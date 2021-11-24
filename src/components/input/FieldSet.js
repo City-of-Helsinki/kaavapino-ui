@@ -11,6 +11,7 @@ import { IconCross, IconClock } from 'hds-react'
 import { Button } from 'hds-react'
 import { change } from 'redux-form'
 import { get } from 'lodash'
+import { useTranslation } from 'react-i18next';
 
 const FieldSet = ({
   sets,
@@ -32,6 +33,8 @@ const FieldSet = ({
     handleSave()
   }
   const dispatch = useDispatch()
+
+  const {t} = useTranslation()
 
   const [hiddenIndex, setHiddenIndex] = useState(-1)
 
@@ -210,7 +213,7 @@ const FieldSet = ({
             disabled={disabled}
             variant="secondary"
           >
-            Lisää
+           {t('project.add')}
           </Button>
           <Button
             className="fieldset-button-remove"
@@ -229,7 +232,7 @@ const FieldSet = ({
             }}
             variant="secondary"
           >
-            Poista
+             {t('project.remove')}
           </Button>
         </>
       )}

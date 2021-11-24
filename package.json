@@ -9,7 +9,7 @@
     "connected-react-router": "^6.9.1",
     "dayjs": "^1.10.4",
     "file-saver": "^2.0.5",
-    "hds-react": "1.5.1",
+    "hds-react": "1.6.0",
     "html-react-parser": "^0.14.3",
     "i18next": "^19.9.2",
     "i18next-browser-languagedetector": "^6.1.0",

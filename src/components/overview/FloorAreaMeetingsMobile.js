@@ -13,7 +13,7 @@ function FloorAreaMeetings({ chartData }) {
   const { t } = useTranslation()
 
   const getFormattedHeaderDate = date => {
-    return dayjs(date).format('DD.MM.YYYY')
+    return dayjs(date).format(t('dateformat'))
   }
   const renderMeetings = () => {
     const items =
@@ -50,7 +50,7 @@ function FloorAreaMeetings({ chartData }) {
   }
   const renderProjects = projects => {
     if (!projects || projects.length === 0) {
-      return <div>Ei projekteja</div>
+      return <div>{t('project.no-projects')}</div>
     }
     return projects.map(project => renderProject(project))
   }

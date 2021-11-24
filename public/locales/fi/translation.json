@@ -1,6 +1,10 @@
 {
   "title": "Kaavapino",
-  "loading": "Ladataan....",
+  "loading": "Ladataan...",
+  "redirecting": "Uudelleenohjataan...",
+  "logging-out": "Kirjaudutaan ulos",
+  "dateformat": "DD.MM.YYYY",
+  "timeformat": "HH:mm",
   "header": {
     "overview": "Yleisnäkymä",
     "projects": "Projektit",
@@ -58,8 +62,22 @@
   "floor-areas": {
     "title": "Päivitä kerrosalatiedot"
   },
+  "file": {
+    "remove-question": "Oletko varma, että haluat poistaa tiedoston {{current}}",
+    "description": "Kuvaus: "
+  },
+  "map": {
+    "attribution": "Leaflet | © Helsingin, Espoon, Vantaan ja Kauniaisen kaupungit, karttasarja",
+    "url": "https://kartta.hel.fi/ws/geoserver/avoindata/gwc/service/wmts?layer=avoindata:Karttasarja_harmaa&tilematrixset=ETRS-GK25&Service=WMTS&Request=GetTile&Version=1.0.0&TileMatrix=ETRS-GK25:{z}&TileCol={x}&TileRow={y}&Format=image%2Fpng"
+  },
   "project": {
     "modify": "Muokkaa",
+    "remove": "Poista",
+    "add": "Lisää",
+    "open": "Avaa",
+    "cancel": "Peruuta",
+    "save": "Tallenna",
+    "create-project": "Luo projekti",
     "create-documents": "Luo dokumentteja",
     "print-project-card": "Tulosta projektikortti",
     "deadlines": "Määräajat",
@@ -88,8 +106,10 @@
     "document-last-loaded": "Ladattu ulos viimeksi:",
     "project-created-log": "{{timestamp}} Projekti luotu {{name}}",
     "default-email": "etunimi.sukunimi@hel.fi",
-    "save-warning": "Hankkeessa on tallentamattomia muutoksia. Haluatteko silti jatkaa?"
-
+    "save-warning": "Hankkeessa on tallentamattomia muutoksia. Haluatteko silti jatkaa?",
+    "more-info": "Lisäohjeita",
+    "link-is-broken": "Linkki on rikki",
+    "no-projects": "Ei projekteja"
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}"
@@ -115,7 +135,8 @@
     "onhold-lable": "Projekti on toistaiseksi keskeytynyt",
     "set-onhold-lable": "Aseta projekti toistaiseksi keskeytyneeksi",
     "change-phase-error": "Vaihetta ei voida vielä lopettaa",
-    "change-phase-error-message": "Täytä puuttuvat kentät"
+    "change-phase-error-message": "Täytä puuttuvat kentät",
+    "title": "Kaavan vaiheet"
   },
   "map-area": {
     "title": "Kaavaprojektit kartalla",
@@ -146,11 +167,26 @@
       "phase": "Vaihe",
       "process-size": "Prosessin koko",
       "responsible-person": "Vastuuhenkilö"
-    },
-    "now": "Nyt",
-    "meetings-title": "Lautakunnan kokoukset",
-    "total-area": "Kokonaiskerrosala"
+    }
   },
+  "project-base": {
+    "modify": "Muokkaa luontitietoja",
+    "add": "Luo uusi projekti",
+    "labels": {
+      "name": "Projektin nimi",
+      "responsible": "Vastuuhenkilö",
+      "is-visible": "Luodaanko projekti näkyväksi",
+      "process-size": "Valitsen projektin koko",
+      "principles": "Periaatteet",
+      "draft": "Kaavaluonnos"
+    },
+    "warning-process-change": "Huom. Kun prosessi vaihtuu, vain ne Kaavapinoon syötetyt tiedot jäävät näkyviin, jotka kuuluvat valittuun prosessiin.",
+    "warning-visibility-change": "Huom. Aiemmin ei-näkyväksi merkityn projektin tiedot muuttuvat näkyviksi kaikille Kaavapinon käyttäjille.",
+    "choose-title": "Valitse laaditaanko"
+  },
+  "now": "Nyt",
+  "meetings-title": "Lautakunnan kokoukset",
+  "total-area": "Kokonaiskerrosala",
   "project-types": {
     "title": "Kaavaprojektien jakauma",
     "kaynnistys": "Käynnistys-vaihe",
@@ -180,5 +216,20 @@
     },
     "report-preview-loaded": "Raportin esikatselu ladattu onnistuneesti",
     "report-loaded": "Raportti ladattu onnistuneesti"
+  },
+  "footer": {
+    "footer-info": {
+      "area": "Kapunkiympäristö",
+      "name": "Asemakaavoitus",
+      "address": "PL 58212 (käyntiosoite Työpajankatu 8)"
+    },
+    "to-start": "Sivun alkuun",
+    "copyright-holder": "Helsingin kaupunki",
+    "copyright-text": "Kaikki oikeudet pidätetään"
+  },
+  "error": {
+    "page-not-found": "Sivua ei löytynyt",
+    "go-back-front-page": "Palaa tästä etusivulle.",
+    "no-rights": "Ei vaadittavia oikeuksia tähän toimenpiteeseen."
   }
 }

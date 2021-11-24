@@ -7,12 +7,16 @@ describe('<Logout />', () => {
   let logoutMock = jest.fn(() => null)
 
   beforeEach(() => {
+    jest.mock("react-i18next", () => ({
+      useTranslation: () => ({ t: key => key }),
+    }));
     logoutMock.mockClear()
     logoutWrapper = mount(<LogoutPage handleLogout={logoutMock} />)
   })
 
   it('renders', () => {
-    expect(logoutWrapper.find('p').text()).toBe('Kirjaudutaan ulos...')
+
+    expect(logoutWrapper.find('div').text()).toBe('logging-out')
   })
 
   it('calls logout fn', () => {

@@ -2,9 +2,12 @@ import React from 'react'
 import { Map, TileLayer } from 'react-leaflet'
 import Polygon from '../common/Polygon'
 import { EPSG3879, formatGeoJSONToPositions, helsinkiCenter } from '../../utils/mapUtils'
+import { useTranslation } from 'react-i18next';
 
 function Geometry(props) {
   const crs = EPSG3879()
+
+  const {t} = useTranslation()
 
   const disabled = false
 
@@ -55,8 +58,8 @@ function Geometry(props) {
         ]}
       >
         <TileLayer
-          attribution="Leaflet | © Helsingin, Espoon, Vantaan ja Kauniaisen kaupungit, karttasarja"
-          url="https://kartta.hel.fi/ws/geoserver/avoindata/gwc/service/wmts?layer=avoindata:Karttasarja_harmaa&tilematrixset=ETRS-GK25&Service=WMTS&Request=GetTile&Version=1.0.0&TileMatrix=ETRS-GK25:{z}&TileCol={x}&TileRow={y}&Format=image%2Fpng"
+          attribution={t('map.attribution')}
+          url={t('map.url')}
         />
         <Polygon positions={formatGeoJSONToPositions([getCoordinates()])} />
       </Map>

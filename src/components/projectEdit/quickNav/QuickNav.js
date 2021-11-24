@@ -176,10 +176,9 @@ export default function NewQuickView({
   }
 
   return (
-    <div>
       <div className="quicknav-container">
         <div className="quicknav-navigation-section">
-          <h2 className="quicknav-title">Kaavan vaiheet</h2>
+          <h2 className="quicknav-title"> {t('quick-nav.title')}</h2>
           <div className="quicknav-content">
             {phases &&
               phases.map(phase => (
@@ -235,6 +234,5 @@ export default function NewQuickView({
           />
         )}
       </div>
-    </div>
   )
 }

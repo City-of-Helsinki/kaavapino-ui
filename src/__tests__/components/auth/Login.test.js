@@ -5,23 +5,22 @@ import mockUserManager from '../../../utils/userManager'
 
 describe('<Login />', () => {
   let loginWrapper
-  let loginSpy
-
+  
   beforeEach(() => {
+    jest.mock('react-i18next', () => ({
+      useTranslation: () => ({ t: key => key })
+    }))
     loginWrapper = mount(<LoginPage />)
-    loginSpy = jest.spyOn(loginWrapper.instance(), 'handleLogin')
+    
   })
 
   it('renders', () => {
-    expect(loginWrapper.find('p').text()).toBe('Uudelleenohjataan...')
+    expect(loginWrapper.find('div').text()).toBe('redirecting')
     expect(mockUserManager.signinRedirect).toHaveBeenCalledTimes(1)
-    loginWrapper.instance().componentDidMount()
-    expect(loginSpy).toHaveBeenCalledTimes(1)
   })
 
   afterEach(() => {
     setInterval.mockClear()
     clearInterval.mockClear()
-    loginSpy.mockClear()
   })
 })
