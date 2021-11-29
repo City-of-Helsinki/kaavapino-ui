@@ -180,7 +180,7 @@ function CustomMap({
   const renderNormalView = () => (
     <div className="map-area">
       <div className="geometry-input-container">
-        <Grid colums="equal" className="full-width">
+        <Grid columns="equal" className="full-width">
           <Grid.Column width={4}>
             <h3>{t('map-area.title')}</h3>
           </Grid.Column>

@@ -64,7 +64,13 @@
   },
   "file": {
     "remove-question": "Oletko varma, että haluat poistaa tiedoston {{current}}",
-    "description": "Kuvaus: "
+    "description": "Kuvaus:",
+    "loading": "Ladataan...",
+    "choose-file": "Valitse tiedosto",
+    "load": "Lataa",
+    "cancel": "Peruuta"
+    
+
   },
   "map": {
     "attribution": "Leaflet | © Helsingin, Espoon, Vantaan ja Kauniaisen kaupungit, karttasarja",
@@ -109,7 +115,9 @@
     "save-warning": "Hankkeessa on tallentamattomia muutoksia. Haluatteko silti jatkaa?",
     "more-info": "Lisäohjeita",
     "link-is-broken": "Linkki on rikki",
-    "no-projects": "Ei projekteja"
+    "no-projects": "Ei projekteja",
+    "fieldset-title": "{{label}} (Max {{max}} merkkiä)s",
+    "required-field": "Pakollinen kenttä"
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}"
@@ -148,7 +156,8 @@
     "filter-button": "Suodata",
     "filter-modal-title": "Suodata",
     "clear": "Tyhjennä",
-    "selected": "{{amount}} valittu"
+    "selected": "{{amount}} valittu",
+    "mobile-accordion-title": "{{date}} {{meetings}} projektia"
   },
 
   "floor-area": {
@@ -167,7 +176,22 @@
       "phase": "Vaihe",
       "process-size": "Prosessin koko",
       "responsible-person": "Vastuuhenkilö"
-    }
+    },
+
+    "now": "Nyt",
+    "meetings-title": "Lautakunnan kokoukset",
+    "total-area": "Kokonaiskerrosala"
+  },
+  "project-types": {
+    "title": "Kaavaprojektien jakauma",
+    "kaynnistys": "Käynnistys-vaihe",
+    "OAS": "OAS-vaihe",
+    "ehdotus": "Ehdotus-vaihe",
+    "hyvaksyminen": "Hyväksyminen-vaihe",
+    "luonnos": "Luonnos-vaihe",
+    "tarkastettuEhdotus": "Tarkastettu ehdotus -vaihe",
+    "voimaantulo": "Voimaantulo-vaihe",
+    "periaatteet": "Periaatteet-vaihe"
   },
   "project-base": {
     "modify": "Muokkaa luontitietoja",
@@ -183,20 +207,6 @@
     "warning-process-change": "Huom. Kun prosessi vaihtuu, vain ne Kaavapinoon syötetyt tiedot jäävät näkyviin, jotka kuuluvat valittuun prosessiin.",
     "warning-visibility-change": "Huom. Aiemmin ei-näkyväksi merkityn projektin tiedot muuttuvat näkyviksi kaikille Kaavapinon käyttäjille.",
     "choose-title": "Valitse laaditaanko"
-  },
-  "now": "Nyt",
-  "meetings-title": "Lautakunnan kokoukset",
-  "total-area": "Kokonaiskerrosala",
-  "project-types": {
-    "title": "Kaavaprojektien jakauma",
-    "kaynnistys": "Käynnistys-vaihe",
-    "OAS": "OAS-vaihe",
-    "ehdotus": "Ehdotus-vaihe",
-    "hyvaksyminen": "Hyväksyminen-vaihe",
-    "luonnos": "Luonnos-vaihe",
-    "tarkastettuEhdotus": "Tarkastettu ehdotus -vaihe",
-    "voimaantulo": "Voimaantulo-vaihe",
-    "periaatteet": "Periaatteet-vaihe"
   },
   "reports": {
     "title": "Raportit",

@@ -127,7 +127,7 @@ const FieldSet = ({
                   }
 
                   const title = field.character_limit
-                    ? `${field.label}  (Max ${field.character_limit} merkkiä)`
+                    ? t('project.fieldset-title', {label: field.label, max: field.character_limit})
                     : field.label
                   const error = syncronousErrors && syncronousErrors[field.name]
 
@@ -136,7 +136,7 @@ const FieldSet = ({
                    * 2) error text can be given directly to the component as props.
                    * Redux form gives error information to the Field component, but that's further down the line, and we need that information
                    * here to modify the input header accordingly. */
-                  const showError = required ? 'pakollinen kenttä' : error
+                  const showError = required ? t('project.required-field') : error
 
                   const fieldUpdated =
                     updated && updated.new_value && has(updated.new_value[0], field.name)

@@ -108,13 +108,13 @@ class File extends Component {
   }
 
   onChangeFile = e => {
-    const { field, image, projectFileUpload } = this.props
+    const { field, image, projectFileUpload, t } = this.props
     const file = this.inputRef.current.files[0]
     if (!file) {
       return
     }
     const path = e.target.value.split('\\')
-    let description = prompt('Tiedoston kuvaus')
+    let description = prompt(t('file.description'))
     if (!description) description = ''
     const onCompleted = () => {
       this.setState({ current: path[path.length - 1], reading: true })
@@ -193,7 +193,8 @@ class File extends Component {
               label={{
                 basic: true,
                 content: `${
-                  this.state.current || (uploading && 'Ladataan...') || 'Valitse tiedosto'
+                  this.state.current || uploading && t('file.loading') 
+                  || t('file.choose-file')
                 }`
               }}
               onClick={this.handleClick}
@@ -207,7 +208,7 @@ class File extends Component {
                   icon="download"
                   className="file-action-button"
                   onClick={this.download}
-                  content="Lataa"
+                  content={t('file.load')}
                   disabled={disabled}
                 />
               )}
@@ -222,7 +223,7 @@ class File extends Component {
               )}
             </div>
             {uploading && (
-              <Button icon="cancel" color="red" onClick={this.cancel} content="Peruuta" />
+              <Button icon="cancel" color="red" onClick={this.cancel} content={t('file.cancel')} />
             )}
           </Button.Group>
         </div>

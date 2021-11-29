@@ -39,7 +39,10 @@ function FloorAreaMeetings({ chartData }) {
 
     return (
       <Accordion
-        heading={getFormattedHeaderDate(item.date) + ' ' + item.meetings + ' projektia'}
+        heading={t('overview.mobile-accordion-title', {
+          date: getFormattedHeaderDate(item.date),
+          meetings: item.meetings
+        })}
         className="mobile-accordion"
         headingLevel={4}
         key={item.date}
