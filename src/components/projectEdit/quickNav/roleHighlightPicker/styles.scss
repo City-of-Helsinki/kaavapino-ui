@@ -1,28 +1,14 @@
 @import '../../../../components/common/colors.scss';
 
 .role-highlight-picker {
-  align-items: flex-start;
   border: 2px solid $light-gray3;
   justify-content: stretch;
-  display: flex;
   padding: 16px 32px;
   margin-top: 32px;
 
   h3:first-child {
     margin-top: 4px;
   }
-
-  .role-highlight-picker-right {
-    flex-grow: 2;
-  }
-
-  .magnifier-icon {
-    background: url('../../../../assets/icons/magnifier-icon.svg') no-repeat center;
-    height: 24px;
-    margin-right: 24px;
-    width: 24px;
-  }
-
   .role-buttons {
     font-family: "Helsinki Grotesk Bold";
     display: flex;

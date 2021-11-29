@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import { loginSuccessful, loginFailure } from '../../actions/authActions'
 import { CallbackComponent } from 'redux-oidc'
 import userManager from '../../utils/userManager'
+import { withTranslation } from 'react-i18next';
 
 class LoginCallbackPage extends Component {
   success = () => {
@@ -21,7 +22,7 @@ class LoginCallbackPage extends Component {
         successCallback={this.success}
         errorCallback={this.success}
       >
-        <p>Uudelleenohjataan...</p>
+       <p>{this.props.t('redirecting')}</p>
       </CallbackComponent>
     )
   }
@@ -37,4 +38,4 @@ const mapDispatchToProps = {
   loginFailure
 }
 
-export default connect(null, mapDispatchToProps)(LoginCallbackPage)
+export default connect(null, mapDispatchToProps)(withTranslation()(LoginCallbackPage))

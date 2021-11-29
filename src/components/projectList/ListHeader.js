@@ -2,6 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Radio } from 'semantic-ui-react'
 import { IconAngleUp, IconAngleDown, Button } from 'hds-react'
+import { useTranslation } from 'react-i18next';
 
 const ListHeader = ({
   items,
@@ -17,9 +18,11 @@ const ListHeader = ({
       <IconAngleDown size="xs" />
     )
   }
+
+  const {t} = useTranslation()
   return (
     <div className="project-list-wrapper">
-      <p className="project-list-sort-text">Lajittele</p>
+      <p className="project-list-sort-text"> {t('project.sort')}</p>
       <div className="project-list-header">
         {items.map((item, index) => {
           return (
@@ -30,7 +33,7 @@ const ListHeader = ({
           )
         })}
         <span className="timeline-header-item  project-timeline-toggle">
-          Aikajana
+          {t('project.timeline')}
           <Radio onChange={toggleGraph} toggle checked={graphToggled} />
         </span>
       </div>
@@ -40,7 +43,7 @@ const ListHeader = ({
             onChange={toggleGraph}
             toggle
             checked={graphToggled}
-            label="Näytä aikajanat"
+            label= {t('project.show-timelines')}
           />
         </span>
       </div>

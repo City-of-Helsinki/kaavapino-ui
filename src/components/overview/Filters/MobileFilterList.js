@@ -37,7 +37,7 @@ export default function MobileFilterList({
     setCheckedItems({ ...checkedItems, [item]: isChecked })
   }
   const handleSingleChange = value => {
-     onUserFilterChange([value], filter.parameter)
+    onUserFilterChange([value], filter.parameter)
   }
 
   const handleUserChange = value => {
@@ -69,12 +69,13 @@ export default function MobileFilterList({
     }
 
     if (filter.accepts_year) {
-
       return (
         <Combobox
           options={choices}
           onChange={handleSingleChange}
-          defaultValue={currentFilterValue && currentFilterValue[0] ? currentFilterValue[0] : null}
+          defaultValue={
+            currentFilterValue && currentFilterValue[0] ? currentFilterValue[0] : null
+          }
           multiselect={false}
           clearable={true}
         />

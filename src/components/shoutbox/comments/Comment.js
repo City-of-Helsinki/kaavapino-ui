@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { Dropdown } from 'semantic-ui-react'
 import projectUtils from '../../../utils/projectUtils'
 import { TextInput, Button } from 'hds-react'
+import { withTranslation } from 'react-i18next';
 
 class Comment extends Component {
   constructor(props) {
@@ -51,10 +52,10 @@ class Comment extends Component {
 
   render() {
     const { showEdit, menuOpen, editing, content } = this.state
-    const { created_at, user: userId, _metadata, generated } = this.props
+    const { created_at, user: userId, _metadata, generated, t } = this.props
     const user = !generated
       ? projectUtils.formatUsersName(_metadata.users.find(({ id }) => id === userId))
-      : 'Automaattinen'
+      :  t('shoutbox.automatic')
     const date = projectUtils.formatDate(created_at)
     const time = projectUtils.formatTime(created_at)
     const dateTime = `${date} ${time}`
@@ -84,10 +85,10 @@ class Comment extends Component {
                 <Dropdown.Menu>
                   <Dropdown.Item
                     icon="pencil"
-                    text="Muokkaa"
+                    text={t('shoutbox.modify')}
                     onClick={() => this.setState({ editing: true })}
                   />
-                  <Dropdown.Item icon="trash" text="Poista" onClick={this.handleDelete} />
+                  <Dropdown.Item icon="trash" text={t('shoutbox.remove')} onClick={this.handleDelete} />
                 </Dropdown.Menu>
               </Dropdown>
             )}
@@ -110,10 +111,10 @@ class Comment extends Component {
             {editing && (
               <React.Fragment>
                 <Button variant="secondary" onClick={this.handleEditCancel}>
-                  Peruuta
+                  {t('shoutbox.cancel')}
                 </Button>
                 <Button variant="primary" onClick={this.handleEditSave} disabled={!content}>
-                  Tallenna
+                {t('shoutbox.save')}
                 </Button>
               </React.Fragment>
             )}
@@ -124,4 +125,4 @@ class Comment extends Component {
   }
 }
 
-export default Comment
+export default withTranslation()(Comment)

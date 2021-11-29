@@ -1,6 +1,10 @@
 {
   "title": "Kaavapino",
-  "loading": "Ladataan....",
+  "loading": "Ladataan...",
+  "redirecting": "Uudelleenohjataan...",
+  "logging-out": "Kirjaudutaan ulos",
+  "dateformat": "DD.MM.YYYY",
+  "timeformat": "HH:mm",
   "header": {
     "overview": "Yleisnäkymä",
     "projects": "Projektit",
@@ -34,7 +38,16 @@
       "modified": "Muokattu",
       "old": "Vanha"
     },
-    "person-search": "Henkilöhaku"
+    "person-search": "Henkilöhaku",
+    "table": {
+      "pino-number": "Pinonumero",
+      "project": "Hanke (PW)",
+      "name": "Nimi",
+      "phase": "Vaihe",
+      "size": "Koko",
+      "modified": "Muokattu",
+      "responsible": "Vastuuhenkilö"
+    }
   },
   "deadlines": {
     "title": "Päivitä aikataulut",
@@ -42,7 +55,25 @@
     "warning": "Päivitettyjen aikataulutietojen tallentaminen saattaa kestää hieman pidempään kun Kaavapino tekee laskutoimituksia.",
     "estimated": "Kaavapinon arvio",
     "project-stopped": "Projekti on toistaiseksi keskeytetty.",
-    "timeline-error": "Projekti ei ole ajan tasalla."
+    "timeline-error": "Projekti ei ole ajan tasalla.",
+    "months": {
+      "jan": "Tammi",
+      "feb": "Helmi",
+      "mar": "Maalis",
+      "apr": "Huhti",
+      "may": "Touko",
+      "jun": "Kesä",
+      "jul": "Heinä",
+      "aug": "Elo",
+      "sep": "Syys",
+      "oct": "Loka",
+      "nov": "Marras",
+      "dec": "Joulu"
+    },
+    "now": "Nyt",
+    "deadline-label": "Määräaika {{date}}.{{month}}",
+    "kylk-message": "Kylk {{date}}.{{month}}",
+    "shown": "nähtävillä"
   },
   "common": {
     "cancel": "Peruuta",
@@ -58,8 +89,28 @@
   "floor-areas": {
     "title": "Päivitä kerrosalatiedot"
   },
+  "file": {
+    "remove-question": "Oletko varma, että haluat poistaa tiedoston {{current}}",
+    "description": "Kuvaus:",
+    "loading": "Ladataan...",
+    "choose-file": "Valitse tiedosto",
+    "load": "Lataa",
+    "cancel": "Peruuta"
+    
+
+  },
+  "map": {
+    "attribution": "Leaflet | © Helsingin, Espoon, Vantaan ja Kauniaisen kaupungit, karttasarja",
+    "url": "https://kartta.hel.fi/ws/geoserver/avoindata/gwc/service/wmts?layer=avoindata:Karttasarja_harmaa&tilematrixset=ETRS-GK25&Service=WMTS&Request=GetTile&Version=1.0.0&TileMatrix=ETRS-GK25:{z}&TileCol={x}&TileRow={y}&Format=image%2Fpng"
+  },
   "project": {
     "modify": "Muokkaa",
+    "remove": "Poista",
+    "add": "Lisää",
+    "open": "Avaa",
+    "cancel": "Peruuta",
+    "save": "Tallenna",
+    "create-project": "Luo projekti",
     "create-documents": "Luo dokumentteja",
     "print-project-card": "Tulosta projektikortti",
     "deadlines": "Määräajat",
@@ -88,8 +139,22 @@
     "document-last-loaded": "Ladattu ulos viimeksi:",
     "project-created-log": "{{timestamp}} Projekti luotu {{name}}",
     "default-email": "etunimi.sukunimi@hel.fi",
-    "save-warning": "Hankkeessa on tallentamattomia muutoksia. Haluatteko silti jatkaa?"
-
+    "save-warning": "Hankkeessa on tallentamattomia muutoksia. Haluatteko silti jatkaa?",
+    "more-info": "Lisäohjeita",
+    "link-is-broken": "Linkki on rikki",
+    "no-projects": "Ei projekteja",
+    "fieldset-title": "{{label}} (Max {{max}} merkkiä)s",
+    "required-field": "Pakollinen kenttä",
+    "projects": "Kaavaprojektit",
+    "documents": "Dokumentit",
+    "print-project-data": "Tulosta projektin tiedot",
+    "highlight-fields": "Korosta täytettävät kentät",
+    "expert": "Asiantuntija",
+    "admin": "Pääkäyttäjä",
+    "sort": "Lajittele",
+    "timeline": "Aikajana",
+    "show-timelines": "Näytä aikajanat"
+    
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}"
@@ -115,7 +180,8 @@
     "onhold-lable": "Projekti on toistaiseksi keskeytynyt",
     "set-onhold-lable": "Aseta projekti toistaiseksi keskeytyneeksi",
     "change-phase-error": "Vaihetta ei voida vielä lopettaa",
-    "change-phase-error-message": "Täytä puuttuvat kentät"
+    "change-phase-error-message": "Täytä puuttuvat kentät",
+    "title": "Kaavan vaiheet"
   },
   "map-area": {
     "title": "Kaavaprojektit kartalla",
@@ -127,7 +193,8 @@
     "filter-button": "Suodata",
     "filter-modal-title": "Suodata",
     "clear": "Tyhjennä",
-    "selected": "{{amount}} valittu"
+    "selected": "{{amount}} valittu",
+    "mobile-accordion-title": "{{date}} {{meetings}} projektia"
   },
 
   "floor-area": {
@@ -147,6 +214,7 @@
       "process-size": "Prosessin koko",
       "responsible-person": "Vastuuhenkilö"
     },
+
     "now": "Nyt",
     "meetings-title": "Lautakunnan kokoukset",
     "total-area": "Kokonaiskerrosala"
@@ -161,6 +229,21 @@
     "tarkastettuEhdotus": "Tarkastettu ehdotus -vaihe",
     "voimaantulo": "Voimaantulo-vaihe",
     "periaatteet": "Periaatteet-vaihe"
+  },
+  "project-base": {
+    "modify": "Muokkaa luontitietoja",
+    "add": "Luo uusi projekti",
+    "labels": {
+      "name": "Projektin nimi",
+      "responsible": "Vastuuhenkilö",
+      "is-visible": "Luodaanko projekti näkyväksi",
+      "process-size": "Valitsen projektin koko",
+      "principles": "Periaatteet",
+      "draft": "Kaavaluonnos"
+    },
+    "warning-process-change": "Huom. Kun prosessi vaihtuu, vain ne Kaavapinoon syötetyt tiedot jäävät näkyviin, jotka kuuluvat valittuun prosessiin.",
+    "warning-visibility-change": "Huom. Aiemmin ei-näkyväksi merkityn projektin tiedot muuttuvat näkyviksi kaikille Kaavapinon käyttäjille.",
+    "choose-title": "Valitse laaditaanko"
   },
   "reports": {
     "title": "Raportit",
@@ -180,5 +263,34 @@
     },
     "report-preview-loaded": "Raportin esikatselu ladattu onnistuneesti",
     "report-loaded": "Raportti ladattu onnistuneesti"
+  },
+  "footer": {
+    "footer-info": {
+      "area": "Kapunkiympäristö",
+      "name": "Asemakaavoitus",
+      "address": "PL 58212 (käyntiosoite Työpajankatu 8)"
+    },
+    "to-start": "Sivun alkuun",
+    "copyright-holder": "Helsingin kaupunki",
+    "copyright-text": "Kaikki oikeudet pidätetään"
+  },
+  "error": {
+    "page-not-found": "Sivua ei löytynyt",
+    "go-back-front-page": "Palaa tästä etusivulle.",
+    "no-rights": "Ei vaadittavia oikeuksia tähän toimenpiteeseen."
+  },
+  "shoutbox": {
+    "title": "Viestit",
+    "modify": "Muokkaa",
+    "remove": "Poista",
+    "cancel": "Peruuta",
+    "save": "Tallenna",
+    "automatic": "Automaattinen",
+    "loading": "Ladataan...",
+    "no-comments": "Ei kommentteja",
+    "add-comment": "Lisää kommentti",
+    "send": "Lähetä"
+
+
   }
 }

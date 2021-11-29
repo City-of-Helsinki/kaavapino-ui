@@ -15,6 +15,7 @@ import ListHeader from './ListHeader'
 import ListItem from './ListItem'
 import projectUtils from '../../utils/projectUtils'
 import { LoadingSpinner } from 'hds-react'
+import { withTranslation } from 'react-i18next';
 
 class List extends Component {
   constructor(props) {
@@ -90,7 +91,8 @@ class List extends Component {
       searchOpen,
       toggleSearch,
       isUserPrivileged,
-      modifyProject
+      modifyProject,
+      t
     } = this.props
 
     if (loadingProjects || !phases) {
@@ -103,13 +105,13 @@ class List extends Component {
 
     const items = this.props.items
     const headerItems = [
-      'Pinonumero',
-      'Hanke (PW)',
-      'Nimi',
-      'Vaihe',
-      'Koko',
-      'Muokattu',
-      'Vastuuhenkilö'
+      t('projects.table.pino-number'),
+      t('projects.table.project'),
+      t('projects.table.name'),
+      t('projects.table.phase'),
+      t('projects.table.size'),
+      t('projects.table.modified'),
+      t('projects.table.responsible')
     ]
 
     let projects = []
@@ -177,4 +179,4 @@ const mapStateToProps = state => ({
   amountOfProjectsToIncrease: amountOfProjectsToIncreaseSelector(state)
 })
 
-export default connect(mapStateToProps, mapDispatchToProps)(List)
+export default connect(mapStateToProps, mapDispatchToProps)(withTranslation()(List))

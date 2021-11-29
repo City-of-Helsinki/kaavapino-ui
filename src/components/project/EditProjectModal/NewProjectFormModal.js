@@ -9,6 +9,7 @@ import { NEW_PROJECT_FORM } from '../../../constants'
 import { newProjectSubtypeSelector } from '../../../selectors/formSelector'
 import FormField from '../../input/FormField'
 import { Button } from 'hds-react'
+import { withTranslation } from 'react-i18next';
 
 const PROJECT_NAME = 'name'
 const USER = 'user'
@@ -66,10 +67,8 @@ class NewProjectFormModal extends Component {
 
   handleSubmit = () => {
     this.setState({ loading: true })
-    const errors = this.props.handleSubmit()
-    if ( errors ) {
-      console.log(errors)
-    }
+    this.props.handleSubmit()
+    
   }
 
   handleClose = () => {
@@ -108,7 +107,7 @@ class NewProjectFormModal extends Component {
 
   render() {
     const { loading } = this.state
-    const { currentProject, selectedSubType, initialValues, formValues } = this.props
+    const { currentProject, selectedSubType, initialValues, formValues, t } = this.props
     const showXLProjectOptions = selectedSubType === 5
     const isEdit = !!currentProject
 
@@ -139,7 +138,7 @@ class NewProjectFormModal extends Component {
         closeIcon
       >
         <Modal.Header>
-          {isEdit ? 'Muokkaa luontitietoja' : 'Luo uusi projekti'}
+          {isEdit ? t('project-base.modify') : t('project-base.add')}
         </Modal.Header>
         <Modal.Content>
           <Form>
@@ -147,7 +146,7 @@ class NewProjectFormModal extends Component {
               {this.getFormField({
                 field: {
                   name: PROJECT_NAME,
-                  label: 'Projektin nimi',
+                  label: t('project-base.labels.name'),
                   type: 'text',
                   editable: true
                 }
@@ -156,7 +155,7 @@ class NewProjectFormModal extends Component {
                 className: 'ui fluid input user-selection',
                 field: {
                   name: USER,
-                  label: 'Vastuuhenkilö',
+                  label: t('project-base.labels.responsible'),
                   type: 'select',
                   choices: this.formatUsers(),
                   editable: true
@@ -166,7 +165,7 @@ class NewProjectFormModal extends Component {
             {this.getFormField({
               field: {
                 name: PUBLIC,
-                label: 'Luodaanko projekti näkyväksi',
+                label: t('project-base.labels.is-visible'),
                 type: 'boolean',
                 editable: true
               },
@@ -174,15 +173,14 @@ class NewProjectFormModal extends Component {
             })}
             {formValues && formValues.public && !initialValues.public && (
               <div className="warning-box">
-                Huom. Aiemmin ei-näkyväksi merkityn projektin tiedot muuttuvat näkyviksi
-                kaikille Kaavapinon käyttäjille.
+                {t('project-base.warning-visibility-change')}
               </div>
             )}
             <div className="subtype-input-container">
               {this.getFormField({
                 field: {
                   name: SUB_TYPE,
-                  label: 'Valitse prosessin koko',
+                  label: t('project-base.labels.process-size'),
                   type: 'radio',
                   editable: true,
                   options: [
@@ -199,22 +197,21 @@ class NewProjectFormModal extends Component {
               initialValues.subtype &&
               formValues.subtype !== initialValues.subtype && (
                 <div className="warning-box">
-                  Huom. Kun prosessi vaihtuu, vain ne Kaavapinoon syötetyt tiedot jäävät
-                  näkyviin, jotka kuuluvat valittuun prosessiin.
+                  {t('project-base.warning-process-change')}       
                 </div>
               )}
             {showXLProjectOptions && (
               <>
-                <h4>Valitse, laaditaanko</h4>
+                <h4>{t('project-base.choose-title')}</h4>
                 {this.getFormField({
                   field: {
                     name: CREATE_PRINCIPLES,
-                    label: 'Periaatteet',
+                    label: t('project-base.labels.principles'),
                     type: 'toggle'
                   }
                 })}
                 {this.getFormField({
-                  field: { name: CREATE_DRAFT, label: 'Kaavaluonnos', type: 'toggle' }
+                  field: { name: CREATE_DRAFT, label: t('project-base.labels.draft'), type: 'toggle' }
                 })}
               </>
             )}
@@ -223,17 +220,17 @@ class NewProjectFormModal extends Component {
         <Modal.Actions>
           <div className="form-buttons">
             <Button variant="secondary" disabled={loading} onClick={this.handleClose}>
-              Peruuta
+              {t('project.cancel')}
             </Button>
             <Button
               variant="primary"
               disabled={loading || hideSave}
-              loadingText={isEdit ? 'Tallenna' : 'Luo projekti'}
+              loadingText={isEdit ? t('project.save') : t('project.create-project')}
               isLoading={loading}
               type="submit"
               onClick={this.handleSubmit}
             >
-              {isEdit ? 'Tallenna' : 'Luo projekti'}
+              {isEdit ? t('project.save') : t('project.create-project')}
             </Button>
           </div>
         </Modal.Actions>
@@ -258,4 +255,4 @@ const decoratedForm = reduxForm({
   initialValues: { public: true }
 })(NewProjectFormModal)
 
-export default connect(mapStateToProps, () => ({}))(decoratedForm)
+export default connect(mapStateToProps, null)(withTranslation()(decoratedForm))
