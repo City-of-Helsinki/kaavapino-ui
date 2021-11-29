@@ -7,18 +7,23 @@ import { connect } from 'react-redux'
 import { unreadCommentsCountSelector } from '../../selectors/commentSelector'
 import { markCommentsAsRead } from '../../actions/commentActions'
 import { IconCross } from 'hds-react'
+import { useTranslation } from 'react-i18next'
 
-const ShoutBoxButton = ({ unreadCommentsCount, ...rest }) => (
-  <Button className="shoutbox-button" {...rest}>
-    <div>Viestit</div>
-    <div className="comment-icon-container">
-      <div className="comment-icon" />
-      {!!unreadCommentsCount && (
-        <div className="unread-comments-count">{unreadCommentsCount}</div>
-      )}
-    </div>
-  </Button>
-)
+const ShoutBoxButton = ({ unreadCommentsCount, ...rest }) => {
+  const { t } = useTranslation()
+
+  return (
+    <Button className="shoutbox-button" {...rest}>
+      <div>{t('shoutbox.title')}</div>
+      <div className="comment-icon-container">
+        <div className="comment-icon" />
+        {!!unreadCommentsCount && (
+          <div className="unread-comments-count">{unreadCommentsCount}</div>
+        )}
+      </div>
+    </Button>
+  )
+}
 
 const Shoutbox = props => {
   const { markCommentsAsRead, project, unreadCommentsCount } = props

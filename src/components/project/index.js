@@ -108,15 +108,15 @@ class ProjectPage extends Component {
   }
 
   getRouteItems = () => {
-    const { currentProject, edit, documents } = this.props
+    const { currentProject, edit, documents, t } = this.props
     const path = [
-      { value: 'Kaavaprojektit', path: '/projects' },
+      { value: t('project.projects'), path: '/projects' },
       { value: `${currentProject.name}`, path: `/${currentProject.id}` }
     ]
     if (edit) {
-      path.push({ value: 'Muokkaa', path: `/${currentProject.id}/edit` })
+      path.push({ value: t('project.modify'), path: `/${currentProject.id}/edit` })
     } else if (documents) {
-      path.push({ value: 'Dokumentit', path: `/${currentProject.id}/documents` })
+      path.push({ value: t('project.documents'), path: `/${currentProject.id}/documents` })
     }
     return path
   }
@@ -315,7 +315,7 @@ class ProjectPage extends Component {
           onClick={this.openProjectDataModal}
           iconLeft={<IconDownload />}
         >
-          Tulosta projektin tiedot
+         {t('project.print-project-data')}
         </Button>
         {showCreate && (
           <Button
