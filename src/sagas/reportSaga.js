@@ -75,10 +75,11 @@ function* downloadReportPreviewSaga({ payload }) {
     )
     currentTask = res && res.data ? res.data.detail : null
 
-    toastr.info(i18next.t('reports.preview-title'), i18next.t('reports.content'))
+    toastr.info(i18next.t('reports.wait-title'), i18next.t('reports.preview-content'))
     if (!currentTask) {
       toastr.removeByType('info')
-      toastr.error(i18next.t('reports.preview-title'), i18next.t('reports.error'))
+      toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-preview'))
+      yield put(downloadReportReviewSuccessful(null))
       isError = true
       yield put(downloadReportSuccessful())
     } else {
@@ -102,16 +103,17 @@ function* downloadReportPreviewSaga({ payload }) {
     }
   } catch (e) {
     isError = true
-    toastr.error(i18next.t('reports.preview-title'), i18next.t('reports.error'))
+    toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-preview'))
+    yield put(downloadReportReviewSuccessful(null))
   }
 
   if (counter === MAX_COUNT) {
-    toastr.error(i18next.t('reports.preview-title'), i18next.t('reports.error'))
+    toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-preview'))
     yield put(downloadReportReviewSuccessful(null))
   }
 
   if (!isError && counter !== MAX_COUNT) {
-    toastr.success(i18next.t('reports.title'), i18next.t('reports.report-preview-loaded'))
+    toastr.success(i18next.t('reports.finished-title'), i18next.t('reports.report-preview-loaded'))
     yield put(downloadReportReviewSuccessful(res.data))
   }
 }
@@ -145,7 +147,7 @@ function* downloadReportSaga({ payload }) {
     }
   })
 
-  toastr.info(i18next.t('reports.title'), i18next.t('reports.content'))
+  toastr.info(i18next.t('reports.wait-title'), i18next.t('reports.content'))
   try {
     res = yield call(
       reportApi.get,
@@ -158,7 +160,7 @@ function* downloadReportSaga({ payload }) {
 
     if (!currentTask) {
       toastr.removeByType('info')
-      toastr.error(i18next.t('reports.title'), i18next.t('reports.error'))
+      toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-report'))
       isError = true
       yield put(downloadReportSuccessful())
     } else {
@@ -181,14 +183,15 @@ function* downloadReportSaga({ payload }) {
       }
     }
   } catch (e) {
-    toastr.error(i18next.t('reports.title'), i18next.t('reports.error'))
+    toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-report'))
     isError = true
+    yield put(downloadReportSuccessful())
   }
 
   toastr.removeByType('info')
 
   if (counter === MAX_COUNT) {
-    toastr.error(i18next.t('reports.preview-title'), i18next.t('reports.error'))
+    toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-report'))
     yield put(downloadReportSuccessful())
   }
 
@@ -200,10 +203,10 @@ function* downloadReportSaga({ payload }) {
     if (fileData) {
       FileSaver.saveAs(fileData, fileName)
 
-      toastr.success(i18next.t('reports.title'), i18next.t('reports.report-loaded'))
+      toastr.success(i18next.t('reports.finished-title'), i18next.t('reports.report-loaded'))
       yield put(downloadReportSuccessful())
     } else {
-      toastr.error(i18next.t('reports.preview-title'), i18next.t('reports.error'))
+      toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-report'))
       yield put(downloadReportSuccessful())
     }
   }

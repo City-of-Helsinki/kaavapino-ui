@@ -249,20 +249,23 @@
     "title": "Raportit",
     "choose-report": "Valitse raporttityyppi",
     "filters": "Suodattimet",
+    "wait-title": "Odota",
+    "finished-title": "Valmis",
+    "error-title": "Virhe",
     "create-report": "Lataa raportti (.xlxs)",
     "create-preview": "Esikatselu",
-    "preview-title": "Esikatseluraportin lataus",
-    "preview-content": "Raporttia ladataan esikatseluun.",
-    "content": "Raporttia ladataan.",
-    "error": "Raportin lataus epäonnistui.",
+    "preview-content": "Raportin esikatselua ladataan",
+    "content": "Excel-raporttia ladataan",
+    "error-report": "Raportin lataus epäonnistui.",
+    "error-preview": "Esikatseluraportin lataus epäonnistui",
     "presentation-report": {
       "title": "Esittelysuunnitelma",
       "infoText": " Kaupunkiympäristölautakunnalle (KYLK) esitettäväksi suunniteltuja MAKA:n asioita",
       "empty-report": "Tyhjä raportti",
       "kylk-title": "Kylk {{date}}"
     },
-    "report-preview-loaded": "Raportin esikatselu ladattu onnistuneesti",
-    "report-loaded": "Raportti ladattu onnistuneesti"
+    "report-preview-loaded": "Raportin esikatselu ladattu.",
+    "report-loaded": "Raportti ladattu."
   },
   "footer": {
     "footer-info": {
