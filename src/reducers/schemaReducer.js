@@ -8,7 +8,7 @@ import {
 
 export const initialState = {
   schema: null,
-  allEditFields: [],
+  allEditFields: undefined,
   attributes: [],
   projectCardFields: []
 }

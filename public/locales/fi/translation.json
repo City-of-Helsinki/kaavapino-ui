@@ -5,6 +5,11 @@
   "logging-out": "Kirjaudutaan ulos",
   "dateformat": "DD.MM.YYYY",
   "timeformat": "HH:mm",
+  "yes": "Kyllä",
+  "no": "Ei",
+  "no-value": "-",
+  "empty": "Tyhjä",
+  "deleted": "-Poistettu-",
   "header": {
     "overview": "Yleisnäkymä",
     "projects": "Projektit",
