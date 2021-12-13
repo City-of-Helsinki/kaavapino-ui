@@ -2,13 +2,19 @@ import React from 'react'
 import { NavHeader } from '../common/NavHeader'
 import ReportBuilder from './ReportBuilder'
 import { useTranslation } from 'react-i18next'
+import Header from '../common/Header'
 
-function Reports() {
+function Reports({user, userRole}) {
 
   const {t} = useTranslation()
   
 
   return (
+    <>
+    <Header
+      user={user}
+      userRole={userRole}
+    />
     <div className="reports-page">
       <NavHeader
         routeItems={[
@@ -19,6 +25,7 @@ function Reports() {
       />
       <ReportBuilder />
     </div>
+    </>
   )
 }
 

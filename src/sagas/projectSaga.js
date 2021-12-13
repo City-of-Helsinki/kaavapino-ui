@@ -156,12 +156,15 @@ export default function* projectSaga() {
 
 function* resetProjectDeadlines({ payload: projectId }) {
   try {
-    yield call(
+    const timelineProject = yield call(
       projectApi.get,
       { path: { projectId } },
       ':projectId/?generate_schedule=true'
     )
-  } catch (e) {
+    yield put(updateProject(timelineProject))
+    yield put(initializeProjectAction(projectId))
+
+   } catch (e) {
     yield put(error(e))
   }
 }
