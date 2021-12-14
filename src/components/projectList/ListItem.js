@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom'
 import { Popup } from 'semantic-ui-react'
 import ProjectTimeline from '../ProjectTimeline/ProjectTimeline'
 import { IconPenLine, Button } from 'hds-react'
+import { truncate } from 'lodash'
 
+const MAX_PROJECT_NAME_LENGTH = 30
 const Status = ({ color }) => {
   return (
     <span
@@ -31,24 +33,23 @@ const ListItem = ({
     modified_at,
     user,
     projectId,
-   pino_number
+    pino_number
   }
 }) => {
-
   return (
     <div className="project-list-item-container">
       <div className="project-list-item">
         <span className="project-list-item-pino field-ellipsis center">
           {pino_number}
         </span>
-        <span className="center field-ellipsis" >{projectId}</span>
+        <span className="center field-ellipsis">{projectId}</span>
         <span className="project-list-item-name center field-ellipsis">
           <Popup
-            trigger={(
+            trigger={
               <Link className="project-name" to={`/${id}`}>
-                {name}
+                {truncate(name, { length: MAX_PROJECT_NAME_LENGTH })}
               </Link>
-            )}
+            }
             on="hover"
             content={name}
           />
@@ -64,20 +65,22 @@ const ListItem = ({
           content={user}
         />
         <span className="project-list-button">
-        {isUserPrivileged && (
-          <Button
-            aria-label="Muokkaa"
-            className="project-list-button"
-            value="modify"
-            variant="supplementary"
-            iconLeft={<IconPenLine />}
-            onClick={() => modifyProject(id)}
-          />
-        )}
+          {isUserPrivileged && (
+            <Button
+              aria-label="Muokkaa"
+              className="project-list-button"
+              value="modify"
+              variant="supplementary"
+              iconLeft={<IconPenLine />}
+              onClick={() => modifyProject(id)}
+            />
+          )}
         </span>
       </div>
       <div className="project-list-item-graph">
-        {showGraph && <ProjectTimeline deadlines={deadlines} projectView={true} onhold={onhold}/>}
+        {showGraph && (
+          <ProjectTimeline deadlines={deadlines} projectView={true} onhold={onhold} />
+        )}
       </div>
     </div>
   )
