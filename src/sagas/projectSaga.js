@@ -416,8 +416,8 @@ function* getProjectSnapshot({ payload }) {
 
     if (payload.phase) {
       query = { phase: payload.phase }
-    } else if (payload.date) {
-      query = { snapshot: payload.date }
+    } else if (payload.snapshot) {
+      query = { snapshot: encodeURIComponent(payload.snapshot) }
     }
     const project = yield call(
       projectApi.get,

@@ -344,7 +344,7 @@ class ProjectPage extends Component {
 
     return (
       <span className="header-buttons">
-        {showCreate && (
+       {showCreate && (
           <Button
             variant="secondary"
             className="header-button"
@@ -472,7 +472,7 @@ class ProjectPage extends Component {
     const phase = formValues['phase']
     const date = formValues['date']
 
-    getProjectSnapshot(currentProject.id, dayjs(date), phase)
+    getProjectSnapshot(currentProject.id, dayjs(date).format(), phase)
   }
 
   render() {
