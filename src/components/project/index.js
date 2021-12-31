@@ -394,45 +394,54 @@ class ProjectPage extends Component {
 
   getAllChanges = () => {
     const { allEditFields, edit, creator, t } = this.props
+    
+    if (!edit || !allEditFields) return []
 
-    if (!edit) return []
+    const returnValues = []
 
-    const returnValues =
-      allEditFields &&
-      allEditFields.map((f, i) => {
-        const value = `${projectUtils.formatDateTime(f.timestamp)} ${f.label} ${
-          f.user_name
-        }`
-        return {
-          name: f.name,
-          label: f.attribute_label,
-          text: value,
-          value: `${value}-${i}`,
-          key: `${value}-${i}`,
-          oldValue: f.old_value,
-          newValue: f.new_value,
-          labels: f.labels,
-          type: f.type,
-          editable: f.editable,
-        }
+    const keys = Object.keys( allEditFields )
+
+    keys.forEach( (key, i) => {
+      const current = allEditFields[key]
+      const value = `${projectUtils.formatDateTime(current.timestamp)} ${current.schema[key].label} ${
+        current.user_name
+      }`
+      returnValues.push( {
+        name: key,
+        text: value,
+        value: value,
+        key: `${value}-${i}`,
+        oldValue: current.old_value,
+        newValue: current.new_value,
+        schema: current.schema,
+        timestamp: current.timestamp,
+        type: current.schema[key].type
+
       })
+    })
 
+    const ordered = returnValues.sort((u1, u2) => new Date(u2.timestamp).getTime() - new Date(u1.timestamp).getTime())
+     
     if (allEditFields) {
-      returnValues.push({
+      ordered.push({
         name: 'Project created',
         label: creator.user_name,
         text: t('project.project-created-log', {
           timestamp: projectUtils.formatDateTime(creator.timestamp),
           name: creator.user_name
+       
         }),
-        hideChangeValue: true,
-        editable: false, // To show project creation
-        autoFill: false
+        timestamp: projectUtils.formatDateTime(creator.timestamp),
+        type: "boolean",
+        oldValue: null,
+        newValue: true,
+
       })
     }
-    return returnValues
+    return ordered
+   
   }
-
+  
   togglePrintProjectDataModal = opened =>
     this.setState({ showPrintProjectDataModal: opened })
 

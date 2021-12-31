@@ -7,7 +7,7 @@
   "timeformat": "HH:mm",
   "yes": "Kyllä",
   "no": "Ei",
-  "no-value": "-",
+  "no-value": "Ei tietoa",
   "empty": "Tyhjä",
   "deleted": "-Poistettu-",
   "header": {

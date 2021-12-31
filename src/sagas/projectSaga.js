@@ -454,6 +454,7 @@ function* createProject() {
   }
 }
 
+
 const getChangedAttributeData = (values, initial, sections) => {
   let attribute_data = {}
 
@@ -468,7 +469,7 @@ const getChangedAttributeData = (values, initial, sections) => {
       attribute_data[key] = values[key]
     }
     let fieldSetName
-
+    projectUtils.reduceNonEditableFields(attribute_data, sections)
     if (sections) {
       // When editing a field inside fieldset, the fieldset is not included by default.
       // This workaround adds fieldset if field is inside fieldset.
