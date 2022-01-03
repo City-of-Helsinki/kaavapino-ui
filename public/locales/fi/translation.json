@@ -110,7 +110,10 @@
     "loading": "Ladataan...",
     "choose-file": "Valitse tiedosto",
     "load": "Lataa",
-    "cancel": "Peruuta"
+    "cancel": "Peruuta",
+    "remove": "Poista"
+    
+
   },
   "map": {
     "attribution": "Leaflet | © Helsingin, Espoon, Vantaan ja Kauniaisen kaupungit, karttasarja",

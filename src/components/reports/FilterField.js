@@ -8,7 +8,7 @@ import CustomADUserCombobox from '../input/CustomADUserCombobox'
 import { isArray } from 'lodash'
 import { Grid } from 'semantic-ui-react'
 
-function FilterField({ type, id, options, change, disabled, inputType }) {
+function FilterField({ type, id, options, change, disabled, inputType, name }) {
   const [start, setStart] = useState(null)
   const [end, setEnd] = useState(null)
 
@@ -22,6 +22,7 @@ function FilterField({ type, id, options, change, disabled, inputType }) {
 
   const renderUser = () => {
     return (
+    
       <CustomADUserCombobox
         input={{
           onChange: value => {
@@ -36,6 +37,7 @@ function FilterField({ type, id, options, change, disabled, inputType }) {
         }}
         disabled={disabled}
         multiselect={true}
+        label={name}
       />
     )
   }
@@ -50,6 +52,7 @@ function FilterField({ type, id, options, change, disabled, inputType }) {
           value: [],
           onChange: value => change(REPORT_FORM, id, value)
         }}
+        label={name}
       />
     )
   }
@@ -67,6 +70,7 @@ function FilterField({ type, id, options, change, disabled, inputType }) {
                 className="date-input"
                 style={{ height: '50px' }}
                 disabled={disabled}
+                aria-label="Alkupvm"
               />
             </Grid.Column>
             <Grid.Column className="center-horizontal" width={1}>
@@ -77,10 +81,10 @@ function FilterField({ type, id, options, change, disabled, inputType }) {
                 onChange={event => {
                   setEnd(event.target.value)
                 }}
-                placeholder="Lopetus"
-                type={type}
+               type={type}
                 className="date-input"
                 disabled={disabled}
+                aria-label="Loppu pvm"
               />
             </Grid.Column>
           </Grid>
@@ -91,11 +95,15 @@ function FilterField({ type, id, options, change, disabled, inputType }) {
 
   const renderTextInput = () => {
     let currentType
+    let label
+
     if (type === 'string') {
       currentType = 'text'
+      label = 'text'
     }
     if (type === 'number') {
       currentType = 'number'
+      label = 'number'
     }
 
     return (
@@ -108,6 +116,8 @@ function FilterField({ type, id, options, change, disabled, inputType }) {
           value: null
         }}
         disabled={disabled}
+        aria-label={label}
+
       />
     )
   }

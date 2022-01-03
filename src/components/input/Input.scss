@@ -234,110 +234,17 @@
   display: flex;
   align-items: center;
 
-  .ui.buttons {
-    margin-top: 4px;
-    height: 56px;
+    .download-button, .upload-button, .remove-button {
+      margin: 5px;
 
-    .ui.button,
-    .ui.label {
-      border-top-left-radius: 0;
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-      border-bottom-left-radius: 0;
-      border-radius: 0;
-      border: 0;
-      outline: 2px solid $black1;
-    }
-
-    label.ui.button {
-      height: 56px;
-      margin-right: 2px;
-    }
-
-    button.ui.button {
-      border-radius: 0;
-      color: $black1;
-      height: 56px;
-      width: 68px;
-
-      &.upload-button {
-        background: url('./assets/icons/upload-icon.svg') no-repeat center !important;
-      }
-
-      &.red {
-        color: white;
-      }
-
-      i.icon.download {
-        display: none;
-        margin: 0 !important;
-
-        @media screen and (min-width: 600px) {
-          display: inline-block;
-        }
-      }
-
-      i.icon.cancel:before {
-        font-size: 18px;
-      }
-    }
-
-    .file-action-buttons {
-      display: flex;
-
-      /* Using max-width instead of min-width here, because desktop styles
-      * use noticeably more semantic ui defaults */
-      @media screen and (max-width: 599px) {
-        flex-direction: column;
-
-        .button.ui.button.file-action-button {
-          background: none;
-          color: $color-primary;
-          height: 28px;
-          margin-left: 8px;
-          outline: none;
-          padding: 0;
-          width: 34px;
-
-          &:hover {
-            color: $color-button-emphasis;
-          }
-
-          &.red {
-            color: red;
-
-            &:hover {
-              color: $color-input-emphasis;
-            }
-
-            &::before {
-              content: 'poista';
-            }
-
-            .icon {
-              display: none;
-            }
-          }
-        }
+      &.remove {
+        color: $red;
+        border-color: $red;
       }
     }
   }
 
-  .ui.label {
-    height: 56px;
-    padding: 0 16px;
-    text-align: center;
-    width: 160px;
-
-    &::before {
-      display: none;
-    }
-
-    @media screen and (min-width: 600px) {
-      width: 232px;
-    }
-  }
-}
+  
 
 .file-description {
   color: $black1;

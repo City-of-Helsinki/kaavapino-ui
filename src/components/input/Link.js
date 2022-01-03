@@ -42,6 +42,7 @@ const Link = props => {
         value={currentValue}
         onChange={onChange}
         className={!isLinkValid && currentValue && !multipleLinks ? 'error' : ''}
+        aria-label="link"
       />
       {!multipleLinks && (
         <Button

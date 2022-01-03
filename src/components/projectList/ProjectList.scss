@@ -137,8 +137,11 @@
           margin-right: 5px;
         }
 
-        .project-name:hover {
-          text-decoration: underline;
+        .project-name {
+          color: $dark-blue-color;
+          &:hover {
+            text-decoration: underline;
+          }
         }
         @media screen and (max-width: 800px) {
           height: 200px;
@@ -266,7 +269,7 @@
           justify-content: space-between;
           background: none;
           color: $color-primary;
-       
+
           .header-item {
             flex-grow: 1;
             margin-bottom: 8px;

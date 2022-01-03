@@ -2,10 +2,11 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { projectFileUpload, projectFileRemove } from '../../actions/projectActions'
 import { downloadFile } from '../../actions/apiActions'
-import { Button, Progress } from 'semantic-ui-react'
+import { Progress } from 'semantic-ui-react'
 import { Document, Page, pdfjs } from 'react-pdf'
 import { showField } from '../../utils/projectVisibilityUtils'
-import { withTranslation } from 'react-i18next';
+import { withTranslation } from 'react-i18next'
+import { Button, IconDownload, IconCrossCircle, IconUpload } from 'hds-react'
 
 class File extends Component {
   constructor(props) {
@@ -72,7 +73,7 @@ class File extends Component {
     } = this.props
     const { current } = this.state
 
-    const confirmText = t('file.remove-question', {current: current})
+    const confirmText = t('file.remove-question', { current: current })
     const confirm = window.confirm(confirmText)
     if (confirm) {
       this.inputRef.current.value = ''
@@ -148,7 +149,7 @@ class File extends Component {
     const { current, uploading, percentCompleted } = this.state
     const { field, image, description, src, formValues, t } = this.props
     const disabled = field.disabled
-    if ( !showField(field, formValues) ) {
+    if (!showField(field, formValues)) {
       return null
     }
 
@@ -165,7 +166,7 @@ class File extends Component {
     )
 
     if (current) {
-      if (current.includes('.pdf') && src ) {
+      if (current.includes('.pdf') && src) {
         filePreview = (
           <Document
             style={{
@@ -185,47 +186,46 @@ class File extends Component {
     return (
       <div>
         <div className="file-input-container">
-          <Button.Group>
-            <Button
-              disabled={uploading || disabled}
-              as="label"
-              htmlFor={field.name}
-              label={{
-                basic: true,
-                content: `${
-                  this.state.current || uploading && t('file.loading') 
-                  || t('file.choose-file')
-                }`
-              }}
-              onClick={this.handleClick}
-              ref={this.inputButtonRef}
-              style={{ overflow: 'auto' }}
-              className="upload-button"
-            />
-            <div className="file-action-buttons">
-              {!uploading && current && (
-                <Button
-                  icon="download"
-                  className="file-action-button"
-                  onClick={this.download}
-                  content={t('file.load')}
-                  disabled={disabled}
-                />
-              )}
-              {!uploading && current && (
-                <Button
-                  icon="cancel"
-                  className="file-action-button"
-                  color="red"
-                  disabled={disabled}
-                  onClick={this.reset}
-                />
-              )}
-            </div>
-            {uploading && (
-              <Button icon="cancel" color="red" onClick={this.cancel} content={t('file.cancel')} />
+          <Button
+            disabled={uploading || disabled}
+            iconLeft={<IconUpload />}
+            variant="secondary"
+            onClick={this.handleClick}
+            ref={this.inputButtonRef}
+            className="upload-button"
+          >
+            {this.state.current ||
+              (uploading && t('file.loading')) ||
+              t('file.choose-file')}
+          </Button>
+          <div className="file-action-buttons">
+            {!uploading && current && (
+              <Button
+                iconLeft={<IconDownload />}
+                onClick={this.download}
+                disabled={disabled}
+                variant="secondary"
+                className="download-button"
+              >{t('file.load')} </Button>
             )}
-          </Button.Group>
+            {!uploading && current && (
+              <Button
+                iconLeft={<IconCrossCircle />}
+                variant="secondary"
+                className="remove-button remove"
+                disabled={disabled}
+                onClick={this.reset}
+              >{t('file.remove')} </Button>
+            )}
+          </div>
+          {uploading && (
+            <Button
+              variant="supplementary"
+              icon="cancel"
+              onClick={this.cancel}
+              content={t('file.cancel')}
+            >{t('file.cancel')}</Button>
+          )}
         </div>
         <input
           ref={this.inputRef}
