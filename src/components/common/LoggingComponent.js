@@ -54,7 +54,7 @@ function LoggingComponent(props) {
     // Fieldset
     if (type === 'fieldset') {
       const fieldSetContent = getFieldSetContent(value, name, schema)
-    
+
       const hasContent =
         fieldSetContent.length > 0 && fieldSetContent[0] && fieldSetContent[0].length > 0
       return fieldSetContent && hasContent ? fieldSetContent : t('no-value')
@@ -77,7 +77,6 @@ function LoggingComponent(props) {
       if (!value) {
         return t('no-value')
       }
-
       return projectUtils.formatDate(value)
     }
     // Image
@@ -126,7 +125,6 @@ function LoggingComponent(props) {
   }
 
   const getFieldSetContent = (value, name, schema) => {
-  
     const returnValues = []
     value &&
       value.forEach(current => {
@@ -134,17 +132,15 @@ function LoggingComponent(props) {
           returnValues.push(getFieldsetValues(current, name, schema))
         } else {
           returnValues.push(
-            current ? getFormattedValue(current, name, schema, schema[name].type) : t('empty')
+            current
+              ? getFormattedValue(current, name, schema, schema[name].type)
+              : t('empty')
           )
         }
         return null
       })
     return returnValues
   }
-
-  // Check from field names
-  const isValidDate = name =>
-    name && (name.lastIndexOf('pvm') !== -1 || name.lastIndexOf('paivamaara') !== -1)
 
   const getFieldsetValues = (fieldset, name, schema) => {
     let deleted = false
@@ -171,12 +167,7 @@ function LoggingComponent(props) {
         let deleted = false
 
         if (key !== '_deleted') {
-          let value = getFormattedValue(
-            fieldset[key],
-            key,
-            schema,
-            schema[key].type
-          )
+          let value = getFormattedValue(fieldset[key], key, schema, schema[key].type)
 
           const date = dayjs(value).format(t('dateformat'))
 
@@ -184,21 +175,14 @@ function LoggingComponent(props) {
             <div key={key + index} className="log-item">
               <>
                 {deleted && <IconTrash />}
-                {schema[key].type !== 'fieldset' &&  schema[key].label}
+                {schema[key].type !== 'fieldset' && schema[key].label}
               </>
-              <div>
-                {isValidDate(key)
-                  ? date !== 'Invalid Date'
-                    ? date
-                    : t('deleted')
-                  : value}
-              </div>
+              <div>{date !== 'Invalid Date' ? date : value}</div>
             </div>
           )
 
           returnValues.push(component)
         } else {
-
           const value = getFormattedValue(
             fieldset[key],
             key,

@@ -403,6 +403,8 @@ class ProjectPage extends Component {
 
     keys.forEach( (key, i) => {
       const current = allEditFields[key]
+
+      if ( !current.schema[key].autofill_readonly || current.schema[key].editable) {
       const value = `${projectUtils.formatDateTime(current.timestamp)} ${current.schema[key].label} ${
         current.user_name
       }`
@@ -418,7 +420,9 @@ class ProjectPage extends Component {
         type: current.schema[key].type
 
       })
+    }
     })
+  
 
     const ordered = returnValues.sort((u1, u2) => new Date(u2.timestamp).getTime() - new Date(u1.timestamp).getTime())
      
