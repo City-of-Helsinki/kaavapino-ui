@@ -82,7 +82,7 @@ class ProjectPage extends Component {
 
     if (viewParameter) {
       this.setState({ ...this.state, showBaseInformationForm: true })
-      this.props.history.replace( { ...this.props.location, search: ''} )
+      this.props.history.replace({ ...this.props.location, search: '' })
     }
   }
 
@@ -116,7 +116,10 @@ class ProjectPage extends Component {
     if (edit) {
       path.push({ value: t('project.modify'), path: `/${currentProject.id}/edit` })
     } else if (documents) {
-      path.push({ value: t('project.documents'), path: `/${currentProject.id}/documents` })
+      path.push({
+        value: t('project.documents'),
+        path: `/${currentProject.id}/documents`
+      })
     }
     return path
   }
@@ -315,7 +318,7 @@ class ProjectPage extends Component {
           onClick={this.openProjectDataModal}
           iconLeft={<IconDownload />}
         >
-         {t('project.print-project-data')}
+          {t('project.print-project-data')}
         </Button>
         {showCreate && (
           <Button
@@ -341,8 +344,7 @@ class ProjectPage extends Component {
 
     return (
       <span className="header-buttons">
-       
-       {showCreate && (
+        {showCreate && (
           <Button
             variant="secondary"
             className="header-button"
@@ -392,38 +394,58 @@ class ProjectPage extends Component {
 
   getAllChanges = () => {
     const { allEditFields, edit, creator, t } = this.props
+    
+    if (!edit || !allEditFields) return []
 
-    if (!edit) return []
+    const returnValues = []
 
-    const returnValues = allEditFields.map((f, i) => {
-      const value = `${projectUtils.formatDateTime(f.timestamp)} ${f.label} ${
-        f.user_name
+    const keys = Object.keys( allEditFields )
+
+    keys.forEach( (key, i) => {
+      const current = allEditFields[key]
+
+      if ( !current.schema[key].autofill_readonly || current.schema[key].editable) {
+      const value = `${projectUtils.formatDateTime(current.timestamp)} ${current.schema[key].label} ${
+        current.user_name
       }`
-      return {
-        name: f.name,
-        label: f.attribute_label,
+      returnValues.push( {
+        name: key,
         text: value,
-        value: `${value}-${i}`,
+        value: value,
         key: `${value}-${i}`,
-        oldValue: f.old_value,
-        newValue: f.new_value,
-        labels: f.labels
-      }
-    })
+        oldValue: current.old_value,
+        newValue: current.new_value,
+        schema: current.schema,
+        timestamp: current.timestamp,
+        type: current.schema[key].type
 
-    returnValues.push({
-      name: 'Project created',
-      label: creator.user_name,
-      text: t('project.project-created-log', {
+      })
+    }
+    })
+  
+
+    const ordered = returnValues.sort((u1, u2) => new Date(u2.timestamp).getTime() - new Date(u1.timestamp).getTime())
+     
+    if (allEditFields) {
+      ordered.push({
+        name: 'Project created',
+        label: creator.user_name,
+        text: t('project.project-created-log', {
+          timestamp: projectUtils.formatDateTime(creator.timestamp),
+          name: creator.user_name
+       
+        }),
         timestamp: projectUtils.formatDateTime(creator.timestamp),
-        name: creator.user_name
-      }),
-      hideChangeValue: true
-    })
+        type: "boolean",
+        oldValue: null,
+        newValue: true,
 
-    return returnValues
+      })
+    }
+    return ordered
+   
   }
-
+  
   togglePrintProjectDataModal = opened =>
     this.setState({ showPrintProjectDataModal: opened })
 
