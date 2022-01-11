@@ -682,6 +682,27 @@ describe('Autofill tests', () => {
     const current = 'testfieldset[0].test'
     expect(getFieldAutofillValue(field.autofill_rule, formValues, current)).toBe('12.12.2012')
   })
+  it('Autofill rule list 7 visibility', () => {
+    const field = {}
+    const conditionObject1 = {}
+    conditionObject1.variable = 'luodaanko_nakyvaksi'
+    conditionObject1.operator = '=='
+    conditionObject1.comparison_value = true
+    conditionObject1.comparison_value_type = 'boolean'
+
+    const condition = {
+      condition: conditionObject1,
+      then_branch: '',
+      variables: ['luodaanko_nakyvaksi']
+    }
+    field.autofill_rule = [condition]
+
+    const formValues = {
+      luodaanko_nakyvaksi: true
+    }
+    
+    expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(true)
+  })
   it('Autofill rule list 8 variables', () => {
     const field = {}
     const conditionObject1 = {}

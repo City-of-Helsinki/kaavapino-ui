@@ -1,4 +1,4 @@
-import { concat, difference, flattenDeep, isBoolean } from 'lodash'
+import { isArray } from 'lodash'
 import { showField } from './projectVisibilityUtils'
 
 const addZeroPrefixIfNecessary = value => (value < 10 ? `0${value}` : value)
@@ -83,15 +83,6 @@ const isFieldsetMissing = (fieldName, formValues, fieldsetRequired) => {
   return missing
 }
 
-const getUniqueUpdates = updates => {
-  const ids = {}
-  return [...updates].filter(({ name }) => {
-    if (ids[name]) return false
-    ids[name] = true
-    return true
-  })
-}
-
 const sortProjects = (projects, options) => {
   const targetAttributes = [
     'projectId',
@@ -142,73 +133,6 @@ const formatSubtype = (id, subtypes) => {
   if (foundSubtype) {
     return foundSubtype.name
   }
-}
-
-const formatPayload = (changedValues, sections, parentNames, initialValues) => {
-  const keys = Object.keys(changedValues)
-  const fieldsetList = keys.filter(key => key.indexOf('fieldset') !== -1)
-
-  const fieldsetAttributes = flattenDeep(
-    fieldsetList.map(currentFieldset => getFieldsetAttributes(currentFieldset, sections))
-  )
-
-  const allFieldsets = concat(fieldsetList, fieldsetAttributes)
-  const nonFieldsets = difference(keys, allFieldsets)
-
-  // Bug fix which caused saga crash
-  if (!keys || keys.length === 0) return changedValues
-
-  const returnValue = {}
-
-  // No fieldset values, fieldsets have attributes
-  if (fieldsetAttributes.length === 0) {
-    nonFieldsets.forEach(key => (returnValue[key] = changedValues[key]))
-    return returnValue
-  }
-
-  // Handle non fieldset values
-  if (nonFieldsets.length !== 0)
-    nonFieldsets.forEach(key => (returnValue[key] = changedValues[key]))
-
-  fieldsetList.forEach(currentFieldset => {
-    const attributes = getFieldsetAttributes(currentFieldset, sections)
-    const currentObject = {}
-
-    if (attributes) {
-      attributes.forEach(attribute => {
-        //use new value for this field
-        if (
-          changedValues[attribute] ||
-          isBoolean(changedValues[attribute]) ||
-          changedValues[attribute] === ''
-        ) {
-          currentObject[attribute] = changedValues[attribute]
-          // use initlavalue
-        } else if (initialValues[attribute] || isBoolean(initialValues[attribute])) {
-          currentObject[attribute] = initialValues[attribute]
-        }
-      })
-      returnValue[currentFieldset] = [currentObject]
-    }
-  })
-  return returnValue
-}
-// Returns parents from changed values.
-const getParents = changedValues => {
-  const keysToSearch = Object.keys(changedValues)
-
-  // Bug fix which caused saga crash
-  if (!keysToSearch || keysToSearch.length === 0) {
-    return
-  }
-  const parentNames = []
-
-  // Check if fieldset is in keysToSearch
-  keysToSearch.forEach(key => {
-    if (key.indexOf('fieldset') !== -1) parentNames.push(key)
-  })
-
-  return parentNames
 }
 
 function getFieldsetAttributes(parent, sections) {
@@ -273,10 +197,11 @@ const findValueFromObject = (object, key) => {
       value = object[currentKey]
       return true
     }
-    if (object[currentKey] && typeof object[currentKey] === 'object') {
+    if (object[currentKey] && typeof object[currentKey] === 'object') { 
       value = findValueFromObject(object[currentKey], key)
       return value !== undefined
     }
+
     return false
   })
   return value
@@ -419,6 +344,70 @@ function isRequiredFieldsetFieldMissing(fieldsetAttributes, fieldset) {
     })
   return isMissing
 }
+const getField = (name, sections) => {
+  let returnField = null
+  sections.forEach(section => {
+    section.fields.some(field => {
+      // Field found
+      if (field.name === name) {
+        returnField = field
+        return true
+      }
+
+      if (field.fieldset_attributes) {
+        field.fieldset_attributes.some(field => {
+          if (field.name === name) {
+            returnField = field
+            return true
+          }
+          if (field.fieldset_attributes) {
+            field.fieldset_attributes.some(field => {
+              if (field.name === name) {
+                returnField = field
+                return true
+              }
+            })
+          }
+        })
+      }
+    })
+  })
+
+  return returnField
+}
+const reduceNonEditableFields = (attributeData, sections) => {
+  const keys = Object.keys(attributeData)
+
+  keys &&
+    keys.forEach(key => {
+      const fieldsetAttributes = attributeData[key]
+
+      checkFieldsetAttributes(fieldsetAttributes, sections)
+    })
+}
+
+const checkFieldsetAttributes = (fieldsetAttributes, sections) => {
+ if (isArray(fieldsetAttributes)) {
+    fieldsetAttributes &&
+      fieldsetAttributes.forEach(attribute => {
+        const subKeys = Object.keys(attribute)
+
+        subKeys &&
+          subKeys.forEach(subKey => {
+            if (subKey !== '_deleted') {
+              const field = getField(subKey, sections)
+
+              if (field && field.type === 'fieldset') {
+                checkFieldsetAttributes(attribute[subKey], sections)
+              }
+              if (field && !field.editable) {
+                delete attribute[subKey]
+              }
+            }
+          })
+      })
+  }
+}
 export default {
   formatDate,
   formatTime,
@@ -426,7 +415,6 @@ export default {
   formatUsersName,
   formatDeadlines,
   isFieldMissing,
-  getUniqueUpdates,
   sortProjects,
   formatFilterProject,
   formatPhase,
@@ -434,8 +422,6 @@ export default {
   formatSubtype,
   checkDeadline,
   getDefaultValue,
-  getParents,
-  formatPayload,
   generateArrayOfYears,
   getFieldsetAttributes,
   findValueFromObject,
@@ -445,5 +431,8 @@ export default {
   hasMissingFields,
   isFieldsetMissing,
   isFieldSetRequired,
-  hasFieldsetErrors
+  hasFieldsetErrors,
+  reduceNonEditableFields,
+  getField,
+  checkFieldsetAttributes
 }
