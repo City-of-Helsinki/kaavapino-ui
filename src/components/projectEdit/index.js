@@ -194,8 +194,9 @@ class ProjectEditPage extends Component {
   }
 
   hasMissingFields = () => {
-    const { formValues, currentProject, schema } = this.props
-    return projectUtils.hasMissingFields(formValues, currentProject, schema)
+    const { project: { attribute_data }, currentProject, schema } = this.props
+    return projectUtils.hasMissingFields(attribute_data, currentProject, schema)
+    
   }
   //choose the screen size
   handleResize = () => {
