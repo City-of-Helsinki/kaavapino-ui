@@ -15,8 +15,13 @@ class EditForm extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { saving, initialize, attributeData, geoServerData, submitErrors, initialized } = this.props
-
+    const { saving, initialize, attributeData, geoServerData, submitErrors, initialized, selectedPhase } = this.props
+  
+    if ( prevProps.selectedPhase !== selectedPhase) {
+      const newInitialize = Object.assign(attributeData, geoServerData )
+      
+      initialize( newInitialize )
+    }
     if (
       prevProps.saving &&
       !saving &&

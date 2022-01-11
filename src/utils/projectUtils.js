@@ -45,13 +45,42 @@ const formatDeadlines = ({ name, deadlines, subtype }, phases) => {
 }
 
 const isFieldMissing = (fieldName, isFieldRequired, attributeData, autofill_readonly) => {
+  const value = findValueFromObject(attributeData, fieldName)
+
   return (
     isFieldRequired &&
     !autofill_readonly &&
-    (attributeData[fieldName] === undefined ||
-      attributeData[fieldName] === null ||
-      attributeData[fieldName] === '')
+    (value === undefined || value === null || value === '')
   )
+}
+
+const isFieldSetRequired = fieldsetAttributes => {
+  let required = false
+
+  fieldsetAttributes &&
+    fieldsetAttributes.forEach(attribute => {
+      if (attribute.required) {
+        required = true
+      }
+    })
+
+  return required
+}
+const isFieldsetMissing = (fieldName, formValues, fieldsetRequired) => {
+  if (!fieldsetRequired) {
+    return false
+  }
+  const value = formValues[fieldName]
+
+  let missing = true
+
+  value &&
+    value.forEach(current => {
+      if (!current._deleted && missing) {
+        missing = false
+      }
+    })
+  return missing
 }
 
 const getUniqueUpdates = updates => {
@@ -290,17 +319,16 @@ const isUserPrivileged = (currentUserId, users) => {
   return userRole === 'admin' || userRole === 'create' || userRole === 'edit'
 }
 
-function hasMissingFields(formValues, currentProject, schema) {
+function hasMissingFields(attributeData, currentProject, schema) {
   const currentSchema = schema.phases.find(s => s.id === currentProject.phase)
   const { sections } = currentSchema
-  const attributeData = currentProject.attribute_data
 
   let missingFields = false
   // Go through every single field
   sections.forEach(({ fields }) => {
-    fields.forEach((field, fieldIndex) => {
+    fields.forEach(field => {
       // Only validate visible fields
-      if (showField(field, formValues)) {
+      if (showField(field, attributeData)) {
         // Matrices can contain any kinds of fields, so
         // we must go through them separately
         if (field.type === 'matrix') {
@@ -310,48 +338,15 @@ function hasMissingFields(formValues, currentProject, schema) {
               missingFields = true
             }
           })
+
           // Fieldsets can contain any fields (except matrices)
           // multiple times, so we need to go through them all
         } else if (field.type === 'fieldset') {
-          const { fieldset_attributes } = field
-
-          if (fieldset_attributes) {
-            fieldset_attributes.forEach(field => {
-              if (attributeData[fields[fieldIndex].name]) {
-                attributeData[fields[fieldIndex].name].forEach(attribute => {
-                  if (
-                    attribute._deleted === false &&
-                    isFieldMissing(
-                      field.name,
-                      field.required,
-                      attribute,
-                      field.autofill_readonly
-                    )
-                  ) {
-                    missingFields = true
-                  }
-                })
-              } else {
-                if (
-                  isFieldMissing(
-                    field.name,
-                    field.required,
-                    attributeData,
-                    field.autofill_readonly
-                  )
-                ) {
-                  missingFields = true
-                }
-              }
-            })
+          if (hasFieldsetErrors(field.name, field.fieldset_attributes, attributeData)) {
+            missingFields = true
           }
         } else if (
-          isFieldMissing(
-            field.name,
-            field.required,
-            attributeData,
-            field.autofill_readonly
-          )
+          isFieldMissing(field.name, field.required, attributeData, field.autofill_readonly)
         ) {
           missingFields = true
         }
@@ -359,6 +354,70 @@ function hasMissingFields(formValues, currentProject, schema) {
     })
   })
   return missingFields
+}
+
+function hasFieldsetErrors(fieldName, fieldsetAttributes, attributeData) {
+  if (isFieldsetMissing(fieldName, attributeData, isFieldSetRequired(fieldsetAttributes))) {
+    return true
+  } else {
+    let missingFields = false
+
+    const validFieldSets = getValidFieldsets(attributeData[fieldName])
+
+    validFieldSets.forEach(fieldset => {
+      const keys = Object.keys(fieldset)
+
+      if (isRequiredFieldsetFieldMissing(fieldsetAttributes, fieldset)) {
+        missingFields = true
+      }
+
+      keys.forEach(key => {
+        if (key !== '_deleted') {
+          const required = isFieldsetFieldRequired(fieldsetAttributes, key)
+
+          if (required) {
+            if (fieldset[key] === undefined) {
+              missingFields = true
+            }
+          }
+        }
+      })
+    })
+    return missingFields
+  }
+}
+function getValidFieldsets(fieldsets) {
+  const validFieldsets = []
+  for (let index in fieldsets) {
+    if (!fieldsets[index]._deleted) {
+      validFieldsets.push(fieldsets[index])
+    }
+  }
+  return validFieldsets
+}
+function isFieldsetFieldRequired(fieldsetAttributes, name) {
+  let required = false
+
+  fieldsetAttributes &&
+    fieldsetAttributes.forEach(attribute => {
+      if (attribute.name === name) {
+        required = attribute.required
+      }
+    })
+  return required
+}
+function isRequiredFieldsetFieldMissing(fieldsetAttributes, fieldset) {
+  let isMissing = false
+  const fieldsetKeys = Object.keys(fieldset)
+  fieldsetAttributes &&
+    fieldsetAttributes.forEach(attribute => {
+      if (attribute.required && attribute.type !== 'file') {
+        if (!fieldsetKeys.includes(attribute.name)) {
+          isMissing = true
+        }
+      }
+    })
+  return isMissing
 }
 export default {
   formatDate,
@@ -383,5 +442,8 @@ export default {
   isUserPrivileged,
   findValuesFromObject,
   generateArrayOfYearsForChart,
-  hasMissingFields
+  hasMissingFields,
+  isFieldsetMissing,
+  isFieldSetRequired,
+  hasFieldsetErrors
 }
