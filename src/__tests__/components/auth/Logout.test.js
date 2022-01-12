@@ -1,15 +1,15 @@
 import React from 'react'
 import { mount } from 'enzyme'
 import LogoutPage from '../../../components/auth/Logout'
-
+jest.mock("react-i18next", () => ({
+  useTranslation: () => ({ t: key => key }),
+}));
 describe('<Logout />', () => {
   let logoutWrapper
   let logoutMock = jest.fn(() => null)
 
   beforeEach(() => {
-    jest.mock("react-i18next", () => ({
-      useTranslation: () => ({ t: key => key }),
-    }));
+   
     logoutMock.mockClear()
     logoutWrapper = mount(<LogoutPage handleLogout={logoutMock} />)
   })

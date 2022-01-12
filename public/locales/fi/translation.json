@@ -5,6 +5,11 @@
   "logging-out": "Kirjaudutaan ulos",
   "dateformat": "DD.MM.YYYY",
   "timeformat": "HH:mm",
+  "yes": "Kyllä",
+  "no": "Ei",
+  "no-value": "Ei tietoa",
+  "empty": "Tyhjä",
+  "deleted": "-Poistettu-",
   "header": {
     "overview": "Yleisnäkymä",
     "projects": "Projektit",
@@ -277,7 +282,7 @@
   },
   "footer": {
     "footer-info": {
-      "area": "Kapunkiympäristö",
+      "area": "Kaupunkiympäristö",
       "name": "Asemakaavoitus",
       "address": "PL 58212 (käyntiosoite Työpajankatu 8)"
     },

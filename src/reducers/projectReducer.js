@@ -362,13 +362,14 @@ export const reducer = (state = initialState, action) => {
     }
 
     case PROJECT_FILE_REMOVE_SUCCESSFUL: {
-      const updatedAttributeData = { ...state.currentProject.attribute_data }
+     
+      const updatedAttributeData = Object.assign( {}, { ...state.currentProject.attribute_data })
       delete updatedAttributeData[action.payload]
-      return {
+        return {
         ...state,
         currentProject: {
           ...state.currentProject,
-          attribute_data: { ...updatedAttributeData }
+          attribute_data: updatedAttributeData
         }
       }
     }

@@ -38,28 +38,6 @@ const FieldSet = ({
 
   const [hiddenIndex, setHiddenIndex] = useState(-1)
 
-  let requiredError = false
-  if (fields) {
-    fields.forEach(field => {
-      if (attributeData[name]) {
-        attributeData[name].forEach(attribute => {
-          if (
-            checking &&
-            projectUtils.isFieldMissing(field.name, field.required, attribute)
-          ) {
-            requiredError = true
-          }
-        })
-      } else {
-        if (
-          checking &&
-          projectUtils.isFieldMissing(field.name, field.required, attributeData)
-        ) {
-          requiredError = true
-        }
-      }
-    })
-  }
   const getLastValidIndex = () => {
     let lastValidIndex = sets.length - 1
 
@@ -204,7 +182,7 @@ const FieldSet = ({
         <>
           <Button
             className={`fieldset-button-add ${
-              requiredError ? 'fieldset-internal-error' : null
+              checking && projectUtils.hasFieldsetErrors(name, fields, attributeData) ? 'fieldset-internal-error' : null
             }`}
             onClick={() => {
               sets.push({})
