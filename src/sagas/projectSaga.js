@@ -88,7 +88,8 @@ import {
   setTotalOnholdProjects,
   setTotalArchivedProjects,
   setOnholdProjects,
-  setArchivedProjects
+  setArchivedProjects,
+  resetProjectDeadlinesSuccessful
 } from '../actions/projectActions'
 import { startSubmit, stopSubmit, setSubmitSucceeded } from 'redux-form'
 import { error } from '../actions/apiActions'
@@ -164,6 +165,7 @@ function* resetProjectDeadlines({ payload: projectId }) {
     )
     yield put(updateProject(timelineProject))
     yield put(initializeProjectAction(projectId))
+    yield put(resetProjectDeadlinesSuccessful())
 
    } catch (e) {
     yield put(error(e))

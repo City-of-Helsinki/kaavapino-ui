@@ -18,7 +18,8 @@ import {
   changingPhaseSelector,
   selectedPhaseSelector,
   externalDocumentsSelector,
-  creatorSelector
+  creatorSelector,
+  resettingDeadlinesSelector
 } from '../../selectors/projectSelector'
 import { phasesSelector } from '../../selectors/phaseSelector'
 import {
@@ -468,13 +469,13 @@ class ProjectPage extends Component {
   }
 
   render() {
-    const { phases, currentProjectLoaded, user, users, userRole } = this.props
+    const { phases, currentProjectLoaded, user, users, userRole, resettingDeadlines } = this.props
 
     const loading = !currentProjectLoaded || !phases
 
     const showCreate = projectUtils.isUserPrivileged(this.props.currentUserId, users)
 
-    if (loading) {
+    if (loading || resettingDeadlines) {
       return this.renderLoading()
     }
 
@@ -527,7 +528,8 @@ const mapStateToProps = state => {
     selectedPhase: selectedPhaseSelector(state),
     projectCardFields: projectCardFieldsSelector(state),
     externalDocuments: externalDocumentsSelector(state),
-    creator: creatorSelector(state)
+    creator: creatorSelector(state),
+    resettingDeadlines: resettingDeadlinesSelector(state)
   }
 }
 
