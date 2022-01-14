@@ -35,11 +35,16 @@ const SelectInput = ({
     }
   } else {
     const current = options && options.find(option => option.value === input.value)
-
+   
     if (current) {
       currentSingleValue = {
         label: current && current.label,
         value: current && current.value
+      }
+    } else {
+      currentSingleValue = {
+        label: input.value,
+        value: input.value
       }
     }
   }

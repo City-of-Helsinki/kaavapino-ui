@@ -475,9 +475,6 @@ class ProjectPage extends Component {
 
     const showCreate = projectUtils.isUserPrivileged(this.props.currentUserId, users)
 
-    if (loading || resettingDeadlines) {
-      return this.renderLoading()
-    }
 
     return (
       <>
@@ -493,9 +490,12 @@ class ProjectPage extends Component {
           resetProjectDeadlines={this.onResetProjectDeadlines}
 
         />
+        {(loading || resettingDeadlines) &&  this.renderLoading()}
+        {(!loading && !resettingDeadlines) &&
         <div className="project-container">
           <div className="project-page-content">{this.getProjectPageContent()}</div>
         </div>
+        }
       </>
     )
   }
