@@ -35,7 +35,7 @@ const SelectInput = ({
     }
   } else {
     const current = options && options.find(option => option.value === input.value)
-   
+
     if (current) {
       currentSingleValue = {
         label: current && current.label,
@@ -53,6 +53,30 @@ const SelectInput = ({
     ? options.filter(option => option.label && option.label.trim() !== '')
     : []
 
+  if (!multiple) {
+    return (
+      <Select
+        placeholder={placeholder}
+        className="selection"
+        id={input.name}
+        name={input.name}
+        multiselect={false}
+        error={inputUtils.hasError(error)}
+        onBlur={onBlur}
+        clearable={true}
+        disabled={disabled}
+        options={options}
+        value={currentSingleValue}
+        onChange={data => {
+          let returnValue = data.value
+          if (returnValue === '') {
+            returnValue = null
+          }
+          input.onChange(returnValue)
+        }}
+      />
+    )
+  }
   return (
     <Select
       placeholder={placeholder}
@@ -64,19 +88,10 @@ const SelectInput = ({
       onBlur={onBlur}
       clearable={true}
       disabled={disabled}
-      defaultValue={multiple ? currentValue : currentSingleValue}
       options={options}
+      defaultValue={currentValue}
       onChange={data => {
-        let returnValue
-        if (multiple) {
-          returnValue = data.map(currentValue => currentValue.value)
-        } else {
-          returnValue = data.value
-        }
-
-        if (returnValue === '') {
-          returnValue = null
-        }
+        let returnValue = data.map(currentValue => currentValue.value)
         input.onChange(returnValue)
       }}
     />

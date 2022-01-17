@@ -180,7 +180,7 @@ class CustomField extends Component {
   renderSelect = props => {
     const { choices, multiple_choice, placeholder_text, formName } = this.props.field
     const { onBlur } = this.props
-
+  
     return (
       <SelectInput
         {...props}
@@ -206,7 +206,7 @@ class CustomField extends Component {
 
   renderBooleanRadio = props => {
     const { input, onRadioChange, defaultValue } = this.props
-   
+
     return (
       <RadioBooleanButton
         onBlur={props.onBlur}
@@ -344,13 +344,10 @@ class CustomField extends Component {
     if (field.choices && field.type !== 'boolean') {
       /* Should perhaps check (field.type === 'select' && field.choices), but there were tests against it.
       Will get back to this. */
-      if (field.autofill_readonly) {
-        return this.renderString
-      } else {
-        return this.renderSelect
-      }
+
+      return this.renderSelect
     }
-    if (field.display === 'dropdown' || field.display === 'simple_integer')  {
+    if (field.display === 'dropdown' || field.display === 'simple_integer') {
       return this.renderYearSelect
     }
     if (
