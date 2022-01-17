@@ -315,9 +315,21 @@ class ProjectPage extends Component {
     this.togglePrintProjectDataModal(true)
   }
   getEditNavActions = () => {
-    const { t } = this.props
+    const { t, users } = this.props
+
+    const showCreate = projectUtils.isUserPrivileged(this.props.currentUserId, users)
+
     return (
       <span className="header-buttons">
+       {showCreate && (
+          <Button
+            variant="secondary"
+            iconLeft={<IconPen />}
+            onClick={this.createDocuments}
+          >
+            {t('project.create-documents')}
+          </Button>
+        )}
         <Button variant="primary" iconLeft={<IconPen />} onClick={this.checkProjectCard}>
           {t('project.check-project-card')}
         </Button>
