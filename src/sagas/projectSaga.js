@@ -88,7 +88,8 @@ import {
   setTotalOnholdProjects,
   setTotalArchivedProjects,
   setOnholdProjects,
-  setArchivedProjects
+  setArchivedProjects,
+  resetProjectDeadlinesSuccessful
 } from '../actions/projectActions'
 import { startSubmit, stopSubmit, setSubmitSucceeded } from 'redux-form'
 import { error } from '../actions/apiActions'
@@ -156,12 +157,17 @@ export default function* projectSaga() {
 
 function* resetProjectDeadlines({ payload: projectId }) {
   try {
-    yield call(
-      projectApi.get,
-      { path: { projectId } },
-      ':projectId/?generate_schedule=true'
+    const timelineProject = yield call(
+      projectApi.patch,
+      {},
+      { path: { projectId }, query: { generate_schedule: true }},
+      ':projectId/'
     )
-  } catch (e) {
+    yield put(updateProject(timelineProject))
+    yield put(initializeProjectAction(projectId))
+    yield put(resetProjectDeadlinesSuccessful())
+
+   } catch (e) {
     yield put(error(e))
   }
 }

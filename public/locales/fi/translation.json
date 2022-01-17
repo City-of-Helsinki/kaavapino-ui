@@ -78,11 +78,15 @@
     "now": "Nyt",
     "deadline-label": "Määräaika {{date}}.{{month}}",
     "kylk-message": "Kylk {{date}}.{{month}}",
-    "shown": "nähtävillä"
+    "shown": "nähtävillä",
+    "reset-project-deadlines": "Alusta aikataulut",
+    "reset-confirm-dialog-title": "Aikataulujen uudelleen luominen",
+    "reset-confirm-dialog-question": "Oletko varma, että haluat luoda aikataulut uudestaan? Tapahtumaa ei voi perua."
   },
   "common": {
     "cancel": "Peruuta",
-    "save": "Tallenna"
+    "save": "Tallenna",
+    "continue": "Jatka"
   },
   "messages": {
     "deadlines-successfully-saved": "Aikataulut tallennettu",
@@ -101,8 +105,6 @@
     "choose-file": "Valitse tiedosto",
     "load": "Lataa",
     "cancel": "Peruuta"
-    
-
   },
   "map": {
     "attribution": "Leaflet | © Helsingin, Espoon, Vantaan ja Kauniaisen kaupungit, karttasarja",
@@ -159,7 +161,6 @@
     "sort": "Lajittele",
     "timeline": "Aikajana",
     "show-timelines": "Näytä aikajanat"
-    
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}"
@@ -186,7 +187,14 @@
     "set-onhold-lable": "Aseta projekti toistaiseksi keskeytyneeksi",
     "change-phase-error": "Vaihetta ei voida vielä lopettaa",
     "change-phase-error-message": "Täytä puuttuvat kentät",
-    "title": "Kaavan vaiheet"
+    "title": "Kaavan vaiheet",
+    "confirm-dialog": {
+      "end-phase": "Lopeta vaihe",
+      "archive-phase": "Arkistoi vaihe",
+      "question-phase": "Siirrytäänkö seuraavaan vaiheeseen? Vaihetta ei voi enää vaihtaa takaisin.",
+      "question-archive": "Arkistoidaanko projekti?",
+      "info": "Huom. Aiemmin ei-näkyväksi merkityn projektin tiedot muuttuvat näkyviksi kaikille Kaavapinon käyttäjille."
+    }
   },
   "map-area": {
     "title": "Kaavaprojektit kartalla",
@@ -298,7 +306,5 @@
     "no-comments": "Ei kommentteja",
     "add-comment": "Lisää kommentti",
     "send": "Lähetä"
-
-
   }
 }

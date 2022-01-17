@@ -28,6 +28,7 @@ import { userIdSelector } from '../../selectors/authSelector'
 import { withRouter } from 'react-router-dom'
 import { Button, IconPlus, TabList, Tabs, Tab, TabPanel } from 'hds-react'
 import projectUtils from './../../utils/projectUtils'
+import Header from '../common/Header'
 
 class ProjectListPage extends Component {
   constructor(props) {
@@ -48,7 +49,7 @@ class ProjectListPage extends Component {
       fetchProjects,
       fetchUsers,
       fetchProjectSubtypes,
-     fetchOnholdProjects,
+      fetchOnholdProjects,
       fetchArchivedProjects
     } = this.props
 
@@ -88,7 +89,6 @@ class ProjectListPage extends Component {
       this.props.fetchProjects(this.state.filter)
       this.props.fetchOnholdProjects(this.state.filter)
       this.props.fetchArchivedProjects(this.state.filter)
-      
     })
   }
 
@@ -113,7 +113,7 @@ class ProjectListPage extends Component {
       onholdProjects,
       archivedProjects
     } = this.props
- 
+
     const { searchOpen, screenWidth } = this.state
 
     const { t } = this.props
@@ -227,20 +227,14 @@ class ProjectListPage extends Component {
         </Tabs>
       )
 
+    const openCreateProject = () => {
+      this.toggleForm(true)
+    }
+
     let headerActions = (
       <span className="header-buttons">
         {!searchOpen && (
           <>
-            {showCreate && (
-              <Button
-                variant="secondary"
-                className="header-button"
-                iconLeft={<IconPlus />}
-                onClick={() => this.toggleForm(true)}
-              >
-                {t('projects.createNewProject')}
-              </Button>
-            )}
             <Button
               variant="secondary"
               iconLeft={<IconPlus />}
@@ -260,21 +254,31 @@ class ProjectListPage extends Component {
       </span>
     )
     return (
-      <div className="project-list-page">
-        <NavHeader
-          routeItems={[{ value: t('projects.title'), path: '/' }]}
-          title={t('projects.title')}
-          actions={headerActions}
+      <>
+        <Header
+          user={this.props.user}
+          userRole={this.props.userRole}
+          createProject={true}
+          openCreateProject={openCreateProject}
+          showCreate={showCreate}
         />
-        <NewProjectFormModal
-          modalOpen={this.state.showBaseInformationForm}
-          handleSubmit={this.props.createProject}
-          handleClose={() => this.toggleForm(false)}
-          users={users}
-          projectSubtypes={projectSubtypes}
-        />
-        <div className="project-list-container">{createTabPanes()}</div>
-      </div>
+
+        <div className="project-list-page">
+          <NavHeader
+            routeItems={[{ value: t('projects.title'), path: '/' }]}
+            title={t('projects.title')}
+            actions={headerActions}
+          />
+          <NewProjectFormModal
+            modalOpen={this.state.showBaseInformationForm}
+            handleSubmit={this.props.createProject}
+            handleClose={() => this.toggleForm(false)}
+            users={users}
+            projectSubtypes={projectSubtypes}
+          />
+          <div className="project-list-container">{createTabPanes()}</div>
+        </div>
+      </>
     )
   }
 }

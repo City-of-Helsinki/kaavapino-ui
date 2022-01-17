@@ -5,28 +5,14 @@ import { currentProjectSelector } from '../../selectors/projectSelector'
 import { Button } from 'hds-react'
 import { useTranslation } from 'react-i18next'
 
-const ConfirmModal = ({ open, callback, notLastPhase, currentProject }) => {
+const ConfirmationModal = ({ open, callback }) => {
   const { t } = useTranslation()
 
   return (
     <Modal open={open} centered={false} size={'tiny'}>
-      <Modal.Header>{`${
-        notLastPhase
-          ? t('quick-nav.confirm-dialog.end-phase')
-          : t('quick-nav.confirm-dialog.archive-phase')
-      }`}</Modal.Header>
+      <Modal.Header>{t('deadlines.reset-confirm-dialog-title')}</Modal.Header>
       <Modal.Content>
-        <div>{`${
-          notLastPhase
-            ? t('quick-nav.confirm-dialog.question-phase')
-            : t('quick-nav.confirm-dialog.question-archive')
-        }`}</div>
-        {currentProject && !currentProject.public && (
-          <div>
-            <br />
-            {t('quick-nav.confirm-dialog.info')}
-          </div>
-        )}
+        <div>{t('deadlines.reset-confirm-dialog-question')}</div>
       </Modal.Content>
       <Modal.Actions>
         <div className="form-buttons">
@@ -34,7 +20,7 @@ const ConfirmModal = ({ open, callback, notLastPhase, currentProject }) => {
             {t('common.cancel')}
           </Button>
           <Button variant="primary" onClick={() => callback(true)}>
-          {t('common.continue')}
+            {t('common.continue')}
           </Button>
         </div>
       </Modal.Actions>
@@ -46,4 +32,4 @@ const mapStateToProps = state => ({
   currentProject: currentProjectSelector(state)
 })
 
-export default connect(mapStateToProps, null)(ConfirmModal)
+export default connect(mapStateToProps, null)(ConfirmationModal)
