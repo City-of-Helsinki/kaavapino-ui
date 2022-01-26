@@ -1,4 +1,4 @@
-/* This file includes inmplementation of editing floor area, but currently only with mock data */
+/* This file includes implementation of editing floor area, but currently only with mock data */
 
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
@@ -62,7 +62,7 @@ class EditProjectTimeTableModal extends Component {
     if (errors) {
       this.setState({ loading: false })
     }
-    console.log(errors)
+  
   }
 
   handleClose = () => {
@@ -73,20 +73,19 @@ class EditProjectTimeTableModal extends Component {
   getFormField(fieldProps, key) {
     const { formSubmitErrors, formValues, deadlines } = this.props
     const error =
-    formSubmitErrors &&
-    fieldProps &&
-    formSubmitErrors &&
-    formSubmitErrors[fieldProps.field.name]
+      formSubmitErrors &&
+      fieldProps &&
+      formSubmitErrors &&
+      formSubmitErrors[fieldProps.field.name]
     let className = ''
 
-    if ( error !== undefined ) {
-
+    if (error !== undefined) {
       className = 'modal-field error-border'
     } else {
       className = 'modal-field'
     }
     // Special case since label is used.
-    if ( fieldProps.field.display === 'checkbox') {
+    if (fieldProps.field.display === 'checkbox') {
       className = error ? 'error-border' : ''
     }
 
@@ -95,7 +94,6 @@ class EditProjectTimeTableModal extends Component {
         <FormField
           {...fieldProps}
           formName={EDIT_PROJECT_TIMETABLE_FORM}
-          attributeData={{}}
           deadlines={deadlines}
           error={error}
           formValues={formValues}
@@ -129,10 +127,53 @@ class EditProjectTimeTableModal extends Component {
     this.setState({ loading })
   }
 
+  getErrorLabel = fieldName => {
+    const { deadlineSections } = this.props
+    let label
+
+    deadlineSections.forEach(deadline_section => {
+      const sections = deadline_section.sections
+
+      sections.forEach(section => {
+        const attributes = section.attributes
+
+        attributes.forEach(attribute => {
+          if (attribute.name === fieldName) {
+            label = attribute.label
+          }
+        })
+      })
+    })
+    return label
+  }
+
+  renderSubmitErrors = () => {
+    const { formSubmitErrors } = this.props
+
+    const returnValue = []
+    const keys = formSubmitErrors ? Object.keys(formSubmitErrors) : []
+
+    keys.forEach(key => {
+      const errors = formSubmitErrors[key]
+
+      errors.forEach(error => {
+        returnValue.push(
+          <div className="submit-error">
+            {this.getErrorLabel(key)}: {error}
+          </div>
+        )
+      })
+    })
+
+    return returnValue ? returnValue : null
+  }
+
   render() {
     const { loading } = this.state
-    const { open, formValues, deadlineSections, t } = this.props
+    const { open, formValues, deadlineSections, t, formSubmitErrors } = this.props
 
+    let currentSubmitErrors = Object.keys( formSubmitErrors ).length > 0
+  
     if (!formValues) {
       return null
     }
@@ -153,9 +194,12 @@ class EditProjectTimeTableModal extends Component {
             )}
           </Form>
           <div className="warning-box">
-          <span><IconInfoCircle className="warning-icon" size='s' /></span>
-          <span> {t('deadlines.warning')}</span>
+            <span>
+              <IconInfoCircle className="warning-icon" size="s" />
+            </span>
+            <span> {t('deadlines.warning')}</span>
           </div>
+          {currentSubmitErrors && <div className="error-area">{this.renderSubmitErrors()}</div>}
         </Modal.Content>
         <Modal.Actions>
           <span className="form-buttons">

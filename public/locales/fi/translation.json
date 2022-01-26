@@ -56,6 +56,7 @@
   },
   "deadlines": {
     "title": "Päivitä aikataulut",
+    "button-title": "Päivitä aikataulut",
     "error": "Virhe: {{error}}",
     "warning": "Päivitettyjen aikataulutietojen tallentaminen saattaa kestää hieman pidempään kun Kaavapino tekee laskutoimituksia.",
     "estimated": "Kaavapinon arvio",
@@ -96,7 +97,8 @@
     "timelines-successfully-saved": "Kerrosalatiedot tallennettu onnistuneesti"
   },
   "floor-areas": {
-    "title": "Päivitä kerrosalatiedot"
+    "title": "Päivitä kerrosalatiedot",
+    "button-title": "Päivitä kerrosalatiedot"
   },
   "file": {
     "remove-question": "Oletko varma, että haluat poistaa tiedoston {{current}}",
