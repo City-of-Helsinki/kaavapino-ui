@@ -13,6 +13,7 @@ import { deadlineSectionsSelector } from '../../../selectors/schemaSelector'
 import { withTranslation } from 'react-i18next'
 import { deadlinesSelector } from '../../../selectors/projectSelector'
 import { Button, IconInfoCircle } from 'hds-react'
+import { isArray } from 'lodash';
 
 class EditProjectTimeTableModal extends Component {
   constructor(props) {
@@ -78,7 +79,7 @@ class EditProjectTimeTableModal extends Component {
       formSubmitErrors &&
       formSubmitErrors[fieldProps.field.name]
     let className = ''
-
+   
     if (error !== undefined) {
       className = 'modal-field error-border'
     } else {
@@ -89,18 +90,26 @@ class EditProjectTimeTableModal extends Component {
       className = error ? 'error-border' : ''
     }
 
+    let modifiedError = ''
+    if ( isArray( error )) {
+        error.forEach( current => {
+          modifiedError = modifiedError + ' ' + current
+        })
+    } else {
+      modifiedError = error
+    }  
     return (
       <div key={key}>
         <FormField
           {...fieldProps}
           formName={EDIT_PROJECT_TIMETABLE_FORM}
           deadlines={deadlines}
-          error={error}
+          error={modifiedError}
           formValues={formValues}
           className={className}
           isProjectTimetableEdit={true}
         />
-        {error && <div className="field-error">{error}</div>}
+        {modifiedError && <div className="field-error">{modifiedError}</div>}
       </div>
     )
   }
@@ -184,7 +193,9 @@ class EditProjectTimeTableModal extends Component {
         size="small"
         onClose={this.handleClose}
         open={open}
-        closeIcon
+        closeIcon={false}
+        closeOnDocumentClick={false}
+        closeOnDimmerClick={false}
       >
         <Modal.Header>{t('deadlines.title')}</Modal.Header>
         <Modal.Content>

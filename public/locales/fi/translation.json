@@ -162,7 +162,8 @@
     "admin": "Pääkäyttäjä",
     "sort": "Lajittele",
     "timeline": "Aikajana",
-    "show-timelines": "Näytä aikajanat"
+    "show-timelines": "Näytä aikajanat",
+    "char-limit": "Max {{amount}} merkkiä."
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}"
