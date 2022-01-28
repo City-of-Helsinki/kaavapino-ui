@@ -50,6 +50,9 @@
   .field-error {
     color: $color-error-text;
   }
+  .submit-error {
+    padding-top: 5px;
+  }
  
 
   .error {
@@ -66,6 +69,13 @@
     border: 0;
     outline: 0;
   }
+  .error-area {
+    margin-top: 5px;
+    color: $color-error-text !important;
+    border: 2px solid $color-error-text;
+    padding: 5px;
+  }
+
   .collapse-content {
     padding: 0 12px;
   }

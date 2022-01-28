@@ -6,7 +6,8 @@ import Info from './Info'
 import projectUtils from '../../utils/projectUtils'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
-import { IconClock, IconAlertCircle } from 'hds-react'
+import { IconClock } from 'hds-react'
+import { withTranslation} from 'react-i18next';
 
 const OneLineFields = ['toggle']
 
@@ -23,7 +24,7 @@ const FormField = props => {
       syncronousErrors,
       ...rest
     } = props
-    let newField = field
+     let newField = field
 
     if (newProps) {
       newField = newProps
@@ -64,7 +65,8 @@ const FormField = props => {
     formValues,
     syncronousErrors,
     submitErrors,
-    formName
+    formName,
+    t
   } = props
   const required =
     checking && projectUtils.isFieldMissing(field.name, field.required, attributeData)
@@ -83,20 +85,20 @@ const FormField = props => {
   }
 
   const error = submitErrorText ? submitErrorText : syncError
-
+  
   /* Two ways to bring errors to FormField component:
    * 1) the missing attribute data of required fields is checked automatically.
    * 2) error text can be given directly to the component as props.
    * Redux form gives error information to the Field component, but that's further down the line, and we need that information
    * here to modify the input header accordingly. */
 
-  const showError = required ? 'pakollinen kenttä' : error
+  const showError = required ? t('project.required-field') : error
   if (!showField(field, formValues) || field.display === 'hidden') {
     return null
   }
 
   const title = field.character_limit
-    ? `${field.label}  (Max ${field.character_limit} merkkiä)`
+    ? `${field.label}  ${t('project.char-limit', {amount: field.character_limit})}`
     : field.label
 
   const renderCheckBox = () => {
@@ -178,7 +180,7 @@ const FormField = props => {
           </div>
         )}
         {renderField()}
-        {showError && <div className="error-text"><IconAlertCircle size='xs' /> {showError}</div>}
+        {showError && <div className="error-text">{showError}</div>}
       </Form.Field>
     )
   }
@@ -203,4 +205,4 @@ const FormField = props => {
   return renderComponent()
 }
 
-export default FormField
+export default withTranslation()(FormField)

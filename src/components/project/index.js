@@ -6,8 +6,7 @@ import {
   changeProjectPhase,
   getProjectSnapshot,
   setSelectedPhaseId,
-  getExternalDocuments,
-  resetProjectDeadlines
+  getExternalDocuments
 } from '../../actions/projectActions'
 import { fetchUsers } from '../../actions/userActions'
 import { getProjectCardFields, getAttributes } from '../../actions/schemaActions'
@@ -18,8 +17,7 @@ import {
   changingPhaseSelector,
   selectedPhaseSelector,
   externalDocumentsSelector,
-  creatorSelector,
-  resettingDeadlinesSelector
+  creatorSelector
 } from '../../selectors/projectSelector'
 import { phasesSelector } from '../../selectors/phaseSelector'
 import {
@@ -40,10 +38,9 @@ import DownloadProjectDataModal from './DownloadProjectDataModal'
 import { DOWNLOAD_PROJECT_DATA_FORM } from '../../constants'
 import { getFormValues } from 'redux-form'
 import { userIdSelector } from '../../selectors/authSelector'
-import { IconPen, IconPrinter, LoadingSpinner, Button } from 'hds-react'
+import { IconPen, IconPrinter, IconDownload, LoadingSpinner, Button } from 'hds-react'
 import { withRouter } from 'react-router-dom'
 import dayjs from 'dayjs'
-import Header from '../common/Header'
 
 class ProjectPage extends Component {
   test = React.createRef()
@@ -80,12 +77,13 @@ class ProjectPage extends Component {
 
     const search = this.props.location.search
     const params = new URLSearchParams(search)
+    console.log("🚀 ~ file: index.js ~ line 80 ~ ProjectPage ~ componentDidMount ~ params", params)
 
     const viewParameter = params.get('property')
 
     if (viewParameter) {
       this.setState({ ...this.state, showBaseInformationForm: true })
-      this.props.history.replace({ ...this.props.location, search: '' })
+  //s    this.props.history.replace({ ...this.props.location, search: '' })
     }
   }
 
@@ -308,26 +306,29 @@ class ProjectPage extends Component {
       </span>
     )
   }
-  showModifyProject = () => {
-    this.toggleBaseInformationForm(true)
-  }
-  showProjectData = () => {
-    this.togglePrintProjectDataModal(true)
-  }
   getEditNavActions = () => {
-    const { t, users } = this.props
+    const { users, t } = this.props
 
     const showCreate = projectUtils.isUserPrivileged(this.props.currentUserId, users)
 
     return (
       <span className="header-buttons">
-       {showCreate && (
+        <Button
+          variant="secondary"
+          className="header-button"
+          onClick={this.openProjectDataModal}
+          iconLeft={<IconDownload />}
+        >
+          {t('project.print-project-data')}
+        </Button>
+        {showCreate && (
           <Button
             variant="secondary"
+            className="header-button"
+            onClick={() => this.toggleBaseInformationForm(true)}
             iconLeft={<IconPen />}
-            onClick={this.createDocuments}
           >
-            {t('project.create-documents')}
+            {t('project.modify-project')}
           </Button>
         )}
         <Button variant="primary" iconLeft={<IconPen />} onClick={this.checkProjectCard}>
@@ -344,7 +345,7 @@ class ProjectPage extends Component {
 
     return (
       <span className="header-buttons">
-        {showCreate && (
+       {showCreate && (
           <Button
             variant="secondary"
             className="header-button"
@@ -475,40 +476,19 @@ class ProjectPage extends Component {
     getProjectSnapshot(currentProject.id, dayjs(date).format(), phase)
   }
 
-  onResetProjectDeadlines = () => {
-    const { currentProject, resetProjectDeadlines } = this.props
-    resetProjectDeadlines( currentProject.id )
-  }
-
   render() {
-    const { phases, currentProjectLoaded, user, users, userRole, resettingDeadlines } = this.props
+    const { phases, currentProjectLoaded } = this.props
 
     const loading = !currentProjectLoaded || !phases
 
-    const showCreate = projectUtils.isUserPrivileged(this.props.currentUserId, users)
-
+    if (loading) {
+      return this.renderLoading()
+    }
 
     return (
-      <>
-        <Header
-          user={user}
-          userRole={userRole}
-          showCreate={showCreate}
-          modifyProject={true}
-          showPrintProjectData={true}
-          resetDeadlines={true}
-          openModifyProject={this.showModifyProject}
-          openPrintProjectData={this.showProjectData}
-          resetProjectDeadlines={this.onResetProjectDeadlines}
-
-        />
-        {(loading || resettingDeadlines) &&  this.renderLoading()}
-        {(!loading && !resettingDeadlines) &&
-        <div className="project-container">
-          <div className="project-page-content">{this.getProjectPageContent()}</div>
-        </div>
-        }
-      </>
+      <div className="project-container">
+        <div className="project-page-content">{this.getProjectPageContent()}</div>
+      </div>
     )
   }
 }
@@ -522,8 +502,7 @@ const mapDispatchToProps = {
   setSelectedPhaseId,
   getProjectCardFields,
   getExternalDocuments,
-  getAttributes,
-  resetProjectDeadlines
+  getAttributes
 }
 
 const mapStateToProps = state => {
@@ -540,8 +519,7 @@ const mapStateToProps = state => {
     selectedPhase: selectedPhaseSelector(state),
     projectCardFields: projectCardFieldsSelector(state),
     externalDocuments: externalDocumentsSelector(state),
-    creator: creatorSelector(state),
-    resettingDeadlines: resettingDeadlinesSelector(state)
+    creator: creatorSelector(state)
   }
 }
 
