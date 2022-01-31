@@ -5,6 +5,8 @@ export const DOWNLOAD_REPORT_REVIEW = 'Download report preview'
 export const DOWNLOAD_REPORT_REVIEW_SUCCESSFUL = 'Download report preview successful'
 export const CLEAR_REPORT_PREVIEW = 'Clear report preview'
 export const DOWNLOAD_REPORT_SUCCESSFUL = 'Export report successful'
+export const CANCEL_REPORT_LOADING = 'Cancel report loading'
+export const CANCEL_REPORT_PREVIEW_LOADING = 'Cancel report preview loading'
 
 export const fetchReports = () => ({ type: FETCH_REPORTS })
 export const fetchReportsSuccessful = reports => ({
@@ -26,3 +28,10 @@ export const downloadReportReviewSuccessful = report => ({
 })
 
 export const clearDownloadReportReview = () => ({ type: CLEAR_REPORT_PREVIEW })
+
+export const cancelReportPreviewLoading = () => ({
+  type: CANCEL_REPORT_PREVIEW_LOADING
+})
+export const cancelReportLoading = () => ({
+  type: CANCEL_REPORT_LOADING
+})

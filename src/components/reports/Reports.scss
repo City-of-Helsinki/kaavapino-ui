@@ -25,7 +25,7 @@
     .report-filter {
       margin-bottom: 20px;
       margin-right: 20px;
-    
+
       h4 {
         width: 300px;
       }
@@ -40,7 +40,7 @@
 }
 .preview-modal {
   overflow: auto;
- 
+
   @media screen and (min-width: 1350px) {
     width: 1350px !important;
   }
@@ -53,18 +53,25 @@
     text-overflow: ellipsis;
   }
   .actions {
-
     margin-right: 0 !important;
     margin-left: 0 !important;
     margin-top: 50px !important;
     margin-bottom: 0 !important;
+
+    .report-create-button {
+      align-self: center;
+      margin-right: 10px;
+    }
+    .report-cancel-button {
+      align-self: center;
+      margin-right: 10px;
+    }
   }
 }
 .table-data-row {
   border-bottom: 1px solid black;
 }
 .report-table {
- 
   font-size: 12px;
   table {
     border-spacing: 0;
@@ -85,7 +92,7 @@
       border-bottom: 1px solid black;
       text-overflow: ellipsis;
       width: 100%;
-    
+
       :last-child {
         border-right: 0;
       }

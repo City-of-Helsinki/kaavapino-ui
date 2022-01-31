@@ -14,6 +14,10 @@ import { toastr } from 'react-redux-toastr'
 import i18next from 'i18next'
 import { isArray } from 'lodash'
 import FileSaver from 'file-saver'
+import {
+  reportPreviewLoadingSelector,
+  reportLoadingSelector
+} from '../selectors/reportSelector'
 
 const MAX_COUNT = 100
 const INTERVAL_MILLISECONDS = 4000
@@ -39,6 +43,7 @@ function* downloadReportPreviewSaga({ payload }) {
   let currentTask
   let isError = false
   let counter = 0
+  let reportPreviewLoading = true
 
   const form = yield select(reportFormSelector)
 
@@ -68,7 +73,7 @@ function* downloadReportPreviewSaga({ payload }) {
   try {
     res = yield call(
       reportApi.get,
-      { path: { id: payload.selectedReport }, query: { ...filteredParams } },
+      { path: { id: payload && payload.selectedReport }, query: { ...filteredParams } },
       ':id/',
       { responseType: 'text' },
       true
@@ -81,9 +86,19 @@ function* downloadReportPreviewSaga({ payload }) {
       toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-preview'))
       yield put(downloadReportReviewSuccessful(null))
       isError = true
-      yield put(downloadReportSuccessful())
     } else {
-      while ((!res || res.status === 202) && !isError && counter < MAX_COUNT) {
+      while (
+        (!res || res.status === 202) &&
+        !isError &&
+        counter < MAX_COUNT &&
+        reportPreviewLoading
+      ) {
+        reportPreviewLoading = yield select(reportPreviewLoadingSelector)
+        console.log(
+          '🚀 ~ file: reportSaga.js ~ line 95 ~ function*downloadReportPreviewSaga ~ reportPreviewLoading',
+          reportPreviewLoading
+        )
+
         if (res && res.status === 500) {
           isError = true
           break
@@ -113,8 +128,17 @@ function* downloadReportPreviewSaga({ payload }) {
   }
 
   if (!isError && counter !== MAX_COUNT) {
-    toastr.success(i18next.t('reports.finished-title'), i18next.t('reports.report-preview-loaded'))
-    yield put(downloadReportReviewSuccessful(res.data))
+    if (!reportPreviewLoading) {
+      console.log('keskeytetty')
+      toastr.error(i18next.t('reports.error-title'), 'keskeytetty')
+      yield put(downloadReportReviewSuccessful(null))
+    } else {
+      toastr.success(
+        i18next.t('reports.finished-title'),
+        i18next.t('reports.report-preview-loaded')
+      )
+      yield put(downloadReportReviewSuccessful(res.data))
+    }
   }
 }
 
@@ -124,6 +148,7 @@ function* downloadReportSaga({ payload }) {
   let isError = false
 
   let counter = 0
+  let reportLoading = true
 
   const form = yield select(reportFormSelector)
 
@@ -164,7 +189,13 @@ function* downloadReportSaga({ payload }) {
       isError = true
       yield put(downloadReportSuccessful())
     } else {
-      while ((!res || res.status === 202) && !isError && counter < MAX_COUNT) {
+      while (
+        (!res || res.status === 202) &&
+        !isError &&
+        counter < MAX_COUNT &&
+        reportLoading
+      ) {
+        reportLoading = yield select(reportLoadingSelector)
         if (res && res.status === 500) {
           isError = true
           break
@@ -196,18 +227,27 @@ function* downloadReportSaga({ payload }) {
   }
 
   if (!isError && counter !== MAX_COUNT) {
-    const fileData = res.data
-
-    const contentDisposition = res.headers['content-disposition']
-    const fileName = contentDisposition && contentDisposition.split('filename=')[1]
-    if (fileData) {
-      FileSaver.saveAs(fileData, fileName)
-
-      toastr.success(i18next.t('reports.finished-title'), i18next.t('reports.report-loaded'))
+    if (!reportLoading) {
+      console.log('keskeytetty')
+      toastr.error(i18next.t('reports.error-title'), 'keskeytetty')
       yield put(downloadReportSuccessful())
     } else {
-      toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-report'))
-      yield put(downloadReportSuccessful())
+      const fileData = res.data
+
+      const contentDisposition = res.headers['content-disposition']
+      const fileName = contentDisposition && contentDisposition.split('filename=')[1]
+      if (fileData) {
+        FileSaver.saveAs(fileData, fileName)
+
+        toastr.success(
+          i18next.t('reports.finished-title'),
+          i18next.t('reports.report-loaded')
+        )
+        yield put(downloadReportSuccessful())
+      } else {
+        toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-report'))
+        yield put(downloadReportSuccessful())
+      }
     }
   }
 }
