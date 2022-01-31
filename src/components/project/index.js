@@ -41,6 +41,7 @@ import { userIdSelector } from '../../selectors/authSelector'
 import { IconPen, IconPrinter, IconDownload, LoadingSpinner, Button } from 'hds-react'
 import { withRouter } from 'react-router-dom'
 import dayjs from 'dayjs'
+import Header from '../common/Header'
 
 class ProjectPage extends Component {
   test = React.createRef()
@@ -54,8 +55,7 @@ class ProjectPage extends Component {
 
     this.state = {
       showBaseInformationForm: false,
-      showPrintProjectDataModal: false,
-      deadlines: null
+      showPrintProjectDataModal: false
     }
   }
 
@@ -74,30 +74,32 @@ class ProjectPage extends Component {
       this.props.fetchUsers()
     }
     window.scrollTo({ top: 0, behavior: 'auto' })
-
-    const search = this.props.location.search
-    const params = new URLSearchParams(search)
-    console.log("🚀 ~ file: index.js ~ line 80 ~ ProjectPage ~ componentDidMount ~ params", params)
-
-    const viewParameter = params.get('property')
-
-    if (viewParameter) {
-      this.setState({ ...this.state, showBaseInformationForm: true })
-  //s    this.props.history.replace({ ...this.props.location, search: '' })
-    }
   }
 
   componentDidUpdate(prevProps) {
-    const { currentProject, changingPhase, edit } = this.props
+    const { currentProject, changingPhase } = this.props
     if (
       (!prevProps.currentProject && currentProject) ||
       (prevProps.changingPhase && !changingPhase)
     ) {
-      this.props.setSelectedPhaseId(currentProject.phase)
-      this.setState({ deadlines: currentProject.deadlines })
+      const search = this.props.location.search
+      const params = new URLSearchParams(search)
+
+      const viewParameter = params.get('property')
+
+      if (viewParameter) {
+        this.setState({ ...this.state, showBaseInformationForm: true })
+        this.props.history.replace({ ...this.props.location, search: '' })
+      }
+
+      if (params.get('phase')) {
+        this.props.setSelectedPhaseId(+params.get('phase'))
+      } else {
+        this.props.setSelectedPhaseId(currentProject.phase)
+      }
       document.title = currentProject.name
     }
-    if (prevProps.edit && !edit) this.props.setSelectedPhaseId(currentProject.phase)
+    //s if (prevProps.edit && !edit) this.props.setSelectedPhaseId(currentProject.phase)
 
     getExternalDocuments(this.props.id)
   }
@@ -345,7 +347,7 @@ class ProjectPage extends Component {
 
     return (
       <span className="header-buttons">
-       {showCreate && (
+        {showCreate && (
           <Button
             variant="secondary"
             className="header-button"
@@ -395,38 +397,38 @@ class ProjectPage extends Component {
 
   getAllChanges = () => {
     const { allEditFields, edit, creator, t } = this.props
-    
+
     if (!edit || !allEditFields) return []
 
     const returnValues = []
 
-    const keys = Object.keys( allEditFields )
+    const keys = Object.keys(allEditFields)
 
-    keys.forEach( (key, i) => {
+    keys.forEach((key, i) => {
       const current = allEditFields[key]
 
-      if ( !current.schema[key].autofill_readonly || current.schema[key].editable) {
-      const value = `${projectUtils.formatDateTime(current.timestamp)} ${current.schema[key].label} ${
-        current.user_name
-      }`
-      returnValues.push( {
-        name: key,
-        text: value,
-        value: value,
-        key: `${value}-${i}`,
-        oldValue: current.old_value,
-        newValue: current.new_value,
-        schema: current.schema,
-        timestamp: current.timestamp,
-        type: current.schema[key].type
-
-      })
-    }
+      if (!current.schema[key].autofill_readonly || current.schema[key].editable) {
+        const value = `${projectUtils.formatDateTime(current.timestamp)} ${
+          current.schema[key].label
+        } ${current.user_name}`
+        returnValues.push({
+          name: key,
+          text: value,
+          value: value,
+          key: `${value}-${i}`,
+          oldValue: current.old_value,
+          newValue: current.new_value,
+          schema: current.schema,
+          timestamp: current.timestamp,
+          type: current.schema[key].type
+        })
+      }
     })
-  
 
-    const ordered = returnValues.sort((u1, u2) => new Date(u2.timestamp).getTime() - new Date(u1.timestamp).getTime())
-     
+    const ordered = returnValues.sort(
+      (u1, u2) => new Date(u2.timestamp).getTime() - new Date(u1.timestamp).getTime()
+    )
+
     if (allEditFields) {
       ordered.push({
         name: 'Project created',
@@ -434,19 +436,16 @@ class ProjectPage extends Component {
         text: t('project.project-created-log', {
           timestamp: projectUtils.formatDateTime(creator.timestamp),
           name: creator.user_name
-       
         }),
         timestamp: projectUtils.formatDateTime(creator.timestamp),
-        type: "boolean",
+        type: 'boolean',
         oldValue: null,
-        newValue: true,
-
+        newValue: true
       })
     }
     return ordered
-   
   }
-  
+
   togglePrintProjectDataModal = opened =>
     this.setState({ showPrintProjectDataModal: opened })
 
@@ -477,18 +476,39 @@ class ProjectPage extends Component {
   }
 
   render() {
-    const { phases, currentProjectLoaded } = this.props
+    const {
+      phases,
+      currentProjectLoaded,
+      user,
+      users,
+      userRole,
+      resettingDeadlines
+    } = this.props
 
     const loading = !currentProjectLoaded || !phases
 
-    if (loading) {
-      return this.renderLoading()
-    }
+    const showCreate = projectUtils.isUserPrivileged(this.props.currentUserId, users)
 
     return (
-      <div className="project-container">
-        <div className="project-page-content">{this.getProjectPageContent()}</div>
-      </div>
+      <>
+        <Header
+          user={user}
+          userRole={userRole}
+          showCreate={showCreate}
+          modifyProject={true}
+          showPrintProjectData={true}
+          resetDeadlines={true}
+          openModifyProject={this.showModifyProject}
+          openPrintProjectData={this.showProjectData}
+          resetProjectDeadlines={this.onResetProjectDeadlines}
+        />
+        {(loading || resettingDeadlines) && this.renderLoading()}
+        {!loading && !resettingDeadlines && (
+          <div className="project-container">
+            <div className="project-page-content">{this.getProjectPageContent()}</div>
+          </div>
+        )}
+      </>
     )
   }
 }
