@@ -26,7 +26,7 @@ import SearchBar from '../SearchBar'
 import { withTranslation } from 'react-i18next'
 import { userIdSelector } from '../../selectors/authSelector'
 import { withRouter } from 'react-router-dom'
-import { Button, IconPlus, TabList, Tabs, Tab, TabPanel } from 'hds-react'
+import { TabList, Tabs, Tab, TabPanel } from 'hds-react'
 import projectUtils from './../../utils/projectUtils'
 import Header from '../common/Header'
 
@@ -233,18 +233,6 @@ class ProjectListPage extends Component {
 
     let headerActions = (
       <span className="header-buttons">
-        {!searchOpen && (
-          <>
-            <Button
-              variant="secondary"
-              iconLeft={<IconPlus />}
-              className="header-button"
-              onClick={this.createReports}
-            >
-              {t('projects.createReports')}
-            </Button>
-          </>
-        )}
         <SearchBar
           minWidth={601}
           toggleSearch={this.toggleSearch}
