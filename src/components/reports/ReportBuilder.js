@@ -231,7 +231,7 @@ function ReportBuilder(props) {
               {t('reports.create-preview')}
             </Button>
             <Button
-              type="submit"
+              type="button"
               variant="secondary"
               onClick={() => props.cancelReportPreviewLoading()}
               loadingText={t('reports.create-report')}

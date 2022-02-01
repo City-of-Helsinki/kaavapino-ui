@@ -272,7 +272,12 @@
       "kylk-title": "Kylk {{date}}"
     },
     "report-preview-loaded": "Raportin esikatselu ladattu.",
-    "report-loaded": "Raportti ladattu."
+    "report-loaded": "Raportti ladattu.",
+    "report-cancel-title": "Peruutettu",
+    "report-cancel": "Raportin lataus on peruutettu.",
+    "report-preview-cancel-title": "Peruutettu",
+    "report-preview-cancel": "Esikatselun lataus on peruutettu."
+    
   },
   "footer": {
     "footer-info": {
