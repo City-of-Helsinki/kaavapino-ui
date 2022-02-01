@@ -214,10 +214,10 @@
   },
 
   "floor-area": {
-    "title": "Tarkistettujen kaavaehdotusten asuinkerrosala {{date}}",
+    "title": "Projektit ja kerrosalat lautakunnassa - tilannearvio {{date}}" ,
     "mobile-title": "Kaavoitettu kerrosala nyt",
-    "total-number": " / {{total}} k-m²",
-    "current-number": " {{current}} k-m²",
+    "total-number": " / {{total}} k-m² (tarkistetut kaavaehdotukset / tavoite)",
+    "current-number": "Asuinkerrosala {{current}} k-m²",
     "y-axis-title": "k-m²",
     "living-area": "Asuinkerrosala",
     "business-area": "Toimitilakerrosala",
