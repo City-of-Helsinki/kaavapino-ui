@@ -87,9 +87,12 @@ const Overview = ({
   if (isMobile) {
     return <MobileView filterList={filterData} isPrivileged={isPrivileged} />
   }
+
+  const showCreate = projectUtils.isUserPrivileged(currentUserId, users)
+
   return (
     <>
-    <Header user={user} userRole={userRole}/>
+    <Header user={user} userRole={userRole} showCreate={showCreate}/>
          
     <div className="overview">
       <NavHeader

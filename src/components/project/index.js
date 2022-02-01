@@ -479,12 +479,11 @@ class ProjectPage extends Component {
   }
 
   render() {
-    const { phases, currentProjectLoaded, user, users, userRole, resettingDeadlines } = this.props
+    const { phases, currentProjectLoaded, user, users, userRole, resettingDeadlines, currentUserId } = this.props
 
     const loading = !currentProjectLoaded || !phases
 
-    const showCreate = projectUtils.isUserPrivileged(this.props.currentUserId, users)
-
+    const showCreate = projectUtils.isUserPrivileged(currentUserId, users)
 
     return (
       <>
