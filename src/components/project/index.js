@@ -57,8 +57,7 @@ class ProjectPage extends Component {
 
     this.state = {
       showBaseInformationForm: false,
-      showPrintProjectDataModal: false,
-      deadlines: null
+      showPrintProjectDataModal: false
     }
   }
 
@@ -77,29 +76,32 @@ class ProjectPage extends Component {
       this.props.fetchUsers()
     }
     window.scrollTo({ top: 0, behavior: 'auto' })
-
-    const search = this.props.location.search
-    const params = new URLSearchParams(search)
-
-    const viewParameter = params.get('property')
-
-    if (viewParameter) {
-      this.setState({ ...this.state, showBaseInformationForm: true })
-      this.props.history.replace({ ...this.props.location, search: '' })
-    }
   }
 
   componentDidUpdate(prevProps) {
-    const { currentProject, changingPhase, edit } = this.props
+    const { currentProject, changingPhase } = this.props
     if (
       (!prevProps.currentProject && currentProject) ||
       (prevProps.changingPhase && !changingPhase)
     ) {
-      this.props.setSelectedPhaseId(currentProject.phase)
-      this.setState({ deadlines: currentProject.deadlines })
+      const search = this.props.location.search
+      const params = new URLSearchParams(search)
+
+      const viewParameter = params.get('property')
+
+      if (viewParameter) {
+        this.setState({ ...this.state, showBaseInformationForm: true })
+        this.props.history.replace({ ...this.props.location, search: '' })
+      }
+
+      if (params.get('phase')) {
+        this.props.setSelectedPhaseId(+params.get('phase'))
+      } else {
+        this.props.setSelectedPhaseId(currentProject.phase)
+      }
       document.title = currentProject.name
     }
-    if (prevProps.edit && !edit) this.props.setSelectedPhaseId(currentProject.phase)
+    //s if (prevProps.edit && !edit) this.props.setSelectedPhaseId(currentProject.phase)
 
     getExternalDocuments(this.props.id)
   }
@@ -392,38 +394,38 @@ class ProjectPage extends Component {
 
   getAllChanges = () => {
     const { allEditFields, edit, creator, t } = this.props
-    
+
     if (!edit || !allEditFields) return []
 
     const returnValues = []
 
-    const keys = Object.keys( allEditFields )
+    const keys = Object.keys(allEditFields)
 
-    keys.forEach( (key, i) => {
+    keys.forEach((key, i) => {
       const current = allEditFields[key]
 
-      if ( !current.schema[key].autofill_readonly || current.schema[key].editable) {
-      const value = `${projectUtils.formatDateTime(current.timestamp)} ${current.schema[key].label} ${
-        current.user_name
-      }`
-      returnValues.push( {
-        name: key,
-        text: value,
-        value: value,
-        key: `${value}-${i}`,
-        oldValue: current.old_value,
-        newValue: current.new_value,
-        schema: current.schema,
-        timestamp: current.timestamp,
-        type: current.schema[key].type
-
-      })
-    }
+      if (!current.schema[key].autofill_readonly || current.schema[key].editable) {
+        const value = `${projectUtils.formatDateTime(current.timestamp)} ${
+          current.schema[key].label
+        } ${current.user_name}`
+        returnValues.push({
+          name: key,
+          text: value,
+          value: value,
+          key: `${value}-${i}`,
+          oldValue: current.old_value,
+          newValue: current.new_value,
+          schema: current.schema,
+          timestamp: current.timestamp,
+          type: current.schema[key].type
+        })
+      }
     })
-  
 
-    const ordered = returnValues.sort((u1, u2) => new Date(u2.timestamp).getTime() - new Date(u1.timestamp).getTime())
-     
+    const ordered = returnValues.sort(
+      (u1, u2) => new Date(u2.timestamp).getTime() - new Date(u1.timestamp).getTime()
+    )
+
     if (allEditFields) {
       ordered.push({
         name: 'Project created',
@@ -431,19 +433,16 @@ class ProjectPage extends Component {
         text: t('project.project-created-log', {
           timestamp: projectUtils.formatDateTime(creator.timestamp),
           name: creator.user_name
-       
         }),
         timestamp: projectUtils.formatDateTime(creator.timestamp),
-        type: "boolean",
+        type: 'boolean',
         oldValue: null,
-        newValue: true,
-
+        newValue: true
       })
     }
     return ordered
-   
   }
-  
+
   togglePrintProjectDataModal = opened =>
     this.setState({ showPrintProjectDataModal: opened })
 
@@ -484,7 +483,6 @@ class ProjectPage extends Component {
     const loading = !currentProjectLoaded || !phases
 
     const showCreate = projectUtils.isUserPrivileged(this.props.currentUserId, users)
-
 
     return (
       <>
