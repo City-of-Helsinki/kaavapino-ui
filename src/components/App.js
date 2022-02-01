@@ -24,8 +24,8 @@ import ProjectListPage from './projectList'
 import ProjectPage from './project'
 import ReportsPage from './reports'
 import ErrorPage from './error'
-import Header from './common/Header'
 import CustomFooter from './common/CustomFooter'
+
 import FakeLoginPage from './auth/FakeLogin'
 import Overview from './overview'
 import Terms from './common/Terms'
@@ -56,9 +56,11 @@ class App extends Component {
     ) {
       return <p>{t('loading')}</p>
     }
-    
-    const currentUser = users.find( item => user && user.profile && item.id === user.profile.sub )
-    
+
+    const currentUser = users.find(
+      item => user && user.profile && item.id === user.profile.sub
+    )
+   
     return (
       <ConnectedRouter history={history}>
         <Switch>
@@ -75,28 +77,80 @@ class App extends Component {
           />
           <Route path="/logout/callback" render={() => <LogoutCallbackPage />} />
           <ProtectedRoute path="/" pred={this.props.apiToken !== null} redirect="/login">
-            <Header user={user} userRole={currentUser && currentUser.privilege_name}/>
             <Switch>
-              <Route exact path="/" render={() => <Overview />} />
+              <Route
+                exact
+                path="/"
+                render={() => (
+                  <Overview
+                    user={user}
+                    userRole={currentUser && currentUser.privilege_name}
+                  />
+                )}
+              />
               <Route exact path="/terms" render={() => <Terms />} />
-              <Route exact path="/projects" render={() => <ProjectListPage />} />
-              <Route exact path="/reports" render={() => <ReportsPage />} />
+              <Route
+                exact
+                path="/projects"
+                render={() => (
+                  <ProjectListPage
+                    user={user}
+                    userRole={currentUser && currentUser.privilege_name}
+                  />
+                )}
+              />
+              <Route
+                exact
+                path="/reports"
+                render={() => (
+                  <ReportsPage
+                    user={user}
+                    userRole={currentUser && currentUser.privilege_name}
+                  />
+                )}
+              />
               <Route
                 exact
                 path="/:id"
-                render={({ match }) => <ProjectPage id={match.params.id} />}
+                render={({ match }) => (
+                  <ProjectPage
+                    id={match.params.id}
+                    user={user}
+                    userRole={currentUser && currentUser.privilege_name}
+                  />
+                )}
               />
               <Route
                 exact
                 path="/:id/edit"
-                render={({ match }) => <ProjectPage edit id={match.params.id} />}
+                render={({ match }) => (
+                  <ProjectPage
+                    user={user}
+                    userRole={currentUser && currentUser.privilege_name}
+                    edit
+                    id={match.params.id}
+                  />
+                )}
               />
               <Route
                 exact
                 path="/:id/documents"
-                render={({ match }) => <ProjectPage documents id={match.params.id} />}
+                render={({ match }) => (
+                  <ProjectPage
+                    user={user}
+                    userRole={currentUser && currentUser.privilege_name}
+                    documents
+                    id={match.params.id}
+                  />
+                )}
               />
-              <Route exact path="/error/:code" component={ErrorPage} />
+              <Route
+                exact
+                path="/error/:code"
+                user={user}
+                userRole={currentUser && currentUser.privilege_name}
+                component={ErrorPage}
+              />
               <Redirect to="/error/404" />
             </Switch>
             <CustomFooter />

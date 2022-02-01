@@ -306,9 +306,7 @@
         white-space: nowrap;
       }
       .field-ellipsis {
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
+        white-space: pre-wrap;
       }
       .center {
         margin: auto;

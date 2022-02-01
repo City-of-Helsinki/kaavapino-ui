@@ -84,6 +84,7 @@ export const SET_TOTAL_ARCHIVED_PROJECTS = "Set total archived projects"
 export const SET_TOTAL_ONHOLD_PROJECTS = "Set total onhold projects"
 export const SET_ONHOLD_PROJECTS = "Set onhold projects"
 export const SET_ARCHIVED_PROJECTS = "Set archived projects"
+export const RESET_PROJECT_DEADLINES_SUCCESSFUL = "Resetting project deadlines successful"
 
 
 export const fetchProjects = searchQuery => ({
@@ -275,6 +276,9 @@ export const getProjectSuccessful = project => ({
 export const resetProjectDeadlines = id => ({
   type: RESET_PROJECT_DEADLINES,
   payload: id
+})
+export const resetProjectDeadlinesSuccessful = () => ({
+  type: RESET_PROJECT_DEADLINES_SUCCESSFUL
 })
 
 export const getProjectSnapshot = (projectId, snapshot, phase) => ({

@@ -15,6 +15,8 @@ import { usersSelector } from '../../selectors/userSelector'
 import { userIdSelector } from '../../selectors/authSelector'
 import projectUtils from '../../utils/projectUtils'
 import MobileView from './MobileView'
+import Header from '../common/Header'
+ 
 
 const Overview = ({
   getProjectsOverviewFilters,
@@ -22,7 +24,9 @@ const Overview = ({
   fetchUsers,
   currentUserId,
   users,
-  clearProjectsOverview
+  clearProjectsOverview,
+  user,
+  userRole
 }) => {
   const { t } = useTranslation()
   const [currentFilterData, setCurrentFilterData] = useState(filterData)
@@ -84,6 +88,9 @@ const Overview = ({
     return <MobileView filterList={filterData} isPrivileged={isPrivileged} />
   }
   return (
+    <>
+    <Header user={user} userRole={userRole}/>
+         
     <div className="overview">
       <NavHeader
         routeItems={[{ value: t('overview.title'), path: '/' }]}
@@ -118,6 +125,7 @@ const Overview = ({
         </Grid.Column>
       </Grid>
     </div>
+    </>
   )
 }
 const mapDispatchToProps = {
