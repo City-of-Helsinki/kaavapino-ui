@@ -100,27 +100,19 @@ class ProjectListPage extends Component {
     const { history } = this.props
     history.push('/reports')
   }
-
-  render() {
+  getOwnProjectsPanel = () => {
     const {
       users,
       projectSubtypes,
-      ownProjects,
-      allProjects,
       totalOwnProjects,
-      totalProjects,
-      currentUserId,
-      onholdProjects,
-      archivedProjects
+      ownProjects,
+      currentUserId
     } = this.props
-
-    const { searchOpen, screenWidth } = this.state
-
-    const { t } = this.props
 
     const showCreate = projectUtils.isUserPrivileged(currentUserId, users)
 
-    const getOwnProjectsPanel = () => (
+    const { searchOpen } = this.state
+    return (
       <List
         projectSubtypes={projectSubtypes}
         users={users}
@@ -132,11 +124,25 @@ class ProjectListPage extends Component {
         searchOpen={searchOpen}
         buttonAction={this.fetchFilteredItems}
         newProjectTab={'own'}
-        modifyProject={modifyProject}
+        modifyProject={this.modifyProject}
       />
     )
+  }
 
-    const getTotalProjectsPanel = () => (
+  getTotalProjectsPanel = () => {
+    const {
+      users,
+      projectSubtypes,
+      totalProjects,
+      allProjects,
+      currentUserId
+    } = this.props
+
+    const showCreate = projectUtils.isUserPrivileged(currentUserId, users)
+
+    const { searchOpen } = this.state
+
+    return (
       <List
         toggleSearch={this.toggleSearch}
         searchOpen={searchOpen}
@@ -147,11 +153,22 @@ class ProjectListPage extends Component {
         setFilter={this.setFilter}
         isUserPrivileged={showCreate}
         newProjectTab={'all'}
-        modifyProject={modifyProject}
+        modifyProject={this.modifyProject}
       />
     )
+  }
 
-    const getOnholdProjectsPanel = () => (
+  getOnholdProjectsPanel = () => {
+    const {
+      users,
+      projectSubtypes,
+      totalProjects,
+      onholdProjects,
+      currentUserId
+    } = this.props
+    const showCreate = projectUtils.isUserPrivileged(currentUserId, users)
+
+    return (
       <List
         projectSubtypes={projectSubtypes}
         users={users}
@@ -160,11 +177,23 @@ class ProjectListPage extends Component {
         setFilter={this.setFilter}
         isUserPrivileged={showCreate}
         newProjectTab={'onhold'}
-        modifyProject={modifyProject}
+        modifyProject={this.modifyProject}
       />
     )
+  }
 
-    const getArchivedProjectsPanel = () => (
+  getArchivedProjectsPanel = () => {
+    const {
+      users,
+      projectSubtypes,
+      totalProjects,
+      archivedProjects,
+      currentUserId
+    } = this.props
+
+    const showCreate = projectUtils.isUserPrivileged(currentUserId, users)
+
+    return (
       <List
         projectSubtypes={projectSubtypes}
         users={users}
@@ -173,63 +202,110 @@ class ProjectListPage extends Component {
         setFilter={this.setFilter}
         isUserPrivileged={showCreate}
         newProjectTab={'onhold'}
-        modifyProject={modifyProject}
+        modifyProject={this.modifyProject}
       />
     )
+  }
 
-    const getOwnProjectsTitle = `${
-      screenWidth < 600 ? t('projects.own-short') : t('projects.own-long')
-    } ${totalOwnProjects > 0 ? t('projects.amount', { pieces: totalOwnProjects }) : ''}`
+  modifyProject = id => {
+    this.props.history.push(`/${id}/edit`)
+  }
 
-    const getTotalProjectsTitle = `${
-      screenWidth < 600 ? t('projects.all-short') : t('projects.all-long')
-    } ${totalProjects > 0 ? t('projects.amount', { pieces: totalProjects }) : ''}`
+  createTabPanes = () => {
+    const {
+      users,
 
-    const getOnholdProjectsTitle = `${
+      currentUserId
+    } = this.props
+
+    const showCreate = projectUtils.isUserPrivileged(currentUserId, users)
+
+    return showCreate ? (
+      <Tabs>
+        <TabList onTabChange={this.handleTabChange}>
+          <Tab key={1}>{this.getOwnProjectsTitle()}</Tab>
+          <Tab key={2}>{this.getTotalProjectsTitle()}</Tab>
+          <Tab key={3}>{this.getOnholdProjectsTitle()}</Tab>
+          <Tab key={4}>{this.getArchivedProjectsTitle()}</Tab>
+        </TabList>
+        <TabPanel>{this.getOwnProjectsPanel()}</TabPanel>
+        <TabPanel>{this.getTotalProjectsPanel()}</TabPanel>
+        <TabPanel>{this.getOnholdProjectsPanel()}</TabPanel>
+        <TabPanel>{this.getArchivedProjectsPanel()}</TabPanel>
+      </Tabs>
+    ) : (
+      <Tabs>
+        <TabList onTabChange={this.handleTabChange}>
+          <Tab>{this.getTotalProjectsTitle()}</Tab>
+        </TabList>
+        <TabPanel>{this.getTotalProjectsPanel()}</TabPanel>
+      </Tabs>
+    )
+  }
+  openCreateProject = () => {
+    this.toggleForm(true)
+  }
+
+  getOwnProjectsTitle = () => {
+    const { totalOwnProjects, t } = this.props
+    const { screenWidth } = this.state
+    return `${screenWidth < 600 ? t('projects.own-short') : t('projects.own-long')} ${
+      totalOwnProjects > 0 ? t('projects.amount', { pieces: totalOwnProjects }) : ''
+    }`
+  }
+
+  getTotalProjectsTitle = () => {
+    const { screenWidth } = this.state
+
+    const { totalProjects, t } = this.props
+
+    return `${screenWidth < 600 ? t('projects.all-short') : t('projects.all-long')} ${
+      totalProjects > 0 ? t('projects.amount', { pieces: totalProjects }) : ''
+    }`
+  }
+
+  getOnholdProjectsTitle = () => {
+    const { screenWidth } = this.state
+
+    const { onholdProjects, t } = this.props
+
+    return `${
       screenWidth < 600 ? t('projects.onhold-short') : t('projects.onhold-long')
     } ${
       onholdProjects && onholdProjects.length > 0
         ? t('projects.amount', { pieces: onholdProjects.length })
         : ''
     }`
-    const getArchivedProjectsTitle = `${
+  }
+  getArchivedProjectsTitle = () => {
+    const { screenWidth } = this.state
+
+    const { archivedProjects, t } = this.props
+
+    return `${
       screenWidth < 600 ? t('projects.archived-short') : t('projects.archived-long')
     } ${
       archivedProjects && archivedProjects.length > 0
         ? t('projects.amount', { pieces: archivedProjects.length })
         : ''
     }`
+  }
 
-    const modifyProject = id => {
-      this.props.history.push(`/${id}/edit`)
-    }
+  render() {
+    const {
+      users,
+      projectSubtypes,
+      currentUserId,
+      user,
+      userRole,
+      createProject
+    } = this.props
 
-    const createTabPanes = () =>
-      showCreate ? (
-        <Tabs>
-          <TabList onTabChange={this.handleTabChange}>
-            <Tab key={1}>{getOwnProjectsTitle}</Tab>
-            <Tab key={2}>{getTotalProjectsTitle}</Tab>
-            <Tab key={3}>{getOnholdProjectsTitle}</Tab>
-            <Tab key={4}>{getArchivedProjectsTitle}</Tab>
-          </TabList>
-          <TabPanel>{getOwnProjectsPanel()}</TabPanel>
-          <TabPanel>{getTotalProjectsPanel()}</TabPanel>
-          <TabPanel>{getOnholdProjectsPanel()}</TabPanel>
-          <TabPanel>{getArchivedProjectsPanel()}</TabPanel>
-        </Tabs>
-      ) : (
-        <Tabs>
-          <TabList onTabChange={this.handleTabChange}>
-            <Tab>{getTotalProjectsTitle}</Tab>
-          </TabList>
-          <TabPanel>{getTotalProjectsPanel()}</TabPanel>
-        </Tabs>
-      )
+    const { searchOpen, showBaseInformationForm } = this.state
 
-    const openCreateProject = () => {
-      this.toggleForm(true)
-    }
+    const { t } = this.props
+
+    const showCreate = projectUtils.isUserPrivileged(currentUserId, users)
 
     let headerActions = (
       <span className="header-buttons">
@@ -244,10 +320,10 @@ class ProjectListPage extends Component {
     return (
       <>
         <Header
-          user={this.props.user}
-          userRole={this.props.userRole}
+          user={user}
+          userRole={userRole}
           createProject={true}
-          openCreateProject={openCreateProject}
+          openCreateProject={this.openCreateProject}
           showCreate={showCreate}
         />
 
@@ -258,13 +334,13 @@ class ProjectListPage extends Component {
             actions={headerActions}
           />
           <NewProjectFormModal
-            modalOpen={this.state.showBaseInformationForm}
-            handleSubmit={this.props.createProject}
+            modalOpen={showBaseInformationForm}
+            handleSubmit={createProject}
             handleClose={() => this.toggleForm(false)}
             users={users}
             projectSubtypes={projectSubtypes}
           />
-          <div className="project-list-container">{createTabPanes()}</div>
+          <div className="project-list-container">{this.createTabPanes()}</div>
         </div>
       </>
     )

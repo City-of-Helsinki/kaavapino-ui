@@ -12,7 +12,8 @@ function ReportPreviewModal({
   handleSubmit,
   noData,
   isReportLoading,
-  blockColumn
+  blockColumn,
+  cancelReportLoading
 }) {
   const { t } = useTranslation()
 
@@ -47,17 +48,26 @@ function ReportPreviewModal({
       closeOnPortalMouseLeave={false}
     >
       <Modal.Actions>
-        <span>
           <Button
             variant="secondary"
             isLoading={isReportLoading}
+            className="report-create-button"
             loadingText={t('reports.create-report')}
             type="button"
             onClick={handleSubmit}
           >
             {t('reports.create-report')}
           </Button>
-        </span>
+          <Button
+              type="button"
+              variant="secondary"
+              onClick={() => cancelReportLoading()}
+              loadingText={t('reports.cancel-report')}
+              className="report-cancel-button"
+              disabled={!isReportLoading}
+            >
+              {t('reports.cancel-report')}
+            </Button>
       </Modal.Actions>
       <Modal.Content>
         <h3>{t('reports.presentation-report.title')}</h3>

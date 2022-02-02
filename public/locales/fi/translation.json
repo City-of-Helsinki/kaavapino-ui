@@ -269,7 +269,9 @@
     "finished-title": "Valmis",
     "error-title": "Virhe",
     "create-report": "Lataa raportti (.xlxs)",
+    "cancel-report": "Peruuta raportin lataus",
     "create-preview": "Esikatselu",
+    "cancel-preview": "Peruuta esikatselu",
     "preview-content": "Raportin esikatselua ladataan",
     "content": "Excel-raporttia ladataan",
     "error-report": "Raportin lataus epäonnistui.",
@@ -281,7 +283,12 @@
       "kylk-title": "Kylk {{date}}"
     },
     "report-preview-loaded": "Raportin esikatselu ladattu.",
-    "report-loaded": "Raportti ladattu."
+    "report-loaded": "Raportti ladattu.",
+    "report-cancel-title": "Peruutettu",
+    "report-cancel": "Raportin lataus on peruutettu.",
+    "report-preview-cancel-title": "Peruutettu",
+    "report-preview-cancel": "Esikatselun lataus on peruutettu."
+    
   },
   "footer": {
     "footer-info": {

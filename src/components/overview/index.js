@@ -95,9 +95,12 @@ const Overview = ({
       />
     )
   }
+
+  const showCreate = projectUtils.isUserPrivileged(currentUserId, users)
+
   return (
     <>
-      <Header user={user} userRole={userRole} />
+      <Header user={user} userRole={userRole} showCreate={showCreate}/>
 
       <div className="overview">
         <NavHeader

@@ -4,7 +4,9 @@ import { reduxForm, getFormValues } from 'redux-form'
 import {
   downloadReport,
   downloadReportReview,
-  clearDownloadReportReview
+  clearDownloadReportReview,
+  cancelReportLoading,
+  cancelReportPreviewLoading
 } from '../../actions/reportActions'
 import {
   reportsSelector,
@@ -87,7 +89,9 @@ function ReportBuilder(props) {
       </Button>
     ))
   }
-  const current = currentReportData ? readString(currentReportData, {encoding: 'utf-8'}) : null
+  const current = currentReportData
+    ? readString(currentReportData, { encoding: 'utf-8' })
+    : null
 
   const getHeaders = () => {
     const columns = []
@@ -170,7 +174,7 @@ function ReportBuilder(props) {
 
   const content = getContent()
 
-  if (!props.reports ) {
+  if (!props.reports) {
     return <LoadingSpinner />
   }
 
@@ -191,28 +195,54 @@ function ReportBuilder(props) {
           </div>
         )}
         {selectedReport && selectedReport.previewable === false && (
-          <Button
-            type="submit"
-            variant="primary"
-            loadingText={t('reports.create-report')}
-            className="report-create-button"
-          >
-            {t('reports.create-report')}
-          </Button>
+          <>
+            <Button
+              type="submit"
+              variant="primary"
+              loadingText={t('reports.create-report')}
+              className="report-create-button"
+              isLoading={isReportLoading}
+            >
+              {t('reports.create-report')}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => props.cancelReportLoading()}
+              loadingText={t('reports.cancel-report')}
+              className="report-cancel-button"
+              disabled={!isReportLoading}
+            >
+              {t('reports.cancel-report')}
+            </Button>
+          </>
+        )}
+
+        {selectedReport && selectedReport.previewable === true && (
+          <>
+            <Button
+              type="button"
+              onClick={onShowPreviewModal}
+              variant="primary"
+              className="report-create-button"
+              loadingText={t('reports.create-preview')}
+              isLoading={isLoading}
+            >
+              {t('reports.create-preview')}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => props.cancelReportPreviewLoading()}
+              loadingText={t('reports.create-report')}
+              className="report-cancel-button"
+              disabled={!isLoading}
+            >
+              {t('reports.cancel-preview')}
+            </Button>
+          </>
         )}
       </Form>
-      {selectedReport && selectedReport.previewable === true && (
-        <Button
-          type="button"
-          onClick={onShowPreviewModal}
-          variant="primary"
-          className="report-create-button"
-          loadingText={t('reports.create-preview')}
-          isLoading={isLoading}
-        >
-          {t('reports.create-preview')}
-        </Button>
-      )}
       <ReportPreviewModal
         open={showPreviewModal}
         noData={noData}
@@ -220,6 +250,7 @@ function ReportBuilder(props) {
         handleSubmit={handleSubmit}
         handleClose={hidePreview}
         headers={headers}
+        cancelReportLoading={props.cancelReportLoading}
         report={parseReport(
           headers,
           content,
@@ -244,7 +275,9 @@ const mapDispatchToProps = {
   downloadReport,
   downloadReportReview,
   fetchReports,
-  clearDownloadReportReview
+  clearDownloadReportReview,
+  cancelReportLoading,
+  cancelReportPreviewLoading
 }
 
 export default reduxForm({

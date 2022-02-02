@@ -4,7 +4,9 @@ import {
   CLEAR_REPORT_PREVIEW,
   DOWNLOAD_REPORT_REVIEW,
   DOWNLOAD_REPORT,
-  DOWNLOAD_REPORT_SUCCESSFUL
+  DOWNLOAD_REPORT_SUCCESSFUL,
+  CANCEL_REPORT_LOADING,
+  CANCEL_REPORT_PREVIEW_LOADING
 } from '../actions/reportActions'
 
 export const initialState = {
@@ -19,7 +21,7 @@ export const reducer = (state = initialState, { type, payload }) => {
     case FETCH_REPORTS_SUCCESSFUL:
       return {
         ...state,
-        reports: payload,
+        reports: payload
       }
 
     case DOWNLOAD_REPORT: {
@@ -46,6 +48,17 @@ export const reducer = (state = initialState, { type, payload }) => {
       return {
         ...state,
         currentReport: undefined
+      }
+
+    case CANCEL_REPORT_LOADING:
+      return {
+        ...state,
+        reportLoading: false
+      }
+    case CANCEL_REPORT_PREVIEW_LOADING:
+      return {
+        ...state,
+        reportPreviewLoading: false,
       }
     default:
       return { ...state }
