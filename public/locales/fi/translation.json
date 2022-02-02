@@ -142,7 +142,7 @@
     "documents-created": "Osa tämän vaiheen dokumenteista on jo ladattu ulos. Ole tarvittaessa yhteydessä projektin vastuuhenkilöön {{email}}.",
     "no-documents": "Ei dokumentteja",
     "phase-passed": "Vaihe ohitettu",
-    "load": "Lataa ulos kun valmis",
+    "load": "Lataa ulos vasta kun valmis",
     "load-preview": "Esikatsele keskeneräistä",
     "phase": "Kaavan vaihe:",
     "document-last-loaded": "Ladattu ulos viimeksi:",
@@ -163,7 +163,9 @@
     "sort": "Lajittele",
     "timeline": "Aikajana",
     "show-timelines": "Näytä aikajanat",
-    "char-limit": "Max {{amount}} merkkiä."
+    "char-limit": "Max {{amount}} merkkiä.",
+    "download_confirmation_header": "Vahvistus dokumentin lataukselle",
+    "download_confirmation_content": "Lataamisen jälkeen saat kaikista muutoksista automaattisia viestejä. Oletko varma, että haluat ladata dokumentin?"
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}"
