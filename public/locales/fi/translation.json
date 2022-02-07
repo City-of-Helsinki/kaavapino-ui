@@ -77,8 +77,8 @@
       "dec": "Joulu"
     },
     "now": "Nyt",
-    "deadline-label": "Määräaika {{date}}.{{month}}",
-    "kylk-message": "Kylk {{date}}.{{month}}",
+    "deadline-label": "{{date}}.{{month}} määräa. ",
+    "kylk-message": "{{date}}.{{month}} Kylk",
     "shown": "nähtävillä",
     "reset-project-deadlines": "Alusta aikataulut",
     "reset-confirm-dialog-title": "Aikataulujen uudelleen luominen",
