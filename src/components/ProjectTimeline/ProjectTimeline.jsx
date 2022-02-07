@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 function ProjectTimeline(props) {
   const { deadlines, projectView, onhold } = props
 
-  const {t} = useTranslation()
+  const { t } = useTranslation()
   const [showError, setShowError] = useState(false)
   const [drawMonths, setDrawMonths] = useState([])
   const [drawItems, setDrawItems] = useState([])
@@ -28,7 +28,7 @@ function ProjectTimeline(props) {
     8: t('deadlines.months.sep'),
     9: t('deadlines.months.oct'),
     10: t('deadlines.months.nov'),
-    11: t('deadlines.months.dec'),
+    11: t('deadlines.months.dec')
   }
   useEffect(() => {
     if (!projectView) {
@@ -238,8 +238,10 @@ function ProjectTimeline(props) {
                 if (monthDates[index].milestone_types.includes('milestone')) {
                   showMessage = (
                     <span className="milestone-message">
-                    {t('deadlines.deadline-label', 
-                      {date: date.getDate(), month: date.getMonth() + 1})}
+                      {t('deadlines.deadline-label', {
+                        date: date.getDate(),
+                        month: date.getMonth() + 1
+                      })}
                     </span>
                   )
                 }
@@ -262,9 +264,11 @@ function ProjectTimeline(props) {
                         monthDates[index].milestone_space < 6 ? 'under' : ''
                       }`}
                     >
-                    {t('deadlines.kylk-message', 
-                      {date: date.getDate(), month: date.getMonth() + 1})}
-                  </span>
+                      {t('deadlines.kylk-message', {
+                        date: date.getDate(),
+                        month: date.getMonth() + 1
+                      })}
+                    </span>
                   )
                   milestoneType.push(
                     <div key={listKey++} className="milestone-icon sphere black" />
