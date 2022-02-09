@@ -105,12 +105,14 @@ function* downloadDocumentSaga({ payload }) {
   toastr.removeByType('info')
 
   if (counter === MAX_COUNT) {
-    payload.projectCard
-      ? i18next.t('document-loading.project-card-title')
-      : i18next.t('document-loading.title'),
+    toastr.error(
+      payload.projectCard
+        ? i18next.t('document-loading.project-card-title')
+        : i18next.t('document-loading.title'),
       payload.projectCard
         ? i18next.t('document-loading.project-card-error')
         : i18next.t('document-loading.error', { name: payload.name })
+    )
   }
 
   if (!isError && counter !== MAX_COUNT) {
@@ -130,12 +132,14 @@ function* downloadDocumentSaga({ payload }) {
           : i18next.t('document-loading.document-loaded', { name: payload.name })
       )
     } else {
-      payload.projectCard
-        ? i18next.t('document-loading.project-card-title')
-        : i18next.t('document-loading.title'),
+      toastr.error(
+        payload.projectCard
+          ? i18next.t('document-loading.project-card-title')
+          : i18next.t('document-loading.title'),
         payload.projectCard
           ? i18next.t('document-loading.project-card-error')
           : i18next.t('document-loading.error', { name: payload.name })
+      )
     }
   }
 }
