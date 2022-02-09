@@ -32,7 +32,6 @@ function* fetchDocumentsSaga({ payload: projectId }) {
     yield put(error(e))
   }
 }
-
 function* downloadDocumentSaga({ payload }) {
   let res
   let currentTask
@@ -41,36 +40,47 @@ function* downloadDocumentSaga({ payload }) {
   let counter = 0
 
   toastr.info(
-    i18next.t('document-loading.title'),
-    i18next.t('document-loading.content', { name: payload.name }),
+    payload.projectCard
+      ? i18next.t('document-loading.project-card-title')
+      : i18next.t('document-loading.title'),
+    payload.projectCard
+      ? i18next.t('document-loading.project-card-content')
+      : i18next.t('document-loading.content', { name: payload.name }),
     { closeOnToastrClick: false }
   )
   try {
-  res = yield call(axios.get, payload.file, { responseType: 'text' })
+    res = yield call(axios.get, payload.file, { responseType: 'text' })
 
-  currentTask = res && res.data ? res.data.detail : null
+    currentTask = res && res.data ? res.data.detail : null
 
-  if (!currentTask) {
-    toastr.removeByType('info')
-    toastr.error(
-      i18next.t('document-loading.title'),
-      i18next.t('document-loading.error', { name: payload.name })
-    )
+    if (!currentTask) {
+      toastr.removeByType('info')
+      toastr.error(
+        payload.projectCard
+          ? i18next.t('document-loading.project-card-title')
+          : i18next.t('document-loading.title'),
+        payload.projectCard
+          ? i18next.t('document-loading.project-card-error')
+          : i18next.t('document-loading.error', { name: payload.name })
+      )
 
-    isError = true
-  } else {
-    while ((!res || res.status === 202) && !isError && counter < MAX_COUNT) {
-      if (res && res.status === 500) {
-        isError = true
-        toastr.removeByType('info')
-        toastr.error(
-          i18next.t('document-loading.title'),
-          i18next.t('document-loading.error', { name: payload.name })
-        )
-        break
-      }
+      isError = true
+    } else {
+      while ((!res || res.status === 202) && !isError && counter < MAX_COUNT) {
+        if (res && res.status === 500) {
+          isError = true
+          toastr.removeByType('info')
+          toastr.error(
+            payload.projectCard
+              ? i18next.t('document-loading.project-card-title')
+              : i18next.t('document-loading.title'),
+            payload.projectCard
+              ? i18next.t('document-loading.project-card-error')
+              : i18next.t('document-loading.error', { name: payload.name })
+          )
+          break
+        }
 
-     
         const includeTaskUrl = payload.file + `?task=${currentTask}`
 
         res = yield call(axios.get, includeTaskUrl, { responseType: 'blob' })
@@ -78,12 +88,16 @@ function* downloadDocumentSaga({ payload }) {
         counter++
 
         yield delay(INTERVAL_MILLISECONDS)
-      } 
+      }
     }
   } catch (e) {
     toastr.error(
-      i18next.t('document-loading.title'),
-      i18next.t('document-loading.error', { name: payload.name })
+      payload.projectCard
+        ? i18next.t('document-loading.project-card-title')
+        : i18next.t('document-loading.title'),
+      payload.projectCard
+        ? i18next.t('document-loading.project-card-error')
+        : i18next.t('document-loading.error', { name: payload.name })
     )
     isError = true
   }
@@ -91,10 +105,12 @@ function* downloadDocumentSaga({ payload }) {
   toastr.removeByType('info')
 
   if (counter === MAX_COUNT) {
-    toastr.error(
-      i18next.t('document-loading.title'),
-      i18next.t('document-loading.error', { name: payload.name })
-    )
+    payload.projectCard
+      ? i18next.t('document-loading.project-card-title')
+      : i18next.t('document-loading.title'),
+      payload.projectCard
+        ? i18next.t('document-loading.project-card-error')
+        : i18next.t('document-loading.error', { name: payload.name })
   }
 
   if (!isError && counter !== MAX_COUNT) {
@@ -106,14 +122,20 @@ function* downloadDocumentSaga({ payload }) {
       FileSaver.saveAs(fileData, fileName)
 
       toastr.success(
-        i18next.t('document-loading.title'),
-        i18next.t('document-loading.document-loaded', { name: payload.name })
+        payload.projectCard
+          ? i18next.t('document-loading.project-card-title')
+          : i18next.t('document-loading.title'),
+        payload.projectCard
+          ? i18next.t('document-loading.project-card-loaded')
+          : i18next.t('document-loading.document-loaded', { name: payload.name })
       )
     } else {
-      toastr.error(
-        i18next.t('document-loading.title'),
-        i18next.t('document-loading.error', { name: payload.name })
-      )
+      payload.projectCard
+        ? i18next.t('document-loading.project-card-title')
+        : i18next.t('document-loading.title'),
+        payload.projectCard
+          ? i18next.t('document-loading.project-card-error')
+          : i18next.t('document-loading.error', { name: payload.name })
     }
   }
 }

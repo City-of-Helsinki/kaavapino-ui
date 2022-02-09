@@ -24,7 +24,11 @@
     "content": "Dokumenttia {{name}} ladataan.",
     "error": "Dokumentin {{name}} lataus epäonnistui.",
     "document-preview-loaded": "Dokumentin esikatselu ladattu onnistuneesti",
-    "document-loaded": "Dokumentti ladattu onnistuneesti"
+    "document-loaded": "Dokumentti ladattu onnistuneesti",
+    "project-card-title": "Projektikortin lataus",
+    "project-card-loaded": "Projektikortti ladattu onnistuneesti",
+    "project-card-content": "Projektikorttia ladataan.",
+    "project-card-error": "Projektikortin lataus epäonnistui."
   },
   "projects": {
     "own-short": "Omat",
@@ -121,7 +125,7 @@
     "save": "Tallenna",
     "create-project": "Luo projekti",
     "create-documents": "Luo dokumentteja",
-    "print-project-card": "Tulosta projektikortti",
+    "print-project-card": "Lataa projektikortti (.pptx)",
     "deadlines": "Määräajat",
     "modify-project": "Muokkaa luontitietoja",
     "check-project-card": "Katso projektikortti",
@@ -166,6 +170,7 @@
     "char-limit": "Max {{amount}} merkkiä.",
     "download_confirmation_header": "Vahvistus dokumentin lataukselle",
     "download_confirmation_content": "Lataamisen jälkeen saat kaikista muutoksista automaattisia viestejä. Oletko varma, että haluat ladata dokumentin?"
+    
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}"

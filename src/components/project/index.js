@@ -40,10 +40,11 @@ import DownloadProjectDataModal from './DownloadProjectDataModal'
 import { DOWNLOAD_PROJECT_DATA_FORM } from '../../constants'
 import { getFormValues } from 'redux-form'
 import { userIdSelector } from '../../selectors/authSelector'
-import { IconPen, IconPrinter, LoadingSpinner, Button } from 'hds-react'
+import { IconPen, LoadingSpinner, Button, IconDownload } from 'hds-react'
 import { withRouter } from 'react-router-dom'
 import dayjs from 'dayjs'
 import Header from '../common/Header'
+import { downloadDocument } from '../../actions/documentActions';
 
 class ProjectPage extends Component {
   test = React.createRef()
@@ -275,7 +276,7 @@ class ProjectPage extends Component {
     return this.getProjectCardContent()
   }
   getProjectCardNavActions = () => {
-    const { users, t } = this.props
+    const { users, t, currentProject, downloadDocument } = this.props
 
     const showCreate = projectUtils.isUserPrivileged(this.props.currentUserId, users)
 
@@ -302,8 +303,8 @@ class ProjectPage extends Component {
         )}
         <Button
           variant="secondary"
-          iconLeft={<IconPrinter />}
-          onClick={() => window.print()}
+          iconLeft={<IconDownload />}
+          onClick={() => downloadDocument( {...currentProject.project_card_document, projectCard: true})}
         >
           {t('project.print-project-card')}
         </Button>
@@ -519,7 +520,8 @@ const mapDispatchToProps = {
   getProjectCardFields,
   getExternalDocuments,
   getAttributes,
-  resetProjectDeadlines
+  resetProjectDeadlines,
+  downloadDocument
 }
 
 const mapStateToProps = state => {
@@ -537,7 +539,7 @@ const mapStateToProps = state => {
     projectCardFields: projectCardFieldsSelector(state),
     externalDocuments: externalDocumentsSelector(state),
     creator: creatorSelector(state),
-    resettingDeadlines: resettingDeadlinesSelector(state)
+    resettingDeadlines: resettingDeadlinesSelector(state),
   }
 }
 
