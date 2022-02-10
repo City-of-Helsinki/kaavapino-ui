@@ -138,7 +138,10 @@ class ProjectEditPage extends Component {
     this.props.saveProject()
   }
   handleTimetableClose = () => {
-    this.props.saveProjectTimetable()
+
+    const { project, saveProjectTimetable } = this.props
+    saveProjectTimetable()
+    initializeProject( project.id )
   }
 
   setSelectedRole = role => {
