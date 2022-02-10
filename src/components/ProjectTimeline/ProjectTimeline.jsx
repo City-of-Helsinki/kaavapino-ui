@@ -4,14 +4,13 @@ import { createMonths } from './helpers/createMonths'
 import { createDeadlines } from './helpers/createDeadlines'
 import { connect } from 'react-redux'
 import { getProject, getProjectSuccessful } from '../../actions/projectActions'
-import { timelineProjectSelector } from '../../selectors/projectSelector'
 import { findWeek } from './helpers/helpers'
 import { IconError } from 'hds-react'
 import { useTranslation } from 'react-i18next'
 
 function ProjectTimeline(props) {
   const { deadlines, projectView, onhold } = props
-
+   
   const { t } = useTranslation()
   const [showError, setShowError] = useState(false)
   const [drawMonths, setDrawMonths] = useState([])
@@ -39,14 +38,10 @@ function ProjectTimeline(props) {
     }
   }, [])
   useEffect(() => {
-    if (props.timelineProject) {
-      props.timelineProject.forEach(timelineProject => {
-        if (timelineProject.id === props.id) {
-          createTimelineItems(timelineProject.deadlines)
-        }
-      })
+    if (deadlines) {
+      createTimelineItems(deadlines)
     }
-  }, [props.timelineProject])
+  }, [deadlines])
   function createNowMarker(week) {
     let nowMarker = []
     for (let i = 1; i <= 5; i++) {
@@ -62,6 +57,7 @@ function ProjectTimeline(props) {
     }
     return nowMarker
   }
+
   function createDrawMonths(months) {
     const drawableMonths = []
     const nowDate = new Date()
@@ -281,7 +277,6 @@ function ProjectTimeline(props) {
                       }`}
                     >
                       {t('deadlines.shown')}
-                    
                     </span>
                   )
                   milestoneType.push(
@@ -375,10 +370,6 @@ const mapDispatchToProps = {
   getProjectSuccessful
 }
 
-const mapStateToProps = state => {
-  return {
-    timelineProject: timelineProjectSelector(state)
-  }
-}
 
-export default connect(mapStateToProps, mapDispatchToProps)(ProjectTimeline)
+
+export default connect(null, mapDispatchToProps)(ProjectTimeline)

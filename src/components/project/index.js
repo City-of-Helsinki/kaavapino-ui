@@ -475,6 +475,7 @@ class ProjectPage extends Component {
   onResetProjectDeadlines = () => {
     const { currentProject, resetProjectDeadlines } = this.props
     resetProjectDeadlines( currentProject.id )
+    initializeProject( currentProject.id )
   }
 
   render() {

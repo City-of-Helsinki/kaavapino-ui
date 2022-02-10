@@ -13,7 +13,7 @@ import { deadlineSectionsSelector } from '../../../selectors/schemaSelector'
 import { withTranslation } from 'react-i18next'
 import { deadlinesSelector } from '../../../selectors/projectSelector'
 import { Button, IconInfoCircle } from 'hds-react'
-import { isArray } from 'lodash';
+import { isArray } from 'lodash'
 
 class EditProjectTimeTableModal extends Component {
   constructor(props) {
@@ -63,11 +63,9 @@ class EditProjectTimeTableModal extends Component {
     if (errors) {
       this.setState({ loading: false })
     }
-  
   }
 
   handleClose = () => {
-    this.props.reset()
     this.props.handleClose()
   }
 
@@ -79,7 +77,7 @@ class EditProjectTimeTableModal extends Component {
       formSubmitErrors &&
       formSubmitErrors[fieldProps.field.name]
     let className = ''
-   
+
     if (error !== undefined) {
       className = 'modal-field error-border'
     } else {
@@ -91,13 +89,13 @@ class EditProjectTimeTableModal extends Component {
     }
 
     let modifiedError = ''
-    if ( isArray( error )) {
-        error.forEach( current => {
-          modifiedError = modifiedError + ' ' + current
-        })
+    if (isArray(error)) {
+      error.forEach(current => {
+        modifiedError = modifiedError + ' ' + current
+      })
     } else {
       modifiedError = error
-    }  
+    }
     return (
       <div key={key}>
         <FormField
@@ -153,36 +151,34 @@ class EditProjectTimeTableModal extends Component {
         })
       })
     })
-    return label
+    return <span>{label}: </span>
   }
 
   renderSubmitErrors = () => {
     const { formSubmitErrors } = this.props
 
-    const returnValue = []
     const keys = formSubmitErrors ? Object.keys(formSubmitErrors) : []
 
-    keys.forEach(key => {
+    return keys.map(key => {
       const errors = formSubmitErrors[key]
 
-      errors.forEach(error => {
-        returnValue.push(
-          <div className="submit-error">
-            {this.getErrorLabel(key)}: {error}
-          </div>
-        )
-      })
+      return (
+        <div key={key} className="submit-error">
+          {this.getErrorLabel(key)}
+          {errors.map(error => (
+            <span key={error}>{error} </span>
+          ))}
+        </div>
+      )
     })
-
-    return returnValue ? returnValue : null
   }
 
   render() {
     const { loading } = this.state
     const { open, formValues, deadlineSections, t, formSubmitErrors } = this.props
 
-    let currentSubmitErrors = Object.keys( formSubmitErrors ).length > 0
-  
+    let currentSubmitErrors = Object.keys(formSubmitErrors).length > 0
+
     if (!formValues) {
       return null
     }
@@ -210,7 +206,9 @@ class EditProjectTimeTableModal extends Component {
             </span>
             <span> {t('deadlines.warning')}</span>
           </div>
-          {currentSubmitErrors && <div className="error-area">{this.renderSubmitErrors()}</div>}
+          {currentSubmitErrors && (
+            <div className="error-area">{this.renderSubmitErrors()}</div>
+          )}
         </Modal.Content>
         <Modal.Actions>
           <span className="form-buttons">
