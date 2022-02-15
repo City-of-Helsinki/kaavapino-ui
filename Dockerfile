@@ -1,6 +1,6 @@
 FROM node:14.16.1-alpine3.13
 
-WORKDIR /kaavapino-ui
+WORKDIR /app
 
 ENV APP_NAME kaavapino-ui
 
@@ -9,4 +9,14 @@ RUN yarn install && yarn cache clean --force
 
 COPY . .
 
-CMD ["yarn", "start"]
+RUN yarn build
+
+####
+
+FROM registry.access.redhat.com/ubi8/nginx-120
+
+COPY nginx/default.conf "${NGINX_DEFAULT_CONF_PATH}"
+COPY --from=builder --chown=1001:0 /app/build .
+
+EXPOSE 9000
+CMD nginx -g "daemon off;"
