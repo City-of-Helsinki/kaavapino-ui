@@ -9,7 +9,10 @@ RUN yarn install && yarn cache clean --force
 
 COPY . .
 
-RUN yarn build
+RUN echo -e "BUILD ENVIRONMENT\n" && \
+    env && \
+    echo -e "\nSTARTING BUILD\n" && \
+    yarn build
 
 ####
 
