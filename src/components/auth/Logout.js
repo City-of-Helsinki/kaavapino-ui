@@ -1,14 +1,14 @@
-import React, { Component } from 'react'
+import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 
-class LogoutPage extends Component {
-  componentDidMount() {
-    this.props.handleLogout()
-  }
+function LogoutPage(props) {
+  useEffect(() => {
+    props.handleLogout()
+  }, [])
+  const { t } = useTranslation()
 
-  render() {
-    return <p>Kirjaudutaan ulos...</p>
-  }
+  return <div>{t('logging-out')}</div>
 }
 
 LogoutPage.propTypes = {

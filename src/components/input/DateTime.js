@@ -1,7 +1,10 @@
 import React from 'react'
 import DateTime from 'react-datetime'
+import { useTranslation } from 'react-i18next';
 
 const CustomDateTime = ({ input, placeholder, ...custom }) => {
+
+  const {t} = useTranslation()
   const formatDate = value => {
     if (!isNaN(new Date(value))) {
       return new Date(value)
@@ -11,8 +14,8 @@ const CustomDateTime = ({ input, placeholder, ...custom }) => {
 
   return (
     <DateTime
-      dateFormat="DD.MM.YYYY"
-      timeFormat="HH:mm"
+      dateFormat={t('dateformat')}
+      timeFormat={t('timeformat')}
       value={formatDate(input.value)}
       {...input}
       {...custom}

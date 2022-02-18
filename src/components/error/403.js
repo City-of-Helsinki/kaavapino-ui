@@ -1,11 +1,15 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next';
 
 const Forbidden = () => {
+
+  const {t} = useTranslation()
+
   return (
     <div>
-      <p>Ei vaadittavia oikeuksia tähän toimenpiteeseen.</p>
-      <Link to="/">Palaa tästä etusivulle.</Link>
+      <p>{t('no-rights')}</p>
+      <Link to="/">{t('go-back-front-page')}</Link>
     </div>
   )
 }

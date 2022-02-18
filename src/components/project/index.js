@@ -6,7 +6,8 @@ import {
   changeProjectPhase,
   getProjectSnapshot,
   setSelectedPhaseId,
-  getExternalDocuments
+  getExternalDocuments,
+  resetProjectDeadlines
 } from '../../actions/projectActions'
 import { fetchUsers } from '../../actions/userActions'
 import { getProjectCardFields, getAttributes } from '../../actions/schemaActions'
@@ -17,7 +18,8 @@ import {
   changingPhaseSelector,
   selectedPhaseSelector,
   externalDocumentsSelector,
-  creatorSelector
+  creatorSelector,
+  resettingDeadlinesSelector
 } from '../../selectors/projectSelector'
 import { phasesSelector } from '../../selectors/phaseSelector'
 import {
@@ -38,9 +40,11 @@ import DownloadProjectDataModal from './DownloadProjectDataModal'
 import { DOWNLOAD_PROJECT_DATA_FORM } from '../../constants'
 import { getFormValues } from 'redux-form'
 import { userIdSelector } from '../../selectors/authSelector'
-import { IconPen, IconPrinter, IconDownload, LoadingSpinner, Button } from 'hds-react'
+import { IconPen, LoadingSpinner, Button, IconDownload } from 'hds-react'
 import { withRouter } from 'react-router-dom'
 import dayjs from 'dayjs'
+import Header from '../common/Header'
+import { downloadDocument } from '../../actions/documentActions';
 
 class ProjectPage extends Component {
   test = React.createRef()
@@ -54,8 +58,7 @@ class ProjectPage extends Component {
 
     this.state = {
       showBaseInformationForm: false,
-      showPrintProjectDataModal: false,
-      deadlines: null
+      showPrintProjectDataModal: false
     }
   }
 
@@ -74,29 +77,32 @@ class ProjectPage extends Component {
       this.props.fetchUsers()
     }
     window.scrollTo({ top: 0, behavior: 'auto' })
-
-    const search = this.props.location.search
-    const params = new URLSearchParams(search)
-
-    const viewParameter = params.get('property')
-
-    if (viewParameter) {
-      this.setState({ ...this.state, showBaseInformationForm: true })
-      this.props.history.replace( { ...this.props.location, search: ''} )
-    }
   }
 
   componentDidUpdate(prevProps) {
-    const { currentProject, changingPhase, edit } = this.props
+    const { currentProject, changingPhase } = this.props
     if (
       (!prevProps.currentProject && currentProject) ||
       (prevProps.changingPhase && !changingPhase)
     ) {
-      this.props.setSelectedPhaseId(currentProject.phase)
-      this.setState({ deadlines: currentProject.deadlines })
+      const search = this.props.location.search
+      const params = new URLSearchParams(search)
+
+      const viewParameter = params.get('property')
+
+      if (viewParameter) {
+        this.setState({ ...this.state, showBaseInformationForm: true })
+        this.props.history.replace({ ...this.props.location, search: '' })
+      }
+
+      if (params.get('phase')) {
+        this.props.setSelectedPhaseId(+params.get('phase'))
+      } else {
+        this.props.setSelectedPhaseId(currentProject.phase)
+      }
       document.title = currentProject.name
     }
-    if (prevProps.edit && !edit) this.props.setSelectedPhaseId(currentProject.phase)
+    //s if (prevProps.edit && !edit) this.props.setSelectedPhaseId(currentProject.phase)
 
     getExternalDocuments(this.props.id)
   }
@@ -108,15 +114,18 @@ class ProjectPage extends Component {
   }
 
   getRouteItems = () => {
-    const { currentProject, edit, documents } = this.props
+    const { currentProject, edit, documents, t } = this.props
     const path = [
-      { value: 'Kaavaprojektit', path: '/projects' },
+      { value: t('project.projects'), path: '/projects' },
       { value: `${currentProject.name}`, path: `/${currentProject.id}` }
     ]
     if (edit) {
-      path.push({ value: 'Muokkaa', path: `/${currentProject.id}/edit` })
+      path.push({ value: t('project.modify'), path: `/${currentProject.id}/edit` })
     } else if (documents) {
-      path.push({ value: 'Dokumentit', path: `/${currentProject.id}/documents` })
+      path.push({
+        value: t('project.documents'),
+        path: `/${currentProject.id}/documents`
+      })
     }
     return path
   }
@@ -267,7 +276,7 @@ class ProjectPage extends Component {
     return this.getProjectCardContent()
   }
   getProjectCardNavActions = () => {
-    const { users, t } = this.props
+    const { users, t, currentProject, downloadDocument } = this.props
 
     const showCreate = projectUtils.isUserPrivileged(this.props.currentUserId, users)
 
@@ -294,42 +303,37 @@ class ProjectPage extends Component {
         )}
         <Button
           variant="secondary"
-          iconLeft={<IconPrinter />}
-          onClick={() => window.print()}
+          iconLeft={<IconDownload />}
+          onClick={() => downloadDocument( {...currentProject.project_card_document, projectCard: true})}
         >
           {t('project.print-project-card')}
         </Button>
       </span>
     )
   }
+  showModifyProject = () => {
+    this.toggleBaseInformationForm(true)
+  }
+  showProjectData = () => {
+    this.togglePrintProjectDataModal(true)
+  }
   getEditNavActions = () => {
-    const { users, t } = this.props
+    const { t, users } = this.props
 
     const showCreate = projectUtils.isUserPrivileged(this.props.currentUserId, users)
 
     return (
       <span className="header-buttons">
-        <Button
-          variant="secondary"
-          className="header-button"
-          onClick={this.openProjectDataModal}
-          iconLeft={<IconDownload />}
-        >
-          Tulosta projektin tiedot
-        </Button>
-        {showCreate && (
+       {showCreate && (
           <Button
             variant="secondary"
-            className="header-button"
-            onClick={() => this.toggleBaseInformationForm(true)}
             iconLeft={<IconPen />}
+            onClick={this.createDocuments}
           >
-            {t('project.modify-project')}
+            {t('project.create-documents')}
           </Button>
         )}
-        <Button variant="primary" iconLeft={<IconPen />} onClick={this.checkProjectCard}>
-          {t('project.check-project-card')}
-        </Button>
+        
       </span>
     )
   }
@@ -341,8 +345,7 @@ class ProjectPage extends Component {
 
     return (
       <span className="header-buttons">
-       
-       {showCreate && (
+        {showCreate && (
           <Button
             variant="secondary"
             className="header-button"
@@ -393,35 +396,52 @@ class ProjectPage extends Component {
   getAllChanges = () => {
     const { allEditFields, edit, creator, t } = this.props
 
-    if (!edit) return []
+    if (!edit || !allEditFields) return []
 
-    const returnValues = allEditFields.map((f, i) => {
-      const value = `${projectUtils.formatDateTime(f.timestamp)} ${f.label} ${
-        f.user_name
-      }`
-      return {
-        name: f.name,
-        label: f.attribute_label,
-        text: value,
-        value: `${value}-${i}`,
-        key: `${value}-${i}`,
-        oldValue: f.old_value,
-        newValue: f.new_value,
-        labels: f.labels
+    const returnValues = []
+
+    const keys = Object.keys(allEditFields)
+
+    keys.forEach((key, i) => {
+      const current = allEditFields[key]
+
+      if (!current.schema[key].autofill_readonly || current.schema[key].editable) {
+        const value = `${projectUtils.formatDateTime(current.timestamp)} ${
+          current.schema[key].label
+        } ${current.user_name}`
+        returnValues.push({
+          name: key,
+          text: value,
+          value: value,
+          key: `${value}-${i}`,
+          oldValue: current.old_value,
+          newValue: current.new_value,
+          schema: current.schema,
+          timestamp: current.timestamp,
+          type: current.schema[key].type
+        })
       }
     })
 
-    returnValues.push({
-      name: 'Project created',
-      label: creator.user_name,
-      text: t('project.project-created-log', {
-        timestamp: projectUtils.formatDateTime(creator.timestamp),
-        name: creator.user_name
-      }),
-      hideChangeValue: true
-    })
+    const ordered = returnValues.sort(
+      (u1, u2) => new Date(u2.timestamp).getTime() - new Date(u1.timestamp).getTime()
+    )
 
-    return returnValues
+    if (allEditFields) {
+      ordered.push({
+        name: 'Project created',
+        label: creator.user_name,
+        text: t('project.project-created-log', {
+          timestamp: projectUtils.formatDateTime(creator.timestamp),
+          name: creator.user_name
+        }),
+        timestamp: projectUtils.formatDateTime(creator.timestamp),
+        type: 'boolean',
+        oldValue: null,
+        newValue: true
+      })
+    }
+    return ordered
   }
 
   togglePrintProjectDataModal = opened =>
@@ -450,22 +470,43 @@ class ProjectPage extends Component {
     const phase = formValues['phase']
     const date = formValues['date']
 
-    getProjectSnapshot(currentProject.id, dayjs(date), phase)
+    getProjectSnapshot(currentProject.id, dayjs(date).format(), phase)
+  }
+
+  onResetProjectDeadlines = () => {
+    const { currentProject, resetProjectDeadlines } = this.props
+    resetProjectDeadlines( currentProject.id )
+    initializeProject( currentProject.id )
   }
 
   render() {
-    const { phases, currentProjectLoaded } = this.props
+    const { phases, currentProjectLoaded, user, users, userRole, resettingDeadlines, currentUserId } = this.props
 
     const loading = !currentProjectLoaded || !phases
 
-    if (loading) {
-      return this.renderLoading()
-    }
+    const showCreate = projectUtils.isUserPrivileged(currentUserId, users)
 
     return (
-      <div className="project-container">
-        <div className="project-page-content">{this.getProjectPageContent()}</div>
-      </div>
+      <>
+        <Header
+          user={user}
+          userRole={userRole}
+          showCreate={showCreate}
+          modifyProject={true}
+          showPrintProjectData={true}
+          resetDeadlines={true}
+          openModifyProject={this.showModifyProject}
+          openPrintProjectData={this.showProjectData}
+          resetProjectDeadlines={this.onResetProjectDeadlines}
+
+        />
+        {(loading || resettingDeadlines) &&  this.renderLoading()}
+        {(!loading && !resettingDeadlines) &&
+        <div className="project-container">
+          <div className="project-page-content">{this.getProjectPageContent()}</div>
+        </div>
+        }
+      </>
     )
   }
 }
@@ -479,7 +520,9 @@ const mapDispatchToProps = {
   setSelectedPhaseId,
   getProjectCardFields,
   getExternalDocuments,
-  getAttributes
+  getAttributes,
+  resetProjectDeadlines,
+  downloadDocument
 }
 
 const mapStateToProps = state => {
@@ -496,7 +539,8 @@ const mapStateToProps = state => {
     selectedPhase: selectedPhaseSelector(state),
     projectCardFields: projectCardFieldsSelector(state),
     externalDocuments: externalDocumentsSelector(state),
-    creator: creatorSelector(state)
+    creator: creatorSelector(state),
+    resettingDeadlines: resettingDeadlinesSelector(state),
   }
 }
 

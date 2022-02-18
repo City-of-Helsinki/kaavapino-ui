@@ -4,6 +4,13 @@ import { Provider } from 'react-redux'
 import { reduxForm } from 'redux-form'
 import configureStore from 'redux-mock-store'
 import CustomField from '../../../components/input/CustomField'
+jest.mock("react-i18next", () => ({
+  useTranslation: () => ({ t: key => key }),
+  withTranslation: () => Component => {
+    Component.defaultProps = { ...Component.defaultProps, t: () => "" };
+    return Component;
+  },
+}));
 
 describe('<Field />', () => {
   let wrapper
@@ -20,6 +27,7 @@ describe('<Field />', () => {
     }
     store = mockStore(initialState)
     wrapper = null
+   
   })
 
   const createFieldOfType = (type, fieldProps = {}, inputProps = {}) => {

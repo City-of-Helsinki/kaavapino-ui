@@ -190,3 +190,7 @@ export const projectMapLegendsSelector = createSelector(
   selectProject,
   project => project.overview.legends
 )
+export const resettingDeadlinesSelector = createSelector(
+  selectProject,
+  ({ resettingDeadlines }) => resettingDeadlines
+)

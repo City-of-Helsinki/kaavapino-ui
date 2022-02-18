@@ -1,4 +1,4 @@
-import { concat, difference, flattenDeep, isBoolean } from 'lodash'
+import { isArray } from 'lodash'
 import { showField } from './projectVisibilityUtils'
 
 const addZeroPrefixIfNecessary = value => (value < 10 ? `0${value}` : value)
@@ -22,8 +22,8 @@ const formatDateTime = date => `${formatDate(date)} ${formatTime(date)}`
 
 const formatUsersName = user => {
   if (user) {
-    return user.first_name || user.last_name
-      ? `${user.first_name} ${user.last_name}`
+    return user.last_name || user.first_name
+      ? `${user.last_name} ${user.first_name}`
       : user.email
   }
   return ''
@@ -45,22 +45,42 @@ const formatDeadlines = ({ name, deadlines, subtype }, phases) => {
 }
 
 const isFieldMissing = (fieldName, isFieldRequired, attributeData, autofill_readonly) => {
+  const value = findValueFromObject(attributeData, fieldName)
+
   return (
     isFieldRequired &&
     !autofill_readonly &&
-    (attributeData[fieldName] === undefined ||
-      attributeData[fieldName] === null ||
-      attributeData[fieldName] === '')
+    (value === undefined || value === null || value === '')
   )
 }
 
-const getUniqueUpdates = updates => {
-  const ids = {}
-  return [...updates].filter(({ name }) => {
-    if (ids[name]) return false
-    ids[name] = true
-    return true
-  })
+const isFieldSetRequired = fieldsetAttributes => {
+  let required = false
+
+  fieldsetAttributes &&
+    fieldsetAttributes.forEach(attribute => {
+      if (attribute.required) {
+        required = true
+      }
+    })
+
+  return required
+}
+const isFieldsetMissing = (fieldName, formValues, fieldsetRequired) => {
+  if (!fieldsetRequired) {
+    return false
+  }
+  const value = formValues[fieldName]
+
+  let missing = true
+
+  value &&
+    value.forEach(current => {
+      if (!current._deleted && missing) {
+        missing = false
+      }
+    })
+  return missing
 }
 
 const sortProjects = (projects, options) => {
@@ -113,73 +133,6 @@ const formatSubtype = (id, subtypes) => {
   if (foundSubtype) {
     return foundSubtype.name
   }
-}
-
-const formatPayload = (changedValues, sections, parentNames, initialValues) => {
-  const keys = Object.keys(changedValues)
-  const fieldsetList = keys.filter(key => key.indexOf('fieldset') !== -1)
-
-  const fieldsetAttributes = flattenDeep(
-    fieldsetList.map(currentFieldset => getFieldsetAttributes(currentFieldset, sections))
-  )
-
-  const allFieldsets = concat(fieldsetList, fieldsetAttributes)
-  const nonFieldsets = difference(keys, allFieldsets)
-
-  // Bug fix which caused saga crash
-  if (!keys || keys.length === 0) return changedValues
-
-  const returnValue = {}
-
-  // No fieldset values, fieldsets have attributes
-  if (fieldsetAttributes.length === 0) {
-    nonFieldsets.forEach(key => (returnValue[key] = changedValues[key]))
-    return returnValue
-  }
-
-  // Handle non fieldset values
-  if (nonFieldsets.length !== 0)
-    nonFieldsets.forEach(key => (returnValue[key] = changedValues[key]))
-
-  fieldsetList.forEach(currentFieldset => {
-    const attributes = getFieldsetAttributes(currentFieldset, sections)
-    const currentObject = {}
-
-    if (attributes) {
-      attributes.forEach(attribute => {
-        //use new value for this field
-        if (
-          changedValues[attribute] ||
-          isBoolean(changedValues[attribute]) ||
-          changedValues[attribute] === ''
-        ) {
-          currentObject[attribute] = changedValues[attribute]
-          // use initlavalue
-        } else if (initialValues[attribute] || isBoolean(initialValues[attribute])) {
-          currentObject[attribute] = initialValues[attribute]
-        }
-      })
-      returnValue[currentFieldset] = [currentObject]
-    }
-  })
-  return returnValue
-}
-// Returns parents from changed values.
-const getParents = changedValues => {
-  const keysToSearch = Object.keys(changedValues)
-
-  // Bug fix which caused saga crash
-  if (!keysToSearch || keysToSearch.length === 0) {
-    return
-  }
-  const parentNames = []
-
-  // Check if fieldset is in keysToSearch
-  keysToSearch.forEach(key => {
-    if (key.indexOf('fieldset') !== -1) parentNames.push(key)
-  })
-
-  return parentNames
 }
 
 function getFieldsetAttributes(parent, sections) {
@@ -244,10 +197,11 @@ const findValueFromObject = (object, key) => {
       value = object[currentKey]
       return true
     }
-    if (object[currentKey] && typeof object[currentKey] === 'object') {
+    if (object[currentKey] && typeof object[currentKey] === 'object') { 
       value = findValueFromObject(object[currentKey], key)
       return value !== undefined
     }
+
     return false
   })
   return value
@@ -290,17 +244,16 @@ const isUserPrivileged = (currentUserId, users) => {
   return userRole === 'admin' || userRole === 'create' || userRole === 'edit'
 }
 
-function hasMissingFields(formValues, currentProject, schema) {
+function hasMissingFields(attributeData, currentProject, schema) {
   const currentSchema = schema.phases.find(s => s.id === currentProject.phase)
   const { sections } = currentSchema
-  const attributeData = currentProject.attribute_data
 
   let missingFields = false
   // Go through every single field
   sections.forEach(({ fields }) => {
-    fields.forEach((field, fieldIndex) => {
+    fields.forEach(field => {
       // Only validate visible fields
-      if (showField(field, formValues)) {
+      if (showField(field, attributeData)) {
         // Matrices can contain any kinds of fields, so
         // we must go through them separately
         if (field.type === 'matrix') {
@@ -310,48 +263,15 @@ function hasMissingFields(formValues, currentProject, schema) {
               missingFields = true
             }
           })
+
           // Fieldsets can contain any fields (except matrices)
           // multiple times, so we need to go through them all
         } else if (field.type === 'fieldset') {
-          const { fieldset_attributes } = field
-
-          if (fieldset_attributes) {
-            fieldset_attributes.forEach(field => {
-              if (attributeData[fields[fieldIndex].name]) {
-                attributeData[fields[fieldIndex].name].forEach(attribute => {
-                  if (
-                    attribute._deleted === false &&
-                    isFieldMissing(
-                      field.name,
-                      field.required,
-                      attribute,
-                      field.autofill_readonly
-                    )
-                  ) {
-                    missingFields = true
-                  }
-                })
-              } else {
-                if (
-                  isFieldMissing(
-                    field.name,
-                    field.required,
-                    attributeData,
-                    field.autofill_readonly
-                  )
-                ) {
-                  missingFields = true
-                }
-              }
-            })
+          if (hasFieldsetErrors(field.name, field.fieldset_attributes, attributeData)) {
+            missingFields = true
           }
         } else if (
-          isFieldMissing(
-            field.name,
-            field.required,
-            attributeData,
-            field.autofill_readonly
-          )
+          isFieldMissing(field.name, field.required, attributeData, field.autofill_readonly)
         ) {
           missingFields = true
         }
@@ -360,6 +280,134 @@ function hasMissingFields(formValues, currentProject, schema) {
   })
   return missingFields
 }
+
+function hasFieldsetErrors(fieldName, fieldsetAttributes, attributeData) {
+  if (isFieldsetMissing(fieldName, attributeData, isFieldSetRequired(fieldsetAttributes))) {
+    return true
+  } else {
+    let missingFields = false
+
+    const validFieldSets = getValidFieldsets(attributeData[fieldName])
+
+    validFieldSets.forEach(fieldset => {
+      const keys = Object.keys(fieldset)
+
+      if (isRequiredFieldsetFieldMissing(fieldsetAttributes, fieldset)) {
+        missingFields = true
+      }
+
+      keys.forEach(key => {
+        if (key !== '_deleted') {
+          const required = isFieldsetFieldRequired(fieldsetAttributes, key)
+
+          if (required) {
+            if (fieldset[key] === undefined) {
+              missingFields = true
+            }
+          }
+        }
+      })
+    })
+    return missingFields
+  }
+}
+function getValidFieldsets(fieldsets) {
+  const validFieldsets = []
+  for (let index in fieldsets) {
+    if (!fieldsets[index]._deleted) {
+      validFieldsets.push(fieldsets[index])
+    }
+  }
+  return validFieldsets
+}
+function isFieldsetFieldRequired(fieldsetAttributes, name) {
+  let required = false
+
+  fieldsetAttributes &&
+    fieldsetAttributes.forEach(attribute => {
+      if (attribute.name === name) {
+        required = attribute.required
+      }
+    })
+  return required
+}
+function isRequiredFieldsetFieldMissing(fieldsetAttributes, fieldset) {
+  let isMissing = false
+  const fieldsetKeys = Object.keys(fieldset)
+  fieldsetAttributes &&
+    fieldsetAttributes.forEach(attribute => {
+      if (attribute.required && attribute.type !== 'file') {
+        if (!fieldsetKeys.includes(attribute.name)) {
+          isMissing = true
+        }
+      }
+    })
+  return isMissing
+}
+const getField = (name, sections) => {
+  let returnField = null
+  sections.forEach(section => {
+    section.fields.some(field => {
+      // Field found
+      if (field.name === name) {
+        returnField = field
+        return true
+      }
+
+      if (field.fieldset_attributes) {
+        field.fieldset_attributes.some(field => {
+          if (field.name === name) {
+            returnField = field
+            return true
+          }
+          if (field.fieldset_attributes) {
+            field.fieldset_attributes.some(field => {
+              if (field.name === name) {
+                returnField = field
+                return true
+              }
+            })
+          }
+        })
+      }
+    })
+  })
+
+  return returnField
+}
+const reduceNonEditableFields = (attributeData, sections) => {
+  const keys = Object.keys(attributeData)
+
+  keys &&
+    keys.forEach(key => {
+      const fieldsetAttributes = attributeData[key]
+
+      checkFieldsetAttributes(fieldsetAttributes, sections)
+    })
+}
+
+const checkFieldsetAttributes = (fieldsetAttributes, sections) => {
+ if (isArray(fieldsetAttributes)) {
+    fieldsetAttributes &&
+      fieldsetAttributes.forEach(attribute => {
+        const subKeys = Object.keys(attribute)
+
+        subKeys &&
+          subKeys.forEach(subKey => {
+            if (subKey !== '_deleted') {
+              const field = getField(subKey, sections)
+
+              if (field && field.type === 'fieldset') {
+                checkFieldsetAttributes(attribute[subKey], sections)
+              }
+              if (field && !field.editable) {
+                delete attribute[subKey]
+              }
+            }
+          })
+      })
+  }
+}
 export default {
   formatDate,
   formatTime,
@@ -367,7 +415,6 @@ export default {
   formatUsersName,
   formatDeadlines,
   isFieldMissing,
-  getUniqueUpdates,
   sortProjects,
   formatFilterProject,
   formatPhase,
@@ -375,13 +422,17 @@ export default {
   formatSubtype,
   checkDeadline,
   getDefaultValue,
-  getParents,
-  formatPayload,
   generateArrayOfYears,
   getFieldsetAttributes,
   findValueFromObject,
   isUserPrivileged,
   findValuesFromObject,
   generateArrayOfYearsForChart,
-  hasMissingFields
+  hasMissingFields,
+  isFieldsetMissing,
+  isFieldSetRequired,
+  hasFieldsetErrors,
+  reduceNonEditableFields,
+  getField,
+  checkFieldsetAttributes
 }

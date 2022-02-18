@@ -55,7 +55,9 @@ import {
   SET_TOTAL_ARCHIVED_PROJECTS,
   SET_TOTAL_ONHOLD_PROJECTS,
   SET_ONHOLD_PROJECTS,
-  SET_ARCHIVED_PROJECTS
+  SET_ARCHIVED_PROJECTS,
+  RESET_PROJECT_DEADLINES,
+  RESET_PROJECT_DEADLINES_SUCCESSFUL
 } from '../actions/projectActions'
 
 export const initialState = {
@@ -82,6 +84,7 @@ export const initialState = {
   timelineProject: [],
   selectedPhase: 0,
   currentProjectExternalDocuments: null,
+  resettingDeadlines: false,
   overview: {
     floorArea: {},
     bySubtype: {},
@@ -163,6 +166,18 @@ export const reducer = (state = initialState, action) => {
       return {
         ...state,
         currentProjectExternalDocuments: null
+      }
+    }
+    case RESET_PROJECT_DEADLINES: {
+      return {
+        ...state,
+        resettingDeadlines: true
+      }
+    }
+    case RESET_PROJECT_DEADLINES_SUCCESSFUL: {
+      return {
+        ...state,
+        resettingDeadlines: false
       }
     }
 
@@ -362,13 +377,14 @@ export const reducer = (state = initialState, action) => {
     }
 
     case PROJECT_FILE_REMOVE_SUCCESSFUL: {
-      const updatedAttributeData = { ...state.currentProject.attribute_data }
+     
+      const updatedAttributeData = Object.assign( {}, { ...state.currentProject.attribute_data })
       delete updatedAttributeData[action.payload]
-      return {
+        return {
         ...state,
         currentProject: {
           ...state.currentProject,
-          attribute_data: { ...updatedAttributeData }
+          attribute_data: updatedAttributeData
         }
       }
     }

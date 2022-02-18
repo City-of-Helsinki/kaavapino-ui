@@ -4,33 +4,31 @@ import { createMonths } from './helpers/createMonths'
 import { createDeadlines } from './helpers/createDeadlines'
 import { connect } from 'react-redux'
 import { getProject, getProjectSuccessful } from '../../actions/projectActions'
-import { timelineProjectSelector } from '../../selectors/projectSelector'
 import { findWeek } from './helpers/helpers'
 import { IconError } from 'hds-react'
 import { useTranslation } from 'react-i18next'
 
 function ProjectTimeline(props) {
   const { deadlines, projectView, onhold } = props
+   
+  const { t } = useTranslation()
   const [showError, setShowError] = useState(false)
   const [drawMonths, setDrawMonths] = useState([])
   const [drawItems, setDrawItems] = useState([])
   const monthNames = {
-    0: 'Tammi',
-    1: 'Helmi',
-    2: 'Maalis',
-    3: 'Huhti',
-    4: 'Touko',
-    5: 'Kesä',
-    6: 'Heinä',
-    7: 'Elo',
-    8: 'Syys',
-    9: 'Loka',
-    10: 'Marras',
-    11: 'Joulu'
+    0: t('deadlines.months.jan'),
+    1: t('deadlines.months.feb'),
+    2: t('deadlines.months.mar'),
+    3: t('deadlines.months.apr'),
+    4: t('deadlines.months.may'),
+    5: t('deadlines.months.jun'),
+    6: t('deadlines.months.jul'),
+    7: t('deadlines.months.aug'),
+    8: t('deadlines.months.sep'),
+    9: t('deadlines.months.oct'),
+    10: t('deadlines.months.nov'),
+    11: t('deadlines.months.dec')
   }
-
-  const { t } = useTranslation()
-
   useEffect(() => {
     if (!projectView) {
       const months = createMonths(deadlines)
@@ -40,21 +38,17 @@ function ProjectTimeline(props) {
     }
   }, [])
   useEffect(() => {
-    if (props.timelineProject) {
-      props.timelineProject.forEach(timelineProject => {
-        if (timelineProject.id === props.id) {
-          createTimelineItems(timelineProject.deadlines)
-        }
-      })
+    if (deadlines) {
+      createTimelineItems(deadlines)
     }
-  }, [props.timelineProject])
+  }, [deadlines])
   function createNowMarker(week) {
     let nowMarker = []
     for (let i = 1; i <= 5; i++) {
       if (i === week) {
         nowMarker.push(
           <div key={i} className="now-marker">
-            <span>Nyt</span>
+            <span>{t('deadlines.now')}</span>
           </div>
         )
       } else {
@@ -63,6 +57,7 @@ function ProjectTimeline(props) {
     }
     return nowMarker
   }
+
   function createDrawMonths(months) {
     const drawableMonths = []
     const nowDate = new Date()
@@ -238,9 +233,12 @@ function ProjectTimeline(props) {
               case 'dashed_start':
                 if (monthDates[index].milestone_types.includes('milestone')) {
                   showMessage = (
-                    <span className="milestone-message">{`Määräaika ${date.getDate()}.${
-                      date.getMonth() + 1
-                    } >`}</span>
+                    <span className="milestone-message">
+                      {t('deadlines.deadline-label', {
+                        date: date.getDate(),
+                        month: date.getMonth() + 1
+                      })}
+                    </span>
                   )
                 }
                 milestoneType.push(
@@ -261,7 +259,12 @@ function ProjectTimeline(props) {
                       className={`milestone-message ${
                         monthDates[index].milestone_space < 6 ? 'under' : ''
                       }`}
-                    >{`Kylk ${date.getDate()}.${date.getMonth() + 1}.`}</span>
+                    >
+                      {t('deadlines.kylk-message', {
+                        date: date.getDate(),
+                        month: date.getMonth() + 1
+                      })}
+                    </span>
                   )
                   milestoneType.push(
                     <div key={listKey++} className="milestone-icon sphere black" />
@@ -273,7 +276,7 @@ function ProjectTimeline(props) {
                         monthDates[index].milestone_space < 6 ? 'under' : ''
                       }`}
                     >
-                      nähtävillä
+                      {t('deadlines.shown')}
                     </span>
                   )
                   milestoneType.push(
@@ -367,10 +370,6 @@ const mapDispatchToProps = {
   getProjectSuccessful
 }
 
-const mapStateToProps = state => {
-  return {
-    timelineProject: timelineProjectSelector(state)
-  }
-}
 
-export default connect(mapStateToProps, mapDispatchToProps)(ProjectTimeline)
+
+export default connect(null, mapDispatchToProps)(ProjectTimeline)

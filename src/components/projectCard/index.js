@@ -272,7 +272,7 @@ function ProjectCardPage({
           <Photo field={photoField} />
         </Accordion>
         <Accordion className="mobile-accordion" heading={t('project.contact-title')}>
-          <Contacts hideTitle={true} fields={contactsFields} />
+          <Contacts hideTitle={true} fields={contactsFields} personnel={personnel} />
         </Accordion>
         <Accordion className="mobile-accordion" heading={t('project.floor-area-title')}>
           <FloorAreaInformation hideTitle={true} fields={floorAreaFields} />

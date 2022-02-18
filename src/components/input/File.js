@@ -5,6 +5,7 @@ import { downloadFile } from '../../actions/apiActions'
 import { Button, Progress } from 'semantic-ui-react'
 import { Document, Page, pdfjs } from 'react-pdf'
 import { showField } from '../../utils/projectVisibilityUtils'
+import { withTranslation } from 'react-i18next';
 
 class File extends Component {
   constructor(props) {
@@ -66,12 +67,13 @@ class File extends Component {
     const {
       projectFileRemove,
       field: { name },
-      handleSave
+      handleSave,
+      t
     } = this.props
     const { current } = this.state
-    const confirm = window.confirm(
-      `Oletko varma, että haluat poistaa tiedoston ${current}?`
-    )
+
+    const confirmText = t('file.remove-question', {current: current})
+    const confirm = window.confirm(confirmText)
     if (confirm) {
       this.inputRef.current.value = ''
       this.setState({ current: null })
@@ -106,13 +108,13 @@ class File extends Component {
   }
 
   onChangeFile = e => {
-    const { field, image, projectFileUpload } = this.props
+    const { field, image, projectFileUpload, t } = this.props
     const file = this.inputRef.current.files[0]
     if (!file) {
       return
     }
     const path = e.target.value.split('\\')
-    let description = prompt('Tiedoston kuvaus')
+    let description = prompt(t('file.description'))
     if (!description) description = ''
     const onCompleted = () => {
       this.setState({ current: path[path.length - 1], reading: true })
@@ -144,7 +146,7 @@ class File extends Component {
 
   render() {
     const { current, uploading, percentCompleted } = this.state
-    const { field, image, description, src, formValues } = this.props
+    const { field, image, description, src, formValues, t } = this.props
     const disabled = field.disabled
     if ( !showField(field, formValues) ) {
       return null
@@ -191,7 +193,8 @@ class File extends Component {
               label={{
                 basic: true,
                 content: `${
-                  this.state.current || (uploading && 'Ladataan...') || 'Valitse tiedosto'
+                  this.state.current || uploading && t('file.loading') 
+                  || t('file.choose-file')
                 }`
               }}
               onClick={this.handleClick}
@@ -205,7 +208,7 @@ class File extends Component {
                   icon="download"
                   className="file-action-button"
                   onClick={this.download}
-                  content="Lataa"
+                  content={t('file.load')}
                   disabled={disabled}
                 />
               )}
@@ -220,7 +223,7 @@ class File extends Component {
               )}
             </div>
             {uploading && (
-              <Button icon="cancel" color="red" onClick={this.cancel} content="Peruuta" />
+              <Button icon="cancel" color="red" onClick={this.cancel} content={t('file.cancel')} />
             )}
           </Button.Group>
         </div>
@@ -237,7 +240,7 @@ class File extends Component {
         {filePreview}
         {current && description && (
           <span className="file-description">
-            <b>Kuvaus: </b>
+            <b>{t('file.description')} </b>
             {description}
           </span>
         )}
@@ -252,4 +255,4 @@ const mapDispatchToProps = {
   downloadFile
 }
 
-export default connect(null, mapDispatchToProps)(File)
+export default connect(null, mapDispatchToProps)(withTranslation()(File))

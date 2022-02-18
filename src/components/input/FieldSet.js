@@ -11,6 +11,7 @@ import { IconCross, IconClock } from 'hds-react'
 import { Button } from 'hds-react'
 import { change } from 'redux-form'
 import { get } from 'lodash'
+import { useTranslation } from 'react-i18next';
 
 const FieldSet = ({
   sets,
@@ -33,30 +34,10 @@ const FieldSet = ({
   }
   const dispatch = useDispatch()
 
+  const {t} = useTranslation()
+
   const [hiddenIndex, setHiddenIndex] = useState(-1)
 
-  let requiredError = false
-  if (fields) {
-    fields.forEach(field => {
-      if (attributeData[name]) {
-        attributeData[name].forEach(attribute => {
-          if (
-            checking &&
-            projectUtils.isFieldMissing(field.name, field.required, attribute)
-          ) {
-            requiredError = true
-          }
-        })
-      } else {
-        if (
-          checking &&
-          projectUtils.isFieldMissing(field.name, field.required, attributeData)
-        ) {
-          requiredError = true
-        }
-      }
-    })
-  }
   const getLastValidIndex = () => {
     let lastValidIndex = sets.length - 1
 
@@ -124,7 +105,7 @@ const FieldSet = ({
                   }
 
                   const title = field.character_limit
-                    ? `${field.label}  (Max ${field.character_limit} merkkiä)`
+                    ? t('project.fieldset-title', {label: field.label, max: field.character_limit})
                     : field.label
                   const error = syncronousErrors && syncronousErrors[field.name]
 
@@ -133,7 +114,7 @@ const FieldSet = ({
                    * 2) error text can be given directly to the component as props.
                    * Redux form gives error information to the Field component, but that's further down the line, and we need that information
                    * here to modify the input header accordingly. */
-                  const showError = required ? 'pakollinen kenttä' : error
+                  const showError = required ? t('project.required-field') : error
 
                   const fieldUpdated =
                     updated && updated.new_value && has(updated.new_value[0], field.name)
@@ -201,7 +182,7 @@ const FieldSet = ({
         <>
           <Button
             className={`fieldset-button-add ${
-              requiredError ? 'fieldset-internal-error' : null
+              checking && projectUtils.hasFieldsetErrors(name, fields, attributeData) ? 'fieldset-internal-error' : null
             }`}
             onClick={() => {
               sets.push({})
@@ -210,7 +191,7 @@ const FieldSet = ({
             disabled={disabled}
             variant="secondary"
           >
-            Lisää
+           {t('project.add')}
           </Button>
           <Button
             className="fieldset-button-remove"
@@ -229,7 +210,7 @@ const FieldSet = ({
             }}
             variant="secondary"
           >
-            Poista
+             {t('project.remove')}
           </Button>
         </>
       )}
