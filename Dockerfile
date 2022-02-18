@@ -24,7 +24,7 @@ RUN echo -e "BUILD ENVIRONMENT\n" && \
 FROM registry.access.redhat.com/ubi8/nginx-120
 
 COPY nginx/default.conf "${NGINX_DEFAULT_CONF_PATH}"
-COPY ngins/logging.conf /opt/app-root/etc/nginx.default.d/
+COPY nginx/logging.conf /opt/app-root/etc/nginx.default.d/
 COPY --from=builder --chown=1001:0 /app/build .
 
 EXPOSE 9000
