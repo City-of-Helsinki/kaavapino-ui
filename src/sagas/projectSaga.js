@@ -88,7 +88,8 @@ import {
   setTotalOnholdProjects,
   setTotalArchivedProjects,
   setOnholdProjects,
-  setArchivedProjects
+  setArchivedProjects,
+  resetProjectDeadlinesSuccessful
 } from '../actions/projectActions'
 import { startSubmit, stopSubmit, setSubmitSucceeded } from 'redux-form'
 import { error } from '../actions/apiActions'
@@ -156,12 +157,17 @@ export default function* projectSaga() {
 
 function* resetProjectDeadlines({ payload: projectId }) {
   try {
-    yield call(
-      projectApi.get,
-      { path: { projectId } },
-      ':projectId/?generate_schedule=true'
+    const timelineProject = yield call(
+      projectApi.patch,
+      {},
+      { path: { projectId }, query: { generate_schedule: true }},
+      ':projectId/'
     )
-  } catch (e) {
+    yield put(updateProject(timelineProject))
+    yield put(initializeProjectAction(projectId))
+    yield put(resetProjectDeadlinesSuccessful())
+
+   } catch (e) {
     yield put(error(e))
   }
 }
@@ -416,8 +422,8 @@ function* getProjectSnapshot({ payload }) {
 
     if (payload.phase) {
       query = { phase: payload.phase }
-    } else if (payload.date) {
-      query = { snapshot: payload.date }
+    } else if (payload.snapshot) {
+      query = { snapshot: encodeURIComponent(payload.snapshot) }
     }
     const project = yield call(
       projectApi.get,
@@ -454,6 +460,7 @@ function* createProject() {
   }
 }
 
+
 const getChangedAttributeData = (values, initial, sections) => {
   let attribute_data = {}
 
@@ -468,7 +475,7 @@ const getChangedAttributeData = (values, initial, sections) => {
       attribute_data[key] = values[key]
     }
     let fieldSetName
-
+    projectUtils.reduceNonEditableFields(attribute_data, sections)
     if (sections) {
       // When editing a field inside fieldset, the fieldset is not included by default.
       // This workaround adds fieldset if field is inside fieldset.
@@ -552,15 +559,15 @@ function* saveProjectFloorArea() {
         { path: { id: currentProjectId } },
         ':id/'
       )
+
       yield put(updateProject(updatedProject))
       yield put(setSubmitSucceeded(EDIT_FLOOR_AREA_FORM))
+
+      yield put(setAllEditFields())
+
       yield put(toastr.success(i18.t('messages.timelines-successfully-saved')))
     } catch (e) {
-      if (e.response && e.response.status === 400) {
-        yield put(stopSubmit(EDIT_FLOOR_AREA_FORM, e.response.data))
-      } else {
-        yield put(error(e))
-      }
+      yield put(stopSubmit(EDIT_FLOOR_AREA_FORM, e.response && e.response.data))
     }
   }
 }
@@ -580,6 +587,7 @@ function* saveProjectTimetable() {
       )
       yield put(updateProject(updatedProject))
       yield put(setSubmitSucceeded(EDIT_PROJECT_TIMETABLE_FORM))
+      yield put(setAllEditFields())
 
       if (!checkDeadlines(updatedProject.deadlines)) {
         yield put(toastr.success(i18.t('messages.deadlines-successfully-saved')))
@@ -591,7 +599,6 @@ function* saveProjectTimetable() {
           )
         )
       }
-      yield put(initializeProjectAction(currentProjectId))
     } catch (e) {
       yield put(stopSubmit(EDIT_PROJECT_TIMETABLE_FORM, e.response && e.response.data))
     }
@@ -623,6 +630,8 @@ function* saveProject() {
           ':id/'
         )
         yield put(updateProject(updatedProject))
+        yield put(saveProjectSuccessful())
+        yield put(setAllEditFields())
       } catch (e) {
         if (e.response && e.response.status === 400) {
           yield put(stopSubmit(EDIT_PROJECT_FORM, e.response.data))
@@ -632,8 +641,6 @@ function* saveProject() {
       }
     }
   }
-  yield put(saveProjectSuccessful())
-  yield put(setAllEditFields())
 }
 
 function* changeProjectPhase({ payload: phase }) {

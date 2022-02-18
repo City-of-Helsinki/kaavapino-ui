@@ -171,8 +171,8 @@ function CustomMap({
     >
       {getPolygonArea()}
       <TileLayer
-        attribution="Leaflet | © Helsingin, Espoon, Vantaan ja Kauniaisen kaupungit, karttasarja"
-        url="https://kartta.hel.fi/ws/geoserver/avoindata/gwc/service/wmts?layer=avoindata:Karttasarja_harmaa&tilematrixset=ETRS-GK25&Service=WMTS&Request=GetTile&Version=1.0.0&TileMatrix=ETRS-GK25:{z}&TileCol={x}&TileRow={y}&Format=image%2Fpng"
+        attribution={t('map.attribution')}
+        url={t('map.url')}
       />
     </Map>
   )
@@ -180,7 +180,7 @@ function CustomMap({
   const renderNormalView = () => (
     <div className="map-area">
       <div className="geometry-input-container">
-        <Grid colums="equal" className="full-width">
+        <Grid columns="equal" className="full-width">
           <Grid.Column width={4}>
             <h3>{t('map-area.title')}</h3>
           </Grid.Column>

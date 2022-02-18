@@ -12,13 +12,17 @@ import {
   getProjectsOverviewFloorArea,
   clearProjectsOverview
 } from '../../actions/projectActions'
+import Header from '../common/Header'
+
 
 function MobileView({
   isPrivileged,
   filterList,
   getProjectsOverviewMapData,
   getProjectsOverviewFloorArea,
-  clearProjectsOverview
+  clearProjectsOverview,
+  user,
+  userRole
 }) {
   const { t } = useTranslation()
 
@@ -60,6 +64,7 @@ function MobileView({
 
   return (
     <div>
+     <Header user={user} userRole={userRole}/>
       <FilterModal
         open={showFilterModal}
         filterList={filterList}

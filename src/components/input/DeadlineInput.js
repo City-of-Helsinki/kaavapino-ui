@@ -10,7 +10,7 @@ import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 
 const DeadLineInput = ({
   input,
-  meta: { error },
+  error,
   currentDeadline,
   editable,
   type,
@@ -19,6 +19,7 @@ const DeadLineInput = ({
   className,
   autofillRule
 }) => {
+  
   const { t } = useTranslation()
   let inputValue = input.value
   if (autofillRule) {
@@ -82,6 +83,7 @@ const DeadLineInput = ({
         type={type}
         disabled={disabled}
         placeholder={placeholder}
+        error={error}
         aria-label={input.name}
         onChange={event => {
           const value = event.target.value

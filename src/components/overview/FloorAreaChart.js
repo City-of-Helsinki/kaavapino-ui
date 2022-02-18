@@ -343,14 +343,14 @@ function FloorAreaChart({
                 />
 
                 <XAxis
-                  interval={1}
+                  interval={0}
                   scale="time"
                   height={65}
                   tickCount={100}
                   domain={['auto', 'auto']}
                   type="number"
                   dataKey="date"
-                  angle={-90}
+                  angle={-45}
                   textAnchor="end"
                   tickFormatter={getFormattedDate}
                 />

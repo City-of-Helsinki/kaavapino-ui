@@ -1,10 +1,14 @@
 import React, { useState } from 'react'
 import './styles.scss'
-
-const roles = ['Pääkäyttäjä', 'Asiantuntija']
+import { useTranslation } from 'react-i18next'
+import { Button, IconSearch } from 'hds-react'
 
 const RoleHighlightPicker = ({ onRoleUpdate }) => {
   const [highlightedRole, setHighlightedRole] = useState(null)
+  const {t} = useTranslation()
+  
+  const roles = [t('project.admin'), t('project.expert')]
+  
   const handleOnClick = index => {
     if (highlightedRole === index) {
       setHighlightedRole(null)
@@ -17,22 +21,23 @@ const RoleHighlightPicker = ({ onRoleUpdate }) => {
 
   return (
     <div className="role-highlight-picker">
-      <div className="magnifier-icon" />
-      <div className="role-highlight-picker-right">
-        <h4>Korosta täytettävät kentät</h4>
-        <div className="role-buttons">
+      
+      
+        <h4><IconSearch /> {t('project.highlight-fields')}</h4>
+      
+      <div className="role-buttons">
           {roles.map((role, i) => (
-            <div
+            <Button
+              variant="supplementary"
               key={i}
               onClick={() => handleOnClick(i)}
               className={`role-button ${i === highlightedRole ? 'active' : ''}`}
             >
               {role}
-            </div>
+            </Button>
           ))}
         </div>
       </div>
-    </div>
   )
 }
 

@@ -8,13 +8,17 @@ import ProjectsChart from './ProjectsChart'
 import './styles.scss'
 import { NavHeader } from '../common/NavHeader'
 import { connect } from 'react-redux'
-import { getProjectsOverviewFilters, clearProjectsOverview } from '../../actions/projectActions'
+import {
+  getProjectsOverviewFilters,
+  clearProjectsOverview
+} from '../../actions/projectActions'
 import { projectOverviewFiltersSelector } from '../../selectors/projectSelector'
 import { fetchUsers } from '../../actions/userActions'
 import { usersSelector } from '../../selectors/userSelector'
 import { userIdSelector } from '../../selectors/authSelector'
 import projectUtils from '../../utils/projectUtils'
 import MobileView from './MobileView'
+import Header from '../common/Header'
 
 const Overview = ({
   getProjectsOverviewFilters,
@@ -22,7 +26,9 @@ const Overview = ({
   fetchUsers,
   currentUserId,
   users,
-  clearProjectsOverview
+  clearProjectsOverview,
+  user,
+  userRole
 }) => {
   const { t } = useTranslation()
   const [currentFilterData, setCurrentFilterData] = useState(filterData)
@@ -52,14 +58,14 @@ const Overview = ({
     if (window.innerWidth < 720) {
       setIsMobile(true)
     } else {
-      setIsMobile( false )
+      setIsMobile(false)
     }
   })
   useEffect(() => {
     return () => {
       clearProjectsOverview()
-    };
-  }, []);
+    }
+  }, [])
 
   useEffect(() => {
     clearProjectsOverview()
@@ -77,47 +83,60 @@ const Overview = ({
     return filters
   }
 
-
   const isPrivileged = projectUtils.isUserPrivileged(currentUserId, users)
 
   if (isMobile) {
-    return <MobileView filterList={filterData} isPrivileged={isPrivileged} />
-  }
-  return (
-    <div className="overview">
-      <NavHeader
-        routeItems={[{ value: 'Yleisnäkymä', path: '/' }]}
-        title={t('overview.title')}
+    return (
+      <MobileView
+        filterList={filterData}
+        isPrivileged={isPrivileged}
+        user={user}
+        userRole={userRole}
       />
-      <Grid stackable columns="equal">
-        <Grid.Column>
-          <Segment>
-            <CustomMap
-              isPrivileged={isPrivileged}
-              filters={getFilters('filters_on_map')}
-              isMobile={isMobile}
-            />
-          </Segment>
-        </Grid.Column>
-      </Grid>
-      <Grid stackable columns="equal">
-        <Grid.Column>
-          <Segment>
-            <FloorAreaChart
-              filters={getFilters('filters_floor_area')}
-              isPrivileged={isPrivileged}
-            />
-          </Segment>
-        </Grid.Column>
-      </Grid>
-      <Grid stackable columns="equal">
-        <Grid.Column width={8}>
-          <Segment>
-            <ProjectsChart filters={getFilters('filters_by_subtype')} />
-          </Segment>
-        </Grid.Column>
-      </Grid>
-    </div>
+    )
+  }
+
+  const showCreate = projectUtils.isUserPrivileged(currentUserId, users)
+
+  return (
+    <>
+      <Header user={user} userRole={userRole} showCreate={showCreate}/>
+
+      <div className="overview">
+        <NavHeader
+          routeItems={[{ value: t('overview.title'), path: '/' }]}
+          title={t('overview.title')}
+        />
+        <Grid stackable columns="equal">
+          <Grid.Column>
+            <Segment>
+              <CustomMap
+                isPrivileged={isPrivileged}
+                filters={getFilters('filters_on_map')}
+                isMobile={isMobile}
+              />
+            </Segment>
+          </Grid.Column>
+        </Grid>
+        <Grid stackable columns="equal">
+          <Grid.Column>
+            <Segment>
+              <FloorAreaChart
+                filters={getFilters('filters_floor_area')}
+                isPrivileged={isPrivileged}
+              />
+            </Segment>
+          </Grid.Column>
+        </Grid>
+        <Grid stackable columns="equal">
+          <Grid.Column width={8}>
+            <Segment>
+              <ProjectsChart filters={getFilters('filters_by_subtype')} />
+            </Segment>
+          </Grid.Column>
+        </Grid>
+      </div>
+    </>
   )
 }
 const mapDispatchToProps = {

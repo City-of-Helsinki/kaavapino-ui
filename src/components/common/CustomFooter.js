@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 import { fetchFooter } from '../../actions/footerActions'
 import { footerSelector } from '../../selectors/footerSelector'
 import { isArray } from 'lodash'
-
+import { withTranslation } from 'react-i18next'
 class CustomFooter extends Component {
   componentDidMount() {
     this.props.fetchFooter()
@@ -57,16 +57,18 @@ class CustomFooter extends Component {
   }
 
   renderTitle = () => {
+    const {t} = this.props
     return (
       <>
-        <div>Kaupunkiympäristö</div>
-        <div>Asemakaavoitus</div>
-        <div>PL 58212 (käyntiosoite Työpajankatu 8)</div>
+        <div>{t('footer.footer-info.area')}</div>
+        <div>{t('footer.footer-info.name')}</div>
+        <div>{t('footer.footer-info.address')}</div>
       </>
     )
   }
 
   render() {
+    const {t} = this.props
     return (
       <Footer
         footerProps={{
@@ -82,11 +84,11 @@ class CustomFooter extends Component {
         >
           {this.renderAllNavigation()}
         </Footer.Navigation>
-        <Footer.Utilities backToTopLabel="Sivun alkuun"/>
+        <Footer.Utilities backToTopLabel={t('footer.to-start')}/>
           
         <Footer.Base
-          copyrightHolder="Helsingin kaupunki"
-          copyrightText="Kaikki oikeudet pidetään"
+          copyrightHolder={t('footer.copyright-holder')}
+          copyrightText={t('footer.copyright-text')}
         />
       </Footer>
     )
@@ -103,4 +105,4 @@ const mapStateToProps = state => {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(CustomFooter)
+export default connect(mapStateToProps, mapDispatchToProps)(withTranslation()(CustomFooter))

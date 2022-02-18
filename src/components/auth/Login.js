@@ -1,17 +1,26 @@
-import React, { Component } from 'react'
+import React, { useEffect, useState } from 'react'
 import userManager from '../../utils/userManager'
+import { useTranslation } from 'react-i18next'
 
-class LoginPage extends Component {
-  componentDidMount = () => {
-    this.handleLogin()
-    this.interval = setInterval(() => this.handleLogin(), 5000)
-  }
+function LoginPage() {
+  const [currentInterval, setCurrentInterval] = useState()
 
-  handleLogin = () => userManager.signinRedirect()
+  const {t} = useTranslation()
 
-  componentWillUnmount = () => clearInterval(this.interval)
+  useEffect(() => {
+    handleLogin()
+    setCurrentInterval(setInterval(() => this.handleLogin(), 5000))
+  }, [])
 
-  render = () => <p>Uudelleenohjataan...</p>
+  useEffect(() => {
+    return () => {
+      clearInterval(currentInterval)
+    }
+  }, [])
+
+  const handleLogin = () => userManager.signinRedirect()
+
+  return <div>{t('redirecting')}</div>
 }
 
 export default LoginPage

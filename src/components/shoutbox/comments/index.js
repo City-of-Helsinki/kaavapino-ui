@@ -21,6 +21,7 @@ import {
 import { userIdSelector } from '../../../selectors/authSelector'
 import Comment from './Comment'
 import { TextInput, Button } from 'hds-react'
+import { withTranslation } from 'react-i18next';
 
 class Comments extends Component {
   constructor(props) {
@@ -95,20 +96,21 @@ class Comments extends Component {
       commentsLoading,
       userId,
       amountOfCommentsToShow,
-      pollingComments
+      pollingComments,
+      t
     } = this.props
     const begin =
       comments.length < amountOfCommentsToShow ? comments.length : amountOfCommentsToShow
 
     return (
       <div className="comment-list-container">
-        <h2 className="comment-list-header">Viestit</h2>
+        <h2 className="comment-list-header">{t('shoutbox.title')}</h2>
         <div className="comment-list" ref={this.commentsRef} onScroll={this.handleScroll}>
           {(commentsLoading || pollingComments) && (
-            <p className="comments-message">Ladataan...</p>
+            <p className="comments-message">{t('shoutbox.loading')}</p>
           )}
           {!commentsLoading && comments.length === 0 && (
-            <p className="comments-message">Ei kommentteja.</p>
+            <p className="comments-message">{t('shoutbox.no-comments')}</p>
           )}
           {comments.slice(comments.length - begin, comments.length).map((comment, i) => (
             <Comment
@@ -126,13 +128,13 @@ class Comments extends Component {
           <TextInput
             onChange={this.handleChange}
             type="text"
-            placeholder="Lisää kommentti"
+            placeholder={t('shoutbox.add-comment')}
             value={this.state.value}
             className="comment-text-field"
           />
 
           <Button className="send-button" variant="primary" onClick={this.handleSubmit}>
-            Lähetä
+            {t('shoutbox.send')}
           </Button>
         </div>
       </div>
@@ -161,4 +163,4 @@ const mapDispatchToProps = {
   clearComments
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Comments)
+export default connect(mapStateToProps, mapDispatchToProps)(withTranslation()(Comments))

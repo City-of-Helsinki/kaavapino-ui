@@ -3,9 +3,12 @@ import { TextInput } from 'hds-react'
 import isUrl from 'is-url'
 import ipRegex from 'ip-regex'
 import { IconCross, IconCheck, Button, IconLink } from 'hds-react'
+import { useTranslation } from 'react-i18next';
 
 const Link = props => {
   const openLink = () => window.open(currentValue)
+
+  const {t} = useTranslation()
 
   const [currentValue, setCurrentValue] = useState(props.input.value)
   const isValid = value => isUrl(value) || ipRegex({ exact: true }).test(value)
@@ -47,7 +50,7 @@ const Link = props => {
           iconLeft={<IconLink />}
           onClick={openLink}
         >
-          Avaa
+          {t('project.add')}
         </Button>
       )}
       {!multipleLinks && currentValue && isLinkValid && (
@@ -57,7 +60,7 @@ const Link = props => {
         <IconCross className="link-status" size="l" color="red" />
       )}
       {!isLinkValid && currentValue && !multipleLinks && (
-        <div className="error-text">Link is broken</div>
+        <div className="error-text">{t('project.link-is-broken')}</div>
       )}
     </div>
   )

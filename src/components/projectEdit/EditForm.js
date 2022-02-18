@@ -5,32 +5,44 @@ import FormSection from './FormSection'
 import FormButton from '../common/FormButton'
 import { EDIT_PROJECT_FORM } from '../../constants'
 import Shoutbox from '../shoutbox'
-import {Button, IconArrowUp } from 'hds-react'
+import { Button, IconArrowUp } from 'hds-react'
+import { withTranslation } from 'react-i18next'
 
 class EditForm extends Component {
- 
   componentWillUnmount() {
     clearTimeout(this.timeout)
     clearInterval(this.autoSave)
   }
 
   componentDidUpdate(prevProps) {
-    const { saving, initialize, attributeData, geoServerData, submitErrors, initialized } = this.props
+    const {
+      saving,
+      initialize,
+      attributeData,
+      geoServerData,
+      submitErrors,
+      initialized,
+      selectedPhase
+    } = this.props
 
+    if (prevProps.selectedPhase !== selectedPhase) {
+      const newInitialize = Object.assign(attributeData, geoServerData)
+
+      initialize(newInitialize)
+    }
     if (
       prevProps.saving &&
       !saving &&
       !submitErrors &&
       Object.keys(submitErrors).length > 0
     ) {
-      const newInitialize = Object.assign(attributeData, geoServerData )
-      
-      initialize( newInitialize )
+      const newInitialize = Object.assign(attributeData, geoServerData)
+
+      initialize(newInitialize)
     }
-    if ( initialized !== prevProps.initialized ) {
+    if (initialized !== prevProps.initialized) {
       this.props.setFormInitialized(true)
     }
-
   }
 
   render() {
@@ -44,24 +56,25 @@ class EditForm extends Component {
       attributeData,
       syncronousErrors,
       submitErrors,
-      showCreate
+      showCreate,
+      t
     } = this.props
-    
+
     return (
       <Form className="form-container" autoComplete="off">
         <h2 id="accordion-title">{title}</h2>
         <div className="edit-form-buttons">
           {showCreate && (
             <FormButton
-              value="Päivitä aikataulu"
-              variant='secondary'
+              value={t('deadlines.button-title')}
+              variant="secondary"
               onClick={showEditProjectTimetableForm}
             />
           )}
           {showCreate && (
             <FormButton
-              value="Päivitä kerrosalatiedot"
-              variant='secondary'
+              value={t('floor-areas.button-title')}
+              variant="secondary"
               onClick={showEditFloorAreaForm}
             />
           )}
@@ -77,23 +90,26 @@ class EditForm extends Component {
             section={section}
             disabled={disabled}
             attributeData={attributeData}
-            setRef={ this.props.setRef }
+            setRef={this.props.setRef}
           />
         ))}
-        <Button variant="supplementary"
-          iconRight={<IconArrowUp/>}
+        <Button
+          variant="supplementary"
+          iconRight={<IconArrowUp />}
           className="scroll-to-top"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         >
-          <div>Sivun alkuun</div>
+          <div>{t('footer.to-start')}</div>
         </Button>
       </Form>
     )
   }
 }
 
-export default reduxForm({
+const decoratedForm = reduxForm({
   form: EDIT_PROJECT_FORM,
   enableReinitialize: true,
   keepDirtyOnReinitialize: true
 })(EditForm)
+
+export default withTranslation()(decoratedForm)
