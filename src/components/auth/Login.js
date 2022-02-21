@@ -9,7 +9,7 @@ function LoginPage() {
 
   useEffect(() => {
     handleLogin()
-    setCurrentInterval(setInterval(() => this.handleLogin(), 5000))
+    setCurrentInterval(setInterval(() => handleLogin(), 5000))
   }, [])
 
   useEffect(() => {
