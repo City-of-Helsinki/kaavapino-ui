@@ -161,6 +161,7 @@ class File extends Component {
         }}
         className="image-preview"
         ref={this.imageRef}
+        aria-label="image"
         alt={current ? current : ''}
       />
     )

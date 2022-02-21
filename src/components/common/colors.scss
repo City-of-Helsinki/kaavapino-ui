@@ -1,13 +1,3 @@
-$dark-blue-color: #0000bf;
-$dark-blue-color-light10: #1a1ad9;
-$dark-blue-color-light20: #3333f2;
-$dark-blue-color-light40: #6666ff;
-$dark-blue-color-light60: #9999ff;
-$dark-blue-color-light80: #ccccff;
-
-$color-fog: #9fc9eb;
-
-$color-light-fog: #e8f3fc;
 
 $black: #000000;
 $black1: #1a1a1a;
@@ -36,15 +26,92 @@ $white: #ffffff;
 
 $turquoise: #007293;
 
-$color-primary: $dark-blue-color;
-$color-button-emphasis: $dark-blue-color-light20;
-$color-input-emphasis: $border-black;
-$color-primary-emphasis: $border-black;
-$color-error-text: $red;
-$color-error-border: $red2;
-$color-warning: $yellow;
-$color-warning2: $yellow2;
-$color-notification: $orange;
-$color-info: $turquoise;
-
 $color-disabled: $accessible-grey;
+
+$color-brick: #bd2719;
+$color-brick-light: #ffeeed;
+$color-brick-medium-light: #facbc8;
+$color-brick-dark: #800e04;
+$color-bus: #0000bf;
+$color-bus-light: #f0f0ff;
+$color-bus-medium-light: #ccf;
+$color-bus-dark: #00005e;
+$color-coat-of-arms: #0072c6;
+$color-coat-of-arms-light: #e6f4ff;
+$color-coat-of-arms-medium-light: #b5daf7;
+$color-coat-of-arms-dark: #005799;
+$color-copper: #00d7a7;
+$color-copper-light: #cffaf1;
+$color-copper-medium-light: #9ef0de;
+$color-copper-dark: #00a17d;
+$color-engel: #ffe977;
+$color-engel-light: #fff9db;
+$color-engel-medium-light: #fff3b8;
+$color-engel-dark: #dbc030;
+$color-fog: #9fc9eb;
+$color-fog-light: #e8f3fc;
+$color-fog-medium-light: #d0e6f7;
+$color-fog-dark: #72a5cf;
+$color-gold: #c2a251;
+$color-gold-light: #f7f2e4;
+$color-gold-medium-light: #e8d7a7;
+$color-gold-dark: #9e823c;
+$color-metro: #fd4f00;
+$color-metro-light: #ffeee6;
+$color-metro-medium-light: #ffcab3;
+$color-metro-dark: #bd2f00;
+$color-silver: #dedfe1;
+$color-silver-light: #f7f7f8;
+$color-silver-medium-light: #efeff0;
+$color-silver-dark: #b0b8bf;
+$color-summer: #ffc61e;
+$color-summer-light: #fff4d4;
+$color-summer-medium-light: #ffe49c;
+$color-summer-dark: #cc9200;
+$color-suomenlinna: #f5a3c7;
+$color-suomenlinna-light: #fff0f7;
+$color-suomenlinna-medium-light: #ffdbeb;
+$color-suomenlinna-dark: #e673a5;
+$color-tram: #008741;
+$color-tram-light: #dff7eb;
+$color-tram-medium-light: #a3e3c2;
+$color-tram-dark: #006631;
+$color-black: #000;
+$color-white: #fff;
+$color-black-5: #f1f1f1;
+$color-black-10: #e5e5e5;
+$color-black-20: #ccc;
+$color-black-30: #b2b2b2;
+$color-black-40: #999898;
+$color-black-50: grey;
+$color-black-60: #666;
+$color-black-70: #4c4c4c;
+$color-black-80: #333;
+$color-black-90: #1a1a1a;
+$color-error: #b01038;
+$color-error-light: #f6e2e6;
+$color-error-dark: #8d0d2d;
+$color-success: #007a64;
+$color-success-light: #e2f5f3;
+$color-success-dark: #006250;
+$color-alert: #ffda07;
+$color-alert-light: #fff4b4;
+$color-alert-dark: #d18200;
+$color-info: #0062b9;
+$color-info-light: #e5eff8;
+$color-info-dark: #004f94;
+
+$color-primary: $color-bus;
+$color-button-emphasis: $color-coat-of-arms;
+$color-input-emphasis: $color-black;
+$color-primary-emphasis: $color-black;
+$color-border: $color-black;
+$color-error-text: $color-error;
+$color-error-border: $color-error;
+$color-warning: $color-alert;
+$color-warning2: $color-alert-light;
+$color-notification: $color-alert-dark;
+$color-info: $color-coat-of-arms;
+$accessible-grey: $color-silver-dark;
+
+

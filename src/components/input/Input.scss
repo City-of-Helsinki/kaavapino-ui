@@ -1,15 +1,6 @@
 @import '../common/colors';
+@import url('hds-core');
 
-/* This file includes input styles that override those from semantic UI where needed */
-.field,
-.ui.form .field {
-  margin-top: 32px;
-  margin-bottom: 0;
-
-  &.small-margin {
-    margin-top: 12px;
-  }
-}
 
 .input-container {
   .input-header {
@@ -19,6 +10,7 @@
     justify-content: space-between;
     position: relative;
     z-index: 1;
+    margin-top: 20px;
   }
 
   .input-header-icons {
@@ -96,19 +88,19 @@
   }
 
   .ui.radio.checkbox input:checked ~ label:after {
-    color: $dark-blue-color;
-    background-color: $dark-blue-color;
+    color: $color-bus-dark;
+    background-color: $color-bus-dark;
     width: 24px;
     height: 24px;
   }
   .ui.radio.checkbox input:focus:checked ~ label:after {
-    color: $dark-blue-color;
-    background-color: $dark-blue-color;
+    color: $color-bus-dark;
+    background-color: $color-bus-dark;
     width: 24px;
     height: 24px;
   }
   .ui.checkbox input:checked ~ label:before {
-    border-color: $dark-blue-color;
+    border-color: $color-bus-dark;
   }
   .ui.radio.checkbox label:before {
     width: 24px;

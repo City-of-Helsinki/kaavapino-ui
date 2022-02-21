@@ -1,8 +1,11 @@
 .reports-page {
-  flex: 1 1;
   margin: 10px auto;
   max-width: 1148px;
   width: calc(100% - 32px);
+
+  .select-report-container {
+    margin-bottom: 20px;
+  }
 
   .report-builder-container {
     .report-filter-container {

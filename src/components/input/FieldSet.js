@@ -68,7 +68,7 @@ const FieldSet = ({
                     <IconCross
                       className="fieldset-remove"
                       color="red"
-                      size="l"
+                      size="m"
                       onClick={() => {
                         dispatch(change(formName, set, ...nulledFields))
                         setHiddenIndex(i)

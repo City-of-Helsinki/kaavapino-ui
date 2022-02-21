@@ -34,17 +34,7 @@ const ListHeader = ({
         })}
         <span className="timeline-header-item  project-timeline-toggle">
           {t('project.timeline')}
-          <Radio onChange={toggleGraph} toggle checked={graphToggled} />
-        </span>
-      </div>
-      <div className="project-list-mb-actions">
-        <span className="project-timeline-toggle-mb">
-          <Radio
-            onChange={toggleGraph}
-            toggle
-            checked={graphToggled}
-            label= {t('project.show-timelines')}
-          />
+          <Radio onChange={toggleGraph} aria-label={t('project.show-timelines')} toggle checked={graphToggled} />
         </span>
       </div>
     </div>

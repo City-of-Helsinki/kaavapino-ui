@@ -9,9 +9,9 @@ body {
   font-family: 'Helsinki Grotesk Regular';
 }
 h1 {
-  color: $black1;
+  color: $color-black;
   font-family: 'Helsinki Grotesk Bold';
-  font-size: 36px;
+  font-size: 30px;
   font-weight: bold;
   letter-spacing: 0;
   line-height: 36px;
@@ -19,7 +19,7 @@ h1 {
 }
 
 h2 {
-  color: $black1;
+  color: $color-black;
   font-family: "Helsinki Grotesk Bold";
   font-size: 24px;
   font-weight: bold;
@@ -28,7 +28,7 @@ h2 {
 }
 
 h3 {
-  color: $black1;
+  color: $color-black;
   font-family: "Helsinki Grotesk Bold";
   font-size: 18px;
   font-weight: bold;
@@ -91,8 +91,8 @@ h4 {
   }
 }
 
-.ui.segment {
-  background-color: $light-gray3;
+.project-input-container .ui.segment {
+  background-color: $light-gray3 !important;
   border: 0;
   border-radius: 0;
   padding: 16px 0;
@@ -138,9 +138,9 @@ h4 {
     a {
       font-family: 'Helsinki Grotesk Regular';
       font-size: 14px;
-      color: #000000;
+      color: $color-black;
       letter-spacing: 0;
-      text-decoration: underline black;
+      text-decoration: underline $color-black;
       line-height: 24px;
     }
   }
@@ -148,9 +148,9 @@ h4 {
     a {
       font-family: 'Helsinki Grotesk Regular';
       font-size: 14px;
-      color: #000000;
+      color: $color-black;
       letter-spacing: 0;
-      text-decoration: underline black;
+      text-decoration: underline $color-black;
       line-height: 24px;
       text-align: right;
     }
@@ -194,7 +194,7 @@ h4 {
       float: right;
       margin-right: 0;
       margin-top: 16px;
-      color: black;
+      color: $color-black;
     }
     .content {
       margin-left: 0;
@@ -218,7 +218,7 @@ h4 {
     background-color: $color-warning;
     border-radius: 2px;
     border: 1px solid $color-warning2;
-    color: $black1;
+    color: $color-black;
     font-size: 16px;
     margin-top: 16px;
     padding: 16px 32px;
@@ -271,7 +271,7 @@ h4 {
     padding-bottom: 20px;
   }
   .field-value {
-    border: 1px solid #a3a3a3;
+    border: 1px solid $color-black-20;
     padding: 2px;
   }
   width: 500px;
@@ -280,58 +280,8 @@ h4 {
 .header {
   margin-bottom: 10px;
 }
-.navbar-container {
-  .ui.navbar-menu {
-    background-color: #cfe4f5;
 
-    .container {
-      width: auto;
-    }
-  }
-  .navbar-image {
-    filter: invert(1);
-  }
-  .navbar-logo {
-    font-family: 'Helsinki Grotesk Bold';
-    font-size: 20px;
-    color: #1a1a1a;
-  }
-  .navbar-menu-item {
-    font-family: 'Helsinki Grotesk Medium';
-    font-size: 16px;
-    span {
-      color: #000000;
-    }
-    svg {
-      padding-right: 5px;
-      position: relative;
-      color: #000000;
-      width: 30px;
-      height: 17px;
-      top: 0.15em;
-    }
-  }
-  .navbar-menu-item-active {
-    border-bottom: 1px solid #000000;
-  }
-  .navbar-responsive-button {
-    border: none;
-    box-shadow: none !important;
-    svg {
-      width: 32px;
-      height: 32px;
-    }
-  }
-  .navbar-responsive-close-icon {
-    border: none;
-    box-shadow: none !important;
-    svg {
-      width: 32px;
-      height: 32px;
-    }
-  }
-}
-
+  
 .nav-header-container {
   display: flex;
   align-items: center;
