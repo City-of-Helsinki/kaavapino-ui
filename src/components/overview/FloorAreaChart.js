@@ -392,9 +392,9 @@ function FloorAreaChart({
                   isAnimationActive={false}
                   legendType="plainline"
                   name={t('floor-area.living-area')}
-                  type="monotone"
+                  type="monotone"s
                   dataKey={LIVING}
-                  stroke="grey"
+                  stroke="#0000BF"
                   strokeWidth="2px"
                   dot={false}
                   yAxisId="left"
@@ -405,7 +405,7 @@ function FloorAreaChart({
                   legendType="none"
                   type="monotone"
                   dataKey={LIVING + PREDICTION}
-                  stroke="grey"
+                  stroke="#0000BF"
                   strokeDasharray="3 3"
                   strokeWidth="2px"
                   dot={false}
@@ -450,7 +450,7 @@ function FloorAreaChart({
                   legendType="none"
                   type="monotone"
                   dataKey={TOTAL + PREDICTION}
-                  stroke="green"
+                  stroke="black"
                   strokeDasharray="3 3"
                   strokeWidth="2px"
                   dot={false}

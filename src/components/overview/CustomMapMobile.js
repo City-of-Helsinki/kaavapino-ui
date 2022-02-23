@@ -75,6 +75,7 @@ function CustomMapMobile({ mapData, isPrivileged }) {
       scrollWheelZoom={true}
       zoom={9}
       minZoom={8}
+      maxZoom={16}
       clusterPopupVisibility={11}
       unitZoom={12}
       mobileZoom={8}

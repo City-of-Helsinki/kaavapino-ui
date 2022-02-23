@@ -97,6 +97,7 @@ class CustomADUserCombobox extends Component {
           }}
           value={this.state.currentValue}
           onBlur={this.props.onBlur}
+          aria-label={this.props.name}
         />
       </div>
     )
