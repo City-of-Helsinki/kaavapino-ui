@@ -68,7 +68,7 @@ const SelectInput = ({
         options={options}
         value={currentSingleValue}
         onChange={data => {
-          let returnValue = data.value
+          let returnValue = data ? data.value : null
           if (returnValue === '') {
             returnValue = null
           }
@@ -91,7 +91,7 @@ const SelectInput = ({
       options={options}
       defaultValue={currentValue}
       onChange={data => {
-        let returnValue = data.map(currentValue => currentValue.value)
+        let returnValue = data && data.map(currentValue => currentValue.value)
         input.onChange(returnValue)
       }}
     />
