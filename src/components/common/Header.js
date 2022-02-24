@@ -66,7 +66,7 @@ const Header = props => {
       label="navigation"
         logoLanguage="fi"
         menuToggleAriaLabel={t('header.choices-label')}
-        title={currentEnv === 'production' ? t('title'): t('title') + '(' + currentEnv + ')'}
+        title={currentEnv === 'production' ? t('title'): t('title') + ' (' + currentEnv + ')'}
         titleAriaLabel={ t('title')}
         titleUrl="./"
         className="header"
