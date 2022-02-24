@@ -21,8 +21,8 @@ import "hds-core";
 const Header = props => {
   const [showConfirm, setShowConfirm] = useState(false)
 
-  const currentEnv = process.env.NODE_ENV
-
+  const currentEnv = process.env.REACT_APP_ENVIRONMENT
+ 
   const navigateToProjects = () => {
     props.history.push('/projects')
   }
