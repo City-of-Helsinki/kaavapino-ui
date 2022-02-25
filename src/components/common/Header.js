@@ -21,8 +21,8 @@ import "hds-core";
 const Header = props => {
   const [showConfirm, setShowConfirm] = useState(false)
 
-  const currentEnv = process.env.NODE_ENV
-
+  const currentEnv = process.env.REACT_APP_ENVIRONMENT
+ 
   const navigateToProjects = () => {
     props.history.push('/projects')
   }
@@ -66,7 +66,7 @@ const Header = props => {
       label="navigation"
         logoLanguage="fi"
         menuToggleAriaLabel={t('header.choices-label')}
-        title={currentEnv === 'production' ? t('title'): t('title') + '(' + currentEnv + ')'}
+        title={currentEnv === 'production' ? t('title'): t('title') + ' (' + currentEnv + ')'}
         titleAriaLabel={ t('title')}
         titleUrl="./"
         className="header"
