@@ -16,9 +16,8 @@ const DeadlineInfoText = props => {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    if (inputValue) {
       setCurrent(inputValue)
-    }
+    
   }, [inputValue])
 
   if (props.autofillRule && props.autofillRule.length > 0) {
@@ -28,12 +27,10 @@ const DeadlineInfoText = props => {
       props.input.name,
       EDIT_PROJECT_TIMETABLE_FORM
     )
- 
-    if (readonlyValue || isNumber(readonlyValue) || isBoolean(readonlyValue)) {
-      if (current === undefined) {
-        dispatch(autofill(EDIT_PROJECT_TIMETABLE_FORM, props.input.name, readonlyValue))
-      }
-    }
+
+    if ( current === undefined )
+      dispatch(autofill(EDIT_PROJECT_TIMETABLE_FORM, props.input.name, readonlyValue !== undefined ? readonlyValue : null))
+      
   }
   let value
 
@@ -43,7 +40,7 @@ const DeadlineInfoText = props => {
     // Expect date in value
 
     value = current && dayjs(current).format('DD.MM.YYYY')
-  
+
     if (value === 'Invalid Date') {
       value = current
     }
