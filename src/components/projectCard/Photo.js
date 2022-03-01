@@ -10,7 +10,7 @@ function Photo({ field }) {
     <div className="photo">
       <div>
         <div className="project-image-container">
-          <img className="project-image" src={field.link} alt={field.description} />
+          {field.link && <img className="project-image" src={field.link} alt={field.description} />}
         </div>
       </div>
     </div>

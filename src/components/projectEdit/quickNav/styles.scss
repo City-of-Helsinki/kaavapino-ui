@@ -83,11 +83,11 @@
     }
   }
   .check-pressed {
-    outline: 1px solid $dark-blue-color !important; 
+    outline: 1px solid $color-bus-dark !important; 
   }
 
 .secondary .ui.active.inline.loader:before {
-  border-color: $dark-blue-color;
+  border-color: $color-bus-dark;
 }
 
   @media screen and (max-width: 545px) {

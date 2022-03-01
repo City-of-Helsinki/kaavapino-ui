@@ -10,13 +10,19 @@ import {
 import { ReactComponent as HistogramMobileIcon } from '../../assets/histogram-mobile.svg'
 import { ReactComponent as ChecklistMobile } from '../../assets/checklist-mobile.svg'
 import { ReactComponent as PagesMobile } from '../../assets/pages-mobile.svg'
+import { ReactComponent as HistogramMobileIconDev } from '../../assets/histogram-mobile-dev.svg'
+import { ReactComponent as ChecklistMobileDev } from '../../assets/checklist-mobile-dev.svg'
+import { ReactComponent as PagesMobileDev } from '../../assets/pages-mobile-dev.svg'
 import { withRouter } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import ConfirmationModal from './ConfirmationModal'
+import "hds-core";
 
 const Header = props => {
   const [showConfirm, setShowConfirm] = useState(false)
 
+  const currentEnv = process.env.REACT_APP_ENVIRONMENT
+ 
   const navigateToProjects = () => {
     props.history.push('/projects')
   }
@@ -50,20 +56,22 @@ const Header = props => {
       props.resetProjectDeadlines()
     }
   }
-
+  
+  const backgroundColor = currentEnv === 'production' ?  'var(--color-fog-light)' : 'var(--color-brick-light)'
   return (
     <>
       {renderConfirmationDialog()}
 
       <Navigation
+      label="navigation"
         logoLanguage="fi"
         menuToggleAriaLabel={t('header.choices-label')}
-        title={t('title')}
-        titleAriaLabel={t('title')}
+        title={currentEnv === 'production' ? t('title'): t('title') + ' (' + currentEnv + ')'}
+        titleAriaLabel={ t('title')}
         titleUrl="./"
         className="header"
         theme={{
-          '--header-background-color': 'var(--color-fog-light)',
+          '--header-background-color': backgroundColor,
           '--header-color': 'var(--color-black-90)',
           '--header-divider-color': 'var(--color-black-20)',
           '--header-focus-outline-color': 'var(--color-black)',
@@ -79,18 +87,18 @@ const Header = props => {
             as="a"
             label={t('header.overview')}
             onClick={navigateToHome}
-            icon={<HistogramMobileIcon />}
+            icon={currentEnv === 'production' ? <HistogramMobileIcon /> : <HistogramMobileIconDev/>}
           />
           <Navigation.Item
             as="a"
             label={t('header.projects')}
             onClick={navigateToProjects}
-            icon={<ChecklistMobile />}
+            icon={currentEnv === 'production' ? <ChecklistMobile />: <ChecklistMobileDev/>}
           />
           <Navigation.Item
             as="a"
             label={t('header.reports')}
-            icon={<PagesMobile />}
+            icon={currentEnv === 'production' ? <PagesMobile /> : <PagesMobileDev/>}
             onClick={navigateToReports}
           />
         </Navigation.Row>

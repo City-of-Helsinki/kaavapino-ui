@@ -7,9 +7,9 @@
   }
   .modal-field {
     max-width: 80%;
-    input[type=checkbox] {
+    input[type='checkbox'] {
       opacity: initial !important;
-    } 
+    }
   }
   .input-header {
     width: 80%;
@@ -17,7 +17,7 @@
   .input-container {
     margin-top: 10px !important;
   }
-  
+
   .selection {
     width: 80%;
   }
@@ -38,7 +38,7 @@
     margin-top: 5px;
     width: 100%;
   }
-  .ui.form .field>.selection.dropdown {
+  .ui.form .field > .selection.dropdown {
     padding: 6px 16px 6px 4px;
     min-height: 40px;
     font-size: 14px;
@@ -51,46 +51,29 @@
     color: $color-error-text;
   }
   .submit-error {
+    color: $color-error-text;
     padding-top: 5px;
   }
- 
-
   .error {
-    color: $color-error-text !important;
-    border: 2px solid $color-error-text;
-  }
-  .error-border {
-    border: 2px solid $color-error-text;
-  }
-  .error-border>input:focus {
-      background: #fff6f6;
-  }
-  .error input {
-    border: 0;
-    outline: 0;
-  }
-  .error-area {
-    margin-top: 5px;
-    color: $color-error-text !important;
-    border: 2px solid $color-error-text;
-    padding: 5px;
+    color: $color-error-text;
   }
 
   .collapse-content {
     padding: 0 12px;
   }
-  .field, .ui.form .field {
+  .field,
+  .ui.form .field {
     margin-top: 0;
   }
-  .ui.dropdown>.text {
+  .ui.dropdown > .text {
     display: inline-block;
     transition: none;
     padding-left: 16px;
   }
   .collapse-content {
-    overflow-y: auto
+    overflow-y: auto;
   }
   .warning-box {
     font-size: 14px !important;
   }
-} 
+}

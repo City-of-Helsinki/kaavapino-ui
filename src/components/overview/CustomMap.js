@@ -131,6 +131,7 @@ function CustomMap({
   const { t } = useTranslation()
 
   const getPolygonArea = () => {
+     
     return (
       currentCoordinates &&
       currentCoordinates.map((current, index) => {
@@ -146,6 +147,7 @@ function CustomMap({
           </div>
         )
       })
+        
     )
   }
 
@@ -156,6 +158,7 @@ function CustomMap({
       scrollWheelZoom={true}
       zoom={9}
       minZoom={8}
+      maxZoom={16}
       clusterPopupVisibility={11}
       unitZoom={12}
       mobileZoom={8}

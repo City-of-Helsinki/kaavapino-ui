@@ -1,10 +1,10 @@
 @import '../common/colors.scss';
 
 .project-list-page {
-  flex: 1;
   margin: 0 auto;
   max-width: 1148px;
   width: calc(100% - 32px);
+  margin-bottom: 20px;
 
   .header-buttons {
     text-align: right;
@@ -34,7 +34,7 @@
         }
       }
       a.action-item {
-        color: white !important;
+        color: $color-white !important;
         border: 2px solid $color-primary !important;
         background: $color-primary !important;
         margin-right: 0;
@@ -53,7 +53,7 @@
     z-index: 0;
 
     .project-list {
-      background-color: #ffffff;
+      background-color: $color-white;
       padding: 10px 0px;
       border-top: none;
 
@@ -67,7 +67,7 @@
         margin-top: 12px;
 
         > * {
-          overflow: auto;
+          overflow: hidden;
         }
 
         @media screen and (max-width: 800px) {
@@ -94,7 +94,7 @@
         }
       }
       .project-list-item-container {
-        color: $black;
+        color: $color-black;
         .project-list-item-graph {
           .chart {
             height: 132px;
@@ -119,7 +119,7 @@
       }
       .project-list-item {
         height: 64px;
-        border: 2px solid #dedfe1;
+        border: 2px solid $color-black-10;
         font-size: 16px;
         position: relative;
 
@@ -137,8 +137,11 @@
           margin-right: 5px;
         }
 
-        .project-name:hover {
-          text-decoration: underline;
+        .project-name {
+          color: $color-bus;
+          &:hover {
+            text-decoration: underline;
+          }
         }
         @media screen and (max-width: 800px) {
           height: 200px;
@@ -165,13 +168,13 @@
         @media screen and (max-width: 599px) {
           display: block;
           font-size: 16px;
-          color: $black;
+          color: $color-black;
         }
       }
 
       .project-list-header {
         font-family: 'Helsinki Grotesk Medium';
-        background-color: $light-gray4;
+        background-color: $color-black-20;
         align-items: center;
         min-height: 56px;
         position: relative;
@@ -184,7 +187,7 @@
             left: 1.977rem;
           }
           .ui.toggle.checkbox input:checked ~ label:before {
-            background-color: $black !important;
+            background-color: $color-black !important;
           }
 
           .toggle {
@@ -222,15 +225,16 @@
           white-space: nowrap;
           grid-column: span 2;
           text-decoration-thickness: 2px;
-          text-decoration-color: $gray2;
+          text-decoration-color: $color-black-30;
           color: black;
-          //border-bottom: 2px solid $gray2;
+          overflow: hidden;
+          //border-bottom: 2px solid $color-black-30;
 
           .angle-icon {
             position: absolute;
             margin-left: 6px;
             font-size: 12px;
-            color: $gray2;
+            color: $color-black-30;
 
             @media screen and (max-width: 800px) {
               position: initial;
@@ -241,7 +245,7 @@
             top: 16px;
 
             &.dir-up {
-              color: $black;
+              color: $color-black;
             }
           }
 
@@ -249,7 +253,7 @@
             bottom: 18px;
 
             &.dir-down {
-              color: $black;
+              color: $color-black;
             }
           }
           &:nth-child(5) {
@@ -266,7 +270,7 @@
           justify-content: space-between;
           background: none;
           color: $color-primary;
-       
+
           .header-item {
             flex-grow: 1;
             margin-bottom: 8px;
@@ -281,7 +285,7 @@
 
           .timeline-header-item {
             border: none;
-            color: $black;
+            color: $color-black;
             flex-grow: 1;
             margin-right: 12px;
             margin-bottom: 8px;
@@ -304,6 +308,7 @@
       .project-list-item-name,
       .project-list-item-phase {
         white-space: nowrap;
+       
       }
       .field-ellipsis {
         white-space: pre-wrap;
@@ -335,7 +340,7 @@
           margin-left: 2px;
 
           .ui.toggle.checkbox input:checked ~ label:before {
-            background-color: $black !important;
+            background-color: $color-black !important;
           }
 
           .toggle {

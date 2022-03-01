@@ -9,7 +9,8 @@
     "connected-react-router": "^6.9.1",
     "dayjs": "^1.10.4",
     "file-saver": "^2.0.5",
-    "hds-react": "1.7.1",
+    "hds-core": "^1.10.0",
+    "hds-react": "1.11.0",
     "html-react-parser": "^0.14.3",
     "i18next": "^19.9.2",
     "i18next-browser-languagedetector": "^6.1.0",
@@ -50,7 +51,7 @@
     "redux-saga": "1.1.1",
     "reselect": "^3.0.1",
     "semantic-ui-css": "^2.4.1",
-    "semantic-ui-react": "^2.0.3"
+    "semantic-ui-react": "2.1.1"
   },
   "scripts": {
     "build-css": "node-sass-chokidar --include-path ./src/index.scss --include-path ./node_modules src/index.scss -o src/",

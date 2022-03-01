@@ -42,7 +42,7 @@ function DropdownFilter({
   return (
     <Select
       name={name}
-      clearable={false}
+      clearable={true}
       id={name}
       multiselect={multiSelect}
       options={options}

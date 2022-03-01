@@ -39,7 +39,7 @@ function Geometry(props) {
         center={getCenterCoordinates()}
         doubleClickZoom={true}
         scrollWheelZoom={true}
-        maxZoom={18}
+        maxZoom={16}
         zoomControl={!disabled}
         dragging={!disabled}
         crs={crs}

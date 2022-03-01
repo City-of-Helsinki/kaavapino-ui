@@ -1,33 +1,53 @@
-import React from 'react'
-import { getFormValues } from 'redux-form'
+import React, { useState, useEffect } from 'react'
+import { getFormValues, autofill } from 'redux-form'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import dayjs from 'dayjs'
+import { isNumber, isBoolean } from 'lodash'
 
 const DeadlineInfoText = props => {
   const formValues = useSelector(getFormValues(EDIT_PROJECT_TIMETABLE_FORM))
   let inputValue = props.input && props.input.value
+  let readonlyValue
+
+  const [current, setCurrent] = useState()
+
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+      setCurrent(inputValue)
+    
+  }, [inputValue])
 
   if (props.autofillRule && props.autofillRule.length > 0) {
-    inputValue = getFieldAutofillValue(
+    readonlyValue = getFieldAutofillValue(
       props.autofillRule,
       formValues,
-      null,
+      props.input.name,
       EDIT_PROJECT_TIMETABLE_FORM
     )
+
+    if ( current === undefined )
+      dispatch(autofill(EDIT_PROJECT_TIMETABLE_FORM, props.input.name, readonlyValue !== undefined ? readonlyValue : null))
+      
   }
+  let value
 
-  // Expect date in value
+  if (isNumber(current) || isBoolean(current)) {
+    value = current
+  } else {
+    // Expect date in value
 
-  let value = inputValue && dayjs(inputValue).format('DD.MM.YYYY')
+    value = current && dayjs(current).format('DD.MM.YYYY')
 
-  if (value === 'Invalid Date') {
-    value = inputValue
+    if (value === 'Invalid Date') {
+      value = current
+    }
   }
 
   return (
-    <div className="deadline-info-text">
+    <div name={props.input.name} className="deadline-info-text">
       {props.label} {value}
     </div>
   )
