@@ -30,9 +30,30 @@ export const parseReport = (headers, csvRows, blockColumn, timeRange) => {
       })
     }
   })
+  const sortDates = (a, b) => {
+    const dayArray = a.date ? a.date.split('.') : []
+    const dayArraySecond = b.date ? b.date.split('.') : []
+
+    if (dayArray.length > 2 && dayArraySecond.length > 2) {
+      const first = new Date()
+      first.setDate(dayArray[0])
+      // First month is 0 in date
+      first.setMonth(dayArray[1] - 1)
+      first.setFullYear(dayArray[2])
+
+      const second = new Date()
+      second.setDate(dayArraySecond[0])
+      // First month is 0 in date
+      second.setMonth(dayArraySecond[1] - 1)
+      second.setFullYear(dayArraySecond[2])
+
+      return first < second ? -1 : first > second ? 1 : 0
+    }
+    return 0
+  }
 
   const sortedKylkDates = Array.from(kylkDates).sort((a, b) => {
-    return a.current < b.current ? -1 : a.current > b.current ? 1 : 0
+    return sortDates(a, b)
   })
 
   const getRows = kylk => {

@@ -151,7 +151,7 @@ function ReportBuilder(props) {
 
     const returnValue = []
 
-    const content = data.slice(1, data.length - 1)
+    const content = data.slice(1, data.length)
 
     content.forEach(row => {
       const rowValues = {}
