@@ -56,7 +56,7 @@ class EditForm extends Component {
       attributeData,
       syncronousErrors,
       submitErrors,
-      showCreate,
+      isExpert,
       t
     } = this.props
 
@@ -64,14 +64,14 @@ class EditForm extends Component {
       <Form className="form-container" autoComplete="off">
         <h2 id="accordion-title">{title}</h2>
         <div className="edit-form-buttons">
-          {showCreate && (
+          {isExpert && (
             <FormButton
               value={t('deadlines.button-title')}
               variant="secondary"
               onClick={showEditProjectTimetableForm}
             />
           )}
-          {showCreate && (
+          {isExpert && (
             <FormButton
               value={t('floor-areas.button-title')}
               variant="secondary"

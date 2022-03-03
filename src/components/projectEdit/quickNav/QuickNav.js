@@ -7,7 +7,7 @@ import { Message } from 'semantic-ui-react'
 import './styles.scss'
 import RoleHighlightPicker from './roleHighlightPicker/index'
 
-export default function NewQuickView({
+export default function QuickNav({
   currentProject,
   saveProjectBase,
   handleCheck,
@@ -22,7 +22,9 @@ export default function NewQuickView({
   setHighlightRole,
   saveProjectBasePayload,
   setChecking,
-  hasMissingFields
+  hasMissingFields,
+  isResponsible,
+  isAdmin
 }) {
   const [endPhaseError, setEndPhaseError] = useState(false)
   const [verifying, setVerifying] = useState(false)
@@ -86,20 +88,22 @@ export default function NewQuickView({
           {t('common.save')}
         </Button>
 
-        <Button
-          onClick={changeCurrentPhase}
-          fullWidth={true}
-          loadingText={`${
-            notLastPhase ? t('quick-nav.end-phase') : t('quick-nav.archive')
-          }`}
-          help={`${
-            notLastPhase ? t('quick-nav.end-phase-help') : t('quick-nav.archive-help')
-          }`}
-          disabled={!isCurrentPhase || currentProject.archived}
-          variant="secondary"
-        >
-          {`${notLastPhase ? t('quick-nav.end-phase') : t('quick-nav.archive')}`}
-        </Button>
+        {isResponsible && (
+          <Button
+            onClick={changeCurrentPhase}
+            fullWidth={true}
+            loadingText={`${
+              notLastPhase ? t('quick-nav.end-phase') : t('quick-nav.archive')
+            }`}
+            help={`${
+              notLastPhase ? t('quick-nav.end-phase-help') : t('quick-nav.archive-help')
+            }`}
+            disabled={!isCurrentPhase || currentProject.archived}
+            variant="secondary"
+          >
+            {`${notLastPhase ? t('quick-nav.end-phase') : t('quick-nav.archive')}`}
+          </Button>
+        )}
       </>
     )
   }
@@ -176,63 +180,72 @@ export default function NewQuickView({
   }
 
   return (
-      <div className="quicknav-container">
-        <div className="quicknav-navigation-section">
-          <h2 className="quicknav-title"> {t('quick-nav.title')}</h2>
-          <div className="quicknav-content">
-            {phases &&
-              phases.map(phase => (
-                <Accordion
-                  initiallyOpen={activePhase === phase.id}
-                  className="phase-accordion"
-                  heading={
-                    <Button
-                      variant="supplementary"
-                      className="accordion-button"
-                      onClick={() => handleAccordionTitleClick(phase.id)}
-                    >{`${phase.list_prefix}. ${phase.title}`}</Button>
-                  }
-                  key={phase.id}
-                >
-                  {phase.sections &&
-                    phase.sections.map((section, index) => {
-                      return (
-                        <Button
-                          key={index}
-                          variant="supplementary"
-                          className={`quicknav-item ${
-                            section.title === selected && phase.id === activePhase
-                              ? 'active'
-                              : ''
-                          }`}
-                          onClick={() =>
-                            handleSectionTitleClick(section.title, index, phase.id)
-                          }
-                        >
-                          <div> {section.title}</div>
-                        </Button>
-                      )
-                    })}
-                </Accordion>
-              ))}
-          </div>
+    <div className="quicknav-container">
+      <div className="quicknav-navigation-section">
+        <h2 className="quicknav-title"> {t('quick-nav.title')}</h2>
+        <div className="quicknav-content">
+          {phases &&
+            phases.map(phase => (
+              <Accordion
+                initiallyOpen={activePhase === phase.id}
+                className="phase-accordion"
+                heading={
+                  <Button
+                    variant="supplementary"
+                    className="accordion-button"
+                    onClick={() => handleAccordionTitleClick(phase.id)}
+                  >{`${phase.list_prefix}. ${phase.title}`}</Button>
+                }
+                key={phase.id}
+              >
+                {phase.sections &&
+                  phase.sections.map((section, index) => {
+                    return (
+                      <Button
+                        key={index}
+                        variant="supplementary"
+                        className={`quicknav-item ${
+                          section.title === selected && phase.id === activePhase
+                            ? 'active'
+                            : ''
+                        }`}
+                        onClick={() =>
+                          handleSectionTitleClick(section.title, index, phase.id)
+                        }
+                      >
+                        <div> {section.title}</div>
+                      </Button>
+                    )
+                  })}
+              </Accordion>
+            ))}
         </div>
-        <RoleHighlightPicker onRoleUpdate={setHighlightRole} />
+      </div>
+      <RoleHighlightPicker onRoleUpdate={setHighlightRole} />
 
-        <div className="quicknav-buttons">{renderButtons()}</div>
-        <div className="quicknav-onhold">{renderCheckBox()}</div>
+      <div className="quicknav-buttons">{renderButtons()}</div>
+      {isResponsible && <div className="quicknav-onhold">{renderCheckBox()}</div>}
+      {isResponsible && notLastPhase && (
         <ConfirmModal
           callback={phaseCallback}
           open={verifying}
           notLastPhase={notLastPhase}
         />
-        {endPhaseError && (
-          <Message
-            header={t('quick-nav.change-phase-error')}
-            content={t('quick-nav.change-phase-error-message')}
-            color="yellow"
-          />
-        )}
-      </div>
+      )}
+      {isAdmin && !notLastPhase && (
+        <ConfirmModal
+          callback={phaseCallback}
+          open={verifying}
+          notLastPhase={notLastPhase}
+        />
+      )}
+      {endPhaseError && (
+        <Message
+          header={t('quick-nav.change-phase-error')}
+          content={t('quick-nav.change-phase-error-message')}
+          color="yellow"
+        />
+      )}
+    </div>
   )
 }

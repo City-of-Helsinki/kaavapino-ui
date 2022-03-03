@@ -197,7 +197,7 @@ const findValueFromObject = (object, key) => {
       value = object[currentKey]
       return true
     }
-    if (object[currentKey] && typeof object[currentKey] === 'object') { 
+    if (object[currentKey] && typeof object[currentKey] === 'object') {
       value = findValueFromObject(object[currentKey], key)
       return value !== undefined
     }
@@ -225,64 +225,53 @@ const findValuesFromObject = (object, key, returnArray) => {
   })
   return value
 }
-const isUserPrivileged = (currentUserId, users) => {
-  const getUserRole = () => {
-    let privilege
-    if (users) {
-      users.forEach(user => {
-        if (user.id === currentUserId) {
-          privilege = user.privilege
-          return
-        }
-      })
-    }
-    return privilege
-  }
 
-  const userRole = getUserRole()
+  function hasMissingFields(attributeData, currentProject, schema) {
+    const currentSchema = schema.phases.find(s => s.id === currentProject.phase)
+    const { sections } = currentSchema
 
-  return userRole === 'admin' || userRole === 'create' || userRole === 'edit'
-}
+    let missingFields = false
+    // Go through every single field
+    sections.forEach(({ fields }) => {
+      fields.forEach(field => {
+        // Only validate visible fields
+        if (showField(field, attributeData)) {
+          // Matrices can contain any kinds of fields, so
+          // we must go through them separately
+          if (field.type === 'matrix') {
+            const { matrix } = field
+            matrix.fields.forEach(({ required, name }) => {
+              if (isFieldMissing(name, required, attributeData)) {
+                missingFields = true
+              }
+            })
 
-function hasMissingFields(attributeData, currentProject, schema) {
-  const currentSchema = schema.phases.find(s => s.id === currentProject.phase)
-  const { sections } = currentSchema
-
-  let missingFields = false
-  // Go through every single field
-  sections.forEach(({ fields }) => {
-    fields.forEach(field => {
-      // Only validate visible fields
-      if (showField(field, attributeData)) {
-        // Matrices can contain any kinds of fields, so
-        // we must go through them separately
-        if (field.type === 'matrix') {
-          const { matrix } = field
-          matrix.fields.forEach(({ required, name }) => {
-            if (isFieldMissing(name, required, attributeData)) {
+            // Fieldsets can contain any fields (except matrices)
+            // multiple times, so we need to go through them all
+          } else if (field.type === 'fieldset') {
+            if (hasFieldsetErrors(field.name, field.fieldset_attributes, attributeData)) {
               missingFields = true
             }
-          })
-
-          // Fieldsets can contain any fields (except matrices)
-          // multiple times, so we need to go through them all
-        } else if (field.type === 'fieldset') {
-          if (hasFieldsetErrors(field.name, field.fieldset_attributes, attributeData)) {
+          } else if (
+            isFieldMissing(
+              field.name,
+              field.required,
+              attributeData,
+              field.autofill_readonly
+            )
+          ) {
             missingFields = true
           }
-        } else if (
-          isFieldMissing(field.name, field.required, attributeData, field.autofill_readonly)
-        ) {
-          missingFields = true
         }
-      }
+      })
     })
-  })
-  return missingFields
-}
+    return missingFields
+  }
 
 function hasFieldsetErrors(fieldName, fieldsetAttributes, attributeData) {
-  if (isFieldsetMissing(fieldName, attributeData, isFieldSetRequired(fieldsetAttributes))) {
+  if (
+    isFieldsetMissing(fieldName, attributeData, isFieldSetRequired(fieldsetAttributes))
+  ) {
     return true
   } else {
     let missingFields = false
@@ -387,7 +376,7 @@ const reduceNonEditableFields = (attributeData, sections) => {
 }
 
 const checkFieldsetAttributes = (fieldsetAttributes, sections) => {
- if (isArray(fieldsetAttributes)) {
+  if (isArray(fieldsetAttributes)) {
     fieldsetAttributes &&
       fieldsetAttributes.forEach(attribute => {
         const subKeys = Object.keys(attribute)
@@ -425,14 +414,13 @@ export default {
   generateArrayOfYears,
   getFieldsetAttributes,
   findValueFromObject,
-  isUserPrivileged,
   findValuesFromObject,
   generateArrayOfYearsForChart,
-  hasMissingFields,
   isFieldsetMissing,
   isFieldSetRequired,
   hasFieldsetErrors,
   reduceNonEditableFields,
   getField,
-  checkFieldsetAttributes
+  checkFieldsetAttributes,
+  hasMissingFields
 }

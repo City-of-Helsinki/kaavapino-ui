@@ -20,7 +20,7 @@ const Status = ({ color }) => {
 
 const ListItem = ({
   showGraph,
-  isUserPrivileged,
+  isExpert,
   modifyProject,
   deadlines,
   onhold,
@@ -65,7 +65,7 @@ const ListItem = ({
           content={user}
         />
         <span className="project-list-button">
-          {isUserPrivileged && (
+          {isExpert && (
             <Button
               aria-label="Muokkaa"
               className="project-list-button"
