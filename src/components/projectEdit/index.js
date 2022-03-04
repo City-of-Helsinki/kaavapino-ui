@@ -41,6 +41,7 @@ import { withRouter } from 'react-router-dom'
 import projectUtils from '../../utils/projectUtils'
 import InfoComponent from '../common/InfoComponent'
 import { withTranslation } from 'react-i18next'
+import authUtils from '../../utils/authUtils'
 
 class ProjectEditPage extends Component {
   state = {
@@ -62,14 +63,12 @@ class ProjectEditPage extends Component {
     const { project } = this.props
     this.props.fetchSchemas(project.id, project.subtype)
   }
-  
-  componentDidUpdate() {
 
+  componentDidUpdate() {
     this.scroll()
     this.headings = this.createHeadings()
   }
   componentDidMount() {
-
     window.addEventListener('resize', this.handleResize)
 
     if (window.innerWidth < 720) {
@@ -128,7 +127,7 @@ class ProjectEditPage extends Component {
     this.props.saveProject()
   }
   handleAutoSave = () => {
-    if ( this.state.showEditFloorAreaForm || this.state.showEditProjectTimetableForm ) {
+    if (this.state.showEditFloorAreaForm || this.state.showEditProjectTimetableForm) {
       return
     }
 
@@ -138,10 +137,9 @@ class ProjectEditPage extends Component {
     this.props.saveProject()
   }
   handleTimetableClose = () => {
-
     const { project, saveProjectTimetable } = this.props
     saveProjectTimetable()
-    initializeProject( project.id )
+    initializeProject(project.id)
   }
 
   setSelectedRole = role => {
@@ -197,9 +195,12 @@ class ProjectEditPage extends Component {
   }
 
   hasMissingFields = () => {
-    const { project: { attribute_data }, currentProject, schema } = this.props
+    const {
+      project: { attribute_data },
+      currentProject,
+      schema
+    } = this.props
     return projectUtils.hasMissingFields(attribute_data, currentProject, schema)
-    
   }
   //choose the screen size
   handleResize = () => {
@@ -217,12 +218,9 @@ class ProjectEditPage extends Component {
   }
 
   showTimelineModal = show => {
-    const showCreate = projectUtils.isUserPrivileged(
-      this.props.currentUserId,
-      this.props.users
-    )
+    const isExpert = projectUtils.isExpert(this.props.currentUserId, this.props.users)
 
-    if (showCreate) {
+    if (isExpert) {
       this.setState({ showEditProjectTimetableForm: show })
     }
   }
@@ -255,7 +253,9 @@ class ProjectEditPage extends Component {
       submitErrors,
       t,
       saveProjectBasePayload,
-      currentPhases
+      currentPhases,
+      users,
+      currentUserId
     } = this.props
     const { highlightGroup } = this.state
     if (!schema) {
@@ -277,10 +277,9 @@ class ProjectEditPage extends Component {
       return <LoadingSpinner className="loader-icon" />
     }
 
-    const showCreate = projectUtils.isUserPrivileged(
-      this.props.currentUserId,
-      this.props.users
-    )
+    const isResponsible = authUtils.isResponsible(currentUserId, users)
+    const isAdmin = authUtils.isAdmin(currentUserId, users)
+    const isExpert = authUtils.isExpert(currentUserId, users)
 
     return (
       <div>
@@ -328,6 +327,8 @@ class ProjectEditPage extends Component {
               notLastPhase={notLastPhase}
               phases={this.headings}
               saveProjectBasePayload={saveProjectBasePayload}
+              isResponsible={isResponsible}
+              isAdmin={isAdmin}
             />
             <NavigationPrompt
               when={
@@ -364,7 +365,7 @@ class ProjectEditPage extends Component {
             showEditProjectTimetableForm={() =>
               this.setState({ showEditProjectTimetableForm: true })
             }
-            showCreate={showCreate}
+            isExpert={isExpert}
             setRef={this.setRef}
             setFormInitialized={this.setFormInitialized}
           />

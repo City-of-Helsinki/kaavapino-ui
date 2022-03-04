@@ -16,13 +16,30 @@ import { ReactComponent as PagesMobileDev } from '../../assets/pages-mobile-dev.
 import { withRouter } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import ConfirmationModal from './ConfirmationModal'
-import "hds-core";
+import 'hds-core'
+import { useSelector } from 'react-redux'
+import { usersSelector } from '../../selectors/userSelector'
+import authUtils from '../../utils/authUtils'
+import { authUserSelector } from '../../selectors/authSelector'
 
 const Header = props => {
   const [showConfirm, setShowConfirm] = useState(false)
 
+  const { t } = useTranslation()
+
+  const users = useSelector(state => usersSelector(state))
+  const user = useSelector(state => authUserSelector(state))
+
+  const currentUser = users.find(
+    item => user && user.profile && item.id === user.profile.sub
+  )
+
+  const userIsResponsible = currentUser
+    ? authUtils.isResponsible(currentUser.id, users)
+    : false
+
   const currentEnv = process.env.REACT_APP_ENVIRONMENT
- 
+
   const navigateToProjects = () => {
     props.history.push('/projects')
   }
@@ -38,12 +55,9 @@ const Header = props => {
   const logout = () => {
     props.history.push('/Logout')
   }
-  const { user, userRole } = props
 
-  const { t } = useTranslation()
-
-  const label = userRole
-    ? `${user && user.profile.name} (${userRole})`
+  const label = currentUser && currentUser.privilege_name
+    ? `${user && user.profile.name} (${currentUser.privilege_name})`
     : user && user.profile.name
 
   const renderConfirmationDialog = () => {
@@ -56,18 +70,21 @@ const Header = props => {
       props.resetProjectDeadlines()
     }
   }
-  
-  const backgroundColor = currentEnv === 'production' ?  'var(--color-fog-light)' : 'var(--color-brick-light)'
+
+  const backgroundColor =
+    currentEnv === 'production' ? 'var(--color-fog-light)' : 'var(--color-brick-light)'
   return (
     <>
       {renderConfirmationDialog()}
 
       <Navigation
-      label="navigation"
+        label="navigation"
         logoLanguage="fi"
         menuToggleAriaLabel={t('header.choices-label')}
-        title={currentEnv === 'production' ? t('title'): t('title') + ' (' + currentEnv + ')'}
-        titleAriaLabel={ t('title')}
+        title={
+          currentEnv === 'production' ? t('title') : t('title') + ' (' + currentEnv + ')'
+        }
+        titleAriaLabel={t('title')}
         titleUrl="./"
         className="header"
         theme={{
@@ -87,25 +104,33 @@ const Header = props => {
             as="a"
             label={t('header.overview')}
             onClick={navigateToHome}
-            icon={currentEnv === 'production' ? <HistogramMobileIcon /> : <HistogramMobileIconDev/>}
+            icon={
+              currentEnv === 'production' ? (
+                <HistogramMobileIcon />
+              ) : (
+                <HistogramMobileIconDev />
+              )
+            }
           />
           <Navigation.Item
             as="a"
             label={t('header.projects')}
             onClick={navigateToProjects}
-            icon={currentEnv === 'production' ? <ChecklistMobile />: <ChecklistMobileDev/>}
+            icon={
+              currentEnv === 'production' ? <ChecklistMobile /> : <ChecklistMobileDev />
+            }
           />
           <Navigation.Item
             as="a"
             label={t('header.reports')}
-            icon={currentEnv === 'production' ? <PagesMobile /> : <PagesMobileDev/>}
+            icon={currentEnv === 'production' ? <PagesMobile /> : <PagesMobileDev />}
             onClick={navigateToReports}
           />
         </Navigation.Row>
         <Navigation.Actions>
           <Navigation.User authenticated={true}>
             <Navigation.Item label={label} href="/" target="_blank" variant="primary" />
-            {props.createProject && props.showCreate && (
+            {props.createProject && userIsResponsible && (
               <Navigation.Item
                 label={t('projects.createNewProject')}
                 className="pointer"
@@ -114,7 +139,7 @@ const Header = props => {
                 variant="primary"
               />
             )}
-            {props.modifyProject && props.showCreate && (
+            {props.modifyProject && userIsResponsible && (
               <Navigation.Item
                 label={t('project.modify-project')}
                 className="pointer"
@@ -132,14 +157,15 @@ const Header = props => {
                 icon={<IconDownload />}
               />
             )}
-            {props.resetDeadlines && props.showCreate && <Navigation.Item
-              label={t('deadlines.reset-project-deadlines')}
-              className="pointer"
-              onClick={() => setShowConfirm(true)}
-              variant="primary"
-              icon={<IconRefresh />}
-            />
-            }
+            {props.resetDeadlines && userIsResponsible && (
+              <Navigation.Item
+                label={t('deadlines.reset-project-deadlines')}
+                className="pointer"
+                onClick={() => setShowConfirm(true)}
+                variant="primary"
+                icon={<IconRefresh />}
+              />
+            )}
 
             <Navigation.Item
               href="#"

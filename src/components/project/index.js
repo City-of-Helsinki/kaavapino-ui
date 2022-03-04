@@ -44,10 +44,10 @@ import { IconPen, LoadingSpinner, Button, IconDownload } from 'hds-react'
 import { withRouter } from 'react-router-dom'
 import dayjs from 'dayjs'
 import Header from '../common/Header'
-import { downloadDocument } from '../../actions/documentActions';
+import { downloadDocument } from '../../actions/documentActions'
+import authUtils from '../../utils/authUtils'
 
 class ProjectPage extends Component {
-  test = React.createRef()
   constructor(props) {
     super(props)
     if (props.currentProject) {
@@ -146,7 +146,7 @@ class ProjectPage extends Component {
     })
   }
 
-  getProjectEditContent = () => {
+  getProjectEditContent = isExpert => {
     const { currentProject, users, projectSubtypes, selectedPhase } = this.props
 
     const currentPhases = this.getCurrentPhases()
@@ -155,7 +155,7 @@ class ProjectPage extends Component {
         <NavHeader
           routeItems={this.getRouteItems()}
           title={currentProject.name}
-          actions={this.getEditNavActions()}
+          actions={this.getEditNavActions(isExpert)}
           infoOptions={this.getAllChanges()}
         />
         <NewProjectFormModal
@@ -190,7 +190,7 @@ class ProjectPage extends Component {
     )
   }
   getProjectDocumentsContent = () => {
-    const { currentProject, users, projectSubtypes } = this.props
+    const { currentProject, users, projectSubtypes, currentUserId } = this.props
 
     return (
       <div key="documents">
@@ -222,12 +222,12 @@ class ProjectPage extends Component {
           initialValues={{}}
           handleClose={() => this.togglePrintProjectDataModal(false)}
         />
-        <ProjectDocumentsPage />
+        <ProjectDocumentsPage users={users} currentUserId={currentUserId} />
       </div>
     )
   }
 
-  getProjectCardContent = () => {
+  getProjectCardContent = isUserExpert => {
     const { currentProject, externalDocuments, users, projectSubtypes } = this.props
 
     return (
@@ -235,7 +235,7 @@ class ProjectPage extends Component {
         <NavHeader
           routeItems={this.getRouteItems()}
           title={currentProject.name}
-          actions={this.getProjectCardNavActions()}
+          actions={this.getProjectCardNavActions(isUserExpert)}
           infoOptions={this.getAllChanges()}
         />
         <NewProjectFormModal
@@ -265,24 +265,22 @@ class ProjectPage extends Component {
     )
   }
 
-  getProjectPageContent = () => {
+  getProjectPageContent = isExpert => {
     const { edit, documents } = this.props
     if (edit) {
-      return this.getProjectEditContent()
+      return this.getProjectEditContent(isExpert)
     }
     if (documents) {
-      return this.getProjectDocumentsContent()
+      return this.getProjectDocumentsContent(isExpert)
     }
-    return this.getProjectCardContent()
+    return this.getProjectCardContent(isExpert)
   }
-  getProjectCardNavActions = () => {
-    const { users, t, currentProject, downloadDocument } = this.props
-
-    const showCreate = projectUtils.isUserPrivileged(this.props.currentUserId, users)
+  getProjectCardNavActions = userIsExpert => {
+    const { t, currentProject, downloadDocument } = this.props
 
     return (
       <span className="header-buttons">
-        {showCreate && (
+        {userIsExpert && (
           <Button
             variant="secondary"
             className="header-button"
@@ -292,7 +290,7 @@ class ProjectPage extends Component {
             {t('project.modify')}
           </Button>
         )}
-        {showCreate && (
+        {userIsExpert && (
           <Button
             variant="secondary"
             iconLeft={<IconPen />}
@@ -304,7 +302,12 @@ class ProjectPage extends Component {
         <Button
           variant="secondary"
           iconLeft={<IconDownload />}
-          onClick={() => downloadDocument( {...currentProject.project_card_document, projectCard: true})}
+          onClick={() =>
+            downloadDocument({
+              ...currentProject.project_card_document,
+              projectCard: true
+            })
+          }
         >
           {t('project.print-project-card')}
         </Button>
@@ -317,14 +320,12 @@ class ProjectPage extends Component {
   showProjectData = () => {
     this.togglePrintProjectDataModal(true)
   }
-  getEditNavActions = () => {
-    const { t, users } = this.props
-
-    const showCreate = projectUtils.isUserPrivileged(this.props.currentUserId, users)
+  getEditNavActions = isUserExpert => {
+    const { t } = this.props
 
     return (
       <span className="header-buttons">
-       {showCreate && (
+        {isUserExpert && (
           <Button
             variant="secondary"
             iconLeft={<IconPen />}
@@ -333,19 +334,15 @@ class ProjectPage extends Component {
             {t('project.create-documents')}
           </Button>
         )}
-        
       </span>
     )
   }
 
-  getDocumentsNavActions = () => {
-    const { users, t } = this.props
-
-    const showCreate = projectUtils.isUserPrivileged(this.props.currentUserId, users)
-
+  getDocumentsNavActions = isUserExpert => {
+    const { t } = this.props
     return (
       <span className="header-buttons">
-        {showCreate && (
+        {isUserExpert && (
           <Button
             variant="secondary"
             className="header-button"
@@ -475,37 +472,41 @@ class ProjectPage extends Component {
 
   onResetProjectDeadlines = () => {
     const { currentProject, resetProjectDeadlines } = this.props
-    resetProjectDeadlines( currentProject.id )
-    initializeProject( currentProject.id )
+    resetProjectDeadlines(currentProject.id)
+    initializeProject(currentProject.id)
   }
 
   render() {
-    const { phases, currentProjectLoaded, user, users, userRole, resettingDeadlines, currentUserId } = this.props
+    const {
+      phases,
+      currentProjectLoaded,
+      users,
+      resettingDeadlines,
+      currentUserId
+    } = this.props
 
     const loading = !currentProjectLoaded || !phases
 
-    const showCreate = projectUtils.isUserPrivileged(currentUserId, users)
+    const userIsExpert = authUtils.isExpert(currentUserId, users)
 
     return (
       <>
         <Header
-          user={user}
-          userRole={userRole}
-          showCreate={showCreate}
           modifyProject={true}
           showPrintProjectData={true}
           resetDeadlines={true}
           openModifyProject={this.showModifyProject}
           openPrintProjectData={this.showProjectData}
           resetProjectDeadlines={this.onResetProjectDeadlines}
-
         />
-        {(loading || resettingDeadlines) &&  this.renderLoading()}
-        {(!loading && !resettingDeadlines) &&
-        <div className="project-container">
-          <div className="project-page-content">{this.getProjectPageContent()}</div>
-        </div>
-        }
+        {(loading || resettingDeadlines) && this.renderLoading()}
+        {!loading && !resettingDeadlines && (
+          <div className="project-container">
+            <div className="project-page-content">
+              {this.getProjectPageContent(userIsExpert)}
+            </div>
+          </div>
+        )}
       </>
     )
   }
@@ -540,7 +541,7 @@ const mapStateToProps = state => {
     projectCardFields: projectCardFieldsSelector(state),
     externalDocuments: externalDocumentsSelector(state),
     creator: creatorSelector(state),
-    resettingDeadlines: resettingDeadlinesSelector(state),
+    resettingDeadlines: resettingDeadlinesSelector(state)
   }
 }
 

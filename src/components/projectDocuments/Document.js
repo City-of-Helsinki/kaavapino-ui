@@ -19,7 +19,8 @@ function Document({
   downloadDocumentPreview,
   phaseEnded,
   image_template,
-  phaseIndex
+  phaseIndex,
+  isUserResponsible
 }) {
   const { t } = useTranslation()
 
@@ -69,14 +70,16 @@ function Document({
               >
                 {t('project.load-preview')}
               </Button>
-              <Button
-                variant="supplementary"
-                onClick={openConfirmationDialog}
-                href={file}
-                className="document"
-              >
-                {t('project.load')}
-              </Button>
+              {isUserResponsible && (
+                <Button
+                  variant="supplementary"
+                  onClick={openConfirmationDialog}
+                  href={file}
+                  className="document"
+                >
+                  {t('project.load')}
+                </Button>
+              )}
             </>
           )}
         </Grid.Column>

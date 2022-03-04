@@ -90,7 +90,7 @@ class List extends Component {
       users,
       searchOpen,
       toggleSearch,
-      isUserPrivileged,
+      isExpert,
       modifyProject,
       t
     } = this.props
@@ -138,7 +138,7 @@ class List extends Component {
             item={listItem}
             showGraph={showGraph}
             phases={phases}
-            isUserPrivileged={isUserPrivileged}
+            isExpert={isExpert}
             deadlines={deadlines}
             onhold={onhold}
           />

@@ -16,13 +16,11 @@ import Header from '../common/Header'
 
 
 function MobileView({
-  isPrivileged,
+  isExpert,
   filterList,
   getProjectsOverviewMapData,
   getProjectsOverviewFloorArea,
   clearProjectsOverview,
-  user,
-  userRole
 }) {
   const { t } = useTranslation()
 
@@ -62,9 +60,11 @@ function MobileView({
 
   const filterAmount = getFilterAmount()
 
+  
+
   return (
     <div>
-     <Header user={user} userRole={userRole}/>
+     <Header />
       <FilterModal
         open={showFilterModal}
         filterList={filterList}
@@ -96,13 +96,13 @@ function MobileView({
           {t('overview.clear')}
         </Button>
         <Segment key="map">
-          <CustomMapMobile isPrivileged={isPrivileged} />
+          <CustomMapMobile isPrivileged={isExpert} />
         </Segment>
         <Segment key="floor-area">
-          <FloorAreaMobile isPrivileged={isPrivileged} />
+          <FloorAreaMobile isPrivileged={isExpert} />
         </Segment>
         <Segment key="floor-area-meetings">
-          <FloorAreaMeetings isPrivileged={isPrivileged} />
+          <FloorAreaMeetings isPrivileged={isExpert} />
         </Segment>
       </div>
     </div>

@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { isEqual } from 'lodash'
-import { change,  getFormValues, Field } from 'redux-form'
+import { change, getFormValues, Field, autofill } from 'redux-form'
 import { useDispatch, useSelector } from 'react-redux'
 import { handleAutofillCalculations } from './autofillCalculationsUtils'
+import { getFieldAutofillValue } from '../../../utils/projectAutofillUtils'
+import { EDIT_PROJECT_FORM, EDIT_FLOOR_AREA_FORM } from '../../../constants'
 
 /* This component should calculate and update it's value in redux form whenever
  * the related fields change.
@@ -17,35 +19,28 @@ import { handleAutofillCalculations } from './autofillCalculationsUtils'
  */
 
 const AutofillInputCalculations = ({
-  field: { name, autofill_readonly, related_fields, calculations, unit },
+  field: { name, autofill_readonly, related_fields, calculations, unit, autofill_rule },
   fieldProps,
   formName
 }) => {
   const dispatch = useDispatch()
   const [previousRelatedFieldValues, setPreviousRelatedFieldValues] = useState([])
   const formValues = useSelector(getFormValues(formName))
-  // TODO: Fix this when FACTA integration is done
-  //const editFormValues = useSelector(getFormValues(EDIT_PROJECT_FORM))
+ 
+  const editFormValues = useSelector(getFormValues(EDIT_PROJECT_FORM))
   const value = (formValues && formValues[name]) || null
-
-  // TODO: Fix this when FACTA integration is done
-  //const [currentAutoFill, setCurrentAutoFill] = useState()
 
   let calculatedTotal = 0
 
-  /*
-  // TODO: Fix this when FACTA integration is done
-  const autoFillValue = getFieldAutofillValue(autofill_rule, editFormValues)
+  const autoFillValue = getFieldAutofillValue(autofill_rule, editFormValues, name)
+  
   const autoFillNumber = autoFillValue ? parseInt(autoFillValue) : null
 
   useEffect(() => {
     if (autoFillNumber && !calculations) {
-    dispatch(autofill(autoFillNumber))
-    setCurrentAutoFill(autoFillNumber)
-
+      dispatch(autofill(EDIT_FLOOR_AREA_FORM, name, autoFillNumber))
     }
-  }, [currentAutoFill])
-  */
+  }, [])
 
   useEffect(() => {
     if (!formValues) {
@@ -86,16 +81,14 @@ const AutofillInputCalculations = ({
       ) : (
         <Field {...fieldProps} />
       )}
-      </div>
+    </div>
   )
   const renderOriginalComponent = () => (
     <div className="autofill-input">
       {autofill_readonly ? (
         <div className="autofill-readonly-input">
           <div className="autofill-readonly-input-value">
-
-          {`${value ? value : 0}${value && unit ? ` ${unit}` : ''}`}
-
+            {`${value ? value : 0}${value && unit ? ` ${unit}` : ''}`}
           </div>
         </div>
       ) : (
