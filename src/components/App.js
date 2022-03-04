@@ -30,10 +30,6 @@ import FakeLoginPage from './auth/FakeLogin'
 import Overview from './overview'
 import Terms from './common/Terms'
 import { withTranslation } from 'react-i18next'
-import { usersSelector } from '../selectors/userSelector'
-
-import { authUserSelector } from '../selectors/authSelector'
-
 class App extends Component {
   componentDidUpdate(prevProps) {
     if (!prevProps.apiInitialized && this.props.apiInitialized) {
@@ -48,7 +44,7 @@ class App extends Component {
   }
 
   render() {
-    const { t, user, users } = this.props
+    const { t} = this.props
     if (
       this.props.loadingApiToken ||
       this.props.userLoading ||
@@ -56,10 +52,6 @@ class App extends Component {
     ) {
       return <p>{t('loading')}</p>
     }
-
-    const currentUser = users.find(
-      item => user && user.profile && item.id === user.profile.sub
-    )
    
     return (
       <ConnectedRouter history={history}>
@@ -82,10 +74,7 @@ class App extends Component {
                 exact
                 path="/"
                 render={() => (
-                  <Overview
-                    user={user}
-                    userRole={currentUser && currentUser.privilege_name}
-                  />
+                  <Overview/>
                 )}
               />
               <Route exact path="/terms" render={() => <Terms />} />
@@ -93,20 +82,14 @@ class App extends Component {
                 exact
                 path="/projects"
                 render={() => (
-                  <ProjectListPage
-                    user={user}
-                    userRole={currentUser && currentUser.privilege_name}
-                  />
+                  <ProjectListPage/>
                 )}
               />
               <Route
                 exact
                 path="/reports"
                 render={() => (
-                  <ReportsPage
-                    user={user}
-                    userRole={currentUser && currentUser.privilege_name}
-                  />
+                  <ReportsPage/>
                 )}
               />
               <Route
@@ -115,8 +98,7 @@ class App extends Component {
                 render={({ match }) => (
                   <ProjectPage
                     id={match.params.id}
-                    user={user}
-                    userRole={currentUser && currentUser.privilege_name}
+                    
                   />
                 )}
               />
@@ -125,8 +107,6 @@ class App extends Component {
                 path="/:id/edit"
                 render={({ match }) => (
                   <ProjectPage
-                    user={user}
-                    userRole={currentUser && currentUser.privilege_name}
                     edit
                     id={match.params.id}
                   />
@@ -137,8 +117,6 @@ class App extends Component {
                 path="/:id/documents"
                 render={({ match }) => (
                   <ProjectPage
-                    user={user}
-                    userRole={currentUser && currentUser.privilege_name}
                     documents
                     id={match.params.id}
                   />
@@ -147,8 +125,6 @@ class App extends Component {
               <Route
                 exact
                 path="/error/:code"
-                user={user}
-                userRole={currentUser && currentUser.privilege_name}
                 component={ErrorPage}
               />
               <Redirect to="/error/404" />
@@ -179,8 +155,7 @@ const mapStateToProps = state => {
     apiToken: apiTokenSelector(state),
     loadingApiToken: apiLoadingTokenSelector(state),
     apiInitialized: apiInitializedSelector(state),
-    user: authUserSelector(state),
-    users: usersSelector(state)
+   
   }
 }
 

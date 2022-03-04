@@ -27,8 +27,8 @@ import { withTranslation } from 'react-i18next'
 import { userIdSelector } from '../../selectors/authSelector'
 import { withRouter } from 'react-router-dom'
 import { TabList, Tabs, Tab, TabPanel } from 'hds-react'
-import projectUtils from './../../utils/projectUtils'
 import Header from '../common/Header'
+import authUtils from '../../utils/authUtils'
 
 class ProjectListPage extends Component {
   constructor(props) {
@@ -109,7 +109,7 @@ class ProjectListPage extends Component {
       currentUserId
     } = this.props
 
-    const showCreate = projectUtils.isUserPrivileged(currentUserId, users)
+    const isExpert = authUtils.isExpert(currentUserId, users)
 
     const { searchOpen } = this.state
     return (
@@ -118,7 +118,7 @@ class ProjectListPage extends Component {
         users={users}
         items={ownProjects}
         total={totalOwnProjects}
-        isUserPrivileged={showCreate}
+        isExpert={isExpert}
         toggleSearch={this.toggleSearch}
         setFilter={this.setFilter}
         searchOpen={searchOpen}
@@ -138,7 +138,7 @@ class ProjectListPage extends Component {
       currentUserId
     } = this.props
 
-    const showCreate = projectUtils.isUserPrivileged(currentUserId, users)
+    const isExpert = authUtils.isExpert(currentUserId, users)
 
     const { searchOpen } = this.state
 
@@ -151,7 +151,7 @@ class ProjectListPage extends Component {
         items={allProjects}
         total={totalProjects}
         setFilter={this.setFilter}
-        isUserPrivileged={showCreate}
+        isExpert={isExpert}
         newProjectTab={'all'}
         modifyProject={this.modifyProject}
       />
@@ -166,7 +166,7 @@ class ProjectListPage extends Component {
       onholdProjects,
       currentUserId
     } = this.props
-    const showCreate = projectUtils.isUserPrivileged(currentUserId, users)
+    const isExpert = authUtils.isExpert(currentUserId, users)
 
     return (
       <List
@@ -175,7 +175,7 @@ class ProjectListPage extends Component {
         items={onholdProjects}
         total={totalProjects}
         setFilter={this.setFilter}
-        isUserPrivileged={showCreate}
+        isExpert={isExpert}
         newProjectTab={'onhold'}
         modifyProject={this.modifyProject}
       />
@@ -191,7 +191,7 @@ class ProjectListPage extends Component {
       currentUserId
     } = this.props
 
-    const showCreate = projectUtils.isUserPrivileged(currentUserId, users)
+    const isExpert = authUtils.isExpert(currentUserId, users)
 
     return (
       <List
@@ -200,7 +200,7 @@ class ProjectListPage extends Component {
         items={archivedProjects}
         total={totalProjects}
         setFilter={this.setFilter}
-        isUserPrivileged={showCreate}
+        isExpert={isExpert}
         newProjectTab={'onhold'}
         modifyProject={this.modifyProject}
       />
@@ -218,9 +218,9 @@ class ProjectListPage extends Component {
       currentUserId
     } = this.props
 
-    const showCreate = projectUtils.isUserPrivileged(currentUserId, users)
+    const isExpert = authUtils.isExpert(currentUserId, users)
 
-    return showCreate ? (
+    return isExpert ? (
       <Tabs>
         <TabList onTabChange={this.handleTabChange}>
           <Tab key={1}>{this.getOwnProjectsTitle()}</Tab>
@@ -295,9 +295,6 @@ class ProjectListPage extends Component {
     const {
       users,
       projectSubtypes,
-      currentUserId,
-      user,
-      userRole,
       createProject
     } = this.props
 
@@ -305,8 +302,7 @@ class ProjectListPage extends Component {
 
     const { t } = this.props
 
-    const showCreate = projectUtils.isUserPrivileged(currentUserId, users)
-
+    
     let headerActions = (
       <span className="header-buttons">
         <SearchBar
@@ -320,11 +316,8 @@ class ProjectListPage extends Component {
     return (
       <>
         <Header
-          user={user}
-          userRole={userRole}
           createProject={true}
           openCreateProject={this.openCreateProject}
-          showCreate={showCreate}
         />
 
         <div className="project-list-page">

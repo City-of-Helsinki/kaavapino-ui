@@ -11,14 +11,17 @@ import { LoadingSpinner } from 'hds-react'
 import DocumentGroup from './DocumentGroup'
 import { IconAlertCircle } from 'hds-react'
 import { useTranslation } from 'react-i18next'
+import authUtils from '../../utils/authUtils'
 
-function ProjectDocumentsPage(props) {
+
+function ProjectDocumentsPage( {currentProjectId, currentUserId, users, fetchDocuments, documents, documentsLoading}) {
   useEffect(() => {
-    const { currentProjectId } = props
-    props.fetchDocuments(currentProjectId)
+      fetchDocuments(currentProjectId)
   }, [])
 
   const {t} = useTranslation()
+
+  const isUserResponsible = authUtils.isResponsible(currentUserId, users)
 
   const groupDocuments = documents => {
     const result = {}
@@ -42,7 +45,6 @@ function ProjectDocumentsPage(props) {
     })
     return result
   }
-  const { documents, documentsLoading } = props
   const groupedDocuments = groupDocuments(documents)
 
   const getTitle = key => {
@@ -74,8 +76,9 @@ function ProjectDocumentsPage(props) {
           title={getTitle(key)}
           phaseEnded={groupedDocuments[key].phaseEnded}
           documents={groupedDocuments[key].documents}
-          projectId={props.currentProjectId}
+          projectId={currentProjectId}
           phase={groupedDocuments[key]}
+          isUserResponsible={isUserResponsible}
         />
       ))}
     </div>

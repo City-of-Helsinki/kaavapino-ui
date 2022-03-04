@@ -16,7 +16,7 @@ import { projectOverviewFiltersSelector } from '../../selectors/projectSelector'
 import { fetchUsers } from '../../actions/userActions'
 import { usersSelector } from '../../selectors/userSelector'
 import { userIdSelector } from '../../selectors/authSelector'
-import projectUtils from '../../utils/projectUtils'
+import authUtils from '../../utils/authUtils'
 import MobileView from './MobileView'
 import Header from '../common/Header'
 
@@ -83,24 +83,24 @@ const Overview = ({
     return filters
   }
 
-  const isPrivileged = projectUtils.isUserPrivileged(currentUserId, users)
-
+  const isResponsible = authUtils.isResponsible( currentUserId, users)
+  const isExpert = authUtils.isExpert( currentUserId, users)
+  
   if (isMobile) {
     return (
       <MobileView
         filterList={filterData}
-        isPrivileged={isPrivileged}
+        isExpert={isExpert}
+        isResponsible={isResponsible}
         user={user}
         userRole={userRole}
       />
     )
   }
 
-  const showCreate = projectUtils.isUserPrivileged(currentUserId, users)
-
   return (
     <>
-      <Header user={user} userRole={userRole} showCreate={showCreate}/>
+      <Header/>
 
       <div className="overview">
         <NavHeader
@@ -111,7 +111,7 @@ const Overview = ({
           <Grid.Column>
             <Segment>
               <CustomMap
-                isPrivileged={isPrivileged}
+                isPrivileged={isExpert}
                 filters={getFilters('filters_on_map')}
                 isMobile={isMobile}
               />
@@ -123,7 +123,7 @@ const Overview = ({
             <Segment>
               <FloorAreaChart
                 filters={getFilters('filters_floor_area')}
-                isPrivileged={isPrivileged}
+                isPrivileged={isExpert}
               />
             </Segment>
           </Grid.Column>

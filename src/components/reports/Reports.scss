@@ -1,3 +1,4 @@
+@import '../common/colors.scss';
 .reports-page {
   margin: 10px auto;
   max-width: 1148px;
@@ -5,12 +6,20 @@
 
   .select-report-container {
     margin-bottom: 20px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    background-color: $light-gray3;
+    padding-top: 10px;
+    padding-bottom: 10px;
   }
 
   .report-builder-container {
-    .report-filter-container {
-      margin-top: 30px;
-    }
+    margin-bottom: 20px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    background-color: $light-gray3;
+    padding-top: 10px;
+    padding-bottom: 10px;
 
     .report-create-button {
       margin-top: 30px;

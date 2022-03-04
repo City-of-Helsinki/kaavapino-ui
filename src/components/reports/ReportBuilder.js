@@ -151,7 +151,7 @@ function ReportBuilder(props) {
 
     const returnValue = []
 
-    const content = data.slice(1, data.length - 1)
+    const content = data.slice(1, data.length)
 
     content.forEach(row => {
       const rowValues = {}
@@ -180,12 +180,11 @@ function ReportBuilder(props) {
 
   const noData = !headers || headers.length === 0 || !content || content.length === 0
 
-  return (
-    <>
-      <div className="select-report-container">
-        <h2>{t('reports.choose-report')}</h2>
-        {renderReportButtons()}
-      </div>
+  const renderReportContainer = () => {
+    if (!selectedReport) {
+      return null
+    }
+    return (
       <Form onSubmit={handleSubmit} className="report-builder-container">
         {selectedReport && (
           <div className="report-filter-container">
@@ -243,6 +242,17 @@ function ReportBuilder(props) {
           </>
         )}
       </Form>
+    )
+  }
+
+  return (
+    <>
+      <div className="select-report-container">
+        <h2>{t('reports.choose-report')}</h2>
+        {renderReportButtons()}
+      </div>
+      {renderReportContainer()}
+
       <ReportPreviewModal
         open={showPreviewModal}
         noData={noData}
