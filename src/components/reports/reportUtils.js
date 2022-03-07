@@ -19,7 +19,7 @@ export const parseReport = (headers, csvRows, blockColumn, timeRange) => {
 
           const dateItems = date.split('.')
 
-          const currentDate = new Date(dateItems[2], dateItems[1], dateItems[0])
+          const currentDate = new Date(dateItems[2], dateItems[1] - 1, dateItems[0])
 
           if (currentDate >= startDate && currentDate <= endDate) {
             return kylkDates.add({ date: date.trim(), current: currentDate })
