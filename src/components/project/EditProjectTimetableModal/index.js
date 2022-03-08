@@ -14,6 +14,7 @@ import { withTranslation } from 'react-i18next'
 import { deadlinesSelector } from '../../../selectors/projectSelector'
 import { Button, IconInfoCircle } from 'hds-react'
 import { isArray } from 'lodash'
+import { showField } from '../../../utils/projectVisibilityUtils'
 
 class EditProjectTimeTableModal extends Component {
   constructor(props) {
@@ -48,6 +49,7 @@ class EditProjectTimeTableModal extends Component {
 
     if (prevProps.submitting && submitSucceeded) {
       this.handleClose()
+      this.props.destroy()
     } else if (prevProps.submitting && submitFailed) {
       this.setLoadingFalse()
     }
@@ -63,6 +65,7 @@ class EditProjectTimeTableModal extends Component {
     if (errors) {
       this.setState({ loading: false })
     }
+   
   }
 
   handleClose = () => {
@@ -70,7 +73,12 @@ class EditProjectTimeTableModal extends Component {
   }
 
   getFormField(fieldProps, key) {
-    const { formSubmitErrors, formValues, deadlines } = this.props
+    const { formSubmitErrors, formValues, deadlines, change } = this.props
+
+    if (!showField(fieldProps.field, formValues)) {
+      change(fieldProps.field.name, null)
+      return null
+    }
     const error =
       formSubmitErrors &&
       fieldProps &&

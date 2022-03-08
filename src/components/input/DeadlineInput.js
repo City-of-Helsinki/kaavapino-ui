@@ -34,8 +34,12 @@ const DeadLineInput = ({
       )
     }
   }
+
+  if ( inputValue === null ) {
+    inputValue = undefined
+  }
   const [currentValue, setCurrentValue] = useState(
-    currentDeadline ? currentDeadline.date : inputValue
+    currentDeadline ? currentDeadline.date : inputValue 
   )
 
   
