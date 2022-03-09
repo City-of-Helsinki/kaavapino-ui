@@ -7,11 +7,19 @@ import { EDIT_PROJECT_FORM } from '../../constants'
 import Shoutbox from '../shoutbox'
 import { Button, IconArrowUp } from 'hds-react'
 import { withTranslation } from 'react-i18next'
+import { isEqual } from 'lodash'
 
 class EditForm extends Component {
   componentWillUnmount() {
     clearTimeout(this.timeout)
     clearInterval(this.autoSave)
+  }
+
+  shouldComponentUpdate(prevProps, prevState) {
+    if (isEqual(prevProps, this.props) && isEqual(prevState, this.state)) {
+      return false
+    }
+    return true
   }
 
   componentDidUpdate(prevProps) {
