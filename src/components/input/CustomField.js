@@ -21,55 +21,15 @@ import AutofillInputCalculations from './AutofillInputCalculation/AutofillInputC
 import { isEqual } from 'lodash'
 import projectUtils from '../../utils/projectUtils'
 import AutofillInput from './AutofillInput/AutofillInput'
-import _ from 'lodash'
 import DeadlineInfoText from './DeadlineInfoText'
 import { get } from 'lodash'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import CustomADUserCombobox from './CustomADUserCombobox'
 class CustomField extends Component {
   yearOptions = []
-  shouldComponentUpdate(p) {
-    if (
-      !this.props.attributeData ||
-      !p.attributeData ||
-      !_.isEqual(this.props.attributeData, p.attributeData)
-    ) {
+  shouldComponentUpdate(prevProps) {
+    if (!isEqual(this.props, prevProps)) {
       return true
-    }
-
-    if (this.props.field.disabled !== p.field.disabled) {
-      return true
-    }
-    if (this.props.field.generated !== p.field.generated) {
-      return true
-    }
-    if (this.props.field.autofill_readOnly !== p.field.autofill_readOnly) {
-      return true
-    }
-
-    /*This is for adding fieldsets  */
-    if (
-      !isEqual(
-        this.props.attributeData[this.props.field.name],
-        p.attributeData[p.field.name]
-      )
-    ) {
-      return true
-    }
-
-    /* Render again when a related field changes */
-    if (this.props.field.related_fields && this.props.field.related_fields.length > 0) {
-      const relatedFields = this.props.field.related_fields
-      for (let i = 0; i < relatedFields.length; i += 1) {
-        if (
-          !isEqual(
-            this.props.attributeData[relatedFields[i]],
-            p.attributeData[relatedFields[i]]
-          )
-        ) {
-          return true
-        }
-      }
     }
     return false
   }
@@ -180,7 +140,7 @@ class CustomField extends Component {
   renderSelect = props => {
     const { choices, multiple_choice, placeholder_text, formName } = this.props.field
     const { onBlur } = this.props
-  
+
     return (
       <SelectInput
         {...props}

@@ -73,6 +73,17 @@ const Header = props => {
 
   const backgroundColor =
     currentEnv === 'production' ? 'var(--color-fog-light)' : 'var(--color-brick-light)'
+
+  const getTitle = ()  => {
+    if ( currentEnv === 'production' ) {
+      return t('title')
+    }
+    if ( !currentEnv ) {
+      return t('title')
+    } else {
+      return t('title') + ' (' + currentEnv + ')'
+    }
+  }  
   return (
     <>
       {renderConfirmationDialog()}
@@ -81,9 +92,8 @@ const Header = props => {
         label="navigation"
         logoLanguage="fi"
         menuToggleAriaLabel={t('header.choices-label')}
-        title={
-          currentEnv === 'production' ? t('title') : t('title') + ' (' + currentEnv + ')'
-        }
+        title={getTitle()}
+        
         titleAriaLabel={t('title')}
         titleUrl="./"
         className="header"
