@@ -51,7 +51,7 @@ function* userFoundSaga({ payload }) {
   if (!process.env.REACT_APP_API_TOKEN) {
     const audience = process.env.REACT_APP_OPENID_AUDIENCE
     apiUtils.setToken(payload.access_token)
-    const data = yield apiUtils.get('https://api.hel.fi/sso/api-tokens/')
+    const data = yield apiUtils.get(process.env.REACT_APP_OPENID_ENDPOINT + '/api-tokens/')
     token = data[audience]
   } else {
     token = process.env.REACT_APP_API_TOKEN

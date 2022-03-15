@@ -42,6 +42,7 @@ import projectUtils from '../../utils/projectUtils'
 import InfoComponent from '../common/InfoComponent'
 import { withTranslation } from 'react-i18next'
 import authUtils from '../../utils/authUtils'
+import { isEqual } from 'lodash'
 
 class ProjectEditPage extends Component {
   state = {
@@ -62,6 +63,13 @@ class ProjectEditPage extends Component {
     super(props)
     const { project } = this.props
     this.props.fetchSchemas(project.id, project.subtype)
+  }
+
+  shouldComponentUpdate(prevProps, prevState) {
+    if (isEqual(prevProps, this.props) && isEqual(prevState, this.state)) {
+      return false
+    }
+    return true
   }
 
   componentDidUpdate() {
@@ -218,7 +226,7 @@ class ProjectEditPage extends Component {
   }
 
   showTimelineModal = show => {
-    const isExpert = projectUtils.isExpert(this.props.currentUserId, this.props.users)
+    const isExpert = authUtils.isExpert(this.props.currentUserId, this.props.users)
 
     if (isExpert) {
       this.setState({ showEditProjectTimetableForm: show })

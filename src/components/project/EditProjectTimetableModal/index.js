@@ -15,6 +15,7 @@ import { deadlinesSelector } from '../../../selectors/projectSelector'
 import { Button, IconInfoCircle } from 'hds-react'
 import { isArray } from 'lodash'
 import { showField } from '../../../utils/projectVisibilityUtils'
+import { isEqual } from 'lodash';
 
 class EditProjectTimeTableModal extends Component {
   constructor(props) {
@@ -28,6 +29,13 @@ class EditProjectTimeTableModal extends Component {
   componentDidMount() {
     const { initialize, attributeData } = this.props
     initialize(attributeData)
+  }
+
+  shouldComponentUpdate(prevProps, prevState) {
+    if (isEqual(prevProps, this.props) && isEqual(prevState, this.state)) {
+      return false
+    }
+    return true
   }
 
   setLoadingFalse = () => {
