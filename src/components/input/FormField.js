@@ -1,30 +1,32 @@
 import React from 'react'
 import CustomField from './CustomField'
 import Matrix from './Matrix'
-import { Form, Label, Popup } from 'semantic-ui-react'
+import { Form, Label,Popup } from 'semantic-ui-react'
 import Info from './Info'
 import projectUtils from '../../utils/projectUtils'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { IconClock } from 'hds-react'
-import { withTranslation} from 'react-i18next';
+import { withTranslation } from 'react-i18next'
 
 const OneLineFields = ['toggle']
 
-const FormField = props => {
-
+const FormField = ({
+  field,
+  attributeData,
+  checking,
+  updated,
+  formValues,
+  syncronousErrors,
+  submitErrors,
+  formName,
+  isFloorCalculation,
+  t,
+  className,
+  ...rest
+}) => {
   const renderField = newProps => {
-    const {
-      field,
-      attributeData,
-      formName,
-      formValues,
-      isFloorCalculation,
-      className,
-      syncronousErrors,
-      ...rest
-    } = props
-     let newField = field
+    let newField = field
 
     if (newProps) {
       newField = newProps
@@ -52,32 +54,26 @@ const FormField = props => {
             formName={formName}
             formValues={formValues}
             syncronousErrors={syncronousErrors}
-            setRef={props.setRef }
           />
         )
     }
   }
-  const {
-    field,
-    attributeData,
-    checking,
-    updated,
-    formValues,
-    syncronousErrors,
-    submitErrors,
-    formName,
-    t
-  } = props
+
   const required =
     checking && projectUtils.isFieldMissing(field.name, field.required, attributeData)
+
   const isOneLineField = OneLineFields.indexOf(field.type) > -1
+
   const isReadOnly =
     field && (field.autofill_readonly || field.display === 'readonly_checkbox')
+
   const isCheckBox =
     field && (field.display === 'checkbox' || field.display === 'readonly_checkbox')
+
   const isDeadlineInfo = field && field.display === 'readonly'
 
   const syncError = syncronousErrors && syncronousErrors[field.name]
+
   let submitErrorText = ''
   if (submitErrors && submitErrors[field.name]) {
     const submitErrorObject = submitErrors[field.name]
@@ -85,21 +81,6 @@ const FormField = props => {
   }
 
   const error = submitErrorText ? submitErrorText : syncError
-  
-  /* Two ways to bring errors to FormField component:
-   * 1) the missing attribute data of required fields is checked automatically.
-   * 2) error text can be given directly to the component as props.
-   * Redux form gives error information to the Field component, but that's further down the line, and we need that information
-   * here to modify the input header accordingly. */
-
-  const showError = required ? t('project.required-field') : error
-  if (!showField(field, formValues) || field.display === 'hidden') {
-    return null
-  }
-
-  const title = field.character_limit
-    ? `${field.label}  ${t('project.char-limit', {amount: field.character_limit})}`
-    : field.label
 
   const renderCheckBox = () => {
     const newProps = {
@@ -142,6 +123,10 @@ const FormField = props => {
   }
 
   const renderNormalField = () => {
+    const title = field.character_limit
+      ? `${field.label}  ${t('project.char-limit', { amount: field.character_limit })}`
+      : field.label
+
     return (
       <Form.Field
         className={`input-container ${isOneLineField ? 'small-margin' : ''} ${
@@ -150,7 +135,10 @@ const FormField = props => {
       >
         {!isOneLineField && (
           <div className="input-header">
-            <Label id={field.name} className={`input-title${required ? ' highlight' : ''}`}>
+            <Label
+              id={field.name}
+              className={`input-title${required ? ' highlight' : ''}`}
+            >
               {title}
             </Label>
             <div className="input-header-icons">
@@ -161,7 +149,7 @@ const FormField = props => {
                   on="hover"
                   position="top center"
                   hideOnScroll
-                  content={ (
+                  content={
                     <span className="input-history">
                       <span>{`${projectUtils.formatDate(
                         updated.timestamp
@@ -169,7 +157,6 @@ const FormField = props => {
                         updated.user_name
                       }`}</span>
                     </span>
-                    )
                   }
                 />
               )}
@@ -185,7 +172,6 @@ const FormField = props => {
     )
   }
   const renderComponent = () => {
-
     // Only for project timetable modal
     if (isCheckBox && formName === EDIT_PROJECT_TIMETABLE_FORM) {
       return renderCheckBox()
@@ -202,7 +188,18 @@ const FormField = props => {
     return renderNormalField()
   }
 
-  return renderComponent()
+  /* Two ways to bring errors to FormField component:
+   * 1) the missing attribute data of required fields is checked automatically.
+   * 2) error text can be given directly to the component as props.
+   * Redux form gives error information to the Field component, but that's further down the line, and we need that information
+   * here to modify the input header accordingly. */
+
+  const showError = required ? t('project.required-field') : error
+  if (!showField(field, formValues) || field.display === 'hidden') {  
+     return null
+  } else {
+    return renderComponent()
+  }
 }
 
 export default withTranslation()(FormField)
