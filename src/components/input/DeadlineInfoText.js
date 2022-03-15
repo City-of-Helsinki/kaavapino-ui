@@ -16,22 +16,30 @@ const DeadlineInfoText = props => {
   const dispatch = useDispatch()
 
   useEffect(() => {
-      setCurrent(inputValue)
-    
+    setCurrent(inputValue)
   }, [inputValue])
 
-  if (props.autofillRule && props.autofillRule.length > 0) {
-    readonlyValue = getFieldAutofillValue(
-      props.autofillRule,
-      formValues,
-      props.input.name,
-      EDIT_PROJECT_TIMETABLE_FORM
-    )
+  useEffect(() => {
+    if (props.autofillRule && props.autofillRule.length > 0) {
+      readonlyValue = getFieldAutofillValue(
+        props.autofillRule,
+        formValues,
+        props.input.name,
+        EDIT_PROJECT_TIMETABLE_FORM
+      )
 
-    if ( current === undefined )
-      dispatch(autofill(EDIT_PROJECT_TIMETABLE_FORM, props.input.name, readonlyValue !== undefined ? readonlyValue : null))
-      
-  }
+      if (current === undefined)
+        dispatch(
+          autofill(
+            EDIT_PROJECT_TIMETABLE_FORM,
+            props.input.name,
+            readonlyValue !== undefined ? readonlyValue : undefined
+          )
+        )
+        setCurrent( readonlyValue )
+    }
+  }, [])
+
   let value
 
   if (isNumber(current) || isBoolean(current)) {
