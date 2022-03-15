@@ -29,20 +29,25 @@ const DeadLineInput = ({
       inputValue = getFieldAutofillValue(
         autofillRule,
         formValues,
-        null,
+        input.name,
         EDIT_PROJECT_TIMETABLE_FORM
       )
     }
   }
 
   if ( inputValue === null ) {
-    inputValue = undefined
+    inputValue = ''
   }
+  let currentDeadlineDate = ''
+
+  if ( currentDeadline && currentDeadline.date ) [
+    currentDeadlineDate = currentDeadline.date
+  ]
+
   const [currentValue, setCurrentValue] = useState(
-    currentDeadline ? currentDeadline.date : inputValue 
+    currentDeadline ? currentDeadlineDate : inputValue 
   )
 
-  
   let currentError
   const generated = currentDeadline && currentDeadline.generated
 
