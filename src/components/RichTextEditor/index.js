@@ -15,6 +15,7 @@ import {
 } from '../../actions/commentActions'
 import { currentProjectIdSelector } from '../../selectors/projectSelector'
 import { ReactComponent as CommentIcon } from '../../assets/icons/comment-icon.svg'
+import { useTranslation } from 'react-i18next';
 
 /* This component defines a react-quill rich text editor field to be used in redux form.
  * We are saving these rich text inputs as quill deltas - a form of JSON that
@@ -69,7 +70,7 @@ function RichTextEditor(props) {
   const userId = useSelector(userIdSelector)
   const projectId = useSelector(currentProjectIdSelector)
   const [showComments, setShowComments] = useState(false)
-
+  
   const [toolbarVisible, setToolbarVisible] = useState(false)
   const editorRef = useRef(null)
   const [counter, setCounter] = useState(props.currentSize)
@@ -90,6 +91,8 @@ function RichTextEditor(props) {
     }
   }
   const comments = getFieldComments()
+
+  const {t} = useTranslation()
 
   useEffect(() => {
     if (setRef) {
@@ -117,15 +120,14 @@ function RichTextEditor(props) {
     }
   }
   const addComment = () => {
-    /* If cursor position is needed, you can get it like this */
-    // const editor = editorRef.current.editor
-    // const cursorPosition = editor.getSelection().index
-    var prompt = window.prompt('Lisää kenttäkohtainen viesti:', '')
+    
+    const prompt = window.prompt(t('shoutbox.add-field-comment'), '')
     if (prompt) {
       dispatch(createFieldComment(projectId, inputProps.name, prompt))
       setShowComments(true)
     }
   }
+  
   const newInputProps = {
     ...inputProps,
     defaultValue: value
