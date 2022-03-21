@@ -1,13 +1,14 @@
 import React from 'react'
-import { Map, TileLayer } from 'react-leaflet'
-import Polygon from '../common/Polygon'
+import { MapContainer, TileLayer, Polygon, useMap } from 'react-leaflet'
 import { EPSG3879, formatGeoJSONToPositions, helsinkiCenter } from '../../utils/mapUtils'
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+
+const MULTIPOLYGON = 'MultiPolygon'
 
 function Geometry(props) {
   const crs = EPSG3879()
 
-  const {t} = useTranslation()
+  const { t } = useTranslation()
 
   const disabled = false
 
@@ -17,24 +18,37 @@ function Geometry(props) {
       if (props.value) {
         return props.value.coordinates
       }
-      return {}
+
+      return []
     }
     const coordinates = value[0] && value[0].geometry && value[0].geometry.coordinates
-    return coordinates || {}
+
+    return coordinates || []
   }
 
   const getCenterCoordinates = () => {
     const coordinates = getCoordinates()
 
-    if (!coordinates || !coordinates[0] || !coordinates[0][0]) {
+    if (!coordinates || !props.input.value) {
       return helsinkiCenter
     }
-    return coordinates[0][0]
+
+    if (props.input.value[0].geometry.type === MULTIPOLYGON) {
+      return coordinates[0][0] ? coordinates[0][0][0] : helsinkiCenter
+    } else {
+      return coordinates[0] ? coordinates[0][0] : helsinkiCenter
+    }
+  }
+
+  const ChangeView = ({ center, zoom }) => {
+    const map = useMap()
+    map.setView(center, zoom)
+    return null
   }
 
   return (
     <div className="geometry-input-container">
-      <Map
+      <MapContainer
         className={`geometry-input${disabled ? ' disabled' : ''}`}
         center={getCenterCoordinates()}
         doubleClickZoom={true}
@@ -57,12 +71,10 @@ function Geometry(props) {
           [60.00855312110063, 25.271114398151653]
         ]}
       >
-        <TileLayer
-          attribution={t('map.attribution')}
-          url={t('map.url')}
-        />
-        <Polygon positions={formatGeoJSONToPositions([getCoordinates()])} />
-      </Map>
+        <ChangeView center={getCenterCoordinates()} />
+        <TileLayer attribution={t('map.attribution')} url={t('map.url')} />
+        <Polygon positions={formatGeoJSONToPositions(getCoordinates())} />
+      </MapContainer>
     </div>
   )
 }

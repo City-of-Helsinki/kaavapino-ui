@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Map, TileLayer } from 'react-leaflet'
+import { MapContainer, TileLayer } from 'react-leaflet'
 import { useTranslation } from 'react-i18next'
 import { formatGeoJSONToPositions, helsinkiCenter } from '../../utils/mapUtils'
 import { projectOverviewMapDataSelector } from '../../selectors/projectSelector'
@@ -69,7 +69,7 @@ function CustomMapMobile({ mapData, isPrivileged }) {
     )
   }
   const renderMap = () => (
-    <Map
+    <MapContainer
       className="geometry-input-mobile"
       center={current}
       scrollWheelZoom={true}
@@ -91,7 +91,7 @@ function CustomMapMobile({ mapData, isPrivileged }) {
     >
       {getPolygonArea()}
       <TileLayer attribution={t('map.attribution')} url={t('map.url')} />
-    </Map>
+    </MapContainer>
   )
 
   const renderMobileView = () => (

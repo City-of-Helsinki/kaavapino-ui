@@ -6,7 +6,6 @@ function GeometryInformation(props) {
   const { t } = useTranslation()
 
  const inputProps = {
-   ...props,
    input: {
      value: props.field && props.field.value
    }
