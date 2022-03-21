@@ -49,14 +49,19 @@ export const formatGeoJSONToPositions = geoJSON => {
   if (!geoJSON) {
     return [[]]
   }
-  geoJSON.forEach(polygon => {
-
-    if (polygon === null || !polygon[0] || polygon.length === 0) {
-      result.push([])
-    } else {
-      result.push(polygon[0].slice(0, -1).map(([lat, lng]) => ({ lat, lng })))
-    }
-  })
+  if (geoJSON.length > 1) {
+    geoJSON.forEach(current => {
+      const multi = []
+      current.forEach(polygon => {
+        multi.push(polygon ? polygon : [])
+      })
+      result.push(multi)
+    })
+  } else {
+    geoJSON.forEach(polygon => {
+      result.push(polygon ? polygon : [])
+    })
+  }
   return result
 }
 

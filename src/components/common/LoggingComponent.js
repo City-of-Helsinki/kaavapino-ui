@@ -167,7 +167,7 @@ function LoggingComponent(props) {
         let deleted = false
 
         if (key !== '_deleted') {
-          let value = getFormattedValue(fieldset[key], key, schema, schema[key].type)
+          let value = getFormattedValue(fieldset[key], key, schema, schema[key] ? schema[key].type: null)
 
           const date = dayjs(value).format(t('dateformat'))
 
@@ -175,7 +175,7 @@ function LoggingComponent(props) {
             <div key={key + index} className="log-item">
               <>
                 {deleted && <IconTrash />}
-                {schema[key].type !== 'fieldset' && schema[key].label}
+                {schema[key] && schema[key].type !== 'fieldset' && schema[key].label}
               </>
               <div>{date !== 'Invalid Date' ? date : value}</div>
             </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Map, TileLayer } from 'react-leaflet'
+import { MapContainer, TileLayer } from 'react-leaflet'
 import { useTranslation } from 'react-i18next'
 import FilterList from './Filters/FilterList'
 import { formatGeoJSONToPositions, helsinkiCenter } from '../../utils/mapUtils'
@@ -87,7 +87,6 @@ function CustomMap({
   const [current] = useState(helsinkiCenter)
 
   const onFilterChange = (values, currentParameter) => {
-
     if (!values || values.length === 0) {
       const newFilter = Object.assign({}, filter)
       delete newFilter[currentParameter]
@@ -131,7 +130,6 @@ function CustomMap({
   const { t } = useTranslation()
 
   const getPolygonArea = () => {
-     
     return (
       currentCoordinates &&
       currentCoordinates.map((current, index) => {
@@ -147,12 +145,11 @@ function CustomMap({
           </div>
         )
       })
-        
     )
   }
 
   const renderMap = () => (
-    <Map
+    <MapContainer
       className={isMobile ? 'geometry-input-mobile' : 'geometry-input'}
       center={current}
       scrollWheelZoom={true}
@@ -173,11 +170,8 @@ function CustomMap({
       crs={crs}
     >
       {getPolygonArea()}
-      <TileLayer
-        attribution={t('map.attribution')}
-        url={t('map.url')}
-      />
-    </Map>
+      <TileLayer attribution={t('map.attribution')} url={t('map.url')} />
+    </MapContainer>
   )
 
   const renderNormalView = () => (
