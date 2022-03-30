@@ -9,7 +9,6 @@ import store from './store'
 import userManager from './utils/userManager'
 import apiUtils from './utils/apiUtils'
 import 'semantic-ui-css/semantic.min.css'
-import i18n from 'i18next'
 import 'hds-core'
 import './index.css'
 import './i18n'
@@ -42,7 +41,7 @@ if (window.location.pathname === '/silent-renew') {
             transitionOut="fadeOut"
             timeOut={0}
           />
-          <Suspense fallback={i18n.t('loading')}>
+          <Suspense fallback='Loading'>
             <App />
           </Suspense>
         </React.Fragment>
