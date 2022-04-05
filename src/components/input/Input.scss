@@ -1,7 +1,6 @@
 @import '../common/colors';
 @import url('hds-core');
 
-
 .input-container {
   .input-header {
     align-items: center;
@@ -125,17 +124,13 @@
   }
 }
 
-
-
-
-
 .ui.search.selection.dropdown {
   border-radius: 2px;
   min-height: 56px;
   line-height: 32px;
   padding: 12px 32px 12px 8px;
   margin-top: 4px;
-  
+
   &.multiple > .label {
     margin-top: 8px;
   }
@@ -167,7 +162,7 @@
 }
 
 .ui.label {
-  font-family: "Helsinki Grotesk Bold";
+  font-family: 'Helsinki Grotesk Bold';
   background-color: transparent;
   color: $black1;
   font-size: 14px;
@@ -205,10 +200,48 @@
   }
 }
 
-
 .highlighted {
   background-color: yellow;
 }
+.error .selection {
+  border: 1px solid $color-error;
+   
+}
+.error .selection > div {
+  border: 1px solid $color-error;
+}
+
+
+.error .rich-text-editor-wrapper {
+  border: 1px solid $color-error;
+
+  .rich-text-editor .ql-container {
+    border: 1px solid $color-error;
+  }
+
+}
+.error .file-input-container button {
+  border: 1px solid $color-error;
+  color: $color-error;
+ 
+}
+
+.error .link-container  div:first-of-type {
+  border: 1px solid $color-error;
+ 
+}
+.ui.form .field.error input[type=text] {
+  border: 1px solid $color-error;
+  border-radius: 0;
+}
+.ui.form .field.error input[type=number] {
+   border: 1px solid $color-error;
+  border-radius: 0;
+}
+
+
+
+
 
 .image-preview {
   margin-top: 10px;
@@ -226,17 +259,17 @@
   display: flex;
   align-items: center;
 
-    .download-button, .upload-button, .remove-button {
-      margin: 5px;
+  .download-button,
+  .upload-button,
+  .remove-button {
+    margin: 5px;
 
-      &.remove {
-        color: $red;
-        border-color: $red;
-      }
+    &.remove {
+      color: $red;
+      border-color: $red;
     }
   }
-
-  
+}
 
 .file-description {
   color: $black1;
@@ -248,7 +281,7 @@
     opacity: 0;
   }
 }
-.fieldset-internal-error{
+.fieldset-internal-error {
   color: $color-error-text !important;
   border-color: $color-error-border !important;
 }
@@ -258,8 +291,7 @@
   margin: 32px 0 16px;
   padding: 16px;
   position: relative;
-  animation: expand .5s ease-in-out;
- 
+  animation: expand 0.5s ease-in-out;
 }
 .input-header + .fieldset-container {
   margin-top: 16px;
@@ -327,9 +359,8 @@
 .deadline-info-text {
   margin-top: 10px;
   padding: 8px 8px 8px 16px;
-  background-color: $yellow; 
+  background-color: $yellow;
   width: 80%;
- 
 }
 .deadline-estimated {
   color: $color-info !important;
@@ -342,7 +373,7 @@
   display: none;
 }
 .radio-button {
-  margin-top: 4px
+  margin-top: 4px;
 }
 .error-text {
   color: $color-error-border;

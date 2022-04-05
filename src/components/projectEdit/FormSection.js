@@ -46,7 +46,7 @@ const FormSection = ({
           formValues={formValues}
           syncronousErrors={syncronousErrors}
           submitErrors={submitErrors}
-          className={field.highlight_group}
+          className={field.highlight_group ? field.highlight_group : '' }
           setRef={setRef}
         />
       ))}
