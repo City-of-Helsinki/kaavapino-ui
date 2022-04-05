@@ -8,7 +8,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
     <TextInput
       className="text-input"
       aria-label={input.name}
-      error={inputUtils.hasError(error)}
+      error={inputUtils.hasError(error).toString()}
       fluid="true"
       {...input}
       {...custom}
