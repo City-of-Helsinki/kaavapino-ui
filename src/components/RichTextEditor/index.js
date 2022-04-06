@@ -15,7 +15,7 @@ import {
 } from '../../actions/commentActions'
 import { currentProjectIdSelector } from '../../selectors/projectSelector'
 import { ReactComponent as CommentIcon } from '../../assets/icons/comment-icon.svg'
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
 
 /* This component defines a react-quill rich text editor field to be used in redux form.
  * We are saving these rich text inputs as quill deltas - a form of JSON that
@@ -70,7 +70,7 @@ function RichTextEditor(props) {
   const userId = useSelector(userIdSelector)
   const projectId = useSelector(currentProjectIdSelector)
   const [showComments, setShowComments] = useState(false)
-  
+
   const [toolbarVisible, setToolbarVisible] = useState(false)
   const editorRef = useRef(null)
   const [counter, setCounter] = useState(props.currentSize)
@@ -92,7 +92,7 @@ function RichTextEditor(props) {
   }
   const comments = getFieldComments()
 
-  const {t} = useTranslation()
+  const { t } = useTranslation()
 
   useEffect(() => {
     if (setRef) {
@@ -109,25 +109,36 @@ function RichTextEditor(props) {
       /* Get the value from the editor - the delta provided to handlechange does not have complete state */
 
       const actualDeltaValue = editorRef.current.editor.getContents()
+
+      // Hack to remove /n  values
+      const actualDeltaText = editorRef.current.editor.getText().replace(/\n/g, '')
+
       setCurrentTimeout(() =>
         setTimeout(
-          () => dispatch(change(fieldFormName, inputProps.name, actualDeltaValue)),
+          () =>
+            dispatch(
+              change(
+                fieldFormName,
+                inputProps.name,
+                actualDeltaText ? actualDeltaValue : null
+              )
+            ),
           500
         )
       )
+
       setCounter(actualDeltaValue.length() - 1)
       setShowCounter(true)
     }
   }
   const addComment = () => {
-    
     const prompt = window.prompt(t('shoutbox.add-field-comment'), '')
     if (prompt) {
       dispatch(createFieldComment(projectId, inputProps.name, prompt))
       setShowComments(true)
     }
   }
-  
+
   const newInputProps = {
     ...inputProps,
     defaultValue: value
@@ -213,15 +224,13 @@ function RichTextEditor(props) {
           onChange={handleChange}
           onBlur={(_range, _source, quill) => {
             setTimeout(() => {
-
               // Hack. Prevent blurring when copy-paste data
               let fixRange = quill.getSelection()
               if (!fixRange) {
                 setToolbarVisible(false)
                 setShowCounter(false)
-
                 if (onBlur) {
-                  onBlur(quill.getContents())
+                  onBlur()
                 }
               }
             }, 50) // random time

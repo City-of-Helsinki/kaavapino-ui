@@ -644,7 +644,7 @@ function* saveProject() {
           ':id/'
         )
         yield put(updateProject(updatedProject))
-        yield put(saveProjectSuccessful())
+       
         yield put(setAllEditFields())
       } catch (e) {
         if (e.response && e.response.status === 400) {
@@ -655,6 +655,7 @@ function* saveProject() {
       }
     }
   }
+  yield put(saveProjectSuccessful())
 }
 
 function* changeProjectPhase({ payload: phase }) {

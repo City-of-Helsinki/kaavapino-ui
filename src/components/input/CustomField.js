@@ -53,11 +53,9 @@ class CustomField extends Component {
   }
 
   renderNumber = props => {
-    const { onBlur, setRef } = this.props
+    const { onBlur } = this.props
 
-    return (
-      <CustomInput setRef={setRef} min={0} onBlur={onBlur} {...props} type="number" />
-    )
+    return <CustomInput min={0} onBlur={onBlur} {...props} type="number" />
   }
 
   renderYearSelect = props => {
@@ -80,9 +78,9 @@ class CustomField extends Component {
   }
 
   renderString = props => {
-    const { onBlur, setRef } = this.props
+    const { onBlur } = this.props
 
-    return <CustomInput setRef={setRef} onBlur={onBlur} type="text" {...props} />
+    return <CustomInput onBlur={onBlur} type="text" {...props} />
   }
 
   renderTextArea = props => {
@@ -395,6 +393,17 @@ class CustomField extends Component {
 
     const showFieldClass = field.display === 'hidden' ? 'hidden' : className
 
+    const getClass = () => {
+      let currentClassName = ''
+      if (className) {
+        currentClassName = className
+      }
+      if (showFieldClass) {
+        currentClassName = currentClassName + ' ' + showFieldClass
+      }
+      return currentClassName
+    }
+
     const placeHolderText = field.placeholder_text
       ? field.placeholder_text.trim()
       : field.label
@@ -407,7 +416,7 @@ class CustomField extends Component {
       component: this.getInput(field),
       ...(field.multiple_choice ? { type: 'select-multiple' } : {}),
       updated: { updated },
-      className: `${className ? className : ''} ${showFieldClass ? showFieldClass : ''}`
+      className: getClass()
     }
 
     /* Some fields are autofilled to a value as per (autofill_rules)
@@ -459,7 +468,6 @@ class CustomField extends Component {
           formName={formName}
           className={`${this.props.className} ${error ? error : ''}`}
           maxSize={field.character_limit}
-          attributeData={this.props.attributeData}
         />
       )
     }
@@ -471,7 +479,6 @@ class CustomField extends Component {
       }
       return <FieldArray component={this.renderFieldset} {...newProps} />
     }
-
     return (
       <Field
         {...fieldProps}
