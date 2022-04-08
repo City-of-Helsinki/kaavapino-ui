@@ -1,13 +1,14 @@
 import React from 'react'
 import CustomField from './CustomField'
 import Matrix from './Matrix'
-import { Form, Label,Popup } from 'semantic-ui-react'
+import { Form, Label, Popup } from 'semantic-ui-react'
 import Info from './Info'
 import projectUtils from '../../utils/projectUtils'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { IconClock } from 'hds-react'
 import { withTranslation } from 'react-i18next'
+import { isArray } from 'lodash'
 
 const OneLineFields = ['toggle']
 
@@ -77,7 +78,12 @@ const FormField = ({
   let submitErrorText = ''
   if (submitErrors && submitErrors[field.name]) {
     const submitErrorObject = submitErrors[field.name]
-    submitErrorText = submitErrorObject ? submitErrorObject[field.name] : ''
+
+    if (isArray(submitErrorObject)) {
+      submitErrorObject.forEach(
+        errorText => (submitErrorText = submitErrorText + errorText)
+      )
+    }
   }
 
   const error = submitErrorText ? submitErrorText : syncError
@@ -195,8 +201,8 @@ const FormField = ({
    * here to modify the input header accordingly. */
 
   const showError = required ? t('project.required-field') : error
-  if (!showField(field, formValues) || field.display === 'hidden') {  
-     return null
+  if (!showField(field, formValues) || field.display === 'hidden') {
+    return null
   } else {
     return renderComponent()
   }
