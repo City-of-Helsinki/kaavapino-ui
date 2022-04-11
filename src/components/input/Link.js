@@ -40,6 +40,7 @@ const Link = props => {
         onBlur={onBlur}
         type="text"
         value={currentValue}
+        error={props.error}
         onChange={onChange}
         className={!isLinkValid && currentValue && !multipleLinks ? 'error' : ''}
         aria-label="link"
