@@ -4,6 +4,8 @@ import inputUtils from '../../utils/inputUtils'
 import { Select } from 'hds-react'
 import { isArray } from 'lodash'
 
+// Label when there are more than one same option. To avoid key errors.
+const MORE_LABEL = ' (2)'
 const SelectInput = ({
   input,
   error,
@@ -49,9 +51,27 @@ const SelectInput = ({
     }
   }
 
+  const currentOptions = []
+
+  const modifyOptionIfExist = currentOption => {
+    if (!currentOption) {
+      return
+    }
+
+    // Check if the list already has same value
+    if (
+      currentOptions.some(current => current && current.label === currentOption.label)
+    ) {
+      currentOption.label = currentOption.label + MORE_LABEL
+    }
+    return currentOption
+  }
+
   options = options
     ? options.filter(option => option.label && option.label.trim() !== '')
     : []
+
+  options.forEach(option => option && currentOptions.push(modifyOptionIfExist(option)))
 
   if (!multiple) {
     return (
@@ -59,13 +79,12 @@ const SelectInput = ({
         placeholder={placeholder}
         className="selection"
         id={input.name}
-        name={input.name}
         multiselect={false}
         error={inputUtils.hasError(error)}
         onBlur={onBlur}
         clearable={true}
         disabled={disabled}
-        options={options}
+        options={currentOptions}
         value={currentSingleValue}
         onChange={data => {
           let returnValue = data ? data.value : null
@@ -88,7 +107,7 @@ const SelectInput = ({
       onBlur={onBlur}
       clearable={true}
       disabled={disabled}
-      options={options}
+      options={currentOptions}
       defaultValue={currentValue}
       onChange={data => {
         let returnValue = data && data.map(currentValue => currentValue.value)
