@@ -77,11 +77,11 @@ const ListItem = ({
           )}
         </span>
       </div>
-      <div className="project-list-item-graph">
-        {showGraph && (
+      {showGraph && (
+        <div className="project-list-item-graph">
           <ProjectTimeline deadlines={deadlines} projectView={true} onhold={onhold} />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }
