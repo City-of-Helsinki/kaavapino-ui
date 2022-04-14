@@ -3,8 +3,8 @@
 .role-highlight-picker {
   border: 2px solid $light-gray3;
   justify-content: stretch;
-  padding: 16px 32px;
-  margin-top: 32px;
+  padding: 0px 32px 10px 32px;
+  margin-top: 16px;
 
   h3:first-child {
     margin-top: 4px;
@@ -13,7 +13,7 @@
     font-family: "Helsinki Grotesk Bold";
     display: flex;
     justify-content: space-between;
-    margin-top: 16px;
+    margin-top: 10px;
   }
 
   .role-button {
