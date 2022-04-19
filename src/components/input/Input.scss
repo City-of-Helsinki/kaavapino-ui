@@ -204,39 +204,54 @@
   background-color: yellow;
 }
 .error .selection {
-  border: 1px solid $color-error;
-   
+  border: 3px solid $color-error;
+  
 }
-.error .selection > div {
-  border: 1px solid $color-error;
+.error .selection div {
+  border: 0;
+  
 }
-
 
 .error .rich-text-editor-wrapper {
-  border: 1px solid $color-error;
+  border: 3px solid $color-error;
 
   .rich-text-editor .ql-container {
-    border: 1px solid $color-error;
+    border: 0;
   }
 
 }
 .error .file-input-container button {
-  border: 1px solid $color-error;
+  border: 3px solid $color-error;
   color: $color-error;
  
 }
 
 .error .link-container  div:first-of-type {
-  border: 1px solid $color-error;
+  border: 3px solid $color-error;
  
 }
+.error .ad-combobox {
+  border: 3px solid $color-error;
+}
+
+.error .ad-combobox  div {
+  border: 0;
+  background-color: white;
+}
 .ui.form .field.error input[type=text] {
-  border: 1px solid $color-error;
+  border: 3px solid $color-error;
   border-radius: 0;
+  background-color: white;
 }
 .ui.form .field.error input[type=number] {
-   border: 1px solid $color-error;
+   border: 3px solid $color-error;
   border-radius: 0;
+  background-color: white;
+}
+.ui.form .field.error input[type=date] {
+  border: 3px solid $color-error;
+  border-radius: 0;
+  background-color: white;
 }
 
 .image-preview {
@@ -279,7 +294,7 @@
 }
 .fieldset-internal-error {
   color: $color-error-text !important;
-  border-color: $color-error-border !important;
+  border: 3px solid $color-error-border !important;
 }
 .fieldset-container {
   border: 1px solid gainsboro;
@@ -288,6 +303,8 @@
   padding: 16px;
   position: relative;
   animation: expand 0.5s ease-in-out;
+
+  
 }
 .input-header + .fieldset-container {
   margin-top: 16px;

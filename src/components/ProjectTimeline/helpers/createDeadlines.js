@@ -1,4 +1,7 @@
 import { findInMonths, findWeek, cleanDeadlines, checkDeadlines } from './helpers'
+import dayjs from 'dayjs'
+
+
 /**
  * @desc creates array of deadlines with milestones that should be rendered, from deadline
  * @param deadlines - deadlines from api
@@ -9,20 +12,25 @@ export function createDeadlines(deadlines) {
   if (checkDeadlines(deadlines)) {
     return { deadlines: null, error: true }
   }
-  const date = new Date()
+  let date = dayjs()
   let monthDatesArray = []
   let week = 1
-  date.setMonth(date.getMonth() - 1)
+
+  date = date.subtract(1, 'month')
   for (let i = 0; i < 65; i++) {
     if (i > 0 && Number.isInteger(i / 5)) {
-      date.setDate(1)
-      date.setMonth(date.getMonth() + 1)
+      date = date.date(1)
+      date = date.add(1, 'month')
+ 
     }
+
+    const tempMonth = date.add(1, 'month')
+   
     monthDatesArray.push({
-      date: `${date.getFullYear()}-${date.getMonth() + 1}`,
+      date: `${tempMonth.year()}-${tempMonth.month()}`,
       week: week
     })
-    week++
+      week++
     if (week > 5) {
       week = 1
     }
@@ -47,9 +55,12 @@ function createStartAndEndPoints(inputMonths, deadlines) {
         deadline.deadline.deadline_types[0] === 'phase_start' ||
         deadline.deadline.deadline_types[0] === 'phase_end'
       ) {
-        let date = new Date(deadline.date)
-        const week = findWeek(date.getDate())
-        date = `${date.getFullYear()}-${date.getMonth() + 1}`
+        let date = dayjs(deadline.date)
+        const week = findWeek(date.date())
+
+        const tempDate = date.add(1, 'month')
+        date = `${tempDate.year()}-${tempDate.month()}`
+        
         const monthIndex = findInMonths(date, week, monthDates)
         if (monthIndex) {
           if (monthDates[monthIndex][deadline.deadline.abbreviation]) {
@@ -224,9 +235,11 @@ function createMilestones(inputMonths, deadlines) {
         deadlineTypes === 'inner_start' ||
         deadlineTypes === 'inner_end'
       ) {
-        let date = new Date(deadline.date)
-        const week = findWeek(date.getDate())
-        date = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+        let date = dayjs(deadline.date)
+        const week = findWeek(date.date())
+
+        let tempDate = date.add(1, 'month')
+        date = `${tempDate.year()}-${tempDate.month()}-${tempDate.date()}`
         const monthIndex = findInMonths(date, week, monthDates)
         if (monthIndex) {
           monthDates[monthIndex].milestone = true

@@ -6,8 +6,8 @@
   margin-top: 20px;
   overflow: hidden;
   position: relative;
-  border: 1px solid $gray;
-
+  background-color: $light-gray3;
+  
   .timeline-error-message {
     position: absolute;
     z-index: 10;

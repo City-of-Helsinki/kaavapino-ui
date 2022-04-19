@@ -95,10 +95,13 @@
       }
       .project-list-item-container {
         color: $color-black;
+        background-color: $light-gray3;
+        
         .project-list-item-graph {
           .chart {
             height: 132px;
           }
+          margin-bottom: 30px;
         }
         .project-card-mb {
           display: none;

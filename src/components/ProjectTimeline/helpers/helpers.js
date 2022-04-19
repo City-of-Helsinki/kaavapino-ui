@@ -1,6 +1,10 @@
+import dayjs from 'dayjs'
+
 export function findInMonths(date, week, monthDates) {
-  date = new Date(date)
-  date = `${date.getFullYear()}-${date.getMonth() + 1}`
+  date = dayjs(date)
+
+  const tempDate = date.add(1, 'month')
+  date = `${tempDate.year()}-${tempDate.month()}`
   let monthIndex = null
   for (let i = 0; i < monthDates.length; i++) {
     if (date === monthDates[i].date && week === monthDates[i].week) {
@@ -11,6 +15,7 @@ export function findInMonths(date, week, monthDates) {
   return monthIndex
 }
 export function findWeek(date) {
+
   if (Math.round(date / 5) < 1) {
     return 1
   } else if (Math.round(date / 5) > 5) {

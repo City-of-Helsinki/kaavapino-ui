@@ -65,8 +65,7 @@
 
   @media screen and (min-width: 600px) {
     width: 90%;
-    padding: 0 0 48px 48px;
-
+  
     h2 {
       margin-left: 0;
     }
@@ -103,7 +102,7 @@
   position: relative;
   min-width: 30%;
   max-width: 400px;
-
+ 
   @media screen and (min-width: 600px) {
     display: flex;
   }
@@ -111,6 +110,10 @@
   @media screen and (min-width: 960px) {
     display: flex;
     padding-right: 48px;
+  }
+  @media screen and (min-height: 768px) {
+    position: sticky;
+    top: 40px;
   }
 }
 
