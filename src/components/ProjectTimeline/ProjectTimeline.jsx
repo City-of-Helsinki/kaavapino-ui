@@ -7,10 +7,11 @@ import { getProject, getProjectSuccessful } from '../../actions/projectActions'
 import { findWeek } from './helpers/helpers'
 import { IconError } from 'hds-react'
 import { useTranslation } from 'react-i18next'
+import dayjs from 'dayjs'
 
 function ProjectTimeline(props) {
   const { deadlines, projectView, onhold } = props
-   
+
   const { t } = useTranslation()
   const [showError, setShowError] = useState(false)
   const [drawMonths, setDrawMonths] = useState([])
@@ -52,30 +53,31 @@ function ProjectTimeline(props) {
           </div>
         )
       } else {
+     
         nowMarker.push(<div key={i} className="now-marker-filler" />)
       }
     }
     return nowMarker
   }
-
+  
   function createDrawMonths(months) {
     const drawableMonths = []
-    const nowDate = new Date()
-    for (let i = 0; i < months.length; i++) {
-      const date = new Date(months[i].date)
+    const nowDate = dayjs()
+     for (let i = 0; i < months.length; i++) {
+      const date = dayjs(months[i].date)
       if (i === 1) {
         drawableMonths.push(
           <div key={i} className="timeline-month">
             <div className="timeline-now-month">
-              {createNowMarker(findWeek(nowDate.getDate()))}
+              {createNowMarker(findWeek(nowDate.date()))}
             </div>
-            <span>{`${monthNames[date.getMonth()]} ${date.getFullYear()}`}</span>
+            <span>{`${monthNames[date.month()]} ${date.year()}`}</span>
           </div>
         )
       } else {
         drawableMonths.push(
           <div key={i} className="timeline-month">
-            <span>{`${monthNames[date.getMonth()]} ${date.getFullYear()}`}</span>
+            <span>{`${monthNames[date.month()]} ${date.year()}`}</span>
           </div>
         )
       }
@@ -221,7 +223,7 @@ function ProjectTimeline(props) {
     }
   }
   function createMilestoneItem(index, propertyIndex, monthDates) {
-    const date = new Date(monthDates[index].milestoneDate)
+    const date = dayjs(monthDates[index].milestoneDate)
     let showMessage = null
     let milestoneType = []
     let listKey = 0
@@ -232,11 +234,13 @@ function ProjectTimeline(props) {
             switch (milestone_type) {
               case 'dashed_start':
                 if (monthDates[index].milestone_types.includes('milestone')) {
+
+                  const tempDate = date.add(1, 'month')
                   showMessage = (
                     <span className="milestone-message">
                       {t('deadlines.deadline-label', {
-                        date: date.getDate(),
-                        month: date.getMonth() + 1
+                        date: tempDate.date(),
+                        month:tempDate.month()
                       })}
                     </span>
                   )
@@ -254,6 +258,8 @@ function ProjectTimeline(props) {
                 break
               case 'dashed_end':
                 if (monthDates[index].milestone_types.includes('milestone')) {
+
+                  const tempDate = date.add(1, 'month')
                   showMessage = (
                     <span
                       className={`milestone-message ${
@@ -261,8 +267,8 @@ function ProjectTimeline(props) {
                       }`}
                     >
                       {t('deadlines.kylk-message', {
-                        date: date.getDate(),
-                        month: date.getMonth() + 1
+                        date: tempDate.date(),
+                        month: tempDate.month()
                       })}
                     </span>
                   )
@@ -369,7 +375,5 @@ const mapDispatchToProps = {
   getProject,
   getProjectSuccessful
 }
-
-
 
 export default connect(null, mapDispatchToProps)(ProjectTimeline)
