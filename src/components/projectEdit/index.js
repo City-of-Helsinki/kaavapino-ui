@@ -337,6 +337,7 @@ class ProjectEditPage extends Component {
               saveProjectBasePayload={saveProjectBasePayload}
               isResponsible={isResponsible}
               isAdmin={isAdmin}
+              phase={phase}
             />
             <NavigationPrompt
               when={
