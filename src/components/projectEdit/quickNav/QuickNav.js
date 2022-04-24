@@ -24,12 +24,13 @@ export default function QuickNav({
   setChecking,
   hasMissingFields,
   isResponsible,
-  isAdmin
+  isAdmin,
+  phase
 }) {
   const [endPhaseError, setEndPhaseError] = useState(false)
   const [verifying, setVerifying] = useState(false)
   const [checkButtonPressed, setCheckButtonPressed] = useState(false)
-  const [activePhase, setActivePhase] = useState(0)
+  const [activePhase, setActivePhase] = useState(phase)
   const [selected, setSelected] = useState(0)
   const [currentTimeout, setCurrentTimeout] = useState(null)
   const [hasErrors, setHasErrors] = useState(false)
@@ -174,8 +175,6 @@ export default function QuickNav({
       if (accordionTitle) {
         accordionTitle.scrollIntoView()
       }
-    } else {
-      setActivePhase(null)
     }
   }
 
@@ -192,7 +191,11 @@ export default function QuickNav({
                 heading={
                   <Button
                     variant="supplementary"
-                    className="accordion-button"
+                    className={
+                      activePhase === phase.id
+                        ? 'accordion-button active'
+                        : 'accordion-button'
+                    }
                     onClick={() => handleAccordionTitleClick(phase.id)}
                   >{`${phase.list_prefix}. ${phase.title}`}</Button>
                 }
