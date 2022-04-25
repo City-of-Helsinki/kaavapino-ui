@@ -21,7 +21,7 @@ function CustomSearchCombobox({ options, disabled, input, onBlur, name }) {
       item => item.label && toLower(item.label).includes(toLower(search))
     )
   }
-  const currentOptions = []
+  let currentOptions = []
   const modifyOptionIfExist = currentOption => {
     if (!currentOption) {
       return
@@ -41,6 +41,8 @@ function CustomSearchCombobox({ options, disabled, input, onBlur, name }) {
     : []
 
   options.forEach(option => option && currentOptions.push(modifyOptionIfExist(option)))
+
+  currentOptions = currentOptions.sort( (a,b) => a.label > b.label ? 1 : -1)
 
   return (
     <div id="test" className="ad-combobox">
