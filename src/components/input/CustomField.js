@@ -25,6 +25,7 @@ import DeadlineInfoText from './DeadlineInfoText'
 import { get } from 'lodash'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import CustomADUserCombobox from './CustomADUserCombobox'
+import CustomSearchCombobox from './CustomSearchCombobox';
 class CustomField extends Component {
   yearOptions = []
   shouldComponentUpdate(prevProps) {
@@ -150,7 +151,20 @@ class CustomField extends Component {
       />
     )
   }
+  renderSearchSelect = props => {
+    const { choices, placeholder_text, formName } = this.props.field
+    const { onBlur } = this.props
 
+    return (
+      <CustomSearchCombobox
+        {...props}
+         options={choices}
+        onBlur={onBlur}
+        placeholder={placeholder_text}
+        formName={formName}
+      />
+    )
+  }
   renderRadio = props => {
     const { field, onBlur } = this.props
     return (
@@ -299,10 +313,8 @@ class CustomField extends Component {
 
     // Since there might be rules which has boolean type and choices, avoid selecting select and select
     // boolean radiobutton intead
-    if (field.choices && field.type !== 'boolean') {
-      /* Should perhaps check (field.type === 'select' && field.choices), but there were tests against it.
-      Will get back to this. */
-
+    if (field.choices && field.type !== 'boolean' && field.type !== 'search-select') {
+   
       return this.renderSelect
     }
     if (field.display === 'dropdown' || field.display === 'simple_integer') {
@@ -354,6 +366,9 @@ class CustomField extends Component {
         return this.renderDeadlineInfo
       case 'personnel':
         return this.renderADUserSelection
+
+      case 'search-select':
+        return this.renderSearchSelect
       default:
         return this.renderNumber
     }

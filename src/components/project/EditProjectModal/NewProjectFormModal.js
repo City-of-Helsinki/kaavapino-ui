@@ -150,7 +150,7 @@ class NewProjectFormModal extends Component {
                 field: {
                   name: USER,
                   label: t('project-base.labels.responsible'),
-                  type: 'select',
+                  type: 'search-select',
                   choices: this.formatUsers(),
                   editable: true
                 }
