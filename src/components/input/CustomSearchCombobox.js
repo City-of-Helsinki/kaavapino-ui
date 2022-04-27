@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Combobox } from 'hds-react'
 import { toLower } from 'lodash'
-const MORE_LABEL = ' (2)'
 
 function CustomSearchCombobox({ options, disabled, input, onBlur, name }) {
   const [currentValue, setCurrentValue] = useState(null)
@@ -17,9 +16,9 @@ function CustomSearchCombobox({ options, disabled, input, onBlur, name }) {
   }
 
   const handleFilter = (items, search) => {
-    return items.filter(
-      item => item.label && toLower(item.label).includes(toLower(search))
-    )
+    return items
+      .slice()
+      .filter(item => item.label && toLower(item.label).includes(toLower(search)))
   }
   let currentOptions = []
   const modifyOptionIfExist = currentOption => {
@@ -28,12 +27,26 @@ function CustomSearchCombobox({ options, disabled, input, onBlur, name }) {
     }
 
     // Check if the list already has same value
+    return fixOptionLabel(currentOption, 1)
+  }
+
+  const fixOptionLabel = (currentOption, index) => {
     if (
       currentOptions.some(current => current && current.label === currentOption.label)
     ) {
-      currentOption.label = currentOption.label + MORE_LABEL
+      let foundIndex = currentOption.label && currentOption.label.indexOf('(')
+      let newOptionLabel = currentOption.label
+
+      // Remove already added index if found
+      if (foundIndex !== -1) {
+        newOptionLabel = newOptionLabel.substring(0, foundIndex).trim()
+      }
+      index++
+      currentOption.label = newOptionLabel + ' (' + index + ')'
+      return fixOptionLabel(currentOption, index)
+    } else {
+      return currentOption
     }
-    return currentOption
   }
 
   options = options
@@ -42,7 +55,7 @@ function CustomSearchCombobox({ options, disabled, input, onBlur, name }) {
 
   options.forEach(option => option && currentOptions.push(modifyOptionIfExist(option)))
 
-  currentOptions = currentOptions.sort( (a,b) => a.label > b.label ? 1 : -1)
+  currentOptions = currentOptions.sort((a, b) => (a.label > b.label ? 1 : -1))
 
   return (
     <div id="test" className="ad-combobox">
