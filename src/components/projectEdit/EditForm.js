@@ -52,11 +52,10 @@ class EditForm extends Component {
       this.props.setFormInitialized(true)
     }
 
-    if ( Object.keys( prevProps.initialValues ).length < Object.keys( this.props.attributeData ).length) {
-    
+    if (!isEqual(prevProps.attributeData, this.props.attributeData)) {
       const newInitialize = Object.assign(attributeData, geoServerData)
-   
-      initialize(newInitialize)
+
+      initialize(newInitialize, true)
     }
   }
 
