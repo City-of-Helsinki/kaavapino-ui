@@ -57,6 +57,7 @@
       "modified": "Muokattu",
       "responsible": "Vastuuhenkilö"
     }
+    
   },
   "deadlines": {
     "title": "Päivitä aikataulut",
@@ -259,6 +260,7 @@
   "project-base": {
     "modify": "Muokkaa luontitietoja",
     "add": "Luo uusi projekti",
+    "project-type-default": "Asemakaava",
     "labels": {
       "name": "Projektin nimi",
       "responsible": "Vastuuhenkilö",
