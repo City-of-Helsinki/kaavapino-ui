@@ -9,14 +9,18 @@ import { NEW_PROJECT_FORM } from '../../../constants'
 import { newProjectSubtypeSelector } from '../../../selectors/formSelector'
 import FormField from '../../input/FormField'
 import { Button } from 'hds-react'
-import { withTranslation } from 'react-i18next';
+import { withTranslation } from 'react-i18next'
 
 const PROJECT_NAME = 'name'
 const USER = 'user'
+const TYPE = 'projektityyppi'
 const PUBLIC = 'public'
 const SUB_TYPE = 'subtype'
 const CREATE_PRINCIPLES = 'create_principles'
 const CREATE_DRAFT = 'create_draft'
+
+// TODO: Change when attbitute_data returns correct project type
+const PROJECT_TYPE_DEFAULT = 'asemakaava'
 
 class NewProjectFormModal extends Component {
   constructor(props) {
@@ -30,11 +34,15 @@ class NewProjectFormModal extends Component {
     const { initialize, currentProject } = this.props
 
     if (!currentProject) {
+      initialize({
+        projektityyppi: PROJECT_TYPE_DEFAULT
+      })
       return
     }
     initialize({
       onhold: currentProject.onhold,
       public: currentProject.public,
+      projektityyppi: PROJECT_TYPE_DEFAULT,
       user: currentProject.user,
       subtype: currentProject.subtype,
       create_draft: currentProject.create_draft,
@@ -68,7 +76,6 @@ class NewProjectFormModal extends Component {
   handleSubmit = () => {
     this.setState({ loading: true })
     this.props.handleSubmit()
-    
   }
 
   handleClose = () => {
@@ -138,6 +145,27 @@ class NewProjectFormModal extends Component {
           <Form>
             <Form.Group widths="equal">
               {this.getFormField({
+                className: 'ui fluid input',
+
+                field: {
+                  name: TYPE,
+                  label: t('project-base.labels.project-type'),
+                  disabled: false,
+                  type: 'set',
+                  // Add only option.
+                  choices: [
+                    {
+                      label: t('project-base.project-type-default'),
+                      value: PROJECT_TYPE_DEFAULT
+                    }
+                  ],
+                  editable: false,
+                  multiple: false
+                }
+              })}
+            </Form.Group>
+            <Form.Group widths="equal">
+              {this.getFormField({
                 field: {
                   name: PROJECT_NAME,
                   label: t('project-base.labels.name'),
@@ -191,7 +219,7 @@ class NewProjectFormModal extends Component {
               initialValues.subtype &&
               formValues.subtype !== initialValues.subtype && (
                 <div className="warning-box">
-                  {t('project-base.warning-process-change')}       
+                  {t('project-base.warning-process-change')}
                 </div>
               )}
             {showXLProjectOptions && (
@@ -205,7 +233,11 @@ class NewProjectFormModal extends Component {
                   }
                 })}
                 {this.getFormField({
-                  field: { name: CREATE_DRAFT, label: t('project-base.labels.draft'), type: 'toggle' }
+                  field: {
+                    name: CREATE_DRAFT,
+                    label: t('project-base.labels.draft'),
+                    type: 'toggle'
+                  }
                 })}
               </>
             )}

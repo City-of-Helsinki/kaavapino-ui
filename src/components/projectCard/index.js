@@ -30,16 +30,16 @@ import { useTranslation } from 'react-i18next'
 import { unreadCommentsCountSelector } from '../../selectors/commentSelector'
 import CommentsMobile from '../shoutbox/comments/CommentsMobile'
 
-export const PROJECT_PICTURE = 'Projektikortin kuva'
-export const PROJECT_BASIC = 'Perustiedot'
-export const PROJECT_DESCRIPTION = 'Suunnittelualueen kuvaus'
-export const PROJECT_STRATEGY = 'Strategiakytkentä'
-export const PROJECT_CONTRACT = 'Maanomistus ja maankäyttösopimus'
-export const PROJECT_FLOOR_AREA = 'Kerrosalatiedot'
-export const PROJECT_TIMETABLE = 'Aikataulu'
-export const PROJECT_CONTACT = 'Yhteyshenkilöt'
-export const PROJECT_DOCUMENTS = 'Dokumentit'
-export const PROJECT_BORDER = 'Suunnittelualueen rajaus'
+export const PROJECT_PICTURE = 'projektikortin_kuva'
+export const PROJECT_BASIC = 'perustiedot'
+export const PROJECT_DESCRIPTION = 'suunnittelualueen_kuvaus'
+export const PROJECT_STRATEGY = 'strategiakytkenta'
+export const PROJECT_CONTRACT = 'maanomistus'
+export const PROJECT_FLOOR_AREA = 'kerrosalatiedot'
+export const PROJECT_TIMETABLE = 'aikataulu'
+export const PROJECT_CONTACT = 'yhteyshenkilot'
+export const PROJECT_DOCUMENTS = 'dokumentit'
+export const PROJECT_BORDER = 'suunnittelualueen_rajaus'
 
 function ProjectCardPage({
   projectId,
@@ -129,7 +129,7 @@ function ProjectCardPage({
     )
     projectCardFields &&
       projectCardFields.forEach(field => {
-        let value = projectUtils.findValueFromObject(projectData, field.name)
+         let value = projectUtils.findValueFromObject(projectData, field.name)
 
         const returnValues = []
         projectUtils.findValuesFromObject(projectData, field.name, returnValues)
@@ -154,29 +154,29 @@ function ProjectCardPage({
           }
           currentPhotoField = newField
         }
-        if (field.section_name === PROJECT_BASIC) {
+        if (field.section_key === PROJECT_BASIC) {
           currentBasicInformationFields.push(newField)
         }
-        if (field.section_name === PROJECT_DESCRIPTION) {
+        if (field.section_key === PROJECT_DESCRIPTION) {
           currentDescriptionFields.push(newField)
         }
-        if (field.section_name === PROJECT_STRATEGY) {
+        if (field.section_key === PROJECT_STRATEGY) {
           currentStrategyConnectionFields.push(newField)
         }
-        if (field.section_name === PROJECT_CONTRACT) {
+        if (field.section_key === PROJECT_CONTRACT) {
           currentContractFields.push(newField)
         }
-        if (field.section_name === PROJECT_FLOOR_AREA) {
+        if (field.section_key === PROJECT_FLOOR_AREA) {
           currentFloorAreaFields.push(newField)
         }
-        if (field.section_name === PROJECT_TIMETABLE) {
+        if (field.section_key === PROJECT_TIMETABLE) {
           currentTimeTableFields.push(newField)
         }
-        if (field.section_name === PROJECT_CONTACT) {
+        if (field.section_key === PROJECT_CONTACT) {
           currentContactsFields.push(newField)
         }
 
-        if (field.section_name === PROJECT_BORDER) {
+        if (field.section_key === PROJECT_BORDER) {
           currentPlanningRestriction = newField
         }
       })
