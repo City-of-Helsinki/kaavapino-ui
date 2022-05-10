@@ -57,6 +57,7 @@
       "modified": "Muokattu",
       "responsible": "Vastuuhenkilö"
     }
+    
   },
   "deadlines": {
     "title": "Päivitä aikataulut",
@@ -259,13 +260,15 @@
   "project-base": {
     "modify": "Muokkaa luontitietoja",
     "add": "Luo uusi projekti",
+    "project-type-default": "Asemakaava",
     "labels": {
       "name": "Projektin nimi",
       "responsible": "Vastuuhenkilö",
       "is-visible": "Luodaanko projekti näkyväksi",
       "process-size": "Valitsen projektin koko",
       "principles": "Periaatteet",
-      "draft": "Kaavaluonnos"
+      "draft": "Kaavaluonnos",
+      "project-type": "Projektin tyyppi"
     },
     "warning-process-change": "Huom. Kun prosessi vaihtuu, vain ne Kaavapinoon syötetyt tiedot jäävät näkyviin, jotka kuuluvat valittuun prosessiin.",
     "warning-visibility-change": "Huom. Aiemmin ei-näkyväksi merkityn projektin tiedot muuttuvat näkyviksi kaikille Kaavapinon käyttäjille.",
