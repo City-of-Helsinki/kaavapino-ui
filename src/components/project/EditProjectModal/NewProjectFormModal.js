@@ -149,7 +149,7 @@ class NewProjectFormModal extends Component {
 
                 field: {
                   name: TYPE,
-                  label: t('project-base.labels.responsible'),
+                  label: t('project-base.labels.project-type'),
                   disabled: false,
                   type: 'set',
                   // Add only option.
