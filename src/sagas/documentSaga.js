@@ -42,10 +42,10 @@ function* downloadDocumentSaga({ payload }) {
   toastr.info(
     payload.projectCard
       ? i18next.t('document-loading.project-card-title')
-      : i18next.t('document-loading.title'),
+      : i18next.t('document-loading.wait-title'),
     payload.projectCard
       ? i18next.t('document-loading.project-card-content')
-      : i18next.t('document-loading.content', { name: payload.name }),
+      : i18next.t('document-loading.document-content'),
     { closeOnToastrClick: false }
   )
   try {
@@ -58,10 +58,10 @@ function* downloadDocumentSaga({ payload }) {
       toastr.error(
         payload.projectCard
           ? i18next.t('document-loading.project-card-title')
-          : i18next.t('document-loading.title'),
+          : i18next.t('document-loading.error-title'),
         payload.projectCard
           ? i18next.t('document-loading.project-card-error')
-          : i18next.t('document-loading.error', { name: payload.name })
+          : i18next.t('document-loading.document-error')
       )
 
       isError = true
@@ -73,10 +73,10 @@ function* downloadDocumentSaga({ payload }) {
           toastr.error(
             payload.projectCard
               ? i18next.t('document-loading.project-card-title')
-              : i18next.t('document-loading.title'),
+              : i18next.t('document-loading.error-title'),
             payload.projectCard
               ? i18next.t('document-loading.project-card-error')
-              : i18next.t('document-loading.error', { name: payload.name })
+              : i18next.t('document-loading.document-error')
           )
           break
         }
@@ -94,10 +94,10 @@ function* downloadDocumentSaga({ payload }) {
     toastr.error(
       payload.projectCard
         ? i18next.t('document-loading.project-card-title')
-        : i18next.t('document-loading.title'),
+        : i18next.t('document-loading.error-title'),
       payload.projectCard
         ? i18next.t('document-loading.project-card-error')
-        : i18next.t('document-loading.error', { name: payload.name })
+        : i18next.t('document-loading.document-error')
     )
     isError = true
   }
@@ -108,10 +108,10 @@ function* downloadDocumentSaga({ payload }) {
     toastr.error(
       payload.projectCard
         ? i18next.t('document-loading.project-card-title')
-        : i18next.t('document-loading.title'),
+        : i18next.t('document-loading.error-title'),
       payload.projectCard
         ? i18next.t('document-loading.project-card-error')
-        : i18next.t('document-loading.error', { name: payload.name })
+        : i18next.t('document-loading.document-error')
     )
   }
 
@@ -126,19 +126,19 @@ function* downloadDocumentSaga({ payload }) {
       toastr.success(
         payload.projectCard
           ? i18next.t('document-loading.project-card-title')
-          : i18next.t('document-loading.title'),
+          : i18next.t('document-loading.ready-title'),
         payload.projectCard
           ? i18next.t('document-loading.project-card-loaded')
-          : i18next.t('document-loading.document-loaded', { name: payload.name })
+          : i18next.t('document-loading.document-loaded')
       )
     } else {
       toastr.error(
         payload.projectCard
           ? i18next.t('document-loading.project-card-title')
-          : i18next.t('document-loading.title'),
+          : i18next.t('document-loading.error-title'),
         payload.projectCard
           ? i18next.t('document-loading.project-card-error')
-          : i18next.t('document-loading.error', { name: payload.name })
+          : i18next.t('document-loading.document-error')
       )
     }
   }
@@ -153,8 +153,8 @@ function* downloadDocumentPreviewSaga({ payload }) {
   const modifiedUrl = payload.file + '?preview=true'
 
   toastr.info(
-    i18next.t('document-loading.preview-title'),
-    i18next.t('document-loading.content', { name: payload.name }),
+    i18next.t('document-loading.wait-title'),
+    i18next.t('document-loading.document-preview-content'),
     { closeOnToastrClick: false }
   )
 
@@ -165,8 +165,8 @@ function* downloadDocumentPreviewSaga({ payload }) {
     if (!currentTask) {
       toastr.removeByType('info')
       toastr.error(
-        i18next.t('document-loading.preview-title'),
-        i18next.t('document-loading.error', { name: payload.name })
+        i18next.t('document-loading.error-title'),
+        i18next.t('document-loading.document-preview-error')
       )
 
       isError = true
@@ -175,8 +175,8 @@ function* downloadDocumentPreviewSaga({ payload }) {
         if (res && res.status === 500) {
           toastr.removeByType('info')
           toastr.error(
-            i18next.t('document-loading.preview-title'),
-            i18next.t('document-loading.error', { name: payload.name })
+            i18next.t('document-loading.error-title'),
+            i18next.t('document-loading.document-preview-error')
           )
           isError = true
           break
@@ -192,8 +192,8 @@ function* downloadDocumentPreviewSaga({ payload }) {
     }
   } catch (e) {
     toastr.error(
-      i18next.t('document-loading.preview-title'),
-      i18next.t('document-loading.error', { name: payload.name })
+      i18next.t('document-loading.error-title'),
+      i18next.t('document-loading.document-preview-error')
     )
     isError = true
   }
@@ -202,8 +202,8 @@ function* downloadDocumentPreviewSaga({ payload }) {
 
   if (counter === MAX_COUNT) {
     toastr.error(
-      i18next.t('document-loading.preview-title'),
-      i18next.t('document-loading.error', { name: payload.name })
+      i18next.t('document-loading.error-title'),
+      i18next.t('document-loading.document-preview-error')
     )
   }
 
@@ -216,13 +216,13 @@ function* downloadDocumentPreviewSaga({ payload }) {
       FileSaver.saveAs(fileData, fileName)
 
       toastr.success(
-        i18next.t('document-loading.preview-title'),
-        i18next.t('document-loading.document-loaded', { name: payload.name })
+        i18next.t('document-loading.ready-title'),
+        i18next.t('document-loading.document-preview-loaded')
       )
     } else {
       toastr.error(
-        i18next.t('document-loading.preview-title'),
-        i18next.t('document-loading.error', { name: payload.name })
+        i18next.t('document-loading.error-title'),
+        i18next.t('document-loading.document-preview-error')
       )
     }
   }
