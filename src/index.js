@@ -39,7 +39,7 @@ if (window.location.pathname === '/silent-renew') {
             position="top-center"
             transitionIn="fadeIn"
             transitionOut="fadeOut"
-            timeOut={0}
+            timeOut={7500}
           />
           <Suspense fallback='Loading'>
             <App />
