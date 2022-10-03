@@ -4,8 +4,8 @@ import { split } from 'lodash'
 import { useTranslation } from 'react-i18next'
 
 function StrategyConnection({ fields, hideTitle }) {
-
     const { t } = useTranslation()
+    let missingData = true
 
     const renderField = ( field ) => {
         let value = field.value
@@ -18,7 +18,6 @@ function StrategyConnection({ fields, hideTitle }) {
         values.sort()
 
         const elements = values.map( (value, index ) => {
-
             if ( field.choices ) {
                 const choice = field.choices.find( choice => choice.value === value)
 
@@ -26,7 +25,8 @@ function StrategyConnection({ fields, hideTitle }) {
                     value = choice.label
                 }
             }
-            return <div className="project-card-field" key={value + index} >{value}</div>
+            if(missingData) missingData = (value == null || value.length == 0)
+            return value && <div className="project-card-field" key={value + index} >{value}</div>
         })
 
         return (
@@ -37,13 +37,15 @@ function StrategyConnection({ fields, hideTitle }) {
     }
    
     const renderFields = () => {
+        missingData = true
         return (
             <div>
                 {!hideTitle && <h3>{t('project.strategy-connection-title')}</h3>}
-                { fields && fields.map( field => {
+                {fields && fields.map( field => {
                     return renderField(field )
-                } )
+                })
                 }
+                {missingData && <label className="missing-data">{t('project.missing-data')}</label>}
             </div>
             )
     }

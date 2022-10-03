@@ -6,14 +6,15 @@ import { isArray } from 'lodash'
 
 function TimeTable({ fields, hideTitle }) {
   const { t } = useTranslation()
+  let missingData = true
 
   const renderField = (field, index) => {
     if (!field.value) {
       return
     }
     let value = field.value
-
     let completeValue = ''
+    if(missingData) missingData = value == null
 
     if (isArray(field.value)) {
       field.value.forEach(current => {
@@ -52,12 +53,15 @@ function TimeTable({ fields, hideTitle }) {
   }
 
   const renderFields = () => {
+    missingData = true
     return (
       <div>
         {fields &&
           fields.map((field, fieldIndex) => {
             return renderField(field, fieldIndex)
-          })}
+          })
+        }
+        {missingData && <label className="missing-data">{t('project.missing-data')}</label>}
       </div>
     )
   }
