@@ -4,12 +4,14 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 function Documents({ documentFields, hideTitle }) {
-
   const { t } = useTranslation()
+  let documentsNotReady = true
+
   const renderSection = section => {
     if (!section.documents || section.documents.length === 0) {
       return null
     }
+    documentsNotReady = false
     return (
       <div key={section.section_name} className="section">
         <div className="values">
@@ -20,11 +22,9 @@ function Documents({ documentFields, hideTitle }) {
     )
   }
   const renderDocuments = documents => {
-    
     return documents.map((document, id) => {
       return (
         <div key={document.link + id}>
-        
           <Link key={document.link + id} to={{ pathname: document.link }} target="_blank">
             {document.document_name ? document.document_name : document.link}
           </Link>
@@ -33,13 +33,15 @@ function Documents({ documentFields, hideTitle }) {
     })
   }
   const renderFields = () => {
+    documentsNotReady = true
     return (
       <div>
-        {documentFields &&
-            documentFields.sections &&
-            documentFields.sections.map(section => {
+        {documentFields && documentFields.sections &&
+          documentFields.sections.map(section => {
             return renderSection(section)
-          })}
+          })
+        }
+        {documentsNotReady && <label className="documents-not-ready">{t('project.documents-not-ready')}</label>}
       </div>
     )
   }
@@ -54,7 +56,7 @@ function Documents({ documentFields, hideTitle }) {
 }
 
 Documents.propTypes = {
-    documentFields: PropTypes.object
+  documentFields: PropTypes.object
 }
 
 export default Documents

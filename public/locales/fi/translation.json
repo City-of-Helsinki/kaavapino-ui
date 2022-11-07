@@ -175,8 +175,9 @@
     "show-timelines": "Näytä aikajanat",
     "char-limit": "Max {{amount}} merkkiä.",
     "download_confirmation_header": "Vahvistus dokumentin lataukselle",
-    "download_confirmation_content": "Lataamisen jälkeen saat kaikista muutoksista automaattisia viestejä. Oletko varma, että haluat ladata dokumentin?"
-    
+    "download_confirmation_content": "Lataamisen jälkeen saat kaikista muutoksista automaattisia viestejä. Oletko varma, että haluat ladata dokumentin?",
+    "missing-data": "Tietoja ei ole vielä syötetty",
+    "documents-not-ready": "Dokumentteja ei ole vielä valmiina"
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}"

@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 
 function Description({ fields, hideTitle }) {
   const { t } = useTranslation()
+  let missingData = true
 
   const renderField = (field, index) => {
     const key = field.label + index
@@ -14,9 +15,12 @@ function Description({ fields, hideTitle }) {
     if (isObject(field.value)) {
       value = getRichTextContent(field.value.ops)
     }
+
+    if(missingData) missingData = value == null
+
     return (
       <div key={key}>
-        <div>{value} </div>
+        <div>{value}</div>
       </div>
     )
   }
@@ -26,13 +30,16 @@ function Description({ fields, hideTitle }) {
     return parse(converter.convert())
   }
   const renderFields = () => {
+    missingData = true
     return (
       <div>
         {!hideTitle && <h3>{t('project.description-title')}</h3>}
         {fields &&
           fields.map((field, index) => {
             return renderField(field, index)
-          })}
+          })
+        }
+        {missingData && <label className="missing-data">{t('project.missing-data')}</label>}
       </div>
     )
   }
