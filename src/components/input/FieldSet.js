@@ -57,6 +57,7 @@ const FieldSet = ({
     <React.Fragment>
       {sets.map((set, i) => {
         const deleted = get(formValues, set + '._deleted')
+        const automatically_added = get(formValues, set + '._automatically_added')
         return (
           <React.Fragment key={`${name}-${i}`}>
             {!deleted && hiddenIndex !== i && (
@@ -64,7 +65,7 @@ const FieldSet = ({
                 <div className="fieldset-header">
                   <h3 className="fieldset-header-number">{i + 1}.</h3>
 
-                  {!disable_fieldset_delete_add && (
+                  {(!disable_fieldset_delete_add && !automatically_added) && (
                     <IconCross
                       className="fieldset-remove"
                       color="red"
@@ -157,7 +158,7 @@ const FieldSet = ({
                           </div>
                         </div>
                         <CustomField
-                          field={{ ...field, name: currentName, disabled }}
+                          field={{ ...field, name: currentName, disabled, automatically_added }}
                           attributeData={attributeData}
                           fieldset={field.type === 'fieldset'}
                           parentName={name}
