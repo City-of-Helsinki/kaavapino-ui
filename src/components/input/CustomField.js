@@ -217,7 +217,8 @@ class CustomField extends Component {
         generated,
         disabled,
         autofill_readonly,
-        editable
+        editable,
+        automatically_added
       },
       field,
       attributeData,
@@ -237,7 +238,7 @@ class CustomField extends Component {
         attributeData={attributeData}
         name={name}
         placeholder={placeholder || label}
-        disabled={generated || disabled || autofill_readonly || !editable}
+        disabled={generated || disabled || autofill_readonly || !editable || automatically_added}
         formValues={formValues}
         validate={[this.validateFieldSize]}
         syncronousErrors={syncronousErrors}
@@ -427,7 +428,7 @@ class CustomField extends Component {
       name: field.name,
       placeholder: placeHolderText,
       disabled:
-        field.generated || field.disabled || field.autofill_readonly || !field.editable,
+        field.generated || field.disabled || field.autofill_readonly || !field.editable || field.automatically_added,
       component: this.getInput(field),
       ...(field.multiple_choice ? { type: 'select-multiple' } : {}),
       updated: { updated },
