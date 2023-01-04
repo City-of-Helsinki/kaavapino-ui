@@ -146,7 +146,7 @@ function ProjectCardPage({
           ...field,
           value: value === undefined ? null : value
         }
-        if (field.section_name === PROJECT_PICTURE) {
+        if (field.section_key === PROJECT_PICTURE) {
           newField = {
             ...field,
             link: value === undefined ? null : value.link,
