@@ -22,7 +22,7 @@ RUN echo -e "BUILD ENVIRONMENT\n" && \
 
 ####
 
-FROM registry.access.redhat.com/ubi8/nginx-120
+FROM registry.access.redhat.com/ubi9/nginx-120
 
 COPY nginx/default.conf "${NGINX_DEFAULT_CONF_PATH}"
 COPY nginx/logging.conf /opt/app-root/etc/nginx.default.d/
