@@ -2,7 +2,7 @@ import { createUserManager } from 'redux-oidc'
 import { WebStorageStateStore, InMemoryWebStorage } from 'oidc-client'
 import { logout } from '../actions/authActions'
 
-const baseUrl = `${window.location.protocol}//${window.location.hostname}${
+ const baseUrl = `${window.location.protocol}//${window.location.hostname}${
   window.location.port ? `:${window.location.port}` : ''
 }`
 
@@ -16,7 +16,9 @@ const userManagerConfig = {
   automaticSilentRenew: true,
   silent_redirect_uri: `${baseUrl}/silent-renew`,
   stateStore: new WebStorageStateStore({ store: localStorage }),
-  userStore: new WebStorageStateStore({ store: localStorage })
+  userStore: new WebStorageStateStore({ store: localStorage }),
+  accessTokenExpiringNotificationTime: 900,
+  includeIdTokenInSilentRenew:true
 }
 
 if (process.env.NODE_ENV === 'test') {
