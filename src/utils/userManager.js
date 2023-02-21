@@ -17,7 +17,6 @@ const userManagerConfig = {
   silent_redirect_uri: `${baseUrl}/silent-renew`,
   stateStore: new WebStorageStateStore({ store: localStorage }),
   userStore: new WebStorageStateStore({ store: localStorage }),
-  accessTokenExpiringNotificationTime: 900,
   includeIdTokenInSilentRenew:true
 }
 
