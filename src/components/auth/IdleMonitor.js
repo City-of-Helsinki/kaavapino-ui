@@ -76,7 +76,7 @@ function IdleMonitor() {
     {autoClose:100000,pauseOnHover: false,position: toast.POSITION.BOTTOM_LEFT }
   );
   
-  const toastSuccess = () => toast.success(
+  const toastSuccess = (idleModal) => toast.success(
     <InactiveMessage idleModal={idleModal} />, 
     {autoClose:3000,pauseOnHover: false,position: toast.POSITION.BOTTOM_LEFT}
   );
