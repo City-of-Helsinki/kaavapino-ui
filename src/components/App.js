@@ -29,6 +29,7 @@ import CustomFooter from './common/CustomFooter'
 import FakeLoginPage from './auth/FakeLogin'
 import Overview from './overview'
 import Terms from './common/Terms'
+import IdleMonitor from './auth/IdleMonitor'
 import { withTranslation } from 'react-i18next'
 class App extends Component {
   componentDidUpdate(prevProps) {
@@ -129,6 +130,7 @@ class App extends Component {
               />
               <Redirect to="/error/404" />
             </Switch>
+            <IdleMonitor/>
             <CustomFooter />
           </ProtectedRoute>
         </Switch>
