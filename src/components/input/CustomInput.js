@@ -11,17 +11,17 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
     oldValueRef.current = input.value;
   }, [])
 
-  const handleBlur = (event) =>{
-    if(event.target.value !== oldValueRef.current){
-      custom.onBlur();
-      oldValueRef.current = event.target.value;
-    }
- }
-
   const handleInputChange = useCallback((event) => {
    input.onChange(event, input.name);
 
    }, [input.name, input.value]);
+
+   const handleBlur = (event) =>{
+      if(event.target.value !== oldValueRef.current){
+        custom.onBlur();
+        oldValueRef.current = event.target.value;
+      }
+   }
 
   return (
     <TextInput
