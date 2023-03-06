@@ -54,14 +54,13 @@ class CustomField extends Component {
   }
 
   renderNumber = props => {
-    const { onBlur } = this.props
-
-    return <CustomInput min={0} onBlur={onBlur} {...props} type="number" />
+    const { handleBlurSave } = this.props
+    return <CustomInput min={0} onBlur={handleBlurSave} onChange={props.changed} {...props} type="number" />
   }
 
   renderYearSelect = props => {
     const { multiple_choice, placeholder_text } = this.props.field
-    const { onBlur, formName } = this.props
+    const { handleBlurSave, formName } = this.props
 
     if (this.yearOptions.length === 0) {
       this.yearOptions = projectUtils.generateArrayOfYears()
@@ -70,7 +69,7 @@ class CustomField extends Component {
       <SelectInput
         multiple={multiple_choice}
         options={this.yearOptions}
-        onBlur={onBlur}
+        onBlur={handleBlurSave}
         formName={formName}
         placeholder={placeholder_text}
         {...props}
@@ -79,21 +78,21 @@ class CustomField extends Component {
   }
 
   renderString = props => {
-    const { onBlur } = this.props
-
-    return <CustomInput onBlur={onBlur} type="text" {...props} />
+    const { handleBlurSave } = this.props
+    return <CustomInput onBlur={handleBlurSave} onChange={props.changed} type="text" {...props} />
   }
 
   renderTextArea = props => {
-    const { onBlur } = this.props
-    return <CustomTextArea onBlur={onBlur} {...props} />
+    const { handleBlurSave } = this.props
+    return <CustomTextArea onBlur={handleBlurSave} onChange={props.changed} {...props} />
   }
 
   renderRichText = props => {
-    const { onBlur, meta, formName } = this.props
+    const { handleBlurSave, meta, formName } = this.props
     return (
       <RichTextEditor
-        onBlur={onBlur}
+        onBlur={handleBlurSave}
+        onChange={props.changed}
         meta={meta}
         {...props}
         formName={formName}
@@ -103,12 +102,12 @@ class CustomField extends Component {
   }
 
   renderRichTextShort = props => {
-    const { onBlur, meta, setRef } = this.props
-    return <RichTextEditor setRef={setRef} onBlur={onBlur} meta={meta} {...props} />
+    const { handleBlurSave, meta, setRef } = this.props
+    return <RichTextEditor setRef={setRef} onBlur={handleBlurSave} onChange={props.changed} meta={meta} {...props} />
   }
 
   renderDate = props => {
-    const { onBlur, deadlines, field } = this.props
+    const { handleBlurSave, deadlines, field } = this.props
 
     let current
     if (deadlines && deadlines.length > 0) {
@@ -128,24 +127,24 @@ class CustomField extends Component {
         />
       )
     }
-    return <CustomInput onBlur={onBlur} type="date" {...props} />
+    return <CustomInput onBlur={handleBlurSave} onChange={props.changed} type="date" {...props} />
   }
 
   renderGeometry = props => {
-    const { onBlur } = this.props
-    return <Geometry onBlur={onBlur} {...props} />
+    const { handleBlurSave } = this.props
+    return <Geometry onBlur={handleBlurSave} {...props} />
   }
 
   renderSelect = props => {
     const { choices, multiple_choice, placeholder_text, formName } = this.props.field
-    const { onBlur } = this.props
+    const { handleBlurSave } = this.props
 
     return (
       <SelectInput
         {...props}
         multiple={multiple_choice}
         options={this.formatOptions(choices)}
-        onBlur={onBlur}
+        onBlur={handleBlurSave}
         placeholder={placeholder_text}
         formName={formName}
       />
@@ -153,24 +152,24 @@ class CustomField extends Component {
   }
   renderSearchSelect = props => {
     const { choices, placeholder_text, formName } = this.props.field
-    const { onBlur } = this.props
+    const { handleBlurSave } = this.props
 
     return (
       <CustomSearchCombobox
         {...props}
-         options={choices}
-        onBlur={onBlur}
+        options={choices}
+        onBlur={handleBlurSave}
         placeholder={placeholder_text}
         formName={formName}
       />
     )
   }
   renderRadio = props => {
-    const { field, onBlur } = this.props
+    const { field, handleBlurSave } = this.props
     return (
       <CustomRadioButton
         options={this.formatOptions(field.options)}
-        onBlur={onBlur}
+        onBlur={handleBlurSave}
         {...props}
       />
     )
@@ -181,7 +180,7 @@ class CustomField extends Component {
 
     return (
       <RadioBooleanButton
-        onBlur={props.onBlur}
+        onBlur={props.handleBlurSave}
         input={input}
         onRadioChange={onRadioChange}
         defaultValue={defaultValue}
@@ -192,23 +191,23 @@ class CustomField extends Component {
   }
 
   renderToggle = props => {
-    const { onBlur } = this.props
-    return <ToggleButton onBlur={onBlur} {...props} />
+    const { handleBlurSave } = this.props
+    return <ToggleButton onBlur={handleBlurSave} {...props} />
   }
 
   renderLink = props => {
-    const { onBlur } = this.props
+    const { handleBlurSave } = this.props
     const { placeholder_text } = this.props.field
 
-    return <Link onBlur={onBlur} placeholder={placeholder_text} {...props} />
+    return <Link onBlur={handleBlurSave} onChange={props.changed} placeholder={placeholder_text} {...props} />
   }
 
   renderDateTime = props => {
-    const { onBlur, handleSave } = this.props
-    return <DateTime onBlur={onBlur} handleSave={handleSave} {...props} />
+    const { handleBlurSave, handleSave } = this.props
+    return <DateTime onBlur={handleBlurSave} handleSave={handleSave} {...props} />
   }
 
-  renderFieldset = ({ fields: sets }) => {
+  renderFieldset = ({ fields: sets}) => {
     const {
       field: {
         fieldset_attributes,
@@ -225,6 +224,7 @@ class CustomField extends Component {
       formValues,
       syncronousErrors,
       handleSave,
+      handleBlurSave,
       onRadioChange,
       placeholder,
       formName,
@@ -247,13 +247,14 @@ class CustomField extends Component {
         field={field}
         formName={formName}
         updated={updated}
+        onBlur={handleBlurSave}
       />
     )
   }
 
   renderDecimal = props => {
-    const { onBlur } = this.props
-    return <CustomInput type="number" step="0.01" onBlur={onBlur} {...props} />
+    const { handleBlurSave } = this.props
+    return <CustomInput type="number" step="0.01" onChange={props.changed} onBlur={handleBlurSave} {...props} />
   }
 
   renderCustomCheckbox = props => {
@@ -295,13 +296,13 @@ class CustomField extends Component {
     )
   }
   renderADUserSelection = props => {
-    const { field, onBlur } = this.props
+    const { field, handleBlurSave } = this.props
 
     return (
       <CustomADUserCombobox
         label={field.label}
         multiselect={false}
-        onBlur={onBlur}
+        onBlur={handleBlurSave}
         {...props}
       />
     )
@@ -315,7 +316,7 @@ class CustomField extends Component {
     // Since there might be rules which has boolean type and choices, avoid selecting select and select
     // boolean radiobutton intead
     if (field.choices && field.type !== 'boolean' && field.type !== 'search-select') {
-   
+
       return this.renderSelect
     }
     if (field.display === 'dropdown' || field.display === 'simple_integer') {
@@ -386,7 +387,8 @@ class CustomField extends Component {
       updated,
       defaultValue,
       className,
-      handleSave
+      handleSave,
+      handleBlurSave
     } = this.props
     const type = field.type
     if (type === 'file' || type === 'image') {
@@ -403,6 +405,7 @@ class CustomField extends Component {
           formValues={formValues}
           attributeData={attributeData}
           handleSave={handleSave}
+          onBlur={handleBlurSave}
         />
       )
     }
@@ -435,9 +438,9 @@ class CustomField extends Component {
       className: getClass()
     }
 
-    /* Some fields are autofilled to a value as per (autofill_rules)
-     * Some fields have their value calculated based on other fields (calculations)
-     * Some autofill fields are readonly, some are not (autofill_readonly) */
+    // Some fields are autofilled to a value as per (autofill_rules)
+    //Some fields have their value calculated based on other fields (calculations)
+    //Some autofill fields are readonly, some are not (autofill_readonly) 
     if (this.props.isFloorCalculation) {
       fieldProps = {
         ...fieldProps,

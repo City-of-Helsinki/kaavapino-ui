@@ -68,7 +68,7 @@ class File extends Component {
     const {
       projectFileRemove,
       field: { name },
-      handleSave,
+      onBlur,
       t
     } = this.props
     const { current } = this.state
@@ -79,7 +79,7 @@ class File extends Component {
       this.inputRef.current.value = ''
       this.setState({ current: null })
       projectFileRemove(name)
-      handleSave()
+      onBlur()
     }
   }
 

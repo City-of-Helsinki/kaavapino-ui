@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect, useCallback } from 'react'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import { change } from 'redux-form'
@@ -76,6 +76,7 @@ function RichTextEditor(props) {
   const [counter, setCounter] = useState(props.currentSize)
   const [showCounter, setShowCounter] = useState(false)
   const [currentTimeout, setCurrentTimeout] = useState(0)
+  const [inputValue,setInputValue] = useState('')
   const fieldFormName = formName ? formName : EDIT_PROJECT_FORM
 
   const getFieldComments = () => {
@@ -94,13 +95,17 @@ function RichTextEditor(props) {
 
   const { t } = useTranslation()
 
+  const oldValueRef = useRef('');
+
   useEffect(() => {
+    oldValueRef.current = inputProps.value;
+    setInputValue(inputProps.value);
     if (setRef) {
       setRef({ name: inputProps.name, ref: editorRef })
     }
   }, [])
 
-  const handleChange = (_val, _delta, source) => {
+  const handleChange = useCallback((_val, _delta, source) => {
     if (currentTimeout) {
       clearTimeout(currentTimeout)
       setCurrentTimeout(0)
@@ -130,7 +135,17 @@ function RichTextEditor(props) {
       setCounter(actualDeltaValue.length() - 1)
       setShowCounter(true)
     }
-  }
+    inputProps.onChange(_val, inputProps.name);
+    setInputValue(_val);
+  },[inputProps.name, inputProps.value])
+
+  const handleBlur = () =>{
+    if(inputValue !== oldValueRef.current){
+      onBlur();
+      oldValueRef.current = inputValue;
+    }
+ }
+
   const addComment = () => {
     const prompt = window.prompt(t('shoutbox.add-field-comment'), '')
     if (prompt) {
@@ -230,7 +245,7 @@ function RichTextEditor(props) {
                 setToolbarVisible(false)
                 setShowCounter(false)
                 if (onBlur) {
-                  onBlur()
+                  handleBlur()
                 }
               }
             }, 50) // random time
