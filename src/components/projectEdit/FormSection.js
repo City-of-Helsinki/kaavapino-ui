@@ -23,9 +23,7 @@ const FormSection = ({
   submitErrors,
   setRef
 }) => {
-  const handleBlurSave = () => {
-    handleSave()
-  }
+  
   return (
     <Segment>
       <h2 id={`title-${title}`} className="section-title">
@@ -40,7 +38,6 @@ const FormSection = ({
           attributeData={attributeData}
           updated={updates[field.name] || null}
           handleSave={handleSave}
-          onBlur={handleBlurSave}
           onRadioChange={handleSave}
           formName={formName}
           formValues={formValues}

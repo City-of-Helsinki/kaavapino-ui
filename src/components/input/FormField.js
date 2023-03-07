@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useCallback} from 'react'
 import CustomField from './CustomField'
 import Matrix from './Matrix'
 import { Form, Label, Popup } from 'semantic-ui-react'
@@ -24,8 +24,14 @@ const FormField = ({
   isFloorCalculation,
   t,
   className,
+  handleSave,
   ...rest
 }) => {
+  const handleBlurSave = useCallback(() => {
+    if (typeof handleSave === 'function') {
+      handleSave()
+    }
+  }, []);
   const renderField = newProps => {
     let newField = field
 
@@ -54,6 +60,7 @@ const FormField = ({
             fieldset={newField.type === 'fieldset'}
             formName={formName}
             formValues={formValues}
+            handleBlurSave={handleBlurSave}
             syncronousErrors={syncronousErrors}
           />
         )
@@ -208,4 +215,4 @@ const FormField = ({
   }
 }
 
-export default withTranslation()(FormField)
+export default withTranslation()(React.memo(FormField))

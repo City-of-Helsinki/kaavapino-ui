@@ -27,10 +27,12 @@ const FieldSet = ({
   handleSave,
   onRadioChange,
   updated,
+  onBlur,
   field: { disable_fieldset_delete_add }
 }) => {
-  const handleBlurSave = () => {
-    handleSave()
+
+  const handleBlur = () => {
+    onBlur()
   }
   const dispatch = useDispatch()
 
@@ -166,7 +168,11 @@ const FieldSet = ({
                           formValues={formValues}
                           handleSave={handleSave}
                           onRadioChange={onRadioChange}
-                          onBlur={handleBlurSave}
+                          handleBlurSave={() => {
+                                if (onBlur) {
+                                  handleBlur()
+                                }
+                          }}
                           validate={validate}
                         />
                         {showError && <div className="error-text">{showError}</div>}
@@ -187,7 +193,7 @@ const FieldSet = ({
             }`}
             onClick={() => {
               sets.push({})
-              handleBlurSave()
+              handleBlur()
             }}
             disabled={disabled}
             variant="secondary"

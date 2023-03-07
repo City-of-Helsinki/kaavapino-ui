@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useRef, useEffect, useState} from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { Select } from 'hds-react'
@@ -16,6 +16,13 @@ const SelectInput = ({
   multiple
 }) => {
   const currentValue = []
+  const oldValueRef = useRef('');
+  const [selectValues,setSelectValues] = useState('')
+
+  useEffect(() => {
+    oldValueRef.current = input.value;
+    setSelectValues(input.value);
+  }, [])
 
   const getLabel = value => {
     const current = options && options.find(option => option.value === value)
@@ -67,6 +74,13 @@ const SelectInput = ({
     return currentOption
   }
 
+  const handleBlur = () =>{
+    if(selectValues !== oldValueRef.current){
+      onBlur();
+      oldValueRef.current = selectValues;
+    }
+ }
+
   options = options
     ? options.filter(option => option.label && option.label.trim() !== '')
     : []
@@ -81,7 +95,7 @@ const SelectInput = ({
         id={input.name}
         multiselect={false}
         error={inputUtils.hasError(error)}
-        onBlur={onBlur}
+        onBlur={handleBlur}
         clearable={true}
         disabled={disabled}
         options={currentOptions}
@@ -91,6 +105,7 @@ const SelectInput = ({
           if (returnValue === '') {
             returnValue = null
           }
+          setSelectValues(returnValue)
           input.onChange(returnValue)
         }}
       />
@@ -104,13 +119,14 @@ const SelectInput = ({
       name={input.name}
       multiselect={multiple}
       error={error}
-      onBlur={onBlur}
+      onBlur={handleBlur}
       clearable={true}
       disabled={disabled}
       options={currentOptions}
       defaultValue={currentValue}
       onChange={data => {
         let returnValue = data && data.map(currentValue => currentValue.value)
+        setSelectValues(returnValue)
         input.onChange(returnValue)
       }}
     />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { TextInput } from 'hds-react'
 import isUrl from 'is-url'
 import ipRegex from 'ip-regex'
@@ -17,9 +17,17 @@ const Link = props => {
 
   const isLinkValid = currentValue && isValid(currentValue)
 
-  const onBlur = () => {
+  const oldValueRef = useRef('');
+
+  useEffect(() => {
+    oldValueRef.current = props.input.value;
+  }, [])
+
+  const onBlur = (event) => {
     if (isLinkValid) {
+      if(event.target.value !== oldValueRef.current){
       props.onBlur()
+      }
     }
   }
 
