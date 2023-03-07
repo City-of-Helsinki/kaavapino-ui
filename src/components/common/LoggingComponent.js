@@ -205,6 +205,31 @@ function LoggingComponent(props) {
     return returnValues.length === 0 ? null : returnValues
   }
 
+  const filterFieldsetValues = (newValuesArray, oldValuesArray) => {
+    //Make array for both sets of values and compare the objects
+    const combineArrays = newValuesArray.concat(oldValuesArray);
+    const [changedValuesOnly, ...others] = combineArrays;
+    for (let [key, value] of Object.entries(changedValuesOnly)) {
+      for (let object of others) {
+        //Modify string values to be similar so they can be compared reliably
+        if(typeof object[key] === 'string'){
+          object[key] = object[key].split('_').join(' ').split('-').join(' ');
+          object[key] = object[key].charAt(0).toUpperCase() + object[key].slice(1);
+          value = value.split('_').join(' ').split('-').join(' ');
+          value = value.charAt(0).toUpperCase() + value.slice(1);
+        }
+        if (object[key] === value) {
+          //delete values that have not been changed, we want to show only values that have changed
+          delete changedValuesOnly[key];
+          delete object[key];
+        }
+      }
+    }
+    const changesOnlyArray = [];
+    changesOnlyArray.push(changedValuesOnly);
+    return [changesOnlyArray, others];
+  }
+
   return (
     <div className="nav-header-info">
       {latestUpdate && (
@@ -221,6 +246,11 @@ function LoggingComponent(props) {
         <Grid stackable columns="equal">
           {infoOptions &&
             infoOptions.map((option, index) => {
+              if (option.type === "fieldset") {
+                //Filter fieldset values from new and old that have not changed from last edit. 
+                //Before this all values on fieldset that had been modified at somepoint were shown as changed every time
+                filterFieldsetValues(option.newValue, option.oldValue);
+              }
               return (
                 <Grid.Row key={option + index}>
                   <Grid.Column width={14}>
