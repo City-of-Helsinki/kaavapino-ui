@@ -215,4 +215,4 @@ const FormField = ({
   }
 }
 
-export default withTranslation()(React.memo(FormField))
+export default withTranslation()(FormField)
