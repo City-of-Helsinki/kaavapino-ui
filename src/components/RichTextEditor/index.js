@@ -107,7 +107,6 @@ function RichTextEditor(props) {
   }, [])
 
   const handleChange = useCallback((_val, _delta, source) => {
-    console.log("change RichTextEditor")
     if (currentTimeout) {
       clearTimeout(currentTimeout)
       setCurrentTimeout(0)
