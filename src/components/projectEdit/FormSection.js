@@ -17,6 +17,7 @@ const FormSection = ({
   attributeData,
   updates,
   handleSave,
+  handleLockField,
   formName,
   formValues,
   syncronousErrors,
@@ -39,6 +40,7 @@ const FormSection = ({
           updated={updates[field.name] || null}
           handleSave={handleSave}
           onRadioChange={handleSave}
+          handleLockField={handleLockField}
           formName={formName}
           formValues={formValues}
           syncronousErrors={syncronousErrors}

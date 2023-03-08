@@ -11,6 +11,10 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
     oldValueRef.current = input.value;
   }, [])
 
+  const handleFocus = () => {
+    custom.onFocus();
+  }
+
   const handleBlur = (event) =>{
     if(event.target.value !== oldValueRef.current){
       custom.onBlur();
@@ -33,6 +37,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       {...custom}
       onChange={handleInputChange}
       onBlur={handleBlur}
+      onFocus={handleFocus}
     />
   )
 }

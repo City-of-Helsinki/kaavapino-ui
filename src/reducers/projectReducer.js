@@ -1,4 +1,5 @@
 import {
+  LOCK_PROJECT_FIELD,
   FETCH_PROJECTS_SUCCESSFUL,
   FETCH_OWN_PROJECTS_SUCCESSFUL,
   FETCH_PROJECTS,
@@ -96,7 +97,14 @@ export const initialState = {
 }
 
 export const reducer = (state = initialState, action) => {
+  console.log(action.type);
   switch (action.type) {
+    case LOCK_PROJECT_FIELD: {
+      return{
+        ...state
+      }
+    }
+
     case FETCH_PROJECTS: {
       return {
         ...state,

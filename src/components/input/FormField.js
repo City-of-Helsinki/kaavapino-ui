@@ -25,6 +25,7 @@ const FormField = ({
   t,
   className,
   handleSave,
+  handleLockField,
   ...rest
 }) => {
   const handleBlurSave = useCallback(() => {
@@ -61,6 +62,7 @@ const FormField = ({
             formName={formName}
             formValues={formValues}
             handleBlurSave={handleBlurSave}
+            handleLockField={handleLockField}
             syncronousErrors={syncronousErrors}
           />
         )

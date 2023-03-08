@@ -54,8 +54,8 @@ class CustomField extends Component {
   }
 
   renderNumber = props => {
-    const { handleBlurSave } = this.props
-    return <CustomInput min={0} onBlur={handleBlurSave} onChange={props.changed} {...props} type="number" />
+    const { handleBlurSave, handleLockField } = this.props
+    return <CustomInput min={0} onBlur={handleBlurSave} onChange={props.changed} onFocus={handleLockField} {...props} type="number" />
   }
 
   renderYearSelect = props => {
@@ -78,8 +78,8 @@ class CustomField extends Component {
   }
 
   renderString = props => {
-    const { handleBlurSave } = this.props
-    return <CustomInput onBlur={handleBlurSave} onChange={props.changed} type="text" {...props} />
+    const { handleBlurSave, handleLockField } = this.props
+    return <CustomInput onBlur={handleBlurSave} onChange={props.changed} onFocus={handleLockField} type="text" {...props} />
   }
 
   renderTextArea = props => {
@@ -107,7 +107,7 @@ class CustomField extends Component {
   }
 
   renderDate = props => {
-    const { handleBlurSave, deadlines, field } = this.props
+    const { handleBlurSave, handleLockField, deadlines, field } = this.props
 
     let current
     if (deadlines && deadlines.length > 0) {
@@ -127,7 +127,7 @@ class CustomField extends Component {
         />
       )
     }
-    return <CustomInput onBlur={handleBlurSave} onChange={props.changed} type="date" {...props} />
+    return <CustomInput onBlur={handleBlurSave} onChange={props.changed} onFocus={handleLockField} type="date" {...props} />
   }
 
   renderGeometry = props => {
@@ -253,8 +253,8 @@ class CustomField extends Component {
   }
 
   renderDecimal = props => {
-    const { handleBlurSave } = this.props
-    return <CustomInput type="number" step="0.01" onChange={props.changed} onBlur={handleBlurSave} {...props} />
+    const { handleBlurSave, handleLockField } = this.props
+    return <CustomInput type="number" step="0.01" onChange={props.changed} onBlur={handleBlurSave} onFocus={handleLockField} {...props} />
   }
 
   renderCustomCheckbox = props => {

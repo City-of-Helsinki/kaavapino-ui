@@ -26,6 +26,7 @@ import { schemaSelector } from '../selectors/schemaSelector'
 import { userIdSelector } from '../selectors/authSelector'
 import { phasesSelector } from '../selectors/phaseSelector'
 import {
+  LOCK_PROJECT_FIELD,
   FETCH_PROJECTS,
   fetchProjectsSuccessful,
   fetchOwnProjectsSuccessful,
@@ -129,6 +130,7 @@ export default function* projectSaga() {
     takeLatest(SAVE_PROJECT_FLOOR_AREA, saveProjectFloorArea),
     takeLatest(SAVE_PROJECT_TIMETABLE, saveProjectTimetable),
     takeLatest(SAVE_PROJECT, saveProject),
+    takeLatest(LOCK_PROJECT_FIELD, lockProjectField),
     takeLatest(CHANGE_PROJECT_PHASE, changeProjectPhase),
     takeLatest(PROJECT_FILE_UPLOAD, projectFileUpload),
     takeLatest(PROJECT_FILE_REMOVE, projectFileRemove),
@@ -616,6 +618,18 @@ function* saveProjectTimetable() {
     } catch (e) {
       yield put(stopSubmit(EDIT_PROJECT_TIMETABLE_FORM, e.response && e.response.data))
     }
+  }
+}
+
+function* lockProjectField() {
+  try {
+    console.log("lock")
+    yield call(
+      
+      )
+  } catch (e) {
+    console.log("lock")
+    yield put(error(e))
   }
 }
 

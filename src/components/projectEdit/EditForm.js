@@ -101,6 +101,7 @@ class EditForm extends Component {
             formName={EDIT_PROJECT_FORM}
             key={i}
             handleSave={this.props.handleSave}
+            handleLockField={this.props.handleLockField}
             section={section}
             disabled={disabled}
             attributeData={attributeData}

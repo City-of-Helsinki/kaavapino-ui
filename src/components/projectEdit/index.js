@@ -4,6 +4,7 @@ import { getFormSyncErrors, getFormSubmitErrors, getFormValues } from 'redux-for
 import { LoadingSpinner } from 'hds-react'
 import { isDirty } from 'redux-form/immutable'
 import {
+  lockProjectField,
   saveProject,
   saveProjectFloorArea,
   saveProjectTimetable,
@@ -143,6 +144,10 @@ class ProjectEditPage extends Component {
       return
     }
     this.props.saveProject()
+  }
+  handleLockField = () => {
+    console.log("onfocus");
+    this.props.lockProjectField()
   }
   handleTimetableClose = () => {
     const { project, saveProjectTimetable } = this.props
@@ -357,6 +362,7 @@ class ProjectEditPage extends Component {
           </div>
           <EditForm
             handleSave={this.handleAutoSave}
+            handleLockField={this.handleLockField}
             sections={currentSchema.sections}
             attributeData={attribute_data}
             geoServerData={geoserver_data}
@@ -421,6 +427,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = {
   fetchSchemas,
+  lockProjectField,
   saveProject,
   saveProjectFloorArea,
   saveProjectTimetable,
