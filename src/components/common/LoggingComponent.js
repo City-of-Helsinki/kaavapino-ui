@@ -167,7 +167,7 @@ function LoggingComponent(props) {
         let deleted = false
 
         if (key !== '_deleted') {
-          let value = getFormattedValue(fieldset[key], key, schema, schema[key] ? schema[key].type: null)
+          let value = getFormattedValue(fieldset[key], key, schema, schema[key] ? schema[key].type : null)
 
           const date = dayjs(value).format(t('dateformat'))
 
@@ -212,20 +212,16 @@ function LoggingComponent(props) {
     for (let [key, value] of Object.entries(changedValuesOnly)) {
       for (let object of others) {
         //Modify string values to be similar so they can be compared reliably
-        if(object){
-          if(typeof object[key] === 'string'){
-            object[key] = object[key].split('_').join(' ').split('-').join(' ');
-            object[key] = object[key].charAt(0).toUpperCase() + object[key].slice(1);
-            if(value){
-              value = value.split('_').join(' ').split('-').join(' ');
-              value = value.charAt(0).toUpperCase() + value.slice(1);
-            }
-          }
-          if (object[key] === value) {
-            //delete values that have not been changed, we want to show only values that have changed
-            delete changedValuesOnly[key];
-            delete object[key];
-          }
+        if (object && value && typeof object[key] === 'string') {
+          object[key] = object[key].split('_').join(' ').split('-').join(' ');
+          object[key] = object[key].toUpperCase();
+          value = value.split('_').join(' ').split('-').join(' ');
+          value = value.toUpperCase();
+        }
+        if (object && value && object[key] === value) {
+          //delete values that have not been changed, we want to show only values that have changed
+          delete changedValuesOnly[key];
+          delete object[key];
         }
       }
     }
