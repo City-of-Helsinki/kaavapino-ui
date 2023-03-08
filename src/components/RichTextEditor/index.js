@@ -73,10 +73,10 @@ function RichTextEditor(props) {
 
   const [toolbarVisible, setToolbarVisible] = useState(false)
   const editorRef = useRef(null)
-  const [counter, setCounter] = useState(props.currentSize)
-  const [showCounter, setShowCounter] = useState(false)
+  const counter = useRef(props.currentSize)
+  const showCounter = useRef(false)
   const [currentTimeout, setCurrentTimeout] = useState(0)
-  const [inputValue,setInputValue] = useState('')
+  const inputValue = useRef('')
   const fieldFormName = formName ? formName : EDIT_PROJECT_FORM
 
   const getFieldComments = () => {
@@ -99,7 +99,8 @@ function RichTextEditor(props) {
 
   useEffect(() => {
     oldValueRef.current = inputProps.value;
-    setInputValue(inputProps.value);
+    inputValue.current = inputProps.value;
+
     if (setRef) {
       setRef({ name: inputProps.name, ref: editorRef })
     }
@@ -109,6 +110,7 @@ function RichTextEditor(props) {
     if (currentTimeout) {
       clearTimeout(currentTimeout)
       setCurrentTimeout(0)
+
     }
     if (source === 'user') {
       /* Get the value from the editor - the delta provided to handlechange does not have complete state */
@@ -129,22 +131,22 @@ function RichTextEditor(props) {
               )
             ),
           500
-        )
-      )
+        ))
 
-      setCounter(actualDeltaValue.length() - 1)
-      setShowCounter(true)
+      counter.current = actualDeltaValue.length() - 1;
+      showCounter.current = true;
     }
     inputProps.onChange(_val, inputProps.name);
-    setInputValue(_val);
-  },[inputProps.name, inputProps.value])
+    inputValue.current = _val;
 
-  const handleBlur = () =>{
-    if(inputValue !== oldValueRef.current){
+  }, [inputProps.name, inputProps.value])
+
+  const handleBlur = () => {
+    if (inputValue.current !== oldValueRef.current) {
       onBlur();
-      oldValueRef.current = inputValue;
+      oldValueRef.current = inputValue.current;
     }
- }
+  }
 
   const addComment = () => {
     const prompt = window.prompt(t('shoutbox.add-field-comment'), '')
@@ -180,9 +182,8 @@ function RichTextEditor(props) {
       aria-label="tooltip"
     >
       <div
-        className={`rich-text-editor ${
-          toolbarVisible || showComments ? 'toolbar-visible' : ''
-        } ${largeField ? 'large' : ''}`}
+        className={`rich-text-editor ${toolbarVisible || showComments ? 'toolbar-visible' : ''
+          } ${largeField ? 'large' : ''}`}
         onFocus={() => setToolbarVisible(true)}
       >
         <div
@@ -243,7 +244,7 @@ function RichTextEditor(props) {
               let fixRange = quill.getSelection()
               if (!fixRange) {
                 setToolbarVisible(false)
-                setShowCounter(false)
+                showCounter.current = false;
                 if (onBlur) {
                   handleBlur()
                 }
@@ -274,13 +275,13 @@ function RichTextEditor(props) {
           ))}
         </div>
       )}
-      {showCounter && props.maxSize ? (
+      {showCounter.current && props.maxSize ? (
         <p
           className={
-            counter > props.maxSize ? 'quill-counter quill-warning' : 'quill-counter'
+            counter.current > props.maxSize ? 'quill-counter quill-warning' : 'quill-counter'
           }
         >
-          {counter + '/' + props.maxSize}
+          {counter.current + '/' + props.maxSize}
         </p>
       ) : null}
     </div>
