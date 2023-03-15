@@ -6,7 +6,7 @@ import Info from './Info'
 import projectUtils from '../../utils/projectUtils'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
-import { IconClock } from 'hds-react'
+import { IconClock,IconLock } from 'hds-react'
 import { withTranslation } from 'react-i18next'
 import { isArray } from 'lodash'
 
@@ -26,8 +26,10 @@ const FormField = ({
   className,
   handleSave,
   handleLockField,
+  handleUnlockField,
   ...rest
 }) => {
+  console.log(rest);
   const handleBlurSave = useCallback(() => {
     if (typeof handleSave === 'function') {
       handleSave()
@@ -63,6 +65,7 @@ const FormField = ({
             formValues={formValues}
             handleBlurSave={handleBlurSave}
             handleLockField={handleLockField}
+            handleUnlockField={handleUnlockField}
             syncronousErrors={syncronousErrors}
           />
         )
@@ -155,6 +158,10 @@ const FormField = ({
               className={`input-title${required ? ' highlight' : ''}`}
             >
               {title}
+              {/* Add check if locked or not from props and add username from props. Change show error to correct prop */}
+              {showError && (
+              <span style={{color:'red',border:'1px solid red'}}> Käyttäjä Henri Haapala on muokkaamassa kenttää <IconLock></IconLock></span>
+              )}
             </Label>
             <div className="input-header-icons">
               {updated && !isReadOnly && (

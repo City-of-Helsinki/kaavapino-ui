@@ -60,6 +60,7 @@ function RichTextEditor(props) {
     meta,
     placeholder,
     onBlur,
+    onFocus,
     className,
     updated,
     formName,
@@ -77,6 +78,8 @@ function RichTextEditor(props) {
   const showCounter = useRef(false)
   const [currentTimeout, setCurrentTimeout] = useState(0)
   const inputValue = useRef('')
+  //Replace with props returned from store
+  const [lockStyle, setLockStyle] = useState(false);
   const fieldFormName = formName ? formName : EDIT_PROJECT_FORM
 
   const getFieldComments = () => {
@@ -104,6 +107,10 @@ function RichTextEditor(props) {
     if (setRef) {
       setRef({ name: inputProps.name, ref: editorRef })
     }
+    window.addEventListener('beforeunload', handleClose)
+    return () => {
+      window.removeEventListener('beforeunload', handleClose)
+    };
   }, [])
 
   const handleChange = useCallback((_val, _delta, source) => {
@@ -141,12 +148,28 @@ function RichTextEditor(props) {
 
   }, [inputProps.name, inputProps.value])
 
+  const handleFocus = () => {
+    console.log(inputProps.name)
+    setLockStyle(true)
+    onFocus(inputProps.name);
+  }
+
   const handleBlur = () => {
+    //Add logic to call handleUnlockField if closing browser or tab when in input
+    setLockStyle(false)
+    props.handleUnlockField()
     if (inputValue.current !== oldValueRef.current) {
       onBlur();
       oldValueRef.current = inputValue.current;
     }
   }
+
+  const handleClose = () => {
+    if(lockStyle){
+      setLockStyle(false)
+      props.handleUnlockField()
+    }
+   }
 
   const addComment = () => {
     const prompt = window.prompt(t('shoutbox.add-field-comment'), '')
@@ -230,6 +253,7 @@ function RichTextEditor(props) {
           </span>
         </div>
         <ReactQuill
+          style={lockStyle ? { border: '1px solid red' } : { border: '' }}
           ref={editorRef}
           modules={modules}
           theme="snow"
@@ -238,6 +262,7 @@ function RichTextEditor(props) {
           // default value initialized, after that quill handles internal state
           // Do not explicitly set value. see comments at top of this file.
           onChange={handleChange}
+          onFocus={handleFocus}
           onBlur={(_range, _source, quill) => {
             setTimeout(() => {
               // Hack. Prevent blurring when copy-paste data

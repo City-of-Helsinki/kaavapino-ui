@@ -86,9 +86,14 @@ export const SET_ONHOLD_PROJECTS = "Set onhold projects"
 export const SET_ARCHIVED_PROJECTS = "Set archived projects"
 export const RESET_PROJECT_DEADLINES_SUCCESSFUL = "Resetting project deadlines successful"
 export const LOCK_PROJECT_FIELD = "lockProjectField"
+export const UNLOCK_PROJECT_FIELD = "unlockProjectField"
 
-export const lockProjectField = () => ({
+export const lockProjectField = (inputname) => ({
   type: LOCK_PROJECT_FIELD,
+  payload: inputname
+})
+export const unlockProjectField = () => ({
+  type: UNLOCK_PROJECT_FIELD
 })
 export const fetchProjects = searchQuery => ({
   type: FETCH_PROJECTS,

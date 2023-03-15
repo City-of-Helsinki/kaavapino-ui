@@ -28,15 +28,18 @@ const FieldSet = ({
   onRadioChange,
   updated,
   onBlur,
+  handleLockField,
+  handleUnlockField,
   field: { disable_fieldset_delete_add }
 }) => {
 
   const handleBlur = () => {
     onBlur()
   }
+  
   const dispatch = useDispatch()
 
-  const {t} = useTranslation()
+  const { t } = useTranslation()
 
   const [hiddenIndex, setHiddenIndex] = useState(-1)
 
@@ -108,7 +111,7 @@ const FieldSet = ({
                   }
 
                   const title = field.character_limit
-                    ? t('project.fieldset-title', {label: field.label, max: field.character_limit})
+                    ? t('project.fieldset-title', { label: field.label, max: field.character_limit })
                     : field.label
                   const error = syncronousErrors && syncronousErrors[field.name]
 
@@ -129,9 +132,8 @@ const FieldSet = ({
                       <Form.Field required={required}>
                         <div className="input-header">
                           <Label
-                            className={`input-title${required ? ' highlight' : ''} ${
-                              showError ? 'error' : ''
-                            }`}
+                            className={`input-title${required ? ' highlight' : ''} ${showError ? 'error' : ''
+                              }`}
                           >
                             {title}
                           </Label>
@@ -147,9 +149,8 @@ const FieldSet = ({
                                   <span className="input-history">
                                     <span>{`${projectUtils.formatDate(
                                       updated.timestamp
-                                    )} ${projectUtils.formatTime(updated.timestamp)} ${
-                                      updated.user_name
-                                    }`}</span>
+                                    )} ${projectUtils.formatTime(updated.timestamp)} ${updated.user_name
+                                      }`}</span>
                                   </span>
                                 }
                               />
@@ -167,11 +168,13 @@ const FieldSet = ({
                           formName={formName}
                           formValues={formValues}
                           handleSave={handleSave}
+                          handleLockField={handleLockField}
+                          handleUnlockField={handleUnlockField}
                           onRadioChange={onRadioChange}
                           handleBlurSave={() => {
-                                if (onBlur) {
-                                  handleBlur()
-                                }
+                            if (onBlur) {
+                              handleBlur()
+                            }
                           }}
                           validate={validate}
                         />
@@ -188,9 +191,8 @@ const FieldSet = ({
       {!disable_fieldset_delete_add && (
         <>
           <Button
-            className={`fieldset-button-add ${
-              checking && projectUtils.hasFieldsetErrors(name, fields, attributeData) ? 'fieldset-internal-error' : null
-            }`}
+            className={`fieldset-button-add ${checking && projectUtils.hasFieldsetErrors(name, fields, attributeData) ? 'fieldset-internal-error' : null
+              }`}
             onClick={() => {
               sets.push({})
               handleBlur()
@@ -198,7 +200,7 @@ const FieldSet = ({
             disabled={disabled}
             variant="secondary"
           >
-           {t('project.add')}
+            {t('project.add')}
           </Button>
           <Button
             className="fieldset-button-remove"
@@ -217,7 +219,7 @@ const FieldSet = ({
             }}
             variant="secondary"
           >
-             {t('project.remove')}
+            {t('project.remove')}
           </Button>
         </>
       )}

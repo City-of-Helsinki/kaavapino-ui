@@ -27,6 +27,7 @@ import { userIdSelector } from '../selectors/authSelector'
 import { phasesSelector } from '../selectors/phaseSelector'
 import {
   LOCK_PROJECT_FIELD,
+  UNLOCK_PROJECT_FIELD,
   FETCH_PROJECTS,
   fetchProjectsSuccessful,
   fetchOwnProjectsSuccessful,
@@ -131,6 +132,7 @@ export default function* projectSaga() {
     takeLatest(SAVE_PROJECT_TIMETABLE, saveProjectTimetable),
     takeLatest(SAVE_PROJECT, saveProject),
     takeLatest(LOCK_PROJECT_FIELD, lockProjectField),
+    takeLatest(UNLOCK_PROJECT_FIELD, unlockProjectField),
     takeLatest(CHANGE_PROJECT_PHASE, changeProjectPhase),
     takeLatest(PROJECT_FILE_UPLOAD, projectFileUpload),
     takeLatest(PROJECT_FILE_REMOVE, projectFileRemove),
@@ -621,14 +623,35 @@ function* saveProjectTimetable() {
   }
 }
 
-function* lockProjectField() {
+function* lockProjectField(inputname) {
+  const currentProjectId = yield select(currentProjectIdSelector)
+  const userId = yield select(userIdSelector)
+  console.log(userId)
+  console.log(currentProjectId)
+  console.log(inputname.payload)
   try {
     console.log("lock")
+        //projecti, lukittu/ei atribuutti ja käyttäjä
+        //if OK success return locked false and change styles to editing
+        //if return LOCKED return username and locked true and change styles to locked
+    yield call(
+      
+    )
+  } catch (e) {
+    console.log("lock")
+    yield put(error(e))
+  }
+}
+
+function* unlockProjectField() {
+  //Send unlock field for other users
+  try {
+    console.log("unlock")
     yield call(
       
       )
   } catch (e) {
-    console.log("lock")
+    console.log("unlock")
     yield put(error(e))
   }
 }

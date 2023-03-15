@@ -1,4 +1,4 @@
-import React, {useRef, useEffect, useState} from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { Select } from 'hds-react'
@@ -13,15 +13,23 @@ const SelectInput = ({
   onBlur,
   placeholder,
   disabled,
-  multiple
+  multiple,
+  onFocus,
+  handleUnlockField
 }) => {
   const currentValue = []
   const oldValueRef = useRef('');
-  const [selectValues,setSelectValues] = useState('')
+  //Replace with props returned from store
+  const [lockStyle, setLockStyle] = useState(false);
+  const [selectValues, setSelectValues] = useState('')
 
   useEffect(() => {
     oldValueRef.current = input.value;
     setSelectValues(input.value);
+    window.addEventListener('beforeunload', handleClose)
+    return () => {
+      window.removeEventListener('beforeunload', handleClose)
+    };
   }, [])
 
   const getLabel = value => {
@@ -74,12 +82,27 @@ const SelectInput = ({
     return currentOption
   }
 
-  const handleBlur = () =>{
-    if(selectValues !== oldValueRef.current){
+  const handleFocus = () => {
+    setLockStyle(true)
+    onFocus(input.name);
+  }
+
+  const handleBlur = () => {
+    //Add logic to call handleUnlockField if closing browser or tab when in input
+    setLockStyle(false)
+    handleUnlockField()
+    if (selectValues !== oldValueRef.current) {
       onBlur();
       oldValueRef.current = selectValues;
     }
- }
+  }
+
+  const handleClose = () => {
+    if(lockStyle){
+      setLockStyle(false)
+      handleUnlockField()
+    }
+   }
 
   options = options
     ? options.filter(option => option.label && option.label.trim() !== '')
@@ -92,10 +115,12 @@ const SelectInput = ({
       <Select
         placeholder={placeholder}
         className="selection"
+        style={lockStyle ? {border:'1px solid red'} : {border:''} }
         id={input.name}
         multiselect={false}
         error={inputUtils.hasError(error)}
         onBlur={handleBlur}
+        onFocus={handleFocus}
         clearable={true}
         disabled={disabled}
         options={currentOptions}
@@ -115,11 +140,13 @@ const SelectInput = ({
     <Select
       placeholder={placeholder}
       className="selection"
+      style={lockStyle ? {border:'1px solid red'} : {border:''} }
       id={input.name}
       name={input.name}
       multiselect={multiple}
       error={error}
       onBlur={handleBlur}
+      onFocus={handleFocus}
       clearable={true}
       disabled={disabled}
       options={currentOptions}
