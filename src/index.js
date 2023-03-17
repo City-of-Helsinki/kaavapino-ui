@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react'
-import ReactDOM from 'react-dom'
+import ReactDOM from "react-dom/client";
 import { Provider } from 'react-redux'
 import { OidcProvider, processSilentRenew } from 'redux-oidc'
 import { init as sentryInit } from '@sentry/browser'
@@ -29,7 +29,9 @@ if (window.location.pathname === '/silent-renew') {
     sentryInit({ dsn: process.env.REACT_APP_SENTRY_URL })
   }
 
-  ReactDOM.render(
+  const root = ReactDOM.createRoot(document.getElementById("root"));
+  
+  root.render(
     <Provider store={store}>
       <OidcProvider userManager={userManager} store={store}>
         <React.Fragment>
@@ -46,7 +48,6 @@ if (window.location.pathname === '/silent-renew') {
           </Suspense>
         </React.Fragment>
       </OidcProvider>
-    </Provider>,
-    document.getElementById('root')
+    </Provider>
   )
 }
