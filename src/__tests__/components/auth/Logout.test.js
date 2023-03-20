@@ -1,5 +1,5 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import {render} from '@testing-library/react'
 import LogoutPage from '../../../components/auth/Logout'
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: key => key }),
@@ -11,7 +11,7 @@ describe('<Logout />', () => {
   beforeEach(() => {
    
     logoutMock.mockClear()
-    logoutWrapper = mount(<LogoutPage handleLogout={logoutMock} />)
+    logoutWrapper = render(<LogoutPage handleLogout={logoutMock} />)
   })
 
   it('renders', () => {

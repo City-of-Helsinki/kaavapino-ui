@@ -1,5 +1,5 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import {render} from '@testing-library/react'
 import FormButton from '../../../components/common/FormButton'
 
 describe('<FormButton />', () => {
@@ -8,7 +8,7 @@ describe('<FormButton />', () => {
 
   beforeEach(() => {
     mockFn = jest.fn(() => null)
-    btn = mount(
+    btn = render(
       <FormButton
         handleClick={mockFn}
         icon={<div className="icon" />}
@@ -41,7 +41,7 @@ describe('<FormButton />', () => {
 
   it('can be loading', () => {
     const loadingMockFn = jest.fn(() => null)
-    const loadingBtn = mount(<FormButton loading={true} handleClick={loadingMockFn} />)
+    const loadingBtn = render(<FormButton loading={true} handleClick={loadingMockFn} />)
 
     // For some reason the class is twice in used component
     expect(loadingBtn.find('.loading-spinner').length).toBe(2)

@@ -1,6 +1,6 @@
 {
   "name": "kaavapino-ui",
-  "version": "3.4.1",
+  "version": "0.2.0",
   "private": true,
   "dependencies": {
     "@sentry/browser": "^7.43.0",
@@ -61,8 +61,8 @@
     "start": "npm-run-all -p watch-css start-js",
     "build-js": "craco build",
     "build": "npm-run-all build-css build-js",
-    "test": "CI=true craco test --env=jest",
-    "test-coverage": "CI=true craco test --env=jest --coverage",
+    "test": "CI=true craco test",
+    "test-coverage": "CI=true craco test --coverage",
     "codecov": "codecov",
     "eject": "craco eject",
     "lint": "eslint .",
@@ -71,8 +71,10 @@
   },
   "devDependencies": {
     "@craco/craco": "^7.1.0",
+    "@testing-library/dom": "^9.0.1",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",
+    "@testing-library/user-event": "^14.4.3",
     "babel-eslint": "^10.1.0",
     "codecov": "^3.8.3",
     "deep-freeze": "0.0.1",

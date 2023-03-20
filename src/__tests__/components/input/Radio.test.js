@@ -1,11 +1,11 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import {render} from '@testing-library/react'
 import RadioBooleanButton from '../../../components/input/RadioBooleanButton'
 
 describe('<RadioBooleanButton />', () => {
   let wrapper
   beforeEach(() => {
-    wrapper = mount(
+    wrapper = render(
       <RadioBooleanButton
         input={{ value: true, name: 'test' }}
         meta={{}}
@@ -26,7 +26,7 @@ describe('<RadioBooleanButton />', () => {
   })
 
   it('is initialized correctly second test', () => {
-    const radioButtonWrapper = mount(
+    const radioButtonWrapper = render(
       <RadioBooleanButton
         input={{ value: false, name: 'test' }}
         meta={{}}
@@ -44,14 +44,14 @@ describe('<RadioBooleanButton />', () => {
   // Click tests needs to be removed since HDS has two same class components
 
   it('can have default value', () => {
-    const positiveRadio = mount(
+    const positiveRadio = render(
       <RadioBooleanButton
         input={{ value: true, name: 'test' }}
         meta={{}}
       />
     )
     expect(positiveRadio.find('.radio-button-true').at(0).props().checked).toBe(true)
-    const negativeRadio = mount(
+    const negativeRadio = render(
       <RadioBooleanButton
         input={{ value: false, name: 'test' }}
         meta={{}}

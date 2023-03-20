@@ -1,5 +1,5 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import {render} from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { reduxForm } from 'redux-form'
 import configureStore from 'redux-mock-store'
@@ -32,7 +32,7 @@ describe('<Matrix />', () => {
       }
     }
     const Decorated = reduxForm({ form: 'testForm' })(Matrix)
-    wrapper = mount(
+    wrapper = render(
       <Provider store={store}>
         <Decorated store={store} {...props} />
       </Provider>

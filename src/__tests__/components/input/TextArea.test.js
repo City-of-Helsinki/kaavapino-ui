@@ -1,5 +1,5 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import {render} from '@testing-library/react'
 import CustomTextArea from '../../../components/input/CustomTextArea'
 
 describe('<TextArea />', () => {
@@ -7,7 +7,7 @@ describe('<TextArea />', () => {
   let change
   beforeEach(() => {
     change = ''
-    textAreaComponent = mount(
+    textAreaComponent = render(
       <CustomTextArea
         input={{ value: '123', name: 'test', onChange: e => (change = e.target.value) }}
         meta={{}}
@@ -27,7 +27,7 @@ describe('<TextArea />', () => {
   })
 
   it('can have custom props', () => {
-    const customComponent = mount(
+    const customComponent = render(
       <CustomTextArea input={{}} meta={{}} placeholder="123" />
     ).find('textarea')
     const { placeholder } = customComponent.instance()

@@ -1,11 +1,11 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import {render} from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import ProtectedRoute from '../../../components/common/ProtectedRoute'
 
 describe('<ProtectedRoute />', () => {
   it('renders a component when pred is true', () => {
-    const protectedRouteComponent = mount(
+    const protectedRouteComponent = render(
       <MemoryRouter>
         <ProtectedRoute
           render={() => <span className="test">123</span>}
@@ -18,7 +18,7 @@ describe('<ProtectedRoute />', () => {
   })
 
   it('renders multiple children when pred is true', () => {
-    const protectedRouteComponent = mount(
+    const protectedRouteComponent = render(
       <MemoryRouter initialEntries={['/login']}>
         <ProtectedRoute exact path="/login" pred={true} redirect="/test">
           <Route exact path="/" render={() => <span className="child">123</span>} />
@@ -32,7 +32,7 @@ describe('<ProtectedRoute />', () => {
   })
 
   it('doesn\'t render a component when pred is false and redirects to another route', () => {
-    const protectedRouteComponent = mount(
+    const protectedRouteComponent = render(
       <MemoryRouter initialEntries={['/login']}>
         <Routes>
           <ProtectedRoute
@@ -54,7 +54,7 @@ describe('<ProtectedRoute />', () => {
   })
 
   it('doesn\'t render children when pred is false and redirects to another route', () => {
-    const protectedRouteComponent = mount(
+    const protectedRouteComponent = render(
       <MemoryRouter initialEntries={['/login']}>
         <Routes>
           <ProtectedRoute exact path="/login" pred={false} redirect="/test">

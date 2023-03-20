@@ -1,5 +1,5 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import {render} from '@testing-library/react'
 import SelectInput from '../../../components/input/SelectInput'
 
 describe('<SelectInput />', () => {
@@ -8,7 +8,7 @@ describe('<SelectInput />', () => {
   let change
   beforeEach(() => {
     change = null
-    selectInputComponent = mount(
+    selectInputComponent = render(
         <SelectInput
           input={{ name: 'test', onChange: value => (change = value) }}
           meta={{}}

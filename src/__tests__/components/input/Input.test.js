@@ -1,13 +1,13 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import {render} from '@testing-library/react'
 import Input from '../../../components/input/CustomInput'
 
 describe('<Input />', () => {
   let inputComponent
  // let change
   beforeEach(() => {
-   // change = ''
-    inputComponent = mount(
+    change = ''
+    inputComponent = render(
       <Input
         input={{ value: '123', name: 'test', onChange: value => (value) }}
         meta={{}}
@@ -27,7 +27,7 @@ describe('<Input />', () => {
   }) */
 
   it('can have custom props', () => {
-    const customComponent = mount(<Input input={{}} meta={{}} placeholder="123" />).find(
+    const customComponent = render(<Input input={{}} meta={{}} placeholder="123" />).find(
       'input'
     )
     const { placeholder } = customComponent.instance()

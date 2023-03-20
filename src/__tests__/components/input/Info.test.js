@@ -1,12 +1,12 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import {render} from '@testing-library/react'
 import Info from '../../../components/input/Info'
 
 describe('<Info />', () => {
   let wrapper
 
   beforeEach(() => {
-    wrapper = mount(<Info className="test" content="test" />)
+    wrapper = render(<Info className="test" content="test" />)
   })
 
   it('renders', () => {
