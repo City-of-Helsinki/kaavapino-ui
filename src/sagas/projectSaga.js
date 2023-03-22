@@ -630,7 +630,10 @@ function* saveProjectTimetable() {
 
 function* lockProjectField(data) {
   const project_name = data.payload.projectName;
-  const attribute_identifier = data.payload.inputName;
+  let attribute_identifier = data.payload.inputName;
+  if(attribute_identifier.includes("].")){
+    attribute_identifier = attribute_identifier.split("].").pop();
+  }
   if(project_name && attribute_identifier){
     try {
       //Return data when succesfully locked or is locked to someone else
@@ -651,7 +654,10 @@ function* lockProjectField(data) {
 function* unlockProjectField(data) {
   //Send unlock field for other users
   const project_name = data.payload.projectName;
-  const attribute_identifier = data.payload.inputName;
+  let attribute_identifier = data.payload.inputName;
+  if(attribute_identifier.includes("].")){
+    attribute_identifier = attribute_identifier.split("].").pop();
+  }
   if(project_name && attribute_identifier){
     try {
        yield call(
