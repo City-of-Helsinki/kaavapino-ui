@@ -78,8 +78,6 @@ function RichTextEditor(props) {
   const showCounter = useRef(false)
   const [currentTimeout, setCurrentTimeout] = useState(0)
   const inputValue = useRef('')
-  //Replace with props returned from store
-  const [lockStyle, setLockStyle] = useState(false);
   const fieldFormName = formName ? formName : EDIT_PROJECT_FORM
 
   const getFieldComments = () => {
@@ -114,62 +112,63 @@ function RichTextEditor(props) {
   }, [])
 
   const handleChange = useCallback((_val, _delta, source) => {
-    if (currentTimeout) {
-      clearTimeout(currentTimeout)
-      setCurrentTimeout(0)
+    if (!props.isLocked) {
+      if (currentTimeout) {
+        clearTimeout(currentTimeout)
+        setCurrentTimeout(0)
 
+      }
+      if (source === 'user') {
+        /* Get the value from the editor - the delta provided to handlechange does not have complete state */
+
+        const actualDeltaValue = editorRef.current.editor.getContents()
+
+        // Hack to remove /n  values
+        const actualDeltaText = editorRef.current.editor.getText().replace(/\n/g, '')
+
+        setCurrentTimeout(() =>
+          setTimeout(
+            () =>
+              dispatch(
+                change(
+                  fieldFormName,
+                  inputProps.name,
+                  actualDeltaText ? actualDeltaValue : null
+                )
+              ),
+            500
+          ))
+
+        counter.current = actualDeltaValue.length() - 1;
+        showCounter.current = true;
+      }
+
+      inputProps.onChange(_val, inputProps.name);
+      inputValue.current = _val;
     }
-    if (source === 'user') {
-      /* Get the value from the editor - the delta provided to handlechange does not have complete state */
-
-      const actualDeltaValue = editorRef.current.editor.getContents()
-
-      // Hack to remove /n  values
-      const actualDeltaText = editorRef.current.editor.getText().replace(/\n/g, '')
-
-      setCurrentTimeout(() =>
-        setTimeout(
-          () =>
-            dispatch(
-              change(
-                fieldFormName,
-                inputProps.name,
-                actualDeltaText ? actualDeltaValue : null
-              )
-            ),
-          500
-        ))
-
-      counter.current = actualDeltaValue.length() - 1;
-      showCounter.current = true;
-    }
-    inputProps.onChange(_val, inputProps.name);
-    inputValue.current = _val;
 
   }, [inputProps.name, inputProps.value])
 
   const handleFocus = () => {
-    console.log(inputProps.name)
-    setLockStyle(true)
     onFocus(inputProps.name);
   }
 
   const handleBlur = () => {
-    //Add logic to call handleUnlockField if closing browser or tab when in input
-    setLockStyle(false)
-    props.handleUnlockField()
+    props.handleUnlockField(inputProps.name)
     if (inputValue.current !== oldValueRef.current) {
-      onBlur();
-      oldValueRef.current = inputValue.current;
+      //prevent saving if locked
+      if (!props.isLocked) {
+        onBlur();
+        oldValueRef.current = inputValue.current;
+      }
     }
   }
 
   const handleClose = () => {
-    if(lockStyle){
-      setLockStyle(false)
+    if (props.isLocked) {
       props.handleUnlockField()
     }
-   }
+  }
 
   const addComment = () => {
     const prompt = window.prompt(t('shoutbox.add-field-comment'), '')
@@ -253,7 +252,6 @@ function RichTextEditor(props) {
           </span>
         </div>
         <ReactQuill
-          style={lockStyle ? { border: '1px solid red' } : { border: '' }}
           ref={editorRef}
           modules={modules}
           theme="snow"

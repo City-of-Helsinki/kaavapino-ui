@@ -27,15 +27,16 @@ const FormField = ({
   handleSave,
   handleLockField,
   handleUnlockField,
+  locked,
+  userMail,
   ...rest
 }) => {
-  console.log(rest);
   const handleBlurSave = useCallback(() => {
     if (typeof handleSave === 'function') {
       handleSave()
     }
   }, []);
-  const renderField = newProps => {
+  const renderField = (newProps,lockfield) => {
     let newField = field
 
     if (newProps) {
@@ -67,6 +68,9 @@ const FormField = ({
             handleLockField={handleLockField}
             handleUnlockField={handleUnlockField}
             syncronousErrors={syncronousErrors}
+            locked={locked}
+            isLocked={lockfield}
+            userMail={userMail}
           />
         )
     }
@@ -140,11 +144,26 @@ const FormField = ({
     return renderField(newProps)
   }
 
+  const checkLocked = () => {
+    //Show styles if some other user is already editing this field
+    //Locked data email address is different then your mail address means someone is editing 
+    //If locked.lockData returns false unlock has been called and it has no other data
+    if(Object.keys(locked).length > 0){
+      if(locked.lockData !== false){
+        const lock = locked.lockData.attribute_lock.user_email !== userMail && 
+        field.name === locked.lockData.attribute_lock.attribute_identifier &&
+        attributeData.kaavan_nimi === locked.lockData.attribute_lock.project_name;
+        return lock
+      }
+    }
+    return false
+  }
+
   const renderNormalField = () => {
+    const lockStyle = checkLocked()
     const title = field.character_limit
       ? `${field.label}  ${t('project.char-limit', { amount: field.character_limit })}`
       : field.label
-
     return (
       <Form.Field
         className={`input-container ${isOneLineField ? 'small-margin' : ''} ${
@@ -158,10 +177,10 @@ const FormField = ({
               className={`input-title${required ? ' highlight' : ''}`}
             >
               {title}
-              {/* Add check if locked or not from props and add username from props. Change show error to correct prop */}
-              {showError && (
-              <span style={{color:'red',border:'1px solid red'}}> Käyttäjä Henri Haapala on muokkaamassa kenttää <IconLock></IconLock></span>
-              )}
+              {lockStyle && (
+                <span style={{color:'red',border:'1px solid red'}}> Käyttäjä {Object.keys(locked).length > 0 && (locked.lockData.attribute_lock.user_name)} on muokkaamassa kenttää <IconLock></IconLock></span>
+                )
+              }
             </Label>
             <div className="input-header-icons">
               {updated && !isReadOnly && (
@@ -188,7 +207,7 @@ const FormField = ({
             </div>
           </div>
         )}
-        {renderField()}
+        {renderField(null,lockStyle)}
         {showError && <div className="error-text">{showError}</div>}
       </Form.Field>
     )

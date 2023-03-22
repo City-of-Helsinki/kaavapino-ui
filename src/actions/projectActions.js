@@ -87,13 +87,19 @@ export const SET_ARCHIVED_PROJECTS = "Set archived projects"
 export const RESET_PROJECT_DEADLINES_SUCCESSFUL = "Resetting project deadlines successful"
 export const LOCK_PROJECT_FIELD = "lockProjectField"
 export const UNLOCK_PROJECT_FIELD = "unlockProjectField"
+export const SET_LOCK_STATUS = "setLockStatus"
 
-export const lockProjectField = (inputname) => ({
-  type: LOCK_PROJECT_FIELD,
-  payload: inputname
+export const setLockStatus = (lockData) => ({
+  type: SET_LOCK_STATUS,
+  payload: {lockData}
 })
-export const unlockProjectField = () => ({
-  type: UNLOCK_PROJECT_FIELD
+export const lockProjectField = (projectName,inputName) => ({
+  type: LOCK_PROJECT_FIELD,
+  payload: {projectName,inputName}
+})
+export const unlockProjectField = (projectName,inputName) => ({
+  type: UNLOCK_PROJECT_FIELD,
+  payload: {projectName,inputName}
 })
 export const fetchProjects = searchQuery => ({
   type: FETCH_PROJECTS,

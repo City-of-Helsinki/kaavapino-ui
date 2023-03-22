@@ -7,6 +7,7 @@ import { isArray } from 'lodash'
 // Label when there are more than one same option. To avoid key errors.
 const MORE_LABEL = ' (2)'
 const SelectInput = ({
+  isLocked,
   input,
   error,
   options,
@@ -19,8 +20,6 @@ const SelectInput = ({
 }) => {
   const currentValue = []
   const oldValueRef = useRef('');
-  //Replace with props returned from store
-  const [lockStyle, setLockStyle] = useState(false);
   const [selectValues, setSelectValues] = useState('')
 
   useEffect(() => {
@@ -83,26 +82,25 @@ const SelectInput = ({
   }
 
   const handleFocus = () => {
-    setLockStyle(true)
     onFocus(input.name);
   }
 
   const handleBlur = () => {
-    //Add logic to call handleUnlockField if closing browser or tab when in input
-    setLockStyle(false)
     handleUnlockField()
     if (selectValues !== oldValueRef.current) {
-      onBlur();
-      oldValueRef.current = selectValues;
+      //prevent saving if locked
+      if (!isLocked) {
+        onBlur();
+        oldValueRef.current = selectValues;
+      }
     }
   }
 
   const handleClose = () => {
-    if(lockStyle){
-      setLockStyle(false)
+    if (isLocked) {
       handleUnlockField()
     }
-   }
+  }
 
   options = options
     ? options.filter(option => option.label && option.label.trim() !== '')
@@ -115,7 +113,6 @@ const SelectInput = ({
       <Select
         placeholder={placeholder}
         className="selection"
-        style={lockStyle ? {border:'1px solid red'} : {border:''} }
         id={input.name}
         multiselect={false}
         error={inputUtils.hasError(error)}
@@ -130,8 +127,10 @@ const SelectInput = ({
           if (returnValue === '') {
             returnValue = null
           }
-          setSelectValues(returnValue)
-          input.onChange(returnValue)
+          if (!isLocked) {
+            setSelectValues(returnValue)
+            input.onChange(returnValue)
+          }
         }}
       />
     )
@@ -140,7 +139,6 @@ const SelectInput = ({
     <Select
       placeholder={placeholder}
       className="selection"
-      style={lockStyle ? {border:'1px solid red'} : {border:''} }
       id={input.name}
       name={input.name}
       multiselect={multiple}
@@ -152,9 +150,11 @@ const SelectInput = ({
       options={currentOptions}
       defaultValue={currentValue}
       onChange={data => {
-        let returnValue = data && data.map(currentValue => currentValue.value)
-        setSelectValues(returnValue)
-        input.onChange(returnValue)
+        if (!isLocked) {
+          let returnValue = data && data.map(currentValue => currentValue.value)
+          setSelectValues(returnValue)
+          input.onChange(returnValue)
+        }
       }}
     />
   )
