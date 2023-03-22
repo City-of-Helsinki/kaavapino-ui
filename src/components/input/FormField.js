@@ -6,7 +6,7 @@ import Info from './Info'
 import projectUtils from '../../utils/projectUtils'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
-import { IconClock } from 'hds-react'
+import { IconClock,IconLock } from 'hds-react'
 import { withTranslation } from 'react-i18next'
 import { isArray } from 'lodash'
 
@@ -25,6 +25,10 @@ const FormField = ({
   t,
   className,
   handleSave,
+  handleLockField,
+  handleUnlockField,
+  locked,
+  userMail,
   ...rest
 }) => {
   const handleBlurSave = useCallback(() => {
@@ -32,7 +36,7 @@ const FormField = ({
       handleSave()
     }
   }, []);
-  const renderField = newProps => {
+  const renderField = (newProps,lockfield) => {
     let newField = field
 
     if (newProps) {
@@ -61,7 +65,12 @@ const FormField = ({
             formName={formName}
             formValues={formValues}
             handleBlurSave={handleBlurSave}
+            handleLockField={handleLockField}
+            handleUnlockField={handleUnlockField}
             syncronousErrors={syncronousErrors}
+            locked={locked}
+            isLocked={lockfield}
+            userMail={userMail}
           />
         )
     }
@@ -135,11 +144,26 @@ const FormField = ({
     return renderField(newProps)
   }
 
+  const checkLocked = () => {
+    //Show styles if some other user is already editing this field
+    //Locked data email address is different then your mail address means someone is editing 
+    //If locked.lockData returns false unlock has been called and it has no other data
+    if(Object.keys(locked).length > 0){
+      if(locked.lockData !== false){
+        const lock = locked.lockData.attribute_lock.user_email !== userMail && 
+        field.name === locked.lockData.attribute_lock.attribute_identifier &&
+        attributeData.kaavan_nimi === locked.lockData.attribute_lock.project_name;
+        return lock
+      }
+    }
+    return false
+  }
+
   const renderNormalField = () => {
+    const lockStyle = checkLocked()
     const title = field.character_limit
       ? `${field.label}  ${t('project.char-limit', { amount: field.character_limit })}`
       : field.label
-
     return (
       <Form.Field
         className={`input-container ${isOneLineField ? 'small-margin' : ''} ${
@@ -153,6 +177,10 @@ const FormField = ({
               className={`input-title${required ? ' highlight' : ''}`}
             >
               {title}
+              {lockStyle && (
+                <span style={{color:'red',border:'1px solid red'}}> Käyttäjä {Object.keys(locked).length > 0 && (locked.lockData.attribute_lock.user_name)} on muokkaamassa kenttää <IconLock></IconLock></span>
+                )
+              }
             </Label>
             <div className="input-header-icons">
               {updated && !isReadOnly && (
@@ -179,7 +207,7 @@ const FormField = ({
             </div>
           </div>
         )}
-        {renderField()}
+        {renderField(null,lockStyle)}
         {showError && <div className="error-text">{showError}</div>}
       </Form.Field>
     )

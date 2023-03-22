@@ -1,4 +1,7 @@
 import {
+  SET_LOCK_STATUS,
+  LOCK_PROJECT_FIELD,
+  UNLOCK_PROJECT_FIELD,
   FETCH_PROJECTS_SUCCESSFUL,
   FETCH_OWN_PROJECTS_SUCCESSFUL,
   FETCH_PROJECTS,
@@ -92,11 +95,33 @@ export const initialState = {
     mapData: {},
     floorAreaTargets: {},
     legends: []
-  }
+  },
+  locked:{}
 }
 
 export const reducer = (state = initialState, action) => {
+
   switch (action.type) {
+
+    case SET_LOCK_STATUS: {
+      return{
+        ...state,
+        locked:action.payload
+      }
+    }
+
+    case LOCK_PROJECT_FIELD: {
+      return{
+        ...state
+      }
+    }
+
+    case UNLOCK_PROJECT_FIELD: {
+      return{
+        ...state
+      }
+    }
+
     case FETCH_PROJECTS: {
       return {
         ...state,

@@ -60,6 +60,7 @@ function RichTextEditor(props) {
     meta,
     placeholder,
     onBlur,
+    onFocus,
     className,
     updated,
     formName,
@@ -104,47 +105,68 @@ function RichTextEditor(props) {
     if (setRef) {
       setRef({ name: inputProps.name, ref: editorRef })
     }
+    window.addEventListener('beforeunload', handleClose)
+    return () => {
+      window.removeEventListener('beforeunload', handleClose)
+    };
   }, [])
 
   const handleChange = useCallback((_val, _delta, source) => {
-    if (currentTimeout) {
-      clearTimeout(currentTimeout)
-      setCurrentTimeout(0)
+    if (!props.isLocked) {
+      if (currentTimeout) {
+        clearTimeout(currentTimeout)
+        setCurrentTimeout(0)
 
+      }
+      if (source === 'user') {
+        /* Get the value from the editor - the delta provided to handlechange does not have complete state */
+
+        const actualDeltaValue = editorRef.current.editor.getContents()
+
+        // Hack to remove /n  values
+        const actualDeltaText = editorRef.current.editor.getText().replace(/\n/g, '')
+
+        setCurrentTimeout(() =>
+          setTimeout(
+            () =>
+              dispatch(
+                change(
+                  fieldFormName,
+                  inputProps.name,
+                  actualDeltaText ? actualDeltaValue : null
+                )
+              ),
+            500
+          ))
+
+        counter.current = actualDeltaValue.length() - 1;
+        showCounter.current = true;
+      }
+
+      inputProps.onChange(_val, inputProps.name);
+      inputValue.current = _val;
     }
-    if (source === 'user') {
-      /* Get the value from the editor - the delta provided to handlechange does not have complete state */
-
-      const actualDeltaValue = editorRef.current.editor.getContents()
-
-      // Hack to remove /n  values
-      const actualDeltaText = editorRef.current.editor.getText().replace(/\n/g, '')
-
-      setCurrentTimeout(() =>
-        setTimeout(
-          () =>
-            dispatch(
-              change(
-                fieldFormName,
-                inputProps.name,
-                actualDeltaText ? actualDeltaValue : null
-              )
-            ),
-          500
-        ))
-
-      counter.current = actualDeltaValue.length() - 1;
-      showCounter.current = true;
-    }
-    inputProps.onChange(_val, inputProps.name);
-    inputValue.current = _val;
 
   }, [inputProps.name, inputProps.value])
 
+  const handleFocus = () => {
+    onFocus(inputProps.name);
+  }
+
   const handleBlur = () => {
+    props.handleUnlockField(inputProps.name)
     if (inputValue.current !== oldValueRef.current) {
-      onBlur();
-      oldValueRef.current = inputValue.current;
+      //prevent saving if locked
+      if (!props.isLocked) {
+        onBlur();
+        oldValueRef.current = inputValue.current;
+      }
+    }
+  }
+
+  const handleClose = () => {
+    if (props.isLocked) {
+      props.handleUnlockField()
     }
   }
 
@@ -238,6 +260,7 @@ function RichTextEditor(props) {
           // default value initialized, after that quill handles internal state
           // Do not explicitly set value. see comments at top of this file.
           onChange={handleChange}
+          onFocus={handleFocus}
           onBlur={(_range, _source, quill) => {
             setTimeout(() => {
               // Hack. Prevent blurring when copy-paste data

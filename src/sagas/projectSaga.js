@@ -26,6 +26,10 @@ import { schemaSelector } from '../selectors/schemaSelector'
 import { userIdSelector } from '../selectors/authSelector'
 import { phasesSelector } from '../selectors/phaseSelector'
 import {
+  setLockStatus,
+  SET_LOCK_STATUS,
+  LOCK_PROJECT_FIELD,
+  UNLOCK_PROJECT_FIELD,
   FETCH_PROJECTS,
   fetchProjectsSuccessful,
   fetchOwnProjectsSuccessful,
@@ -104,7 +108,9 @@ import {
   externalDocumentsApi,
   overviewMapApi,
   overviewFloorAreaTargetApi,
-  legendApi
+  legendApi,
+  attributesApiLock,
+  attributesApiUnlock,
 } from '../utils/api'
 import { usersSelector } from '../selectors/userSelector'
 import {
@@ -129,6 +135,9 @@ export default function* projectSaga() {
     takeLatest(SAVE_PROJECT_FLOOR_AREA, saveProjectFloorArea),
     takeLatest(SAVE_PROJECT_TIMETABLE, saveProjectTimetable),
     takeLatest(SAVE_PROJECT, saveProject),
+    takeLatest(SET_LOCK_STATUS, setLockStatus),
+    takeLatest(LOCK_PROJECT_FIELD, lockProjectField),
+    takeLatest(UNLOCK_PROJECT_FIELD, unlockProjectField),
     takeLatest(CHANGE_PROJECT_PHASE, changeProjectPhase),
     takeLatest(PROJECT_FILE_UPLOAD, projectFileUpload),
     takeLatest(PROJECT_FILE_REMOVE, projectFileRemove),
@@ -615,6 +624,45 @@ function* saveProjectTimetable() {
       }
     } catch (e) {
       yield put(stopSubmit(EDIT_PROJECT_TIMETABLE_FORM, e.response && e.response.data))
+    }
+  }
+}
+
+function* lockProjectField(data) {
+  const project_name = data.payload.projectName;
+  const attribute_identifier = data.payload.inputName;
+  if(project_name && attribute_identifier){
+    try {
+      //Return data when succesfully locked or is locked to someone else
+      //lockData is compared to current userdata on frontend and editing allowed or prevented
+      const lockData = yield call(
+        attributesApiLock.post,
+        {project_name,
+        attribute_identifier}
+      )
+      yield put(setLockStatus(lockData))
+    }
+    catch (e) {
+      yield put(error(e))
+    }
+  }
+}
+
+function* unlockProjectField(data) {
+  //Send unlock field for other users
+  const project_name = data.payload.projectName;
+  const attribute_identifier = data.payload.inputName;
+  if(project_name && attribute_identifier){
+    try {
+       yield call(
+        attributesApiUnlock.post,
+        {project_name,
+        attribute_identifier}
+      )
+      yield put(setLockStatus(false))
+    }
+    catch (e) {
+      yield put(error(e))
     }
   }
 }

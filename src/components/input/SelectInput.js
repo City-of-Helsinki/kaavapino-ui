@@ -1,4 +1,4 @@
-import React, {useRef, useEffect, useState} from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { Select } from 'hds-react'
@@ -7,21 +7,28 @@ import { isArray } from 'lodash'
 // Label when there are more than one same option. To avoid key errors.
 const MORE_LABEL = ' (2)'
 const SelectInput = ({
+  isLocked,
   input,
   error,
   options,
   onBlur,
   placeholder,
   disabled,
-  multiple
+  multiple,
+  onFocus,
+  handleUnlockField
 }) => {
   const currentValue = []
   const oldValueRef = useRef('');
-  const [selectValues,setSelectValues] = useState('')
+  const [selectValues, setSelectValues] = useState('')
 
   useEffect(() => {
     oldValueRef.current = input.value;
     setSelectValues(input.value);
+    window.addEventListener('beforeunload', handleClose)
+    return () => {
+      window.removeEventListener('beforeunload', handleClose)
+    };
   }, [])
 
   const getLabel = value => {
@@ -74,12 +81,26 @@ const SelectInput = ({
     return currentOption
   }
 
-  const handleBlur = () =>{
-    if(selectValues !== oldValueRef.current){
-      onBlur();
-      oldValueRef.current = selectValues;
+  const handleFocus = () => {
+    onFocus(input.name);
+  }
+
+  const handleBlur = () => {
+    handleUnlockField()
+    if (selectValues !== oldValueRef.current) {
+      //prevent saving if locked
+      if (!isLocked) {
+        onBlur();
+        oldValueRef.current = selectValues;
+      }
     }
- }
+  }
+
+  const handleClose = () => {
+    if (isLocked) {
+      handleUnlockField()
+    }
+  }
 
   options = options
     ? options.filter(option => option.label && option.label.trim() !== '')
@@ -96,6 +117,7 @@ const SelectInput = ({
         multiselect={false}
         error={inputUtils.hasError(error)}
         onBlur={handleBlur}
+        onFocus={handleFocus}
         clearable={true}
         disabled={disabled}
         options={currentOptions}
@@ -105,8 +127,10 @@ const SelectInput = ({
           if (returnValue === '') {
             returnValue = null
           }
-          setSelectValues(returnValue)
-          input.onChange(returnValue)
+          if (!isLocked) {
+            setSelectValues(returnValue)
+            input.onChange(returnValue)
+          }
         }}
       />
     )
@@ -120,14 +144,17 @@ const SelectInput = ({
       multiselect={multiple}
       error={error}
       onBlur={handleBlur}
+      onFocus={handleFocus}
       clearable={true}
       disabled={disabled}
       options={currentOptions}
       defaultValue={currentValue}
       onChange={data => {
-        let returnValue = data && data.map(currentValue => currentValue.value)
-        setSelectValues(returnValue)
-        input.onChange(returnValue)
+        if (!isLocked) {
+          let returnValue = data && data.map(currentValue => currentValue.value)
+          setSelectValues(returnValue)
+          input.onChange(returnValue)
+        }
       }}
     />
   )

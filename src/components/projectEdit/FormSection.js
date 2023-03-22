@@ -17,11 +17,15 @@ const FormSection = ({
   attributeData,
   updates,
   handleSave,
+  handleLockField,
+  handleUnlockField,
   formName,
   formValues,
   syncronousErrors,
   submitErrors,
-  setRef
+  setRef,
+  locked,
+  userMail
 }) => {
   
   return (
@@ -39,12 +43,16 @@ const FormSection = ({
           updated={updates[field.name] || null}
           handleSave={handleSave}
           onRadioChange={handleSave}
+          handleLockField={handleLockField}
+          handleUnlockField={handleUnlockField}
           formName={formName}
           formValues={formValues}
           syncronousErrors={syncronousErrors}
           submitErrors={submitErrors}
           className={field.highlight_group ? field.highlight_group : '' }
           setRef={setRef}
+          locked={locked}
+          userMail={userMail}
         />
       ))}
     </Segment>

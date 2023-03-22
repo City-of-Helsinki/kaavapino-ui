@@ -4,6 +4,8 @@ import { getFormSyncErrors, getFormSubmitErrors, getFormValues } from 'redux-for
 import { LoadingSpinner } from 'hds-react'
 import { isDirty } from 'redux-form/immutable'
 import {
+  unlockProjectField,
+  lockProjectField,
   saveProject,
   saveProjectFloorArea,
   saveProjectTimetable,
@@ -18,6 +20,7 @@ import {
 } from '../../actions/projectActions'
 import { fetchSchemas, setAllEditFields, clearSchemas } from '../../actions/schemaActions'
 import {
+  lockedSelector,
   savingSelector,
   changingPhaseSelector,
   validatingSelector,
@@ -52,7 +55,8 @@ class ProjectEditPage extends Component {
     refs: [],
     selectedRefName: null,
     currentRef: null,
-    formInitialized: false
+    formInitialized: false,
+    currentEmail: ""
   }
 
   currentSectionIndex = 0
@@ -101,6 +105,15 @@ class ProjectEditPage extends Component {
       this.setState({ ...this.state, showEditFloorAreaForm: true })
       this.props.history.replace({ ...this.props.location, search: '' })
     }
+
+    if(this.props.users && this.props.currentUserId){
+      const userData = this.props.users.find(x => x.id === this.props.currentUserId)
+      
+      if('email' in userData){
+        const currentEmail = userData.email
+        this.setState({currentEmail});
+      }
+    }
   }
 
   componentWillUnmount() {
@@ -143,6 +156,14 @@ class ProjectEditPage extends Component {
       return
     }
     this.props.saveProject()
+  }
+  handleLockField = (inputname) => {
+    const projectName = this.props.currentProject.name;
+    this.props.lockProjectField(projectName,inputname)
+  }
+  handleUnlockField = (inputname) => {
+    const projectName = this.props.currentProject.name;
+    this.props.unlockProjectField(projectName,inputname)
   }
   handleTimetableClose = () => {
     const { project, saveProjectTimetable } = this.props
@@ -263,9 +284,11 @@ class ProjectEditPage extends Component {
       saveProjectBasePayload,
       currentPhases,
       users,
-      currentUserId
+      currentUserId,
+      locked
     } = this.props
     const { highlightGroup } = this.state
+
     if (!schema) {
       return <LoadingSpinner className="loader-icon" />
     }
@@ -357,6 +380,8 @@ class ProjectEditPage extends Component {
           </div>
           <EditForm
             handleSave={this.handleAutoSave}
+            handleLockField={this.handleLockField}
+            handleUnlockField={this.handleUnlockField}
             sections={currentSchema.sections}
             attributeData={attribute_data}
             geoServerData={geoserver_data}
@@ -377,6 +402,8 @@ class ProjectEditPage extends Component {
             isExpert={isExpert}
             setRef={this.setRef}
             setFormInitialized={this.setFormInitialized}
+            locked={locked}
+            userMail={this.state.currentEmail}
           />
           {this.state.showEditFloorAreaForm && (
             <EditFloorAreaFormModal
@@ -415,12 +442,15 @@ const mapStateToProps = state => {
     allEditFields: allEditFieldsSelector(state),
     users: usersSelector(state),
     currentUserId: userIdSelector(state),
-    currentProject: currentProjectSelector(state)
+    currentProject: currentProjectSelector(state),
+    locked: lockedSelector(state)
   }
 }
 
 const mapDispatchToProps = {
   fetchSchemas,
+  lockProjectField,
+  unlockProjectField,
   saveProject,
   saveProjectFloorArea,
   saveProjectTimetable,

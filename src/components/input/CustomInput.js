@@ -1,27 +1,50 @@
-import React, {useCallback,useRef, useEffect} from 'react'
+import React, { useCallback, useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { TextInput } from 'hds-react'
 
 const CustomInput = ({ input, meta: { error }, ...custom }) => {
-
   const oldValueRef = useRef('');
 
   useEffect(() => {
+    window.addEventListener('beforeunload', handleClose)
     oldValueRef.current = input.value;
+    return () => {
+      window.removeEventListener('beforeunload', handleClose)
+    };
   }, [])
 
-  const handleBlur = (event) =>{
-    if(event.target.value !== oldValueRef.current){
-      custom.onBlur();
-      oldValueRef.current = event.target.value;
+  const handleFocus = () => {
+    custom.onFocus(input.name);
+  }
+
+  const handleBlur = (event) => {
+    custom.handleUnlockField(input.name)
+    if (event.target.value !== oldValueRef.current) {
+      //prevent saving if locked
+      if (!custom.isLocked) {
+        custom.onBlur();
+        oldValueRef.current = event.target.value;
+      }
     }
- }
+  }
 
   const handleInputChange = useCallback((event) => {
-   input.onChange(event, input.name);
+    if (custom.isLocked) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    else {
+      input.onChange(event, input.name);
+    }
 
-   }, [input.name, input.value]);
+  }, [input.name, input.value]);
+
+  const handleClose = () => {
+    if (custom.isLocked) {
+      custom.handleUnlockField(input.name)
+    }
+  }
 
   return (
     <TextInput
@@ -33,6 +56,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       {...custom}
       onChange={handleInputChange}
       onBlur={handleBlur}
+      onFocus={handleFocus}
     />
   )
 }
