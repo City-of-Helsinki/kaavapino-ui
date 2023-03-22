@@ -81,7 +81,7 @@ const FieldSet = ({
                       onClick={() => {
                         dispatch(change(formName, set, ...nulledFields))
                         setHiddenIndex(i)
-                        handleSave()
+                        handleBlur()
                       }}
                     />
                   )}
@@ -221,7 +221,7 @@ const FieldSet = ({
                 return null
               })
 
-              handleSave()
+              handleBlur()
             }}
             variant="secondary"
           >
