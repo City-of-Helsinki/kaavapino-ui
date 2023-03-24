@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { takeLatest, put, all, call, select } from 'redux-saga/effects'
+import { takeLatest, put, all, call, select, take } from 'redux-saga/effects'
 import { isEqual } from 'lodash'
 import { push } from 'connected-react-router'
 import {
@@ -26,8 +26,10 @@ import { schemaSelector } from '../selectors/schemaSelector'
 import { userIdSelector } from '../selectors/authSelector'
 import { phasesSelector } from '../selectors/phaseSelector'
 import {
-  setLockStatus,
+  SET_UNLOCK_STATUS,
   SET_LOCK_STATUS,
+  setUnlockStatus,
+  setLockStatus,
   LOCK_PROJECT_FIELD,
   UNLOCK_PROJECT_FIELD,
   FETCH_PROJECTS,
@@ -136,6 +138,7 @@ export default function* projectSaga() {
     takeLatest(SAVE_PROJECT_TIMETABLE, saveProjectTimetable),
     takeLatest(SAVE_PROJECT, saveProject),
     takeLatest(SET_LOCK_STATUS, setLockStatus),
+    takeLatest(SET_UNLOCK_STATUS, setUnlockStatus),
     takeLatest(LOCK_PROJECT_FIELD, lockProjectField),
     takeLatest(UNLOCK_PROJECT_FIELD, unlockProjectField),
     takeLatest(CHANGE_PROJECT_PHASE, changeProjectPhase),
@@ -628,31 +631,10 @@ function* saveProjectTimetable() {
   }
 }
 
-function* lockProjectField(data) {
-  const project_name = data.payload.projectName;
-  let attribute_identifier = data.payload.inputName;
-  if(attribute_identifier.includes("].")){
-    attribute_identifier = attribute_identifier.split("].").pop();
-  }
-  if(project_name && attribute_identifier){
-    try {
-      //Return data when succesfully locked or is locked to someone else
-      //lockData is compared to current userdata on frontend and editing allowed or prevented
-      const lockData = yield call(
-        attributesApiLock.post,
-        {project_name,
-        attribute_identifier}
-      )
-      yield put(setLockStatus(lockData))
-    }
-    catch (e) {
-      yield put(error(e))
-    }
-  }
-}
-
 function* unlockProjectField(data) {
-  //Send unlock field for other users
+  //Makes sure that waits unlock so lock order does not get mixed and accidentally unlock wrong field
+  yield take(SET_UNLOCK_STATUS)
+
   const project_name = data.payload.projectName;
   let attribute_identifier = data.payload.inputName;
   if(attribute_identifier.includes("].")){
@@ -665,7 +647,33 @@ function* unlockProjectField(data) {
         {project_name,
         attribute_identifier}
       )
-      yield put(setLockStatus(false))
+      const lockData = {attribute_lock:{project_name:project_name,attribute_identifier:attribute_identifier}}
+      yield put(setUnlockStatus(lockData,true))
+    }
+    catch (e) {
+      yield put(error(e))
+    }
+  }
+}
+
+function* lockProjectField(data) {
+  const project_name = data.payload.projectName;
+  let attribute_identifier = data.payload.inputName;
+  //Fielset has prefixes someprefix[x]. that needs to be cut out. Only actual field info is compared.
+  if(attribute_identifier.includes("].")){
+    attribute_identifier = attribute_identifier.split("].").pop();
+  }
+  if(project_name && attribute_identifier){
+    try {
+      //Return data when succesfully locked or is locked to someone else
+      //lockData is compared to current userdata on frontend and editing allowed or prevented
+      const lockData = yield call(
+        attributesApiLock.post,
+        {project_name,
+        attribute_identifier}
+      )
+      //Send data to store
+      yield put(setLockStatus(lockData,false))
     }
     catch (e) {
       yield put(error(e))

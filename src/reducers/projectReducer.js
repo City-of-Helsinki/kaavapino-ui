@@ -1,4 +1,5 @@
 import {
+  SET_UNLOCK_STATUS,
   SET_LOCK_STATUS,
   LOCK_PROJECT_FIELD,
   UNLOCK_PROJECT_FIELD,
@@ -103,6 +104,13 @@ export const reducer = (state = initialState, action) => {
 
   switch (action.type) {
 
+    case SET_UNLOCK_STATUS: {
+      return{
+        ...state,
+        locked:action.payload
+      }
+    }
+
     case SET_LOCK_STATUS: {
       return{
         ...state,
@@ -110,13 +118,13 @@ export const reducer = (state = initialState, action) => {
       }
     }
 
-    case LOCK_PROJECT_FIELD: {
+    case UNLOCK_PROJECT_FIELD: {
       return{
         ...state
       }
     }
 
-    case UNLOCK_PROJECT_FIELD: {
+    case LOCK_PROJECT_FIELD: {
       return{
         ...state
       }

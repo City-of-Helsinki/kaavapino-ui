@@ -30,14 +30,10 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   }
 
   const handleInputChange = useCallback((event) => {
-    if (custom.isLocked) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-    else {
-      input.onChange(event, input.name);
-    }
-
+      let val = custom.onChange(event.target.value);
+      if(val){
+        input.onChange(val,input.name)
+      }
   }, [input.name, input.value]);
 
   const handleClose = () => {
