@@ -14,7 +14,7 @@ const CustomTextArea = ({ input, meta: { error }, ...custom }) => {
   }, [])
 
   const handleInputChange = useCallback((event) => {
-      input.onChange(event.target.value, input.name)
+    input.onChange(event, input.name);
   }, [input.name, input.value]);
 
   const handleFocus = () => {
