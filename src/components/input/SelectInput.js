@@ -16,7 +16,8 @@ const SelectInput = ({
   disabled,
   multiple,
   onFocus,
-  handleUnlockField
+  handleUnlockField,
+  onChange
 }) => {
   const currentValue = []
   const oldValueRef = useRef('');
@@ -127,7 +128,8 @@ const SelectInput = ({
           if (returnValue === '') {
             returnValue = null
           }
-          if (!isLocked) {
+          let val = onChange(returnValue);
+          if(val){
             setSelectValues(returnValue)
             input.onChange(returnValue)
           }
@@ -150,8 +152,9 @@ const SelectInput = ({
       options={currentOptions}
       defaultValue={currentValue}
       onChange={data => {
-        if (!isLocked) {
-          let returnValue = data && data.map(currentValue => currentValue.value)
+        let returnValue = data && data.map(currentValue => currentValue.value)
+        let val = onChange(returnValue);
+        if(val){
           setSelectValues(returnValue)
           input.onChange(returnValue)
         }

@@ -112,7 +112,8 @@ function RichTextEditor(props) {
   }, [])
 
   const handleChange = useCallback((_val, _delta, source) => {
-    if (!props.isLocked) {
+    let checkedValue = props.onChange(_val);
+    if (checkedValue) {
       if (currentTimeout) {
         clearTimeout(currentTimeout)
         setCurrentTimeout(0)
@@ -142,9 +143,8 @@ function RichTextEditor(props) {
         counter.current = actualDeltaValue.length() - 1;
         showCounter.current = true;
       }
-
-      inputProps.onChange(_val, inputProps.name);
-      inputValue.current = _val;
+      inputProps.onChange(checkedValue, inputProps.name);
+      inputValue.current = checkedValue;
     }
 
   }, [inputProps.name, inputProps.value])

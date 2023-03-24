@@ -14,14 +14,7 @@ const CustomTextArea = ({ input, meta: { error }, ...custom }) => {
   }, [])
 
   const handleInputChange = useCallback((event) => {
-    if (custom.isLocked) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-    else {
-      input.onChange(event, input.name);
-    }
-
+      input.onChange(event.target.value, input.name)
   }, [input.name, input.value]);
 
   const handleFocus = () => {
