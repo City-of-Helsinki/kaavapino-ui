@@ -150,7 +150,7 @@ const FormField = ({
     //If locked.lockData returns false unlock has been called and it has no other data
     if(Object.keys(locked).length > 0){
       if(locked.lock === false){
-        const lock = locked.lockData.attribute_lock.user_email === userMail && 
+        const lock = locked.lockData.attribute_lock.user_email !== userMail && 
         field.name === locked.lockData.attribute_lock.attribute_identifier &&
         attributeData.kaavan_nimi === locked.lockData.attribute_lock.project_name;
         return lock
