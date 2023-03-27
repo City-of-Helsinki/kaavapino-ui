@@ -31,7 +31,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
 
   const handleInputChange = useCallback((event) => {
       let val = custom.onChange(event.target.value);
-      if(val){
+      if(val || val === ""){
         input.onChange(val,input.name)
       }
   }, [input.name, input.value]);
