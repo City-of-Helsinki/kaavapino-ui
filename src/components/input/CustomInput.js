@@ -15,11 +15,15 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   }, [])
 
   const handleFocus = () => {
-    custom.onFocus(input.name);
+    if(typeof custom.onFocus === 'function'){
+      custom.onFocus(input.name);
+    }
   }
 
   const handleBlur = (event) => {
-    custom.handleUnlockField(input.name)
+    if(typeof custom.handleUnlockField === 'function'){
+      custom.handleUnlockField(input.name)
+    }
     if (event.target.value !== oldValueRef.current) {
       //prevent saving if locked
       if (!custom.isLocked) {
