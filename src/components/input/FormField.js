@@ -150,17 +150,22 @@ const FormField = ({
     //If locked.lockData returns false unlock has been called and it has no other data
     if(locked && Object.keys(locked).length > 0){
       if(locked.lock === false){
-        const lock = locked.lockData.attribute_lock.user_email !== userMail && 
-        field.name === locked.lockData.attribute_lock.attribute_identifier &&
+        const lock = field.name === locked.lockData.attribute_lock.attribute_identifier &&
         attributeData.kaavan_nimi === locked.lockData.attribute_lock.project_name;
-        return lock
+        return {
+          lockStyle:lock,
+          owner:locked.lockData.attribute_lock.owner
+        }
       }
     }
-    return false
+    return {
+      lockStyle:false,
+      owner:false
+    }
   }
 
   const renderNormalField = () => {
-    const lockStyle = checkLocked()
+    const {lockStyle,owner} = checkLocked()
     const title = field.character_limit
       ? `${field.label}  ${t('project.char-limit', { amount: field.character_limit })}`
       : field.label
@@ -177,8 +182,12 @@ const FormField = ({
               className={`input-title${required ? ' highlight' : ''}`}
             >
               {title}
-              {lockStyle && (
-                <span style={{color:'red',border:'1px solid red'}}> Käyttäjä {Object.keys(locked).length > 0 && (locked.lockData.attribute_lock.user_name)} on muokkaamassa kenttää <IconLock></IconLock></span>
+              {lockStyle && !owner && (
+                <span style={{display:'inline-flex',marginLeft:'5px',padding:'5px',color:'#dc3545',border:'2px solid #dc3545'}}> Käyttäjä {Object.keys(locked).length > 0 && (locked.lockData.attribute_lock.user_name)} on muokkaamassa kenttää <IconLock></IconLock></span>
+                )
+              }
+              {lockStyle && owner && (
+                <span style={{display:'inline-flex',marginLeft:'5px',padding:'5px',color:'#0000bf',border:'2px solid #0000bf'}}>Kenttä on lukittu sinulle <IconLock></IconLock></span>
                 )
               }
             </Label>
