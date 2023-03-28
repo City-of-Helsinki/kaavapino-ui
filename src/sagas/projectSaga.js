@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { takeLatest, put, all, call, select, take } from 'redux-saga/effects'
+import { takeLatest, put, all, call, select, delay } from 'redux-saga/effects'
 import { isEqual } from 'lodash'
 import { push } from 'connected-react-router'
 import {
@@ -646,8 +646,7 @@ function* unlockProjectField(data) {
         attribute_identifier}
       )
       const lockData = {attribute_lock:{project_name:project_name,attribute_identifier:attribute_identifier}}
-      //Makes sure that waits unlock so lock order does not get mixed and accidentally unlock wrong field
-      yield take(SET_UNLOCK_STATUS)
+
       yield put(setUnlockStatus(lockData,true))
     }
     catch (e) {
@@ -672,6 +671,8 @@ function* lockProjectField(data) {
         {project_name,
         attribute_identifier}
       )
+      //Makes sure that waits unlock so lock order does not get mixed and accidentally unlock wrong field
+      yield delay(200)
       //Send data to store
       yield put(setLockStatus(lockData,false))
     }
