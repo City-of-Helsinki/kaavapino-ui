@@ -36,7 +36,7 @@ const FormField = ({
       handleSave()
     }
   }, []);
-  const renderField = (newProps,lockfield) => {
+  const renderField = (newProps,lockfield, owner) => {
     let newField = field
 
     if (newProps) {
@@ -70,6 +70,7 @@ const FormField = ({
             syncronousErrors={syncronousErrors}
             locked={locked}
             isLocked={lockfield}
+            isLockedOwner={owner}
             userMail={userMail}
           />
         )
@@ -216,7 +217,7 @@ const FormField = ({
             </div>
           </div>
         )}
-        {renderField(null,lockStyle)}
+        {renderField(null,lockStyle,owner)}
         {showError && <div className="error-text">{showError}</div>}
       </Form.Field>
     )

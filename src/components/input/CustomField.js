@@ -82,7 +82,7 @@ class CustomField extends Component {
   }
 
   handleChange = (value) => {
-    if(!this.props.isLocked){
+    if(this.props.isLockedOwner){
       return value
     }
     return false
@@ -252,8 +252,8 @@ class CustomField extends Component {
       formName,
       updated,
       locked,
-      userMail,
-      isLocked
+      isLocked,
+      isLockedOwner
     } = this.props
 
     return (
@@ -276,8 +276,8 @@ class CustomField extends Component {
         handleLockField={handleLockField}
         handleUnlockField={handleUnlockField}
         locked={locked}
-        userMail={userMail}
         isLocked={isLocked}
+        isLockedOwner={isLockedOwner}
       />
     )
   }
