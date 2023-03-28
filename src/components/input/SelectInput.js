@@ -7,7 +7,7 @@ import { isArray } from 'lodash'
 // Label when there are more than one same option. To avoid key errors.
 const MORE_LABEL = ' (2)'
 const SelectInput = ({
-  isLocked,
+  isLockedOwner,
   input,
   error,
   options,
@@ -90,7 +90,7 @@ const SelectInput = ({
     handleUnlockField()
     if (selectValues !== oldValueRef.current) {
       //prevent saving if locked
-      if (!isLocked) {
+      if (isLockedOwner) {
         onBlur();
         oldValueRef.current = selectValues;
       }
@@ -98,7 +98,7 @@ const SelectInput = ({
   }
 
   const handleClose = () => {
-    if (isLocked) {
+    if (isLockedOwner) {
       handleUnlockField()
     }
   }
