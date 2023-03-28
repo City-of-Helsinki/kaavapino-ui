@@ -26,7 +26,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
     }
     if (event.target.value !== oldValueRef.current) {
       //prevent saving if locked
-      if (!custom.isLocked) {
+      if (custom.isLockedOwner) {
         custom.onBlur();
         oldValueRef.current = event.target.value;
       }
@@ -41,7 +41,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   }, [input.name, input.value]);
 
   const handleClose = () => {
-    if (custom.isLocked) {
+    if (custom.isLockedOwner) {
       custom.handleUnlockField(input.name)
     }
   }

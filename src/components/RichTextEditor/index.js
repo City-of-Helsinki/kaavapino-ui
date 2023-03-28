@@ -157,7 +157,7 @@ function RichTextEditor(props) {
     props.handleUnlockField(inputProps.name)
     if (inputValue.current !== oldValueRef.current) {
       //prevent saving if locked
-      if (!props.isLocked) {
+      if (props.isLockedOwner) {
         onBlur();
         oldValueRef.current = inputValue.current;
       }
@@ -165,7 +165,7 @@ function RichTextEditor(props) {
   }
 
   const handleClose = () => {
-    if (props.isLocked) {
+    if (props.isLockedOwner) {
       props.handleUnlockField()
     }
   }
