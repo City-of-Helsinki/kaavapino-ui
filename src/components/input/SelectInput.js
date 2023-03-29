@@ -7,17 +7,13 @@ import { isArray } from 'lodash'
 // Label when there are more than one same option. To avoid key errors.
 const MORE_LABEL = ' (2)'
 const SelectInput = ({
-  isLockedOwner,
   input,
   error,
   options,
   onBlur,
   placeholder,
   disabled,
-  multiple,
-  onFocus,
-  handleUnlockField,
-  onChange
+  multiple
 }) => {
   const currentValue = []
   const oldValueRef = useRef('');
@@ -26,9 +22,8 @@ const SelectInput = ({
   useEffect(() => {
     oldValueRef.current = input.value;
     setSelectValues(input.value);
-    window.addEventListener('beforeunload', handleClose)
     return () => {
-      window.removeEventListener('beforeunload', handleClose)
+
     };
   }, [])
 
@@ -82,24 +77,10 @@ const SelectInput = ({
     return currentOption
   }
 
-  const handleFocus = () => {
-    onFocus(input.name);
-  }
-
   const handleBlur = () => {
-    handleUnlockField()
     if (selectValues !== oldValueRef.current) {
-      //prevent saving if locked
-      if (isLockedOwner) {
-        onBlur();
-        oldValueRef.current = selectValues;
-      }
-    }
-  }
-
-  const handleClose = () => {
-    if (isLockedOwner) {
-      handleUnlockField()
+      onBlur();
+      oldValueRef.current = selectValues;
     }
   }
 
@@ -118,7 +99,6 @@ const SelectInput = ({
         multiselect={false}
         error={inputUtils.hasError(error)}
         onBlur={handleBlur}
-        onFocus={handleFocus}
         clearable={true}
         disabled={disabled}
         options={currentOptions}
@@ -128,11 +108,8 @@ const SelectInput = ({
           if (returnValue === '') {
             returnValue = null
           }
-          let val = onChange(returnValue);
-          if(val){
-            setSelectValues(returnValue)
-            input.onChange(returnValue)
-          }
+          setSelectValues(returnValue)
+          input.onChange(returnValue)
         }}
       />
     )
@@ -146,18 +123,14 @@ const SelectInput = ({
       multiselect={multiple}
       error={error}
       onBlur={handleBlur}
-      onFocus={handleFocus}
       clearable={true}
       disabled={disabled}
       options={currentOptions}
       defaultValue={currentValue}
       onChange={data => {
         let returnValue = data && data.map(currentValue => currentValue.value)
-        let val = onChange(returnValue);
-        if(val){
-          setSelectValues(returnValue)
-          input.onChange(returnValue)
-        }
+        setSelectValues(returnValue)
+        input.onChange(returnValue)
       }}
     />
   )

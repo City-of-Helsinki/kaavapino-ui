@@ -77,6 +77,7 @@ function RichTextEditor(props) {
   const counter = useRef(props.currentSize)
   const showCounter = useRef(false)
   const [currentTimeout, setCurrentTimeout] = useState(0)
+  const [readonly, setReadOnly] = useState(false)
   const inputValue = useRef('')
   const fieldFormName = formName ? formName : EDIT_PROJECT_FORM
 
@@ -112,8 +113,13 @@ function RichTextEditor(props) {
   }, [])
 
   const handleChange = useCallback((_val, _delta, source) => {
+    //Check from parent is it okay to edit or is someone else editing
+    //return false if not ok to edit and sets input readonly
     let checkedValue = props.onChange(_val);
     if (checkedValue) {
+      if(readonly === true){
+        setReadOnly(false)
+      }
       if (currentTimeout) {
         clearTimeout(currentTimeout)
         setCurrentTimeout(0)
@@ -145,6 +151,11 @@ function RichTextEditor(props) {
       }
       inputProps.onChange(checkedValue, inputProps.name);
       inputValue.current = checkedValue;
+    }
+    else{
+      //Blur from field and set to readonly
+      editorRef.current.blur()
+      setReadOnly(true)
     }
 
   }, [inputProps.name, inputProps.value])
@@ -279,6 +290,7 @@ function RichTextEditor(props) {
           className={className}
           onClick={() => setToolbarVisible(true)}
           updated={updated}
+          readOnly={readonly}
         />
       </div>
       {showComments && comments && comments.length > 0 && (
