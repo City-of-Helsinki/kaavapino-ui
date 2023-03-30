@@ -117,7 +117,7 @@ function RichTextEditor(props) {
     //return false if not ok to edit and sets input readonly
     let checkedValue = props.onChange(_val);
     if (checkedValue) {
-       setReadOnly(false)
+      setReadOnly(false)
       if (currentTimeout) {
         clearTimeout(currentTimeout)
         setCurrentTimeout(0)
