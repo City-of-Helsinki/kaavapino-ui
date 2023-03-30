@@ -33,7 +33,8 @@ const FieldSet = ({
   field: { disable_fieldset_delete_add },
   locked,
   userMail,
-  isLocked
+  isLocked,
+  isLockedOwner
 }) => {
 
   const handleBlur = () => {
@@ -177,6 +178,7 @@ const FieldSet = ({
                           locked={locked}
                           userMail={userMail}
                           isLocked={isLocked}
+                          isLockedOwner={isLockedOwner}
                           handleBlurSave={() => {
                             if (onBlur) {
                               handleBlur()
