@@ -1,10 +1,11 @@
-import React, { useCallback, useRef, useEffect } from 'react'
+import React, { useCallback, useRef, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { TextInput } from 'hds-react'
 
 const CustomInput = ({ input, meta: { error }, ...custom }) => {
   const oldValueRef = useRef('');
+  const [readonly, setReadOnly] = useState(false)
 
   useEffect(() => {
     window.addEventListener('beforeunload', handleClose)
@@ -15,13 +16,13 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   }, [])
 
   const handleFocus = () => {
-    if(typeof custom.onFocus === 'function'){
+    if (typeof custom.onFocus === 'function') {
       custom.onFocus(input.name);
     }
   }
 
   const handleBlur = (event) => {
-    if(typeof custom.handleUnlockField === 'function'){
+    if (typeof custom.handleUnlockField === 'function') {
       custom.handleUnlockField(input.name)
     }
     if (event.target.value !== oldValueRef.current) {
@@ -34,10 +35,16 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   }
 
   const handleInputChange = useCallback((event) => {
-      let val = custom.onChange(event.target.value);
-      if(val || val === ""){
-        input.onChange(val,input.name)
-      }
+    //Check from parent is it okay to edit or is someone else editing
+    //return false if not ok to edit and sets input readonly
+    let val = custom.onChange(event.target.value);
+    if (val || val === "") {
+      setReadOnly(false)
+      input.onChange(val, input.name)
+    }
+    else {
+      setReadOnly(true)
+    }
   }, [input.name, input.value]);
 
   const handleClose = () => {
@@ -57,6 +64,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       onChange={handleInputChange}
       onBlur={handleBlur}
       onFocus={handleFocus}
+      readOnly={readonly}
     />
   )
 }
