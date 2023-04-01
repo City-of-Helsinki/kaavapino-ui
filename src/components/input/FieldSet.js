@@ -34,7 +34,8 @@ const FieldSet = ({
   locked,
   userMail,
   isLocked,
-  isLockedOwner
+  isLockedOwner,
+  lockField
 }) => {
 
   const handleBlur = () => {
@@ -184,6 +185,7 @@ const FieldSet = ({
                               handleBlur()
                             }
                           }}
+                          lockField={lockField}
                           validate={validate}
                         />
                         {showError && <div className="error-text">{showError}</div>}

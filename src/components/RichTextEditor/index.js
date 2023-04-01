@@ -13,7 +13,7 @@ import {
   deleteFieldComment,
   createFieldComment
 } from '../../actions/commentActions'
-import { currentProjectIdSelector } from '../../selectors/projectSelector'
+import { currentProjectIdSelector,lockedSelector } from '../../selectors/projectSelector'
 import { ReactComponent as CommentIcon } from '../../assets/icons/comment-icon.svg'
 import { useTranslation } from 'react-i18next'
 
@@ -64,9 +64,11 @@ function RichTextEditor(props) {
     className,
     updated,
     formName,
-    setRef
+    setRef,
+    lockField
   } = props
   const dispatch = useDispatch()
+  const lockedStatus = useSelector(state => lockedSelector(state))
   const fieldComments = useSelector(fieldCommentsSelector)
   const userId = useSelector(userIdSelector)
   const projectId = useSelector(currentProjectIdSelector)
@@ -112,12 +114,35 @@ function RichTextEditor(props) {
     };
   }, [])
 
+  useEffect(() => {
+    if(lockedStatus && Object.keys(lockedStatus).length > 0){
+      if(lockedStatus.lock === false){
+        let identifier;
+        if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
+          identifier = lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier;
+        }
+        else{
+          identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
+        }
+        const lock = inputProps.name=== identifier
+        if(lock){
+          setReadOnly(false)
+          if (typeof lockField === 'function') {
+            lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
+          }
+        }
+        else{
+          setReadOnly(true)
+          if (typeof lockField === 'function') {
+            lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
+          }
+        }
+      }
+    }
+  }, [lockedStatus]);
+
   const handleChange = useCallback((_val, _delta, source) => {
-    //Check from parent is it okay to edit or is someone else editing
-    //return false if not ok to edit and sets input readonly
-    let checkedValue = props.onChange(_val);
-    if (checkedValue) {
-      setReadOnly(false)
+    if (_val) {
       if (currentTimeout) {
         clearTimeout(currentTimeout)
         setCurrentTimeout(0)
@@ -147,22 +172,29 @@ function RichTextEditor(props) {
         counter.current = actualDeltaValue.length() - 1;
         showCounter.current = true;
       }
-      inputProps.onChange(checkedValue, inputProps.name);
-      inputValue.current = checkedValue;
-    }
-    else{
-      //Blur from field and set to readonly
-      editorRef.current.blur()
-      setReadOnly(true)
+      inputProps.onChange(_val, inputProps.name);
+      inputValue.current = _val;
     }
 
   }, [inputProps.name, inputProps.value])
 
   const handleFocus = () => {
-    onFocus(inputProps.name);
+    if (typeof onFocus === 'function') {
+      onFocus(inputProps.name);
+    }
   }
 
   const handleBlur = () => {
+    let identifier;
+    if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
+      identifier = lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier;
+    }
+    else{
+      identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
+    }
+    if (typeof lockField === 'function') {
+      lockField(false,false,identifier)
+    }
     props.handleUnlockField(inputProps.name)
     if (inputValue.current !== oldValueRef.current) {
       //prevent saving if locked

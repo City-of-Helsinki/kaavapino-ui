@@ -1,4 +1,4 @@
-import React, {useCallback} from 'react'
+import React, {useCallback,useState} from 'react'
 import CustomField from './CustomField'
 import Matrix from './Matrix'
 import { Form, Label, Popup } from 'semantic-ui-react'
@@ -31,11 +31,22 @@ const FormField = ({
   userMail,
   ...rest
 }) => {
+  const [lockStatus, setLockStatus] = useState({})
   const handleBlurSave = useCallback(() => {
     if (typeof handleSave === 'function') {
       handleSave()
     }
   }, []);
+
+  const lockField = (lockStyle,owner,identifier) => {
+    const status = {
+      lockStyle: lockStyle,
+      owner: owner,
+      identifier:identifier
+    }
+    setLockStatus(status)
+  }
+
   const renderField = (newProps,lockfield, owner) => {
     let newField = field
 
@@ -72,6 +83,7 @@ const FormField = ({
             isLocked={lockfield}
             isLockedOwner={owner}
             userMail={userMail}
+            lockField={lockField}
           />
         )
     }
@@ -145,28 +157,8 @@ const FormField = ({
     return renderField(newProps)
   }
 
-  const checkLocked = () => {
-    //Show styles if some other user is already editing this field
-    //Locked data email address is different then your mail address means someone is editing 
-    //If locked.lockData returns false unlock has been called and it has no other data
-    if(locked && Object.keys(locked).length > 0){
-      if(locked.lock === false){
-        const lock = field.name === locked.lockData.attribute_lock.attribute_identifier &&
-        attributeData.kaavan_nimi === locked.lockData.attribute_lock.project_name;
-        return {
-          lockStyle:lock,
-          owner:locked.lockData.attribute_lock.owner
-        }
-      }
-    }
-    return {
-      lockStyle:false,
-      owner:false
-    }
-  }
-
   const renderNormalField = () => {
-    const {lockStyle,owner} = checkLocked()
+    const status = lockStatus
     const title = field.character_limit
       ? `${field.label}  ${t('project.char-limit', { amount: field.character_limit })}`
       : field.label
@@ -183,12 +175,16 @@ const FormField = ({
               className={`input-title${required ? ' highlight' : ''}`}
             >
               {title}
-              {lockStyle && !owner && (
-                <span style={{display:'inline-flex',marginLeft:'5px',padding:'5px',color:'#dc3545',border:'2px solid #dc3545'}}> Käyttäjä {Object.keys(locked).length > 0 && (locked.lockData.attribute_lock.user_name)} on muokkaamassa kenttää <IconLock></IconLock></span>
+              {status.lockStyle && !status.owner && (
+                status.identifier && status.identifier === field.name &&(
+                <span style={{display:'inline-flex',marginLeft:'5px',padding:'5px',color:'#dc3545',border:'2px solid #dc3545'}}> Käyttäjä {status.lockStyle.lockData.attribute_lock.user_name} on muokkaamassa kenttää <IconLock></IconLock></span>
+                )
                 )
               }
-              {lockStyle && owner && (
+              {status.lockStyle && status.owner && (
+                status.identifier && status.identifier === field.name &&(
                 <span style={{display:'inline-flex',marginLeft:'5px',padding:'5px',color:'#0000bf',border:'2px solid #0000bf'}}>Kenttä on lukittu sinulle <IconLock></IconLock></span>
+                )
                 )
               }
             </Label>
@@ -217,7 +213,7 @@ const FormField = ({
             </div>
           </div>
         )}
-        {renderField(null,lockStyle,owner)}
+        {renderField(null,status.lockStyle,status.owner)}
         {showError && <div className="error-text">{showError}</div>}
       </Form.Field>
     )
