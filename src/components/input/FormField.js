@@ -27,8 +27,6 @@ const FormField = ({
   handleSave,
   handleLockField,
   handleUnlockField,
-  locked,
-  userMail,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -39,15 +37,19 @@ const FormField = ({
   }, []);
 
   const lockField = (lockStyle,owner,identifier) => {
+    let fieldName = identifier;
+    if(lockStyle && lockStyle.lockData.attribute_lock.fieldset_attribute_identifier){
+      fieldName = lockStyle.lockData.attribute_lock.fieldset_attribute_identifier;
+    }
     const status = {
       lockStyle: lockStyle,
       owner: owner,
-      identifier:identifier
+      identifier:fieldName
     }
     setLockStatus(status)
   }
 
-  const renderField = (newProps,lockfield, owner) => {
+  const renderField = (newProps) => {
     let newField = field
 
     if (newProps) {
@@ -79,10 +81,6 @@ const FormField = ({
             handleLockField={handleLockField}
             handleUnlockField={handleUnlockField}
             syncronousErrors={syncronousErrors}
-            locked={locked}
-            isLocked={lockfield}
-            isLockedOwner={owner}
-            userMail={userMail}
             lockField={lockField}
           />
         )
@@ -177,13 +175,13 @@ const FormField = ({
               {title}
               {status.lockStyle && !status.owner && (
                 status.identifier && status.identifier === field.name &&(
-                <span style={{display:'inline-flex',marginLeft:'5px',padding:'5px',color:'#dc3545',border:'2px solid #dc3545'}}> Käyttäjä {status.lockStyle.lockData.attribute_lock.user_name} on muokkaamassa kenttää <IconLock></IconLock></span>
+                <span className="input-locked"> Käyttäjä {status.lockStyle.lockData.attribute_lock.user_name} on muokkaamassa kenttää <IconLock></IconLock></span>
                 )
                 )
               }
               {status.lockStyle && status.owner && (
                 status.identifier && status.identifier === field.name &&(
-                <span style={{display:'inline-flex',marginLeft:'5px',padding:'5px',color:'#0000bf',border:'2px solid #0000bf'}}>Kenttä on lukittu sinulle <IconLock></IconLock></span>
+                <span className="input-editable">Kenttä on lukittu sinulle <IconLock></IconLock></span>
                 )
                 )
               }
@@ -213,7 +211,7 @@ const FormField = ({
             </div>
           </div>
         )}
-        {renderField(null,status.lockStyle,status.owner)}
+        {renderField(null)}
         {showError && <div className="error-text">{showError}</div>}
       </Form.Field>
     )

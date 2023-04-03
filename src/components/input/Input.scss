@@ -10,6 +10,20 @@
     position: relative;
     z-index: 1;
     margin-top: 20px;
+    .input-locked{
+      display:inline-flex;
+      margin-left:5px;
+      padding:5px;
+      color:$red2;
+      border:2px solid $red2;
+    }
+    .input-editable{
+      display:inline-flex;
+      margin-left:5px;
+      padding:5px;
+      color:$color-bus;
+      border:2px solid $color-bus;
+    }
   }
 
   .input-header-icons {

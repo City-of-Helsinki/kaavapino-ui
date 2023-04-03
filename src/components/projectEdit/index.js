@@ -20,7 +20,6 @@ import {
 } from '../../actions/projectActions'
 import { fetchSchemas, setAllEditFields, clearSchemas } from '../../actions/schemaActions'
 import {
-  lockedSelector,
   savingSelector,
   changingPhaseSelector,
   validatingSelector,
@@ -284,8 +283,7 @@ class ProjectEditPage extends Component {
       saveProjectBasePayload,
       currentPhases,
       users,
-      currentUserId,
-      locked
+      currentUserId
     } = this.props
     const { highlightGroup } = this.state
 
@@ -402,8 +400,6 @@ class ProjectEditPage extends Component {
             isExpert={isExpert}
             setRef={this.setRef}
             setFormInitialized={this.setFormInitialized}
-            locked={locked}
-            userMail={this.state.currentEmail}
           />
           {this.state.showEditFloorAreaForm && (
             <EditFloorAreaFormModal
@@ -442,8 +438,7 @@ const mapStateToProps = state => {
     allEditFields: allEditFieldsSelector(state),
     users: usersSelector(state),
     currentUserId: userIdSelector(state),
-    currentProject: currentProjectSelector(state),
-    locked: lockedSelector(state)
+    currentProject: currentProjectSelector(state)
   }
 }
 

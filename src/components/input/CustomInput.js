@@ -23,14 +23,14 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       if(lockedStatus.lock === false){
         let identifier;
         if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
-          identifier = lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier;
+          identifier = lockedStatus.lockData.attribute_lock.field_identifier;
         }
         else{
           identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
         }
 
         const lock = input.name === identifier
-        if(lock){
+        if(lock && lockedStatus.lockData.attribute_lock.owner){
           setReadOnly(false)
           custom.lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
         }
@@ -50,11 +50,13 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
 
   const handleBlur = (event) => {
     let identifier;
-    if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
-      identifier = lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier;
-    }
-    else{
-      identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
+    if(lockedStatus){
+      if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
+        identifier = lockedStatus.lockData.attribute_lock.field_identifier;
+      }
+      else{
+        identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
+      }
     }
     custom.lockField(false,false,identifier)
     if (typeof custom.handleUnlockField === 'function') {
@@ -62,7 +64,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
     }
     if (event.target.value !== oldValueRef.current) {
       //prevent saving if locked
-      if (custom.isLockedOwner) {
+      if (!readonly) {
         custom.onBlur();
         oldValueRef.current = event.target.value;
       }
@@ -70,13 +72,13 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   }
 
   const handleInputChange = useCallback((event) => {
-    if (event.target.value) {
+    if(!readonly){
       input.onChange(event.target.value, input.name)
     }
   }, [input.name, input.value]);
 
   const handleClose = () => {
-    if (custom.isLockedOwner) {
+    if (!readonly) {
       custom.handleUnlockField(input.name)
     }
   }

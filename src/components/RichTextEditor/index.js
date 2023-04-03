@@ -74,7 +74,7 @@ function RichTextEditor(props) {
   const projectId = useSelector(currentProjectIdSelector)
   const [showComments, setShowComments] = useState(false)
 
-  const [toolbarVisible, setToolbarVisible] = useState(false)
+  //const [toolbarVisible, setToolbarVisible] = useState(false)
   const editorRef = useRef(null)
   const counter = useRef(props.currentSize)
   const showCounter = useRef(false)
@@ -119,13 +119,13 @@ function RichTextEditor(props) {
       if(lockedStatus.lock === false){
         let identifier;
         if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
-          identifier = lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier;
+          identifier = lockedStatus.lockData.attribute_lock.field_identifier;
         }
         else{
           identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
         }
-        const lock = inputProps.name=== identifier
-        if(lock){
+        const lock = inputProps.name === identifier
+        if(lock && lockedStatus.lockData.attribute_lock.owner){
           setReadOnly(false)
           if (typeof lockField === 'function') {
             lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
@@ -142,7 +142,7 @@ function RichTextEditor(props) {
   }, [lockedStatus]);
 
   const handleChange = useCallback((_val, _delta, source) => {
-    if (_val) {
+    if(!readonly){
       if (currentTimeout) {
         clearTimeout(currentTimeout)
         setCurrentTimeout(0)
@@ -175,7 +175,6 @@ function RichTextEditor(props) {
       inputProps.onChange(_val, inputProps.name);
       inputValue.current = _val;
     }
-
   }, [inputProps.name, inputProps.value])
 
   const handleFocus = () => {
@@ -187,7 +186,7 @@ function RichTextEditor(props) {
   const handleBlur = () => {
     let identifier;
     if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
-      identifier = lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier;
+      identifier = lockedStatus.lockData.attribute_lock.field_identifier;
     }
     else{
       identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
@@ -198,7 +197,7 @@ function RichTextEditor(props) {
     props.handleUnlockField(inputProps.name)
     if (inputValue.current !== oldValueRef.current) {
       //prevent saving if locked
-      if (props.isLockedOwner) {
+      if (!readonly) {
         onBlur();
         oldValueRef.current = inputValue.current;
       }
@@ -206,7 +205,7 @@ function RichTextEditor(props) {
   }
 
   const handleClose = () => {
-    if (props.isLockedOwner) {
+    if (!readonly) {
       props.handleUnlockField()
     }
   }
@@ -245,14 +244,14 @@ function RichTextEditor(props) {
       aria-label="tooltip"
     >
       <div
-        className={`rich-text-editor ${toolbarVisible || showComments ? 'toolbar-visible' : ''
+        className={`rich-text-editor ${showComments ? 'toolbar-visible' : ''
           } ${largeField ? 'large' : ''}`}
-        onFocus={() => setToolbarVisible(true)}
+        //onFocus={() => setToolbarVisible(true)}
       >
         <div
           role="toolbar"
           id={toolbarName}
-          onMouseDown={e => e.preventDefault()}
+          //onMouseDown={e => e.preventDefault()}
           className="ql-toolbar"
         >
           <span className="ql-formats">
@@ -307,7 +306,7 @@ function RichTextEditor(props) {
               // Hack. Prevent blurring when copy-paste data
               let fixRange = quill.getSelection()
               if (!fixRange) {
-                setToolbarVisible(false)
+               // setToolbarVisible(false)
                 showCounter.current = false;
                 if (onBlur) {
                   handleBlur()
@@ -318,7 +317,7 @@ function RichTextEditor(props) {
           meta={meta}
           placeholder={placeholder}
           className={className}
-          onClick={() => setToolbarVisible(true)}
+          //onClick={() => setToolbarVisible(true)}
           updated={updated}
           readOnly={readonly}
         />

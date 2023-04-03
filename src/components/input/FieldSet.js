@@ -31,10 +31,6 @@ const FieldSet = ({
   handleLockField,
   handleUnlockField,
   field: { disable_fieldset_delete_add },
-  locked,
-  userMail,
-  isLocked,
-  isLockedOwner,
   lockField
 }) => {
 
@@ -176,10 +172,6 @@ const FieldSet = ({
                           handleLockField={handleLockField}
                           handleUnlockField={handleUnlockField}
                           onRadioChange={onRadioChange}
-                          locked={locked}
-                          userMail={userMail}
-                          isLocked={isLocked}
-                          isLockedOwner={isLockedOwner}
                           handleBlurSave={() => {
                             if (onBlur) {
                               handleBlur()

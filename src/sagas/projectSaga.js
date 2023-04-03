@@ -636,9 +636,7 @@ function* unlockProjectField(data) {
   let attribute_identifier = data.payload.inputName;
 
   if(project_name && attribute_identifier){
-    if(attribute_identifier.includes("].")){
-      attribute_identifier = attribute_identifier.split("].").pop();
-    }
+
     try {
        yield call(
         attributesApiUnlock.post,
@@ -658,11 +656,9 @@ function* unlockProjectField(data) {
 function* lockProjectField(data) {
   const project_name = data.payload.projectName;
   let attribute_identifier = data.payload.inputName;
+
   if(project_name && attribute_identifier){
     //Fielset has prefixes someprefix[x]. that needs to be cut out. Only actual field info is compared.
-    if(attribute_identifier.includes("].")){
-      attribute_identifier = attribute_identifier.split("].").pop();
-    }
     try {
       //Return data when succesfully locked or is locked to someone else
       //lockData is compared to current userdata on frontend and editing allowed or prevented
