@@ -74,7 +74,7 @@ function RichTextEditor(props) {
   const projectId = useSelector(currentProjectIdSelector)
   const [showComments, setShowComments] = useState(false)
 
-  //const [toolbarVisible, setToolbarVisible] = useState(false)
+  const [toolbarVisible, setToolbarVisible] = useState(false)
   const editorRef = useRef(null)
   const counter = useRef(props.currentSize)
   const showCounter = useRef(false)
@@ -244,14 +244,14 @@ function RichTextEditor(props) {
       aria-label="tooltip"
     >
       <div
-        className={`rich-text-editor ${showComments ? 'toolbar-visible' : ''
-          } ${largeField ? 'large' : ''}`}
-        //onFocus={() => setToolbarVisible(true)}
+        className={`rich-text-editor ${toolbarVisible || showComments ? 'toolbar-visible' : ''
+      } ${largeField ? 'large' : ''}`}
+        onFocus={() => setToolbarVisible(true)}
       >
         <div
           role="toolbar"
           id={toolbarName}
-          //onMouseDown={e => e.preventDefault()}
+          onMouseDown={e => e.preventDefault()}
           className="ql-toolbar"
         >
           <span className="ql-formats">
@@ -306,7 +306,7 @@ function RichTextEditor(props) {
               // Hack. Prevent blurring when copy-paste data
               let fixRange = quill.getSelection()
               if (!fixRange) {
-               // setToolbarVisible(false)
+                setToolbarVisible(false)
                 showCounter.current = false;
                 if (onBlur) {
                   handleBlur()
@@ -317,7 +317,7 @@ function RichTextEditor(props) {
           meta={meta}
           placeholder={placeholder}
           className={className}
-          //onClick={() => setToolbarVisible(true)}
+          onClick={() => setToolbarVisible(true)}
           updated={updated}
           readOnly={readonly}
         />
