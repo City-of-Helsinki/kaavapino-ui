@@ -23,9 +23,7 @@ const FormSection = ({
   formValues,
   syncronousErrors,
   submitErrors,
-  setRef,
-  locked,
-  userMail
+  setRef
 }) => {
   
   return (
@@ -51,8 +49,6 @@ const FormSection = ({
           submitErrors={submitErrors}
           className={field.highlight_group ? field.highlight_group : '' }
           setRef={setRef}
-          locked={locked}
-          userMail={userMail}
         />
       ))}
     </Segment>

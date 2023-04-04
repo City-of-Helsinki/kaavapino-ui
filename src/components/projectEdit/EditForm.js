@@ -71,9 +71,7 @@ class EditForm extends Component {
       syncronousErrors,
       submitErrors,
       isExpert,
-      t,
-      locked,
-      userMail
+      t
     } = this.props
 
     return (
@@ -109,8 +107,6 @@ class EditForm extends Component {
             disabled={disabled}
             attributeData={attributeData}
             setRef={this.props.setRef}
-            locked={locked}
-            userMail={userMail}
           />
         ))}
         <Button

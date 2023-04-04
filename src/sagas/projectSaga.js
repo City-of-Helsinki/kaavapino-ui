@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { takeLatest, put, all, call, select, delay } from 'redux-saga/effects'
+import { takeLatest, put, all, call, select } from 'redux-saga/effects'
 import { isEqual } from 'lodash'
 import { push } from 'connected-react-router'
 import {
@@ -636,9 +636,7 @@ function* unlockProjectField(data) {
   let attribute_identifier = data.payload.inputName;
 
   if(project_name && attribute_identifier){
-    if(attribute_identifier.includes("].")){
-      attribute_identifier = attribute_identifier.split("].").pop();
-    }
+
     try {
        yield call(
         attributesApiUnlock.post,
@@ -658,11 +656,9 @@ function* unlockProjectField(data) {
 function* lockProjectField(data) {
   const project_name = data.payload.projectName;
   let attribute_identifier = data.payload.inputName;
+
   if(project_name && attribute_identifier){
     //Fielset has prefixes someprefix[x]. that needs to be cut out. Only actual field info is compared.
-    if(attribute_identifier.includes("].")){
-      attribute_identifier = attribute_identifier.split("].").pop();
-    }
     try {
       //Return data when succesfully locked or is locked to someone else
       //lockData is compared to current userdata on frontend and editing allowed or prevented
@@ -671,8 +667,6 @@ function* lockProjectField(data) {
         {project_name,
         attribute_identifier}
       )
-      //Makes sure that waits unlock so lock order does not get mixed and accidentally unlock wrong field
-      yield delay(200)
       //Send data to store
       yield put(setLockStatus(lockData,false))
     }

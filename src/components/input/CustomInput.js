@@ -2,8 +2,11 @@ import React, { useCallback, useRef, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { TextInput } from 'hds-react'
+import { useSelector } from 'react-redux'
+import {lockedSelector } from '../../selectors/projectSelector'
 
 const CustomInput = ({ input, meta: { error }, ...custom }) => {
+  const lockedStatus = useSelector(state => lockedSelector(state))
   const oldValueRef = useRef('');
   const [readonly, setReadOnly] = useState(false)
 
@@ -15,6 +18,30 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
     };
   }, [])
 
+  useEffect(() => {
+    if(lockedStatus && Object.keys(lockedStatus).length > 0){
+      if(lockedStatus.lock === false){
+        let identifier;
+        if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
+          identifier = lockedStatus.lockData.attribute_lock.field_identifier;
+        }
+        else{
+          identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
+        }
+
+        const lock = input.name === identifier
+        if(lock && lockedStatus.lockData.attribute_lock.owner){
+          setReadOnly(false)
+          custom.lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
+        }
+        else{
+          setReadOnly(true)
+          custom.lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
+        }
+      }
+    }
+  }, [lockedStatus]);
+
   const handleFocus = () => {
     if (typeof custom.onFocus === 'function') {
       custom.onFocus(input.name);
@@ -22,12 +49,22 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   }
 
   const handleBlur = (event) => {
+    let identifier;
+    if(lockedStatus){
+      if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
+        identifier = lockedStatus.lockData.attribute_lock.field_identifier;
+      }
+      else{
+        identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
+      }
+    }
+    custom.lockField(false,false,identifier)
     if (typeof custom.handleUnlockField === 'function') {
       custom.handleUnlockField(input.name)
     }
     if (event.target.value !== oldValueRef.current) {
       //prevent saving if locked
-      if (custom.isLockedOwner) {
+      if (!readonly) {
         custom.onBlur();
         oldValueRef.current = event.target.value;
       }
@@ -35,20 +72,13 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   }
 
   const handleInputChange = useCallback((event) => {
-    //Check from parent is it okay to edit or is someone else editing
-    //return false if not ok to edit and sets input readonly
-    let val = custom.onChange(event.target.value);
-    if (val || val === "") {
-      setReadOnly(false)
-      input.onChange(val, input.name)
-    }
-    else {
-      setReadOnly(true)
+    if(!readonly){
+      input.onChange(event.target.value, input.name)
     }
   }, [input.name, input.value]);
 
   const handleClose = () => {
-    if (custom.isLockedOwner) {
+    if (!readonly) {
       custom.handleUnlockField(input.name)
     }
   }

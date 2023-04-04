@@ -35,13 +35,6 @@ class CustomField extends Component {
     return false
   }
 
-  handleChange = (value) => {
-    if(this.props.isLockedOwner){
-      return value
-    }
-    return false
-  }
-
   validateFieldSize = value => {
     const field = this.props.field
     if (value && field && field.character_limit && field.character_limit > 0) {
@@ -62,8 +55,8 @@ class CustomField extends Component {
   }
 
   renderNumber = props => {
-    const { handleBlurSave, handleLockField, handleUnlockField, isLockedOwner } = this.props
-    return <CustomInput min={0} isLockedOwner={isLockedOwner} onBlur={handleBlurSave} onChange={this.handleChange} onFocus={handleLockField} handleUnlockField={handleUnlockField} {...props} type="number" />
+    const { handleBlurSave, handleLockField, handleUnlockField, lockField } = this.props
+    return <CustomInput min={0} lockField={lockField} onBlur={handleBlurSave} onChange={props.onChange} onFocus={handleLockField} handleUnlockField={handleUnlockField} {...props} type="number" />
   }
 
   renderYearSelect = props => {
@@ -89,22 +82,22 @@ class CustomField extends Component {
   }
 
   renderString = props => {
-    const { handleBlurSave, handleLockField, handleUnlockField, isLockedOwner } = this.props
-    return <CustomInput isLockedOwner={isLockedOwner} onBlur={handleBlurSave} onChange={this.handleChange} onFocus={handleLockField} handleUnlockField={handleUnlockField}  {...props} type="text" />
+    const { handleBlurSave, handleLockField, handleUnlockField, lockField } = this.props
+    return <CustomInput lockField={lockField} onBlur={handleBlurSave} onChange={props.change} onFocus={handleLockField} handleUnlockField={handleUnlockField}  {...props} type="text" />
   }
 
   renderTextArea = props => {
-    const { handleBlurSave, handleLockField, handleUnlockField, isLockedOwner } = this.props
-    return <CustomTextArea isLockedOwner={isLockedOwner} onBlur={handleBlurSave} onChange={props.change} onFocus={handleLockField} handleUnlockField={handleUnlockField} {...props} />
+    const { handleBlurSave, handleLockField, handleUnlockField } = this.props
+    return <CustomTextArea onBlur={handleBlurSave} onChange={props.change} onFocus={handleLockField} handleUnlockField={handleUnlockField} {...props} />
   }
 
   renderRichText = props => {
-    const { handleBlurSave, handleLockField, handleUnlockField, meta, formName, isLockedOwner } = this.props
+    const { handleBlurSave, handleLockField, handleUnlockField, meta, formName, lockField } = this.props
     return (
       <RichTextEditor
-        isLockedOwner={isLockedOwner}
+        lockField={lockField}
         onBlur={handleBlurSave}
-        onChange={this.handleChange}
+        onChange={props.onChange}
         onFocus={handleLockField}
         handleUnlockField={handleUnlockField}
         meta={meta}
@@ -116,12 +109,12 @@ class CustomField extends Component {
   }
 
   renderRichTextShort = props => {
-    const { handleBlurSave, handleLockField, handleUnlockField, meta, setRef, isLockedOwner } = this.props
-    return <RichTextEditor isLockedOwner={isLockedOwner} setRef={setRef} onBlur={handleBlurSave} onChange={this.handleChange} onFocus={handleLockField} handleUnlockField={handleUnlockField} meta={meta} {...props} />
+    const { handleBlurSave, handleLockField, handleUnlockField, meta, setRef, lockField } = this.props
+    return <RichTextEditor lockField={lockField} setRef={setRef} onBlur={handleBlurSave} onChange={props.onChange} onFocus={handleLockField} handleUnlockField={handleUnlockField} meta={meta} {...props} />
   }
 
   renderDate = props => {
-    const { handleBlurSave, handleLockField, handleUnlockField, deadlines, field, isLockedOwner } = this.props
+    const { handleBlurSave, handleLockField, handleUnlockField, deadlines, field, lockField } = this.props
 
     let current
     if (deadlines && deadlines.length > 0) {
@@ -141,7 +134,7 @@ class CustomField extends Component {
         />
       )
     }
-    return <CustomInput isLockedOwner={isLockedOwner} onBlur={handleBlurSave} onChange={this.handleChange} onFocus={handleLockField} handleUnlockField={handleUnlockField} type="date" {...props} />
+    return <CustomInput lockField={lockField} onBlur={handleBlurSave} onChange={props.onChange} onFocus={handleLockField} handleUnlockField={handleUnlockField} type="date" {...props} />
   }
 
   renderGeometry = props => {
@@ -250,13 +243,12 @@ class CustomField extends Component {
       placeholder,
       formName,
       updated,
-      locked,
-      isLocked,
-      isLockedOwner
+      lockField
     } = this.props
 
     return (
       <FieldSet
+        lockField={lockField}
         sets={sets}
         fields={fieldset_attributes}
         attributeData={attributeData}
@@ -274,16 +266,13 @@ class CustomField extends Component {
         onBlur={handleBlurSave}
         handleLockField={handleLockField}
         handleUnlockField={handleUnlockField}
-        locked={locked}
-        isLocked={isLocked}
-        isLockedOwner={isLockedOwner}
       />
     )
   }
 
   renderDecimal = props => {
-    const { handleBlurSave, handleLockField, handleUnlockField, isLockedOwner } = this.props
-    return <CustomInput type="number" step="0.01" isLockedOwner={isLockedOwner} onChange={this.handleChange} onBlur={handleBlurSave} onFocus={handleLockField} handleUnlockField={handleUnlockField} {...props} />
+    const { handleBlurSave, handleLockField, handleUnlockField, lockField } = this.props
+    return <CustomInput type="number" step="0.01" lockField={lockField} onChange={props.onChange} onBlur={handleBlurSave} onFocus={handleLockField} handleUnlockField={handleUnlockField} {...props} />
   }
 
   renderCustomCheckbox = props => {

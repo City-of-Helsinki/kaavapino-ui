@@ -24,17 +24,13 @@ const CustomTextArea = ({ input, meta: { error }, ...custom }) => {
   const handleBlur = (event) => {
     custom.handleUnlockField()
     if (event.target.value !== oldValueRef.current) {
-      if (!custom.isLocked) {
         custom.onBlur();
         oldValueRef.current = event.target.value;
-      }
     }
   }
 
   const handleClose = () => {
-    if (custom.isLocked) {
       custom.handleUnlockField()
-    }
   }
 
   return (
