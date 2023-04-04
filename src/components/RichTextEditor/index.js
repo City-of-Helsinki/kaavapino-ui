@@ -115,9 +115,12 @@ function RichTextEditor(props) {
   }, [])
 
   useEffect(() => {
+    //Chekcs that locked status has more data then inital empty object
     if(lockedStatus && Object.keys(lockedStatus).length > 0){
       if(lockedStatus.lock === false){
         let identifier;
+        //Field is fieldset field and has different type of identifier
+        //else is normal field
         if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
           identifier = lockedStatus.lockData.attribute_lock.field_identifier;
         }
@@ -125,15 +128,25 @@ function RichTextEditor(props) {
           identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
         }
         const lock = inputProps.name === identifier
+        //Check if locked field name matches with instance and that owner is true to allow edit
+        //else someone else is editing and prevent editing
         if(lock && lockedStatus.lockData.attribute_lock.owner){
           setReadOnly(false)
           if (typeof lockField === 'function') {
+            //Change styles from FormField
             lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
           }
+          //Focus to editor input so user does not need to click twice
+          const fieldToFocus = document.getElementById(toolbarName + "input").querySelector("p");
+          if(fieldToFocus.tabIndex != 0){
+            fieldToFocus.tabIndex = 0;
+          }
+          fieldToFocus.focus()
         }
         else{
           setReadOnly(true)
           if (typeof lockField === 'function') {
+            //Change styles from FormField
             lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
           }
         }
@@ -179,25 +192,33 @@ function RichTextEditor(props) {
 
   const handleFocus = () => {
     if (typeof onFocus === 'function') {
+      //Sent a call to lock field to backend
       onFocus(inputProps.name);
     }
+    setToolbarVisible(true)
   }
 
   const handleBlur = () => {
     let identifier;
-    if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
-      identifier = lockedStatus.lockData.attribute_lock.field_identifier;
-    }
-    else{
-      identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
+
+    if(lockedStatus && Object.keys(lockedStatus).length > 0){
+      if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
+        identifier = lockedStatus.lockData.attribute_lock.field_identifier;
+      }
+      else{
+        identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
+      }
     }
     if (typeof lockField === 'function') {
+      //Send identifier data to change styles from FormField.js
       lockField(false,false,identifier)
     }
+    //Sent a call to unlock field to backend
     props.handleUnlockField(inputProps.name)
     if (inputValue.current !== oldValueRef.current) {
       //prevent saving if locked
       if (!readonly) {
+        //Sent call to save changes
         onBlur();
         oldValueRef.current = inputValue.current;
       }
@@ -206,6 +227,7 @@ function RichTextEditor(props) {
 
   const handleClose = () => {
     if (!readonly) {
+      //Unlock if tab closed
       props.handleUnlockField()
     }
   }
@@ -246,7 +268,6 @@ function RichTextEditor(props) {
       <div
         className={`rich-text-editor ${toolbarVisible || showComments ? 'toolbar-visible' : ''
       } ${largeField ? 'large' : ''}`}
-        onFocus={() => setToolbarVisible(true)}
       >
         <div
           role="toolbar"
@@ -292,6 +313,7 @@ function RichTextEditor(props) {
           </span>
         </div>
         <ReactQuill
+          id={toolbarName + "input"}
           ref={editorRef}
           modules={modules}
           theme="snow"
@@ -317,7 +339,6 @@ function RichTextEditor(props) {
           meta={meta}
           placeholder={placeholder}
           className={className}
-          onClick={() => setToolbarVisible(true)}
           updated={updated}
           readOnly={readonly}
         />
