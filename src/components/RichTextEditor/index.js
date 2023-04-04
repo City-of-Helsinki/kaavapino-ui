@@ -200,6 +200,7 @@ function RichTextEditor(props) {
 
   const handleBlur = () => {
     let identifier;
+
     if(lockedStatus && Object.keys(lockedStatus).length > 0){
       if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
         identifier = lockedStatus.lockData.attribute_lock.field_identifier;
