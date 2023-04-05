@@ -8,7 +8,7 @@ import Info from './Info'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { has } from 'lodash'
 import { IconCross, IconClock } from 'hds-react'
-import { Button } from 'hds-react'
+import { Button, IconLock } from 'hds-react'
 import { change } from 'redux-form'
 import { get } from 'lodash'
 import { useTranslation } from 'react-i18next';
@@ -31,7 +31,8 @@ const FieldSet = ({
   handleLockField,
   handleUnlockField,
   field: { disable_fieldset_delete_add },
-  lockField
+  lockField,
+  lockStatus
 }) => {
 
   const handleBlur = () => {
@@ -137,6 +138,18 @@ const FieldSet = ({
                               }`}
                           >
                             {title}
+                            {lockStatus.lockStyle && !lockStatus.owner && (
+                                lockStatus.fieldIdentifier && lockStatus.fieldIdentifier === set + "." + field.name &&(
+                                <span className="input-locked"> Käyttäjä {lockStatus.lockStyle.lockData.attribute_lock.user_name} on muokkaamassa kenttää <IconLock></IconLock></span>
+                                )
+                              )
+                            }
+                            {lockStatus.lockStyle && lockStatus.owner && (
+                                lockStatus.fieldIdentifier && lockStatus.fieldIdentifier === set + "." + field.name &&(
+                                <span className="input-editable">Kenttä on lukittu sinulle <IconLock></IconLock></span>
+                                )
+                              )
+                            }
                           </Label>
                           <div className="input-header-icons">
                             {fieldUpdated && !isReadOnly && (

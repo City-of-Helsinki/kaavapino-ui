@@ -243,7 +243,8 @@ class CustomField extends Component {
       placeholder,
       formName,
       updated,
-      lockField
+      lockField,
+      lockStatus
     } = this.props
 
     return (
@@ -266,6 +267,7 @@ class CustomField extends Component {
         onBlur={handleBlurSave}
         handleLockField={handleLockField}
         handleUnlockField={handleUnlockField}
+        lockStatus={lockStatus}
       />
     )
   }
