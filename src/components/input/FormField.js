@@ -38,13 +38,16 @@ const FormField = ({
 
   const lockField = (lockStyle,owner,identifier) => {
     let fieldName = identifier;
+    let fieldSetId = "";
     if(lockStyle && lockStyle.lockData.attribute_lock.fieldset_attribute_identifier){
       fieldName = lockStyle.lockData.attribute_lock.fieldset_attribute_identifier;
+      fieldSetId = lockStyle.lockData.attribute_lock.field_identifier;
     }
     const status = {
       lockStyle: lockStyle,
       owner: owner,
-      identifier:fieldName
+      identifier:fieldName,
+      fieldIdentifier:fieldSetId
     }
     setLockStatus(status)
   }
@@ -82,6 +85,7 @@ const FormField = ({
             handleUnlockField={handleUnlockField}
             syncronousErrors={syncronousErrors}
             lockField={lockField}
+            lockStatus={lockStatus}
           />
         )
     }
@@ -174,13 +178,13 @@ const FormField = ({
             >
               {title}
               {status.lockStyle && !status.owner && (
-                status.identifier && status.identifier === field.name &&(
+                !status.fieldIdentifier && status.identifier && status.identifier === field.name &&(
                 <span className="input-locked"> Käyttäjä {status.lockStyle.lockData.attribute_lock.user_name} on muokkaamassa kenttää <IconLock></IconLock></span>
                 )
                 )
               }
               {status.lockStyle && status.owner && (
-                status.identifier && status.identifier === field.name &&(
+                !status.fieldIdentifier && status.identifier && status.identifier === field.name &&(
                 <span className="input-editable">Kenttä on lukittu sinulle <IconLock></IconLock></span>
                 )
                 )
