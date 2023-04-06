@@ -228,7 +228,7 @@ function RichTextEditor(props) {
   const handleClose = () => {
     if (!readonly) {
       //Unlock if tab closed
-      props.handleUnlockField()
+      props.handleUnlockField(inputProps.name)
     }
   }
 
