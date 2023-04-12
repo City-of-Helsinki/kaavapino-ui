@@ -473,82 +473,7 @@ function* createProject() {
 
 const getChangedAttributeData = (values, initial, sections) => {
   let attribute_data = {}
-  console.log(values,initial)
   Object.keys(values).forEach(key => {
-    if(initial[key] instanceof Object){
-      //Checking match for Richtext ReactQuill initial value that is object and saved value a string
-      if(initial[key].ops){
-        let initval = initial[key].ops[0].insert.replace("\n", '')
-        let val = values[key]
-
-        if(val.ops){
-          val = val.ops[0].insert.replace("\n", '')
-        }
-        else{
-          val = val.replace(/<p>/g, '').replace(/<\/p>/g, '')
-          console.log(val)
-        }
-        if(val === initval){
-          return
-        }
-      }
-    }
-
-    if(initial[key] instanceof Array){
-      console.log(initial[key].length)
-      if(values[key].length > 0){
-        let initialArrayValues = []
-        let valueArray = []
-
-        for (let index = 0; index < initial[key].length; index++) {
-          let keysInitial = initial[key][index]
-          //Add initial keys to comparable array and remove extra object properties
-          if(keysInitial){
-            let subArray = []
-            for (const [key, value] of Object.entries(keysInitial)) {
-              if(value.ops){
-                let pair = {[key]: value.ops[0].insert.replace("\n", '')}
-                subArray.push(pair)
-              }
-            }
-            initialArrayValues.push(subArray)
-          }
-        }
-
-        for (let index = 0; index < values[key].length; index++) {
-          let keysValues = values[key][index]
-          //Add new values to comparable array without element tags
-          if(keysValues){
-            let subArray = []
-            for (const [key, value] of Object.entries(keysValues)) {
-              if(value){
-                if(value.ops){
-                  let pair = {[key]: value.ops[0].insert.replace("\n", '')}
-                  subArray.push(pair)
-                }
-                else{
-                  let pair = {[key]: value.replace(/<p>/g, '').replace(/<\/p>/g, '')}
-                  subArray.push(pair)
-                }
-              }
-            }
-            valueArray.push(subArray)
-          }
-        }
-        //Compare arrays
-        //Return if values have not been edited and are the same
-        if(initialArrayValues && valueArray){
-          if(JSON.stringify(initialArrayValues) === JSON.stringify(valueArray)){
-            console.log("equal")
-            return
-          }
-          else{
-            console.log("something chagend")
-          }
-        }
-      }
-    }
-  
     if (initial[key] !== undefined && isEqual(values[key], initial[key])) {
       return
     }
@@ -583,7 +508,6 @@ const getChangedAttributeData = (values, initial, sections) => {
       attribute_data = Object.assign({}, initialFieldSetValues[0], attribute_data)
     }
   })
-  console.log(attribute_data)
   return attribute_data
 }
 function* saveProjectPayload({ payload }) {
@@ -767,7 +691,6 @@ function* saveProject() {
 
     if (keys.length !== 0) {
       const attribute_data = changedValues
-      console.log(attribute_data)
       try {
         const updatedProject = yield call(
           projectApi.patch,
