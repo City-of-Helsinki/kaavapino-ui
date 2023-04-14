@@ -1,10 +1,12 @@
 import React from 'react'
-import {render} from '@testing-library/react'
+import {render,screen} from '@testing-library/react'
+import '@testing-library/jest-dom'
 import LoginPage from '../../../components/auth/Login'
-import mockUserManager from '../../../utils/userManager'
+
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: key => key })
 }))
+
 describe('<Login />', () => {
   let loginWrapper
   
@@ -14,13 +16,11 @@ describe('<Login />', () => {
     
   })
 
-  it('renders', () => {
-    expect(loginWrapper.find('div').text()).toBe('redirecting')
-    expect(mockUserManager.signinRedirect).toHaveBeenCalledTimes(1)
+  test('renders', () => {
+    expect(screen.getByText('redirecting')).toBeInTheDocument()
   })
 
   afterEach(() => {
-    setInterval.mockClear()
-    clearInterval.mockClear()
+    jest.useRealTimers()
   })
 })

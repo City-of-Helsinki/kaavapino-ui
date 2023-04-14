@@ -1,7 +1,7 @@
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../../constants'
 import { getFieldAutofillValue } from '../../../utils/projectAutofillUtils'
 describe('Autofill tests', () => {
- it('Autofill rule succeeds (string)', () => {
+ test('Autofill rule succeeds (string)', () => {
     const field = {}
     const conditionObject = {}
     conditionObject.variable = 'a'
@@ -17,7 +17,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe('uusitulos')
   })
-  it('Autofill rule not succeeds (string)', () => {
+  test('Autofill rule not succeeds (string)', () => {
     const field = {}
     const conditionObject = {}
     conditionObject.variable = 'a'
@@ -33,7 +33,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(undefined)
   })
-  it('Autofill rule succeeds (boolean)', () => {
+  test('Autofill rule succeeds (boolean)', () => {
     const field = {}
     const conditionObject = {}
     conditionObject.variable = 'a'
@@ -49,7 +49,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(true)
   })
-  it('Autofill rule not succeeds (boolean)', () => {
+  test('Autofill rule not succeeds (boolean)', () => {
     const field = {}
     const conditionObject = {}
     conditionObject.variable = 'a'
@@ -65,7 +65,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(undefined)
   })
-  it('Autofill rule succeeds (boolean)', () => {
+  test('Autofill rule succeeds (boolean)', () => {
     const field = {}
     const conditionObject = {}
     conditionObject.variable = 'a'
@@ -81,7 +81,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(undefined)
   })
-  it('Autofill rule not succeeds (boolean)', () => {
+  test('Autofill rule not succeeds (boolean)', () => {
     const field = {}
     const conditionObject = {}
     conditionObject.variable = 'a'
@@ -97,7 +97,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(true)
   })
-  it('Autofill rule succeeds multiple (string)', () => {
+  test('Autofill rule succeeds multiple (string)', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'yksikon_johtaja'
@@ -128,7 +128,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe('Pohjoinen')
   })
-  it('Autofill rule succeeds multiple (string)', () => {
+  test('Autofill rule succeeds multiple (string)', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'yksikon_johtaja'
@@ -159,7 +159,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe('Itäinen')
   })
-  it('Autofill rule not succeeds multiple (string)', () => {
+  test('Autofill rule not succeeds multiple (string)', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'yksikon_johtaja'
@@ -190,7 +190,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(undefined)
   })
-  it('Autofill rule succeeds multiple (string)', () => {
+  test('Autofill rule succeeds multiple (string)', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'vastuuyksikko'
@@ -228,7 +228,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe('Suvi Tyynilä')
   })
-  it('Autofill rule succeeds multiple not found (string)', () => {
+  test('Autofill rule succeeds multiple not found (string)', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'vastuuyksikko'
@@ -266,7 +266,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(undefined)
   })
-  it('Autofill rule succeeds (list)', () => {
+  test('Autofill rule succeeds (list)', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'vastuuyksikko'
@@ -283,7 +283,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe('loytyy_listasta')
   })
-  it('Autofill rule not succeeds (list)', () => {
+  test('Autofill rule not succeeds (list)', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'vastuuyksikko'
@@ -301,7 +301,7 @@ describe('Autofill tests', () => {
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(undefined)
   })
  
-  it('Autofill rule fails boolean if/else', () => {
+  test('Autofill rule fails boolean if/else', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'maanomistus_yksityinen'
@@ -325,7 +325,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(false)
   })
-  it('Autofill rule succeeds boolean if/else', () => {
+  test('Autofill rule succeeds boolean if/else', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'maanomistus_yksityinen'
@@ -349,7 +349,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(true)
   })
-  it('Autofill list', () => {
+  test('Autofill list', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'oasvaiheen_dokumentin_nimi'
@@ -377,7 +377,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(false)
   })
-  it('Autofill rule list 2', () => {
+  test('Autofill rule list 2', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'oasvaiheen_dokumentin_nimi'
@@ -405,7 +405,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(true)
   })
-  it('Autofill rule list 3', () => {
+  test('Autofill rule list 3', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'oasvaiheen_dokumentin_nimi'
@@ -433,7 +433,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(undefined)
   })
-  it('Autofill rule list 4', () => {
+  test('Autofill rule list 4', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'oasvaiheen_dokumentin_nimi'
@@ -461,7 +461,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(false)
   })
-  it('Autofill rule list 4', () => {
+  test('Autofill rule list 4', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'oasvaiheen_dokumentin_nimi'
@@ -489,7 +489,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(false)
   })
-  it('Autofill rule list 4', () => {
+  test('Autofill rule list 4', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'oasvaiheen_dokumentin_nimi'
@@ -520,7 +520,7 @@ describe('Autofill tests', () => {
     const current = 'testfieldset[0].test'
     expect(getFieldAutofillValue(field.autofill_rule, formValues, current)).toBe(true)
   })
-  it('Autofill rule list 4 deeper', () => {
+  test('Autofill rule list 4 deeper', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'oasvaiheen_dokumentin_nimi'
@@ -551,7 +551,7 @@ describe('Autofill tests', () => {
     const current = 'testfieldset[0].test'
     expect(getFieldAutofillValue(field.autofill_rule, formValues, current )).toBe(true)
   })
-  it('Autofill rule list 5 fails', () => {
+  test('Autofill rule list 5 fails', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'oasvaiheen_dokumentin_nimi'
@@ -582,7 +582,7 @@ describe('Autofill tests', () => {
     const current = 'testfieldset[0].test'
     expect(getFieldAutofillValue(field.autofill_rule, formValues,current)).toBe(undefined)
   })
-  it('Autofill rule list 6 false', () => {
+  test('Autofill rule list 6 false', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'oasvaiheen_dokumentin_nimi'
@@ -613,7 +613,7 @@ describe('Autofill tests', () => {
     const current = 'testfieldset[0].test'
     expect(getFieldAutofillValue(field.autofill_rule, formValues, current)).toBe(false)
   })
-  it('Autofill rule list 7 kaupunkiympäristölautakunta', () => {
+  test('Autofill rule list 7 kaupunkiympäristölautakunta', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'kaavaprosessin_kokoluokka'
@@ -636,7 +636,7 @@ describe('Autofill tests', () => {
       }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe('kaupunkiympäristölautakunta')
   })
-  it('Autofill rule list 8 kaupunginvaltuusto', () => {
+  test('Autofill rule list 8 kaupunginvaltuusto', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'kaavaprosessin_kokoluokka'
@@ -659,7 +659,7 @@ describe('Autofill tests', () => {
       }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe('kaupunginvaltuusto')
   })
-  it('Autofill rule list 7 variables', () => {
+  test('Autofill rule list 7 variables', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'aloituskokous_suunniteltu_pvm'
@@ -682,7 +682,7 @@ describe('Autofill tests', () => {
     const current = 'testfieldset[0].test'
     expect(getFieldAutofillValue(field.autofill_rule, formValues, current)).toBe('12.12.2012')
   })
-  it('Autofill rule list 7 visibility', () => {
+  test('Autofill rule list 7 visibility', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'luodaanko_nakyvaksi'
@@ -703,7 +703,7 @@ describe('Autofill tests', () => {
     
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(true)
   })
-  it('Autofill rule list 8 variables', () => {
+  test('Autofill rule list 8 variables', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'aloituskokous_suunniteltu_pvm'
@@ -725,7 +725,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues, undefined, EDIT_PROJECT_TIMETABLE_FORM)).toBe('12.12.2012')
   })
-  it('Autofill rule number bigger than', () => {
+  test('Autofill rule number bigger than', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'mielipiteiden_maara'
@@ -741,7 +741,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(true)
   })
-  it('Autofill rule number bigger than', () => {
+  test('Autofill rule number bigger than', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'mielipiteiden_maara'
@@ -757,7 +757,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(false)
   })
-  it('Autofill multiple rule number bigger than', () => {
+  test('Autofill multiple rule number bigger than', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'mielipiteiden_maara'
@@ -782,7 +782,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(true)
   })
-  it('Autofill multiple rule number bigger than', () => {
+  test('Autofill multiple rule number bigger than', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'mielipiteiden_maara'
@@ -806,7 +806,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(true)
   })
-  it('Autofill multiple rule number bigger than', () => {
+  test('Autofill multiple rule number bigger than', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'mielipiteiden_maara'
@@ -831,7 +831,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(true)
   })
-  it('Autofill multiple rule number bigger than', () => {
+  test('Autofill multiple rule number bigger than', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'mielipiteiden_maara'
@@ -853,7 +853,7 @@ describe('Autofill tests', () => {
     const formValues = {}
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(false)
   })
-  it('Autofill multiple rule three (1) number bigger than', () => {
+  test('Autofill multiple rule three (1) number bigger than', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'mielipiteiden_maara'
@@ -886,7 +886,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(true)
   })
-  it('Autofill multiple rule three (2) number bigger than', () => {
+  test('Autofill multiple rule three (2) number bigger than', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'mielipiteiden_maara'
@@ -919,7 +919,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(true)
   })
-  it('Autofill multiple rule three (3) number bigger than', () => {
+  test('Autofill multiple rule three (3) number bigger than', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'mielipiteiden_maara'
@@ -952,7 +952,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(false)
   })
-  it('Autofill rule succeeds string with formvalue', () => {
+  test('Autofill rule succeeds string with formvalue', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'yksikon_johtaja'
@@ -969,7 +969,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe('Mikko')
   })
-  it('Autofill rule fails string with formvalue', () => {
+  test('Autofill rule fails string with formvalue', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'yksikon_johtaja_1'
@@ -986,7 +986,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(undefined)
   })
-  it('Autofill rule fails string with formvalue', () => {
+  test('Autofill rule fails string with formvalue', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'yksikon_johtaja'
@@ -1003,7 +1003,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(undefined)
   })
-  it('New autofill radiobutton rule', () => {
+  test('New autofill radiobutton rule', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'tehty_muutos_muistutusten_johdosta'
@@ -1035,7 +1035,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(true)
   })
-  it('New autofill radiobutton rule 2', () => {
+  test('New autofill radiobutton rule 2', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'tehty_muutos_muistutusten_johdosta'
@@ -1066,7 +1066,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(true)
   })
-  it('New autofill radiobutton rule 3', () => {
+  test('New autofill radiobutton rule 3', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'tehty_muutos_muistutusten_johdosta'
@@ -1095,7 +1095,7 @@ describe('Autofill tests', () => {
     const formValues = {}
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(false)
   })
-  it('New autofill radiobutton rule 4', () => {
+  test('New autofill radiobutton rule 4', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'tehty_muutos_muistutusten_johdosta'
@@ -1127,7 +1127,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(true)
   })
-  it('New autofill radiobutton rule 5', () => {
+  test('New autofill radiobutton rule 5', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'tehty_muutos_muistutusten_johdosta'
@@ -1159,7 +1159,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(true)
   })
-  it('New autofill radiobutton rule 6', () => {
+  test('New autofill radiobutton rule 6', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'tehty_muutos_muistutusten_johdosta'
@@ -1191,7 +1191,7 @@ describe('Autofill tests', () => {
     }
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(false)
   })
-  it('New autofill radiobutton rule 7', () => {
+  test('New autofill radiobutton rule 7', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'tehty_muutos_muistutusten_johdosta'
@@ -1230,7 +1230,7 @@ describe('Autofill tests', () => {
     expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(false)
   })
 })
-it('New autofill rule', () => {
+test('New autofill rule', () => {
   const field = {}
   const conditionObject1 = {}
   conditionObject1.variable = 'lautakunta_paatti_tarkistettu_ehdotus_4'
@@ -1270,7 +1270,7 @@ it('New autofill rule', () => {
   expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe("10-12-1977")
 })
 
-it('New autofill rule', () => {
+test('New autofill rule', () => {
   const field = {}
   const conditionObject1 = {}
   conditionObject1.variable = 'lautakunta_paatti_tarkistettu_ehdotus_4'
@@ -1310,7 +1310,7 @@ it('New autofill rule', () => {
   expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe("10-12-2977")
 })
 
-it('New autofill rule 2', () => {
+test('New autofill rule 2', () => {
   const field = {}
   const conditionObject1 = {}
   conditionObject1.variable = 'lautakunta_paatti_tarkistettu_ehdotus_4'
@@ -1349,7 +1349,7 @@ it('New autofill rule 2', () => {
   }
   expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(undefined)
 })
-it('New autofill bug', () => {
+test('New autofill bug', () => {
   const field = {}
   const conditionObject1 = {}
   conditionObject1.variable = 'periaatteet_mielipiteet_maara'
@@ -1402,7 +1402,7 @@ it('New autofill bug', () => {
   expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(true)
 })
 
-it('New autofill bug 2', () => {
+test('New autofill bug 2', () => {
   const field = {}
   const conditionObject1 = {}
   conditionObject1.variable = 'periaatteet_mielipiteet_maara'
@@ -1456,7 +1456,7 @@ it('New autofill bug 2', () => {
   expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(true)
 })
 
-it('New autofill bug false', () => {
+test('New autofill bug false', () => {
   const field = {}
   const conditionObject1 = {}
   conditionObject1.variable = 'periaatteet_mielipiteet_maara'
@@ -1509,7 +1509,7 @@ it('New autofill bug false', () => {
   expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(false)
 })
 
-it('New autofill bug false', () => {
+test('New autofill bug false', () => {
   const field = {}
   const conditionObject1 = {}
   conditionObject1.variable = 'periaatteet_mielipiteet_maara'
@@ -1562,7 +1562,7 @@ it('New autofill bug false', () => {
   expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(false)
 })
 
-it('New autofill bug true', () => {
+test('New autofill bug true', () => {
   const field = {}
   const conditionObject1 = {}
   conditionObject1.variable = 'periaatteet_mielipiteet_maara'
@@ -1615,7 +1615,7 @@ it('New autofill bug true', () => {
   expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(true)
 })
 
-it('New autofill first false then true', () => {
+test('New autofill first false then true', () => {
   const field = {}
   const conditionObject1 = {}
   conditionObject1.variable = 'periaatteet_mielipiteet_maara'
@@ -1669,7 +1669,7 @@ it('New autofill first false then true', () => {
   expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(true)
 })
 
-it('Autofill rule project visibility check', () => {
+test('Autofill rule project visibility check', () => {
   const field = {}
   const conditionObject1 = {}
   conditionObject1.variable = 'luodaanko_nakyvaksi'
@@ -1690,7 +1690,7 @@ it('Autofill rule project visibility check', () => {
   expect(getFieldAutofillValue(field.autofill_rule, formValues)).toBe(true)
 })
 
-it('Autofill rule project visibility check 2', () => {
+test('Autofill rule project visibility check 2', () => {
   const field = {}
   const conditionObject1 = {}
   conditionObject1.variable = 'luodaanko_nakyvaksi'

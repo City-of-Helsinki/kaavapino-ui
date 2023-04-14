@@ -30,6 +30,7 @@ const RadioBooleanButton = ({
   return (
     <div className={className}>
       <RadioButton
+        data-testid="radio1"
         key={`${name}-true`}
         id={`${name}-true`}
         label="Kyllä"
@@ -42,6 +43,7 @@ const RadioBooleanButton = ({
         checked={radioValue === true}
       />
       <RadioButton
+        data-testid="radio2"
         label="Ei"
         id={`${name}-false`}
         key={`${name}-false`}
@@ -55,6 +57,7 @@ const RadioBooleanButton = ({
       />
       {!double && showNoInformation && (
         <RadioButton
+          data-testid="radio3"
           key={`${name}-null`}
           id={`${name}-null`}
           label="Tieto puuttuu"

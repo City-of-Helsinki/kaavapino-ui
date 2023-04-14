@@ -1,5 +1,6 @@
 import React from 'react'
-import {render} from '@testing-library/react'
+import {render,screen} from '@testing-library/react'
+import '@testing-library/jest-dom'
 import Info from '../../../components/input/Info'
 
 describe('<Info />', () => {
@@ -9,7 +10,8 @@ describe('<Info />', () => {
     wrapper = render(<Info className="test" content="test" />)
   })
 
-  it('renders', () => {
-    expect(wrapper.find('.test').length).toBe(1)
+  test('renders', () => {
+    const inputNode = screen.getByLabelText('Tooltip')
+    expect(inputNode).toBeInTheDocument()
   })
 })

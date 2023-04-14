@@ -1,7 +1,7 @@
 import { showField } from '../../../utils/projectVisibilityUtils'
 describe('VisibilityCondition tests', () => {
 
-  it('Shows field with == rule (boolean)', () => {
+  test('Shows field with == rule (boolean)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -15,7 +15,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(true)
   })
-  it('Does not show field with == rule with undefined (boolean)', () => {
+  test('Does not show field with == rule with undefined (boolean)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -28,7 +28,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(false)
   })
-  it('Does not show field with == rule with value (boolean)', () => {
+  test('Does not show field with == rule with value (boolean)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -42,7 +42,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(false)
   })
-  it('Show field with == rule with value (boolean)', () => {
+  test('Show field with == rule with value (boolean)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'yleiskaava_2002_mukainen',
@@ -56,7 +56,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(true)
   })
-  it('Show field with == rule with value (boolean) not found', () => {
+  test('Show field with == rule with value (boolean) not found', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'yleiskaava_2002_mukainen',
@@ -70,7 +70,7 @@ describe('VisibilityCondition tests', () => {
     expect(showField(field, formValues)).toBe(true)
   })
 
-  it('Show field with == rule with wrong type (boolean) but field has value', () => {
+  test('Show field with == rule with wrong type (boolean) but field has value', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -84,7 +84,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(true)
   })
-  it('Show field with == rule with wrong type (boolean) but field has not value', () => {
+  test('Show field with == rule with wrong type (boolean) but field has not value', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -98,7 +98,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(false)
   })
-  it('Show field with == rule with wrong type (boolean) but not exists', () => {
+  test('Show field with == rule with wrong type (boolean) but not exists', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -111,7 +111,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(false)
   })
-  it('Does not show field with == rule (boolean)', () => {
+  test('Does not show field with == rule (boolean)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -125,7 +125,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(false)
   })
-  it('Show field with multiple == rule (boolean)', () => {
+  test('Show field with multiple == rule (boolean)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -146,7 +146,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(true)
   })
-  it('Show field with multiple == rule all true (boolean)', () => {
+  test('Show field with multiple == rule all true (boolean)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -167,7 +167,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(true)
   })
-  it('Show field with != rule', () => {
+  test('Show field with != rule', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -181,7 +181,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(true)
   })
-  it('Does not show field with != rule multiple values all true (boolean)', () => {
+  test('Does not show field with != rule multiple values all true (boolean)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -209,7 +209,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(false)
   })
-  it('Shows field with != rule multiple values (boolean)', () => {
+  test('Shows field with != rule multiple values (boolean)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -237,7 +237,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(true)
   })
-  it('Shows field with != rule multiple values all false (boolean)', () => {
+  test('Shows field with != rule multiple values all false (boolean)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -265,7 +265,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(true)
   })
-  it('Shows field with != rule multiple values with undefined (boolean)', () => {
+  test('Shows field with != rule multiple values with undefined (boolean)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -290,7 +290,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(true)
   })
-  it('Shows field with != rule multiple values with wrong value type (boolean)', () => {
+  test('Shows field with != rule multiple values with wrong value type (boolean)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -304,7 +304,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(false)
   })
-  it('Shows field with != rule multiple values with wrong value type (boolean) value undefined', () => {
+  test('Shows field with != rule multiple values with wrong value type (boolean) value undefined', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -318,7 +318,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(true)
   })
-  it('Shows field with != rule multiple values with wrong value type (boolean) value not found', () => {
+  test('Shows field with != rule multiple values with wrong value type (boolean) value not found', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -331,7 +331,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(true)
   })
-  it('Shows field with == rule success (string)', () => {
+  test('Shows field with == rule success (string)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -345,7 +345,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(true)
   })
-  it('Shows field with == rule fail (string)', () => {
+  test('Shows field with == rule fail (string)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -359,7 +359,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(false)
   })
-  it('Shows field with != rule success (string)', () => {
+  test('Shows field with != rule success (string)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -373,7 +373,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(true)
   })
-  it('Shows field with != rule (string)', () => {
+  test('Shows field with != rule (string)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -387,7 +387,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(false)
   })
-  it('Shows field with == rule (number)', () => {
+  test('Shows field with == rule (number)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -401,7 +401,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(true)
   })
-  it('Shows field with == rule fails (number)', () => {
+  test('Shows field with == rule fails (number)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -415,7 +415,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(false)
   })
-  it('Shows field with != rule (number)', () => {
+  test('Shows field with != rule (number)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -429,7 +429,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(true)
   })
-  it('Shows field with != rule fails (number)', () => {
+  test('Shows field with != rule fails (number)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -443,7 +443,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(false)
   }),
-  it('Shows field with != rule succeed (number)', () => {
+  test('Shows field with != rule succeed (number)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -457,7 +457,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(true)
   }),
-  it('Shows field with in rule (list)', () => {
+  test('Shows field with in rule (list)', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -471,7 +471,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(false)
   })
-  it('Shows field with in rule (list) not found', () => {
+  test('Shows field with in rule (list) not found', () => {
     const field = {}
     field.visibility_conditions = [{
         variable: 'a',
@@ -485,7 +485,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(false)
   })
-  it('Shows field with == rule multiple values (boolean) hide_conditions 1', () => {
+  test('Shows field with == rule multiple values (boolean) hide_conditions 1', () => {
     const field = {}
     field.hide_conditions = [{
         variable: 'a',
@@ -513,7 +513,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(false)
   })
-  it('Shows field with == rule multiple values (boolean) hide_conditions 2', () => {
+  test('Shows field with == rule multiple values (boolean) hide_conditions 2', () => {
     const field = {}
     field.hide_conditions = [{
         variable: 'a',
@@ -541,7 +541,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(false)
   })
-  it('Shows field with == rule multiple values (boolean) hide_conditions 3', () => {
+  test('Shows field with == rule multiple values (boolean) hide_conditions 3', () => {
     const field = {}
     field.hide_conditions = [{
         variable: 'a',
@@ -569,7 +569,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(true)
   })
-  it('Shows field with == rule multiple values (boolean) hide_conditions 4', () => {
+  test('Shows field with == rule multiple values (boolean) hide_conditions 4', () => {
     const field = {}
     field.hide_conditions = [{
         variable: 'yleiskaavan_2016_mukainen',
@@ -597,7 +597,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(true)
   })
-  it('Shows field with == rule multiple values (boolean) hide_conditions 5', () => {
+  test('Shows field with == rule multiple values (boolean) hide_conditions 5', () => {
     const field = {}
     field.hide_conditions = [{
         variable: 'yleiskaavan_2016_mukainen',
@@ -625,7 +625,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(false)
   })
-  it('Shows field with == rule multiple values (boolean) hide_conditions 6', () => {
+  test('Shows field with == rule multiple values (boolean) hide_conditions 6', () => {
     const field = {}
     field.hide_conditions = [{
         variable: 'yleiskaavan_2016_mukainen',
@@ -653,7 +653,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(false)
   })
-  it('Shows field with == rule multiple values (boolean) hide_conditions 7', () => {
+  test('Shows field with == rule multiple values (boolean) hide_conditions 7', () => {
     const field = {}
     field.hide_conditions = [{
         variable: 'yleiskaavan_2016_mukainen',
@@ -681,7 +681,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(true)
   })
-  it('Shows field with == rule multiple values (boolean) hide_conditions 8', () => {
+  test('Shows field with == rule multiple values (boolean) hide_conditions 8', () => {
     const field = {}
     field.hide_conditions = [{
         variable: 'yleiskaavan_2016_mukainen',
@@ -708,7 +708,7 @@ describe('VisibilityCondition tests', () => {
     }
     expect(showField(field, formValues)).toBe(true)
   })
-  it('Shows field with == rule multiple values (boolean) hide_conditions 9', () => {
+  test('Shows field with == rule multiple values (boolean) hide_conditions 9', () => {
     const field = {}
     field.hide_conditions = [{
         variable: 'yleiskaavan_2016_mukainen',
@@ -736,7 +736,7 @@ describe('VisibilityCondition tests', () => {
   })
 })
 
-it('Shows field with != 0', () => {
+test('Shows field with != 0', () => {
   const field = {}
   field.visibility_conditions = [{
       variable: 'muistutusten_lukumaara',
@@ -750,7 +750,7 @@ it('Shows field with != 0', () => {
   }
   expect(showField(field, formValues)).toBe(true)
 })
-it('Shows field with != 0', () => {
+test('Shows field with != 0', () => {
   const field = {}
   field.visibility_conditions = [{
       variable: 'muistutusten_lukumaara',
@@ -764,7 +764,7 @@ it('Shows field with != 0', () => {
   }
   expect(showField(field, formValues, test.test)).toBe(false)
 })
-it('Shows field with != 0', () => {
+test('Shows field with != 0', () => {
   const field = {}
   field.visibility_conditions = [{
       variable: 'muistutusten_lukumaara',

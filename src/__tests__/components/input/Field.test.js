@@ -1,5 +1,6 @@
 import React from 'react'
-import {render} from '@testing-library/react'
+import {render,screen} from '@testing-library/react'
+import '@testing-library/jest-dom'
 import { Provider } from 'react-redux'
 import { reduxForm } from 'redux-form'
 import configureStore from 'redux-mock-store'
@@ -62,17 +63,17 @@ describe('<Field />', () => {
     )
   }
 
-  it('renders', () => {
+  test('renders', () => {
     createFieldOfType('text')
     /* React-redux version 8 makes a wrapping Field component and another Field component inside it,
      * which is given _reduxForm context.
      * Older ones seem to render only one.
-     * Both render only one input though. */
+     * Both render only one input though. */  
     expect(wrapper.find('Field').length).not.toBe(0)
     expect(wrapper.find('input').length).toBe(1)
   })
 
-  it('renders different types', () => {
+  test('renders different types', () => {
     createFieldOfType('short_string')
     expect(wrapper.find('input').props().type).toBe('text')
     createFieldOfType('long_string')
@@ -107,7 +108,7 @@ describe('<Field />', () => {
     expect(selectInput.props().options[0].label).toBe('1')
   })
 
-  it('updates only when necessary', () => {
+  test('updates only when necessary', () => {
     const props = {
       attributeData: {
         '1': 'a',

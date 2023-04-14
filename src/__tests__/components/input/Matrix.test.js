@@ -39,7 +39,7 @@ describe('<Matrix />', () => {
     )
   })
 
-  it('renders', () => {
+  test('renders', () => {
     expect(wrapper.find('.matrix').length).toBe(1)
     const inputs = wrapper.find('input')
     expect(inputs.length).toBe(4)
@@ -48,7 +48,7 @@ describe('<Matrix />', () => {
     }
   })
 
-  it('can be highlighted', () => {
+  test('can be highlighted', () => {
     expect(wrapper.find('.highlighted').length).toBe(2)
   })
 })

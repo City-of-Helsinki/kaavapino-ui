@@ -1,5 +1,6 @@
 import React from 'react'
-import {render} from '@testing-library/react'
+import {render,screen} from '@testing-library/react'
+import '@testing-library/jest-dom'
 import LogoutPage from '../../../components/auth/Logout'
 jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: key => key }),
@@ -14,9 +15,9 @@ describe('<Logout />', () => {
     logoutWrapper = render(<LogoutPage handleLogout={logoutMock} />)
   })
 
-  it('renders', () => {
-
-    expect(logoutWrapper.find('div').text()).toBe('logging-out')
+  test('renders', () => {
+    const normalRoute = screen.queryByText('logging-out')
+    expect(normalRoute).toBeInTheDocument()
   })
 
   it('calls logout fn', () => {

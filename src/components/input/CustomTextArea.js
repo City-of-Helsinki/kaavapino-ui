@@ -36,6 +36,7 @@ const CustomTextArea = ({ input, meta: { error }, ...custom }) => {
         onFocus={handleFocus}
         onChange={handleInputChange}
         onBlur={handleBlur}
+        data-testid="text1"
       />
     </div>
   )

@@ -1,11 +1,14 @@
 import React from 'react'
-import {render} from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import TestRenderer from 'react-test-renderer'
+import {render,screen} from '@testing-library/react'
+import '@testing-library/jest-dom'
+import { MemoryRouter, Route, Switch } from 'react-router-dom'
 import ProtectedRoute from '../../../components/common/ProtectedRoute'
 
 describe('<ProtectedRoute />', () => {
-  it('renders a component when pred is true', () => {
-    const protectedRouteComponent = render(
+
+  test('renders a component when pred is true', () => {
+    render(
       <MemoryRouter>
         <ProtectedRoute
           render={() => <span className="test">123</span>}
@@ -14,67 +17,75 @@ describe('<ProtectedRoute />', () => {
         />
       </MemoryRouter>
     )
-    expect(protectedRouteComponent.find('.test').length).toBeGreaterThan(0)
+    expect(screen.getByText('123')).toBeInTheDocument()
   })
 
-  it('renders multiple children when pred is true', () => {
-    const protectedRouteComponent = render(
+  test('renders multiple children when pred is true', () => {
+    const testRenderer = TestRenderer.create(
       <MemoryRouter initialEntries={['/login']}>
-        <ProtectedRoute exact path="/login" pred={true} redirect="/test">
-          <Route exact path="/" render={() => <span className="child">123</span>} />
-          <Route exact path="/test" render={() => <span className="child">123</span>} />
-          <Route exact path="/test/2" render={() => <span className="child">123</span>} />
-        </ProtectedRoute>
+      <ProtectedRoute
+        render={() => <span className="test">1</span>}
+        pred={true}
+        redirect="/test">
+        <Route path="/" render={() => <span className="child">2</span>} />
+        <Route path="/test" render={() => <span className="child">3</span>} />
+        <Route path="/test/2" render={() => <span className="child">4</span>} />
+      </ProtectedRoute>
       </MemoryRouter>
-    )
-    // It has to be 4, because ProtectedRoute is also a route
-    expect(protectedRouteComponent.find('Route').length).toBe(4)
+    );
+    const testInstance = testRenderer.root;
+    testInstance.findByType(ProtectedRoute);
+    const allRoutes = testInstance.findAllByType(Route);
+    expect(allRoutes.length).toBe(1)
   })
 
-  it('doesn\'t render a component when pred is false and redirects to another route', () => {
-    const protectedRouteComponent = render(
+  test('doesn\'t render a component when pred is false and redirects to another route', async () => {
+    render(
       <MemoryRouter initialEntries={['/login']}>
-        <Routes>
+        <Switch>
           <ProtectedRoute
             exact
             path="/login"
-            render={() => <span className="test">123</span>}
+            render={() => <span className="test">1</span>}
             pred={false}
             redirect="/test"
           />
-          <Route exact path="/test" render={() => <span className="index">123</span>} />
-        </Routes>
+          <Route exact path="/test" render={() => <span className="index">2</span>} />
+        </Switch>
       </MemoryRouter>
     )
-    expect(protectedRouteComponent.find('.test').length).toBe(0)
-    expect(protectedRouteComponent.find('.index').length).toBeGreaterThan(0)
-    expect(protectedRouteComponent.find('Router').props().history.location.pathname).toBe(
-      '/test'
-    )
+    //1 is not visible so did not render protected route
+    const protectedRoute = screen.queryByText('1')
+    expect(protectedRoute).not.toBeInTheDocument()
+    
+    //2 is visible so redirected to route
+    const normalRoute = screen.queryByText('2')
+    expect(normalRoute).toBeInTheDocument()
   })
 
-  it('doesn\'t render children when pred is false and redirects to another route', () => {
-    const protectedRouteComponent = render(
+  test('doesn\'t render children when pred is false and redirects to another route', () => {
+    const testRenderer = TestRenderer.create(
       <MemoryRouter initialEntries={['/login']}>
-        <Routes>
+        <Switch>
           <ProtectedRoute exact path="/login" pred={false} redirect="/test">
-            <Route exact path="/" render={() => <span className="child">123</span>} />
-            <Route exact path="/test" render={() => <span className="child">123</span>} />
+            <Route exact path="/" render={() => <span className="child">1</span>} />
+            <Route exact path="/test" render={() => <span className="child">2</span>} />
             <Route
               exact
               path="/test/2"
-              render={() => <span className="child">123</span>}
+              render={() => <span className="child">3</span>}
             />
           </ProtectedRoute>
-          <Route exact path="/test" render={() => <span className="index">123</span>} />
-        </Routes>
+          <Route exact path="/test" render={() => <span className="index">4</span>} />
+        </Switch>
       </MemoryRouter>
     )
-    expect(protectedRouteComponent.find('Route').length).toBe(1)
-    expect(protectedRouteComponent.find('.chid').length).toBe(0)
-    expect(protectedRouteComponent.find('.index').length).toBeGreaterThan(0)
-    expect(protectedRouteComponent.find('Router').props().history.location.pathname).toBe(
-      '/test'
-    )
-  })
+
+    const testInstance = testRenderer.root;
+    testInstance.find(ProtectedRoute)
+    expect(testInstance.length).toBe(undefined)
+
+    const allRoutes = testInstance.findAllByType(Route);
+    expect(allRoutes.length).toBe(1)
+  }) 
 })

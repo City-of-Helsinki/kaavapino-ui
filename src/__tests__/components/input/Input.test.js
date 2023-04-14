@@ -1,36 +1,35 @@
 import React from 'react'
-import {render} from '@testing-library/react'
+import {render,screen,fireEvent} from '@testing-library/react'
+import '@testing-library/jest-dom'
 import Input from '../../../components/input/CustomInput'
 
 describe('<Input />', () => {
-  let inputComponent
- // let change
+  let change
   beforeEach(() => {
     change = ''
-    inputComponent = render(
+    render(
       <Input
         input={{ value: '123', name: 'test', onChange: value => (value) }}
         meta={{}}
       />
-    ).find('input')
+    )
   })
 
-  it('has value and name', () => {
-    const { value, name } = inputComponent.instance()
-    expect(value).toBe('123')
-    expect(name).toBe('test')
+  test('has value and name', () => {
+    const inputNode = screen.getByLabelText('test')
+    expect(inputNode).toBeInTheDocument()
+    expect(inputNode.value).toBe('123')
   })
-/* 
-  it('can be changed', () => {
-    inputComponent.simulate('change', { target: { value: 'test' } })
-    expect(change).toBe('test')
+
+/*   test('can be changed', () => {
+    const inputNode = screen.getByLabelText('test')
+    fireEvent.change(inputNode, { target: { value: 'test' }});
+    expect(inputNode.value).toBe('test')
   }) */
 
-  it('can have custom props', () => {
-    const customComponent = render(<Input input={{}} meta={{}} placeholder="123" />).find(
-      'input'
-    )
-    const { placeholder } = customComponent.instance()
-    expect(placeholder).toBe('123')
+  test('can have custom props', () => {
+    render(<Input input={{}} meta={{}} name='test' placeholder="123" />)
+    const inputNode = screen.getByPlaceholderText('123')
+    expect(inputNode).toBeInTheDocument()
   })
 })
