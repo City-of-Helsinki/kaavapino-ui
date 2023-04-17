@@ -18,7 +18,10 @@ RUN apk add --no-cache --virtual .build-deps-yarn curl \
     && rm yarn-v$YARN_VERSION.tar.gz \
     && apk del .build-deps-yarn
 
-COPY package.json yarn.lock ./
+COPY package.json .
+RUN yarn set version berry
+
+COPY yarn.lock .yarn .yarnrc.yml ./
 RUN yarn install && yarn cache clean --force
 
 COPY . .
