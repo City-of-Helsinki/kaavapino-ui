@@ -13,7 +13,7 @@ ENV APP_NAME kaavapino-ui
 COPY package.json .
 RUN yarn set version berry
 
-RUN yarn install --frozen-lockfile && yarn cache clean --force
+RUN yarn install && yarn cache clean --force
 
 COPY . .
 
