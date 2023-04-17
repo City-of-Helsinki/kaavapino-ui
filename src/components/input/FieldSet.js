@@ -138,7 +138,7 @@ const FieldSet = ({
                               }`}
                           >
                             {title} 
-                            {Object.hasOwn(lockStatus, 'lockStyle') && typeof lockStatus.lockStyle !== 'undefined' &&(
+                            {lockStatus &&(
                               lockStatus.lockStyle && !lockStatus.owner && (
                                   lockStatus.fieldIdentifier && lockStatus.fieldIdentifier === set + "." + field.name &&(
                                   <span className="input-locked"> Käyttäjä {lockStatus.lockStyle.lockData.attribute_lock.user_name} on muokkaamassa kenttää <IconLock></IconLock></span>
@@ -146,7 +146,7 @@ const FieldSet = ({
                                 )
                               )
                             }
-                            {Object.hasOwn(lockStatus, 'lockStyle') && typeof lockStatus.lockStyle !== 'undefined' &&(
+                            {lockStatus &&(
                               lockStatus.lockStyle && lockStatus.owner && (
                                   lockStatus.fieldIdentifier && lockStatus.fieldIdentifier === set + "." + field.name &&(
                                   <span className="input-editable">Kenttä on lukittu sinulle <IconLock></IconLock></span>
