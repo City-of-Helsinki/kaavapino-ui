@@ -3,7 +3,7 @@
 # Only use spaces to indent your .yml configuration.
 # -----
 # You can specify a custom docker image from Docker Hub as your build environment.
-image: node:14.16.1-alpine3.13
+image: node:14.21-alpine3.16
 
 pipelines:
   default:
