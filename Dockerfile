@@ -5,6 +5,7 @@ ARG REACT_APP_OPENID_AUDIENCE
 ARG REACT_APP_OPENID_CONNECT_CLIENT_ID
 ARG REACT_APP_SENTRY_URL
 
+ENV YARN_VERSION 3.4.1
 RUN env
 WORKDIR /app
 
@@ -13,7 +14,7 @@ ENV APP_NAME kaavapino-ui
 COPY package.json .
 RUN yarn set version berry
 
-RUN yarn install && yarn cache clean --force
+RUN yarn install && yarn cache clean
 
 COPY . .
 
