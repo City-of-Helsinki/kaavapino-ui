@@ -1,4 +1,4 @@
-FROM node:14.16.1-alpine3.13 AS builder
+FROM node:14.21-alpine3.16 AS builder
 
 ARG REACT_APP_BASE_URL
 ARG REACT_APP_OPENID_AUDIENCE
