@@ -1,5 +1,4 @@
 FROM node:14.21-alpine3.16 AS builder
-ENV YARN_VERSION 3.4.1
 
 ARG REACT_APP_BASE_URL
 ARG REACT_APP_OPENID_AUDIENCE
@@ -10,6 +9,8 @@ RUN env
 WORKDIR /app
 
 ENV APP_NAME kaavapino-ui
+ENV YARN_VERSION 3.4.1
+RUN yarn policies set-version $YARN_VERSION
 
 COPY package.json yarn.lock ./
 RUN yarn install && yarn cache clean --force
