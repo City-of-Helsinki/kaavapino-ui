@@ -185,7 +185,6 @@ function RichTextEditor(props) {
         counter.current = actualDeltaValue.length() - 1;
         showCounter.current = true;
       }
-      inputProps.onChange(_val, inputProps.name);
       inputValue.current = _val;
     }
   }, [inputProps.name, inputProps.value])

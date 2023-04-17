@@ -473,13 +473,12 @@ function* createProject() {
 
 const getChangedAttributeData = (values, initial, sections) => {
   let attribute_data = {}
-
   Object.keys(values).forEach(key => {
     if (initial[key] !== undefined && isEqual(values[key], initial[key])) {
       return
     }
 
-    if (values[key] === '') {
+    if (values[key].length === 0 || values[key] === '') {
       attribute_data[key] = null
     } else {
       attribute_data[key] = values[key]
@@ -692,7 +691,6 @@ function* saveProject() {
 
     if (keys.length !== 0) {
       const attribute_data = changedValues
-
       try {
         const updatedProject = yield call(
           projectApi.patch,

@@ -1,6 +1,6 @@
 import React from 'react'
 import { mount } from 'enzyme'
-import { MemoryRouter, Route, Switch } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import ProtectedRoute from '../../../components/common/ProtectedRoute'
 
 describe('<ProtectedRoute />', () => {
@@ -34,7 +34,7 @@ describe('<ProtectedRoute />', () => {
   it('doesn\'t render a component when pred is false and redirects to another route', () => {
     const protectedRouteComponent = mount(
       <MemoryRouter initialEntries={['/login']}>
-        <Switch>
+        <Routes>
           <ProtectedRoute
             exact
             path="/login"
@@ -43,7 +43,7 @@ describe('<ProtectedRoute />', () => {
             redirect="/test"
           />
           <Route exact path="/test" render={() => <span className="index">123</span>} />
-        </Switch>
+        </Routes>
       </MemoryRouter>
     )
     expect(protectedRouteComponent.find('.test').length).toBe(0)
@@ -56,7 +56,7 @@ describe('<ProtectedRoute />', () => {
   it('doesn\'t render children when pred is false and redirects to another route', () => {
     const protectedRouteComponent = mount(
       <MemoryRouter initialEntries={['/login']}>
-        <Switch>
+        <Routes>
           <ProtectedRoute exact path="/login" pred={false} redirect="/test">
             <Route exact path="/" render={() => <span className="child">123</span>} />
             <Route exact path="/test" render={() => <span className="child">123</span>} />
@@ -67,7 +67,7 @@ describe('<ProtectedRoute />', () => {
             />
           </ProtectedRoute>
           <Route exact path="/test" render={() => <span className="index">123</span>} />
-        </Switch>
+        </Routes>
       </MemoryRouter>
     )
     expect(protectedRouteComponent.find('Route').length).toBe(1)
