@@ -15,7 +15,8 @@ COPY package.json ./
 
 RUN yarn set version berry
 
-COPY yarn.lock ./
+COPY .yarn/ ./.yarn/
+COPY .yarnrc.yml yarn.lock ./
 
 RUN yarn install && yarn cache clean
 
