@@ -6,6 +6,7 @@ import {
   FETCH_PROJECTS_SUCCESSFUL,
   FETCH_OWN_PROJECTS_SUCCESSFUL,
   FETCH_PROJECTS,
+  FETCH_OWN_PROJECTS,
   FETCH_PROJECT_SUCCESSFUL,
   SET_PROJECTS,
   SET_OWN_PROJECTS,
@@ -61,7 +62,8 @@ import {
   SET_ONHOLD_PROJECTS,
   SET_ARCHIVED_PROJECTS,
   RESET_PROJECT_DEADLINES,
-  RESET_PROJECT_DEADLINES_SUCCESSFUL
+  RESET_PROJECT_DEADLINES_SUCCESSFUL,
+  FILTER_OWN_PROJECTS
 } from '../actions/projectActions'
 
 export const initialState = {
@@ -97,7 +99,8 @@ export const initialState = {
     floorAreaTargets: {},
     legends: []
   },
-  locked:{}
+  locked:{},
+  ownProjectFilters:[]
 }
 
 export const reducer = (state = initialState, action) => {
@@ -147,10 +150,28 @@ export const reducer = (state = initialState, action) => {
       }
     }
 
+    case FETCH_OWN_PROJECTS: {
+      return {
+        ...state,
+        currentProject: null,
+        currentProjectLoaded: false,
+        loadingProjects: true,
+        projects: [],
+        ownProjects: [],
+        amountOfProjectsToIncrease: 10,
+        amountOfProjectsToShow: 10,
+        totalOnholdProjects: null,
+        totalArchivedProjects: null,
+        onholdProjects: [],
+        archivedProjects: []
+      }
+    }
+
     case FETCH_OWN_PROJECTS_SUCCESSFUL: {
       return {
         ...state,
-        ownProjects: state.ownProjects.concat(action.payload)
+        ownProjects: state.ownProjects.concat(action.payload),
+        loadingProjects: false
       }
     }
 
@@ -582,6 +603,13 @@ export const reducer = (state = initialState, action) => {
           ...state.overview,
           legends: action.payload
         }
+      }
+    }
+
+    case FILTER_OWN_PROJECTS: {
+      return {
+        ...state,
+        ownProjectFilters: action.payload,
       }
     }
 

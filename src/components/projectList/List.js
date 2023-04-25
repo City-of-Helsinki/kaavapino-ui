@@ -22,7 +22,6 @@ class List extends Component {
     super(props)
 
     this.state = {
-      showGraph: false,
       sort: 5,
       dir: 1,
       projectTab: 'own'
@@ -49,23 +48,8 @@ class List extends Component {
     this.setState({
       ...this.state,
       sort: newSort,
-      dir: newDir,
-      showGraph: false
+      dir: newDir
     })
-  }
-
-  toggleGraph = () => {
-    if (this.state.showGraph) {
-      this.setState({
-        ...this.state,
-        showGraph: false
-      })
-    } else {
-      this.setState({
-        ...this.state,
-        showGraph: true
-      })
-    }
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -73,7 +57,6 @@ class List extends Component {
     const { projectTab } = prevState
     if (newProjectTab && newProjectTab !== projectTab) {
       return {
-        showGraph: false,
         projectTab: newProjectTab
       }
     } else {
@@ -82,7 +65,7 @@ class List extends Component {
   }
 
   render() {
-    const { sort, dir, showGraph } = this.state
+    const { sort, dir } = this.state
     const {
       loadingProjects,
       phases,
@@ -105,38 +88,47 @@ class List extends Component {
 
     const items = this.props.items
     const headerItems = [
-      t('projects.table.pino-number'),
-      t('projects.table.project'),
+      t('projects.table.priority'),
       t('projects.table.name'),
-      t('projects.table.phase'),
+      t('projects.table.project'),
+      t('projects.table.pino-number'),
       t('projects.table.size'),
-      t('projects.table.modified'),
-      t('projects.table.responsible')
+      t('projects.table.responsible'),
+      t('projects.table.phase'),
+      t('projects.table.modified')
     ]
 
     let projects = []
 
     items.forEach(
       (
-        { attribute_data, name, id, modified_at, user, subtype, phase, pino_number, deadlines, onhold },
+        { attribute_data, name, id, user, subtype, phase, pino_number, deadlines, onhold, priority, modified_at },
         i
       ) => {
+        let prio
+        if(priority){
+          prio = priority.name
+        }
+        else{
+          prio = ""
+        }
         const listItem = {
-          ...projectUtils.formatPhase(phase, phases),
+          prio,
           name,
+          projectId: attribute_data['hankenumero'] || '-',
           id,
           pino_number,
-          modified_at: projectUtils.formatDate(modified_at),
-          user: projectUtils.formatUsersName(users.find(u => u.id === user)),
           subtype: projectUtils.formatSubtype(subtype, projectSubtypes),
-          projectId: attribute_data['hankenumero'] || '-'
+          user: projectUtils.formatUsersName(users.find(u => u.id === user)),
+          ...projectUtils.formatPhase(phase, phases),
+          modified_at: projectUtils.formatDate(modified_at)
         }
         projects.push(
           <ListItem
             key={i}
             modifyProject={modifyProject}
             item={listItem}
-            showGraph={showGraph}
+            showGraph={this.props.showGraph}
             phases={phases}
             isExpert={isExpert}
             deadlines={deadlines}
@@ -155,8 +147,6 @@ class List extends Component {
             selected={sort}
             dir={dir}
             sort={this.setSort}
-            toggleGraph={this.toggleGraph}
-            graphToggled={showGraph}
           />
         )}
         {projects.length !== 0 && projects}

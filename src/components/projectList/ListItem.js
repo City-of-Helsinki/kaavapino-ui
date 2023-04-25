@@ -33,16 +33,16 @@ const ListItem = ({
     modified_at,
     user,
     projectId,
-    pino_number
+    pino_number,
+    prio
   }
 }) => {
   return (
     <div className="project-list-item-container">
       <div className="project-list-item">
-        <span className="project-list-item-pino field-ellipsis center">
-          {pino_number}
+        <span className="project-list-item-name field-ellipsis center">
+            {prio}
         </span>
-        <span className="center field-ellipsis">{projectId}</span>
         <span className="project-list-item-name center field-ellipsis">
           <Popup
             trigger={
@@ -54,16 +54,20 @@ const ListItem = ({
             content={name}
           />
         </span>
-        <span className="project-list-item-phase center field-ellipsis">
-          <Status color={phaseColor} /> {phaseName}
+        <span className="center field-ellipsis">{projectId}</span>
+        <span className="project-list-item-pino field-ellipsis center">
+          {pino_number}
         </span>
         <span className="center field-ellipsis">{subtype}</span>
-        <span className="center field-ellipsis">{modified_at}</span>
         <Popup
           trigger={<span className="field-ellipsis center">{user}</span>}
           on="hover"
           content={user}
         />
+        <span className="project-list-item-phase center field-ellipsis">
+          <Status color={phaseColor} /> {phaseName}
+        </span>
+        <span className="center field-ellipsis">{modified_at}</span>
         <span className="project-list-button">
           {isExpert && (
             <Button

@@ -38,7 +38,7 @@
     "own-long": "Omat projektit",
     "all-long": "Kaikki projektit",
     "amount": "({{pieces}} kpl)",
-    "title": "Kaavaprojektit",
+    "title": "Projektit",
     "createNewProject": "Luo uusi projekti",
     "createReports": "Luo raportteja",
     "onhold-short": "Keskeytyneet",
@@ -57,7 +57,8 @@
       "phase": "Vaihe",
       "size": "Koko",
       "modified": "Muokattu",
-      "responsible": "Vastuuhenkilö"
+      "responsible": "Vastuuhenkilö",
+      "priority":"Prioriteetti"
     }
     
   },
@@ -94,7 +95,10 @@
   "common": {
     "cancel": "Peruuta",
     "save": "Tallenna",
-    "continue": "Jatka"
+    "continue": "Jatka",
+    "person":"Henkilö",
+    "unit":"Yksikkö tai tiimi",
+    "keyword":"Hakusana"
   },
   "messages": {
     "deadlines-successfully-saved": "Aikataulut tallennettu",

@@ -33,6 +33,7 @@ import {
   LOCK_PROJECT_FIELD,
   UNLOCK_PROJECT_FIELD,
   FETCH_PROJECTS,
+  FETCH_OWN_PROJECTS,
   fetchProjectsSuccessful,
   fetchOwnProjectsSuccessful,
   fetchProjectSuccessful,
@@ -130,6 +131,7 @@ import { toastr } from 'react-redux-toastr'
 export default function* projectSaga() {
   yield all([
     takeLatest(FETCH_PROJECTS, fetchProjects),
+    takeLatest(FETCH_OWN_PROJECTS, fetchOwnProjects),
     takeLatest(FETCH_PROJECT_DEADLINES, fetchProjectDeadlines),
     takeLatest(INITIALIZE_PROJECT, initializeProject),
     takeLatest(CREATE_PROJECT, createProject),
@@ -261,65 +263,92 @@ function* fetchArchivedProjects({ page, payload: searchQuery }) {
     }
   }
 }
-function* fetchProjects({ page, own = true, all = true, payload: searchQuery }) {
+
+function* fetchProjects({ payload }) {
   try {
+    const page_size = payload.page_size
+    const page = payload.page
+    const searchQuery = payload.searchQuery
+
+    let query = {
+      page: page ? page : 1,
+      ordering: '-modified_at',
+      status: 'active',
+      page_size: page_size ? page_size : 10
+    }
+    if (searchQuery) {
+      query = {
+        page: page ? page : 1,
+        ordering: '-modified_at',
+        search: searchQuery,
+        status: 'active',
+        page_size: page_size ? page_size : 10
+      }
+    }
+    console.log("allquery",query)
+    
+
+    const projects = yield call(
+      projectApi.get,
+      {
+        query
+      },
+      '',
+      null,
+      null,
+      true
+    )
+
+    yield put(fetchProjectsSuccessful(projects.results))
+    yield put(setTotalProjects(projects.count))
+    
+  } catch (e) {
+    if (e.response && e.response.status !== 404) {
+      yield put(error(e))
+    }
+  }
+}
+
+function* fetchOwnProjects({ payload }) {
+  try {
+    const page_size = payload.page_size
+    const page = payload.page
+    const searchQuery = payload.searchQuery
+
     const userId = yield select(userIdSelector)
-    if (own) {
-      let query = {
+    let query = {
         includes_users: userId,
         page: page ? page : 1,
         ordering: '-modified_at',
-        status: 'active'
-      }
-      if (searchQuery) {
-        query = {
-          includes_users: userId,
-          page: page ? page : 1,
-          ordering: '-modified_at',
-          search: searchQuery,
-          status: 'active'
-        }
-      }
-      const ownProjects = yield call(
-        projectApi.get,
-        {
-          query
-        },
-        '',
-        null,
-        null,
-        true
-      )
-      yield put(fetchOwnProjectsSuccessful(ownProjects.results))
-      yield put(setTotalOwnProjects(ownProjects.count))
+        status: 'active',
+        page_size: page_size ? page_size : 10
     }
-    if (all) {
-      let query = {
+
+    if (searchQuery) {
+      query = {
+        includes_users: userId,
         page: page ? page : 1,
         ordering: '-modified_at',
-        status: 'active'
+        search: searchQuery,
+        status: 'active',
+        page_size: page_size ? page_size : 10
       }
-      if (searchQuery) {
-        query = {
-          page: page ? page : 1,
-          ordering: '-modified_at',
-          search: searchQuery,
-          status: 'active'
-        }
-      }
-      const allProjects = yield call(
-        projectApi.get,
-        {
-          query
-        },
-        '',
-        null,
-        null,
-        true
-      )
-      yield put(fetchProjectsSuccessful(allProjects.results))
-      yield put(setTotalProjects(allProjects.count))
     }
+    console.log("ownquery",query)
+  
+    const projects = yield call(
+      projectApi.get,
+      {
+        query
+      },
+      '',
+      null,
+      null,
+      true
+    )
+
+    yield put(fetchOwnProjectsSuccessful(projects.results))
+    yield put(setTotalOwnProjects(projects.count))
   } catch (e) {
     if (e.response && e.response.status !== 404) {
       yield put(error(e))
