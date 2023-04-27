@@ -37,6 +37,16 @@ export const totalOwnProjectsSelector = createSelector(
   ({ totalOwnProjects }) => totalOwnProjects
 )
 
+export const totalOnholdProjectsSelector = createSelector(
+  selectProject,
+  ({ totalOnholdProjects }) => totalOnholdProjects
+)
+
+export const totalArchivedProjectsSelector = createSelector(
+  selectProject,
+  ({ totalArchivedProjects }) => totalArchivedProjects
+)
+
 export const pollingProjectsSelector = createSelector(
   selectProject,
   ({ pollingProjects }) => pollingProjects
@@ -200,12 +210,11 @@ export const lockedSelector = createSelector(
   project => project.locked
 )
 
-export const ownProjectFiltersSelector = createSelector(
+/* export const ownProjectFiltersSelector = createSelector(
   (state) => state.project.ownProjects,
   (state) => state.project.ownProjectFilters,
   (state) => state.project,
   (ownProjects, ownProjectFilters,project) => {
-    console.log(project)
     let intersection
     if(Array.isArray(ownProjectFilters)){
       intersection = ownProjects.filter(element => ownProjectFilters.includes(element.user));
@@ -214,9 +223,5 @@ export const ownProjectFiltersSelector = createSelector(
       intersection = ownProjects.filter(element => ownProjectFilters.includes(element.department));
     }
     return intersection
-    /* return ownProjects.filter((ownProject) => {
-     arr1.some(r=> arr2.includes(r))
-      return ownProject.user.includes(ownProjectFilters);
-    }); */
   }
-);
+) */

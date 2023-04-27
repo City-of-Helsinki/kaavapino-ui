@@ -2,7 +2,6 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { Popup } from 'semantic-ui-react'
 import ProjectTimeline from '../ProjectTimeline/ProjectTimeline'
-import { IconPenLine, Button } from 'hds-react'
 import { truncate } from 'lodash'
 
 const MAX_PROJECT_NAME_LENGTH = 30
@@ -20,8 +19,6 @@ const Status = ({ color }) => {
 
 const ListItem = ({
   showGraph,
-  isExpert,
-  modifyProject,
   deadlines,
   onhold,
   item: {
@@ -68,18 +65,6 @@ const ListItem = ({
           <Status color={phaseColor} /> {phaseName}
         </span>
         <span className="center field-ellipsis">{modified_at}</span>
-        <span className="project-list-button">
-          {isExpert && (
-            <Button
-              aria-label="Muokkaa"
-              className="project-list-button"
-              value="modify"
-              variant="supplementary"
-              iconLeft={<IconPenLine />}
-              onClick={() => modifyProject(id)}
-            />
-          )}
-        </span>
       </div>
       {showGraph && (
         <div className="project-list-item-graph">

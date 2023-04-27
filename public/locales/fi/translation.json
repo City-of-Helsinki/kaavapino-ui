@@ -52,7 +52,7 @@
     "person-search": "Henkilöhaku",
     "table": {
       "pino-number": "Pinonumero",
-      "project": "Hanke (PW)",
+      "project": "PW-numero",
       "name": "Nimi",
       "phase": "Vaihe",
       "size": "Koko",
@@ -181,7 +181,9 @@
     "download_confirmation_header": "Vahvistus dokumentin lataukselle",
     "download_confirmation_content": "Lataamisen jälkeen saat kaikista muutoksista automaattisia viestejä. Oletko varma, että haluat ladata dokumentin?",
     "missing-data": "Tietoja ei ole vielä syötetty",
-    "documents-not-ready": "Dokumentteja ei ole vielä valmiina"
+    "documents-not-ready": "Dokumentteja ei ole vielä valmiina",
+    "searchterms-found":"Hakuehdoilla löytyi",
+    "found-projects":"projektia"
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}"

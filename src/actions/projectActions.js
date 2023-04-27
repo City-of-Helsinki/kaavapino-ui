@@ -112,21 +112,21 @@ export const lockProjectField = (projectName,inputName) => ({
   type: LOCK_PROJECT_FIELD,
   payload: {projectName,inputName}
 })
-export const fetchProjects = (page_size,page,searchQuery) => ({
+export const fetchProjects = (page_size,page,searchQuery,sortField,sortDir) => ({
   type: FETCH_PROJECTS,
-  payload: {page_size,page,searchQuery}
+  payload: {page_size,page,searchQuery,sortField,sortDir}
 })
-export const fetchOwnProjects = (page_size,page,searchQuery) => ({
+export const fetchOwnProjects = (page_size,page,searchQuery,sortField,sortDir) => ({
   type: FETCH_OWN_PROJECTS,
-  payload: {page_size,page,searchQuery}
+  payload: {page_size,page,searchQuery,sortField,sortDir}
 })
-export const fetchOnholdProjects = searchQuery => ({
+export const fetchOnholdProjects = (page_size,page,searchQuery,sortField,sortDir) => ({
   type: FETCH_ONHOLD_PROJECTS,
-  payload: searchQuery
+  payload: {page_size,page,searchQuery,sortField,sortDir}
 })
-export const fetchArchivedProjects = searchQuery => ({
+export const fetchArchivedProjects = (page_size,page,searchQuery,sortField,sortDir) => ({
   type: FETCH_ARCHIVED_PROJECTS,
-  payload: searchQuery
+  payload: {page_size,page,searchQuery,sortField,sortDir}
 })
 export const fetchOnholdProjectsSuccessful = projects => ({
   type: FETCH_ONHOLD_PROJECTS_SUCCESSFUL,

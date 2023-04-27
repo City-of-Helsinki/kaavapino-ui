@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { IconAngleUp, IconAngleDown, Button } from 'hds-react'
+import { IconSort,IconAngleUp, IconAngleDown,IconSortAscending, IconSortDescending, Button } from 'hds-react'
 import { useTranslation } from 'react-i18next';
 
 const ListHeader = ({
@@ -11,9 +11,16 @@ const ListHeader = ({
   }) => {
   const getArrowIcon = () => {
     return dir === 0 ? (
-      <IconAngleUp size="xs" display="none" />
+      <IconAngleUp display="none" />
     ) : (
-      <IconAngleDown size="xs" />
+      <IconAngleDown />
+    )
+  }
+  const getSortIcon = () => {
+    return dir === 0 ? (
+      <IconSortAscending />
+    ) : (
+      <IconSortDescending />
     )
   }
 
@@ -24,9 +31,12 @@ const ListHeader = ({
       <div className="project-list-header">
         {items.map((item, index) => {
           return (
-            <Button variant="supplementary" className="header-item" key={index} onClick={() => sort(index)}>
+            <Button variant="supplementary" className="header-item" key={index} onClick={() => sort(index,item)}>
               {item}
-              {selected === index && getArrowIcon()}
+              {selected !== index && item !== "Muokattu" && <IconSort />}
+              {selected === index && item !== "Muokattu" && getArrowIcon(item)}
+              {selected !== index && item === "Muokattu" && <IconSortDescending />}
+              {selected === index && item === "Muokattu" && getSortIcon(item)}
             </Button>
           )
         })}
@@ -39,7 +49,8 @@ ListHeader.propTypes = {
   searchOpen: PropTypes.bool,
   items: PropTypes.array.isRequired,
   sort: PropTypes.func.isRequired,
-  dir: PropTypes.number.isRequired
+  dir: PropTypes.number.isRequired,
+  sortField: PropTypes.func
 }
 
 export default ListHeader

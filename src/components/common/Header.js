@@ -7,12 +7,6 @@ import {
   IconDownload,
   IconRefresh
 } from 'hds-react'
-import { ReactComponent as HistogramMobileIcon } from '../../assets/histogram-mobile.svg'
-import { ReactComponent as ChecklistMobile } from '../../assets/checklist-mobile.svg'
-import { ReactComponent as PagesMobile } from '../../assets/pages-mobile.svg'
-import { ReactComponent as HistogramMobileIconDev } from '../../assets/histogram-mobile-dev.svg'
-import { ReactComponent as ChecklistMobileDev } from '../../assets/checklist-mobile-dev.svg'
-import { ReactComponent as PagesMobileDev } from '../../assets/pages-mobile-dev.svg'
 import { withRouter } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import ConfirmationModal from './ConfirmationModal'
@@ -84,6 +78,7 @@ const Header = props => {
       return t('title') + ' (' + currentEnv + ')'
     }
   }  
+
   return (
     <>
       {renderConfirmationDialog()}
@@ -114,27 +109,40 @@ const Header = props => {
             as="a"
             label={t('header.overview')}
             onClick={navigateToHome}
-            icon={
-              currentEnv === 'production' ? (
-                <HistogramMobileIcon />
-              ) : (
-                <HistogramMobileIconDev />
-              )
+            className={(props.location.pathname === "/")
+            ? "header-nav-item active"
+            : "header-nav-item " 
+          }
+            active={(props.location.pathname === "/")
+            ? true
+            : false 
             }
           />
           <Navigation.Item
             as="a"
             label={t('header.projects')}
             onClick={navigateToProjects}
-            icon={
-              currentEnv === 'production' ? <ChecklistMobile /> : <ChecklistMobileDev />
+            className={(props.location.pathname === "/projects")
+            ? "header-nav-item active"
+            : "header-nav-item " 
+          }
+            active={(props.location.pathname === "/projects")
+            ? true
+            : false 
             }
           />
           <Navigation.Item
             as="a"
             label={t('header.reports')}
-            icon={currentEnv === 'production' ? <PagesMobile /> : <PagesMobileDev />}
             onClick={navigateToReports}
+            className={(props.location.pathname === "/reports")
+              ? "header-nav-item active"
+              : "header-nav-item " 
+            }
+            active={(props.location.pathname === "/reports")
+              ? true
+              : false 
+            }
           />
         </Navigation.Row>
         <Navigation.Actions>

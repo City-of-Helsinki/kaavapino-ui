@@ -287,6 +287,31 @@ footer{
 
 .header {
   margin-bottom: 0;
+  background-color: transparent;
+  --header-background-color: transparent !important;
+  border-bottom: 1px solid $light-gray;
+  .header-nav-item.active:after{
+    background-color:$color-bus;
+    --item-active-color:$color-bus;      
+    bottom: 0;
+    content: "";
+    height: var(--spacing-3-xs);
+    left: 0;
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+  }
+  .header-nav-item:hover:after{
+    background-color:$color-bus;
+    --item-active-color:$color-bus;      
+    bottom: 0;
+    content: "";
+    height: var(--spacing-3-xs);
+    left: 0;
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+  }
 }
 
   

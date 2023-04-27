@@ -16,6 +16,8 @@ import {
   projectsSelector,
   amountOfProjectsToShowSelector,
   totalOwnProjectsSelector,
+  totalArchivedProjectsSelector,
+  totalOnholdProjectsSelector,
   totalProjectsSelector,
   onholdProjectSelector,
   archivedProjectSelector,
@@ -46,7 +48,10 @@ class ProjectListPage extends Component {
       pageIndex:0,
       showGraph: false,
       pageLimit:10,
-      projectsTotal:0
+      projectsTotal:0,
+      resultsFound:[null,null,null,null],
+      tabName:false,
+      tabDir:0
     }
   }
 
@@ -82,11 +87,11 @@ class ProjectListPage extends Component {
       const isExpert = authUtils.isExpert(this.props.currentUserId, this.props.users)
 
       if(isExpert){
-        this.fetchProjectsByTabIndex(1,0)
+        this.fetchProjectsByTabIndex(1,0,false,0)
         this.setState({activeIndex:1})
       }
       else{
-        this.fetchProjectsByTabIndex(2,0)
+        this.fetchProjectsByTabIndex(2,0,false,0)
         this.setState({activeIndex:2})
       }
     }
@@ -95,18 +100,22 @@ class ProjectListPage extends Component {
     if(prevProps.totalProjects !== this.props.totalProjects){
       pageCount = Math.ceil(this.props.totalProjects/this.state.pageLimit);
       this.setState({projectsTotal:pageCount})
+      this.setState({resultsFound:[this.props.totalOwnProjects,this.props.totalProjects,this.props.totalOnholdProjects,this.props.totalArchivedProjects]})
     }
     if(prevProps.totalOwnProjects !== this.props.totalOwnProjects){
       pageCount = Math.ceil(this.props.totalOwnProjects/this.state.pageLimit);
       this.setState({projectsTotal:pageCount})
+      this.setState({resultsFound:[this.props.totalOwnProjects,this.props.totalProjects,this.props.totalOnholdProjects,this.props.totalArchivedProjects]})
     }
     if(prevProps.totalOnholdProjects !== this.props.totalOnholdProjects){
       pageCount = Math.ceil(this.props.totalOnholdProjects/this.state.pageLimit);
       this.setState({projectsTotal:pageCount})
+      this.setState({resultsFound:[this.props.totalOwnProjects,this.props.totalProjects,this.props.totalOnholdProjects,this.props.totalArchivedProjects]})
     }
     if(prevProps.totalArchivedProjects !== this.props.totalArchivedProjects){
       pageCount = Math.ceil(this.props.totalArchivedProjects/this.state.pageLimit);
       this.setState({projectsTotal:pageCount})
+      this.setState({resultsFound:[this.props.totalOwnProjects,this.props.totalProjects,this.props.totalOnholdProjects,this.props.totalArchivedProjects]})
     }
   }
 
@@ -119,7 +128,7 @@ class ProjectListPage extends Component {
   toggleSearch = opened => {
     if (!opened) {
       if(this.state.activeIndex){
-        this.fetchProjectsByTabIndex(this.state.activeIndex,this.state.pageIndex)
+        this.fetchProjectsByTabIndex(this.state.activeIndex,this.state.pageIndex,this.state.tabName,this.state.tabDir)
       }
     }
   }
@@ -127,12 +136,12 @@ class ProjectListPage extends Component {
   fetchFilteredItems = value => {
     this.setState({ filter: value }, () => {
       this.props.clearProjects()
-      this.fetchProjectsByTabIndex(this.state.activeIndex,this.state.pageIndex)
+      this.fetchProjectsByTabIndex(this.state.activeIndex,this.state.pageIndex,this.state.tabName,this.state.tabDir)
     })
   }
 
   handleTabChange = (activeIndex) => {
-    this.fetchProjectsByTabIndex(activeIndex,0)
+    this.fetchProjectsByTabIndex(activeIndex,0,false,0)
     this.setState({ activeIndex })
   }
 
@@ -140,7 +149,13 @@ class ProjectListPage extends Component {
     const { history } = this.props
     history.push('/reports')
   }
-  
+
+  sortField = (name,dir) => {
+    console.log(name,dir)
+    this.setState({tabName:name,tabDir:dir})
+    this.fetchProjectsByTabIndex(this.state.activeIndex,this.state.pageIndex,name,dir)
+  } 
+
   getOwnProjectsPanel = () => {
     const {
       users,
@@ -165,6 +180,7 @@ class ProjectListPage extends Component {
         buttonAction={this.fetchFilteredItems}
         newProjectTab={'own'}
         modifyProject={this.modifyProject}
+        sortField={this.sortField}
       />
     )
   }
@@ -193,6 +209,7 @@ class ProjectListPage extends Component {
         isExpert={isExpert}
         newProjectTab={'all'}
         modifyProject={this.modifyProject}
+        sortField={this.sortField}
       />
     )
   }
@@ -201,7 +218,7 @@ class ProjectListPage extends Component {
     const {
       users,
       projectSubtypes,
-      totalProjects,
+      totalOnholdProjects,
       onholdProjects,
       currentUserId
     } = this.props
@@ -213,11 +230,12 @@ class ProjectListPage extends Component {
         projectSubtypes={projectSubtypes}
         users={users}
         items={onholdProjects}
-        total={totalProjects}
+        total={totalOnholdProjects}
         setFilter={this.setFilter}
         isExpert={isExpert}
         newProjectTab={'onhold'}
         modifyProject={this.modifyProject}
+        sortField={this.sortField}
       />
     )
   }
@@ -226,7 +244,7 @@ class ProjectListPage extends Component {
     const {
       users,
       projectSubtypes,
-      totalProjects,
+      totalArchivedProjects,
       archivedProjects,
       currentUserId
     } = this.props
@@ -239,11 +257,12 @@ class ProjectListPage extends Component {
         projectSubtypes={projectSubtypes}
         users={users}
         items={archivedProjects}
-        total={totalProjects}
+        total={totalArchivedProjects}
         setFilter={this.setFilter}
         isExpert={isExpert}
         newProjectTab={'onhold'}
         modifyProject={this.modifyProject}
+        sortField={this.sortField}
       />
     )
   }
@@ -321,48 +340,32 @@ class ProjectListPage extends Component {
   }
 
   getOwnProjectsTitle = () => {
-    const { totalOwnProjects, t } = this.props
+    const { t } = this.props
     const { screenWidth } = this.state
-    return `${screenWidth < 600 ? t('projects.own-short') : t('projects.own-long')} ${
-      totalOwnProjects > 0 ? t('projects.amount', { pieces: totalOwnProjects }) : ''
-    }`
+    return `${screenWidth < 600 ? t('projects.own-short') : t('projects.own-long')}`
   }
 
   getTotalProjectsTitle = () => {
     const { screenWidth } = this.state
 
-    const { totalProjects, t } = this.props
+    const { t } = this.props
 
-    return `${screenWidth < 600 ? t('projects.all-short') : t('projects.all-long')} ${
-      totalProjects > 0 ? t('projects.amount', { pieces: totalProjects }) : ''
-    }`
+    return `${screenWidth < 600 ? t('projects.all-short') : t('projects.all-long')}`
   }
 
   getOnholdProjectsTitle = () => {
     const { screenWidth } = this.state
 
-    const { onholdProjects, t } = this.props
+    const { t } = this.props
 
-    return `${
-      screenWidth < 600 ? t('projects.onhold-short') : t('projects.onhold-long')
-    } ${
-      onholdProjects && onholdProjects.length > 0
-        ? t('projects.amount', { pieces: onholdProjects.length })
-        : ''
-    }`
+    return `${screenWidth < 600 ? t('projects.onhold-short') : t('projects.onhold-long')}`
   }
   getArchivedProjectsTitle = () => {
     const { screenWidth } = this.state
 
-    const { archivedProjects, t } = this.props
+    const { t } = this.props
 
-    return `${
-      screenWidth < 600 ? t('projects.archived-short') : t('projects.archived-long')
-    } ${
-      archivedProjects && archivedProjects.length > 0
-        ? t('projects.amount', { pieces: archivedProjects.length })
-        : ''
-    }`
+    return `${screenWidth < 600 ? t('projects.archived-short') : t('projects.archived-long')}`
   }
 
   getFilters = key => {
@@ -378,10 +381,9 @@ class ProjectListPage extends Component {
   }
 
   setPageIndex = (index) => {
-    console.log(index)
     this.setState({pageIndex:index})
     if(this.state.activeIndex){
-      this.fetchProjectsByTabIndex(this.state.activeIndex,index)
+      this.fetchProjectsByTabIndex(this.state.activeIndex,index,this.state.tabName,this.state.tabDir)
     }
   }
 
@@ -399,22 +401,22 @@ class ProjectListPage extends Component {
     }
   }
 
-  fetchProjectsByTabIndex = (index,pageIndex) => {
+  fetchProjectsByTabIndex = (index,pageIndex,name,dir) => {
     switch(index) {
       case 1:
-        this.props.fetchOwnProjects(this.state.pageLimit,pageIndex,this.state.filter)
+        this.props.fetchOwnProjects(this.state.pageLimit,pageIndex,this.state.filter,name,dir)
         break;
       case 2:
-        this.props.fetchProjects(this.state.pageLimit,pageIndex,this.state.filter)
+        this.props.fetchProjects(this.state.pageLimit,pageIndex,this.state.filter,name,dir)
         break;
       case 3:
-        this.props.fetchOnholdProjects(this.state.filter)
+        this.props.fetchOnholdProjects(this.state.pageLimit,pageIndex,this.state.filter,name,dir)
         break;
       case 4:
-        this.props.fetchArchivedProjects(this.state.filter)
+        this.props.fetchArchivedProjects(this.state.pageLimit,pageIndex,this.state.filter,name,dir)
         break;
       default:
-        this.props.fetchProjects(this.state.pageLimit,pageIndex,this.state.filter)
+        this.props.fetchProjects(this.state.pageLimit,pageIndex,this.state.filter,name,dir)
     }
   }
 
@@ -456,10 +458,13 @@ class ProjectListPage extends Component {
             isPrivileged={isExpert}
             buttonAction={this.fetchFilteredItems}
           />
-          <span className="timeline-header-item  project-timeline-toggle">
-            {t('project.timeline')}
-            <Radio onChange={() => this.toggleGraph()} aria-label={t('project.show-timelines')} toggle checked={this.state.showGraph} />
-          </span>
+          <div className='project-list-result'>
+            <span className='project-list-result-number'>{t('project.searchterms-found')} {this.state.resultsFound[this.state.activeIndex -1]} {t('project.found-projects')}</span>
+            <div className="timeline-header-item  project-timeline-toggle">
+              <span className='toggle-text'>{t('project.show-timelines')}</span>
+              <Radio onChange={() => this.toggleGraph()} aria-label={t('project.show-timelines')} toggle checked={this.state.showGraph} />
+            </div>
+          </div>
           <div className="project-list-container">{this.createTabPanes()}</div>
           <div className='project-list-pagination'>
           <Pagination
@@ -490,6 +495,8 @@ const mapStateToProps = state => {
     projectSubtypes: projectSubtypesSelector(state),
     amountOfProjectsToShow: amountOfProjectsToShowSelector(state),
     totalOwnProjects: totalOwnProjectsSelector(state),
+    totalOnholdProjects: totalOnholdProjectsSelector(state),
+    totalArchivedProjects :totalArchivedProjectsSelector(state),
     totalProjects: totalProjectsSelector(state),
     currentUserId: userIdSelector(state),
     onholdProjects: onholdProjectSelector(state),

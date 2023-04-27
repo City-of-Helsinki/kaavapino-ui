@@ -5,9 +5,9 @@ import DropdownFilter from '../overview/Filters/DropdownFilter'
 import CustomADUserCombobox from '../input/CustomADUserCombobox'
 import { SearchInput } from 'hds-react'
 import {
-    projectOverviewMapFiltersSelector,
-    ownProjectFiltersSelector
+    projectOverviewMapFiltersSelector
 } from '../../selectors/projectSelector'
+//ownProjectFiltersSelector
 import {
     getProjectsOverviewMapData,
     setProjectsOverviewMapFilter,
@@ -45,41 +45,18 @@ function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter
         }
     }, [filter])
 
-     const onFilterChange = (values,currentParameter) => {
-        console.log(currentParameter)
+     const onFilterChange = (values) => {
         if(values && values.value){
             dispatch(filterOwnProjects(values.value));
         }
-/*         if (!values || values.length === 0) {
-            const newFilter = Object.assign({}, filter)
-            delete newFilter[currentParameter]
-            setFilter({
-                ...newFilter
-            })
-            return
-        } */
-   /*      const valueArray = []
-        let parameter */
-/* 
-        values.forEach(value => {
-            valueArray.push(value.value)
-            parameter = value.parameter
-        }) */
-
-/*         setFilter({
-            ...filter,
-            [parameter]: valueArray
-        }) */
     }
    
     const onUserFilterChange = (values, currentParameter) => {
-        //users etsi email avulla user id jota voidaan verrata 
-        //department tieto jota voi verrata
         const valueArray = []
         for (let index = 0; index < values.length; index++) {
             valueArray.push(values[index].email)
         }
-       // const intersection = ownProjects.filter(element => ownProjectFilters.includes(element.user));
+
         if(valueArray.length > 0){
             dispatch(filterOwnProjects(valueArray));
         }
@@ -164,8 +141,8 @@ const mapDispatchToProps = {
 
 const mapStateToProps = state => {
     return {
-        storedFilter: projectOverviewMapFiltersSelector(state),
-        filteredOwnProjects:ownProjectFiltersSelector(state)
+        storedFilter: projectOverviewMapFiltersSelector(state)
+        //filteredOwnProjects:ownProjectFiltersSelector(state)
     }
 }
 

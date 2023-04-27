@@ -28,7 +28,7 @@ class List extends Component {
     }
   }
 
-  setSort = type => {
+  setSort = (type,name) => {
     const { sort, dir } = this.state
     let newSort = sort,
       newDir = dir
@@ -42,7 +42,7 @@ class List extends Component {
       newSort = type
       newDir = 0
     }
-
+    this.props.sortField(name,dir)
     this.props.sortProjects({ sort: newSort, dir: newDir })
 
     this.setState({
@@ -75,7 +75,8 @@ class List extends Component {
       toggleSearch,
       isExpert,
       modifyProject,
-      t
+      t,
+      sortField
     } = this.props
 
     if (loadingProjects || !phases) {
@@ -147,6 +148,7 @@ class List extends Component {
             selected={sort}
             dir={dir}
             sort={this.setSort}
+            sortField={sortField}
           />
         )}
         {projects.length !== 0 && projects}
