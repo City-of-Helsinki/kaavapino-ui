@@ -207,19 +207,17 @@ function* fetchOnholdProjects({ payload }) {
 
     let query = {
       page: page,
-      ordering: sortDir === 1 ? 'modified_at' : '-modified_at',
+      ordering: sortDir === 1 ? sortField : '-'+sortField,
       status: 'onhold',
-      page_size: page_size ? page_size : 10,
-      sortField:sortField
+      page_size: page_size ? page_size : 10
     }
     if (searchQuery) {
       query = {
         page: page,
-        ordering: sortDir === 1 ? 'modified_at' : '-modified_at',
+        ordering: sortDir === 1 ? sortField : '-'+sortField,
         search: searchQuery,
         status: 'onhold',
-        page_size: page_size ? page_size : 10,
-        sortField:sortField
+        page_size: page_size ? page_size : 10
       }
     }
     const onholdProjects = yield call(
@@ -250,19 +248,17 @@ function* fetchArchivedProjects({ payload }) {
 
     let query = {
       page: page,
-      ordering: sortDir === 1 ? 'modified_at' : '-modified_at',
+      ordering: sortDir === 1 ? sortField : '-'+sortField,
       status: 'archived',
-      page_size: page_size ? page_size : 10,
-      sortField:sortField
+      page_size: page_size ? page_size : 10
     }
     if (searchQuery) {
       query = {
         page: page,
-        ordering: sortDir === 1 ? 'modified_at' : '-modified_at',
+        ordering: sortDir === 1 ? sortField : '-'+sortField,
         search: searchQuery,
         status: 'archived',
-        page_size: page_size ? page_size : 10,
-        sortField:sortField
+        page_size: page_size ? page_size : 10
       }
     }
     const archivedProjects = yield call(
@@ -294,19 +290,17 @@ function* fetchProjects({ payload }) {
 
     let query = {
       page: page,
-      ordering: sortDir === 1 ? 'modified_at' : '-modified_at',
+      ordering: sortDir === 1 ? sortField : '-'+sortField,
       status: 'active',
-      page_size: page_size ? page_size : 10,
-      sortField:sortField
+      page_size: page_size ? page_size : 10
     }
     if (searchQuery) {
       query = {
         page: page,
-        ordering: sortDir === 1 ? 'modified_at' : '-modified_at',
+        ordering: sortDir === 1 ? sortField : '-'+sortField,
         search: searchQuery,
         status: 'active',
-        page_size: page_size ? page_size : 10,
-        sortField:sortField
+        page_size: page_size ? page_size : 10
       }
     }
 
@@ -338,26 +332,24 @@ function* fetchOwnProjects({ payload }) {
     const searchQuery = payload.searchQuery
     const sortField = payload.sortField
     const sortDir = payload.sortDir
-
+    console.log(sortField)
     const userId = yield select(userIdSelector)
     let query = {
         includes_users: userId,
         page: page,
-        ordering: sortDir === 1 ? 'modified_at' : '-modified_at',
+        ordering: sortDir === 1 ? sortField : '-'+sortField,
         status: 'active',
-        page_size: page_size ? page_size : 10,
-        sortField:sortField
+        page_size: page_size ? page_size : 10
     }
 
     if (searchQuery) {
       query = {
         includes_users: userId,
         page: page,
-        ordering: sortDir === 1 ? 'modified_at' : '-modified_at',
+        ordering: sortDir === 1 ? sortField : '-'+sortField,
         search: searchQuery,
         status: 'active',
-        page_size: page_size ? page_size : 10,
-        sortField:sortField
+        page_size: page_size ? page_size : 10
       }
     }
   

@@ -339,5 +339,15 @@
     "add-comment": "Lisää viesti",
     "send": "Lähetä",
     "add-field-comment" : "Lisää kenttäkohtainen kommentti:"
+  },
+  "sorting":{
+    "Prioriteetti":"priority_id",
+    "Nimi":"name",
+    "PW-numero":"hankenumero",
+    "Pinonumero":"pino_number",
+    "Koko":"subtype_id",
+    "Vastuuhenkilö":"user_id",
+    "Vaihe":"phase_id",
+    "Muokattu":"modified_at"
   }
 }
