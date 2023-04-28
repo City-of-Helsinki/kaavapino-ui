@@ -77,8 +77,6 @@ class EditFloorAreaFormModal extends Component {
 
   handleSubmit = () => {
     this.setState({ loading: true })
-    const errors = this.props.handleSubmit()
-    console.log(errors)
   }
 
   handleClose = () => {

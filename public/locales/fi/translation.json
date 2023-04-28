@@ -341,13 +341,13 @@
     "add-field-comment" : "Lisää kenttäkohtainen kommentti:"
   },
   "sorting":{
-    "Prioriteetti":"priority_id",
+    "Prioriteetti":"priority__priority",
     "Nimi":"name",
-    "PW-numero":"hankenumero",
+    "PW-numero":"attribute_data__hankenumero",
     "Pinonumero":"pino_number",
-    "Koko":"subtype_id",
-    "Vastuuhenkilö":"user_id",
-    "Vaihe":"phase_id",
+    "Koko":"subtype__name",
+    "Vastuuhenkilö":"user__first_name,user__last_name",
+    "Vaihe":"phase__common_project_phase__name",
     "Muokattu":"modified_at"
   }
 }

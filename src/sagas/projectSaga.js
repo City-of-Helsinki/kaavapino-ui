@@ -332,7 +332,7 @@ function* fetchOwnProjects({ payload }) {
     const searchQuery = payload.searchQuery
     const sortField = payload.sortField
     const sortDir = payload.sortDir
-    console.log(sortField)
+
     const userId = yield select(userIdSelector)
     let query = {
         includes_users: userId,
