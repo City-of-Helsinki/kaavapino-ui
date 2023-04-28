@@ -70,7 +70,7 @@
 
       .project-list-header,
       .project-list-item {
-        font-family: 'Helsinki Grotesk Regular';
+        font-family: "Helsinki Grotesk Regular", sans-serif;
         text-align: center;
         display: grid;
         grid-template-columns: repeat(15, 1fr);
@@ -190,7 +190,7 @@
       }
 
       .project-list-header {
-        font-family: 'Helsinki Grotesk Medium';
+        font-family: "Helsinki Grotesk Medium", sans-serif;
         background-color: $color-bus;
         align-items: center;
         min-height: 56px;
@@ -392,7 +392,7 @@
     }
 
     .empty-list-info {
-      font-family: 'Helsinki Grotesk Regular';
+      font-family: "Helsinki Grotesk Regular", sans-serif;
       display: flex;
       justify-content: center;
       margin-top: 100px;
@@ -402,7 +402,7 @@
   .filters-list{
     margin-bottom: 64px;
     label{
-      font-family: 'Helsinki Grotesk Medium';
+      font-family: "Helsinki Grotesk Medium", sans-serif;
       font-size: 16px;
     }
   }
@@ -412,7 +412,7 @@
     }
   }
   .ui.tabular.menu {
-    font-family: 'Helsinki Grotesk Medium';
+    font-family: "Helsinki Grotesk Medium", sans-serif;
     border: none;
     height: 50px;
     margin-bottom: 30px;
@@ -442,14 +442,14 @@
     margin-bottom: 16px;
     font-size: 16px;
     .project-list-result-number{
-      font-family: 'Helsinki Grotesk Regular';
+      font-family: "Helsinki Grotesk Regular", sans-serif;
     }
     .timeline-header-item{
       display: flex;
       align-items: center;
       .toggle-text{
         padding-right: 20px;
-        font-family: 'Helsinki Grotesk Medium';
+        font-family: "Helsinki Grotesk Medium", sans-serif;
       }
       .toggle{
         label:before{
