@@ -34,9 +34,9 @@ const ListHeader = ({
             <Button variant="supplementary" className="header-item" key={index} onClick={() => sort(index,item)}>
               {item}
               {selected !== index && item !== "Muokattu" && <IconSort />}
-              {selected === index && item !== "Muokattu" && getArrowIcon(item)}
+              {selected === index && item !== "Muokattu" && getArrowIcon()}
               {selected !== index && item === "Muokattu" && <IconSortDescending />}
-              {selected === index && item === "Muokattu" && getSortIcon(item)}
+              {selected === index && item === "Muokattu" && getSortIcon()}
             </Button>
           )
         })}
@@ -49,8 +49,7 @@ ListHeader.propTypes = {
   searchOpen: PropTypes.bool,
   items: PropTypes.array.isRequired,
   sort: PropTypes.func.isRequired,
-  dir: PropTypes.number.isRequired,
-  sortField: PropTypes.func
+  dir: PropTypes.number.isRequired
 }
 
 export default ListHeader

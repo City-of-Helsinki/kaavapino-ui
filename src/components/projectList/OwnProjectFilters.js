@@ -112,7 +112,7 @@ function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter
                         placeholder={t('common.unit')}
                         onChange={
                             value => {
-                                onFilterChange(value,'yksikkö')
+                                onFilterChange(value)
                             }
                         }
                         type="choice"
