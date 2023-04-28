@@ -197,29 +197,51 @@ function* getProject({ payload: projectId }) {
     yield put(error(e))
   }
 }
-function* fetchOnholdProjects({ payload }) {
-  try {
-    const page_size = payload.page_size
-    const page = payload.page + 1
-    const searchQuery = payload.searchQuery
-    const sortField = payload.sortField
-    const sortDir = payload.sortDir
 
-    let query = {
-      page: page,
+function getQueryValues(page_size,page,searchQuery,sortField,sortDir,status,userId){
+  let query
+  if(userId){
+    query = {
+      includes_users: userId,
+      page: page + 1,
       ordering: sortDir === 1 ? sortField : '-'+sortField,
-      status: 'onhold',
+      status: status,
       page_size: page_size ? page_size : 10
     }
     if (searchQuery) {
       query = {
-        page: page,
+        includes_users: userId,
+        page: page + 1,
         ordering: sortDir === 1 ? sortField : '-'+sortField,
         search: searchQuery,
-        status: 'onhold',
+        status: status,
         page_size: page_size ? page_size : 10
       }
     }
+  }
+  else{
+    query = {
+      page: page + 1,
+      ordering: sortDir === 1 ? sortField : '-'+sortField,
+      status: status,
+      page_size: page_size ? page_size : 10
+    }
+    if (searchQuery) {
+      query = {
+        page: page + 1,
+        ordering: sortDir === 1 ? sortField : '-'+sortField,
+        search: searchQuery,
+        status: status,
+        page_size: page_size ? page_size : 10
+      }
+    }
+  }
+  return query
+}
+
+function* fetchOnholdProjects({ payload }) {
+  try {
+    const query = getQueryValues(payload.page_size,payload.page,payload.searchQuery,payload.sortField,payload.sortDir,"onhold",false)
     const onholdProjects = yield call(
       projectApi.get,
       {
@@ -240,27 +262,7 @@ function* fetchOnholdProjects({ payload }) {
 }
 function* fetchArchivedProjects({ payload }) {
   try {
-    const page_size = payload.page_size
-    const page = payload.page + 1
-    const searchQuery = payload.searchQuery
-    const sortField = payload.sortField
-    const sortDir = payload.sortDir
-
-    let query = {
-      page: page,
-      ordering: sortDir === 1 ? sortField : '-'+sortField,
-      status: 'archived',
-      page_size: page_size ? page_size : 10
-    }
-    if (searchQuery) {
-      query = {
-        page: page,
-        ordering: sortDir === 1 ? sortField : '-'+sortField,
-        search: searchQuery,
-        status: 'archived',
-        page_size: page_size ? page_size : 10
-      }
-    }
+    const query = getQueryValues(payload.page_size,payload.page,payload.searchQuery,payload.sortField,payload.sortDir,"archived",false)
     const archivedProjects = yield call(
       projectApi.get,
       {
@@ -282,27 +284,7 @@ function* fetchArchivedProjects({ payload }) {
 
 function* fetchProjects({ payload }) {
   try {
-    const page_size = payload.page_size
-    const page = payload.page + 1
-    const searchQuery = payload.searchQuery
-    const sortField = payload.sortField
-    const sortDir = payload.sortDir
-
-    let query = {
-      page: page,
-      ordering: sortDir === 1 ? sortField : '-'+sortField,
-      status: 'active',
-      page_size: page_size ? page_size : 10
-    }
-    if (searchQuery) {
-      query = {
-        page: page,
-        ordering: sortDir === 1 ? sortField : '-'+sortField,
-        search: searchQuery,
-        status: 'active',
-        page_size: page_size ? page_size : 10
-      }
-    }
+    const query = getQueryValues(payload.page_size,payload.page,payload.searchQuery,payload.sortField,payload.sortDir,"active",false)
 
     const projects = yield call(
       projectApi.get,
@@ -327,32 +309,9 @@ function* fetchProjects({ payload }) {
 
 function* fetchOwnProjects({ payload }) {
   try {
-    const page_size = payload.page_size
-    const page = payload.page + 1     //Increased by one because index in hds pagination page 1 starts from 0
-    const searchQuery = payload.searchQuery
-    const sortField = payload.sortField
-    const sortDir = payload.sortDir
-
     const userId = yield select(userIdSelector)
-    let query = {
-        includes_users: userId,
-        page: page,
-        ordering: sortDir === 1 ? sortField : '-'+sortField,
-        status: 'active',
-        page_size: page_size ? page_size : 10
-    }
+    const query = getQueryValues(payload.page_size,payload.page,payload.searchQuery,payload.sortField,payload.sortDir,"active",userId)
 
-    if (searchQuery) {
-      query = {
-        includes_users: userId,
-        page: page,
-        ordering: sortDir === 1 ? sortField : '-'+sortField,
-        search: searchQuery,
-        status: 'active',
-        page_size: page_size ? page_size : 10
-      }
-    }
-  
     const projects = yield call(
       projectApi.get,
       {
