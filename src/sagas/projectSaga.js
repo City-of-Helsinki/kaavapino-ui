@@ -208,7 +208,8 @@ function getQueryValues(page_size,page,searchQuery,sortField,sortDir,status,user
       status: status,
       page_size: page_size ? page_size : 10
     }
-    if (searchQuery) {
+    if (searchQuery.length > 0) {
+      console.log(searchQuery)
       query = {
         includes_users: userId,
         page: page + 1,
@@ -226,7 +227,8 @@ function getQueryValues(page_size,page,searchQuery,sortField,sortDir,status,user
       status: status,
       page_size: page_size ? page_size : 10
     }
-    if (searchQuery) {
+    if (searchQuery.length > 0) {
+      console.log(searchQuery)
       query = {
         page: page + 1,
         ordering: sortDir === 1 ? sortField : '-'+sortField,

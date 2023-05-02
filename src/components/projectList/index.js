@@ -34,6 +34,7 @@ import Header from '../common/Header'
 import authUtils from '../../utils/authUtils'
 import OwnProjectFilters from './OwnProjectFilters'
 import { Radio } from 'semantic-ui-react'
+import { isEqual } from 'lodash'
 
 class ProjectListPage extends Component {
   constructor(props) {
@@ -41,7 +42,7 @@ class ProjectListPage extends Component {
 
     this.state = {
       showBaseInformationForm: false,
-      filter: '',
+      filter: [],
       activeIndex: 1,
       screenWidth: window.innerWidth,
       currentFilterData:this.props.filterData,
@@ -134,16 +135,16 @@ class ProjectListPage extends Component {
     }
   }
 
-  fetchFilteredItems = value => {
+  fetchFilteredItems = (values) => {
     let pageIndex
     //Set page index to 0 when filtering with new search
-    if(value !== this.state.filter){
+    if(!isEqual(values, this.state.filter)){
       pageIndex = 0
     }
     else{
       pageIndex = this.state.pageIndex
     }
-    this.setState({ filter: value }, () => {
+    this.setState({ filter: values }, () => {
       this.props.clearProjects()
       this.fetchProjectsByTabIndex(this.state.activeIndex,pageIndex,this.state.tabName,this.state.tabDir)
     })

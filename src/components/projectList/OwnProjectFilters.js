@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { connect, useDispatch } from 'react-redux'
+import { connect } from 'react-redux'
 import { Grid } from 'semantic-ui-react'
 import DropdownFilter from '../overview/Filters/DropdownFilter'
 import CustomADUserCombobox from '../input/CustomADUserCombobox'
@@ -10,16 +10,14 @@ import {
 //ownProjectFiltersSelector
 import {
     getProjectsOverviewMapData,
-    setProjectsOverviewMapFilter,
-    filterOwnProjects
+    setProjectsOverviewMapFilter
 } from '../../actions/projectActions'
 import { isEqual } from 'lodash'
 import { useTranslation } from 'react-i18next'
 
 function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter, ...props }) {
-    const dispatch = useDispatch()
     const { t } = useTranslation()
-    const [filter, setFilter] = useState({})
+    const [filter, setFilter] = useState([false,false,false])
     const [filterData, setFilterData] = useState([])
 
     useEffect(() => {
@@ -45,44 +43,34 @@ function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter
         }
     }, [filter])
 
+    const onSubmit = (value) => {
+        let val = filter
+        val[0] = value
+        setFilter(val)
+        const { buttonAction } = props
+        buttonAction(filter)
+    }
+
      const onFilterChange = (values) => {
-        if(values && values.value){
-            dispatch(filterOwnProjects(values.value));
-        }
+        let val = filter
+        val[1] = values.value
+        setFilter(val)
     }
    
-    const onUserFilterChange = (values, currentParameter) => {
-        const valueArray = []
+    const onUserFilterChange = (values) => {
+        let filterArray = filter
+        let valueArray = []
         for (let index = 0; index < values.length; index++) {
             valueArray.push(values[index].email)
         }
-
-        if(valueArray.length > 0){
-            dispatch(filterOwnProjects(valueArray));
-        }
-
-        if (!values || values.length === 0) {
-            const newFilter = Object.assign({}, filter)
-            delete newFilter[currentParameter]
-            setFilter({
-                ...newFilter
-            })
-            return
-        }
-        setFilter({
-            ...filter,
-            [currentParameter]: values
-        })
+        filterArray[2] = valueArray
+        setFilter(filterArray)
     }
     /*
     const onClear = () => {
         setProjectsOverviewMapFilter({})
         setFilter({})
     } */
-    const onSubmit = value => {
-        const { buttonAction } = props
-        buttonAction(value)
-    }
 
     return (
         <div className="filters-list">
@@ -94,7 +82,7 @@ function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter
                         label={t('common.person')}
                         input={{
                             onChange: value => {
-                                onUserFilterChange(value, "henkilo")
+                                onUserFilterChange(value)
                             }
                         }}
                         multiselect={true}
