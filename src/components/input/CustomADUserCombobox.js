@@ -11,7 +11,11 @@ class CustomADUserCombobox extends Component {
   }
 
   componentDidMount() {
-    this.getPerson().then().catch()
+    try {
+      this.getPerson()
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   getModifiedOption({ name, id, email, title }) {
@@ -74,7 +78,11 @@ class CustomADUserCombobox extends Component {
   }
   handleFilter = (items, search) => {   
     setTimeout(() => {
-      this.getOptions(search).then().catch()
+      try {
+        this.getOptions(search)
+      } catch (error) {
+        console.log(error)
+      }
     }, 300)
 
     return items
