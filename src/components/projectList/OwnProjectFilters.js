@@ -61,8 +61,9 @@ function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter
         let filterArray = filter
         let valueArray = []
         for (let index = 0; index < values.length; index++) {
-            valueArray.push(values[index].email)
+            valueArray.push(values[index].id)
         }
+        console.log(valueArray)
         filterArray[2] = valueArray
         setFilter(filterArray)
     }
