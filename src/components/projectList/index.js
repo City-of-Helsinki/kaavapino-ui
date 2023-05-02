@@ -48,7 +48,7 @@ class ProjectListPage extends Component {
       pageIndex:0,
       showGraph: false,
       pageLimit:10,
-      projectsTotal:0,
+      projectsTotal:[0,0,0,0],
       resultsFound:[null,null,null,null],
       tabName:false,
       tabDir:0
@@ -56,8 +56,6 @@ class ProjectListPage extends Component {
   }
 
   componentDidMount() {
-         /*  fetchOnholdProjects,
-      fetchArchivedProjects, */
     const {
       t,
       fetchUsers,
@@ -68,8 +66,6 @@ class ProjectListPage extends Component {
     document.title = t('title')
     fetchUsers()
     fetchProjectSubtypes()
-   // fetchOnholdProjects()
-   //fetchArchivedProjects()
     getProjectsOverviewFilters()
     window.addEventListener('resize', this.handleWindowSizeChange)
   }
@@ -97,24 +93,29 @@ class ProjectListPage extends Component {
     }
     
     let pageCount = 0;
-    if(prevProps.totalProjects !== this.props.totalProjects){
-      pageCount = Math.ceil(this.props.totalProjects/this.state.pageLimit);
-      this.setState({projectsTotal:pageCount})
-      this.setState({resultsFound:[this.props.totalOwnProjects,this.props.totalProjects,this.props.totalOnholdProjects,this.props.totalArchivedProjects]})
-    }
+    let projectsTotalArray = this.state.projectsTotal
     if(prevProps.totalOwnProjects !== this.props.totalOwnProjects){
       pageCount = Math.ceil(this.props.totalOwnProjects/this.state.pageLimit);
-      this.setState({projectsTotal:pageCount})
+      projectsTotalArray[0] = pageCount
+      this.setState({projectsTotal:projectsTotalArray})
+      this.setState({resultsFound:[this.props.totalOwnProjects,this.props.totalProjects,this.props.totalOnholdProjects,this.props.totalArchivedProjects]})
+    }
+    if(prevProps.totalProjects !== this.props.totalProjects){
+      pageCount = Math.ceil(this.props.totalProjects/this.state.pageLimit);
+      projectsTotalArray[1] = pageCount
+      this.setState({projectsTotal:projectsTotalArray})
       this.setState({resultsFound:[this.props.totalOwnProjects,this.props.totalProjects,this.props.totalOnholdProjects,this.props.totalArchivedProjects]})
     }
     if(prevProps.totalOnholdProjects !== this.props.totalOnholdProjects){
       pageCount = Math.ceil(this.props.totalOnholdProjects/this.state.pageLimit);
-      this.setState({projectsTotal:pageCount})
+      projectsTotalArray[2] = pageCount
+      this.setState({projectsTotal:projectsTotalArray})
       this.setState({resultsFound:[this.props.totalOwnProjects,this.props.totalProjects,this.props.totalOnholdProjects,this.props.totalArchivedProjects]})
     }
     if(prevProps.totalArchivedProjects !== this.props.totalArchivedProjects){
       pageCount = Math.ceil(this.props.totalArchivedProjects/this.state.pageLimit);
-      this.setState({projectsTotal:pageCount})
+      projectsTotalArray[3] = pageCount
+      this.setState({projectsTotal:projectsTotalArray})
       this.setState({resultsFound:[this.props.totalOwnProjects,this.props.totalProjects,this.props.totalOnholdProjects,this.props.totalArchivedProjects]})
     }
   }
@@ -134,15 +135,23 @@ class ProjectListPage extends Component {
   }
 
   fetchFilteredItems = value => {
+    let pageIndex
+    //Set page index to 0 when filtering with new search
+    if(value !== this.state.filter){
+      pageIndex = 0
+    }
+    else{
+      pageIndex = this.state.pageIndex
+    }
     this.setState({ filter: value }, () => {
       this.props.clearProjects()
-      this.fetchProjectsByTabIndex(this.state.activeIndex,this.state.pageIndex,this.state.tabName,this.state.tabDir)
+      this.fetchProjectsByTabIndex(this.state.activeIndex,pageIndex,this.state.tabName,this.state.tabDir)
     })
   }
 
   handleTabChange = (activeIndex) => {
-    this.fetchProjectsByTabIndex(activeIndex,0,false,0)
-    this.setState({ activeIndex })
+    this.fetchProjectsByTabIndex(activeIndex,0,this.state.tabName,this.state.tabDir)
+    this.setState({ activeIndex, pageIndex:0 })
   }
 
   createReports = () => {
@@ -196,7 +205,6 @@ class ProjectListPage extends Component {
 
     const isExpert = authUtils.isExpert(currentUserId, users)
 
-
     return (
       <List
         showGraph={this.state.showGraph}
@@ -222,6 +230,7 @@ class ProjectListPage extends Component {
       onholdProjects,
       currentUserId
     } = this.props
+
     const isExpert = authUtils.isExpert(currentUserId, users)
 
     return (
@@ -473,11 +482,10 @@ class ProjectListPage extends Component {
               event.preventDefault();
               this.setPageIndex(index);
             }}
-            pageCount={this.state.projectsTotal}
+            pageCount={this.state.projectsTotal[this.state.activeIndex -1]}
             pageHref={() => '#'}
             pageIndex={this.state.pageIndex}
             paginationAriaLabel="Projektit sivutus"
-            siblingCount={9}
           />
           </div>
         </div>
