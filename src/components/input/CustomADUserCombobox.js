@@ -50,6 +50,9 @@ class CustomADUserCombobox extends Component {
         currentValue: { label: response.data.name, id: response.data.id }
       })
     })
+    .catch(error => {
+      console.log(error)
+    })
   }
 
   getOptions = async query => {
@@ -64,6 +67,9 @@ class CustomADUserCombobox extends Component {
         options: this.modifyOptions(result),
         currentQuery: query
       })
+    })
+    .catch(error => {
+      console.log(error)
     })
   }
   handleFilter = (items, search) => {   

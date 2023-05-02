@@ -94,8 +94,8 @@ function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter
                     <label htmlFor="unit_combo">{t('common.unit')}</label>
                     <DropdownFilter
                         id="unit_combo"
-                        key="Yksikkö tai tiimi"
-                        name="Yksikkö tai tiimi"
+                        key={t('common.unit')}
+                        name={t('common.unit')}
                         defaultValue={null}
                         options={filterData}
                         placeholder={t('common.unit')}
