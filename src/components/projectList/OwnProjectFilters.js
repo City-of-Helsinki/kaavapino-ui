@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next'
 
 function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter, ...props }) {
     const { t } = useTranslation()
-    const [filter, setFilter] = useState([false,false,false])
+    const [filter, setFilter] = useState(["","",[]])
     const [filterData, setFilterData] = useState([])
 
     useEffect(() => {
