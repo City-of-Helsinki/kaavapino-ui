@@ -4,14 +4,24 @@ import axios from 'axios'
 import { isArray } from 'lodash';
 
 class CustomADUserCombobox extends Component {
-  state = {
-    options: [],
-    currentQuery: null,
-    currentValue: null
+  constructor() {
+    super();
+    this.state = {
+      options: [],
+      currentQuery: null,
+      currentValue: null
+    }
+    this.timer = null;
   }
 
   componentDidMount() {
     this.getPerson().then(() => {}).catch(err => console.error(err));
+  }
+
+  componentDidUpdate (prevState) {
+    if(prevState.currentValue !== this.state.currentValue) {
+      this.handleFilter();
+    }
   }
 
   getModifiedOption({ name, id, email, title }) {
@@ -72,10 +82,14 @@ class CustomADUserCombobox extends Component {
       console.log(error)
     })
   }
-  handleFilter = (items, search) => {   
-    setTimeout(() => {
+
+  handleFilter = (items, search) => { 
+    // Clears running timer and starts a new one each time the user types.
+    // Prevents spamming backend.
+    clearTimeout(this.timer);  
+    this.timer = setTimeout(() => {
       this.getOptions(search).then(() => {}).catch(err => console.error(err));
-    }, 300)
+    }, 400)
 
     return items
   }
