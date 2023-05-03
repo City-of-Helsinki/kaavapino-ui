@@ -200,60 +200,30 @@ function* getProject({ payload: projectId }) {
 
 function getQueryValues(page_size,page,searchQuery,sortField,sortDir,status,userId){
   let query
+  
+  query = {
+    page: page + 1,
+    ordering: sortDir === 1 ? sortField : '-'+sortField,
+    status: status,
+    page_size: page_size ? page_size : 10
+  }
+
   if(userId){
-    query = {
-      users: userId,
-      page: page + 1,
-      ordering: sortDir === 1 ? sortField : '-'+sortField,
-      status: status,
-      page_size: page_size ? page_size : 10
-    }
-    if (searchQuery.length > 0) {
-      query = {
-        users: userId,
-        page: page + 1,
-        ordering: sortDir === 1 ? sortField : '-'+sortField,
-        status: status,
-        page_size: page_size ? page_size : 10
-      }
+    query.users = userId
+  }
 
-      if(searchQuery[0] !== ""){
-        query.search = searchQuery[0]
-      }
-      if(searchQuery[1] !== ""){
-        query.department = searchQuery[1]
-      }
-      if(searchQuery[2].length > 0){
-        query.includes_users = searchQuery[2]
-      }
+  if (searchQuery.length > 0) {
+    if(searchQuery[0] !== ""){
+      query.search = searchQuery[0]
+    }
+    if(searchQuery[1] !== ""){
+      query.department = searchQuery[1]
+    }
+    if(searchQuery[2].length > 0){
+      query.includes_users = searchQuery[2]
     }
   }
-  else{
-    query = {
-      page: page + 1,
-      ordering: sortDir === 1 ? sortField : '-'+sortField,
-      status: status,
-      page_size: page_size ? page_size : 10
-    }
-    if (searchQuery.length > 0) {
-      query = {
-        page: page + 1,
-        ordering: sortDir === 1 ? sortField : '-'+sortField,
-        status: status,
-        page_size: page_size ? page_size : 10
-      }
-
-      if(searchQuery[0] !== ""){
-        query.search = searchQuery[0]
-      }
-      if(searchQuery[1] !== ""){
-        query.department = searchQuery[1]
-      }
-      if(searchQuery[2].length > 0){
-        query.includes_users = searchQuery[2]
-      }
-    }
-  }
+  
   return query
 }
 

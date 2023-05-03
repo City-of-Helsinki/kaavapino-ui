@@ -47,7 +47,7 @@ function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter
         val[0] = value
         setFilter(val)
         const { buttonAction } = props
-        buttonAction(filter)
+        buttonAction(val)
     }
 
      const onFilterChange = (values) => {
@@ -56,12 +56,12 @@ function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter
         if(values){
             val[1] = values.value
             setFilter(val)
-            buttonAction(filter)
+            buttonAction(val)
         }
         else{
             val[1] = ""
             setFilter(val)
-            buttonAction(filter)
+            buttonAction(val)
         }
     }
    
@@ -73,13 +73,14 @@ function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter
             valueArray.push(values[index].email)
         }
         //get user ids by user email
-        const userArray = users.filter(a => valueArray.some(b => a.email === b)).map(a => a.id); 
-
-        filterArray[2] = userArray
+        const userArray = users.filter(a => valueArray.some(b => a.email === b)); 
+        const idArray = userArray.map(a => a.id)
+        console.log(idArray)
+        filterArray[2] = idArray
         setFilter(filterArray)
 
         const { buttonAction } = props
-        buttonAction(filter)
+        buttonAction(filterArray)
     }
     /*
     const onClear = () => {
