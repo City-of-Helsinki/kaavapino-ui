@@ -72,16 +72,20 @@ function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter
         for (let index = 0; index < values.length; index++) {
             valueArray.push(values[index].id)
         }
-        //console.log(users)
-        //get user ids by user email
-       // const userArray = users.filter(a => valueArray.some(b => a.email === b)); 
-       // const idArray = userArray.map(a => a.id)
-        console.log(valueArray)
         filterArray[2] = valueArray
         setFilter(filterArray)
 
         const { buttonAction } = props
         buttonAction(filterArray)
+    }
+
+    const onSearchChange = (value) => {
+        //State need to be up to date if changing other filters, 
+        //pressing clear buton only removes value from hds input but does not change it otherwise
+        //control is not reachable for buttons clear property
+        let val = filter
+        val[0] = value
+        setFilter(val)
     }
     /*
     const onClear = () => {
@@ -133,6 +137,7 @@ function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter
                         onSubmit={value => onSubmit(value)}
                         aria-label="Tyhjennä"
                         placeholder={t('common.keyword')}
+                        onChange={value => onSearchChange(value)}
                     />
                 </Grid.Column>
             </Grid>

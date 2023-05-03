@@ -84,11 +84,11 @@ class ProjectListPage extends Component {
       const isExpert = authUtils.isExpert(this.props.currentUserId, this.props.users)
 
       if(isExpert){
-        this.fetchProjectsByTabIndex(1,0,false,0)
+        this.fetchProjectsByTabIndex(1,0,"modified_at",0)
         this.setState({activeIndex:1})
       }
       else{
-        this.fetchProjectsByTabIndex(2,0,false,0)
+        this.fetchProjectsByTabIndex(2,0,"modified_at",0)
         this.setState({activeIndex:2})
       }
     }
