@@ -202,21 +202,29 @@ function getQueryValues(page_size,page,searchQuery,sortField,sortDir,status,user
   let query
   if(userId){
     query = {
-      includes_users: userId,
+      users: userId,
       page: page + 1,
       ordering: sortDir === 1 ? sortField : '-'+sortField,
       status: status,
       page_size: page_size ? page_size : 10
     }
     if (searchQuery.length > 0) {
-      console.log(searchQuery)
       query = {
-        includes_users: userId,
+        users: userId,
         page: page + 1,
         ordering: sortDir === 1 ? sortField : '-'+sortField,
-        search: searchQuery,
         status: status,
         page_size: page_size ? page_size : 10
+      }
+
+      if(searchQuery[0] !== ""){
+        query.search = searchQuery[0]
+      }
+      if(searchQuery[1] !== ""){
+        query.department = searchQuery[1]
+      }
+      if(searchQuery[2].length > 0){
+        query.includes_users = searchQuery[2]
       }
     }
   }
@@ -228,13 +236,21 @@ function getQueryValues(page_size,page,searchQuery,sortField,sortDir,status,user
       page_size: page_size ? page_size : 10
     }
     if (searchQuery.length > 0) {
-      console.log(searchQuery)
       query = {
         page: page + 1,
         ordering: sortDir === 1 ? sortField : '-'+sortField,
-        search: searchQuery,
         status: status,
         page_size: page_size ? page_size : 10
+      }
+
+      if(searchQuery[0] !== ""){
+        query.search = searchQuery[0]
+      }
+      if(searchQuery[1] !== ""){
+        query.department = searchQuery[1]
+      }
+      if(searchQuery[2].length > 0){
+        query.includes_users = searchQuery[2]
       }
     }
   }

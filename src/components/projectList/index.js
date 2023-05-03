@@ -467,6 +467,7 @@ class ProjectListPage extends Component {
             filters={this.getFilters('filters_floor_area')}
             isPrivileged={isExpert}
             buttonAction={this.fetchFilteredItems}
+            users={users}
           />
           <div className='project-list-result'>
             <span className='project-list-result-number'>{t('project.searchterms-found')} {this.state.resultsFound[this.state.activeIndex -1]} {t('project.found-projects')}</span>

@@ -7,7 +7,6 @@ import { SearchInput } from 'hds-react'
 import {
     projectOverviewMapFiltersSelector
 } from '../../selectors/projectSelector'
-//ownProjectFiltersSelector
 import {
     getProjectsOverviewMapData,
     setProjectsOverviewMapFilter
@@ -15,7 +14,7 @@ import {
 import { isEqual } from 'lodash'
 import { useTranslation } from 'react-i18next'
 
-function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter, ...props }) {
+function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter, users, ...props }) {
     const { t } = useTranslation()
     const [filter, setFilter] = useState(["","",[]])
     const [filterData, setFilterData] = useState([])
@@ -53,19 +52,34 @@ function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter
 
      const onFilterChange = (values) => {
         let val = filter
-        val[1] = values.value
-        setFilter(val)
+        const { buttonAction } = props
+        if(values){
+            val[1] = values.value
+            setFilter(val)
+            buttonAction(filter)
+        }
+        else{
+            val[1] = ""
+            setFilter(val)
+            buttonAction(filter)
+        }
     }
    
     const onUserFilterChange = (values) => {
         let filterArray = filter
         let valueArray = []
+
         for (let index = 0; index < values.length; index++) {
-            valueArray.push(values[index].id)
+            valueArray.push(values[index].email)
         }
-        console.log(valueArray)
-        filterArray[2] = valueArray
+        //get user ids by user email
+        const userArray = users.filter(a => valueArray.some(b => a.email === b)).map(a => a.id); 
+
+        filterArray[2] = userArray
         setFilter(filterArray)
+
+        const { buttonAction } = props
+        buttonAction(filter)
     }
     /*
     const onClear = () => {
@@ -131,7 +145,6 @@ const mapDispatchToProps = {
 const mapStateToProps = state => {
     return {
         storedFilter: projectOverviewMapFiltersSelector(state)
-        //filteredOwnProjects:ownProjectFiltersSelector(state)
     }
 }
 

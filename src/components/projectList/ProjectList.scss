@@ -405,6 +405,11 @@
       font-family: "Helsinki Grotesk Medium", sans-serif;
       font-size: 16px;
     }
+    .ad-combobox{
+      ul{
+        overflow-y: scroll;
+      }
+    }
   }
   .project-list-pagination{
     [aria-current]:not([aria-current="false"]) {
