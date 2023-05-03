@@ -14,7 +14,7 @@ import {
 import { isEqual } from 'lodash'
 import { useTranslation } from 'react-i18next'
 
-function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter, users, ...props }) {
+function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter, ...props }) {
     const { t } = useTranslation()
     const [filter, setFilter] = useState(["","",[]])
     const [filterData, setFilterData] = useState([])
@@ -70,13 +70,14 @@ function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter
         let valueArray = []
 
         for (let index = 0; index < values.length; index++) {
-            valueArray.push(values[index].email)
+            valueArray.push(values[index].id)
         }
+        //console.log(users)
         //get user ids by user email
-        const userArray = users.filter(a => valueArray.some(b => a.email === b)); 
-        const idArray = userArray.map(a => a.id)
-        console.log(idArray)
-        filterArray[2] = idArray
+       // const userArray = users.filter(a => valueArray.some(b => a.email === b)); 
+       // const idArray = userArray.map(a => a.id)
+        console.log(valueArray)
+        filterArray[2] = valueArray
         setFilter(filterArray)
 
         const { buttonAction } = props
