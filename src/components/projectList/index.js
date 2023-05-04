@@ -51,7 +51,7 @@ class ProjectListPage extends Component {
       pageLimit:10,
       projectsTotal:[0,0,0,0],
       resultsFound:[null,null,null,null],
-      tabName:false,
+      tabName:"modified_at",
       tabDir:0
     }
   }
