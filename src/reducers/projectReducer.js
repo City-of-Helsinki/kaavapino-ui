@@ -64,8 +64,7 @@ import {
   SET_ONHOLD_PROJECTS,
   SET_ARCHIVED_PROJECTS,
   RESET_PROJECT_DEADLINES,
-  RESET_PROJECT_DEADLINES_SUCCESSFUL,
-  FILTER_OWN_PROJECTS
+  RESET_PROJECT_DEADLINES_SUCCESSFUL
 } from '../actions/projectActions'
 
 export const initialState = {
@@ -641,13 +640,6 @@ export const reducer = (state = initialState, action) => {
           ...state.overview,
           legends: action.payload
         }
-      }
-    }
-
-    case FILTER_OWN_PROJECTS: {
-      return {
-        ...state,
-        ownProjectFilters: action.payload,
       }
     }
 

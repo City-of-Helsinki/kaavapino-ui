@@ -90,12 +90,7 @@ export const LOCK_PROJECT_FIELD = "lockProjectField"
 export const UNLOCK_PROJECT_FIELD = "unlockProjectField"
 export const SET_LOCK_STATUS = "setLockStatus"
 export const SET_UNLOCK_STATUS = "setUnLockStatus"
-export const FILTER_OWN_PROJECTS = "filterOwnProjects"
 
-export const filterOwnProjects = (filtered) => ({
-  type: FILTER_OWN_PROJECTS,
-  payload:filtered
-})
 export const setUnlockStatus = (lockData,lock) => ({
   type: SET_UNLOCK_STATUS,
   payload: {lockData,lock}

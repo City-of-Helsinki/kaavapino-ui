@@ -1,46 +1,20 @@
 import React, { useState, useEffect } from 'react'
-import { connect } from 'react-redux'
 import { Grid } from 'semantic-ui-react'
 import DropdownFilter from '../overview/Filters/DropdownFilter'
 import CustomADUserCombobox from '../input/CustomADUserCombobox'
 import { SearchInput } from 'hds-react'
-import {
-    projectOverviewMapFiltersSelector
-} from '../../selectors/projectSelector'
-import {
-    getProjectsOverviewMapData,
-    setProjectsOverviewMapFilter
-} from '../../actions/projectActions'
-import { isEqual } from 'lodash'
 import { useTranslation } from 'react-i18next'
 
-function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter, ...props }) {
+function OwnProjectFilters({ filters, ...props }) {
     const { t } = useTranslation()
     const [filter, setFilter] = useState(["","",[]])
     const [filterData, setFilterData] = useState([])
-
-    useEffect(() => {
-        getProjectsOverviewMapData(filter)
-    }, [])
-
-    useEffect(() => {
-        getProjectsOverviewMapData(filter)
-    }, [filter])
-
 
     useEffect(() => {
         if(filters.length > 0){
             setFilterData(filters[2].choices)
         }
     }, [filters])
-    
-
-    useEffect(() => {
-        if (!storedFilter || !isEqual(storedFilter, filter)) {
-            getProjectsOverviewMapData(filter)
-            setProjectsOverviewMapFilter(filter)
-        }
-    }, [filter])
 
     const onSubmit = (value) => {
         let val = filter
@@ -87,11 +61,6 @@ function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter
         val[0] = value
         setFilter(val)
     }
-    /*
-    const onClear = () => {
-        setProjectsOverviewMapFilter({})
-        setFilter({})
-    } */
 
     return (
         <div className="filters-list">
@@ -145,14 +114,4 @@ function OwnProjectFilters({ filters, setProjectsOverviewMapFilter, storedFilter
     )
 }
 
-const mapDispatchToProps = {
-    setProjectsOverviewMapFilter
-}
-
-const mapStateToProps = state => {
-    return {
-        storedFilter: projectOverviewMapFiltersSelector(state)
-    }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(OwnProjectFilters)
+export default OwnProjectFilters

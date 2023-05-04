@@ -209,19 +209,3 @@ export const lockedSelector = createSelector(
   selectProject, 
   project => project.locked
 )
-
-/* export const ownProjectFiltersSelector = createSelector(
-  (state) => state.project.ownProjects,
-  (state) => state.project.ownProjectFilters,
-  (state) => state.project,
-  (ownProjects, ownProjectFilters,project) => {
-    let intersection
-    if(Array.isArray(ownProjectFilters)){
-      intersection = ownProjects.filter(element => ownProjectFilters.includes(element.user));
-    }
-    else{
-      intersection = ownProjects.filter(element => ownProjectFilters.includes(element.department));
-    }
-    return intersection
-  }
-) */
