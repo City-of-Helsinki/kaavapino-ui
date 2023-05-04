@@ -290,6 +290,9 @@ footer{
   background-color: transparent;
   --header-background-color: transparent !important;
   border-bottom: 1px solid $light-gray;
+  #hds-mobile-menu{
+    z-index: 2000;
+  }
   .header-nav-item.active:after{
     background-color:$color-bus;
     --item-active-color:$color-bus;      
