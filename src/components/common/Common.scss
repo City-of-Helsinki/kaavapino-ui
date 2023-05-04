@@ -11,7 +11,7 @@ body {
 h1 {
   color: $color-black;
   font-family: 'Helsinki Grotesk Bold';
-  font-size: 30px;
+  font-size: 64px;
   font-weight: bold;
   letter-spacing: 0;
   line-height: 36px;
@@ -102,6 +102,12 @@ h4 {
   @media screen and (min-width: 600px) {
     padding: 32px 22px;
   }
+}
+
+footer{
+  margin-top: 96px;
+  position: sticky;
+  top: 100vh;
 }
 
 .ui.segment.footer-container {
@@ -280,7 +286,35 @@ h4 {
 }
 
 .header {
-  margin-bottom: 10px;
+  margin-bottom: 0;
+  background-color: transparent;
+  --header-background-color: transparent !important;
+  border-bottom: 1px solid $light-gray;
+  #hds-mobile-menu{
+    z-index: 2000;
+  }
+  .header-nav-item.active:after{
+    background-color:$color-bus;
+    --item-active-color:$color-bus;      
+    bottom: 0;
+    content: "";
+    height: var(--spacing-3-xs);
+    left: 0;
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+  }
+  .header-nav-item:hover:after{
+    background-color:$color-bus;
+    --item-active-color:$color-bus;      
+    bottom: 0;
+    content: "";
+    height: var(--spacing-3-xs);
+    left: 0;
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+  }
 }
 
   
@@ -297,6 +331,7 @@ h4 {
     justify-content: space-around;
 
     .nav-header-route {
+      display: none;
       color: black;
 
       .nav-header-route-items {
@@ -320,7 +355,8 @@ h4 {
 
 
     .nav-header-content {
-      margin-top: 32px;
+      margin-top: 64px;
+      margin-bottom: 48px;
 
       @media screen and (max-width: 725px) { 
         margin-top: 0;
@@ -331,8 +367,18 @@ h4 {
         align-items: flex-end;
         display: flex;
 
+        .ui{
+          margin-top: 0;
+          margin-bottom: 0;
+        }
+
+        .column{
+          padding-top: 0;
+          padding-bottom: 0;
+        }
+
         .nav-header-title {
-          line-height: 36px;
+          line-height: 1;
         }
 
         .nav-header-subtitle {
@@ -351,7 +397,7 @@ h4 {
       .nav-header-info {
         font-size: 14px;
         line-height: 24px;
-        margin-top: 32px;
+        margin-top: 0;
         width: 50%;
 
         @media screen and (max-width: 599px) {

@@ -38,7 +38,7 @@
     "own-long": "Omat projektit",
     "all-long": "Kaikki projektit",
     "amount": "({{pieces}} kpl)",
-    "title": "Kaavaprojektit",
+    "title": "Projektit",
     "createNewProject": "Luo uusi projekti",
     "createReports": "Luo raportteja",
     "onhold-short": "Keskeytyneet",
@@ -52,12 +52,13 @@
     "person-search": "Henkilöhaku",
     "table": {
       "pino-number": "Pinonumero",
-      "project": "Hanke (PW)",
+      "project": "PW-numero",
       "name": "Nimi",
       "phase": "Vaihe",
       "size": "Koko",
       "modified": "Muokattu",
-      "responsible": "Vastuuhenkilö"
+      "responsible": "Vastuuhenkilö",
+      "priority":"Prioriteetti"
     }
     
   },
@@ -94,7 +95,10 @@
   "common": {
     "cancel": "Peruuta",
     "save": "Tallenna",
-    "continue": "Jatka"
+    "continue": "Jatka",
+    "person":"Henkilö",
+    "unit":"Yksikkö tai tiimi",
+    "keyword":"Hakusana"
   },
   "messages": {
     "deadlines-successfully-saved": "Aikataulut tallennettu",
@@ -177,7 +181,9 @@
     "download_confirmation_header": "Vahvistus dokumentin lataukselle",
     "download_confirmation_content": "Lataamisen jälkeen saat kaikista muutoksista automaattisia viestejä. Oletko varma, että haluat ladata dokumentin?",
     "missing-data": "Tietoja ei ole vielä syötetty",
-    "documents-not-ready": "Dokumentteja ei ole vielä valmiina"
+    "documents-not-ready": "Dokumentteja ei ole vielä valmiina",
+    "searchterms-found":"Hakuehdoilla löytyi",
+    "found-projects":"projektia"
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}"
@@ -333,5 +339,15 @@
     "add-comment": "Lisää viesti",
     "send": "Lähetä",
     "add-field-comment" : "Lisää kenttäkohtainen kommentti:"
+  },
+  "sorting":{
+    "Prioriteetti":"priority__priority",
+    "Nimi":"name",
+    "PW-numero":"attribute_data__hankenumero",
+    "Pinonumero":"pino_number",
+    "Koko":"subtype__index",
+    "Vastuuhenkilö":"user__last_name,user__first_name",
+    "Vaihe":"phase__common_project_phase__name",
+    "Muokattu":"modified_at"
   }
 }

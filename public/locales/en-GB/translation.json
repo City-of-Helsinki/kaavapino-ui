@@ -1,1 +1,12 @@
-{}
+{
+    "sorting":{
+        "Prioriteetti":"priority_id",
+        "Nimi":"name",
+        "PW-numero":"?",
+        "Pinonumero":"pino_number",
+        "Koko":"subtype_id",
+        "Vastuuhenkilö":"?",
+        "Vaihe":"phase_id",
+        "Muokattu":"modfied_at"
+      }
+}

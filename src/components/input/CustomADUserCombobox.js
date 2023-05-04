@@ -4,14 +4,24 @@ import axios from 'axios'
 import { isArray } from 'lodash';
 
 class CustomADUserCombobox extends Component {
-  state = {
-    options: [],
-    currentQuery: null,
-    currentValue: null
+  constructor() {
+    super();
+    this.state = {
+      options: [],
+      currentQuery: null,
+      currentValue: null
+    }
+    this.timer = null;
   }
 
   componentDidMount() {
-    this.getPerson()
+    this.getPerson().then(() => {}).catch(err => console.error(err));
+  }
+
+  componentDidUpdate (prevState) {
+    if(prevState.currentValue !== this.state.currentValue) {
+      this.handleFilter();
+    }
   }
 
   getModifiedOption({ name, id, email, title }) {
@@ -32,9 +42,9 @@ class CustomADUserCombobox extends Component {
       const label = name && title ? `${name} (${title})` : optionValue
 
       if (modifiedOptions.find(option => option.label === label)) {
-        modifiedOptions.push({ label: email, id })
+        modifiedOptions.push({ label: email, id, email })
       } else {
-        modifiedOptions.push({ label: label, id })
+        modifiedOptions.push({ label: label, id, email })
       }
     })
     return modifiedOptions
@@ -49,6 +59,9 @@ class CustomADUserCombobox extends Component {
         ...this.state,
         currentValue: { label: response.data.name, id: response.data.id }
       })
+    })
+    .catch(error => {
+      console.log(error)
     })
   }
 
@@ -65,11 +78,18 @@ class CustomADUserCombobox extends Component {
         currentQuery: query
       })
     })
+    .catch(error => {
+      console.log(error)
+    })
   }
-  handleFilter = (items, search) => {   
-    setTimeout(() => {
-      this.getOptions(search)
-    }, 300)
+
+  handleFilter = (items, search) => { 
+    // Clears running timer and starts a new one each time the user types.
+    // Prevents spamming backend.
+    clearTimeout(this.timer);  
+    this.timer = setTimeout(() => {
+      this.getOptions(search).then(() => {}).catch(err => console.error(err));
+    }, 400)
 
     return items
   }

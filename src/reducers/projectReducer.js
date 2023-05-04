@@ -6,6 +6,7 @@ import {
   FETCH_PROJECTS_SUCCESSFUL,
   FETCH_OWN_PROJECTS_SUCCESSFUL,
   FETCH_PROJECTS,
+  FETCH_OWN_PROJECTS,
   FETCH_PROJECT_SUCCESSFUL,
   SET_PROJECTS,
   SET_OWN_PROJECTS,
@@ -54,7 +55,9 @@ import {
   CLEAR_PROJECTS,
   CLEAR_EXTERNAL_DOCUMENTS,
   SAVE_PROJECT_BASE_PAYLOAD,
+  FETCH_ARCHIVED_PROJECTS,
   FETCH_ARCHIVED_PROJECTS_SUCCESSFUL,
+  FETCH_ONHOLD_PROJECTS,
   FETCH_ONHOLD_PROJECTS_SUCCESSFUL,
   SET_TOTAL_ARCHIVED_PROJECTS,
   SET_TOTAL_ONHOLD_PROJECTS,
@@ -97,7 +100,8 @@ export const initialState = {
     floorAreaTargets: {},
     legends: []
   },
-  locked:{}
+  locked:{},
+  ownProjectFilters:[]
 }
 
 export const reducer = (state = initialState, action) => {
@@ -147,10 +151,62 @@ export const reducer = (state = initialState, action) => {
       }
     }
 
+    case FETCH_OWN_PROJECTS: {
+      return {
+        ...state,
+        currentProject: null,
+        currentProjectLoaded: false,
+        loadingProjects: true,
+        projects: [],
+        ownProjects: [],
+        amountOfProjectsToIncrease: 10,
+        amountOfProjectsToShow: 10,
+        totalOnholdProjects: null,
+        totalArchivedProjects: null,
+        onholdProjects: [],
+        archivedProjects: []
+      }
+    }
+
+    case FETCH_ONHOLD_PROJECTS: {
+      return {
+        ...state,
+        currentProject: null,
+        currentProjectLoaded: false,
+        loadingProjects: true,
+        projects: [],
+        ownProjects: [],
+        amountOfProjectsToIncrease: 10,
+        amountOfProjectsToShow: 10,
+        totalOnholdProjects: null,
+        totalArchivedProjects: null,
+        onholdProjects: [],
+        archivedProjects: []
+      }
+    }
+
+    case FETCH_ARCHIVED_PROJECTS: {
+      return {
+        ...state,
+        currentProject: null,
+        currentProjectLoaded: false,
+        loadingProjects: true,
+        projects: [],
+        ownProjects: [],
+        amountOfProjectsToIncrease: 10,
+        amountOfProjectsToShow: 10,
+        totalOnholdProjects: null,
+        totalArchivedProjects: null,
+        onholdProjects: [],
+        archivedProjects: []
+      }
+    }
+
     case FETCH_OWN_PROJECTS_SUCCESSFUL: {
       return {
         ...state,
-        ownProjects: state.ownProjects.concat(action.payload)
+        ownProjects: state.ownProjects.concat(action.payload),
+        loadingProjects: false
       }
     }
 
@@ -172,14 +228,16 @@ export const reducer = (state = initialState, action) => {
     case FETCH_ONHOLD_PROJECTS_SUCCESSFUL: {
       return {
         ...state,
-        onholdProjects: state.onholdProjects.concat(action.payload)
+        onholdProjects: state.onholdProjects.concat(action.payload),
+        loadingProjects: false
       }
     }
 
     case FETCH_ARCHIVED_PROJECTS_SUCCESSFUL: {
       return {
         ...state,
-        archivedProjects: state.archivedProjects.concat(action.payload)
+        archivedProjects: state.archivedProjects.concat(action.payload),
+        loadingProjects: false
       }
     }
     case CLEAR_PROJECTS: {

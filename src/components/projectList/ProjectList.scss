@@ -1,8 +1,9 @@
 @import '../common/colors.scss';
+@import '../common/Fonts.scss';
 
 .project-list-page {
   margin: 0 auto;
-  max-width: 1148px;
+  max-width: 1200px;
   width: calc(100% - 32px);
   margin-bottom: 20px;
 
@@ -48,23 +49,35 @@
     }
   }
   .project-list-container {
-    min-height: 273px;
     position: relative;
     z-index: 0;
+    margin-bottom: 32px;
+
+    ul{
+      --tablist-border-color:transparent;
+    }
+
+    li[role=tab] {
+      span{
+        font-weight: bold;
+      }
+    }
 
     .project-list {
       background-color: $color-white;
-      padding: 10px 0px;
+      padding: 0px 0px;
       border-top: none;
 
       .project-list-header,
       .project-list-item {
-        font-family: 'Helsinki Grotesk Regular';
+        font-family: "Helsinki Grotesk Regular", sans-serif;
         text-align: center;
         display: grid;
         grid-template-columns: repeat(15, 1fr);
         column-gap: 10px;
-        margin-top: 12px;
+        margin: 0;
+        border: none !important;
+        border-bottom: 1px solid $color-black !important;
 
         > * {
           overflow: hidden;
@@ -95,7 +108,7 @@
       }
       .project-list-item-container {
         color: $color-black;
-        background-color: $light-gray3;
+        background-color: transparent;
         
         .project-list-item-graph {
           .chart {
@@ -142,6 +155,7 @@
 
         .project-name {
           color: $color-bus;
+          text-decoration: underline;
           &:hover {
             text-decoration: underline;
           }
@@ -176,8 +190,8 @@
       }
 
       .project-list-header {
-        font-family: 'Helsinki Grotesk Medium';
-        background-color: $color-black-20;
+        font-family: "Helsinki Grotesk Medium", sans-serif;
+        background-color: $color-bus;
         align-items: center;
         min-height: 56px;
         position: relative;
@@ -185,6 +199,7 @@
         .project-timeline-toggle {
           cursor: pointer;
           width: 68px;
+          color: $color-bus-light;
 
           .ui.toggle.checkbox input:checked ~ label:after {
             left: 1.977rem;
@@ -220,7 +235,7 @@
 
         .header-item {
           text-align: center;
-          font-size: 14px;
+          font-size: 16px;
           user-select: none;
           cursor: pointer;
           overflow: hidden;
@@ -229,7 +244,7 @@
           grid-column: span 2;
           text-decoration-thickness: 2px;
           text-decoration-color: $color-black-30;
-          color: black;
+          color: $color-bus-light;
           overflow: hidden;
           //border-bottom: 2px solid $color-black-30;
 
@@ -265,6 +280,21 @@
           &:nth-child(9) {
             grid-column: span 1;
           }
+
+          span{
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            svg{
+              width: 24px;
+              height: 24px;
+              margin-left: 12px;
+            }
+          }
+        }
+        .header-item:hover {
+          text-decoration: underline;
+          background-color:transparent;
         }
         @media screen and (max-width: 800px) {
           position: relative;
@@ -280,6 +310,7 @@
             font-size: 14px;
             padding: 4px 14px;
             border: 2px solid $color-primary;
+            color: $color-bus;
 
             .angle-icon {
               display: none;
@@ -362,15 +393,32 @@
     }
 
     .empty-list-info {
-      font-family: 'Helsinki Grotesk Regular';
+      font-family: "Helsinki Grotesk Regular", sans-serif;
       display: flex;
       justify-content: center;
       margin-top: 100px;
       font-size: 24px;
     }
   }
+  .filters-list{
+    margin-bottom: 64px;
+    label{
+      font-family: "Helsinki Grotesk Medium", sans-serif;
+      font-size: 16px;
+    }
+    .ad-combobox{
+      ul{
+        overflow-y: scroll;
+      }
+    }
+  }
+  .project-list-pagination{
+    [aria-current]:not([aria-current="false"]) {
+      min-width: 40px;
+    }
+  }
   .ui.tabular.menu {
-    font-family: 'Helsinki Grotesk Medium';
+    font-family: "Helsinki Grotesk Medium", sans-serif;
     border: none;
     height: 50px;
     margin-bottom: 30px;
@@ -392,6 +440,46 @@
     }
     @media screen and (max-width: 599px) {
       font-size: 16px;
+    }
+  }
+  .project-list-result{
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    font-size: 16px;
+    .project-list-result-number{
+      font-family: "Helsinki Grotesk Regular", sans-serif;
+    }
+    .timeline-header-item{
+      display: flex;
+      align-items: center;
+      .toggle-text{
+        padding-right: 20px;
+        font-family: "Helsinki Grotesk Medium", sans-serif;
+      }
+      .toggle{
+        label:before{
+          border: 2px solid $color-black;
+          background: transparent;
+          height: 2rem;
+          top: -3.5px;
+        }
+        input:checked~label:before{
+          background: transparent !important;
+        }
+        label:after{
+          content: '\00d7' !important;
+          color: $white;
+          background:$color-black;
+          font-size: 20px;
+          left: 0.3rem;
+          padding: 0;
+        }
+        input:checked~label:after{
+          left: 1.7rem;
+          padding-left: 1px;
+        }
+      }
     }
   }
 }

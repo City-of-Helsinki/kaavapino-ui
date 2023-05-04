@@ -1,21 +1,26 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Radio } from 'semantic-ui-react'
-import { IconAngleUp, IconAngleDown, Button } from 'hds-react'
+import { IconSort,IconAngleUp, IconAngleDown,IconSortAscending, IconSortDescending, Button } from 'hds-react'
 import { useTranslation } from 'react-i18next';
 
 const ListHeader = ({
   items,
   sort,
   selected,
-  dir,
-  toggleGraph,
-  graphToggled}) => {
+  dir
+  }) => {
   const getArrowIcon = () => {
     return dir === 0 ? (
-      <IconAngleUp size="xs" display="none" />
+      <IconAngleUp display="none" />
     ) : (
-      <IconAngleDown size="xs" />
+      <IconAngleDown />
+    )
+  }
+  const getSortIcon = () => {
+    return dir === 0 ? (
+      <IconSortAscending />
+    ) : (
+      <IconSortDescending />
     )
   }
 
@@ -26,25 +31,22 @@ const ListHeader = ({
       <div className="project-list-header">
         {items.map((item, index) => {
           return (
-            <Button variant="supplementary" className="header-item" key={index} onClick={() => sort(index)}>
+            <Button variant="supplementary" className="header-item" key={index} onClick={() => sort(index,item)}>
               {item}
-              {selected === index && getArrowIcon()}
+              {selected !== index && item !== "Muokattu" && <IconSort />}
+              {selected === index && item !== "Muokattu" && getArrowIcon()}
+              {selected !== index && item === "Muokattu" && <IconSortDescending />}
+              {selected === index && item === "Muokattu" && getSortIcon()}
             </Button>
           )
         })}
-        <span className="timeline-header-item  project-timeline-toggle">
-          {t('project.timeline')}
-          <Radio onChange={toggleGraph} aria-label={t('project.show-timelines')} toggle checked={graphToggled} />
-        </span>
       </div>
     </div>
   )
 }
 
 ListHeader.propTypes = {
-  toggleSearch: PropTypes.func,
   searchOpen: PropTypes.bool,
-  toggleGraph: PropTypes.func.isRequired,
   items: PropTypes.array.isRequired,
   sort: PropTypes.func.isRequired,
   dir: PropTypes.number.isRequired

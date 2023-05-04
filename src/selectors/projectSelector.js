@@ -37,6 +37,16 @@ export const totalOwnProjectsSelector = createSelector(
   ({ totalOwnProjects }) => totalOwnProjects
 )
 
+export const totalOnholdProjectsSelector = createSelector(
+  selectProject,
+  ({ totalOnholdProjects }) => totalOnholdProjects
+)
+
+export const totalArchivedProjectsSelector = createSelector(
+  selectProject,
+  ({ totalArchivedProjects }) => totalArchivedProjects
+)
+
 export const pollingProjectsSelector = createSelector(
   selectProject,
   ({ pollingProjects }) => pollingProjects
