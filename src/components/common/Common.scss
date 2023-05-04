@@ -12,7 +12,6 @@ h1 {
   color: $color-black;
   font-family: 'Helsinki Grotesk Bold';
   font-size: 64px;
-  font-weight: bold;
   letter-spacing: 0;
   line-height: 36px;
   margin: 0;
@@ -523,4 +522,10 @@ footer{
 }
 .info-icon {
   cursor:pointer;
+}
+
+.filter-dropdown{
+  ul{
+    overflow-y: overlay;
+  }
 }

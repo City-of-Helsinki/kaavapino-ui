@@ -199,7 +199,7 @@ function FloorAreaChart({
       const dailyStats = chartData && chartData.daily_stats
 
       const current = getFormattedDataToOriginal(props.payload.date)
-      const currentDate = dailyStats.find(stats => {
+      const currentDate = dailyStats && dailyStats.find && dailyStats.find(stats => {
         if (stats.date === current) return stats
       })
 
@@ -214,7 +214,7 @@ function FloorAreaChart({
 
       const current = getFormattedDataToOriginal(props.payload.date)
       const currentDate =
-        dailyStats.find &&
+        dailyStats && dailyStats.find &&
         dailyStats.find(stats => {
           if (stats.date === current) return stats
         })

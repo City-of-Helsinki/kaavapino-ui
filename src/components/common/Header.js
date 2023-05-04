@@ -146,8 +146,7 @@ const Header = props => {
           />
         </Navigation.Row>
         <Navigation.Actions>
-          <Navigation.User authenticated={true}>
-            <Navigation.Item label={label} href="/" target="_blank" variant="primary" />
+          <Navigation.User userName={label} authenticated={true}>
             {props.createProject && userIsResponsible && (
               <Navigation.Item
                 label={t('projects.createNewProject')}
