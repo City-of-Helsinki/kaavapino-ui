@@ -107,6 +107,9 @@ footer{
   margin-top: 96px;
   position: sticky;
   top: 100vh;
+  .footer-util{
+    justify-content: end;
+  }
 }
 
 .ui.segment.footer-container {
@@ -289,8 +292,19 @@ footer{
   background-color: transparent;
   --header-background-color: transparent !important;
   border-bottom: 1px solid $light-gray;
+  font-size: 16px;
+  font-family: "Helsinki Grotesk Regular", sans-serif;
+  a{
+    font-size: 16px;
+  }
+  [aria-label='Kaavapino']{
+    color: $color-black;
+  }
   #hds-mobile-menu{
     z-index: 2000;
+  }
+  .header-nav-item:hover{
+    color: $color-black;
   }
   .header-nav-item.active:after{
     background-color:$color-bus;
@@ -304,7 +318,7 @@ footer{
     width: 100%;
   }
   .header-nav-item:hover:after{
-    background-color:$color-bus;
+    background-color:$color-black;
     --item-active-color:$color-bus;      
     bottom: 0;
     content: "";
@@ -453,6 +467,9 @@ footer{
 }
 .align-left span {
   justify-content: left;
+}
+.align-right > div{
+  justify-content: end;
 }
 .loader-icon {
   margin-left: auto;

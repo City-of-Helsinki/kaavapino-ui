@@ -37,10 +37,10 @@ const ListItem = ({
   return (
     <div className="project-list-item-container">
       <div className="project-list-item">
-        <span className="project-list-item-name field-ellipsis center">
+        <span className="project-list-item-name field-ellipsis left">
             {prio}
         </span>
-        <span className="project-list-item-name center field-ellipsis">
+        <span className="project-list-item-name left field-ellipsis">
           <Popup
             trigger={
               <Link className="project-name" to={`/${id}`}>
@@ -51,20 +51,20 @@ const ListItem = ({
             content={name}
           />
         </span>
-        <span className="center field-ellipsis">{projectId}</span>
-        <span className="project-list-item-pino field-ellipsis center">
+        <span className="left field-ellipsis">{projectId}</span>
+        <span className="project-list-item-pino field-ellipsis left">
           {pino_number}
         </span>
-        <span className="center field-ellipsis">{subtype}</span>
+        <span className="left field-ellipsis">{subtype}</span>
         <Popup
-          trigger={<span className="field-ellipsis center">{user}</span>}
+          trigger={<span className="field-ellipsis left">{user}</span>}
           on="hover"
           content={user}
         />
-        <span className="project-list-item-phase center field-ellipsis">
+        <span className="project-list-item-phase left field-ellipsis">
           <Status color={phaseColor} /> {phaseName}
         </span>
-        <span className="center field-ellipsis">{modified_at}</span>
+        <span className="left field-ellipsis">{modified_at}</span>
       </div>
       {showGraph && (
         <div className="project-list-item-graph">

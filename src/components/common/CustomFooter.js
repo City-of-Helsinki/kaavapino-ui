@@ -25,18 +25,41 @@ class CustomFooter extends Component {
   }
   renderFooterLinks = links => {
     const returnValue = []
+    console.log(links)
     links.forEach( link => {
-      returnValue.push(
-        <Footer.Item
-          as="a"
-          href={link.url}
-          label={link.link_text}
-          onClick={function noRefCheck() {}}
-          subItem
-          key={link.url}
-        />
+      console.log(link)
+      if(link.link_text !== "Anna palautetta"){
+        returnValue.push(
+          <Footer.Item
+            as="a"
+            href={link.url}
+            label={link.link_text}
+            onClick={function noRefCheck() {}}
+            subItem
+            key={link.url}
+          />
+        )
+      }
+    })
+    return returnValue
+  }
 
-      )
+  renderFeedbackLink = links => {
+    const returnValue = []
+    console.log(links)
+    links.forEach( link => {
+      console.log(link)
+      if(link.link_text === "Anna palautetta"){
+        returnValue.push(
+          <Footer.Item
+            as="a"
+            href={link.url}
+            label={link.link_text}
+            onClick={function noRefCheck() {}}
+            key={link.url}
+          />
+        )
+      }
     })
     return returnValue
   }
@@ -55,6 +78,19 @@ class CustomFooter extends Component {
 
     return returnValue
   }
+
+  renderFeedback = () => {
+    const returnValue = []
+
+    if ( !this.props.footerData || !isArray( this.props.footerData )) {
+        return null
+    }
+   this.props.footerData.forEach(current => {
+      returnValue.push(this.renderFeedbackLink(current.links))
+    })
+    console.log(returnValue)
+    return returnValue
+    }
 
   renderTitle = () => {
     const {t} = this.props
@@ -84,7 +120,11 @@ class CustomFooter extends Component {
         >
           {this.renderAllNavigation()}
         </Footer.Navigation>
-        <Footer.Utilities backToTopLabel={t('footer.to-start')}/>
+        <div className="align-right">
+          <Footer.Utilities backToTopLabel={t('footer.to-start')}>
+            {this.renderFeedback()}
+          </Footer.Utilities>
+        </div>
           
         <Footer.Base
           copyrightHolder={t('footer.copyright-holder')}

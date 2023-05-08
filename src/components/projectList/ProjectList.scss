@@ -48,7 +48,9 @@
       min-height: 0;
     }
   }
+
   .project-list-container {
+    font-family: "Helsinki Grotesk Regular", sans-serif;
     position: relative;
     z-index: 0;
     margin-bottom: 32px;
@@ -63,335 +65,433 @@
       }
     }
 
-    .project-list {
+    .project-list{
+      display: block;
       background-color: $color-white;
       padding: 0px 0px;
       border-top: none;
 
-      .project-list-header,
-      .project-list-item {
-        font-family: "Helsinki Grotesk Regular", sans-serif;
-        text-align: center;
-        display: grid;
-        grid-template-columns: repeat(15, 1fr);
-        column-gap: 10px;
-        margin: 0;
-        border: none !important;
-        border-bottom: 1px solid $color-black !important;
-
-        > * {
-          overflow: hidden;
-        }
-
-        @media screen and (max-width: 800px) {
-          grid-template-columns: repeat(1, 1fr);
-        }
-      }
-      .list-amount {
+      .project-status-container{
         display: flex;
-        justify-content: center;
         align-items: center;
-        margin: 10px 0;
-      }
-
-      .list-actions-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-        padding-top: 40px;
-
-        .button {
-          width: 300px;
-          height: 56px;
-        }
-      }
-      .project-list-item-container {
-        color: $color-black;
-        background-color: transparent;
-        
-        .project-list-item-graph {
-          .chart {
-            height: 132px;
-          }
-          margin-bottom: 30px;
-        }
-        .project-card-mb {
-          display: none;
-          font-size: 16px;
-          color: $color-primary;
-          text-align: center;
-          justify-content: center;
-          border: 2px solid $color-primary;
-          margin-top: 18px;
-          margin-bottom: 32px;
-          padding-top: 18px;
-          padding-bottom: 18px;
-
-          @media screen and (max-width: 599px) {
-            display: flex;
-          }
-        }
-      }
-      .project-list-item {
-        height: 64px;
-        border: 2px solid $color-black-10;
-        font-size: 16px;
-        position: relative;
-
-        &:hover,
-        &:focus,
-        &:active {
-          border-color: $color-primary;
-        }
-
-        .project-status {
-          display: inline-block;
-          min-width: 12px;
-          min-height: 12px;
+        .project-status-color{
           border-radius: 100%;
-          margin-right: 5px;
+          display: inline-flex;
+          min-height: 12px;
+          min-width: 12px;
+          height: 12px;
         }
-
-        .project-name {
-          color: $color-bus;
-          text-decoration: underline;
-          &:hover {
-            text-decoration: underline;
-          }
-        }
-        @media screen and (max-width: 800px) {
-          height: 200px;
-        }
-        @media screen and (max-width: 599px) {
-          padding-bottom: 20px;
-          text-align: left;
-        }
-        span {
-          grid-column: span 2;
-
-          &:nth-child(5) {
-            grid-column: span 1;
-          }
-          &:nth-child(3) {
-            grid-column: span 2;
-          }
+        .project-status-text{
+          padding-left: 2px;
         }
       }
 
-      .project-list-sort-text {
-        display: none;
-
-        @media screen and (max-width: 599px) {
-          display: block;
-          font-size: 16px;
-          color: $color-black;
-        }
-      }
-
-      .project-list-header {
-        font-family: "Helsinki Grotesk Medium", sans-serif;
-        background-color: $color-bus;
-        align-items: center;
-        min-height: 56px;
-        position: relative;
-
-        .project-timeline-toggle {
-          cursor: pointer;
-          width: 68px;
-          color: $color-bus-light;
-
-          .ui.toggle.checkbox input:checked ~ label:after {
-            left: 1.977rem;
-          }
-          .ui.toggle.checkbox input:checked ~ label:before {
-            background-color: $color-black !important;
-          }
-
-          .toggle {
-            padding-left: 6px;
-            position: absolute;
-            label:before {
-              width: 47px;
-              height: 20px;
-            }
-            label:after {
-              width: 20px;
-              height: 20px;
-            }
-
-            @media screen and (max-width: 1200px) {
-              padding-left: 0;
-            }
-          }
-          @media screen and (max-width: 601px) {
-            display: none;
-          }
-        }
-
-        /*
-        Design did not have a clear style to indicate direction of filter. Currently gray.
-        */
-
-        .header-item {
-          text-align: center;
-          font-size: 16px;
-          user-select: none;
-          cursor: pointer;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          grid-column: span 2;
-          text-decoration-thickness: 2px;
-          text-decoration-color: $color-black-30;
-          color: $color-bus-light;
-          overflow: hidden;
-          //border-bottom: 2px solid $color-black-30;
-
-          .angle-icon {
-            position: absolute;
-            margin-left: 6px;
-            font-size: 12px;
-            color: $color-black-30;
-
-            @media screen and (max-width: 800px) {
-              position: initial;
-            }
-          }
-
-          .angle-up-icon {
-            top: 16px;
-
-            &.dir-up {
-              color: $color-black;
-            }
-          }
-
-          .angle-down-icon {
-            bottom: 18px;
-
-            &.dir-down {
-              color: $color-black;
-            }
-          }
-          &:nth-child(5) {
-            grid-column: span 1;
-          }
-          &:nth-child(9) {
-            grid-column: span 1;
-          }
-
+      table{
+        thead{
+          width: 100%;
           span{
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            svg{
-              width: 24px;
-              height: 24px;
-              margin-left: 12px;
-            }
+            font-size: 16px;
+          }
+          button[data-testid='hds-table-sorting-header-Muokattu']{
+       
           }
         }
-        .header-item:hover {
-          text-decoration: underline;
-          background-color:transparent;
-        }
-        @media screen and (max-width: 800px) {
-          position: relative;
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: space-between;
-          background: none;
-          color: $color-primary;
-
-          .header-item {
-            flex-grow: 1;
-            margin-bottom: 8px;
-            font-size: 14px;
-            padding: 4px 14px;
-            border: 2px solid $color-primary;
-            color: $color-bus;
-
-            .angle-icon {
+        tbody{
+          width: 100%;
+          tr:nth-child(even) {
+            display: none;
+            td{
               display: none;
             }
-          }
-
-          .timeline-header-item {
-            border: none;
-            color: $color-black;
-            flex-grow: 1;
-            margin-right: 12px;
-            margin-bottom: 8px;
-            font-size: 14px;
-            padding: 0;
-            text-align: left;
-          }
-
-          @media screen and (max-width: 365px) {
-            margin-right: 0;
-          }
-        }
-      }
-
-      .project-list-button {
-        overflow: hidden;
-        height: 60px;
-      }
-
-      .project-list-item-name,
-      .project-list-item-phase {
-        white-space: nowrap;
-       
-      }
-      .field-ellipsis {
-        white-space: pre-wrap;
-      }
-      .center {
-        margin: auto;
-      }
-
-      .project-list-sublist {
-        padding-top: 68px;
-        padding-bottom: 10px;
-        .project-sublist-title {
-          cursor: pointer;
-          font-size: 16px;
-          padding-bottom: 20px;
-        }
-      }
-
-      .project-list-mb-actions {
-        position: relative;
-        display: flex;
-        margin-bottom: 4px;
-        min-height: 32px;
-        align-items: center;
-
-        .project-timeline-toggle-mb {
-          display: flex;
-          position: absolute;
-          margin-left: 2px;
-
-          .ui.toggle.checkbox input:checked ~ label:before {
-            background-color: $color-black !important;
-          }
-
-          .toggle {
-            z-index: 0;
-            margin-right: 8px;
-
-            label {
-              font-size: 16px;
+            td:nth-child(1){
+              display: block;
+              width: 100%;
+              position: absolute;
+              border-bottom: none;
             }
           }
-        }
-        @media screen and (min-width: 600px) {
-          display: none;
+
+          tr{
+            td{
+              font-size: 16px;
+              a{
+                color: $color-bus;
+                text-decoration: underline;
+              }
+            }
+          }
         }
       }
     }
 
+    .showGraph{
+      table{
+        thead{
+          th:nth-child(9){
+            display: none;
+          }
+        }
+        tbody{
+          tr:nth-child(even) {
+            display: block;
+            height: 200px;
+            margin-bottom: 30px;
+            td{
+              display: none;
+            }
+            td:nth-child(9){
+              display: block;
+              width: 100%;
+              position: absolute;
+            }
+          }
+          tr:nth-child(9){
+            display: none;
+          }
+        }
+      }
+    }
+
+    .project-list-mobile {
+      display: none;
+    }
+
+    @media screen and (max-width: 1049px) {
+      .project-list{
+        display: none;
+      }
+
+      .project-list-mobile {
+        display: block;
+        background-color: $color-white;
+        padding: 0px 0px;
+        border-top: none;
+  
+        .project-status-container{
+          display: flex;
+          align-items: center;
+          .project-status-color{
+            border-radius: 100%;
+            display: inline-flex;
+            min-height: 12px;
+            min-width: 12px;
+            height: 12px;
+          }
+        }
+  
+        .project-list-header,
+        .project-list-item {
+          font-family: "Helsinki Grotesk Regular", sans-serif;
+          text-align: center;
+          display: flex;
+          justify-content: stretch;
+          width: 100%;
+          margin: 0;
+          border: none !important;
+          border-bottom: 1px solid $color-black !important;
+  
+          > * {
+            overflow: hidden;
+          }
+        }
+        .project-list-header{
+          gap: 10px;
+        }
+        .project-list-item{
+          flex-flow: column;
+        }
+        .list-amount {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin: 10px 0;
+        }
+  
+        .list-actions-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          position: relative;
+          padding-top: 40px;
+  
+          .button {
+            width: 300px;
+            height: 56px;
+          }
+        }
+        .project-list-item-container {
+          color: $color-black;
+          background-color: transparent;
+          
+          .project-list-item-graph {
+            .chart {
+              height: 132px;
+            }
+            margin-bottom: 30px;
+          }
+          .project-card-mb {
+            display: none;
+            font-size: 16px;
+            color: $color-primary;
+            text-align: center;
+            justify-content: center;
+            border: 2px solid $color-primary;
+            margin-top: 18px;
+            margin-bottom: 32px;
+            padding-top: 18px;
+            padding-bottom: 18px;
+  
+            @media screen and (max-width: 599px) {
+              display: flex;
+            }
+          }
+        }
+        .project-list-item {
+          height: 64px;
+          border: 2px solid $color-black-10;
+          font-size: 16px;
+          position: relative;
+          flex-grow: 1;
+  
+          &:hover,
+          &:focus,
+          &:active {
+            border-color: $color-primary;
+          }
+  
+          .project-status {
+            display: inline-block;
+            min-width: 12px;
+            min-height: 12px;
+            border-radius: 100%;
+            margin-right: 5px;
+          }
+  
+          .project-name {
+            color: $color-bus;
+            text-decoration: underline;
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+          @media screen and (max-width: 1049px) {
+            height: 200px;
+          }
+          @media screen and (max-width: 599px) {
+            padding-bottom: 20px;
+            text-align: left;
+          }
+          span {
+            flex:1;
+          }
+        }
+  
+        .project-list-sort-text {
+          display: none;
+  
+          @media screen and (max-width: 599px) {
+            display: block;
+            font-size: 16px;
+            color: $color-black;
+          }
+        }
+  
+        .project-list-header {
+          font-family: "Helsinki Grotesk Medium", sans-serif;
+          background-color: $color-bus;
+          align-items: center;
+          min-height: 56px;
+          position: relative;
+  
+          .project-timeline-toggle {
+            cursor: pointer;
+            width: 68px;
+            color: $color-bus-light;
+  
+            .ui.toggle.checkbox input:checked ~ label:after {
+              left: 1.977rem;
+            }
+            .ui.toggle.checkbox input:checked ~ label:before {
+              background-color: $color-black !important;
+            }
+  
+            .toggle {
+              padding-left: 6px;
+              position: absolute;
+              label:before {
+                width: 47px;
+                height: 20px;
+              }
+              label:after {
+                width: 20px;
+                height: 20px;
+              }
+  
+              @media screen and (max-width: 1200px) {
+                padding-left: 0;
+              }
+            }
+            @media screen and (max-width: 601px) {
+              display: none;
+            }
+          }
+  
+          .header-item {
+            text-align: left;
+            font-size: 16px;
+            user-select: none;
+            cursor: pointer;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-decoration-thickness: 2px;
+            text-decoration-color: $color-black-30;
+            color: $color-bus-light;
+            overflow: hidden;
+            flex-grow: 1;
+            margin: 0;
+            padding: 0;
+            justify-content: start;
+  
+            .angle-icon {
+              position: absolute;
+              margin-left: 6px;
+              font-size: 12px;
+              color: $color-black-30;
+  
+              @media screen and (max-width: 1049px) {
+                position: initial;
+              }
+            }
+  
+            .angle-up-icon {
+              top: 16px;
+  
+              &.dir-up {
+                color: $color-black;
+              }
+            }
+  
+            .angle-down-icon {
+              bottom: 18px;
+  
+              &.dir-down {
+                color: $color-black;
+              }
+            }
+  
+            span{
+              display: flex;
+              justify-content: flex-start;
+              align-items: center;
+              svg{
+                width: 24px;
+                height: 24px;
+                margin-left: 12px;
+              }
+            }
+          }
+          .header-item:hover {
+            text-decoration: underline;
+            background-color:transparent;
+          }
+          @media screen and (max-width: 1049px) {
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            background: none;
+            color: $color-primary;
+  
+            .header-item {
+              flex-grow: 1;
+              margin-bottom: 8px;
+              font-size: 14px;
+              padding: 4px 14px;
+              border: 2px solid $color-primary;
+              color: $color-bus;
+  
+              .angle-icon {
+                display: none;
+              }
+            }
+  
+            .timeline-header-item {
+              border: none;
+              color: $color-black;
+              flex-grow: 1;
+              margin-right: 12px;
+              margin-bottom: 8px;
+              font-size: 14px;
+              padding: 0;
+              text-align: left;
+            }
+  
+            @media screen and (max-width: 365px) {
+              margin-right: 0;
+            }
+          }
+        }
+  
+        .project-list-button {
+          overflow: hidden;
+          height: 60px;
+        }
+  
+        .project-list-item-name,
+        .project-list-item-phase {
+          white-space: nowrap;
+         
+        }
+        .field-ellipsis {
+          white-space: pre-wrap;
+        }
+        .center {
+          margin: auto;
+        }
+  
+        .project-list-sublist {
+          padding-top: 68px;
+          padding-bottom: 10px;
+          .project-sublist-title {
+            cursor: pointer;
+            font-size: 16px;
+            padding-bottom: 20px;
+          }
+        }
+  
+        .project-list-mb-actions {
+          position: relative;
+          display: flex;
+          margin-bottom: 4px;
+          min-height: 32px;
+          align-items: center;
+  
+          .project-timeline-toggle-mb {
+            display: flex;
+            position: absolute;
+            margin-left: 2px;
+  
+            .ui.toggle.checkbox input:checked ~ label:before {
+              background-color: $color-black !important;
+            }
+  
+            .toggle {
+              z-index: 0;
+              margin-right: 8px;
+  
+              label {
+                font-size: 16px;
+              }
+            }
+          }
+          @media screen and (min-width: 600px) {
+            display: none;
+          }
+        }
+      }
+    } 
+    
     .empty-list-info {
       font-family: "Helsinki Grotesk Regular", sans-serif;
       display: flex;
@@ -400,6 +500,7 @@
       font-size: 24px;
     }
   }
+
   .filters-list{
     margin-bottom: 64px;
     label{
@@ -412,9 +513,16 @@
       }
     }
   }
+
   .project-list-pagination{
+    font-size: 16px;
+    font-family: "Helsinki Grotesk Regular", sans-serif;
     [aria-current]:not([aria-current="false"]) {
       min-width: 40px;
+    }
+    nav{
+      font-size: 16px;
+      font-family: "Helsinki Grotesk Regular", sans-serif;
     }
   }
   .ui.tabular.menu {
@@ -435,7 +543,7 @@
       margin-bottom: 0 !important;
       font-weight: normal !important;
     }
-    @media screen and (max-width: 800px) {
+    @media screen and (max-width: 1049px) {
       margin-top: -46px;
     }
     @media screen and (max-width: 599px) {

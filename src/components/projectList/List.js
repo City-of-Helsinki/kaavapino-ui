@@ -14,8 +14,24 @@ import {
 import ListHeader from './ListHeader'
 import ListItem from './ListItem'
 import projectUtils from '../../utils/projectUtils'
-import { LoadingSpinner } from 'hds-react'
+import { Table, LoadingSpinner } from 'hds-react'
 import { withTranslation } from 'react-i18next';
+import { truncate } from 'lodash'
+import { Link } from 'react-router-dom'
+import { Popup } from 'semantic-ui-react'
+import ProjectTimeline from '../ProjectTimeline/ProjectTimeline'
+
+const Status = ({ color }) => {
+  return (
+    <span
+      className="project-status-color"
+      style={{
+        backgroundColor: color,
+        ...(color === '#ffffff' && { border: '1px solid' })
+      }}
+    />
+  )
+}
 
 class List extends Component {
   constructor(props) {
@@ -24,11 +40,14 @@ class List extends Component {
     this.state = {
       sort: 5,
       dir: 1,
-      projectTab: 'own'
+      projectTab: 'own',
+      name:'',
+      dirname:'asc'
     }
   }
 
   setSort = (type,name) => {
+    console.log(type,name)
     const { sort, dir } = this.state
     let newSort = sort,
       newDir = dir
@@ -40,16 +59,22 @@ class List extends Component {
       }
     } else {
       newSort = type
-      newDir = 0
+      if (dir === 0) {
+        newDir = 1
+      } else {
+        newDir = 0
+      }
     }
-    this.props.sortField(name,dir)
-    this.props.sortProjects({ sort: newSort, dir: newDir })
-
+    console.log(dir,type,sort)
     this.setState({
       ...this.state,
       sort: newSort,
-      dir: newDir
+      dir: newDir,
+      name,
+      dirname:type
     })
+    this.props.sortField(name,dir)
+    this.props.sortProjects({ sort: newSort, dir: newDir })
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -64,6 +89,28 @@ class List extends Component {
     }
   }
 
+  headerItems = [
+    {key:this.props.t('projects.table.priority'),headerName:this.props.t('projects.table.priority'),isSortable: true},
+    {key:this.props.t('projects.table.name'),headerName:this.props.t('projects.table.name'),isSortable: true},
+    {key:this.props.t('projects.table.project'),headerName:this.props.t('projects.table.project'),isSortable: true},
+    {key:this.props.t('projects.table.pino-number'),headerName:this.props.t('projects.table.pino-number'),isSortable: true,sortIconType: 'other'},
+    {key:this.props.t('projects.table.size'),headerName:this.props.t('projects.table.size'),isSortable: true},
+    {key:this.props.t('projects.table.responsible'),headerName:this.props.t('projects.table.responsible'),isSortable: true},
+    {key:this.props.t('projects.table.phase'),headerName:this.props.t('projects.table.phase'),isSortable: true},
+    {key:this.props.t('projects.table.modified'),headerName:this.props.t('projects.table.modified'),isSortable: true,sortIconType: 'other'}
+  ]
+
+  headerItemsMobile = [
+    this.props.t('projects.table.priority'),
+    this.props.t('projects.table.name'),
+    this.props.t('projects.table.project'),
+    this.props.t('projects.table.pino-number'),
+    this.props.t('projects.table.size'),
+    this.props.t('projects.table.responsible'),
+    this.props.t('projects.table.phase'),
+    this.props.t('projects.table.modified')
+  ]
+
   render() {
     const { sort, dir } = this.state
     const {
@@ -75,7 +122,6 @@ class List extends Component {
       toggleSearch,
       isExpert,
       modifyProject,
-      t,
       sortField
     } = this.props
 
@@ -88,18 +134,9 @@ class List extends Component {
     }
 
     const items = this.props.items
-    const headerItems = [
-      t('projects.table.priority'),
-      t('projects.table.name'),
-      t('projects.table.project'),
-      t('projects.table.pino-number'),
-      t('projects.table.size'),
-      t('projects.table.responsible'),
-      t('projects.table.phase'),
-      t('projects.table.modified')
-    ]
 
     let projects = []
+    let rows = []
 
     items.forEach(
       (
@@ -124,6 +161,7 @@ class List extends Component {
           ...projectUtils.formatPhase(phase, phases),
           modified_at: projectUtils.formatDate(modified_at)
         }
+        //Mobile
         projects.push(
           <ListItem
             key={i}
@@ -136,24 +174,75 @@ class List extends Component {
             onhold={onhold}
           />
         )
+        
+        //Desktop
+        const prioField = this.props.t('projects.table.priority');
+        const nameField = this.props.t('projects.table.name');
+        const projecField = this.props.t('projects.table.project');
+        const pinoField = this.props.t('projects.table.pino-number');
+        const sizeField = this.props.t('projects.table.size');
+        const responsibleField = this.props.t('projects.table.responsible');
+        const phaseField = this.props.t('projects.table.phase');
+        const modifiedField = this.props.t('projects.table.modified');
+
+        let rowObject = {}
+        rowObject[prioField] = listItem.prio
+        rowObject[nameField] = <Popup trigger={<Link to={`/${listItem.id}`}>{truncate(listItem.name, { length: 30 })}</Link>} on="hover" content={listItem.name}/>
+        rowObject[projecField] = listItem.projectId
+        rowObject[pinoField] = listItem.pino_number
+        rowObject[sizeField] = listItem.subtype
+        rowObject[responsibleField] = <Popup trigger={<span>{listItem.user}</span>} on="hover" content={listItem.user}/>
+        rowObject[phaseField] = <span className='project-status-container'><Status color={listItem.phaseColor} /> <span className='project-status-text'>{listItem.phaseName}</span></span>
+        rowObject[modifiedField] = listItem.modified_at
+        
+        rows.push(rowObject)
+        let rowObject2 = {}
+        
+        rowObject2[prioField] = this.props.showGraph && ( <span className="project-list-item-graph"> <ProjectTimeline deadlines={deadlines} projectView={true} onhold={onhold} /></span>)
+        rows.push(rowObject2)
       }
     )
+
+    let showGraphStyle = this.props.showGraph ? "project-list showGraph" : "project-list"
     return (
-      <div className="project-list">
+      <>
+        <div className={showGraphStyle}>
+          <Table
+            ariaLabelSortButtonUnset="Not sorted"
+            ariaLabelSortButtonAscending="Sorted in ascending order"
+            ariaLabelSortButtonDescending="Sorted in descending order"
+            indexKey="id"
+            renderIndexCol={false}
+            cols={this.headerItems}
+            rows={rows}
+            initialSortingColumnKey={this.state.name}
+            initialSortingOrder={this.state.dirname}
+          // selected={sort}
+          // dir={dir}
+          //  sort={this.setSort}
+            onSort={(order, colKey, handleSort) => {
+                this.setSort(order,colKey)
+                handleSort(order,colKey)
+            }}
+          />
+          {items.length === 0 && <span className="empty-list-info">Ei projekteja!</span>}
+        </div>
+        <div className="project-list-mobile">
         {items.length > 0 && (
           <ListHeader
             toggleSearch={toggleSearch}
             searchOpen={searchOpen}
-            items={headerItems}
+            items={this.headerItemsMobile}
             selected={sort}
             dir={dir}
             sort={this.setSort}
             sortField={sortField}
           />
-        )}
-        {projects.length !== 0 && projects}
+        )} 
+        {projects.length !== 0 && projects} 
         {items.length === 0 && <span className="empty-list-info">Ei projekteja!</span>}
       </div>
+    </>
     )
   }
 }

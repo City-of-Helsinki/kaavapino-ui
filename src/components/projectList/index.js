@@ -161,6 +161,7 @@ class ProjectListPage extends Component {
   }
 
   sortField = (name,dir) => {
+    console.log(name,dir)
     const sortField = this.props.t('sorting.'+name)
     this.setState({tabName:sortField,tabDir:dir})
     this.fetchProjectsByTabIndex(this.state.activeIndex,this.state.pageIndex,sortField,dir)
