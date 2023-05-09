@@ -33,7 +33,7 @@ import { Tabs, Pagination } from 'hds-react'
 import Header from '../common/Header'
 import authUtils from '../../utils/authUtils'
 import OwnProjectFilters from './OwnProjectFilters'
-import { Radio } from 'semantic-ui-react'
+import { ToggleButton } from 'hds-react';
 import { isEqual } from 'lodash'
 
 class ProjectListPage extends Component {
@@ -472,8 +472,7 @@ class ProjectListPage extends Component {
           <div className='project-list-result'>
             <span className='project-list-result-number'>{t('project.searchterms-found')} {this.state.resultsFound[this.state.activeIndex -1]} {t('project.found-projects')}</span>
             <div className="timeline-header-item  project-timeline-toggle">
-              <span className='toggle-text'>{t('project.show-timelines')}</span>
-              <Radio onChange={() => this.toggleGraph()} aria-label={t('project.show-timelines')} toggle checked={this.state.showGraph} />
+              <ToggleButton id="timeline-toggle" label={t('project.show-timelines')} variant="inline" checked={this.state.showGraph} onChange={() => this.toggleGraph()} />
             </div>
           </div>
           <div className="project-list-container">{this.createTabPanes()}</div>

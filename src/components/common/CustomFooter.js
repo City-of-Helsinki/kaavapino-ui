@@ -16,7 +16,6 @@ class CustomFooter extends Component {
         <div className="align-left">
         <Footer.Item
           as="span"
-          label={header.title}
           onClick={function noRefCheck() {}}
         />
         {this.renderFooterLinks(header.links)}
@@ -26,17 +25,35 @@ class CustomFooter extends Component {
   renderFooterLinks = links => {
     const returnValue = []
     links.forEach( link => {
-      returnValue.push(
-        <Footer.Item
-          as="a"
-          href={link.url}
-          label={link.link_text}
-          onClick={function noRefCheck() {}}
-          subItem
-          key={link.url}
-        />
+      if(link.link_text !== "Anna palautetta"){
+        returnValue.push(
+          <Footer.Item
+            as="a"
+            href={link.url}
+            label={link.link_text}
+            onClick={function noRefCheck() {}}
+            key={link.url}
+          />
+        )
+      }
+    })
+    return returnValue
+  }
 
-      )
+  renderFeedbackLink = links => {
+    const returnValue = []
+    links.forEach( link => {
+      if(link.link_text === "Anna palautetta"){
+        returnValue.push(
+          <Footer.Item
+            as="a"
+            href={link.url}
+            label={link.link_text}
+            onClick={function noRefCheck() {}}
+            key={link.url}
+          />
+        )
+      }
     })
     return returnValue
   }
@@ -55,6 +72,18 @@ class CustomFooter extends Component {
 
     return returnValue
   }
+
+  renderFeedback = () => {
+    const returnValue = []
+
+    if ( !this.props.footerData || !isArray( this.props.footerData )) {
+        return null
+    }
+   this.props.footerData.forEach(current => {
+      returnValue.push(this.renderFeedbackLink(current.links))
+    })
+    return returnValue
+    }
 
   renderTitle = () => {
     const {t} = this.props
@@ -78,13 +107,19 @@ class CustomFooter extends Component {
         logoLanguage="fi"
         title={this.renderTitle()}
       >
+        <div className="align-left">
         <Footer.Navigation
           navigationAriaLabel="Footer navigation items"
           variant="minimal"
         >
           {this.renderAllNavigation()}
         </Footer.Navigation>
-        <Footer.Utilities backToTopLabel={t('footer.to-start')}/>
+        </div>
+        <div className="align-right">
+          <Footer.Utilities backToTopLabel={t('footer.to-start')}>
+            {this.renderFeedback()}
+          </Footer.Utilities>
+        </div>
           
         <Footer.Base
           copyrightHolder={t('footer.copyright-holder')}
