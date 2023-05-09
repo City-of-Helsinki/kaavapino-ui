@@ -16,7 +16,6 @@ class CustomFooter extends Component {
         <div className="align-left">
         <Footer.Item
           as="span"
-          //label={header.title}
           onClick={function noRefCheck() {}}
         />
         {this.renderFooterLinks(header.links)}
