@@ -215,9 +215,6 @@ class List extends Component {
             rows={rows}
             initialSortingColumnKey={this.state.name}
             initialSortingOrder={this.state.dirname}
-          // selected={sort}
-          // dir={dir}
-          //  sort={this.setSort}
             onSort={(order, colKey, handleSort) => {
                 this.setSort(order,colKey)
                 handleSort(order,colKey)

@@ -561,6 +561,20 @@
     .timeline-header-item{
       display: flex;
       align-items: center;
+      font-size: 16px;
+      font-family: "Helsinki Grotesk Regular", sans-serif;
+      label{
+        font-size: 16px;
+        font-family: "Helsinki Grotesk Regular", sans-serif;
+        margin-right: 20px;
+      }
+      #timeline-toggle{
+        div{
+          svg{
+            margin-top: 2px;
+          }
+        }
+      }
       .toggle-text{
         padding-right: 20px;
         font-family: "Helsinki Grotesk Medium", sans-serif;
