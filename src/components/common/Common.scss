@@ -6,44 +6,44 @@
 }
 
 body {
-  font-family: 'Helsinki Grotesk Regular';
+  font-family: 'Helsinki Grotesk Regular', sans-serif;
 }
 h1 {
   color: $color-black;
-  font-family: 'Helsinki Grotesk Bold';
-  font-size: 64px;
+  font-family: 'Helsinki Grotesk Bold', sans-serif;
+  font-size: 64px !important;
   letter-spacing: 0;
-  line-height: 36px;
-  margin: 0;
+  line-height: 36px !important;
+  margin: 0 !important;
+  font-weight: 400 !important;
 }
 
 h2 {
   color: $color-black;
-  font-family: "Helsinki Grotesk Bold";
+  font-family: "Helsinki Grotesk Bold", sans-serif;
   font-size: 24px;
-  font-weight: bold;
+  font-weight: 400;
   letter-spacing: 0;
   line-height: 24px;
 }
 
 h3 {
   color: $color-black;
-  font-family: "Helsinki Grotesk Bold";
+  font-family: "Helsinki Grotesk Bold", sans-serif;
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 400;
   letter-spacing: 0;
 }
 
 h4 {
-  font-family: "Helsinki Grotesk Bold";
+  font-family: "Helsinki Grotesk Bold", sans-serif;
   font-size: 14px;
-  font-weight: bold;
   line-height: 16px;
   margin: 44px 0 8px;
 }
 
 .ui.button {
-  font-family: "Helsinki Grotesk Medium";
+  font-family: "Helsinki Grotesk Medium", sans-serif;
   border-radius: 0;
   font-size: 16px;
   font-weight: 500;
@@ -114,7 +114,7 @@ footer{
 
 .ui.segment.footer-container {
   background: $light-gray2;
-  font-family: 'Helsinki Grotesk Regular';
+  font-family: 'Helsinki Grotesk Regular', sans-serif;
 
   .footer-image {
     width: 152px;
@@ -126,13 +126,13 @@ footer{
   }
   .footer-link-group {
     h4 {
-      font-family: 'Helsinki Grotesk Bold';
+      font-family: 'Helsinki Grotesk Bold', sans-serif;
       font-size: 20px;
       color: #000000;
       text-align: left;
     }
     a {
-      font-family: 'Helsinki Grotesk Regular';
+      font-family: 'Helsinki Grotesk Regular', sans-serif;
       font-size: 16px;
       color: #000000 !important;
       text-align: left;
@@ -140,13 +140,13 @@ footer{
     }
   }
   .footer-copyright {
-    font-family: 'Helsinki Grotesk Regular';
+    font-family: 'Helsinki Grotesk Regular', sans-serif;
     font-size: 14px;
     color: #666666;
     text-align: left;
     line-height: 18px;
     a {
-      font-family: 'Helsinki Grotesk Regular';
+      font-family: 'Helsinki Grotesk Regular', sans-serif;
       font-size: 14px;
       color: $color-black;
       letter-spacing: 0;
@@ -156,7 +156,7 @@ footer{
   }
   .footer-feedback {
     a {
-      font-family: 'Helsinki Grotesk Regular';
+      font-family: 'Helsinki Grotesk Regular', sans-serif;
       font-size: 14px;
       color: $color-black;
       letter-spacing: 0;
@@ -334,7 +334,7 @@ footer{
 .nav-header-container {
   display: flex;
   align-items: center;
-  font-family: 'Helsinki Grotesk Regular';
+  font-family: 'Helsinki Grotesk Regular', sans-serif;
 
   .nav-header-inner-container {
     height: 100%;
