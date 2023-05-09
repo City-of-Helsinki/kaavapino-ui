@@ -16,7 +16,7 @@ class CustomFooter extends Component {
         <div className="align-left">
         <Footer.Item
           as="span"
-          label={header.title}
+          //label={header.title}
           onClick={function noRefCheck() {}}
         />
         {this.renderFooterLinks(header.links)}
@@ -25,9 +25,7 @@ class CustomFooter extends Component {
   }
   renderFooterLinks = links => {
     const returnValue = []
-    console.log(links)
     links.forEach( link => {
-      console.log(link)
       if(link.link_text !== "Anna palautetta"){
         returnValue.push(
           <Footer.Item
@@ -35,7 +33,6 @@ class CustomFooter extends Component {
             href={link.url}
             label={link.link_text}
             onClick={function noRefCheck() {}}
-            subItem
             key={link.url}
           />
         )
@@ -46,9 +43,7 @@ class CustomFooter extends Component {
 
   renderFeedbackLink = links => {
     const returnValue = []
-    console.log(links)
     links.forEach( link => {
-      console.log(link)
       if(link.link_text === "Anna palautetta"){
         returnValue.push(
           <Footer.Item
@@ -88,7 +83,6 @@ class CustomFooter extends Component {
    this.props.footerData.forEach(current => {
       returnValue.push(this.renderFeedbackLink(current.links))
     })
-    console.log(returnValue)
     return returnValue
     }
 
@@ -114,12 +108,14 @@ class CustomFooter extends Component {
         logoLanguage="fi"
         title={this.renderTitle()}
       >
+        <div className="align-left">
         <Footer.Navigation
           navigationAriaLabel="Footer navigation items"
           variant="minimal"
         >
           {this.renderAllNavigation()}
         </Footer.Navigation>
+        </div>
         <div className="align-right">
           <Footer.Utilities backToTopLabel={t('footer.to-start')}>
             {this.renderFeedback()}

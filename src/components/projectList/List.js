@@ -47,7 +47,6 @@ class List extends Component {
   }
 
   setSort = (type,name) => {
-    console.log(type,name)
     const { sort, dir } = this.state
     let newSort = sort,
       newDir = dir
@@ -65,7 +64,6 @@ class List extends Component {
         newDir = 0
       }
     }
-    console.log(dir,type,sort)
     this.setState({
       ...this.state,
       sort: newSort,

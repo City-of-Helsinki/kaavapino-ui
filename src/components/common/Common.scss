@@ -462,22 +462,59 @@ footer{
   }
   
 }
-.align-left a {
-  justify-content: left;
+
+.align-left{
+  display: flex;
+  flex-flow: row;
+  nav{
+    margin-left: 0 !important;
+  }
+  a {
+    font-size: 16px;
+    font-family: "Helsinki Grotesk Regular", sans-serif;
+    justify-content: left;
+    padding-left: 20px;
+    padding-bottom: 30px;
+  }
+  a:hover{
+    font-size: 16px;
+    color: $color-black;
+    text-decoration: underline;
+  }
+  span{
+    justify-content: left;
+  }
 }
-.align-left span {
-  justify-content: left;
-}
+
 .align-right > div{
   justify-content: end;
 }
+
+.align-right{
+  a{
+    font-family: "Helsinki Grotesk Regular", sans-serif;
+    font-size: 16px;
+  }
+  a:hover{
+    font-size: 16px;
+    color: $color-black;
+    text-decoration: underline;
+  }
+  button{
+    font-size: 16px;
+    font-family: "Helsinki Grotesk Regular", sans-serif;
+  }
+}
+
 .loader-icon {
   margin-left: auto;
   margin-right: auto;
 }
+
 .loader-icon-right-margin {
    margin-right: 10px;
 }
+
 .full-width {
   width: 100%;
 }
