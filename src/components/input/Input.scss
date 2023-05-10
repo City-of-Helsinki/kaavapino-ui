@@ -226,6 +226,17 @@
   
 }
 
+.readonly{
+  button{
+    background-color: #e6e6e6;
+  }
+  ul{
+    li{
+      background-color: #e6e6e6;
+    }
+  }
+}
+
 .error .rich-text-editor-wrapper {
   border: 3px solid $color-error;
 

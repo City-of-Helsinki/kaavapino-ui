@@ -61,13 +61,14 @@ class CustomField extends Component {
 
   renderYearSelect = props => {
     const { multiple_choice, placeholder_text } = this.props.field
-    const { handleBlurSave, handleLockField, handleUnlockField, formName } = this.props
+    const { handleBlurSave, handleLockField, handleUnlockField, formName, lockField } = this.props
 
     if (this.yearOptions.length === 0) {
       this.yearOptions = projectUtils.generateArrayOfYears()
     }
     return (
       <SelectInput
+        lockField={lockField}
         multiple={multiple_choice}
         options={this.yearOptions}
         onBlur={handleBlurSave}
@@ -144,11 +145,12 @@ class CustomField extends Component {
 
   renderSelect = props => {
     const { choices, multiple_choice, placeholder_text, formName } = this.props.field
-    const { handleBlurSave, handleLockField, handleUnlockField } = this.props
+    const { handleBlurSave, handleLockField, handleUnlockField, lockField } = this.props
 
     return (
       <SelectInput
         {...props}
+        lockField={lockField}
         multiple={multiple_choice}
         options={this.formatOptions(choices)}
         onBlur={handleBlurSave}
