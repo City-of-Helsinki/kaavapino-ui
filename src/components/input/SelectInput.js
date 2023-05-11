@@ -1,23 +1,62 @@
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { Select } from 'hds-react'
 import { isArray } from 'lodash'
+import { useSelector } from 'react-redux'
+import {lockedSelector } from '../../selectors/projectSelector'
 
 // Label when there are more than one same option. To avoid key errors.
 const MORE_LABEL = ' (2)'
 const SelectInput = ({
   input,
   error,
+  lockField,
   options,
+  onFocus,
   onBlur,
   placeholder,
   disabled,
-  multiple
+  multiple,
+  handleUnlockField,
 }) => {
   const currentValue = []
   const oldValueRef = useRef('');
   const [selectValues, setSelectValues] = useState('')
+  const lockedStatus = useSelector(state => lockedSelector(state))
+  const [readonly, setReadOnly] = useState(false)
+  const [fieldName, setFieldName] = useState("")
+
+  useEffect(() => {
+    //Chekcs that locked status has more data then inital empty object
+    if(lockedStatus && Object.keys(lockedStatus).length > 0){
+      if(lockedStatus.lock === false){
+        let identifier;
+        //Field is fieldset field and has different type of identifier
+        //else is normal field
+        if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
+          identifier = lockedStatus.lockData.attribute_lock.field_identifier;
+        }
+        else{
+          identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
+        }
+        const lock = input.name === identifier
+        //Check if locked field name matches with instance and that owner is true to allow edit
+        //else someone else is editing and prevent editing
+        if(lock && lockedStatus.lockData.attribute_lock.owner){
+          setReadOnly(false)
+          //Change styles from FormField
+          lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
+        }
+        else{
+          setReadOnly(true)
+          setFieldName(identifier)
+          //Change styles from FormField
+          lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
+        }
+      }
+    }
+  }, [lockedStatus]);
 
   useEffect(() => {
     oldValueRef.current = input.value;
@@ -77,39 +116,80 @@ const SelectInput = ({
     return currentOption
   }
 
-  const handleBlur = () => {
-    if (selectValues !== oldValueRef.current) {
-      onBlur();
-      oldValueRef.current = selectValues;
+  const handleFocus = () => {
+    if (typeof onFocus === 'function') {
+      //Sent a call to lock field to backend
+      onFocus(input.name);
     }
   }
+
+  const handleBlur = () => {
+    let identifier;
+    //Chekcs that locked status has more data then inital empty object
+    if(lockedStatus && Object.keys(lockedStatus).length > 0){
+      //Field is fieldset field and has different type of identifier
+      //else is normal field
+      if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
+        identifier = lockedStatus.lockData.attribute_lock.field_identifier;
+      }
+      else{
+        identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
+      }
+    }
+    //Send identifier data to change styles from FormField.js
+    lockField(false,false,identifier)
+    
+    if (typeof handleUnlockField === 'function') {
+      //Sent a call to unlock field to backend
+      handleUnlockField(input.name)
+    }
+    if (selectValues !== oldValueRef.current) {
+      //prevent saving if locked
+      if (!readonly) {
+      //Sent call to save changes
+        onBlur();
+        oldValueRef.current = selectValues;
+      }
+    }
+    setFieldName("")
+  }
+
+  const handleInputChange = useCallback((val) => {
+    if(!readonly){
+      input.onChange(val, input.name)
+    }
+  }, [input.name, input.value]);
 
   options = options
     ? options.filter(option => option.label && option.label.trim() !== '')
     : []
 
   options.forEach(option => option && currentOptions.push(modifyOptionIfExist(option)))
-
+  let notSelectable = readonly === true && fieldName === input.name
+  let readOnlyStyle = notSelectable ? 'selection readonly' : 'selection'
   if (!multiple) {
     return (
       <Select
         placeholder={placeholder}
-        className="selection"
+        className={readOnlyStyle}
         id={input.name}
         multiselect={false}
         error={inputUtils.hasError(error)}
         onBlur={handleBlur}
+        onFocus={handleFocus}
         clearable={true}
         disabled={disabled}
         options={currentOptions}
         value={currentSingleValue}
         onChange={data => {
-          let returnValue = data ? data.value : null
-          if (returnValue === '') {
-            returnValue = null
+          if(!notSelectable){
+            let returnValue = data ? data.value : null
+            if (returnValue === '') {
+              returnValue = null
+            }
+            setSelectValues(returnValue)
+            handleInputChange(returnValue)
           }
-          setSelectValues(returnValue)
-          input.onChange(returnValue)
         }}
       />
     )
@@ -117,20 +197,23 @@ const SelectInput = ({
   return (
     <Select
       placeholder={placeholder}
-      className="selection"
+      className={readOnlyStyle}
       id={input.name}
       name={input.name}
       multiselect={multiple}
       error={error}
       onBlur={handleBlur}
+      onFocus={handleFocus}
       clearable={true}
       disabled={disabled}
       options={currentOptions}
       defaultValue={currentValue}
       onChange={data => {
-        let returnValue = data && data.map(currentValue => currentValue.value)
-        setSelectValues(returnValue)
-        input.onChange(returnValue)
+        if(!notSelectable){
+          let returnValue = data && data.map(currentValue => currentValue.value)
+          setSelectValues(returnValue)
+          handleInputChange(returnValue)
+        }
       }}
     />
   )

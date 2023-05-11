@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Grid } from 'semantic-ui-react'
 import DropdownFilter from '../overview/Filters/DropdownFilter'
 import CustomADUserCombobox from '../input/CustomADUserCombobox'
@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 
 function OwnProjectFilters({ filters, ...props }) {
     const { t } = useTranslation()
+    const oldValueRef = useRef('');
     const [filter, setFilter] = useState(["","",[]])
     const [filterData, setFilterData] = useState([])
 
@@ -27,15 +28,20 @@ function OwnProjectFilters({ filters, ...props }) {
      const onFilterChange = (values) => {
         let val = filter
         const { buttonAction } = props
-        if(values){
+        if(values && values.value !== oldValueRef.current){
             val[1] = values.value
+            oldValueRef.current = values.value;
             setFilter(val)
             buttonAction(val)
         }
         else{
-            val[1] = ""
-            setFilter(val)
-            buttonAction(val)
+            //clear button pressed if null, when undefined do nothing
+            if(values === null && oldValueRef.current != ""){
+                val[1] = ""
+                oldValueRef.current = "";
+                setFilter(val)
+                buttonAction(val)
+            }
         }
     }
    

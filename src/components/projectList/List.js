@@ -123,14 +123,6 @@ class List extends Component {
       sortField
     } = this.props
 
-    if (loadingProjects || !phases) {
-      return (
-        <div className="project-list">
-          <LoadingSpinner className="loader-icon" position="center" />
-        </div>
-      )
-    }
-
     const items = this.props.items
 
     let projects = []
@@ -220,22 +212,24 @@ class List extends Component {
                 handleSort(order,colKey)
             }}
           />
-          {items.length === 0 && <span className="empty-list-info">Ei projekteja!</span>}
+          {loadingProjects && <LoadingSpinner className="loader-icon" style={{marginTop:'var(--spacing-l)'}} position="center" />}
+          {!loadingProjects && items.length === 0 && <span className="empty-list-info">Ei projekteja!</span>}
         </div>
         <div className="project-list-mobile">
-        {items.length > 0 && (
-          <ListHeader
-            toggleSearch={toggleSearch}
-            searchOpen={searchOpen}
-            items={this.headerItemsMobile}
-            selected={sort}
-            dir={dir}
-            sort={this.setSort}
-            sortField={sortField}
-          />
-        )} 
-        {projects.length !== 0 && projects} 
-        {items.length === 0 && <span className="empty-list-info">Ei projekteja!</span>}
+          {items.length > 0 && (
+            <ListHeader
+              toggleSearch={toggleSearch}
+              searchOpen={searchOpen}
+              items={this.headerItemsMobile}
+              selected={sort}
+              dir={dir}
+              sort={this.setSort}
+              sortField={sortField}
+            />
+          )} 
+          {projects.length !== 0 && projects} 
+          {loadingProjects && <LoadingSpinner className="loader-icon" style={{marginTop:'var(--spacing-l)'}} position="center" />}
+          {!loadingProjects && items.length === 0 && <span className="empty-list-info">Ei projekteja!</span>}
       </div>
     </>
     )
