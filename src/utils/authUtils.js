@@ -24,6 +24,19 @@ const isAdmin = (currentUserId, users) => {
   return userRole === ADMIN 
 }
 
+const getAdId = (currentUserId, users) => {
+  let ad
+  if (users) {
+    users.forEach(user => {
+      if (user.id === currentUserId) {
+        ad = user.ad_id
+        return
+      }
+    })
+  }
+  return ad 
+}
+
 const getUserRole = (currentUserId, users) => {
   let privilege
   if (users) {
@@ -40,5 +53,6 @@ const getUserRole = (currentUserId, users) => {
 export default {
   isAdmin,
   isExpert,
-  isResponsible
+  isResponsible,
+  getAdId
 }

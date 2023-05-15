@@ -42,7 +42,7 @@ class ProjectListPage extends Component {
 
     this.state = {
       showBaseInformationForm: false,
-      filter: [],
+      filter: ["","",[]],
       activeIndex: 1,
       screenWidth: window.innerWidth,
       currentFilterData:this.props.filterData,
