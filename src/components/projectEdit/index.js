@@ -114,6 +114,8 @@ class ProjectEditPage extends Component {
         this.setState({currentEmail});
       }
     }
+
+    this.unlockAllFields()
   }
 
   componentWillUnmount() {
@@ -145,8 +147,11 @@ class ProjectEditPage extends Component {
   }
 
   handleSave = () => {
+    const projectName = this.props.currentProject.name;
     this.props.saveProject()
+    this.props.unlockAllFields(projectName)
   }
+
   handleAutoSave = () => {
     if (this.state.showEditFloorAreaForm || this.state.showEditProjectTimetableForm) {
       return
@@ -157,16 +162,20 @@ class ProjectEditPage extends Component {
     }
     this.props.saveProject()
   }
+
   handleLockField = (inputname) => {
     const projectName = this.props.currentProject.name;
     this.props.lockProjectField(projectName,inputname)
   }
+
   handleUnlockField = (inputname) => {
     const projectName = this.props.currentProject.name;
     this.props.unlockProjectField(projectName,inputname)
   }
+
   unlockAllFields = () => {
-    this.props.unlockAllFields()
+    const projectName = this.props.currentProject.name;
+    this.props.unlockAllFields(projectName)
   }
 
   handleTimetableClose = () => {
@@ -364,6 +373,7 @@ class ProjectEditPage extends Component {
               isResponsible={isResponsible}
               isAdmin={isAdmin}
               phase={phase}
+              unlockAllFields={this.unlockAllFields}
             />
             <NavigationPrompt
               when={

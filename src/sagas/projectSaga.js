@@ -650,17 +650,13 @@ function* saveProjectTimetable() {
   }
 }
 
-function* unlockAllFields() {
-  const users = yield select(usersSelector)
-  const userId = yield select(userIdSelector)
-  const adId = authUtils.getAdId(userId,users)
+function* unlockAllFields(data) {
+  const project_name = data.payload.projectName;
   try {
     yield call(
      attributesApiUnlockAll.post,
-     {adId}
+     {project_name}
    )
-   console.log("unlockAll")
-   //yield put(setUnlockStatus(adId))
  }
  catch (e) {
    yield put(error(e))
@@ -680,7 +676,6 @@ function* unlockProjectField(data) {
         attribute_identifier}
       )
       const lockData = {attribute_lock:{project_name:project_name,attribute_identifier:attribute_identifier}}
-      console.log("unlock")
       yield put(setUnlockStatus(lockData,true))
     }
     catch (e) {

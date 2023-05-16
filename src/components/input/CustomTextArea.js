@@ -7,9 +7,7 @@ const CustomTextArea = ({ input, meta: { error }, ...custom }) => {
 
   useEffect(() => {
     oldValueRef.current = input.value;
-    window.addEventListener('beforeunload', handleClose)
     return () => {
-      window.removeEventListener('beforeunload', handleClose)
     };
   }, [])
 
@@ -27,10 +25,6 @@ const CustomTextArea = ({ input, meta: { error }, ...custom }) => {
         custom.onBlur();
         oldValueRef.current = event.target.value;
     }
-  }
-
-  const handleClose = () => {
-      custom.handleUnlockField()
   }
 
   return (

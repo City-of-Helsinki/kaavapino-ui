@@ -185,12 +185,14 @@ const FormField = ({
                 )
                 )
               }
-              {status.lockStyle && status.owner && (
+              {/* Commented out for now because uncertainty that should this be used
+             {status.lockStyle && status.owner && (
                 !status.fieldIdentifier && status.identifier && status.identifier === field.name &&(
                 <span className="input-editable">Kenttä on lukittu sinulle <IconLock></IconLock></span>
                 )
                 )
-              }
+              } 
+              */}
             </Label>
             <div className="input-header-icons">
               {updated && !isReadOnly && (

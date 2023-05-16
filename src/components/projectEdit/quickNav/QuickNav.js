@@ -25,7 +25,8 @@ export default function QuickNav({
   hasMissingFields,
   isResponsible,
   isAdmin,
-  phase
+  phase,
+  unlockAllFields
 }) {
   const [endPhaseError, setEndPhaseError] = useState(false)
   const [verifying, setVerifying] = useState(false)
@@ -161,6 +162,7 @@ export default function QuickNav({
     }
 
     setSelected(title)
+    unlockAllFields()
   }
 
   const handleAccordionTitleClick = titleIndex => {
@@ -176,12 +178,13 @@ export default function QuickNav({
         accordionTitle.scrollIntoView()
       }
     }
+    unlockAllFields()
   }
 
   return (
     <div className="quicknav-container">
       <div className="quicknav-navigation-section">
-        <h2 className="quicknav-title"> {t('quick-nav.title')}</h2>
+        <h2 tabIndex="0" id='quicknav-main-title' className="quicknav-title"> {t('quick-nav.title')}</h2>
         <div className="quicknav-content">
           {phases &&
             phases.map(phase => (

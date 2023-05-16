@@ -92,8 +92,9 @@ export const SET_LOCK_STATUS = "setLockStatus"
 export const SET_UNLOCK_STATUS = "setUnLockStatus"
 export const UNLOCK_ALL_FIELDS = "unlockAllFields"
 
-export const unlockAllFields = () => ({
-  type: UNLOCK_ALL_FIELDS
+export const unlockAllFields = (projectName) => ({
+  type: UNLOCK_ALL_FIELDS,
+  payload: {projectName}
 })
 
 export const setUnlockStatus = (lockData,lock) => ({

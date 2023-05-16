@@ -131,7 +131,8 @@ export const reducer = (state = initialState, action) => {
 
     case UNLOCK_ALL_FIELDS: {
       return{
-        ...state
+        ...state,
+        locked:{}
       }
     }
 
