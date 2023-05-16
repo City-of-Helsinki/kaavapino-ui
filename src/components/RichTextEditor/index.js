@@ -265,9 +265,9 @@ function RichTextEditor(props) {
         e.target.setAttribute('contenteditable',"true")
         e.target.firstChild.tabIndex = 0
         e.target.firstChild.focus()
-        if(e.target.tagName.toLowerCase() === 'p' && e.target.firstChild.tabIndex === 0){
-          e.target.blur();
-        }
+      }
+      if(e.target.tagName.toLowerCase() === 'p' && e.target.firstChild.tabIndex === 0){
+        e.target.blur();
       }
     }
   }
