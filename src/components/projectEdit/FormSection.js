@@ -23,7 +23,8 @@ const FormSection = ({
   formValues,
   syncronousErrors,
   submitErrors,
-  setRef
+  setRef,
+  unlockAllFields
 }) => {
   
   return (
@@ -49,6 +50,7 @@ const FormSection = ({
           submitErrors={submitErrors}
           className={field.highlight_group ? field.highlight_group : '' }
           setRef={setRef}
+          unlockAllFields={unlockAllFields}
         />
       ))}
     </Segment>

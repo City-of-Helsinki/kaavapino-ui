@@ -27,6 +27,7 @@ const FormField = ({
   handleSave,
   handleLockField,
   handleUnlockField,
+  unlockAllFields,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -86,6 +87,7 @@ const FormField = ({
             syncronousErrors={syncronousErrors}
             lockField={lockField}
             lockStatus={lockStatus}
+            unlockAllFields={unlockAllFields}
           />
         )
     }

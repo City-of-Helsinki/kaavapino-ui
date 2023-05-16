@@ -67,6 +67,7 @@ export const externalDocumentsApi = new Api('/v1/projects/:id/external_documents
 export const attributesApi = new Api('/v1/attributes/')
 export const attributesApiLock = new Api('/v1/attributes/lock/')
 export const attributesApiUnlock = new Api('/v1/attributes/unlock/')
+export const attributesApiUnlockAll = new Api('/v1/attributes/unlock_all/')
 export const personnelApi = new Api('/v1/personnel/')
 export const legendApi = new Api('/v1/legend/')
 

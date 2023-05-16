@@ -32,7 +32,8 @@ const FieldSet = ({
   handleUnlockField,
   field: { disable_fieldset_delete_add },
   lockField,
-  lockStatus
+  lockStatus,
+  unlockAllFields
 }) => {
 
   const handleBlur = () => {
@@ -195,6 +196,7 @@ const FieldSet = ({
                             }
                           }}
                           lockField={lockField}
+                          unlockAllFields={unlockAllFields}
                           validate={validate}
                         />
                         {showError && <div className="error-text">{showError}</div>}

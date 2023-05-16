@@ -16,7 +16,8 @@ import {
   fetchProjectDeadlines,
   initializeProject,
   getProjectSnapshot,
-  saveProjectBasePayload
+  saveProjectBasePayload,
+  unlockAllFields
 } from '../../actions/projectActions'
 import { fetchSchemas, setAllEditFields, clearSchemas } from '../../actions/schemaActions'
 import {
@@ -164,6 +165,10 @@ class ProjectEditPage extends Component {
     const projectName = this.props.currentProject.name;
     this.props.unlockProjectField(projectName,inputname)
   }
+  unlockAllFields = () => {
+    this.props.unlockAllFields()
+  }
+
   handleTimetableClose = () => {
     const { project, saveProjectTimetable } = this.props
     saveProjectTimetable()
@@ -400,6 +405,7 @@ class ProjectEditPage extends Component {
             isExpert={isExpert}
             setRef={this.setRef}
             setFormInitialized={this.setFormInitialized}
+            unlockAllFields={this.unlockAllFields}
           />
           {this.state.showEditFloorAreaForm && (
             <EditFloorAreaFormModal
@@ -446,6 +452,7 @@ const mapDispatchToProps = {
   fetchSchemas,
   lockProjectField,
   unlockProjectField,
+  unlockAllFields,
   saveProject,
   saveProjectFloorArea,
   saveProjectTimetable,

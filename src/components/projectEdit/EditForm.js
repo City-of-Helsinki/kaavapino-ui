@@ -76,7 +76,7 @@ class EditForm extends Component {
 
     return (
       <Form className="form-container" autoComplete="off">
-        <h2 id="accordion-title">{title}</h2>
+        <h2 tabIndex="0" id="accordion-title">{title}</h2>
         <div className="edit-form-buttons">
           {isExpert && (
             <FormButton
@@ -107,6 +107,7 @@ class EditForm extends Component {
             disabled={disabled}
             attributeData={attributeData}
             setRef={this.props.setRef}
+            unlockAllFields={this.props.unlockAllFields}
           />
         ))}
         <Button

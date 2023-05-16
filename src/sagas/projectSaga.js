@@ -32,6 +32,7 @@ import {
   setLockStatus,
   LOCK_PROJECT_FIELD,
   UNLOCK_PROJECT_FIELD,
+  UNLOCK_ALL_FIELDS,
   FETCH_PROJECTS,
   FETCH_OWN_PROJECTS,
   fetchProjectsSuccessful,
@@ -115,6 +116,7 @@ import {
   legendApi,
   attributesApiLock,
   attributesApiUnlock,
+  attributesApiUnlockAll
 } from '../utils/api'
 import { usersSelector } from '../selectors/userSelector'
 import {
@@ -144,6 +146,7 @@ export default function* projectSaga() {
     takeLatest(SET_UNLOCK_STATUS, setUnlockStatus),
     takeLatest(LOCK_PROJECT_FIELD, lockProjectField),
     takeLatest(UNLOCK_PROJECT_FIELD, unlockProjectField),
+    takeLatest(UNLOCK_ALL_FIELDS,unlockAllFields),
     takeLatest(CHANGE_PROJECT_PHASE, changeProjectPhase),
     takeLatest(PROJECT_FILE_UPLOAD, projectFileUpload),
     takeLatest(PROJECT_FILE_REMOVE, projectFileRemove),
@@ -647,6 +650,23 @@ function* saveProjectTimetable() {
   }
 }
 
+function* unlockAllFields() {
+  const users = yield select(usersSelector)
+  const userId = yield select(userIdSelector)
+  const adId = authUtils.getAdId(userId,users)
+  try {
+    yield call(
+     attributesApiUnlockAll.post,
+     {adId}
+   )
+   console.log("unlockAll")
+   //yield put(setUnlockStatus(adId))
+ }
+ catch (e) {
+   yield put(error(e))
+ }
+}
+
 function* unlockProjectField(data) {
   const project_name = data.payload.projectName;
   let attribute_identifier = data.payload.inputName;
@@ -660,7 +680,7 @@ function* unlockProjectField(data) {
         attribute_identifier}
       )
       const lockData = {attribute_lock:{project_name:project_name,attribute_identifier:attribute_identifier}}
-
+      console.log("unlock")
       yield put(setUnlockStatus(lockData,true))
     }
     catch (e) {

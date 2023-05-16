@@ -93,7 +93,7 @@ class CustomField extends Component {
   }
 
   renderRichText = props => {
-    const { handleBlurSave, handleLockField, handleUnlockField, meta, formName, lockField } = this.props
+    const { handleBlurSave, handleLockField, handleUnlockField, meta, formName, lockField, unlockAllFields } = this.props
     return (
       <RichTextEditor
         lockField={lockField}
@@ -101,6 +101,7 @@ class CustomField extends Component {
         onChange={props.onChange}
         onFocus={handleLockField}
         handleUnlockField={handleUnlockField}
+        unlockAllFields={unlockAllFields}
         meta={meta}
         {...props}
         formName={formName}
@@ -110,8 +111,8 @@ class CustomField extends Component {
   }
 
   renderRichTextShort = props => {
-    const { handleBlurSave, handleLockField, handleUnlockField, meta, setRef, lockField } = this.props
-    return <RichTextEditor lockField={lockField} setRef={setRef} onBlur={handleBlurSave} onChange={props.onChange} onFocus={handleLockField} handleUnlockField={handleUnlockField} meta={meta} {...props} />
+    const { handleBlurSave, handleLockField, handleUnlockField, meta, setRef, lockField,unlockAllFields } = this.props
+    return <RichTextEditor lockField={lockField} setRef={setRef} onBlur={handleBlurSave} onChange={props.onChange} onFocus={handleLockField} handleUnlockField={handleUnlockField} unlockAllFields={unlockAllFields} meta={meta} {...props} />
   }
 
   renderDate = props => {
@@ -246,7 +247,8 @@ class CustomField extends Component {
       formName,
       updated,
       lockField,
-      lockStatus
+      lockStatus,
+      unlockAllFields
     } = this.props
 
     return (
@@ -270,6 +272,7 @@ class CustomField extends Component {
         handleLockField={handleLockField}
         handleUnlockField={handleUnlockField}
         lockStatus={lockStatus}
+        unlockAllFields={unlockAllFields}
       />
     )
   }

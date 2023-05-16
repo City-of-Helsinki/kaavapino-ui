@@ -3,6 +3,7 @@ import {
   SET_LOCK_STATUS,
   LOCK_PROJECT_FIELD,
   UNLOCK_PROJECT_FIELD,
+  UNLOCK_ALL_FIELDS,
   FETCH_PROJECTS_SUCCESSFUL,
   FETCH_OWN_PROJECTS_SUCCESSFUL,
   FETCH_PROJECTS,
@@ -123,6 +124,12 @@ export const reducer = (state = initialState, action) => {
     }
 
     case UNLOCK_PROJECT_FIELD: {
+      return{
+        ...state
+      }
+    }
+
+    case UNLOCK_ALL_FIELDS: {
       return{
         ...state
       }
