@@ -32,6 +32,7 @@ import {
   setLockStatus,
   LOCK_PROJECT_FIELD,
   UNLOCK_PROJECT_FIELD,
+  UNLOCK_ALL_FIELDS,
   FETCH_PROJECTS,
   FETCH_OWN_PROJECTS,
   fetchProjectsSuccessful,
@@ -102,6 +103,7 @@ import { startSubmit, stopSubmit, setSubmitSucceeded } from 'redux-form'
 import { error } from '../actions/apiActions'
 import { setAllEditFields } from '../actions/schemaActions'
 import projectUtils from '../utils/projectUtils'
+import authUtils from '../utils/authUtils'
 import {
   projectApi,
   projectDeadlinesApi,
@@ -114,6 +116,7 @@ import {
   legendApi,
   attributesApiLock,
   attributesApiUnlock,
+  attributesApiUnlockAll
 } from '../utils/api'
 import { usersSelector } from '../selectors/userSelector'
 import {
@@ -143,6 +146,7 @@ export default function* projectSaga() {
     takeLatest(SET_UNLOCK_STATUS, setUnlockStatus),
     takeLatest(LOCK_PROJECT_FIELD, lockProjectField),
     takeLatest(UNLOCK_PROJECT_FIELD, unlockProjectField),
+    takeLatest(UNLOCK_ALL_FIELDS,unlockAllFields),
     takeLatest(CHANGE_PROJECT_PHASE, changeProjectPhase),
     takeLatest(PROJECT_FILE_UPLOAD, projectFileUpload),
     takeLatest(PROJECT_FILE_REMOVE, projectFileRemove),
@@ -198,9 +202,10 @@ function* getProject({ payload: projectId }) {
   }
 }
 
-function getQueryValues(page_size,page,searchQuery,sortField,sortDir,status,userId){
+function getQueryValues(page_size,page,searchQuery,sortField,sortDir,status,name,adId){
   let query
-  
+  let searchValues = []
+
   query = {
     page: page + 1,
     ordering: sortDir === 1 ? sortField : '-'+sortField,
@@ -208,8 +213,12 @@ function getQueryValues(page_size,page,searchQuery,sortField,sortDir,status,user
     page_size: page_size ? page_size : 10
   }
 
-  if(userId){
-    query.users = userId
+  if(name === "own"){
+    //Own projects needs to always show the current users projects
+    if(!searchValues.includes(adId)){
+      searchValues.push(adId)
+      query.includes_users = searchValues
+    }
   }
 
   if (searchQuery.length > 0) {
@@ -220,16 +229,26 @@ function getQueryValues(page_size,page,searchQuery,sortField,sortDir,status,user
       query.department = searchQuery[1]
     }
     if(searchQuery[2].length > 0){
-      query.includes_users = searchQuery[2]
+      if(name === "own"){
+        //Own projects needs to always show the current users projects
+        //Add current user to other user filter values
+        searchValues = searchValues.concat(searchQuery[2])
+        query.includes_users = searchValues
+      }
+      else{
+        query.includes_users = searchQuery[2]
+      }
     }
   }
-  
   return query
 }
 
 function* fetchOnholdProjects({ payload }) {
   try {
-    const query = getQueryValues(payload.page_size,payload.page,payload.searchQuery,payload.sortField,payload.sortDir,"onhold",false)
+    const users = yield select(usersSelector)
+    const userId = yield select(userIdSelector)
+    const adId = authUtils.getAdId(userId,users)
+    const query = getQueryValues(payload.page_size,payload.page,payload.searchQuery,payload.sortField,payload.sortDir,"onhold","onhold",adId)
     const onholdProjects = yield call(
       projectApi.get,
       {
@@ -250,7 +269,10 @@ function* fetchOnholdProjects({ payload }) {
 }
 function* fetchArchivedProjects({ payload }) {
   try {
-    const query = getQueryValues(payload.page_size,payload.page,payload.searchQuery,payload.sortField,payload.sortDir,"archived",false)
+    const users = yield select(usersSelector)
+    const userId = yield select(userIdSelector)
+    const adId = authUtils.getAdId(userId,users)
+    const query = getQueryValues(payload.page_size,payload.page,payload.searchQuery,payload.sortField,payload.sortDir,"archived","archived",adId)
     const archivedProjects = yield call(
       projectApi.get,
       {
@@ -272,7 +294,10 @@ function* fetchArchivedProjects({ payload }) {
 
 function* fetchProjects({ payload }) {
   try {
-    const query = getQueryValues(payload.page_size,payload.page,payload.searchQuery,payload.sortField,payload.sortDir,"active",false)
+    const users = yield select(usersSelector)
+    const userId = yield select(userIdSelector)
+    const adId = authUtils.getAdId(userId,users)
+    const query = getQueryValues(payload.page_size,payload.page,payload.searchQuery,payload.sortField,payload.sortDir,"active","all",adId)
 
     const projects = yield call(
       projectApi.get,
@@ -297,8 +322,10 @@ function* fetchProjects({ payload }) {
 
 function* fetchOwnProjects({ payload }) {
   try {
+    const users = yield select(usersSelector)
     const userId = yield select(userIdSelector)
-    const query = getQueryValues(payload.page_size,payload.page,payload.searchQuery,payload.sortField,payload.sortDir,"active",userId)
+    const adId = authUtils.getAdId(userId,users)
+    const query = getQueryValues(payload.page_size,payload.page,payload.searchQuery,payload.sortField,payload.sortDir,"active","own",adId)
 
     const projects = yield call(
       projectApi.get,
@@ -471,7 +498,7 @@ const getChangedAttributeData = (values, initial, sections) => {
       return
     }
 
-    if (values[key].length === 0 || values[key] === '') {
+    if (values[key] === null || values[key].length === 0 || values[key] === '') {
       attribute_data[key] = null
     } else {
       attribute_data[key] = values[key]
@@ -623,6 +650,19 @@ function* saveProjectTimetable() {
   }
 }
 
+function* unlockAllFields(data) {
+  const project_name = data.payload.projectName;
+  try {
+    yield call(
+     attributesApiUnlockAll.post,
+     {project_name}
+   )
+ }
+ catch (e) {
+   yield put(error(e))
+ }
+}
+
 function* unlockProjectField(data) {
   const project_name = data.payload.projectName;
   let attribute_identifier = data.payload.inputName;
@@ -636,7 +676,6 @@ function* unlockProjectField(data) {
         attribute_identifier}
       )
       const lockData = {attribute_lock:{project_name:project_name,attribute_identifier:attribute_identifier}}
-
       yield put(setUnlockStatus(lockData,true))
     }
     catch (e) {

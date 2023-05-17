@@ -16,7 +16,8 @@ import {
   fetchProjectDeadlines,
   initializeProject,
   getProjectSnapshot,
-  saveProjectBasePayload
+  saveProjectBasePayload,
+  unlockAllFields
 } from '../../actions/projectActions'
 import { fetchSchemas, setAllEditFields, clearSchemas } from '../../actions/schemaActions'
 import {
@@ -81,6 +82,7 @@ class ProjectEditPage extends Component {
   }
   componentDidMount() {
     window.addEventListener('resize', this.handleResize)
+    window.addEventListener("click", this.checkClickedElement);
 
     if (window.innerWidth < 720) {
       this.setState({
@@ -113,11 +115,24 @@ class ProjectEditPage extends Component {
         this.setState({currentEmail});
       }
     }
+
+    this.unlockAllFields()
   }
 
   componentWillUnmount() {
     this.props.clearSchemas()
+    window.removeEventListener("click", this.checkClickedElement);
+    window.removeEventListener('resize', this.handleResize)
   }
+
+   checkClickedElement = (e) => {
+    if(e.target.className){
+      //Lose focus and unclock if select button is clicked
+      if(e.target.className.includes("Select-module") || e.target.parentNode.className.includes("Select-module")){
+        this.unlockAllFields()
+      }
+    }
+  };
 
   scroll() {
     const search = this.props.location.search
@@ -144,8 +159,11 @@ class ProjectEditPage extends Component {
   }
 
   handleSave = () => {
+    const projectName = this.props.currentProject.name;
     this.props.saveProject()
+    this.props.unlockAllFields(projectName)
   }
+
   handleAutoSave = () => {
     if (this.state.showEditFloorAreaForm || this.state.showEditProjectTimetableForm) {
       return
@@ -156,14 +174,22 @@ class ProjectEditPage extends Component {
     }
     this.props.saveProject()
   }
+
   handleLockField = (inputname) => {
     const projectName = this.props.currentProject.name;
     this.props.lockProjectField(projectName,inputname)
   }
+
   handleUnlockField = (inputname) => {
     const projectName = this.props.currentProject.name;
     this.props.unlockProjectField(projectName,inputname)
   }
+
+  unlockAllFields = () => {
+    const projectName = this.props.currentProject.name;
+    this.props.unlockAllFields(projectName)
+  }
+
   handleTimetableClose = () => {
     const { project, saveProjectTimetable } = this.props
     saveProjectTimetable()
@@ -359,6 +385,7 @@ class ProjectEditPage extends Component {
               isResponsible={isResponsible}
               isAdmin={isAdmin}
               phase={phase}
+              unlockAllFields={this.unlockAllFields}
             />
             <NavigationPrompt
               when={
@@ -400,6 +427,7 @@ class ProjectEditPage extends Component {
             isExpert={isExpert}
             setRef={this.setRef}
             setFormInitialized={this.setFormInitialized}
+            unlockAllFields={this.unlockAllFields}
           />
           {this.state.showEditFloorAreaForm && (
             <EditFloorAreaFormModal
@@ -446,6 +474,7 @@ const mapDispatchToProps = {
   fetchSchemas,
   lockProjectField,
   unlockProjectField,
+  unlockAllFields,
   saveProject,
   saveProjectFloorArea,
   saveProjectTimetable,

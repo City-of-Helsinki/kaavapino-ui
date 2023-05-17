@@ -32,7 +32,8 @@ const FieldSet = ({
   handleUnlockField,
   field: { disable_fieldset_delete_add },
   lockField,
-  lockStatus
+  lockStatus,
+  unlockAllFields
 }) => {
 
   const handleBlur = () => {
@@ -146,14 +147,14 @@ const FieldSet = ({
                                 )
                               )
                             }
-                            {lockStatus &&(
+                            {/* Temp commented out incase it is decided that this was a good info {lockStatus &&(
                               lockStatus.lockStyle && lockStatus.owner && (
                                   lockStatus.fieldIdentifier && lockStatus.fieldIdentifier === set + "." + field.name &&(
                                   <span className="input-editable">Kenttä on lukittu sinulle <IconLock></IconLock></span>
                                   )
                                 )
                               )
-                            }
+                            } */}
                           </Label>
                           <div className="input-header-icons">
                             {fieldUpdated && !isReadOnly && (
@@ -195,6 +196,7 @@ const FieldSet = ({
                             }
                           }}
                           lockField={lockField}
+                          unlockAllFields={unlockAllFields}
                           validate={validate}
                         />
                         {showError && <div className="error-text">{showError}</div>}

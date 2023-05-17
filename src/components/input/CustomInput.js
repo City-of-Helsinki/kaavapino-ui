@@ -11,10 +11,9 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   const [readonly, setReadOnly] = useState(false)
 
   useEffect(() => {
-    window.addEventListener('beforeunload', handleClose)
     oldValueRef.current = input.value;
     return () => {
-      window.removeEventListener('beforeunload', handleClose)
+
     };
   }, [])
 
@@ -90,13 +89,6 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       input.onChange(event.target.value, input.name)
     }
   }, [input.name, input.value]);
-
-  const handleClose = () => {
-    if (!readonly) {
-      //Unlock if tab closed
-      custom.handleUnlockField(input.name)
-    }
-  }
 
   return (
     <TextInput
