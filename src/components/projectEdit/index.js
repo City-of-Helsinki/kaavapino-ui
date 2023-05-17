@@ -82,6 +82,7 @@ class ProjectEditPage extends Component {
   }
   componentDidMount() {
     window.addEventListener('resize', this.handleResize)
+    window.addEventListener("click", this.checkClickedElement);
 
     if (window.innerWidth < 720) {
       this.setState({
@@ -120,7 +121,18 @@ class ProjectEditPage extends Component {
 
   componentWillUnmount() {
     this.props.clearSchemas()
+    window.removeEventListener("click", this.checkClickedElement);
+    window.removeEventListener('resize', this.handleResize)
   }
+
+   checkClickedElement = (e) => {
+    if(e.target.className){
+      //Lose focus and unclock if select button is clicked
+      if(e.target.className.includes("Select-module") || e.target.parentNode.className.includes("Select-module")){
+        this.unlockAllFields()
+      }
+    }
+  };
 
   scroll() {
     const search = this.props.location.search

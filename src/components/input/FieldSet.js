@@ -147,14 +147,14 @@ const FieldSet = ({
                                 )
                               )
                             }
-                            {lockStatus &&(
+                            {/* Temp commented out incase it is decided that this was a good info {lockStatus &&(
                               lockStatus.lockStyle && lockStatus.owner && (
                                   lockStatus.fieldIdentifier && lockStatus.fieldIdentifier === set + "." + field.name &&(
                                   <span className="input-editable">Kenttä on lukittu sinulle <IconLock></IconLock></span>
                                   )
                                 )
                               )
-                            }
+                            } */}
                           </Label>
                           <div className="input-header-icons">
                             {fieldUpdated && !isReadOnly && (

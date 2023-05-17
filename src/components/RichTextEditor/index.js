@@ -81,6 +81,7 @@ function RichTextEditor(props) {
   const showCounter = useRef(false)
   const [currentTimeout, setCurrentTimeout] = useState(0)
   const [readonly, setReadOnly] = useState(false)
+  const [tabOut, setTabout] = useState(false)
   const inputValue = useRef('')
   const fieldFormName = formName ? formName : EDIT_PROJECT_FORM
 
@@ -103,6 +104,7 @@ function RichTextEditor(props) {
   const oldValueRef = useRef('');
 
   document.onvisibilitychange = () => {
+    //If navigated to different tab/window/screen blur and unclock
     if(document.hidden){
       handleBlur()
       onBlur()
@@ -261,20 +263,29 @@ function RichTextEditor(props) {
 
   const onKeyDown = (e) => {
     if (e.key === "Tab") {
-      if(e.target.className === "ql-editor"){
+      if(tabOut){
+        e.target.blur();
+        e.preventDefault();
+        handleBlur()
+        setTabout(false)
+      }
+      else if(e.target.tagName === 'P' && e.target.tabIndex === 0){
+        e.target.setAttribute('contenteditable',"true")
+        e.target.focus();
+        handleFocus()
+        setTabout(true)
+      }
+      else if(e.target.className === "ql-editor"){
         e.target.setAttribute('contenteditable',"true")
         e.target.firstChild.tabIndex = 0
         e.target.firstChild.focus()
-      }
-      if(e.target.tagName.toLowerCase() === 'p' && e.target.firstChild.tabIndex === 0){
-        e.target.blur();
+        handleFocus()
       }
     }
   }
 
   return (
     <div
-      tabIndex="0"
       role="textbox"
       className={`rich-text-editor-wrapper ${disabled ? 'rich-text-disabled' : ''}`}
       aria-label="tooltip"

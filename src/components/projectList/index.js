@@ -179,6 +179,7 @@ class ProjectListPage extends Component {
 
     return (
       <List
+        key={'own'}
         showGraph={this.state.showGraph}
         projectSubtypes={projectSubtypes}
         users={users}
@@ -208,6 +209,7 @@ class ProjectListPage extends Component {
 
     return (
       <List
+        key={'all'}
         showGraph={this.state.showGraph}
         toggleSearch={this.toggleSearch}
         projectSubtypes={projectSubtypes}
@@ -236,6 +238,7 @@ class ProjectListPage extends Component {
 
     return (
       <List
+        key={'onhold'}
         showGraph={this.state.showGraph}
         projectSubtypes={projectSubtypes}
         users={users}
@@ -263,6 +266,7 @@ class ProjectListPage extends Component {
 
     return (
       <List
+        key={'archived'}
         showGraph={this.state.showGraph}
         projectSubtypes={projectSubtypes}
         users={users}
@@ -270,7 +274,7 @@ class ProjectListPage extends Component {
         total={totalArchivedProjects}
         setFilter={this.setFilter}
         isExpert={isExpert}
-        newProjectTab={'onhold'}
+        newProjectTab={'archived'}
         modifyProject={this.modifyProject}
         sortField={this.sortField}
       />
@@ -339,7 +343,7 @@ class ProjectListPage extends Component {
     ) : (
       <Tabs>
         <Tabs.TabList>
-          <Tabs.Tab>{this.getTotalProjectsTitle()}</Tabs.Tab>
+          <Tabs.Tab key={1}>{this.getTotalProjectsTitle()}</Tabs.Tab>
         </Tabs.TabList>
       </Tabs>
     )

@@ -86,20 +86,20 @@ class List extends Component {
       return null
     }
   }
-    //{key:this.props.t('projects.table.project'),headerName:this.props.t('projects.table.project'),isSortable: true},
+  //{key:this.props.t('projects.table.priority'),headerName:this.props.t('projects.table.priority'),isSortable: true},
   headerItems = [
-    {key:this.props.t('projects.table.priority'),headerName:this.props.t('projects.table.priority'),isSortable: true},
     {key:this.props.t('projects.table.name'),headerName:this.props.t('projects.table.name'),isSortable: true},
+    {key:this.props.t('projects.table.project'),headerName:this.props.t('projects.table.project'),isSortable: true},
     {key:this.props.t('projects.table.pino-number'),headerName:this.props.t('projects.table.pino-number'),isSortable: true,sortIconType: 'other'},
     {key:this.props.t('projects.table.size'),headerName:this.props.t('projects.table.size'),isSortable: true},
     {key:this.props.t('projects.table.responsible'),headerName:this.props.t('projects.table.responsible'),isSortable: true},
     {key:this.props.t('projects.table.phase'),headerName:this.props.t('projects.table.phase'),isSortable: true},
     {key:this.props.t('projects.table.modified'),headerName:this.props.t('projects.table.modified'),isSortable: true,sortIconType: 'other'}
   ]
-    //this.props.t('projects.table.project'),
+    //this.props.t('projects.table.priority'),
   headerItemsMobile = [
-    this.props.t('projects.table.priority'),
     this.props.t('projects.table.name'),
+    this.props.t('projects.table.project'),
     this.props.t('projects.table.pino-number'),
     this.props.t('projects.table.size'),
     this.props.t('projects.table.responsible'),
@@ -128,8 +128,7 @@ class List extends Component {
 
     items.forEach(
       (
-        { attribute_data, name, id, user, subtype, phase, pino_number, deadlines, onhold, priority, modified_at },
-        i
+        { attribute_data, name, id, user, subtype, phase, pino_number, deadlines, onhold, priority, modified_at }
       ) => {
         let prio
         if(priority){
@@ -152,7 +151,7 @@ class List extends Component {
         //Mobile
         projects.push(
           <ListItem
-            key={i}
+            key={pino_number}
             modifyProject={modifyProject}
             item={listItem}
             showGraph={this.props.showGraph}
@@ -199,7 +198,7 @@ class List extends Component {
             ariaLabelSortButtonUnset="Not sorted"
             ariaLabelSortButtonAscending="Sorted in ascending order"
             ariaLabelSortButtonDescending="Sorted in descending order"
-            indexKey="id"
+            indexKey={this.props.t('projects.table.pino-number')}
             renderIndexCol={false}
             cols={this.headerItems}
             rows={rows}
