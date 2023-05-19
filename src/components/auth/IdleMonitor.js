@@ -4,14 +4,16 @@ import InactiveMessage from './InactiveMessage';
 import { useIsMount } from '../../hooks/IsMounted';
 import { useHistory } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
+import userManager from '../../utils/userManager'
+import { processSilentRenew } from 'redux-oidc'
 
 
 function IdleMonitor() {
   const history = useHistory();
   const isMount = useIsMount();
   const [idleModal, setIdleModal] = useState(false);
-  let idleTimeout = 1000 * 50 * 60;  //50 minute
-  let idleLogout = 1000 * 60 * 60; //60 minutes
+  let idleTimeout = 1000 * 15 * 60;  //15 minute
+  let idleLogout = 1000 * 10 * 60; //10 minutes
   let idleEvent;
   let idleLogoutEvent;
 
@@ -38,6 +40,14 @@ function IdleMonitor() {
     setIdleModal(false);
     clearTimeout(idleEvent);
     clearTimeout(idleLogoutEvent);
+    console.log("extend session")
+    userManager.signinSilent()
+    .then(() => {
+      processSilentRenew()
+    })
+    .catch((error) => {
+        console.error('Error extending session',error)
+    })
   }
 
   const logOut = () => {
@@ -73,7 +83,7 @@ function IdleMonitor() {
   //Toast message components
   const toastWarn = (idleModal) => toast.warning(
     <InactiveMessage idleModal={idleModal} extendSession={extendSession} />, 
-    {autoClose:100000,pauseOnHover: false,position: toast.POSITION.BOTTOM_LEFT }
+    {autoClose:600000,pauseOnHover: false,position: toast.POSITION.BOTTOM_LEFT }
   );
   
   const toastSuccess = (idleModal) => toast.success(
