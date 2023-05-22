@@ -4,6 +4,7 @@ import { Provider } from 'react-redux'
 import { OidcProvider, processSilentRenew } from 'redux-oidc'
 import { init as sentryInit } from '@sentry/browser'
 import ReduxToastr from 'react-redux-toastr'
+import { ToastContainer } from 'react-toastify';
 import App from './components/App'
 import store from './store'
 import userManager from './utils/userManager'
@@ -45,6 +46,7 @@ if (window.location.pathname === '/silent-renew') {
             transitionOut="fadeOut"
             timeOut={7500}
           />
+          <ToastContainer />
           <Suspense fallback='Loading'>
             <App />
           </Suspense>

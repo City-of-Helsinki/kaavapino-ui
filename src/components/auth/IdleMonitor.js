@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import InactiveMessage from './InactiveMessage';
 import { useIsMount } from '../../hooks/IsMounted';
 import { useHistory } from "react-router-dom";
@@ -103,12 +103,6 @@ function IdleMonitor() {
     <InactiveMessage idleModal={idleModal} />, 
     {autoClose:3000,pauseOnHover: false,position: toast.POSITION.BOTTOM_LEFT}
   );
-
-  return (
-    <>
-      <ToastContainer />
-    </>
-  )
 
 }
 
