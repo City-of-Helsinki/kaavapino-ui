@@ -3,16 +3,16 @@ import { ToastContainer, toast } from 'react-toastify';
 import InactiveMessage from './InactiveMessage';
 import { useIsMount } from '../../hooks/IsMounted';
 import { useHistory } from "react-router-dom";
-import 'react-toastify/dist/ReactToastify.css';
+import 'react-toastify/dist/ReactToastify.min.css';
 import userManager from '../../utils/userManager'
-import { processSilentRenew } from 'redux-oidc'
+//import { processSilentRenew } from 'redux-oidc'
 
 
 function IdleMonitor() {
   const history = useHistory();
   const isMount = useIsMount();
   const [idleModal, setIdleModal] = useState(false);
-  let idleTimeout = 1000 * 15 * 60;  //15 minute
+  let idleTimeout = 1000 * 1 * 60;  //1 minute
   let idleLogout = 1000 * 10 * 60; //10 minutes
   let idleEvent;
   let idleLogoutEvent;
@@ -36,18 +36,31 @@ function IdleMonitor() {
     idleLogoutEvent = setTimeout(() => logOut(), idleLogout); //Call logout if user did not react to warning.
   };
 
+/*   async function getUser() {
+    const user = await userManager.getUser();
+    if (!user) {
+      console.log("not user")
+      return await userManager.signinSilentCallback();
+    }
+    console.log(user)
+   // userManager.storeUser(user)
+    //userManager.signinSilent()
+    return user;
+  } */
+
   const extendSession = () => {
     setIdleModal(false);
     clearTimeout(idleEvent);
     clearTimeout(idleLogoutEvent);
     console.log("extend session")
+    //userManager.signinSilentCallback();
     userManager.signinSilent()
-    .then(() => {
+/*     getUser().then(() => {
       processSilentRenew()
     })
     .catch((error) => {
         console.error('Error extending session',error)
-    })
+    }) */
   }
 
   const logOut = () => {

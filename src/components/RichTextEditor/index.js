@@ -108,7 +108,9 @@ function RichTextEditor(props) {
     if(document.hidden){
       handleBlur()
       onBlur()
-      document.getElementById("quicknav-main-title").focus()
+      if(document.getElementById("quicknav-main-title")){
+        document.getElementById("quicknav-main-title").focus()
+      }
       unlockAllFields()
     }
   }

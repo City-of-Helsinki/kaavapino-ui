@@ -12,6 +12,7 @@ import 'semantic-ui-css/semantic.min.css'
 import 'hds-core'
 import './index.css'
 import './i18n'
+import 'react-toastify/dist/ReactToastify.min.css';
 
 // Software uses semanctic-ui-react as a global style. In the end of 2021 the idea was to change components use
 // hds-rect. However since hds-react implementation was only started then, it did not have all the required

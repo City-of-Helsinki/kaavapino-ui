@@ -1,7 +1,6 @@
 import { createUserManager } from 'redux-oidc'
-import { WebStorageStateStore, InMemoryWebStorage } from 'oidc-client'
+import { WebStorageStateStore, InMemoryWebStorage, Log } from 'oidc-client'
 import { logout } from '../actions/authActions'
-import { Log } from 'oidc-client';
 
 Log.logger = console;
 Log.level = Log.DEBUG;
