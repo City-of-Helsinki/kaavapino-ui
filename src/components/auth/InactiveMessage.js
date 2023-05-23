@@ -70,6 +70,8 @@ function InactiveMessage(props) {
     // Start timer on componentDidMount
     useEffect(() => {
         clearTimer(getDeadTime());
+        return () => {
+        }
     }, []);
     //Show text and elements based on idleModal prop from IdleMonitor
     if (idleModal) {
@@ -89,4 +91,4 @@ function InactiveMessage(props) {
     }
 }
 
-export default InactiveMessage
+export default InactiveMessage;

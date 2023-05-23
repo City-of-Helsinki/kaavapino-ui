@@ -1,6 +1,9 @@
 import { createUserManager } from 'redux-oidc'
-import { WebStorageStateStore, InMemoryWebStorage } from 'oidc-client'
+import { WebStorageStateStore, InMemoryWebStorage, Log } from 'oidc-client'
 import { logout } from '../actions/authActions'
+
+Log.logger = console;
+Log.level = Log.DEBUG;
 
  const baseUrl = `${window.location.protocol}//${window.location.hostname}${
   window.location.port ? `:${window.location.port}` : ''
@@ -18,6 +21,8 @@ const userManagerConfig = {
   stateStore: new WebStorageStateStore({ store: localStorage }),
   userStore: new WebStorageStateStore({ store: localStorage }),
   includeIdTokenInSilentRenew:true
+  //For debugging, set token renew time to 1min and after that should silent renew
+  //accessTokenExpiringNotificationTime: 59.65 * 60
 }
 
 if (process.env.NODE_ENV === 'test') {
