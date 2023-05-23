@@ -10,7 +10,7 @@ function IdleMonitor() {
   const history = useHistory();
   const isMount = useIsMount();
   const [idleModal, setIdleModal] = useState(false);
-  let idleTimeout = 1000 * 1 * 10;  //1 minute
+  let idleTimeout = 1000 * 15 * 60;  //15 minute
   let idleLogout = 1000 * 10 * 60; //10 minutes
   let idleEvent;
   let idleLogoutEvent;
@@ -83,7 +83,7 @@ function IdleMonitor() {
 
   return (
     <div>
-      <ToastContainer />
+      <ToastContainer onClick={() => extendSession()} closeButton={false}/>
     </div>
   )
 

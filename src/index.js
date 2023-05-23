@@ -19,7 +19,6 @@ import './i18n'
 // still missing. When all required components are available, semantic-ui-react could be removed and use hds-react
 // as a common style. 
 if (window.location.pathname === '/silent-renew') {
-  console.log("silent renew")
   processSilentRenew()
 } else {
   // Initialize axios
