@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
 import InactiveMessage from './InactiveMessage';
 import { useIsMount } from '../../hooks/IsMounted';
 import { useHistory } from "react-router-dom";
-import 'react-toastify/dist/ReactToastify.min.css';
-import userManager from '../../utils/userManager'
-//import { processSilentRenew } from 'redux-oidc'
+import { processSilentRenew } from 'redux-oidc'
+import toast, { Toaster } from 'react-hot-toast';
 
 
 function IdleMonitor() {
   const history = useHistory();
   const isMount = useIsMount();
   const [idleModal, setIdleModal] = useState(false);
-  let idleTimeout = 1000 * 1 * 60;  //1 minute
+  let idleTimeout = 1000 * 1 * 30;  //1 minute
   let idleLogout = 1000 * 10 * 60; //10 minutes
   let idleEvent;
   let idleLogoutEvent;
@@ -36,31 +34,12 @@ function IdleMonitor() {
     idleLogoutEvent = setTimeout(() => logOut(), idleLogout); //Call logout if user did not react to warning.
   };
 
-/*   async function getUser() {
-    const user = await userManager.getUser();
-    if (!user) {
-      console.log("not user")
-      return await userManager.signinSilentCallback();
-    }
-    console.log(user)
-   // userManager.storeUser(user)
-    //userManager.signinSilent()
-    return user;
-  } */
-
   const extendSession = () => {
     setIdleModal(false);
+    toast.dismiss();
     clearTimeout(idleEvent);
     clearTimeout(idleLogoutEvent);
-    console.log("extend session")
-    //userManager.signinSilentCallback();
-    userManager.signinSilent()
-/*     getUser().then(() => {
-      processSilentRenew()
-    })
-    .catch((error) => {
-        console.error('Error extending session',error)
-    }) */
+    processSilentRenew()
   }
 
   const logOut = () => {
@@ -94,15 +73,21 @@ function IdleMonitor() {
   }, []);
 
   //Toast message components
-  const toastWarn = (idleModal) => toast.warning(
+  const toastWarn = (idleModal) => toast.error(
     <InactiveMessage idleModal={idleModal} extendSession={extendSession} />, 
-    {autoClose:600000,pauseOnHover: false,position: toast.POSITION.BOTTOM_LEFT }
+    {duration:600000,position: 'bottom-left' }
   );
   
   const toastSuccess = (idleModal) => toast.success(
     <InactiveMessage idleModal={idleModal} />, 
-    {autoClose:3000,pauseOnHover: false,position: toast.POSITION.BOTTOM_LEFT}
+    {duration:1000,position: 'bottom-left'}
   );
+
+  return (
+    <div>
+      <Toaster />
+    </div>
+  )
 
 }
 

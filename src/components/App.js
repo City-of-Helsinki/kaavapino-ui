@@ -31,8 +31,6 @@ import Overview from './overview'
 import Terms from './common/Terms'
 import IdleMonitor from './auth/IdleMonitor'
 import { withTranslation } from 'react-i18next'
-import { ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.min.css'
 class App extends Component {
   componentDidUpdate(prevProps) {
     if (!prevProps.apiInitialized && this.props.apiInitialized) {
@@ -132,7 +130,6 @@ class App extends Component {
               />
               <Redirect to="/error/404" />
             </Switch>
-            <ToastContainer />
             <IdleMonitor/>
             <CustomFooter />
           </ProtectedRoute>
