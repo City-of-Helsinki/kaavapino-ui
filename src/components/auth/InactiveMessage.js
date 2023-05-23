@@ -69,7 +69,6 @@ function InactiveMessage(props) {
   
     // Start timer on componentDidMount
     useEffect(() => {
-        console.log("clear timer")
         clearTimer(getDeadTime());
         return () => {
         }

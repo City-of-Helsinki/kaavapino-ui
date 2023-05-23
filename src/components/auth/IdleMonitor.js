@@ -2,15 +2,15 @@ import React, { useState, useEffect } from 'react';
 import InactiveMessage from './InactiveMessage';
 import { useIsMount } from '../../hooks/IsMounted';
 import { useHistory } from "react-router-dom";
-import { processSilentRenew } from 'redux-oidc'
-import toast, { Toaster } from 'react-hot-toast';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.min.css';
 
 
 function IdleMonitor() {
   const history = useHistory();
   const isMount = useIsMount();
   const [idleModal, setIdleModal] = useState(false);
-  let idleTimeout = 1000 * 1 * 30;  //1 minute
+  let idleTimeout = 1000 * 1 * 10;  //1 minute
   let idleLogout = 1000 * 10 * 60; //10 minutes
   let idleEvent;
   let idleLogoutEvent;
@@ -36,10 +36,8 @@ function IdleMonitor() {
 
   const extendSession = () => {
     setIdleModal(false);
-    toast.dismiss();
     clearTimeout(idleEvent);
     clearTimeout(idleLogoutEvent);
-    processSilentRenew()
   }
 
   const logOut = () => {
@@ -73,19 +71,19 @@ function IdleMonitor() {
   }, []);
 
   //Toast message components
-  const toastWarn = (idleModal) => toast.error(
+  const toastWarn = (idleModal) => toast.warning(
     <InactiveMessage idleModal={idleModal} extendSession={extendSession} />, 
-    {duration:600000,position: 'bottom-left' }
+    {autoClose:600000,pauseOnHover: false,position: toast.POSITION.BOTTOM_LEFT }
   );
   
   const toastSuccess = (idleModal) => toast.success(
     <InactiveMessage idleModal={idleModal} />, 
-    {duration:1000,position: 'bottom-left'}
+    {autoClose:2000,pauseOnHover: false,position: toast.POSITION.BOTTOM_LEFT}
   );
 
   return (
     <div>
-      <Toaster />
+      <ToastContainer />
     </div>
   )
 
