@@ -36,6 +36,10 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
         //else someone else is editing and prevent editing
         if(lock && lockedStatus.lockData.attribute_lock.owner){
           setReadOnly(false)
+          //Add changed value from db if there has been changes
+          if(lockedStatus.lockData.attribute_lock.field_data && oldValueRef.current !== lockedStatus.lockData.attribute_lock.field_data){
+            setValue(lockedStatus.lockData.attribute_lock.field_data)
+          }
           //Change styles from FormField
           custom.lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
         }
@@ -82,6 +86,10 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
         oldValueRef.current = event.target.value;
       }
     }
+  }
+
+  const setValue = (dbValue) => {
+    input.onChange(dbValue, input.name)
   }
 
   const handleInputChange = useCallback((event) => {

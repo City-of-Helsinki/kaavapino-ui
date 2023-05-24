@@ -16,6 +16,7 @@ import {
 import { currentProjectIdSelector,lockedSelector } from '../../selectors/projectSelector'
 import { ReactComponent as CommentIcon } from '../../assets/icons/comment-icon.svg'
 import { useTranslation } from 'react-i18next'
+import toPlaintext from 'quill-delta-to-plaintext'
 
 /* This component defines a react-quill rich text editor field to be used in redux form.
  * We are saving these rich text inputs as quill deltas - a form of JSON that
@@ -144,6 +145,10 @@ function RichTextEditor(props) {
         //else someone else is editing and prevent editing
         if(lock && lockedStatus.lockData.attribute_lock.owner){
           setReadOnly(false)
+          //Add changed value from db if there has been changes
+          if(lockedStatus.lockData.attribute_lock.field_data && oldValueRef.current !== lockedStatus.lockData.attribute_lock.field_data){
+            setValue(lockedStatus.lockData.attribute_lock.field_data)
+          }
           if (typeof lockField === 'function') {
             //Change styles from FormField
             lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
@@ -284,6 +289,14 @@ function RichTextEditor(props) {
         handleFocus()
       }
     }
+  }
+
+  const setValue = (dbValue) => {
+    const plainValue = toPlaintext(dbValue.ops).trim()
+   editorRef.current.getEditor().setContents([
+    { insert: plainValue },
+    { insert: '\n' }
+    ]);
   }
 
   return (

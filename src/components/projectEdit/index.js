@@ -110,7 +110,7 @@ class ProjectEditPage extends Component {
     if(this.props.users && this.props.currentUserId){
       const userData = this.props.users.find(x => x.id === this.props.currentUserId)
       
-      if('email' in userData){
+      if(userData && 'email' in userData){
         const currentEmail = userData.email
         this.setState({currentEmail});
       }
