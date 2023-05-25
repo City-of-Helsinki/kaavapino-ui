@@ -69,7 +69,7 @@ function OwnProjectFilters({ filters, ...props }) {
     }
 
     return (
-        <div className="filters-list">
+        <div className="filters-list projects-filters">
             <Grid stackable columns="equal">
                 <Grid.Column key="own1">
                     <label htmlFor="person_combo">{t('common.person')}</label>

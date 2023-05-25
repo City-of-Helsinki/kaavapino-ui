@@ -183,7 +183,8 @@
     "missing-data": "Tietoja ei ole vielä syötetty",
     "documents-not-ready": "Dokumentteja ei ole vielä valmiina",
     "searchterms-found":"Hakuehdoilla löytyi",
-    "found-projects":"projektia"
+    "total":"Yhteensä",
+    "found-projects":"projektia."
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}"

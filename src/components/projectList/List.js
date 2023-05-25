@@ -163,7 +163,6 @@ class List extends Component {
         )
         
         //Desktop
-        const prioField = this.props.t('projects.table.priority');
         const nameField = this.props.t('projects.table.name');
         const projecField = this.props.t('projects.table.project');
         const pinoField = this.props.t('projects.table.pino-number');
@@ -173,8 +172,7 @@ class List extends Component {
         const modifiedField = this.props.t('projects.table.modified');
 
         let rowObject = {}
-        rowObject[prioField] = listItem.prio
-        rowObject[nameField] = <Popup trigger={<Link to={`/${listItem.id}`}>{truncate(listItem.name, { length: 30 })}</Link>} on="hover" content={listItem.name}/>
+        rowObject[nameField] = <Link to={`/${listItem.id}`}>{truncate(listItem.name, { length: 30 })}</Link>
         rowObject[projecField] = listItem.projectId
         rowObject[pinoField] = listItem.pino_number
         rowObject[sizeField] = listItem.subtype
@@ -185,7 +183,7 @@ class List extends Component {
         rows.push(rowObject)
         let rowObject2 = {}
         
-        rowObject2[prioField] = this.props.showGraph && ( <span className="project-list-item-graph"> <ProjectTimeline deadlines={deadlines} projectView={true} onhold={onhold} /></span>)
+        rowObject2[nameField] = this.props.showGraph && ( <span className="project-list-item-graph"> <ProjectTimeline deadlines={deadlines} projectView={true} onhold={onhold} /></span>)
         rows.push(rowObject2)
       }
     )
@@ -202,8 +200,8 @@ class List extends Component {
             renderIndexCol={false}
             cols={this.headerItems}
             rows={rows}
-            initialSortingColumnKey={this.state.name}
-            initialSortingOrder={this.state.dirname}
+            initialSortingColumnKey={this.props.t('projects.table.modified')}
+            initialSortingOrder={'desc'}
             onSort={(order, colKey, handleSort) => {
                 this.setSort(order,colKey)
                 handleSort(order,colKey)

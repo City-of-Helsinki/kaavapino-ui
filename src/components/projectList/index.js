@@ -382,6 +382,17 @@ class ProjectListPage extends Component {
     return `${screenWidth < 600 ? t('projects.archived-short') : t('projects.archived-long')}`
   }
 
+  getResults = () => {
+    const { t } = this.props
+    let res = ""
+
+    if(this.state.resultsFound[this.state.activeIndex -1] || this.state.resultsFound[this.state.activeIndex -1] === 0){
+      res = t('project.total') + " " + this.state.resultsFound[this.state.activeIndex -1] + " " + t('project.found-projects')
+    }
+
+    return res
+  }
+
   getFilters = key => {
     const filters = []
 
@@ -474,7 +485,7 @@ class ProjectListPage extends Component {
             users={users}
           />
           <div className='project-list-result'>
-            <span className='project-list-result-number'>{t('project.searchterms-found')} {this.state.resultsFound[this.state.activeIndex -1]} {t('project.found-projects')}</span>
+            <span className='project-list-result-number'>{this.getResults()}</span>
             <div className="timeline-header-item  project-timeline-toggle">
               <ToggleButton id="timeline-toggle" label={t('project.show-timelines')} variant="inline" checked={this.state.showGraph} onChange={() => this.toggleGraph()} />
             </div>

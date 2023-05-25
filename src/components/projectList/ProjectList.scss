@@ -514,10 +514,19 @@
     }
   }
 
+  .projects-filters{
+    .column{
+      max-width: 328px;
+    }
+  }
+
   .project-list-pagination{
     font-size: 16px;
     font-family: "Helsinki Grotesk Regular", sans-serif;
     [aria-current]:not([aria-current="false"]) {
+      min-width: 40px;
+    }
+    a:focus {
       min-width: 40px;
     }
     nav{
