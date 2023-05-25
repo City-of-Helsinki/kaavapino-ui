@@ -157,7 +157,7 @@ const SelectInput = ({
   }
 
   const setSelectValue = (dbValue) => {
-    if(oldValueRef.current !== lockedStatus.lockData.attribute_lock.field_data){
+    if(oldValueRef.current !== dbValue){
       input.onChange(dbValue, input.name)
     }
   }

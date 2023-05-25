@@ -126,7 +126,7 @@ class ProjectEditPage extends Component {
   }
 
    checkClickedElement = (e) => {
-    if(e.target.className){
+    if(e.target.className && (typeof e.target.className === 'string' || e.target.className instanceof String)){
       //Lose focus and unclock if select button is clicked
       if(e.target.className.includes("Select-module") || e.target.parentNode.className.includes("Select-module")){
         this.unlockAllFields()
