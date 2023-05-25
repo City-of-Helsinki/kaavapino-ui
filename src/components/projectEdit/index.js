@@ -110,7 +110,7 @@ class ProjectEditPage extends Component {
     if(this.props.users && this.props.currentUserId){
       const userData = this.props.users.find(x => x.id === this.props.currentUserId)
       
-      if('email' in userData){
+      if(userData && 'email' in userData){
         const currentEmail = userData.email
         this.setState({currentEmail});
       }
@@ -126,7 +126,7 @@ class ProjectEditPage extends Component {
   }
 
    checkClickedElement = (e) => {
-    if(e.target.className){
+    if(e.target.className && (typeof e.target.className === 'string' || e.target.className instanceof String)){
       //Lose focus and unclock if select button is clicked
       if(e.target.className.includes("Select-module") || e.target.parentNode.className.includes("Select-module")){
         this.unlockAllFields()

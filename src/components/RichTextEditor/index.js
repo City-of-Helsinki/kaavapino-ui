@@ -144,6 +144,8 @@ function RichTextEditor(props) {
         //else someone else is editing and prevent editing
         if(lock && lockedStatus.lockData.attribute_lock.owner){
           setReadOnly(false)
+          //Add changed value from db if there has been changes
+          setValue(lockedStatus.lockData.attribute_lock.field_data)
           if (typeof lockField === 'function') {
             //Change styles from FormField
             lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
@@ -283,6 +285,12 @@ function RichTextEditor(props) {
         e.target.firstChild.focus()
         handleFocus()
       }
+    }
+  }
+
+  const setValue = (dbValue) => {
+    if(oldValueRef.current !== dbValue){
+      editorRef.current.getEditor().setContents(dbValue);
     }
   }
 
