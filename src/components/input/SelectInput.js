@@ -46,9 +46,7 @@ const SelectInput = ({
         if(lock && lockedStatus.lockData.attribute_lock.owner){
           setReadOnly(false)
           //Add changed value from db if there has been changes
-          if(lockedStatus.lockData.attribute_lock.field_data && oldValueRef.current !== lockedStatus.lockData.attribute_lock.field_data){
-            setValue(lockedStatus.lockData.attribute_lock.field_data)
-          }
+          setValue(lockedStatus.lockData.attribute_lock.field_data)
           //Change styles from FormField
           lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
         }
@@ -159,7 +157,9 @@ const SelectInput = ({
   }
 
   const setValue = (dbValue) => {
-    input.onChange(dbValue, input.name)
+    if(oldValueRef.current !== lockedStatus.lockData.attribute_lock.field_data){
+      input.onChange(dbValue, input.name)
+    }
   }
 
   const handleInputChange = useCallback((val) => {

@@ -146,9 +146,7 @@ function RichTextEditor(props) {
         if(lock && lockedStatus.lockData.attribute_lock.owner){
           setReadOnly(false)
           //Add changed value from db if there has been changes
-          if(lockedStatus.lockData.attribute_lock.field_data && oldValueRef.current !== lockedStatus.lockData.attribute_lock.field_data){
-            setValue(lockedStatus.lockData.attribute_lock.field_data)
-          }
+          setValue(lockedStatus.lockData.attribute_lock.field_data)
           if (typeof lockField === 'function') {
             //Change styles from FormField
             lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
@@ -292,11 +290,13 @@ function RichTextEditor(props) {
   }
 
   const setValue = (dbValue) => {
-    const plainValue = toPlaintext(dbValue.ops).trim()
-   editorRef.current.getEditor().setContents([
-    { insert: plainValue },
-    { insert: '\n' }
-    ]);
+    if(oldValueRef.current !== lockedStatus.lockData.attribute_lock.field_data){
+      const plainValue = toPlaintext(dbValue.ops).trim()
+      editorRef.current.getEditor().setContents([
+        { insert: plainValue },
+        { insert: '\n' }
+      ]);
+    }
   }
 
   return (
