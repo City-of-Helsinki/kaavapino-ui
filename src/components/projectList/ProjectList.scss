@@ -107,7 +107,7 @@
               display: block;
               width: 100%;
               position: absolute;
-              border-bottom: none;
+              border-bottom: 1px solid black;
             }
           }
 
@@ -147,6 +147,12 @@
           }
           tr:nth-child(9){
             display: none;
+          }
+
+          tr{
+            td{
+              border-bottom: none;
+            }
           }
         }
       }

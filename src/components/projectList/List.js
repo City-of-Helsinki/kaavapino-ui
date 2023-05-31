@@ -196,7 +196,7 @@ class List extends Component {
             ariaLabelSortButtonUnset="Not sorted"
             ariaLabelSortButtonAscending="Sorted in ascending order"
             ariaLabelSortButtonDescending="Sorted in descending order"
-            indexKey={this.props.t('projects.table.pino-number')}
+           // indexKey={this.props.t('projects.table.pino-number')}
             renderIndexCol={false}
             cols={this.headerItems}
             rows={rows}
