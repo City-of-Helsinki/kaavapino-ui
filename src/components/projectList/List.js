@@ -196,8 +196,8 @@ class List extends Component {
             ariaLabelSortButtonUnset="Not sorted"
             ariaLabelSortButtonAscending="Sorted in ascending order"
             ariaLabelSortButtonDescending="Sorted in descending order"
-           // indexKey={this.props.t('projects.table.pino-number')}
-            renderIndexCol={false}
+            indexKey={this.props.t('projects.table.pino-number')}
+            renderIndexCol={true}
             cols={this.headerItems}
             rows={rows}
             initialSortingColumnKey={this.props.t('projects.table.modified')}
