@@ -203,12 +203,14 @@ function RichTextEditor(props) {
     }
   }, [inputProps.name, inputProps.value])
 
-  const handleFocus = () => {
-    if (typeof onFocus === 'function') {
-      //Sent a call to lock field to backend
-      onFocus(inputProps.name);
+  const handleFocus = (event,source) => {
+    if(source && event && source !== "silent"){
+      if (typeof onFocus === 'function') {
+        //Sent a call to lock field to backend
+        onFocus(inputProps.name);
+      }
+      setToolbarVisible(true)
     }
-    setToolbarVisible(true)
   }
 
   const handleBlur = () => {
@@ -359,7 +361,7 @@ function RichTextEditor(props) {
           // default value initialized, after that quill handles internal state
           // Do not explicitly set value. see comments at top of this file.
           onChange={handleChange}
-          onFocus={handleFocus}
+          onFocus={(event, source) =>{handleFocus(event,source)}}
           onBlur={(_range, _source, quill) => {
             setTimeout(() => {
               // Hack. Prevent blurring when copy-paste data
