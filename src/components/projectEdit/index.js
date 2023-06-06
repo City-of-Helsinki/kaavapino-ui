@@ -46,6 +46,7 @@ import InfoComponent from '../common/InfoComponent'
 import { withTranslation } from 'react-i18next'
 import authUtils from '../../utils/authUtils'
 import { isEqual } from 'lodash'
+import FormFilter from './FormFilter'
 
 class ProjectEditPage extends Component {
   state = {
@@ -358,6 +359,7 @@ class ProjectEditPage extends Component {
               })}
             </InfoComponent>
           )}
+        <FormFilter></FormFilter>
         <div className={`project-input-container ${highlightGroup}`}>
           <div className="project-input-left">
             <QuickNav

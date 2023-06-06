@@ -122,3 +122,91 @@
   padding-bottom: 20px;
 }
 
+.project-edit-form-filter{
+  display: flex;
+  flex-flow: wrap;
+  align-items: flex-start;
+  padding: 20px;
+  background-color: #f5f5f5;
+  .toggle-filters{
+    margin-left: auto;
+  }
+
+  .filter-tag{
+    margin-left: 20px;
+  }
+
+  .yellow{
+    background-color: $tagyellow;
+  }
+
+  .filter-tag:first-of-type{
+    margin-left: 0;
+  }
+
+  .filter-tag-info{
+    display: flex;
+    width: 100%;
+  }
+}
+
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 100; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+
+  /* Modal Content/Box */
+  .modal-content {
+    background-color: $color-white;;
+    margin: 15% 5%; /* 15% from the top and centered */
+    border: 1px solid $color-black;
+    width: 500px; /* Could be more or less, depending on screen size */
+    font-size: 16px;
+    max-width: 1148px;
+    width: fit-content;
+    .modal-header {
+      padding: 20px;
+      background-color: $color-white;
+      border-bottom: 1px solid $light-gray;
+    }
+    
+    .modal-body {
+      padding: 20px;
+      font-family: "Helsinki Grotesk Regular", sans-serif;
+      .remove-filters{
+        color: $color-error-dark;
+        padding-left: 0;
+        margin-left: 0;
+        div{
+          padding-left: 0;
+          margin-left: 0;
+        }
+      }
+    }
+    
+    .modal-footer {
+      padding: 20px;
+      font-family: "Helsinki Grotesk Regular", sans-serif;
+      background-color: $color-white;
+      border-top: 1px solid $light-gray;
+    }
+  }
+
+  /* The Close Button */
+  .close {
+    margin-left:20px;
+  }
+
+  .close:hover,
+  .close:focus {
+    text-decoration: none;
+    cursor: pointer;
+  }
+}

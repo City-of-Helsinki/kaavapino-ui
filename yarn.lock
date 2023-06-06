@@ -8342,10 +8342,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hds-core@npm:2.12.1, hds-core@npm:^2.12.1":
+"hds-core@npm:2.12.1":
   version: 2.12.1
   resolution: "hds-core@npm:2.12.1"
   checksum: f38eac506ba498027a9ceb14656ab055d9c0cb4fe09c18acfcfd2e8422228c2f52b521c8e5c05aa4794d7c8947b150040f68055b0070cf6cc38294f8768cd975
+  languageName: node
+  linkType: hard
+
+"hds-core@npm:^2.12.1":
+  version: 2.15.0
+  resolution: "hds-core@npm:2.15.0"
+  checksum: 0ea64649d763c3d85eb8c430722d30108541c18169d1485edd4240b1981f949e991aeea83976df4e35180ef691be8e1b8bd68021037ac75e9cf6c5df2473cd48
   languageName: node
   linkType: hard
 

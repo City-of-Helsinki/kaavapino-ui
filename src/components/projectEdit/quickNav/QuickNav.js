@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, Accordion } from 'hds-react'
+import { Button, Select } from 'hds-react'
 import OnHoldCheckbox from '../../input/OnholdCheckbox'
 import ConfirmModal from '../ConfirmModal'
 import { Message } from 'semantic-ui-react'
@@ -36,6 +36,8 @@ export default function QuickNav({
   const [currentTimeout, setCurrentTimeout] = useState(null)
   const [hasErrors, setHasErrors] = useState(false)
   const [validationOk, setValidationOk] = useState(false)
+  const [options,setOptions] = useState({optionsArray:[],curPhase:{}})
+  const [selectedPhase,setSelectedPhase] = useState({currentPhase:[],phaseId:0})
 
   const { t } = useTranslation()
 
@@ -43,6 +45,20 @@ export default function QuickNav({
     setCheckButtonPressed(true)
     handleCheck()
   }
+
+  useEffect(() => {
+    const optionsArray = [];
+    let curPhase = ""
+    if(phases){
+      phases.map(phase => {
+        if(phase.id === activePhase){
+          curPhase = phase
+        }
+        optionsArray.push({label:phase.title})
+    })
+    }
+    setOptions({optionsArray,curPhase})
+  }, [phases])
 
   useEffect(() => {
     const c = document.getElementById(`title-${selected}`)
@@ -160,12 +176,13 @@ export default function QuickNav({
       setActivePhase(phaseId)
       switchDisplayedPhase(phaseId)
     }
-
-    setSelected(title)
+    if(title){
+      setSelected(title)
+    }
     unlockAllFields()
   }
 
-  const handleAccordionTitleClick = titleIndex => {
+/*   const handleAccordionTitleClick = titleIndex => {
     const shouldChangePhase = activePhase !== titleIndex
 
     if (shouldChangePhase) {
@@ -179,14 +196,51 @@ export default function QuickNav({
       }
     }
     unlockAllFields()
+  } */
+
+  const switchPhase = (item) => {
+    let currentPhase;
+    let phaseId;
+    let i;
+    if(phases){
+      phases.map((phase,index) => {
+        if(phase.title === item.label){
+          currentPhase = phase.sections
+          phaseId = phase.id
+          i = index
+        }
+      });
+    } 
+    setSelectedPhase({currentPhase,phaseId});
+    handleSectionTitleClick(item.label, i, phaseId)
   }
 
   return (
     <div className="quicknav-container">
       <div className="quicknav-navigation-section">
-        <h2 tabIndex="0" id='quicknav-main-title' className="quicknav-title"> {t('quick-nav.title')}</h2>
+      <Select label="Vaiheet" helper="Vaihda vaiheita" placeholder="Vaiheet" options={options.optionsArray} onChange={switchPhase} />
+        {/* <h2 tabIndex="0" id='quicknav-main-title' className="quicknav-title"> {t('quick-nav.title')}</h2> */}
         <div className="quicknav-content">
-          {phases &&
+        {selectedPhase.currentPhase &&
+          selectedPhase.currentPhase.map((section, index) => {
+            return (
+              <Button
+                key={index}
+                variant="supplementary"
+                className={`quicknav-item ${
+                  section.title === selected && selectedPhase.phaseId === activePhase
+                    ? 'active'
+                    : ''
+                }`}
+                onClick={() =>
+                  handleSectionTitleClick(section.title, index, selectedPhase.phaseId)
+                }
+              >
+                <div> {section.title}</div>
+              </Button>
+            )
+            })}
+           {/* {phases &&
             phases.map(phase => (
               <Accordion
                 initiallyOpen={activePhase === phase.id}
@@ -224,7 +278,7 @@ export default function QuickNav({
                     )
                   })}
               </Accordion>
-            ))}
+            ))} */}
         </div>
       </div>
       <RoleHighlightPicker onRoleUpdate={setHighlightRole} />
