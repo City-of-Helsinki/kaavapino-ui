@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect }  from 'react'
 import { Button, Tag, IconTrash, Checkbox } from 'hds-react';
 
-function FormFilter() {
+function FormFilter({schema,filterFields,isHighlightedTag}) {
 
 const openButtonRef = useRef(null);
 const modal = document.getElementById("myModal");
@@ -9,7 +9,7 @@ const [tags, setTags] = useState({})
 const [tagArray, setTagArray] = useState([])
 const [checkedItems, setCheckedItems] = useState({});
 const [selectedTag, setSelectedTag] = useState("")
-const options = ['Option 1', 'Option 2', 'Option 3'];
+const [options,setOptions] = useState([]);
 
 useEffect(() => {
     let tagArray = []
@@ -19,7 +19,34 @@ useEffect(() => {
         }
     }
     setTagArray(tagArray)
-}, [tags]) 
+}, [tags])
+
+useEffect(() => {
+    let optionsArray = [{header:"Asiantuntija",roles:[]},{header:"Pääkäyttäjä",roles:[]},{header:"Vastuuhenkilö",roles:[]}]
+    if(schema){
+        let roles = schema.filters.subroles
+
+        for (let x = 0; x < roles.length; x++) {
+            if(roles[x] === "Projektin vastuuhenkilö"){
+                optionsArray[2].roles.push(roles[x]);
+            }
+            else if(roles[x] === "Kaavoitussihteeri" || roles[x] === "Kanslian pääkäyttäjä" ||
+            roles[x] === "Suunnitteluassistentti" || roles[x] === "Tontit-yksikön pääkäyttäjä"){
+                optionsArray[1].roles.push(roles[x]);
+            }
+            else{
+                optionsArray[0].roles.push(roles[x]);
+            }
+        }
+
+        for (let i = 0; i < optionsArray.length; i++) {
+            optionsArray[i].roles.sort();
+            
+        }
+
+        setOptions(optionsArray)
+    }
+}, [schema]) 
 
 const handleChange = (e) => {
     const item = e.target.name;
@@ -39,6 +66,12 @@ const closeModal = () => {
 const saveSelections = () => {
     setTags(checkedItems)
     modal.style.display = "none";
+    let fields = []
+    if(typeof filterFields === 'function'){
+        //Get only field keys from checboxes not the true / false value for filtering fields
+        fields = Object.keys(checkedItems).filter(k=>checkedItems[k]===true)
+        filterFields(fields)
+    }
 }
 
 const removeFilters = () => {
@@ -57,10 +90,12 @@ const highlightTag = (e,tag) => {
         e.target.closest(".filter-tag").classList.add("yellow");
         setSelectedTag(tag)
     }
+    isHighlightedTag(tag)
 }
 
 let renderedTags;
 let tagInfo;
+let fieldCount = document.getElementsByClassName("input-container").length;
 
 if(tagArray.length > 0){
     renderedTags = <>
@@ -83,10 +118,10 @@ if(tagArray.length > 0){
  }
 
  if(tagArray.length > 0 && selectedTag === ""){
-    tagInfo = <div className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä | Näytetään x kenttää</p></div>
+    tagInfo = <div className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä | Näytetään {fieldCount ? fieldCount : 0} kenttää</p></div>
  }
  else if(tagArray.length > 0 && selectedTag !== ""){
-    tagInfo = <div className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä | Näytetään x kenttää | <b>Korostus päällä: </b> {selectedTag}.</p></div>
+    tagInfo = <div className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä | Näytetään {fieldCount ? fieldCount : 0} kenttää | <b>Korostus päällä: </b> {selectedTag}.</p></div>
  }
 
 return (
@@ -102,17 +137,25 @@ return (
                     <h2>Suodattimet</h2>
                 </div>
                 <div className="modal-body">
-                    <h3>Ryhmä</h3>
-                    {options.map((item) => (
-                        <Checkbox
-                        key={`checkbox-${item}`}
-                        id={`checkbox-${item}`}
-                        label={item}
-                        name={item}
-                        checked={checkedItems[item]}
-                        onChange={handleChange}
-                        />
-                    ))}
+                    {(() => {
+                    let row = []
+                        for (let i = 0; i < options.length; i++) {
+                            let header = options[i].header
+                            let roles = options[i].roles
+                            row.push(<h3>{header}</h3>)
+                            for (let x = 0; x < roles.length; x++) {
+                                row.push(<Checkbox
+                                    key={`checkbox-${roles[x]}`}
+                                    id={`checkbox-${roles[x]}`}
+                                    label={roles[x]}
+                                    name={roles[x]}
+                                    checked={checkedItems[roles[x]]}
+                                    onChange={handleChange}
+                                />)
+                            }
+                        }
+                        return row
+                    })()}
                     <Button onClick={() => removeFilters()} className="remove-filters" variant="supplementary" iconLeft={<IconTrash />}>
                         Poista kaikki valinnat
                     </Button>

@@ -41,6 +41,7 @@ function IdleMonitor() {
   }
 
   const logOut = () => {
+    console.log("LOGOUT");
     let path = `/logout`;
     history.push(path);
   }

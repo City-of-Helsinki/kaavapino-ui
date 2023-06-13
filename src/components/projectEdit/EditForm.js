@@ -71,7 +71,9 @@ class EditForm extends Component {
       syncronousErrors,
       submitErrors,
       isExpert,
-      t
+      t,
+      sectionIndex,
+      filterFieldsArray
     } = this.props
 
     return (
@@ -94,22 +96,21 @@ class EditForm extends Component {
           )}
           <Shoutbox project={projectId} />
         </div>
-        {sections.map((section, i) => (
           <FormSection
             syncronousErrors={syncronousErrors}
             submitErrors={submitErrors}
             formName={EDIT_PROJECT_FORM}
-            key={i}
+            key={sectionIndex}
             handleSave={this.props.handleSave}
             handleLockField={this.props.handleLockField}
             handleUnlockField={this.props.handleUnlockField}
-            section={section}
+            section={sections[sectionIndex]}
             disabled={disabled}
             attributeData={attributeData}
             setRef={this.props.setRef}
             unlockAllFields={this.props.unlockAllFields}
+            filterFieldsArray={filterFieldsArray}
           />
-        ))}
         <Button
           variant="supplementary"
           iconRight={<IconArrowUp />}

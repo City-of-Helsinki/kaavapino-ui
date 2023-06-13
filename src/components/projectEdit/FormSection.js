@@ -11,7 +11,7 @@ import { getFormValues } from 'redux-form'
 import { EDIT_PROJECT_FORM } from '../../constants'
 
 const FormSection = ({
-  section: { title, fields },
+  section,
   checking,
   disabled,
   attributeData,
@@ -24,37 +24,44 @@ const FormSection = ({
   syncronousErrors,
   submitErrors,
   setRef,
-  unlockAllFields
+  unlockAllFields,
+  filterFieldsArray
 }) => {
-  
+  if(section && section.title && section.fields){
   return (
     <Segment>
-      <h2 id={`title-${title}`} className="section-title">
-        {title}
+      <h2 id={`title-${section.title}`} className="section-title">
+        {section.title}
       </h2>
-      {fields.map((field, i) => (
-        <FormField
-          key={`${field.name}-${i}`}
-          checking={checking}
-          disabled={disabled}
-          field={{ ...field, disabled: disabled || field.disabled }}
-          attributeData={attributeData}
-          updated={updates[field.name] || null}
-          handleSave={handleSave}
-          onRadioChange={handleSave}
-          handleLockField={handleLockField}
-          handleUnlockField={handleUnlockField}
-          formName={formName}
-          formValues={formValues}
-          syncronousErrors={syncronousErrors}
-          submitErrors={submitErrors}
-          className={field.highlight_group ? field.highlight_group : '' }
-          setRef={setRef}
-          unlockAllFields={unlockAllFields}
-        />
-      ))}
+      {section.fields.map((field, i) => {
+        if(filterFieldsArray.length === 0 || filterFieldsArray.includes(field.field_subroles)){
+          return (<FormField
+            key={`${field.name}-${i}`}
+            checking={checking}
+            disabled={disabled}
+            field={{ ...field, disabled: disabled || field.disabled }}
+            attributeData={attributeData}
+            updated={updates[field.name] || null}
+            handleSave={handleSave}
+            onRadioChange={handleSave}
+            handleLockField={handleLockField}
+            handleUnlockField={handleUnlockField}
+            formName={formName}
+            formValues={formValues}
+            syncronousErrors={syncronousErrors}
+            submitErrors={submitErrors}
+            className={field.highlight_group ? field.highlight_group : '' }
+            setRef={setRef}
+            unlockAllFields={unlockAllFields}
+          />)
+        }
+        else{
+          return <></>
+        }
+    })}
     </Segment>
   )
+  }
 }
 
 const mapStateToProps = state => ({

@@ -57,7 +57,11 @@ class ProjectEditPage extends Component {
     selectedRefName: null,
     currentRef: null,
     formInitialized: false,
-    currentEmail: ""
+    currentEmail: "",
+    sectionIndex:0,
+    phaseTitle:0,
+    filterFieldsArray: [],
+    highlightedTag: ""
   }
 
   currentSectionIndex = 0
@@ -232,7 +236,7 @@ class ProjectEditPage extends Component {
       allPhases.forEach(phase => {
         const sections = []
         phase.sections.forEach(section => {
-          sections.push({ title: section.title })
+          sections.push({ title: section.title, fields: section.fields })
         })
 
         const newPhase = {
@@ -289,6 +293,20 @@ class ProjectEditPage extends Component {
       checkedSelectedPhase = +params.get('phase')
     }
     return checkedSelectedPhase
+  }
+
+  changeSection = (index,title) => {
+    //Show fields only from selected navigation link, not the whole phase
+    this.setState({ sectionIndex: index, phaseTitle:title })
+  }
+
+  filterFields = (fields) => {
+    this.setState({ filterFieldsArray: fields })
+  }
+
+  isHighlightedTag = (tag) => {
+    console.log(tag)
+    this.setState({highlightedTag:tag})
   }
 
   render() {
@@ -359,7 +377,7 @@ class ProjectEditPage extends Component {
               })}
             </InfoComponent>
           )}
-        <FormFilter></FormFilter>
+        <FormFilter schema={schema} filterFields={this.filterFields} isHighlightedTag={this.isHighlightedTag} selectedPhase={selectedPhase}></FormFilter>
         <div className={`project-input-container ${highlightGroup}`}>
           <div className="project-input-left">
             <QuickNav
@@ -388,6 +406,10 @@ class ProjectEditPage extends Component {
               isAdmin={isAdmin}
               phase={phase}
               unlockAllFields={this.unlockAllFields}
+              changeSection={this.changeSection}
+              filterFieldsArray={this.state.filterFieldsArray}
+              highlightedTag={this.state.highlightedTag}
+              setFilterAmount={this.setFilterAmount}
             />
             <NavigationPrompt
               when={
@@ -430,6 +452,9 @@ class ProjectEditPage extends Component {
             setRef={this.setRef}
             setFormInitialized={this.setFormInitialized}
             unlockAllFields={this.unlockAllFields}
+            sectionIndex={this.state.sectionIndex}
+            phaseTitle={this.state.phaseTitle}
+            filterFieldsArray={this.state.filterFieldsArray}
           />
           {this.state.showEditFloorAreaForm && (
             <EditFloorAreaFormModal
