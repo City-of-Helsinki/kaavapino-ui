@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect }  from 'react'
 import { Button, Tag, IconTrash, Checkbox } from 'hds-react';
 
-function FormFilter({schema,filterFields,isHighlightedTag}) {
+function FormFilter({schema,filterFields,isHighlightedTag,sectionIndex}) {
 
 const openButtonRef = useRef(null);
 const modal = document.getElementById("myModal");
@@ -10,6 +10,7 @@ const [tagArray, setTagArray] = useState([])
 const [checkedItems, setCheckedItems] = useState({});
 const [selectedTag, setSelectedTag] = useState("")
 const [options,setOptions] = useState([]);
+const [fieldCount,setFieldCount] = useState(0);
 
 useEffect(() => {
     let tagArray = []
@@ -19,7 +20,12 @@ useEffect(() => {
         }
     }
     setTagArray(tagArray)
+    calculateFields()
 }, [tags])
+
+useEffect(() => {
+    calculateFields()
+}, [sectionIndex])
 
 useEffect(() => {
     let optionsArray = [{header:"Asiantuntija",roles:[]},{header:"Pääkäyttäjä",roles:[]},{header:"Vastuuhenkilö",roles:[]}]
@@ -46,7 +52,12 @@ useEffect(() => {
 
         setOptions(optionsArray)
     }
-}, [schema]) 
+}, [schema])
+
+const calculateFields = () => {
+    let numberOfFields = document.querySelectorAll(':not(.fieldset-container) > .input-container').length
+    setFieldCount(numberOfFields)
+}
 
 const handleChange = (e) => {
     const item = e.target.name;
@@ -70,6 +81,11 @@ const saveSelections = () => {
     if(typeof filterFields === 'function'){
         //Get only field keys from checboxes not the true / false value for filtering fields
         fields = Object.keys(checkedItems).filter(k=>checkedItems[k]===true)
+
+        if(fields.length === 0){
+            isHighlightedTag("")
+        }
+        
         filterFields(fields)
     }
 }
@@ -82,6 +98,7 @@ const highlightTag = (e,tag) => {
     if(e.target.closest(".filter-tag").classList.contains("yellow")){
         e.target.closest(".filter-tag").classList.remove("yellow");
         setSelectedTag("")
+        isHighlightedTag("")
     }
     else{
         if(document.getElementsByClassName("yellow").length > 0){
@@ -89,13 +106,12 @@ const highlightTag = (e,tag) => {
         }
         e.target.closest(".filter-tag").classList.add("yellow");
         setSelectedTag(tag)
+        isHighlightedTag(tag)
     }
-    isHighlightedTag(tag)
 }
 
 let renderedTags;
 let tagInfo;
-let fieldCount = document.getElementsByClassName("input-container").length;
 
 if(tagArray.length > 0){
     renderedTags = <>
@@ -118,10 +134,10 @@ if(tagArray.length > 0){
  }
 
  if(tagArray.length > 0 && selectedTag === ""){
-    tagInfo = <div className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä | Näytetään {fieldCount ? fieldCount : 0} kenttää</p></div>
+    tagInfo = <div className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä | Näytetään {fieldCount} kenttää</p></div>
  }
  else if(tagArray.length > 0 && selectedTag !== ""){
-    tagInfo = <div className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä | Näytetään {fieldCount ? fieldCount : 0} kenttää | <b>Korostus päällä: </b> {selectedTag}.</p></div>
+    tagInfo = <div className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä | Näytetään {fieldCount} kenttää | <b>Korostus päällä: </b> {selectedTag}.</p></div>
  }
 
 return (

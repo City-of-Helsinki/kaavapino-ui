@@ -73,7 +73,9 @@ class EditForm extends Component {
       isExpert,
       t,
       sectionIndex,
-      filterFieldsArray
+      filterFieldsArray,
+      highlightedTag,
+      fieldCount
     } = this.props
 
     return (
@@ -110,6 +112,8 @@ class EditForm extends Component {
             setRef={this.props.setRef}
             unlockAllFields={this.props.unlockAllFields}
             filterFieldsArray={filterFieldsArray}
+            highlightedTag={highlightedTag}
+            fieldCount={fieldCount}
           />
         <Button
           variant="supplementary"

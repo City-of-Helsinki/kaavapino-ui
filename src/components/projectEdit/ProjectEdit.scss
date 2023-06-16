@@ -47,6 +47,11 @@
   .section-title {
     margin: 0 0 0 8px;
     padding: 0;
+    position: sticky;
+    top: 184px;
+    padding: 20px;
+    z-index: 2000;
+    background-color: $light-gray3;
 
     @media screen and (min-width: 600px) {
       margin: 0;
@@ -65,10 +70,15 @@
 
   @media screen and (min-width: 600px) {
     width: 90%;
-  
     h2 {
       margin-left: 0;
     }
+  }
+}
+
+@media screen and (max-width: 600px){
+  .form-container{
+      padding-top: 120px !important;
   }
 }
 
@@ -113,7 +123,7 @@
   }
   @media screen and (min-height: 768px) {
     position: sticky;
-    top: 40px;
+    top: 170px;
   }
 }
 
@@ -126,8 +136,13 @@
   display: flex;
   flex-flow: wrap;
   align-items: flex-start;
+  position: sticky;
+  top: 64px;
+  z-index: 1000;
   padding: 20px;
-  background-color: #f5f5f5;
+  background-color: white;
+  border-bottom: 1px solid $light-gray;
+  height: 120px;
   .toggle-filters{
     margin-left: auto;
   }

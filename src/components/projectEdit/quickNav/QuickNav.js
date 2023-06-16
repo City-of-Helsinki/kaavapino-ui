@@ -28,7 +28,9 @@ export default function QuickNav({
   phase,
   unlockAllFields,
   changeSection,
-  filterFieldsArray
+  filterFieldsArray,
+  highlightedTag,
+  visibleFields
 }) {
   const [endPhaseError, setEndPhaseError] = useState(false)
   const [verifying, setVerifying] = useState(false)
@@ -48,25 +50,13 @@ export default function QuickNav({
     handleCheck()
   }
 
-/*   let curDate = new Date().toJSON().slice(0,10);
-  let startDate = project.attribute_data.projektin_kaynnistys_pvm
-  let endDate = project.attribute_data.kaynnistys_paattyy_pvm
-  let from = new Date(startDate[2], parseInt(startDate[1])-1, startDate[0]);
-  let to   = new Date(endDate[2], parseInt(endDate[1])-1, endDate[0]);
-  let check = new Date(curDate[2], parseInt(curDate[1])-1, curDate[0]);
-  console.log(curDate)
-  console.log(project.attribute_data.projektin_kaynnistys_pvm)
-  console.log(project.attribute_data.kaynnistys_paattyy_pvm)
+  useEffect(() => {
+    let numberOfFields = calculateFields()
+    if (typeof visibleFields === 'function'){
+      visibleFields(numberOfFields)
+    }
 
-  if((check <= from && check >= to)) {
-    console.log("käynnissä")
-  }
-  else if(from < check){
-    console.log("Aloittamatta")
-  }
-  else if(to > check){
-    console.log("suoritettu")
-  } */
+  }, [selectedPhase])
 
   useEffect(() => {
     const optionsArray = [];
@@ -93,24 +83,13 @@ export default function QuickNav({
   }, [phases])
 
   useEffect(() => {
-    const optionsArray = [];
-    let curPhase = ""
-
-    if(phases){
-      phases.map(phase => {
-        if(phase.id === activePhase){
-          curPhase = {label:phase.title}
-        }
-        optionsArray.push({label:phase.title})
-    })
-    }
-
-    setOptions({optionsArray,curPhase})
-  }, [])
-
-  useEffect(() => {
     const c = document.getElementById(`title-${selected}`)
-    c && c.scrollIntoView()
+    c && c.scrollIntoView({behavior: "smooth", block: "center", inline: "center"})
+    let numberOfFields = calculateFields()
+
+    if (typeof visibleFields === 'function'){
+      visibleFields(numberOfFields)
+    }
   }, [selected])
 
   useEffect(() => {
@@ -130,6 +109,27 @@ export default function QuickNav({
       setValidationOk(false)
     }
   }, [validationOk])
+
+  useEffect(() => {
+    const optionsArray = [];
+    let curPhase = ""
+
+    if(phases){
+      phases.map(phase => {
+        if(phase.id === activePhase){
+          curPhase = {label:phase.title}
+        }
+        optionsArray.push({label:phase.title})
+    })
+    }
+
+    setOptions({optionsArray,curPhase})
+  }, [])
+
+  const calculateFields = () => {
+    let numberOfFields = document.querySelectorAll(':not(.fieldset-container) > .input-container').length
+    return numberOfFields
+  }
 
   const renderButtons = () => {
     return (
@@ -263,28 +263,33 @@ export default function QuickNav({
 
     setSelectedPhase({currentPhase,phaseId});
     handleSectionTitleClick(item.label, 0, phaseId)
+    unlockAllFields()
   }
 
-  const calculateFilterNumber = (fields) => {
+  const calculateFilterNumber = (fields,highlighted) => {
     let filterNumber = 0
+    let highlight = false
+
     for (let x = 0; x < fields.length; x++) {
       if(filterFieldsArray.includes(fields[x].field_subroles)){
         filterNumber = filterNumber + 1
       }
+      if(fields[x].field_subroles === highlighted){
+        highlight = true
+      }
     }
-    return filterNumber
+    return [filterNumber,highlight]
   }
 
   return (
     <div className="quicknav-container">
       <div className="quicknav-navigation-section">
       <Select placeholder={options.curPhase.label} options={options.optionsArray} onChange={switchPhase} />
-        {/* <h2 tabIndex="0" id='quicknav-main-title' className="quicknav-title"> {t('quick-nav.title')}</h2> */}
         <div className="quicknav-content">
         {selectedPhase.currentPhase &&
           selectedPhase.currentPhase.map((section, index) => {
             let fields = section.fields
-            let filterNumber = calculateFilterNumber(fields)
+            let [filterNumber,highlight] = calculateFilterNumber(fields,highlightedTag)
             return (
               <Button
                 key={index}
@@ -301,7 +306,7 @@ export default function QuickNav({
                 <div> {section.title} 
                 {filterNumber > 0 ? 
                   <Tag
-                    className='filter-tag'
+                    className={`filter-tag ${highlight ? "yellow" : ""}`}
                     role="link"
                     key={`checkbox-${section.title}`}
                     id={`checkbox-${section.title}`}
