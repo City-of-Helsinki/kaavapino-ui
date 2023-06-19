@@ -111,6 +111,7 @@ const highlightTag = (e,tag) => {
 
 let renderedTags;
 let tagInfo;
+let tagText;
 
 if(tagArray.length > 0){
     renderedTags = <>
@@ -121,6 +122,7 @@ if(tagArray.length > 0){
          key={`checkbox-${tag}`}
          id={`checkbox-${tag}`}
          onClick={() => highlightTag(event,tag)}
+         aria-label={tag + ". Ota korostus käyttöön klikkaamalla painiketta."}
          >
          {tag}
          </Tag>
@@ -132,19 +134,26 @@ if(tagArray.length > 0){
  }
 
  if(tagArray.length > 0 && selectedTag === ""){
+    tagText = <div><b>Suodattimet</b></div>
     tagInfo = <div className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä | Näytetään {fieldCount} kenttää</p></div>
  }
  else if(tagArray.length > 0 && selectedTag !== ""){
+    tagText = <div><b>Suodattimet</b></div>
     tagInfo = <div className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä | Näytetään {fieldCount} kenttää | <b>Korostus päällä: </b> {selectedTag}.</p></div>
  }
 
 return (
     <div className='project-edit-form-filter'>
-        {renderedTags}
-        <Button ref={openButtonRef} onClick={() => openModal()} className="toggle-filters" variant="secondary" size="small">
-            Muokkaa suodattimia
-        </Button>
-        {tagInfo}
+        <div className='left-container'>
+            {tagText}
+            {tagInfo}
+            {renderedTags}
+        </div>
+        <div className='right-container'>
+            <Button ref={openButtonRef} onClick={() => openModal()} className="toggle-filters" variant="secondary" size="small">
+                Muokkaa suodattimia
+            </Button>
+        </div>
         <div id="myModal" className="modal">
             <div className="modal-content">
                 <div className="modal-header">

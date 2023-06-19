@@ -5,7 +5,7 @@
   
   .filter-button {
     height: 49px !important;  
-    font-size: 14px !important;
+    font-size: $size14 !important;
  }
  ul {
    overflow: hidden;
@@ -13,7 +13,7 @@
  
 }
 .filter-modal {
-  font-size: 12px;
+  font-size: $size12;
  
 }
 
@@ -35,7 +35,7 @@
     margin-left: 10px;
 }
 .filter-accordion {
-  font-size: 14px;
+  font-size: $size14;
 }
 
 

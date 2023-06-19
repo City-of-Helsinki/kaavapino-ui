@@ -1,9 +1,11 @@
+@import '../common/colors.scss';
+
 .error-page {
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-size: 32px;
+  font-size: $size32;
   text-align: center;
 }

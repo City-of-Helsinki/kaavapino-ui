@@ -134,34 +134,55 @@
 .project-edit-form-filter{
   display: flex;
   flex-flow: wrap;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: flex-start;
   position: sticky;
   top: 64px;
   z-index: 1000;
   padding: 20px;
-  background-color: white;
+  background-color: $light-gray3;
   border-bottom: 1px solid $light-gray;
-  height: 120px;
   .toggle-filters{
     margin-left: auto;
   }
+  .left-container{
+    flex: 0 80%;
 
-  .filter-tag{
-    margin-left: 20px;
+    b{
+      color: black;
+    }
+  
+    .filter-tag{
+      background-color: $gray;
+    }
+  
+    & > .filter-tag{
+      margin-left: 0;
+    }
+  
+    & > .filter-tag ~ .filter-tag{
+      margin-left: 20px;
+    }
+  
+    .yellow{
+      background-color: $tagyellow;
+    }
+  
+    .filter-tag-info{
+      display: flex;
+      width: 100%;
+    }
+
+    div{
+      padding-top: 5px;
+      padding-bottom:5px;
+    }
   }
 
-  .yellow{
-    background-color: $tagyellow;
+  .right-container{
+    flex: 0 20%;
   }
 
-  .filter-tag:first-of-type{
-    margin-left: 0;
-  }
-
-  .filter-tag-info{
-    display: flex;
-    width: 100%;
-  }
 }
 
 .modal {
@@ -181,7 +202,7 @@
     background-color: $color-white;
     margin: 15% 5%; /* 15% from the top and centered */
     border: 1px solid $color-black;
-    font-size: 16px;
+    font-size: $size16;
     max-width: 1148px;
     width: fit-content;
     .modal-header {

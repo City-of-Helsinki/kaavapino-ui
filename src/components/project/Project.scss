@@ -99,7 +99,7 @@
       }
 
       .timeline-item-title {
-        font-size: 12px;
+        font-size: $size12;
         font-weight: bold;
         color: #aab2be;
 
@@ -161,7 +161,7 @@
   .deadline-splitter {
     margin: 0 10px;
     align-self: center;
-    font-size: 22px;
+    font-size: $size22;
   }
 }
 

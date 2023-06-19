@@ -82,14 +82,14 @@
       .deadline-name-over {
         position: absolute;
         bottom: 20px;
-        font-size: 12px;
+        font-size: $size12;
         width: 118px;
       }
       .deadline-name-inside {
         position: absolute;
         left: 2px;
         z-index: 3;
-        font-size: 12px;
+        font-size: $size12;
         width: 120px;
       }
       .deadline-milestone {
@@ -97,7 +97,7 @@
           position: absolute;
           top: 20px;
           line-height: normal;
-          font-size: 12px;
+          font-size: $size12;
         }
         .milestone-icon {
           position: absolute;
@@ -155,7 +155,7 @@
       position: relative;
       height: 10px;
       margin-bottom: 30px;
-      font-size: 12px;
+      font-size: $size12;
       span {
         position: absolute;
         left: 8px;

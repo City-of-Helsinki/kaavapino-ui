@@ -7,10 +7,10 @@
 
     .floor-area-totals-header {
       color: $black1;
-      font-size: 20px;
+      font-size: $size20;
       font-weight: bold;
       letter-spacing: 0;
-      line-height: 24px;
+      line-height: $size24;
     }
 
     .totals {
@@ -25,13 +25,13 @@
 
         .single-total-title {
           color: $black;
-          font-size: 14px;
+          font-size: $size14;
           font-weight: bold;
           letter-spacing: 0;
         }
         .single-total-value {
           color: $black;
-          font-size: 18px;
+          font-size: $size18;
           letter-spacing: 0;
           margin-top: 4px;
         }

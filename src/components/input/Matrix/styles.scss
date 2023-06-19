@@ -13,10 +13,10 @@
     row-gap: 10px;
 
     .row-header {
-      font-size: 18px;
+      font-size: $size18;
       font-weight: bold;
       letter-spacing: 0;
-      line-height: 22px;
+      line-height: $size22;
       margin-top: 16px;
     }
 
@@ -59,8 +59,8 @@
       border: 1px solid $gray2;
       border-radius: 2px;
       color: black;
-      font-size: 16px;
-      line-height: 56px;
+      font-size: $size16;
+      line-height: $size56;
       padding: 0 16px;
       height: 56px;
       width: 100%;

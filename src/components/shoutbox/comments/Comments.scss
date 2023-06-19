@@ -1,3 +1,4 @@
+@import '../../../components/common/colors.scss';
 /* the heights are overridden in shoutbox.scss, because it requires rather interconnected logic
  * and thus should be in the same file. */
 .comment-list-container {
@@ -9,9 +10,9 @@
     align-items: flex-end;
     border-bottom: 2px solid black;
     display: flex;
-    font-size: 24px;
+    font-size: $size24;
     font-weight: 700;
-    line-height: 24px;
+    line-height: $size24;
     margin: 0;
     padding-bottom: 16px;
     text-transform: uppercase;
@@ -64,7 +65,7 @@
       justify-content: space-between;
 
       .comment-header-text-container {
-        font-size: 12px;
+        font-size: $size12;
         max-width: 100%;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -89,7 +90,7 @@
     }
 
     .comment-content {
-      font-size: 16px;
+      font-size: $size16;
       margin: 16px 0;
     }
 
@@ -134,14 +135,14 @@
       flex-direction: column;
       overflow-wrap: break-word;
       padding: 5px 22px;
-      font-size: 12px;
+      font-size: $size12;
 
       .comment-header-container {
         display: flex;
         justify-content: space-between;
 
         .comment-header-text-container {
-          font-size: 12px;
+          font-size: $size12;
           max-width: 100%;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -166,12 +167,12 @@
       }
 
       .comment-content {
-        font-size: 12px;
+        font-size: $size12;
         margin: 6px 0;
 
         input {
           height: 30px;
-          font-size: 12px;
+          font-size: $size12;
         }
         
       }
@@ -188,7 +189,7 @@
             height: 30px;
             min-height: 30px;
             margin-left: 8px;
-            font-size: 12px;
+            font-size: $size12;
           }
         }
       }
@@ -209,11 +210,11 @@
   height: 30px;
   margin-left: 2px;
   min-height: 30px;
-  font-size: 12px;
+  font-size: $size12;
 }
 input[type='text'] {
   height: 30px;
   min-height: 30px;
-  font-size: 12px;
+  font-size: $size12;
 }
 }
