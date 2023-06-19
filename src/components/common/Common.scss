@@ -101,6 +101,14 @@ h4 {
   @media screen and (min-width: 600px) {
     padding: 32px 22px;
   }
+
+  .field.yellow{
+    border-left: 4px solid $tagyellow;
+  }
+  
+  span.yellow{
+      background-color: $tagyellow;
+  }
 }
 
 footer{
@@ -289,7 +297,6 @@ footer{
 
 .header {
   margin-bottom: 0;
-  background-color: transparent;
   --header-background-color: transparent !important;
   border-bottom: 1px solid $light-gray;
   font-size: 16px;
@@ -330,6 +337,13 @@ footer{
   }
 }
 
+header{
+  position: fixed !important;
+  top:0;
+  z-index: 1000;
+  background-color: white !important;
+}
+
   
 .nav-header-container {
   display: flex;
@@ -368,7 +382,7 @@ footer{
 
 
     .nav-header-content {
-      margin-top: 64px;
+      margin-top: 128px;
       margin-bottom: 48px;
 
       @media screen and (max-width: 725px) { 

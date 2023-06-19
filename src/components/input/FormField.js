@@ -28,6 +28,8 @@ const FormField = ({
   handleLockField,
   handleUnlockField,
   unlockAllFields,
+  highlightedTag,
+  highlightStyle,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -170,8 +172,9 @@ const FormField = ({
       <Form.Field
         className={`input-container ${isOneLineField ? 'small-margin' : ''} ${
           showError ? 'error' : ''
-        }`}
+        } ${highlightStyle}`}
       >
+        {highlightStyle === "yellow" ? <span className={highlightStyle}>{highlightedTag}</span> : ''}
         {!isOneLineField && (
           <div className="input-header">
             <Label

@@ -46,6 +46,7 @@ import InfoComponent from '../common/InfoComponent'
 import { withTranslation } from 'react-i18next'
 import authUtils from '../../utils/authUtils'
 import { isEqual } from 'lodash'
+import FormFilter from './FormFilter'
 
 class ProjectEditPage extends Component {
   state = {
@@ -56,7 +57,12 @@ class ProjectEditPage extends Component {
     selectedRefName: null,
     currentRef: null,
     formInitialized: false,
-    currentEmail: ""
+    currentEmail: "",
+    sectionIndex:0,
+    phaseTitle:0,
+    filterFieldsArray: [],
+    highlightedTag: "",
+    fieldCount:0
   }
 
   currentSectionIndex = 0
@@ -146,7 +152,7 @@ class ProjectEditPage extends Component {
       this.props.history.replace({ ...this.props.location, search: '' })
     }
 
-    element && element.scrollIntoView()
+    element?.scrollIntoView({behavior: "smooth", block: "center", inline: "center"})
   }
   changePhase = () => {
     const { schema, selectedPhase } = this.props
@@ -231,7 +237,7 @@ class ProjectEditPage extends Component {
       allPhases.forEach(phase => {
         const sections = []
         phase.sections.forEach(section => {
-          sections.push({ title: section.title })
+          sections.push({ title: section.title, fields: section.fields })
         })
 
         const newPhase = {
@@ -288,6 +294,23 @@ class ProjectEditPage extends Component {
       checkedSelectedPhase = +params.get('phase')
     }
     return checkedSelectedPhase
+  }
+
+  filterFields = (fields) => {
+    this.setState({ filterFieldsArray: fields })
+  }
+
+  isHighlightedTag = (tag) => {
+    this.setState({highlightedTag:tag})
+  }
+
+  visibleFields = (count) => {
+    this.setState({fieldCount:count})
+  }
+
+  changeSection = (index,title) => {
+    //Show fields only from selected navigation link, not the whole phase
+    this.setState({ sectionIndex: index, phaseTitle:title })
   }
 
   render() {
@@ -358,6 +381,14 @@ class ProjectEditPage extends Component {
               })}
             </InfoComponent>
           )}
+        <FormFilter 
+          schema={schema} 
+          filterFields={this.filterFields} 
+          isHighlightedTag={this.isHighlightedTag} 
+          selectedPhase={selectedPhase}
+          visibleFields={this.visibleFields}
+          sectionIndex={this.state.sectionIndex}
+        />
         <div className={`project-input-container ${highlightGroup}`}>
           <div className="project-input-left">
             <QuickNav
@@ -386,6 +417,11 @@ class ProjectEditPage extends Component {
               isAdmin={isAdmin}
               phase={phase}
               unlockAllFields={this.unlockAllFields}
+              changeSection={this.changeSection}
+              filterFieldsArray={this.state.filterFieldsArray}
+              highlightedTag={this.state.highlightedTag}
+              setFilterAmount={this.setFilterAmount}
+              visibleFields={this.visibleFields}
             />
             <NavigationPrompt
               when={
@@ -428,6 +464,11 @@ class ProjectEditPage extends Component {
             setRef={this.setRef}
             setFormInitialized={this.setFormInitialized}
             unlockAllFields={this.unlockAllFields}
+            phaseTitle={this.state.phaseTitle}
+            filterFieldsArray={this.state.filterFieldsArray}
+            highlightedTag={this.state.highlightedTag}
+            fieldCount={this.state.fieldCount}
+            sectionIndex={this.state.sectionIndex}
           />
           {this.state.showEditFloorAreaForm && (
             <EditFloorAreaFormModal

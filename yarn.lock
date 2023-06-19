@@ -8342,7 +8342,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hds-core@npm:2.12.1, hds-core@npm:^2.12.1":
+"hds-core@npm:2.12.1":
   version: 2.12.1
   resolution: "hds-core@npm:2.12.1"
   checksum: f38eac506ba498027a9ceb14656ab055d9c0cb4fe09c18acfcfd2e8422228c2f52b521c8e5c05aa4794d7c8947b150040f68055b0070cf6cc38294f8768cd975
@@ -10738,7 +10738,7 @@ __metadata:
     eslint-plugin-jest: ^27.2.1
     eslint-plugin-react: ^7.23.2
     file-saver: ^2.0.5
-    hds-core: ^2.12.1
+    hds-core: 2.12.1
     hds-react: 2.12.1
     html-react-parser: ^3.0.12
     husky: ^8.0.3
