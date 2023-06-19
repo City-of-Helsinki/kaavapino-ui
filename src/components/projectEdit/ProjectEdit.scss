@@ -46,7 +46,6 @@
 
   .section-title {
     margin: 0 0 0 8px;
-    padding: 0;
     position: sticky;
     top: 184px;
     padding: 20px;
@@ -182,7 +181,6 @@
     background-color: $color-white;;
     margin: 15% 5%; /* 15% from the top and centered */
     border: 1px solid $color-black;
-    width: 500px; /* Could be more or less, depending on screen size */
     font-size: 16px;
     max-width: 1148px;
     width: fit-content;

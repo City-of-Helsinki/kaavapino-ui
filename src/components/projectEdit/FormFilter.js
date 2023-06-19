@@ -46,8 +46,7 @@ useEffect(() => {
         }
 
         for (let i = 0; i < optionsArray.length; i++) {
-            optionsArray[i].roles.sort();
-            
+            optionsArray[i].roles.sort((a, b) => (a - b));
         }
 
         setOptions(optionsArray)
