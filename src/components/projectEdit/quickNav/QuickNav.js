@@ -84,7 +84,7 @@ export default function QuickNav({
 
   useEffect(() => {
     const c = document.getElementById(`title-${selected}`)
-    c && c.scrollIntoView({behavior: "smooth", block: "center", inline: "center"})
+    c?.scrollIntoView({behavior: "smooth", block: "center", inline: "center"})
     let numberOfFields = calculateFields()
 
     if (typeof visibleFields === 'function'){
@@ -270,8 +270,7 @@ export default function QuickNav({
       <div className="quicknav-navigation-section">
       <Select placeholder={options.curPhase.label} options={options.optionsArray} onChange={switchPhase} />
         <div className="quicknav-content">
-        {selectedPhase.currentPhase &&
-          selectedPhase.currentPhase.map((section, index) => {
+        {selectedPhase?.currentPhase.map((section, index) => {
             let fields = section.fields
             let [filterNumber,highlight] = calculateFilterNumber(fields,highlightedTag)
             return (

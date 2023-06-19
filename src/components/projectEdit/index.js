@@ -152,7 +152,7 @@ class ProjectEditPage extends Component {
       this.props.history.replace({ ...this.props.location, search: '' })
     }
 
-    element && element.scrollIntoView({behavior: "smooth", block: "center", inline: "center"})
+    element?.scrollIntoView({behavior: "smooth", block: "center", inline: "center"})
   }
   changePhase = () => {
     const { schema, selectedPhase } = this.props

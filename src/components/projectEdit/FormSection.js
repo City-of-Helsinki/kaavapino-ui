@@ -30,7 +30,7 @@ const FormSection = ({
   highlightedTag,
   fieldCount
 }) => {
-  if(section && section.title && section.fields){
+  if(section?.title && section?.fields){
   return (
     <Segment id="field-segment">
       <h2 id={`title-${section.title}`} className="section-title">
