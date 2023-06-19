@@ -268,8 +268,9 @@ export default function QuickNav({
   return (
     <div className="quicknav-container">
       <div className="quicknav-navigation-section">
-      <Select placeholder={options.curPhase.label} options={options.optionsArray} onChange={switchPhase} />
-        <div className="quicknav-content">
+      <span id='ext-label' className='visually-hidden'>Vaihda sivun vaihe</span>
+      <Select aria-labelledby="ext-label" placeholder={options.curPhase.label} options={options.optionsArray} onChange={switchPhase} />
+        <nav className="quicknav-content">
         {selectedPhase?.currentPhase.map((section, index) => {
             let fields = section.fields
             let [filterNumber,highlight] = calculateFilterNumber(fields,highlightedTag)
@@ -289,11 +290,12 @@ export default function QuickNav({
                 <div> {section.title} 
                 {filterNumber > 0 ? 
                   <Tag
+                    tabIndex="0"
                     className={`filter-tag ${highlight ? "yellow" : ""}`}
-                    role="link"
+                    role="button"
                     key={`checkbox-${section.title}`}
                     id={`checkbox-${section.title}`}
-                    aria-label={section.title}
+                    aria-label={filterNumber + " suodatettu kenttä esillä"}
                   >
                   {filterNumber}
                   </Tag> 
@@ -303,7 +305,7 @@ export default function QuickNav({
               </Button>
             )
             })}
-        </div>
+        </nav>
       </div>
       <RoleHighlightPicker onRoleUpdate={setHighlightRole} />
 

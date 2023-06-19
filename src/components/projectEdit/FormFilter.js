@@ -117,10 +117,9 @@ if(tagArray.length > 0){
      {tagArray.map((tag) => (
          <Tag
          className='filter-tag'
-         role="link"
+         role="button"
          key={`checkbox-${tag}`}
          id={`checkbox-${tag}`}
-         aria-label={tag}
          onClick={() => highlightTag(event,tag)}
          >
          {tag}
