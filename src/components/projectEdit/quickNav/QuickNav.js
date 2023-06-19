@@ -232,22 +232,6 @@ export default function QuickNav({
     unlockAllFields()
   }
 
-/*   const handleAccordionTitleClick = titleIndex => {
-    const shouldChangePhase = activePhase !== titleIndex
-
-    if (shouldChangePhase) {
-      setActivePhase(activePhase === titleIndex ? null : titleIndex)
-
-      switchDisplayedPhase(titleIndex)
-
-      const accordionTitle = document.getElementById('accordion-title')
-      if (accordionTitle) {
-        accordionTitle.scrollIntoView()
-      }
-    }
-    unlockAllFields()
-  } */
-
   const switchPhase = (item) => {
     let currentPhase;
     let phaseId;
