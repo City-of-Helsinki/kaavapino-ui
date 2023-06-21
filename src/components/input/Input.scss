@@ -36,8 +36,8 @@
 
     .input-info {
       background: url('./assets/icons/field-info-icon.svg') no-repeat center;
-      width: 16px;
-      height: 16px;
+      width: $size16;
+      height: $size16;
     }
 
     .input-history {
@@ -62,7 +62,7 @@
   .ui.checkbox label {
     align-items: center;
     display: flex;
-    font-size: 16px;
+    font-size: $size16;
     height: 24px;
     margin-top: 14px;
     padding-left: 34px;
@@ -141,7 +141,7 @@
 .ui.search.selection.dropdown {
   border-radius: 2px;
   min-height: 56px;
-  line-height: 32px;
+  line-height: $size32;
   padding: 12px 32px 12px 8px;
   margin-top: 4px;
 
@@ -152,7 +152,7 @@
   > .delete.icon,
   > .dropdown.icon,
   > .search.icon {
-    line-height: 56px;
+    line-height: $size56;
     padding: 0;
     right: 20px;
   }
@@ -160,7 +160,7 @@
   > input.search {
     position: absolute;
     height: 56px;
-    line-height: 56px;
+    line-height: $size56;
     padding: 0 32px 0 8px;
     margin: 0;
   }
@@ -179,10 +179,10 @@
   font-family: 'Helsinki Grotesk Bold';
   background-color: transparent;
   color: $black1;
-  font-size: 14px;
+  font-size: $size14;
   font-weight: bold;
   letter-spacing: 0;
-  line-height: 20px;
+  line-height: $size20;
   margin: 0;
   padding: 0;
   transition: none;
@@ -193,9 +193,9 @@
 .ui.form textarea {
   border-radius: 2px;
   border: 1px solid $border-gray;
-  font-size: 16px;
+  font-size: $size16;
   color: $black1;
-  line-height: 16px;
+  line-height: $size16;
   transition: border 0.2s ease;
   padding: 8px 16px;
 
@@ -339,7 +339,7 @@
   .fieldset-header-number {
     position: absolute;
     margin-top: -31px;
-    font-size: 16px;
+    font-size: $size16;
     background: $light-gray3;
     padding: 4px 16px;
   }

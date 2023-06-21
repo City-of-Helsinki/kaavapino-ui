@@ -1,7 +1,7 @@
 @import '../../common/colors.scss';
 
 .edit-project-timetable-form-modal {
-  font-size: 12px;
+  font-size: $size12;
   .collapse .collapse-header {
     height: 40px;
   }
@@ -22,8 +22,8 @@
     width: 80%;
   }
   .ui.form .input input:not(textarea) {
-    font-size: 14px;
-    line-height: 14px;
+    font-size: $size14;
+    line-height: $size14;
   }
   .radio-input-container .ui.checkbox:first-of-type label {
     margin-top: 4px;
@@ -34,14 +34,14 @@
     height: 42px;
   }
   .ui.label {
-    font-size: 12px;
+    font-size: $size12;
     margin-top: 5px;
     width: 100%;
   }
   .ui.form .field > .selection.dropdown {
     padding: 6px 16px 6px 4px;
     min-height: 40px;
-    font-size: 14px;
+    font-size: $size14;
   }
   .deadline-info-icon {
     margin-right: 10px;
@@ -74,6 +74,6 @@
     overflow-y: auto;
   }
   .warning-box {
-    font-size: 14px !important;
+    font-size: $size14 !important;
   }
 }

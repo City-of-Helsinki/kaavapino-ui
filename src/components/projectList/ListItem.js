@@ -3,19 +3,9 @@ import { Link } from 'react-router-dom'
 import { Popup } from 'semantic-ui-react'
 import ProjectTimeline from '../ProjectTimeline/ProjectTimeline'
 import { truncate } from 'lodash'
+import Status from '../common/Status'
 
 const MAX_PROJECT_NAME_LENGTH = 30
-const Status = ({ color }) => {
-  return (
-    <span
-      className="project-status"
-      style={{
-        backgroundColor: color,
-        ...(color === '#ffffff' && { border: '1px solid' })
-      }}
-    />
-  )
-}
 
 const ListItem = ({
   showGraph,

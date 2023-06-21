@@ -33,7 +33,7 @@ $comment-list-height-mobile: calc(
   right: 0;
   top: 0;
   transition: max-width 0.25s ease-in-out;
-  z-index: 10;
+  z-index: 5;
 
   .comment-list-wrapper {
     width: calc(100vw - 16px);
@@ -54,7 +54,7 @@ $comment-list-height-mobile: calc(
   }
 
   .shoutbox-close-icon {
-    font-size: 24px;
+    font-size: $size24;
     height: 24px;
     position: absolute;
     width: 24px;
@@ -81,12 +81,12 @@ $comment-list-height-mobile: calc(
   background: #007293;
   color: white;
   display: flex;
-  font-size: 24px;
+  font-size: $size24;
   font-weight: 700;
   height: 36px;
   justify-content: center;
   left: 0;
-  line-height: 24px;
+  line-height: $size24;
   width: 100%;
 
   .comment-icon-container {
@@ -106,7 +106,7 @@ $comment-list-height-mobile: calc(
       border-radius: 50%;
       color: white;
       display: flex;
-      font-size: 14px;
+      font-size: $size14;
       font-weight: normal;
       height: 20px;
       justify-content: center;

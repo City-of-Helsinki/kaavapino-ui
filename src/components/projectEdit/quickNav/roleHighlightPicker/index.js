@@ -21,9 +21,9 @@ const RoleHighlightPicker = ({ onRoleUpdate }) => {
 
   return (
     <div className="role-highlight-picker">
-      <h4>
+      <div>
         <IconSearch /> {t('project.highlight-fields')}
-      </h4>
+      </div>
 
       <div className="role-buttons">
         {roles.map((role, i) => (

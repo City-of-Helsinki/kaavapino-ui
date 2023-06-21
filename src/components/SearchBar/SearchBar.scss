@@ -13,7 +13,7 @@
         box-sizing: border-box;
         border: none !important;
         border-bottom: 1px solid $black !important;
-        font-size: 12px;
+        font-size: $size12;
         width: 226px;
         height: 32px;
       }
@@ -21,7 +21,7 @@
         box-sizing: border-box;
         border: none !important;
         border-bottom: 1px solid $black !important;
-        font-size: 12px;
+        font-size: $size12;
         width: 100px;
         height: 32px;
       }
@@ -48,7 +48,7 @@
     @media screen and (max-width: 599px) {
       z-index: 1;
       padding-right: 0 !important;
-      font-size: 12px;
+      font-size: $size12;
       width: 100%;
       margin-top: -4px;
     }

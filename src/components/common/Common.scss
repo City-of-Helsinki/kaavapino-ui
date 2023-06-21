@@ -11,9 +11,9 @@ body {
 h1 {
   color: $color-black;
   font-family: 'Helsinki Grotesk Bold', sans-serif;
-  font-size: 64px !important;
+  font-size: $size64 !important;
   letter-spacing: 0;
-  line-height: 64px !important;
+  line-height: $size64 !important;
   margin: 0 !important;
   font-weight: 400 !important;
 }
@@ -21,37 +21,37 @@ h1 {
 h2 {
   color: $color-black;
   font-family: "Helsinki Grotesk Bold", sans-serif;
-  font-size: 24px;
+  font-size: $size24;
   font-weight: 400;
   letter-spacing: 0;
-  line-height: 24px;
+  line-height: $size24;
 }
 
 h3 {
   color: $color-black;
   font-family: "Helsinki Grotesk Bold", sans-serif;
-  font-size: 18px;
+  font-size: $size18;
   font-weight: 400;
   letter-spacing: 0;
 }
 
 h4 {
   font-family: "Helsinki Grotesk Bold", sans-serif;
-  font-size: 14px;
-  line-height: 16px;
+  font-size: $size14;
+  line-height: $size16;
   margin: 44px 0 8px;
 }
 
 .ui.button {
   font-family: "Helsinki Grotesk Medium", sans-serif;
   border-radius: 0;
-  font-size: 16px;
+  font-size: $size16;
   font-weight: 500;
   height: 36px;
   letter-spacing: 0;
-  line-height: 16px;
+  line-height: $size16;
   margin: 0;
-  padding: 0 16px;
+  padding: 0 $size16;
   text-align: center;
   transition: opacity 0.2s ease, border 0.2s ease, background-color 0.2s ease,
     color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease,
@@ -135,41 +135,41 @@ footer{
   .footer-link-group {
     h4 {
       font-family: 'Helsinki Grotesk Bold', sans-serif;
-      font-size: 20px;
+      font-size: $size20;
       color: #000000;
       text-align: left;
     }
     a {
       font-family: 'Helsinki Grotesk Regular', sans-serif;
-      font-size: 16px;
+      font-size: $size16;
       color: #000000 !important;
       text-align: left;
-      line-height: 25.89px;
+      line-height: $size26;
     }
   }
   .footer-copyright {
     font-family: 'Helsinki Grotesk Regular', sans-serif;
-    font-size: 14px;
+    font-size: $size14;
     color: #666666;
     text-align: left;
-    line-height: 18px;
+    line-height: $size18;
     a {
       font-family: 'Helsinki Grotesk Regular', sans-serif;
-      font-size: 14px;
+      font-size: $size14;
       color: $color-black;
       letter-spacing: 0;
       text-decoration: underline $color-black;
-      line-height: 24px;
+      line-height: $size24;
     }
   }
   .footer-feedback {
     a {
       font-family: 'Helsinki Grotesk Regular', sans-serif;
-      font-size: 14px;
+      font-size: $size14;
       color: $color-black;
       letter-spacing: 0;
       text-decoration: underline $color-black;
-      line-height: 24px;
+      line-height: $size24;
       text-align: right;
     }
   }
@@ -189,7 +189,7 @@ footer{
     &.small,
     &.tiny {
       left: 50%;
-      top: 24px;
+      top: $size24;
       transform: translateX(-50%);
       max-width: calc(100vw - 48px);
       width: 740px;
@@ -197,8 +197,8 @@ footer{
 
       > .header {
         border-bottom: 0;
-        font-size: 24px;
-        line-height: 24px;
+        font-size: $size24;
+        line-height: $size24;
         margin: 16px 0;
         padding: 0;
       }
@@ -211,7 +211,7 @@ footer{
       position: relative;
       float: right;
       margin-right: 0;
-      margin-top: 16px;
+      margin-top: $size16;
       color: $color-black;
     }
     .content {
@@ -227,7 +227,7 @@ footer{
       padding: 0;
 
       .button:not(:first-child) {
-        margin-left: 16px;
+        margin-left: $size16;
       }
     }
   }
@@ -237,8 +237,8 @@ footer{
     border-radius: 2px;
     border: 1px solid $color-warning2;
     color: $color-black;
-    font-size: 16px;
-    margin-top: 16px;
+    font-size: $size16;
+    margin-top: $size16;
     padding: 16px 32px;
   }
 
@@ -266,7 +266,7 @@ footer{
         margin: 66px 56px 80px;
 
         .button:not(:first-child) {
-          margin-left: 20px;
+          margin-left: $size20;
         }
       }
 
@@ -286,7 +286,7 @@ footer{
 }
 .popup-logger {
   .show-value {
-    padding-bottom: 20px;
+    padding-bottom: $size20;
   }
   .field-value {
     border: 1px solid $color-black-20;
@@ -299,16 +299,16 @@ footer{
   margin-bottom: 0;
   --header-background-color: transparent !important;
   border-bottom: 1px solid $light-gray;
-  font-size: 16px;
+  font-size: $size16;
   font-family: "Helsinki Grotesk Regular", sans-serif;
   a{
-    font-size: 16px;
+    font-size: $size16;
   }
   [aria-label='Kaavapino']{
     color: $color-black;
   }
   #hds-mobile-menu{
-    z-index: 2000;
+    z-index: 4;
   }
   .header-nav-item:hover{
     color: $color-black;
@@ -340,7 +340,7 @@ footer{
 header{
   position: fixed !important;
   top:0;
-  z-index: 1000;
+  z-index: 4;
   background-color: white !important;
 }
 
@@ -422,8 +422,8 @@ header{
       }
 
       .nav-header-info {
-        font-size: 14px;
-        line-height: 24px;
+        font-size: $size14;
+        line-height: $size24;
         margin-top: 0;
         width: 50%;
 
@@ -450,8 +450,8 @@ header{
     .nav-header-actions {
       display: flex;
       flex-wrap: wrap;
-      margin-top: 12px;
-      margin-bottom: 12px;
+      margin-top: $size12;
+      margin-bottom: $size12;
       justify-content: flex-end;
       width: 100%;
 
@@ -460,13 +460,13 @@ header{
         white-space: nowrap;
 
         > svg {
-          margin-right: 16px;
-          width: 24px;
-          height: 24px;
+          margin-right: $size16;
+          width: $size24;
+          height: $size24;
         }
 
         @media screen and (max-width: 599px) {
-          font-size: 12px;
+          font-size: $size12;
           height: 32px;
           margin-left: 8px;
         }
@@ -484,14 +484,14 @@ header{
     margin-left: 0 !important;
   }
   a {
-    font-size: 16px;
+    font-size: $size16;
     font-family: "Helsinki Grotesk Regular", sans-serif;
     justify-content: left;
-    padding-left: 20px;
+    padding-left: $size20;
     padding-bottom: 30px;
   }
   a:hover{
-    font-size: 16px;
+    font-size: $size16;
     color: $color-black;
     text-decoration: underline;
   }
@@ -507,15 +507,15 @@ header{
 .align-right{
   a{
     font-family: "Helsinki Grotesk Regular", sans-serif;
-    font-size: 16px;
+    font-size: $size16;
   }
   a:hover{
-    font-size: 16px;
+    font-size: $size16;
     color: $color-black;
     text-decoration: underline;
   }
   button{
-    font-size: 16px;
+    font-size: $size16;
     font-family: "Helsinki Grotesk Regular", sans-serif;
   }
 }
