@@ -308,7 +308,7 @@ footer{
     color: $color-black;
   }
   #hds-mobile-menu{
-    z-index: 2000;
+    z-index: 4;
   }
   .header-nav-item:hover{
     color: $color-black;
@@ -340,7 +340,7 @@ footer{
 header{
   position: fixed !important;
   top:0;
-  z-index: 1000;
+  z-index: 4;
   background-color: white !important;
 }
 

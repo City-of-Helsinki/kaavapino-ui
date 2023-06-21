@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, Select, Tag } from 'hds-react'
+import { Button, Tag, IconArrowRight, IconArrowLeft } from 'hds-react'
 import OnHoldCheckbox from '../../input/OnholdCheckbox'
 import ConfirmModal from '../ConfirmModal'
 import { Message } from 'semantic-ui-react'
 import './styles.scss'
 import RoleHighlightPicker from './roleHighlightPicker/index'
+//import Status from '../../common/Status'
 
 export default function QuickNav({
   currentProject,
@@ -30,7 +31,9 @@ export default function QuickNav({
   changeSection,
   filterFieldsArray,
   highlightedTag,
-  visibleFields
+  visibleFields,
+  title,
+  showSections
 }) {
   const [endPhaseError, setEndPhaseError] = useState(false)
   const [verifying, setVerifying] = useState(false)
@@ -40,8 +43,9 @@ export default function QuickNav({
   const [currentTimeout, setCurrentTimeout] = useState(null)
   const [hasErrors, setHasErrors] = useState(false)
   const [validationOk, setValidationOk] = useState(false)
-  const [options,setOptions] = useState({optionsArray:[],curPhase:{label:""}})
+  const [options,setOptions] = useState({optionsArray:[],curPhase:{label:"",color:""}})
   const [selectedPhase,setSelectedPhase] = useState({currentPhase:[],phaseId:0})
+  const prevSelectedRef = useRef(false);
 
   const { t } = useTranslation()
 
@@ -61,23 +65,23 @@ export default function QuickNav({
   useEffect(() => {
     const optionsArray = [];
     let curPhase = ""
-    let phaseId = 0
-    let title = ""
+  //  let phaseId = 0
+  //  let title = ""
 
     if(phases){
       phases.map(phase => {
         if(phase.id === activePhase){
           curPhase = {label:phase.title}
-          title = phase.sections[0].title
-          phaseId = phase.id
+   //       title = phase.sections[0].title
+   //       phaseId = phase.id
         }
-        optionsArray.push({label:phase.title})
+        optionsArray.push({label:phase.title,color:phase.color_code})
     })
     }
 
     if(curPhase && selectedPhase.currentPhase.length === 0){
-      switchPhase(curPhase)
-      handleSectionTitleClick(title, 0, phaseId)
+     // switchPhase(curPhase)
+     // handleSectionTitleClick(title, 0, phaseId)
     }
     setOptions({optionsArray,curPhase})
   }, [phases])
@@ -119,7 +123,7 @@ export default function QuickNav({
         if(phase.id === activePhase){
           curPhase = {label:phase.title}
         }
-        optionsArray.push({label:phase.title})
+        optionsArray.push({label:phase.title,color:phase.color_code})
     })
     }
 
@@ -235,6 +239,7 @@ export default function QuickNav({
   const switchPhase = (item) => {
     let currentPhase;
     let phaseId;
+    prevSelectedRef.current = item
 
     if(phases){
       phases.map((phase) => {
@@ -247,38 +252,92 @@ export default function QuickNav({
 
     setSelectedPhase({currentPhase,phaseId});
     handleSectionTitleClick(item.label, 0, phaseId)
+    showSections(true)
     unlockAllFields()
   }
 
   const calculateFilterNumber = (fields,highlighted) => {
     let filterNumber = 0
+    let highlightNumber = 0
     let highlight = false
 
     for (let x = 0; x < fields.length; x++) {
-      if(filterFieldsArray.includes(fields[x].field_subroles)){
-        filterNumber = filterNumber + 1
-      }
       if(fields[x].field_subroles === highlighted){
         highlight = true
+        if(filterFieldsArray.includes(fields[x].field_subroles)){
+          highlightNumber = highlightNumber + 1
+        }
+      }
+      else{
+        if(filterFieldsArray.includes(fields[x].field_subroles)){
+          filterNumber = filterNumber + 1
+        }
       }
     }
-    return [filterNumber,highlight]
+    return [filterNumber,highlightNumber,highlight]
   }
+
+  const hideSections = () => {
+    setSelectedPhase({currentPhase:[],phaseId:0})
+    showSections(false)
+  } 
 
   return (
     <div className="quicknav-container">
       <div className="quicknav-navigation-section">
-      <span id='ext-label' className='visually-hidden'>Vaihda sivun vaihe</span>
-      <Select aria-labelledby="ext-label" placeholder={options.curPhase.label} options={options.optionsArray} onChange={switchPhase} />
+
+        {selectedPhase?.phaseId === 0 ? (
+          <div className='quicknav-header-container'>
+            <div className='quicknav-header'>
+              <Button variant="supplementary" aria-label="Kaikki vaiheet. Valitse vaihe alla olevasta navigaatiosta tai palaa takaisin aikaisempaan vaiheeseen" disabled={!prevSelectedRef.current} onClick={() => switchPhase(prevSelectedRef.current)} iconRight={<IconArrowRight className='right-icon' />}>
+                Kaikki vaiheet
+              </Button>
+            </div>
+            <span className='quicknav-header-info'>Valitse vaihe tai palaa takaisin nuolen avulla</span>
+          </div>
+        ) : (
+          <div className='quicknav-header-container'>
+            <div className='quicknav-header'>
+                <Button variant="supplementary" aria-label='Palaa takaisin vaiheiden etusivulle' onClick={() => hideSections()} iconLeft={<IconArrowLeft className='left-icon' />}>
+                  {title}
+                </Button>
+            </div>
+          <span className='quicknav-header-info'>TODO:Vaiheen tila tähän ja väri</span>
+          </div>
+        )
+        }
+
         <nav className="quicknav-content">
+        {selectedPhase?.phaseId === 0 && options?.optionsArray.map((option,index) =>{
+          return (
+            <Button
+              aria-label={'Avaa ' + option.label + " lomakkeen sisältö"} 
+              key={option + index}
+              variant="supplementary"
+              className={`quicknav-main quicknav-item ${
+                index === selected && selectedPhase.phaseId === activePhase
+                  ? 'active'
+                  : ''
+              }`}
+              onClick={() =>
+                switchPhase(option)
+              }
+              >
+              {option.label}
+             {/*  <span className='project-status-container'><span>Vaihe käynnissä</span><Status color={option.color} /></span> */}
+            </Button>
+          )
+        })}
         {selectedPhase?.currentPhase.map((section, index) => {
             let fields = section.fields
-            let [filterNumber,highlight] = calculateFilterNumber(fields,highlightedTag)
+            let [filterNumber,highlightNumber,highlight] = calculateFilterNumber(fields,highlightedTag)
             return (
               <Button
+                tabIndex="0"
+                aria-label={'Avaa ' + section.title + " lomakkeen sisältö. " + filterNumber + " suodatettua kenttää esillä. " + highlightNumber + " korostettua kenttää esillä."} 
                 key={index}
                 variant="supplementary"
-                className={`quicknav-item ${
+                className={`quicknav-item ${"phase"+selectedPhase.phaseId} ${
                   index === selected && selectedPhase.phaseId === activePhase
                     ? 'active'
                     : ''
@@ -291,13 +350,24 @@ export default function QuickNav({
                 {filterNumber > 0 ? 
                   <Tag
                     tabIndex="0"
+                    className={`filter-tag`}
+                    role="button"
+                    key={`checkbox-${section.title}`}
+                    id={`checkbox-${section.title}`}
+                  >
+                  {filterNumber}
+                  </Tag> 
+                  : 
+                  ''}
+                  {highlightNumber > 0 ? 
+                  <Tag
+                    tabIndex="0"
                     className={`filter-tag ${highlight ? "yellow" : ""}`}
                     role="button"
                     key={`checkbox-${section.title}`}
                     id={`checkbox-${section.title}`}
-                    aria-label={filterNumber + " suodatettu kenttä esillä"}
                   >
-                  {filterNumber}
+                  {highlightNumber}
                   </Tag> 
                   : 
                   ''}

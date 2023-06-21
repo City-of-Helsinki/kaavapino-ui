@@ -229,7 +229,9 @@ function RichTextEditor(props) {
       lockField(false,false,identifier)
     }
     //Sent a call to unlock field to backend
-    props.handleUnlockField(inputProps.name)
+    if (typeof props.handleUnlockField === 'function') {
+      props.handleUnlockField(inputProps.name)
+    }
     if (inputValue.current !== oldValueRef.current) {
       //prevent saving if locked
       if (!readonly) {

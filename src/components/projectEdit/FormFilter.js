@@ -134,12 +134,12 @@ if(tagArray.length > 0){
  }
 
  if(tagArray.length > 0 && selectedTag === ""){
-    tagText = <div><b>Suodattimet</b></div>
-    tagInfo = <div className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä | Näytetään {fieldCount} kenttää</p></div>
+    tagText = <div><b tabIndex="0">Suodattimet</b></div>
+    tagInfo = <div tabIndex="0" className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä.</p> <span> | </span> <p>Näytetään {fieldCount} kenttää.</p></div>
  }
  else if(tagArray.length > 0 && selectedTag !== ""){
-    tagText = <div><b>Suodattimet</b></div>
-    tagInfo = <div className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä | Näytetään {fieldCount} kenttää | <b>Korostus päällä: </b> {selectedTag}.</p></div>
+    tagText = <div><b tabIndex="0">Suodattimet</b></div>
+    tagInfo = <div tabIndex="0" className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä.</p> <span> | </span> <p>Näytetään {fieldCount} kenttää.</p> <span> | </span> <p><b>Korostus päällä: </b> {selectedTag}.</p></div>
  }
 
 return (
@@ -168,8 +168,8 @@ return (
                             row.push(<h3>{header}</h3>)
                             for (let x = 0; x < roles.length; x++) {
                                 row.push(<Checkbox
-                                    key={`checkbox-${roles[x]}`}
-                                    id={`checkbox-${roles[x]}`}
+                                    key={`checkbox-${roles[x]}-filter`}
+                                    id={`checkbox-${roles[x]}-filter`}
                                     label={roles[x]}
                                     name={roles[x]}
                                     checked={checkedItems[roles[x]]}

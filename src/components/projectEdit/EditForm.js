@@ -75,11 +75,13 @@ class EditForm extends Component {
       sectionIndex,
       filterFieldsArray,
       highlightedTag,
-      fieldCount
+      fieldCount,
+      showSection
     } = this.props
-
     return (
-      <Form className="form-container" autoComplete="off">
+      <>
+      {showSection ?
+      <Form className="form-container" autoComplete="off" aria-live="polite" aria-atomic="true">
         <h2 tabIndex="0" id="accordion-title">{title}</h2>
         <div className="edit-form-buttons">
           {isExpert && (
@@ -124,6 +126,11 @@ class EditForm extends Component {
           <div>{t('footer.to-start')}</div>
         </Button>
       </Form>
+      :
+      <>
+      </>
+      }
+      </>
     )
   }
 }

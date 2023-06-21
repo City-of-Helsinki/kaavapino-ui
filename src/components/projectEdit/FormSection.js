@@ -33,9 +33,9 @@ const FormSection = ({
   if(section?.title && section?.fields){
   return (
     <Segment id="field-segment">
-      <h2 id={`title-${section.title}`} className="section-title">
+      <h3 tabIndex="0" id={`title-${section.title}`} className="section-title">
         {section.title}
-      </h2>
+      </h3>
       {section.fields.map((field, i) => {
         let highlightStyle = highlightedTag === field.field_subroles ? 'yellow' : ''
         if(filterFieldsArray.length === 0 || filterFieldsArray.includes(field.field_subroles)){

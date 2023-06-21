@@ -47,9 +47,9 @@
   .section-title {
     margin: 0 0 0 8px;
     position: sticky;
-    top: 184px;
+    top: 212px;
     padding: 20px;
-    z-index: 2000;
+    z-index: 10;
     background-color: $light-gray3;
 
     @media screen and (min-width: 600px) {
@@ -122,7 +122,7 @@
   }
   @media screen and (min-height: 768px) {
     position: sticky;
-    top: 170px;
+    top: 220px;
   }
 }
 
@@ -137,16 +137,22 @@
   align-items: center;
   justify-content: flex-start;
   position: sticky;
-  top: 64px;
-  z-index: 1000;
+  top: 73px;
+  z-index: 4;
   padding: 20px;
   background-color: $light-gray3;
   border-bottom: 1px solid $light-gray;
+  min-height: 139px;
   .toggle-filters{
     margin-left: auto;
   }
   .left-container{
     flex: 0 80%;
+    line-height: 1.5;
+
+    p{
+      line-height: 1.5;
+    }
 
     b{
       color: black;
@@ -154,6 +160,8 @@
   
     .filter-tag{
       background-color: $gray;
+      border-radius: 25px;
+      line-height: 1.5;
     }
   
     & > .filter-tag{
@@ -171,6 +179,10 @@
     .filter-tag-info{
       display: flex;
       width: 100%;
+      span{
+        padding-left: 5px;
+        padding-right: 5px;
+      }
     }
 
     div{
@@ -181,6 +193,8 @@
 
   .right-container{
     flex: 0 20%;
+    display: flex;
+    justify-content: flex-end;
   }
 
 }

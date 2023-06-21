@@ -20,18 +20,7 @@ import { truncate } from 'lodash'
 import { Link } from 'react-router-dom'
 import { Popup } from 'semantic-ui-react'
 import ProjectTimeline from '../ProjectTimeline/ProjectTimeline'
-
-const Status = ({ color }) => {
-  return (
-    <span
-      className="project-status-color"
-      style={{
-        backgroundColor: color,
-        ...(color === '#ffffff' && { border: '1px solid' })
-      }}
-    />
-  )
-}
+import Status from '../common/Status'
 
 class List extends Component {
   constructor(props) {

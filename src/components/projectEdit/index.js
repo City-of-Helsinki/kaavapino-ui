@@ -62,7 +62,8 @@ class ProjectEditPage extends Component {
     phaseTitle:0,
     filterFieldsArray: [],
     highlightedTag: "",
-    fieldCount:0
+    fieldCount:0,
+    showSection:false
   }
 
   currentSectionIndex = 0
@@ -88,7 +89,7 @@ class ProjectEditPage extends Component {
   }
   componentDidMount() {
     window.addEventListener('resize', this.handleResize)
-    window.addEventListener("click", this.checkClickedElement);
+    //window.addEventListener("click", this.checkClickedElement);
 
     if (window.innerWidth < 720) {
       this.setState({
@@ -127,18 +128,18 @@ class ProjectEditPage extends Component {
 
   componentWillUnmount() {
     this.props.clearSchemas()
-    window.removeEventListener("click", this.checkClickedElement);
+    //window.removeEventListener("click", this.checkClickedElement);
     window.removeEventListener('resize', this.handleResize)
   }
 
-   checkClickedElement = (e) => {
+/*    checkClickedElement = (e) => {
     if(e.target.className && (typeof e.target.className === 'string' || e.target.className instanceof String)){
       //Lose focus and unclock if select button is clicked
       if(e.target.className.includes("Select-module") || e.target.parentNode.className.includes("Select-module")){
         this.unlockAllFields()
       }
     }
-  };
+  }; */
 
   scroll() {
     const search = this.props.location.search
@@ -296,6 +297,10 @@ class ProjectEditPage extends Component {
     return checkedSelectedPhase
   }
 
+  showSections = (show) => {
+    this.setState({showSection: show})
+  }
+
   filterFields = (fields) => {
     this.setState({ filterFieldsArray: fields })
   }
@@ -335,7 +340,7 @@ class ProjectEditPage extends Component {
       currentUserId
     } = this.props
     const { highlightGroup } = this.state
-
+   
     if (!schema) {
       return <LoadingSpinner className="loader-icon" />
     }
@@ -422,6 +427,8 @@ class ProjectEditPage extends Component {
               highlightedTag={this.state.highlightedTag}
               setFilterAmount={this.setFilterAmount}
               visibleFields={this.visibleFields}
+              title={currentSchema.title}
+              showSections={this.showSections}
             />
             <NavigationPrompt
               when={
@@ -469,6 +476,7 @@ class ProjectEditPage extends Component {
             highlightedTag={this.state.highlightedTag}
             fieldCount={this.state.fieldCount}
             sectionIndex={this.state.sectionIndex}
+            showSection={this.state.showSection}
           />
           {this.state.showEditFloorAreaForm && (
             <EditFloorAreaFormModal

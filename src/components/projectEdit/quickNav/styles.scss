@@ -8,8 +8,38 @@
 
 
   .quicknav-navigation-section {
-    background-color: $light-gray3;
-    padding: 32px;
+    .quicknav-header-container{
+      border-bottom: 2px solid;
+      padding-bottom: 15px;
+      .quicknav-header{
+        display: flex;
+        justify-content: flex-start;
+        button{
+          padding: 0;
+          div{
+            margin: 0;
+          }
+          svg{
+            color: $black1;
+          }
+          span{
+            font-size: $size24;
+            color: $black;
+            padding-bottom: 0;
+            padding-top: 0;
+          }
+        }
+        button:hover{
+          background-color: transparent;
+        }
+      }
+      .quicknav-header-info{
+        font-size: $size14;
+        font-style: italic;
+        color: $color-black-60;
+        padding-left: 0;
+      }
+    }
   }
 
   .quicknav-title {
@@ -23,9 +53,10 @@
     border-bottom: 1px solid $gray;
     display: flex;
     flex-direction: column;
-    max-height: 45vh;
+    max-height: 100%;
     overflow: hidden;
-    overflow-y: auto;
+    border-right: 1px solid $gray;
+    padding-top: 10px;
     
     .phase-accordion > div{
       font-size: $size16;
@@ -50,25 +81,178 @@
     .quicknav-item {
       cursor: pointer;
       display: block;
-      padding-left: 8px;
-      margin: 20px 8px 0;
-      font-size: $size14;
+      font-size: $size16;
       margin-top: 0px;
-      color: black;
+      color: $color-black-70;
       text-align: left;
-      margin-left: 10px;
-      width: 90%;
-     
+      padding-left: 20px;
+      width: 100%;
+      border-bottom: 1px solid $light-gray;
 
-      &.active {
+      span{
+        padding-left: 0;
+        margin-left: 0;
+        padding-right: 5px;
+        .project-status-container{
+          float: right;
+          font-size: $size14;
+          .project-status-color{
+            border-radius: 100%;
+            display: inline-flex;
+            min-height: 10px;
+            min-width: 10px;
+            height: 10px;
+          }
+          .project-status-text{
+            padding-left: 2px;
+          }
+        }
+        div{
+          padding-top: 15px;
+          .filter-tag{
+            font-size: $size14;
+            float: right;
+            padding: 0;
+            --tag-height: 10px;
+            margin-left: 5px;
+            span{
+              padding: 2px;
+              margin: 0;
+            }
+          }
+        }
+      }
+    }
+
+    .phase19{
+      &:hover{
+        border-left: 4px solid;
+        border-left-color: #02d7a7;
+        text-decoration: underline;
+        background-color: transparent;
+      }
+      &.active{
         font-weight: bold;
-        color: $color-primary;
-        border-left: 2px solid;
+        border-left: 4px solid;
+        border-left-color: #02d7a7;
+        background-color: $light-gray3;
+      }
+    }
+
+    .phase20{
+      &:hover{
+        border-left: 4px solid;
+        border-left-color: #ffc61e ;
+        text-decoration: underline;
+        background-color: transparent;
+      }
+      &.active{
+        font-weight: bold;
+        border-left: 4px solid;
+        border-left-color: #ffc61e ;
+        background-color: $light-gray3;
+      }
+    }
+
+    .phase21{
+      &:hover{
+        border-left: 4px solid;
+        border-left-color: #fd4f00;
+        text-decoration: underline;
+        background-color: transparent;
+      }
+      &.active{
+        font-weight: bold;
+        border-left: 4px solid;
+        border-left-color: #fd4f00;
+        background-color: $light-gray3;
+      }
+    }
+
+    .phase22{
+      &:hover{
+        border-left: 4px solid;
+        border-left-color: #0000bf;
+        text-decoration: underline;
+        background-color: transparent;
+      }
+      &.active{
+        font-weight: bold;
+        border-left: 4px solid;
+        border-left-color: #0000bf;
+        background-color: $light-gray3;
+      }
+    }
+
+    .phase23{
+      &:hover{
+        border-left: 4px solid;
+        border-left-color: #bd9650;
+        text-decoration: underline;
+        background-color: transparent;
+      }
+      &.active{
+        font-weight: bold;
+        border-left: 4px solid;
+        border-left-color: #bd9650;
+        background-color: $light-gray3;
+      }
+    }
+
+    .phase24{
+      &:hover{
+        border-left: 4px solid;
+        border-left-color: #9ec8eb;
+        text-decoration: underline;
+        background-color: transparent;
+      }
+      &.active{
+        font-weight: bold;
+        border-left: 4px solid;
+        border-left-color: #9ec8eb;
+        background-color: $light-gray3;
       }
     }
 
     .yellow{
       background-color: $tagyellow;
+    }
+
+    .quicknav-main:nth-of-type(1):hover{
+      border-left: 4px solid;
+      border-left-color: #02d7a7;
+      text-decoration: underline;
+      background-color: transparent;
+    }
+    .quicknav-main:nth-of-type(2):hover{
+      border-left: 4px solid;
+      border-left-color: #ffc61e !important;
+      text-decoration: underline;
+      background-color: transparent;
+    }
+    .quicknav-main:nth-of-type(3):hover{
+      border-left: 4px solid;
+      border-left-color: #fd4f00 !important;
+      text-decoration: underline;
+      background-color: transparent;
+    }
+    .quicknav-main:nth-of-type(4):hover{
+      border-left: 4px solid;
+      border-left-color: #0000bf !important;
+      text-decoration: underline;
+      background-color: transparent;
+    }
+    .quicknav-main:nth-of-type(5):hover{
+      border-left: 4px solid;
+      border-left-color: #bd9650 !important;
+      text-decoration: underline;
+      background-color: transparent;
+    }
+    .quicknav-main:nth-of-type(6):hover{
+      border-left: 4px solid;
+      border-left-color: #9ec8eb !important;
+      text-decoration: underline;
+      background-color: transparent;
     }
   }
 
