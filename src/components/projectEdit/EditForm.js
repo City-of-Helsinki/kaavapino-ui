@@ -104,7 +104,7 @@ class EditForm extends Component {
             syncronousErrors={syncronousErrors}
             submitErrors={submitErrors}
             formName={EDIT_PROJECT_FORM}
-            key={sectionIndex}
+            key={sections + sectionIndex}
             handleSave={this.props.handleSave}
             handleLockField={this.props.handleLockField}
             handleUnlockField={this.props.handleUnlockField}

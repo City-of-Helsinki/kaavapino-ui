@@ -43,8 +43,8 @@ export default function QuickNav({
   const [currentTimeout, setCurrentTimeout] = useState(null)
   const [hasErrors, setHasErrors] = useState(false)
   const [validationOk, setValidationOk] = useState(false)
-  const [options,setOptions] = useState({optionsArray:[],curPhase:{label:"",color:""}})
-  const [selectedPhase,setSelectedPhase] = useState({currentPhase:[],phaseId:0})
+  const [options,setOptions] = useState({optionsArray:[],curPhase:{label:"",color:"",phaseID:0}})
+  const [selectedPhase,setSelectedPhase] = useState({currentPhase:[],phaseID:0})
   const prevSelectedRef = useRef(false);
 
   const { t } = useTranslation()
@@ -65,7 +65,7 @@ export default function QuickNav({
   useEffect(() => {
     const optionsArray = [];
     let curPhase = ""
-  //  let phaseId = 0
+  //  let phaseID = 0
   //  let title = ""
 
     if(phases){
@@ -73,15 +73,15 @@ export default function QuickNav({
         if(phase.id === activePhase){
           curPhase = {label:phase.title}
    //       title = phase.sections[0].title
-   //       phaseId = phase.id
+   //       phaseID = phase.id
         }
-        optionsArray.push({label:phase.title,color:phase.color_code})
+        optionsArray.push({label:phase.title,color:phase.color_code,phaseID:phase.id})
     })
     }
 
     if(curPhase && selectedPhase.currentPhase.length === 0){
      // switchPhase(curPhase)
-     // handleSectionTitleClick(title, 0, phaseId)
+     // handleSectionTitleClick(title, 0, phaseID)
     }
     setOptions({optionsArray,curPhase})
   }, [phases])
@@ -123,7 +123,7 @@ export default function QuickNav({
         if(phase.id === activePhase){
           curPhase = {label:phase.title}
         }
-        optionsArray.push({label:phase.title,color:phase.color_code})
+        optionsArray.push({label:phase.title,color:phase.color_code,phaseID:phase.id})
     })
     }
 
@@ -223,35 +223,35 @@ export default function QuickNav({
     setEndPhaseError(false)
   }
 
-  const handleSectionTitleClick = (title, index, phaseId) => {
-    if (phaseId !== activePhase) {
-      setActivePhase(phaseId)
-      switchDisplayedPhase(phaseId)
+  const handleSectionTitleClick = (title, index, phaseID, fields) => {
+    if (phaseID !== activePhase) {
+      setActivePhase(phaseID)
+      switchDisplayedPhase(phaseID)
     }
     if(title){
       setSelected(index)
     }
 
-    changeSection(index,phaseId)
+    changeSection(index,phaseID,fields)
     unlockAllFields()
   }
 
   const switchPhase = (item) => {
     let currentPhase;
-    let phaseId;
+    let phaseID;
     prevSelectedRef.current = item
 
     if(phases){
       phases.map((phase) => {
         if(phase.title === item.label){
           currentPhase = phase.sections
-          phaseId = phase.id
+          phaseID = phase.id
         }
       });
     }
 
-    setSelectedPhase({currentPhase,phaseId});
-    handleSectionTitleClick(item.label, 0, phaseId)
+    setSelectedPhase({currentPhase,phaseID});
+    handleSectionTitleClick(item.label, 0, phaseID,currentPhase)
     showSections(true)
     unlockAllFields()
   }
@@ -278,7 +278,7 @@ export default function QuickNav({
   }
 
   const hideSections = () => {
-    setSelectedPhase({currentPhase:[],phaseId:0})
+    setSelectedPhase({currentPhase:[],phaseID:0})
     showSections(false)
   } 
 
@@ -286,10 +286,10 @@ export default function QuickNav({
     <div className="quicknav-container">
       <div className="quicknav-navigation-section">
 
-        {selectedPhase?.phaseId === 0 ? (
+        {selectedPhase?.phaseID === 0 ? (
           <div className='quicknav-header-container'>
             <div className='quicknav-header'>
-              <Button variant="supplementary" aria-label="Kaikki vaiheet. Valitse vaihe alla olevasta navigaatiosta tai palaa takaisin aikaisempaan vaiheeseen" disabled={!prevSelectedRef.current} onClick={() => switchPhase(prevSelectedRef.current)} iconRight={<IconArrowRight className='right-icon' />}>
+              <Button variant="supplementary" className='quicknav-allphases' aria-label="Kaikki vaiheet. Valitse vaihe alla olevasta navigaatiosta tai palaa takaisin aikaisempaan vaiheeseen" disabled={!prevSelectedRef.current} onClick={() => switchPhase(prevSelectedRef.current)} iconRight={<IconArrowRight className='right-icon' />}>
                 Kaikki vaiheet
               </Button>
             </div>
@@ -308,14 +308,14 @@ export default function QuickNav({
         }
 
         <nav className="quicknav-content">
-        {selectedPhase?.phaseId === 0 && options?.optionsArray.map((option,index) =>{
+        {selectedPhase?.phaseID === 0 && options?.optionsArray.map((option,index) =>{
           return (
             <Button
               aria-label={'Avaa ' + option.label + " lomakkeen sisältö"} 
               key={option + index}
               variant="supplementary"
-              className={`quicknav-main quicknav-item ${
-                index === selected && selectedPhase.phaseId === activePhase
+              className={`${"phase"+option.phaseID} quicknav-item ${
+                index === selected && selectedPhase.phaseID === activePhase
                   ? 'active'
                   : ''
               }`}
@@ -337,13 +337,13 @@ export default function QuickNav({
                 aria-label={'Avaa ' + section.title + " lomakkeen sisältö. " + filterNumber + " suodatettua kenttää esillä. " + highlightNumber + " korostettua kenttää esillä."} 
                 key={index}
                 variant="supplementary"
-                className={`quicknav-item ${"phase"+selectedPhase.phaseId} ${
-                  index === selected && selectedPhase.phaseId === activePhase
+                className={`quicknav-item ${"phase"+selectedPhase.phaseID} ${
+                  index === selected && selectedPhase.phaseID === activePhase
                     ? 'active'
                     : ''
                 }`}
                 onClick={() =>
-                  handleSectionTitleClick(section.title, index, selectedPhase.phaseId)
+                  handleSectionTitleClick(section.title, index, selectedPhase.phaseID,selectedPhase.currentPhase)
                 }
               >
                 <div> {section.title} 
@@ -364,7 +364,7 @@ export default function QuickNav({
                     tabIndex="0"
                     className={`filter-tag ${highlight ? "yellow" : ""}`}
                     role="button"
-                    key={`checkbox-${section.title}`}
+                    key={`checkbox-${section.title}-highlighted`}
                     id={`checkbox-${section.title}`}
                   >
                   {highlightNumber}

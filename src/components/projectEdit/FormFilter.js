@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect }  from 'react'
 import { Button, Tag, IconTrash, Checkbox } from 'hds-react';
 
-function FormFilter({schema,filterFields,isHighlightedTag,sectionIndex}) {
+function FormFilter({schema,filterFields,isHighlightedTag,selectedPhase,allfields}) {
 
 const openButtonRef = useRef(null);
 const modal = document.getElementById("myModal");
@@ -10,7 +10,7 @@ const [tagArray, setTagArray] = useState([])
 const [checkedItems, setCheckedItems] = useState({});
 const [selectedTag, setSelectedTag] = useState("")
 const [options,setOptions] = useState([]);
-const [fieldCount,setFieldCount] = useState(0);
+const [totalFilteredFields,setTotalFilteredFields] = useState(0)
 
 useEffect(() => {
     let tagArray = []
@@ -20,18 +20,16 @@ useEffect(() => {
         }
     }
     setTagArray(tagArray)
-    calculateFields()
 }, [tags])
 
 useEffect(() => {
-    calculateFields()
-}, [sectionIndex])
+    calculateFields(allfields)
+}, [selectedPhase])
 
 useEffect(() => {
     let optionsArray = [{header:"Asiantuntija",roles:[]},{header:"Pääkäyttäjä",roles:[]},{header:"Vastuuhenkilö",roles:[]}]
     if(schema){
         let roles = schema.filters.subroles
-
         for (let x = 0; x < roles.length; x++) {
             if(roles[x] === "Projektin vastuuhenkilö"){
                 optionsArray[2].roles.push(roles[x]);
@@ -53,9 +51,30 @@ useEffect(() => {
     }
 }, [schema])
 
-const calculateFields = () => {
-    let numberOfFields = document.querySelectorAll(':not(.fieldset-container) > .input-container').length
-    setFieldCount(numberOfFields)
+const calculateFields = (all) => {
+   let fields = []
+   if(typeof filterFields === 'function'){
+       //Get only field keys from checboxes not the true / false value for filtering fields
+       fields = Object.keys(checkedItems).filter(k=>checkedItems[k]===true)
+
+       if(fields.length === 0){
+           isHighlightedTag("")
+       }
+       
+       filterFields(fields)
+   }
+   
+   let totalFilteredFields = 0;
+   for (let i = 0; i < all.length; i++) {
+       let field = all[i].fields
+       for (let x = 0; x < field.length; x++) {
+           if(fields.includes(field[x].field_subroles)){
+               totalFilteredFields = totalFilteredFields + 1
+           }
+       }
+   }
+
+   setTotalFilteredFields(totalFilteredFields)
 }
 
 const handleChange = (e) => {
@@ -76,17 +95,7 @@ const closeModal = () => {
 const saveSelections = () => {
     setTags(checkedItems)
     modal.style.display = "none";
-    let fields = []
-    if(typeof filterFields === 'function'){
-        //Get only field keys from checboxes not the true / false value for filtering fields
-        fields = Object.keys(checkedItems).filter(k=>checkedItems[k]===true)
-
-        if(fields.length === 0){
-            isHighlightedTag("")
-        }
-        
-        filterFields(fields)
-    }
+    calculateFields(allfields)
 }
 
 const removeFilters = () => {
@@ -119,7 +128,7 @@ if(tagArray.length > 0){
          <Tag
          className='filter-tag'
          role="button"
-         key={`checkbox-${tag}`}
+         key={`checkbox-${tag}-key`}
          id={`checkbox-${tag}`}
          onClick={() => highlightTag(event,tag)}
          aria-label={tag + ". Ota korostus käyttöön klikkaamalla painiketta."}
@@ -135,11 +144,11 @@ if(tagArray.length > 0){
 
  if(tagArray.length > 0 && selectedTag === ""){
     tagText = <div><b tabIndex="0">Suodattimet</b></div>
-    tagInfo = <div tabIndex="0" className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä.</p> <span> | </span> <p>Näytetään {fieldCount} kenttää.</p></div>
+    tagInfo = <div tabIndex="0" className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä.</p> <span> | </span> <p>Näytetään {totalFilteredFields} kenttää.</p></div>
  }
  else if(tagArray.length > 0 && selectedTag !== ""){
     tagText = <div><b tabIndex="0">Suodattimet</b></div>
-    tagInfo = <div tabIndex="0" className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä.</p> <span> | </span> <p>Näytetään {fieldCount} kenttää.</p> <span> | </span> <p><b>Korostus päällä: </b> {selectedTag}.</p></div>
+    tagInfo = <div tabIndex="0" className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä.</p> <span> | </span> <p>Näytetään {totalFilteredFields} kenttää.</p> <span> | </span> <p><b>Korostus päällä: </b> {selectedTag}.</p></div>
  }
 
 return (
@@ -165,7 +174,7 @@ return (
                         for (let i = 0; i < options.length; i++) {
                             let header = options[i].header
                             let roles = options[i].roles
-                            row.push(<h3>{header}</h3>)
+                            row.push(<h3 key={header + i}>{header}</h3>)
                             for (let x = 0; x < roles.length; x++) {
                                 row.push(<Checkbox
                                     key={`checkbox-${roles[x]}-filter`}

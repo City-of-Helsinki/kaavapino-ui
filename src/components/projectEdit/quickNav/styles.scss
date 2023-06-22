@@ -32,6 +32,11 @@
         button:hover{
           background-color: transparent;
         }
+        .quicknav-allphases{
+          span{
+            padding-left: 0;
+          }
+        }
       }
       .quicknav-header-info{
         font-size: $size14;
@@ -124,135 +129,128 @@
       }
     }
 
-    .phase19{
+    .phase7,.phase19,.phase25{
       &:hover{
         border-left: 4px solid;
-        border-left-color: #02d7a7;
+        border-left-color: $color_phase_start;
         text-decoration: underline;
         background-color: transparent;
       }
       &.active{
         font-weight: bold;
         border-left: 4px solid;
-        border-left-color: #02d7a7;
+        border-left-color: $color_phase_start;
         background-color: $light-gray3;
       }
     }
 
-    .phase20{
+    .phase26{
       &:hover{
         border-left: 4px solid;
-        border-left-color: #ffc61e ;
+        border-left-color: $color_phase_principles;
         text-decoration: underline;
         background-color: transparent;
       }
       &.active{
         font-weight: bold;
         border-left: 4px solid;
-        border-left-color: #ffc61e ;
+        border-left-color: $color_phase_principles;
         background-color: $light-gray3;
       }
     }
 
-    .phase21{
+    .phase8,.phase20,.phase27{
       &:hover{
         border-left: 4px solid;
-        border-left-color: #fd4f00;
+        border-left-color: $color_phase_oas;
         text-decoration: underline;
         background-color: transparent;
       }
       &.active{
         font-weight: bold;
         border-left: 4px solid;
-        border-left-color: #fd4f00;
+        border-left-color: $color_phase_oas;
         background-color: $light-gray3;
       }
     }
 
-    .phase22{
+    .phase28{
       &:hover{
         border-left: 4px solid;
-        border-left-color: #0000bf;
+        border-left-color: $color_phase_draft;
         text-decoration: underline;
         background-color: transparent;
       }
       &.active{
         font-weight: bold;
         border-left: 4px solid;
-        border-left-color: #0000bf;
+        border-left-color: $color_phase_draft;
         background-color: $light-gray3;
       }
     }
 
-    .phase23{
+    .phase9,.phase21,.phase29{
       &:hover{
         border-left: 4px solid;
-        border-left-color: #bd9650;
+        border-left-color: $color_phase_suggestion;
         text-decoration: underline;
         background-color: transparent;
       }
       &.active{
         font-weight: bold;
         border-left: 4px solid;
-        border-left-color: #bd9650;
+        border-left-color: $color_phase_suggestion;
         background-color: $light-gray3;
       }
     }
 
-    .phase24{
+    .phase10,.phase22,.phase30{
       &:hover{
         border-left: 4px solid;
-        border-left-color: #9ec8eb;
+        border-left-color: $color_phase_check_suggestion;
         text-decoration: underline;
         background-color: transparent;
       }
       &.active{
         font-weight: bold;
         border-left: 4px solid;
-        border-left-color: #9ec8eb;
+        border-left-color: $color_phase_check_suggestion;
+        background-color: $light-gray3;
+      }
+    }
+
+    .phase11,.phase23,.phase31{
+      &:hover{
+        border-left: 4px solid;
+        border-left-color: $color_phase_approval;
+        text-decoration: underline;
+        background-color: transparent;
+      }
+      &.active{
+        font-weight: bold;
+        border-left: 4px solid;
+        border-left-color: $color_phase_approval;
+        background-color: $light-gray3;
+      }
+    }
+
+    .phase12,.phase24,.phase32{
+      &:hover{
+        border-left: 4px solid;
+        border-left-color: $color_phase_inception;
+        text-decoration: underline;
+        background-color: transparent;
+      }
+      &.active{
+        font-weight: bold;
+        border-left: 4px solid;
+        border-left-color: $color_phase_inception;
         background-color: $light-gray3;
       }
     }
 
     .yellow{
       background-color: $tagyellow;
-    }
-
-    .quicknav-main:nth-of-type(1):hover{
-      border-left: 4px solid;
-      border-left-color: #02d7a7;
-      text-decoration: underline;
-      background-color: transparent;
-    }
-    .quicknav-main:nth-of-type(2):hover{
-      border-left: 4px solid;
-      border-left-color: #ffc61e !important;
-      text-decoration: underline;
-      background-color: transparent;
-    }
-    .quicknav-main:nth-of-type(3):hover{
-      border-left: 4px solid;
-      border-left-color: #fd4f00 !important;
-      text-decoration: underline;
-      background-color: transparent;
-    }
-    .quicknav-main:nth-of-type(4):hover{
-      border-left: 4px solid;
-      border-left-color: #0000bf !important;
-      text-decoration: underline;
-      background-color: transparent;
-    }
-    .quicknav-main:nth-of-type(5):hover{
-      border-left: 4px solid;
-      border-left-color: #bd9650 !important;
-      text-decoration: underline;
-      background-color: transparent;
-    }
-    .quicknav-main:nth-of-type(6):hover{
-      border-left: 4px solid;
-      border-left-color: #9ec8eb !important;
-      text-decoration: underline;
-      background-color: transparent;
     }
   }
 

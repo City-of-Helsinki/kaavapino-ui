@@ -63,7 +63,8 @@ class ProjectEditPage extends Component {
     filterFieldsArray: [],
     highlightedTag: "",
     fieldCount:0,
-    showSection:false
+    showSection:false,
+    fields:[]
   }
 
   currentSectionIndex = 0
@@ -313,9 +314,9 @@ class ProjectEditPage extends Component {
     this.setState({fieldCount:count})
   }
 
-  changeSection = (index,title) => {
+  changeSection = (index,title,fields) => {
     //Show fields only from selected navigation link, not the whole phase
-    this.setState({ sectionIndex: index, phaseTitle:title })
+    this.setState({ sectionIndex: index, phaseTitle:title, fields:fields })
   }
 
   render() {
@@ -393,6 +394,7 @@ class ProjectEditPage extends Component {
           selectedPhase={selectedPhase}
           visibleFields={this.visibleFields}
           sectionIndex={this.state.sectionIndex}
+          allfields={this.state.fields}
         />
         <div className={`project-input-container ${highlightGroup}`}>
           <div className="project-input-left">
