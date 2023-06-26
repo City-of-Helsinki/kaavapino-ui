@@ -140,6 +140,8 @@
   top: 73px;
   z-index: 4;
   padding: 20px;
+  padding-bottom: 10px;
+  padding-top: 10px;
   background-color: $light-gray3;
   border-bottom: 1px solid $light-gray;
   min-height: 139px;
@@ -152,6 +154,7 @@
 
     p{
       line-height: 1.5;
+      margin: 0;
     }
 
     b{
@@ -234,7 +237,7 @@
   /* Modal Content/Box */
   .modal-content {
     background-color: $color-white;
-    margin: 15% 5%; /* 15% from the top and centered */
+    margin: 15%; /* 15% from the top and centered */
     border: 1px solid $color-black;
     font-size: $size16;
     max-width: 1148px;
