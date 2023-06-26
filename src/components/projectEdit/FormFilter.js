@@ -42,11 +42,9 @@ useEffect(() => {
                 optionsArray[0].roles.push(roles[x]);
             }
         }
-
         for (let i = 0; i < optionsArray.length; i++) {
-            optionsArray[i].roles.sort((a, b) => (a - b));
+            optionsArray[i].roles.sort((a, b) => a.localeCompare(b));
         }
-
         setOptions(optionsArray)
     }
 }, [schema])
