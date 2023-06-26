@@ -69,7 +69,7 @@ const calculateFields = (all) => {
        let field = all[i].fields
        for (let x = 0; x < field.length; x++) {
            if(fields.includes(field[x].field_subroles)){
-               totalFilteredFields = totalFilteredFields + 1
+            totalFilteredFields = totalFilteredFields + 1
            }
        }
    }

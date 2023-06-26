@@ -27,9 +27,9 @@ const FormSection = ({
   setRef,
   unlockAllFields,
   filterFieldsArray,
-  highlightedTag,
-  fieldCount
+  highlightedTag
 }) => {
+  let count = 0;
   if(section?.title && section?.fields){
   return (
     <Segment id="field-segment">
@@ -39,8 +39,9 @@ const FormSection = ({
       {section.fields.map((field, i) => {
         let highlightStyle = highlightedTag === field.field_subroles ? 'yellow' : ''
         if(filterFieldsArray.length === 0 || filterFieldsArray.includes(field.field_subroles)){
+          count++
           return (<FormField
-            key={`${field.name}-${i}`}
+            key={`${field.name}-${i}-${field.label}`}
             checking={checking}
             disabled={disabled}
             field={{ ...field, disabled: disabled || field.disabled }}
@@ -65,7 +66,7 @@ const FormSection = ({
           return <></>
         }
     })}
-    {fieldCount === 0 && filterFieldsArray.length > 0 ? <Notification label="New messages">You have received new messages.</Notification> : ""}
+    {count === 0 ? <Notification label="Suodatinvalinalla ei löytynyt tämän otsikon alta suodatettavia kenttiä."></Notification> : ""}
     </Segment>
   )
   }

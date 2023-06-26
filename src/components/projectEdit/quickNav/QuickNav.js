@@ -31,7 +31,6 @@ export default function QuickNav({
   changeSection,
   filterFieldsArray,
   highlightedTag,
-  visibleFields,
   title,
   showSections
 }) {
@@ -53,14 +52,6 @@ export default function QuickNav({
     setCheckButtonPressed(true)
     handleCheck()
   }
-
-  useEffect(() => {
-    let numberOfFields = calculateFields()
-    if (typeof visibleFields === 'function'){
-      visibleFields(numberOfFields)
-    }
-
-  }, [selectedPhase])
 
   useEffect(() => {
     const optionsArray = [];
@@ -89,11 +80,6 @@ export default function QuickNav({
   useEffect(() => {
     const c = document.getElementById(`title-${selected}`)
     c?.scrollIntoView({behavior: "smooth", block: "center", inline: "center"})
-    let numberOfFields = calculateFields()
-
-    if (typeof visibleFields === 'function'){
-      visibleFields(numberOfFields)
-    }
   }, [selected])
 
   useEffect(() => {
@@ -130,10 +116,6 @@ export default function QuickNav({
     setOptions({optionsArray,curPhase})
   }, [])
 
-  const calculateFields = () => {
-    let numberOfFields = document.querySelectorAll(':not(.fieldset-container) > .input-container').length
-    return numberOfFields
-  }
 
   const renderButtons = () => {
     return (
