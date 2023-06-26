@@ -62,8 +62,8 @@ class ProjectEditPage extends Component {
     phaseTitle:0,
     filterFieldsArray: [],
     highlightedTag: "",
-    fieldCount:0,
-    showSection:false
+    showSection:false,
+    fields:[]
   }
 
   currentSectionIndex = 0
@@ -309,13 +309,9 @@ class ProjectEditPage extends Component {
     this.setState({highlightedTag:tag})
   }
 
-  visibleFields = (count) => {
-    this.setState({fieldCount:count})
-  }
-
-  changeSection = (index,title) => {
+  changeSection = (index,title,fields) => {
     //Show fields only from selected navigation link, not the whole phase
-    this.setState({ sectionIndex: index, phaseTitle:title })
+    this.setState({ sectionIndex: index, phaseTitle:title, fields:fields })
   }
 
   render() {
@@ -391,8 +387,7 @@ class ProjectEditPage extends Component {
           filterFields={this.filterFields} 
           isHighlightedTag={this.isHighlightedTag} 
           selectedPhase={selectedPhase}
-          visibleFields={this.visibleFields}
-          sectionIndex={this.state.sectionIndex}
+          allfields={this.state.fields}
         />
         <div className={`project-input-container ${highlightGroup}`}>
           <div className="project-input-left">
@@ -426,7 +421,6 @@ class ProjectEditPage extends Component {
               filterFieldsArray={this.state.filterFieldsArray}
               highlightedTag={this.state.highlightedTag}
               setFilterAmount={this.setFilterAmount}
-              visibleFields={this.visibleFields}
               title={currentSchema.title}
               showSections={this.showSections}
             />
@@ -474,7 +468,6 @@ class ProjectEditPage extends Component {
             phaseTitle={this.state.phaseTitle}
             filterFieldsArray={this.state.filterFieldsArray}
             highlightedTag={this.state.highlightedTag}
-            fieldCount={this.state.fieldCount}
             sectionIndex={this.state.sectionIndex}
             showSection={this.state.showSection}
           />
