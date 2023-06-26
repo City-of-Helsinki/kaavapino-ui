@@ -47,7 +47,7 @@
   .section-title {
     margin: 0 0 0 8px;
     position: sticky;
-    top: 212px;
+    top: 158px;
     padding: 20px;
     z-index: 2;
     background-color: $light-gray3;
@@ -194,6 +194,10 @@
       }
     }
 
+    .filter-tag-info.is-pinned {
+      display: none;
+    } 
+
     div{
       padding-top: 5px;
       padding-bottom:5px;
@@ -209,6 +213,10 @@
     }
   }
 
+}
+
+.sticky{
+  min-height: 0;
 }
 
 .modal {

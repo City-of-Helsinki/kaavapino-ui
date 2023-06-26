@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect }  from 'react'
 import { Button, Tag, IconTrash, Checkbox } from 'hds-react';
+import { getOffset } from '../../hooks/getOffset';
 
 function FormFilter({schema,filterFields,isHighlightedTag,selectedPhase,allfields}) {
 
@@ -11,6 +12,12 @@ const [checkedItems, setCheckedItems] = useState({});
 const [selectedTag, setSelectedTag] = useState("")
 const [options,setOptions] = useState([]);
 const [totalFilteredFields,setTotalFilteredFields] = useState(0)
+const [isVisible,setVisible] = useState(true);
+
+useEffect(() => {
+    window.addEventListener("scroll",listenToScroll);
+    return () => window.removeEventListener("scroll",listenToScroll);
+}, [])
 
 useEffect(() => {
     let tagArray = []
@@ -42,14 +49,27 @@ useEffect(() => {
                 optionsArray[0].roles.push(roles[x]);
             }
         }
-
         for (let i = 0; i < optionsArray.length; i++) {
-            optionsArray[i].roles.sort((a, b) => (a - b));
+            optionsArray[i].roles.sort((a, b) => a.localeCompare(b));
         }
-
         setOptions(optionsArray)
     }
 }, [schema])
+
+const listenToScroll = () => {
+    const heightToHide = getOffset(
+        document.getElementsByClassName("quicknav-content")[0]
+    )
+
+    const windowScrollHeight = document.body.scrollTop || document.documentElement.scrollTop
+
+    if(windowScrollHeight > heightToHide + 120){
+        setVisible(false)
+    }
+    else{
+        setVisible(true)
+    }
+}
 
 const calculateFields = (all) => {
    let fields = []
@@ -120,7 +140,6 @@ const highlightTag = (e,tag) => {
 
 let renderedTags;
 let tagInfo;
-let tagText;
 
 if(tagArray.length > 0){
     renderedTags = <>
@@ -143,19 +162,19 @@ if(tagArray.length > 0){
  }
 
  if(tagArray.length > 0 && selectedTag === ""){
-    tagText = <div><b tabIndex="0">Suodattimet</b></div>
-    tagInfo = <div tabIndex="0" className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä.</p> <span> | </span> <p>Näytetään {totalFilteredFields} kenttää.</p></div>
+    tagInfo = <><div><b tabIndex="0">Suodattimet</b></div> <div tabIndex="0" className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä.</p> <span> | </span> <p>Näytetään {totalFilteredFields} kenttää.</p></div></>
  }
  else if(tagArray.length > 0 && selectedTag !== ""){
-    tagText = <div><b tabIndex="0">Suodattimet</b></div>
-    tagInfo = <div tabIndex="0" className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä.</p> <span> | </span> <p>Näytetään {totalFilteredFields} kenttää.</p> <span> | </span> <p><b>Korostus päällä: </b> {selectedTag}.</p></div>
+    tagInfo = <><div><b tabIndex="0">Suodattimet</b></div><div tabIndex="0" className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä.</p> <span> | </span> <p>Näytetään {totalFilteredFields} kenttää.</p> <span> | </span> <p><b>Korostus päällä: </b> {selectedTag}.</p></div></>
  }
 
 return (
-    <div className='project-edit-form-filter'>
+    <div className={!isVisible ? "project-edit-form-filter sticky" : "project-edit-form-filter"}>
         <div className='left-container'>
-            {tagText}
-            {tagInfo}
+            {isVisible && (
+                tagInfo
+            )
+            }
             {renderedTags}
         </div>
         <div className='right-container'>
