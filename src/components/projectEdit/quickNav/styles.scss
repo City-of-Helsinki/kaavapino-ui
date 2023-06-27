@@ -86,18 +86,20 @@
     .quicknav-item {
       cursor: pointer;
       display: block;
+      width: 95%;
       font-size: $size16;
       margin-top: 0px;
       color: $color-black-70;
       text-align: left;
       padding-left: 20px;
-      width: 100%;
       border-bottom: 1px solid $light-gray;
 
       span{
         padding-left: 0;
         margin-left: 0;
         padding-right: 5px;
+        padding-top: 0;
+        padding-bottom: 0;
         .project-status-container{
           float: right;
           font-size: $size14;
