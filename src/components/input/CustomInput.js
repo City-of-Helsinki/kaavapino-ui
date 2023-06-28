@@ -70,8 +70,11 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
         identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
       }
     }
-    //Send identifier data to change styles from FormField.js
-    custom.lockField(false,false,identifier)
+    //Check lockfield if component is used somewhere where locking is not used.
+    if (typeof lockField === 'function') {
+      //Send identifier data to change styles from FormField.js
+      custom.lockField(false,false,identifier)
+    }
     if (typeof custom.handleUnlockField === 'function') {
       //Sent a call to unlock field to backend
       custom.handleUnlockField(input.name)

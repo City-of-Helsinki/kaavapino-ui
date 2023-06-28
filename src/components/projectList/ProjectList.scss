@@ -515,6 +515,7 @@
     }
     .ad-combobox{
       ul{
+        overflow-x: hidden;
         overflow-y: scroll;
       }
     }

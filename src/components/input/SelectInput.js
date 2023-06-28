@@ -138,8 +138,11 @@ const SelectInput = ({
         identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
       }
     }
-    //Send identifier data to change styles from FormField.js
-    lockField(false,false,identifier)
+    //Check lockfield if component is used somewhere where locking is not used.
+    if (typeof lockField === 'function') {
+      //Send identifier data to change styles from FormField.js
+      lockField(false,false,identifier)
+    }
     
     if (typeof handleUnlockField === 'function') {
       //Sent a call to unlock field to backend
@@ -148,9 +151,11 @@ const SelectInput = ({
     if (selectValues !== oldValueRef.current) {
       //prevent saving if locked
       if (!readonly) {
-      //Sent call to save changes
-        onBlur();
-        oldValueRef.current = selectValues;
+        if (typeof onBlur === 'function') {
+          //Sent call to save changes
+          onBlur();
+          oldValueRef.current = selectValues;
+        }
       }
     }
     setFieldName("")

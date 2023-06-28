@@ -231,6 +231,7 @@ function RichTextEditor(props) {
         identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
       }
     }
+    //Check lockfield if component is used somewhere where locking is not used.
     if (typeof lockField === 'function') {
       //Send identifier data to change styles from FormField.js
       lockField(false,false,identifier)
