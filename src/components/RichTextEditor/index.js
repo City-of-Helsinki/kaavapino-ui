@@ -175,10 +175,8 @@ function RichTextEditor(props) {
 
       }
       if (source === 'user') {
-        if(valueIsSet){
-          //set to false when user edited so save can happen
-          setValueIsSet(false)
-        }
+        //set to false when user edited so save can happen
+        setValueIsSet(false)
 
         /* Get the value from the editor - the delta provided to handlechange does not have complete state */
         const actualDeltaValue = editorRef.current.editor.getContents()
