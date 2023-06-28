@@ -65,16 +65,16 @@ function RichTextEditor(props) {
     updated,
     formName,
     setRef,
-    lockField,
-    unlockAllFields
+    lockField
   } = props
+
   const dispatch = useDispatch()
+
   const lockedStatus = useSelector(state => lockedSelector(state))
   const fieldComments = useSelector(fieldCommentsSelector)
   const userId = useSelector(userIdSelector)
   const projectId = useSelector(currentProjectIdSelector)
   const [showComments, setShowComments] = useState(false)
-
   const [toolbarVisible, setToolbarVisible] = useState(false)
   const editorRef = useRef(null)
   const counter = useRef(props.currentSize)
@@ -82,7 +82,10 @@ function RichTextEditor(props) {
   const [currentTimeout, setCurrentTimeout] = useState(0)
   const [readonly, setReadOnly] = useState(false)
   const [tabOut, setTabout] = useState(false)
+  const [valueIsSet, setValueIsSet] = useState(false)
+
   const inputValue = useRef('')
+  const myRefname= useRef(null);
   const fieldFormName = formName ? formName : EDIT_PROJECT_FORM
 
   const getFieldComments = () => {
@@ -107,11 +110,10 @@ function RichTextEditor(props) {
     //If navigated to different tab/window/screen blur and unclock
     if(document.hidden){
       handleBlur()
-      onBlur()
-      if(document.getElementById("quicknav-main-title")){
-        document.getElementById("quicknav-main-title").focus()
-      }
-      unlockAllFields()
+      myRefname.current?.focus();
+    }
+    if(!document.hidden){
+      myRefname.current?.focus();
     }
   }
 
@@ -152,9 +154,6 @@ function RichTextEditor(props) {
           }
           //Focus to editor input so user does not need to click twice
           const fieldToFocus = document.getElementById(toolbarName + "input").querySelector("p");
-          if(fieldToFocus.tabIndex != 0){
-            fieldToFocus.tabIndex = 0;
-          }
           fieldToFocus.focus()
         }
         else{
@@ -176,8 +175,12 @@ function RichTextEditor(props) {
 
       }
       if (source === 'user') {
-        /* Get the value from the editor - the delta provided to handlechange does not have complete state */
+        if(valueIsSet){
+          //set to false when user edited so save can happen
+          setValueIsSet(false)
+        }
 
+        /* Get the value from the editor - the delta provided to handlechange does not have complete state */
         const actualDeltaValue = editorRef.current.editor.getContents()
 
         // Hack to remove /n  values
@@ -198,6 +201,10 @@ function RichTextEditor(props) {
 
         counter.current = actualDeltaValue.length() - 1;
         showCounter.current = true;
+      }
+      else if(source === 'api'){
+        //Value is updated with lock call so do not save it again
+        setValueIsSet(true)
       }
       inputValue.current = _val;
     }
@@ -235,9 +242,11 @@ function RichTextEditor(props) {
     if (inputValue.current !== oldValueRef.current) {
       //prevent saving if locked
       if (!readonly) {
-        //Sent call to save changes
-        onBlur();
-        oldValueRef.current = inputValue.current;
+        //Sent call to save changes if it is modified by user and not updated by lock call
+        if(!valueIsSet){
+          onBlur();
+          oldValueRef.current = inputValue.current;
+        }
       }
     }
   }
@@ -293,12 +302,16 @@ function RichTextEditor(props) {
   }
 
   const setValue = (dbValue) => {
-    if(oldValueRef.current !== dbValue){
+    const editor = editorRef.current.getEditor().getContents()
+    if(editor?.ops !== dbValue?.ops){
+      //set editor value from db value updated with lock call
       editorRef.current.getEditor().setContents(dbValue);
     }
   }
 
   return (
+    <>
+    <input className='visually-hidden' ref={myRefname}/>
     <div
       role="textbox"
       className={`rich-text-editor-wrapper ${disabled ? 'rich-text-disabled' : ''}`}
@@ -411,6 +424,7 @@ function RichTextEditor(props) {
         </p>
       ) : null}
     </div>
+    </>
   )
 }
 
