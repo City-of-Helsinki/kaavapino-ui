@@ -112,7 +112,7 @@
       color: $color-black-70;
       text-align: left;
       padding-left: 20px;
-      border-bottom: 1px solid $light-gray;
+      border-bottom: none;
 
       span{
         padding-left: 0;
@@ -150,6 +150,27 @@
           }
         }
       }
+    }
+
+    .quicknav-item::after{
+      content: '';
+      position: absolute;
+      width: calc(100% - 40px);
+      height: 1px;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0;
+      background: #b2b2b2;
+      border: none;
+      font-size: 1rem;
+      margin-top: 0px;
+      color: #b2b2b2;
+      text-align: left;
+      padding-left: 0px;
+    }
+
+    .active::after{
+      display: none;
     }
 
     .phase7,.phase19,.phase25{
@@ -274,6 +295,10 @@
 
     .yellow{
       background-color: $tagyellow !important;
+    }
+
+    button:last-of-type::after{
+      display: none;
     }
   }
 
