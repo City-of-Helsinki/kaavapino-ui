@@ -39,9 +39,29 @@
         }
       }
       .quicknav-header-info{
+        display: flex;
         font-size: $size14;
         font-style: italic;
         color: $color-black-60;
+        padding-left: 34px;
+        .project-status-container{
+          align-items: center;
+          display: flex;
+          float: right;
+          font-size: $size14;
+          .project-status-color{
+            border-radius: 100%;
+            display: inline-flex;
+            min-height: 10px;
+            min-width: 10px;
+            height: 10px;
+          }
+          .project-status-text{
+            padding-right: 10px;
+          }
+        }
+      }
+      .main-info{
         padding-left: 0;
       }
     }
@@ -97,7 +117,7 @@
       span{
         padding-left: 0;
         margin-left: 0;
-        padding-right: 5px;
+        padding-right: 10px;
         padding-top: 0;
         padding-bottom: 0;
         .project-status-container{
