@@ -6,7 +6,7 @@ import ConfirmModal from '../ConfirmModal'
 import { Message } from 'semantic-ui-react'
 import './styles.scss'
 import RoleHighlightPicker from './roleHighlightPicker/index'
-//import Status from '../../common/Status'
+import Status from '../../common/Status'
 
 export default function QuickNav({
   currentProject,
@@ -31,7 +31,9 @@ export default function QuickNav({
   changeSection,
   filterFieldsArray,
   highlightedTag,
-  title,
+  phaseTitle,
+  phaseStatus,
+  phaseColor,
   showSections
 }) {
   const [endPhaseError, setEndPhaseError] = useState(false)
@@ -66,7 +68,7 @@ export default function QuickNav({
    //       title = phase.sections[0].title
    //       phaseID = phase.id
         }
-        optionsArray.push({label:phase.title,color:phase.color_code,phaseID:phase.id})
+        optionsArray.push({label:phase.title,color:phase.color_code,phaseID:phase.id,status:phase.status})
     })
     }
 
@@ -109,7 +111,7 @@ export default function QuickNav({
         if(phase.id === activePhase){
           curPhase = {label:phase.title}
         }
-        optionsArray.push({label:phase.title,color:phase.color_code,phaseID:phase.id})
+        optionsArray.push({label:phase.title,color:phase.color_code,phaseID:phase.id,status:phase.status})
     })
     }
 
@@ -275,16 +277,16 @@ export default function QuickNav({
                 Kaikki vaiheet
               </Button>
             </div>
-            <span className='quicknav-header-info'>Valitse vaihe tai palaa takaisin nuolen avulla</span>
+            <span className='quicknav-header-info main-info'>Valitse vaihe tai palaa takaisin nuolen avulla</span>
           </div>
         ) : (
           <div className='quicknav-header-container'>
             <div className='quicknav-header'>
                 <Button variant="supplementary" aria-label='Palaa takaisin vaiheiden etusivulle' onClick={() => hideSections()} iconLeft={<IconArrowLeft className='left-icon' />}>
-                  {title}
+                  {phaseTitle}
                 </Button>
             </div>
-          <span className='quicknav-header-info'>TODO:Vaiheen tila tähän ja väri</span>
+          <span className='quicknav-header-info'><span className='project-status-container'><span className='project-status-text'>{phaseStatus}</span><Status color={phaseColor} /></span></span>
           </div>
         )
         }
@@ -306,7 +308,7 @@ export default function QuickNav({
               }
               >
               {option.label}
-             {/*  <span className='project-status-container'><span>Vaihe käynnissä</span><Status color={option.color} /></span> */}
+              {option.status === "Vaihe käynnissä" ? <span className='project-status-container'><span>Vaihe käynnissä</span><Status color={option.color} /></span> : ""}
             </Button>
           )
         })}

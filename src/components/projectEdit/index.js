@@ -247,6 +247,7 @@ class ProjectEditPage extends Component {
           color: phase.color,
           color_code: phase.color_code,
           list_prefix: phase.list_prefix,
+          status:phase.status,
           sections: sections
         }
 
@@ -336,7 +337,7 @@ class ProjectEditPage extends Component {
       currentUserId
     } = this.props
     const { highlightGroup } = this.state
-   
+    
     if (!schema) {
       return <LoadingSpinner className="loader-icon" />
     }
@@ -421,7 +422,9 @@ class ProjectEditPage extends Component {
               filterFieldsArray={this.state.filterFieldsArray}
               highlightedTag={this.state.highlightedTag}
               setFilterAmount={this.setFilterAmount}
-              title={currentSchema.title}
+              phaseTitle={currentSchema.title}
+              phaseStatus={currentSchema.status}
+              phaseColor={currentSchema.color_code}
               showSections={this.showSections}
             />
             <NavigationPrompt
