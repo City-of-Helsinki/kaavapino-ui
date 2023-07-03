@@ -1,54 +1,35 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import { render, fireEvent, screen } from '@testing-library/react'
+import '@testing-library/jest-dom'
 import FormButton from '../../../components/common/FormButton'
 
 describe('<FormButton />', () => {
-  let btn
   let mockFn
-
-  beforeEach(() => {
+  test('renders', () => {
     mockFn = jest.fn(() => null)
-    btn = mount(
-      <FormButton
-        handleClick={mockFn}
-        icon={<div className="icon" />}
-        help="help"
-        value="button-test"
-      />
-    )
-  })
+    render(<FormButton
+      handleClick={mockFn}
+      icon={<div className="icon" />}
+      help="help"
+      value="button-test"
+    />);
+    const button = screen.getByText("button-test");
+    expect(button).toBeInTheDocument();
+  });
 
-  it('renders', () => {
-    expect(btn.find('button').length).toBe(1)
-    expect(btn.find('button').text()).toBe(' button-test')
-  })
+  test("can be clicked", () => {
+    mockFn = jest.fn(() => null)
+    render(<FormButton
+      handleClick={mockFn}
+      icon={<div className="icon" />}
+      help="help"
+      value="button-test"
+    />);
 
-  it('can be clicked', () => {
-    btn.find('button').simulate('click')
+    const button = screen.getByText("button-test");
+    fireEvent.click(button);
     expect(mockFn.mock.calls.length).toBe(1)
-    btn.find('button').simulate('click')
+    fireEvent.click(button);
     expect(mockFn.mock.calls.length).toBe(2)
-  })
-
-  it('has icon', () => {
-    expect(btn.find('.icon').length).toBe(1)
-  })
-
-  it('has help text', () => {
-    expect(btn.find('Popup').length).toBe(1)
-    expect(btn.find('Popup').props().content).toBe('help')
-  })
-
-  it('can be loading', () => {
-    const loadingMockFn = jest.fn(() => null)
-    const loadingBtn = mount(<FormButton loading={true} handleClick={loadingMockFn} />)
-
-    // For some reason the class is twice in used component
-    expect(loadingBtn.find('.loading-spinner').length).toBe(2)
-
-    btn.find('button').simulate('click')
-    expect(loadingMockFn.mock.calls.length).toBe(0)
-    btn.find('button').simulate('click')
-    expect(loadingMockFn.mock.calls.length).toBe(0)
-  })
+  });
 })

@@ -1,13 +1,12 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import {render,screen} from '@testing-library/react'
+import '@testing-library/jest-dom'
 import { Provider } from 'react-redux'
 import { reduxForm } from 'redux-form'
 import configureStore from 'redux-mock-store'
 import Matrix from '../../../components/input/Matrix'
 
 describe('<Matrix />', () => {
-  let wrapper
-
   beforeEach(() => {
     const mockStore = configureStore()
     const initialState = { project: { checking: true } }
@@ -32,23 +31,32 @@ describe('<Matrix />', () => {
       }
     }
     const Decorated = reduxForm({ form: 'testForm' })(Matrix)
-    wrapper = mount(
+     render(
       <Provider store={store}>
         <Decorated store={store} {...props} />
       </Provider>
     )
   })
 
-  it('renders', () => {
-    expect(wrapper.find('.matrix').length).toBe(1)
-    const inputs = wrapper.find('input')
-    expect(inputs.length).toBe(4)
-    for (let i = 0; i < 4; i++) {
-      expect(inputs.at(i).props().name).toBe(`${i + 1}`)
-    }
+  test('renders', () => {
+    const inputContainer = screen.getByTestId("matrix-testid")
+    expect(inputContainer).toBeInTheDocument()
+    const input1 = screen.getByLabelText("1")
+    const input2 = screen.getByLabelText("2")
+    const input3 = screen.getByLabelText("3")
+    const input4 = screen.getByLabelText("4")
+    expect(input1).toBeInTheDocument()
+    expect(input2).toBeInTheDocument()
+    expect(input3).toBeInTheDocument()
+    expect(input4).toBeInTheDocument()
   })
 
-  it('can be highlighted', () => {
-    expect(wrapper.find('.highlighted').length).toBe(2)
+  test('can be highlighted', () => {
+    const highlighted = screen.getByTestId("1test-highligh")
+    const normal = screen.getByTestId("4test-highligh")
+    expect(highlighted).toBeInTheDocument()
+    expect(highlighted).toHaveClass('highlighted')
+    expect(normal).toBeInTheDocument()
+    expect(normal).toHaveClass('rowColumnStyle')
   })
 })

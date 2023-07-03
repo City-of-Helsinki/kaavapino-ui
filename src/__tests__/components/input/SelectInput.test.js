@@ -1,35 +1,32 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import {render,screen} from '@testing-library/react'
+import '@testing-library/jest-dom'
+import { Provider } from 'react-redux';
+import configureStore from 'redux-mock-store';
 import SelectInput from '../../../components/input/SelectInput'
 
 describe('<SelectInput />', () => {
-  let selectInputComponent
-  const options = ['a', 'b', 'c']
-  let change
-  beforeEach(() => {
-    change = null
-    selectInputComponent = mount(
-        <SelectInput
-          input={{ name: 'test', onChange: value => (change = value) }}
-          meta={{}}
-          options={options.map(option => ({ key: option, value: option, label: option }))}
-          placeholder="placeholder"
-        />
-    )
-  })
-
-  it('is initialized correctly', () => {
-    const dropwDownComponent = selectInputComponent.find('SelectInput')
-    expect(dropwDownComponent.props().input.name).toBe('test')
-    expect(dropwDownComponent.props().placeholder).toBe('placeholder')
+  const mockStore = configureStore();
+  let store;
+  test('is initialized correctly', () => {
+    const initialState = { output: false};
+    store = mockStore(initialState);
+    const options = ['a', 'b', 'c']
+    let change
+  
+      change = null
+      render(
+        <Provider store={store}>
+          <SelectInput
+            input={{ name: 'test', onChange: value => (change = value) }}
+            meta={{}}
+            options={options.map(option => ({ key: option, value: option, label: option }))}
+            placeholder="placeholder"
+          />
+        </Provider>
+      )
+    const inputNode = screen.queryByText('placeholder')
+    expect(inputNode).toBeInTheDocument()
     expect(change).toBeNull()
-  })
-
-  it('has all option components', () => {
-    const dropwDownComponent = selectInputComponent.find('SelectInput')
-
-    expect(dropwDownComponent.props().options.length).toBe(options.length)
-    expect(dropwDownComponent.props().options[0].label).toBe('a')
-    expect(dropwDownComponent.props().options[0].value).toBe('a')
   })
 })

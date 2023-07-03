@@ -1,6 +1,6 @@
 import { getFieldAutofillValue } from '../../../utils/projectAutofillUtils'
 describe('Autofill tests', () => {
-  it('Autofill rule succeeds combine rule (boolean) both true', () => {
+  test('Autofill rule succeeds combine rule (boolean) both true', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'sisaltyyko_kaavoittamatonta'
@@ -29,7 +29,7 @@ describe('Autofill tests', () => {
       ', asemakaava ja asemakaavan muutos'
     )
   })
-  it('Autofill rule succeeds combine rule (boolean) project name missing', () => {
+  test('Autofill rule succeeds combine rule (boolean) project name missing', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'sisaltyyko_kaavoittamatonta'
@@ -96,7 +96,7 @@ describe('Autofill tests', () => {
     )
   })
 
-  it('Autofill rule succeeds combine rule (boolean) false/true', () => {
+  test('Autofill rule succeeds combine rule (boolean) false/true', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'sisaltyyko_kaavoittamatonta'
@@ -164,7 +164,7 @@ describe('Autofill tests', () => {
     )
   })
 
-  it('Autofill rule succeeds combine rule (boolean) true/false', () => {
+  test('Autofill rule succeeds combine rule (boolean) true/false', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'sisaltyyko_kaavoittamatonta'
@@ -231,7 +231,7 @@ describe('Autofill tests', () => {
       'Testiprojekti, asemakaava'
     )
   })
-  it('Autofill rule succeeds combine rule (boolean) false/false', () => {
+  test('Autofill rule succeeds combine rule (boolean) false/false', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'sisaltyyko_kaavoittamatonta'
@@ -316,7 +316,7 @@ describe('Autofill tests', () => {
       'Testiprojekti'
     )
   })
-  it('Autofill rule succeeds combine rule (boolean) true / missing', () => {
+  test('Autofill rule succeeds combine rule (boolean) true / missing', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'sisaltyyko_kaavoittamatonta'
@@ -382,7 +382,7 @@ describe('Autofill tests', () => {
       'Testiprojekti, asemakaava'
     )
   })
-  it('Autofill rule succeeds combine rule (boolean) missing/true', () => {
+  test('Autofill rule succeeds combine rule (boolean) missing/true', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'sisaltyyko_kaavoittamatonta'
@@ -448,7 +448,7 @@ describe('Autofill tests', () => {
       'Testiprojekti, asemakaavan muutos'
     )
   })
-  it('Autofill rule succeeds combine rule (boolean) missing/missing', () => {
+  test('Autofill rule succeeds combine rule (boolean) missing/missing', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'sisaltyyko_kaavoittamatonta'
@@ -513,7 +513,7 @@ describe('Autofill tests', () => {
       'Testiprojekti'
     )
   })
-  it('Autofill rule succeeds combine rule (boolean) string comparison one true', () => {
+  test('Autofill rule succeeds combine rule (boolean) string comparison one true', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'sisaltyyko_kaavoittamatonta'
@@ -579,7 +579,7 @@ describe('Autofill tests', () => {
       'Testiprojekti, asemakaava'
     )
   })
-  it('Autofill rule succeeds combine rule (boolean) string comparison all true', () => {
+  test('Autofill rule succeeds combine rule (boolean) string comparison all true', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'sisaltyyko_kaavoittamatonta'
@@ -646,7 +646,7 @@ describe('Autofill tests', () => {
       'Testiprojekti, asemakaava ja asemakaavan muutos'
     )
   })
-  it('Autofill rule succeeds combine rule (boolean) string comparison no values', () => {
+  test('Autofill rule succeeds combine rule (boolean) string comparison no values', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'sisaltyyko_kaavoittamatonta'
@@ -711,7 +711,7 @@ describe('Autofill tests', () => {
       'Testiprojekti'
     )
   })
-  it('Autofill rule succeeds combine rule (boolean) string comparison no values', () => {
+  test('Autofill rule succeeds combine rule (boolean) string comparison no values', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'sisaltyyko_kaavoittamatonta'
@@ -779,7 +779,7 @@ describe('Autofill tests', () => {
       'Testiprojekti, asemakaava'
     )
   })
-  it('Autofill rule succeeds combine rule (boolean) string comparison both false', () => {
+  test('Autofill rule succeeds combine rule (boolean) string comparison both false', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'sisaltyyko_kaavoittamatonta'
@@ -865,7 +865,7 @@ describe('Autofill tests', () => {
       'Testiprojekti'
     )
   })
-  it('Autofill rule succeeds combine rule (boolean) string comparison both false', () => {
+  test('Autofill rule succeeds combine rule (boolean) string comparison both false', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'sisaltyyko_kaavoittamatonta'
@@ -951,7 +951,7 @@ describe('Autofill tests', () => {
       'Testiprojekti'
     )
   })
-  it('Autofill rule succeeds combine rule (boolean) string comparison both false', () => {
+  test('Autofill rule succeeds combine rule (boolean) string comparison both false', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'sisaltyyko_kaavoittamatonta'
@@ -1036,7 +1036,7 @@ describe('Autofill tests', () => {
       'Testiprojekti'
     )
   })
-  it('Autofill rule succeeds combine rule (boolean) string comparison both false', () => {
+  test('Autofill rule succeeds combine rule (boolean) string comparison both false', () => {
     const field = {}
     const conditionObject1 = {}
     conditionObject1.variable = 'sisaltyyko_kaavoittamatonta'

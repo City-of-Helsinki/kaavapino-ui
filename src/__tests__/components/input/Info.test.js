@@ -1,15 +1,16 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import {render,screen} from '@testing-library/react'
+import '@testing-library/jest-dom'
 import Info from '../../../components/input/Info'
 
 describe('<Info />', () => {
-  let wrapper
 
   beforeEach(() => {
-    wrapper = mount(<Info className="test" content="test" />)
+    render(<Info className="test" content="test" />)
   })
 
-  it('renders', () => {
-    expect(wrapper.find('.test').length).toBe(1)
+  test('renders', () => {
+    const inputNode = screen.getByLabelText('Tooltip')
+    expect(inputNode).toBeInTheDocument()
   })
 })

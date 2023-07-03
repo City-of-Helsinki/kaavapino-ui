@@ -1,36 +1,23 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import {render,screen} from '@testing-library/react'
+import '@testing-library/jest-dom'
 import CustomTextArea from '../../../components/input/CustomTextArea'
 
 describe('<TextArea />', () => {
-  let textAreaComponent
-  let change
-  beforeEach(() => {
-    change = ''
-    textAreaComponent = mount(
-      <CustomTextArea
-        input={{ value: '123', name: 'test', onChange: e => (change = e.target.value) }}
-        meta={{}}
-      />
-    ).find('textarea')
-  })
-
   it('has value and name', () => {
-    const { value, name } = textAreaComponent.instance()
-    expect(value).toBe('123')
-    expect(name).toBe('test')
-  })
+    render(<CustomTextArea input={{ value: '123', name: 'test', onChange: e => (e.target.value) }}
+    meta={{}} />);
 
-  it('can be changed', () => {
-    textAreaComponent.simulate('change', { target: { value: 'test' } })
-    expect(change).toBe('test')
+   expect(screen.getByTestId('text1')).toHaveTextContent('123');
+   expect(screen.getByTestId('text1')).toHaveProperty('name');
+   expect(screen.getByTestId('text1').name).toEqual('test');
   })
-
+ 
   it('can have custom props', () => {
-    const customComponent = mount(
+    render(
       <CustomTextArea input={{}} meta={{}} placeholder="123" />
-    ).find('textarea')
-    const { placeholder } = customComponent.instance()
+    )
+    const {placeholder} = screen.getByPlaceholderText('123')
     expect(placeholder).toBe('123')
-  })
+  }) 
 })

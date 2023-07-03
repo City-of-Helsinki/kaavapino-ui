@@ -1,36 +1,37 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import {render,screen} from '@testing-library/react'
+import '@testing-library/jest-dom'
+import { Provider } from 'react-redux';
+import configureStore from 'redux-mock-store';
 import Input from '../../../components/input/CustomInput'
 
 describe('<Input />', () => {
-  let inputComponent
- // let change
+  const mockStore = configureStore();
+  let store;
+
   beforeEach(() => {
-   // change = ''
-    inputComponent = mount(
-      <Input
-        input={{ value: '123', name: 'test', onChange: value => (value) }}
-        meta={{}}
-      />
-    ).find('input')
-  })
-
-  it('has value and name', () => {
-    const { value, name } = inputComponent.instance()
-    expect(value).toBe('123')
-    expect(name).toBe('test')
-  })
-/* 
-  it('can be changed', () => {
-    inputComponent.simulate('change', { target: { value: 'test' } })
-    expect(change).toBe('test')
-  }) */
-
-  it('can have custom props', () => {
-    const customComponent = mount(<Input input={{}} meta={{}} placeholder="123" />).find(
-      'input'
+    const initialState = { output: false};
+    store = mockStore(initialState);
+    render(
+      <Provider store={store}>
+        <Input
+          input={{ value: '123', name: 'test', onChange: value => (value) }}
+          meta={{}}
+          name='test' 
+          placeholder="123"
+        />
+      </Provider>
     )
-    const { placeholder } = customComponent.instance()
-    expect(placeholder).toBe('123')
+  })
+
+  test('has value and name', () => {
+    const inputNode = screen.getByLabelText('test')
+    expect(inputNode).toBeInTheDocument()
+    expect(inputNode.value).toBe('123')
+  })
+
+  test('can have custom props', () => {
+    const inputNode = screen.getByPlaceholderText('123')
+    expect(inputNode).toBeInTheDocument()
   })
 })

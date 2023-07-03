@@ -3199,7 +3199,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/dom@npm:^9.0.0":
+"@testing-library/dom@npm:^9.0.0, @testing-library/dom@npm:^9.0.1":
   version: 9.0.1
   resolution: "@testing-library/dom@npm:9.0.1"
   dependencies:
@@ -3243,6 +3243,15 @@ __metadata:
     react: ^18.0.0
     react-dom: ^18.0.0
   checksum: 4a54c8f56cc4a39b50803205f84f06280bb76521d6d5d4b3b36651d760c7c7752ef142d857d52aaf4fad4848ed7a8be49afc793a5dda105955d2f8bef24901ac
+  languageName: node
+  linkType: hard
+
+"@testing-library/user-event@npm:^14.4.3":
+  version: 14.4.3
+  resolution: "@testing-library/user-event@npm:14.4.3"
+  peerDependencies:
+    "@testing-library/dom": ">=7.21.4"
+  checksum: 852c48ea6db1c9471b18276617c84fec4320771e466cd58339a732ca3fd73ad35e5a43ae14f51af51a8d0a150dcf60fcaab049ef367871207bea8f92c4b8195e
   languageName: node
   linkType: hard
 
@@ -5697,6 +5706,13 @@ __metadata:
   version: 3.29.1
   resolution: "core-js@npm:3.29.1"
   checksum: b38446dbfcfd3887b3d4922990da487e2c95044cb4c5717aaf95e786a4c6b218f05c056c7ed6c699169b9794a49fec890e402659d54661fc56965a0eb717e7bd
+  languageName: node
+  linkType: hard
+
+"core-js@npm:^3.31.0":
+  version: 3.31.0
+  resolution: "core-js@npm:3.31.0"
+  checksum: f7cf9b3010f7ca99c026d95b61743baca1a85512742ed2b67e8f65a72ac4f4fe0b90b00057783e886bdd39d3a295f42f845d33e7cba3973ed263df978343ab79
   languageName: node
   linkType: hard
 
@@ -10725,13 +10741,16 @@ __metadata:
   dependencies:
     "@craco/craco": ^7.1.0
     "@sentry/browser": ^7.43.0
+    "@testing-library/dom": ^9.0.1
     "@testing-library/jest-dom": ^5.16.5
     "@testing-library/react": ^14.0.0
+    "@testing-library/user-event": ^14.4.3
     axios: ^1.3.4
     axios-retry: ^3.1.9
     babel-eslint: ^10.1.0
     codecov: ^3.8.3
     connected-react-router: ^6.9.1
+    core-js: ^3.31.0
     dayjs: ^1.10.4
     deep-freeze: 0.0.1
     eslint: ^7.24.0
@@ -10778,6 +10797,7 @@ __metadata:
     react-router-navigation-prompt: ^1.8.2
     react-scripts: ^5.0.1
     react-table: ^7.7.0
+    react-test-renderer: ^18.2.0
     react-toastify: ^9.1.3
     recharts: ^2.0.9
     redux: ^4.0.0
@@ -13627,7 +13647,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-is@npm:^16.8.6 || ^17.0.0 || ^18.0.0, react-is@npm:^18.0.0":
+"react-is@npm:^16.12.0 || ^17.0.0 || ^18.0.0, react-is@npm:^16.8.6 || ^17.0.0 || ^18.0.0, react-is@npm:^18.0.0, react-is@npm:^18.2.0":
   version: 18.2.0
   resolution: "react-is@npm:18.2.0"
   checksum: e72d0ba81b5922759e4aff17e0252bd29988f9642ed817f56b25a3e217e13eea8a7f2322af99a06edb779da12d5d636e9fda473d620df9a3da0df2a74141d53e
@@ -13929,6 +13949,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-shallow-renderer@npm:^16.15.0":
+  version: 16.15.0
+  resolution: "react-shallow-renderer@npm:16.15.0"
+  dependencies:
+    object-assign: ^4.1.1
+    react-is: ^16.12.0 || ^17.0.0 || ^18.0.0
+  peerDependencies:
+    react: ^16.0.0 || ^17.0.0 || ^18.0.0
+  checksum: 6052c7e3e9627485120ebd8257f128aad8f56386fe8d42374b7743eac1be457c33506d153c7886b4e32923c0c352d402ab805ef9ca02dbcd8393b2bdeb6e5af8
+  languageName: node
+  linkType: hard
+
 "react-smooth@npm:^2.0.2":
   version: 2.0.2
   resolution: "react-smooth@npm:2.0.2"
@@ -13963,6 +13995,19 @@ __metadata:
   peerDependencies:
     react: ^16.8.3 || ^17.0.0-0 || ^18.0.0
   checksum: 44ca0fb848c6869cd793cede8dc33072b38ebb8f8d2833565afe7cf3eac5d1fa455ac5fb9d06838b16fab0523d5d03e3e82f7645032f71245096e67b892313b9
+  languageName: node
+  linkType: hard
+
+"react-test-renderer@npm:^18.2.0":
+  version: 18.2.0
+  resolution: "react-test-renderer@npm:18.2.0"
+  dependencies:
+    react-is: ^18.2.0
+    react-shallow-renderer: ^16.15.0
+    scheduler: ^0.23.0
+  peerDependencies:
+    react: ^18.2.0
+  checksum: 6b6980ced93fa2b72662d5e4ab3b4896833586940047ce52ca9aca801e5432adf05fcbe28289b0af3ce6a2a7c590974e25dcc8aa43d0de658bfe8bbcd686f958
   languageName: node
   linkType: hard
 

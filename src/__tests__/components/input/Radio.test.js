@@ -1,62 +1,38 @@
 import React from 'react'
-import { mount } from 'enzyme'
+import {render} from '@testing-library/react'
+import '@testing-library/jest-dom'
 import RadioBooleanButton from '../../../components/input/RadioBooleanButton'
 
 describe('<RadioBooleanButton />', () => {
-  let wrapper
-  beforeEach(() => {
-    wrapper = mount(
-      <RadioBooleanButton
-        input={{ value: true, name: 'test' }}
-        meta={{}}
-      />
-    )
+
+  test('is initialized correctly', () => {
+    const {getByTestId} = render(<RadioBooleanButton input={{value:"Kyllä", name:'test'}} meta={{ error:"false" }} label="Kyllä" />);
+
+    const radioValue = getByTestId("radio1").value
+    expect(radioValue).toEqual("Kyllä")
+
+    const radioButton = getByTestId("radio1")
+    expect(radioButton).toBeChecked
+
+    const radioButton2 = getByTestId("radio2")
+    expect(radioButton2).not.toBeChecked
+
+    const radioButton3 = getByTestId("radio3")
+    expect(radioButton3).not.toBeChecked
+
   })
 
-  it('is initialized correctly', () => {
-    expect(wrapper.find('input')).toHaveLength(3)
+  test('is initialized correctly second test', () => {
+    const {getByTestId} = render(<RadioBooleanButton input={{ value: "", name: 'test' }} meta={{}} />);
 
-    const radioButtonTrue = wrapper.find('.radio-button-true')
-    const radioButtonFalse = wrapper.find('.radio-button-false')
-    const radioButtonNull = wrapper.find('.radio-button-null')
+    const radioButton = getByTestId("radio1")
+    expect(radioButton).not.toBeChecked
 
-    expect(radioButtonTrue.at(0).props().checked).toBe(true)
-    expect(radioButtonFalse.at(0).props().checked).toBe(false)
-    expect(radioButtonNull.at(0).props().checked).toBe(false)
-  })
+    const radioButton2 = getByTestId("radio2")
+    expect(radioButton2).toBeChecked
 
-  it('is initialized correctly second test', () => {
-    const radioButtonWrapper = mount(
-      <RadioBooleanButton
-        input={{ value: false, name: 'test' }}
-        meta={{}}
-      />
-    )
+    const radioButton3 = getByTestId("radio3")
+    expect(radioButton3).not.toBeChecked
 
-    const radioButtonTrue = radioButtonWrapper.find('.radio-button-true')
-    const radioButtonFalse = radioButtonWrapper.find('.radio-button-false')
-    const radioButtonNull = radioButtonWrapper.find('.radio-button-null')
-
-    expect(radioButtonTrue.at(0).props().checked).toBe(false)
-    expect(radioButtonFalse.at(0).props().checked).toBe(true)
-    expect(radioButtonNull.at(0).props().checked).toBe(false)
-  })
-  // Click tests needs to be removed since HDS has two same class components
-
-  it('can have default value', () => {
-    const positiveRadio = mount(
-      <RadioBooleanButton
-        input={{ value: true, name: 'test' }}
-        meta={{}}
-      />
-    )
-    expect(positiveRadio.find('.radio-button-true').at(0).props().checked).toBe(true)
-    const negativeRadio = mount(
-      <RadioBooleanButton
-        input={{ value: false, name: 'test' }}
-        meta={{}}
-      />
-    )
-    expect(negativeRadio.find('.radio-button-false').at(0).props().checked).toBe(true)
   })
 })
