@@ -6,13 +6,12 @@ jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: key => key }),
 }));
 describe('<Logout />', () => {
-  let logoutWrapper
+
   let logoutMock = jest.fn(() => null)
 
   beforeEach(() => {
-   
     logoutMock.mockClear()
-    logoutWrapper = render(<LogoutPage handleLogout={logoutMock} />)
+    render(<LogoutPage handleLogout={logoutMock} />)
   })
 
   test('renders', () => {

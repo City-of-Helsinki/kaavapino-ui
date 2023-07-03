@@ -8,12 +8,10 @@ jest.mock('react-i18next', () => ({
 }))
 
 describe('<Login />', () => {
-  let loginWrapper
+
   
   beforeEach(() => {
-   
-    loginWrapper = render(<LoginPage />)
-    
+    render(<LoginPage />)
   })
 
   test('renders', () => {

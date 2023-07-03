@@ -6,14 +6,12 @@ import configureStore from 'redux-mock-store';
 import Input from '../../../components/input/CustomInput'
 
 describe('<Input />', () => {
-  let change
   const mockStore = configureStore();
   let store;
 
   beforeEach(() => {
     const initialState = { output: false};
     store = mockStore(initialState);
-    change = ''
     render(
       <Provider store={store}>
         <Input

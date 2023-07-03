@@ -14,7 +14,6 @@ jest.mock("react-i18next", () => ({
 }));
 
 describe('<Field />', () => {
-  let wrapper
   const mockStore = configureStore();
   let store
 
@@ -94,7 +93,7 @@ describe('<Field />', () => {
       </div>
     )
     const Decorated = reduxForm({ form: 'testForm' })(formWrapper)
-    wrapper = render(
+    render(
       <Provider store={store}>
         <Decorated />
       </Provider>

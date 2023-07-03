@@ -1,11 +1,11 @@
 import React from 'react'
-import {render,screen, fireEvent} from '@testing-library/react'
+import {render,screen} from '@testing-library/react'
 import '@testing-library/jest-dom'
 import CustomTextArea from '../../../components/input/CustomTextArea'
 
 describe('<TextArea />', () => {
   it('has value and name', () => {
-    render(<CustomTextArea input={{ value: '123', name: 'test', onChange: e => (change = e.target.value) }}
+    render(<CustomTextArea input={{ value: '123', name: 'test', onChange: e => (e.target.value) }}
     meta={{}} />);
 
    expect(screen.getByTestId('text1')).toHaveTextContent('123');
