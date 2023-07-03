@@ -353,7 +353,7 @@ describe('VisibilityCondition tests', () => {
       a: 2
     }
     expect(showField(field, formValues)).toBe(false)
-  }),
+  })
   test('Shows field with != rule succeed (number)', () => {
     const field = {}
     field.visibility_conditions = [{
@@ -367,7 +367,7 @@ describe('VisibilityCondition tests', () => {
       a: 2
     }
     expect(showField(field, formValues)).toBe(true)
-  }),
+  })
   test('Shows field with in rule (list)', () => {
     const field = {}
     field.visibility_conditions = [{
