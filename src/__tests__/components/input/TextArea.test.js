@@ -12,18 +12,6 @@ describe('<TextArea />', () => {
    expect(screen.getByTestId('text1')).toHaveProperty('name');
    expect(screen.getByTestId('text1').name).toEqual('test');
   })
-
-/*   it('can be changed', async () => {
-    const handleInputChange = jest.fn();
-    render(<CustomTextArea onChange={handleInputChange} input={{ value: '123', name: 'test' }}
-    meta={{}} />);
-
-    const inputNode = screen.getByTestId('text1')
-    fireEvent.change(inputNode, { target: { value: 'test' }});
-    expect(handleInputChange).toHaveBeenCalledTimes(1);
-    expect(handleInputChange).toHaveBeenCalledWith("test");
-
-  }) */
  
   it('can have custom props', () => {
     render(
