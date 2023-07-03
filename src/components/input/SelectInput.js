@@ -183,6 +183,7 @@ const SelectInput = ({
   if (!multiple) {
     return (
       <Select
+        data-testid="select-single"
         placeholder={placeholder}
         className={readOnlyStyle}
         id={input.name}
@@ -209,6 +210,7 @@ const SelectInput = ({
   }
   return (
     <Select
+      data-testid="select-multi"
       placeholder={placeholder}
       className={readOnlyStyle}
       id={input.name}

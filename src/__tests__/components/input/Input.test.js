@@ -1,17 +1,28 @@
 import React from 'react'
-import {render,screen,fireEvent} from '@testing-library/react'
+import {render,screen} from '@testing-library/react'
 import '@testing-library/jest-dom'
+import { Provider } from 'react-redux';
+import configureStore from 'redux-mock-store';
 import Input from '../../../components/input/CustomInput'
 
 describe('<Input />', () => {
   let change
+  const mockStore = configureStore();
+  let store;
+
   beforeEach(() => {
+    const initialState = { output: false};
+    store = mockStore(initialState);
     change = ''
     render(
-      <Input
-        input={{ value: '123', name: 'test', onChange: value => (value) }}
-        meta={{}}
-      />
+      <Provider store={store}>
+        <Input
+          input={{ value: '123', name: 'test', onChange: value => (value) }}
+          meta={{}}
+          name='test' 
+          placeholder="123"
+        />
+      </Provider>
     )
   })
 
@@ -21,14 +32,7 @@ describe('<Input />', () => {
     expect(inputNode.value).toBe('123')
   })
 
-/*   test('can be changed', () => {
-    const inputNode = screen.getByLabelText('test')
-    fireEvent.change(inputNode, { target: { value: 'test' }});
-    expect(inputNode.value).toBe('test')
-  }) */
-
   test('can have custom props', () => {
-    render(<Input input={{}} meta={{}} name='test' placeholder="123" />)
     const inputNode = screen.getByPlaceholderText('123')
     expect(inputNode).toBeInTheDocument()
   })

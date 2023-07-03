@@ -44,7 +44,7 @@ const Matrix = ({
     return <Info content={field.help_text} link={field.help_link} />
   }
   return (
-    <div className="matrix-container">
+    <div className="matrix-container" data-testid="matrix-testid" >
       <div className="matrix" style={matrixStyle}>
         {fieldMatrix.map((row, y) => {
           return (
@@ -70,6 +70,7 @@ const Matrix = ({
                         <span />
                       ) : (
                         <span
+                          data-testid={field.name+"test-highligh"}
                           className={`${highlighted ? 'highlighted' : 'rowColumnStyle'}`}
                           style={rowColumnStyle}
                           key={`${field.name}-${y}-${x}`}

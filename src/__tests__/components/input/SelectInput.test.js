@@ -1,45 +1,32 @@
 import React from 'react'
-import {render,screen, fireEvent} from '@testing-library/react'
+import {render,screen} from '@testing-library/react'
 import '@testing-library/jest-dom'
+import { Provider } from 'react-redux';
+import configureStore from 'redux-mock-store';
 import SelectInput from '../../../components/input/SelectInput'
 
 describe('<SelectInput />', () => {
+  const mockStore = configureStore();
+  let store;
   test('is initialized correctly', () => {
+    const initialState = { output: false};
+    store = mockStore(initialState);
     const options = ['a', 'b', 'c']
     let change
   
       change = null
       render(
+        <Provider store={store}>
           <SelectInput
             input={{ name: 'test', onChange: value => (change = value) }}
             meta={{}}
             options={options.map(option => ({ key: option, value: option, label: option }))}
             placeholder="placeholder"
           />
+        </Provider>
       )
     const inputNode = screen.queryByText('placeholder')
     expect(inputNode).toBeInTheDocument()
     expect(change).toBeNull()
   })
-
-/*   it('has all option components', () => {
-    const options = ['a', 'b', 'c']
-    let change
-  
-      change = null
-      render(
-          <SelectInput
-            input={{ name: 'test', onChange: value => (change = value) }}
-            meta={{}}
-            options={options.map(option => ({ key: option, value: option, label: option }))}
-            placeholder="placeholder"
-          />
-      )
-
-    const dropwDownComponent = screen.findByPlaceholderText('placeholder')
-
-    expect(dropwDownComponent.options).toBe(options.length)
-    expect(dropwDownComponent.options[0].label).toBe('a')
-    expect(dropwDownComponent.options[0].value).toBe('a')
-  }) */
 })

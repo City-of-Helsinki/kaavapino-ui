@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import { projectFileUpload, projectFileRemove } from '../../actions/projectActions'
 import { downloadFile } from '../../actions/apiActions'
 import { Progress } from 'semantic-ui-react'
+import 'core-js/features/array/at';
 import { Document, Page, pdfjs } from 'react-pdf'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { withTranslation } from 'react-i18next'

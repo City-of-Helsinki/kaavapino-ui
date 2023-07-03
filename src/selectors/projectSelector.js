@@ -207,5 +207,5 @@ export const resettingDeadlinesSelector = createSelector(
 
 export const lockedSelector = createSelector(
   selectProject, 
-  project => project.locked
+  project => project?.locked
 )
