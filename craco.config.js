@@ -1,5 +1,5 @@
 const path = require('path');
-const fs = require('fs')
+
 module.exports = {
     webpack: {
         configure:  webpackConfig => {
@@ -14,14 +14,14 @@ module.exports = {
             /* Any webpack configuration options: https://webpack.js.org/configuration */
             /* Webpack <5 used to add polyfills for node.js core modules by default */
             resolve: {
-              modules: [ path.resolve(__dirname, 'src'), 'node_modules' ],
+              modules: [ path.resolve(process.env.PWD, 'src'), 'node_modules' ],
               extensions: [ '.js', '.jsx', '.ts', '.tsx' ],
               fallback: {
                 path: require.resolve('path-browserify'),
                 fs: false
               },
               alias: {
-                fs: path.resolve(__dirname, 'src/mock-fs.js'),
+                fs: path.resolve(process.env.PWD, 'src/mock-fs.js'),
                 process: 'process/browser',
               },
               mainFields: [ 'browser', 'module', 'main' ],
