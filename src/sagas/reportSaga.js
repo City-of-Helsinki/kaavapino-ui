@@ -94,7 +94,7 @@ function* downloadReportPreviewSaga({ payload }) {
       reportApi.get,
       { path: { id: payload && payload.selectedReport }, query: { ...filteredParams } },
       ':id/',
-      { responseType: 'text' },
+      { responseType: 'json' },
       true
     )
     currentTask = res && res.data ? res.data.detail : null
@@ -127,7 +127,7 @@ function* downloadReportPreviewSaga({ payload }) {
           reportApi.get,
           { path: { id: payload.selectedReport, task: currentTask } },
           ':id/?preview=true&task=:task',
-          { responseType: 'text' },
+          { responseType: 'json' },
           true
         )
         counter++
@@ -199,7 +199,7 @@ function* downloadReportSaga({ payload }) {
       reportApi.get,
       { path: { id: payload.selectedReport }, query: { ...filteredParams } },
       ':id/',
-      { responseType: 'text' },
+      { responseType: 'json' },
       true
     )
     currentTask = res && res.data ? res.data.detail : null
