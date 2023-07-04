@@ -57,6 +57,8 @@ import {
   SAVE_PROJECT_FLOOR_AREA_SUCCESSFUL,
   saveProjectFloorAreaSuccessful,
   SAVE_PROJECT_TIMETABLE,
+  SAVE_PROJECT_TIMETABLE_SUCCESSFUL,
+  saveProjectTimetableSuccessful,
   SAVE_PROJECT,
   saveProjectSuccessful,
   CHANGE_PROJECT_PHASE,
@@ -143,6 +145,7 @@ export default function* projectSaga() {
     takeLatest(SAVE_PROJECT_FLOOR_AREA, saveProjectFloorArea),
     takeLatest(SAVE_PROJECT_FLOOR_AREA_SUCCESSFUL, saveProjectFloorAreaSuccessful),
     takeLatest(SAVE_PROJECT_TIMETABLE, saveProjectTimetable),
+    takeLatest(SAVE_PROJECT_TIMETABLE_SUCCESSFUL, saveProjectTimetableSuccessful),
     takeLatest(SAVE_PROJECT, saveProject),
     takeLatest(SET_LOCK_STATUS, setLockStatus),
     takeLatest(SET_UNLOCK_STATUS, setUnlockStatus),
@@ -605,6 +608,7 @@ function* saveProjectTimetable() {
       )
       yield put(updateProject(updatedProject))
       yield put(setSubmitSucceeded(EDIT_PROJECT_TIMETABLE_FORM))
+      yield put(saveProjectTimetableSuccessful(true))
       yield put(setAllEditFields())
 
       if (!checkDeadlines(updatedProject.deadlines)) {
