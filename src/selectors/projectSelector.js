@@ -214,3 +214,8 @@ export const floorAreaSavedSelector = createSelector(
   selectProject, 
   ({ floorAreaSaved }) => floorAreaSaved
 )
+
+export const timetableSavedSelector = createSelector(
+  selectProject, 
+  ({ timetableSaved }) => timetableSaved
+)

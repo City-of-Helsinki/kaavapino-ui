@@ -18,7 +18,8 @@ import {
   getProjectSnapshot,
   saveProjectBasePayload,
   unlockAllFields,
-  resetFloorAreaSave
+  resetFloorAreaSave,
+  resetTimetableSave
 } from '../../actions/projectActions'
 import { fetchSchemas, setAllEditFields, clearSchemas } from '../../actions/schemaActions'
 import {
@@ -28,7 +29,8 @@ import {
   hasErrorsSelector,
   checkingSelector,
   currentProjectSelector,
-  floorAreaSavedSelector
+  floorAreaSavedSelector,
+  timetableSavedSelector
 } from '../../selectors/projectSelector'
 import { schemaSelector, allEditFieldsSelector } from '../../selectors/schemaSelector'
 import NavigationPrompt from 'react-router-navigation-prompt'
@@ -200,6 +202,11 @@ class ProjectEditPage extends Component {
   }
 
   handleTimetableClose = () => {
+    this.setState({ showEditProjectTimetableForm: false })
+    this.props.resetTimetableSave()
+  }
+
+  handleTimetableSave = () => {
     const { project, saveProjectTimetable } = this.props
     saveProjectTimetable()
     initializeProject(project.id)
@@ -494,8 +501,9 @@ class ProjectEditPage extends Component {
             <EditProjectTimetableModal
               attributeData={attribute_data}
               open
-              handleSubmit={this.handleTimetableClose}
-              handleClose={() => this.setState({ showEditProjectTimetableForm: false })}
+              handleSubmit={() => this.handleTimetableSave()}
+              handleClose={() => this.handleTimetableClose()}
+              isTimetableSaved={this.props.timetableSavedSelector}
             />
           )}
         </div>
@@ -520,7 +528,8 @@ const mapStateToProps = state => {
     users: usersSelector(state),
     currentUserId: userIdSelector(state),
     currentProject: currentProjectSelector(state),
-    floorAreaSavedSelector: floorAreaSavedSelector(state)
+    floorAreaSavedSelector: floorAreaSavedSelector(state),
+    timetableSavedSelector: timetableSavedSelector(state)
   }
 }
 
@@ -542,7 +551,8 @@ const mapDispatchToProps = {
   getProjectSnapshot,
   clearSchemas,
   saveProjectBasePayload,
-  resetFloorAreaSave
+  resetFloorAreaSave,
+  resetTimetableSave
 }
 
 export default withRouter(

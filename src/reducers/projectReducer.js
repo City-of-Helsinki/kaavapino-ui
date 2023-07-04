@@ -42,7 +42,9 @@ import {
   GET_PROJECTS_OVERVIEW_FLOOR_AREA_SUCCESSFUL,
   GET_PROJECTS_OVERVIEW_BY_SUBTYPE_SUCCESSFUL,
   SAVE_PROJECT_FLOOR_AREA_SUCCESSFUL,
+  SAVE_PROJECT_TIMETABLE_SUCCESSFUL,
   RESET_FLOOR_AREA_SAVE,
+  RESET_TIMETABLE_SAVE,
   GET_PROJECTS_OVERVIEW_FILTERS_SUCCESSFUL,
   GET_EXTERNAL_DOCUMENTS_SUCCESSFUL,
   CLEAR_PROJECTS_OVERVIEW_FLOOR_AREA,
@@ -105,7 +107,8 @@ export const initialState = {
   },
   locked:{},
   ownProjectFilters:[],
-  floorAreaSaved:false
+  floorAreaSaved:false,
+  timetableSaved:false
 }
 
 export const reducer = (state = initialState, action) => {
@@ -664,6 +667,20 @@ export const reducer = (state = initialState, action) => {
       return{
         ...state,
         floorAreaSaved:false
+      }
+    }
+
+    case SAVE_PROJECT_TIMETABLE_SUCCESSFUL: {
+      return{
+        ...state,
+        timetableSaved:action.payload
+      }
+    }
+
+    case RESET_TIMETABLE_SAVE: {
+      return{
+        ...state,
+        timetableSaved:false
       }
     }
 

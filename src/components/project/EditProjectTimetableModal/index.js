@@ -64,6 +64,9 @@ class EditProjectTimeTableModal extends Component {
     if (prevProps.saving && !saving) {
       initialize(attributeData)
     }
+    if(this.props.isTimetableSaved){
+      this.props.handleClose()
+    }
   }
 
   handleSubmit = () => {
