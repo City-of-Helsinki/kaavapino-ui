@@ -13,6 +13,7 @@ import { floorAreaSectionsSelector } from '../../../selectors/schemaSelector'
 import { withTranslation } from 'react-i18next'
 import { Button } from 'hds-react'
 
+
 const FloorAreaTotals = ({ formValues, floorAreaSections, attributeData }) => {
   // Would love a more rubust check than string includes if one becomes available
   const totalSection = floorAreaSections.find(section =>
@@ -57,7 +58,6 @@ class EditFloorAreaFormModal extends Component {
 
   componentDidUpdate(prevProps) {
     const { saving, initialize, formValues } = this.props
-
     /* handle submit success / failure */
 
     if (prevProps.submitting && this.props.submitSucceeded) {
@@ -73,10 +73,18 @@ class EditFloorAreaFormModal extends Component {
     if (prevProps.saving && !saving) {
       initialize(formValues)
     }
+
+    if(this.props.isFloorAreaSaved){
+      this.setState({ loading: false })
+      this.props.handleClose()
+    }
   }
 
   handleSubmit = () => {
     this.setState({ loading: true })
+    if(typeof this.props.saveProjectFloorArea === "function"){
+      this.props.saveProjectFloorArea()
+    }
   }
 
   handleClose = () => {

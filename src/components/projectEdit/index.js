@@ -17,7 +17,8 @@ import {
   initializeProject,
   getProjectSnapshot,
   saveProjectBasePayload,
-  unlockAllFields
+  unlockAllFields,
+  resetFloorAreaSave
 } from '../../actions/projectActions'
 import { fetchSchemas, setAllEditFields, clearSchemas } from '../../actions/schemaActions'
 import {
@@ -26,7 +27,8 @@ import {
   validatingSelector,
   hasErrorsSelector,
   checkingSelector,
-  currentProjectSelector
+  currentProjectSelector,
+  floorAreaSavedSelector
 } from '../../selectors/projectSelector'
 import { schemaSelector, allEditFieldsSelector } from '../../selectors/schemaSelector'
 import NavigationPrompt from 'react-router-navigation-prompt'
@@ -315,6 +317,11 @@ class ProjectEditPage extends Component {
     this.setState({ sectionIndex: index, phaseTitle:title, fields:fields })
   }
 
+  handleFloorAreaClose = () => {
+    this.setState({ showEditFloorAreaForm: false })
+    this.props.resetFloorAreaSave()
+  }
+
   render() {
     const {
       schema,
@@ -478,8 +485,9 @@ class ProjectEditPage extends Component {
             <EditFloorAreaFormModal
               attributeData={attribute_data}
               open
-              handleSubmit={saveProjectFloorArea}
-              handleClose={() => this.setState({ showEditFloorAreaForm: false })}
+              saveProjectFloorArea={saveProjectFloorArea}
+              handleClose={() => this.handleFloorAreaClose()}
+              isFloorAreaSaved={this.props.floorAreaSavedSelector}
             />
           )}
           {this.state.showEditProjectTimetableForm && (
@@ -511,7 +519,8 @@ const mapStateToProps = state => {
     allEditFields: allEditFieldsSelector(state),
     users: usersSelector(state),
     currentUserId: userIdSelector(state),
-    currentProject: currentProjectSelector(state)
+    currentProject: currentProjectSelector(state),
+    floorAreaSavedSelector: floorAreaSavedSelector(state)
   }
 }
 
@@ -532,7 +541,8 @@ const mapDispatchToProps = {
   initializeProject,
   getProjectSnapshot,
   clearSchemas,
-  saveProjectBasePayload
+  saveProjectBasePayload,
+  resetFloorAreaSave
 }
 
 export default withRouter(

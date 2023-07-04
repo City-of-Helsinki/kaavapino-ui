@@ -41,6 +41,8 @@ import {
   SET_SELECTED_PHASE_ID,
   GET_PROJECTS_OVERVIEW_FLOOR_AREA_SUCCESSFUL,
   GET_PROJECTS_OVERVIEW_BY_SUBTYPE_SUCCESSFUL,
+  SAVE_PROJECT_FLOOR_AREA_SUCCESSFUL,
+  RESET_FLOOR_AREA_SAVE,
   GET_PROJECTS_OVERVIEW_FILTERS_SUCCESSFUL,
   GET_EXTERNAL_DOCUMENTS_SUCCESSFUL,
   CLEAR_PROJECTS_OVERVIEW_FLOOR_AREA,
@@ -102,7 +104,8 @@ export const initialState = {
     legends: []
   },
   locked:{},
-  ownProjectFilters:[]
+  ownProjectFilters:[],
+  floorAreaSaved:false
 }
 
 export const reducer = (state = initialState, action) => {
@@ -648,6 +651,19 @@ export const reducer = (state = initialState, action) => {
           ...state.overview,
           legends: action.payload
         }
+      }
+    }
+    case SAVE_PROJECT_FLOOR_AREA_SUCCESSFUL: {
+      return{
+        ...state,
+        floorAreaSaved: action.payload
+      }
+    }
+
+    case RESET_FLOOR_AREA_SAVE: {
+      return{
+        ...state,
+        floorAreaSaved:false
       }
     }
 
