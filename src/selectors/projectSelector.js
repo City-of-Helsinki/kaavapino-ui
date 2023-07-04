@@ -209,3 +209,8 @@ export const lockedSelector = createSelector(
   selectProject, 
   project => project?.locked
 )
+
+export const floorAreaSavedSelector = createSelector(
+  selectProject, 
+  ({ floorAreaSaved }) => floorAreaSaved
+)

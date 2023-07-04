@@ -54,6 +54,8 @@ import {
   initializeProjectSuccessful,
   SAVE_PROJECT_BASE,
   SAVE_PROJECT_FLOOR_AREA,
+  SAVE_PROJECT_FLOOR_AREA_SUCCESSFUL,
+  saveProjectFloorAreaSuccessful,
   SAVE_PROJECT_TIMETABLE,
   SAVE_PROJECT,
   saveProjectSuccessful,
@@ -139,6 +141,7 @@ export default function* projectSaga() {
     takeLatest(CREATE_PROJECT, createProject),
     takeLatest(SAVE_PROJECT_BASE, saveProjectBase),
     takeLatest(SAVE_PROJECT_FLOOR_AREA, saveProjectFloorArea),
+    takeLatest(SAVE_PROJECT_FLOOR_AREA_SUCCESSFUL, saveProjectFloorAreaSuccessful),
     takeLatest(SAVE_PROJECT_TIMETABLE, saveProjectTimetable),
     takeLatest(SAVE_PROJECT, saveProject),
     takeLatest(SET_LOCK_STATUS, setLockStatus),
@@ -468,7 +471,7 @@ const getChangedAttributeData = (values, initial, sections) => {
       return
     }
 
-    if (values[key] === null || values[key].length === 0 || values[key] === '') {
+    if (values[key] === null || values[key]?.length === 0 || values[key] === '') {
       attribute_data[key] = null
     } else {
       attribute_data[key] = values[key]
@@ -561,7 +564,7 @@ function* saveProjectFloorArea() {
 
       yield put(updateProject(updatedProject))
       yield put(setSubmitSucceeded(EDIT_FLOOR_AREA_FORM))
-
+      yield put(saveProjectFloorAreaSuccessful(true))
       yield put(setAllEditFields())
 
       yield put(toastr.success(i18.t('messages.timelines-successfully-saved')))

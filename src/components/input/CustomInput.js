@@ -83,8 +83,10 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       //prevent saving if locked
       if (!readonly) {
         //Sent call to save changes
-        custom.onBlur();
-        oldValueRef.current = event.target.value;
+        if (typeof custom.onBlur === 'function') {
+          custom.onBlur();
+          oldValueRef.current = event.target.value;
+        }
       }
     }
   }

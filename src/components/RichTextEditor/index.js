@@ -109,8 +109,10 @@ function RichTextEditor(props) {
   document.onvisibilitychange = () => {
     //If navigated to different tab/window/screen blur and unclock
     if(document.hidden){
-      handleBlur()
-      myRefname.current?.focus();
+      if (typeof handleBlur === 'function') {
+        handleBlur()
+        myRefname.current?.focus();
+      }
     }
     if(!document.hidden){
       myRefname.current?.focus();
@@ -243,8 +245,10 @@ function RichTextEditor(props) {
       if (!readonly) {
         //Sent call to save changes if it is modified by user and not updated by lock call
         if(!valueIsSet){
-          onBlur();
-          oldValueRef.current = inputValue.current;
+          if (typeof onBlur === 'function') {
+            onBlur();
+            oldValueRef.current = inputValue.current;
+          }
         }
       }
     }

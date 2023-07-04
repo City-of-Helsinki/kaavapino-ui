@@ -91,6 +91,7 @@ export const UNLOCK_PROJECT_FIELD = "unlockProjectField"
 export const SET_LOCK_STATUS = "setLockStatus"
 export const SET_UNLOCK_STATUS = "setUnLockStatus"
 export const UNLOCK_ALL_FIELDS = "unlockAllFields"
+export const RESET_FLOOR_AREA_SAVE = "Reset floor area save"
 
 export const unlockAllFields = (projectName) => ({
   type: UNLOCK_ALL_FIELDS,
@@ -238,9 +239,12 @@ export const saveProjectBasePayloadSuccessful = () => ({
 export const saveProjectBaseSuccessful = () => ({ type: SAVE_PROJECT_BASE_SUCCESSFUL })
 
 export const saveProjectFloorArea = () => ({ type: SAVE_PROJECT_FLOOR_AREA })
-export const saveProjectFloorAreaSuccessful = () => ({
-  type: SAVE_PROJECT_FLOOR_AREA_SUCCESSFUL
+export const saveProjectFloorAreaSuccessful = success => ({
+  type: SAVE_PROJECT_FLOOR_AREA_SUCCESSFUL,
+  payload: success
 })
+
+export const resetFloorAreaSave = () => ({type: RESET_FLOOR_AREA_SAVE})
 
 export const saveProjectTimetable = () => ({ type: SAVE_PROJECT_TIMETABLE })
 export const saveProjectTimetableSuccessful = () => ({
