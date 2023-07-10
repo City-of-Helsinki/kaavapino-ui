@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { getFormSyncErrors, getFormSubmitErrors, getFormValues } from 'redux-form'
-import { LoadingSpinner } from 'hds-react'
+import { LoadingSpinner, Notification, IconCross } from 'hds-react'
 import { isDirty } from 'redux-form/immutable'
 import {
   unlockProjectField,
@@ -51,6 +51,8 @@ import { withTranslation } from 'react-i18next'
 import authUtils from '../../utils/authUtils'
 import { isEqual } from 'lodash'
 import FormFilter from './FormFilter'
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.min.css';
 
 class ProjectEditPage extends Component {
   state = {
@@ -67,7 +69,8 @@ class ProjectEditPage extends Component {
     filterFieldsArray: [],
     highlightedTag: "",
     showSection:false,
-    fields:[]
+    fields:[],
+    errorFields:[]
   }
 
   currentSectionIndex = 0
@@ -78,6 +81,7 @@ class ProjectEditPage extends Component {
     super(props)
     const { project } = this.props
     this.props.fetchSchemas(project.id, project.subtype)
+    this.errorField = React.createRef();
   }
 
   shouldComponentUpdate(prevProps, prevState) {
@@ -87,9 +91,14 @@ class ProjectEditPage extends Component {
     return true
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(_, prevState) {
     this.scroll()
     this.headings = this.createHeadings()
+    if(prevState.errorFields != this.state.errorFields){
+      if(this.state.errorFields.length > 0){
+        this.errorField.current?.focus();
+      }
+    }
   }
   componentDidMount() {
     window.addEventListener('resize', this.handleResize)
@@ -309,6 +318,9 @@ class ProjectEditPage extends Component {
 
   showSections = (show) => {
     this.setState({showSection: show})
+    if(!show){
+      this.setState({errorFields:[]})
+    }
   }
 
   filterFields = (fields) => {
@@ -327,6 +339,84 @@ class ProjectEditPage extends Component {
   handleFloorAreaClose = () => {
     this.setState({ showEditFloorAreaForm: false })
     this.props.resetFloorAreaSave()
+  }
+
+  checkRequiredFields = () => {
+    this.props.projectSetChecking(this.props.checking)
+    const {
+      project: { attribute_data },
+      schema,
+      t
+    } = this.props
+
+    const currentSchemaIndex = schema.phases.findIndex(s => s.id === this.getSelectedPhase())
+    const currentSchema = schema.phases[currentSchemaIndex]
+    const errorFields = projectUtils.getErrorFields(attribute_data, currentSchema)
+
+    this.setState({errorFields:errorFields})
+    if(errorFields?.length === 0){
+      const elements = <div>
+        <div>
+          <h3>{t('messages.required-fields-filled-header')}
+            <span className='icon-container'><IconCross size="s" /></span>
+          </h3>
+        </div>
+        <div>
+          <p>{t('messages.required-fields-filled-text')}
+          </p>
+        </div>
+      </div>
+      //show toastr message
+      toast.success(elements, {
+        toastId:"noErrorsToastr",
+        position: "top-right",
+        autoClose: false,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        progress: undefined,
+        theme: "light",
+        });
+    }
+  }
+
+  showErrorField = (section,anchor) => {
+    let activeSection = document.getElementsByClassName("active")[0];
+    let target
+    let openSection
+    if(activeSection?.textContent === "section"){
+      target = document.getElementById(anchor)
+      target?.focus();
+    }
+    else{
+      openSection = document.getElementById(section)
+      openSection?.click();
+      this.waitForElm(anchor).then(() => {
+        target = document.getElementById(anchor)
+        target?.focus();
+      });
+    }
+  }
+
+  waitForElm = (selector) => {
+    return new Promise(resolve => {
+        if (document.getElementById(selector)) {
+            return resolve(document.getElementById(selector));
+        }
+  
+        const observer = new MutationObserver(() => {
+            if (document.getElementById(selector)) {
+                resolve(document.getElementById(selector));
+                observer.disconnect();
+            }
+        });
+  
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    });
   }
 
   render() {
@@ -404,13 +494,30 @@ class ProjectEditPage extends Component {
           selectedPhase={selectedPhase}
           allfields={this.state.fields}
         />
+        {this.state.errorFields?.length > 0 ?
+        <div tabIndex="0" ref={this.errorField} className='required-fields-container'>
+          <Notification id="required-fields-notification" label="Lomakkeelta puuttuu pakollisia tietoja" type="error" style={{marginTop: 'var(--spacing-s)'}}>
+            <ul>
+            {this.state.errorFields.map((error,index) =>{
+              return (
+                <li key={error.errorSection + error.errorField}>
+                  Virhe {index}: <a href='#0' role="button" onClick={() => this.showErrorField(error.errorSection,error.fieldAnchorKey)} className='required-fields-notification-link'>{error.errorSection} - {error.errorField}</a>
+                </li>
+              )
+            })}
+            </ul>
+          </Notification>
+        </div>
+        :
+        ""
+        }
         <div className={`project-input-container ${highlightGroup}`}>
           <div className="project-input-left">
             <QuickNav
               changingPhase={changingPhase}
               currentPhases={currentPhases}
               handleSave={this.handleSave}
-              handleCheck={() => this.props.projectSetChecking(!this.props.checking)}
+              handleCheck={() => this.checkRequiredFields()}
               setChecking={this.props.projectSetChecking}
               saving={saving}
               switchDisplayedPhase={switchDisplayedPhase}

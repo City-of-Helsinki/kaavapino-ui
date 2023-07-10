@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react'
 import { connect } from 'react-redux'
 import { fetchDocuments, downloadDocumentPreview } from '../../actions/documentActions'
+import { fetchSchemas} from '../../actions/schemaActions'
+import { schemaSelector} from '../../selectors/schemaSelector'
 import {
   documentsSelector,
   documentsLoadingSelector,
@@ -9,14 +11,15 @@ import {
 import { currentProjectIdSelector } from '../../selectors/projectSelector'
 import { LoadingSpinner } from 'hds-react'
 import DocumentGroup from './DocumentGroup'
-import { IconAlertCircle } from 'hds-react'
 import { useTranslation } from 'react-i18next'
 import authUtils from '../../utils/authUtils'
 
 
-function ProjectDocumentsPage( {currentProjectId, currentUserId, users, fetchDocuments, documents, documentsLoading}) {
+function ProjectDocumentsPage(props) {
+  const {currentProjectId, currentUserId, users, fetchDocuments, documents, documentsLoading,project,fetchSchemas,schema,selectedPhase, search} = props
   useEffect(() => {
       fetchDocuments(currentProjectId)
+      fetchSchemas(project.id, project.subtype)
   }, [])
 
   const {t} = useTranslation()
@@ -54,12 +57,6 @@ function ProjectDocumentsPage( {currentProjectId, currentUserId, users, fetchDoc
       <>
         <span>
           {current.title}
-          {current.phaseEnded && (
-            <span className="phase-end-tag">
-              <IconAlertCircle size="xs" />
-              {t('project.phase-passed')}
-            </span>
-          )}
         </span>
       </>
     )
@@ -79,6 +76,10 @@ function ProjectDocumentsPage( {currentProjectId, currentUserId, users, fetchDoc
           projectId={currentProjectId}
           phase={groupedDocuments[key]}
           isUserResponsible={isUserResponsible}
+          schema={schema}
+          attribute_data={project.attribute_data}
+          selectedPhase={selectedPhase}
+          search={search}
         />
       ))}
     </div>
@@ -92,13 +93,15 @@ const mapStateToProps = state => {
     documents: documentsSelector(state),
     documentsLoading: documentsLoadingSelector(state),
     currentProjectId: currentProjectIdSelector(state),
-    documentPreview: documentPreviewSelector(state)
+    documentPreview: documentPreviewSelector(state),
+    schema: schemaSelector(state),
   }
 }
 
 const mapDispatchToProps = {
   fetchDocuments,
-  downloadDocumentPreview
+  downloadDocumentPreview,
+  fetchSchemas
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ProjectDocumentsPage)

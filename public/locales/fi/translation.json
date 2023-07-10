@@ -105,7 +105,9 @@
     "min-distance": "Valitse myöhempi päivä, koska tämä on liian lähellä edellistä etappia.",
     "max-distance": "Valitse aikaisempi päivä, koska tämä on liian lähellä seuraavaa etappia.",
     "check-timetable": "Tekemäsi aikataulumuutos vaikuttaa myöhempiin vaiheisiin. Siirrä myöhempiä vaiheita eteenpäin, jotta saat koko aikataulun ajantasalle.",
-    "timelines-successfully-saved": "Kerrosalatiedot tallennettu onnistuneesti"
+    "timelines-successfully-saved": "Kerrosalatiedot tallennettu onnistuneesti",
+    "required-fields-filled-header":"Pakolliset kentät täytetty",
+    "required-fields-filled-text":"Pyydä seuraavaksi kaavoitussihteeriä vahvistamaan vaiheen aikataulu, jonka jälkeen voit siirtyä lataamaan documentteja."
   },
   "floor-areas": {
     "title": "Päivitä kerrosalatiedot",
@@ -155,9 +157,14 @@
     "no": "Ei",
     "documents-created": "Osa tämän vaiheen dokumenteista on jo ladattu ulos. Ole tarvittaessa yhteydessä projektin vastuuhenkilöön {{email}}.",
     "no-documents": "Ei dokumentteja",
-    "phase-passed": "Vaihe ohitettu",
-    "load": "Lataa ulos vasta kun valmis",
-    "load-preview": "Esikatsele keskeneräistä",
+    "phase-passed": "Vaihe on ohitettu ja suljettu.",
+    "phase-preview-ended":"Et voi enää esikatsella dokumentteja.",
+    "phase-load-prevented":"Vaiheen kaikkia pakollisia tietoja ei ole täytetty.",
+    "phase-preview-only":"Voit ainoastaan esikatsella dokumentteja.",
+    "phase-ok":"Kaikki vaiheen pakolliset tiedot ovat täytetty.",
+    "phase-load-ok":"Voit ladata dokumentit ulos.",
+    "load": "Lataa ulos",
+    "load-preview": "Esikatsele",
     "phase": "Kaavan vaihe:",
     "document-last-loaded": "Ladattu ulos viimeksi:",
     "project-created-log": "{{timestamp}} Projekti luotu {{name}}",
@@ -200,6 +207,7 @@
     "button-close": "Sulje"
   },
   "quick-nav": {
+    "check-required":"Tarkasta pakolliset kentät",
     "check": "Tarkista",
     "check-help-text": "Korostaa pakolliset puuttuvat kentät",
     "save-help": "Tallentaa projektin",

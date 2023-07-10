@@ -190,7 +190,7 @@ class ProjectPage extends Component {
     )
   }
   getProjectDocumentsContent = () => {
-    const { currentProject, users, projectSubtypes, currentUserId } = this.props
+    const { currentProject, users, projectSubtypes, currentUserId, selectedPhase } = this.props
 
     return (
       <div key="documents">
@@ -222,7 +222,13 @@ class ProjectPage extends Component {
           initialValues={{}}
           handleClose={() => this.togglePrintProjectDataModal(false)}
         />
-        <ProjectDocumentsPage users={users} currentUserId={currentUserId} />
+        <ProjectDocumentsPage 
+        users={users} 
+        currentUserId={currentUserId} 
+        project={currentProject} 
+        selectedPhase={selectedPhase}
+        search={this.props.location.search}
+        />
       </div>
     )
   }
