@@ -304,7 +304,7 @@
 
 
   .quicknav-buttons {
-    margin-top: 16px;
+    margin-top: 10px;
     text-align: center;
     display: flex;
     justify-content: space-around;
@@ -312,11 +312,8 @@
     width: 100%;
 
     button {
-      min-width: calc(50% - 8px);
-
-      &:last-of-type {
-        margin-top: 20px;
-      }
+      margin-top: 10px;
+      font-weight: bolder;
     }
   }
   .check-pressed {

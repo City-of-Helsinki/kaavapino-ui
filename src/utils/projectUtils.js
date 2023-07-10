@@ -226,7 +226,7 @@ const findValuesFromObject = (object, key, returnArray) => {
   return value
 }
 
-  function hasMissingFields(attributeData, currentProject, schema) {
+function hasMissingFields(attributeData, currentProject, schema) {
     const currentSchema = schema.phases.find(s => s.id === currentProject.phase)
     const { sections } = currentSchema
 
@@ -265,8 +265,87 @@ const findValuesFromObject = (object, key, returnArray) => {
         }
       })
     })
-    return missingFields
+    return missingFields 
+}
+
+function getErrorFields(attributeData, currentSchema) {
+  let errorFields = []
+  if(currentSchema?.sections){
+    const { sections } = currentSchema
+    // Go through every single field
+    sections.forEach(({ title,fields }) => {
+      fields.forEach(field => {
+        // Only validate visible fields
+        if (showField(field, attributeData)) {
+          // Matrices can contain any kinds of fields, so
+          // we must go through them separately
+          if (field.type === 'matrix') {
+            const { matrix } = field
+            matrix.fields.forEach(({ required, name, label }) => {
+              if (isFieldMissing(name, required, attributeData)) {
+                errorFields.push({"errorSection":title,"errorField":label,"fieldAnchorKey":name})
+              }
+            })
+            // Fieldsets can contain any fields (except matrices)
+            // multiple times, so we need to go through them all
+          } else if (field.type === 'fieldset') {
+            if (hasFieldsetErrors(field.name, field.fieldset_attributes, attributeData)) {
+              errorFields.push({"errorSection":title,"errorField":field.label,"fieldAnchorKey":field.name})
+            }
+          } else if (
+            isFieldMissing(
+              field.name,
+              field.required,
+              attributeData,
+              field.autofill_readonly
+            )
+          ) {
+            errorFields.push({"errorSection":title,"errorField":field.label,"fieldAnchorKey":field.name})
+          }
+        }
+      })
+    })
   }
+
+  return errorFields 
+}
+
+function isSceduleAccepted(attributeData, currentSchema) {
+  /*These have to be accepted from schedule before phase can be confirmed
+  OAS
+  vahvista_oas_esillaolo_alkaa: true
+  vahvista_oas_esillaolo_paattyy: true
+  EHDOTUS
+  vahvista_ehdotus_esillaolo_alkaa_pieni: true
+  vahvista_ehdotus_esillaolo_paattyy: true
+  TARKISTETTU EHDOTUS
+  vahvista_tarkistettu_ehdotus_lautakunnassa: true 
+  */
+  let scheduleIsAccepted = []
+  if(currentSchema?.sections){
+    const { sections } = currentSchema
+    // Go through every single field
+    sections.forEach(({name,attributes }) => {
+      if(name === "2. OAS" || name === "3. Ehdotus" || name === "4. Tarkistettu ehdotus"){
+        attributes.forEach(field => {
+          if (showField(field, attributeData)) {
+            if (field.name === 'vahvista_oas_esillaolo_alkaa' || field.name === 'vahvista_oas_esillaolo_paattyy' 
+            || field.name === 'vahvista_ehdotus_esillaolo_alkaa_pieni' || field.name === 'vahvista_ehdotus_esillaolo_paattyy'
+            || field.name === 'vahvista_tarkistettu_ehdotus_lautakunnassa') {
+              const value = findValueFromObject(attributeData, field.name)
+              if (!value) {
+                //increase array size with false value and prevent acceptance
+                scheduleIsAccepted.push(value)
+              }
+            }
+          }
+        })
+      }
+    })
+    
+  }
+  return scheduleIsAccepted 
+}
 
 function hasFieldsetErrors(fieldName, fieldsetAttributes, attributeData) {
   if (
@@ -364,6 +443,7 @@ const getField = (name, sections) => {
 
   return returnField
 }
+
 const reduceNonEditableFields = (attributeData, sections) => {
   const keys = Object.keys(attributeData)
 
@@ -397,6 +477,7 @@ const checkFieldsetAttributes = (fieldsetAttributes, sections) => {
       })
   }
 }
+
 export default {
   formatDate,
   formatTime,
@@ -422,5 +503,7 @@ export default {
   reduceNonEditableFields,
   getField,
   checkFieldsetAttributes,
-  hasMissingFields
+  hasMissingFields,
+  getErrorFields,
+  isSceduleAccepted
 }

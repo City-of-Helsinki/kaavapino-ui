@@ -5,7 +5,6 @@ import OnHoldCheckbox from '../../input/OnholdCheckbox'
 import ConfirmModal from '../ConfirmModal'
 import { Message } from 'semantic-ui-react'
 import './styles.scss'
-import RoleHighlightPicker from './roleHighlightPicker/index'
 import Status from '../../common/Status'
 
 export default function QuickNav({
@@ -20,7 +19,6 @@ export default function QuickNav({
   notLastPhase,
   phases,
   switchDisplayedPhase,
-  setHighlightRole,
   saveProjectBasePayload,
   setChecking,
   hasMissingFields,
@@ -123,15 +121,19 @@ export default function QuickNav({
     return (
       <>
         <Button
+          size="small"
+          fullWidth={true}
           onClick={onCheckPressed}
           help={t('quick-nav.check-help-text')}
           disabled={currentProject.archived}
           className={checkButtonPressed ? 'check-pressed' : ''}
           variant="secondary"
         >
-          {t('quick-nav.check')}
+          {t('quick-nav.check-required')}
         </Button>
         <Button
+          size="small"
+          fullWidth={true}
           onClick={handleSave}
           isLoading={saving || errors}
           loadingText={t('common.save')}
@@ -144,6 +146,7 @@ export default function QuickNav({
 
         {isResponsible && (
           <Button
+            size="small"
             onClick={changeCurrentPhase}
             fullWidth={true}
             loadingText={`${
@@ -192,6 +195,7 @@ export default function QuickNav({
     const value = hasMissingFields()
     setHasErrors(value)
     setValidationOk(true)
+    handleCheck()
   }
 
   const phaseCallback = currentChange => {
@@ -295,6 +299,7 @@ export default function QuickNav({
         {selectedPhase?.phaseID === 0 && options?.optionsArray.map((option,index) =>{
           return (
             <Button
+              id={option.label}
               aria-label={'Avaa ' + option.label + " lomakkeen sisältö"} 
               key={option + index}
               variant="supplementary"
@@ -317,9 +322,10 @@ export default function QuickNav({
             let [filterNumber,highlightNumber,highlight] = calculateFilterNumber(fields,highlightedTag)
             return (
               <Button
+                id={section.title}
                 tabIndex="0"
                 aria-label={'Avaa ' + section.title + " lomakkeen sisältö. " + filterNumber + " suodatettua kenttää esillä. " + highlightNumber + " korostettua kenttää esillä."} 
-                key={index}
+                key={section.title}
                 variant="supplementary"
                 className={`quicknav-item ${"phase"+selectedPhase.phaseID} ${
                   index === selected && selectedPhase.phaseID === activePhase
@@ -361,7 +367,6 @@ export default function QuickNav({
             })}
         </nav>
       </div>
-      <RoleHighlightPicker onRoleUpdate={setHighlightRole} />
 
       <div className="quicknav-buttons">{renderButtons()}</div>
       {isResponsible && <div className="quicknav-onhold">{renderCheckBox()}</div>}

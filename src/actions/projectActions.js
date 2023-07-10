@@ -98,7 +98,6 @@ export const unlockAllFields = (projectName) => ({
   type: UNLOCK_ALL_FIELDS,
   payload: {projectName}
 })
-
 export const setUnlockStatus = (lockData,lock) => ({
   type: SET_UNLOCK_STATUS,
   payload: {lockData,lock}

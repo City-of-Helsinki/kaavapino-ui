@@ -603,3 +603,24 @@ header{
     overflow-y: overlay;
   }
 }
+
+.required-error-text{
+  color: $color_error_hds;
+  svg{
+    vertical-align: bottom;
+    margin-right: 5px;
+  }
+}
+
+.required-success-text{
+  color: $color-success;
+  svg{
+    vertical-align: bottom;
+    margin-right: 5px;
+  }
+}
+
+.italic-text{
+  font-style: italic;
+  font-size: $size14;
+}

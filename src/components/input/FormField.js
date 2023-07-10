@@ -178,6 +178,7 @@ const FormField = ({
         {!isOneLineField && (
           <div className="input-header">
             <Label
+              tabIndex="0"
               id={field.name}
               className={`input-title${required ? ' highlight' : ''}`}
             >

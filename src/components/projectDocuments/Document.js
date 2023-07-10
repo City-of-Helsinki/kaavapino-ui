@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { connect } from 'react-redux'
 import { downloadDocument, downloadDocumentPreview } from '../../actions/documentActions'
-import { Button, IconPhoto } from 'hds-react'
+import { Button } from 'hds-react'
 import { Grid } from 'semantic-ui-react'
 import { withRouter } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -9,7 +9,7 @@ import dayjs from 'dayjs'
 import DocumentConfirmationModal from './DocumentConfirmationModal'
 
 // Special case for checking that in "Käynnistysvaihe" documents stays downloadable
-export const STARTING_PHASE_INDEX = 1
+//export const STARTING_PHASE_INDEX = 1
 
 function Document({
   name,
@@ -18,9 +18,10 @@ function Document({
   downloadDocument,
   downloadDocumentPreview,
   phaseEnded,
-  image_template,
-  phaseIndex,
-  isUserResponsible
+  isUserResponsible,
+  hideButtons,
+  scheduleAccepted
+  //  phaseIndex,
 }) {
   const { t } = useTranslation()
 
@@ -43,16 +44,41 @@ function Document({
     )
   }
 
+  const disablePreview = (ended) => {
+    //const inStatringPhase = index === STARTING_PHASE_INDEX
+    //not sure is this requirement is still valid
+    /*  if(inStatringPhase){
+      return false
+    } */
+    if(ended){
+      return true
+    }
+    else{
+      return false
+    }
+  }
+
+  const disableDownload = (ended,hide,accepted) => {
+    //not sure is this requirement is still valid
+/*     const inStatringPhase = index === STARTING_PHASE_INDEX
+    if(inStatringPhase){
+      return false
+    } */
+    if(ended || hide || !accepted){
+      return true
+    }
+    else{
+      return false
+    }
+  }
+
   const openConfirmationDialog = () => setShowConfirmation(true)
   return (
     <>
       {renderConfirmationDialog()}
       <Grid columns="equal" className="document-row ">
         <Grid.Column>
-          {image_template && <IconPhoto className="image-template-icon" />}
-          <span className="document-title">{name}</span>
-        </Grid.Column>
-        <Grid.Column>
+          <span className="document-title document-header">{name}</span>
           <span className="document-title">
             <span>{t('project.document-last-loaded')} </span>
             {lastDownloaded ? dayjs(lastDownloaded).format('DD.MM.YYYY HH:mm') : ''}
@@ -60,28 +86,30 @@ function Document({
         </Grid.Column>
 
         <Grid.Column textAlign="right">
-          {(!phaseEnded || phaseIndex === STARTING_PHASE_INDEX) && (
             <>
               <Button
-                variant="supplementary"
+                size='small'
+                variant="secondary"
                 onClick={() => downloadDocumentPreview({ file, name })}
                 href={file}
-                className="document"
+                className="document-button"
+                disabled={disablePreview(phaseEnded)}
               >
                 {t('project.load-preview')}
               </Button>
               {isUserResponsible && (
                 <Button
-                  variant="supplementary"
+                  size='small'
+                  variant="primary"
                   onClick={openConfirmationDialog}
                   href={file}
-                  className="document"
+                  className="document-button"
+                  disabled={disableDownload(phaseEnded,hideButtons,scheduleAccepted)}
                 >
                   {t('project.load')}
                 </Button>
               )}
             </>
-          )}
         </Grid.Column>
       </Grid>
     </>
