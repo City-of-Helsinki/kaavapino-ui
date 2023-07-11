@@ -26,7 +26,7 @@ const SelectInput = ({
   const lockedStatus = useSelector(state => lockedSelector(state))
   const [readonly, setReadOnly] = useState(false)
   const [fieldName, setFieldName] = useState("")
-
+  const currentOptions = []
   useEffect(() => {
     //Chekcs that locked status has more data then inital empty object
     if(lockedStatus && Object.keys(lockedStatus).length > 0){
@@ -78,31 +78,31 @@ const SelectInput = ({
   }
   let currentSingleValue
 
-  if (multiple) {
-    if (isArray(input && input.value)) {
-      input.value.forEach(value =>
-        currentValue.push({ label: getLabel(value), value: value })
-      )
-    } else {
-      currentValue.push(input.value)
-    }
-  } else {
-    const current = options && options.find(option => option.value === input.value)
-
-    if (current) {
-      currentSingleValue = {
-        label: current && current.label,
-        value: current && current.value
+  if(!readonly){
+    if (multiple) {
+      if (isArray(input && input.value)) {
+        input.value.forEach(value =>
+          currentValue.push({ label: getLabel(value), value: value })
+        )
+      } else {
+        currentValue.push(input.value)
       }
     } else {
-      currentSingleValue = {
-        label: input.value,
-        value: input.value
+      const current = options && options.find(option => option.value === input.value)
+  
+      if (current) {
+        currentSingleValue = {
+          label: current && current.label,
+          value: current && current.value
+        }
+      } else {
+        currentSingleValue = {
+          label: input.value,
+          value: input.value
+        }
       }
     }
   }
-
-  const currentOptions = []
 
   const modifyOptionIfExist = currentOption => {
     if (!currentOption) {
@@ -173,11 +173,14 @@ const SelectInput = ({
     }
   }, [input.name, input.value]);
 
-  options = options
+  if(!readonly){
+    options = options
     ? options.filter(option => option.label && option.label.trim() !== '')
     : []
 
-  options.forEach(option => option && currentOptions.push(modifyOptionIfExist(option)))
+    options.forEach(option => option && currentOptions.push(modifyOptionIfExist(option)))
+  }
+
   let notSelectable = readonly === true && fieldName === input.name
   let readOnlyStyle = notSelectable ? 'selection readonly' : 'selection'
   if (!multiple) {

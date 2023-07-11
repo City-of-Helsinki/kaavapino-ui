@@ -142,7 +142,7 @@ const FieldSet = ({
                             {lockStatus &&(
                               lockStatus.lockStyle && !lockStatus.owner && (
                                   lockStatus.fieldIdentifier && lockStatus.fieldIdentifier === set + "." + field.name &&(
-                                  <span className="input-locked"> Käyttäjä {lockStatus.lockStyle.lockData.attribute_lock.user_name} on muokkaamassa kenttää <IconLock></IconLock></span>
+                                  <span className="input-locked"> Käyttäjä {lockStatus.lockStyle.lockData.attribute_lock.user_name} {lockStatus.lockStyle.lockData.attribute_lock.user_email} on muokkaamassa kenttää <IconLock></IconLock></span>
                                   )
                                 )
                               )
