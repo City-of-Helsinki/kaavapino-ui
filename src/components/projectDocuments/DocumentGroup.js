@@ -5,6 +5,7 @@ import projectUtils from '../../utils/projectUtils'
 import { useTranslation } from 'react-i18next'
 
 const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserResponsible, schema, attribute_data, selectedPhase, search }) => {
+  const {t} = useTranslation()
   
   const checkRequired = (index) => {
     let hasErrors
@@ -37,7 +38,6 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
   }
   
   const getStatus = () => {
-    const {t} = useTranslation()
     const requirements = checkRequired(phase.phaseIndex)
     const scheduleAccepted = isSceduleAccepted(phase.phaseIndex)
     const hideButtons = requirements ? true : false
