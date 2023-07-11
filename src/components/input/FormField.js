@@ -185,7 +185,7 @@ const FormField = ({
               {title}
               {status.lockStyle && !status.owner && (
                 !status.fieldIdentifier && status.identifier && status.identifier === field.name &&(
-                <span className="input-locked"> Käyttäjä {status.lockStyle.lockData.attribute_lock.user_name} on muokkaamassa kenttää <IconLock></IconLock></span>
+                <span className="input-locked"> Käyttäjä {status.lockStyle.lockData.attribute_lock.user_name} {status.lockStyle.lockData.attribute_lock.user_email} on muokkaamassa kenttää <IconLock></IconLock></span>
                 )
                 )
               }
