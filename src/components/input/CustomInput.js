@@ -12,6 +12,9 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
 
   useEffect(() => {
     oldValueRef.current = input.value;
+    if(custom.type === "date"){
+      setReadOnly(true)
+    }
     return () => {
 
     };
@@ -88,6 +91,10 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
           oldValueRef.current = event.target.value;
         }
       }
+    }
+
+    if(custom.type === "date"){
+      setReadOnly(true)
     }
   }
 
