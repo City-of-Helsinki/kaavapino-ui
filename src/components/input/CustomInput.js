@@ -38,6 +38,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
         //Check if locked field name matches with instance and that owner is true to allow edit
         //else someone else is editing and prevent editing
         if(lock && lockedStatus.lockData.attribute_lock.owner){
+          console.log("set readonly false")
           setReadOnly(false)
           //Add changed value from db if there has been changes
           setValue(lockedStatus.lockData.attribute_lock.field_data)
@@ -45,6 +46,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
           custom.lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
         }
         else{
+          console.log("set readonly true")
           setReadOnly(true)
           //Change styles from FormField
           custom.lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
@@ -99,13 +101,17 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   }
 
   const setValue = (dbValue) => {
+    console.log("set value",dbValue,oldValueRef.current)
     if(oldValueRef.current !== dbValue){
+      console.log(dbValue, input.name)
       input.onChange(dbValue, input.name)
     }
   }
 
   const handleInputChange = useCallback((event) => {
+    console.log(readonly)
     if(!readonly){
+      console.log(event.target.value, input.name)
       input.onChange(event.target.value, input.name)
     }
   }, [input.name, input.value]);
