@@ -44,7 +44,7 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
     let status
     
     if(!phaseEnded){
-      status = requirements ? 
+      status = requirements || !scheduleAccepted ? 
       <div className='document-group-requirements'>
         <div className='required-error-text'><p><IconAlertCircle size="s" />{t('project.phase-load-prevented')}</p></div>
         <div className='italic-text'><p>{t('project.phase-preview-only')}</p></div>
