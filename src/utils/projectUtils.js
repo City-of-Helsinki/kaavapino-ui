@@ -311,16 +311,6 @@ function getErrorFields(attributeData, currentSchema) {
 }
 
 function isSceduleAccepted(attributeData, currentSchema) {
-  /*These have to be accepted from schedule before phase can be confirmed
-  OAS
-  vahvista_oas_esillaolo_alkaa: true
-  vahvista_oas_esillaolo_paattyy: true
-  EHDOTUS
-  vahvista_ehdotus_esillaolo_alkaa_pieni: true
-  vahvista_ehdotus_esillaolo_paattyy: true
-  TARKISTETTU EHDOTUS
-  vahvista_tarkistettu_ehdotus_lautakunnassa: true 
-  */
   let scheduleIsAccepted = []
   if(currentSchema?.sections){
     const { sections } = currentSchema
@@ -330,12 +320,31 @@ function isSceduleAccepted(attributeData, currentSchema) {
         attributes.forEach(field => {
           if (showField(field, attributeData)) {
             if (field.name === 'vahvista_oas_esillaolo_alkaa' || field.name === 'vahvista_oas_esillaolo_paattyy' 
+            || field.name === 'vahvista_oas_esillaolo_alkaa_2' || field.name === 'vahvista_oas_esillaolo_paattyy_2' 
+            || field.name === 'vahvista_oas_esillaolo_alkaa_3' || field.name === 'vahvista_oas_esillaolo_paattyy_3'
+            || field.name === 'vahvista_periaatteet_esillaolo_alkaa' || field.name === 'vahvista_periaatteet_esillaolo_paattyy'
+            || field.name === 'vahvista_periaatteet_esillaolo_alkaa_2' || field.name === 'vahvista_periaatteet_esillaolo_paattyy_2'
+            || field.name === 'vahvista_periaatteet_esillaolo_alkaa_3' || field.name === 'vahvista_periaatteet_esillaolo_paattyy_3'
+            || field.name === 'vahvista_periaatteet_lautakunnassa'
+            || field.name === 'vahvista_luonnos_esillaolo_alkaa' || field.name === 'vahvista_luonnos_esillaolo_paattyy'
+            || field.name === 'vahvista_luonnos_esillaolo_alkaa_2' || field.name === 'vahvista_luonnos_esillaolo_paattyy_2'
+            || field.name === 'vahvista_luonnos_esillaolo_alkaa_3' || field.name === 'vahvista_luonnos_esillaolo_paattyy_3'
             || field.name === 'vahvista_ehdotus_esillaolo_alkaa_pieni' || field.name === 'vahvista_ehdotus_esillaolo_paattyy'
+            || field.name === 'vahvista_kaavaluonnos_lautakunnassa'
+            || field.name === 'vahvista_ehdotus_esillaolo_alkaa_pieni' || field.name === 'vahvista_ehdotus_esillaolo_alkaa_iso'
+            || field.name === 'vahvista_ehdotus_esillaolo_paattyy'
+            || field.name === 'vahvista_ehdotus_esillaolo_alkaa_pieni_2' || field.name === 'vahvista_ehdotus_esillaolo_alkaa_iso_2'
+            || field.name === 'vahvista_ehdotus_esillaolo_paattyy_2'
+            || field.name === 'vahvista_ehdotus_esillaolo_alkaa_pieni_3' || field.name === 'vahvista_ehdotus_esillaolo_alkaa_iso_3'
+            || field.name === 'vahvista_ehdotus_esillaolo_paattyy_3'
+            || field.name === 'vahvista_ehdotus_esillaolo_alkaa_pieni_4' || field.name === 'vahvista_ehdotus_esillaolo_alkaa_iso_4'
+            || field.name === 'vahvista_ehdotus_esillaolo_paattyy_4'
+            || field.name === 'vahvista_kaavaehdotus_lautakunnassa'
             || field.name === 'vahvista_tarkistettu_ehdotus_lautakunnassa') {
               const value = findValueFromObject(attributeData, field.name)
               if (!value) {
                 //increase array size with false value and prevent acceptance
-                scheduleIsAccepted.push(value)
+                scheduleIsAccepted.push(field.name)
               }
             }
           }
