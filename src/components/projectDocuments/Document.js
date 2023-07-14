@@ -50,11 +50,11 @@ function Document({
     /*  if(inStatringPhase){
       return false
     } */
-    if(ended){
-      return true
+    if(!ended){
+      return false
     }
     else{
-      return false
+      return true
     }
   }
 
@@ -64,11 +64,11 @@ function Document({
     if(inStatringPhase){
       return false
     } */
-    if(ended || hide || !accepted){
-      return true
+    if(!ended && !hide && accepted){
+      return false
     }
     else{
-      return false
+      return true
     }
   }
 
