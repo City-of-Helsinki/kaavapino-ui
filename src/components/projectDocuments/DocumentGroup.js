@@ -43,16 +43,7 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
     const hideButtons = requirements ? true : false
     let status
     
-    if(phaseEnded){
-      status = 
-        <div className='document-group-requirements'>
-          <div className="phase-end-tag required-error-text">
-            <p><IconAlertCircle size="s" />{t('project.phase-passed')}</p>
-          </div>
-          <div className='italic-text'><p>{t('project.phase-preview-ended')}</p></div>
-        </div>
-    }
-    else{
+    if(!phaseEnded){
       status = requirements ? 
       <div className='document-group-requirements'>
         <div className='required-error-text'><p><IconAlertCircle size="s" />{t('project.phase-load-prevented')}</p></div>
@@ -63,6 +54,15 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
         <div className='required-success-text'><p><IconCheck size="s" />{t('project.phase-ok')}</p></div>
         <div className='italic-text'><p>{t('project.phase-load-ok')}</p></div>
       </div>
+    }
+    else{
+      status = 
+        <div className='document-group-requirements'>
+          <div className="phase-end-tag required-error-text">
+            <p><IconAlertCircle size="s" />{t('project.phase-passed')}</p>
+          </div>
+          <div className='italic-text'><p>{t('project.phase-preview-ended')}</p></div>
+        </div>
     }
     return [status,hideButtons,scheduleAccepted]
   }
