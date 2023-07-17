@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 
 const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserResponsible, schema, attribute_data, selectedPhase, search }) => {
   const {t} = useTranslation()
-  
+  console.log(documents)
   const checkRequired = (index) => {
     let hasErrors
     const currentSchemaIndex = index - 1
