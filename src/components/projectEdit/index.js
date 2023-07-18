@@ -549,7 +549,7 @@ class ProjectEditPage extends Component {
               changingPhase={changingPhase}
               currentPhases={currentPhases}
               handleSave={this.handleSave}
-              handleCheck={() => this.checkRequiredFields()}
+              handleCheck={this.checkRequiredFields}
               setChecking={this.props.projectSetChecking}
               saving={saving}
               switchDisplayedPhase={switchDisplayedPhase}

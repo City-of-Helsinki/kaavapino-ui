@@ -53,7 +53,7 @@ export default function QuickNav({
 
   const onCheckPressed = () => {
     setCheckButtonPressed(true)
-    handleCheck(allowPhaseClose)
+    handleCheck()
   }
 
   useEffect(() => {
@@ -78,26 +78,7 @@ export default function QuickNav({
      // handleSectionTitleClick(title, 0, phaseID)
     }
     setOptions({optionsArray,curPhase})
-    const prefix = parseInt(phasePrefix)
-    let documentsDownloaded = false
-    if(documents){
-      for (let i = 0; i < documents.length; i++) {
-        //Check if document has not been downloaded
-        //if(documents[i]?.last_downloaded === null){
-        const documentPhases = documents[i].phases
-        //Check if it is ongoing phase
-        if (documentPhases.some(e => e.phase_index === prefix && e.last_downloaded === null)) {
-          //Prevent phase ending because documents have not been downloaded
-          documentsDownloaded = false
-          break;
-        }
-        else{
-          documentsDownloaded = true
-        }
-      }
-    }
 
-    setAllowPhaseClose(documentsDownloaded)
   }, [phases])
 
   useEffect(() => {
@@ -215,10 +196,29 @@ export default function QuickNav({
   )
 
   const changeCurrentPhase = () => {
+    const prefix = parseInt(phasePrefix)
+    let documentsDownloaded = false
+    if(documents){
+      for (let i = 0; i < documents.length; i++) {
+        //Check if document has not been downloaded
+        const documentPhases = documents[i].phases
+        //Check if it is ongoing phase
+        if (documentPhases.some(e => e.phase_index === prefix && e.last_downloaded === null)) {
+          //Prevent phase ending because documents have not been downloaded
+          documentsDownloaded = false
+          break;
+        }
+        else{
+          documentsDownloaded = true
+        }
+      }
+    }
+
+    setAllowPhaseClose(documentsDownloaded)
     const value = hasMissingFields()
     setHasErrors(value)
     setValidationOk(true)
-    handleCheck(allowPhaseClose)
+    handleCheck(documentsDownloaded)
   }
 
   const phaseCallback = currentChange => {
