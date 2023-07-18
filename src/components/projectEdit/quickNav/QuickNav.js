@@ -336,32 +336,33 @@ export default function QuickNav({
                   handleSectionTitleClick(section.title, index, selectedPhase.phaseID,selectedPhase.currentPhase)
                 }
               >
-                <div> {section.title} 
-                {filterNumber > 0 ? 
-                  <Tag
-                    tabIndex="0"
-                    className={`filter-tag`}
-                    role="button"
-                    key={`checkbox-${section.title}`}
-                    id={`checkbox-${section.title}`}
-                  >
-                  {filterNumber}
-                  </Tag> 
-                  : 
-                  ''}
-                  {highlightNumber > 0 ? 
-                  <Tag
-                    tabIndex="0"
-                    className={`filter-tag ${highlight ? "yellow" : ""}`}
-                    role="button"
-                    key={`checkbox-${section.title}-highlighted`}
-                    id={`checkbox-${section.title}`}
-                  >
-                  {highlightNumber}
-                  </Tag> 
-                  : 
-                  ''}
-                  </div>
+              <div className='quicknav-item-title'>{section.title} </div>
+              <div className='quicknav-item-tags'>
+              {filterNumber > 0 ? 
+                <Tag
+                  tabIndex="0"
+                  className={`filter-tag`}
+                  role="button"
+                  key={`checkbox-${section.title}`}
+                  id={`checkbox-${section.title}`}
+                >
+                {filterNumber}
+                </Tag> 
+                : 
+                ''}
+                {highlightNumber > 0 ? 
+                <Tag
+                  tabIndex="0"
+                  className={`filter-tag ${highlight ? "yellow" : ""}`}
+                  role="button"
+                  key={`checkbox-${section.title}-highlighted`}
+                  id={`checkbox-${section.title}`}
+                >
+                {highlightNumber}
+                </Tag> 
+                : 
+                ''}
+                </div>
               </Button>
             )
             })}
