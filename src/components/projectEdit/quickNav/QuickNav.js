@@ -29,14 +29,17 @@ export default function QuickNav({
   changeSection,
   filterFieldsArray,
   highlightedTag,
+  phasePrefix,
   phaseTitle,
   phaseStatus,
   phaseColor,
-  showSections
+  showSections,
+  documents
 }) {
   const [endPhaseError, setEndPhaseError] = useState(false)
   const [verifying, setVerifying] = useState(false)
   const [checkButtonPressed, setCheckButtonPressed] = useState(false)
+  const [allowPhaseClose, setAllowPhaseClose] = useState(false)
   const [activePhase, setActivePhase] = useState(phase)
   const [selected, setSelected] = useState(0)
   const [currentTimeout, setCurrentTimeout] = useState(null)
@@ -50,7 +53,7 @@ export default function QuickNav({
 
   const onCheckPressed = () => {
     setCheckButtonPressed(true)
-    handleCheck()
+    handleCheck(allowPhaseClose)
   }
 
   useEffect(() => {
@@ -75,6 +78,26 @@ export default function QuickNav({
      // handleSectionTitleClick(title, 0, phaseID)
     }
     setOptions({optionsArray,curPhase})
+    const prefix = parseInt(phasePrefix)
+    let documentsDownloaded = false
+    if(documents){
+      for (let i = 0; i < documents.length; i++) {
+        //Check if document has not been downloaded
+        //if(documents[i]?.last_downloaded === null){
+        const documentPhases = documents[i].phases
+        //Check if it is ongoing phase
+        if (documentPhases.some(e => e.phase_index === prefix && e.last_downloaded === null)) {
+          //Prevent phase ending because documents have not been downloaded
+          documentsDownloaded = false
+          break;
+        }
+        else{
+          documentsDownloaded = true
+        }
+      }
+    }
+
+    setAllowPhaseClose(documentsDownloaded)
   }, [phases])
 
   useEffect(() => {
@@ -195,7 +218,7 @@ export default function QuickNav({
     const value = hasMissingFields()
     setHasErrors(value)
     setValidationOk(true)
-    handleCheck()
+    handleCheck(allowPhaseClose)
   }
 
   const phaseCallback = currentChange => {
@@ -371,7 +394,7 @@ export default function QuickNav({
 
       <div className="quicknav-buttons">{renderButtons()}</div>
       {isResponsible && <div className="quicknav-onhold">{renderCheckBox()}</div>}
-      {isResponsible && notLastPhase && (
+      {isResponsible && notLastPhase && allowPhaseClose && (
         <ConfirmModal
           callback={phaseCallback}
           open={verifying}
@@ -385,7 +408,7 @@ export default function QuickNav({
           notLastPhase={notLastPhase}
         />
       )}
-      {endPhaseError && (
+      {endPhaseError && !allowPhaseClose && (
         <Message
           header={t('quick-nav.change-phase-error')}
           content={t('quick-nav.change-phase-error-message')}

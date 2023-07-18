@@ -22,6 +22,7 @@ import {
   resetTimetableSave
 } from '../../actions/projectActions'
 import { fetchSchemas, setAllEditFields, clearSchemas } from '../../actions/schemaActions'
+import { fetchDocuments } from '../../actions/documentActions'
 import {
   savingSelector,
   changingPhaseSelector,
@@ -32,6 +33,9 @@ import {
   floorAreaSavedSelector,
   timetableSavedSelector
 } from '../../selectors/projectSelector'
+import {
+  documentsSelector
+} from '../../selectors/documentSelector'
 import { schemaSelector, allEditFieldsSelector } from '../../selectors/schemaSelector'
 import NavigationPrompt from 'react-router-navigation-prompt'
 import Prompt from '../common/Prompt'
@@ -136,6 +140,7 @@ class ProjectEditPage extends Component {
       }
     }
 
+    this.props.fetchDocuments(this.props.project.id)
     this.unlockAllFields()
   }
 
@@ -341,7 +346,7 @@ class ProjectEditPage extends Component {
     this.props.resetFloorAreaSave()
   }
 
-  checkRequiredFields = () => {
+  checkRequiredFields = (documentsDownloaded) => {
     this.props.projectSetChecking(this.props.checking)
     const {
       project: { attribute_data },
@@ -354,7 +359,32 @@ class ProjectEditPage extends Component {
     const errorFields = projectUtils.getErrorFields(attribute_data, currentSchema)
 
     this.setState({errorFields:errorFields})
-    if(errorFields?.length === 0){
+    if(errorFields?.length === 0 && !documentsDownloaded){
+      const elements = <div>
+      <div>
+        <h3>{t('messages.required-documents-header')}
+          <span className='icon-container'><IconCross size="s" /></span>
+        </h3>
+      </div>
+      <div>
+        <p>{t('messages.required-documents-text')}
+        </p>
+      </div>
+    </div>
+    //show toastr message
+    toast.error(elements, {
+      toastId:"errorsToastr",
+      position: "top-right",
+      autoClose: false,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: false,
+      progress: undefined,
+      theme: "light"
+      });
+    }
+    else if(errorFields?.length === 0 && documentsDownloaded){
       const elements = <div>
         <div>
           <h3>{t('messages.required-fields-filled-header')}
@@ -438,7 +468,8 @@ class ProjectEditPage extends Component {
       saveProjectBasePayload,
       currentPhases,
       users,
-      currentUserId
+      currentUserId,
+      documents
     } = this.props
     const { highlightGroup } = this.state
     
@@ -543,10 +574,12 @@ class ProjectEditPage extends Component {
               filterFieldsArray={this.state.filterFieldsArray}
               highlightedTag={this.state.highlightedTag}
               setFilterAmount={this.setFilterAmount}
+              phasePrefix={currentSchema.list_prefix}
               phaseTitle={currentSchema.title}
               phaseStatus={currentSchema.status}
               phaseColor={currentSchema.color_code}
               showSections={this.showSections}
+              documents={documents}
             />
             <NavigationPrompt
               when={
@@ -636,7 +669,8 @@ const mapStateToProps = state => {
     currentUserId: userIdSelector(state),
     currentProject: currentProjectSelector(state),
     floorAreaSavedSelector: floorAreaSavedSelector(state),
-    timetableSavedSelector: timetableSavedSelector(state)
+    timetableSavedSelector: timetableSavedSelector(state),
+    documents: documentsSelector(state)
   }
 }
 
@@ -659,7 +693,8 @@ const mapDispatchToProps = {
   clearSchemas,
   saveProjectBasePayload,
   resetFloorAreaSave,
-  resetTimetableSave
+  resetTimetableSave,
+  fetchDocuments
 }
 
 export default withRouter(

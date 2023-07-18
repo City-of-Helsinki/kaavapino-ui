@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useEffect, useState} from 'react'
 import Document from './Document'
 import { Accordion,IconAlertCircle,IconCheck } from 'hds-react'
 import projectUtils from '../../utils/projectUtils'
@@ -6,7 +6,17 @@ import { useTranslation } from 'react-i18next'
 
 const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserResponsible, schema, attribute_data, selectedPhase, search }) => {
   const {t} = useTranslation()
-  console.log(documents)
+  const [status, setStatus] = useState("")
+  const [hideButtons, setHideButtons] = useState(true)
+  const [scheduleAccepted, setScheduleAccepted] = useState(false)
+
+  useEffect(() => {
+    const[status,hideButtons,scheduleAccepted] = getStatus()
+    setStatus(status)
+    setHideButtons(hideButtons)
+    setScheduleAccepted(scheduleAccepted)
+  }, [title]);
+
   const checkRequired = (index) => {
     let hasErrors
     const currentSchemaIndex = index - 1
@@ -66,8 +76,6 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
     }
     return [status,hideButtons,scheduleAccepted]
   }
-
-  const[status,hideButtons,scheduleAccepted] = getStatus()
 
   return (
     <div className="document-group">

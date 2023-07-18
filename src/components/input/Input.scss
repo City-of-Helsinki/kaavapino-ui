@@ -407,6 +407,9 @@
     color: $color-info !important;
   }
 }
+.invisible{
+  visibility: hidden;
+}
 .hidden {
   display: none;
 }
