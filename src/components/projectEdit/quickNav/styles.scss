@@ -78,8 +78,8 @@
     border-bottom: 1px solid $gray;
     display: flex;
     flex-direction: column;
-    max-height: 100%;
-    overflow: hidden;
+    max-height: 520px;
+    overflow-y: scroll;
     border-right: 1px solid $gray;
     padding-top: 10px;
     
@@ -106,15 +106,19 @@
     .quicknav-item {
       cursor: pointer;
       display: block;
-      width: 95%;
+      width: 100%;
       font-size: $size16;
       margin-top: 0px;
       color: $color-black-70;
       text-align: left;
       padding-left: 20px;
       border-bottom: none;
+      min-height: 50px;
 
       span{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         padding-left: 0;
         margin-left: 0;
         padding-right: 10px;
@@ -135,7 +139,6 @@
           }
         }
         div{
-          padding-top: 15px;
           .filter-tag{
             background-color: $gray;
             font-size: $size14;
@@ -148,6 +151,13 @@
               margin: 0;
             }
           }
+        }
+        .quicknav-item-title{
+          padding-left: 0;
+          margin-left: 0;
+          padding-right: 0px;
+          padding-top: 0px;
+          padding-bottom: 0;
         }
       }
     }
@@ -173,7 +183,7 @@
       display: none;
     }
 
-    .phase7,.phase19,.phase25{
+    .phase1,.phase7,.phase19,.phase25{
       &:hover{
         border-left: 4px solid;
         border-left-color: $color_phase_start;
@@ -203,7 +213,7 @@
       }
     }
 
-    .phase8,.phase20,.phase27{
+    .phase2,.phase8,.phase20,.phase27{
       &:hover{
         border-left: 4px solid;
         border-left-color: $color_phase_oas;
@@ -233,7 +243,7 @@
       }
     }
 
-    .phase9,.phase21,.phase29{
+    .phase3,.phase9,.phase21,.phase29{
       &:hover{
         border-left: 4px solid;
         border-left-color: $color_phase_suggestion;
@@ -248,7 +258,7 @@
       }
     }
 
-    .phase10,.phase22,.phase30{
+    .phase4,.phase10,.phase22,.phase30{
       &:hover{
         border-left: 4px solid;
         border-left-color: $color_phase_check_suggestion;
@@ -263,7 +273,7 @@
       }
     }
 
-    .phase11,.phase23,.phase31{
+    .phase5,.phase11,.phase23,.phase31{
       &:hover{
         border-left: 4px solid;
         border-left-color: $color_phase_approval;
@@ -278,7 +288,7 @@
       }
     }
 
-    .phase12,.phase24,.phase32{
+    .phase6,.phase12,.phase24,.phase32{
       &:hover{
         border-left: 4px solid;
         border-left-color: $color_phase_inception;
