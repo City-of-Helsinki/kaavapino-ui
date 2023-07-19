@@ -37,7 +37,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
         const lock = input.name === identifier
         //Check if locked field name matches with instance and that owner is true to allow edit
         //else someone else is editing and prevent editing
-        console.log(lock, lockedStatus.lockData.attribute_lock.owner)
+        console.log("useEffect",lock, lockedStatus.lockData.attribute_lock.owner)
         if(lock && lockedStatus.lockData.attribute_lock.owner){
           console.log("set readonly false")
           setReadOnly(false)
