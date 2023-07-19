@@ -53,7 +53,7 @@ export default function QuickNav({
 
   const onCheckPressed = () => {
     setCheckButtonPressed(true)
-    handleCheck(true)
+    handleCheck(true,"checkphase")
   }
 
   useEffect(() => {
@@ -218,7 +218,7 @@ export default function QuickNav({
     const value = hasMissingFields()
     setHasErrors(value)
     setValidationOk(true)
-    handleCheck(documentsDownloaded)
+    handleCheck(documentsDownloaded,"closephase")
   }
 
   const phaseCallback = currentChange => {

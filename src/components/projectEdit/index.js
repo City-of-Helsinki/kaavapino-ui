@@ -346,8 +346,8 @@ class ProjectEditPage extends Component {
     this.props.resetFloorAreaSave()
   }
 
-  checkRequiredFields = (documentsDownloaded) => {
-    console.log(documentsDownloaded)
+  checkRequiredFields = (documentsDownloaded,origin) => {
+    console.log(documentsDownloaded,origin)
     this.props.projectSetChecking(this.props.checking)
     const {
       project: { attribute_data },
@@ -385,7 +385,7 @@ class ProjectEditPage extends Component {
       theme: "light"
       });
     }
-    else if(errorFields?.length === 0 && documentsDownloaded){
+    else if(errorFields?.length === 0 && documentsDownloaded && origin === "checkphase"){
       const elements = <div>
         <div>
           <h3>{t('messages.required-fields-filled-header')}
