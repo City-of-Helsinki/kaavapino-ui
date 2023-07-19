@@ -347,7 +347,6 @@ class ProjectEditPage extends Component {
   }
 
   checkRequiredFields = (documentsDownloaded,origin) => {
-    console.log(documentsDownloaded,origin)
     this.props.projectSetChecking(this.props.checking)
     const {
       project: { attribute_data },

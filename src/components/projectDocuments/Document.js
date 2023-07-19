@@ -20,7 +20,8 @@ function Document({
   phaseEnded,
   isUserResponsible,
   hideButtons,
-  scheduleAccepted
+  scheduleAccepted,
+  schema
   //  phaseIndex,
 }) {
   const { t } = useTranslation()
@@ -44,13 +45,13 @@ function Document({
     )
   }
 
-  const disablePreview = (ended) => {
+  const disablePreview = (ended,schema) => {
     //const inStatringPhase = index === STARTING_PHASE_INDEX
     //not sure is this requirement is still valid
     /*  if(inStatringPhase){
       return false
     } */
-    if(!ended){
+    if(!ended && schema){
       return false
     }
     else{
@@ -58,13 +59,13 @@ function Document({
     }
   }
 
-  const disableDownload = (ended,hide,accepted) => {
+  const disableDownload = (ended,hide,accepted,schema) => {
     //not sure is this requirement is still valid
 /*     const inStatringPhase = index === STARTING_PHASE_INDEX
     if(inStatringPhase){
       return false
     } */
-    if(!ended && !hide && accepted){
+    if(!ended && !hide && accepted && schema){
       return false
     }
     else{
@@ -93,7 +94,7 @@ function Document({
                 onClick={() => downloadDocumentPreview({ file, name })}
                 href={file}
                 className="document-button"
-                disabled={disablePreview(phaseEnded)}
+                disabled={disablePreview(phaseEnded,schema)}
               >
                 {t('project.load-preview')}
               </Button>
@@ -104,7 +105,7 @@ function Document({
                   onClick={openConfirmationDialog}
                   href={file}
                   className="document-button"
-                  disabled={disableDownload(phaseEnded,hideButtons,scheduleAccepted)}
+                  disabled={disableDownload(phaseEnded,hideButtons,scheduleAccepted,schema)}
                 >
                   {t('project.load')}
                 </Button>

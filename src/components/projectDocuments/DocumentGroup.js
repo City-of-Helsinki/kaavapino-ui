@@ -11,10 +11,13 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
   const [scheduleAccepted, setScheduleAccepted] = useState(false)
 
   useEffect(() => {
-    const[status,hideButtons,scheduleAccepted] = getStatus()
-    setStatus(status)
-    setHideButtons(hideButtons)
-    setScheduleAccepted(scheduleAccepted)
+    //Wait for schema to be truthful and fetched. Prevents multiple checks and false values flashing on slow load.
+    if(schema){
+      const[status,hideButtons,scheduleAccepted] = getStatus()
+      setStatus(status)
+      setHideButtons(hideButtons)
+      setScheduleAccepted(scheduleAccepted)
+    }
   }, [title]);
 
   const checkRequired = (index) => {
@@ -53,13 +56,17 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
     const hideButtons = requirements ? true : false
     let status
     
-    if(!phaseEnded){
-      status = requirements || !scheduleAccepted ? 
+    if(phaseEnded){
+      status = 
       <div className='document-group-requirements'>
-        <div className='required-error-text'><p><IconAlertCircle size="s" />{t('project.phase-load-prevented')}</p></div>
-        <div className='italic-text'><p>{t('project.phase-preview-only')}</p></div>
-      </div> 
-      : 
+        <div className="phase-end-tag required-error-text">
+          <p><IconAlertCircle size="s" />{t('project.phase-passed')}</p>
+        </div>
+        <div className='italic-text'><p>{t('project.phase-preview-ended')}</p></div>
+      </div>
+    }
+    else if(schema && !requirements && scheduleAccepted){
+      status = 
       <div className='document-group-requirements'>
         <div className='required-success-text'><p><IconCheck size="s" />{t('project.phase-ok')}</p></div>
         <div className='italic-text'><p>{t('project.phase-load-ok')}</p></div>
@@ -67,12 +74,10 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
     }
     else{
       status = 
-        <div className='document-group-requirements'>
-          <div className="phase-end-tag required-error-text">
-            <p><IconAlertCircle size="s" />{t('project.phase-passed')}</p>
-          </div>
-          <div className='italic-text'><p>{t('project.phase-preview-ended')}</p></div>
-        </div>
+      <div className='document-group-requirements'>
+        <div className='required-error-text'><p><IconAlertCircle size="s" />{t('project.phase-load-prevented')}</p></div>
+        <div className='italic-text'><p>{t('project.phase-preview-only')}</p></div>
+      </div> 
     }
     return [status,hideButtons,scheduleAccepted]
   }
