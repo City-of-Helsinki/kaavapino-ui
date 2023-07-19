@@ -53,7 +53,7 @@ export default function QuickNav({
 
   const onCheckPressed = () => {
     setCheckButtonPressed(true)
-    handleCheck()
+    handleCheck(true)
   }
 
   useEffect(() => {
