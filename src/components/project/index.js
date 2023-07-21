@@ -488,7 +488,8 @@ class ProjectPage extends Component {
       currentProjectLoaded,
       users,
       resettingDeadlines,
-      currentUserId
+      currentUserId,
+      currentProject
     } = this.props
 
     const loading = !currentProjectLoaded || !phases
@@ -498,6 +499,7 @@ class ProjectPage extends Component {
     return (
       <>
         <Header
+          title={currentProject?.name}
           modifyProject={true}
           showPrintProjectData={true}
           resetDeadlines={true}

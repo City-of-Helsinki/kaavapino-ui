@@ -26,6 +26,8 @@ import { schemaSelector } from '../selectors/schemaSelector'
 import { userIdSelector } from '../selectors/authSelector'
 import { phasesSelector } from '../selectors/phaseSelector'
 import {
+  SET_LAST_SAVED, 
+  setLastSaved,
   SET_UNLOCK_STATUS,
   SET_LOCK_STATUS,
   setUnlockStatus,
@@ -147,6 +149,7 @@ export default function* projectSaga() {
     takeLatest(SAVE_PROJECT_TIMETABLE, saveProjectTimetable),
     takeLatest(SAVE_PROJECT_TIMETABLE_SUCCESSFUL, saveProjectTimetableSuccessful),
     takeLatest(SAVE_PROJECT, saveProject),
+    takeLatest(SET_LAST_SAVED, setLastSaved),
     takeLatest(SET_LOCK_STATUS, setLockStatus),
     takeLatest(SET_UNLOCK_STATUS, setUnlockStatus),
     takeLatest(LOCK_PROJECT_FIELD, lockProjectField),
@@ -698,8 +701,9 @@ function* saveProject() {
     const currentSchema = schema.phases.find(s => s.id === selectedPhase)
     const { sections } = currentSchema
     const changedValues = getChangedAttributeData(values, initial, sections)
-
     const keys = Object.keys(changedValues)
+    const dateVariable = new Date()
+    const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
 
     if (keys.length !== 0) {
       const attribute_data = changedValues
@@ -711,13 +715,14 @@ function* saveProject() {
           ':id/'
         )
         yield put(updateProject(updatedProject))
-       
         yield put(setAllEditFields())
+        //success will show if error toastr is last visible toastr
+        yield put(setLastSaved("success",time))
       } catch (e) {
         if (e.response && e.response.status === 400) {
           yield put(stopSubmit(EDIT_PROJECT_FORM, e.response.data))
         } else {
-          yield put(error(e))
+          yield put(setLastSaved("error",time,Object.keys(attribute_data)))
         }
       }
     }
