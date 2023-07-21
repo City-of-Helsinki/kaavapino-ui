@@ -5,13 +5,15 @@ import {
   IconPlus,
   IconPen,
   IconDownload,
-  IconRefresh
+  IconRefresh,
+  Button,
+  IconAngleLeft,
+  IconCross
 } from 'hds-react'
 import { withRouter, useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import ConfirmationModal from './ConfirmationModal'
 import 'hds-core'
-import { Button,IconAngleLeft,IconCross } from 'hds-react';
 import { useSelector } from 'react-redux'
 import { usersSelector } from '../../selectors/userSelector'
 import authUtils from '../../utils/authUtils'
