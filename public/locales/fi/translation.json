@@ -15,7 +15,11 @@
     "projects": "Projektit",
     "reports": "Raportit",
     "sign-out": "Kirjaudu ulos",
-    "choices-label": "Valikko"
+    "choices-label": "Valikko",
+    "edit-menu-back":"Palaa takaisin",
+    "edit-menu-no-save":"Ei tallentamattomia tietoja",
+    "edit-menu-saved":"Tallennettu: ",
+    "edit-menu-save-fail":"Tallennus epäonnistui: "
   },
   "document-loading": {
     "wait-title": "Odota",
@@ -109,7 +113,16 @@
     "required-fields-filled-header":"Pakolliset kentät täytetty",
     "required-fields-filled-text":"Pyydä seuraavaksi kaavoitussihteeriä vahvistamaan vaiheen aikataulu, jonka jälkeen voit siirtyä lataamaan dokumentteja.",
     "required-documents-header":"Lataa dokumentit",
-    "required-documents-text":"Kaikkia tarvittavia dokumentteja ei ole vielä ladattu ulos"
+    "required-documents-text":"Kaikkia tarvittavia dokumentteja ei ole vielä ladattu ulos",
+    "could-not-save-header":"Tallennus epäonnistui",
+    "could-not-save-fields-text":"Kaavapino ei voinut tallentaa kenttiä:",
+    "could-not-save-text":"Tarkista verkkoyhteys ja yritä uudelleen. Mikäli poistut näkymästä, muutoksesi menetetään.",
+    "tryagain":"Yritä uudelleen",
+    "trying":"Uudelleentallennus käynnissä",
+    "tried-to-save":"Tallennusta yritettiin kello: ",
+    "other-fields":"kappaletta muita kenttiä",
+    "save-success-header":"Tallennus onnistui",
+    "save-success-text":"Kaikki tiedot ovat tallennettu onnistuneesti. Voit jatkaa tietojen muokkaamista."
   },
   "floor-areas": {
     "title": "Päivitä kerrosalatiedot",

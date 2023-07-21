@@ -219,3 +219,8 @@ export const timetableSavedSelector = createSelector(
   selectProject, 
   ({ timetableSaved }) => timetableSaved
 )
+
+export const lastSavedSelector = createSelector(
+  selectProject, 
+  project => project?.lastSaved
+)

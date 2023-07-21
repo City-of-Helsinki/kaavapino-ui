@@ -1,4 +1,5 @@
 import {
+  SET_LAST_SAVED,
   SET_UNLOCK_STATUS,
   SET_LOCK_STATUS,
   LOCK_PROJECT_FIELD,
@@ -108,12 +109,21 @@ export const initialState = {
   locked:{},
   ownProjectFilters:[],
   floorAreaSaved:false,
-  timetableSaved:false
+  timetableSaved:false,
+  lastSaved:{}
 }
 
 export const reducer = (state = initialState, action) => {
 
   switch (action.type) {
+
+    case SET_LAST_SAVED: {
+      return{
+        ...state,
+        lastSaved:action.payload,
+        saving: false
+      }
+    }
 
     case SET_UNLOCK_STATUS: {
       return{

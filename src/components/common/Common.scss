@@ -350,6 +350,64 @@ header{
   background-color: white !important;
 }
 
+.edit-page-header{
+  header{
+    --header-height: 56px;
+  }
+  nav{
+    justify-content: space-between;
+    margin-left: 0 !important;
+  }
+  div{
+    cursor: default;
+    background-color: $color-bus-light;
+    color: $black;
+    font-size: $size16;
+    .edit-page-title{
+      font-family: "Helsinki Grotesk Bold", sans-serif;
+      font-weight: bold;
+      p{
+        font-family: "Helsinki Grotesk Bold", sans-serif;
+        font-weight: bold;
+      }
+    }
+    .edit-page-save{
+      font-family: "Helsinki Grotesk Medium", sans-serif;
+      p{
+        font-family: "Helsinki Grotesk Medium", sans-serif;
+      }
+    }
+  }
+  svg{
+    display: none;
+  }
+  button{
+    font-family: "Helsinki Grotesk Medium", sans-serif;
+    color: $color-bus;
+    pointer-events: auto;
+    svg{
+      display: inline-block;
+      color: $color-bus;
+    }
+  }
+  button:hover{
+    color: $color-bus;
+    text-decoration: underline;
+    span{
+      color: $color-bus;
+    }
+  }
+  button:after{
+    background-color: unset !important;
+  }
+  div:after{
+    background-color: unset !important;
+  }
+  .error{
+    color: $color-error;
+  }
+}
+
   
 .nav-header-container {
   display: flex;
@@ -605,7 +663,7 @@ header{
 }
 
 .required-error-text{
-  color: $color_error_hds;
+  color: $color-error;
   svg{
     vertical-align: bottom;
     margin-right: 5px;

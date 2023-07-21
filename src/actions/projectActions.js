@@ -93,7 +93,12 @@ export const SET_UNLOCK_STATUS = "setUnLockStatus"
 export const UNLOCK_ALL_FIELDS = "unlockAllFields"
 export const RESET_FLOOR_AREA_SAVE = "Reset floor area save"
 export const RESET_TIMETABLE_SAVE = "Reset timetable save"
+export const SET_LAST_SAVED = "setLastSaved"
 
+export const setLastSaved = (status,time,fields) => ({
+  type: SET_LAST_SAVED,
+  payload: {status,time,fields}
+})
 export const unlockAllFields = (projectName) => ({
   type: UNLOCK_ALL_FIELDS,
   payload: {projectName}
