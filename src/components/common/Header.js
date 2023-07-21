@@ -44,8 +44,7 @@ const Header = props => {
   
   useEffect(() => {
     let latestUpdate
-    if(lastSaved?.time){
-      if(lastSaved?.status){
+    if(lastSaved?.time && lastSaved?.status){
         latestUpdate = {status:t('header.edit-menu-saved'),time:lastSaved.time}
         let elements = ""
         if(lastSaved?.fields){
@@ -105,7 +104,7 @@ const Header = props => {
         </div>
         //show toastr message
         toast.success(elements, {
-          toastId:"noErrorsToastr",
+          toastId:"saveOk",
           position: "top-right",
           autoClose: false,
           hideProgressBar: false,
@@ -133,7 +132,7 @@ const Header = props => {
             });
           } 
         }
-      }
+      
       setUpdateTime(latestUpdate)
     }
   }, [lastSaved]);
