@@ -492,6 +492,20 @@ class ProjectEditPage extends Component {
       return <LoadingSpinner className="loader-icon" />
     }
 
+    let color;
+    if(currentSchema.status === "Vaihe käynnissä"){
+      color = "#FFC61E"
+    }
+    else if(currentSchema.status === "Vaihe aloittamatta"){
+      color = "#0072C6"
+    }
+    else if(currentSchema.status === "Vaihe suoritettu"){
+      color = "#008741"
+    }
+    else{
+      color = ""
+    }
+
     const isResponsible = authUtils.isResponsible(currentUserId, users)
     const isAdmin = authUtils.isAdmin(currentUserId, users)
     const isExpert = authUtils.isExpert(currentUserId, users)
@@ -577,7 +591,7 @@ class ProjectEditPage extends Component {
               phasePrefix={currentSchema.list_prefix}
               phaseTitle={currentSchema.title}
               phaseStatus={currentSchema.status}
-              phaseColor={currentSchema.color_code}
+              phaseColor={color}
               showSections={this.showSections}
               documents={documents}
             />
