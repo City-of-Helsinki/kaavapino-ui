@@ -336,7 +336,7 @@ export default function QuickNav({
               }
               >
               {option.label}
-              {option.status === "Vaihe käynnissä" ? <span className='project-status-container'><span>Vaihe käynnissä</span><Status color={option.color} /></span> : ""}
+              {option.status === "Vaihe käynnissä" ? <span className='project-status-container'><span>Vaihe käynnissä</span><Status color={"#FFC61E"} /></span> : ""}
             </Button>
           )
         })}
