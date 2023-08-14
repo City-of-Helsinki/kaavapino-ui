@@ -19,7 +19,8 @@ import {
   selectedPhaseSelector,
   externalDocumentsSelector,
   creatorSelector,
-  resettingDeadlinesSelector
+  resettingDeadlinesSelector,
+  savingSelector
 } from '../../selectors/projectSelector'
 import { phasesSelector } from '../../selectors/phaseSelector'
 import {
@@ -81,6 +82,9 @@ class ProjectPage extends Component {
 
   componentDidUpdate(prevProps) {
     const { currentProject, changingPhase } = this.props
+    if(prevProps.saving && !this.props.saving){
+      this.setState({ ...this.state, showBaseInformationForm: false })
+    }
     if (
       (!prevProps.currentProject && currentProject) ||
       (prevProps.changingPhase && !changingPhase)
@@ -549,7 +553,8 @@ const mapStateToProps = state => {
     projectCardFields: projectCardFieldsSelector(state),
     externalDocuments: externalDocumentsSelector(state),
     creator: creatorSelector(state),
-    resettingDeadlines: resettingDeadlinesSelector(state)
+    resettingDeadlines: resettingDeadlinesSelector(state),
+    saving: savingSelector(state)
   }
 }
 
