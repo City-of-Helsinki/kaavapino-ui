@@ -411,6 +411,27 @@ class ProjectEditPage extends Component {
     }
   }
 
+  checkTarget = (target) => {
+    let focusedTarget
+    if (target.querySelector('.rich-text-editor-wrapper')) {
+      focusedTarget = target.querySelector("p")
+      focusedTarget.tabIndex = 0
+    }
+    else if (target.querySelector('input')) {
+      focusedTarget = target.querySelector("input")
+      if(focusedTarget.type === "file"){
+        focusedTarget = target.querySelector(".upload-button")
+      }
+    }
+    else if (target.querySelector('.selection')) {
+      focusedTarget = target.querySelector(".selection button")
+    }
+    else if (target.querySelector('button')) {
+      focusedTarget = target.querySelector("button")
+    }
+    return focusedTarget
+  }
+
   showErrorField = (section,anchor) => {
     let activeSection = document.getElementsByClassName("active")[0];
     let container
@@ -420,22 +441,7 @@ class ProjectEditPage extends Component {
     if(activeSection?.textContent === "section"){
       container = document.getElementById(anchor)
       target = container.closest(".input-container")
-      if (target.querySelector('.rich-text-editor-wrapper')) {
-        focusedTarget = target.querySelector("p")
-        focusedTarget.tabIndex = 0
-      }
-      else if (target.querySelector('input')) {
-        focusedTarget = target.querySelector("input")
-        if(focusedTarget.type === "file"){
-          focusedTarget = target.querySelector(".upload-button")
-        }
-      }
-      else if (target.querySelector('.selection')) {
-        focusedTarget = target.querySelector(".selection button")
-      }
-      else if (target.querySelector('button')) {
-        focusedTarget = target.querySelector("button")
-      }
+      focusedTarget = this.checkTarget(target)
       focusedTarget?.focus();
     }
     else{
@@ -444,22 +450,7 @@ class ProjectEditPage extends Component {
       this.waitForElm(anchor).then(() => {
         container = document.getElementById(anchor)
         target = container.closest(".input-container")
-        if (target.querySelector('.rich-text-editor-wrapper')) {
-          focusedTarget = target.querySelector("p")
-          focusedTarget.tabIndex = 0
-        }
-        else if (target.querySelector('input')) {
-          focusedTarget = target.querySelector("input")
-          if(focusedTarget.type === "file"){
-            focusedTarget = target.querySelector(".upload-button")
-          }
-        }
-        else if (target.querySelector('.selection')) {
-          focusedTarget = target.querySelector(".selection button")
-        }
-        else if (target.querySelector('button')) {
-          focusedTarget = target.querySelector("button")
-        }
+        focusedTarget = this.checkTarget(target)
         focusedTarget?.focus();
       });
     }
