@@ -53,6 +53,9 @@ export default function QuickNav({
 
   const onCheckPressed = () => {
     setCheckButtonPressed(true)
+    const value = hasMissingFields()
+    setHasErrors(value)
+    setValidationOk(true)
     handleCheck(true,"checkphase")
   }
 

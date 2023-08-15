@@ -411,20 +411,47 @@ class ProjectEditPage extends Component {
     }
   }
 
+  checkTarget = (target) => {
+    let focusedTarget
+    if (target.querySelector('.rich-text-editor-wrapper')) {
+      focusedTarget = target.querySelector("p")
+      focusedTarget.tabIndex = 0
+    }
+    else if (target.querySelector('input')) {
+      focusedTarget = target.querySelector("input")
+      if(focusedTarget.type === "file"){
+        focusedTarget = target.querySelector(".upload-button")
+      }
+    }
+    else if (target.querySelector('.selection')) {
+      focusedTarget = target.querySelector(".selection button")
+    }
+    else if (target.querySelector('button')) {
+      focusedTarget = target.querySelector("button")
+    }
+    return focusedTarget
+  }
+
   showErrorField = (section,anchor) => {
     let activeSection = document.getElementsByClassName("active")[0];
+    let container
     let target
+    let focusedTarget
     let openSection
     if(activeSection?.textContent === "section"){
-      target = document.getElementById(anchor)
-      target?.focus();
+      container = document.getElementById(anchor)
+      target = container.closest(".input-container")
+      focusedTarget = this.checkTarget(target)
+      focusedTarget?.focus();
     }
     else{
       openSection = document.getElementById(section)
       openSection?.click();
       this.waitForElm(anchor).then(() => {
-        target = document.getElementById(anchor)
-        target?.focus();
+        container = document.getElementById(anchor)
+        target = container.closest(".input-container")
+        focusedTarget = this.checkTarget(target)
+        focusedTarget?.focus();
       });
     }
   }
@@ -546,7 +573,7 @@ class ProjectEditPage extends Component {
             {this.state.errorFields.map((error,index) =>{
               return (
                 <li key={error.errorSection + error.errorField}>
-                  Virhe {index}: <a href='#0' role="button" onClick={() => this.showErrorField(error.errorSection,error.fieldAnchorKey)} className='required-fields-notification-link'>{error.errorSection} - {error.errorField}</a>
+                  Virhe {index + 1}: <a href='#0' role="button" onClick={() => this.showErrorField(error.errorSection,error.fieldAnchorKey)} className='required-fields-notification-link'>{error.errorSection} - {error.errorField}</a>
                 </li>
               )
             })}
