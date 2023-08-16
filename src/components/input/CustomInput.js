@@ -6,14 +6,14 @@ import { useSelector } from 'react-redux'
 import {lockedSelector } from '../../selectors/projectSelector'
 
 const CustomInput = ({ input, meta: { error }, ...custom }) => {
+  const [readonly, setReadOnly] = useState({name:"",read:false})
   const lockedStatus = useSelector(state => lockedSelector(state))
   const oldValueRef = useRef('');
-  const [readonly, setReadOnly] = useState(false)
 
   useEffect(() => {
     oldValueRef.current = input.value;
     if(custom.type === "date"){
-      setReadOnly(true)
+      setReadOnly({name:input.name,read:true})
     }
     return () => {
 
@@ -37,18 +37,15 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
         const lock = input.name === identifier
         //Check if locked field name matches with instance and that owner is true to allow edit
         //else someone else is editing and prevent editing
-        console.log("useEffect",lock, lockedStatus.lockData.attribute_lock.owner)
         if(lock && lockedStatus.lockData.attribute_lock.owner){
-          console.log("set readonly false")
-          setReadOnly(false)
+          setReadOnly({name:input.name,read:false})
           //Add changed value from db if there has been changes
           setValue(lockedStatus.lockData.attribute_lock.field_data)
           //Change styles from FormField
           custom.lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
         }
         else{
-          console.log("set readonly true")
-          setReadOnly(true)
+          setReadOnly({name:input.name,read:true})
           //Change styles from FormField
           custom.lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
         }
@@ -63,7 +60,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
     }
   }
 
-  const handleBlur = (event) => {
+  const handleBlur = (event,readonly) => {
     let identifier;
     //Chekcs that locked status has more data then inital empty object
     if(lockedStatus && Object.keys(lockedStatus).length > 0){
@@ -97,23 +94,18 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
     }
 
     if(custom.type === "date"){
-      setReadOnly(true)
+      setReadOnly({name:input.name,read:true})
     }
   }
 
   const setValue = (dbValue) => {
-    console.log("set value",dbValue)
-    console.log(oldValueRef.current)
     if(dbValue && oldValueRef.current !== dbValue){
-      console.log(dbValue, input.name)
       input.onChange(dbValue, input.name)
     }
   }
 
-  const handleInputChange = useCallback((event) => {
-    console.log("handleInputChange",readonly)
+  const handleInputChange = useCallback((event,readonly) => {
     if(!readonly || custom.type === "date"){
-      console.log(event.target.value, input.name)
       input.onChange(event.target.value, input.name)
     }
   }, [input.name, input.value]);
@@ -126,10 +118,10 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       fluid="true"
       {...input}
       {...custom}
-      onChange={handleInputChange}
-      onBlur={handleBlur}
+      onChange={(event) =>{handleInputChange(event,readonly.read)}}
+      onBlur={(event) => {handleBlur(event,readonly.read)}}
       onFocus={handleFocus}
-      readOnly={readonly}
+      readOnly={readonly.read}
     />
   )
 }
