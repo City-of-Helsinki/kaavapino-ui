@@ -53,6 +53,16 @@
       }
     }
   }
+  .selection{
+    div{
+      button{
+        svg{
+          pointer-events: none !important;
+        }
+      }
+    }
+  }
+
 }
 .radio-input-container {
   display: flex;

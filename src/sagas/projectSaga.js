@@ -632,7 +632,6 @@ function* saveProjectTimetable() {
 
 function* unlockAllFields(data) {
   const project_name = data.payload.projectName;
-  console.log("unloack all")
   try {
     yield call(
      attributesApiUnlockAll.post,
@@ -657,7 +656,6 @@ function* unlockProjectField(data) {
         attribute_identifier}
       )
       const lockData = {attribute_lock:{project_name:project_name,attribute_identifier:attribute_identifier}}
-      console.log(lockData,true)
       yield put(setUnlockStatus(lockData,true))
     }
     catch (e) {
@@ -681,7 +679,6 @@ function* lockProjectField(data) {
         attribute_identifier}
       )
       //Send data to store
-      console.log(lockData,false)
       yield put(setLockStatus(lockData,false))
     }
     catch (e) {

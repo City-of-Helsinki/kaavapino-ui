@@ -110,7 +110,7 @@ function RichTextEditor(props) {
     //If navigated to different tab/window/screen blur and unclock
     if(document.hidden){
       if (typeof handleBlur === 'function') {
-        handleBlur()
+        handleBlur(readonly)
         myRefname.current?.focus();
       }
     }
@@ -169,7 +169,42 @@ function RichTextEditor(props) {
     }
   }, [lockedStatus]);
 
-  const handleChange = useCallback((_val, _delta, source) => {
+  useEffect(() => {
+    window.addEventListener("click", checkClickedElement);
+    return () => {
+      window.removeEventListener("click", checkClickedElement);
+    };
+  }, [])
+
+  const checkClickedElement = (e) => {
+    if(e.target.className != null && (typeof e.target.className === 'string' || e.target.className instanceof String)){
+      //Lose focus and unclock if select button is clicked
+      if(e.target.className && e.target.className.includes("Select-module")){
+        //e.target.parentNode && e.target.parentNode?.className.includes("Select-module")
+        handleBlur(readonly)
+        setToolbarVisible(false)
+        showCounter.current = false;
+      }
+      else if(e.target?.className && e.target.className.includes("ql-editor") || e.target.parentNode.className.includes("ql-editor")){
+        oldValueRef.current = inputProps.value;
+        inputValue.current = inputProps.value;
+        let container = e.target.closest(".input-container").querySelector(".input-header .input-title")
+        //Focus outside to header of the richtext editor first to confirm that editing will initiate correctly, 
+        //richtext editor bugs if focusing staingth from select.
+        container.focus()
+        //Set editor focusable and editable.
+        e.target.firstChild.tabIndex = 0
+        editorRef.current.editor.enable(true)
+        //e.target.setAttribute('contenteditable',"true")
+        //Focus cursor, show toolbar and call focus event.
+        editorRef.current.editor.focus()
+        setToolbarVisible(true)
+        handleFocus("user",true)
+      }
+    }
+  };
+
+  const handleChange = useCallback((_val, _delta, source,readonly) => {
     if(!readonly){
       if (currentTimeout) {
         clearTimeout(currentTimeout)
@@ -220,7 +255,7 @@ function RichTextEditor(props) {
     }
   }
 
-  const handleBlur = () => {
+  const handleBlur = (readonly) => {
     let identifier;
 
     if(lockedStatus && Object.keys(lockedStatus).length > 0){
@@ -282,11 +317,18 @@ function RichTextEditor(props) {
   }
 
   const onKeyDown = (e) => {
+
+    if(readonly){
+      //prevent typing text if locked
+      editorRef.current.editor.enable(false)
+      editorRef.current.editor.blur()
+    }
+
     if (e.key === "Tab") {
       if(tabOut){
         e.target.blur();
         e.preventDefault();
-        handleBlur()
+        handleBlur(readonly)
         setTabout(false)
       }
       else if(e.target.tagName === 'P' && e.target.tabIndex === 0){
@@ -378,7 +420,7 @@ function RichTextEditor(props) {
           onKeyDown={onKeyDown}
           // default value initialized, after that quill handles internal state
           // Do not explicitly set value. see comments at top of this file.
-          onChange={handleChange}
+          onChange={(_val, _delta, source) =>{handleChange(_val, _delta, source,readonly)}}
           onFocus={(event, source) =>{handleFocus(event,source)}}
           onBlur={(_range, _source, quill) => {
             setTimeout(() => {
@@ -388,7 +430,7 @@ function RichTextEditor(props) {
                 setToolbarVisible(false)
                 showCounter.current = false;
                 if (onBlur) {
-                  handleBlur()
+                  handleBlur(readonly)
                 }
               }
             }, 50) // random time
