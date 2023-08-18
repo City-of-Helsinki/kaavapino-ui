@@ -81,7 +81,6 @@ function RichTextEditor(props) {
   const showCounter = useRef(false)
   const [currentTimeout, setCurrentTimeout] = useState(0)
   const [readonly, setReadOnly] = useState(false)
-  const [tabOut, setTabout] = useState(false)
   const [valueIsSet, setValueIsSet] = useState(false)
 
   const inputValue = useRef('')
@@ -131,6 +130,20 @@ function RichTextEditor(props) {
   }, [])
 
   useEffect(() => {
+    //Remove tab press inside editor so navigating with tab stays normal.
+    const removeTabBinding = () => {
+      if (editorRef.current === null) {
+        return;
+      }
+      const keyboard = editorRef.current.getEditor().getModule('keyboard');
+      // 'hotkeys' have been renamed to 'bindings'
+      delete keyboard.bindings[9];
+    };
+
+    removeTabBinding();
+  }, [editorRef])
+
+  useEffect(() => {
     //Chekcs that locked status has more data then inital empty object
     if(lockedStatus && Object.keys(lockedStatus).length > 0){
       if(lockedStatus.lock === false){
@@ -170,22 +183,22 @@ function RichTextEditor(props) {
   }, [lockedStatus]);
 
   useEffect(() => {
-    window.addEventListener("click", checkClickedElement);
+    document.addEventListener("click", checkClickedElement);
     return () => {
-      window.removeEventListener("click", checkClickedElement);
+      document.removeEventListener("click", checkClickedElement);
     };
   }, [])
 
   const checkClickedElement = (e) => {
-    if(e.target.className != null && (typeof e.target.className === 'string' || e.target.className instanceof String)){
+    let target = e.target.classList.length > 0 ? e.target.classList : e.target.parentNode.classList
+    if(target?.length > 0){
       //Lose focus and unclock if select button is clicked
-      if(e.target.className && e.target.className.includes("Select-module")){
-        //e.target.parentNode && e.target.parentNode?.className.includes("Select-module")
+      if(target.length > 0 && target.value.includes("Select-module")){
         handleBlur(readonly)
         setToolbarVisible(false)
         showCounter.current = false;
       }
-      else if(e.target?.className && e.target.className.includes("ql-editor") || e.target.parentNode.className.includes("ql-editor")){
+      else if(target.length > 0 && target.contains("ql-editor")){
         oldValueRef.current = inputProps.value;
         inputValue.current = inputProps.value;
         let container = e.target.closest(".input-container").querySelector(".input-header .input-title")
@@ -195,11 +208,10 @@ function RichTextEditor(props) {
         //Set editor focusable and editable.
         e.target.firstChild.tabIndex = 0
         editorRef.current.editor.enable(true)
-        //e.target.setAttribute('contenteditable',"true")
         //Focus cursor, show toolbar and call focus event.
         editorRef.current.editor.focus()
         setToolbarVisible(true)
-        handleFocus("user",true)
+        handleFocus("api",true)
       }
     }
   };
@@ -257,7 +269,6 @@ function RichTextEditor(props) {
 
   const handleBlur = (readonly) => {
     let identifier;
-
     if(lockedStatus && Object.keys(lockedStatus).length > 0){
       if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
         identifier = lockedStatus.lockData.attribute_lock.field_identifier;
@@ -325,23 +336,13 @@ function RichTextEditor(props) {
     }
 
     if (e.key === "Tab") {
-      if(tabOut){
-        e.target.blur();
-        e.preventDefault();
-        handleBlur(readonly)
-        setTabout(false)
-      }
-      else if(e.target.tagName === 'P' && e.target.tabIndex === 0){
-        e.target.setAttribute('contenteditable',"true")
-        e.target.focus();
-        handleFocus()
-        setTabout(true)
+      //Set focus to editor when tab press detected at container
+     if(e.target.className === "richtext-container"){
+        handleFocus("api",true)
       }
       else if(e.target.className === "ql-editor"){
-        e.target.setAttribute('contenteditable',"true")
-        e.target.firstChild.tabIndex = 0
-        e.target.firstChild.focus()
-        handleFocus()
+        //tab focus out from editor and check if save is needed because value change
+        handleBlur(readonly)
       }
     }
   }
@@ -355,7 +356,11 @@ function RichTextEditor(props) {
   }
 
   return (
-    <>
+    <div 
+    tabIndex="0"
+    onKeyDown={onKeyDown}
+    className='richtext-container'
+    >
     <input className='visually-hidden' ref={myRefname}/>
     <div
       role="textbox"
@@ -409,6 +414,7 @@ function RichTextEditor(props) {
             </button>
           </span>
         </div>
+        
         <ReactQuill
           tabIndex="0"
           id={toolbarName + "input"}
@@ -417,7 +423,6 @@ function RichTextEditor(props) {
           theme="snow"
           formats={formats}
           {...newInputProps}
-          onKeyDown={onKeyDown}
           // default value initialized, after that quill handles internal state
           // Do not explicitly set value. see comments at top of this file.
           onChange={(_val, _delta, source) =>{handleChange(_val, _delta, source,readonly)}}
@@ -469,7 +474,7 @@ function RichTextEditor(props) {
         </p>
       ) : null}
     </div>
-    </>
+    </div>
   )
 }
 
