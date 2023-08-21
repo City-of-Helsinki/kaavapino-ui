@@ -82,6 +82,7 @@ function RichTextEditor(props) {
   const [currentTimeout, setCurrentTimeout] = useState(0)
   const [readonly, setReadOnly] = useState(false)
   const [valueIsSet, setValueIsSet] = useState(false)
+  const [previousElement,setPreviousElement] = useState(false)
 
   const inputValue = useRef('')
   const myRefname= useRef(null);
@@ -194,11 +195,13 @@ function RichTextEditor(props) {
     if(target?.length > 0){
       //Lose focus and unclock if select button is clicked
       if(target.length > 0 && target.value.includes("Select-module")){
+        setPreviousElement(true)
         handleBlur(readonly)
         setToolbarVisible(false)
         showCounter.current = false;
       }
-      else if(target.length > 0 && target.contains("ql-editor")){
+      else if(target.length > 0 && target.contains("ql-editor") && previousElement){
+        setPreviousElement(false)
         oldValueRef.current = inputProps.value;
         inputValue.current = inputProps.value;
         let container = e.target.closest(".input-container").querySelector(".input-header .input-title")
@@ -213,6 +216,12 @@ function RichTextEditor(props) {
         setToolbarVisible(true)
         handleFocus("api",true)
       }
+      else{
+        setPreviousElement(false)
+      }
+    }
+    else{
+      setPreviousElement(false)
     }
   };
 
