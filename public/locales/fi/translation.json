@@ -133,10 +133,13 @@
     "description": "Kuvaus:",
     "loading": "Ladataan...",
     "choose-file": "Valitse tiedosto",
+    "change-file":"Vaihda tiedosto",
+    "preview":"Esikatsele",
     "load": "Lataa",
     "cancel": "Peruuta",
-    "remove": "Poista"
-    
+    "remove": "Poista",
+    "file-name":"Tiedostonimi: ",
+    "confirmed-files":"Hyväksyttyjä tiedostomuotoja docx, xlsx, pptx, pdf, png, jpg, svg, gif."
 
   },
   "map": {

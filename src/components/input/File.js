@@ -196,9 +196,9 @@ class File extends Component {
             ref={this.inputButtonRef}
             className="upload-button"
           >
-            {this.state.current ||
-              (uploading && t('file.loading')) ||
-              t('file.choose-file')}
+            {uploading && t('file.loading')}
+            {this.state.current && !uploading && t('file.change-file')}
+            {this.state.current === null && !uploading && t('file.choose-file')}
           </Button>
           <div className="file-action-buttons">
             {!uploading && current && (
@@ -208,7 +208,7 @@ class File extends Component {
                 disabled={disabled}
                 variant="secondary"
                 className="download-button"
-              >{t('file.load')} </Button>
+              >{t('file.preview')} </Button>
             )}
             {!uploading && current && (
               <Button
@@ -239,12 +239,18 @@ class File extends Component {
           disabled={disabled}
         />
         {uploading && <Progress percent={percentCompleted} progress indicating />}
+        {current && description && (
+          <div className='assistive'>{t('file.confirmed-files')}</div>
+        )}
         {filePreview}
         {current && description && (
+          <>
+          <div><b>{t('file.file-name')} </b>{this.state.current}</div>
           <span className="file-description">
             <b>{t('file.description')} </b>
             {description}
           </span>
+          </>
         )}
       </div>
     )
