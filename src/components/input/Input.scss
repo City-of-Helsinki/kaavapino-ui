@@ -274,19 +274,35 @@
   background-color: white;
 }
 .ui.form .field.error input[type=text] {
-  border: 3px solid $color-error;
+  background: white !important;
+  color: $color-error !important;
+  border: 3px solid $color-error !important;
   border-radius: 0;
-  background-color: white;
 }
 .ui.form .field.error input[type=number] {
-   border: 3px solid $color-error;
+  background: white !important;
+  color: $color-error !important;
+  border: 3px solid $color-error !important;
   border-radius: 0;
-  background-color: white;
 }
 .ui.form .field.error input[type=date] {
-  border: 3px solid $color-error;
+  background: white !important;
+  color: $color-error !important;
+  border: 3px solid $color-error !important;
   border-radius: 0;
-  background-color: white;
+}
+
+.ui.form input:focus{
+  border: 2px solid $black1 !important;
+  border-color: unset !important;
+  box-shadow: 0 0 0 3px $color-coat-of-arms !important;
+  transform: translateZ(0) !important;
+  transition: 85ms ease-out !important;
+  transition-property: box-shadow,transform !important;
+}
+
+.ui.form .field.error input::placeholder { 
+    color: $color-black-60 !important;
 }
 
 .image-preview {
