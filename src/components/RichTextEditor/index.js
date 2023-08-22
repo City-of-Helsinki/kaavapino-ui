@@ -129,6 +129,8 @@ function RichTextEditor(props) {
     document.addEventListener("click", checkClickedElement);
     return () => {
       document.removeEventListener("click", checkClickedElement);
+      localStorage.removeItem("previousElement");
+      localStorage.removeItem("previousElementId");
     };
   }, [])
 
