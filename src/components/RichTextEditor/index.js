@@ -82,7 +82,6 @@ function RichTextEditor(props) {
   const [currentTimeout, setCurrentTimeout] = useState(0)
   const [readonly, setReadOnly] = useState(false)
   const [valueIsSet, setValueIsSet] = useState(false)
-  const [previousElement,setPreviousElement] = useState(false)
 
   const inputValue = useRef('')
   const myRefname= useRef(null);
@@ -122,11 +121,16 @@ function RichTextEditor(props) {
   useEffect(() => {
     oldValueRef.current = inputProps.value;
     inputValue.current = inputProps.value;
-
     if (setRef) {
       setRef({ name: inputProps.name, ref: editorRef })
     }
+    localStorage.setItem("previousElement", false);
+    localStorage.setItem("previousElementId", "");
+    document.addEventListener("click", checkClickedElement);
     return () => {
+      document.removeEventListener("click", checkClickedElement);
+      localStorage.removeItem("previousElement");
+      localStorage.removeItem("previousElementId");
     };
   }, [])
 
@@ -183,25 +187,20 @@ function RichTextEditor(props) {
     }
   }, [lockedStatus]);
 
-  useEffect(() => {
-    document.addEventListener("click", checkClickedElement);
-    return () => {
-      document.removeEventListener("click", checkClickedElement);
-    };
-  }, [])
-
   const checkClickedElement = (e) => {
+    let previousElement = localStorage.getItem("previousElement")
+    let previousElementId = localStorage.getItem("previousElementId")
     let target = e.target.classList.length > 0 ? e.target.classList : e.target.parentNode.classList
+
     if(target?.length > 0){
       //Lose focus and unclock if select button is clicked
       if(target.length > 0 && target.value.includes("Select-module")){
-        setPreviousElement(true)
+        localStorage.setItem("previousElement","Select-module");
         handleBlur(readonly)
         setToolbarVisible(false)
         showCounter.current = false;
       }
-      else if(target.length > 0 && target.contains("ql-editor") && previousElement){
-        setPreviousElement(false)
+      else if(target.length > 0 && target.value.includes("ql-editor") && previousElement && previousElementId === editorRef.current.props.id){
         oldValueRef.current = inputProps.value;
         inputValue.current = inputProps.value;
         let container = e.target.closest(".input-container").querySelector(".input-header .input-title")
@@ -216,12 +215,10 @@ function RichTextEditor(props) {
         setToolbarVisible(true)
         handleFocus("api",true)
       }
-      else{
-        setPreviousElement(false)
-      }
     }
     else{
-      setPreviousElement(false)
+      localStorage.setItem("previousElement",false);
+      localStorage.setItem("previousElementId","");
     }
   };
 
@@ -271,6 +268,7 @@ function RichTextEditor(props) {
       if (typeof onFocus === 'function') {
         //Sent a call to lock field to backend
         onFocus(inputProps.name);
+        localStorage.setItem("previousElementId",editorRef.current.props.id);
       }
       setToolbarVisible(true)
     }
