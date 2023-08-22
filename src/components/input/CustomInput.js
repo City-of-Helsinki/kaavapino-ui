@@ -4,6 +4,7 @@ import inputUtils from '../../utils/inputUtils'
 import { TextInput } from 'hds-react'
 import { useSelector } from 'react-redux'
 import {lockedSelector } from '../../selectors/projectSelector'
+import moment from 'moment'
 
 const CustomInput = ({ input, meta: { error }, ...custom }) => {
   const [readonly, setReadOnly] = useState({name:"",read:false})
@@ -87,8 +88,18 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       if (!readonly) {
         //Sent call to save changes
         if (typeof custom.onBlur === 'function') {
-          custom.onBlur();
-          oldValueRef.current = event.target.value;
+          if(custom.type === "date"){
+            //Validate date
+            let dateOk = moment(event.target.value, 'YYYY/MM/DD',false).isValid()
+            if(dateOk){
+              custom.onBlur();
+              oldValueRef.current = event.target.value;
+            }
+          }
+          else{
+            custom.onBlur();
+            oldValueRef.current = event.target.value;
+          }
         }
       }
     }
