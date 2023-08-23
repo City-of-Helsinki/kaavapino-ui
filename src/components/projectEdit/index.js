@@ -72,7 +72,7 @@ class ProjectEditPage extends Component {
     phaseTitle:0,
     filterFieldsArray: [],
     highlightedTag: "",
-    showSection:false,
+    showSection:true,
     fields:[],
     errorFields:[]
   }
@@ -178,6 +178,7 @@ class ProjectEditPage extends Component {
     const currentSchemaIndex = schema.phases.findIndex(s => s.id === selectedPhase)
     if (currentSchemaIndex + 1 < schema.phases.length) {
       this.props.changeProjectPhase(schema.phases[currentSchemaIndex + 1].id)
+      window.location.reload();
     } else {
       // do something with last phase
     }
@@ -621,6 +622,7 @@ class ProjectEditPage extends Component {
               phaseColor={color}
               showSections={this.showSections}
               documents={documents}
+              currentSchema={currentSchema}
             />
             <NavigationPrompt
               when={
