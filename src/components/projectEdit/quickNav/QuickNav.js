@@ -34,7 +34,8 @@ export default function QuickNav({
   phaseStatus,
   phaseColor,
   showSections,
-  documents
+  documents,
+  currentSchema
 }) {
   const [endPhaseError, setEndPhaseError] = useState(false)
   const [verifying, setVerifying] = useState(false)
@@ -83,6 +84,20 @@ export default function QuickNav({
     setOptions({optionsArray,curPhase})
 
   }, [phases])
+
+  useEffect(() => {
+   const curPhase = currentSchema.title
+   const optionsArray = [];
+   const sections = currentSchema.sections
+   const id = currentSchema.id
+   if(currentSchema){
+    optionsArray.push({label:currentSchema.title,color:phaseColor,phaseID:currentSchema.id,status:currentSchema.status})
+    setOptions({optionsArray,curPhase})
+    setSelectedPhase({currentPhase:sections,phaseID:id});
+    showSections(true)
+    unlockAllFields()
+   } 
+  }, [currentSchema])
 
   useEffect(() => {
     const c = document.getElementById(`title-${selected}`)
