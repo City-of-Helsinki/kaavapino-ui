@@ -95,13 +95,17 @@ class ProjectEditPage extends Component {
     return true
   }
 
-  componentDidUpdate(_, prevState) {
+  componentDidUpdate(prevProps, prevState) {
     this.scroll()
     this.headings = this.createHeadings()
     if(prevState.errorFields != this.state.errorFields){
       if(this.state.errorFields.length > 0){
         this.errorField.current?.focus();
       }
+    }
+    if(prevProps.changingPhase === true && this.props.changingPhase === false){
+      //get updated project data when moving to next phase
+      window.location.reload();
     }
   }
   componentDidMount() {
@@ -178,7 +182,6 @@ class ProjectEditPage extends Component {
     const currentSchemaIndex = schema.phases.findIndex(s => s.id === selectedPhase)
     if (currentSchemaIndex + 1 < schema.phases.length) {
       this.props.changeProjectPhase(schema.phases[currentSchemaIndex + 1].id)
-      window.location.reload();
     } else {
       // do something with last phase
     }
