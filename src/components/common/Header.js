@@ -57,7 +57,7 @@ const Header = props => {
     //doubles the time after each try
     if(lastSaved?.status === "error"){
       setCount(count + count)
-      if(spinnerRef.current){
+      if(spinnerRef?.current?.style){
         spinnerRef.current.style.visibility = "visible"
         setTimeout(() => {
           spinnerRef.current.style.visibility = "hidden"

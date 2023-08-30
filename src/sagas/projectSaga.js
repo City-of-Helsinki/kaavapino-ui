@@ -124,7 +124,8 @@ import {
   legendApi,
   attributesApiLock,
   attributesApiUnlock,
-  attributesApiUnlockAll
+  attributesApiUnlockAll,
+  pingApi
 } from '../utils/api'
 import { usersSelector } from '../selectors/userSelector'
 import {
@@ -189,7 +190,7 @@ export default function* projectSaga() {
 function* pollConnection() {
   try {
     yield call(
-      projectApi.get
+      pingApi.get
     )
     const dateVariable = new Date()
     const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
