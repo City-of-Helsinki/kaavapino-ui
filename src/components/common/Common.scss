@@ -688,3 +688,8 @@ header{
   padding-top: 8px;
   padding-bottom: $size16;
 }
+
+.Toastify__toast-container--top-right {
+  top: 3.5em;
+  right: 1em;
+}

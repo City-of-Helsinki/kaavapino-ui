@@ -7,7 +7,8 @@ import {
   getProjectSnapshot,
   setSelectedPhaseId,
   getExternalDocuments,
-  resetProjectDeadlines
+  resetProjectDeadlines,
+  pollConnection
 } from '../../actions/projectActions'
 import { fetchUsers } from '../../actions/userActions'
 import { getProjectCardFields, getAttributes } from '../../actions/schemaActions'
@@ -20,7 +21,8 @@ import {
   externalDocumentsSelector,
   creatorSelector,
   resettingDeadlinesSelector,
-  savingSelector
+  savingSelector,
+  pollSelector
 } from '../../selectors/projectSelector'
 import { phasesSelector } from '../../selectors/phaseSelector'
 import {
@@ -109,6 +111,12 @@ class ProjectPage extends Component {
     //s if (prevProps.edit && !edit) this.props.setSelectedPhaseId(currentProject.phase)
 
     getExternalDocuments(this.props.id)
+  }
+
+  pollConnection = () => {
+    //Polls connection when getting error from editform
+    //calls from Header.js useInterval
+    this.props.pollConnection()
   }
 
   switchDisplayedPhase = phase => {
@@ -510,6 +518,7 @@ class ProjectPage extends Component {
           openModifyProject={this.showModifyProject}
           openPrintProjectData={this.showProjectData}
           resetProjectDeadlines={this.onResetProjectDeadlines}
+          pollConnection={this.pollConnection}
         />
         {(loading || resettingDeadlines) && this.renderLoading()}
         {!loading && !resettingDeadlines && (
@@ -535,7 +544,8 @@ const mapDispatchToProps = {
   getExternalDocuments,
   getAttributes,
   resetProjectDeadlines,
-  downloadDocument
+  downloadDocument,
+  pollConnection
 }
 
 const mapStateToProps = state => {
@@ -554,7 +564,8 @@ const mapStateToProps = state => {
     externalDocuments: externalDocumentsSelector(state),
     creator: creatorSelector(state),
     resettingDeadlines: resettingDeadlinesSelector(state),
-    saving: savingSelector(state)
+    saving: savingSelector(state),
+    connection: pollSelector(state)
   }
 }
 

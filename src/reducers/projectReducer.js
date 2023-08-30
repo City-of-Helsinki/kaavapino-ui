@@ -1,4 +1,5 @@
 import {
+  SET_POLL,
   SET_LAST_SAVED,
   SET_UNLOCK_STATUS,
   SET_LOCK_STATUS,
@@ -110,12 +111,20 @@ export const initialState = {
   ownProjectFilters:[],
   floorAreaSaved:false,
   timetableSaved:false,
-  lastSaved:{}
+  lastSaved:{},
+  connection:false
 }
 
 export const reducer = (state = initialState, action) => {
 
   switch (action.type) {
+
+    case SET_POLL: {
+      return{
+        ...state,
+        connection:action.payload,
+      }
+    }
 
     case SET_LAST_SAVED: {
       return{

@@ -224,3 +224,8 @@ export const lastSavedSelector = createSelector(
   selectProject, 
   project => project?.lastSaved
 )
+
+export const pollSelector = createSelector(
+  selectProject, 
+  project => project?.connection
+)

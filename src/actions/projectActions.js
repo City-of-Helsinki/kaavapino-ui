@@ -94,10 +94,20 @@ export const UNLOCK_ALL_FIELDS = "unlockAllFields"
 export const RESET_FLOOR_AREA_SAVE = "Reset floor area save"
 export const RESET_TIMETABLE_SAVE = "Reset timetable save"
 export const SET_LAST_SAVED = "setLastSaved"
+export const POLL_CONNECTION = "pollConnection"
+export const SET_POLL = "setPoll"
 
-export const setLastSaved = (status,time,fields) => ({
+export const pollConnection = (connection) => ({
+  type: POLL_CONNECTION,
+  payload:connection
+})
+export const setPoll = (connection) => ({
+  type: SET_POLL,
+  payload: {connection}
+})
+export const setLastSaved = (status,time,fields,values) => ({
   type: SET_LAST_SAVED,
-  payload: {status,time,fields}
+  payload: {status,time,fields,values}
 })
 export const unlockAllFields = (projectName) => ({
   type: UNLOCK_ALL_FIELDS,

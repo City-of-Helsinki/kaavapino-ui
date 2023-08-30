@@ -26,6 +26,9 @@ import { schemaSelector } from '../selectors/schemaSelector'
 import { userIdSelector } from '../selectors/authSelector'
 import { phasesSelector } from '../selectors/phaseSelector'
 import {
+  POLL_CONNECTION,
+  SET_POLL,
+  setPoll,
   SET_LAST_SAVED, 
   setLastSaved,
   SET_UNLOCK_STATUS,
@@ -138,6 +141,8 @@ import { toastr } from 'react-redux-toastr'
 
 export default function* projectSaga() {
   yield all([
+    takeLatest(POLL_CONNECTION,pollConnection),
+    takeLatest(SET_POLL, setPoll),
     takeLatest(FETCH_PROJECTS, fetchProjects),
     takeLatest(FETCH_OWN_PROJECTS, fetchOwnProjects),
     takeLatest(FETCH_PROJECT_DEADLINES, fetchProjectDeadlines),
@@ -179,6 +184,20 @@ export default function* projectSaga() {
     takeLatest(FETCH_ONHOLD_PROJECTS, fetchOnholdProjects),
     takeLatest(FETCH_ARCHIVED_PROJECTS, fetchArchivedProjects)
   ])
+}
+
+function* pollConnection() {
+  try {
+    yield call(
+      projectApi.get
+    )
+    const dateVariable = new Date()
+    const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    yield put(setPoll(true))
+    yield put(setLastSaved("success",time))
+  } catch (e) {
+    yield put(setPoll(false))
+  }
 }
 
 function* resetProjectDeadlines({ payload: projectId }) {
@@ -713,13 +732,14 @@ function* saveProject() {
         )
         yield put(updateProject(updatedProject))
         yield put(setAllEditFields())
+        yield put(setPoll(false))
         //success will show if error toastr is last visible toastr
         yield put(setLastSaved("success",time))
       } catch (e) {
         if (e.response && e.response.status === 400) {
           yield put(stopSubmit(EDIT_PROJECT_FORM, e.response.data))
         } else {
-          yield put(setLastSaved("error",time,Object.keys(attribute_data)))
+          yield put(setLastSaved("error",time,Object.keys(attribute_data),Object.values(attribute_data)))
         }
       }
     }

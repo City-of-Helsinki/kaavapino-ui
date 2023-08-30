@@ -83,7 +83,7 @@ function IdleMonitor() {
 
   return (
     <div>
-      <ToastContainer onClick={() => extendSession()} closeButton={false}/>
+      <ToastContainer newestOnTop onClick={() => extendSession()} closeButton={false}/>
     </div>
   )
 
