@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   Navigation,
   IconSignout,
@@ -8,7 +8,9 @@ import {
   IconRefresh,
   Button,
   IconAngleLeft,
-  IconCross
+  IconCross,
+  LoadingSpinner,
+  Accordion
 } from 'hds-react'
 import { withRouter, useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -18,7 +20,8 @@ import { useSelector } from 'react-redux'
 import { usersSelector } from '../../selectors/userSelector'
 import authUtils from '../../utils/authUtils'
 import { authUserSelector } from '../../selectors/authSelector'
-import { lastSavedSelector } from '../../selectors/projectSelector'
+import { lastSavedSelector,pollSelector } from '../../selectors/projectSelector'
+import {useInterval} from '../../hooks/connectionPoller';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
 
@@ -26,11 +29,18 @@ const Header = props => {
   const { t } = useTranslation()
   const [showConfirm, setShowConfirm] = useState(false)
   const [updateTime, setUpdateTime] = useState({status: t('header.edit-menu-no-save'),time: ""})
+  const [count, setCount] = useState(1)
+  const [errorFields,setErrorFields] = useState([])
+  const [errorValues,setErrorValues] = useState([])
+  const [errorCount,setErrorCount] = useState(1)
+
   const history = useHistory();
+  const spinnerRef = useRef(null);
 
   const users = useSelector(state => usersSelector(state))
   const user = useSelector(state => authUserSelector(state))
   const lastSaved = useSelector(state => lastSavedSelector(state))
+  const connection = useSelector(state => pollSelector(state))
 
   const currentUser = users.find(
     item => user && user.profile && item.id === user.profile.sub
@@ -42,12 +52,43 @@ const Header = props => {
 
   const currentEnv = process.env.REACT_APP_ENVIRONMENT
   
+  useInterval(() => {
+    //polls connection to backend if there is error
+    //doubles the time after each try
+    if(lastSaved?.status === "error"){
+      setCount(count + count)
+      if(spinnerRef?.current?.style){
+        spinnerRef.current.style.visibility = "visible"
+        setTimeout(() => {
+          spinnerRef.current.style.visibility = "hidden"
+        }, 5000)
+      }
+    }
+    props.pollConnection()
+  }, lastSaved?.status === "error" ? 1000 * count * 10 : 0);
+
   useEffect(() => {
     let latestUpdate
     if(lastSaved?.time && lastSaved?.status){
         latestUpdate = {status:t('header.edit-menu-saved'),time:lastSaved.time}
         let elements = ""
         if(lastSaved?.fields){
+          //Get the latest field and value from error fields and set the values for this toast
+          let newErrorField = lastSaved?.fields.filter(x => !errorFields.includes(x));
+          let newErrorValue = lastSaved?.values.filter(x => !errorValues.includes(x));
+          //Rirchtext and selects can be array values so get copy pastable values from them
+          const arrayValues = [];
+          if(Array.isArray(newErrorValue)){
+            if(newErrorValue[0]?.ops){
+              const opsArray = newErrorValue[0].ops
+              for (let i = 0; i < opsArray.length; i++) {
+                arrayValues.push(opsArray[i].insert);
+              }
+            }
+          }
+          //Get normal or array value and make sure it is formated as string
+          let errorTextValue = arrayValues.length > 0 ? arrayValues.toString() : newErrorValue.toString()
+
           elements =
           <div>
             <div>
@@ -59,51 +100,70 @@ const Header = props => {
               <p>
                 {t('messages.could-not-save-fields-text')}
               </p>
-              <p>
-                - {lastSaved?.fields[0]}
-              </p>
-              {lastSaved?.fields.length > 1 ?
-                <p>
-                  + {lastSaved?.fields.length -1 + " " + t('messages.other-fields')}
-                </p>
-                :
-                ""
-              }
+              <Accordion className='error-info-accordian' size="s" closeButton={false} closeButtonClassName="error-info-close" card border heading="Näytä tiedot" language="fi" style={{ maxWidth: '312px' }}>
+                <div className='error-field'>
+                {t('messages.field')}: {newErrorField}
+                </div>
+                <div className='error-value'>
+                {t('messages.value')}: {errorTextValue}
+                </div>
+                <div className='error-button-container'>
+                <Button size="small" onClick={() => {navigator.clipboard.writeText(errorTextValue)}}>{t('messages.copy-value')}</Button>
+                </div>
+              </Accordion>
             </div>
             <div className='bottom-container'>
               <p>{t('messages.could-not-save-text')}</p>
             </div>
             <div className='button-container'>
               <span className='last-saved-info'>{t('messages.tried-to-save')} {lastSaved.time}</span>
-              <Button size="small">{t('messages.tryagain')}</Button>
+              <div className='spinner-container' ref={spinnerRef}>
+                <LoadingSpinner className="loading-spinner" small></LoadingSpinner>
+                <span className="loading-spinner">{t('messages.connect-again')}</span>
+              </div>
             </div>
           </div>
         }
-        if(toast.isActive("saveFailToastr") && lastSaved?.status === "error"){
+
+        if(lastSaved?.status === "error"){
           latestUpdate = {status:t('header.edit-menu-save-fail'),time:lastSaved.time}
-        // update a toast if already visible
-          toast.update("saveFailToastr", {
-            type:toast.error,
-            render:elements
+          let errors = errorCount
+          // show new toastr error
+          toast.error(elements, {
+            toastId:errorCount,
+            className: "saveFailToastr",
+            position: "top-right",
+            autoClose: false,
+            hideProgressBar: false,
+            closeOnClick: false,
+            pauseOnHover: false,
+            draggable: false,
+            progress: undefined,
+            theme: "light",
+            closeButton: <Button className='close-button' size="small" variant='supplementary' onClick={() => dismiss(errorCount)}><IconCross size="s" /></Button>
           });
+          setErrorFields(lastSaved?.fields)
+          setErrorValues(lastSaved?.values)
+          //Add error toast count, used as an toastid needed to close correct toast
+          setErrorCount(errors + 1)
         }
-        else if(toast.isActive("saveFailToastr") && lastSaved?.status === "success"){
+        else if(lastSaved?.status === "success" && connection.connection){
+          //set polling time to default
+          setCount(1)
           latestUpdate = {status:t('header.edit-menu-saved'),time:lastSaved.time}
-          // dismiss a toast if already visible and not failing any more
-          toast.dismiss("saveFailToastr")
           elements = <div>
           <div>
-            <h3>{t('messages.save-success-header')}
+            <h3>{t('messages.connection-info-header')}
               <span className='icon-container'><IconCross size="s" /></span>
             </h3>
           </div>
           <div>
-            <p>{t('messages.save-success-text')}
+            <p>{t('messages.connection-info-text')}
             </p>
           </div>
         </div>
-        //show toastr message
-        toast.success(elements, {
+        //show toastr info when connection ok
+        toast.info(elements, {
           toastId:"saveOk",
           position: "top-right",
           autoClose: false,
@@ -115,27 +175,14 @@ const Header = props => {
           theme: "light"
           });
         }
-        else{
-        //show toastr message
-        if(lastSaved?.fields){
-          latestUpdate = {status:t('header.edit-menu-save-fail'),time:lastSaved.time}
-          toast.error(elements, {
-            toastId:"saveFailToastr",
-            position: "top-right",
-            autoClose: false,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: false,
-            draggable: false,
-            progress: undefined,
-            theme: "light"
-            });
-          } 
-        }
       
       setUpdateTime(latestUpdate)
     }
   }, [lastSaved]);
+
+  const dismiss = (toastId) =>  {
+    toast.dismiss(toastId);
+  }
 
   const navigateToProjects = () => {
     props.history.push('/projects')

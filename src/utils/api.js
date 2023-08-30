@@ -70,5 +70,6 @@ export const attributesApiUnlock = new Api('/v1/attributes/unlock/')
 export const attributesApiUnlockAll = new Api('/v1/attributes/unlock_all/')
 export const personnelApi = new Api('/v1/personnel/')
 export const legendApi = new Api('/v1/legend/')
+export const pingApi = new Api('/v1/ping/')
 
 
