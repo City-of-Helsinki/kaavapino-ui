@@ -459,6 +459,18 @@
 }
 .checkbox {
   display: flex;
+  .checkbox-item {
+    input{
+      z-index: 2000;
+      position: relative;
+    }
+    label:first-of-type{
+      padding-left: 10px;
+    }
+    label{
+      position: unset;
+    }
+  }
 }
 .checkbox-item {
   margin-top: 0 !important;

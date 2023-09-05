@@ -115,8 +115,8 @@
     "required-documents-header":"Lataa dokumentit",
     "required-documents-text":"Kaikkia tarvittavia dokumentteja ei ole vielä ladattu ulos",
     "could-not-save-header":"Tallennus epäonnistui",
-    "could-not-save-fields-text":"Kaavapino ei voinut tallentaa kenttiä hetkellisen yhteysongelman vuoksi. Älä lataa sivua uudelleen ennen tietojen kopioimista. Mikäli poistut näkymästä, muutoksesi menetetään.",
-    "could-not-save-text":"Yhteyden muodostamista kokeillaan uudelleen automaattisesti.",
+    "could-not-save-fields-text":"Tallennus epäonnistui yhteysongelmien takia. Kopioi kentän sisältö talteen ja päivitä kenttä yhteyden palauduttua.",
+    "could-not-save-fields-text2":"Mikäli poistut näkymästä, menetät muutokset.",
     "tryagain":"Yritä uudelleen",
     "connect-again":"Tarkistetaan yhteyttä",
     "trying":"Uudelleentallennus käynnissä",
@@ -127,8 +127,12 @@
     "save-success-header":"Tallennus onnistui",
     "save-success-text":"Kaikki tiedot ovat tallennettu onnistuneesti. Voit jatkaa tietojen muokkaamista.",
     "field":"Kenttä",
-    "value":"Arvo",
-    "copy-value":"Kopioi arvo"
+    "value":"Kentän sisältö",
+    "copy-value":"Kopioi kentän sisältö",
+    "fieldset":"Kenttäkokonaisuus",
+    "addfield":"Kentän lisäys.",
+    "total":"Yhteensä",
+    "fields":"kenttää."
   },
   "floor-areas": {
     "title": "Päivitä kerrosalatiedot",

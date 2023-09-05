@@ -374,50 +374,44 @@
     border-color: $color-error;
   }
   .middle-container{
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding-top: 0;
+    padding-bottom: 0;
     p{
       margin: 0;
     }
-    .error-info-accordian{
-      font-size: $size14;
-      pointer-events: all;
-      [role=heading]{
-        font-size: 18px;
-      }
+    .font-bold{
+      font-family: "Helsinki Grotesk Bold", sans-serif;
+    }
+    font-size: $size14;
+    pointer-events: all;
+    [role=heading]{
+      font-size: 18px;
+    }
+    .error-fields-container{
+      padding-top: 10px;
       .error-field{
-        font-weight: bold;
-        font-size: $size14
+        font-size: $size14;
+        p{
+          padding-top: 2px;
+        }
       }
       .error-value{
-        padding-top: 15px;
-        font-weight: bold;
-        font-size: $size14
-      }
-      .error-button-container{
-        display: flex;
-        height: 100%;
-        margin-top: 40px;
-        button{
-          position: absolute;
-          bottom: 2px;
-          right: 0;
+        padding-bottom: 10px;
+        font-size: $size14;
+        p{
+          padding-top: 2px;
+          text-overflow: ellipsis;
+          overflow: hidden; 
+          width: 180px;
+          white-space: nowrap;
+        }
+        .fieldset-info{
+          padding-top: 10px;
+          padding-bottom: 10px;
         }
       }
       .error-info-close{
         display: none;
-      }
-    }
-  }
-  .button-container{
-    .spinner-container{
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      padding-top: 15px;
-      visibility: hidden;
-      span{
-        padding-left: 10px;
       }
     }
   }
