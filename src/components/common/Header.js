@@ -9,8 +9,7 @@ import {
   Button,
   IconAngleLeft,
   IconCross,
-  LoadingSpinner,
-  Accordion
+  LoadingSpinner
 } from 'hds-react'
 import { withRouter, useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -30,6 +29,7 @@ const Header = props => {
   const [showConfirm, setShowConfirm] = useState(false)
   const [updateTime, setUpdateTime] = useState({status: t('header.edit-menu-no-save'),time: ""})
   const [count, setCount] = useState(1)
+  const [latestErrorField,setLatestErrorField] = useState()
   const [errorFields,setErrorFields] = useState([])
   const [errorValues,setErrorValues] = useState([])
   const [errorCount,setErrorCount] = useState(1)
@@ -67,27 +67,61 @@ const Header = props => {
     props.pollConnection()
   }, lastSaved?.status === "error" ? 1000 * count * 10 : 0);
 
+  const getFieldSetValues = (object) => {
+    const arrayValues = []
+    let index = 1;
+    for (let i = 0; i < object.length; i++) {
+      let fieldsetObject = object[i];
+      for (var data in fieldsetObject) {
+        if (Object.prototype.hasOwnProperty.call(fieldsetObject, data)) {
+          if(fieldsetObject[data]?.ops){
+            const opsArray = fieldsetObject[data].ops
+            for (let i = 0; i < opsArray.length; i++) {
+              arrayValues.push("fieldset-"+index)
+              arrayValues.push(data+": "+opsArray[i].insert);
+              index = index + 1
+            }
+          }
+        }
+      } 
+    }
+    return arrayValues
+  }
+
   useEffect(() => {
     let latestUpdate
+    let newErrorField
     if(lastSaved?.time && lastSaved?.status){
         latestUpdate = {status:t('header.edit-menu-saved'),time:lastSaved.time}
         let elements = ""
         if(lastSaved?.fields){
           //Get the latest field and value from error fields and set the values for this toast
-          let newErrorField = lastSaved?.fields.filter(x => !errorFields.includes(x));
+          newErrorField = lastSaved?.fields.filter(x => !errorFields.includes(x));
+          if(newErrorField.length === 0){
+            newErrorField=latestErrorField
+          }
           let newErrorValue = lastSaved?.values.filter(x => !errorValues.includes(x));
           //Rirchtext and selects can be array values so get copy pastable values from them
-          const arrayValues = [];
+          let arrayValues = [];
+
           if(Array.isArray(newErrorValue)){
             if(newErrorValue[0]?.ops){
               const opsArray = newErrorValue[0].ops
               for (let i = 0; i < opsArray.length; i++) {
                 arrayValues.push(opsArray[i].insert);
               }
+              newErrorValue = arrayValues.toString()
+              arrayValues = []
+            }
+            else if(typeof newErrorValue[0] === 'object' && newErrorValue[0] !== null){
+              //Fieldset values to copy pasteble format
+              let object = newErrorValue[0]
+              arrayValues = getFieldSetValues(object)
             }
           }
           //Get normal or array value and make sure it is formated as string
-          let errorTextValue = arrayValues.length > 0 ? arrayValues.toString() : newErrorValue.toString()
+          let errorTextValue = arrayValues.length > 0 ? arrayValues : newErrorValue.toString()
+          let copyFieldsetValues = arrayValues.map(a => a).join("\n")
 
           elements =
           <div>
@@ -100,26 +134,36 @@ const Header = props => {
               <p>
                 {t('messages.could-not-save-fields-text')}
               </p>
-              <Accordion className='error-info-accordian' size="s" closeButton={false} closeButtonClassName="error-info-close" card border heading="Näytä tiedot" language="fi" style={{ maxWidth: '312px' }}>
+              <p>
+              {t('messages.could-not-save-fields-text2')}
+              </p>
+              <div className='error-fields-container'>
                 <div className='error-field'>
-                {t('messages.field')}: {newErrorField}
+                  <p className='font-bold'>{arrayValues.length > 0 ? t('messages.fieldset') :t('messages.field')}:</p> 
+                  <a className='link-underlined' href={"#"+newErrorField}>{newErrorField}</a>
                 </div>
                 <div className='error-value'>
-                {t('messages.value')}: {errorTextValue}
+                  {errorTextValue.includes("[object Object]") 
+                  ? 
+                    <p className='font-bold'>{t('messages.addfield')}</p>  
+                  : 
+                  <>
+                  {arrayValues.length > 0 
+                  ? 
+                    <p className='fieldset-info'>{t('messages.total')} {arrayValues.length} {t('messages.fields')}</p>
+                  :
+                    <> 
+                      <p className='font-bold'>{t('messages.value')}:</p> 
+                      <p>{errorTextValue}</p>
+                    </>
+                  }
+                  </>
+                  }
                 </div>
                 <div className='error-button-container'>
-                <Button size="small" onClick={() => {navigator.clipboard.writeText(errorTextValue)}}>{t('messages.copy-value')}</Button>
+                  <Button size="small" onClick={() => {navigator.clipboard.writeText(arrayValues.length > 0 ? 
+                  copyFieldsetValues : errorTextValue)}}>{t('messages.copy-value')}</Button>
                 </div>
-              </Accordion>
-            </div>
-            <div className='bottom-container'>
-              <p>{t('messages.could-not-save-text')}</p>
-            </div>
-            <div className='button-container'>
-              <span className='last-saved-info'>{t('messages.tried-to-save')} {lastSaved.time}</span>
-              <div className='spinner-container' ref={spinnerRef}>
-                <LoadingSpinner className="loading-spinner" small></LoadingSpinner>
-                <span className="loading-spinner">{t('messages.connect-again')}</span>
               </div>
             </div>
           </div>
@@ -144,6 +188,7 @@ const Header = props => {
           });
           setErrorFields(lastSaved?.fields)
           setErrorValues(lastSaved?.values)
+          setLatestErrorField(newErrorField)
           //Add error toast count, used as an toastid needed to close correct toast
           setErrorCount(errors + 1)
         }
@@ -244,7 +289,13 @@ const Header = props => {
         <Navigation.Row variant="inline">
           <Button onClick={() => navigateBack()} role="link" variant="supplementary" size="small" iconLeft={<IconAngleLeft />}>{t('header.edit-menu-back')}</Button>
           <div className='edit-page-title'><p>{props?.title}</p></div>
-          <div className={'edit-page-save ' + lastSaved?.status}><p>{updateTime?.status}{updateTime?.time}</p></div>
+          <div className={'edit-page-save ' + lastSaved?.status}>
+            <div className='spinner-container' ref={spinnerRef}>
+              <LoadingSpinner className="loading-spinner" small></LoadingSpinner>
+              <span className="loading-spinner">{t('messages.connect-again')}</span>
+            </div>
+            <p>{updateTime?.status}{updateTime?.time}</p>
+          </div>
         </Navigation.Row>
       </Navigation>
       </div>

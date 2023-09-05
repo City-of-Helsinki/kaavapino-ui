@@ -369,10 +369,24 @@ header{
       p{
         font-family: "Helsinki Grotesk Bold", sans-serif;
         font-weight: bold;
+        color: $black;
       }
     }
     .edit-page-save{
       font-family: "Helsinki Grotesk Medium", sans-serif;
+      .spinner-container{
+        font-size: $size16;
+        display: flex;
+        justify-content: flex-start;
+        visibility: hidden;
+        padding-right: 15px;
+        color: $color-error;
+        span{
+          font-family: "Helsinki Grotesk Medium", sans-serif;
+          font-size: $size16;
+          padding-left: 10px;
+        }
+      }
       p{
         font-family: "Helsinki Grotesk Medium", sans-serif;
       }
@@ -408,6 +422,17 @@ header{
   }
 }
 
+.link-underlined{
+  font-family: "Helsinki Grotesk Medium", sans-serif;
+  color: $color-bus;
+  text-decoration: underline;
+}
+
+.link-underlined:hover{
+  font-family: "Helsinki Grotesk Medium", sans-serif;
+  color: $color-bus;
+  text-decoration: underline;
+}
   
 .nav-header-container {
   display: flex;
