@@ -140,7 +140,7 @@ const Header = props => {
               <div className='error-fields-container'>
                 <div className='error-field'>
                   <p className='font-bold'>{arrayValues.length > 0 ? t('messages.fieldset') :t('messages.field')}:</p> 
-                  <a className='link-underlined' href={"#"+newErrorField}>{newErrorField}</a>
+                  <a className='link-underlined' type="button" onClick={() => scrollToAncher(newErrorField)}>{newErrorField}</a>
                 </div>
                 <div className='error-value'>
                   {errorTextValue.includes("[object Object]") 
@@ -224,6 +224,15 @@ const Header = props => {
       setUpdateTime(latestUpdate)
     }
   }, [lastSaved]);
+
+  const scrollToAncher = (anchor) => {
+    let anchorElement = document.getElementById(anchor)
+    //Set offset so field is not hidden under sticky filter menu
+    if(anchorElement){
+      anchorElement.scrollIntoView({ block: "start" });
+      window.scrollBy(0, -200); 
+    }
+  }
 
   const dismiss = (toastId) =>  {
     toast.dismiss(toastId);
