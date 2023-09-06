@@ -107,6 +107,14 @@ class ProjectEditPage extends Component {
       //get updated project data when moving to next phase
       window.location.reload();
     }
+    if(prevProps.schema != this.props.schema){
+      if(this.props.schema?.phases){
+        const currentSchemaIndex = this.props.schema.phases.findIndex(s => s.id === this.getSelectedPhase())
+        const currentSchema = this.props.schema.phases[currentSchemaIndex]
+        //Get number of fields for filter component
+        this.setState({fields:currentSchema.sections})
+      }
+    }
   }
   componentDidMount() {
     window.addEventListener('resize', this.handleResize)
@@ -569,6 +577,7 @@ class ProjectEditPage extends Component {
           isHighlightedTag={this.isHighlightedTag} 
           selectedPhase={selectedPhase}
           allfields={this.state.fields}
+          currentlyHighlighted={this.state.highlightedTag}
         />
         {this.state.errorFields?.length > 0 ?
         <div tabIndex="0" ref={this.errorField} className='required-fields-container'>

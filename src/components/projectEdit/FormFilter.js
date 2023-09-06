@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect }  from 'react'
 import { Button, Tag, IconTrash, Checkbox } from 'hds-react';
 import { getOffset } from '../../hooks/getOffset';
 
-function FormFilter({schema,filterFields,isHighlightedTag,selectedPhase,allfields}) {
+function FormFilter({schema,filterFields,isHighlightedTag,selectedPhase,allfields,currentlyHighlighted}) {
 
 const openButtonRef = useRef(null);
 const modal = document.getElementById("myModal");
@@ -93,7 +93,6 @@ const calculateFields = (all) => {
            }
        }
    }
-
    setTotalFilteredFields(totalFilteredFields)
 }
 
@@ -113,7 +112,18 @@ const closeModal = () => {
 }
 
 const saveSelections = () => {
+
+    for (const [key, value] of Object.entries(checkedItems)) {
+        if(key === currentlyHighlighted && value === false){
+            //If highlighted and tag is checked away from menu, remove highlight styles
+            isHighlightedTag("")
+        }
+    }
+    
     setTags(checkedItems)
+    if(!checkedItems){
+        isHighlightedTag("")
+    }
     modal.style.display = "none";
     calculateFields(allfields)
 }
