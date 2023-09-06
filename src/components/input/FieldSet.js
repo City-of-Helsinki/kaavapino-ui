@@ -73,7 +73,7 @@ const FieldSet = ({
                 <div className="fieldset-header">
                   <h3 className="fieldset-header-number">{i + 1}.</h3>
 
-                  {(!disable_fieldset_delete_add && !automatically_added) && (
+                  {(!disable_fieldset_delete_add && !automatically_added && !disabled) && (
                     <IconCross
                       className="fieldset-remove"
                       color="red"
@@ -225,7 +225,7 @@ const FieldSet = ({
           </Button>
           <Button
             className="fieldset-button-remove"
-            disabled={sets.length < 1}
+            disabled={sets.length < 1 || disabled}
             onClick={() => {
               const lastValidIndex = getLastValidIndex()
               sets.map((set, index) => {
