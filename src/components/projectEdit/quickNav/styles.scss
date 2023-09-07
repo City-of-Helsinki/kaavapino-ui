@@ -184,7 +184,7 @@
     }
 
     .phase1,.phase7,.phase19,.phase25{
-      &:hover{
+      &:hover,&:focus{
         border-left: 4px solid;
         border-left-color: $color_phase_start;
         text-decoration: underline;
@@ -199,7 +199,7 @@
     }
 
     .phase26{
-      &:hover{
+      &:hover,&:focus{
         border-left: 4px solid;
         border-left-color: $color_phase_principles;
         text-decoration: underline;
@@ -214,7 +214,7 @@
     }
 
     .phase2,.phase8,.phase20,.phase27{
-      &:hover{
+      &:hover,&:focus{
         border-left: 4px solid;
         border-left-color: $color_phase_oas;
         text-decoration: underline;
@@ -229,7 +229,7 @@
     }
 
     .phase28{
-      &:hover{
+      &:hover,&:focus{
         border-left: 4px solid;
         border-left-color: $color_phase_draft;
         text-decoration: underline;
@@ -244,7 +244,7 @@
     }
 
     .phase3,.phase9,.phase21,.phase29{
-      &:hover{
+      &:hover,&:focus{
         border-left: 4px solid;
         border-left-color: $color_phase_suggestion;
         text-decoration: underline;
@@ -259,7 +259,7 @@
     }
 
     .phase4,.phase10,.phase22,.phase30{
-      &:hover{
+      &:hover,&:focus{
         border-left: 4px solid;
         border-left-color: $color_phase_check_suggestion;
         text-decoration: underline;
@@ -274,7 +274,7 @@
     }
 
     .phase5,.phase11,.phase23,.phase31{
-      &:hover{
+      &:hover,&:focus{
         border-left: 4px solid;
         border-left-color: $color_phase_approval;
         text-decoration: underline;
@@ -289,7 +289,7 @@
     }
 
     .phase6,.phase12,.phase24,.phase32{
-      &:hover{
+      &:hover,&:focus{
         border-left: 4px solid;
         border-left-color: $color_phase_inception;
         text-decoration: underline;
