@@ -94,9 +94,13 @@ export default function QuickNav({
     optionsArray.push({label:currentSchema.title,color:phaseColor,phaseID:currentSchema.id,status:currentSchema.status})
     setOptions({optionsArray,curPhase})
     setSelectedPhase({currentPhase:sections,phaseID:id});
+    //Get last section pressed from navigation when pressing back button and returning from project card
+    const currentSection = localStorage.getItem("currentSection");
+    handleSectionTitleClick(curPhase, +currentSection, id,sections)
+
     showSections(true)
     unlockAllFields()
-   } 
+   }
   }, [currentSchema])
 
   useEffect(() => {
@@ -123,6 +127,10 @@ export default function QuickNav({
   }, [validationOk])
 
   useEffect(() => {
+    window.onbeforeunload = function() {
+      localStorage.removeItem("currentSection");
+    };
+
     const optionsArray = [];
     let curPhase = ""
 
@@ -136,6 +144,10 @@ export default function QuickNav({
     }
 
     setOptions({optionsArray,curPhase})
+
+    return () => {
+      window.onbeforeunload = null;
+    };
   }, [])
 
 
@@ -260,7 +272,8 @@ export default function QuickNav({
     if(title){
       setSelected(index)
     }
-
+    //Set last navigation menu phase section selection to memory
+    localStorage.setItem("currentSection", index);
     changeSection(index,phaseID,fields)
     unlockAllFields()
   }
@@ -280,6 +293,7 @@ export default function QuickNav({
     }
 
     setSelectedPhase({currentPhase,phaseID});
+    localStorage.removeItem("currentSection");
     handleSectionTitleClick(item.label, 0, phaseID,currentPhase)
     showSections(true)
     unlockAllFields()
