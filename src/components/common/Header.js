@@ -284,7 +284,9 @@ const Header = props => {
   } 
 
   const navigateBack = () => {
-    history.goBack()
+    let path = history.location.pathname
+    path = path.replace('edit','');
+    history.push(path)
   }
 
   const pathToCheck = props.location.pathname
