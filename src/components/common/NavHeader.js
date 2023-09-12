@@ -52,7 +52,7 @@ export const NavHeader = ({ routeItems, actions, title, infoOptions, attributes 
               <div className='nav-menu-buttons'>
                 <LoggingComponent infoOptions={infoOptions} attributes={attributes} />
                 <div className='nav-select-container'>
-                  {actions && actions}
+                  {actions}
                 </div>
               </div>
             </div>
