@@ -229,3 +229,13 @@ export const pollSelector = createSelector(
   selectProject, 
   project => project?.connection
 )
+
+export const showTimetableSelector = createSelector(
+  selectProject, 
+  project => project?.showEditProjectTimetableForm
+)
+
+export const showFloorAreaSelector = createSelector(
+  selectProject, 
+  project => project?.showEditFloorAreaForm
+)

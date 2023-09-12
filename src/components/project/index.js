@@ -8,7 +8,9 @@ import {
   setSelectedPhaseId,
   getExternalDocuments,
   resetProjectDeadlines,
-  pollConnection
+  pollConnection,
+  showTimetable,
+  showFloorArea
 } from '../../actions/projectActions'
 import { fetchUsers } from '../../actions/userActions'
 import { getProjectCardFields, getAttributes } from '../../actions/schemaActions'
@@ -43,7 +45,7 @@ import DownloadProjectDataModal from './DownloadProjectDataModal'
 import { DOWNLOAD_PROJECT_DATA_FORM } from '../../constants'
 import { getFormValues } from 'redux-form'
 import { userIdSelector } from '../../selectors/authSelector'
-import { IconPen, LoadingSpinner, Button, IconDownload } from 'hds-react'
+import { IconPen, LoadingSpinner, Button, Select } from 'hds-react'
 import { withRouter } from 'react-router-dom'
 import dayjs from 'dayjs'
 import Header from '../common/Header'
@@ -293,42 +295,67 @@ class ProjectPage extends Component {
     }
     return this.getProjectCardContent(isExpert)
   }
+
+  changeOptions = (option) => {
+    const { currentProject, downloadDocument } = this.props
+    switch (option.value) {
+      case 1:
+        this.createDocuments()
+        break;
+      case 2:
+        this.props.showTimetable(true)
+        break;
+      case 3:
+        this.props.showFloorArea(true)
+        break;
+      case 4:
+        this.showProjectData()
+        break;
+      case 5:
+        this.showModifyProject()
+        break;
+      case 6:
+        this.onResetProjectDeadlines()
+        break;
+      case 7:
+        downloadDocument({
+          ...currentProject.project_card_document,
+          projectCard: true
+        })
+        break;
+      default:
+        console.log("invalid option.");
+    }
+  }
+
   getProjectCardNavActions = userIsExpert => {
-    const { t, currentProject, downloadDocument } = this.props
+    const { t } = this.props
+    const options = [
+    {value:1,label:<><i className="icons document-icon"></i>{t('project.create-documents')}</> },
+    {value:7,label:<><i className="icons download-icon"></i>{t('project.print-project-card')}</>}]
 
     return (
       <span className="header-buttons">
         {userIsExpert && (
+        <>
           <Button
             variant="secondary"
             className="header-button"
+            size='small'
             onClick={this.modifyContent}
             iconLeft={<IconPen />}
           >
             {t('project.modify')}
           </Button>
+          <Select
+            className='edit-view-select'
+            id="editNavSelect"
+            placeholder='Projektin työkalut'
+            options={options}
+            onChange={this.changeOptions}
+          />
+        </>
         )}
-        {userIsExpert && (
-          <Button
-            variant="secondary"
-            iconLeft={<IconPen />}
-            onClick={this.createDocuments}
-          >
-            {t('project.create-documents')}
-          </Button>
-        )}
-        <Button
-          variant="secondary"
-          iconLeft={<IconDownload />}
-          onClick={() =>
-            downloadDocument({
-              ...currentProject.project_card_document,
-              projectCard: true
-            })
-          }
-        >
-          {t('project.print-project-card')}
-        </Button>
       </span>
     )
   }
@@ -338,19 +365,22 @@ class ProjectPage extends Component {
   showProjectData = () => {
     this.togglePrintProjectDataModal(true)
   }
-  getEditNavActions = isUserExpert => {
-    const { t } = this.props
 
+  getEditNavActions = isUserExpert => {
+   const { t } = this.props
+    const options = [{value:1,label:<><i className="icons document-icon"></i>{t('project.create-documents')}</> },{value:2,label:<><i className="icons calendar-icon"></i>{t('deadlines.title')}</>},{value:3,label:<><i className="icons company-icon"></i>{t('floor-areas.title')}</>},
+    {value:4,label:<><i className="icons download-icon"></i>{t('project.download-old-data')}</>},{value:5,label:<><i className="icons pen-icon"></i>{t('project.modify-project-base')}</>},{value:6,label:<><i className="icons trash-icon"></i>{t('deadlines.reset-project-deadlines')}</>},
+    ]
     return (
       <span className="header-buttons">
         {isUserExpert && (
-          <Button
-            variant="secondary"
-            iconLeft={<IconPen />}
-            onClick={this.createDocuments}
-          >
-            {t('project.create-documents')}
-          </Button>
+        <Select
+          className='edit-view-select'
+          id="editNavSelect"
+          placeholder='Projektin työkalut'
+          options={options}
+          onChange={this.changeOptions}
+        />
         )}
       </span>
     )
@@ -545,7 +575,9 @@ const mapDispatchToProps = {
   getAttributes,
   resetProjectDeadlines,
   downloadDocument,
-  pollConnection
+  pollConnection,
+  showTimetable,
+  showFloorArea
 }
 
 const mapStateToProps = state => {

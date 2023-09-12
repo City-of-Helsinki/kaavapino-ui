@@ -19,7 +19,9 @@ import {
   saveProjectBasePayload,
   unlockAllFields,
   resetFloorAreaSave,
-  resetTimetableSave
+  resetTimetableSave,
+  showTimetable,
+  showFloorArea
 } from '../../actions/projectActions'
 import { fetchSchemas, setAllEditFields, clearSchemas } from '../../actions/schemaActions'
 import { fetchDocuments } from '../../actions/documentActions'
@@ -31,7 +33,9 @@ import {
   checkingSelector,
   currentProjectSelector,
   floorAreaSavedSelector,
-  timetableSavedSelector
+  timetableSavedSelector,
+  showFloorAreaSelector,
+  showTimetableSelector
 } from '../../selectors/projectSelector'
 import {
   documentsSelector
@@ -60,8 +64,6 @@ import 'react-toastify/dist/ReactToastify.min.css';
 
 class ProjectEditPage extends Component {
   state = {
-    showEditFloorAreaForm: false,
-    showEditProjectTimetableForm: false,
     highlightGroup: '',
     refs: [],
     selectedRefName: null,
@@ -135,11 +137,13 @@ class ProjectEditPage extends Component {
     const viewParameter = params.get('view')
 
     if (viewParameter === 'deadlines') {
-      this.setState({ ...this.state, showEditProjectTimetableForm: true })
+      this.props.showTimetable(true)
+      this.setState({ ...this.state })
       this.props.history.replace({ ...this.props.location, search: '' })
     }
     if (viewParameter === 'floorarea') {
-      this.setState({ ...this.state, showEditFloorAreaForm: true })
+      this.props.showFloorArea(true)
+      this.setState({ ...this.state })
       this.props.history.replace({ ...this.props.location, search: '' })
     }
 
@@ -202,7 +206,7 @@ class ProjectEditPage extends Component {
   }
 
   handleAutoSave = () => {
-    if (this.state.showEditFloorAreaForm || this.state.showEditProjectTimetableForm) {
+    if (this.props.showEditFloorAreaForm || this.props.showEditProjectTimetableForm) {
       return
     }
 
@@ -228,7 +232,7 @@ class ProjectEditPage extends Component {
   }
 
   handleTimetableClose = () => {
-    this.setState({ showEditProjectTimetableForm: false })
+    this.props.showTimetable(false)
     this.props.resetTimetableSave()
   }
 
@@ -318,7 +322,7 @@ class ProjectEditPage extends Component {
     const isExpert = authUtils.isExpert(this.props.currentUserId, this.props.users)
 
     if (isExpert) {
-      this.setState({ showEditProjectTimetableForm: show })
+      this.props.showTimetable(show)
     }
   }
 
@@ -354,7 +358,7 @@ class ProjectEditPage extends Component {
   }
 
   handleFloorAreaClose = () => {
-    this.setState({ showEditFloorAreaForm: false })
+    this.props.showFloorArea(false)
     this.props.resetFloorAreaSave()
   }
 
@@ -660,7 +664,6 @@ class ProjectEditPage extends Component {
             attributeData={attribute_data}
             geoServerData={geoserver_data}
             saving={saving}
-            // changingPhase={changingPhase}
             initialValues={Object.assign(attribute_data, geoserver_data)}
             phase={phase}
             selectedPhase={selectedPhase}
@@ -669,10 +672,6 @@ class ProjectEditPage extends Component {
             syncronousErrors={syncErrors}
             submitErrors={submitErrors}
             title={`${currentSchema.list_prefix}. ${currentSchema.title}`}
-            showEditFloorAreaForm={() => this.setState({ showEditFloorAreaForm: true })}
-            showEditProjectTimetableForm={() =>
-              this.setState({ showEditProjectTimetableForm: true })
-            }
             isExpert={isExpert}
             setRef={this.setRef}
             setFormInitialized={this.setFormInitialized}
@@ -683,7 +682,7 @@ class ProjectEditPage extends Component {
             sectionIndex={this.state.sectionIndex}
             showSection={this.state.showSection}
           />
-          {this.state.showEditFloorAreaForm && (
+          {this.props.showFloorAreaForm && (
             <EditFloorAreaFormModal
               attributeData={attribute_data}
               open
@@ -692,7 +691,7 @@ class ProjectEditPage extends Component {
               isFloorAreaSaved={this.props.floorAreaSavedSelector}
             />
           )}
-          {this.state.showEditProjectTimetableForm && (
+          {this.props.showTimetableForm && (
             <EditProjectTimetableModal
               attributeData={attribute_data}
               open
@@ -725,7 +724,9 @@ const mapStateToProps = state => {
     currentProject: currentProjectSelector(state),
     floorAreaSavedSelector: floorAreaSavedSelector(state),
     timetableSavedSelector: timetableSavedSelector(state),
-    documents: documentsSelector(state)
+    documents: documentsSelector(state),
+    showTimetableForm:showTimetableSelector(state),
+    showFloorAreaForm:showFloorAreaSelector(state) 
   }
 }
 
@@ -749,7 +750,9 @@ const mapDispatchToProps = {
   saveProjectBasePayload,
   resetFloorAreaSave,
   resetTimetableSave,
-  fetchDocuments
+  fetchDocuments,
+  showTimetable,
+  showFloorArea
 }
 
 export default withRouter(

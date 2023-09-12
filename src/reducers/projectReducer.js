@@ -71,7 +71,9 @@ import {
   SET_ONHOLD_PROJECTS,
   SET_ARCHIVED_PROJECTS,
   RESET_PROJECT_DEADLINES,
-  RESET_PROJECT_DEADLINES_SUCCESSFUL
+  RESET_PROJECT_DEADLINES_SUCCESSFUL,
+  SHOW_TIMETABLE,
+  SHOW_FLOOR_AREA
 } from '../actions/projectActions'
 
 export const initialState = {
@@ -112,12 +114,28 @@ export const initialState = {
   floorAreaSaved:false,
   timetableSaved:false,
   lastSaved:{},
-  connection:false
+  connection:false,
+  showEditFloorAreaForm:false,
+  showEditProjectTimetableForm:false
 }
 
 export const reducer = (state = initialState, action) => {
 
   switch (action.type) {
+
+    case SHOW_TIMETABLE: {
+      return{
+        ...state,
+        showEditProjectTimetableForm: action.payload
+      }
+    }
+    
+    case SHOW_FLOOR_AREA: {
+      return{
+        ...state,
+        showEditFloorAreaForm:action.payload
+      }
+    }
 
     case SET_POLL: {
       return{

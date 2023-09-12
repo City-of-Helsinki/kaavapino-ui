@@ -235,11 +235,11 @@ function LoggingComponent(props) {
       {latestUpdate && (
         <Button
           className="latest-update"
-          variant="supplementary"
-          iconLeft={icon}
+          variant="secondary"
+          iconRight={icon}
           {...buttonProps}
         >
-          {latestUpdate}
+          {t('nav-header.latest-changes')}
         </Button>
       )}
       <Card border aria-label="Loki" className="log-card" {...contentProps}>
