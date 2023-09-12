@@ -47,7 +47,7 @@ function InactiveMessage(props) {
         // If you adjust it you should also need to
         // adjust the Endtime formula we are about
         // to code next    
-        setTimer('00:10:00');
+        setTimer('00:01:00');
   
         // If you try to remove this line the 
         // updating of timer Variable will be
@@ -63,7 +63,8 @@ function InactiveMessage(props) {
         let deadline = new Date();
         // This is where you need to adjust if 
         // you entend to add more time
-        deadline.setSeconds(deadline.getSeconds() + 600);
+        //600 === 10minutes
+        deadline.setSeconds(deadline.getSeconds() + 60);
         return deadline;
     }
   
