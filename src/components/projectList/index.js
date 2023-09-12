@@ -29,7 +29,7 @@ import List from './List'
 import { withTranslation } from 'react-i18next'
 import { userIdSelector } from '../../selectors/authSelector'
 import { withRouter } from 'react-router-dom'
-import { Tabs, Pagination } from 'hds-react'
+import { Tabs, Pagination, Button, IconPlus } from 'hds-react'
 import Header from '../common/Header'
 import authUtils from '../../utils/authUtils'
 import OwnProjectFilters from './OwnProjectFilters'
@@ -445,6 +445,24 @@ class ProjectListPage extends Component {
     }
   }
 
+  getDocumentsNavActions = isUserExpert => {
+    const { t } = this.props
+    return (
+      <span className="header-buttons">
+        {isUserExpert && (
+          <Button
+            variant="secondary"
+            className="header-button"
+            onClick={this.openCreateProject}
+            iconLeft={<IconPlus />}
+          >
+            {t('projects.addNewProject')}
+          </Button>
+        )}
+      </span>
+    )
+  }
+
   render() {
     const {
       users,
@@ -469,6 +487,7 @@ class ProjectListPage extends Component {
           <NavHeader
             routeItems={[{ value: t('projects.title'), path: '/' }]}
             title={t('projects.title')}
+            actions={this.getDocumentsNavActions(isExpert)}
           />
           <NewProjectFormModal
             modalOpen={showBaseInformationForm}

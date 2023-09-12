@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
-import { Grid } from 'semantic-ui-react'
 import "hds-core";
 
 import LoggingComponent from './LoggingComponent'
@@ -46,14 +45,18 @@ export const NavHeader = ({ routeItems, actions, title, infoOptions, attributes 
         </div>
         <div className="nav-header-content">
           <div className="nav-header-titles">
-            <Grid className="full-width" stackable padded={false} columns="equal">
-              <Grid.Column width={4}>
+            <div className="nav-menu-container">
+              <div>
                 <h1 className="nav-header-title">{title}</h1>
-              </Grid.Column>
-              <Grid.Column textAlign="right">{actions && actions}</Grid.Column>
-            </Grid>
+              </div>
+              <div className='nav-menu-buttons'>
+                <LoggingComponent infoOptions={infoOptions} attributes={attributes} />
+                <div className='nav-select-container'>
+                  {actions && actions}
+                </div>
+              </div>
+            </div>
           </div>
-          <LoggingComponent infoOptions={infoOptions} attributes={attributes} />
         </div>
       </div>
     </div>

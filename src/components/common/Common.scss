@@ -481,8 +481,20 @@ header{
 
       }
       .nav-header-titles {
-        align-items: flex-end;
         display: flex;
+        align-items: flex-end;
+        justify-content: flex-end;
+
+        .nav-menu-container{
+          width: 100%;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          .nav-menu-buttons{
+            display: flex;
+            align-items: center;
+          }
+        }
 
         .ui{
           margin-top: 0;
@@ -515,7 +527,7 @@ header{
         font-size: $size14;
         line-height: $size24;
         margin-top: 0;
-        width: 50%;
+        padding-right: 20px;
 
         @media screen and (max-width: 599px) {
           width: 100%;
@@ -532,6 +544,49 @@ header{
 
         .text {
           max-width: calc(100% - 32px);
+        }
+      }
+
+      .nav-select-container{
+        padding-left: 0;
+        margin-left: 0;
+        margin-right: 0;
+        padding-right: 0;
+        #editNavSelect-menu{
+          max-height: unset !important;
+          width: 320px;
+          left: -102px;
+          bottom: -6px;
+          border: 1px solid $border-black;
+          -webkit-box-shadow:0px 2px 8px $dropdown-blur-color;
+          -moz-box-shadow:0px 2px 8px $dropdown-blur-color;
+          box-shadow:0px 2px 8px $dropdown-blur-color;
+          li{
+            color: $dropdown-text-color;
+            background-color:white;
+            padding-left: 14px;
+            justify-content: flex-start;
+            min-height: 42px;
+            padding-top: 0;
+            padding-bottom: 0;
+            font-size: $size16;
+            i{
+              color: $dropdown-icon-color;
+              margin-right: 14px;
+              font-size: $size16;
+            }
+          }
+          li:nth-child(4){
+            border-top: 1px solid $dropdown-divider-color;
+          }
+          #editNavSelect-item-5{
+            color:$color-error;
+            border-top: 1px solid $dropdown-divider-color;
+            i{
+              color: $color-error;
+            }
+          }
+
         }
       }
 
@@ -633,7 +688,10 @@ header{
 }
 .log-card {
   max-height: 200px;
+  width: 242px;
   overflow: auto;
+  position: absolute;
+  z-index: 4;
   .ui.grid>.row {
     padding-top: 5px;
     padding-bottom: 5px;

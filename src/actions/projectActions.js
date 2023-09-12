@@ -96,7 +96,17 @@ export const RESET_TIMETABLE_SAVE = "Reset timetable save"
 export const SET_LAST_SAVED = "setLastSaved"
 export const POLL_CONNECTION = "pollConnection"
 export const SET_POLL = "setPoll"
+export const SHOW_TIMETABLE = "showTimetable"
+export const SHOW_FLOOR_AREA = "showFloorArea"
 
+export const showFloorArea = (showEditFloorAreaForm) => ({
+  type: SHOW_FLOOR_AREA,
+  payload:showEditFloorAreaForm
+})
+export const showTimetable = (showEditProjectTimetableForm) => ({
+  type: SHOW_TIMETABLE,
+  payload:showEditProjectTimetableForm
+})
 export const pollConnection = (connection) => ({
   type: POLL_CONNECTION,
   payload:connection

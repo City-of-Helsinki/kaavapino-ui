@@ -2,7 +2,6 @@ import React, { Component } from 'react'
 import { Form } from 'semantic-ui-react'
 import { reduxForm } from 'redux-form'
 import FormSection from './FormSection'
-import FormButton from '../common/FormButton'
 import { EDIT_PROJECT_FORM } from '../../constants'
 import Shoutbox from '../shoutbox'
 import { Button, IconArrowUp } from 'hds-react'
@@ -65,12 +64,9 @@ class EditForm extends Component {
       sections,
       title,
       projectId,
-      showEditFloorAreaForm,
-      showEditProjectTimetableForm,
       attributeData,
       syncronousErrors,
       submitErrors,
-      isExpert,
       t,
       sectionIndex,
       filterFieldsArray,
@@ -84,20 +80,6 @@ class EditForm extends Component {
       <Form className="form-container" autoComplete="off" aria-live="polite" aria-atomic="true">
         <h2 tabIndex="0" id="accordion-title">{title}</h2>
         <div className="edit-form-buttons">
-          {isExpert && (
-            <FormButton
-              value={t('deadlines.button-title')}
-              variant="secondary"
-              onClick={showEditProjectTimetableForm}
-            />
-          )}
-          {isExpert && (
-            <FormButton
-              value={t('floor-areas.button-title')}
-              variant="secondary"
-              onClick={showEditFloorAreaForm}
-            />
-          )}
           <Shoutbox project={projectId} />
         </div>
           <FormSection

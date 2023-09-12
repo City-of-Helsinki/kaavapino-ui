@@ -44,6 +44,7 @@
     "amount": "({{pieces}} kpl)",
     "title": "Projektit",
     "createNewProject": "Luo uusi projekti",
+    "addNewProject": "Lisää uusi projekti",
     "createReports": "Luo raportteja",
     "onhold-short": "Keskeytyneet",
     "archived-short": "Arkistoidut",
@@ -219,10 +220,13 @@
     "documents-not-ready": "Dokumentteja ei ole vielä valmiina",
     "searchterms-found":"Hakuehdoilla löytyi",
     "total":"Yhteensä",
-    "found-projects":"projektia."
+    "found-projects":"projektia.",
+    "download-old-data":"Lataa vanhoja projektitietoja",
+    "modify-project-base":"Muokkaa projektin luontitietoja"
   },
   "nav-header": {
-    "latest-update": "Viimeisin muokkaus: {{latestUpdate}}"
+    "latest-update": "Viimeisin muokkaus: {{latestUpdate}}",
+    "latest-changes":"Viimeisimmät muutokset"
   },
   "print-project-data": {
     "title": "Tulosta projektin tiedot",

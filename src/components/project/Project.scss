@@ -10,11 +10,50 @@
     width: 100%;
   }
   .header-buttons {
+    display: flex;
     text-align: right;
     margin: 10px 0 10px 0;
+    .edit-view-select{
+      div{
+        color: $color-bus;
+        border: 2px solid $color-bus;
+      }
+      span{
+        color: $color-bus;
+      }
+      svg{
+        color: $color-bus;
+      }
+      .icons{
+        width: 20px;
+        height: 20px;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: contain;
+      }
+      .document-icon{
+        background-image: url('./assets/icons/document.svg');
+      }
+      .calendar-icon{
+        background-image: url('./assets/icons/calendar-recurring.svg');
+      }
+      .company-icon{
+        background-image: url('./assets/icons/company.svg');
+      }
+      .download-icon{
+        background-image: url('./assets/icons/download.svg');
+      }
+      .pen-icon{
+        background-image: url('./assets/icons/pen.svg');
+      }
+      .trash-icon{
+        background-image: url('./assets/icons/trash-red.svg');
+      }
+    }
    button {
-      margin-left: 10px;
-
+      margin-left: 0;
+      margin-right: 20px;
+      font-family: 'Helsinki Grotesk Bold', sans-serif;
       @media screen and (max-width: 600px) {
           width: 100%;
           margin-left: 0;
