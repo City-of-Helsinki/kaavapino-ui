@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { Button, Tag, IconArrowRight, IconArrowLeft } from 'hds-react'
 import OnHoldCheckbox from '../../input/OnholdCheckbox'
 import ConfirmModal from '../ConfirmModal'
-import { Message } from 'semantic-ui-react'
 import './styles.scss'
 import Status from '../../common/Status'
 
@@ -11,9 +10,7 @@ export default function QuickNav({
   currentProject,
   saveProjectBase,
   handleCheck,
-  handleSave,
   saving,
-  errors,
   isCurrentPhase,
   changePhase,
   notLastPhase,
@@ -37,13 +34,11 @@ export default function QuickNav({
   documents,
   currentSchema
 }) {
-  const [endPhaseError, setEndPhaseError] = useState(false)
   const [verifying, setVerifying] = useState(false)
   const [checkButtonPressed, setCheckButtonPressed] = useState(false)
   const [allowPhaseClose, setAllowPhaseClose] = useState(false)
   const [activePhase, setActivePhase] = useState(phase)
   const [selected, setSelected] = useState(0)
-  const [currentTimeout, setCurrentTimeout] = useState(null)
   const [hasErrors, setHasErrors] = useState(false)
   const [validationOk, setValidationOk] = useState(false)
   const [options,setOptions] = useState({optionsArray:[],curPhase:{label:"",color:"",phaseID:0}})
@@ -114,14 +109,10 @@ export default function QuickNav({
       return
     }
     if (!hasErrors) {
-      setEndPhaseError(false)
       setChecking(false)
       setVerifying(true)
       setValidationOk(false)
     } else {
-      setEndPhaseError(true)
-      clearTimeout(currentTimeout)
-      setCurrentTimeout(setTimeout(() => setEndPhaseError(false), 5000))
       setChecking(true)
       setValidationOk(false)
     }
@@ -157,18 +148,6 @@ export default function QuickNav({
           variant="secondary"
         >
           {t('quick-nav.check-required')}
-        </Button>
-        <Button
-          size="small"
-          fullWidth={true}
-          onClick={handleSave}
-          isLoading={saving || errors}
-          loadingText={t('common.save')}
-          help={t('quick-nav.save-help')}
-          disabled={currentProject.archived}
-          variant="secondary"
-        >
-          {t('common.save')}
         </Button>
 
         {isResponsible && (
@@ -254,7 +233,6 @@ export default function QuickNav({
     }
     setVerifying(false)
     setValidationOk(false)
-    setEndPhaseError(false)
   }
 
   const handleSectionTitleClick = (title, index, phaseID, fields) => {
@@ -431,13 +409,6 @@ export default function QuickNav({
           callback={phaseCallback}
           open={verifying}
           notLastPhase={notLastPhase}
-        />
-      )}
-      {endPhaseError && !allowPhaseClose && (
-        <Message
-          header={t('quick-nav.change-phase-error')}
-          content={t('quick-nav.change-phase-error-message')}
-          color="yellow"
         />
       )}
     </div>
