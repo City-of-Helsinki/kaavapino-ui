@@ -553,9 +553,9 @@ header{
         margin-right: 0;
         padding-right: 0;
         #editNavSelect-menu{
-          max-height: unset !important;
+          //max-height: unset !important;
           width: 320px;
-          left: -102px;
+          left: -117px;
           bottom: -6px;
           border: 1px solid $border-black;
           -webkit-box-shadow:0px 2px 8px $dropdown-blur-color;
@@ -687,11 +687,14 @@ header{
   }
 }
 .log-card {
+  max-width: 320px;
   max-height: 200px;
-  width: 242px;
+  width: 100%;
   overflow: auto;
   position: absolute;
   z-index: 4;
+  margin-top: 5px;
+  margin-left: -78px;
   .ui.grid>.row {
     padding-top: 5px;
     padding-bottom: 5px;
