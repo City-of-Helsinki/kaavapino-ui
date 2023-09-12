@@ -545,6 +545,14 @@ header{
         .text {
           max-width: calc(100% - 32px);
         }
+
+        button{
+          font-size: $size16;
+          font-family: 'Helsinki Grotesk Medium', sans-serif;
+        }
+        button:focus-within{
+          box-shadow: 0 0 0 3px $color-coat-of-arms;
+        }
       }
 
       .nav-select-container{
@@ -687,6 +695,7 @@ header{
   }
 }
 .log-card {
+  font-size: $size16;
   max-width: 320px;
   max-height: 200px;
   width: 100%;
@@ -694,7 +703,7 @@ header{
   position: absolute;
   z-index: 4;
   margin-top: 5px;
-  margin-left: -78px;
+  margin-left: -54px;
   .ui.grid>.row {
     padding-top: 5px;
     padding-bottom: 5px;

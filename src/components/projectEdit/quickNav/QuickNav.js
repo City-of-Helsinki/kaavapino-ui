@@ -48,6 +48,7 @@ export default function QuickNav({
   const [validationOk, setValidationOk] = useState(false)
   const [options,setOptions] = useState({optionsArray:[],curPhase:{label:"",color:"",phaseID:0}})
   const [selectedPhase,setSelectedPhase] = useState({currentPhase:[],phaseID:0})
+  const [currentSection,setCurrentSection] = useState(0)
   const prevSelectedRef = useRef(false);
 
   const { t } = useTranslation()
@@ -82,7 +83,7 @@ export default function QuickNav({
      // handleSectionTitleClick(title, 0, phaseID)
     }
     setOptions({optionsArray,curPhase})
-
+    
   }, [phases])
 
   useEffect(() => {
@@ -95,9 +96,9 @@ export default function QuickNav({
     setOptions({optionsArray,curPhase})
     setSelectedPhase({currentPhase:sections,phaseID:id});
     //Get last section pressed from navigation when pressing back button and returning from project card
-    const currentSection = localStorage.getItem("currentSection");
-    handleSectionTitleClick(curPhase, +currentSection, id,sections)
-
+    console.log("currentschemasta")
+    setCurrentSection(0)
+    handleSectionTitleClick(curPhase, 0, id,sections)
     showSections(true)
     unlockAllFields()
    }
@@ -127,10 +128,6 @@ export default function QuickNav({
   }, [validationOk])
 
   useEffect(() => {
-    window.onbeforeunload = function() {
-      localStorage.removeItem("currentSection");
-    };
-
     const optionsArray = [];
     let curPhase = ""
 
@@ -144,10 +141,6 @@ export default function QuickNav({
     }
 
     setOptions({optionsArray,curPhase})
-
-    return () => {
-      window.onbeforeunload = null;
-    };
   }, [])
 
 
@@ -273,7 +266,8 @@ export default function QuickNav({
       setSelected(index)
     }
     //Set last navigation menu phase section selection to memory
-    localStorage.setItem("currentSection", index);
+    console.log(index)
+    setCurrentSection(index)
     changeSection(index,phaseID,fields)
     unlockAllFields()
   }
@@ -293,8 +287,7 @@ export default function QuickNav({
     }
 
     setSelectedPhase({currentPhase,phaseID});
-    localStorage.removeItem("currentSection");
-    handleSectionTitleClick(item.label, 0, phaseID,currentPhase)
+    handleSectionTitleClick(item.label, currentSection, phaseID,currentPhase)
     showSections(true)
     unlockAllFields()
   }

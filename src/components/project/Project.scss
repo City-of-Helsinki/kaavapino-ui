@@ -50,11 +50,11 @@
         background-image: url('./assets/icons/trash-red.svg');
       }
     }
-   button {
+    button {
       margin-left: 0;
       margin-right: 20px;
-      font-family: 'Helsinki Grotesk Regular', sans-serif;
-      font-size: 16px;
+      font-family: 'Helsinki Grotesk Medium', sans-serif;
+      font-size: $size16;
       @media screen and (max-width: 600px) {
           width: 100%;
           margin-left: 0;
@@ -63,6 +63,9 @@
       svg {
         padding-right: 2px;
       }
+    }
+    button:focus-within{
+      box-shadow: 0 0 0 3px $color-coat-of-arms;
     }
    }
   @media screen and (max-width: 600px) {
