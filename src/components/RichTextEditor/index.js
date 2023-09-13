@@ -194,7 +194,7 @@ function RichTextEditor(props) {
 
     if(target?.length > 0){
       //Lose focus and unclock if select button is clicked
-      if(target.length > 0 && target.value.includes("Select-module")){
+      if(target.length > 0 && target.value.includes("Select-module") || target.value.includes("Button")){
         localStorage.setItem("previousElement","Select-module");
         handleBlur(readonly)
         setToolbarVisible(false)
@@ -356,8 +356,13 @@ function RichTextEditor(props) {
 
   const setValue = (dbValue) => {
     const editor = editorRef.current.getEditor().getContents()
+   // console.log(editor?.ops[0].insert === dbValue?.ops[0].insert)
+   //Bugi liia epätarkka tarkistus
     if(editor?.ops !== dbValue?.ops){
       //set editor value from db value updated with lock call
+   //   const cursorPosition = editorRef.current.getEditor().getSelection()
+   //   console.log(cursorPosition.index)
+   //   editorRef.current.getEditor().setSelection(editorRef.current.getEditor().getLength(), cursorPosition.index);
       editorRef.current.getEditor().setContents(dbValue);
     }
   }
