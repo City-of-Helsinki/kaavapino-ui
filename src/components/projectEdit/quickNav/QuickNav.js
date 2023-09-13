@@ -91,7 +91,6 @@ export default function QuickNav({
     setOptions({optionsArray,curPhase})
     setSelectedPhase({currentPhase:sections,phaseID:id});
     //Get last section pressed from navigation when pressing back button and returning from project card
-    console.log("currentschemasta")
     setCurrentSection(0)
     handleSectionTitleClick(curPhase, 0, id,sections)
     showSections(true)
@@ -244,7 +243,6 @@ export default function QuickNav({
       setSelected(index)
     }
     //Set last navigation menu phase section selection to memory
-    console.log(index)
     setCurrentSection(index)
     changeSection(index,phaseID,fields)
     unlockAllFields()
