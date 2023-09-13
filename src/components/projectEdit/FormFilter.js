@@ -27,6 +27,18 @@ useEffect(() => {
         }
     }
     setTagArray(tagArray)
+
+    //If no filters and leghty form +2000px etc and user has scrolled a lot and sets filter with only few result,
+    //scroll back to top off form instead of leaving scroll position near the footer and hiding results of filtering.
+    const formHeight = document.getElementsByClassName("form-container")[0]
+    const windowHeight = window.innerHeight
+
+    if(windowHeight > formHeight.offsetHeight){
+        const startOffForm = document.getElementById("accordion-title")
+        if(startOffForm){
+            startOffForm.scrollIntoView()
+        }
+    }
 }, [tags])
 
 useEffect(() => {
