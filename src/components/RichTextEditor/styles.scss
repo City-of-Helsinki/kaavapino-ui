@@ -46,10 +46,19 @@
         font-size: $size16;
         padding: 16px;
         min-height: 56px;
+        p{
+          outline: none;
+        }
       }
     }
 
     &.toolbar-visible {
+      border: 2px solid $black1 !important;
+      border-color: unset !important;
+      box-shadow: 0 0 0 3px $color-coat-of-arms !important;
+      transform: translateZ(0) !important;
+      transition: 85ms ease-out !important;
+      transition-property: box-shadow,transform !important;
       .ql-toolbar {
         display: block;
         border-top-left-radius: 2px;
