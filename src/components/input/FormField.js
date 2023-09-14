@@ -168,7 +168,11 @@ const FormField = ({
     const title = field.character_limit
       ? `${field.label}  ${t('project.char-limit', { amount: field.character_limit })}`
       : field.label
+    //Todo add real assitive text prop when at coming from backend
+    //Show if has text and hide if text is empty 
+    const assitiveText = false
     return (
+      <>
       <Form.Field
         className={`input-container ${isOneLineField ? 'small-margin' : ''} ${
           showError ? 'error' : ''
@@ -185,7 +189,7 @@ const FormField = ({
               {title}
               {status.lockStyle && !status.owner && (
                 !status.fieldIdentifier && status.identifier && status.identifier === field.name &&(
-                <span className="input-locked"> Käyttäjä {status.lockStyle.lockData.attribute_lock.user_name} {status.lockStyle.lockData.attribute_lock.user_email} on muokkaamassa kenttää <IconLock></IconLock></span>
+                <span className="input-locked"> Käyttäjä {status.lockStyle.lockData.attribute_lock.user_name} ({status.lockStyle.lockData.attribute_lock.user_email}) on muokkaamassa kenttää <IconLock></IconLock></span>
                 )
                 )
               }
@@ -226,6 +230,8 @@ const FormField = ({
         {renderField(null)}
         {showError && <div className="error-text">{showError}</div>}
       </Form.Field>
+      {assitiveText && <div className='assistive-text'>{assitiveText}</div>}
+      </>
     )
   }
   const renderComponent = () => {
