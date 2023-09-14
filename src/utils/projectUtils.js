@@ -486,6 +486,11 @@ const checkFieldsetAttributes = (fieldsetAttributes, sections) => {
       })
   }
 }
+//Check if two similar objects values has been changed
+const objectsEqual = (o1, o2) => {
+  return Object.keys(o1).length === Object.keys(o2).length 
+  && Object.keys(o1).every(p => o1[p] === o2[p])
+}
 
 export default {
   formatDate,
@@ -514,5 +519,6 @@ export default {
   checkFieldsetAttributes,
   hasMissingFields,
   getErrorFields,
-  isSceduleAccepted
+  isSceduleAccepted,
+  objectsEqual
 }

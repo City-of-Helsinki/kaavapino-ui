@@ -16,6 +16,7 @@ import {
 import { currentProjectIdSelector,lockedSelector } from '../../selectors/projectSelector'
 import { ReactComponent as CommentIcon } from '../../assets/icons/comment-icon.svg'
 import { useTranslation } from 'react-i18next'
+import projectUtils from '../../utils/projectUtils'
 
 /* This component defines a react-quill rich text editor field to be used in redux form.
  * We are saving these rich text inputs as quill deltas - a form of JSON that
@@ -82,6 +83,9 @@ function RichTextEditor(props) {
   const [currentTimeout, setCurrentTimeout] = useState(0)
   const [readonly, setReadOnly] = useState(false)
   const [valueIsSet, setValueIsSet] = useState(false)
+  //Stringify the object for useEffect update check so it can be compared correctly
+  //Normal object always different
+  const lockedStatusJsonString = JSON.stringify(lockedStatus);
 
   const inputValue = useRef('')
   const myRefname= useRef(null);
@@ -185,7 +189,7 @@ function RichTextEditor(props) {
         }
       }
     }
-  }, [lockedStatus]);
+  }, [lockedStatusJsonString]);
 
   const checkClickedElement = (e) => {
     let previousElement = localStorage.getItem("previousElement")
@@ -354,16 +358,21 @@ function RichTextEditor(props) {
     }
   }
 
+
+
   const setValue = (dbValue) => {
     const editor = editorRef.current.getEditor().getContents()
-   // console.log(editor?.ops[0].insert === dbValue?.ops[0].insert)
-   //Bugi liia epätarkka tarkistus
-    if(editor?.ops !== dbValue?.ops){
+    
+    /*TODO possible bug on adding some styles from editor to text. 
+    The text could come as empty string and only show up on page refresh. Example add text and add color styles to it, 
+    save and check from other browser tab that does it update the difference
+    console.log(editor?.ops[0], dbValue?.ops[0])
+    console.log(projectUtils.objectsEqual(editor?.ops[0], dbValue?.ops[0])) */
+    if(!projectUtils.objectsEqual(editor?.ops[0], dbValue?.ops[0])){
       //set editor value from db value updated with lock call
-   //   const cursorPosition = editorRef.current.getEditor().getSelection()
-   //   console.log(cursorPosition.index)
-   //   editorRef.current.getEditor().setSelection(editorRef.current.getEditor().getLength(), cursorPosition.index);
+      const cursorPosition = editorRef.current.getEditor().getSelection()
       editorRef.current.getEditor().setContents(dbValue);
+      editorRef.current.getEditor().setSelection(cursorPosition.index);
     }
   }
 
