@@ -3,6 +3,13 @@
 @import url('hds-core');
 
 .input-container {
+  .input-header-container{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 4px;
+    margin-top: 20px;
+  }
   .input-header {
     align-items: center;
     display: flex;
@@ -10,7 +17,6 @@
     justify-content: space-between;
     position: relative;
     z-index: 1;
-    margin-top: 20px;
     .input-locked{
       font-family: 'Helsinki Grotesk Medium', sans-serif;
       font-size: $size14;
