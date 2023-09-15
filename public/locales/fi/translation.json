@@ -390,5 +390,12 @@
     "Vastuuhenkilö":"user__last_name,user__first_name",
     "Vaihe":"phase__common_project_phase__index",
     "Muokattu":"modified_at"
+  },
+  "project-edit-info":{
+    "size": "Prosessin koko",
+    "person": "Vastuuhenkilö",
+    "pino":"Pinonumero",
+    "diaari":"Diaarinumero",
+    "pwnum":"PW-numero"
   }
 }

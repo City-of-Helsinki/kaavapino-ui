@@ -491,7 +491,7 @@ header{
 
     .nav-header-content {
       margin-top: 128px;
-      margin-bottom: 48px;
+      margin-bottom: 32px;
 
       @media screen and (max-width: 725px) { 
         margin-top: 0;
@@ -616,6 +616,29 @@ header{
         }
       }
 
+    }
+
+    .project-info{
+      table{
+        border-spacing: 4px;
+        tr{
+          font-size: $size16;
+          font-family: 'Helsinki Grotesk Bold', sans-serif;
+          color: $dropdown-text-color;
+          text-align: left;
+        }
+        td{
+          font-size: $size16;
+          font-family: 'Helsinki Grotesk Regular', sans-serif;
+          color: $dropdown-text-color;
+          padding-left: 32px;
+          a{
+            svg{
+              margin-left: 8px;
+            }
+          }
+        }
+      }
     }
 
     .nav-header-actions {

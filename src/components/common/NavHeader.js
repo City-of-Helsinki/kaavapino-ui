@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
+import { IconLinkExternal } from 'hds-react'
 import "hds-core";
-
+import { useTranslation } from 'react-i18next';
 import LoggingComponent from './LoggingComponent'
 
-export const NavHeader = ({ routeItems, actions, title, infoOptions, attributes }) => {
+export const NavHeader = ({ routeItems, actions, title, infoOptions, attributes, projectSize, responsibleUser, pino, diaari, pwnumber, location }) => {
   const [isMobile, setIsMobile] = useState(false)
-
+  const {t} = useTranslation()
+  const pathToCheck = location?.pathname
   // create an event listener
   useEffect(() => {
     window.addEventListener('resize', handleResize)
@@ -58,6 +60,32 @@ export const NavHeader = ({ routeItems, actions, title, infoOptions, attributes 
             </div>
           </div>
         </div>
+        {pathToCheck?.endsWith('/edit') &&
+        <div className="project-info">
+          <table>
+            <tr>
+              <th>{t('project-edit-info.size')}</th>
+              <td>{projectSize}</td>
+            </tr>
+            <tr>
+              <th>{t('project-edit-info.person')}</th>
+              <td>{responsibleUser}</td>
+            </tr>
+            <tr>
+              <th>{t('project-edit-info.pino')}</th>
+              <td>{pino}</td>
+            </tr>
+            <tr>
+              <th>{t('project-edit-info.diaari')}</th>
+              <td>{diaari}</td>
+            </tr>
+            <tr>
+              <th>{t('project-edit-info.pwnum')}</th>
+              <td><a className='link-underlined' target="#">{pwnumber} <IconLinkExternal size="xs" aria-hidden="true" /></a></td>
+            </tr>
+          </table>
+        </div>
+        }
       </div>
     </div>
   )

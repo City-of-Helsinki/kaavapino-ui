@@ -162,13 +162,20 @@ class ProjectPage extends Component {
 
   getProjectEditContent = isExpert => {
     const { currentProject, users, projectSubtypes, selectedPhase } = this.props
-
+    const user = projectUtils.formatUsersName(users.find(u => u.id === currentProject.user))
     const currentPhases = this.getCurrentPhases()
+    console.log(this.props)
     return (
       <div key="edit">
         <NavHeader
           routeItems={this.getRouteItems()}
           title={currentProject.name}
+          projectSize={currentProject.attribute_data.kaavaprosessin_kokoluokka}
+          responsibleUser={user}
+          pino={currentProject?.pino_number}
+          diaari={currentProject?.attribute_data?.diaarinumero}
+          pwnumber={currentProject?.attribute_data?.hankenumero}
+          location={this.props.location}
           actions={this.getEditNavActions(isExpert)}
           infoOptions={this.getAllChanges()}
         />
