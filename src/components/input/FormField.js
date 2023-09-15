@@ -180,52 +180,54 @@ const FormField = ({
       >
         {highlightStyle === "yellow" ? <span className={highlightStyle}>{highlightedTag}</span> : ''}
         {!isOneLineField && (
-          <div className="input-header">
-            <Label
-              tabIndex="0"
-              id={field.name}
-              className={`input-title${required ? ' highlight' : ''}`}
-            >
-              {title}
-              {status.lockStyle && !status.owner && (
-                !status.fieldIdentifier && status.identifier && status.identifier === field.name &&(
-                <span className="input-locked"> Käyttäjä {status.lockStyle.lockData.attribute_lock.user_name} ({status.lockStyle.lockData.attribute_lock.user_email}) on muokkaamassa kenttää <IconLock></IconLock></span>
-                )
-                )
-              }
-              {/* Commented out for now because uncertainty that should this be used
-             {status.lockStyle && status.owner && (
-                !status.fieldIdentifier && status.identifier && status.identifier === field.name &&(
-                <span className="input-editable">Kenttä on lukittu sinulle <IconLock></IconLock></span>
-                )
-                )
-              } 
-              */}
-            </Label>
-            <div className="input-header-icons">
-              {updated && !isReadOnly && (
-                <Popup
-                  trigger={<IconClock />}
-                  inverted
-                  on="hover"
-                  position="top center"
-                  hideOnScroll
-                  content={
-                    <span className="input-history">
-                      <span>{`${projectUtils.formatDate(
-                        updated.timestamp
-                      )} ${projectUtils.formatTime(updated.timestamp)} ${
-                        updated.user_name
-                      }`}</span>
-                    </span>
-                  }
-                />
-              )}
-              {field.help_text && (
-                <Info content={field.help_text} link={field.help_link} />
-              )}
+          <div className='input-header-container'>
+            <div className="input-header">
+              <Label
+                tabIndex="0"
+                id={field.name}
+                className={`input-title${required ? ' highlight' : ''}`}
+              >
+                {title}
+                {status.lockStyle && !status.owner && (
+                  !status.fieldIdentifier && status.identifier && status.identifier === field.name &&(
+                  <span className="input-locked"> Käyttäjä {status.lockStyle.lockData.attribute_lock.user_name} ({status.lockStyle.lockData.attribute_lock.user_email}) on muokkaamassa kenttää <IconLock></IconLock></span>
+                  )
+                  )
+                }
+                {/* Commented out for now because uncertainty that should this be used
+              {status.lockStyle && status.owner && (
+                  !status.fieldIdentifier && status.identifier && status.identifier === field.name &&(
+                  <span className="input-editable">Kenttä on lukittu sinulle <IconLock></IconLock></span>
+                  )
+                  )
+                } 
+                */}
+              </Label>
             </div>
+            <div className="input-header-icons">
+            {updated && !isReadOnly && (
+              <Popup
+                trigger={<IconClock />}
+                inverted
+                on="hover"
+                position="top center"
+                hideOnScroll
+                content={
+                  <span className="input-history">
+                    <span>{`${projectUtils.formatDate(
+                      updated.timestamp
+                    )} ${projectUtils.formatTime(updated.timestamp)} ${
+                      updated.user_name
+                    }`}</span>
+                  </span>
+                }
+              />
+            )}
+            {field.help_text && (
+              <Info content={field.help_text} link={field.help_link} />
+            )}
           </div>
+        </div>
         )}
         {renderField(null)}
         {showError && <div className="error-text">{showError}</div>}

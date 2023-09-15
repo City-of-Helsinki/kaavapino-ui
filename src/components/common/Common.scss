@@ -423,17 +423,34 @@ header{
   }
 }
 
+.link-container{
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 4px;
+  svg{
+    color: $color-bus;
+    margin-left: 4px;
+  }
+}
+
 .link-underlined{
+  display: flex;
+  align-items: center;
   font-family: "Helsinki Grotesk Medium", sans-serif;
   color: $color-bus;
   text-decoration: underline;
   cursor: pointer;
+  font-weight: 500;
 }
 
 .link-underlined:hover{
+  display: flex;
+  align-items: center;
   font-family: "Helsinki Grotesk Medium", sans-serif;
   color: $color-bus;
   text-decoration: underline;
+  font-weight: 500;
 }
   
 .nav-header-container {
