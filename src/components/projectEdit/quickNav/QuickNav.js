@@ -310,7 +310,7 @@ export default function QuickNav({
         ) : (
           <div className='quicknav-header-container'>
             <div className='quicknav-header'>
-                <Button id='phase-title' variant="supplementary" aria-label='Palaa takaisin vaiheiden etusivulle' onClick={() => hideSections()} iconLeft={<IconArrowLeft className='left-icon' />}>
+                <Button variant="supplementary" aria-label='Palaa takaisin vaiheiden etusivulle' onClick={() => hideSections()} iconLeft={<IconArrowLeft className='left-icon' />}>
                   {phaseTitle}
                 </Button>
             </div>
