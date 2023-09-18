@@ -1,126 +1,168 @@
 @import '../common/colors.scss';
 
-.rich-text-editor-wrapper {
-  .rich-text-editor {
-    background-color: white;
+.richtext-container{
+  .rich-text-editor-wrapper {
+    .rich-text-editor {
+      background-color: white;
 
-    .ql-toolbar {
-      border: 1px solid $gray2;
-      display: none;
-      position: relative;
-      background-color: $white;
-      z-index: 1;
-
-      .quill-toolbar-comment-button {
-        .comment-icon {
-          width: 16px;
-          height: 16px;
-
-          path {
-            fill: $black1 !important;
-          }
-        }
-        &:focus {
-          outline: none;
-        }
-        &:hover .comment-icon {
-          path {
-            // same as others in quill. Keep this way or change all in quill
-            fill: #06c !important;
-          }
-        }
-      }
-    }
-    .ql-editor.ql-blank::before {
-      color: $gray;
-      font-style: normal;
-      font-size: $size16;
-    }
-
-    .ql-container {
-      border: 1px solid $gray2;
-      border-radius: 2px;
-      border-top-width: 1px;
-
-      .ql-editor {
-        font-size: $size16;
-        padding: 16px;
-        min-height: 56px;
-        p{
-          outline: none;
-        }
-      }
-    }
-
-    &.toolbar-visible {
-      border: 2px solid $black1 !important;
-      border-color: unset !important;
-      box-shadow: 0 0 0 3px $color-coat-of-arms !important;
-      transform: translateZ(0) !important;
-      transition: 85ms ease-out !important;
-      transition-property: box-shadow,transform !important;
       .ql-toolbar {
-        display: block;
-        border-top-left-radius: 2px;
-        border-top-right-radius: 2px;
+        border: 1px solid $gray2;
+        display: none;
+        position: relative;
+        background-color: $white;
+        z-index: 1;
+
+        .quill-toolbar-comment-button {
+          .comment-icon {
+            width: 16px;
+            height: 16px;
+
+            path {
+              fill: $black1 !important;
+            }
+          }
+          &:focus {
+            outline: none;
+          }
+          &:hover .comment-icon {
+            path {
+              // same as others in quill. Keep this way or change all in quill
+              fill: #06c !important;
+            }
+          }
+        }
+      }
+      .ql-editor.ql-blank::before {
+        color: $gray;
+        font-style: normal;
+        font-size: $size16;
       }
 
       .ql-container {
-        border-top: 0;
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
+        border: 1px solid $gray2;
+        border-radius: 2px;
+        border-top-width: 1px;
+
+        .ql-editor {
+          font-size: $size16;
+          padding: 16px;
+          min-height: 56px;
+          p{
+            outline: none;
+          }
+        }
       }
-    }
 
-    &:hover {
-      box-shadow: inset 0px 0px 0px 2px $black1;
-      border-radius: 2px;
-
-      .quill {
+      &.toolbar-visible {
+        border: 2px solid $black1 !important;
+        border-color: unset !important;
+        box-shadow: 0 0 0 3px $color-coat-of-arms !important;
+        transform: translateZ(0) !important;
+        transition: 85ms ease-out !important;
+        transition-property: box-shadow,transform !important;
         .ql-toolbar {
-          border: 1px solid $black1;
+          display: block;
+          border-top-left-radius: 2px;
+          border-top-right-radius: 2px;
         }
 
         .ql-container {
-          border: 1px solid $black1;
+          border-top: 0;
+          border-top-left-radius: 0;
+          border-top-right-radius: 0;
+        }
+      }
+
+      &.toolbar-visible-error{
+        border: 2px solid $color-error !important;
+        border-color: $color-error !important;
+        box-shadow: unset!important;
+        transform: translateZ(0) !important;
+        transition: 85ms ease-out !important;
+        transition-property: box-shadow,transform !important;
+        .ql-toolbar {
+          display: block;
+          border-top-left-radius: 2px;
+          border-top-right-radius: 2px;
+        }
+
+        .ql-container {
+          border-top: 0;
+          border-top-left-radius: 0;
+          border-top-right-radius: 0;
+        }
+      }
+
+      &:hover {
+        box-shadow: inset 0px 0px 0px 2px $black1;
+        border-radius: 2px;
+
+        .quill {
+          .ql-toolbar {
+            border: 1px solid $black1;
+          }
+
+          .ql-container {
+            border: 1px solid $black1;
+          }
+        }
+      }
+
+      &.large .quill .ql-editor {
+        min-height: 128px;
+      }
+
+      .add-comment-button,
+      .show-comments-button {
+        width: auto;
+
+        &:focus {
+          outline: none;
         }
       }
     }
 
-    &.large .quill .ql-editor {
-      min-height: 128px;
-    }
+    .comment-list {
+      padding: 16px;
+      background: $light-gray3;
+      border-radius: 0 0 2px 2px;
 
-    .add-comment-button,
-    .show-comments-button {
-      width: auto;
-
-      &:focus {
-        outline: none;
+      .comment-container:first-child {
+        margin-top: 0;
       }
     }
   }
-
-  .comment-list {
-    padding: 16px;
-    background: $light-gray3;
-    border-radius: 0 0 2px 2px;
-
-    .comment-container:first-child {
-      margin-top: 0;
-    }
+  .rich-text-disabled {
+    pointer-events: none;
+    opacity: .35;
   }
-}
-.rich-text-disabled {
-  pointer-events: none;
-  opacity: .35;
-}
-.quill-warning {
-  color: red;
-}
-.quill-counter {
-  position: relative;
-  top: -20px;
-  text-align: right;
-  padding-right: 4px;
+  .quill-counter {
+    font-family: "Helsinki Grotesk Bold", sans-serif;
+    font-size: $size14;
+    color: $black1;
+    position: relative;
+    top: -30px;
+    right: 10px;
+    text-align: right;
+    padding-right: 4px;
+    letter-spacing: 0.4px;
+  }
+  .max-chars{
+    font-family: "Helsinki Grotesk Regular", sans-serif;
+    font-size: $size16;
+    color: $max-markings-color;
+    line-height: $size24;
+    margin-top: 8px;
+  }
+  .max-chars-error{
+    display: flex;
+    font-family: "Helsinki Grotesk Regular", sans-serif;
+    font-size: $size16;
+    color: $color-error;
+    line-height: $size24;
+    margin-top: -10px;
+  }
+  .quill-warning {
+    color: $color-error;
+  }
 }

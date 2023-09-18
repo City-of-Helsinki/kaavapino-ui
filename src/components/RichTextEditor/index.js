@@ -17,6 +17,7 @@ import { currentProjectIdSelector,lockedSelector } from '../../selectors/project
 import { ReactComponent as CommentIcon } from '../../assets/icons/comment-icon.svg'
 import { useTranslation } from 'react-i18next'
 import projectUtils from '../../utils/projectUtils'
+import {IconAlertCircleFill} from 'hds-react'
 
 /* This component defines a react-quill rich text editor field to be used in redux form.
  * We are saving these rich text inputs as quill deltas - a form of JSON that
@@ -262,6 +263,7 @@ function RichTextEditor(props) {
       else if(source === 'api'){
         //Value is updated with lock call so do not save it again
         setValueIsSet(true)
+        showCounter.current = true;
       }
       inputValue.current = _val;
     }
@@ -389,7 +391,10 @@ function RichTextEditor(props) {
       aria-label="tooltip"
     >
       <div
-        className={`rich-text-editor ${toolbarVisible || showComments ? 'toolbar-visible' : ''
+        className={counter.current > props.maxSize ? 
+        `rich-text-editor ${toolbarVisible || showComments ? 'toolbar-visible-error' : ''
+        } ${largeField ? 'large' : ''}`
+        : `rich-text-editor ${toolbarVisible || showComments ? 'toolbar-visible' : ''
       } ${largeField ? 'large' : ''}`}
       >
         <div
@@ -495,6 +500,10 @@ function RichTextEditor(props) {
         </p>
       ) : null}
     </div>
+      {counter.current > props.maxSize && toolbarVisible || showComments ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> Merkkimäärä on ylittynyt</div> : ""}
+      <div className='max-chars'>
+        Max 1000 merkkiä
+      </div>
     </div>
   )
 }
