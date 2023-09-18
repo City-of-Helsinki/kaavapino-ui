@@ -63,7 +63,8 @@ class ProjectPage extends Component {
 
     this.state = {
       showBaseInformationForm: false,
-      showPrintProjectDataModal: false
+      showPrintProjectDataModal: false,
+      sectionIndex:0
     }
   }
 
@@ -160,11 +161,14 @@ class ProjectPage extends Component {
     })
   }
 
+  getCurrentSection = (sectionIndex) => {
+    this.setState({sectionIndex})
+  }
+
   getProjectEditContent = isExpert => {
     const { currentProject, users, projectSubtypes, selectedPhase } = this.props
     const user = projectUtils.formatUsersName(users.find(u => u.id === currentProject.user))
     const currentPhases = this.getCurrentPhases()
-    console.log(this.props)
     return (
       <div key="edit">
         <NavHeader
@@ -206,6 +210,7 @@ class ProjectPage extends Component {
           selectedPhase={selectedPhase}
           switchDisplayedPhase={this.switchDisplayedPhase}
           project={currentProject}
+          getCurrentSection={this.getCurrentSection}
         />
       </div>
     )
@@ -556,6 +561,7 @@ class ProjectPage extends Component {
           openPrintProjectData={this.showProjectData}
           resetProjectDeadlines={this.onResetProjectDeadlines}
           pollConnection={this.pollConnection}
+          currentSection={this.state.sectionIndex}
         />
         {(loading || resettingDeadlines) && this.renderLoading()}
         {!loading && !resettingDeadlines && (

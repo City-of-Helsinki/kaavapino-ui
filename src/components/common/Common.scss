@@ -354,6 +354,8 @@ header{
 .edit-page-header{
   header{
     --header-height: 56px;
+    border-bottom: 2px solid $color-suomenlinna;
+    z-index: 6;
   }
   nav{
     justify-content: space-between;
@@ -365,12 +367,22 @@ header{
     color: $black;
     font-size: $size16;
     .edit-page-title{
-      font-family: "Helsinki Grotesk Bold", sans-serif;
-      font-weight: bold;
+      display: flex;
+      flex-flow: column;
+      align-items: center;
+      margin-left: 0 !important;
       p{
-        font-family: "Helsinki Grotesk Bold", sans-serif;
-        font-weight: bold;
-        color: $black;
+        font-family: "Helsinki Grotesk Medium", sans-serif;
+        color: $black1;
+        font-size: $size16;
+        line-height: $size24;
+        letter-spacing: 0.5px;
+      }
+      span{
+        font-family: "Helsinki Grotesk Regular", sans-serif;
+        font-size: $size12;
+        color: $black1;
+        letter-spacing: 0.375px;
       }
     }
     .edit-page-save{
@@ -390,6 +402,10 @@ header{
       }
       p{
         font-family: "Helsinki Grotesk Medium", sans-serif;
+        padding-left: 8px;
+      }
+      .check-icon{
+        display: flex;
       }
     }
   }

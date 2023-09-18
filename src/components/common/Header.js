@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react'
 import {
   Navigation,
+  Button,
   IconSignout,
   IconPlus,
   IconPen,
   IconDownload,
   IconRefresh,
-  Button,
   IconAngleLeft,
   IconCross,
+  IconCheck,
   LoadingSpinner
 } from 'hds-react'
 import { withRouter, useHistory } from 'react-router-dom'
@@ -19,7 +20,9 @@ import { useSelector } from 'react-redux'
 import { usersSelector } from '../../selectors/userSelector'
 import authUtils from '../../utils/authUtils'
 import { authUserSelector } from '../../selectors/authSelector'
-import { lastSavedSelector,pollSelector } from '../../selectors/projectSelector'
+import { lastSavedSelector,pollSelector,savingSelector,selectedPhaseSelector } from '../../selectors/projectSelector'
+import { schemaSelector } from '../../selectors/schemaSelector'
+import schemaUtils from '../../utils/schemaUtils'
 import {useInterval} from '../../hooks/connectionPoller';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
@@ -33,6 +36,8 @@ const Header = props => {
   const [errorFields,setErrorFields] = useState([])
   const [errorValues,setErrorValues] = useState([])
   const [errorCount,setErrorCount] = useState(1)
+  const [phaseTitle,setPhaseTitle] = useState("")
+  const [sectionTitle,setSectionTitle] = useState("")
 
   const history = useHistory();
   const spinnerRef = useRef(null);
@@ -41,6 +46,9 @@ const Header = props => {
   const user = useSelector(state => authUserSelector(state))
   const lastSaved = useSelector(state => lastSavedSelector(state))
   const connection = useSelector(state => pollSelector(state))
+  const saving =  useSelector(state => savingSelector(state))
+  const schema = useSelector(state => schemaSelector(state))
+  const selectedPhase = useSelector(state => selectedPhaseSelector(state))
 
   const currentUser = users.find(
     item => user && user.profile && item.id === user.profile.sub
@@ -87,6 +95,27 @@ const Header = props => {
     }
     return arrayValues
   }
+
+  useEffect(() => {
+    if(schema?.phases){
+      const currentSchemaIndex = schema.phases.findIndex(s => s.id === schemaUtils.getSelectedPhase(props.location.search,selectedPhase))
+      const currentSchema = schema.phases[currentSchemaIndex]
+      const currentSection = currentSchema.sections[props.currentSection]
+      setPhaseTitle(currentSchema.title)
+      setSectionTitle(currentSection.title)
+    }
+  },[schema,selectedPhase,props.currentSection])
+
+  useEffect(() => {
+    if(spinnerRef?.current?.style){
+      if(saving){
+        spinnerRef.current.style.visibility = "visible"
+      }
+      else{
+        spinnerRef.current.style.visibility = "hidden"
+      }
+    }
+  }, [saving])
 
   useEffect(() => {
     let latestUpdate
@@ -299,12 +328,16 @@ const Header = props => {
       >
         <Navigation.Row variant="inline">
           <Button onClick={() => navigateBack()} role="link" variant="supplementary" size="small" iconLeft={<IconAngleLeft />}>{t('header.edit-menu-back')}</Button>
-          <div className='edit-page-title'><p>{props?.title}</p></div>
+          <div className='edit-page-title'>
+            <div><p>{props?.title}</p></div>
+            <div><span>{phaseTitle} / {sectionTitle}</span></div>
+          </div>
           <div className={'edit-page-save ' + lastSaved?.status}>
             <div className='spinner-container' ref={spinnerRef}>
               <LoadingSpinner className="loading-spinner" small></LoadingSpinner>
-              <span className="loading-spinner">{t('messages.connect-again')}</span>
+              <span className="loading-spinner">{lastSaved?.status === "error" ? t('messages.connect-again') : ""}</span>
             </div>
+            {updateTime?.status === t('header.edit-menu-saved') ? <IconCheck className='check-icon'/> : ""}
             <p>{updateTime?.status}{updateTime?.time}</p>
           </div>
         </Navigation.Row>
