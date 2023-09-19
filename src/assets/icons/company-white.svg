@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>UI/Forms and information/company</title>
+    <g id="UI/Forms-and-information/company" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Bounding-box" x="0" y="0" width="24" height="24"></rect>
+        <path d="M24,20.797211 L24,22.797211 L0,22.797211 L0,20.797211 L1,20.797211 L1,-1 L12.5,2.026311 L12.5,5.797211 L23,5.797201 L23,20.797201 L24,20.797211 Z M20,8.797201 L20,14.797201 L8,14.797201 L8,8.797201 L20,8.797201 Z M18,10.797211 L10,10.797211 L10,12.797211 L18,12.797211 L18,10.797211 Z M21,7.797201 L7,7.797201 L7,20.797201 L12,20.797201 L12,16.797201 L16,16.797201 L16,20.797201 L21,20.797201 L21,7.797201 Z M10.5,3.568091 L3,1.594411 L3,20.797211 L5,20.797211 L5,5.797201 L10.5,5.797211 L10.5,3.568091 Z" id="Color" fill="#fff"></path>
+    </g>
+</svg>

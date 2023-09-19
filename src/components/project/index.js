@@ -63,7 +63,8 @@ class ProjectPage extends Component {
 
     this.state = {
       showBaseInformationForm: false,
-      showPrintProjectDataModal: false
+      showPrintProjectDataModal: false,
+      sectionIndex:0
     }
   }
 
@@ -160,15 +161,25 @@ class ProjectPage extends Component {
     })
   }
 
+  getCurrentSection = (sectionIndex) => {
+    this.setState({sectionIndex})
+  }
+
   getProjectEditContent = isExpert => {
     const { currentProject, users, projectSubtypes, selectedPhase } = this.props
-
+    const user = projectUtils.formatUsersName(users.find(u => u.id === currentProject.user))
     const currentPhases = this.getCurrentPhases()
     return (
       <div key="edit">
         <NavHeader
           routeItems={this.getRouteItems()}
           title={currentProject.name}
+          projectSize={currentProject.attribute_data.kaavaprosessin_kokoluokka}
+          responsibleUser={user}
+          pino={currentProject?.pino_number}
+          diaari={currentProject?.attribute_data?.diaarinumero}
+          pwnumber={currentProject?.attribute_data?.hankenumero}
+          location={this.props.location}
           actions={this.getEditNavActions(isExpert)}
           infoOptions={this.getAllChanges()}
         />
@@ -199,6 +210,7 @@ class ProjectPage extends Component {
           selectedPhase={selectedPhase}
           switchDisplayedPhase={this.switchDisplayedPhase}
           project={currentProject}
+          getCurrentSection={this.getCurrentSection}
         />
       </div>
     )
@@ -331,8 +343,8 @@ class ProjectPage extends Component {
   getProjectCardNavActions = userIsExpert => {
     const { t } = this.props
     const options = [
-    {value:1,label:<><i className="icons document-icon"></i>{t('project.create-documents')}</> },
-    {value:7,label:<><i className="icons download-icon"></i>{t('project.print-project-card')}</>}]
+    {value:7,label:<><i className="icons download-icon"></i>{t('project.print-project-card')}</>},
+    {value:1,label:<><i className="icons document-icon"></i>{t('project.create-documents')}</> }]
 
     return (
       <span className="header-buttons">
@@ -341,16 +353,18 @@ class ProjectPage extends Component {
           <Button
             variant="secondary"
             className="header-button"
-            size='small'
+            size="small"
             onClick={this.modifyContent}
             iconLeft={<IconPen />}
           >
             {t('project.modify')}
           </Button>
           <Select
+            size="small"
             className='edit-view-select'
             id="editNavSelect"
             placeholder='Projektin työkalut'
+            value='Projektin työkalut'
             options={options}
             onChange={this.changeOptions}
           />
@@ -375,9 +389,11 @@ class ProjectPage extends Component {
       <span className="header-buttons">
         {isUserExpert && (
         <Select
+          size="small"
           className='edit-view-select'
           id="editNavSelect"
           placeholder='Projektin työkalut'
+          value='Projektin työkalut'
           options={options}
           onChange={this.changeOptions}
         />
@@ -549,6 +565,7 @@ class ProjectPage extends Component {
           openPrintProjectData={this.showProjectData}
           resetProjectDeadlines={this.onResetProjectDeadlines}
           pollConnection={this.pollConnection}
+          currentSection={this.state.sectionIndex}
         />
         {(loading || resettingDeadlines) && this.renderLoading()}
         {!loading && !resettingDeadlines && (

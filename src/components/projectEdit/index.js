@@ -57,6 +57,7 @@ import projectUtils from '../../utils/projectUtils'
 import InfoComponent from '../common/InfoComponent'
 import { withTranslation } from 'react-i18next'
 import authUtils from '../../utils/authUtils'
+import schemaUtils from '../../utils/schemaUtils'
 import { isEqual } from 'lodash'
 import FormFilter from './FormFilter'
 import { toast } from 'react-toastify';
@@ -111,7 +112,7 @@ class ProjectEditPage extends Component {
     }
     if(prevProps.schema != this.props.schema){
       if(this.props.schema?.phases){
-        const currentSchemaIndex = this.props.schema.phases.findIndex(s => s.id === this.getSelectedPhase())
+        const currentSchemaIndex = this.props.schema.phases.findIndex(s => s.id === schemaUtils.getSelectedPhase(this.props.location.search,this.props.selectedPhase))
         const currentSchema = this.props.schema.phases[currentSchemaIndex]
         //Get number of fields for filter component
         this.setState({fields:currentSchema.sections})
@@ -327,17 +328,6 @@ class ProjectEditPage extends Component {
     }
   }
 
-  getSelectedPhase = () => {
-    let checkedSelectedPhase = this.props.selectedPhase
-    const search = this.props.location.search
-    const params = new URLSearchParams(search)
-
-    if (params.get('phase')) {
-      checkedSelectedPhase = +params.get('phase')
-    }
-    return checkedSelectedPhase
-  }
-
   showSections = (show) => {
     this.setState({showSection: show})
     if(!show){
@@ -356,6 +346,10 @@ class ProjectEditPage extends Component {
   changeSection = (index,title,fields) => {
     //Show fields only from selected navigation link, not the whole phase
     this.setState({ sectionIndex: index, phaseTitle:title, fields:fields })
+    //Index to Header component for section title
+    if(typeof this.props.getCurrentSection !== "undefined"){
+      this.props.getCurrentSection(index)
+    }
   }
 
   handleFloorAreaClose = () => {
@@ -371,7 +365,7 @@ class ProjectEditPage extends Component {
       t
     } = this.props
 
-    const currentSchemaIndex = schema.phases.findIndex(s => s.id === this.getSelectedPhase())
+    const currentSchemaIndex = schema.phases.findIndex(s => s.id === schemaUtils.getSelectedPhase(this.props.location.search,this.props.selectedPhase))
     const currentSchema = schema.phases[currentSchemaIndex]
     const errorFields = projectUtils.getErrorFields(attribute_data, currentSchema)
 
@@ -522,7 +516,7 @@ class ProjectEditPage extends Component {
     }
 
     const currentSchemaIndex = schema.phases.findIndex(
-      s => s.id === this.getSelectedPhase()
+      s => s.id === schemaUtils.getSelectedPhase(this.props.location.search,this.props.selectedPhase)
     )
 
     const currentSchema = schema.phases[currentSchemaIndex]

@@ -16,7 +16,7 @@
     "reports": "Raportit",
     "sign-out": "Kirjaudu ulos",
     "choices-label": "Valikko",
-    "edit-menu-back":"Palaa takaisin",
+    "edit-menu-back":"Palaa takaisin projektikortille",
     "edit-menu-no-save":"Ei tallentamattomia tietoja",
     "edit-menu-saved":"Tallennettu: ",
     "edit-menu-save-fail":"Tallennus epäonnistui: "
@@ -166,7 +166,7 @@
     "save": "Tallenna",
     "create-project": "Luo projekti",
     "create-documents": "Luo dokumentteja",
-    "print-project-card": "Lataa projektikortti (.pptx)",
+    "print-project-card": "Lataa projektikortti",
     "deadlines": "Määräajat",
     "modify-project": "Muokkaa luontitietoja",
     "check-project-card": "Katso projektikortti",
@@ -390,5 +390,12 @@
     "Vastuuhenkilö":"user__last_name,user__first_name",
     "Vaihe":"phase__common_project_phase__index",
     "Muokattu":"modified_at"
+  },
+  "project-edit-info":{
+    "size": "Prosessin koko",
+    "person": "Vastuuhenkilö",
+    "pino":"Pinonumero",
+    "diaari":"Diaarinumero",
+    "pwnum":"PW-numero"
   }
 }

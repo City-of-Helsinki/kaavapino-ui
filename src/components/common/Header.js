@@ -1,14 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react'
 import {
   Navigation,
-  IconSignout,
-  IconPlus,
-  IconPen,
-  IconDownload,
-  IconRefresh,
   Button,
+  IconSignout,
   IconAngleLeft,
   IconCross,
+  IconCheck,
   LoadingSpinner
 } from 'hds-react'
 import { withRouter, useHistory } from 'react-router-dom'
@@ -17,9 +14,10 @@ import ConfirmationModal from './ConfirmationModal'
 import 'hds-core'
 import { useSelector } from 'react-redux'
 import { usersSelector } from '../../selectors/userSelector'
-import authUtils from '../../utils/authUtils'
 import { authUserSelector } from '../../selectors/authSelector'
-import { lastSavedSelector,pollSelector } from '../../selectors/projectSelector'
+import { lastSavedSelector,pollSelector,savingSelector,selectedPhaseSelector } from '../../selectors/projectSelector'
+import { schemaSelector } from '../../selectors/schemaSelector'
+import schemaUtils from '../../utils/schemaUtils'
 import {useInterval} from '../../hooks/connectionPoller';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
@@ -33,6 +31,8 @@ const Header = props => {
   const [errorFields,setErrorFields] = useState([])
   const [errorValues,setErrorValues] = useState([])
   const [errorCount,setErrorCount] = useState(1)
+  const [phaseTitle,setPhaseTitle] = useState("")
+  const [sectionTitle,setSectionTitle] = useState("")
 
   const history = useHistory();
   const spinnerRef = useRef(null);
@@ -41,14 +41,13 @@ const Header = props => {
   const user = useSelector(state => authUserSelector(state))
   const lastSaved = useSelector(state => lastSavedSelector(state))
   const connection = useSelector(state => pollSelector(state))
+  const saving =  useSelector(state => savingSelector(state))
+  const schema = useSelector(state => schemaSelector(state))
+  const selectedPhase = useSelector(state => selectedPhaseSelector(state))
 
   const currentUser = users.find(
     item => user && user.profile && item.id === user.profile.sub
   )
-
-  const userIsResponsible = currentUser
-    ? authUtils.isResponsible(currentUser.id, users)
-    : false
 
   const currentEnv = process.env.REACT_APP_ENVIRONMENT
   
@@ -87,6 +86,27 @@ const Header = props => {
     }
     return arrayValues
   }
+
+  useEffect(() => {
+    if(schema?.phases){
+      const currentSchemaIndex = schema.phases.findIndex(s => s.id === schemaUtils.getSelectedPhase(props.location.search,selectedPhase))
+      const currentSchema = schema.phases[currentSchemaIndex]
+      const currentSection = currentSchema.sections[props.currentSection]
+      setPhaseTitle(currentSchema.title)
+      setSectionTitle(currentSection.title)
+    }
+  },[schema,selectedPhase,props.currentSection])
+
+  useEffect(() => {
+    if(spinnerRef?.current?.style){
+      if(saving){
+        spinnerRef.current.style.visibility = "visible"
+      }
+      else{
+        spinnerRef.current.style.visibility = "hidden"
+      }
+    }
+  }, [saving])
 
   useEffect(() => {
     let latestUpdate
@@ -299,12 +319,16 @@ const Header = props => {
       >
         <Navigation.Row variant="inline">
           <Button onClick={() => navigateBack()} role="link" variant="supplementary" size="small" iconLeft={<IconAngleLeft />}>{t('header.edit-menu-back')}</Button>
-          <div className='edit-page-title'><p>{props?.title}</p></div>
+          <div className='edit-page-title'>
+            <div><p>{props?.title}</p></div>
+            <div><span>{phaseTitle} / {sectionTitle}</span></div>
+          </div>
           <div className={'edit-page-save ' + lastSaved?.status}>
             <div className='spinner-container' ref={spinnerRef}>
               <LoadingSpinner className="loading-spinner" small></LoadingSpinner>
-              <span className="loading-spinner">{t('messages.connect-again')}</span>
+              <span className="loading-spinner">{lastSaved?.status === "error" ? t('messages.connect-again') : ""}</span>
             </div>
+            {updateTime?.status === t('header.edit-menu-saved') ? <IconCheck className='check-icon'/> : ""}
             <p>{updateTime?.status}{updateTime?.time}</p>
           </div>
         </Navigation.Row>
@@ -381,43 +405,6 @@ const Header = props => {
           </Navigation.Row>
           <Navigation.Actions>
             <Navigation.User userName={label} authenticated={true}>
-              {props.createProject && userIsResponsible && (
-                <Navigation.Item
-                  label={t('projects.createNewProject')}
-                  className="pointer"
-                  onClick={props.openCreateProject}
-                  icon={<IconPlus aria-hidden />}
-                  variant="primary"
-                />
-              )}
-              {props.modifyProject && userIsResponsible && (
-                <Navigation.Item
-                  label={t('project.modify-project')}
-                  className="pointer"
-                  onClick={props.openModifyProject}
-                  variant="primary"
-                  icon={<IconPen />}
-                />
-              )}
-              {props.showPrintProjectData && (
-                <Navigation.Item
-                  label={t('project.print-project-data')}
-                  className="pointer"
-                  onClick={props.openPrintProjectData}
-                  variant="primary"
-                  icon={<IconDownload />}
-                />
-              )}
-              {props.resetDeadlines && userIsResponsible && (
-                <Navigation.Item
-                  label={t('deadlines.reset-project-deadlines')}
-                  className="pointer"
-                  onClick={() => setShowConfirm(true)}
-                  variant="primary"
-                  icon={<IconRefresh />}
-                />
-              )}
-  
               <Navigation.Item
                 href="#"
                 icon={<IconSignout aria-hidden />}

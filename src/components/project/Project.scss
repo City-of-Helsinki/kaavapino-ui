@@ -13,8 +13,11 @@
     display: flex;
     text-align: right;
     margin: 10px 0 10px 0;
+    height: 44px;
     .edit-view-select{
       div{
+        min-height: 44px;
+        height: 44px;
         color: $color-bus;
         border: 2px solid $color-bus;
       }
@@ -23,6 +26,8 @@
       }
       svg{
         color: $color-bus;
+        margin-top: -6px;
+        padding: 0;
       }
       .icons{
         width: 20px;
@@ -31,23 +36,52 @@
         background-repeat: no-repeat;
         background-size: contain;
       }
-      .document-icon{
-        background-image: url('./assets/icons/document.svg');
+      li{
+        .document-icon{
+          background-image: url('./assets/icons/document.svg');
+        }
+        .calendar-icon{
+          background-image: url('./assets/icons/calendar-recurring.svg');
+        }
+        .company-icon{
+          background-image: url('./assets/icons/company.svg');
+        }
+        .download-icon{
+          background-image: url('./assets/icons/download.svg');
+        }
+        .pen-icon{
+          background-image: url('./assets/icons/pen.svg');
+        }
+        .trash-icon{
+          background-image: url('./assets/icons/trash-red.svg');
+        }
       }
-      .calendar-icon{
-        background-image: url('./assets/icons/calendar-recurring.svg');
+      li:hover{
+        .document-icon{
+          background-image: url('./assets/icons/document-white.svg');
+        }
+        .calendar-icon{
+          background-image: url('./assets/icons/calendar-recurring-white.svg');
+        }
+        .company-icon{
+          background-image: url('./assets/icons/company-white.svg');
+        }
+        .download-icon{
+          background-image: url('./assets/icons/download-white.svg');
+        }
+        .pen-icon{
+          background-image: url('./assets/icons/pen-white.svg');
+        }
+        .trash-icon{
+          background-image: url('./assets/icons/trash-white.svg');
+        }
       }
-      .company-icon{
-        background-image: url('./assets/icons/company.svg');
-      }
-      .download-icon{
-        background-image: url('./assets/icons/download.svg');
-      }
-      .pen-icon{
-        background-image: url('./assets/icons/pen.svg');
-      }
-      .trash-icon{
-        background-image: url('./assets/icons/trash-red.svg');
+    }
+    .edit-view-select:hover{
+      border-color: $color-bus-dark;
+      div{
+        color: $color-bus-dark;
+        border: 2px solid $color-bus-dark;
       }
     }
     button {
@@ -55,6 +89,9 @@
       margin-right: 20px;
       font-family: 'Helsinki Grotesk Medium', sans-serif;
       font-size: $size16;
+      min-height: 40px; //borders add couple of px so 44px
+      padding-top: 0;
+      padding-bottom: 0;
       @media screen and (max-width: 600px) {
           width: 100%;
           margin-left: 0;
@@ -62,6 +99,14 @@
 
       svg {
         padding-right: 2px;
+      }
+    }
+    button:hover{
+      border-color: $color-bus-dark;
+      background-color:$color-bus-light;
+      color: $color-bus-dark;
+      span,svg{
+        color: $color-bus-dark;
       }
     }
     button:focus-within{

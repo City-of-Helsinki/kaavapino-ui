@@ -451,6 +451,7 @@ class ProjectListPage extends Component {
       <span className="header-buttons">
         {isUserExpert && (
           <Button
+            size="small"
             variant="secondary"
             className="header-button"
             onClick={this.openCreateProject}

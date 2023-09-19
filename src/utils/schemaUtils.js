@@ -48,6 +48,18 @@ function getValue( field, includeNameAndLabelOnly ) {
     return field
 }
 
+function getSelectedPhase (location,selectedPhase) {
+  let checkedSelectedPhase = selectedPhase
+  const search = location
+  const params = new URLSearchParams(search)
+
+  if (params.get('phase')) {
+    checkedSelectedPhase = +params.get('phase')
+  }
+  return checkedSelectedPhase
+}
+
 export default {
-  getAllFields
+  getAllFields,
+  getSelectedPhase
 }
