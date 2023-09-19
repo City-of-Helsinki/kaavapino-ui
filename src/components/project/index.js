@@ -51,6 +51,7 @@ import dayjs from 'dayjs'
 import Header from '../common/Header'
 import { downloadDocument } from '../../actions/documentActions'
 import authUtils from '../../utils/authUtils'
+import ConfirmationModal from '../common/ConfirmationModal'
 
 class ProjectPage extends Component {
   constructor(props) {
@@ -64,6 +65,7 @@ class ProjectPage extends Component {
     this.state = {
       showBaseInformationForm: false,
       showPrintProjectDataModal: false,
+      showConfirm:false,
       sectionIndex:0
     }
   }
@@ -327,7 +329,7 @@ class ProjectPage extends Component {
         this.showModifyProject()
         break;
       case 6:
-        this.onResetProjectDeadlines()
+        this.setState({showConfirm:true})
         break;
       case 7:
         downloadDocument({
@@ -540,6 +542,17 @@ class ProjectPage extends Component {
     initializeProject(currentProject.id)
   }
 
+  renderConfirmationDialog = () => {
+    return <ConfirmationModal callback={this.callback} open={this.state.showConfirm} />
+  }
+
+  callback = (value) => {
+    this.setState({showConfirm:false})
+    if (value) {
+      this.onResetProjectDeadlines()
+    }
+  }
+
   render() {
     const {
       phases,
@@ -567,6 +580,7 @@ class ProjectPage extends Component {
           pollConnection={this.pollConnection}
           currentSection={this.state.sectionIndex}
         />
+         {this.renderConfirmationDialog()}
         {(loading || resettingDeadlines) && this.renderLoading()}
         {!loading && !resettingDeadlines && (
           <div className="project-container">
