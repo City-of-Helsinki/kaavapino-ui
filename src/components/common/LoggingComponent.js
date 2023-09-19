@@ -234,6 +234,7 @@ function LoggingComponent(props) {
     <div className="nav-header-info">
       {latestUpdate && (
         <Button
+          size="small"
           className="latest-update"
           variant="secondary"
           iconRight={icon}

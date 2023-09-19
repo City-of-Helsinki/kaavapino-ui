@@ -3,10 +3,6 @@ import {
   Navigation,
   Button,
   IconSignout,
-  IconPlus,
-  IconPen,
-  IconDownload,
-  IconRefresh,
   IconAngleLeft,
   IconCross,
   IconCheck,
@@ -18,7 +14,6 @@ import ConfirmationModal from './ConfirmationModal'
 import 'hds-core'
 import { useSelector } from 'react-redux'
 import { usersSelector } from '../../selectors/userSelector'
-import authUtils from '../../utils/authUtils'
 import { authUserSelector } from '../../selectors/authSelector'
 import { lastSavedSelector,pollSelector,savingSelector,selectedPhaseSelector } from '../../selectors/projectSelector'
 import { schemaSelector } from '../../selectors/schemaSelector'
@@ -53,10 +48,6 @@ const Header = props => {
   const currentUser = users.find(
     item => user && user.profile && item.id === user.profile.sub
   )
-
-  const userIsResponsible = currentUser
-    ? authUtils.isResponsible(currentUser.id, users)
-    : false
 
   const currentEnv = process.env.REACT_APP_ENVIRONMENT
   
@@ -414,43 +405,6 @@ const Header = props => {
           </Navigation.Row>
           <Navigation.Actions>
             <Navigation.User userName={label} authenticated={true}>
-              {props.createProject && userIsResponsible && (
-                <Navigation.Item
-                  label={t('projects.createNewProject')}
-                  className="pointer"
-                  onClick={props.openCreateProject}
-                  icon={<IconPlus aria-hidden />}
-                  variant="primary"
-                />
-              )}
-              {props.modifyProject && userIsResponsible && (
-                <Navigation.Item
-                  label={t('project.modify-project')}
-                  className="pointer"
-                  onClick={props.openModifyProject}
-                  variant="primary"
-                  icon={<IconPen />}
-                />
-              )}
-              {props.showPrintProjectData && (
-                <Navigation.Item
-                  label={t('project.print-project-data')}
-                  className="pointer"
-                  onClick={props.openPrintProjectData}
-                  variant="primary"
-                  icon={<IconDownload />}
-                />
-              )}
-              {props.resetDeadlines && userIsResponsible && (
-                <Navigation.Item
-                  label={t('deadlines.reset-project-deadlines')}
-                  className="pointer"
-                  onClick={() => setShowConfirm(true)}
-                  variant="primary"
-                  icon={<IconRefresh />}
-                />
-              )}
-  
               <Navigation.Item
                 href="#"
                 icon={<IconSignout aria-hidden />}

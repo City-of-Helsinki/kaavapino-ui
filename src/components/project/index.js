@@ -343,8 +343,8 @@ class ProjectPage extends Component {
   getProjectCardNavActions = userIsExpert => {
     const { t } = this.props
     const options = [
-    {value:1,label:<><i className="icons document-icon"></i>{t('project.create-documents')}</> },
-    {value:7,label:<><i className="icons download-icon"></i>{t('project.print-project-card')}</>}]
+    {value:7,label:<><i className="icons download-icon"></i>{t('project.print-project-card')}</>},
+    {value:1,label:<><i className="icons document-icon"></i>{t('project.create-documents')}</> }]
 
     return (
       <span className="header-buttons">
@@ -353,16 +353,18 @@ class ProjectPage extends Component {
           <Button
             variant="secondary"
             className="header-button"
-            size='small'
+            size="small"
             onClick={this.modifyContent}
             iconLeft={<IconPen />}
           >
             {t('project.modify')}
           </Button>
           <Select
+            size="small"
             className='edit-view-select'
             id="editNavSelect"
             placeholder='Projektin työkalut'
+            value='Projektin työkalut'
             options={options}
             onChange={this.changeOptions}
           />
@@ -387,9 +389,11 @@ class ProjectPage extends Component {
       <span className="header-buttons">
         {isUserExpert && (
         <Select
+          size="small"
           className='edit-view-select'
           id="editNavSelect"
           placeholder='Projektin työkalut'
+          value='Projektin työkalut'
           options={options}
           onChange={this.changeOptions}
         />
