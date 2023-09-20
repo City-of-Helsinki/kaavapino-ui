@@ -181,6 +181,7 @@ class ProjectPage extends Component {
           pino={currentProject?.pino_number}
           diaari={currentProject?.attribute_data?.diaarinumero}
           pwnumber={currentProject?.attribute_data?.hankenumero}
+          pwlink={false}
           location={this.props.location}
           actions={this.getEditNavActions(isExpert)}
           infoOptions={this.getAllChanges()}

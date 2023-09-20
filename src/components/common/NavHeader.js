@@ -6,7 +6,7 @@ import "hds-core";
 import { useTranslation } from 'react-i18next';
 import LoggingComponent from './LoggingComponent'
 
-export const NavHeader = ({ routeItems, actions, title, infoOptions, attributes, projectSize, responsibleUser, pino, diaari, pwnumber, location }) => {
+export const NavHeader = ({ routeItems, actions, title, infoOptions, attributes, projectSize, responsibleUser, pino, diaari, pwnumber, pwlink, location }) => {
   const [isMobile, setIsMobile] = useState(false)
   const {t} = useTranslation()
   const pathToCheck = location?.pathname
@@ -25,6 +25,24 @@ export const NavHeader = ({ routeItems, actions, title, infoOptions, attributes,
     } else {
       setIsMobile(false)
     }
+  }
+
+  const getPW = () => {
+    //TODO undesided how this goes and no pwlink comes from excel and backend yet
+    let pw
+    if(pwlink && pwnumber){
+      pw = <td><a className='link-underlined' target={pwlink}>{pwnumber} <IconLinkExternal size="xs" aria-hidden="true" /></a></td>
+    }
+    else if(pwlink){
+      pw = <td><a className='link-underlined' target={pwlink}>{pwlink} <IconLinkExternal size="xs" aria-hidden="true" /></a></td>
+    }
+    else if(pwnumber){
+      pw = <td>{pwnumber}</td>
+    }
+    else{
+      pw = <td></td>
+    }
+    return pw
   }
 
   if (isMobile) {
@@ -81,7 +99,7 @@ export const NavHeader = ({ routeItems, actions, title, infoOptions, attributes,
             </tr>
             <tr>
               <th>{t('project-edit-info.pwnum')}</th>
-              <td><a className='link-underlined' target="#">{pwnumber} <IconLinkExternal size="xs" aria-hidden="true" /></a></td>
+              {getPW()}
             </tr>
           </table>
         </div>

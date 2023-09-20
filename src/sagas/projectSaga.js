@@ -482,7 +482,7 @@ function* createProject() {
     }
     yield put(setSubmitSucceeded(NEW_PROJECT_FORM))
   } catch (e) {
-    if (e.response.status === 400) {
+    if (e?.response?.status === 400) {
       yield put(stopSubmit(NEW_PROJECT_FORM, e.response.data))
     } else {
       yield put(error(e))
