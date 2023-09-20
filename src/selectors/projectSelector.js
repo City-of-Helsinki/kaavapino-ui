@@ -82,7 +82,7 @@ export const currentProjectIdSelector = createSelector(
   currentProject => (currentProject ? currentProject.id : null)
 )
 
-export const savingSelector = createSelector(selectProject, project => project.saving)
+export const savingSelector = createSelector(selectProject, project => project?.saving)
 
 export const changingPhaseSelector = createSelector(
   selectProject,

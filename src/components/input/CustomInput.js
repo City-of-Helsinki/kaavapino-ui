@@ -59,7 +59,6 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
 
   const handleFocus = (saving) => {
     if (!saving && typeof custom.onFocus === 'function') {
-      console.log("lock")
       //Sent a call to lock field to backend
       custom.onFocus(input.name);
     }
