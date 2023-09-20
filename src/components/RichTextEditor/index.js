@@ -13,7 +13,7 @@ import {
   deleteFieldComment,
   createFieldComment
 } from '../../actions/commentActions'
-import { currentProjectIdSelector,lockedSelector } from '../../selectors/projectSelector'
+import { currentProjectIdSelector,savingSelector,lockedSelector } from '../../selectors/projectSelector'
 import { ReactComponent as CommentIcon } from '../../assets/icons/comment-icon.svg'
 import { useTranslation } from 'react-i18next'
 import projectUtils from '../../utils/projectUtils'
@@ -72,18 +72,22 @@ function RichTextEditor(props) {
 
   const dispatch = useDispatch()
 
+  const saving =  useSelector(state => savingSelector(state))
   const lockedStatus = useSelector(state => lockedSelector(state))
   const fieldComments = useSelector(fieldCommentsSelector)
   const userId = useSelector(userIdSelector)
   const projectId = useSelector(currentProjectIdSelector)
+
   const [showComments, setShowComments] = useState(false)
   const [toolbarVisible, setToolbarVisible] = useState(false)
-  const editorRef = useRef(null)
-  const counter = useRef(props.currentSize)
-  const showCounter = useRef(false)
   const [currentTimeout, setCurrentTimeout] = useState(0)
   const [readonly, setReadOnly] = useState(false)
   const [valueIsSet, setValueIsSet] = useState(false)
+
+  const editorRef = useRef(null)
+  const counter = useRef(props.currentSize)
+  const showCounter = useRef(false)
+
   //Stringify the object for useEffect update check so it can be compared correctly
   //Normal object always different
   const lockedStatusJsonString = JSON.stringify(lockedStatus);
@@ -178,8 +182,8 @@ function RichTextEditor(props) {
             lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
           }
           //Focus to editor input so user does not need to click twice
-          const fieldToFocus = document.getElementById(toolbarName + "input").querySelector("p");
-          fieldToFocus.focus()
+          //const fieldToFocus = document.getElementById(toolbarName + "input").querySelector("p");
+          //fieldToFocus.focus()
         }
         else{
           setReadOnly(true)
@@ -370,7 +374,7 @@ function RichTextEditor(props) {
     save and check from other browser tab that does it update the difference
     console.log(editor?.ops[0], dbValue?.ops[0])
     console.log(projectUtils.objectsEqual(editor?.ops[0], dbValue?.ops[0])) */
-    if(!projectUtils.objectsEqual(editor?.ops[0], dbValue?.ops[0])){
+    if(!saving && !projectUtils.objectsEqual(editor?.ops[0], dbValue?.ops[0])){
       //set editor value from db value updated with lock call
       const cursorPosition = editorRef.current.getEditor().getSelection()
       editorRef.current.getEditor().setContents(dbValue);
@@ -387,7 +391,7 @@ function RichTextEditor(props) {
     <input className='visually-hidden' ref={myRefname}/>
     <div
       role="textbox"
-      className={`rich-text-editor-wrapper ${disabled ? 'rich-text-disabled' : ''}`}
+      className={`rich-text-editor-wrapper ${disabled || saving ? 'rich-text-disabled' : ''}`}
       aria-label="tooltip"
     >
       <div
@@ -451,7 +455,7 @@ function RichTextEditor(props) {
           {...newInputProps}
           // default value initialized, after that quill handles internal state
           // Do not explicitly set value. see comments at top of this file.
-          onChange={(_val, _delta, source) =>{handleChange(_val, _delta, source,readonly)}}
+          onChange={(_val, _delta, source) =>{handleChange(_val, _delta, source, readonly)}}
           onFocus={(event, source) =>{handleFocus(event,source)}}
           onBlur={(_range, _source, quill) => {
             setTimeout(() => {

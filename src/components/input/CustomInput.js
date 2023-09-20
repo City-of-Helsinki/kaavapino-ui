@@ -3,12 +3,15 @@ import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { TextInput } from 'hds-react'
 import { useSelector } from 'react-redux'
-import {lockedSelector } from '../../selectors/projectSelector'
+import {lockedSelector,savingSelector } from '../../selectors/projectSelector'
 import moment from 'moment'
 
 const CustomInput = ({ input, meta: { error }, ...custom }) => {
   const [readonly, setReadOnly] = useState({name:"",read:false})
+
+  const saving =  useSelector(state => savingSelector(state))
   const lockedStatus = useSelector(state => lockedSelector(state))
+
   const oldValueRef = useRef('');
 
   useEffect(() => {
@@ -54,10 +57,14 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
     }
   }, [lockedStatus]);
 
-  const handleFocus = () => {
-    if (typeof custom.onFocus === 'function') {
+  const handleFocus = (saving) => {
+    if (!saving && typeof custom.onFocus === 'function') {
+      console.log("lock")
       //Sent a call to lock field to backend
       custom.onFocus(input.name);
+    }
+    else{
+      setReadOnly({name:input.name,read:true})
     }
   }
 
@@ -131,7 +138,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       {...custom}
       onChange={(event) =>{handleInputChange(event,readonly.read)}}
       onBlur={(event) => {handleBlur(event,readonly.read)}}
-      onFocus={handleFocus}
+      onFocus={() => {handleFocus(saving)}}
       readOnly={readonly.read}
     />
   )
