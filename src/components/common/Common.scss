@@ -522,6 +522,7 @@ header{
         .nav-menu-container{
           width: 100%;
           display: flex;
+          flex-flow: row wrap;
           justify-content: space-between;
           align-items: center;
           .nav-menu-buttons{
