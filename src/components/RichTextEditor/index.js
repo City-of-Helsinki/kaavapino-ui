@@ -13,7 +13,7 @@ import {
   deleteFieldComment,
   createFieldComment
 } from '../../actions/commentActions'
-import { currentProjectIdSelector,savingSelector,lockedSelector } from '../../selectors/projectSelector'
+import { currentProjectIdSelector,savingSelector,lockedSelector, lastModifiedSelector } from '../../selectors/projectSelector'
 import { ReactComponent as CommentIcon } from '../../assets/icons/comment-icon.svg'
 import { useTranslation } from 'react-i18next'
 import projectUtils from '../../utils/projectUtils'
@@ -73,6 +73,7 @@ function RichTextEditor(props) {
   const dispatch = useDispatch()
 
   const saving =  useSelector(state => savingSelector(state))
+  const lastModified = useSelector(state => lastModifiedSelector(state))
   const lockedStatus = useSelector(state => lockedSelector(state))
   const fieldComments = useSelector(fieldCommentsSelector)
   const userId = useSelector(userIdSelector)
@@ -174,16 +175,21 @@ function RichTextEditor(props) {
         //Check if locked field name matches with instance and that owner is true to allow edit
         //else someone else is editing and prevent editing
         if(lock && lockedStatus.lockData.attribute_lock.owner){
-          setReadOnly(false)
-          //Add changed value from db if there has been changes
-          setValue(lockedStatus.lockData.attribute_lock.field_data)
-          if (typeof lockField === 'function') {
-            //Change styles from FormField
-            lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
+          if(lastModified === inputProps.name && lockedStatus?.saving){
+            setReadOnly(true)
           }
-          //Focus to editor input so user does not need to click twice
-          //const fieldToFocus = document.getElementById(toolbarName + "input").querySelector("p");
-          //fieldToFocus.focus()
+          else{
+            setReadOnly(false)
+            //Add changed value from db if there has been changes
+            setValue(lockedStatus.lockData.attribute_lock.field_data)
+            if (typeof lockField === 'function') {
+              //Change styles from FormField
+              lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
+            }
+            //Focus to editor input so user does not need to click twice
+            const fieldToFocus = document.getElementById(toolbarName + "input").querySelector("p");
+            fieldToFocus.focus()
+          }
         }
         else{
           setReadOnly(true)
@@ -309,8 +315,10 @@ function RichTextEditor(props) {
         //Sent call to save changes if it is modified by user and not updated by lock call
         if(!valueIsSet){
           if (typeof onBlur === 'function') {
+            localStorage.setItem("changedValues", inputProps.name);
             onBlur();
             oldValueRef.current = inputValue.current;
+            setReadOnly(true)
           }
         }
       }
@@ -374,7 +382,7 @@ function RichTextEditor(props) {
     save and check from other browser tab that does it update the difference
     console.log(editor?.ops[0], dbValue?.ops[0])
     console.log(projectUtils.objectsEqual(editor?.ops[0], dbValue?.ops[0])) */
-    if(!saving && !projectUtils.objectsEqual(editor?.ops[0], dbValue?.ops[0])){
+    if(!projectUtils.objectsEqual(editor?.ops[0], dbValue?.ops[0])){
       //set editor value from db value updated with lock call
       const cursorPosition = editorRef.current.getEditor().getSelection()
       editorRef.current.getEditor().setContents(dbValue);
@@ -391,7 +399,7 @@ function RichTextEditor(props) {
     <input className='visually-hidden' ref={myRefname}/>
     <div
       role="textbox"
-      className={`rich-text-editor-wrapper ${disabled || saving ? 'rich-text-disabled' : ''}`}
+      className={`rich-text-editor-wrapper ${disabled || lastModified === inputProps.name && saving ? 'rich-text-disabled' : ''}`}
       aria-label="tooltip"
     >
       <div

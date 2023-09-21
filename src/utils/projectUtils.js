@@ -496,6 +496,25 @@ const objectsEqual = (o1, o2) => {
   return equal
 }
 
+//Find difference in two arrays
+const diffArray = (arr1, arr2) => {
+  function diff(a, b) {
+    return a.filter(item => b.indexOf(item) === -1);
+  }
+
+  const diff1 = diff(arr1, arr2)
+  const diff2 = diff(arr2, arr1)
+  return [].concat(diff1, diff2)
+}
+//Find difference in array of objects
+const diffArrayObject = (array1, array2) => {
+  return array1.filter(object1 => {
+    return !array2.some(object2 => {
+      return object1 === object2;
+    })
+  })
+}
+
 export default {
   formatDate,
   formatTime,
@@ -524,5 +543,7 @@ export default {
   hasMissingFields,
   getErrorFields,
   isSceduleAccepted,
-  objectsEqual
+  objectsEqual,
+  diffArray,
+  diffArrayObject
 }
