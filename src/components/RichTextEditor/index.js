@@ -264,7 +264,7 @@ function RichTextEditor(props) {
                   actualDeltaText ? actualDeltaValue : null
                 )
               ),
-            500
+            1
           ))
 
         counter.current = actualDeltaValue.length() - 1;
