@@ -239,3 +239,8 @@ export const showFloorAreaSelector = createSelector(
   selectProject, 
   project => project?.showEditFloorAreaForm
 )
+
+export const lastModifiedSelector = createSelector(
+  selectProject, 
+  project => project?.lastModified
+)

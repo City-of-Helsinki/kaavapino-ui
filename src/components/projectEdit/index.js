@@ -120,6 +120,7 @@ class ProjectEditPage extends Component {
     }
   }
   componentDidMount() {
+    localStorage.removeItem("changedValues")
     window.addEventListener('resize', this.handleResize)
     //window.addEventListener("click", this.checkClickedElement);
 

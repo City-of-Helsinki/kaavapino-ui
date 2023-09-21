@@ -20,12 +20,15 @@ import {
   amountOfProjectsToIncreaseSelector,
   selectedPhaseSelector,
   onholdProjectsSelector,
-  archivedProjectsSelector
+  archivedProjectsSelector,
+  savingSelector
 } from '../selectors/projectSelector'
 import { schemaSelector } from '../selectors/schemaSelector'
 import { userIdSelector } from '../selectors/authSelector'
 import { phasesSelector } from '../selectors/phaseSelector'
 import {
+  LAST_MODIFIED,
+  lastModified,
   POLL_CONNECTION,
   SET_POLL,
   setPoll,
@@ -142,6 +145,7 @@ import { toastr } from 'react-redux-toastr'
 
 export default function* projectSaga() {
   yield all([
+    takeLatest(LAST_MODIFIED, lastModified),
     takeLatest(POLL_CONNECTION,pollConnection),
     takeLatest(SET_POLL, setPoll),
     takeLatest(FETCH_PROJECTS, fetchProjects),
@@ -688,6 +692,8 @@ function* lockProjectField(data) {
   const project_name = data.payload.projectName;
   let attribute_identifier = data.payload.inputName;
 
+  const saving = yield select(savingSelector)
+
   if(project_name && attribute_identifier){
     //Fielset has prefixes someprefix[x]. that needs to be cut out. Only actual field info is compared.
     try {
@@ -699,7 +705,7 @@ function* lockProjectField(data) {
         attribute_identifier}
       )
       //Send data to store
-      yield put(setLockStatus(lockData,false))
+      yield put(setLockStatus(lockData,false,saving))
     }
     catch (e) {
       yield put(error(e))
@@ -721,6 +727,12 @@ function* saveProject() {
     const keys = Object.keys(changedValues)
     const dateVariable = new Date()
     const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    //Get latest modified field and send it to components to prevent new modification for that field until saved. 
+    //Prevents only user that was editing and saving. Richtext and custominput.
+    const latestModifiedKey = localStorage.getItem("changedValues")?.split(",") ? localStorage.getItem("changedValues")?.split(",") : []
+    if(latestModifiedKey){
+      yield put(lastModified(latestModifiedKey[0]))
+    }
 
     if (keys.length !== 0) {
       const attribute_data = changedValues

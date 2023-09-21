@@ -98,7 +98,12 @@ export const POLL_CONNECTION = "pollConnection"
 export const SET_POLL = "setPoll"
 export const SHOW_TIMETABLE = "showTimetable"
 export const SHOW_FLOOR_AREA = "showFloorArea"
+export const LAST_MODIFIED = "lastModified"
 
+export const lastModified = (field) => ({
+  type: LAST_MODIFIED,
+  payload:field
+})
 export const showFloorArea = (showEditFloorAreaForm) => ({
   type: SHOW_FLOOR_AREA,
   payload:showEditFloorAreaForm
@@ -127,9 +132,9 @@ export const setUnlockStatus = (lockData,lock) => ({
   type: SET_UNLOCK_STATUS,
   payload: {lockData,lock}
 })
-export const setLockStatus = (lockData,lock) => ({
+export const setLockStatus = (lockData,lock,saving) => ({
   type: SET_LOCK_STATUS,
-  payload: {lockData,lock}
+  payload: {lockData,lock,saving}
 })
 export const unlockProjectField = (projectName,inputName) => ({
   type: UNLOCK_PROJECT_FIELD,

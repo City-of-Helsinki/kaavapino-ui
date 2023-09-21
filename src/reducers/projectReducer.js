@@ -1,4 +1,5 @@
 import {
+  LAST_MODIFIED,
   SET_POLL,
   SET_LAST_SAVED,
   SET_UNLOCK_STATUS,
@@ -116,12 +117,20 @@ export const initialState = {
   lastSaved:{},
   connection:false,
   showEditFloorAreaForm:false,
-  showEditProjectTimetableForm:false
+  showEditProjectTimetableForm:false,
+  lastModified:false
 }
 
 export const reducer = (state = initialState, action) => {
 
   switch (action.type) {
+
+    case LAST_MODIFIED: {
+      return{
+        ...state,
+        lastModified:action.payload,
+      }
+    }
 
     case SHOW_TIMETABLE: {
       return{
