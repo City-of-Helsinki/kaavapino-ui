@@ -17,12 +17,18 @@
     justify-content: space-between;
     position: relative;
     z-index: 1;
+    .input-title{
+      display: flex;
+      flex-flow: column;
+      height: 100%;
+    }
     .input-locked{
       font-family: 'Helsinki Grotesk Medium', sans-serif;
       font-size: $size14;
       height: 18px;
       display:inline-flex;
       flex-direction: row-reverse;
+      justify-content: flex-start;
       color:$color-info-dark;
       margin-top: 4px;
       margin-bottom: 8px;
