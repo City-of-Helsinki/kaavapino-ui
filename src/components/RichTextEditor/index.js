@@ -387,7 +387,7 @@ function RichTextEditor(props) {
       //set editor value from db value updated with lock call
       const cursorPosition = editorRef.current.getEditor().getSelection()
       editorRef.current.getEditor().setContents(dbValue);
-      editorRef.current.getEditor().setSelection(cursorPosition.index);
+      editorRef.current.getEditor().setSelection(cursorPosition?.index);
     }
   }
 
