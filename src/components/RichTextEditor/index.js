@@ -67,7 +67,8 @@ function RichTextEditor(props) {
     updated,
     formName,
     setRef,
-    lockField
+    lockField,
+    fieldSetDisabled
   } = props
 
   const dispatch = useDispatch()
@@ -399,7 +400,7 @@ function RichTextEditor(props) {
     <input className='visually-hidden' ref={myRefname}/>
     <div
       role="textbox"
-      className={`rich-text-editor-wrapper ${disabled || lastModified === inputProps.name && saving ? 'rich-text-disabled' : ''}`}
+      className={`rich-text-editor-wrapper ${fieldSetDisabled || disabled || lastModified === inputProps.name && saving ? 'rich-text-disabled' : ''}`}
       aria-label="tooltip"
     >
       <div

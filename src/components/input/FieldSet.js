@@ -7,8 +7,7 @@ import projectUtils from '../../utils/projectUtils'
 import Info from './Info'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { has } from 'lodash'
-import { IconCross, IconClock } from 'hds-react'
-import { Button, IconLock } from 'hds-react'
+import { Accordion, Button, IconLock, IconClock, IconPlus, IconTrash } from 'hds-react'
 import { change } from 'redux-form'
 import { get } from 'lodash'
 import { useTranslation } from 'react-i18next';
@@ -45,47 +44,66 @@ const FieldSet = ({
   const { t } = useTranslation()
 
   const [hiddenIndex, setHiddenIndex] = useState(-1)
+  //const [fieldSetDisabled, setFieldSetDisabled] = useState(false)
+  const [expanded, setExpanded] = useState([]);
 
-  const getLastValidIndex = () => {
-    let lastValidIndex = sets.length - 1
+  const checkLocked = (e,set,i) => {
+    //TODO change lock logic fieldset and disable all fields inside fieldset index
+    // console.log("change")
+    // console.log(lockStatus?.fieldIdentifier?.split('.')[0])
+    // console.log(set)
+    // console.log(!lockStatus?.owner)
+    //check if any field inside index has locks muu_ohjelmakytkenta_fieldset[0]
+    //show locked and disabled fields
+    //handleLockField(set)
+    // && lockStatus?.fieldIdentifier?.split('.')[0] === set
+/*     if(!lockStatus?.owner){
+      setFieldSetDisabled(true)
+      console.log(fieldSetDisabled,"disable")
+    } */
+    let expand = false
 
-    for (let index = lastValidIndex; index >= 0; index--) {
-      if (!sets.get(index)._deleted) {
-        return index
+    if(e.target.nodeName === "path" || e.target.nodeName === "svg"){
+      expand = true
+    }
+    else{
+      const substrings = ["label", "fieldset-accordian-close"];
+      if (substrings.some(v => e?.target?.className?.includes(v))) {
+          expand = true
       }
     }
+
+    if(expand){
+      let expandedArray = expanded.slice();
+      if(expandedArray.includes(i)){
+        expandedArray.splice(expandedArray.indexOf(i), 1);
+      }
+      else{
+        expandedArray.push(i);
+      }
+      
+      setExpanded(expandedArray);
+    }
+
   }
 
   const nulledFields =
     fields &&
     fields.map(field => {
       return { [field.name]: null, _deleted: true }
-    })
+  })
+
   return (
     <React.Fragment>
+      <div className='fieldset-info'>Korvataan tämä info excelistä tulevalla datalla</div>
       {sets.map((set, i) => {
         const deleted = get(formValues, set + '._deleted')
         const automatically_added = get(formValues, set + '._automatically_added')
         return (
           <React.Fragment key={`${name}-${i}`}>
             {!deleted && hiddenIndex !== i && (
-              <div key={i} className="fieldset-container">
-                <div className="fieldset-header">
-                  <h3 className="fieldset-header-number">{i + 1}.</h3>
-
-                  {(!disable_fieldset_delete_add && !automatically_added && !disabled) && (
-                    <IconCross
-                      className="fieldset-remove"
-                      color="red"
-                      size="m"
-                      onClick={() => {
-                        dispatch(change(formName, set, ...nulledFields))
-                        setHiddenIndex(i)
-                        handleBlur()
-                      }}
-                    />
-                  )}
-                </div>
+              <div key={i} className="fieldset-container" onClick={(e) => {checkLocked(e,set,i)}}>
+                <Accordion className={expanded.includes(i) ? 'fieldset-accordian-open' : 'fieldset-accordian'} closeButtonClassName="fieldset-accordian-close" size="s" card border heading={name} language="fi" style={{ maxWidth: '100%' }}>
                 {fields.map((field, j) => {
                   const currentName = `${set}.${field.name}`
                   if (
@@ -198,51 +216,48 @@ const FieldSet = ({
                           lockField={lockField}
                           unlockAllFields={unlockAllFields}
                           validate={validate}
+                          fieldSetDisabled={false}
                         />
                         {showError && <div className="error-text">{showError}</div>}
                       </Form.Field>
                     </div>
                   )
                 })}
+                {(!disable_fieldset_delete_add && !automatically_added && !disabled) && (
+                  <Button
+                    className="fieldset-button-remove"
+                    disabled={sets.length < 1 || disabled}
+                    variant="secondary"
+                    size='small'
+                    iconLeft={<IconTrash/>}
+                    onClick={() => {
+                      dispatch(change(formName, set, ...nulledFields))
+                      setHiddenIndex(i)
+                      handleBlur()
+                    }}
+                  > {t('project.remove')}</Button>
+                )}
+                </Accordion>
               </div>
             )}
           </React.Fragment>
         )
       })}
       {!disable_fieldset_delete_add && (
-        <>
-          <Button
-            className={`fieldset-button-add ${checking && projectUtils.hasFieldsetErrors(name, fields, attributeData) ? 'fieldset-internal-error' : null
-              }`}
-            onClick={() => {
-              sets.push({})
-              handleBlur()
-            }}
-            disabled={disabled}
-            variant="secondary"
-          >
-            {t('project.add')}
-          </Button>
-          <Button
-            className="fieldset-button-remove"
-            disabled={sets.length < 1 || disabled}
-            onClick={() => {
-              const lastValidIndex = getLastValidIndex()
-              sets.map((set, index) => {
-                if (index === lastValidIndex) {
-                  dispatch(change(formName, set, ...nulledFields))
-                  setHiddenIndex(index)
-                }
-                return null
-              })
-
-              handleBlur()
-            }}
-            variant="secondary"
-          >
-            {t('project.remove')}
-          </Button>
-        </>
+      <Button
+        className={`fieldset-button-add ${checking && projectUtils.hasFieldsetErrors(name, fields, attributeData) ? 'fieldset-internal-error' : null
+          }`}
+        onClick={() => {
+          sets.push({})
+          handleBlur()
+        }}
+        disabled={disabled}
+        variant="supplementary"
+        size='small'
+        iconLeft={<IconPlus/>}
+      >
+        {t('project.add')}
+      </Button>
       )}
     </React.Fragment>
   )
