@@ -663,7 +663,7 @@ function* unlockAllFields(data) {
    )
  }
  catch (e) {
-   yield put(error(e))
+  yield put(error(e.response.data))
  }
 }
 
@@ -672,7 +672,6 @@ function* unlockProjectField(data) {
   let attribute_identifier = data.payload.inputName;
 
   if(project_name && attribute_identifier){
-
     try {
        yield call(
         attributesApiUnlock.post,
@@ -683,7 +682,7 @@ function* unlockProjectField(data) {
       yield put(setUnlockStatus(lockData,true))
     }
     catch (e) {
-      yield put(error(e))
+      yield put(error(e.response.data))
     }
   }
 }
@@ -708,7 +707,7 @@ function* lockProjectField(data) {
       yield put(setLockStatus(lockData,false,saving))
     }
     catch (e) {
-      yield put(error(e))
+      yield put(error(e.response.data))
     }
   }
 }
