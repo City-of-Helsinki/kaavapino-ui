@@ -98,35 +98,44 @@ class CustomFooter extends Component {
 
   render() {
     const {t} = this.props
-    return (
-      <Footer
-        footerProps={{
-          lang: 'fi'
-        }}
-        korosType="basic"
-        logoLanguage="fi"
-        title={this.renderTitle()}
-      >
-        <div className="align-left">
-        <Footer.Navigation
-          navigationAriaLabel="Footer navigation items"
-          variant="minimal"
+    const pathToCheck = location?.pathname
+    
+    if(pathToCheck?.endsWith('/edit')){
+      return(
+        <></>
+      )
+    }
+    else{
+      return (
+        <Footer
+          footerProps={{
+            lang: 'fi'
+          }}
+          korosType="basic"
+          logoLanguage="fi"
+          title={this.renderTitle()}
         >
-          {this.renderAllNavigation()}
-        </Footer.Navigation>
-        </div>
-        <div className="align-right">
-          <Footer.Utilities backToTopLabel={t('footer.to-start')}>
-            {this.renderFeedback()}
-          </Footer.Utilities>
-        </div>
-          
-        <Footer.Base
-          copyrightHolder={t('footer.copyright-holder')}
-          copyrightText={t('footer.copyright-text')}
-        />
-      </Footer>
-    )
+          <div className="align-left">
+          <Footer.Navigation
+            navigationAriaLabel="Footer navigation items"
+            variant="minimal"
+          >
+            {this.renderAllNavigation()}
+          </Footer.Navigation>
+          </div>
+          <div className="align-right">
+            <Footer.Utilities backToTopLabel={t('footer.to-start')}>
+              {this.renderFeedback()}
+            </Footer.Utilities>
+          </div>
+            
+          <Footer.Base
+            copyrightHolder={t('footer.copyright-holder')}
+            copyrightText={t('footer.copyright-text')}
+          />
+        </Footer>
+      )
+    }
   }
 }
 

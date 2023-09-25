@@ -21,6 +21,7 @@
       display: flex;
       flex-flow: column;
       height: 100%;
+      font-weight: 500;
     }
     .input-locked{
       font-family: 'Helsinki Grotesk Medium', sans-serif;
@@ -207,13 +208,12 @@
 }
 
 .ui.label {
-  font-family: 'Helsinki Grotesk Bold';
+  font-family: "Helsinki Grotesk Medium", sans-serif;
   background-color: transparent;
   color: $black1;
-  font-size: $size14;
-  font-weight: bold;
+  font-size: $size16;
   letter-spacing: 0;
-  line-height: $size20;
+  line-height: $size24;
   margin: 0;
   padding: 0;
   transition: none;
@@ -364,20 +364,155 @@
     opacity: 0;
   }
 }
+
 .fieldset-internal-error {
   color: $color-error-text !important;
   border: 3px solid $color-error-border !important;
 }
+.fieldset-info{
+  font-family: "Helsinki Grotesk Regular", sans-serif;
+  font-style: italic;
+  font-size: $size14;
+  color: $dropdown-text-color;
+  border-bottom: 1px solid $border-gray1;
+  padding-top: 16px;
+  padding-bottom: 15px;
+  margin-bottom: 17px;
+  margin-left: 16px;
+}
 .fieldset-container {
-  border: 1px solid gainsboro;
-  padding: 10px;
-  margin: 32px 0 16px;
-  padding: 16px;
+  pointer-events: none;
+  border: none;
   position: relative;
   animation: expand 0.5s ease-in-out;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  padding-top: 0;
+  padding-left: 16px;
+  padding-right: 16px;
 
-  
+  .fieldset-accordian{
+    pointer-events: all;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: 0.7px solid $color-black-60;
+    padding-left: 0;
+    padding-right: 0;
+    .label{
+      font-family: "Helsinki Grotesk Medium", sans-serif;
+      font-size: $size14;
+      color: $black1;
+      font-weight: 500;
+    }
+    svg{
+      font-size: $size14;
+      width: 24px !important;
+      height: 24px !important;
+    }
+    .input-container {
+      background-color: $color-white;
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+    div:first-of-type{
+      padding-bottom: 0;
+      padding-top: 0;
+    }
+    div[role=button]{
+      height: 42px;
+      outline: none;
+    } 
+  }
+  .fieldset-accordian-open{
+    pointer-events: all;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: 0.7px solid $color-black-60;
+    background-color: $color-fog-light;
+    padding-left: 0;
+    padding-right: 0;
+    .label{
+      font-family: "Helsinki Grotesk Medium", sans-serif;
+      font-size: $size14;
+      font-weight: 500;
+      color: $black1;
+      padding-left: 8px;
+    }
+    svg{
+      font-size: $size14;
+      width: 24px !important;
+      height: 24px !important;
+      pointer-events: none;
+    }
+    .input-container {
+      background-color: $color-fog-light;
+      padding-left: 16px;
+      padding-right: 16px;
+      input{
+        border:1.6px solid $border-gray2;
+      }
+      .max-chars{
+        font-size: $size13;
+        padding-bottom: 27.5px;
+      }
+    }
+    div[role=button]{
+      height: 42px;
+      outline: none;
+    }
+    div:first-of-type{
+      padding-bottom: 0;
+      padding-top: 0;
+    }
+    .input-container:last-of-type{
+      .max-chars{
+        padding-bottom: 0;
+      }
+    }
+    .input-title{
+      font-size: $size13;
+      padding-left: 0;
+      pointer-events: none;
+    }
+  }
 }
+
+.fieldset-button-add {
+  margin-top: 16px;
+}
+
+.fieldset-button-remove {
+ color: $color-error;
+ border-color: $color-error !important;
+ margin-left: 16px;
+ margin-top: 20px;
+}
+
+.fieldset-button-remove:hover{
+  color: $color-error;
+  border-color: $color-error !important;
+  margin-left: 16px;
+}
+
+.fieldset-accordian-close{
+  font-family: "Helsinki Grotesk Medium", sans-serif;
+  font-size: $size12;
+  background-color: $color-fog-light;
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+  max-height: 25px;
+  min-height: 25px;
+}
+
+.fieldset-accordian-close:hover{
+  text-decoration: underline;
+  background-color: #e8f3fc;
+}
+
 .input-header + .fieldset-container {
   margin-top: 16px;
 }
@@ -426,14 +561,6 @@
 
 .textarea-wrapper {
   position: relative;
-}
-
-.fieldset-button-add {
-  margin-right: 3px;
-}
-
-.fieldset-button-remove {
-  margin-right: 3px;
 }
 .checkbox-container {
   .checkbox {
