@@ -289,6 +289,10 @@ function RichTextEditor(props) {
       }
       setToolbarVisible(true)
     }
+     
+    let length = editorRef.current.getEditor().getLength();
+    counter.current = length -1;
+    showCounter.current = true;
   }
 
   const handleBlur = (readonly) => {
@@ -377,7 +381,6 @@ function RichTextEditor(props) {
 
   const setValue = (dbValue) => {
     const editor = editorRef.current.getEditor().getContents()
-    
     /*TODO possible bug on adding some styles from editor to text. 
     The text could come as empty string and only show up on page refresh. Example add text and add color styles to it, 
     save and check from other browser tab that does it update the difference
@@ -503,7 +506,7 @@ function RichTextEditor(props) {
           ))}
         </div>
       )}
-      {showCounter.current && props.maxSize ? (
+      {showCounter.current && counter.current < 1002 && props.maxSize ? (
         <p
           className={
             counter.current > props.maxSize ? 'quill-counter quill-warning' : 'quill-counter'

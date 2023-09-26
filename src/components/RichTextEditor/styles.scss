@@ -146,6 +146,8 @@
     text-align: right;
     padding-right: 4px;
     letter-spacing: 0.4px;
+    width: 70px;
+    float: right;
   }
   .max-chars{
     font-family: "Helsinki Grotesk Regular", sans-serif;
@@ -160,7 +162,6 @@
     font-size: $size16;
     color: $color-error;
     line-height: $size24;
-    margin-top: -10px;
   }
   .quill-warning {
     color: $color-error;
