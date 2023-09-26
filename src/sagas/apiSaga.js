@@ -37,7 +37,16 @@ function* handleErrorSaga({ payload }) {
         })
       )
     } else {
-      yield put(push(`/error/${status}`))
+      console.log(payload)
+      console.log(payload.config.url)
+      if(payload?.config?.url === "/v1/attributes/unlock/" || payload?.config?.url === "/v1/attributes/lock/"){
+        console.log("MultipleObjectsReturned")
+      }
+      else{
+        yield put(
+          toastrActions.add({ type: 'error', title: 'Virhe', message: status })
+        )
+      }
     }
   } else if (payload.custom) {
     yield put(

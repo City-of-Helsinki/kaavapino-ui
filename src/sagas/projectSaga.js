@@ -663,7 +663,7 @@ function* unlockAllFields(data) {
    )
  }
  catch (e) {
-  yield put(error(e.response.data))
+  yield put(error(e))
  }
 }
 
@@ -682,7 +682,7 @@ function* unlockProjectField(data) {
       yield put(setUnlockStatus(lockData,true))
     }
     catch (e) {
-      yield put(error(e.response.data))
+      yield put(error(e))
     }
   }
 }
@@ -707,7 +707,7 @@ function* lockProjectField(data) {
       yield put(setLockStatus(lockData,false,saving))
     }
     catch (e) {
-      yield put(error(e.response.data))
+      yield put(error(e))
     }
   }
 }
