@@ -48,6 +48,7 @@ const FieldSet = ({
   const [expanded, setExpanded] = useState([]);
 
   const checkLocked = (e,set,i) => {
+    console.log(set,i)
     //TODO change lock logic fieldset and disable all fields inside fieldset index
     // console.log("change")
     // console.log(lockStatus?.fieldIdentifier?.split('.')[0])
@@ -55,7 +56,7 @@ const FieldSet = ({
     // console.log(!lockStatus?.owner)
     //check if any field inside index has locks muu_ohjelmakytkenta_fieldset[0]
     //show locked and disabled fields
-    //handleLockField(set)
+    handleLockField(set)
     // && lockStatus?.fieldIdentifier?.split('.')[0] === set
 /*     if(!lockStatus?.owner){
       setFieldSetDisabled(true)

@@ -690,7 +690,7 @@ function* unlockProjectField(data) {
 function* lockProjectField(data) {
   const project_name = data.payload.projectName;
   let attribute_identifier = data.payload.inputName;
-
+  console.log(attribute_identifier)
   const saving = yield select(savingSelector)
 
   if(project_name && attribute_identifier){
