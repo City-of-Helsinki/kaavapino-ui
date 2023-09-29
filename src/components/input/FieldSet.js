@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { connect, useDispatch } from 'react-redux'
 import { checkingSelector } from '../../selectors/projectSelector'
 import CustomField from './CustomField'
@@ -44,48 +44,49 @@ const FieldSet = ({
   const { t } = useTranslation()
 
   const [hiddenIndex, setHiddenIndex] = useState(-1)
-  //const [fieldSetDisabled, setFieldSetDisabled] = useState(false)
   const [expanded, setExpanded] = useState([]);
 
-  const checkLocked = (e,set,i) => {
-    console.log(set,i)
-    //TODO change lock logic fieldset and disable all fields inside fieldset index
-    // console.log("change")
-    // console.log(lockStatus?.fieldIdentifier?.split('.')[0])
-    // console.log(set)
-    // console.log(!lockStatus?.owner)
-    //check if any field inside index has locks muu_ohjelmakytkenta_fieldset[0]
-    //show locked and disabled fields
-    handleLockField(set)
-    // && lockStatus?.fieldIdentifier?.split('.')[0] === set
-/*     if(!lockStatus?.owner){
-      setFieldSetDisabled(true)
-      console.log(fieldSetDisabled,"disable")
-    } */
-    let expand = false
+  useEffect(() => {
+    document.addEventListener("click", checkClickedElement);
+    return () => {
+      document.removeEventListener("click", checkClickedElement);
+    };
+  }, [])
 
+  const checkClickedElement = (e) => {
+    console.log(e.target.parentNode)
+  };
+
+  const checkLocked = (e,set,i) => {
+    let expand = false
+    //Change expanded styles if some of these custom targets is clicked from accordian
     if(e.target.nodeName === "path" || e.target.nodeName === "svg"){
       expand = true
     }
+    else if(e.target.getAttribute('aria-expanded')){
+      expand = true
+    }
     else{
-      const substrings = ["label", "fieldset-accordian-close"];
+      const substrings = ["label", "fieldset-accordian-close","accoardian-header-text","Accordian-module"];
       if (substrings.some(v => e?.target?.className?.includes(v))) {
           expand = true
       }
     }
 
     if(expand){
+      //Expand or close element that was clicked inside fieldset array of elements
       let expandedArray = expanded.slice();
       if(expandedArray.includes(i)){
         expandedArray.splice(expandedArray.indexOf(i), 1);
+        //handleUnlockField(set)
       }
       else{
         expandedArray.push(i);
+        //handleLockField(set)
       }
-      
       setExpanded(expandedArray);
     }
-
+    //check is someone else editing the fieldset
   }
 
   const nulledFields =
@@ -98,13 +99,16 @@ const FieldSet = ({
     <React.Fragment>
       <div className='fieldset-info'>Korvataan tämä info excelistä tulevalla datalla</div>
       {sets.map((set, i) => {
+        const fieldsetDisabled = lockStatus?.lockStyle && !lockStatus?.owner && lockStatus?.fieldIdentifier === set ? true : false;
         const deleted = get(formValues, set + '._deleted')
         const automatically_added = get(formValues, set + '._automatically_added')
+        const lockedElement = fieldsetDisabled ? <span className="input-locked"> Käyttäjä {lockStatus.lockStyle.lockData.attribute_lock.user_name} {lockStatus.lockStyle.lockData.attribute_lock.user_email} on muokkaamassa kenttää<IconLock></IconLock></span> : <></>
+        const lockName = <><span className='accoardian-header-text'>{name}</span> {lockedElement}</>
         return (
           <React.Fragment key={`${name}-${i}`}>
             {!deleted && hiddenIndex !== i && (
               <div key={i} className="fieldset-container" onClick={(e) => {checkLocked(e,set,i)}}>
-                <Accordion className={expanded.includes(i) ? 'fieldset-accordian-open' : 'fieldset-accordian'} closeButtonClassName="fieldset-accordian-close" size="s" card border heading={name} language="fi" style={{ maxWidth: '100%' }}>
+                <Accordion className={expanded.includes(i) ? 'fieldset-accordian-open' : 'fieldset-accordian'} closeButtonClassName="fieldset-accordian-close" size="s" card border heading={lockName} language="fi" style={{ maxWidth: '100%' }}>
                 {fields.map((field, j) => {
                   const currentName = `${set}.${field.name}`
                   if (
@@ -148,7 +152,7 @@ const FieldSet = ({
                     updated && updated.new_value && has(updated.new_value[0], field.name)
                   return (
                     <div
-                      className={`input-container ${showError ? 'error' : ''}`}
+                      className={`input-container ${showError ? 'error' : ''} ${fieldsetDisabled ? 'disabled-fieldset' : ''}`}
                       key={j}
                     >
                       <Form.Field required={required}>
@@ -217,7 +221,7 @@ const FieldSet = ({
                           lockField={lockField}
                           unlockAllFields={unlockAllFields}
                           validate={validate}
-                          fieldSetDisabled={false}
+                          fieldSetDisabled={fieldsetDisabled}
                         />
                         {showError && <div className="error-text">{showError}</div>}
                       </Form.Field>

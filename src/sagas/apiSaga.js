@@ -37,10 +37,8 @@ function* handleErrorSaga({ payload }) {
         })
       )
     } else {
-      console.log(payload)
-      console.log(payload.config.url)
       if(payload?.config?.url === "/v1/attributes/unlock/" || payload?.config?.url === "/v1/attributes/lock/"){
-        console.log("MultipleObjectsReturned")
+        console.log("lock error")
       }
       else{
         yield put(

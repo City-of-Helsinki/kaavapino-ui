@@ -86,6 +86,35 @@
   }
 
 }
+.disabled-fieldset{
+  pointer-events: none;
+  cursor: not-allowed;
+  opacity: .35;
+  -moz-user-focus: none;
+  -webkit-user-focus: none;
+  -ms-user-focus: none;
+  -moz-user-modify: read-only;
+  -webkit-user-modify: read-only;
+  -ms-user-modify: read-only;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  input,div,span,p,button{
+    pointer-events: none;
+    cursor: not-allowed;
+    -moz-user-focus: none;
+    -webkit-user-focus: none;
+    -ms-user-focus: none;
+    -moz-user-modify: read-only;
+    -webkit-user-modify: read-only;
+    -ms-user-modify: read-only;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+}
 .radio-input-container {
   display: flex;
   flex-direction: column;
@@ -405,6 +434,8 @@
       font-size: $size14;
       color: $black1;
       font-weight: 500;
+      display: flex;
+      flex-flow: column;
     }
     svg{
       font-size: $size14;
@@ -416,14 +447,14 @@
       padding-left: 16px;
       padding-right: 16px;
     }
-    div:first-of-type{
-      padding-bottom: 0;
-      padding-top: 0;
-    }
     div[role=button]{
-      height: 42px;
+      max-height: 66px;
       outline: none;
     } 
+  }
+  .fieldset-accordian + div:first-of-type{
+    padding-bottom: 12px;
+    padding-top: 12px;
   }
   .fieldset-accordian-open{
     pointer-events: all;
@@ -440,6 +471,8 @@
       font-weight: 500;
       color: $black1;
       padding-left: 8px;
+      display: flex;
+      flex-flow: column;
     }
     svg{
       font-size: $size14;
@@ -460,12 +493,11 @@
       }
     }
     div[role=button]{
-      height: 42px;
+      max-height: 66px;
       outline: none;
-    }
-    div:first-of-type{
-      padding-bottom: 0;
-      padding-top: 0;
+      svg{
+        margin-right: 8px;
+      }
     }
     .input-container:last-of-type{
       .max-chars{
@@ -477,6 +509,18 @@
       padding-left: 0;
       pointer-events: none;
     }
+  }
+  .fieldset-accordian-open + div:first-of-type{
+    padding-bottom: 12px;
+    padding-top: 12px;
+  }
+  .input-locked{
+    font-family: "Helsinki Grotesk Medium", sans-serif;
+    font-size: $size12;
+    color: $color-info-dark;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-end;
   }
 }
 

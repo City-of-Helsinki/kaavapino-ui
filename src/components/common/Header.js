@@ -329,7 +329,7 @@ const Header = props => {
               <span className="loading-spinner">{lastSaved?.status === "error" ? t('messages.connect-again') : ""}</span>
             </div>
             {updateTime?.status === t('header.edit-menu-saved') ? <IconCheck className='check-icon'/> : ""}
-            <p>{updateTime?.status}{updateTime?.time}</p>
+            <p className={updateTime?.status === t('header.edit-menu-save-fail') ? "error" : ""}>{updateTime?.status}{updateTime?.time}</p>
           </div>
         </Navigation.Row>
       </Navigation>
