@@ -402,7 +402,7 @@ function RichTextEditor(props) {
     console.log(editor?.ops[0], dbValue?.ops[0])
     console.log(projectUtils.objectsEqual(editor?.ops[0], dbValue?.ops[0])) */
     console.log(editor?.ops, dbValue)
-    if(!projectUtils.objectsEqual(editor?.ops[0], dbValue?.ops[0])){
+    if(dbValue?.ops && !projectUtils.objectsEqual(editor?.ops[0], dbValue?.ops[0])){
       //set editor value from db value updated with lock call
       const cursorPosition = editorRef.current.getEditor().getSelection()
       editorRef.current.getEditor().setContents(dbValue);
