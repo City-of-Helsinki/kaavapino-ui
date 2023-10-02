@@ -68,7 +68,8 @@ function RichTextEditor(props) {
     formName,
     setRef,
     lockField,
-    fieldSetDisabled
+    fieldSetDisabled,
+    insideFieldset
   } = props
 
   const dispatch = useDispatch()
@@ -161,27 +162,23 @@ function RichTextEditor(props) {
 
   useEffect(() => {
     //Chekcs that locked status has more data then inital empty object
-    if(lockedStatus && Object.keys(lockedStatus).length > 0){
+    if(!insideFieldset && lockedStatus && Object.keys(lockedStatus).length > 0){
       if(lockedStatus.lock === false){
         let identifier;
-        let name = inputProps.name
         //Field is fieldset field and has different type of identifier
         //else is normal field
         if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
           identifier = lockedStatus.lockData.attribute_lock.field_identifier;
-          if(name){
-            name = name.split('.')[0]
-          }
         }
         else{
           identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
         }
 
-        const lock = name === identifier
+        const lock = inputProps.name === identifier
         //Check if locked field name matches with instance and that owner is true to allow edit
         //else someone else is editing and prevent editing
         if(lock && lockedStatus.lockData.attribute_lock.owner){
-          if(lastModified === name && lockedStatus?.saving){
+          if(lastModified === inputProps.name && lockedStatus?.saving){
             setReadOnly(true)
           }
           else{
@@ -204,6 +201,53 @@ function RichTextEditor(props) {
             //Change styles from FormField
             lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
           }
+        }
+      }
+    }
+    else if(insideFieldset && lockedStatus && Object.keys(lockedStatus).length > 0){
+      //Fieldsets lock happends on Fieldset.js
+      //Get most recent data for all fields inside fieldset when accordian is clicked and whole fieldset is locked.
+      if(lockedStatus.lock === false){
+        let identifier;
+        let name = inputProps.name;
+        if(name){
+          //Get index of fieldset
+          name = name.split('.')[0]
+        }
+        //Field is fieldset field and has different type of identifier
+        //else is normal field
+        if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
+          identifier = lockedStatus.lockData.attribute_lock.field_identifier;
+        }
+        else{
+          identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
+        }
+        //Compares which index not which field
+        const lock = name === identifier
+        if(lock){
+          let fieldData
+          let field = inputProps.name
+          const fieldSetFields = lockedStatus.lockData.attribute_lock.field_data
+
+          if(field){
+            //Get single field
+            field = field.split('.')[1]
+          }
+
+          for (const [key, value] of Object.entries(fieldSetFields)) {
+            if(key === field){
+              //If field is this instance of component then set value for it from db
+              fieldData = value
+            }
+          }
+
+          setValue(fieldData)
+          lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
+          setReadOnly(false)
+        }
+        else{
+          lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
+          setReadOnly(false)
         }
       }
     }
@@ -290,12 +334,9 @@ function RichTextEditor(props) {
     if(source && event && source !== "silent"){
       if (typeof onFocus === 'function') {
         //Sent a call to lock field to backend
-        let name = inputProps.name
-        if(name){
-          name = name.split('.')[0]
+        if(!insideFieldset){
+          onFocus(inputProps.name);
         }
-        console.log(name)
-        onFocus(name);
         localStorage.setItem("previousElementId",editorRef.current.props.id);
       }
       setToolbarVisible(true)
@@ -317,14 +358,12 @@ function RichTextEditor(props) {
       }
     }
     //Check lockfield if component is used somewhere where locking is not used.
-    if (typeof lockField === 'function') {
+    if (typeof lockField === 'function' && !insideFieldset) {
       //Send identifier data to change styles from FormField.js
-      console.log(identifier)
       lockField(false,false,identifier)
     }
     //Sent a call to unlock field to backend
-    if (typeof props.handleUnlockField === 'function') {
-      console.log(inputProps.name)
+    if (typeof props.handleUnlockField === 'function' && !insideFieldset) {
       props.handleUnlockField(inputProps.name)
     }
     if (inputValue.current !== oldValueRef.current) {
@@ -334,7 +373,6 @@ function RichTextEditor(props) {
         if(!valueIsSet){
           if (typeof onBlur === 'function') {
             localStorage.setItem("changedValues", inputProps.name);
-            console.log("blur")
             onBlur();
             oldValueRef.current = inputValue.current;
             setReadOnly(true)
@@ -394,14 +432,11 @@ function RichTextEditor(props) {
 
 
   const setValue = (dbValue) => {
-    console.log(dbValue)
     const editor = editorRef.current.getEditor().getContents()
     /*TODO possible bug on adding some styles from editor to text. 
     The text could come as empty string and only show up on page refresh. Example add text and add color styles to it, 
     save and check from other browser tab that does it update the difference
-    console.log(editor?.ops[0], dbValue?.ops[0])
-    console.log(projectUtils.objectsEqual(editor?.ops[0], dbValue?.ops[0])) */
-    console.log(editor?.ops, dbValue)
+     */
     if(dbValue?.ops && !projectUtils.objectsEqual(editor?.ops[0], dbValue?.ops[0])){
       //set editor value from db value updated with lock call
       const cursorPosition = editorRef.current.getEditor().getSelection()

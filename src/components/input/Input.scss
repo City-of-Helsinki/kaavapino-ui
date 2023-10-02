@@ -14,7 +14,7 @@
     align-items: center;
     display: flex;
     font-weight: bold;
-    justify-content: space-between;
+    justify-content: flex-start;
     position: relative;
     z-index: 1;
     .input-title{
@@ -51,6 +51,7 @@
   .input-header-icons {
     display: flex;
     margin-right: 8px;
+    margin-left: 8px;
 
     @media screen and (min-width: 600px) {
       margin-right: 0;
@@ -86,35 +87,7 @@
   }
 
 }
-.disabled-fieldset{
-  pointer-events: none;
-  cursor: not-allowed;
-  opacity: .35;
-  -moz-user-focus: none;
-  -webkit-user-focus: none;
-  -ms-user-focus: none;
-  -moz-user-modify: read-only;
-  -webkit-user-modify: read-only;
-  -ms-user-modify: read-only;
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  input,div,span,p,button{
-    pointer-events: none;
-    cursor: not-allowed;
-    -moz-user-focus: none;
-    -webkit-user-focus: none;
-    -ms-user-focus: none;
-    -moz-user-modify: read-only;
-    -webkit-user-modify: read-only;
-    -ms-user-modify: read-only;
-    -moz-user-select: none;
-    -webkit-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
-}
+
 .radio-input-container {
   display: flex;
   flex-direction: column;
@@ -410,7 +383,6 @@
   margin-left: 16px;
 }
 .fieldset-container {
-  pointer-events: none;
   border: none;
   position: relative;
   animation: expand 0.5s ease-in-out;
@@ -421,75 +393,110 @@
   padding-left: 16px;
   padding-right: 16px;
 
-  .fieldset-accordian{
+  /* Style the buttons that are used to open and close the accordion panel */
+  .accordion-button {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background-color: $color-white;
+    font-family: "Helsinki Grotesk Medium", sans-serif;
+    font-size: $size14;
+    color: $black1;
+    font-weight: 500;
     pointer-events: all;
-    border-top: none;
-    border-left: none;
-    border-right: none;
-    border-bottom: 0.7px solid $color-black-60;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    border:none;
+    outline: none;
+    transition: 0.1s;
+    padding-top: 11.2px;
+    padding-bottom: 10.8px;
     padding-left: 0;
-    padding-right: 0;
-    .label{
-      font-family: "Helsinki Grotesk Medium", sans-serif;
-      font-size: $size14;
-      color: $black1;
-      font-weight: 500;
+    border-bottom: 0.7px solid $color-black-60;
+    .accordion-button-content{
       display: flex;
+      justify-content: flex-start;
       flex-flow: column;
+      align-items: flex-start;
+      svg{
+        pointer-events: none;
+      }
+      .accoardian-header-text{
+        pointer-events: none;
+      }
     }
     svg{
-      font-size: $size14;
-      width: 24px !important;
-      height: 24px !important;
-    }
-    .input-container {
-      background-color: $color-white;
-      padding-left: 16px;
-      padding-right: 16px;
-    }
-    div[role=button]{
-      max-height: 66px;
-      outline: none;
-    } 
-  }
-  .fieldset-accordian + div:first-of-type{
-    padding-bottom: 12px;
-    padding-top: 12px;
-  }
-  .fieldset-accordian-open{
-    pointer-events: all;
-    border-top: none;
-    border-left: none;
-    border-right: none;
-    border-bottom: 0.7px solid $color-black-60;
-    background-color: $color-fog-light;
-    padding-left: 0;
-    padding-right: 0;
-    .label{
-      font-family: "Helsinki Grotesk Medium", sans-serif;
-      font-size: $size14;
-      font-weight: 500;
-      color: $black1;
-      padding-left: 8px;
-      display: flex;
-      flex-flow: column;
-    }
-    svg{
-      font-size: $size14;
-      width: 24px !important;
-      height: 24px !important;
       pointer-events: none;
+      width: $size17;
+      height: $size17;
     }
+  }
+
+  .accordion-button-open{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background-color: $color-fog-light;
+    font-family: "Helsinki Grotesk Medium", sans-serif;
+    font-size: $size14;
+    color: $black1;
+    font-weight: 500;
+    pointer-events: all;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    border: none;
+    outline: none;
+    transition: 0.1s;
+    padding-top: 11.2px;
+    padding-bottom: 10.8px;
+    padding-left: 8px;
+    .accordion-button-content{
+      display: flex;
+      justify-content: flex-start;
+      flex-flow: column;
+      align-items: flex-start;
+      svg{
+        pointer-events: none;
+      }
+      .accoardian-header-text{
+        pointer-events: none;
+      }
+    }
+    svg{
+      pointer-events: none;
+      width: $size17;
+      height: $size17;
+    }
+  }
+
+  .accordion-button > * {
+    pointer-events: none !important;
+  }
+
+  /* Style the accordion panel. Note: hidden by default */
+  .fieldset-accordian {
+    padding: 0 18px;
+    background-color: $color-white;
+    display: none;
+    overflow: hidden;
     .input-container {
       background-color: $color-fog-light;
-      padding-left: 16px;
-      padding-right: 16px;
-      input{
+      padding-bottom: 27.5px;
+      .field{
+        .text-input,.selection,.ad-combobox{
+          max-width: 256px;
+        }
+      }
+      input,.ql-editor{
         border:1.6px solid $border-gray2;
+        font-family: "Helsinki Grotesk Regular", sans-serif;
+        font-size: $size14;
+        color:$black1
       }
       .max-chars{
         font-size: $size13;
-        padding-bottom: 27.5px;
       }
     }
     div[role=button]{
@@ -510,10 +517,69 @@
       pointer-events: none;
     }
   }
-  .fieldset-accordian-open + div:first-of-type{
-    padding-bottom: 12px;
-    padding-top: 12px;
+
+  .fieldset-accordian-open{
+    padding: 0 18px;
+    background-color: $color-fog-light;
+    display: block;
+    overflow: hidden;
+    border-bottom: 0.7px solid $color-black-60;
+    .input-container {
+      background-color: $color-fog-light;
+      padding-bottom: 27.5px;
+      .field{
+        .text-input,.selection,.ad-combobox{
+          max-width: 256px;
+        }
+      }
+      input,.ql-editor{
+        border:1.6px solid $border-gray2;
+        font-family: "Helsinki Grotesk Regular", sans-serif;
+        font-size: $size14;
+        color:$black1
+      }
+      .max-chars{
+        font-size: $size13;
+      }
+    }
+    div[role=button]{
+      max-height: 66px;
+      outline: none;
+      svg{
+        margin-right: 8px;
+      }
+    }
+    .input-container:last-of-type{
+      .max-chars{
+        padding-bottom: 0;
+      }
+    }
+    .input-title{
+      font-size: $size13;
+      padding-left: 0;
+      pointer-events: none;
+    }
+    .close-accordion-button{
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      button{
+        font-family: "Helsinki Grotesk Medium", sans-serif;
+        font-size: $size12;
+        color: $black1;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        background-color: transparent;
+        border: none;
+        margin-right: -16px;
+        span{
+          padding-right: 5px;
+        }
+      }
+    }
   }
+
   .input-locked{
     font-family: "Helsinki Grotesk Medium", sans-serif;
     font-size: $size12;
@@ -531,13 +597,23 @@
 .fieldset-button-remove {
  color: $color-error;
  border-color: $color-error !important;
- margin-left: 16px;
  margin-top: 20px;
+ margin-bottom: 3.4px;
 }
 
 .fieldset-button-remove:hover{
   color: $color-error;
   border-color: $color-error !important;
+}
+
+.fieldset-button-remove-disabled{
+  border-color: $color-black-40 !important;
+  margin-left: 16px;
+  margin-top: 20px;
+}
+
+.fieldset-button-remove-disabled:hover{
+  border-color: $color-black-40 !important;
   margin-left: 16px;
 }
 
@@ -671,4 +747,34 @@
 
 .ad-combobox {
   text-align: left;
+}
+
+.disabled-fieldset{
+  pointer-events: none;
+  cursor: not-allowed;
+  opacity: .35;
+  -moz-user-focus: none;
+  -webkit-user-focus: none;
+  -ms-user-focus: none;
+  -moz-user-modify: read-only;
+  -webkit-user-modify: read-only;
+  -ms-user-modify: read-only;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  input,div,span,p,button{
+    pointer-events: none;
+    cursor: not-allowed;
+    -moz-user-focus: none;
+    -webkit-user-focus: none;
+    -ms-user-focus: none;
+    -moz-user-modify: read-only;
+    -webkit-user-modify: read-only;
+    -ms-user-modify: read-only;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
 }

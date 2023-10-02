@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useRef } from 'react'
 import { connect, useDispatch } from 'react-redux'
 import { checkingSelector } from '../../selectors/projectSelector'
 import CustomField from './CustomField'
@@ -7,10 +7,11 @@ import projectUtils from '../../utils/projectUtils'
 import Info from './Info'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { has } from 'lodash'
-import { Accordion, Button, IconLock, IconClock, IconPlus, IconTrash } from 'hds-react'
+import { Button, IconLock, IconClock, IconPlus, IconTrash, IconAngleDown, IconAngleUp } from 'hds-react'
 import { change } from 'redux-form'
 import { get } from 'lodash'
 import { useTranslation } from 'react-i18next';
+import { OutsideClick } from '../../hooks/OutsideClick'
 
 const FieldSet = ({
   sets,
@@ -45,48 +46,32 @@ const FieldSet = ({
 
   const [hiddenIndex, setHiddenIndex] = useState(-1)
   const [expanded, setExpanded] = useState([]);
-
-  useEffect(() => {
-    document.addEventListener("click", checkClickedElement);
-    return () => {
-      document.removeEventListener("click", checkClickedElement);
-    };
-  }, [])
-
-  const checkClickedElement = (e) => {
-    console.log(e.target.parentNode)
-  };
+  const accordianRef = useRef(null)
 
   const checkLocked = (e,set,i) => {
     let expand = false
-    //Change expanded styles if some of these custom targets is clicked from accordian
-    if(e.target.nodeName === "path" || e.target.nodeName === "svg"){
-      expand = true
+    //Change expanded styles if close button or accordian heading element is clicked
+    const substrings = ["fieldset-accordian-close","accordion-button"];
+    if (substrings.some(v => e?.target?.className?.includes(v))) {
+        expand = true
     }
-    else if(e.target.getAttribute('aria-expanded')){
-      expand = true
-    }
-    else{
-      const substrings = ["label", "fieldset-accordian-close","accoardian-header-text","Accordian-module"];
-      if (substrings.some(v => e?.target?.className?.includes(v))) {
-          expand = true
-      }
-    }
-
+    
     if(expand){
       //Expand or close element that was clicked inside fieldset array of elements
       let expandedArray = expanded.slice();
       if(expandedArray.includes(i)){
         expandedArray.splice(expandedArray.indexOf(i), 1);
-        //handleUnlockField(set)
+        handleUnlockField(set)
       }
       else{
-        expandedArray.push(i);
-        //handleLockField(set)
+        //Close other accordians and open latest
+        expandedArray = [i];
+        //check is someone else editing the fieldset or lock it to this user
+        handleLockField(set)
       }
       setExpanded(expandedArray);
     }
-    //check is someone else editing the fieldset
+
   }
 
   const nulledFields =
@@ -95,7 +80,15 @@ const FieldSet = ({
       return { [field.name]: null, _deleted: true }
   })
 
+   const handleOutsideClick = () => {
+    //close all accordians when clicked outside fieldset main
+    setExpanded([]);
+  }
+
+  OutsideClick(accordianRef, handleOutsideClick)
+  //<Accordion className={expanded.includes(i) ? 'fieldset-accordian-open' : 'fieldset-accordian'} closeButtonClassName="fieldset-accordian-close" size="s" card border heading={lockName} language="fi" style={{ maxWidth: '100%' }}>
   return (
+    <div className='fieldset-main-container' ref={accordianRef}>
     <React.Fragment>
       <div className='fieldset-info'>Korvataan tämä info excelistä tulevalla datalla</div>
       {sets.map((set, i) => {
@@ -107,8 +100,14 @@ const FieldSet = ({
         return (
           <React.Fragment key={`${name}-${i}`}>
             {!deleted && hiddenIndex !== i && (
-              <div key={i} className="fieldset-container" onClick={(e) => {checkLocked(e,set,i)}}>
-                <Accordion className={expanded.includes(i) ? 'fieldset-accordian-open' : 'fieldset-accordian'} closeButtonClassName="fieldset-accordian-close" size="s" card border heading={lockName} language="fi" style={{ maxWidth: '100%' }}>
+              <div key={i} className="fieldset-container">
+                <button className={expanded.includes(i) ? "accordion-button-open" : "accordion-button"} onClick={(e) => {checkLocked(e,set,i)}}>
+                  <div className='accordion-button-content'>
+                    {lockName}
+                  </div>
+                  {expanded.includes(i) ? <IconAngleUp size='s'/> : <IconAngleDown size='s'/>}
+                </button>
+                <div className={expanded.includes(i) ? 'fieldset-accordian-open' : 'fieldset-accordian'}>
                 {fields.map((field, j) => {
                   const currentName = `${set}.${field.name}`
                   if (
@@ -222,6 +221,7 @@ const FieldSet = ({
                           unlockAllFields={unlockAllFields}
                           validate={validate}
                           fieldSetDisabled={fieldsetDisabled}
+                          insideFieldset={true}
                         />
                         {showError && <div className="error-text">{showError}</div>}
                       </Form.Field>
@@ -230,8 +230,8 @@ const FieldSet = ({
                 })}
                 {(!disable_fieldset_delete_add && !automatically_added && !disabled) && (
                   <Button
-                    className="fieldset-button-remove"
-                    disabled={sets.length < 1 || disabled}
+                    className={fieldsetDisabled ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'}
+                    disabled={sets.length < 1 || disabled || fieldsetDisabled}
                     variant="secondary"
                     size='small'
                     iconLeft={<IconTrash/>}
@@ -242,7 +242,10 @@ const FieldSet = ({
                     }}
                   > {t('project.remove')}</Button>
                 )}
-                </Accordion>
+                  <div className='close-accordion-button'>
+                    <button className={expanded.includes(i) ? "accordion-button-open" : "accordion-button"}  onClick={(e) => {checkLocked(e,set,i)}}><span>Sulje</span><IconAngleUp onClick={(e) => {checkLocked(e,set,i)}} size='s'/></button>
+                  </div>
+                </div>
               </div>
             )}
           </React.Fragment>
@@ -265,6 +268,7 @@ const FieldSet = ({
       </Button>
       )}
     </React.Fragment>
+    </div>
   )
 }
 
