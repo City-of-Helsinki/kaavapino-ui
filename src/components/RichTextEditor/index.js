@@ -233,11 +233,13 @@ function RichTextEditor(props) {
             //Get single field
             field = field.split('.')[1]
           }
-
-          for (const [key, value] of Object.entries(fieldSetFields)) {
-            if(key === field){
-              //If field is this instance of component then set value for it from db
-              fieldData = value
+          
+          if(fieldSetFields){
+            for (const [key, value] of Object.entries(fieldSetFields)) {
+              if(key === field){
+                //If field is this instance of component then set value for it from db
+                fieldData = value
+              }
             }
           }
 

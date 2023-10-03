@@ -83,10 +83,11 @@ const FieldSet = ({
    const handleOutsideClick = () => {
     //close all accordians when clicked outside fieldset main
     setExpanded([]);
+    unlockAllFields()
   }
 
   OutsideClick(accordianRef, handleOutsideClick)
-  //<Accordion className={expanded.includes(i) ? 'fieldset-accordian-open' : 'fieldset-accordian'} closeButtonClassName="fieldset-accordian-close" size="s" card border heading={lockName} language="fi" style={{ maxWidth: '100%' }}>
+
   return (
     <div className='fieldset-main-container' ref={accordianRef}>
     <React.Fragment>

@@ -92,8 +92,8 @@ const Header = props => {
       const currentSchemaIndex = schema.phases.findIndex(s => s.id === schemaUtils.getSelectedPhase(props.location.search,selectedPhase))
       const currentSchema = schema.phases[currentSchemaIndex]
       const currentSection = currentSchema.sections[props.currentSection]
-      setPhaseTitle(currentSchema.title)
-      setSectionTitle(currentSection.title)
+      setPhaseTitle(currentSchema?.title)
+      setSectionTitle(currentSection?.title)
     }
   },[schema,selectedPhase,props.currentSection])
 
