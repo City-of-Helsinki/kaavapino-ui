@@ -669,7 +669,7 @@ function* unlockAllFields(data) {
 
 function* unlockProjectField(data) {
   const project_name = data.payload.projectName;
-  let attribute_identifier = data.payload.inputName;
+  const attribute_identifier = data.payload.inputName;
 
   if(project_name && attribute_identifier){
     try {
@@ -688,9 +688,8 @@ function* unlockProjectField(data) {
 }
 
 function* lockProjectField(data) {
+  const attribute_identifier = data.payload.inputName;
   const project_name = data.payload.projectName;
-  let attribute_identifier = data.payload.inputName;
-
   const saving = yield select(savingSelector)
 
   if(project_name && attribute_identifier){
