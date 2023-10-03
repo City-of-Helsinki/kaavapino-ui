@@ -35,7 +35,7 @@ const FieldSet = ({
   lockStatus,
   unlockAllFields
 }) => {
-  console.log(attributeData)
+
   const handleBlur = () => {
     onBlur()
   }
