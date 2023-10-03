@@ -519,7 +519,9 @@
   }
 
   .fieldset-accordian-open{
-    padding: 0 18px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 16px;
     background-color: $color-fog-light;
     display: block;
     overflow: hidden;
@@ -574,6 +576,7 @@
         border: none;
         margin-right: -16px;
         span{
+          pointer-events: none;
           padding-right: 5px;
         }
       }
@@ -587,11 +590,15 @@
     display: flex;
     justify-content: flex-start;
     align-items: flex-end;
+    padding-top: 8px;
+    padding-bottom: 2px;
   }
 }
 
-.fieldset-button-add {
-  margin-top: 16px;
+.fieldset-main-container{
+  .fieldset-container:last-of-type{
+    margin-bottom: 16px;
+  }
 }
 
 .fieldset-button-remove {
@@ -608,13 +615,11 @@
 
 .fieldset-button-remove-disabled{
   border-color: $color-black-40 !important;
-  margin-left: 16px;
   margin-top: 20px;
 }
 
 .fieldset-button-remove-disabled:hover{
   border-color: $color-black-40 !important;
-  margin-left: 16px;
 }
 
 .fieldset-accordian-close{
@@ -752,7 +757,6 @@
 .disabled-fieldset{
   pointer-events: none;
   cursor: not-allowed;
-  opacity: .35;
   -moz-user-focus: none;
   -webkit-user-focus: none;
   -ms-user-focus: none;
@@ -763,6 +767,9 @@
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  .richtext-container,.text-input,.selection,.ad-combobox,.link-container,.file-input-container{
+    opacity: .35;
+  }
   input,div,span,p,button{
     pointer-events: none;
     cursor: not-allowed;
