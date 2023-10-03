@@ -446,7 +446,8 @@ function RichTextEditor(props) {
       editorRef.current.getEditor().setSelection(cursorPosition?.index);
     }
   }
-
+  //Default maxsize 1000
+  const maxSize = props.maxSize ? props.maxSize : 1000;
   return (
     <div 
     tabIndex="0"
@@ -460,7 +461,7 @@ function RichTextEditor(props) {
       aria-label="tooltip"
     >
       <div
-        className={counter.current > props.maxSize ? 
+        className={counter.current > maxSize ? 
         `rich-text-editor ${toolbarVisible || showComments ? 'toolbar-visible-error' : ''
         } ${largeField ? 'large' : ''}`
         : `rich-text-editor ${toolbarVisible || showComments ? 'toolbar-visible' : ''
@@ -559,17 +560,17 @@ function RichTextEditor(props) {
           ))}
         </div>
       )}
-      {showCounter.current && counter.current < 1002 && props.maxSize ? (
+      {showCounter.current && counter.current < 1002 && maxSize ? (
         <p
           className={
-            counter.current > props.maxSize ? 'quill-counter quill-warning' : 'quill-counter'
+            counter.current > maxSize ? 'quill-counter quill-warning' : 'quill-counter'
           }
         >
-          {counter.current + '/' + props.maxSize}
+          {counter.current + '/' + maxSize}
         </p>
       ) : null}
     </div>
-      {counter.current > props.maxSize && toolbarVisible || showComments ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> Merkkimäärä on ylittynyt</div> : ""}
+      {counter.current > maxSize && toolbarVisible ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> Merkkimäärä on ylittynyt</div> : ""}
       <div className='max-chars'>
         Max 1000 merkkiä
       </div>
