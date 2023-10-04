@@ -183,7 +183,7 @@
       display: none;
     }
 
-    .phase1,.phase7,.phase19,.phase25{
+    .phase1,.phase7,.phase13,.phase19,.phase25{
       &:hover,&:focus{
         border-left: 4px solid;
         border-left-color: $color_phase_start;
@@ -213,7 +213,7 @@
       }
     }
 
-    .phase2,.phase8,.phase20,.phase27{
+    .phase2,.phase8,.phase14,.phase20,.phase27{
       &:hover,&:focus{
         border-left: 4px solid;
         border-left-color: $color_phase_oas;
@@ -243,7 +243,7 @@
       }
     }
 
-    .phase3,.phase9,.phase21,.phase29{
+    .phase3,.phase9,.phase15,.phase21,.phase29{
       &:hover,&:focus{
         border-left: 4px solid;
         border-left-color: $color_phase_suggestion;
@@ -258,7 +258,7 @@
       }
     }
 
-    .phase4,.phase10,.phase22,.phase30{
+    .phase4,.phase10,.phase16,.phase22,.phase30{
       &:hover,&:focus{
         border-left: 4px solid;
         border-left-color: $color_phase_check_suggestion;
@@ -273,7 +273,7 @@
       }
     }
 
-    .phase5,.phase11,.phase23,.phase31{
+    .phase5,.phase11,.phase17,.phase23,.phase31{
       &:hover,&:focus{
         border-left: 4px solid;
         border-left-color: $color_phase_approval;
@@ -288,7 +288,7 @@
       }
     }
 
-    .phase6,.phase12,.phase24,.phase32{
+    .phase6,.phase12,.phase18,.phase24,.phase32{
       &:hover,&:focus{
         border-left: 4px solid;
         border-left-color: $color_phase_inception;
