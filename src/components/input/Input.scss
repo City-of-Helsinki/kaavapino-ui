@@ -602,14 +602,14 @@
 }
 
 .fieldset-button-remove {
- color: $color-error;
+ color: $color-error !important;
  border-color: $color-error !important;
  margin-top: 20px;
  margin-bottom: 3.4px;
 }
 
 .fieldset-button-remove:hover{
-  color: $color-error;
+  color: $color-error !important;
   border-color: $color-error !important;
 }
 
