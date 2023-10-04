@@ -53,6 +53,7 @@ export default function QuickNav({
     const value = hasMissingFields()
     setHasErrors(value)
     setValidationOk(true)
+    setAllowPhaseClose(false)
     handleCheck(true,"checkphase")
   }
 
@@ -197,7 +198,31 @@ export default function QuickNav({
   )
 
   const changeCurrentPhase = () => {
-    const prefix = parseInt(phasePrefix)
+    let prefix
+    if(isNaN(phasePrefix)){
+      if(phasePrefix + phaseTitle === "XLPeriaatteet"){
+        prefix = 2
+      }
+      else if(phasePrefix + phaseTitle === "XLLuonnos"){
+        prefix = 4
+      }
+    }
+    else{
+      prefix = parseInt(phasePrefix)
+      //5 = XL projects
+      if(currentProject.subtype === 5){
+        if(prefix === 2){
+          prefix = 3
+        }
+        if(prefix === 3){
+          prefix = 5
+        }
+        if(prefix === 4){
+          prefix = 6
+        }
+      }
+    }
+
     let documentsDownloaded = false
     if(documents){
       for (let i = 0; i < documents.length; i++) {
