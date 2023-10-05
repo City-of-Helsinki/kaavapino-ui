@@ -30,11 +30,8 @@ export const NavHeader = ({ routeItems, actions, title, infoOptions, attributes,
   const getPW = () => {
     //TODO undesided how this goes and no pwlink comes from excel and backend yet
     let pw
-    if(pwlink && pwnumber){
-      pw = <td><a className='link-underlined' target={pwlink}>{pwnumber} <IconLinkExternal size="xs" aria-hidden="true" /></a></td>
-    }
-    else if(pwlink){
-      pw = <td><a className='link-underlined' target={pwlink}>{pwlink} <IconLinkExternal size="xs" aria-hidden="true" /></a></td>
+    if(pwlink?.new_value && pwnumber){
+      pw = <td><a className='link-underlined' href={pwlink?.new_value} target="_blank" rel="noreferrer">{pwnumber} <IconLinkExternal size="xs" aria-hidden="true" /></a></td>
     }
     else if(pwnumber){
       pw = <td>{pwnumber}</td>

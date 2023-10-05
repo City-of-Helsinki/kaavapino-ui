@@ -102,6 +102,7 @@ class NewProjectFormModal extends Component {
         {...fieldProps}
         submitErrors={formSubmitErrors}
         formValues={formValues}
+        insideFieldset={true}
       />
     )
   }
