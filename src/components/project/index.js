@@ -168,9 +168,10 @@ class ProjectPage extends Component {
   }
 
   getProjectEditContent = isExpert => {
-    const { currentProject, users, projectSubtypes, selectedPhase } = this.props
+    const { currentProject, users, projectSubtypes, selectedPhase, allEditFields } = this.props
     const user = projectUtils.formatUsersName(users.find(u => u.id === currentProject.user))
     const currentPhases = this.getCurrentPhases()
+
     return (
       <div key="edit">
         <NavHeader
@@ -181,7 +182,7 @@ class ProjectPage extends Component {
           pino={currentProject?.pino_number}
           diaari={currentProject?.attribute_data?.diaarinumero}
           pwnumber={currentProject?.attribute_data?.hankenumero}
-          pwlink={false}
+          pwlink={allEditFields?.pw_urn}
           location={this.props.location}
           actions={this.getEditNavActions(isExpert)}
           infoOptions={this.getAllChanges()}

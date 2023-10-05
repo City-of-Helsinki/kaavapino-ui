@@ -691,6 +691,24 @@
   .checkbox {
     padding-top: 3px;
     padding-right: 5px;
+    input{
+      &:before {
+        //checkmark
+        z-index: 1;
+      }
+    }
+    input:hover,.input:focus{
+      &:before {
+        //checkmark
+        z-index: 1;
+      }
+    }
+    label{
+      &:before {
+        //background
+        z-index: 1;
+      }
+    }
   }
 }
 .deadline-info-text {
