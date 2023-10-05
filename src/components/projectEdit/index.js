@@ -359,6 +359,7 @@ class ProjectEditPage extends Component {
   }
 
   checkRequiredFields = (documentsDownloaded,origin) => {
+
     this.props.projectSetChecking(this.props.checking)
     const {
       project: { attribute_data },
@@ -511,7 +512,7 @@ class ProjectEditPage extends Component {
       documents
     } = this.props
     const { highlightGroup } = this.state
-    
+
     if (!schema) {
       return <LoadingSpinner className="loader-icon" />
     }
