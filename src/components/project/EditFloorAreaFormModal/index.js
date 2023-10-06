@@ -102,7 +102,6 @@ class EditFloorAreaFormModal extends Component {
     const { formSubmitErrors, formValues, attributeData } = this.props
     const error =
       formSubmitErrors && fieldProps.field && formSubmitErrors[fieldProps.field.name]
-
     return (
       <div key={key}>
         <FormField
@@ -117,6 +116,7 @@ class EditFloorAreaFormModal extends Component {
       </div>
     )
   }
+
   renderSection = (section, sectionIndex) => {
     // "Yhteesä" section is handled separately
     if (section.title.includes('yhteensä')) {

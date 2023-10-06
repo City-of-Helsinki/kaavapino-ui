@@ -71,6 +71,7 @@ const FormField = ({
             attributeData={attributeData}
             formValues={formValues}
             formName={formName}
+            insideFieldset={insideFieldset}
           />
         )
       default:

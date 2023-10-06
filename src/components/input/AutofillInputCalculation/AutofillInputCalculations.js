@@ -65,10 +65,10 @@ const AutofillInputCalculations = ({
 
     calculatedTotal = handleAutofillCalculations(calculations, formValues)
 
-    if (calculatedTotal !== value) {
-      dispatch(change(formName, name, calculatedTotal))
-    }
-  }, [related_fields, formValues])
+    dispatch(change(formName, name, calculatedTotal))
+    
+    
+  }, [related_fields, JSON.stringify(formValues)])
 
   const renderKm2UnitComponent = () => (
     <div className="autofill-input">
