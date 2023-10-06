@@ -103,11 +103,8 @@ h4 {
   background-color: $white-background !important;
   border: 0;
   border-radius: 0;
-  padding: 16px 0;
-
-  @media screen and (min-width: 600px) {
-    padding: 32px 22px;
-  }
+  padding: 0 0;
+  margin-top: 0;
 
   .field.yellow{
     border-left: 4px solid $tagyellow;

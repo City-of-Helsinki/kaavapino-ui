@@ -62,7 +62,6 @@ class EditForm extends Component {
     const {
       disabled,
       sections,
-      title,
       projectId,
       attributeData,
       syncronousErrors,
@@ -77,8 +76,7 @@ class EditForm extends Component {
     return (
       <>
       {showSection ?
-      <Form className="form-container" autoComplete="off" aria-live="polite" aria-atomic="true">
-        <h2 tabIndex="0" id="accordion-title">{title}</h2>
+      <Form className="form-container" autoComplete="off" aria-live="polite" aria-atomic="true" id="accordion-title" tabIndex="0">
         <div className="edit-form-buttons">
           <Shoutbox project={projectId} />
         </div>
