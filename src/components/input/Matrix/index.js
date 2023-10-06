@@ -11,7 +11,8 @@ const Matrix = ({
   checking,
   attributeData,
   formName,
-  isFloorCalculation
+  isFloorCalculation,
+  insideFieldset
 }) => {
   const { rows, columns, fields } = matrix
 
@@ -85,6 +86,7 @@ const Matrix = ({
                             fieldset={field.type === 'fieldset'}
                             formName={formName}
                             isFloorCalculation={isFloorCalculation}
+                            insideFieldset={insideFieldset}
                           />
                         </span>
                       )}
