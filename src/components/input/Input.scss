@@ -680,6 +680,28 @@
   }
 }
 
+.linked-fields{
+  font-family: 'Helsinki Grotesk Regular', sans-serif;
+  font-size: $size14;
+  line-height: $size24;
+  color: $black1;
+  padding-top: 20px;
+  .linked-header{
+    font-family: 'Helsinki Grotesk Bold', sans-serif;
+    font-size: $size14;
+    line-height: $size24;
+    color: $black1;
+    font-weight: 700;
+  }
+  .linked-fields-list{
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 4px;
+    padding-bottom: 8px;
+    margin: 0;
+  }
+}
+
 .rdtPicker {
   color: black;
 }

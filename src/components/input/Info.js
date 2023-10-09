@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next'
 
 const InfoContent = props => {
   const { t } = useTranslation()
-
   return (
     <React.Fragment>
       <span className="content">{props.content}</span>
@@ -17,13 +16,24 @@ const InfoContent = props => {
           </Link>
         </div>
       )}
+      {props.linked && (
+        <div className='linked-fields'>
+          <span className='linked-header'>{t('project.header-text')}</span>
+          <ul className='linked-fields-list'>
+          {props.linked.map((info) => 
+            <li className='linked-list-element' key={info}>{info}</li>
+            )
+          }
+          </ul>
+        </div>
+      )}
     </React.Fragment>
   )
 }
 
 const Info = props => (
   <Tooltip tooltipClassName={props.className} placement="top">
-    <InfoContent content={props.content} link={props.link} />
+    <InfoContent content={props.content} link={props.link} linked={props.linked} />
   </Tooltip>
 )
 
