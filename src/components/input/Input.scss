@@ -88,6 +88,19 @@
 
 }
 
+.highligh-error{
+  border: 4px solid $color-coat-of-arms;
+  .input-header{
+    animation: shake 1s ease 1;
+  }
+}
+
+@keyframes shake {
+	0%, 80% {transform: translateX(0);}
+	30%, 70% {transform: translateX(-10px);}
+	50% {transform: translateX(10px);}
+}
+
 .radio-input-container {
   display: flex;
   flex-direction: column;

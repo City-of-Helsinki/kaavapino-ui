@@ -353,6 +353,15 @@ header{
     --header-height: 56px;
     border-bottom: 2px solid $color-suomenlinna;
     z-index: 6;
+    div:nth-child(3){
+      div:nth-child(1){
+        div:first-of-type{
+          max-width: 1148px;
+          padding-right: 0;
+          padding-left: 0; 
+        }
+      }
+    }
   }
   nav{
     max-width: 1148px;
@@ -385,6 +394,7 @@ header{
     }
     .edit-page-save{
       font-family: "Helsinki Grotesk Medium", sans-serif;
+      padding-right: 0;
       .spinner-container{
         font-size: $size16;
         display: flex;
@@ -416,6 +426,9 @@ header{
     font-family: "Helsinki Grotesk Medium", sans-serif;
     color: $color-bus;
     pointer-events: auto;
+    div{
+      margin-left: -10px !important;
+    }
     svg{
       display: inline-block;
       color: $color-bus;

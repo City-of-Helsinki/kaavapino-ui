@@ -250,7 +250,12 @@ const Header = props => {
     //Set offset so field is not hidden under sticky filter menu
     if(anchorElement){
       anchorElement.scrollIntoView({ block: "start" });
-      window.scrollBy(0, -200); 
+      window.scrollBy(0, -200);
+      let highlighContainer = anchorElement.closest(".input-container")
+      highlighContainer.classList.add("highligh-error");
+      setTimeout(() => {
+        highlighContainer.classList.remove("highligh-error");
+      }, 2000)
     }
   }
 
