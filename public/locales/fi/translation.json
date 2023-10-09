@@ -222,7 +222,8 @@
     "total":"Yhteensä",
     "found-projects":"projektia.",
     "download-old-data":"Lataa vanhoja projektitietoja",
-    "modify-project-base":"Muokkaa projektin luontitietoja"
+    "modify-project-base":"Muokkaa projektin luontitietoja",
+    "header-text":"Kentän tieto siirtyy seuraaviin paikkoihin: "
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}",

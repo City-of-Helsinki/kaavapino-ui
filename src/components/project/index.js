@@ -69,7 +69,7 @@ class ProjectPage extends Component {
       sectionIndex:0
     }
   }
-
+  
   componentDidMount() {
     const { currentProjectLoaded, users, getAttributes, currentProject } = this.props
 
