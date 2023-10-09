@@ -177,6 +177,7 @@ const FormField = ({
     return (
       <>
       <Form.Field
+        tabIndex="0"
         className={`input-container ${isOneLineField ? 'small-margin' : ''} ${
           showError ? 'error' : ''
         } ${highlightStyle}`}
