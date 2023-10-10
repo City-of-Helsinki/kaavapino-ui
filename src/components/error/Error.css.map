@@ -1,1 +1,1 @@
-{"version":3,"sourceRoot":"","sources":["Error.scss"],"names":[],"mappings":"AAAA;EACE;EACA;EACA;EACA;EACA;EACA;EACA","file":"Error.css"}
+{"version":3,"sourceRoot":"","sources":["Error.scss","../common/colors.scss"],"names":[],"mappings":"AAEA;EACE;EACA;EACA;EACA;EACA;EACA,WC0IM;EDzIN","file":"Error.css"}
