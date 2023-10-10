@@ -85,7 +85,7 @@
           height: 12px;
         }
         .project-status-text{
-          padding-left: 2px;
+          padding-left: 8px;
         }
       }
 
@@ -316,14 +316,14 @@
             cursor: pointer;
             width: 68px;
             color: $color-bus-light;
-  
+
             .ui.toggle.checkbox input:checked ~ label:after {
               left: 1.977rem;
             }
             .ui.toggle.checkbox input:checked ~ label:before {
               background-color: $color-black !important;
             }
-  
+
             .toggle {
               padding-left: 6px;
               position: absolute;
@@ -335,7 +335,7 @@
                 width: 20px;
                 height: 20px;
               }
-  
+
               @media screen and (max-width: 1200px) {
                 padding-left: 0;
               }
@@ -528,6 +528,15 @@
     .column{
       max-width: 328px;
     }
+    .column label + div {
+      margin-top: 4px;
+    }
+    .ui.grid > .column:not(.row) {
+      padding: $size12;
+    }
+    .ui.grid {
+      margin: -$size12;
+    }
   }
 
   .project-list-pagination{
@@ -541,7 +550,10 @@
     }
     nav{
       font-size: $size16;
-      font-family: "Helsinki Grotesk Regular", sans-serif;
+      font-family: "Helsinki Grotesk Medium", sans-serif;
+    }
+    nav > ul > li > a {
+      font-family: "Helsinki Grotesk Bold", sans-serif;
     }
   }
   .ui.tabular.menu {
@@ -575,28 +587,21 @@
     margin-bottom: 16px;
     font-size: $size16;
     .project-list-result-number{
-      font-family: "Helsinki Grotesk Regular", sans-serif;
+      font-family: "Helsinki Grotesk Medium", sans-serif;
+      display: flex;
+      align-items: center;
     }
     .timeline-header-item{
       display: flex;
       align-items: center;
       font-size: $size16;
-      font-family: "Helsinki Grotesk Regular", sans-serif;
+      font-family: "Helsinki Grotesk Medium", sans-serif;
       label{
         font-size: $size16;
-        font-family: "Helsinki Grotesk Regular", sans-serif;
-        margin-right: 20px;
-      }
-      #timeline-toggle{
-        div{
-          svg{
-            margin-top: 2px;
-          }
-        }
+        margin-right: 24px;
       }
       .toggle-text{
         padding-right: 20px;
-        font-family: "Helsinki Grotesk Medium", sans-serif;
       }
       .toggle{
         label:before{

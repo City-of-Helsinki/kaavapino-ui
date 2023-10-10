@@ -16,30 +16,24 @@ body ::-webkit-scrollbar-track {
 }
 
 h1 {
-  color: $color-black;
   font-family: 'Helsinki Grotesk Bold', sans-serif;
-  font-size: $size64 !important;
-  letter-spacing: 0;
-  line-height: $size64 !important;
+  font-size: $size40 !important;
+  line-height: $size40 !important;
   margin: 0 !important;
   font-weight: 400 !important;
 }
 
 h2 {
-  color: $color-black;
   font-family: "Helsinki Grotesk Bold", sans-serif;
   font-size: $size24;
   font-weight: 400;
-  letter-spacing: 0;
   line-height: $size24;
 }
 
 h3 {
-  color: $color-black;
   font-family: "Helsinki Grotesk Bold", sans-serif;
   font-size: $size18;
   font-weight: 400;
-  letter-spacing: 0;
 }
 
 h4 {
@@ -519,7 +513,7 @@ header{
 
 
     .nav-header-content {
-      margin-top: 128px;
+      margin-top: 120px;
       margin-bottom: 32px;
 
       @media screen and (max-width: 725px) { 
