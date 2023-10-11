@@ -1,7 +1,7 @@
 @import '../common/colors.scss';
 .overview {
   margin: 0 auto;
-  max-width: 1148px;
+  max-width: 1200px;
   width: calc(100% - 32px);
   margin-bottom: 20px;
 
@@ -73,6 +73,19 @@
       font-size: $size14;
     }
   }
+
+  .ui.segment {
+    box-shadow: none;
+    padding: 0 $size16;
+  }
+
+  .ui.grid > .column:not(.row) {
+    padding: $size16;
+  }
+
+  .ui.grid {
+    margin: -$size16;
+  }
 }
 .floor-area {
   margin-bottom: 20px;
@@ -143,12 +156,12 @@
   margin-left: 10px;
 }
 .dot {
-  height: 10px;
-  width: 10px;
+  height: 12px;
+  width: 12px;
   background-color: $accessible-grey;
   border-radius: 50%;
   display: inline-block;
-  margin-right: 5px;
+  margin-right: 8px;
 }
 .centered {
   text-align: center;
@@ -168,11 +181,26 @@
   margin-bottom: 20px;
 
   .color-legend:not(:first-of-type) {
-    margin-left: 10px;
+    margin-left: 16px;
   }
 }
 .overview-filter-button {
   min-height: 32px;
   max-height: 32px;
   margin: 10px;
+}
+
+.filters-list {
+  .ui.segment {
+    box-shadow: none;
+    padding: 0 $size12;
+  }
+
+  .ui.grid > .column:not(.row) {
+    padding: $size12;
+  }
+
+  .ui.grid {
+    margin: -$size12;
+  }
 }
