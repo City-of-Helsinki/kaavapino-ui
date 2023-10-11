@@ -95,7 +95,6 @@ export default function QuickNav({
     setCurrentSection(0)
     handleSectionTitleClick(curPhase, 0, id,sections)
     showSections(true)
-    //unlockAllFields()
    }
   }, [currentSchema])
 

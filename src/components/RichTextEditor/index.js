@@ -373,7 +373,7 @@ function RichTextEditor(props) {
       props.handleUnlockField(inputProps.name)
     }
     //User is clicking inside editor and we don't want data to be refeched from db each time but we want to save latest edited data when blurred
-    const editor = editorRef.current.getEditor().getContents()
+    const editor = editorRef?.current?.getEditor().getContents()
     if(currentEditor === inputProps.name && typeof inputValue.current === "undefined" && typeof oldValueRef.current === "undefined"
     && JSON.stringify(lockedStatus.lockData?.attribute_lock?.field_data?.ops[0]) !== JSON.stringify(editor?.ops[0])){
       inputValue.current = editor?.ops[0]
