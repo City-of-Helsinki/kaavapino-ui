@@ -94,10 +94,10 @@ h4 {
 .project-input-container .ui.segment, 
 .project-card-container .ui.segment,
 .overview .ui.segment  {
-  background-color: $white-background !important;
+  background-color: $color-black-5;
   border: 0;
   border-radius: 0;
-  padding: 0 0;
+  padding: $size16 $size24 $size24 $size24;
   margin-top: 0;
 
   .field.yellow{
