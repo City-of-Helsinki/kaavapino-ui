@@ -64,8 +64,16 @@ function OwnProjectFilters({ filters, ...props }) {
         //pressing clear buton only removes value from hds input but does not change it otherwise
         //control is not reachable for buttons clear property
         let val = filter
-        val[0] = value
-        setFilter(val)
+
+        if(val[0] !== "" && value === ""){
+            val[0] = value
+            setFilter(val)
+            onSubmit(value)
+        }
+        else{
+            val[0] = value
+            setFilter(val)
+        }
     }
 
     return (

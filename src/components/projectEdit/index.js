@@ -230,8 +230,8 @@ class ProjectEditPage extends Component {
   }
 
   unlockAllFields = () => {
-    const projectName = this.props.currentProject.name;
-    this.props.unlockAllFields(projectName)
+    //const projectName = this.props.currentProject.name;
+    //this.props.unlockAllFields(projectName)
   }
 
   handleTimetableClose = () => {
