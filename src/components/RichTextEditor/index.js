@@ -86,6 +86,7 @@ function RichTextEditor(props) {
   const [currentTimeout, setCurrentTimeout] = useState(0)
   const [readonly, setReadOnly] = useState(false)
   const [valueIsSet, setValueIsSet] = useState(false)
+  const [currentEditor,setCurrentEditor] = useState("")
 
   const editorRef = useRef(null)
   const counter = useRef(props.currentSize)
@@ -333,20 +334,23 @@ function RichTextEditor(props) {
   }, [inputProps.name, inputProps.value])
 
   const handleFocus = (event,source) => {
-    if(source && event && source !== "silent"){
-      if (typeof onFocus === 'function') {
-        //Sent a call to lock field to backend
-        if(!insideFieldset){
-          onFocus(inputProps.name);
+    if(currentEditor.toString() !== inputProps.name.toString()){
+      if(source && event && source !== "silent"){
+        if (typeof onFocus === 'function') {
+          //Sent a call to lock field to backend
+          if(!insideFieldset){
+            onFocus(inputProps.name);
+          }
+          localStorage.setItem("previousElementId",editorRef.current.props.id);
         }
-        localStorage.setItem("previousElementId",editorRef.current.props.id);
+        setToolbarVisible(true)
       }
-      setToolbarVisible(true)
+      
+      let length = editorRef.current.getEditor().getLength();
+      counter.current = length -1;
+      showCounter.current = true;
+      setCurrentEditor(inputProps.name)
     }
-     
-    let length = editorRef.current.getEditor().getLength();
-    counter.current = length -1;
-    showCounter.current = true;
   }
 
   const handleBlur = (readonly) => {
@@ -368,6 +372,13 @@ function RichTextEditor(props) {
     if (typeof props.handleUnlockField === 'function' && !insideFieldset) {
       props.handleUnlockField(inputProps.name)
     }
+    //User is clicking inside editor and we don't want data to be refeched from db each time but we want to save latest edited data when blurred
+    const editor = editorRef.current.getEditor().getContents()
+    if(currentEditor === inputProps.name && typeof inputValue.current === "undefined" && typeof oldValueRef.current === "undefined"
+    && JSON.stringify(lockedStatus.lockData?.attribute_lock?.field_data?.ops[0]) !== JSON.stringify(editor?.ops[0])){
+      inputValue.current = editor?.ops[0]
+    } 
+    //Prevent saving if data has not changed
     if (inputValue.current !== oldValueRef.current) {
       //prevent saving if locked
       if (!readonly) {
@@ -378,6 +389,7 @@ function RichTextEditor(props) {
             onBlur();
             oldValueRef.current = inputValue.current;
             setReadOnly(true)
+            setCurrentEditor("")
           }
         }
       }
@@ -522,7 +534,7 @@ function RichTextEditor(props) {
           // default value initialized, after that quill handles internal state
           // Do not explicitly set value. see comments at top of this file.
           onChange={(_val, _delta, source) =>{handleChange(_val, _delta, source, readonly)}}
-          onFocus={(event, source) =>{handleFocus(event,source)}}
+          onFocus={(event, source) => {handleFocus(event,source)}}
           onBlur={(_range, _source, quill) => {
             setTimeout(() => {
               // Hack. Prevent blurring when copy-paste data

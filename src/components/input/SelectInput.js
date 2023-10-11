@@ -124,7 +124,7 @@ const SelectInput = ({
     if (multiple) {
       if (isArray(input && input.value)) {
         input.value.forEach(value =>
-          currentValue.push({ label: getLabel(value), value: value })
+          currentValue.push({ parameter:undefined, key:value.toString(), label: getLabel(value), value: value })
         )
       } else {
         currentValue.push(input.value)
@@ -271,7 +271,7 @@ const SelectInput = ({
       onChange={data => {
         if(!notSelectable){
           let returnValue = data && data.map(currentValue => currentValue.value)
-          setSelectValues(returnValue)
+          setSelectValues(data)
           handleInputChange(returnValue)
         }
       }}
