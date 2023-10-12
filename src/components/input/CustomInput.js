@@ -169,7 +169,6 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
 
   const handleInputChange = useCallback((event,readonly) => {
     if(!readonly || custom.type === "date"){
-      console.log(event.target.value)
       input.onChange(event.target.value, input.name)
     }
   }, [input.name, input.value]);
