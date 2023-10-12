@@ -138,7 +138,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
         if (typeof custom.onBlur === 'function') {
           if(custom.type === "date"){
             //Validate date
-            let dateOk = moment(event.target.value, 'YYYY/MM/DD',false).isValid()
+            let dateOk = moment(event.target.value, 'YYYY-MM-DD',false).isValid()
             if(dateOk){
               custom.onBlur();
               oldValueRef.current = event.target.value;
@@ -169,6 +169,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
 
   const handleInputChange = useCallback((event,readonly) => {
     if(!readonly || custom.type === "date"){
+      console.log(event.target.value)
       input.onChange(event.target.value, input.name)
     }
   }, [input.name, input.value]);
