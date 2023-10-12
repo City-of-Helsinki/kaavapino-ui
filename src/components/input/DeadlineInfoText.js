@@ -46,7 +46,7 @@ const DeadlineInfoText = props => {
     value = current
   } else {
     // Expect date in value
-    value = current && dayjs(current).format('YYYY-MM-DD')
+    value = current && dayjs(current).format('DD.MM.YYYY')
 
     if (value === 'Invalid Date') {
       value = current
