@@ -618,8 +618,12 @@ function* saveProjectTimetable() {
   if (values) {
     let attribute_data = getChangedAttributeData(values, initial)
 
+    if(attribute_data.oikaisukehoituksen_alainen_readonly){
+      delete attribute_data.oikaisukehoituksen_alainen_readonly
+    }
+    
     const deadlineAttributes = currentProject.deadline_attributes
-
+    
     // Add missing fields as a null to payload since there are
     // fields which can be hidden according the user selection. 
     // If old values are left, it will break the timelines.
