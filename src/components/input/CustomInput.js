@@ -188,7 +188,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       <TextInput
         aria-label={input.name}
         error={inputUtils.hasError(error).toString()}
-        errorText={!custom && inputUtils.hasError(error).toString() || isEmpty ? t('project.error') : ""}
+        errorText={custom.disabled || !inputUtils.hasError(error).toString() || !isEmpty ? "" : t('project.error')}
         fluid="true"
         {...input}
         {...custom}
