@@ -5,14 +5,17 @@ import { TextInput } from 'hds-react'
 import { useSelector } from 'react-redux'
 import {lockedSelector,lastModifiedSelector } from '../../selectors/projectSelector'
 import moment from 'moment'
+import { useTranslation } from 'react-i18next'
 
 const CustomInput = ({ input, meta: { error }, ...custom }) => {
   const [readonly, setReadOnly] = useState({name:"",read:false})
+  const [isEmpty,setIsEmpty] = useState(false)
 
   const lastModified = useSelector(state => lastModifiedSelector(state))
   const lockedStatus = useSelector(state => lockedSelector(state))
 
   const oldValueRef = useRef('');
+  const { t } = useTranslation()
 
   useEffect(() => {
     oldValueRef.current = input.value;
@@ -170,6 +173,12 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
 
   const handleInputChange = useCallback((event,readonly) => {
     if(!readonly || custom.type === "date"){
+      if(!event.target.value?.trim()){
+        setIsEmpty(true)
+      }
+      else{
+        setIsEmpty(false)
+      }
       input.onChange(event.target.value, input.name)
     }
   }, [input.name, input.value]);
@@ -179,6 +188,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       <TextInput
         aria-label={input.name}
         error={inputUtils.hasError(error).toString()}
+        errorText={inputUtils.hasError(error).toString() === true || isEmpty ? t('project.error') : ""}
         fluid="true"
         {...input}
         {...custom}

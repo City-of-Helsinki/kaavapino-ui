@@ -589,10 +589,10 @@ function RichTextEditor(props) {
         </p>
       ) : null}
     </div>
-      {counter.current > maxSize && toolbarVisible ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> Merkkimäärä on ylittynyt</div> : ""}
-      {valueIsEmpty ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> Kenttä ei tallennu tyhjänä</div> : ""}
+      {counter.current > maxSize && toolbarVisible ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.charsover')}</div> : ""}
+      {valueIsEmpty ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.noempty')}</div> : ""}
       <div className='max-chars'>
-        Max 1000 merkkiä
+      {t('project.max1000')}
       </div>
     </div>
   )
