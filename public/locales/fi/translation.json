@@ -223,7 +223,11 @@
     "found-projects":"projektia.",
     "download-old-data":"Lataa vanhoja projektitietoja",
     "modify-project-base":"Muokkaa projektin luontitietoja",
-    "header-text":"Kentän tieto siirtyy seuraaviin paikkoihin: "
+    "header-text":"Kentän tieto siirtyy seuraaviin paikkoihin: ",
+    "charsover":"Merkkimäärä on ylittynyt",
+    "noempty":"Kenttä ei saa olla tyhjä",
+    "max1000":"Max 1000 merkkiä",
+    "error":"Virhe"
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}",

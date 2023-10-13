@@ -500,8 +500,11 @@ const getChangedAttributeData = (values, initial, sections) => {
     if (initial[key] !== undefined && isEqual(values[key], initial[key])) {
       return
     }
-
-    if (values[key] === null || values[key]?.length === 0 || values[key] === '') {
+    if(values[key] === ''){
+      //empty text values are ignored and not saved
+      delete attribute_data[key]
+    }
+    else if(values[key] === null || values[key]?.length === 0) {
       attribute_data[key] = null
     } else {
       attribute_data[key] = values[key]

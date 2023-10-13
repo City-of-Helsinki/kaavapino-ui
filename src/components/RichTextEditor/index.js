@@ -87,8 +87,9 @@ function RichTextEditor(props) {
   const [readonly, setReadOnly] = useState(false)
   const [valueIsSet, setValueIsSet] = useState(false)
   const [currentEditor,setCurrentEditor] = useState("")
+  const [valueIsEmpty,setValueIsEmpty] = useState(false)
 
-  const editorRef = useRef(null)
+  const editorRef = useRef("")
   const counter = useRef(props.currentSize)
   const showCounter = useRef(false)
 
@@ -150,7 +151,7 @@ function RichTextEditor(props) {
   useEffect(() => {
     //Remove tab press inside editor so navigating with tab stays normal.
     const removeTabBinding = () => {
-      if (editorRef.current === null) {
+      if (editorRef.current === "") {
         return;
       }
       const keyboard = editorRef.current.getEditor().getModule('keyboard');
@@ -315,7 +316,7 @@ function RichTextEditor(props) {
                 change(
                   fieldFormName,
                   inputProps.name,
-                  actualDeltaText ? actualDeltaValue : null
+                  actualDeltaText ? actualDeltaValue : ""
                 )
               ),
             1
@@ -323,6 +324,8 @@ function RichTextEditor(props) {
 
         counter.current = actualDeltaValue.length() - 1;
         showCounter.current = true;
+        const editorEmpty = actualDeltaText.trim().length === 0 ? true : false
+        setValueIsEmpty(editorEmpty)
       }
       else if(source === 'api'){
         //Value is updated with lock call so do not save it again
@@ -378,8 +381,10 @@ function RichTextEditor(props) {
     && JSON.stringify(lockedStatus.lockData?.attribute_lock?.field_data?.ops[0]) !== JSON.stringify(editor?.ops[0])){
       inputValue.current = editor?.ops[0]
     } 
-    //Prevent saving if data has not changed
-    if (inputValue.current !== oldValueRef.current) {
+
+    const editorEmpty = editorRef?.current?.getEditor().getText().trim().length === 0 ? true : false
+    //Prevent saving if data has not changed or is empty
+    if (!editorEmpty && inputValue.current !== oldValueRef.current) {
       //prevent saving if locked
       if (!readonly) {
         //Sent call to save changes if it is modified by user and not updated by lock call
@@ -456,6 +461,8 @@ function RichTextEditor(props) {
       const cursorPosition = editorRef.current.getEditor().getSelection()
       editorRef.current.getEditor().setContents(dbValue);
       editorRef.current.getEditor().setSelection(cursorPosition?.index);
+      counter.current = editorRef.current.getEditor().getLength() -1
+      setValueIsEmpty(false)
     }
   }
   //Default maxsize 1000
@@ -582,9 +589,10 @@ function RichTextEditor(props) {
         </p>
       ) : null}
     </div>
-      {counter.current > maxSize && toolbarVisible ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> Merkkimäärä on ylittynyt</div> : ""}
+      {counter.current > maxSize && toolbarVisible ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.charsover')}</div> : ""}
+      {valueIsEmpty ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.noempty')}</div> : ""}
       <div className='max-chars'>
-        Max 1000 merkkiä
+      {t('project.max1000')}
       </div>
     </div>
   )
