@@ -367,6 +367,7 @@ header{
     background-color: $color-bus-light;
     color: $black;
     font-size: $size16;
+    border: none !important;
     .edit-page-title{
       display: flex;
       flex-flow: column;
