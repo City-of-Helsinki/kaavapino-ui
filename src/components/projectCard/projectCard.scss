@@ -36,112 +36,118 @@
 .project-card-extend {
   margin-top: 10px;
 }
-.project-card .basic-information {
-  min-height: 250px;
-  overflow: auto;
-}
-.project-card .contract {
-  min-height: 250px;
-  overflow: auto;
-}
-.project-card .description {
-  min-height: 300px;
-}
-.project-card .floor-area-information {
-  min-height: 120px;
-  overflow: auto;
-}
-.project-card .floor-area-field {
-  padding-left: 0;
-  padding-right: 0;
-}
-.project-card .strategy-connection {
-  min-height: 200px;
-  overflow: auto;
-}
-.project-card .documents {
-  min-height: 200px;
-  overflow: auto;
 
-  .section {
-    margin-bottom: 10px;
+.project-card {
+  margin: -$size16;
+
+  .basic-information {
+    min-height: 250px;
+    overflow: auto;
   }
-}
-.project-card .timetable {
-  min-height: 200px;
-  overflow: auto;
-}
-.project-card .contacts {
-  min-height: 200px;
-  overflow: auto;
-}
-.project-card .missing-data,
-.project-card .documents-not-ready {
-  color: rgba(0, 0, 0, 0.5)
+  .contract {
+    min-height: 250px;
+    overflow: auto;
+  }
+  .description {
+    min-height: 300px;
+  }
+  .floor-area-information {
+    min-height: 120px;
+    overflow: auto;
+  }
+  .floor-area-field {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .strategy-connection {
+    min-height: 200px;
+    overflow: auto;
+  }
+  .documents {
+    min-height: 200px;
+    overflow: auto;
+
+    .section {
+      margin-bottom: 10px;
+    }
+  }
+  .timetable {
+    min-height: 200px;
+    overflow: auto;
+  }
+  .contacts {
+    min-height: 200px;
+    overflow: auto;
+  }
+  .missing-data,
+  .documents-not-ready {
+    color: rgba(0, 0, 0, 0.5)
+  }
+
+  @media only screen and (min-width: 501px) {
+    .photo {
+      height: 300px;
+      text-align: center;
+    }
+  }
+  @media only screen and (max-width: 500px) {
+    .photo {
+      height: 200px;
+      text-align: center;
+    }
+  }
+
+  .project-image-container {
+    flex: 0.5;
+
+    .project-image {
+      max-width: 100%;
+      max-height: 300px;
+      width: auto;
+      height: auto;
+    }
+  }
+  .ui.segment {
+    background-color: $light-gray3 !important;
+    border: 0;
+    border-radius: 0;
+    padding: 8px 16px 16px 16px;
+    box-shadow: none;
+
+    @media screen and (min-width: 600px) {
+      padding: 16px 24px 24px 24px;
+    }
+  }
+  .ui.grid {
+    margin: 0;
+  }
+  .inner-left-column {
+    margin: 0;
+    padding: 0 !important;
+    padding-right: 7px !important;
+  }
+  .inner-right-column {
+    margin: 0;
+    padding: 0 !important;
+    padding-left: 7px !important;
+  }
+  .floor-area-information .floor-area-value {
+    font-weight: bold;
+    font-size: larger;
+  }
+  .floor-area-information .column:first-of-type {
+    border-right: 1px solid black;
+  }
+  .geometry-input-container {
+    .geometry-input {
+      height: 300px;
+    }
+  }
+  .project-container {
+    margin-top: 10px;
+  }
 }
 
-@media only screen and (min-width: 501px) {
-  .project-card .photo {
-    height: 300px;
-    text-align: center;
-  }
-}
-@media only screen and (max-width: 500px) {
-  .project-card .photo {
-    height: 200px;
-    text-align: center;
-  }
-}
-
-.project-card .project-image-container {
-  flex: 0.5;
-
-  .project-image {
-    max-width: 100%;
-    max-height: 300px;
-    width: auto;
-    height: auto;
-  }
-}
-.project-card .ui.segment {
-  background-color: $light-gray3 !important;
-  border: 0;
-  border-radius: 0;
-  padding: 16px 0;
-
-  @media screen and (min-width: 600px) {
-    padding: 32px 22px;
-  }
-  padding: 10px;
-}
-.project-card .ui.grid {
-  margin: 0;
-}
-.project-card .inner-left-column {
-  margin: 0;
-  padding: 0 !important;
-  padding-right: 7px !important;
-}
-.project-card .inner-right-column {
-  margin: 0;
-  padding: 0 !important;
-  padding-left: 7px !important;
-}
-.project-card .floor-area-information .floor-area-value {
-  font-weight: bold;
-  font-size: larger;
-}
-.project-card .floor-area-information .column:first-of-type {
-  border-right: 1px solid black;
-}
-.project-card .geometry-input-container {
-  .geometry-input {
-    height: 300px;
-  }
-}
-.project-card .project-container {
-  margin-top: 10px;
-}
 .mobile {
   display: none;
 }

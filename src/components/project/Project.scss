@@ -2,7 +2,7 @@
 .project-container {
   flex: 1;
   margin: 0 auto;
-  max-width: 1148px;
+  max-width: 1200px;
   width: calc(100% - 32px);
 
   .project-page-content {
@@ -12,7 +12,6 @@
   .header-buttons {
     display: flex;
     text-align: right;
-    margin: 10px 0 10px 0;
     height: 44px;
     .edit-view-select{
       div{
