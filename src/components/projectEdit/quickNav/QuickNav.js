@@ -354,7 +354,7 @@ export default function QuickNav({
               key={option + index}
               variant="supplementary"
               className={`${"phase"+option.phaseID} quicknav-item ${
-                index === selected && selectedPhase.phaseID === activePhase
+                option.phaseID === activePhase
                   ? 'active'
                   : ''
               }`}
