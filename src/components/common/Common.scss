@@ -17,29 +17,30 @@ body ::-webkit-scrollbar-track {
 
 h1 {
   font-family: 'Helsinki Grotesk Bold', sans-serif;
-  font-size: $size40 !important;
-  line-height: $size40 !important;
+  font-size: $size40;
+  line-height: $size44;
   margin: 0 !important;
-  font-weight: 400 !important;
+  font-weight: 700;
 }
 
 h2 {
   font-family: "Helsinki Grotesk Bold", sans-serif;
   font-size: $size24;
-  font-weight: 400;
+  font-weight: 700;
   line-height: $size24;
 }
 
 h3 {
   font-family: "Helsinki Grotesk Bold", sans-serif;
   font-size: $size18;
-  font-weight: 400;
+  font-weight: 700;
 }
 
 h4 {
   font-family: "Helsinki Grotesk Bold", sans-serif;
   font-size: $size14;
   line-height: $size16;
+  font-weight: 700;
   margin: 44px 0 8px;
 }
 
@@ -91,7 +92,13 @@ h4 {
   }
 }
 
-.project-input-container .ui.segment, 
+// Semantic.css override.
+.ui.segment {
+  box-shadow: none;
+  border: none;
+  margin: 0;
+}
+
 .project-card-container .ui.segment,
 .overview .ui.segment  {
   background-color: $color-black-5;
@@ -547,10 +554,6 @@ header{
         .column{
           padding-top: 0;
           padding-bottom: 0;
-        }
-
-        .nav-header-title {
-          line-height: 1;
         }
 
         .nav-header-subtitle {
