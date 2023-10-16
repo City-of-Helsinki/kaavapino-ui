@@ -9,6 +9,7 @@ import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { IconClock,IconLock } from 'hds-react'
 import { withTranslation } from 'react-i18next'
 import { isArray } from 'lodash'
+import PropTypes from 'prop-types'
 
 const OneLineFields = ['toggle']
 
@@ -31,6 +32,7 @@ const FormField = ({
   highlightedTag,
   highlightStyle,
   insideFieldset,
+  disabled,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -78,7 +80,7 @@ const FormField = ({
         return (
           <CustomField
             {...rest}
-            disabled={newField.disabled}
+            disabled={newField.disabled || disabled?.disabled}
             field={newField}
             attributeData={attributeData}
             className={className}
@@ -269,6 +271,10 @@ const FormField = ({
   } else {
     return renderComponent()
   }
+}
+
+FormField.propTypes = {
+  disabled: PropTypes.bool
 }
 
 export default withTranslation()(FormField)

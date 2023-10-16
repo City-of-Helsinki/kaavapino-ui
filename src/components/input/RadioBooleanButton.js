@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { RadioButton } from 'hds-react'
+import PropTypes from 'prop-types';
 
 const RadioBooleanButton = ({
   input: { value, name, ...rest },
@@ -8,7 +9,8 @@ const RadioBooleanButton = ({
   onRadioChange,
   disabled,
   className,
-  autofillReadonly
+  autofillReadonly,
+  timeTableDisabled
 }) => {
   const [radioValue, setRadioValue] = useState(null)
 
@@ -34,8 +36,8 @@ const RadioBooleanButton = ({
         key={`${name}-true`}
         id={`${name}-true`}
         label="Kyllä"
-        disabled={disabled}
-        className={`radio-button radio-button-true ${disabled ? 'radio-button-disabled' : ''}`}
+        disabled={disabled || timeTableDisabled}
+        className={`radio-button radio-button-true ${disabled || timeTableDisabled ? 'radio-button-disabled' : ''}`}
         value="Kyllä"
         error={error}
         name={name}
@@ -47,8 +49,8 @@ const RadioBooleanButton = ({
         label="Ei"
         id={`${name}-false`}
         key={`${name}-false`}
-        disabled={disabled}
-        className={`radio-button radio-button-false ${disabled ? 'radio-button-disabled' : ''}`}
+        disabled={disabled || timeTableDisabled}
+        className={`radio-button radio-button-false ${disabled || timeTableDisabled ? 'radio-button-disabled' : ''}`}
         error={error}
         value="Ei"
         name={name}
@@ -61,8 +63,8 @@ const RadioBooleanButton = ({
           key={`${name}-null`}
           id={`${name}-null`}
           label="Tieto puuttuu"
-          disabled={disabled}
-          className={`radio-button radio-button-null ${disabled ? 'radio-button-disabled' : ''}`}
+          disabled={disabled || timeTableDisabled}
+          className={`radio-button radio-button-null ${disabled || timeTableDisabled ? 'radio-button-disabled' : ''}`}
           value=""
           error={error}
           name={name}
@@ -72,6 +74,10 @@ const RadioBooleanButton = ({
       )}
     </div>
   )
+}
+
+RadioBooleanButton.propTypes = {
+  timeTableDisabled: PropTypes.bool
 }
 
 export default RadioBooleanButton

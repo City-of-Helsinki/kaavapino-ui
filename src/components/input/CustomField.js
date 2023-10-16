@@ -26,6 +26,8 @@ import { get } from 'lodash'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import CustomADUserCombobox from './CustomADUserCombobox'
 import CustomSearchCombobox from './CustomSearchCombobox';
+import PropTypes from 'prop-types';
+
 class CustomField extends Component {
   yearOptions = []
   shouldComponentUpdate(prevProps) {
@@ -120,7 +122,7 @@ class CustomField extends Component {
   }
 
   renderDate = props => {
-    const { handleBlurSave, handleLockField, handleUnlockField, deadlines, field, lockField, fieldSetDisabled, insideFieldset } = this.props
+    const { handleBlurSave, handleLockField, handleUnlockField, deadlines, field, lockField, fieldSetDisabled, insideFieldset, disabled } = this.props
 
     let current
     if (deadlines && deadlines.length > 0) {
@@ -136,6 +138,7 @@ class CustomField extends Component {
           editable={field.editable}
           currentDeadline={current}
           autofillRule={field.autofill_rule}
+          timeTableDisabled={disabled}
           {...props}
         />
       )
@@ -191,14 +194,15 @@ class CustomField extends Component {
       <CustomRadioButton
         options={this.formatOptions(field.options)}
         onBlur={handleBlurSave}
+        disabled={field.disabled}
         {...props}
       />
     )
   }
 
   renderBooleanRadio = props => {
-    const { input, onRadioChange, defaultValue } = this.props
-
+    const { input, onRadioChange, defaultValue, disabled } = this.props
+    console.log(defaultValue)
     return (
       <RadioBooleanButton
         onBlur={props.handleBlurSave}
@@ -206,6 +210,7 @@ class CustomField extends Component {
         onRadioChange={onRadioChange}
         defaultValue={defaultValue}
         autofillReadonly={this.props.field.autofill_readonly}
+        timeTableDisabled={disabled}
         {...props}
       />
     )
@@ -289,7 +294,7 @@ class CustomField extends Component {
   }
 
   renderCustomCheckbox = props => {
-    const { field, formName } = this.props
+    const { field, formName, disabled } = this.props
 
     return (
       <CustomCheckbox
@@ -298,6 +303,7 @@ class CustomField extends Component {
         autofillRule={field.autofill_rule}
         formName={formName}
         display={field.display}
+        disabled={disabled}
       />
     )
   }
@@ -539,6 +545,16 @@ class CustomField extends Component {
       />
     )
   }
+}
+
+CustomField.propTypes = {
+  disabled: PropTypes.bool,
+  field:PropTypes.object,
+  input:PropTypes.func,
+  onRadioChange:PropTypes.func,
+  defaultValue:PropTypes.bool,
+  formName:PropTypes.string
+
 }
 
 export default CustomField

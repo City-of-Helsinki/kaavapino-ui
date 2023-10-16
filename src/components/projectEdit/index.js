@@ -695,6 +695,8 @@ class ProjectEditPage extends Component {
               handleSubmit={() => this.handleTimetableSave()}
               handleClose={() => this.handleTimetableClose()}
               isTimetableSaved={this.props.timetableSavedSelector}
+              projectPhaseIndex={projectPhaseIndex}
+              archived={currentProject.archived}
             />
           )}
         </div>
