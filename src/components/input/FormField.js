@@ -79,7 +79,7 @@ const FormField = ({
         return (
           <CustomField
             {...rest}
-            disabled={newField.disabled ? newField.disabled : disabled?.disabled}
+            disabled={newField.disabled || disabled?.disabled}
             field={newField}
             attributeData={attributeData}
             className={className}
