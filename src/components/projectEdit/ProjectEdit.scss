@@ -405,6 +405,7 @@
 
 .sticky{
   min-height: 0;
+  z-index: $z-index-sticky;
 }
 
 .modal {

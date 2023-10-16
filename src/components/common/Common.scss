@@ -353,7 +353,7 @@ header{
   header{
     --header-height: 56px;
     border-bottom: 2px solid $color-suomenlinna;
-    z-index: 6;
+    z-index: $z-index-sticky;
     div:nth-child(3){
       div:nth-child(1){
         div:first-of-type{
