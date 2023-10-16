@@ -31,6 +31,7 @@ const FormField = ({
   highlightedTag,
   highlightStyle,
   insideFieldset,
+  disabled,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -78,7 +79,7 @@ const FormField = ({
         return (
           <CustomField
             {...rest}
-            disabled={newField.disabled}
+            disabled={newField.disabled ? newField.disabled : disabled?.disabled}
             field={newField}
             attributeData={attributeData}
             className={className}

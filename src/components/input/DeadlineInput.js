@@ -17,7 +17,8 @@ const DeadLineInput = ({
   disabled,
   placeholder,
   className,
-  autofillRule
+  autofillRule,
+  timeTableDisabled
 }) => {
   
   const { t } = useTranslation()
@@ -90,7 +91,7 @@ const DeadLineInput = ({
         value={currentValue}
         name={input.name}
         type={type}
-        disabled={disabled}
+        disabled={disabled ? disabled : timeTableDisabled}
         placeholder={placeholder}
         error={error}
         aria-label={input.name}

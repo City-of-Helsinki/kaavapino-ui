@@ -42,7 +42,7 @@ const CustomCheckbox = ({
   return (
     <Checkbox
       aria-label={name}
-      disabled={disabled}
+      disabled={autofillRule ? autofillRule : disabled}
       label={label}
       updated={updated}
       error={error}

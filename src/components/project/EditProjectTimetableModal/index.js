@@ -82,7 +82,7 @@ class EditProjectTimeTableModal extends Component {
     this.props.handleClose()
   }
 
-  getFormField(fieldProps, key) {
+  getFormField(fieldProps, key, disabled) {
     const { formSubmitErrors, formValues, deadlines } = this.props
 
     if (!showField(fieldProps.field, formValues)) {
@@ -123,17 +123,18 @@ class EditProjectTimeTableModal extends Component {
           formValues={formValues}
           className={className}
           isProjectTimetableEdit={true}
+          disabled={disabled}
         />
         {modifiedError && <div className="field-error">{modifiedError}</div>}
       </div>
     )
   }
-  getFormFields = (sections, sectionIndex) => {
+  getFormFields = (sections, sectionIndex, disabled) => {
     const formFields = []
     sections.forEach(subsection => {
       subsection.attributes &&
         subsection.attributes.forEach((field, fieldIndex) => {
-          formFields.push(this.getFormField({ field }, `${sectionIndex} - ${fieldIndex}`))
+          formFields.push(this.getFormField({ field }, `${sectionIndex} - ${fieldIndex}`, {disabled}))
         })
     })
     return formFields
@@ -141,9 +142,10 @@ class EditProjectTimeTableModal extends Component {
 
   renderSection = (section, sectionIndex) => {
     const sections = section.sections
+    const disabled = (sectionIndex < this.props.projectPhaseIndex) || this.props.archived
     return (
       <Collapse title={section.title} key={sectionIndex}>
-        {this.getFormFields(sections, sectionIndex)}
+        {this.getFormFields(sections, sectionIndex, disabled)}
       </Collapse>
     )
   }
