@@ -253,7 +253,10 @@ class EditProjectTimeTableModal extends Component {
 
 EditProjectTimeTableModal.propTypes = {
   open: PropTypes.bool.isRequired,
-  handleClose: PropTypes.func.isRequired
+  handleClose: PropTypes.func.isRequired,
+  projectPhaseIndex: PropTypes.number,
+  currentProject: PropTypes.object,
+  archived: PropTypes.bool
 }
 
 const mapStateToProps = state => ({

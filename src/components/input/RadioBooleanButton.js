@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { RadioButton } from 'hds-react'
+import PropTypes from 'prop-types';
 
 const RadioBooleanButton = ({
   input: { value, name, ...rest },
@@ -73,6 +74,10 @@ const RadioBooleanButton = ({
       )}
     </div>
   )
+}
+
+RadioBooleanButton.propTypes = {
+  timeTableDisabled: PropTypes.bool
 }
 
 export default RadioBooleanButton

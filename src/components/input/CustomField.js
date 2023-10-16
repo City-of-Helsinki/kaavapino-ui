@@ -26,6 +26,8 @@ import { get } from 'lodash'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import CustomADUserCombobox from './CustomADUserCombobox'
 import CustomSearchCombobox from './CustomSearchCombobox';
+import PropTypes from 'prop-types';
+
 class CustomField extends Component {
   yearOptions = []
   shouldComponentUpdate(prevProps) {
@@ -200,6 +202,7 @@ class CustomField extends Component {
 
   renderBooleanRadio = props => {
     const { input, onRadioChange, defaultValue, disabled } = this.props
+    console.log(defaultValue)
     return (
       <RadioBooleanButton
         onBlur={props.handleBlurSave}
@@ -542,6 +545,16 @@ class CustomField extends Component {
       />
     )
   }
+}
+
+CustomField.propTypes = {
+  disabled: PropTypes.bool,
+  field:PropTypes.object,
+  input:PropTypes.func,
+  onRadioChange:PropTypes.func,
+  defaultValue:PropTypes.bool,
+  formName:PropTypes.string
+
 }
 
 export default CustomField

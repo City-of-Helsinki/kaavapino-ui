@@ -124,7 +124,8 @@ const DeadLineInput = ({
 }
 
 DeadLineInput.propTypes = {
-  input: PropTypes.object.isRequired
+  input: PropTypes.object.isRequired,
+  timeTableDisabled: PropTypes.bool
 }
 
 export default DeadLineInput
