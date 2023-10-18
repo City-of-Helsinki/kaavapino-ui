@@ -351,7 +351,7 @@ class CustomField extends Component {
 
   renderInfoFieldset = props => {
     //TODO User modifies dates show "modified" otherwise show "kaavapinon arvio"
-
+    console.log(this.props.attributeData)
     const name = props.input?.name
     const data = this.props.attributeData
     const placeholder = props.placeholder
@@ -594,8 +594,8 @@ CustomField.propTypes = {
   input:PropTypes.func,
   onRadioChange:PropTypes.func,
   defaultValue:PropTypes.bool,
-  formName:PropTypes.string
-
+  formName:PropTypes.string,
+  attributeData:PropTypes.object
 }
 
 export default CustomField

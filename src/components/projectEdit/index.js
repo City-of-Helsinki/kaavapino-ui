@@ -678,7 +678,6 @@ class ProjectEditPage extends Component {
             highlightedTag={this.state.highlightedTag}
             sectionIndex={this.state.sectionIndex}
             showSection={this.state.showSection}
-            currentPhase={currentSchema.title}
           />
           {this.props.showFloorAreaForm && (
             <EditFloorAreaFormModal

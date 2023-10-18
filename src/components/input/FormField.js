@@ -33,7 +33,6 @@ const FormField = ({
   highlightStyle,
   insideFieldset,
   disabled,
-  currentPhase,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -96,7 +95,6 @@ const FormField = ({
             lockStatus={lockStatus}
             unlockAllFields={unlockAllFields}
             insideFieldset={insideFieldset}
-            currentPhase={currentPhase}
           />
         )
     }

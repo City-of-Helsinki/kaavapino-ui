@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { useDispatch } from 'react-redux';
 import {Button,IconPenLine } from 'hds-react'
 import {showFloorArea, showTimetable} from '../../actions/projectActions'
@@ -61,6 +62,18 @@ function CustomCard({type,startInfo,endInfo,startModifiedText,endModifiedText,li
       {editDataLink}
     </div>
   )
+}
+
+CustomCard.propTypes = {
+  type: PropTypes.string,
+  startInfo: PropTypes.string,
+  endInfo: PropTypes.string,
+  startModifiedText: PropTypes.string,
+  endModifiedText: PropTypes.string,
+  living: PropTypes.string,
+  office: PropTypes.string,
+  general: PropTypes.string,
+  other: PropTypes.string,
 }
 
 export default CustomCard

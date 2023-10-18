@@ -27,8 +27,7 @@ const FormSection = ({
   setRef,
   unlockAllFields,
   filterFieldsArray,
-  highlightedTag,
-  currentPhase
+  highlightedTag
 }) => {
   let count = 0;
   if(section?.title && section?.fields){
@@ -64,7 +63,6 @@ const FormSection = ({
             unlockAllFields={unlockAllFields}
             highlightedTag={highlightedTag}
             highlightStyle={highlightStyle}
-            currentPhase={currentPhase}
           />)
         }
         else{
