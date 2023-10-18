@@ -443,8 +443,5 @@ export default function QuickNav({
 }
 
 QuickNav.propTypes = {
-  label: PropTypes.string,
-  color: PropTypes.string,
-  phaseID: PropTypes.string,
-  status: PropTypes.string
+  phase: PropTypes.object
 }
