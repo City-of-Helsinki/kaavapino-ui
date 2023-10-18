@@ -2,12 +2,8 @@ const userHasModified = (field,deadlines,phase) => {
   //Check if user has updated fields and field is no longer automatically generated date 
   for (let i = 0; i < deadlines.length; i++) {
     if(deadlines[i].deadline.phase_name === phase && deadlines[i].deadline?.attribute === field){
-      if(deadlines[i]?.edited){
-        return true
-      }
-      else{
-        return false
-      }
+      //return true if has value
+      return !!deadlines[i]?.edited
     }
   }
   return false
@@ -65,12 +61,6 @@ const getOASDates = (data,deadlines) =>{
     endDate = data?.milloin_oas_esillaolo_paattyy_2
     startModified = userHasModified("milloin_oas_esillaolo_alkaa_2",deadlines,"OAS")
     endModified = userHasModified("milloin_oas_esillaolo_paattyy_2",deadlines,"OAS")
-  }
-  else if(!data?.vahvista_oas_esillaolo_alkaa && !data?.vahvista_oas_esillaolo_paattyy && data?.jarjestetaan_oas_esillaolo_1 && data?.milloin_oas_esillaolo_alkaa && data?.milloin_oas_esillaolo_paattyy){
-    startDate = data?.milloin_oas_esillaolo_alkaa
-    endDate = data?.milloin_oas_esillaolo_paattyy
-    startModified = userHasModified("milloin_oas_esillaolo_alkaa",deadlines,"OAS")
-    endModified = userHasModified("milloin_oas_esillaolo_paattyy",deadlines,"OAS")
   }
   else if(!data?.vahvista_oas_esillaolo_alkaa && !data?.vahvista_oas_esillaolo_paattyy && data?.milloin_oas_esillaolo_alkaa && data?.milloin_oas_esillaolo_paattyy){
     startDate = data?.milloin_oas_esillaolo_alkaa

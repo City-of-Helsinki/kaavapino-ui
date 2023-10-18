@@ -10,6 +10,7 @@ import FormField from '../input/FormField'
 import { getFormValues } from 'redux-form'
 import { EDIT_PROJECT_FORM } from '../../constants'
 import { Notification } from 'hds-react'
+import PropTypes from 'prop-types'
 
 const FormSection = ({
   section,
@@ -75,6 +76,10 @@ const FormSection = ({
     </Segment>
   )
   }
+}
+
+FormSection.propTypes = {
+  deadlines:PropTypes.object
 }
 
 const mapStateToProps = state => ({

@@ -62,6 +62,8 @@ import { isEqual } from 'lodash'
 import FormFilter from './FormFilter'
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
+import PropTypes from 'prop-types'
+
 
 class ProjectEditPage extends Component {
   state = {
@@ -549,7 +551,7 @@ class ProjectEditPage extends Component {
     const isResponsible = authUtils.isResponsible(currentUserId, users)
     const isAdmin = authUtils.isAdmin(currentUserId, users)
     const isExpert = authUtils.isExpert(currentUserId, users)
-    console.log(currentProject.deadlines)
+    
     return (
       <div>
         {!this.state.isMobile && (
@@ -704,6 +706,10 @@ class ProjectEditPage extends Component {
       </div>
     )
   }
+}
+
+ProjectEditPage.propTypes = {
+  currentProject:PropTypes.object
 }
 
 const mapStateToProps = state => {

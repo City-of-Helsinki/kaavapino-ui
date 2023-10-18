@@ -7,6 +7,7 @@ import Shoutbox from '../shoutbox'
 import { Button, IconArrowUp } from 'hds-react'
 import { withTranslation } from 'react-i18next'
 import { isEqual } from 'lodash'
+import PropTypes from 'prop-types'
 
 class EditForm extends Component {
   componentWillUnmount() {
@@ -117,10 +118,14 @@ class EditForm extends Component {
   }
 }
 
+EditForm.propTypes = {
+  deadlines:PropTypes.object
+}
+
 const decoratedForm = reduxForm({
   form: EDIT_PROJECT_FORM,
   enableReinitialize: true,
-  keepDirtyOnReinitialize: true
+  keepDirtyOnReinitialize: true,
 })(EditForm)
 
 export default withTranslation()(decoratedForm)

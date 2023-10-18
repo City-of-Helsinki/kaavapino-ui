@@ -594,7 +594,8 @@ CustomField.propTypes = {
   onRadioChange:PropTypes.func,
   defaultValue:PropTypes.bool,
   formName:PropTypes.string,
-  attributeData:PropTypes.object
+  attributeData:PropTypes.object,
+  deadlines:PropTypes.object
 }
 
 export default CustomField
