@@ -125,7 +125,7 @@ EditForm.propTypes = {
 const decoratedForm = reduxForm({
   form: EDIT_PROJECT_FORM,
   enableReinitialize: true,
-  keepDirtyOnReinitialize: true,
+  keepDirtyOnReinitialize: true
 })(EditForm)
 
 export default withTranslation()(decoratedForm)
