@@ -191,7 +191,7 @@ const FormField = ({
               <Label
                 tabIndex="0"
                 id={field.name}
-                className={`input-title${required ? ' highlight' : ''}`}
+                className={`input-title${required ? ' highlight' : ''} ${field.type === "info_fieldset" ? ' hide' : ''}`}
               >
                 {title}
                 {status.lockStyle && !status.owner && (
