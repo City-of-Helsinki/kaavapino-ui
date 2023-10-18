@@ -5,6 +5,7 @@ import OnHoldCheckbox from '../../input/OnholdCheckbox'
 import ConfirmModal from '../ConfirmModal'
 import './styles.scss'
 import Status from '../../common/Status'
+import PropTypes from 'prop-types'
 
 export default function QuickNav({
   currentProject,
@@ -439,4 +440,11 @@ export default function QuickNav({
       )}
     </div>
   )
+}
+
+QuickNav.propTypes = {
+  label: PropTypes.string,
+  color: PropTypes.string,
+  phaseID: PropTypes.string,
+  status: PropTypes.string
 }
