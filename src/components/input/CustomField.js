@@ -351,7 +351,6 @@ class CustomField extends Component {
 
   renderInfoFieldset = props => {
     //TODO User modifies dates show "modified" otherwise show "kaavapinon arvio"
-    console.log(this.props.attributeData)
     const name = props.input?.name
     const data = this.props.attributeData
     const placeholder = props.placeholder
