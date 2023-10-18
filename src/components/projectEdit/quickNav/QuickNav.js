@@ -65,12 +65,14 @@ export default function QuickNav({
 
     if(phases){
       phases.map(phase => {
+        let option = {label:phase.title,color:phase.color_code,phaseID:phase.id,status:phase.status};
         if(phase.id === activePhase){
           curPhase = {label:phase.title}
    //       title = phase.sections[0].title
    //       phaseID = phase.id
+          prevSelectedRef.current = option
         }
-        optionsArray.push({label:phase.title,color:phase.color_code,phaseID:phase.id,status:phase.status})
+        optionsArray.push(option)
     })
     }
 
@@ -79,7 +81,7 @@ export default function QuickNav({
      // handleSectionTitleClick(title, 0, phaseID)
     }
     setOptions({optionsArray,curPhase})
-    
+
   }, [phases])
 
   useEffect(() => {
@@ -350,7 +352,7 @@ export default function QuickNav({
           return (
             <Button
               id={option.label}
-              aria-label={'Avaa ' + option.label + " lomakkeen sisältö"} 
+              aria-label={'Avaa ' + option.label + " lomakkeen sisältö"}
               key={option + index}
               variant="supplementary"
               className={`${"phase"+option.phaseID} quicknav-item ${
