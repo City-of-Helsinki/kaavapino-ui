@@ -274,7 +274,8 @@ const FormField = ({
 }
 
 FormField.propTypes = {
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  field: PropTypes.object
 }
 
 export default withTranslation()(FormField)
