@@ -71,7 +71,8 @@ class EditForm extends Component {
       filterFieldsArray,
       highlightedTag,
       fieldCount,
-      showSection
+      showSection,
+      deadlines
     } = this.props
     return (
       <>
@@ -96,6 +97,7 @@ class EditForm extends Component {
             filterFieldsArray={filterFieldsArray}
             highlightedTag={highlightedTag}
             fieldCount={fieldCount}
+            deadlines={deadlines}
           />
         <Button
           variant="supplementary"

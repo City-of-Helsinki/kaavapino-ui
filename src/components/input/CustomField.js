@@ -350,12 +350,12 @@ class CustomField extends Component {
   }
 
   renderInfoFieldset = props => {
-    //TODO User modifies dates show "modified" otherwise show "kaavapinon arvio"
     const name = props.input?.name
     const data = this.props.attributeData
+    const deadlines = this.props.deadlines
     const placeholder = props.placeholder
 
-    const [startDate,endDate,startModified,endModified,hide,living,office,general,other] = infoFieldUtil.getInfoFieldData(placeholder,name,data)
+    const [startDate,endDate,startModified,endModified,hide,living,office,general,other] = infoFieldUtil.getInfoFieldData(placeholder,name,data,deadlines)
     //Date informations
     if(placeholder === "Tarkasta esilläolopäivät"){
       return (

@@ -549,7 +549,7 @@ class ProjectEditPage extends Component {
     const isResponsible = authUtils.isResponsible(currentUserId, users)
     const isAdmin = authUtils.isAdmin(currentUserId, users)
     const isExpert = authUtils.isExpert(currentUserId, users)
-
+    console.log(currentProject.deadlines)
     return (
       <div>
         {!this.state.isMobile && (
@@ -678,6 +678,7 @@ class ProjectEditPage extends Component {
             highlightedTag={this.state.highlightedTag}
             sectionIndex={this.state.sectionIndex}
             showSection={this.state.showSection}
+            deadlines={currentProject.deadlines}
           />
           {this.props.showFloorAreaForm && (
             <EditFloorAreaFormModal

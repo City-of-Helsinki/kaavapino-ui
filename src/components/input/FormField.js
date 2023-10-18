@@ -33,6 +33,7 @@ const FormField = ({
   highlightStyle,
   insideFieldset,
   disabled,
+  deadlines,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -95,6 +96,7 @@ const FormField = ({
             lockStatus={lockStatus}
             unlockAllFields={unlockAllFields}
             insideFieldset={insideFieldset}
+            deadlines={deadlines}
           />
         )
     }
