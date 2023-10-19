@@ -98,6 +98,9 @@ h4 {
   border: none;
   margin: 0;
 }
+.ui.form .field {
+  margin: 0 0 $size32;
+}
 
 .project-card-container .ui.segment,
 .overview .ui.segment {
@@ -867,4 +870,5 @@ header{
 
 .assistive-text{
   color: $color-black-60;
+  margin-top: $size8;
 }

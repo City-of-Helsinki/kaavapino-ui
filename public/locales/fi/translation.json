@@ -213,7 +213,7 @@
     "sort": "Lajittele",
     "timeline": "Aikajana",
     "show-timelines": "Näytä aikajanat",
-    "char-limit": "Max {{amount}} merkkiä.",
+    "char-limit": "Max {{amount}} merkkiä",
     "download_confirmation_header": "Vahvistus dokumentin lataukselle",
     "download_confirmation_content": "Lataamisen jälkeen saat kaikista muutoksista automaattisia viestejä. Oletko varma, että haluat ladata dokumentin?",
     "missing-data": "Tietoja ei ole vielä syötetty",
@@ -226,7 +226,6 @@
     "header-text":"Kentän tieto siirtyy seuraaviin paikkoihin: ",
     "charsover":"Merkkimäärä on ylittynyt",
     "noempty":"Kenttä ei saa olla tyhjä",
-    "max1000":"Max 1000 merkkiä",
     "error":"Virhe"
   },
   "nav-header": {

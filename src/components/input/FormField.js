@@ -172,12 +172,10 @@ const FormField = ({
 
   const renderNormalField = () => {
     const status = lockStatus
-    const title = field.character_limit
-      ? `${field.label}  ${t('project.char-limit', { amount: field.character_limit })}`
-      : field.label
-    //Todo add real assitive text prop when at coming from backend
-    //Show if has text and hide if text is empty 
-    const assitiveText = false
+    const title = (field.character_limit
+      ? `${field.label}  (${t('project.char-limit', { amount: field.character_limit })})`
+      : field.label) + (field.required ? ' *' : '')
+    const assistiveText = field.assistive_text
     return (
       <>
       <Form.Field
@@ -239,8 +237,8 @@ const FormField = ({
         )}
         {renderField(null)}
         {showError && <div className="error-text">{showError}</div>}
+        {assistiveText && <div className='assistive-text'>{assistiveText}.</div>}
       </Form.Field>
-      {assitiveText && <div className='assistive-text'>{assitiveText}</div>}
       </>
     )
   }
