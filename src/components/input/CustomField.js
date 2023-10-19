@@ -20,13 +20,15 @@ import AutofillInputCalculations from './AutofillInputCalculation/AutofillInputC
 
 import { isEqual } from 'lodash'
 import projectUtils from '../../utils/projectUtils'
+import infoFieldUtil from '../../utils/infoFieldUtil'
 import AutofillInput from './AutofillInput/AutofillInput'
 import DeadlineInfoText from './DeadlineInfoText'
 import { get } from 'lodash'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import CustomADUserCombobox from './CustomADUserCombobox'
-import CustomSearchCombobox from './CustomSearchCombobox';
-import PropTypes from 'prop-types';
+import CustomSearchCombobox from './CustomSearchCombobox'
+import CustomCard from './CustomCard'
+import PropTypes from 'prop-types'
 
 class CustomField extends Component {
   yearOptions = []
@@ -202,7 +204,7 @@ class CustomField extends Component {
 
   renderBooleanRadio = props => {
     const { input, onRadioChange, defaultValue, disabled } = this.props
-    console.log(defaultValue)
+    
     return (
       <RadioBooleanButton
         onBlur={props.handleBlurSave}
@@ -347,6 +349,44 @@ class CustomField extends Component {
     )
   }
 
+  renderInfoFieldset = props => {
+    const name = props.input?.name
+    const data = this.props.attributeData
+    const deadlines = this.props.deadlines
+    const placeholder = props.placeholder
+
+    const [startDate,endDate,startModified,endModified,hide,living,office,general,other] = infoFieldUtil.getInfoFieldData(placeholder,name,data,deadlines)
+    //Date informations
+    if(placeholder === "Tarkasta esilläolopäivät"){
+      return (
+        !hide ?
+        <CustomCard
+          props={props}
+          type={placeholder}
+          startInfo={startDate}
+          startModifiedText={startModified}
+          endModifiedText={endModified}
+          endInfo={endDate}
+        />
+        : ""
+      )
+    }//Floor area informations
+    else if(placeholder === "Tarkasta kerrosalatiedot"){
+      return (
+        !hide ?
+        <CustomCard
+          type={placeholder}
+          props={props}
+          living={living}
+          office={office}
+          general={general}
+          other={other}
+        />
+        : ""
+      )
+    }
+  }
+
   getInput = field => {
     if (field.type === 'set' || field.type === 'multiple') {
       return this.renderSelect
@@ -355,7 +395,6 @@ class CustomField extends Component {
     // Since there might be rules which has boolean type and choices, avoid selecting select and select
     // boolean radiobutton intead
     if (field.choices && field.type !== 'boolean' && field.type !== 'search-select') {
-
       return this.renderSelect
     }
     if (field.display === 'dropdown' || field.display === 'simple_integer') {
@@ -407,9 +446,10 @@ class CustomField extends Component {
         return this.renderDeadlineInfo
       case 'personnel':
         return this.renderADUserSelection
-
       case 'search-select':
         return this.renderSearchSelect
+      case 'info_fieldset':
+        return this.renderInfoFieldset
       default:
         return this.renderNumber
     }
@@ -553,8 +593,9 @@ CustomField.propTypes = {
   input:PropTypes.func,
   onRadioChange:PropTypes.func,
   defaultValue:PropTypes.bool,
-  formName:PropTypes.string
-
+  formName:PropTypes.string,
+  attributeData:PropTypes.object,
+  deadlines:PropTypes.object
 }
 
 export default CustomField

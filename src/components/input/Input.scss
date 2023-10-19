@@ -23,6 +23,9 @@
       height: 100%;
       font-weight: 500;
     }
+    .hide{
+      display: none;
+    }
     .input-locked{
       font-family: 'Helsinki Grotesk Medium', sans-serif;
       font-size: $size14;
@@ -836,5 +839,69 @@
     -webkit-user-select: none;
     -ms-user-select: none;
     user-select: none;
+  }
+}
+
+.custom-card{
+  padding: 0;
+  margin: 0;
+  gap: 0;
+  padding-left: $size20;
+  border:1px solid $border-gray3;
+  background-color: $color-bus-light;
+  .heading{
+    font-family: 'Helsinki Grotesk Bold', sans-serif;
+    font-size: $size16;
+    color: $color-black-90;
+    padding-top: $size16;
+    padding-bottom: $size28;
+  }
+  .custom-card-container{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    .custom-card-info-container{
+      width: 100%;
+      .custom-card-info{
+        font-family: 'Helsinki Grotesk Medium', sans-serif;
+        font-size: $size14;
+        color: $color-black-90;
+        padding-bottom: $size10;
+      }
+      .custom-card-date{
+        font-family: 'Helsinki Grotesk Bold', sans-serif;
+        font-size: $size14;
+        color: $color-black-90;
+        .custom-card-mod{
+          font-family: 'Helsinki Grotesk Regular', sans-serif;
+          font-style: italic;
+          font-size: $size14;
+          color: $color-black-90;
+          padding-left: $size8;
+        }
+      }
+      .custom-card-floor-info{
+        font-family: 'Helsinki Grotesk Regular', sans-serif;
+        font-size: $size14;
+        line-height: $size14;
+        color: $color-black-90;
+      }
+    }
+  }
+  button{
+    font-family: 'Helsinki Grotesk Medium', sans-serif;
+    font-size: $size16;
+    line-height: $size24;
+    color: $color-bus;
+    padding-bottom: $size8;
+    padding-top: $size20;
+    div{
+      margin-left:0 !important;
+    }
+  }
+  button:hover{
+    --background-color-hover: $color-bus-light;
+    text-decoration: underline;
+    color: $color-bus;
   }
 }

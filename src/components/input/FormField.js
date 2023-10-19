@@ -33,6 +33,7 @@ const FormField = ({
   highlightStyle,
   insideFieldset,
   disabled,
+  deadlines,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -95,6 +96,7 @@ const FormField = ({
             lockStatus={lockStatus}
             unlockAllFields={unlockAllFields}
             insideFieldset={insideFieldset}
+            deadlines={deadlines}
           />
         )
     }
@@ -191,7 +193,7 @@ const FormField = ({
               <Label
                 tabIndex="0"
                 id={field.name}
-                className={`input-title${required ? ' highlight' : ''}`}
+                className={`input-title${required ? ' highlight' : ''} ${field.type === "info_fieldset" ? ' hide' : ''}`}
               >
                 {title}
                 {status.lockStyle && !status.owner && (
@@ -274,7 +276,9 @@ const FormField = ({
 }
 
 FormField.propTypes = {
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  field: PropTypes.object,
+  deadlines:PropTypes.object
 }
 
 export default withTranslation()(FormField)

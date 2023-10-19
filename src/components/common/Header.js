@@ -89,9 +89,9 @@ const Header = props => {
 
   useEffect(() => {
     if(schema?.phases){
-      const currentSchemaIndex = schema.phases.findIndex(s => s.id === schemaUtils.getSelectedPhase(props.location.search,selectedPhase))
-      const currentSchema = schema.phases[currentSchemaIndex]
-      const currentSection = currentSchema.sections[props.currentSection]
+      const currentSchemaIndex = schema?.phases.findIndex(s => s.id === schemaUtils.getSelectedPhase(props.location.search,selectedPhase))
+      const currentSchema = schema?.phases[currentSchemaIndex]
+      const currentSection = currentSchema?.sections[props.currentSection]
       setPhaseTitle(currentSchema?.title)
       setSectionTitle(currentSection?.title)
     }

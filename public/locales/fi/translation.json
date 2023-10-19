@@ -402,5 +402,19 @@
     "pino":"Pinonumero",
     "diaari":"Diaarinumero",
     "pwnum":"PW-numero"
+  },
+  "custom-card":{
+    "when-starts":"Milloin kaavaehdotuksen nähtävilläolo alkaa:",
+    "when-ends":"Milloin kaavaehdotuksen nähtävilläolo päättyy:",
+    "modified":"Muokattu",
+    "evaluation":"Kaavapinon arvio",
+    "modify-date":"Muokkaa päivämääriä",
+    "check-date":"Tarkasta seuraavat päivämäärät",
+    "modify-floor-area":"Muokkaa kerrosalatietoja",
+    "check-floor-area":"Tarkasta kerrosalatiedot",
+    "living":"Asuminen",
+    "office":"Toimitila",
+    "public":"Julkiset",
+    "other":"Muut"
   }
 }

@@ -7,6 +7,7 @@ import Shoutbox from '../shoutbox'
 import { Button, IconArrowUp } from 'hds-react'
 import { withTranslation } from 'react-i18next'
 import { isEqual } from 'lodash'
+import PropTypes from 'prop-types'
 
 class EditForm extends Component {
   componentWillUnmount() {
@@ -71,7 +72,8 @@ class EditForm extends Component {
       filterFieldsArray,
       highlightedTag,
       fieldCount,
-      showSection
+      showSection,
+      deadlines
     } = this.props
     return (
       <>
@@ -96,6 +98,7 @@ class EditForm extends Component {
             filterFieldsArray={filterFieldsArray}
             highlightedTag={highlightedTag}
             fieldCount={fieldCount}
+            deadlines={deadlines}
           />
         <Button
           variant="supplementary"
@@ -113,6 +116,10 @@ class EditForm extends Component {
       </>
     )
   }
+}
+
+EditForm.propTypes = {
+  deadlines:PropTypes.object
 }
 
 const decoratedForm = reduxForm({
