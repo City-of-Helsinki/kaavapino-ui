@@ -114,10 +114,12 @@ class ProjectEditPage extends Component {
     }
     if(prevProps.schema != this.props.schema){
       if(this.props.schema?.phases){
-        const currentSchemaIndex = this.props.schema.phases.findIndex(s => s.id === schemaUtils.getSelectedPhase(this.props.location.search,this.props.selectedPhase))
-        const currentSchema = this.props.schema.phases[currentSchemaIndex]
+        const currentSchemaIndex = this.props.schema?.phases.findIndex(s => s.id === schemaUtils.getSelectedPhase(this.props.location.search,this.props.selectedPhase))
+        const currentSchema = this.props.schema?.phases[currentSchemaIndex]
         //Get number of fields for filter component
-        this.setState({fields:currentSchema.sections})
+        if(currentSchema?.sections){
+          this.setState({fields:currentSchema.sections})
+        }
       }
     }
   }
@@ -372,7 +374,6 @@ class ProjectEditPage extends Component {
     const currentSchemaIndex = schema.phases.findIndex(s => s.id === schemaUtils.getSelectedPhase(this.props.location.search,this.props.selectedPhase))
     const currentSchema = schema.phases[currentSchemaIndex]
     const errorFields = projectUtils.getErrorFields(attribute_data, currentSchema)
-
     this.setState({errorFields:errorFields})
     if(errorFields?.length === 0 && !documentsDownloaded){
       const elements = <div>

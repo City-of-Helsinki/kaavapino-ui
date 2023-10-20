@@ -48,6 +48,7 @@ function ProjectDocumentsPage(props) {
     })
     return result
   }
+  
   const groupedDocuments = groupDocuments(documents)
 
   const getTitle = key => {
@@ -61,6 +62,7 @@ function ProjectDocumentsPage(props) {
       </>
     )
   }
+
   const renderDocumentList = () => (
     <div className="documents-page-container">
       {documentsLoading && <LoadingSpinner className="loader-icon" />}
@@ -85,7 +87,9 @@ function ProjectDocumentsPage(props) {
     </div>
   )
 
-  return renderDocumentList()
+  if(schema){
+    return renderDocumentList()
+  }
 }
 
 const mapStateToProps = state => {

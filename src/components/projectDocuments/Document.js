@@ -8,9 +8,6 @@ import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
 import DocumentConfirmationModal from './DocumentConfirmationModal'
 
-// Special case for checking that in "Käynnistysvaihe" documents stays downloadable
-//export const STARTING_PHASE_INDEX = 1
-
 function Document({
   name,
   file,
@@ -21,8 +18,8 @@ function Document({
   isUserResponsible,
   hideButtons,
   scheduleAccepted,
-  schema
-  //  phaseIndex,
+  schema,
+  phaseIndex
 }) {
   const { t } = useTranslation()
 
@@ -46,11 +43,6 @@ function Document({
   }
 
   const disablePreview = (ended,schema) => {
-    //const inStatringPhase = index === STARTING_PHASE_INDEX
-    //not sure is this requirement is still valid
-    /*  if(inStatringPhase){
-      return false
-    } */
     if(!ended && schema){
       return false
     }
@@ -60,12 +52,9 @@ function Document({
   }
 
   const disableDownload = (ended,hide,accepted,schema) => {
-    //not sure is this requirement is still valid
-/*     const inStatringPhase = index === STARTING_PHASE_INDEX
-    if(inStatringPhase){
-      return false
-    } */
-    if(!ended && !hide && accepted && schema){
+    const currentSchemaIndex = schema?.subtype_name === "XL" ? phaseIndex - 2 : phaseIndex - 1
+    const currentSchema = schema?.phases[currentSchemaIndex]
+    if(!ended && !hide && accepted && schema && currentSchema?.status === "Vaihe käynnissä"){
       return false
     }
     else{

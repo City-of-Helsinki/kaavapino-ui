@@ -133,7 +133,7 @@ class CustomField extends Component {
       )
     }
 
-    if (deadlines && deadlines.length > 0) {
+    if (current && deadlines && deadlines.length > 0) {
       return (
         <DeadLineInput
           type="date"

@@ -500,7 +500,7 @@ const getChangedAttributeData = (values, initial, sections) => {
     if (initial[key] !== undefined && isEqual(values[key], initial[key])) {
       return
     }
-    if(values[key] === ''){
+    if(values[key] === '' || values[key]?.ops && values[key]?.ops[0] && values[key]?.ops[0]?.insert.replace(/^\s+|\s+$/g, '').length === 0){
       //empty text values are ignored and not saved
       delete attribute_data[key]
     }

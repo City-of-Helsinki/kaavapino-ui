@@ -229,7 +229,6 @@ const findValuesFromObject = (object, key, returnArray) => {
 function hasMissingFields(attributeData, currentProject, schema) {
     const currentSchema = schema.phases.find(s => s.id === currentProject.phase)
     const { sections } = currentSchema
-
     let missingFields = false
     // Go through every single field
     sections.forEach(({ fields }) => {
@@ -270,7 +269,9 @@ function hasMissingFields(attributeData, currentProject, schema) {
 
 function getErrorFields(attributeData, currentSchema) {
   let errorFields = []
-  if(currentSchema?.sections){
+  const phaseName = attributeData.kaavan_vaihe.split(".").pop().replace(/\s/g,'');
+  const title = currentSchema.title.replace(/\s/g,'');
+  if(currentSchema?.status === "Vaihe käynnissä" && currentSchema?.sections && title === phaseName){
     const { sections } = currentSchema
     // Go through every single field
     sections.forEach(({ title,fields }) => {
