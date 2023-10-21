@@ -75,13 +75,15 @@
   }
 
   .quicknav-content {
-    border-bottom: 1px solid $gray;
     display: flex;
     flex-direction: column;
     max-height: 520px;
-    overflow-y: auto;
-    border-right: 1px solid $gray;
-    padding-top: 10px;
+    overflow-y: scroll;
+    padding-top: $size12;
+
+    &::-webkit-scrollbar-track {
+      margin-top: $size12;
+    }
     
     .phase-accordion > div{
       font-size: $size16;
@@ -309,6 +311,10 @@
 
     button:last-of-type::after{
       display: none;
+    }
+
+    > button {
+      max-width: 341px;
     }
   }
 
