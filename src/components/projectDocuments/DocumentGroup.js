@@ -3,6 +3,7 @@ import Document from './Document'
 import { Accordion,IconAlertCircle,IconCheck } from 'hds-react'
 import projectUtils from '../../utils/projectUtils'
 import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 
 const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserResponsible, schema, attribute_data, selectedPhase, search }) => {
   const {t} = useTranslation()
@@ -122,6 +123,13 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
       </div>
     )
   }
+}
+
+DocumentGroup.propTypes = {
+  schema: PropTypes.object,
+  attribute_data: PropTypes.object,
+  phase: PropTypes.object,
+  title: PropTypes.object
 }
 
 export default DocumentGroup

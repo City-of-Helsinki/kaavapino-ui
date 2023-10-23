@@ -267,46 +267,51 @@ function hasMissingFields(attributeData, currentProject, schema) {
     return missingFields 
 }
 
+function checkErrors(errorFields,currentSchema,attributeData) {
+  const { sections } = currentSchema
+  sections.forEach(({ title,fields }) => {
+    fields.forEach(field => {
+      // Only validate visible fields
+      if (showField(field, attributeData)) {
+        // Matrices can contain any kinds of fields, so
+        // we must go through them separately
+        if (field.type === 'matrix') {
+          const { matrix } = field
+          matrix.fields.forEach(({ required, name, label }) => {
+            if (isFieldMissing(name, required, attributeData)) {
+              errorFields.push({"errorSection":title,"errorField":label,"fieldAnchorKey":name})
+            }
+          })
+          // Fieldsets can contain any fields (except matrices)
+          // multiple times, so we need to go through them all
+        } else if (field.type === 'fieldset') {
+          if (hasFieldsetErrors(field.name, field.fieldset_attributes, attributeData)) {
+            errorFields.push({"errorSection":title,"errorField":field.label,"fieldAnchorKey":field.name})
+          }
+        } else if (
+          isFieldMissing(
+            field.name,
+            field.required,
+            attributeData,
+            field.autofill_readonly
+          )
+        ) {
+          errorFields.push({"errorSection":title,"errorField":field.label,"fieldAnchorKey":field.name})
+        }
+      }
+    })
+  })
+  return errorFields
+}
+
 function getErrorFields(checkDocuments, attributeData, currentSchema) {
   let errorFields = []
   const phaseName = attributeData.kaavan_vaihe.split(".").pop().replace(/\s/g,'');
   const title = currentSchema.title.replace(/\s/g,'');
     //Check only using currentPhase sections if check checkDocuments is false and do other check when checking document downloads
   if(checkDocuments && currentSchema?.status === "Vaihe käynnissä" && currentSchema?.sections && title === phaseName || !checkDocuments && currentSchema?.sections){
-      // Go through every single field
-    const { sections } = currentSchema
-    sections.forEach(({ title,fields }) => {
-      fields.forEach(field => {
-        // Only validate visible fields
-        if (showField(field, attributeData)) {
-          // Matrices can contain any kinds of fields, so
-          // we must go through them separately
-          if (field.type === 'matrix') {
-            const { matrix } = field
-            matrix.fields.forEach(({ required, name, label }) => {
-              if (isFieldMissing(name, required, attributeData)) {
-                errorFields.push({"errorSection":title,"errorField":label,"fieldAnchorKey":name})
-              }
-            })
-            // Fieldsets can contain any fields (except matrices)
-            // multiple times, so we need to go through them all
-          } else if (field.type === 'fieldset') {
-            if (hasFieldsetErrors(field.name, field.fieldset_attributes, attributeData)) {
-              errorFields.push({"errorSection":title,"errorField":field.label,"fieldAnchorKey":field.name})
-            }
-          } else if (
-            isFieldMissing(
-              field.name,
-              field.required,
-              attributeData,
-              field.autofill_readonly
-            )
-          ) {
-            errorFields.push({"errorSection":title,"errorField":field.label,"fieldAnchorKey":field.name})
-          }
-        }
-      })
-    })
+    // Go through every single field
+    errorFields = checkErrors(errorFields,currentSchema,attributeData)
   }
   else if(checkDocuments && currentSchema?.status !== "Vaihe käynnissä"){
     //Show error for hide download button on document download view if not currently active phase

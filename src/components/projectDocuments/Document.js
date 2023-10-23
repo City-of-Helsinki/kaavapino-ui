@@ -7,6 +7,7 @@ import { withRouter } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
 import DocumentConfirmationModal from './DocumentConfirmationModal'
+import PropTypes from 'prop-types'
 
 function Document({
   name,
@@ -61,12 +62,7 @@ function Document({
       currentSchemaIndex = 4
     } 
     const currentSchema = schema?.phases[currentSchemaIndex]
-    if(!ended && !hide && accepted && schema && currentSchema?.status === "Vaihe käynnissä"){
-      return false
-    }
-    else{
-      return true
-    }
+    return !ended && !hide && accepted && schema && currentSchema?.status === "Vaihe käynnissä" ? false : true
   }
 
   const openConfirmationDialog = () => setShowConfirmation(true)
@@ -111,6 +107,12 @@ function Document({
       </Grid>
     </>
   )
+}
+
+Document.propTypes = {
+  schema: PropTypes.object,
+  attribute_data: PropTypes.object,
+  phaseIndex: PropTypes.number
 }
 
 const mapDispatchToProps = {
