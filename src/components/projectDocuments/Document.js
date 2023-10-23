@@ -7,9 +7,7 @@ import { withRouter } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
 import DocumentConfirmationModal from './DocumentConfirmationModal'
-
-// Special case for checking that in "Käynnistysvaihe" documents stays downloadable
-//export const STARTING_PHASE_INDEX = 1
+import PropTypes from 'prop-types'
 
 function Document({
   name,
@@ -21,8 +19,9 @@ function Document({
   isUserResponsible,
   hideButtons,
   scheduleAccepted,
-  schema
-  //  phaseIndex,
+  schema,
+  phaseIndex,
+  attribute_data
 }) {
   const { t } = useTranslation()
 
@@ -46,11 +45,6 @@ function Document({
   }
 
   const disablePreview = (ended,schema) => {
-    //const inStatringPhase = index === STARTING_PHASE_INDEX
-    //not sure is this requirement is still valid
-    /*  if(inStatringPhase){
-      return false
-    } */
     if(!ended && schema){
       return false
     }
@@ -60,17 +54,15 @@ function Document({
   }
 
   const disableDownload = (ended,hide,accepted,schema) => {
-    //not sure is this requirement is still valid
-/*     const inStatringPhase = index === STARTING_PHASE_INDEX
-    if(inStatringPhase){
-      return false
-    } */
-    if(!ended && !hide && accepted && schema){
-      return false
+    let currentSchemaIndex = schema?.subtype_name === "XL" && attribute_data?.luonnos_luotu && !attribute_data?.periaatteet_luotu ? phaseIndex - 2 : phaseIndex - 1
+    if(schema?.subtype_name === "XL" && !attribute_data?.luonnos_luotu && attribute_data?.periaatteet_luotu && phaseIndex === 5){
+      currentSchemaIndex = 3
     }
-    else{
-      return true
-    }
+    else if(schema?.subtype_name === "XL" && !attribute_data?.luonnos_luotu && attribute_data?.periaatteet_luotu && phaseIndex === 6){
+      currentSchemaIndex = 4
+    } 
+    const currentSchema = schema?.phases[currentSchemaIndex]
+    return !ended && !hide && accepted && schema && currentSchema?.status === "Vaihe käynnissä" ? false : true
   }
 
   const openConfirmationDialog = () => setShowConfirmation(true)
@@ -115,6 +107,12 @@ function Document({
       </Grid>
     </>
   )
+}
+
+Document.propTypes = {
+  schema: PropTypes.object,
+  attribute_data: PropTypes.object,
+  phaseIndex: PropTypes.number
 }
 
 const mapDispatchToProps = {
