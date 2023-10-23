@@ -50,7 +50,6 @@ function ProjectDocumentsPage(props) {
   }
   
   const groupedDocuments = groupDocuments(documents)
-
   const getTitle = key => {
     const current = groupedDocuments[key]
 

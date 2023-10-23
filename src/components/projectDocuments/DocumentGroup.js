@@ -7,10 +7,11 @@ import { useTranslation } from 'react-i18next'
 const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserResponsible, schema, attribute_data, selectedPhase, search }) => {
   const {t} = useTranslation()
 
-  const checkRequired = (index) => {
+  const checkRequired = () => {
+    const index = getCorrectPhaseIndex()
     let hasErrors
     const currentSchema = schema?.phases[index]
-    const errorFields = projectUtils.getErrorFields(attribute_data, currentSchema)
+    const errorFields = projectUtils.getErrorFields(true,attribute_data, currentSchema)
     if(errorFields.length > 0){
       hasErrors = true
     }
@@ -35,20 +36,28 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
   }
 
   const getCorrectPhaseIndex = () => {
-    const currentSchemaIndex = schema?.subtype_name === "XL" ? phase.phaseIndex - 2 : phase.phaseIndex - 1
+    //XL Luonnos -2 to starting index so document accordians are check correctly
+    //Other situations - periaatteet, luonnos + periaate, non xl projects -1
+    //compared to groupedDocuments[key] that has different indexes
+    let currentSchemaIndex = schema?.subtype_name === "XL" && attribute_data?.luonnos_luotu && !attribute_data?.periaatteet_luotu ? phase.phaseIndex - 2 : phase.phaseIndex - 1
+    if(schema?.subtype_name === "XL" && !attribute_data?.luonnos_luotu && attribute_data?.periaatteet_luotu && phase.phaseIndex === 5){
+      currentSchemaIndex = 3
+    }
+    else if(schema?.subtype_name === "XL" && !attribute_data?.luonnos_luotu && attribute_data?.periaatteet_luotu && phase.phaseIndex === 6){
+      currentSchemaIndex = 4
+    } 
     return currentSchemaIndex
   }
 
   const hideButtons = () => {
-    const index = getCorrectPhaseIndex()
-    const hideButtons = checkRequired(index)
+    const hideButtons = checkRequired()
     return hideButtons
   }
   
   const getStatus = () => {
     const currentSchemaIndex = getCorrectPhaseIndex()
     const currentSchema = schema?.phases[currentSchemaIndex]
-    const requirements = checkRequired(currentSchemaIndex)
+    const requirements = checkRequired()
     const scheduleAccepted = isSceduleAccepted()
     let status
     if(phaseEnded){

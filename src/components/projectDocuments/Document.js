@@ -19,7 +19,8 @@ function Document({
   hideButtons,
   scheduleAccepted,
   schema,
-  phaseIndex
+  phaseIndex,
+  attribute_data
 }) {
   const { t } = useTranslation()
 
@@ -52,7 +53,13 @@ function Document({
   }
 
   const disableDownload = (ended,hide,accepted,schema) => {
-    const currentSchemaIndex = schema?.subtype_name === "XL" ? phaseIndex - 2 : phaseIndex - 1
+    let currentSchemaIndex = schema?.subtype_name === "XL" && attribute_data?.luonnos_luotu && !attribute_data?.periaatteet_luotu ? phaseIndex - 2 : phaseIndex - 1
+    if(schema?.subtype_name === "XL" && !attribute_data?.luonnos_luotu && attribute_data?.periaatteet_luotu && phaseIndex === 5){
+      currentSchemaIndex = 3
+    }
+    else if(schema?.subtype_name === "XL" && !attribute_data?.luonnos_luotu && attribute_data?.periaatteet_luotu && phaseIndex === 6){
+      currentSchemaIndex = 4
+    } 
     const currentSchema = schema?.phases[currentSchemaIndex]
     if(!ended && !hide && accepted && schema && currentSchema?.status === "Vaihe käynnissä"){
       return false

@@ -267,13 +267,14 @@ function hasMissingFields(attributeData, currentProject, schema) {
     return missingFields 
 }
 
-function getErrorFields(attributeData, currentSchema) {
+function getErrorFields(checkDocuments, attributeData, currentSchema) {
   let errorFields = []
   const phaseName = attributeData.kaavan_vaihe.split(".").pop().replace(/\s/g,'');
   const title = currentSchema.title.replace(/\s/g,'');
-  if(currentSchema?.status === "Vaihe käynnissä" && currentSchema?.sections && title === phaseName){
+    //Check only using currentPhase sections if check checkDocuments is false and do other check when checking document downloads
+  if(checkDocuments && currentSchema?.status === "Vaihe käynnissä" && currentSchema?.sections && title === phaseName || !checkDocuments && currentSchema?.sections){
+      // Go through every single field
     const { sections } = currentSchema
-    // Go through every single field
     sections.forEach(({ title,fields }) => {
       fields.forEach(field => {
         // Only validate visible fields
@@ -307,7 +308,10 @@ function getErrorFields(attributeData, currentSchema) {
       })
     })
   }
-
+  else if(checkDocuments && currentSchema?.status !== "Vaihe käynnissä"){
+    //Show error for hide download button on document download view if not currently active phase
+    errorFields.push("notcurrentphase")
+  }
   return errorFields 
 }
 
