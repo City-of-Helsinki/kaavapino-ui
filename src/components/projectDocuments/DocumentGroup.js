@@ -49,7 +49,7 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
     const currentSchemaIndex = getCorrectPhaseIndex()
     const currentSchema = schema?.phases[currentSchemaIndex]
     const requirements = checkRequired(currentSchemaIndex)
-    const scheduleAccepted = isSceduleAccepted(currentSchemaIndex)
+    const scheduleAccepted = isSceduleAccepted()
     let status
     if(phaseEnded){
       status = 
@@ -106,7 +106,7 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
               selectedPhase={selectedPhase}
               search={search}
               hideButtons={schema ? hideButtons() : true}
-              scheduleAccepted={schema ? isSceduleAccepted(getCorrectPhaseIndex()) : false}
+              scheduleAccepted={schema ? isSceduleAccepted() : false}
             />
           ))}
         </Accordion>

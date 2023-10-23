@@ -496,11 +496,12 @@ function* createProject() {
 
 const getChangedAttributeData = (values, initial, sections) => {
   let attribute_data = {}
+  const wSpaceRegex = /^(\s+|\s+)$/g
   Object.keys(values).forEach(key => {
     if (initial[key] !== undefined && isEqual(values[key], initial[key])) {
       return
     }
-    if(values[key] === '' || values[key]?.ops && values[key]?.ops[0] && values[key]?.ops[0]?.insert.replace(/^\s+|\s+$/g, '').length === 0){
+    if(values[key] === '' || values[key]?.ops && values[key]?.ops[0] && values[key]?.ops[0]?.insert.replace(wSpaceRegex, '').length === 0){
       //empty text values are ignored and not saved
       delete attribute_data[key]
     }
