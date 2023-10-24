@@ -88,6 +88,7 @@ function RichTextEditor(props) {
   const [valueIsSet, setValueIsSet] = useState(false)
   const [currentEditor,setCurrentEditor] = useState("")
   const [valueIsEmpty,setValueIsEmpty] = useState(false)
+  const [charLimitOver,setCharLimitOver] = useState(false)
 
   const editorRef = useRef("")
   const counter = useRef(props.currentSize)
@@ -394,6 +395,7 @@ function RichTextEditor(props) {
             onBlur();
             oldValueRef.current = inputValue.current;
             setReadOnly(true)
+            setCharLimitOver(false)
             setCurrentEditor("")
           }
         }
@@ -549,8 +551,11 @@ function RichTextEditor(props) {
               if (!fixRange) {
                 setToolbarVisible(false)
                 showCounter.current = false;
-                if (onBlur) {
+                if (onBlur && counter.current <= maxSize) {
                   handleBlur(readonly)
+                }
+                else{
+                  setCharLimitOver(true)
                 }
               }
             }, 50) // random time
@@ -579,7 +584,7 @@ function RichTextEditor(props) {
           ))}
         </div>
       )}
-      {showCounter.current && maxSize ? (
+      {showCounter.current && typeof counter.current !== "undefined" && maxSize ? (
         <p
           className={
             counter.current > maxSize ? 'quill-counter quill-warning' : 'quill-counter'
@@ -589,7 +594,7 @@ function RichTextEditor(props) {
         </p>
       ) : null}
     </div>
-      {counter.current > maxSize && toolbarVisible ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.charsover')}</div> : ""}
+      {counter.current > maxSize && charLimitOver ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.charsover')}</div> : ""}
       {valueIsEmpty ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.noempty')}</div> : ""}
     </div>
   )
