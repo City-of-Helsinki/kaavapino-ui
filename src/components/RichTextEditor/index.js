@@ -579,7 +579,7 @@ function RichTextEditor(props) {
           ))}
         </div>
       )}
-      {showCounter.current && counter.current < 1002 && maxSize ? (
+      {showCounter.current && maxSize ? (
         <p
           className={
             counter.current > maxSize ? 'quill-counter quill-warning' : 'quill-counter'
