@@ -338,23 +338,21 @@ function RichTextEditor(props) {
   }, [inputProps.name, inputProps.value])
 
   const handleFocus = (event,source) => {
-    if(currentEditor.toString() !== inputProps.name.toString()){
-      if(source && event && source !== "silent"){
-        if (typeof onFocus === 'function') {
-          //Sent a call to lock field to backend
-          if(!insideFieldset){
-            onFocus(inputProps.name);
-          }
-          localStorage.setItem("previousElementId",editorRef.current.props.id);
+    if(source && event && source !== "silent"){
+      if (typeof onFocus === 'function') {
+        //Sent a call to lock field to backend
+        if(!insideFieldset){
+          onFocus(inputProps.name);
         }
-        setToolbarVisible(true)
+        localStorage.setItem("previousElementId",editorRef.current.props.id);
       }
-      
-      let length = editorRef.current.getEditor().getLength();
-      counter.current = length -1;
-      showCounter.current = true;
-      setCurrentEditor(inputProps.name)
+      setToolbarVisible(true)
     }
+    
+    let length = editorRef.current.getEditor().getLength();
+    counter.current = length -1;
+    showCounter.current = true;
+    setCurrentEditor(inputProps.name)
   }
 
   const handleBlur = (readonly) => {
@@ -551,7 +549,7 @@ function RichTextEditor(props) {
               if (!fixRange) {
                 setToolbarVisible(false)
                 showCounter.current = false;
-                if (onBlur && counter.current <= maxSize) {
+                if (onBlur && counter.current <= maxSize || onBlur && typeof counter.current === "undefined") {
                   handleBlur(readonly)
                 }
                 else{

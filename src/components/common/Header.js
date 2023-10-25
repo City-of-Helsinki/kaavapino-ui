@@ -146,7 +146,7 @@ const Header = props => {
           elements =
           <div>
             <div>
-              <h3>{t('messages.could-not-save-header')}
+              <h3>{lastSaved.lock ? t('messages.could-not-lock-header') : t('messages.could-not-save-header')}
                 <span className='icon-container'><IconCross size="s" /></span>
               </h3>
             </div>

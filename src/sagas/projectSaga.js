@@ -715,6 +715,9 @@ function* lockProjectField(data) {
       yield put(setLockStatus(lockData,false,saving))
     }
     catch (e) {
+      const dateVariable = new Date()
+      const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      yield put(setLastSaved("error",time,[attribute_identifier],[""],true))
       yield put(error(e))
     }
   }
