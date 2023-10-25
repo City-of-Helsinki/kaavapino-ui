@@ -117,7 +117,7 @@
     "required-documents-text":"Kaikkia tarvittavia dokumentteja ei ole vielä ladattu ulos",
     "could-not-save-header":"Tallennus epäonnistui",
     "could-not-lock-header":"Lukitus epäonnistui",
-    "could-not-save-fields-text":"Tallennus epäonnistui yhteysongelmien takia. Kopioi kentän sisältö leikepöydälle. Yhteyden palauduttua tarkista kentän tiedot ja päivitä ne tarvittaessa.",
+    "could-not-save-fields-text":"Tallennus epäonnistui yhteysongelmien takia. Kopioi kentän sisältö talteen itsellesi. Yhteyden palauduttua tarkista kentän tiedot ja päivitä ne tarvittaessa.",
     "could-not-save-fields-text2":"Mikäli poistut näkymästä, menetät muutokset.",
     "tryagain":"Yritä uudelleen",
     "connect-again":"Tarkistetaan yhteyttä",
