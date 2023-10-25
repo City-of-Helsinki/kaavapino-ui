@@ -32,7 +32,7 @@ import {
   POLL_CONNECTION,
   SET_POLL,
   setPoll,
-  SET_LAST_SAVED, 
+  SET_LAST_SAVED,
   setLastSaved,
   SET_UNLOCK_STATUS,
   SET_LOCK_STATUS,
@@ -109,7 +109,8 @@ import {
   setTotalArchivedProjects,
   setOnholdProjects,
   setArchivedProjects,
-  resetProjectDeadlinesSuccessful
+  resetProjectDeadlinesSuccessful,
+  projectFileUploadSuccessful
 } from '../actions/projectActions'
 import { startSubmit, stopSubmit, setSubmitSucceeded } from 'redux-form'
 import { error } from '../actions/apiActions'
@@ -823,12 +824,16 @@ function* projectFileUpload({
     if (fieldSetIndex && fieldSetIndex.length > 0) {
       formData.append('fieldset_path', JSON.stringify(fieldSetIndex))
     }
+
+    const dateVariable = new Date()
+    const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+
     // Set cancel token
     const CancelToken = axios.CancelToken
     const src = CancelToken.source()
     setCancelToken(src)
     // Upload file
-    yield call(
+    const res = yield call(
       projectApi.put,
       formData,
       { path: { id: currentProjectId } },
@@ -839,7 +844,10 @@ function* projectFileUpload({
         cancelToken: src.token
       }
     )
+
+    yield put(projectFileUploadSuccessful(res))
     yield put(saveProjectAction())
+    yield put(setLastSaved("success",time))
   } catch (e) {
     if (!axios.isCancel(e)) {
       yield put(error(e))
@@ -852,6 +860,9 @@ function* projectFileRemove({ payload }) {
     const currentProjectId = yield select(currentProjectIdSelector)
     const attribute_data = {}
     attribute_data[payload] = null
+    const dateVariable = new Date()
+    const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+
     yield call(
       projectApi.patch,
       { attribute_data },
@@ -860,6 +871,7 @@ function* projectFileRemove({ payload }) {
     )
     yield put(projectFileRemoveSuccessful(payload))
     yield put(saveProjectAction())
+    yield put(setLastSaved("success",time))
   } catch (e) {
     yield put(error(e))
   }
