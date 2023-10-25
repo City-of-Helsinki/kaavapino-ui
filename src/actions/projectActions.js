@@ -120,9 +120,9 @@ export const setPoll = (connection) => ({
   type: SET_POLL,
   payload: {connection}
 })
-export const setLastSaved = (status,time,fields,values) => ({
+export const setLastSaved = (status,time,fields,values,lock) => ({
   type: SET_LAST_SAVED,
-  payload: {status,time,fields,values}
+  payload: {status,time,fields,values,lock}
 })
 export const unlockAllFields = (projectName) => ({
   type: UNLOCK_ALL_FIELDS,
