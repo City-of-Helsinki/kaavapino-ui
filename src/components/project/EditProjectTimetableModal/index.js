@@ -123,7 +123,7 @@ class EditProjectTimeTableModal extends Component {
           formValues={formValues}
           className={className}
           isProjectTimetableEdit={true}
-          disabled={disabled}
+          disabled={disabled?.disabled}
         />
         {modifiedError && <div className="field-error">{modifiedError}</div>}
       </div>

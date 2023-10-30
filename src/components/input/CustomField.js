@@ -124,7 +124,7 @@ class CustomField extends Component {
   }
 
   renderDate = props => {
-    const { handleBlurSave, handleLockField, handleUnlockField, deadlines, field, lockField, fieldSetDisabled, insideFieldset, disabled } = this.props
+    const { handleBlurSave, handleLockField, handleUnlockField, deadlines, field, lockField, fieldSetDisabled, insideFieldset, disabled, isProjectTimetableEdit } = this.props
 
     let current
     if (deadlines && deadlines.length > 0) {
@@ -133,7 +133,7 @@ class CustomField extends Component {
       )
     }
 
-    if (current && deadlines && deadlines.length > 0) {
+    if (current && deadlines && deadlines.length > 0 || isProjectTimetableEdit) {
       return (
         <DeadLineInput
           type="date"

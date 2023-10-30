@@ -34,6 +34,7 @@ const FormField = ({
   insideFieldset,
   disabled,
   deadlines,
+  isProjectTimetableEdit,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -81,7 +82,7 @@ const FormField = ({
         return (
           <CustomField
             {...rest}
-            disabled={newField.disabled || disabled?.disabled}
+            disabled={typeof newField.disabled === "undefined" ? disabled : newField.disabled}
             field={newField}
             attributeData={attributeData}
             className={className}
@@ -97,6 +98,7 @@ const FormField = ({
             unlockAllFields={unlockAllFields}
             insideFieldset={insideFieldset}
             deadlines={deadlines}
+            isProjectTimetableEdit={isProjectTimetableEdit}
           />
         )
     }
