@@ -89,6 +89,55 @@
     }
   }
 
+  .rolling-info-container{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: "Helsinki Grotesk Medium", sans-serif;
+    font-size: $size16;
+    line-height: $size24;
+    color: $color-black-90;
+    .text-input{
+      width: 80%;
+      padding-left: $size16;
+      input{
+        font-family: "Helsinki Grotesk Regular", sans-serif;
+        font-size: $size16;
+        opacity: 1 !important;
+        border: none;
+        color: $color-black-90;
+        padding-left: 0;
+      }
+    }
+    .text-input-italic{
+      width: 80%;
+      padding-left: $size14;
+      input{
+        font-family: "Helsinki Grotesk Regular", sans-serif;
+        font-size: $size14;
+        opacity: 1 !important;
+        border: none;
+        color: $max-markings-color;
+        padding-left: 0;
+        font-style: italic;
+      }
+    }
+  }
+
+  .rolling-text{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    font-family: "Helsinki Grotesk Medium", sans-serif;
+    font-size: $size14;
+    color: $color_rolling_info;
+    padding-left: $size16;
+    padding-top: $size12;
+    span{
+      padding-left: $size8;
+    }
+  }
+
 }
 
 .highligh-error{

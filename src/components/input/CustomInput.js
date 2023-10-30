@@ -6,14 +6,18 @@ import { useSelector } from 'react-redux'
 import {lockedSelector,lastModifiedSelector } from '../../selectors/projectSelector'
 import moment from 'moment'
 import { useTranslation } from 'react-i18next'
+import RollingInfo from '../input/RollingInfo'
+import {refFocus} from '../../hooks/refFocus'
 
 const CustomInput = ({ input, meta: { error }, ...custom }) => {
   const [readonly, setReadOnly] = useState({name:"",read:false})
   const [isEmpty,setIsEmpty] = useState(false)
+  const [editField,setEditField] = useState(false)
 
   const lastModified = useSelector(state => lastModifiedSelector(state))
   const lockedStatus = useSelector(state => lockedSelector(state))
 
+  const [inputRef, setInputFocus] = refFocus()
   const oldValueRef = useRef('');
   const { t } = useTranslation()
 
@@ -163,6 +167,10 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
     if(custom.type === "date" && !custom.insideFieldset){
       setReadOnly({name:input.name,read:true})
     }
+
+    if(custom.rollingInfo){
+      setEditField(false)
+    }
   }
 
   const setValue = (dbValue) => {
@@ -183,21 +191,49 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
     }
   }, [input.name, input.value]);
 
-  return (
-    <div className={custom.disabled || !inputUtils.hasError(error).toString() || !isEmpty ? "text-input " : "text-input " +t('project.error')}>
-      <TextInput
-        aria-label={input.name}
-        error={inputUtils.hasError(error).toString()}
-        errorText={custom.disabled || !inputUtils.hasError(error).toString() || !isEmpty ? "" : t('project.error')}
-        fluid="true"
-        {...input}
-        {...custom}
-        onChange={(event) =>{handleInputChange(event,readonly.read)}}
-        onBlur={(event) => {handleBlur(event,readonly.read)}}
-        onFocus={() => {handleFocus()}}
-        readOnly={readonly.read}
+  const editRollingField = () => {
+    setEditField(true)
+    setTimeout(function(){
+      setInputFocus()
+    }, 200);
+  }
+
+
+  const normalOrRollingElement = () => {
+    //Render rolling info field or normal edit field
+    //If clicking rolling field button makes positive lock check then show normal editable field
+    //Rolling field can be nonEditable
+    const elements = custom.nonEditable || custom.rollingInfo && !editField ?
+      <RollingInfo 
+        name={input.name} 
+        value={input.value} 
+        nonEditable={custom.nonEditable}
+        modifyText={custom.modifyText}
+        rollingInfoText={custom.rollingInfoText}
+        editRollingField={editRollingField}
       />
-    </div>
+      :    
+      <div className={custom.disabled || !inputUtils.hasError(error).toString() || !isEmpty ? "text-input " : "text-input " +t('project.error')}>
+        <TextInput
+          ref={inputRef}
+          aria-label={input.name}
+          error={inputUtils.hasError(error).toString()}
+          errorText={custom.disabled || !inputUtils.hasError(error).toString() || !isEmpty ? "" : t('project.error')}
+          fluid="true"
+          {...input}
+          {...custom}
+          onChange={(event) =>{handleInputChange(event,readonly.read)}}
+          onBlur={(event) => {handleBlur(event,readonly.read)}}
+          onFocus={() => {handleFocus()}}
+          readOnly={readonly.read}
+        />
+      </div>
+    
+    return elements
+  }
+
+  return (
+    normalOrRollingElement()
   )
 }
 

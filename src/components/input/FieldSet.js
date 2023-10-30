@@ -33,7 +33,8 @@ const FieldSet = ({
   field: { disable_fieldset_delete_add },
   lockField,
   lockStatus,
-  unlockAllFields
+  unlockAllFields,
+  rollingInfo
 }) => {
 
   const handleBlur = () => {
@@ -150,6 +151,20 @@ const FieldSet = ({
 
                   const fieldUpdated =
                     updated && updated.new_value && has(updated.new_value[0], field.name)
+
+                  let rollingInfoText = "Tieto siirtynyt aiemmasta vaiheesta"
+                  let nonEditable = false
+                  if(isReadOnly || field?.display === 'readonly_checkbox'){
+                    rollingInfoText = "Tieto on automaattisesti muodostettu"
+                    nonEditable = true
+                  }
+                  /*     else if(rollingInfo){
+                    rollingInfoText = "Tieto siirtynyt aiemmasta vaiheesta"
+                  }
+                  else if(rollingInfo && nodata){
+              
+                  } */
+                  
                   return (
                     <div
                       className={`input-container ${showError ? 'error' : ''} ${fieldsetDisabled ? 'disabled-fieldset' : ''}`}
@@ -223,6 +238,10 @@ const FieldSet = ({
                           validate={validate}
                           fieldSetDisabled={fieldsetDisabled}
                           insideFieldset={true}
+                          rollingInfo={rollingInfo}
+                          modifyText={t('project.modify')}
+                          rollingInfoText={rollingInfoText}
+                          nonEditable={nonEditable}
                         />
                         {showError && <div className="error-text">{showError}</div>}
                       </Form.Field>

@@ -42,6 +42,7 @@ const FormSection = ({
         {section?.ingress}
       </div>
       {section.fields.map((field, i) => {
+        const rollingInfo = true
         let highlightStyle = highlightedTag === field.field_subroles ? 'yellow' : ''
         if(filterFieldsArray.length === 0 || filterFieldsArray.includes(field.field_subroles)){
           count++
@@ -66,6 +67,7 @@ const FormSection = ({
             highlightedTag={highlightedTag}
             highlightStyle={highlightStyle}
             deadlines={deadlines}
+            rollingInfo={rollingInfo}
           />)
         }
         else{

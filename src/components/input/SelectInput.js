@@ -5,6 +5,7 @@ import { Select } from 'hds-react'
 import { isArray } from 'lodash'
 import { useSelector } from 'react-redux'
 import {lockedSelector } from '../../selectors/projectSelector'
+import RollingInfo from '../input/RollingInfo'
 
 // Label when there are more than one same option. To avoid key errors.
 const MORE_LABEL = ' (2)'
@@ -19,7 +20,11 @@ const SelectInput = ({
   disabled,
   multiple,
   handleUnlockField,
-  insideFieldset
+  insideFieldset,
+  nonEditable, 
+  rollingInfo, 
+  modifyText, 
+  rollingInfoText
 }) => {
   const currentValue = []
   const oldValueRef = useRef('');
@@ -27,6 +32,7 @@ const SelectInput = ({
   const lockedStatus = useSelector(state => lockedSelector(state))
   const [readonly, setReadOnly] = useState(false)
   const [fieldName, setFieldName] = useState("")
+  const [editField,setEditField] = useState(false)
   const currentOptions = []
   useEffect(() => {
     //Chekcs that locked status has more data then inital empty object
@@ -200,6 +206,9 @@ const SelectInput = ({
         }
       }
     }
+    if(rollingInfo){
+      setEditField(false)
+    }
     setFieldName("")
   }
 
@@ -215,67 +224,88 @@ const SelectInput = ({
     }
   }, [input.name, input.value]);
 
-  if(!readonly){
-    options = options
-    ? options.filter(option => option.label && option.label.trim() !== '')
-    : []
-
-    options.forEach(option => option && currentOptions.push(modifyOptionIfExist(option)))
+  const editRollingField = () => {
+    setEditField(true)
   }
 
-  let notSelectable = readonly === true && fieldName === input.name
-  let readOnlyStyle = notSelectable ? 'selection readonly' : 'selection'
-  if (!multiple) {
-    return (
-      <Select
-        data-testid="select-single"
-        placeholder={placeholder}
-        className={readOnlyStyle}
-        id={input.name}
-        multiselect={false}
-        error={inputUtils.hasError(error)}
-        onBlur={handleBlur}
-        onFocus={handleFocus}
-        clearable={true}
-        disabled={disabled}
-        options={currentOptions}
-        value={currentSingleValue}
-        onChange={data => {
-          if(!notSelectable){
-            let returnValue = data ? data.value : null
-            if (returnValue === '') {
-              returnValue = null
-            }
-            setSelectValues(returnValue)
-            handleInputChange(returnValue)
-          }
-        }}
+  const normalOrRollingElement = () => {
+    if(!readonly){
+      options = options
+      ? options.filter(option => option.label && option.label.trim() !== '')
+      : []
+  
+      options.forEach(option => option && currentOptions.push(modifyOptionIfExist(option)))
+    }
+  
+    let notSelectable = readonly === true && fieldName === input.name
+    let readOnlyStyle = notSelectable ? 'selection readonly' : 'selection'
+    //Render rolling info field or normal edit field
+    //If clicking rolling field button makes positive lock check then show normal editable field
+    //Rolling field can be nonEditable
+    const elements = nonEditable || rollingInfo && !editField ?
+      <RollingInfo 
+        name={input.name} 
+        value={input.value} 
+        nonEditable={nonEditable}
+        modifyText={modifyText}
+        rollingInfoText={rollingInfoText}
+        editRollingField={editRollingField}
       />
-    )
+      :    
+      !multiple ?
+        <Select
+          data-testid="select-single"
+          placeholder={placeholder}
+          className={readOnlyStyle}
+          id={input.name}
+          multiselect={false}
+          error={inputUtils.hasError(error)}
+          onBlur={handleBlur}
+          onFocus={handleFocus}
+          clearable={true}
+          disabled={disabled}
+          options={currentOptions}
+          value={currentSingleValue}
+          onChange={data => {
+            if(!notSelectable){
+              let returnValue = data ? data.value : null
+              if (returnValue === '') {
+                returnValue = null
+              }
+              setSelectValues(returnValue)
+              handleInputChange(returnValue)
+            }
+          }}
+        />
+        :
+        <Select
+          data-testid="select-multi"
+          placeholder={placeholder}
+          className={readOnlyStyle}
+          id={input.name}
+          name={input.name}
+          multiselect={multiple}
+          error={error}
+          onBlur={handleBlur}
+          onFocus={handleFocus}
+          clearable={true}
+          disabled={disabled}
+          options={currentOptions}
+          defaultValue={currentValue}
+          onChange={data => {
+            if(!notSelectable){
+              let returnValue = data && data.map(currentValue => currentValue.value)
+              setSelectValues(data)
+              handleInputChange(returnValue)
+            }
+          }}
+        />
+    
+    return elements
   }
+
   return (
-    <Select
-      data-testid="select-multi"
-      placeholder={placeholder}
-      className={readOnlyStyle}
-      id={input.name}
-      name={input.name}
-      multiselect={multiple}
-      error={error}
-      onBlur={handleBlur}
-      onFocus={handleFocus}
-      clearable={true}
-      disabled={disabled}
-      options={currentOptions}
-      defaultValue={currentValue}
-      onChange={data => {
-        if(!notSelectable){
-          let returnValue = data && data.map(currentValue => currentValue.value)
-          setSelectValues(data)
-          handleInputChange(returnValue)
-        }
-      }}
-    />
+    normalOrRollingElement()
   )
 }
 
