@@ -278,7 +278,8 @@ const FormField = ({
 FormField.propTypes = {
   disabled: PropTypes.bool,
   field: PropTypes.object,
-  deadlines:PropTypes.object
+  deadlines:PropTypes.object,
+  isProjectTimetableEdit:PropTypes.bool
 }
 
 export default withTranslation()(FormField)

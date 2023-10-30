@@ -595,7 +595,8 @@ CustomField.propTypes = {
   defaultValue:PropTypes.bool,
   formName:PropTypes.string,
   attributeData:PropTypes.object,
-  deadlines:PropTypes.object
+  deadlines:PropTypes.object,
+  isProjectTimetableEdit:PropTypes.bool
 }
 
 export default CustomField
