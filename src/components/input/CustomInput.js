@@ -7,7 +7,7 @@ import {lockedSelector,lastModifiedSelector } from '../../selectors/projectSelec
 import moment from 'moment'
 import { useTranslation } from 'react-i18next'
 import RollingInfo from '../input/RollingInfo'
-import {refFocus} from '../../hooks/RefFocus'
+import {refFocus} from '../../hooks/useRefFocus'
 
 const CustomInput = ({ input, meta: { error }, ...custom }) => {
   const [readonly, setReadOnly] = useState({name:"",read:false})
