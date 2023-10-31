@@ -105,6 +105,10 @@
     float: right;
     margin-top: 48px;
   }
+
+  form {
+    min-height: 1500px;
+  }
 }
 
 .project-input-left {
@@ -126,7 +130,7 @@
   }
   @media screen and (min-height: 768px) {
     position: sticky;
-    top: 220px;
+    top: 150px;
   }
 }
 
