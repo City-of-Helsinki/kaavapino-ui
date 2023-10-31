@@ -86,12 +86,12 @@ const DeadLineInput = ({
   }
 
   return (
-    <div>
+    <div className='deadline-input'>
       <TextInput
         value={currentValue}
         name={input.name}
         type={type}
-        disabled={disabled || timeTableDisabled}
+        disabled={typeof timeTableDisabled !== "undefined" ? timeTableDisabled : disabled}
         placeholder={placeholder}
         error={error}
         aria-label={input.name}
