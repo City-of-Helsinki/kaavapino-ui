@@ -46,6 +46,7 @@ export default function QuickNav({
   const [selectedPhase,setSelectedPhase] = useState({currentPhase:[],phaseID:0})
   const [currentSection,setCurrentSection] = useState(0)
   const prevSelectedRef = useRef(false);
+  const firstRender = useRef(true);
 
   const { t } = useTranslation()
 
@@ -102,8 +103,29 @@ export default function QuickNav({
   }, [currentSchema])
 
   useEffect(() => {
-    const c = document.getElementById(`title-${selected}`)
-    c?.scrollIntoView({behavior: "smooth", block: "center", inline: "center"})
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+
+    const formTitleElement = document.getElementById("title-"+currentSchema.sections[selected].title)
+    const offset = 178
+    let formTitleElementBoundingRectTop = 0
+
+    if(formTitleElement) {
+      formTitleElementBoundingRectTop = formTitleElement.getBoundingClientRect().top
+    }
+    else {
+      console.error("Selected item don't match the title of the form area. Cannot determine the right scroll position.")
+    }
+
+    const bodyElementBoundingRectTop = document.body.getBoundingClientRect().top
+    const top = formTitleElementBoundingRectTop - bodyElementBoundingRectTop - offset
+
+    window.scrollTo({
+      behavior: 'smooth',
+      top: top,
+    })
   }, [selected])
 
   useEffect(() => {
