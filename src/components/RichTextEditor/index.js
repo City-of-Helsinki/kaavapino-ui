@@ -252,7 +252,7 @@ function RichTextEditor(props) {
 
     if(target?.length > 0){
       //Lose focus and unclock if select button is clicked
-      if(target.length > 0 && target.value.includes("Select-module") || target.value.includes("Button")){
+      if(target.length > 0 && target.value.includes("Select-module") || target.value.includes("accordion-button") || target.value.includes("Button")){
         localStorage.setItem("previousElement","Select-module");
         handleBlur(readonly)
         setToolbarVisible(false)
