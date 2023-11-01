@@ -120,19 +120,6 @@ function RichTextEditor(props) {
 
   const oldValueRef = useRef('');
 
-  document.onvisibilitychange = () => {
-    //If navigated to different tab/window/screen blur and unclock
-    if(document.hidden){
-      if (typeof handleBlur === 'function') {
-        handleBlur(readonly)
-        myRefname.current?.focus();
-      }
-    }
-    if(!document.hidden){
-      myRefname.current?.focus();
-    }
-  }
-
   useEffect(() => {
     oldValueRef.current = inputProps.value;
     inputValue.current = inputProps.value;
