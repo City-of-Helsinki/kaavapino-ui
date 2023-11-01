@@ -102,7 +102,7 @@ const FieldSet = ({
           <React.Fragment key={`${name}-${i}`}>
             {!deleted && hiddenIndex !== i && (
               <div key={i} className="fieldset-container">
-                <button className={expanded.includes(i) ? "accordion-button-open" : "accordion-button"} onClick={(e) => {checkLocked(e,set,i)}}>
+                <button type="button" tabIndex={0} className={expanded.includes(i) ? "accordion-button-open" : "accordion-button"} onClick={(e) => {checkLocked(e,set,i)}}>
                   <div className='accordion-button-content'>
                     {lockName}
                   </div>

@@ -487,6 +487,11 @@
     }
   }
 
+  .accordion-button:focus-within,.accordion-button-open:focus-within{
+    box-shadow: 0 0 0 3px $color-coat-of-arms;
+    position: relative;
+  }
+
   .accordion-button > * {
     pointer-events: none !important;
   }
@@ -591,6 +596,7 @@
         background-color: transparent;
         border: none;
         margin-right: -16px;
+        width: fit-content;
         span{
           pointer-events: none;
           padding-right: 5px;
