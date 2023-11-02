@@ -97,6 +97,9 @@
     font-size: $size16;
     line-height: $size24;
     color: $color-black-90;
+    padding-top: $size4;
+    padding-bottom: $size12;
+    height: $size40;
     .text-input{
       width: 80%;
       padding-left: $size16;
@@ -104,10 +107,15 @@
         font-family: "Helsinki Grotesk Regular", sans-serif;
         font-size: $size16;
         opacity: 1 !important;
-        border: none;
+        border: none !important;
         color: $color-black-90;
-        padding-left: 0;
+        background: transparent;
+        height: $size24;
+        padding: 0;
       }
+    }
+    button{
+      font-size: $size14;
     }
     .text-input-italic{
       width: 80%;
@@ -116,10 +124,12 @@
         font-family: "Helsinki Grotesk Regular", sans-serif;
         font-size: $size14;
         opacity: 1 !important;
-        border: none;
+        border: none !important;
         color: $max-markings-color;
-        padding-left: 0;
+        background: transparent;
         font-style: italic;
+        height: $size24;
+        padding: 0;
       }
     }
   }
@@ -129,12 +139,15 @@
     justify-content: flex-start;
     align-items: center;
     font-family: "Helsinki Grotesk Medium", sans-serif;
-    font-size: $size14;
+    font-size: $size12;
     color: $color_rolling_info;
-    padding-left: $size16;
-    padding-top: $size12;
+    padding-left: $size12;
+    padding-top: 0;
+    svg{
+      height: $size16;
+    }
     span{
-      padding-left: $size8;
+      padding-left: 0.1rem;
     }
   }
 
