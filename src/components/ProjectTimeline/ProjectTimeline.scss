@@ -13,7 +13,7 @@
     z-index: 4;
     margin-left: -160px;
     left: 50%;
-    top: 10px;
+    top: 20px;
     width: 320px;
     height: 56px;
     border-left: 4px solid #d8000c;
@@ -180,6 +180,7 @@
 }
 .timeline-error {
   color: $color-disabled;
+  padding-top: 33px;
 }
 .hide-background {
   opacity: 0.8;
