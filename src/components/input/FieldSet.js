@@ -299,6 +299,7 @@ const mapStateToProps = state => ({
 
 FieldSet.propTypes = {
   rollingInfo: PropTypes.bool,
+  unlockAllFields:PropTypes.func
 }
 
 export default connect(mapStateToProps)(FieldSet)
