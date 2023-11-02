@@ -118,18 +118,25 @@
       padding: 16px 24px 24px 24px;
     }
   }
+  .five.wide.column .segment,
+  .five.wide.column + .column .ui {
+    &:not(:first-of-type) {
+      margin-top: 16px;
+    }
+  }
+
   .ui.grid {
     margin: 0;
   }
   .inner-left-column {
     margin: 0;
     padding: 0 !important;
-    padding-right: 7px !important;
+    padding-right: 8px !important;
   }
   .inner-right-column {
     margin: 0;
     padding: 0 !important;
-    padding-left: 7px !important;
+    padding-left: 8px !important;
   }
   .floor-area-information .floor-area-value {
     font-weight: bold;
