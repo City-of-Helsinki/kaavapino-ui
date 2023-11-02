@@ -719,7 +719,26 @@ CustomField.propTypes = {
   formName:PropTypes.string,
   attributeData:PropTypes.object,
   deadlines:PropTypes.object,
-  isProjectTimetableEdit:PropTypes.bool
+  isProjectTimetableEdit:PropTypes.bool,
+  nonEditable: PropTypes.bool,
+  rollingInfo: PropTypes.bool,
+  modifyText: PropTypes.string,
+  rollingInfoText: PropTypes.string,
+  handleBlurSave: PropTypes.func,
+  handleLockField: PropTypes.func,
+  handleUnlockField: PropTypes.func,
+  lockField: PropTypes.func,
+  fieldSetDisabled: PropTypes.bool,
+  insideFieldset: PropTypes.bool,
+  meta: PropTypes.object,
+  unlockAllFields: PropTypes.func,
+  setRef: PropTypes.func,
+  value: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.bool,
+    PropTypes.object
+  ])
 }
 
 export default CustomField
