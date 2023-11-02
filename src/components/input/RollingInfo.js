@@ -1,5 +1,6 @@
 import React from 'react'
 import { TextInput,IconPenLine,IconCheckCircle,Button } from 'hds-react'
+import PropTypes from 'prop-types'
 
 function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField}) {
 
@@ -29,6 +30,15 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
     </div>
   </>
   )
+}
+
+RollingInfo.propTypes = {
+  name:PropTypes.string,
+  value:PropTypes.string,
+  nonEditable: PropTypes.bool,
+  modifyText: PropTypes.string,
+  rollingInfoText: PropTypes.string,
+  editRollingField: PropTypes.func
 }
 
 export default RollingInfo

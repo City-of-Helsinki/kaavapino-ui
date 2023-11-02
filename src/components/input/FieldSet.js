@@ -12,6 +12,7 @@ import { change } from 'redux-form'
 import { get } from 'lodash'
 import { useTranslation } from 'react-i18next';
 import { OutsideClick } from '../../hooks/OutsideClick'
+import PropTypes from 'prop-types'
 
 const FieldSet = ({
   sets,
@@ -295,5 +296,9 @@ const FieldSet = ({
 const mapStateToProps = state => ({
   checking: checkingSelector(state)
 })
+
+FieldSet.propTypes = {
+  rollingInfo: PropTypes.bool,
+}
 
 export default connect(mapStateToProps)(FieldSet)

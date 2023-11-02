@@ -296,7 +296,8 @@ FormField.propTypes = {
   disabled: PropTypes.bool,
   field: PropTypes.object,
   deadlines:PropTypes.object,
-  isProjectTimetableEdit:PropTypes.bool
+  isProjectTimetableEdit:PropTypes.bool,
+  rollingInfo:PropTypes.bool
 }
 
 export default withTranslation()(FormField)
