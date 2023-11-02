@@ -182,10 +182,10 @@ const Header = props => {
                 {lastSaved?.status === "error" ?
                   <>
                     <p className='font-bold'>{arrayValues.length > 0 ? t('messages.fieldset') :t('messages.field')}:</p> 
-                    <a className='link-underlined' type="button" onClick={() => scrollToAnchor("id",newErrorField)}>{newErrorField}</a>
+                    <a className='link-underlined' type="button" onKeyDown={(event) => {if (event.key == 'Enter' || event.key === "Space"){scrollToAnchor("id",newErrorField)}}} onClick={() => scrollToAnchor("id",newErrorField)}>{newErrorField}</a>
                   </>
                   :
-                  <a className='link-underlined' type="button" onClick={() => scrollToAnchor("class",".max-chars-error,.Virhe")}>{t('messages.show-errors')}</a>
+                  <a className='link-underlined' type="button" onKeyDown={(event) => {if (event.key == 'Enter' || event.key === "Space"){scrollToAnchor("class",".max-chars-error,.Virhe")}}} onClick={() => scrollToAnchor("class",".max-chars-error,.Virhe")}>{t('messages.show-errors')}</a>
                 }
                 </div>
                 <div className='error-value'>
