@@ -142,25 +142,51 @@ const Header = props => {
           //Get normal or array value and make sure it is formated as string
           let errorTextValue = arrayValues.length > 0 ? arrayValues : newErrorValue.toString()
           let copyFieldsetValues = arrayValues.map(a => a).join("\n")
-
+          const connectionOrLockErrorHeader = lastSaved.lock ? t('messages.could-not-lock-header') : t('messages.could-not-save-header')
+          const connectionOrLockErrorText = lastSaved.lock ?       
+            <p>
+            {t('messages.could-not-lock-text')}
+            </p>
+            : 
+            <>
+            <p>
+            {t('messages.could-not-save-fields-text')}
+            </p>
+            <p>
+            {t('messages.could-not-save-fields-text2')}
+            </p>
+          </>
+          const fieldErrorHeader = t('messages.field-error-prevent-save-header')
+          const fieldErrorText = t('messages.field-error-prevent-save-text')
+          const errorHeader = lastSaved?.status === "error" ? connectionOrLockErrorHeader : fieldErrorHeader
+          const errorTexts = lastSaved?.status === "error" ? connectionOrLockErrorText : fieldErrorText
+          const errorContent = lastSaved?.status === "error" && !lastSaved.lock ?
+          <> 
+            <p className='font-bold'>{t('messages.value')}:</p> 
+            <p>{errorTextValue}</p>
+          </>
+          :
+          <>
+          </>
           elements =
           <div>
             <div>
-              <h3>{lastSaved.lock ? t('messages.could-not-lock-header') : t('messages.could-not-save-header')}
+              <h3>{errorHeader}
                 <span className='icon-container'><IconCross size="s" /></span>
               </h3>
             </div>
             <div className='middle-container'>
-              <p>
-                {t('messages.could-not-save-fields-text')}
-              </p>
-              <p>
-              {t('messages.could-not-save-fields-text2')}
-              </p>
+              {errorTexts}
               <div className='error-fields-container'>
                 <div className='error-field'>
-                  <p className='font-bold'>{arrayValues.length > 0 ? t('messages.fieldset') :t('messages.field')}:</p> 
-                  <a className='link-underlined' type="button" onClick={() => scrollToAncher(newErrorField)}>{newErrorField}</a>
+                {lastSaved?.status === "error" ?
+                  <>
+                    <p className='font-bold'>{arrayValues.length > 0 ? t('messages.fieldset') :t('messages.field')}:</p> 
+                    <a className='link-underlined' type="button" onClick={() => scrollToAnchor("id",newErrorField)}>{newErrorField}</a>
+                  </>
+                  :
+                  <a className='link-underlined' type="button" onClick={() => scrollToAnchor("class",".max-chars-error,.Virhe")}>{t('messages.show-errors')}</a>
+                }
                 </div>
                 <div className='error-value'>
                   {errorTextValue.includes("[object Object]") 
@@ -172,24 +198,25 @@ const Header = props => {
                   ? 
                     <p className='fieldset-info'>{t('messages.total')} {arrayValues.length} {t('messages.fields')}</p>
                   :
-                    <> 
-                      <p className='font-bold'>{t('messages.value')}:</p> 
-                      <p>{errorTextValue}</p>
-                    </>
+                    errorContent
                   }
                   </>
                   }
                 </div>
                 <div className='error-button-container'>
+                  {lastSaved?.status === "error" && !lastSaved.lock ? 
                   <Button size="small" onClick={() => {navigator.clipboard.writeText(arrayValues.length > 0 ? 
-                  copyFieldsetValues : errorTextValue)}}>{t('messages.copy-value')}</Button>
+                    copyFieldsetValues : errorTextValue)}}>{t('messages.copy-value')}</Button>
+                  : 
+                  <></>
+                  }
                 </div>
               </div>
             </div>
           </div>
         }
 
-        if(lastSaved?.status === "error"){
+        if(lastSaved?.status === "error" || lastSaved?.status === "field_error"){
           latestUpdate = {status:t('header.edit-menu-save-fail'),time:lastSaved.time}
           let errors = errorCount
           // show new toastr error
@@ -245,8 +272,8 @@ const Header = props => {
     }
   }, [lastSaved]);
 
-  const scrollToAncher = (anchor) => {
-    let anchorElement = document.getElementById(anchor)
+  const scrollToAnchor = (type,anchor) => {
+    const anchorElement = type === "id" ? document.getElementById(anchor) : document.querySelectorAll(anchor)[0]
     //Set offset so field is not hidden under sticky filter menu
     if(anchorElement){
       anchorElement.scrollIntoView({ block: "start" });
