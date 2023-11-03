@@ -28,6 +28,11 @@
   width: 100%;
   background-color: white;
   padding: 0;
+  position: initial !important;
+
+  #field-segment {
+    position: initial;
+  }
 
   .edit-form-buttons {
     display: flex;
