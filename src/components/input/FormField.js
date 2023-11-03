@@ -69,12 +69,6 @@ const FormField = ({
       rollingInfoText = "Tieto on automaattisesti muodostettu"
       nonEditable = true
     }
-/*     else if(rollingInfo){
-      rollingInfoText = "Tieto siirtynyt aiemmasta vaiheesta"
-    }
-    else if(rollingInfo && nodata){
-
-    } */
 
     if (newProps) {
       newField = newProps

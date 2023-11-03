@@ -187,8 +187,8 @@ function RichTextEditor(props) {
               lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
             }
             //Focus to editor input so user does not need to click twice
-            const fieldToFocus = document.getElementById(toolbarName + "input").querySelector("p");
-            fieldToFocus.focus()
+            const fieldToFocus = document.getElementById(toolbarName + "input")?.querySelector("p");
+            fieldToFocus?.focus()
           }
         }
         else{
