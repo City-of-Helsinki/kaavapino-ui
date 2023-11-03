@@ -380,7 +380,6 @@ function RichTextEditor(props) {
             onBlur();
             oldValueRef.current = inputValue.current;
             setReadOnly(true)
-            setCharLimitOver(false)
             setCurrentEditor("")
           }
         }

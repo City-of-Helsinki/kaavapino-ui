@@ -497,6 +497,7 @@ function* createProject() {
 
 const getChangedAttributeData = (values, initial, sections) => {
   let attribute_data = {}
+  let errorValues = false
   const wSpaceRegex = /^(\s+|\s+)$/g
   Object.keys(values).forEach(key => {
     if (initial[key] !== undefined && isEqual(values[key], initial[key])) {
@@ -505,6 +506,7 @@ const getChangedAttributeData = (values, initial, sections) => {
     if(values[key] === '' || values[key]?.ops && values[key]?.ops[0] && values[key]?.ops[0]?.insert.replace(wSpaceRegex, '').length === 0){
       //empty text values are ignored and not saved
       delete attribute_data[key]
+      errorValues = true
     }
     else if(values[key] === null || values[key]?.length === 0) {
       attribute_data[key] = null
@@ -536,7 +538,7 @@ const getChangedAttributeData = (values, initial, sections) => {
       attribute_data = Object.assign({}, initialFieldSetValues[0], attribute_data)
     }
   })
-  return attribute_data
+  return errorValues ? false : attribute_data
 }
 function* saveProjectPayload({ payload }) {
   const currentProjectId = yield select(currentProjectIdSelector)
@@ -760,11 +762,15 @@ function* saveProject() {
         yield put(setLastSaved("success",time))
       } catch (e) {
         if (e.response && e.response.status === 400) {
+          yield put(setLastSaved("field_error",time,Object.keys(attribute_data),Object.values(attribute_data)))
           yield put(stopSubmit(EDIT_PROJECT_FORM, e.response.data))
         } else {
           yield put(setLastSaved("error",time,Object.keys(attribute_data),Object.values(attribute_data)))
         }
       }
+    }
+    else{
+      yield put(setLastSaved("field_error",time,[],[]))
     }
   }
   yield put(saveProjectSuccessful())

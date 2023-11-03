@@ -184,7 +184,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   }, [input.name, input.value]);
 
   return (
-    <div className="text-input">
+    <div className={custom.disabled || !inputUtils.hasError(error).toString() || !isEmpty ? "text-input " : "text-input " +t('project.error')}>
       <TextInput
         aria-label={input.name}
         error={inputUtils.hasError(error).toString()}
