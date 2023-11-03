@@ -110,6 +110,9 @@ h4 {
 .ui.form .field {
   margin: 0 0 $size32;
 }
+.ui.dimmer {
+  z-index: $z-index-bg-dimmer;
+}
 
 ul {
   &::-webkit-scrollbar-track {
