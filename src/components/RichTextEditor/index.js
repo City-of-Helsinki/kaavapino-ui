@@ -134,9 +134,9 @@ function RichTextEditor(props) {
     }
     localStorage.setItem("previousElement", false);
     localStorage.setItem("previousElementId", "");
-    //document.addEventListener("click", checkClickedElement);
+    document.addEventListener("click", checkClickedElement);
     return () => {
-      //document.removeEventListener("click", checkClickedElement);
+      document.removeEventListener("click", checkClickedElement);
       localStorage.removeItem("previousElement");
       localStorage.removeItem("previousElementId");
     };
@@ -251,21 +251,19 @@ function RichTextEditor(props) {
     }
   }, [lockedStatusJsonString]);
 
-//TODO CHECK THIS BEFORE MERGE 
-  /* const checkClickedElement = (e) => {
+  const checkClickedElement = (e) => {
     let previousElement = localStorage.getItem("previousElement")
     let previousElementId = localStorage.getItem("previousElementId")
     let target = e.target.classList.length > 0 ? e.target.classList : e.target.parentNode.classList
-
     if(target?.length > 0){
       //Lose focus and unclock if select button is clicked
-      if(target.length > 0 && target.value.includes("Select-module") || target.value.includes("accordion-button") || target.value.includes("Button")){
+      if(target.length > 0 && target.value.includes("Select-module")){
         localStorage.setItem("previousElement","Select-module");
         handleBlur(readonly)
         setToolbarVisible(false)
         showCounter.current = false;
       }
-      else if(target.length > 0 && target.value.includes("ql-editor") && previousElement && previousElementId === editorRef.current.props.id){
+      else if(target.length > 0 && target.value.includes("ql-editor") && previousElement && previousElementId && previousElementId === editorRef?.current?.props?.id){
         oldValueRef.current = inputProps.value;
         inputValue.current = inputProps.value;
         let container = e.target.closest(".input-container").querySelector(".input-header .input-title")
@@ -285,7 +283,7 @@ function RichTextEditor(props) {
       localStorage.setItem("previousElement",false);
       localStorage.setItem("previousElementId","");
     }
-  } */
+  } 
 
   const handleChange = useCallback((_val, _delta, source,readonly) => {
     if(!readonly){
@@ -370,10 +368,26 @@ function RichTextEditor(props) {
     }
     //User is clicking inside editor and we don't want data to be refeched from db each time but we want to save latest edited data when blurred
     const editor = editorRef?.current?.getEditor().getContents()
+    let richtextValue
+    if(lockedStatus.lockData?.attribute_lock?.field_data && Object.keys(lockedStatus.lockData?.attribute_lock?.field_data).length > 0){
+      //fieldset richtext
+      const fieldSetIdentifier = currentEditor.split('.').pop()
+      const fieldData = lockedStatus.lockData?.attribute_lock?.field_data
+      for (const [key, value] of Object.entries(fieldData)) {
+        if(key === fieldSetIdentifier){
+          richtextValue = value.ops[0]
+          break
+        }
+      }
+    }
+    else{
+      richtextValue = lockedStatus.lockData?.attribute_lock?.field_data?.ops[0]
+    }
+
     if(currentEditor === inputProps.name && typeof inputValue.current === "undefined" && typeof oldValueRef.current === "undefined"
-    && JSON.stringify(lockedStatus.lockData?.attribute_lock?.field_data?.ops[0]) !== JSON.stringify(editor?.ops[0])){
+    && JSON.stringify(richtextValue) !== JSON.stringify(editor?.ops[0])){
       inputValue.current = editor?.ops[0]
-    } 
+    }
 
     const editorEmpty = editorRef?.current?.getEditor().getText().trim().length === 0 ? true : false
     //Prevent saving if data has not changed or is empty
