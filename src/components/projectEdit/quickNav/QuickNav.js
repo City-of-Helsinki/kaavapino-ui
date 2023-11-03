@@ -295,7 +295,6 @@ export default function QuickNav({
     //Set last navigation menu phase section selection to memory
     setCurrentSection(index)
     changeSection(index,phaseID,fields)
-    //unlockAllFields()
   }
 
   const switchPhase = (item) => {
@@ -315,7 +314,6 @@ export default function QuickNav({
     setSelectedPhase({currentPhase,phaseID});
     handleSectionTitleClick(item.label, currentSection, phaseID,currentPhase)
     showSections(true)
-    //unlockAllFields()
   }
 
   const calculateFilterNumber = (fields,highlighted) => {
