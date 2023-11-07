@@ -552,7 +552,6 @@ class ProjectEditPage extends Component {
     const isResponsible = authUtils.isResponsible(currentUserId, users)
     const isAdmin = authUtils.isAdmin(currentUserId, users)
     const isExpert = authUtils.isExpert(currentUserId, users)
-    
     return (
       <div>
         {!this.state.isMobile && (
