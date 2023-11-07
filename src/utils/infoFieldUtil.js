@@ -16,20 +16,22 @@ const getPrincipleDates = (data,deadlines) =>{
   let hide = false
   let startModified = false
   let endModified = false
-
-  if(!data?.vahvista_periaatteet_esillaolo_alkaa_3 && !data?.vahvista_periaatteet_esillaolo_paattyy_3 && data?.jarjestetaan_periaatteet_esillaolo_3 && data?.milloin_periaatteet_esillaolo_alkaa_3 && data?.milloin_periaatteet_esillaolo_paattyy_3){
+  if(data?.vahvista_periaatteet_esillaolo_alkaa_3 === true && data?.vahvista_periaatteet_esillaolo_paattyy_3 === true){
+    hide = true
+  }
+  if(data?.vahvista_periaatteet_esillaolo_alkaa_2 === true && data?.vahvista_periaatteet_esillaolo_paattyy_2 === true && data?.jarjestetaan_periaatteet_esillaolo_3 && data?.milloin_periaatteet_esillaolo_alkaa_3 && data?.milloin_periaatteet_esillaolo_paattyy_3){
     startDate = data?.milloin_periaatteet_esillaolo_alkaa_3
     endDate = data?.milloin_periaatteet_esillaolo_paattyy_3
     startModified = userHasModified("milloin_periaatteet_esillaolo_alkaa_3",deadlines,"Periaatteet")
     endModified = userHasModified("milloin_periaatteet_esillaolo_paattyy_3",deadlines,"Periaatteet")
   }
-  else if(!data?.vahvista_periaatteet_esillaolo_alkaa_2 && !data?.vahvista_periaatteet_esillaolo_paattyy_2 && data?.jarjestetaan_periaatteet_esillaolo_2 && data?.milloin_periaatteet_esillaolo_alkaa_2 && data?.milloin_periaatteet_esillaolo_paattyy_2){
+  else if(data?.vahvista_periaatteet_esillaolo_alkaa === true && data?.vahvista_periaatteet_esillaolo_paattyy === true && data?.jarjestetaan_periaatteet_esillaolo_2 && data?.milloin_periaatteet_esillaolo_alkaa_2 && data?.milloin_periaatteet_esillaolo_paattyy_2){
     startDate = data?.milloin_periaatteet_esillaolo_alkaa_2
     endDate = data?.milloin_periaatteet_esillaolo_paattyy_2
     startModified = userHasModified("milloin_periaatteet_esillaolo_alkaa_2",deadlines,"Periaatteet")
     endModified = userHasModified("milloin_periaatteet_esillaolo_paattyy_2",deadlines,"Periaatteet")
   }
-  else if(!data?.vahvista_periaatteet_esillaolo_alkaa && !data?.vahvista_periaatteet_esillaolo_paattyy && data?.jarjestetaan_periaatteet_esillaolo_1 && data?.milloin_periaatteet_esillaolo_alkaa && data?.milloin_periaatteet_esillaolo_paattyy){
+  else if(data?.jarjestetaan_periaatteet_esillaolo_1 && data?.milloin_periaatteet_esillaolo_alkaa && data?.milloin_periaatteet_esillaolo_paattyy){
     startDate = data?.milloin_periaatteet_esillaolo_alkaa
     endDate = data?.milloin_periaatteet_esillaolo_paattyy
     startModified = userHasModified("milloin_periaatteet_esillaolo_alkaa",deadlines,"Periaatteet")
@@ -50,19 +52,22 @@ const getOASDates = (data,deadlines) =>{
   let startModified = false
   let endModified = false
 
-  if(!data?.vahvista_oas_esillaolo_alkaa_3 && !data?.vahvista_oas_esillaolo_paattyy_3 && data?.jarjestetaan_oas_esillaolo_3 && data?.milloin_oas_esillaolo_alkaa_3 && data?.milloin_oas_esillaolo_paattyy_3){
+  if(data?.vahvista_oas_esillaolo_alkaa_3 === true && data?.vahvista_oas_esillaolo_paattyy_3 === true){
+    hide = true
+  }
+  else if(data?.vahvista_oas_esillaolo_alkaa_2 === true && data?.vahvista_oas_esillaolo_paattyy_2 === true && data?.jarjestetaan_oas_esillaolo_3 && data?.milloin_oas_esillaolo_alkaa_3 && data?.milloin_oas_esillaolo_paattyy_3){
     startDate = data?.milloin_oas_esillaolo_alkaa_3
     endDate = data?.milloin_oas_esillaolo_paattyy_3
     startModified = userHasModified("milloin_oas_esillaolo_alkaa_3",deadlines,"OAS")
     endModified = userHasModified("milloin_oas_esillaolo_paattyy_3",deadlines,"OAS")
   }
-  else if(!data?.vahvista_oas_esillaolo_alkaa_2 && !data?.vahvista_oas_esillaolo_paattyy_2 && data?.jarjestetaan_oas_esillaolo_2 && data?.milloin_oas_esillaolo_alkaa_2 && data?.milloin_oas_esillaolo_paattyy_2){
+  else if(data?.vahvista_oas_esillaolo_alkaa === true && data?.vahvista_oas_esillaolo_paattyy === true && data?.jarjestetaan_oas_esillaolo_2 && data?.milloin_oas_esillaolo_alkaa_2 && data?.milloin_oas_esillaolo_paattyy_2){
     startDate = data?.milloin_oas_esillaolo_alkaa_2
     endDate = data?.milloin_oas_esillaolo_paattyy_2
     startModified = userHasModified("milloin_oas_esillaolo_alkaa_2",deadlines,"OAS")
     endModified = userHasModified("milloin_oas_esillaolo_paattyy_2",deadlines,"OAS")
   }
-  else if(!data?.vahvista_oas_esillaolo_alkaa && !data?.vahvista_oas_esillaolo_paattyy && data?.milloin_oas_esillaolo_alkaa && data?.milloin_oas_esillaolo_paattyy){
+  else if(data?.milloin_oas_esillaolo_alkaa && data?.milloin_oas_esillaolo_paattyy){
     startDate = data?.milloin_oas_esillaolo_alkaa
     endDate = data?.milloin_oas_esillaolo_paattyy
     startModified = userHasModified("milloin_oas_esillaolo_alkaa",deadlines,"OAS")

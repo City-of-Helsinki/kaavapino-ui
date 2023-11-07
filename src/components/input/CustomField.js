@@ -350,6 +350,7 @@ class CustomField extends Component {
   }
 
   renderInfoFieldset = props => {
+    console.log("renderinfo",props.testjoku)
     const name = props.input?.name
     const data = this.props.attributeData
     const deadlines = this.props.deadlines
@@ -388,6 +389,7 @@ class CustomField extends Component {
   }
 
   getInput = field => {
+    console.log(field,field.type)
     if (field.type === 'set' || field.type === 'multiple') {
       return this.renderSelect
     }
@@ -456,6 +458,7 @@ class CustomField extends Component {
   }
 
   render() {
+    console.log("customField",this.props.attributeData)
     const {
       field,
       attributeData,

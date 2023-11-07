@@ -31,6 +31,7 @@ const FormSection = ({
   highlightedTag,
   deadlines
 }) => {
+  console.log("Section",attributeData)
   let count = 0;
   if(section?.title && section?.fields){
   return (

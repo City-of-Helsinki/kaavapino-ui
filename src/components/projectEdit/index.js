@@ -112,7 +112,7 @@ class ProjectEditPage extends Component {
       //get updated project data when moving to next phase
       window.location.reload();
     }
-    if(prevProps.schema != this.props.schema){
+    if(prevProps.schema != this.props.schema || prevProps.project.attribute_data != this.props.project.attribute_data){
       if(this.props.schema?.phases){
         const currentSchemaIndex = this.props.schema?.phases.findIndex(s => s.id === schemaUtils.getSelectedPhase(this.props.location.search,this.props.selectedPhase))
         const currentSchema = this.props.schema?.phases[currentSchemaIndex]
@@ -552,7 +552,7 @@ class ProjectEditPage extends Component {
     const isResponsible = authUtils.isResponsible(currentUserId, users)
     const isAdmin = authUtils.isAdmin(currentUserId, users)
     const isExpert = authUtils.isExpert(currentUserId, users)
-    
+    console.log(attribute_data,this.props.project.attribute_data)
     return (
       <div>
         {!this.state.isMobile && (

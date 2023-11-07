@@ -61,6 +61,7 @@ const FormField = ({
   }
 
   const renderField = (newProps) => {
+    console.log("Form field render",attributeData)
     let newField = field
 
     if (newProps) {
