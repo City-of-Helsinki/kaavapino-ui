@@ -135,7 +135,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       custom.handleUnlockField(input.name)
     }
 
-    if (event.target.value?.trim() && event.target.value !== oldValueRef.current) {
+    if (event.target.value !== oldValueRef.current) {
       //prevent saving if locked
       if (!readonly) {
         //Sent call to save changes

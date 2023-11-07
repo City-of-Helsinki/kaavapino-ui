@@ -21,7 +21,8 @@ import {
   resetFloorAreaSave,
   resetTimetableSave,
   showTimetable,
-  showFloorArea
+  showFloorArea,
+  setLastSaved
 } from '../../actions/projectActions'
 import { fetchSchemas, setAllEditFields, clearSchemas } from '../../actions/schemaActions'
 import { fetchDocuments } from '../../actions/documentActions'
@@ -216,8 +217,10 @@ class ProjectEditPage extends Component {
     if (this.props.showEditFloorAreaForm || this.props.showEditProjectTimetableForm) {
       return
     }
-
-    if (this.props.syncErrors && !_.isEmpty(this.props.syncErrors)) {
+    if(this.props.syncErrors && !_.isEmpty(this.props.syncErrors)) {
+      const dateVariable = new Date()
+      const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      this.props.setLastSaved("field_error",time,[],[])
       return
     }
     this.props.saveProject()
@@ -758,7 +761,8 @@ const mapDispatchToProps = {
   resetTimetableSave,
   fetchDocuments,
   showTimetable,
-  showFloorArea
+  showFloorArea,
+  setLastSaved
 }
 
 export default withRouter(
