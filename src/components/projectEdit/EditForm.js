@@ -75,7 +75,6 @@ class EditForm extends Component {
       showSection,
       deadlines
     } = this.props
-    console.log("Form",attributeData)
     return (
       <>
       {showSection ?
