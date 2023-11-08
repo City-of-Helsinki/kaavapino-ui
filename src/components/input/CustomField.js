@@ -377,10 +377,10 @@ class CustomField extends Component {
         <CustomCard
           type={placeholder}
           props={props}
-          living={living}
-          office={office}
-          general={general}
-          other={other}
+          living={living || 0}
+          office={office || 0}
+          general={general || 0}
+          other={other || 0}
         />
         : ""
       )

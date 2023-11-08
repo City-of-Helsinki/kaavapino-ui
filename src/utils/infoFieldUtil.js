@@ -37,9 +37,6 @@ const getPrincipleDates = (data,deadlines) =>{
     startModified = userHasModified("milloin_periaatteet_esillaolo_alkaa",deadlines,"Periaatteet")
     endModified = userHasModified("milloin_periaatteet_esillaolo_paattyy",deadlines,"Periaatteet")
   }
-  else{
-    hide = true
-  }
 
   return [startDate,endDate,hide,startModified,endModified]
 }
@@ -72,9 +69,6 @@ const getOASDates = (data,deadlines) =>{
     endDate = data?.milloin_oas_esillaolo_paattyy
     startModified = userHasModified("milloin_oas_esillaolo_alkaa",deadlines,"OAS")
     endModified = userHasModified("milloin_oas_esillaolo_paattyy",deadlines,"OAS")
-  }
-  else{
-    hide = true
   }
 
   return [startDate,endDate,hide,startModified,endModified]
@@ -111,10 +105,6 @@ const getInfoFieldData = (placeholder,name,data,deadlines) => {
   }
   else if(placeholder === "Tarkasta esilläolopäivät" && name === "tarkasta_esillaolo_oas_fieldset"){
     [startDate,endDate,hide,startModified,endModified] = getOASDates(data,deadlines) 
-  }
-  else if(placeholder === "Tarkasta kerrosalatiedot"){
-    //show floor area info if even one data exists
-    hide = !living && !office && !general && !other
   }
   
   return [startDate,endDate,startModified,endModified,hide,living,office,general,other]
