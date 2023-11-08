@@ -86,12 +86,18 @@ const FieldSet = ({
     unlockAllFields()
   }
 
+  const getNumberOfFieldsets = () => {
+   const fieldName = get(formValues, name)
+   let fieldsLength = fieldName?.filter( i => i?._deleted !== true );
+   return fieldsLength?.length || 0 
+  }
+
   OutsideClick(accordianRef, handleOutsideClick)
 
   return (
     <div className='fieldset-main-container' ref={accordianRef}>
     <React.Fragment>
-      <div className='fieldset-info'>Korvataan tämä info excelistä tulevalla datalla</div>
+      <div className='fieldset-info'>{t('project.fieldset-info', { fieldAmount: getNumberOfFieldsets() })}</div>
       {sets.map((set, i) => {
         const fieldsetDisabled = lockStatus?.lockStyle && !lockStatus?.owner && lockStatus?.fieldIdentifier === set ? true : false;
         const deleted = get(formValues, set + '._deleted')

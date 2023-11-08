@@ -231,7 +231,8 @@
     "header-text":"Kentän tieto siirtyy seuraaviin paikkoihin: ",
     "charsover":"Merkkimäärä on ylittynyt",
     "noempty":"Kenttä ei saa olla tyhjä",
-    "error":"Virhe"
+    "error":"Virhe",
+    "fieldset-info":"Yhteensä {{fieldAmount}} tietuetta."
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}",
