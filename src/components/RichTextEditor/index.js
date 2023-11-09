@@ -484,6 +484,7 @@ function RichTextEditor(props) {
   }
 
   const normalOrRollingElement = () => {
+    console.log(value)
     let rollingValue = []
     const val = value?.ops
     if(rollingInfo && !editField && val){
@@ -493,6 +494,7 @@ function RichTextEditor(props) {
         }
       }
     }
+    console.log(rollingValue)
     //Default maxsize 1000
     const maxSize = props.maxSize ? props.maxSize : 1000;
     //Render rolling info field or normal edit field

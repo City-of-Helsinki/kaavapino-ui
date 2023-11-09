@@ -504,6 +504,7 @@ const getChangedAttributeData = (values, initial, sections) => {
     console.log(key)
     if(key.includes("_readonly")){
       console.log(key,"readonly")
+      return
     }
     if (initial[key] !== undefined && isEqual(values[key], initial[key])) {
       console.log("return undefined or same",key)
