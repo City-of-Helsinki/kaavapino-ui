@@ -60,6 +60,7 @@ const RadioBooleanButton = ({
         modifyText={modifyText}
         rollingInfoText={rollingInfoText}
         editRollingField={editRollingField}
+        disabled={disabled || timeTableDisabled}
       />
       : 
       <div className={className}>

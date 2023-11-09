@@ -367,7 +367,12 @@ function RichTextEditor(props) {
       props.handleUnlockField(inputProps.name)
     }
     //User is clicking inside editor and we don't want data to be refeched from db each time but we want to save latest edited data when blurred
-    const editor = editorRef?.current?.getEditor().getContents()
+    let editor
+    let editorEmpty
+    if(editorRef.current && editorRef?.current !== ""){
+      editor = editorRef?.current?.getEditor().getContents()
+      editorEmpty = editorRef?.current?.getEditor().getText().trim().length === 0 ? true : false
+    }
     let richtextValue
     if(lockedStatus.lockData?.attribute_lock?.field_data && Object.keys(lockedStatus.lockData?.attribute_lock?.field_data).length > 0){
       //fieldset richtext
@@ -389,7 +394,6 @@ function RichTextEditor(props) {
       inputValue.current = editor?.ops[0]
     }
 
-    const editorEmpty = editorRef?.current?.getEditor().getText().trim().length === 0 ? true : false
     //Prevent saving if data has not changed or is empty
     if (!editorEmpty && inputValue.current !== oldValueRef.current) {
       //prevent saving if locked
@@ -506,6 +510,7 @@ function RichTextEditor(props) {
       modifyText={modifyText}
       rollingInfoText={rollingInfoText}
       editRollingField={editRollingField}
+      disabled={disabled}
     />
     :    
     <div 

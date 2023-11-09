@@ -250,6 +250,7 @@ const SelectInput = ({
         modifyText={modifyText}
         rollingInfoText={rollingInfoText}
         editRollingField={editRollingField}
+        disabled={disabled}
       />
       :    
       !multiple ?
