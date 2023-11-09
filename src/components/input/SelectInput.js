@@ -245,7 +245,7 @@ const SelectInput = ({
     const elements = nonEditable || rollingInfo && !editField ?
       <RollingInfo 
         name={input.name} 
-        value={input.value} 
+        value={input.value.toString()} 
         nonEditable={nonEditable}
         modifyText={modifyText}
         rollingInfoText={rollingInfoText}

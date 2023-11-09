@@ -99,19 +99,20 @@
     color: $color-black-90;
     padding-top: $size4;
     padding-bottom: $size12;
-    height: $size40;
+    height: 100%;
     .text-input{
       width: 80%;
       padding-left: $size16;
-      input{
+      .content{
         font-family: "Helsinki Grotesk Regular", sans-serif;
         font-size: $size16;
         opacity: 1 !important;
         border: none !important;
         color: $color-black-90;
         background: transparent;
-        height: $size24;
+        height: 100%;
         padding: 0;
+        word-break: break-word;
       }
     }
     button{
@@ -120,7 +121,7 @@
     .text-input-italic{
       width: 80%;
       padding-left: $size14;
-      input{
+      .content{
         font-family: "Helsinki Grotesk Regular", sans-serif;
         font-size: $size14;
         opacity: 1 !important;
@@ -128,8 +129,9 @@
         color: $max-markings-color;
         background: transparent;
         font-style: italic;
-        height: $size24;
+        height: 100%;
         padding: 0;
+        word-break: break-word;
       }
     }
   }

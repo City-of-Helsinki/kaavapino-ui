@@ -1,23 +1,17 @@
 import React from 'react'
-import { TextInput,IconPenLine,IconCheckCircle,Button } from 'hds-react'
+import {IconPenLine,IconCheckCircle,Button } from 'hds-react'
 import PropTypes from 'prop-types'
 
-function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField}) {
+function RollingInfo({value,nonEditable,modifyText,rollingInfoText,editRollingField}) {
 
   const openEdit = () => {
     editRollingField()
   }
-
   return (
     <>
     <div className='rolling-info-container'>
       <div className={value === "" ? "text-input-italic" : "text-input"}>
-        <TextInput
-          aria-label={name}
-          fluid="true"
-          disabled
-          defaultValue={value === "" ? "Tieto puuttuu." : value}
-        />
+        <div className='content'>{value === "" ? "Tieto puuttuu." : value}</div>
       </div>
       {nonEditable ? 
       <></> : 
