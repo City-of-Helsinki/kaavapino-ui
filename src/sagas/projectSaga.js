@@ -500,9 +500,8 @@ const getChangedAttributeData = (values, initial, sections) => {
   let errorValues = false
   const wSpaceRegex = /^(\s+|\s+)$/g
   Object.keys(values).forEach(key => {
-    if(key.includes("_readonly")){
-      delete attribute_data[key]
-    }
+    console.log(values[key],initial[key])
+    console.log(key)
     if (initial[key] !== undefined && isEqual(values[key], initial[key])) {
       return
     }
@@ -751,6 +750,7 @@ function* saveProject() {
 
     if (keys.length !== 0) {
       const attribute_data = changedValues
+      console.log(attribute_data)
       try {
         const updatedProject = yield call(
           projectApi.patch,
