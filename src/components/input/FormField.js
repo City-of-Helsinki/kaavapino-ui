@@ -35,6 +35,7 @@ const FormField = ({
   disabled,
   deadlines,
   isProjectTimetableEdit,
+  rollingInfo,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -62,6 +63,12 @@ const FormField = ({
 
   const renderField = (newProps) => {
     let newField = field
+    let rollingInfoText = "Tieto siirtynyt aiemmasta vaiheesta"
+    let nonEditable = false
+    if(newField?.autofill_readonly || newField.display === 'readonly_checkbox'){
+      rollingInfoText = "Tieto on automaattisesti muodostettu"
+      nonEditable = true
+    }
 
     if (newProps) {
       newField = newProps
@@ -99,6 +106,10 @@ const FormField = ({
             insideFieldset={insideFieldset}
             deadlines={deadlines}
             isProjectTimetableEdit={isProjectTimetableEdit}
+            rollingInfo={rollingInfo}
+            modifyText={t('project.modify')}
+            rollingInfoText={rollingInfoText}
+            nonEditable={nonEditable}
           />
         )
     }
@@ -279,7 +290,8 @@ FormField.propTypes = {
   disabled: PropTypes.bool,
   field: PropTypes.object,
   deadlines:PropTypes.object,
-  isProjectTimetableEdit:PropTypes.bool
+  isProjectTimetableEdit:PropTypes.bool,
+  rollingInfo:PropTypes.bool
 }
 
 export default withTranslation()(FormField)

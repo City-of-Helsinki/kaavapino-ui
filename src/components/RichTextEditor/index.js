@@ -18,6 +18,7 @@ import { ReactComponent as CommentIcon } from '../../assets/icons/comment-icon.s
 import { useTranslation } from 'react-i18next'
 import projectUtils from '../../utils/projectUtils'
 import {IconAlertCircleFill} from 'hds-react'
+import RollingInfo from '../input/RollingInfo'
 
 /* This component defines a react-quill rich text editor field to be used in redux form.
  * We are saving these rich text inputs as quill deltas - a form of JSON that
@@ -69,7 +70,11 @@ function RichTextEditor(props) {
     setRef,
     lockField,
     fieldSetDisabled,
-    insideFieldset
+    insideFieldset,
+    nonEditable, 
+    rollingInfo, 
+    modifyText, 
+    rollingInfoText
   } = props
 
   const dispatch = useDispatch()
@@ -89,6 +94,7 @@ function RichTextEditor(props) {
   const [currentEditor,setCurrentEditor] = useState("")
   const [valueIsEmpty,setValueIsEmpty] = useState(false)
   const [charLimitOver,setCharLimitOver] = useState(false)
+  const [editField,setEditField] = useState(false)
 
   const editorRef = useRef("")
   const counter = useRef(props.currentSize)
@@ -121,8 +127,8 @@ function RichTextEditor(props) {
   const oldValueRef = useRef('');
 
   useEffect(() => {
-    oldValueRef.current = inputProps.value;
-    inputValue.current = inputProps.value;
+    oldValueRef.current = value;
+    inputValue.current = value;
     if (setRef) {
       setRef({ name: inputProps.name, ref: editorRef })
     }
@@ -181,8 +187,8 @@ function RichTextEditor(props) {
               lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
             }
             //Focus to editor input so user does not need to click twice
-            const fieldToFocus = document.getElementById(toolbarName + "input").querySelector("p");
-            fieldToFocus.focus()
+            const fieldToFocus = document.getElementById(toolbarName + "input")?.querySelector("p");
+            fieldToFocus?.focus()
           }
         }
         else{
@@ -249,16 +255,15 @@ function RichTextEditor(props) {
     let previousElement = localStorage.getItem("previousElement")
     let previousElementId = localStorage.getItem("previousElementId")
     let target = e.target.classList.length > 0 ? e.target.classList : e.target.parentNode.classList
-
     if(target?.length > 0){
       //Lose focus and unclock if select button is clicked
-      if(target.length > 0 && target.value.includes("Select-module") || target.value.includes("accordion-button") || target.value.includes("Button")){
+      if(target.length > 0 && target.value.includes("Select-module")){
         localStorage.setItem("previousElement","Select-module");
         handleBlur(readonly)
         setToolbarVisible(false)
         showCounter.current = false;
       }
-      else if(target.length > 0 && target.value.includes("ql-editor") && previousElement && previousElementId === editorRef.current.props.id){
+      else if(target.length > 0 && target.value.includes("ql-editor") && previousElement && previousElementId && previousElementId === editorRef?.current?.props?.id){
         oldValueRef.current = inputProps.value;
         inputValue.current = inputProps.value;
         let container = e.target.closest(".input-container").querySelector(".input-header .input-title")
@@ -278,7 +283,7 @@ function RichTextEditor(props) {
       localStorage.setItem("previousElement",false);
       localStorage.setItem("previousElementId","");
     }
-  };
+  } 
 
   const handleChange = useCallback((_val, _delta, source,readonly) => {
     if(!readonly){
@@ -322,7 +327,7 @@ function RichTextEditor(props) {
       }
       inputValue.current = _val;
     }
-  }, [inputProps.name, inputProps.value])
+  }, [inputProps.name, value])
 
   const handleFocus = (event,source) => {
     if(source && event && source !== "silent"){
@@ -363,10 +368,26 @@ function RichTextEditor(props) {
     }
     //User is clicking inside editor and we don't want data to be refeched from db each time but we want to save latest edited data when blurred
     const editor = editorRef?.current?.getEditor().getContents()
+    let richtextValue
+    if(lockedStatus.lockData?.attribute_lock?.field_data && Object.keys(lockedStatus.lockData?.attribute_lock?.field_data).length > 0){
+      //fieldset richtext
+      const fieldSetIdentifier = currentEditor.split('.').pop()
+      const fieldData = lockedStatus.lockData?.attribute_lock?.field_data
+      for (const [key, value] of Object.entries(fieldData)) {
+        if(key === fieldSetIdentifier){
+          richtextValue = value.ops[0]
+          break
+        }
+      }
+    }
+    else{
+      richtextValue = lockedStatus.lockData?.attribute_lock?.field_data?.ops[0]
+    }
+
     if(currentEditor === inputProps.name && typeof inputValue.current === "undefined" && typeof oldValueRef.current === "undefined"
-    && JSON.stringify(lockedStatus.lockData?.attribute_lock?.field_data?.ops[0]) !== JSON.stringify(editor?.ops[0])){
+    && JSON.stringify(richtextValue) !== JSON.stringify(editor?.ops[0])){
       inputValue.current = editor?.ops[0]
-    } 
+    }
 
     const editorEmpty = editorRef?.current?.getEditor().getText().trim().length === 0 ? true : false
     //Prevent saving if data has not changed or is empty
@@ -384,6 +405,9 @@ function RichTextEditor(props) {
           }
         }
       }
+    }
+    if(rollingInfo){
+      setEditField(false)
     }
   }
 
@@ -434,26 +458,56 @@ function RichTextEditor(props) {
     }
   }
 
-
-
   const setValue = (dbValue) => {
-    const editor = editorRef.current.getEditor().getContents()
-    /*TODO possible bug on adding some styles from editor to text. 
-    The text could come as empty string and only show up on page refresh. Example add text and add color styles to it, 
-    save and check from other browser tab that does it update the difference
-     */
-    if(dbValue?.ops && !projectUtils.objectsEqual(editor?.ops[0], dbValue?.ops[0])){
-      //set editor value from db value updated with lock call
-      const cursorPosition = editorRef.current.getEditor().getSelection()
-      editorRef.current.getEditor().setContents(dbValue);
-      editorRef.current.getEditor().setSelection(cursorPosition?.index);
-      counter.current = editorRef.current.getEditor().getLength() -1
-      setValueIsEmpty(false)
+    if (editorRef?.current) {
+      const editor = editorRef?.current?.getEditor().getContents()
+      /*TODO possible bug on adding some styles from editor to text. 
+      The text could come as empty string and only show up on page refresh. Example add text and add color styles to it, 
+      save and check from other browser tab that does it update the difference
+      */
+      if(dbValue?.ops && !projectUtils.objectsEqual(editor?.ops[0], dbValue?.ops[0])){
+        //set editor value from db value updated with lock call
+        const cursorPosition = editorRef.current.getEditor().getSelection()
+        editorRef.current.getEditor().setContents(dbValue);
+        editorRef.current.getEditor().setSelection(cursorPosition?.index);
+        counter.current = editorRef.current.getEditor().getLength() -1
+        setValueIsEmpty(false)
+      }
     }
   }
-  //Default maxsize 1000
-  const maxSize = props.maxSize ? props.maxSize : 1000;
-  return (
+
+  const editRollingField = () => {
+    setEditField(true)
+    setTimeout(function(){
+      editorRef.current.editor.focus()
+    }, 200);
+  }
+
+  const normalOrRollingElement = () => {
+    let rollingValue = []
+    const val = value?.ops
+    if(rollingInfo && !editField && val){
+      if(Array.isArray(val)){
+        for (let i = 0; i < val.length; i++) {
+          rollingValue.push(val[i].insert);
+        }
+      }
+    }
+    //Default maxsize 1000
+    const maxSize = props.maxSize ? props.maxSize : 1000;
+    //Render rolling info field or normal edit field
+    //If clicking rolling field button makes positive lock check then show normal editable field
+    //Rolling field can be nonEditable
+    const elements = nonEditable || rollingInfo && !editField ?
+    <RollingInfo 
+      name={inputProps.name} 
+      value={Array.isArray(rollingValue) && rollingValue.length ? rollingValue : ""}
+      nonEditable={nonEditable}
+      modifyText={modifyText}
+      rollingInfoText={rollingInfoText}
+      editRollingField={editRollingField}
+    />
+    :    
     <div 
     tabIndex="0"
     onKeyDown={onKeyDown}
@@ -581,6 +635,12 @@ function RichTextEditor(props) {
       {counter.current > maxSize && charLimitOver ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.charsover')}</div> : ""}
       {valueIsEmpty ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.noempty')}</div> : ""}
     </div>
+    
+    return elements
+  }
+
+  return (
+    normalOrRollingElement()
   )
 }
 

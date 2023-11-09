@@ -12,6 +12,7 @@ import { change } from 'redux-form'
 import { get } from 'lodash'
 import { useTranslation } from 'react-i18next';
 import { OutsideClick } from '../../hooks/OutsideClick'
+import PropTypes from 'prop-types'
 
 const FieldSet = ({
   sets,
@@ -33,7 +34,8 @@ const FieldSet = ({
   field: { disable_fieldset_delete_add },
   lockField,
   lockStatus,
-  unlockAllFields
+  unlockAllFields,
+  rollingInfo
 }) => {
 
   const handleBlur = () => {
@@ -156,6 +158,14 @@ const FieldSet = ({
 
                   const fieldUpdated =
                     updated && updated.new_value && has(updated.new_value[0], field.name)
+
+                  let rollingInfoText = "Tieto siirtynyt aiemmasta vaiheesta"
+                  let nonEditable = false
+                  if(isReadOnly || field?.display === 'readonly_checkbox'){
+                    rollingInfoText = "Tieto on automaattisesti muodostettu"
+                    nonEditable = true
+                  }
+                  
                   return (
                     <div
                       className={`input-container ${showError ? 'error' : ''} ${fieldsetDisabled ? 'disabled-fieldset' : ''}`}
@@ -229,6 +239,10 @@ const FieldSet = ({
                           validate={validate}
                           fieldSetDisabled={fieldsetDisabled}
                           insideFieldset={true}
+                          rollingInfo={rollingInfo}
+                          modifyText={t('project.modify')}
+                          rollingInfoText={rollingInfoText}
+                          nonEditable={nonEditable}
                         />
                         {showError && <div className="error-text">{showError}</div>}
                       </Form.Field>
@@ -282,5 +296,10 @@ const FieldSet = ({
 const mapStateToProps = state => ({
   checking: checkingSelector(state)
 })
+
+FieldSet.propTypes = {
+  rollingInfo: PropTypes.bool,
+  unlockAllFields:PropTypes.func
+}
 
 export default connect(mapStateToProps)(FieldSet)
