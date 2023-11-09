@@ -503,16 +503,20 @@ const getChangedAttributeData = (values, initial, sections) => {
     console.log(values[key],initial[key])
     console.log(key)
     if (initial[key] !== undefined && isEqual(values[key], initial[key])) {
+      console.log("return undefined or same",key)
       return
     }
     if(values[key] === '' || values[key]?.ops && values[key]?.ops[0] && values[key]?.ops[0]?.insert.replace(wSpaceRegex, '').length === 0){
       //empty text values are ignored and not saved
+      console.log("empty",key)
       delete attribute_data[key]
       errorValues = true
     }
     else if(values[key] === null || values[key]?.length === 0) {
+      console.log("null",key)
       attribute_data[key] = null
     } else {
+      console.log("else",key)
       attribute_data[key] = values[key]
     }
     let fieldSetName
