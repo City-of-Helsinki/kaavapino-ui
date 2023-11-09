@@ -500,6 +500,9 @@ const getChangedAttributeData = (values, initial, sections) => {
   let errorValues = false
   const wSpaceRegex = /^(\s+|\s+)$/g
   Object.keys(values).forEach(key => {
+    if(key.includes("_readonly")){
+      delete attribute_data[key]
+    }
     if (initial[key] !== undefined && isEqual(values[key], initial[key])) {
       return
     }
