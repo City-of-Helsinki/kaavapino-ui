@@ -45,7 +45,12 @@ const formatDeadlines = ({ name, deadlines, subtype }, phases) => {
 }
 
 const isFieldMissing = (fieldName, isFieldRequired, attributeData, autofill_readonly) => {
-  const value = findValueFromObject(attributeData, fieldName)
+  let name = fieldName
+  if(name?.includes("_readonly")){
+    //get the correct key name for readonly values, attribute data has the value without _readonly for some reason
+    name = name.replace('_readonly','');
+  }
+  const value = findValueFromObject(attributeData, name)
 
   return (
     isFieldRequired &&
