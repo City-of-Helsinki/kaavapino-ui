@@ -29,7 +29,8 @@ const FormSection = ({
   unlockAllFields,
   filterFieldsArray,
   highlightedTag,
-  deadlines
+  deadlines,
+  isCurrentPhase
 }) => {
   let count = 0;
   if(section?.title && section?.fields){
@@ -74,6 +75,7 @@ const FormSection = ({
             highlightStyle={highlightStyle}
             deadlines={deadlines}
             rollingInfo={rollingInfo}
+            isCurrentPhase={isCurrentPhase}
           />)
         }
         else{

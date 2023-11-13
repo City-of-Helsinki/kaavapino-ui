@@ -2,7 +2,7 @@ import React from 'react'
 import {IconPenLine,IconCheckCircle,Button } from 'hds-react'
 import PropTypes from 'prop-types'
 
-function RollingInfo({value,nonEditable,modifyText,rollingInfoText,editRollingField,disabled}) {
+function RollingInfo({value,nonEditable,modifyText,rollingInfoText,editRollingField,isCurrentPhase}) {
 
   const openEdit = () => {
     editRollingField()
@@ -13,7 +13,7 @@ function RollingInfo({value,nonEditable,modifyText,rollingInfoText,editRollingFi
       <div className={value === "" ? "text-input-italic" : "text-input"}>
         <div className='content'>{value === "" ? "Tieto puuttuu." : value}</div>
       </div>
-      {nonEditable || disabled ? 
+      {nonEditable || !isCurrentPhase ? 
       <></> : 
       <Button onClick={() => {openEdit()}} size="small" variant="supplementary" iconLeft={<IconPenLine />}>
         {modifyText}
@@ -32,7 +32,8 @@ RollingInfo.propTypes = {
   nonEditable: PropTypes.bool,
   modifyText: PropTypes.string,
   rollingInfoText: PropTypes.string,
-  editRollingField: PropTypes.func
+  editRollingField: PropTypes.func,
+  isCurrentPhase:PropTypes.bool
 }
 
 export default RollingInfo

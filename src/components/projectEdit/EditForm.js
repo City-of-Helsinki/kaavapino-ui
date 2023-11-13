@@ -73,7 +73,8 @@ class EditForm extends Component {
       highlightedTag,
       fieldCount,
       showSection,
-      deadlines
+      deadlines,
+      isCurrentPhase
     } = this.props
     return (
       <>
@@ -99,6 +100,7 @@ class EditForm extends Component {
             highlightedTag={highlightedTag}
             fieldCount={fieldCount}
             deadlines={deadlines}
+            isCurrentPhase={isCurrentPhase}
           />
         <Button
           variant="supplementary"

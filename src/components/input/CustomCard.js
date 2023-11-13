@@ -70,10 +70,10 @@ CustomCard.propTypes = {
   endInfo: PropTypes.string,
   startModifiedText: PropTypes.string,
   endModifiedText: PropTypes.string,
-  living: PropTypes.string,
-  office: PropTypes.string,
-  general: PropTypes.string,
-  other: PropTypes.string,
+  living: PropTypes.number,
+  office: PropTypes.number,
+  general: PropTypes.number,
+  other: PropTypes.number,
 }
 
 export default CustomCard

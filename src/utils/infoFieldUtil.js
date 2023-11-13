@@ -19,7 +19,7 @@ const getPrincipleDates = (data,deadlines) =>{
   if(data?.vahvista_periaatteet_esillaolo_alkaa_3 === true && data?.vahvista_periaatteet_esillaolo_paattyy_3 === true){
     hide = true
   }
-  if(data?.vahvista_periaatteet_esillaolo_alkaa_2 === true && data?.vahvista_periaatteet_esillaolo_paattyy_2 === true && data?.jarjestetaan_periaatteet_esillaolo_3 && data?.milloin_periaatteet_esillaolo_alkaa_3 && data?.milloin_periaatteet_esillaolo_paattyy_3){
+  else if(data?.vahvista_periaatteet_esillaolo_alkaa_2 === true && data?.vahvista_periaatteet_esillaolo_paattyy_2 === true && data?.jarjestetaan_periaatteet_esillaolo_3 && data?.milloin_periaatteet_esillaolo_alkaa_3 && data?.milloin_periaatteet_esillaolo_paattyy_3){
     startDate = data?.milloin_periaatteet_esillaolo_alkaa_3
     endDate = data?.milloin_periaatteet_esillaolo_paattyy_3
     startModified = userHasModified("milloin_periaatteet_esillaolo_alkaa_3",deadlines,"Periaatteet")
@@ -31,11 +31,14 @@ const getPrincipleDates = (data,deadlines) =>{
     startModified = userHasModified("milloin_periaatteet_esillaolo_alkaa_2",deadlines,"Periaatteet")
     endModified = userHasModified("milloin_periaatteet_esillaolo_paattyy_2",deadlines,"Periaatteet")
   }
-  else if(data?.jarjestetaan_periaatteet_esillaolo_1 && data?.milloin_periaatteet_esillaolo_alkaa && data?.milloin_periaatteet_esillaolo_paattyy){
+  else if(data?.jarjestetaan_periaatteet_esillaolo_1 && !data?.vahvista_periaatteet_esillaolo_alkaa && !data?.vahvista_periaatteet_esillaolo_paattyy && data?.milloin_periaatteet_esillaolo_alkaa && data?.milloin_periaatteet_esillaolo_paattyy){
     startDate = data?.milloin_periaatteet_esillaolo_alkaa
     endDate = data?.milloin_periaatteet_esillaolo_paattyy
     startModified = userHasModified("milloin_periaatteet_esillaolo_alkaa",deadlines,"Periaatteet")
     endModified = userHasModified("milloin_periaatteet_esillaolo_paattyy",deadlines,"Periaatteet")
+  }
+  else{
+    hide = true
   }
 
   return [startDate,endDate,hide,startModified,endModified]
@@ -64,11 +67,14 @@ const getOASDates = (data,deadlines) =>{
     startModified = userHasModified("milloin_oas_esillaolo_alkaa_2",deadlines,"OAS")
     endModified = userHasModified("milloin_oas_esillaolo_paattyy_2",deadlines,"OAS")
   }
-  else if(data?.milloin_oas_esillaolo_alkaa && data?.milloin_oas_esillaolo_paattyy){
+  else if(!data?.vahvista_oas_esillaolo_alkaa && !data?.vahvista_oas_esillaolo_paattyy && data?.milloin_oas_esillaolo_alkaa && data?.milloin_oas_esillaolo_paattyy){
     startDate = data?.milloin_oas_esillaolo_alkaa
     endDate = data?.milloin_oas_esillaolo_paattyy
     startModified = userHasModified("milloin_oas_esillaolo_alkaa",deadlines,"OAS")
     endModified = userHasModified("milloin_oas_esillaolo_paattyy",deadlines,"OAS")
+  }
+  else{
+    hide = true
   }
 
   return [startDate,endDate,hide,startModified,endModified]

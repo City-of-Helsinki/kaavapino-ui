@@ -24,7 +24,8 @@ const SelectInput = ({
   nonEditable, 
   rollingInfo, 
   modifyText, 
-  rollingInfoText
+  rollingInfoText,
+  isCurrentPhase
 }) => {
   const currentValue = []
   const oldValueRef = useRef('');
@@ -250,7 +251,7 @@ const SelectInput = ({
         modifyText={modifyText}
         rollingInfoText={rollingInfoText}
         editRollingField={editRollingField}
-        disabled={disabled}
+        isCurrentPhase={isCurrentPhase}
       />
       :    
       !multiple ?

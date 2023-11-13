@@ -669,6 +669,7 @@ class ProjectEditPage extends Component {
             initialValues={Object.assign(attribute_data, geoserver_data)}
             phase={phase}
             selectedPhase={selectedPhase}
+            isCurrentPhase={selectedPhase === phase}
             disabled={formDisabled}
             projectId={id}
             syncronousErrors={syncErrors}
