@@ -89,7 +89,8 @@ const FormSection = ({
 }
 
 FormSection.propTypes = {
-  deadlines:PropTypes.object
+  deadlines:PropTypes.object,
+  isCurrentPhase:PropTypes.bool
 }
 
 const mapStateToProps = state => ({

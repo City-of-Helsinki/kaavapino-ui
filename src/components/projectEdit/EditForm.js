@@ -121,7 +121,8 @@ class EditForm extends Component {
 }
 
 EditForm.propTypes = {
-  deadlines:PropTypes.object
+  deadlines:PropTypes.object,
+  isCurrentPhase:PropTypes.bool
 }
 
 const decoratedForm = reduxForm({

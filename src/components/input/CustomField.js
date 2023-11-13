@@ -748,7 +748,8 @@ CustomField.propTypes = {
     PropTypes.number,
     PropTypes.bool,
     PropTypes.object
-  ])
+  ]),
+  isCurrentPhase:PropTypes.bool
 }
 
 export default CustomField
