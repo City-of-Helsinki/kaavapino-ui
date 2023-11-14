@@ -37,6 +37,7 @@ const FormField = ({
   isProjectTimetableEdit,
   rollingInfo,
   isCurrentPhase,
+  selectedPhase,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -112,6 +113,7 @@ const FormField = ({
             rollingInfoText={rollingInfoText}
             nonEditable={nonEditable}
             isCurrentPhase={isCurrentPhase}
+            selectedPhase={selectedPhase}
           />
         )
     }

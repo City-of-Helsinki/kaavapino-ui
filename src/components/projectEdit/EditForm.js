@@ -74,7 +74,8 @@ class EditForm extends Component {
       fieldCount,
       showSection,
       deadlines,
-      isCurrentPhase
+      isCurrentPhase,
+      selectedPhase
     } = this.props
     return (
       <>
@@ -101,6 +102,7 @@ class EditForm extends Component {
             fieldCount={fieldCount}
             deadlines={deadlines}
             isCurrentPhase={isCurrentPhase}
+            selectedPhase={selectedPhase}
           />
         <Button
           variant="supplementary"

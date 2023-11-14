@@ -75,7 +75,8 @@ function RichTextEditor(props) {
     rollingInfo, 
     modifyText, 
     rollingInfoText,
-    isCurrentPhase
+    isCurrentPhase,
+    selectedPhase
   } = props
 
   const dispatch = useDispatch()
@@ -512,6 +513,7 @@ function RichTextEditor(props) {
       rollingInfoText={rollingInfoText}
       editRollingField={editRollingField}
       isCurrentPhase={isCurrentPhase}
+      selectedPhase={selectedPhase}
     />
     :    
     <div
