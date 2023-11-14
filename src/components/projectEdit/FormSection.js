@@ -92,7 +92,8 @@ const FormSection = ({
 
 FormSection.propTypes = {
   deadlines:PropTypes.object,
-  isCurrentPhase:PropTypes.bool
+  isCurrentPhase:PropTypes.bool,
+  selectedPhase: PropTypes.number
 }
 
 const mapStateToProps = state => ({
