@@ -51,7 +51,7 @@
     "redux-oidc": "^4.0.0-beta1",
     "redux-saga": "1.2.2",
     "reselect": "^4.1.7",
-    "sass": "1.59.3",
+    "sass": "1.69.4",
     "semantic-ui-css": "^2.4.1",
     "semantic-ui-react": "2.1.4"
   },
