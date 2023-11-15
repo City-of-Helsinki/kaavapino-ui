@@ -264,8 +264,8 @@ function RichTextEditor(props) {
         showCounter.current = false;
       }
       else if(target.length > 0 && target.value.includes("ql-editor") && previousElement && previousElementId && previousElementId === editorRef?.current?.props?.id){
-        oldValueRef.current = inputProps.value;
-        inputValue.current = inputProps.value;
+        oldValueRef.current = value;
+        inputValue.current = value;
         let container = e.target.closest(".input-container").querySelector(".input-header .input-title")
         //Focus outside to header of the richtext editor first to confirm that editing will initiate correctly, 
         //richtext editor bugs if focusing staingth from select.
