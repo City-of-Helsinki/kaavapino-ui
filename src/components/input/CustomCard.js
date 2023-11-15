@@ -82,14 +82,10 @@ function CustomCard({type,props,name,data,deadlines}) {
 
 CustomCard.propTypes = {
   type: PropTypes.string,
-  startInfo: PropTypes.string,
-  endInfo: PropTypes.string,
-  startModifiedText: PropTypes.string,
-  endModifiedText: PropTypes.string,
-  living: PropTypes.number,
-  office: PropTypes.number,
-  general: PropTypes.number,
-  other: PropTypes.number,
+  props: PropTypes.object,
+  name: PropTypes.string,
+  data: PropTypes.object,
+  deadlines: PropTypes.object
 }
 
 export default CustomCard

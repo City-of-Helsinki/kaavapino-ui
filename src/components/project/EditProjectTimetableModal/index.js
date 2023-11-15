@@ -246,7 +246,8 @@ EditProjectTimeTableModal.propTypes = {
   handleClose: PropTypes.func.isRequired,
   projectPhaseIndex: PropTypes.number,
   currentProject: PropTypes.object,
-  archived: PropTypes.bool
+  archived: PropTypes.bool,
+  submitting: PropTypes.bool
 }
 
 const mapStateToProps = state => ({
