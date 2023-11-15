@@ -85,7 +85,9 @@ CustomCard.propTypes = {
   props: PropTypes.object,
   name: PropTypes.string,
   data: PropTypes.object,
-  deadlines: PropTypes.object
+  deadlines: PropTypes.object,
+  placeholder: PropTypes.string,
+  input: PropTypes.object
 }
 
 export default CustomCard
