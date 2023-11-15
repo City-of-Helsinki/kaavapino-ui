@@ -719,7 +719,8 @@ export const reducer = (state = initialState, action) => {
     case SAVE_PROJECT_TIMETABLE_SUCCESSFUL: {
       return{
         ...state,
-        timetableSaved:action.payload
+        timetableSaved:action.payload,
+        showEditProjectTimetableForm: false
       }
     }
 

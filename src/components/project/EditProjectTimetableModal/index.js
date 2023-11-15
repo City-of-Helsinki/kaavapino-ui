@@ -49,23 +49,14 @@ class EditProjectTimeTableModal extends Component {
       saving,
       initialize,
       attributeData,
-      submitSucceeded,
       submitFailed
     } = this.props
 
-    /* handle submit success / failure */
-
-    if (prevProps.submitting && submitSucceeded) {
-      this.handleClose()
-      this.props.destroy()
-    } else if (prevProps.submitting && submitFailed) {
+    if (prevProps.submitting && submitFailed) {
       this.setLoadingFalse()
     }
     if (prevProps.saving && !saving) {
       initialize(attributeData)
-    }
-    if(this.props.isTimetableSaved){
-      this.props.handleClose()
     }
   }
 
@@ -206,7 +197,6 @@ class EditProjectTimeTableModal extends Component {
       <Modal
         className="form-modal edit-project-timetable-form-modal"
         size="small"
-        onClose={this.handleClose}
         open={open}
         closeIcon={false}
         closeOnDocumentClick={false}

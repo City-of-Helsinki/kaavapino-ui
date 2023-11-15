@@ -93,10 +93,10 @@ const getDraftDates = (data,deadlines) =>{
 
 const getInfoFieldData = (placeholder,name,data,deadlines) => {
   //Floor area info
-  const living = data?.asuminen_yhteensa
-  const office = data?.toimitila_yhteensa
-  const general = data?.julkiset_yhteensa
-  const other = data?.muut_yhteensa
+  const living = data?.asuminen_yhteensa || 0
+  const office = data?.toimitila_yhteensa || 0
+  const general = data?.julkiset_yhteensa || 0
+  const other = data?.muut_yhteensa || 0
 
   //Date info
   let [startDate,endDate,hide,startModified,endModified] = ["","","",false,false]

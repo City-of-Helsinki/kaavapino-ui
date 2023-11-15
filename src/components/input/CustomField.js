@@ -18,12 +18,10 @@ import CustomCheckbox from './CustomCheckbox'
 
 import AutofillInputCalculations from './AutofillInputCalculation/AutofillInputCalculations'
 
-import { isEqual } from 'lodash'
+import { isEqual,get } from 'lodash'
 import projectUtils from '../../utils/projectUtils'
-import infoFieldUtil from '../../utils/infoFieldUtil'
 import AutofillInput from './AutofillInput/AutofillInput'
 import DeadlineInfoText from './DeadlineInfoText'
-import { get } from 'lodash'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import CustomADUserCombobox from './CustomADUserCombobox'
 import CustomSearchCombobox from './CustomSearchCombobox'
@@ -493,39 +491,27 @@ class CustomField extends Component {
   }
 
   renderInfoFieldset = props => {
-    const name = props.input?.name
-    const data = this.props.attributeData
-    const deadlines = this.props.deadlines
-    const placeholder = props.placeholder
-
-    const [startDate,endDate,startModified,endModified,hide,living,office,general,other] = infoFieldUtil.getInfoFieldData(placeholder,name,data,deadlines)
     //Date informations
-    if(placeholder === "Tarkasta esilläolopäivät"){
+    if(props.placeholder === "Tarkasta esilläolopäivät"){
       return (
-        !hide ?
         <CustomCard
           props={props}
-          type={placeholder}
-          startInfo={startDate}
-          startModifiedText={startModified}
-          endModifiedText={endModified}
-          endInfo={endDate}
+          type={props.placeholder}
+          name={props.input?.name}
+          data={this.props.attributeData}
+          deadlines={this.props.deadlines}
         />
-        : ""
       )
     }//Floor area informations
-    else if(placeholder === "Tarkasta kerrosalatiedot"){
+    else if(props.placeholder === "Tarkasta kerrosalatiedot"){
       return (
-        !hide ?
         <CustomCard
-          type={placeholder}
+          type={props.placeholder}
           props={props}
-          living={living || 0}
-          office={office || 0}
-          general={general || 0}
-          other={other || 0}
+          name={props.input?.name}
+          data={this.props.attributeData}
+          deadlines={this.props.deadlines}
         />
-        : ""
       )
     }
   }
