@@ -36,6 +36,8 @@ const FormField = ({
   deadlines,
   isProjectTimetableEdit,
   rollingInfo,
+  isCurrentPhase,
+  selectedPhase,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -110,6 +112,8 @@ const FormField = ({
             modifyText={t('project.modify')}
             rollingInfoText={rollingInfoText}
             nonEditable={nonEditable}
+            isCurrentPhase={isCurrentPhase}
+            selectedPhase={selectedPhase}
           />
         )
     }
@@ -291,7 +295,9 @@ FormField.propTypes = {
   field: PropTypes.object,
   deadlines:PropTypes.object,
   isProjectTimetableEdit:PropTypes.bool,
-  rollingInfo:PropTypes.bool
+  rollingInfo:PropTypes.bool,
+  isCurrentPhase:PropTypes.bool,
+  selectedPhase: PropTypes.number
 }
 
 export default withTranslation()(FormField)

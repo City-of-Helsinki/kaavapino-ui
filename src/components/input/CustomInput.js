@@ -211,7 +211,8 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
         modifyText={custom.modifyText}
         rollingInfoText={custom.rollingInfoText}
         editRollingField={editRollingField}
-        disabled={custom.disabled}
+        isCurrentPhase={custom.isCurrentPhase}
+        selectedPhase={custom.selectedPhase}
       />
       :    
       <div className={custom.disabled || !inputUtils.hasError(error).toString() || !isEmpty ? "text-input " : "text-input " +t('project.error')}>

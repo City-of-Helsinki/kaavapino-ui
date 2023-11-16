@@ -18,12 +18,10 @@ import CustomCheckbox from './CustomCheckbox'
 
 import AutofillInputCalculations from './AutofillInputCalculation/AutofillInputCalculations'
 
-import { isEqual } from 'lodash'
+import { isEqual,get } from 'lodash'
 import projectUtils from '../../utils/projectUtils'
-import infoFieldUtil from '../../utils/infoFieldUtil'
 import AutofillInput from './AutofillInput/AutofillInput'
 import DeadlineInfoText from './DeadlineInfoText'
-import { get } from 'lodash'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import CustomADUserCombobox from './CustomADUserCombobox'
 import CustomSearchCombobox from './CustomSearchCombobox'
@@ -60,7 +58,7 @@ class CustomField extends Component {
 
   renderNumber = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, lockField, fieldSetDisabled, insideFieldset,
-      nonEditable, rollingInfo, modifyText, rollingInfoText } = this.props
+      nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase } = this.props
     return (
     <CustomInput 
       min={0} 
@@ -76,7 +74,9 @@ class CustomField extends Component {
       nonEditable={nonEditable}
       rollingInfo={rollingInfo}
       modifyText={modifyText}
-      rollingInfoText={rollingInfoText} 
+      rollingInfoText={rollingInfoText}
+      isCurrentPhase={isCurrentPhase}
+      selectedPhase={selectedPhase}
       />
     )
   }
@@ -84,7 +84,7 @@ class CustomField extends Component {
   renderYearSelect = props => {
     const { multiple_choice, placeholder_text } = this.props.field
     const { handleBlurSave, handleLockField, handleUnlockField, formName, lockField, fieldSetDisabled, 
-      insideFieldset, nonEditable, rollingInfo, modifyText, rollingInfoText} = this.props
+      insideFieldset, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase} = this.props
 
     if (this.yearOptions.length === 0) {
       this.yearOptions = projectUtils.generateArrayOfYears()
@@ -106,14 +106,16 @@ class CustomField extends Component {
         nonEditable={nonEditable}
         rollingInfo={rollingInfo}
         modifyText={modifyText}
-        rollingInfoText={rollingInfoText} 
+        rollingInfoText={rollingInfoText}
+        isCurrentPhase={isCurrentPhase}
+        selectedPhase={selectedPhase}
       />
     )
   }
 
   renderString = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, lockField, fieldSetDisabled, insideFieldset, 
-      nonEditable, rollingInfo, modifyText, rollingInfoText } = this.props
+      nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase } = this.props
     return( 
       <CustomInput 
         lockField={lockField} 
@@ -129,6 +131,8 @@ class CustomField extends Component {
         rollingInfo={rollingInfo}
         modifyText={modifyText}
         rollingInfoText={rollingInfoText}
+        isCurrentPhase={isCurrentPhase}
+        selectedPhase={selectedPhase}
       />
     )
   }
@@ -140,7 +144,7 @@ class CustomField extends Component {
 
   renderRichText = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, meta, formName, lockField, unlockAllFields, fieldSetDisabled,
-      insideFieldset,nonEditable, rollingInfo, modifyText, rollingInfoText } = this.props
+      insideFieldset,nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase } = this.props
     return (
       <RichTextEditor
         lockField={lockField}
@@ -159,13 +163,15 @@ class CustomField extends Component {
         rollingInfo={rollingInfo}
         modifyText={modifyText}
         rollingInfoText={rollingInfoText}
+        isCurrentPhase={isCurrentPhase}
+        selectedPhase={selectedPhase}
       />
     )
   }
 
   renderRichTextShort = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, meta, setRef, lockField,unlockAllFields,fieldSetDisabled,
-      insideFieldset, nonEditable, rollingInfo, modifyText, rollingInfoText } = this.props
+      insideFieldset, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase } = this.props
     return (
       <RichTextEditor 
         lockField={lockField} 
@@ -183,13 +189,15 @@ class CustomField extends Component {
         rollingInfo={rollingInfo}
         modifyText={modifyText}
         rollingInfoText={rollingInfoText}
+        isCurrentPhase={isCurrentPhase}
+        selectedPhase={selectedPhase}
       />
     )
   }
 
   renderDate = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, deadlines, field, lockField, fieldSetDisabled, 
-      insideFieldset, disabled, isProjectTimetableEdit, nonEditable, rollingInfo, modifyText, rollingInfoText } = this.props
+      insideFieldset, disabled, isProjectTimetableEdit, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase } = this.props
 
     let current
     if (deadlines && deadlines.length > 0) {
@@ -225,6 +233,8 @@ class CustomField extends Component {
         rollingInfo={rollingInfo}
         modifyText={modifyText}
         rollingInfoText={rollingInfoText}
+        isCurrentPhase={isCurrentPhase}
+        selectedPhase={selectedPhase}
       />
     )
   }
@@ -237,7 +247,7 @@ class CustomField extends Component {
   renderSelect = props => {
     const { choices, multiple_choice, placeholder_text, formName } = this.props.field
     const { handleBlurSave, handleLockField, handleUnlockField, lockField, fieldSetDisabled, 
-      insideFieldset, nonEditable, rollingInfo, modifyText, rollingInfoText } = this.props
+      insideFieldset, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase } = this.props
 
     return (
       <SelectInput
@@ -257,6 +267,8 @@ class CustomField extends Component {
         rollingInfo={rollingInfo}
         modifyText={modifyText}
         rollingInfoText={rollingInfoText}
+        isCurrentPhase={isCurrentPhase}
+        selectedPhase={selectedPhase}
       />
     )
   }
@@ -291,7 +303,7 @@ class CustomField extends Component {
   }
 
   renderBooleanRadio = props => {
-    const { input, onRadioChange, defaultValue, disabled, nonEditable, rollingInfo, modifyText, rollingInfoText } = this.props
+    const { input, onRadioChange, defaultValue, disabled, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase } = this.props
     
     return (
       <RadioBooleanButton
@@ -304,7 +316,9 @@ class CustomField extends Component {
         nonEditable={nonEditable}
         rollingInfo={rollingInfo}
         modifyText={modifyText}
-        rollingInfoText={rollingInfoText} 
+        rollingInfoText={rollingInfoText}
+        isCurrentPhase={isCurrentPhase}
+        selectedPhase={selectedPhase}
         {...props}
       />
     )
@@ -316,7 +330,7 @@ class CustomField extends Component {
   }
 
   renderLink = props => {
-    const { handleBlurSave, nonEditable, rollingInfo, modifyText, rollingInfoText } = this.props
+    const { handleBlurSave, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase } = this.props
     const { placeholder_text } = this.props.field
 
     return (
@@ -327,7 +341,9 @@ class CustomField extends Component {
         nonEditable={nonEditable}
         rollingInfo={rollingInfo}
         modifyText={modifyText}
-        rollingInfoText={rollingInfoText} 
+        rollingInfoText={rollingInfoText}
+        isCurrentPhase={isCurrentPhase}
+        selectedPhase={selectedPhase}
         {...props} 
       />
     )
@@ -397,7 +413,7 @@ class CustomField extends Component {
 
   renderDecimal = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, lockField, fieldSetDisabled, insideFieldset,
-      nonEditable, rollingInfo, modifyText, rollingInfoText } = this.props
+      nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase } = this.props
     return (
       <CustomInput 
         type="number" 
@@ -414,6 +430,8 @@ class CustomField extends Component {
         rollingInfo={rollingInfo}
         modifyText={modifyText}
         rollingInfoText={rollingInfoText}
+        isCurrentPhase={isCurrentPhase}
+        selectedPhase={selectedPhase}
       />
     )
   }
@@ -473,39 +491,27 @@ class CustomField extends Component {
   }
 
   renderInfoFieldset = props => {
-    const name = props.input?.name
-    const data = this.props.attributeData
-    const deadlines = this.props.deadlines
-    const placeholder = props.placeholder
-
-    const [startDate,endDate,startModified,endModified,hide,living,office,general,other] = infoFieldUtil.getInfoFieldData(placeholder,name,data,deadlines)
     //Date informations
-    if(placeholder === "Tarkasta esilläolopäivät"){
+    if(props.placeholder === "Tarkasta esilläolopäivät"){
       return (
-        !hide ?
         <CustomCard
           props={props}
-          type={placeholder}
-          startInfo={startDate}
-          startModifiedText={startModified}
-          endModifiedText={endModified}
-          endInfo={endDate}
+          type={props.placeholder}
+          name={props.input?.name}
+          data={this.props.attributeData}
+          deadlines={this.props.deadlines}
         />
-        : ""
       )
     }//Floor area informations
-    else if(placeholder === "Tarkasta kerrosalatiedot"){
+    else if(props.placeholder === "Tarkasta kerrosalatiedot"){
       return (
-        !hide ?
         <CustomCard
-          type={placeholder}
+          type={props.placeholder}
           props={props}
-          living={living || 0}
-          office={office || 0}
-          general={general || 0}
-          other={other || 0}
+          name={props.input?.name}
+          data={this.props.attributeData}
+          deadlines={this.props.deadlines}
         />
-        : ""
       )
     }
   }
@@ -738,7 +744,9 @@ CustomField.propTypes = {
     PropTypes.number,
     PropTypes.bool,
     PropTypes.object
-  ])
+  ]),
+  isCurrentPhase:PropTypes.bool,
+  selectedPhase: PropTypes.number
 }
 
 export default CustomField

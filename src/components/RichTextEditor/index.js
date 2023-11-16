@@ -74,7 +74,9 @@ function RichTextEditor(props) {
     nonEditable, 
     rollingInfo, 
     modifyText, 
-    rollingInfoText
+    rollingInfoText,
+    isCurrentPhase,
+    selectedPhase
   } = props
 
   const dispatch = useDispatch()
@@ -510,10 +512,12 @@ function RichTextEditor(props) {
       modifyText={modifyText}
       rollingInfoText={rollingInfoText}
       editRollingField={editRollingField}
-      disabled={disabled}
+      isCurrentPhase={isCurrentPhase}
+      selectedPhase={selectedPhase}
     />
     :    
-    <div 
+    <div
+    onContextMenu={(e)=> {if(readonly){e.preventDefault()}}}
     tabIndex="0"
     onKeyDown={onKeyDown}
     className='richtext-container'
@@ -537,21 +541,21 @@ function RichTextEditor(props) {
           onMouseDown={e => e.preventDefault()}
           className="ql-toolbar"
         >
-          <span className="ql-formats">
+          <span className={readonly ? "ql-formats rich-text-disabled" : "ql-formats"}>
             <button aria-label="bold" className="ql-bold" />
             <button aria-label="italic" className="ql-italic" />
             <button aria-label="underline" className="ql-underline" />
             <button aria-label="strike" className="ql-strike" />
           </span>
-          <span className="ql-formats">
+          <span className={readonly ? "ql-formats rich-text-disabled" : "ql-formats"}>
             <select aria-label="color" className="ql-color" />
             <select aria-label="background" className="ql-background" />
           </span>
-          <span className="ql-formats">
+          <span className={readonly ? "ql-formats rich-text-disabled" : "ql-formats"}>
             <button aria-label="list" className="ql-list" value="ordered" />
             <button aria-label="bullet" className="ql-list" value="bullet" />
           </span>
-          <span className="ql-formats">
+          <span className={readonly ? "ql-formats rich-text-disabled" : "ql-formats"}>
             <button aria-label="script" className="ql-script" value="super" />
             <button aria-label="sub" className="ql-script" value="sub" />
           </span>

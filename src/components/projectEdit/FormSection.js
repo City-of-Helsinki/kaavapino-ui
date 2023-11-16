@@ -29,7 +29,9 @@ const FormSection = ({
   unlockAllFields,
   filterFieldsArray,
   highlightedTag,
-  deadlines
+  deadlines,
+  isCurrentPhase,
+  selectedPhase
 }) => {
   let count = 0;
   if(section?.title && section?.fields){
@@ -74,6 +76,8 @@ const FormSection = ({
             highlightStyle={highlightStyle}
             deadlines={deadlines}
             rollingInfo={rollingInfo}
+            isCurrentPhase={isCurrentPhase}
+            selectedPhase={selectedPhase}
           />)
         }
         else{
@@ -87,7 +91,9 @@ const FormSection = ({
 }
 
 FormSection.propTypes = {
-  deadlines:PropTypes.object
+  deadlines:PropTypes.object,
+  isCurrentPhase:PropTypes.bool,
+  selectedPhase: PropTypes.number
 }
 
 const mapStateToProps = state => ({

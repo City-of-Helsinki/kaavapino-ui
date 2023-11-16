@@ -669,6 +669,7 @@ class ProjectEditPage extends Component {
             initialValues={Object.assign(attribute_data, geoserver_data)}
             phase={phase}
             selectedPhase={selectedPhase}
+            isCurrentPhase={selectedPhase === phase}
             disabled={formDisabled}
             projectId={id}
             syncronousErrors={syncErrors}
@@ -691,7 +692,6 @@ class ProjectEditPage extends Component {
               open
               saveProjectFloorArea={saveProjectFloorArea}
               handleClose={() => this.handleFloorAreaClose()}
-              isFloorAreaSaved={this.props.floorAreaSavedSelector}
             />
           )}
           {this.props.showTimetableForm && (
@@ -700,7 +700,6 @@ class ProjectEditPage extends Component {
               open
               handleSubmit={() => this.handleTimetableSave()}
               handleClose={() => this.handleTimetableClose()}
-              isTimetableSaved={this.props.timetableSavedSelector}
               projectPhaseIndex={projectPhaseIndex}
               archived={currentProject.archived}
             />

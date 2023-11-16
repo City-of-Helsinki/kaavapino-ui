@@ -705,7 +705,8 @@ export const reducer = (state = initialState, action) => {
     case SAVE_PROJECT_FLOOR_AREA_SUCCESSFUL: {
       return{
         ...state,
-        floorAreaSaved: action.payload
+        floorAreaSaved: action.payload,
+        showEditFloorAreaForm: false
       }
     }
 
@@ -719,7 +720,8 @@ export const reducer = (state = initialState, action) => {
     case SAVE_PROJECT_TIMETABLE_SUCCESSFUL: {
       return{
         ...state,
-        timetableSaved:action.payload
+        timetableSaved:action.payload,
+        showEditProjectTimetableForm: false
       }
     }
 
