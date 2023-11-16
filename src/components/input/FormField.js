@@ -185,9 +185,14 @@ const FormField = ({
 
   const renderNormalField = () => {
     const status = lockStatus
-    const title = (field.character_limit
+    let title = (field.character_limit
       ? `${field.label}  (${t('project.char-limit', { amount: field.character_limit })})`
-      : field.label) + (field.required ? ' *' : '')
+      : field.label)
+
+    if(field.required) {
+      title += field.required ? ' *' : ''
+    }
+
     const assistiveText = field.assistive_text
     return (
       <>
