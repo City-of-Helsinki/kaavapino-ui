@@ -154,8 +154,7 @@
     "load": "Lataa",
     "cancel": "Peruuta",
     "remove": "Poista",
-    "file-name":"Tiedostonimi: ",
-    "confirmed-files":"Hyväksyttyjä tiedostomuotoja docx, xlsx, pptx, pdf, png, jpg, svg, gif."
+    "file-name":"Tiedostonimi: "
 
   },
   "map": {

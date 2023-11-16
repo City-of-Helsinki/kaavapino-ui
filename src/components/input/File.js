@@ -239,11 +239,8 @@ class File extends Component {
           disabled={disabled}
         />
         {uploading && <Progress percent={percentCompleted} progress indicating />}
-        {current && description && (
-          <div className='assistive'>{t('file.confirmed-files')}</div>
-        )}
         {filePreview}
-        {current && description && (
+        {current && (
           <>
           <div><b>{t('file.file-name')} </b>{this.state.current}</div>
           <span className="file-description">
