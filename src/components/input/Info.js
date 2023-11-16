@@ -32,7 +32,7 @@ const InfoContent = props => {
 }
 
 const Info = props => (
-  <Tooltip tooltipClassName={props.className} placement="top">
+  <Tooltip tooltipClassName={"tooltip"} placement="top">
     <InfoContent content={props.content} link={props.link} linked={props.linked} />
   </Tooltip>
 )
