@@ -692,7 +692,6 @@ class ProjectEditPage extends Component {
               open
               saveProjectFloorArea={saveProjectFloorArea}
               handleClose={() => this.handleFloorAreaClose()}
-              isFloorAreaSaved={this.props.floorAreaSavedSelector}
             />
           )}
           {this.props.showTimetableForm && (

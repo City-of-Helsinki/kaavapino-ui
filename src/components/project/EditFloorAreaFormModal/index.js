@@ -60,9 +60,7 @@ class EditFloorAreaFormModal extends Component {
     const { saving, initialize, formValues } = this.props
     /* handle submit success / failure */
 
-    if (prevProps.submitting && this.props.submitSucceeded) {
-      this.handleClose()
-    } else if (
+    if (
       prevProps.submitting &&
       this.props.submitFailed &&
       !this.props.submitSucceeded &&
@@ -72,11 +70,6 @@ class EditFloorAreaFormModal extends Component {
     }
     if (prevProps.saving && !saving) {
       initialize(formValues)
-    }
-
-    if(this.props.isFloorAreaSaved){
-      this.setState({ loading: false })
-      this.props.handleClose()
     }
   }
 
@@ -88,7 +81,6 @@ class EditFloorAreaFormModal extends Component {
   }
 
   handleClose = () => {
-    this.props.reset()
     this.props.handleClose()
     this.setState({ loading: false })
   }
@@ -139,7 +131,6 @@ class EditFloorAreaFormModal extends Component {
       <Modal
         className="form-modal edit-floor-area-form-modal"
         size={'small'}
-        onClose={this.props.handleClose}
         open={this.props.open}
         closeIcon
       >

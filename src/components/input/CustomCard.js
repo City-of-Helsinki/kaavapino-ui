@@ -7,7 +7,7 @@ import {attributeDataSelector} from '../../selectors/projectSelector'
 import { useTranslation } from 'react-i18next'
 import infoFieldUtil from '../../utils/infoFieldUtil'
 
-function CustomCard({type,props,name,data,deadlines}) {
+function CustomCard({type, props, name, data, deadlines}) {
   const [cardValues, setCardValues] = useState(["","","","",true,0,0,0,0]);
   const attributeData = useSelector(state => attributeDataSelector(state))
 
