@@ -200,7 +200,7 @@ function* pollConnection() {
     const dateVariable = new Date()
     const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     yield put(setPoll(true))
-    yield put(setLastSaved("success",time))
+    yield put(setLastSaved("success",time,[],[],false))
   } catch (e) {
     yield put(setPoll(false))
   }
@@ -728,7 +728,7 @@ function* lockProjectField(data) {
   }
 }
 
-function* saveProject() {
+function* saveProject(fileOrimgSave) {
   const currentProjectId = yield select(currentProjectIdSelector)
   const editForm = yield select(editFormSelector) || {}
   const { initial, values } = editForm
@@ -762,18 +762,24 @@ function* saveProject() {
         yield put(setAllEditFields())
         yield put(setPoll(false))
         //success will show if error toastr is last visible toastr
-        yield put(setLastSaved("success",time))
+        yield put(setLastSaved("success",time,[],[],false))
       } catch (e) {
         if (e.response && e.response.status === 400) {
-          yield put(setLastSaved("field_error",time,Object.keys(attribute_data),Object.values(attribute_data)))
+          yield put(setLastSaved("field_error",time,Object.keys(attribute_data),Object.values(attribute_data),false))
           yield put(stopSubmit(EDIT_PROJECT_FORM, e.response.data))
         } else {
-          yield put(setLastSaved("error",time,Object.keys(attribute_data),Object.values(attribute_data)))
+          yield put(setLastSaved("error",time,Object.keys(attribute_data),Object.values(attribute_data),false))
         }
       }
     }
+    else if(fileOrimgSave){
+      yield put(setAllEditFields())
+      yield put(setPoll(false))
+      //success will show if error toastr is last visible toastr
+      yield put(setLastSaved("success",time,[],[],false))
+    }
     else{
-      yield put(setLastSaved("field_error",time,[],[]))
+      yield put(setLastSaved("field_error",time,[],[],false))
     }
   }
   yield put(saveProjectSuccessful())
@@ -858,8 +864,8 @@ function* projectFileUpload({
     )
 
     yield put(projectFileUploadSuccessful(res))
-    yield put(saveProjectAction())
-    yield put(setLastSaved("success",time))
+    yield put(saveProjectAction(true))
+    yield put(setLastSaved("success",time,[],[],false))
   } catch (e) {
     if (!axios.isCancel(e)) {
       yield put(error(e))
@@ -882,8 +888,8 @@ function* projectFileRemove({ payload }) {
       ':id/'
     )
     yield put(projectFileRemoveSuccessful(payload))
-    yield put(saveProjectAction())
-    yield put(setLastSaved("success",time))
+    yield put(saveProjectAction(true))
+    yield put(setLastSaved("success",time,[],[],true))
   } catch (e) {
     yield put(error(e))
   }
