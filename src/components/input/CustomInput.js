@@ -11,7 +11,7 @@ import {useFocus} from '../../hooks/useRefFocus'
 
 const CustomInput = ({ input, meta: { error }, ...custom }) => {
   const [readonly, setReadOnly] = useState({name:"",read:false})
-  const [isEmpty,setIsEmpty] = useState(false)
+  const [hasError,setHasError] = useState(false)
   const [editField,setEditField] = useState(false)
 
   const lastModified = useSelector(state => lastModifiedSelector(state))
@@ -159,6 +159,10 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
               setReadOnly({name:input.name,read:true})
             }
             oldValueRef.current = event.target.value;
+            if(custom.regex){
+              const regex = new RegExp(custom.regex);
+              setHasError(!regex.test(event.target.value))
+            }
           }
         }
       }
@@ -182,10 +186,10 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   const handleInputChange = useCallback((event,readonly) => {
     if(!readonly || custom.type === "date"){
       if(!event.target.value?.trim()){
-        setIsEmpty(true)
+        setHasError(true)
       }
       else{
-        setIsEmpty(false)
+        setHasError(false)
       }
       input.onChange(event.target.value, input.name)
     }
@@ -215,12 +219,12 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
         selectedPhase={custom.selectedPhase}
       />
       :    
-      <div className={custom.disabled || !inputUtils.hasError(error).toString() || !isEmpty ? "text-input " : "text-input " +t('project.error')}>
+      <div className={custom.disabled || !inputUtils.hasError(error).toString() || !hasError ? "text-input " : "text-input " +t('project.error')}>
         <TextInput
           ref={inputRef}
           aria-label={input.name}
           error={inputUtils.hasError(error).toString()}
-          errorText={custom.disabled || !inputUtils.hasError(error).toString() || !isEmpty ? "" : t('project.error')}
+          errorText={custom.disabled || !inputUtils.hasError(error).toString() || !hasError ? "" : t('project.error')}
           fluid="true"
           {...input}
           {...custom}
