@@ -3,21 +3,23 @@ import PropTypes from 'prop-types'
 import { useDispatch,useSelector } from 'react-redux';
 import {Button,IconPenLine } from 'hds-react'
 import {showFloorArea, showTimetable} from '../../actions/projectActions'
-import {attributeDataSelector} from '../../selectors/projectSelector'
+import {attributeDataSelector,deadlinesSelector} from '../../selectors/projectSelector'
 import { useTranslation } from 'react-i18next'
 import infoFieldUtil from '../../utils/infoFieldUtil'
 
 function CustomCard({type, props, name, data, deadlines}) {
   const [cardValues, setCardValues] = useState(["","","","",true,0,0,0,0]);
+  
   const attributeData = useSelector(state => attributeDataSelector(state))
+  const deadlinesData = useSelector(state => deadlinesSelector(state))
 
   useEffect(() => {
     setCardValues(infoFieldUtil.getInfoFieldData(type,name,data,deadlines))
   }, [])
 
    useEffect(() => {
-    setCardValues(infoFieldUtil.getInfoFieldData(props.placeholder,props.input?.name,attributeData,deadlines))
-  }, [attributeData])
+    setCardValues(infoFieldUtil.getInfoFieldData(props.placeholder,props.input?.name,attributeData,deadlinesData))
+  }, [attributeData,deadlinesData])
 
   const dispatch = useDispatch()
   const { t } = useTranslation()
