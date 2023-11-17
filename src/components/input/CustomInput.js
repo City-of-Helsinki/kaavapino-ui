@@ -159,8 +159,10 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
               setReadOnly({name:input.name,read:true})
             }
             oldValueRef.current = event.target.value;
-            const regex = new RegExp(custom.regex);
-            setHasError(!regex.test(event.target.value))
+            if(custom.regex){
+              const regex = new RegExp(custom.regex);
+              setHasError(!regex.test(event.target.value))
+            }
           }
         }
       }
