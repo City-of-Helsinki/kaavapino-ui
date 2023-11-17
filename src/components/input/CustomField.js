@@ -77,6 +77,7 @@ class CustomField extends Component {
       rollingInfoText={rollingInfoText}
       isCurrentPhase={isCurrentPhase}
       selectedPhase={selectedPhase}
+      regex={this.props?.field?.validation_regex}
       />
     )
   }
@@ -133,6 +134,7 @@ class CustomField extends Component {
         rollingInfoText={rollingInfoText}
         isCurrentPhase={isCurrentPhase}
         selectedPhase={selectedPhase}
+        regex={this.props?.field?.validation_regex}
       />
     )
   }
@@ -235,6 +237,7 @@ class CustomField extends Component {
         rollingInfoText={rollingInfoText}
         isCurrentPhase={isCurrentPhase}
         selectedPhase={selectedPhase}
+        regex={this.props?.field?.validation_regex}
       />
     )
   }
@@ -432,6 +435,7 @@ class CustomField extends Component {
         rollingInfoText={rollingInfoText}
         isCurrentPhase={isCurrentPhase}
         selectedPhase={selectedPhase}
+        regex={this.props?.field?.validation_regex}
       />
     )
   }
