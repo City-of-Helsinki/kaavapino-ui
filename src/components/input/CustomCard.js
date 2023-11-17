@@ -26,6 +26,7 @@ function CustomCard({type, props, name, data, deadlines}) {
   let heading
   let fields
   let editDataLink
+  const unit = "k-m²"
 
   if(type === "Tarkasta esilläolopäivät"){
     buttonText = t('custom-card.modify-date')
@@ -48,19 +49,19 @@ function CustomCard({type, props, name, data, deadlines}) {
     fields = <>  
     <div className='custom-card-info-container'>
       <div className='custom-card-info'>{t('custom-card.living')}</div>
-      <div className='custom-card-floor-info'><span>{cardValues[5]}</span></div>
+      <div className='custom-card-floor-info'><span>{cardValues[5]} {unit}</span></div>
     </div>
     <div className='custom-card-info-container'>
       <div className='custom-card-info'>{t('custom-card.office')}</div>
-      <div className='custom-card-floor-info'><span>{cardValues[6]}</span></div>
+      <div className='custom-card-floor-info'><span>{cardValues[6]} {unit}</span></div>
     </div>
     <div className='custom-card-info-container'>
       <div className='custom-card-info'>{t('custom-card.public')}</div>
-      <div className='custom-card-floor-info'><span>{cardValues[7]}</span></div>
+      <div className='custom-card-floor-info'><span>{cardValues[7]} {unit}</span></div>
     </div>
     <div className='custom-card-info-container'>
       <div className='custom-card-info'>{t('custom-card.other')}</div>
-      <div className='custom-card-floor-info'><span>{cardValues[8]}</span></div>
+      <div className='custom-card-floor-info'><span>{cardValues[8]} {unit}</span></div>
     </div>
     </>
     editDataLink = <Button size='small' iconLeft={<IconPenLine />} onClick={() => dispatch(showFloorArea(true))} variant="supplementary" theme="black" role="link">{buttonText}</Button>
