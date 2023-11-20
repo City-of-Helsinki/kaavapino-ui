@@ -259,7 +259,7 @@ function RichTextEditor(props) {
     let target = e.target.classList.length > 0 ? e.target.classList : e.target.parentNode.classList
     const form = e.target.form
     //Prevent usage outside of main project form
-    if(target?.length > 0 && form){
+    if(target?.length > 0 && form?.id === "accordion-title"){
       //Lose focus and unclock if select button is clicked
       if(target.length > 0 && target.value.includes("Select-module")){
         localStorage.setItem("previousElement","Select-module");
