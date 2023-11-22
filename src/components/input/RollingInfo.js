@@ -17,16 +17,23 @@ function RollingInfo({value,nonEditable,modifyText,rollingInfoText,editRollingFi
       <div className={value === "" ? "text-input-italic" : "text-input"}>
         <div className='content'>{value === "" ? "Tieto puuttuu." : value}</div>
       </div>
-      {nonEditable || !firstPhase && !isCurrentPhase ? 
-      <></> : 
-      <Button onClick={() => {openEdit()}} size="small" variant="supplementary" iconLeft={<IconPenLine />}>
+      {nonEditable ? 
+      <></> 
+      : 
+      <Button disabled={!firstPhase && !isCurrentPhase} onClick={() => {openEdit()}} size="small" variant="supplementary" iconLeft={<IconPenLine />}>
         {modifyText}
       </Button>}
     </div>
     {!nonEditable && !firstPhase && !isCurrentPhase ?
     <div className='rolling-text'></div> :
     <div className='rolling-text'>
-      <IconCheckCircle aria-hidden="true" /><span>{rollingInfoText}</span>
+      {firstPhase && rollingInfoText === "Tieto siirtynyt aiemmasta vaiheesta" ? 
+      <></> 
+      : 
+      <>
+        <IconCheckCircle aria-hidden="true" /><span>{rollingInfoText}</span>
+      </>
+      }
     </div>
     }
   </>
