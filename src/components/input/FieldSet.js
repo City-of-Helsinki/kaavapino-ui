@@ -165,7 +165,7 @@ const FieldSet = ({
                     rollingInfoText = "Tieto on automaattisesti muodostettu"
                     nonEditable = true
                   }
-                  
+                  const assistiveText = field.assistive_text
                   return (
                     <div
                       className={`input-container ${showError ? 'error' : ''} ${fieldsetDisabled ? 'disabled-fieldset' : ''}`}
@@ -245,6 +245,7 @@ const FieldSet = ({
                           nonEditable={nonEditable}
                         />
                         {showError && <div className="error-text">{showError}</div>}
+                        {assistiveText && <div className='assistive-text'>{assistiveText}.</div>}
                       </Form.Field>
                     </div>
                   )
