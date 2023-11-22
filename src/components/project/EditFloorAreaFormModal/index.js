@@ -131,6 +131,7 @@ class EditFloorAreaFormModal extends Component {
       <Modal
         className="form-modal edit-floor-area-form-modal"
         size={'small'}
+        onClose={this.handleClose}
         open={this.props.open}
         closeIcon
       >

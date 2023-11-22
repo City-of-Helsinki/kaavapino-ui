@@ -775,8 +775,6 @@ function* saveProject(fileOrimgSave) {
     else if(fileOrimgSave){
       yield put(setAllEditFields())
       yield put(setPoll(false))
-      //success will show if error toastr is last visible toastr
-      yield put(setLastSaved("success",time,[],[],false))
     }
     else{
       yield put(setLastSaved("field_error",time,[],[],false))
@@ -889,7 +887,7 @@ function* projectFileRemove({ payload }) {
     )
     yield put(projectFileRemoveSuccessful(payload))
     yield put(saveProjectAction(true))
-    yield put(setLastSaved("success",time,[],[],true))
+    yield put(setLastSaved("success",time,[],[],false))
   } catch (e) {
     yield put(error(e))
   }

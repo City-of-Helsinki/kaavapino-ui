@@ -54,7 +54,7 @@ const Header = props => {
   useInterval(() => {
     //polls connection to backend if there is error
     //doubles the time after each try
-    if(lastSaved?.status === "error"){
+    if(lastSaved?.status === "error" && !lastSaved?.lock){
       setCount(count + count)
       if(spinnerRef?.current?.style){
         spinnerRef.current.style.visibility = "visible"
@@ -64,7 +64,7 @@ const Header = props => {
       }
     }
     props.pollConnection()
-  }, lastSaved?.status === "error" ? 1000 * count * 10 : 0);
+  }, lastSaved?.status === "error" && !lastSaved?.lock ? 1000 * count * 10 : 0);
 
   const getFieldSetValues = (object) => {
     const arrayValues = []
