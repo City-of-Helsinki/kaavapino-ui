@@ -206,7 +206,7 @@ const FormField = ({
           showError ? 'error' : ''
         } ${highlightStyle}`}
       >
-        {highlightStyle === "yellow" ? <span className={highlightStyle}>{highlightedTag}</span> : ''}
+        {highlightStyle === "yellow" ? <div className={highlightStyle + " highlight-flag"}>{highlightedTag}</div> : ''}
         {!isOneLineField && (
           <div className='input-header-container'>
             <div className="input-header">

@@ -56,7 +56,7 @@
     margin-left: 8px;
 
     @media screen and (min-width: 600px) {
-      margin-right: 0;
+      margin-right: 4px;
     }
 
     .input-info {
@@ -140,15 +140,16 @@
     justify-content: flex-start;
     align-items: center;
     font-family: "Helsinki Grotesk Medium", sans-serif;
-    font-size: $size12;
+    font-size: $size14;
     color: $color_rolling_info;
     padding-left: $size12;
     padding-top: 0;
-    svg{
-      height: $size16;
+
+    svg {
+      height: $size18;
     }
-    span{
-      padding-left: 0.1rem;
+    span {
+      padding-left: 0.125rem;
     }
   }
 

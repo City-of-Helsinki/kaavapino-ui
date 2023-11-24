@@ -129,9 +129,30 @@ ul {
   margin-top: 0;
 }
 
+.input-container {
+  position: relative;
+}
+
+.project-input-container .ui.segment .field {
+  border-left: 6px solid transparent;
+  padding-left: 12px;
+  margin-left: -18px;
+}
+
 .project-input-container .ui.segment {
   .field.yellow {
-    border-left: 4px solid $tagyellow;
+    border-left: 6px solid $tagyellow;
+    margin-top: 63px;
+
+    .highlight-flag {
+      position: absolute;
+      top: -29px;
+      left: -6px;
+      padding: 3px 8px 3px 10px;
+      border-radius: 2px 2px 2px 0;
+      font-size: $size14;
+      background-color: $tagyellow;
+    }
   }
 
   span.yellow {
@@ -380,7 +401,7 @@ header{
     div:nth-child(3){
       div:nth-child(1){
         div:first-of-type{
-          max-width: 1148px;
+          max-width: 1200px;
           padding-right: 0;
           padding-left: 0; 
         }
@@ -388,7 +409,7 @@ header{
     }
   }
   nav{
-    max-width: 1148px;
+    max-width: 1200px;
     justify-content: space-between;
     margin-left: 0 !important;
   }

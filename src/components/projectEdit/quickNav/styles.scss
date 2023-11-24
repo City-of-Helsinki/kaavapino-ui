@@ -40,24 +40,26 @@
       }
       .quicknav-header-info{
         display: flex;
-        font-size: $size14;
+        font-size: $size16;
         font-style: italic;
-        color: $color-black-60;
+        color: $color-black-90;
         padding-left: 34px;
+
         .project-status-container{
           align-items: center;
           display: flex;
           float: right;
-          font-size: $size14;
+
           .project-status-color{
             border-radius: 100%;
             display: inline-flex;
-            min-height: 10px;
-            min-width: 10px;
-            height: 10px;
+            min-height: $size8;
+            min-width: $size8;
+            height: $size8;
+            margin-top: 1px;
           }
           .project-status-text{
-            padding-right: 10px;
+            padding-right: $size8;
           }
         }
       }
@@ -85,7 +87,11 @@
     &::-webkit-scrollbar-track {
       margin-top: $size12;
     }
-    
+
+    .quicknav-item-tags {
+      margin-right: $size4;
+    }
+
     .phase-accordion > div{
       font-size: $size16;
       cursor: pointer;
@@ -111,7 +117,7 @@
       display: block;
       width: 100%;
       font-size: $size16;
-      margin-top: 0px;
+      margin-top: 0;
       color: $color-black-70;
       text-align: left;
       padding-left: 20px;
@@ -122,36 +128,41 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding-left: 0;
         margin-left: 0;
-        padding-right: 10px;
-        padding-top: 0;
-        padding-bottom: 0;
+        padding: 0;
+
         .project-status-container{
           float: right;
           font-size: $size14;
           .project-status-color{
             border-radius: 100%;
             display: inline-flex;
-            min-height: 10px;
-            min-width: 10px;
-            height: 10px;
+            min-height: $size8;
+            min-width: $size8;
+            height: $size8;
+            margin-top: 1px;
           }
+
           .project-status-text{
-            padding-left: 2px;
+            padding-right: $size8;
           }
         }
         div{
           .filter-tag{
-            background-color: $gray;
-            font-size: $size14;
+            background-color: $color-black-20;
+            font-family: "Helsinki Grotesk Medium", sans-serif;
+            font-size: $size12;
             float: right;
             padding: 0;
-            --tag-height: 10px;
-            margin-left: 5px;
-            span{
-              padding: 2px;
+            --tag-height: 17px;
+            width: 23px;
+            border-radius: 2px;
+            margin-left: $size4;
+            justify-content: center;
+
+            span {
               margin: 0;
+              text-align: center;
             }
           }
         }
@@ -176,10 +187,10 @@
       background: #b2b2b2;
       border: none;
       font-size: 1rem;
-      margin-top: 0px;
+      margin-top: 0;
       color: #b2b2b2;
       text-align: left;
-      padding-left: 0px;
+      padding-left: 0;
     }
 
     .active::after{
