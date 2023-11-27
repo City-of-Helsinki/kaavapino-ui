@@ -29,9 +29,11 @@
   background-color: white;
   padding: 0;
   position: initial !important;
+  padding-left: $size16;
 
   #field-segment {
     position: initial;
+    padding: $size20 0 0 $size20;
   }
 
   .edit-form-buttons {
@@ -123,7 +125,7 @@
   padding-right: 8px;
   position: relative;
   min-width: 30%;
-  max-width: 400px;
+  max-width: 368px;
  
   @media screen and (min-width: 600px) {
     display: flex;
@@ -131,7 +133,7 @@
 
   @media screen and (min-width: 960px) {
     display: flex;
-    padding-right: 48px;
+    padding-right: $size16;
   }
   @media screen and (min-height: 768px) {
     position: sticky;
@@ -144,20 +146,35 @@
   padding-bottom: 20px;
 }
 
-.project-edit-form-filter{
+.project-edit-form-filter.sticky.no-filters-selected {
+  align-items: center;
+
+  .message {
+    margin-top: 0;
+  }
+}
+
+.project-edit-form-filter {
   display: flex;
   flex-flow: wrap;
-  align-items: center;
+  align-items: flex-end;
   justify-content: flex-start;
   position: sticky;
-  top: 57px;
+  top: 58px;
   z-index: 4;
-  padding: 20px;
-  padding-bottom: 10px;
-  padding-top: 10px;
-  background-color: $light-gray3;
+  padding: $size16 $size28;
+  background-color: $color-black-5;
   border-bottom: 1px solid $light-gray;
-  min-height: 139px;
+  border: none;
+
+  .filter-title {
+    font-family: 'Helsinki Grotesk Bold', sans-serif;
+
+    >.hidden {
+      visibility: hidden;
+    }
+  }
+
   .toggle-filters{
     margin-left: auto;
   }
@@ -170,26 +187,28 @@
       margin: 0;
     }
 
-    b{
-      color: black;
+    .message {
+      margin-top: $size8;
+    }
+
+    b {
+      font-family: "Helsinki Grotesk Bold", sans-serif;
+    }
+
+    .filter-tag-container {
+      padding: $size4 0;
+      margin: 0 -$size8;
     }
   
     .filter-tag{
-      background-color: $gray;
+      background-color: $color-black-20;
       border-radius: 25px;
       line-height: 1.5;
+      margin: $size4 $size8;
     }
 
     .filter-tag:focus{
       --tag-focus-outline-color: transparent;
-    }
-  
-    & > .filter-tag{
-      margin-left: 0;
-    }
-  
-    & > .filter-tag ~ .filter-tag{
-      margin-left: 20px;
     }
   
     .yellow{
@@ -201,32 +220,26 @@
       --tag-focus-outline-color: transparent;
     }
   
-    .filter-tag-info{
+    .filter-tag-info {
       display: flex;
       width: 100%;
-      span{
-        padding-left: 5px;
-        padding-right: 5px;
+      margin-top: $size8;
+      margin-bottom: $size16;
+
+      span {
+        padding: 0 $size12;
       }
     }
 
     .filter-tag-info.is-pinned {
       display: none;
-    } 
-
-    div{
-      padding-top: 5px;
-      padding-bottom:5px;
     }
   }
 
-  .right-container{
+  .right-container {
     flex: 0 20%;
     display: flex;
     justify-content: flex-end;
-    button{
-      background-color: white;
-    }
   }
 
 }
@@ -429,27 +442,42 @@
   background-color: rgb(0,0,0); /* Fallback color */
   background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 
+  h3 {
+    font-family: "Helsinki Grotesk Medium", sans-serif;
+    font-size: $size16;
+  }
+
   /* Modal Content/Box */
   .modal-content {
     background-color: $color-white;
-    margin: 15%; /* 15% from the top and centered */
+    margin: 96px auto;
     border: 1px solid $color-black;
     font-size: $size16;
     max-width: 1148px;
     width: fit-content;
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+      padding: $size16 $size24;
+    }
+
     .modal-header {
-      padding: 20px;
       background-color: $color-white;
       border-bottom: 1px solid $light-gray;
     }
     
     .modal-body {
-      padding: 20px;
       font-family: "Helsinki Grotesk Regular", sans-serif;
+
       .remove-filters{
-        color: $color-error-dark;
+        font-family: "Helsinki Grotesk Medium", sans-serif;
+        color: $color-error;
+        margin-top: $size32;
+        margin-left: -$size8;
+        margin-bottom: -$size12;
         padding-left: 0;
-        margin-left: 0;
+
         div{
           padding-left: 0;
           margin-left: 0;
@@ -458,7 +486,6 @@
     }
     
     .modal-footer {
-      padding: 20px;
       font-family: "Helsinki Grotesk Regular", sans-serif;
       background-color: $color-white;
       border-top: 1px solid $light-gray;

@@ -165,6 +165,7 @@ let tagInfo;
 
 if(tagArray.length > 0){
     renderedTags = <>
+     <div className={"filter-tag-container"}>
      {tagArray.map((tag) => (
          <Tag
          className='filter-tag'
@@ -177,22 +178,37 @@ if(tagArray.length > 0){
          {tag}
          </Tag>
      ))}
+     </div>
      </>
  }
  else{
-    renderedTags = <p>Yhtään suodatinta ei ole valittu.</p>
+    renderedTags = <div className={"message"}>Yhtään suodatinta ei ole valittu.</div>
  }
 
  if(tagArray.length > 0 && selectedTag === ""){
-    tagInfo = <><div><b tabIndex="0">Suodattimet</b></div> <div tabIndex="0" className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä.</p> <span> | </span> <p>Näytetään {totalFilteredFields} kenttää.</p></div></>
+    tagInfo = <><div tabIndex="0" className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä.</p> <span> | </span> <p>Näytetään {totalFilteredFields} kenttää.</p></div></>
  }
  else if(tagArray.length > 0 && selectedTag !== ""){
-    tagInfo = <><div><b tabIndex="0">Suodattimet</b></div><div tabIndex="0" className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä.</p> <span> | </span> <p>Näytetään {totalFilteredFields} kenttää.</p> <span> | </span> <p><b>Korostus päällä: </b> {selectedTag}.</p></div></>
+    tagInfo = <><div tabIndex="0" className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä.</p> <span> | </span> <p>Näytetään {totalFilteredFields} kenttää.</p> <span> | </span> <p><b>Korostus päällä: </b> {selectedTag}.</p></div></>
  }
 
+ let stickyClass = "";
+ let noFiltersClass = "";
+
+ if(!isVisible) {
+     stickyClass = " sticky";
+ }
+ if(tagArray.length === 0) {
+     noFiltersClass = " no-filters-selected"
+ }
+
+let containerClasses = "project-edit-form-filter" + stickyClass + noFiltersClass;
+
 return (
-    <div className={!isVisible ? "project-edit-form-filter sticky" : "project-edit-form-filter"}>
+    <div className={containerClasses}>
         <div className='left-container'>
+            <div className={isVisible ? "filter-title": "filter-title hidden"} tabIndex="0">Suodattimet</div>
+
             {isVisible && (
                 tagInfo
             )
@@ -234,8 +250,8 @@ return (
                     </Button>
                 </div>
                 <div className="modal-footer">
-                    <Button className="save" onClick={() => saveSelections()}>Tallenna</Button>
-                    <Button className="close" variant="secondary" onClick={() => closeModal()}>Peruuta</Button>
+                    <Button className="save" size="small" onClick={() => saveSelections()}>Tallenna</Button>
+                    <Button className="close" size="small" variant="secondary" onClick={() => closeModal()}>Peruuta</Button>
                 </div>
             </div>
         </div>
