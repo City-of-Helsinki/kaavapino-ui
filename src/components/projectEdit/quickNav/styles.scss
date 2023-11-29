@@ -56,7 +56,7 @@
             min-height: $size8;
             min-width: $size8;
             height: $size8;
-            margin-top: 1px;
+            margin-top: 3px;
           }
           .project-status-text{
             padding-right: $size8;
@@ -118,11 +118,12 @@
       width: 100%;
       font-size: $size16;
       margin-top: 0;
-      color: $color-black-70;
+      color: $color-black-90;
       text-align: left;
       padding-left: 20px;
-      border-bottom: none;
-      min-height: 50px;
+      border: 0;
+      border-left: $size4 solid transparent;
+      min-height: 52px;
 
       span{
         display: flex;
@@ -140,10 +141,13 @@
             min-height: $size8;
             min-width: $size8;
             height: $size8;
-            margin-top: 1px;
+            margin-top: 3px;
           }
 
           .project-status-text{
+            font-family: "Helsinki Grotesk Regular", sans-serif;
+            font-style: italic;
+            font-weight: 400;
             padding-right: $size8;
           }
         }
@@ -197,18 +201,30 @@
       display: none;
     }
 
+    .quicknav-item:hover {
+      background-color: inherit;
+      border-left-color: transparent;
+    }
+
+    .quicknav-item.active {
+      font-family: "Helsinki Grotesk Bold", sans-serif;
+      font-weight: 700;
+      border-left: $size4 solid;
+      background-color: $color-black-5;
+    }
+
+    .quicknav-item.active:hover {
+      background-color: $color-black-5;
+    }
+
     .phase1,.phase7,.phase13,.phase19,.phase25{
       &:hover,&:focus{
         border-left: 4px solid;
         border-left-color: $color_phase_start;
         text-decoration: underline;
-        background-color: transparent;
       }
       &.active{
-        font-weight: bold;
-        border-left: 4px solid;
         border-left-color: $color_phase_start;
-        background-color: $light-gray3;
       }
     }
 
@@ -217,13 +233,9 @@
         border-left: 4px solid;
         border-left-color: $color_phase_principles;
         text-decoration: underline;
-        background-color: transparent;
       }
       &.active{
-        font-weight: bold;
-        border-left: 4px solid;
         border-left-color: $color_phase_principles;
-        background-color: $light-gray3;
       }
     }
 
@@ -232,13 +244,9 @@
         border-left: 4px solid;
         border-left-color: $color_phase_oas;
         text-decoration: underline;
-        background-color: transparent;
       }
       &.active{
-        font-weight: bold;
-        border-left: 4px solid;
         border-left-color: $color_phase_oas;
-        background-color: $light-gray3;
       }
     }
 
@@ -247,13 +255,9 @@
         border-left: 4px solid;
         border-left-color: $color_phase_draft;
         text-decoration: underline;
-        background-color: transparent;
       }
       &.active{
-        font-weight: bold;
-        border-left: 4px solid;
         border-left-color: $color_phase_draft;
-        background-color: $light-gray3;
       }
     }
 
@@ -262,13 +266,9 @@
         border-left: 4px solid;
         border-left-color: $color_phase_suggestion;
         text-decoration: underline;
-        background-color: transparent;
       }
       &.active{
-        font-weight: bold;
-        border-left: 4px solid;
         border-left-color: $color_phase_suggestion;
-        background-color: $light-gray3;
       }
     }
 
@@ -277,13 +277,9 @@
         border-left: 4px solid;
         border-left-color: $color_phase_check_suggestion;
         text-decoration: underline;
-        background-color: transparent;
       }
       &.active{
-        font-weight: bold;
-        border-left: 4px solid;
         border-left-color: $color_phase_check_suggestion;
-        background-color: $light-gray3;
       }
     }
 
@@ -292,13 +288,9 @@
         border-left: 4px solid;
         border-left-color: $color_phase_approval;
         text-decoration: underline;
-        background-color: transparent;
       }
       &.active{
-        font-weight: bold;
-        border-left: 4px solid;
         border-left-color: $color_phase_approval;
-        background-color: $light-gray3;
       }
     }
 
@@ -307,13 +299,9 @@
         border-left: 4px solid;
         border-left-color: $color_phase_inception;
         text-decoration: underline;
-        background-color: transparent;
       }
       &.active{
-        font-weight: bold;
-        border-left: 4px solid;
         border-left-color: $color_phase_inception;
-        background-color: $light-gray3;
       }
     }
 

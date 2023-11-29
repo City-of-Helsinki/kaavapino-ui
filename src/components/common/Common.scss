@@ -108,10 +108,41 @@ h4 {
   margin: 0;
 }
 .ui.form .field {
-  margin: 0 0 $size32;
+  margin: 0 $size4 $size32 0;
 }
 .ui.dimmer {
   z-index: $z-index-bg-dimmer;
+}
+.ui.form input:not([type]),
+.ui.form input[type=date],
+.ui.form input[type=datetime-local],
+.ui.form input[type=email],
+.ui.form input[type=file],
+.ui.form input[type=number],
+.ui.form input[type=password],
+.ui.form input[type=search],
+.ui.form input[type=tel],
+.ui.form input[type=text],
+.ui.form input[type=time],
+.ui.form input[type=url] {
+  font-family: inherit;
+  border-radius: 0;
+  border-width: 2px;
+  border-color: $color-black-50;
+}
+.ui.form input:not([type]):focus,
+.ui.form input[type=date]:focus,
+.ui.form input[type=datetime-local]:focus,
+.ui.form input[type=email]:focus,
+.ui.form input[type=file]:focus,
+.ui.form input[type=number]:focus,
+.ui.form input[type=password]:focus,
+.ui.form input[type=search]:focus,
+.ui.form input[type=tel]:focus,
+.ui.form input[type=text]:focus,
+.ui.form input[type=time]:focus,
+.ui.form input[type=url]:focus {
+  border-radius: 0;
 }
 
 ul {
