@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { handleAutofillCalculations } from './autofillCalculationsUtils'
 import { getFieldAutofillValue } from '../../../utils/projectAutofillUtils'
 import { EDIT_PROJECT_FORM, EDIT_FLOOR_AREA_FORM } from '../../../constants'
-
+import {updateFloorValuesSelector } from '../../../selectors/projectSelector'
 /* This component should calculate and update it's value in redux form whenever
  * the related fields change.
  *
@@ -26,10 +26,10 @@ const AutofillInputCalculations = ({
   const dispatch = useDispatch()
   const [previousRelatedFieldValues, setPreviousRelatedFieldValues] = useState([])
   const formValues = useSelector(getFormValues(formName))
- 
   const editFormValues = useSelector(getFormValues(EDIT_PROJECT_FORM))
-  const value = (formValues && formValues[name]) || null
-
+  const updateFloorValue = useSelector(state => updateFloorValuesSelector(state))
+  const value = (formValues && formValues[name]) || (editFormValues && editFormValues[name]) || null
+  const values = formValues ? formValues : editFormValues
   let calculatedTotal = 0
 
   const autoFillValue = getFieldAutofillValue(autofill_rule, editFormValues, name)
@@ -37,6 +37,10 @@ const AutofillInputCalculations = ({
   const autoFillNumber = autoFillValue ? parseInt(autoFillValue) : null
 
   useEffect(() => {
+    setPreviousRelatedFieldValues(
+      related_fields.map(relatedField => editFormValues[relatedField])
+    )
+
     if (autoFillNumber && !calculations) {
       dispatch(autofill(EDIT_FLOOR_AREA_FORM, name, autoFillNumber))
     }
@@ -66,9 +70,25 @@ const AutofillInputCalculations = ({
     calculatedTotal = handleAutofillCalculations(calculations, formValues)
 
     dispatch(change(formName, name, calculatedTotal))
+    if(name === "asuminen_yhteensa"){
+      let relatedName = "kerrosalan_lisays_yhteensa_asuminen"
+      dispatch(change(formName, relatedName, calculatedTotal))
+    }
+    else if(name === "toimitila_yhteensa"){
+      let relatedName = "kerrosalan_lisays_yhteensa_toimitila"
+      dispatch(change(formName, relatedName, calculatedTotal))
+    }
+    else if(name === "julkiset_yhteensa"){
+      let relatedName = "kerrosalan_lisays_yhteensa_julkinen"
+      dispatch(change(formName, relatedName, calculatedTotal))
+    }
+    else if(name === "muut_yhteensa"){
+      let relatedName = "kerrosalan_lisays_yhteensa_muut"
+      dispatch(change(formName, relatedName, calculatedTotal))
+    }
     
     
-  }, [related_fields, JSON.stringify(formValues)])
+  }, [related_fields,JSON.stringify(updateFloorValue)])
 
   const renderKm2UnitComponent = () => (
     <div className="autofill-input">
@@ -79,7 +99,7 @@ const AutofillInputCalculations = ({
           </div>
         </div>
       ) : (
-        <Field {...fieldProps} />
+        <Field {...fieldProps} isFloorAreaForm={true} floorValue={values}/>
       )}
     </div>
   )
@@ -92,7 +112,7 @@ const AutofillInputCalculations = ({
           </div>
         </div>
       ) : (
-        <Field {...fieldProps} disabled={fieldProps.disabled} />
+        <Field {...fieldProps} disabled={fieldProps.disabled} isFloorAreaForm={true} floorValue={values}/>
       )}
     </div>
   )

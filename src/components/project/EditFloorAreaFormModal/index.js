@@ -15,6 +15,13 @@ import { Button } from 'hds-react'
 
 
 const FloorAreaTotals = ({ formValues, floorAreaSections, attributeData }) => {
+  let values
+  if(!formValues){
+    values = attributeData
+  }
+  else{
+    values = formValues
+  }
   // Would love a more rubust check than string includes if one becomes available
   const totalSection = floorAreaSections.find(section =>
     section.title.includes('yhteensä')
@@ -29,7 +36,7 @@ const FloorAreaTotals = ({ formValues, floorAreaSections, attributeData }) => {
             field={totalMatrix}
             attributeData={attributeData}
             key={i}
-            formValues={formValues}
+            formValues={values}
             formName={EDIT_FLOOR_AREA_FORM}
             isFloorCalculation={true}
           />
@@ -38,6 +45,7 @@ const FloorAreaTotals = ({ formValues, floorAreaSections, attributeData }) => {
     </div>
   )
 }
+
 class EditFloorAreaFormModal extends Component {
   constructor(props) {
     super(props)

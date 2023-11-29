@@ -2,7 +2,8 @@ import React, { useCallback, useRef, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { TextInput } from 'hds-react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import {updateFloorValues} from '../../actions/projectActions'
 import {lockedSelector,lastModifiedSelector } from '../../selectors/projectSelector'
 import moment from 'moment'
 import { useTranslation } from 'react-i18next'
@@ -20,6 +21,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   const [inputRef, setInputFocus] = useFocus()
   const oldValueRef = useRef('');
   const { t } = useTranslation()
+  const dispatch = useDispatch()
 
   useEffect(() => {
     oldValueRef.current = input.value;
@@ -192,6 +194,11 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
         setHasError(false)
       }
       input.onChange(event.target.value, input.name)
+      if(custom.isFloorAreaForm){
+        let newObject = custom.floorValue
+        newObject[input.name] = Number(event.target.value)
+        dispatch(updateFloorValues(newObject))
+      }
     }
   }, [input.name, input.value]);
 

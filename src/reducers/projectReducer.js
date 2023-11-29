@@ -74,7 +74,8 @@ import {
   RESET_PROJECT_DEADLINES,
   RESET_PROJECT_DEADLINES_SUCCESSFUL,
   SHOW_TIMETABLE,
-  SHOW_FLOOR_AREA
+  SHOW_FLOOR_AREA,
+  UPDATE_FLOOR_VALUES
 } from '../actions/projectActions'
 
 export const initialState = {
@@ -118,12 +119,20 @@ export const initialState = {
   connection:false,
   showEditFloorAreaForm:false,
   showEditProjectTimetableForm:false,
-  lastModified:false
+  lastModified:false,
+  updatedFloorValue:{}
 }
 
 export const reducer = (state = initialState, action) => {
 
   switch (action.type) {
+
+    case UPDATE_FLOOR_VALUES: {
+      return{
+        ...state,
+        updatedFloorValue:action.payload,
+      }
+    }
 
     case LAST_MODIFIED: {
       return{

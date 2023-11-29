@@ -244,3 +244,8 @@ export const lastModifiedSelector = createSelector(
   selectProject, 
   project => project?.lastModified
 )
+
+export const updateFloorValuesSelector = createSelector(
+  selectProject, 
+  project => project?.updatedFloorValue
+)
