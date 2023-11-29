@@ -37,6 +37,7 @@ const AutofillInputCalculations = ({
   const autoFillNumber = autoFillValue ? parseInt(autoFillValue) : null
 
   useEffect(() => {
+    //Set values on first load from saved/new data
     setPreviousRelatedFieldValues(
       related_fields.map(relatedField => editFormValues[relatedField])
     )
@@ -70,7 +71,11 @@ const AutofillInputCalculations = ({
     calculatedTotal = handleAutofillCalculations(calculations, formValues)
 
     dispatch(change(formName, name, calculatedTotal))
+
+    //Dispatch change to FloorAreaTotals component that is child component to EditFloorAreaForm
+    //values are always identical to if statements fields values and are not working reliably without this
     if(name === "asuminen_yhteensa"){
+      //Changes value on FloorAreaTotals component
       let relatedName = "kerrosalan_lisays_yhteensa_asuminen"
       dispatch(change(formName, relatedName, calculatedTotal))
     }
@@ -87,7 +92,7 @@ const AutofillInputCalculations = ({
       dispatch(change(formName, relatedName, calculatedTotal))
     }
     
-    
+    //updateFloorValue updates only when user is actually editing inputs
   }, [related_fields,JSON.stringify(updateFloorValue)])
 
   const renderKm2UnitComponent = () => (

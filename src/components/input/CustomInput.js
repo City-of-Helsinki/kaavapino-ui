@@ -195,6 +195,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       }
       input.onChange(event.target.value, input.name)
       if(custom.isFloorAreaForm){
+        //Edit floor area model object data with current value and dispatch change for form total value recalculation
         let newObject = custom.floorValue
         newObject[input.name] = Number(event.target.value)
         dispatch(updateFloorValues(newObject))

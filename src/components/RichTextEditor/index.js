@@ -132,6 +132,7 @@ function RichTextEditor(props) {
 
   useEffect(() => {
     if(isFloorAreaForm){
+      //Set value for floor area richtext
       setValue(floorValue[inputProps.name])
     }
     else{
@@ -153,6 +154,7 @@ function RichTextEditor(props) {
 
   useEffect(() => {
     if(isFloorAreaForm && floorValue && floorValue[inputProps.name] !== oldValueRef.current){
+      //Update value for floor area richtext on reopen modal
       setValue(floorValue[inputProps.name])
       oldValueRef.current = floorValue[inputProps.name];
       inputValue.current = floorValue[inputProps.name];

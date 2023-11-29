@@ -15,6 +15,7 @@ import { Button } from 'hds-react'
 
 
 const FloorAreaTotals = ({ formValues, floorAreaSections, attributeData }) => {
+  //formValues can return empty at initiation, attributeData always has the correct structure
   let values
   if(!formValues){
     values = attributeData
