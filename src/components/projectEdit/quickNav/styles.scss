@@ -40,24 +40,26 @@
       }
       .quicknav-header-info{
         display: flex;
-        font-size: $size14;
+        font-size: $size16;
         font-style: italic;
-        color: $color-black-60;
+        color: $color-black-90;
         padding-left: 34px;
+
         .project-status-container{
           align-items: center;
           display: flex;
           float: right;
-          font-size: $size14;
+
           .project-status-color{
             border-radius: 100%;
             display: inline-flex;
-            min-height: 10px;
-            min-width: 10px;
-            height: 10px;
+            min-height: $size8;
+            min-width: $size8;
+            height: $size8;
+            margin-top: 3px;
           }
           .project-status-text{
-            padding-right: 10px;
+            padding-right: $size8;
           }
         }
       }
@@ -85,7 +87,11 @@
     &::-webkit-scrollbar-track {
       margin-top: $size12;
     }
-    
+
+    .quicknav-item-tags {
+      margin-right: $size4;
+    }
+
     .phase-accordion > div{
       font-size: $size16;
       cursor: pointer;
@@ -111,47 +117,56 @@
       display: block;
       width: 100%;
       font-size: $size16;
-      margin-top: 0px;
-      color: $color-black-70;
+      margin-top: 0;
+      color: $color-black-90;
       text-align: left;
       padding-left: 20px;
-      border-bottom: none;
-      min-height: 50px;
+      border: 0;
+      border-left: $size4 solid transparent;
+      min-height: 52px;
 
       span{
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding-left: 0;
         margin-left: 0;
-        padding-right: 10px;
-        padding-top: 0;
-        padding-bottom: 0;
+        padding: 0;
+
         .project-status-container{
           float: right;
           font-size: $size14;
           .project-status-color{
             border-radius: 100%;
             display: inline-flex;
-            min-height: 10px;
-            min-width: 10px;
-            height: 10px;
+            min-height: $size8;
+            min-width: $size8;
+            height: $size8;
+            margin-top: 3px;
           }
+
           .project-status-text{
-            padding-left: 2px;
+            font-family: "Helsinki Grotesk Regular", sans-serif;
+            font-style: italic;
+            font-weight: 400;
+            padding-right: $size8;
           }
         }
         div{
           .filter-tag{
-            background-color: $gray;
-            font-size: $size14;
+            background-color: $color-black-20;
+            font-family: "Helsinki Grotesk Medium", sans-serif;
+            font-size: $size12;
             float: right;
             padding: 0;
-            --tag-height: 10px;
-            margin-left: 5px;
-            span{
-              padding: 2px;
+            --tag-height: 17px;
+            width: 23px;
+            border-radius: 2px;
+            margin-left: $size4;
+            justify-content: center;
+
+            span {
               margin: 0;
+              text-align: center;
             }
           }
         }
@@ -176,14 +191,30 @@
       background: #b2b2b2;
       border: none;
       font-size: 1rem;
-      margin-top: 0px;
+      margin-top: 0;
       color: #b2b2b2;
       text-align: left;
-      padding-left: 0px;
+      padding-left: 0;
     }
 
     .active::after{
       display: none;
+    }
+
+    .quicknav-item:hover {
+      background-color: inherit;
+      border-left-color: transparent;
+    }
+
+    .quicknav-item.active {
+      font-family: "Helsinki Grotesk Bold", sans-serif;
+      font-weight: 700;
+      border-left: $size4 solid;
+      background-color: $color-black-5;
+    }
+
+    .quicknav-item.active:hover {
+      background-color: $color-black-5;
     }
 
     .phase1,.phase7,.phase13,.phase19,.phase25{
@@ -191,13 +222,9 @@
         border-left: 4px solid;
         border-left-color: $color_phase_start;
         text-decoration: underline;
-        background-color: transparent;
       }
       &.active{
-        font-weight: bold;
-        border-left: 4px solid;
         border-left-color: $color_phase_start;
-        background-color: $light-gray3;
       }
     }
 
@@ -206,13 +233,9 @@
         border-left: 4px solid;
         border-left-color: $color_phase_principles;
         text-decoration: underline;
-        background-color: transparent;
       }
       &.active{
-        font-weight: bold;
-        border-left: 4px solid;
         border-left-color: $color_phase_principles;
-        background-color: $light-gray3;
       }
     }
 
@@ -221,13 +244,9 @@
         border-left: 4px solid;
         border-left-color: $color_phase_oas;
         text-decoration: underline;
-        background-color: transparent;
       }
       &.active{
-        font-weight: bold;
-        border-left: 4px solid;
         border-left-color: $color_phase_oas;
-        background-color: $light-gray3;
       }
     }
 
@@ -236,13 +255,9 @@
         border-left: 4px solid;
         border-left-color: $color_phase_draft;
         text-decoration: underline;
-        background-color: transparent;
       }
       &.active{
-        font-weight: bold;
-        border-left: 4px solid;
         border-left-color: $color_phase_draft;
-        background-color: $light-gray3;
       }
     }
 
@@ -251,13 +266,9 @@
         border-left: 4px solid;
         border-left-color: $color_phase_suggestion;
         text-decoration: underline;
-        background-color: transparent;
       }
       &.active{
-        font-weight: bold;
-        border-left: 4px solid;
         border-left-color: $color_phase_suggestion;
-        background-color: $light-gray3;
       }
     }
 
@@ -266,13 +277,9 @@
         border-left: 4px solid;
         border-left-color: $color_phase_check_suggestion;
         text-decoration: underline;
-        background-color: transparent;
       }
       &.active{
-        font-weight: bold;
-        border-left: 4px solid;
         border-left-color: $color_phase_check_suggestion;
-        background-color: $light-gray3;
       }
     }
 
@@ -281,13 +288,9 @@
         border-left: 4px solid;
         border-left-color: $color_phase_approval;
         text-decoration: underline;
-        background-color: transparent;
       }
       &.active{
-        font-weight: bold;
-        border-left: 4px solid;
         border-left-color: $color_phase_approval;
-        background-color: $light-gray3;
       }
     }
 
@@ -296,13 +299,9 @@
         border-left: 4px solid;
         border-left-color: $color_phase_inception;
         text-decoration: underline;
-        background-color: transparent;
       }
       &.active{
-        font-weight: bold;
-        border-left: 4px solid;
         border-left-color: $color_phase_inception;
-        background-color: $light-gray3;
       }
     }
 

@@ -1,12 +1,24 @@
 @import '../common/colors.scss';
 
 .richtext-container{
+  .quill .ql-container.ql-snow {
+    border: 0 !important;
+  }
+
+  .ql-toolbar.ql-snow {
+    border-width: 0 0 1px 0;
+  }
+
   .rich-text-editor-wrapper {
     .rich-text-editor {
       background-color: white;
+      border: 2px solid $color-black-50;
+
+      &:hover {
+        border: 2px solid $color-black-90;
+      }
 
       .ql-toolbar {
-        border: 1px solid $gray2;
         display: none;
         position: relative;
         background-color: $white;
@@ -18,7 +30,7 @@
             height: 16px;
 
             path {
-              fill: $black1 !important;
+              fill: $color-black-90 !important;
             }
           }
           &:focus {
@@ -39,13 +51,10 @@
       }
 
       .ql-container {
-        border: 1px solid $gray2;
-        border-radius: 2px;
-        border-top-width: 1px;
-
         .ql-editor {
           font-size: $size16;
           padding: 16px;
+          padding-bottom: $size40;
           min-height: 56px;
           p{
             outline: none;
@@ -54,7 +63,7 @@
       }
 
       &.toolbar-visible {
-        border: 2px solid $black1 !important;
+        border: 2px solid $color-black-90 !important;
         border-color: unset !important;
         box-shadow: 0 0 0 3px $color-coat-of-arms !important;
         transform: translateZ(0) !important;
@@ -62,8 +71,6 @@
         transition-property: box-shadow,transform !important;
         .ql-toolbar {
           display: block;
-          border-top-left-radius: 2px;
-          border-top-right-radius: 2px;
         }
 
         .ql-container {
@@ -82,29 +89,12 @@
         transition-property: box-shadow,transform !important;
         .ql-toolbar {
           display: block;
-          border-top-left-radius: 2px;
-          border-top-right-radius: 2px;
         }
 
         .ql-container {
           border-top: 0;
           border-top-left-radius: 0;
           border-top-right-radius: 0;
-        }
-      }
-
-      &:hover {
-        box-shadow: inset 0px 0px 0px 2px $black1;
-        border-radius: 2px;
-
-        .quill {
-          .ql-toolbar {
-            border: 1px solid $black1;
-          }
-
-          .ql-container {
-            border: 1px solid $black1;
-          }
         }
       }
 
@@ -139,10 +129,10 @@
   .quill-counter {
     font-family: "Helsinki Grotesk Bold", sans-serif;
     font-size: $size14;
-    color: $black1;
+    color: $color-black-90;
     position: relative;
-    top: -22px;
-    right: 10px;
+    top: -30px;
+    right: 14px;
     text-align: right;
     padding-right: 4px;
     letter-spacing: 0.4px;
