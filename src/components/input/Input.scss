@@ -395,10 +395,8 @@
   border-radius: 0;
 }
 
-.ui.form input:focus{
-  border: 2px solid $black1 !important;
+.ui.form input:focus {
   border-color: unset !important;
-  box-shadow: 0 0 0 3px $color-coat-of-arms !important;
   transform: translateZ(0) !important;
   transition: 85ms ease-out !important;
   transition-property: box-shadow,transform !important;
@@ -573,12 +571,6 @@
           max-width: 256px;
         }
       }
-      input,.ql-editor{
-        border:1.6px solid $border-gray2;
-        font-family: "Helsinki Grotesk Regular", sans-serif;
-        font-size: $size14;
-        color:$black1
-      }
       .max-chars{
         font-size: $size13;
       }
@@ -617,12 +609,6 @@
         .text-input,.selection,.ad-combobox{
           max-width: 256px;
         }
-      }
-      input,.ql-editor{
-        border:1.6px solid $border-gray2;
-        font-family: "Helsinki Grotesk Regular", sans-serif;
-        font-size: $size14;
-        color:$black1
       }
       .max-chars{
         font-size: $size13;

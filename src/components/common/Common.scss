@@ -143,7 +143,36 @@ h4 {
 .ui.form input[type=time]:focus,
 .ui.form input[type=url]:focus {
   border-radius: 0;
+  transition: 85ms ease-out !important;
 }
+.ui.form input:not([type]):hover,
+.ui.form input[type=date]:hover,
+.ui.form input[type=datetime-local]:hover,
+.ui.form input[type=email]:hover,
+.ui.form input[type=file]:hover,
+.ui.form input[type=number]:hover,
+.ui.form input[type=password]:hover,
+.ui.form input[type=search]:hover,
+.ui.form input[type=tel]:hover,
+.ui.form input[type=text]:hover,
+.ui.form input[type=time]:hover,
+.ui.form input[type=url]:hover {
+  border-color: $color-black-90;
+}
+input[class^="Combobox-module"] {
+  border: 0 !important;
+}
+//
+
+// HDS fixes.
+div[class^="Combobox-module_wrapper"] {
+  transition: 85ms ease-out !important;
+}
+input[class^="TextInput-module_input"]:focus {
+  box-shadow: 0 0 0 3px #0072c6 !important;
+  transition: 85ms ease-out !important;
+}
+//
 
 ul {
   &::-webkit-scrollbar-track {
