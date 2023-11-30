@@ -76,7 +76,9 @@ function RichTextEditor(props) {
     modifyText, 
     rollingInfoText,
     isCurrentPhase,
-    selectedPhase
+    selectedPhase,
+    isFloorAreaForm,
+    floorValue
   } = props
 
   const dispatch = useDispatch()
@@ -129,8 +131,14 @@ function RichTextEditor(props) {
   const oldValueRef = useRef('');
 
   useEffect(() => {
-    oldValueRef.current = value;
-    inputValue.current = value;
+    if(isFloorAreaForm){
+      //Set value for floor area richtext
+      setValue(floorValue[inputProps.name])
+    }
+    else{
+      oldValueRef.current = value;
+      inputValue.current = value;
+    }
     if (setRef) {
       setRef({ name: inputProps.name, ref: editorRef })
     }
@@ -143,6 +151,15 @@ function RichTextEditor(props) {
       localStorage.removeItem("previousElementId");
     };
   }, [])
+
+  useEffect(() => {
+    if(isFloorAreaForm && floorValue && floorValue[inputProps.name] !== oldValueRef.current){
+      //Update value for floor area richtext on reopen modal
+      setValue(floorValue[inputProps.name])
+      oldValueRef.current = floorValue[inputProps.name];
+      inputValue.current = floorValue[inputProps.name];
+    }
+  }, [JSON.stringify(floorValue)])
 
   useEffect(() => {
     //Remove tab press inside editor so navigating with tab stays normal.

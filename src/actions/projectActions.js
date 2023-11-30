@@ -99,7 +99,12 @@ export const SET_POLL = "setPoll"
 export const SHOW_TIMETABLE = "showTimetable"
 export const SHOW_FLOOR_AREA = "showFloorArea"
 export const LAST_MODIFIED = "lastModified"
+export const UPDATE_FLOOR_VALUES = "updateFloorValues"
 
+export const updateFloorValues = (updatedFloorValues) => ({
+  type: UPDATE_FLOOR_VALUES,
+  payload:updatedFloorValues
+})
 export const lastModified = (field) => ({
   type: LAST_MODIFIED,
   payload:field
