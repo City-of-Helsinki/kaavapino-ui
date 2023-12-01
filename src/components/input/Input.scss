@@ -88,7 +88,8 @@
     }
   }
 
-  .rolling-info-container{
+  .rolling-info-container {
+    position: relative;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -99,9 +100,11 @@
     padding-top: $size4;
     padding-bottom: $size12;
     height: 100%;
+
     .text-input{
       width: 80%;
       padding-left: $size16;
+
       .content{
         font-family: "Helsinki Grotesk Regular", sans-serif;
         font-size: $size16;
@@ -114,10 +117,17 @@
         word-break: break-word;
       }
     }
-    button{
-      font-size: $size14;
+
+    button {
+      position: absolute;
+      top: $size4;
+      right: 0;
+      font-size: $size16;
+      align-self: flex-start;
+      justify-self: flex-end;
     }
-    .text-input-italic{
+
+    .text-input-italic {
       width: 80%;
       padding-left: $size14;
       .content{
@@ -667,8 +677,9 @@
 }
 
 .fieldset-button-remove:hover{
-  color: $color-error !important;
-  border-color: $color-error !important;
+  color: $color-error-dark !important;
+  border-color: $color-error-dark !important;
+  background-color: $color-error-light !important;
 }
 
 .fieldset-button-remove-disabled{
