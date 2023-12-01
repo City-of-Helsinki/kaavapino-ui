@@ -77,6 +77,7 @@ const Link = props => {
           onChange={onChange}
           className={!isLinkValid && currentValue && !multipleLinks ? 'error' : ''}
           aria-label="link"
+          class="link"
         />
         {!multipleLinks && (
         <Button
@@ -85,7 +86,7 @@ const Link = props => {
           iconLeft={<IconLink />}
           onClick={openLink}
         >
-          {t('project.add')}
+          {t('project.open')}
         </Button>
         )}
         {!multipleLinks && currentValue && isLinkValid && (

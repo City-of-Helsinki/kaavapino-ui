@@ -301,30 +301,8 @@
   transition: none;
 }
 
-.ui.form .input input,
-.ui.selection.dropdown,
-.ui.form textarea {
-  border-radius: 2px;
-  border: 1px solid $border-gray;
-  font-size: $size16;
-  color: $black1;
-  line-height: $size16;
-  transition: border 0.2s ease;
-  padding: 8px 16px;
-
-  &:not(textarea) {
-    padding: 0 16px;
-  }
-
-  &:focus,
-  &:hover,
-  &:active,
-  &.active,
-  &.active:hover {
-    border-radius: 2px;
-    border: 1px solid $color-input-emphasis;
-    box-shadow: inset 0px 0px 0px 1px $color-input-emphasis;
-  }
+.ui.form input[type=text]:hover {
+  border-color: $color-black !important;
 }
 
 .highlighted {
@@ -361,7 +339,6 @@
 .error .file-input-container button {
   border: 3px solid $color-error;
   color: $color-error;
- 
 }
 
 .error .link-container  div:first-of-type {
@@ -430,6 +407,16 @@
       color: $red;
       border-color: $red;
     }
+
+    &.remove:hover {
+      color: $color-error;
+      border-color: $color-error;
+      background-color: $color-error-light;
+    }
+  }
+
+  .file-action-buttons button {
+    margin-left: $size12;
   }
 }
 
@@ -743,11 +730,30 @@
 
 .link-container {
   .link-button {
-    margin-top: 10px;
+    margin-left: $size20;
   }
+
+  input {
+    min-height: $size56;
+    min-width: 300px;
+  }
+
+  svg {
+    color: $color-white;
+  }
+
   .link-status {
-    margin-top: 10px;
+    margin-left: $size20;
     height: 49px;
+    color: $color-success;
+  }
+
+  .error ~ svg {
+    color: $color-error;
+  }
+
+  .error-text {
+    margin-left: $size4;
   }
 }
 
