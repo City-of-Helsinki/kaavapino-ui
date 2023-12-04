@@ -545,6 +545,45 @@
     }
   }
 
+  .accordion-button-disabled{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background-color: $color-white;
+    font-family: "Helsinki Grotesk Medium", sans-serif;
+    font-size: $size14;
+    color: $color-black-40;
+    font-weight: 500;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    border:none;
+    outline: none;
+    transition: 0.1s;
+    padding-top: 11.2px;
+    padding-bottom: 10.8px;
+    padding-left: 0;
+    border-bottom: 0.7px solid $color-black-40;
+    pointer-events: none;
+    .accordion-button-content{
+      display: flex;
+      justify-content: flex-start;
+      flex-flow: column;
+      align-items: flex-start;
+      svg{
+        pointer-events: none;
+      }
+      .accoardian-header-text{
+        pointer-events: none;
+      }
+    }
+    svg{
+      pointer-events: none;
+      width: $size17;
+      height: $size17;
+    }
+  }
+
   .accordion-button:focus-within,.accordion-button-open:focus-within{
     box-shadow: 0 0 0 3px $color-coat-of-arms;
     position: relative;

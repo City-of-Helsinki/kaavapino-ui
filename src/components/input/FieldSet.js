@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { connect, useDispatch } from 'react-redux'
-import { checkingSelector } from '../../selectors/projectSelector'
+import { checkingSelector, savingSelector } from '../../selectors/projectSelector'
 import CustomField from './CustomField'
 import { Form, Label, Popup } from 'semantic-ui-react'
 import projectUtils from '../../utils/projectUtils'
@@ -35,7 +35,8 @@ const FieldSet = ({
   lockField,
   lockStatus,
   unlockAllFields,
-  rollingInfo
+  rollingInfo,
+  saving
 }) => {
 
   const handleBlur = () => {
@@ -110,7 +111,7 @@ const FieldSet = ({
           <React.Fragment key={`${name}-${i}`}>
             {!deleted && hiddenIndex !== i && (
               <div key={i} className="fieldset-container">
-                <button type="button" tabIndex={0} className={expanded.includes(i) ? "accordion-button-open" : "accordion-button"} onClick={(e) => {checkLocked(e,set,i)}}>
+                <button type="button" tabIndex={0} className={!saving ? expanded.includes(i) ? "accordion-button-open" : "accordion-button" : "accordion-button-disabled"} onClick={(e) => {if(!saving){checkLocked(e,set,i)}}}>
                   <div className='accordion-button-content'>
                     {lockName}
                   </div>
@@ -280,8 +281,9 @@ const FieldSet = ({
         onClick={() => {
           sets.push({})
           handleBlur()
+          handleOutsideClick()
         }}
-        disabled={disabled}
+        disabled={disabled || saving}
         variant="supplementary"
         size='small'
         iconLeft={<IconPlus/>}
@@ -295,12 +297,14 @@ const FieldSet = ({
 }
 
 const mapStateToProps = state => ({
-  checking: checkingSelector(state)
+  checking: checkingSelector(state),
+  saving: savingSelector(state)
 })
 
 FieldSet.propTypes = {
   rollingInfo: PropTypes.bool,
-  unlockAllFields:PropTypes.func
+  unlockAllFields:PropTypes.func,
+  saving: PropTypes.bool
 }
 
 export default connect(mapStateToProps)(FieldSet)

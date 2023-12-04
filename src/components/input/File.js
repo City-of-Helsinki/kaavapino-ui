@@ -8,6 +8,7 @@ import { Document, Page, pdfjs } from 'react-pdf'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { withTranslation } from 'react-i18next'
 import { Button, IconDownload, IconCrossCircle, IconUpload } from 'hds-react'
+import PropTypes from 'prop-types'
 
 class File extends Component {
   constructor(props) {
@@ -69,7 +70,6 @@ class File extends Component {
     const {
       projectFileRemove,
       field: { name },
-      onBlur,
       t
     } = this.props
     const { current } = this.state
@@ -80,7 +80,6 @@ class File extends Component {
       this.inputRef.current.value = ''
       this.setState({ current: null })
       projectFileRemove(name)
-      onBlur()
     }
   }
 
@@ -110,7 +109,7 @@ class File extends Component {
   }
 
   onChangeFile = e => {
-    const { field, image, projectFileUpload, t } = this.props
+    const { field, image, projectFileUpload, t, insideFieldset } = this.props
     const file = this.inputRef.current.files[0]
     if (!file) {
       return
@@ -141,7 +140,8 @@ class File extends Component {
       file,
       description,
       callback: e => this.callback(e, onCompleted),
-      setCancelToken: token => (this.cancelToken = token)
+      setCancelToken: token => (this.cancelToken = token),
+      insideFieldset:insideFieldset
     })
     this.setState({ uploading: true, percentCompleted: 0 })
   }
@@ -252,6 +252,14 @@ class File extends Component {
       </div>
     )
   }
+}
+
+File.propTypes = {
+  field: PropTypes.object,
+  image: PropTypes.bool,
+  projectFileUpload: PropTypes.func,
+  t:PropTypes.func,
+  insideFieldset:PropTypes.bool
 }
 
 const mapDispatchToProps = {

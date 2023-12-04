@@ -33,6 +33,8 @@ import {
   CHANGE_PROJECT_PHASE,
   CHANGE_PROJECT_PHASE_SUCCESSFUL,
   CHANGE_PROJECT_PHASE_FAILURE,
+  PROJECT_FILE_UPLOAD,
+  PROJECT_FILE_REMOVE,
   PROJECT_FILE_UPLOAD_SUCCESSFUL,
   PROJECT_FILE_REMOVE_SUCCESSFUL,
   PROJECT_SET_CHECKING,
@@ -463,7 +465,9 @@ export const reducer = (state = initialState, action) => {
 
     case SAVE_PROJECT:
     case SAVE_PROJECT_BASE:
-    case SAVE_PROJECT_BASE_PAYLOAD: {
+    case SAVE_PROJECT_BASE_PAYLOAD:
+    case PROJECT_FILE_UPLOAD:
+    case PROJECT_FILE_REMOVE: {
       return {
         ...state,
         saving: true
@@ -532,7 +536,8 @@ export const reducer = (state = initialState, action) => {
         currentProject: {
           ...state.currentProject,
           attribute_data: { ...updatedAttributeData }
-        }
+        },
+        saving: false
       }
     }
 
@@ -545,7 +550,8 @@ export const reducer = (state = initialState, action) => {
         currentProject: {
           ...state.currentProject,
           attribute_data: updatedAttributeData
-        }
+        },
+        saving: false
       }
     }
 

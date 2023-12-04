@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { takeLatest, put, all, call, select } from 'redux-saga/effects'
-import { isEqual } from 'lodash'
+import { isEqual, isEmpty } from 'lodash'
 import { push } from 'connected-react-router'
 import {
   editFormSelector,
@@ -18,12 +18,10 @@ import {
   ownProjectsSelector,
   projectsSelector,
   amountOfProjectsToIncreaseSelector,
-  selectedPhaseSelector,
   onholdProjectsSelector,
   archivedProjectsSelector,
   savingSelector
 } from '../selectors/projectSelector'
-import { schemaSelector } from '../selectors/schemaSelector'
 import { userIdSelector } from '../selectors/authSelector'
 import { phasesSelector } from '../selectors/phaseSelector'
 import {
@@ -495,7 +493,7 @@ function* createProject() {
   }
 }
 
-const getChangedAttributeData = (values, initial, sections) => {
+const getChangedAttributeData = (values, initial) => {
   let attribute_data = {}
   let errorValues = false
   const wSpaceRegex = /^(\s+|\s+)$/g
@@ -515,30 +513,6 @@ const getChangedAttributeData = (values, initial, sections) => {
       attribute_data[key] = null
     } else {
       attribute_data[key] = values[key]
-    }
-    let fieldSetName
-    projectUtils.reduceNonEditableFields(attribute_data, sections)
-    if (sections) {
-      // When editing a field inside fieldset, the fieldset is not included by default.
-      // This workaround adds fieldset if field is inside fieldset.
-      sections.some(title => {
-        title.fields.some(fieldset => {
-          const fieldsetAttributes = fieldset.fieldset_attributes
-
-          fieldsetAttributes.forEach(value => {
-            if (value.name === key) {
-              fieldSetName = fieldset.name
-              attribute_data[fieldset.name] = fieldset.name
-            }
-          })
-          return null
-        })
-        return null
-      })
-    }
-    const initialFieldSetValues = initial[fieldSetName]
-    if (initialFieldSetValues) {
-      attribute_data = Object.assign({}, initialFieldSetValues[0], attribute_data)
     }
   })
   return errorValues ? false : attribute_data
@@ -728,17 +702,14 @@ function* lockProjectField(data) {
   }
 }
 
-function* saveProject(fileOrimgSave) {
+function* saveProject(data) {
+  const {fileOrimgSave,insideFieldset,fieldsetData,fieldsetPath} = data.payload
   const currentProjectId = yield select(currentProjectIdSelector)
   const editForm = yield select(editFormSelector) || {}
   const { initial, values } = editForm
 
   if (values) {
-    const selectedPhase = yield select(selectedPhaseSelector)
-    const schema = yield select(schemaSelector)
-    const currentSchema = schema.phases.find(s => s.id === selectedPhase)
-    const { sections } = currentSchema
-    const changedValues = getChangedAttributeData(values, initial, sections)
+    const changedValues = getChangedAttributeData(values, initial)
     const keys = Object.keys(changedValues)
     const dateVariable = new Date()
     const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
@@ -750,6 +721,12 @@ function* saveProject(fileOrimgSave) {
     }
 
     if (keys.length !== 0) {
+      if(fileOrimgSave && insideFieldset && fieldsetData && fieldsetPath){
+        //Data added for front when image inside fieldset is saved without other data
+        if(isEmpty(changedValues[fieldsetPath[0].parent][fieldsetPath[0].index])){
+          changedValues[fieldsetPath[0].parent][fieldsetPath[0].index] = fieldsetData
+        }
+      }
       const attribute_data = changedValues
       try {
         const updatedProject = yield call(
@@ -801,7 +778,7 @@ function* changeProjectPhase({ payload: phase }) {
 }
 
 function* projectFileUpload({
-  payload: { attribute, file, description, callback, setCancelToken }
+  payload: { attribute, file, description, callback, setCancelToken, insideFieldset }
 }) {
   try {
     const currentProjectId = yield select(currentProjectIdSelector)
@@ -861,8 +838,14 @@ function* projectFileUpload({
       }
     )
 
+    let fieldsetData = false
+    let fieldsetPath = false
+    if (fieldSetIndex && fieldSetIndex.length > 0) {
+      fieldsetData = {"_deleted": false,[res.attribute]:{"description":res.description,"link":res.file}}
+      fieldsetPath = res.fieldset_path
+    }
     yield put(projectFileUploadSuccessful(res))
-    yield put(saveProjectAction(true))
+    yield put(saveProjectAction(true,insideFieldset,fieldsetData,fieldsetPath))
     yield put(setLastSaved("success",time,[],[],false))
   } catch (e) {
     if (!axios.isCancel(e)) {
@@ -886,7 +869,7 @@ function* projectFileRemove({ payload }) {
       ':id/'
     )
     yield put(projectFileRemoveSuccessful(payload))
-    yield put(saveProjectAction(true))
+    yield put(saveProjectAction(true,false,false,false))
     yield put(setLastSaved("success",time,[],[],false))
   } catch (e) {
     yield put(error(e))

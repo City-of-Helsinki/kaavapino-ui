@@ -289,7 +289,7 @@ export const saveProjectTimetableSuccessful = success => ({
 
 export const resetTimetableSave = () => ({type: RESET_TIMETABLE_SAVE})
 
-export const saveProject = () => ({ type: SAVE_PROJECT })
+export const saveProject = (fileOrimgSave,insideFieldset,fieldsetData,fieldsetPath) => ({ type: SAVE_PROJECT,payload: {fileOrimgSave,insideFieldset,fieldsetData,fieldsetPath} })
 export const saveProjectSuccessful = () => ({ type: SAVE_PROJECT_SUCCESSFUL })
 
 export const validateProjectFields = formValues => ({
