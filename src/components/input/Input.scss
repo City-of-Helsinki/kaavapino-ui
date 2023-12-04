@@ -915,63 +915,82 @@
 }
 
 .custom-card{
-  padding: 0;
+  padding: $size16 $size20 $size8 $size16;
   margin: 0;
   gap: 0;
   padding-left: $size20;
   border:1px solid $border-gray3;
   background-color: $color-bus-light;
-  .heading{
+
+  .heading {
     font-family: 'Helsinki Grotesk Bold', sans-serif;
+    font-weight: 700;
     font-size: $size16;
-    color: $color-black-90;
-    padding-top: $size16;
     padding-bottom: $size28;
   }
-  .custom-card-container{
+
+  .custom-card-item-container {
+    display: flex;
+    column-gap: $size64;
+  }
+
+  .custom-card-container {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    .custom-card-info-container{
-      width: 100%;
-      .custom-card-info{
+    line-height: $size18;
+
+    .custom-card-info-container {
+      display: flex;
+      flex-direction: column;
+
+      .custom-card-info {
         font-family: 'Helsinki Grotesk Medium', sans-serif;
+        font-weight: 500;
         font-size: $size14;
-        color: $color-black-90;
-        padding-bottom: $size10;
+        padding-bottom: $size8;
       }
-      .custom-card-date{
-        font-family: 'Helsinki Grotesk Bold', sans-serif;
+
+      .custom-card-date {
         font-size: $size14;
-        color: $color-black-90;
-        .custom-card-mod{
-          font-family: 'Helsinki Grotesk Regular', sans-serif;
+
+        .date {
+          display: inline-flex;
+          font-family: 'Helsinki Grotesk Bold', sans-serif;
+          font-weight: 700;
+        }
+
+        .divider {
+          display: inline-flex;
+          padding: 0 $size8;
+        }
+
+        .status {
+          display: inline-flex;
           font-style: italic;
           font-size: $size14;
-          color: $color-black-90;
-          padding-left: $size8;
         }
       }
-      .custom-card-floor-info{
-        font-family: 'Helsinki Grotesk Regular', sans-serif;
+      .custom-card-floor-info {
         font-size: $size14;
-        line-height: $size14;
-        color: $color-black-90;
       }
     }
   }
-  button{
+
+  button {
     font-family: 'Helsinki Grotesk Medium', sans-serif;
     font-size: $size16;
     line-height: $size24;
     color: $color-bus;
-    padding-bottom: $size8;
-    padding-top: $size20;
-    div{
+    margin-top: $size20;
+    margin-left: -$size4;
+
+    div {
       margin-left:0 !important;
     }
   }
-  button:hover{
+
+  button:hover {
     --background-color-hover: $color-bus-light;
     text-decoration: underline;
     color: $color-bus;
