@@ -55,7 +55,7 @@ class File extends Component {
   componentDidMount() {
     const { src, image } = this.props
     pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js'
-    console.log(image)
+
     if (src && image) {
       this.imageRef.current.src = src
     }
@@ -149,7 +149,6 @@ class File extends Component {
   render() {
     const { current, uploading, percentCompleted } = this.state
     const { field, image, description, src, formValues, t } = this.props
-    console.log(this.props)
     const disabled = field.disabled
     if (!showField(field, formValues)) {
       return null
