@@ -600,7 +600,8 @@ class CustomField extends Component {
       defaultValue,
       className,
       handleSave,
-      handleBlurSave
+      handleBlurSave,
+      insideFieldset
     } = this.props
     const type = field.type
     if (type === 'file' || type === 'image') {
@@ -618,6 +619,7 @@ class CustomField extends Component {
           attributeData={attributeData}
           handleSave={handleSave}
           onBlur={handleBlurSave}
+          insideFieldset={insideFieldset}
         />
       )
     }

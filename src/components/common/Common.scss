@@ -444,7 +444,7 @@ header{
     justify-content: space-between;
     margin-left: 0 !important;
   }
-  div{
+  div:not(.spinner-container,.spinner-container *){
     cursor: default;
     background-color: $color-bus-light;
     color: $black;
@@ -484,6 +484,7 @@ header{
           font-size: $size16;
           padding-left: 10px;
         }
+      
       }
       p{
         font-family: "Helsinki Grotesk Medium", sans-serif;
