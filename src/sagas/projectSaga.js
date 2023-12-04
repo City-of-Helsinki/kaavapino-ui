@@ -18,12 +18,10 @@ import {
   ownProjectsSelector,
   projectsSelector,
   amountOfProjectsToIncreaseSelector,
-  selectedPhaseSelector,
   onholdProjectsSelector,
   archivedProjectsSelector,
   savingSelector
 } from '../selectors/projectSelector'
-import { schemaSelector } from '../selectors/schemaSelector'
 import { userIdSelector } from '../selectors/authSelector'
 import { phasesSelector } from '../selectors/phaseSelector'
 import {
@@ -711,11 +709,7 @@ function* saveProject(data) {
   const { initial, values } = editForm
 
   if (values) {
-    const selectedPhase = yield select(selectedPhaseSelector)
-    const schema = yield select(schemaSelector)
-    const currentSchema = schema.phases.find(s => s.id === selectedPhase)
-    const { sections } = currentSchema
-    const changedValues = getChangedAttributeData(values, initial, sections)
+    const changedValues = getChangedAttributeData(values, initial)
     const keys = Object.keys(changedValues)
     const dateVariable = new Date()
     const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
