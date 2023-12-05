@@ -36,11 +36,11 @@ function CustomCard({type, props, name, data, deadlines}) {
     fields = <>  
     <div className='custom-card-info-container'>
       <div className='custom-card-info'>{t('custom-card.when-starts')}</div>
-      <div className='custom-card-date'><span>{cardValues[0]}</span><span className='custom-card-mod'> {cardValues[2] ? "- "+t('custom-card.modified') : "- "+t('custom-card.evaluation')}</span></div>
+      <div className='custom-card-date'><span className='date'>{cardValues[0]}</span><span className='divider'>-</span><span className='status'> {cardValues[2] ? t('custom-card.modified') : t('custom-card.evaluation')}</span></div>
     </div>
     <div className='custom-card-info-container'>
       <div className='custom-card-info'>{t('custom-card.when-ends')}</div>
-      <div className='custom-card-date'><span>{cardValues[1]}</span><span className='custom-card-mod'> {cardValues[3] ? "- "+t('custom-card.modified') : "- "+t('custom-card.evaluation')}</span></div>
+      <div className='custom-card-date'><span className='date'>{cardValues[1]}</span><span className='divider'>-</span><span className='status'> {cardValues[3] ? t('custom-card.modified') : t('custom-card.evaluation')}</span></div>
     </div>
     </>
     editDataLink = <Button size='small' iconLeft={<IconPenLine />} onClick={() => dispatch(showTimetable(true))} variant="supplementary" theme="black" role="link">{buttonText}</Button>
@@ -74,7 +74,9 @@ function CustomCard({type, props, name, data, deadlines}) {
     <div className='custom-card' >
       <div className='heading'>{heading}</div>
       <div className='custom-card-container'>
-        {fields}
+        <div className='custom-card-item-container'>
+          {fields}
+        </div>
       </div>
       {editDataLink}
     </div>
