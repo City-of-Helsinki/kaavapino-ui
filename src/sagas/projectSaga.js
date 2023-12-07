@@ -20,7 +20,8 @@ import {
   amountOfProjectsToIncreaseSelector,
   onholdProjectsSelector,
   archivedProjectsSelector,
-  savingSelector
+  savingSelector,
+  formErrorListSelector
 } from '../selectors/projectSelector'
 import { userIdSelector } from '../selectors/authSelector'
 import { phasesSelector } from '../selectors/phaseSelector'
@@ -704,15 +705,23 @@ function* lockProjectField(data) {
 
 function* saveProject(data) {
   const {fileOrimgSave,insideFieldset,fieldsetData,fieldsetPath} = data.payload
+  
   const currentProjectId = yield select(currentProjectIdSelector)
   const editForm = yield select(editFormSelector) || {}
+  const visibleErrors = yield select(formErrorListSelector)
+
   const { initial, values } = editForm
 
+  const dateVariable = new Date()
+  const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+
   if (values) {
-    const changedValues = getChangedAttributeData(values, initial)
-    const keys = Object.keys(changedValues)
-    const dateVariable = new Date()
-    const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    let keys = {}
+    let changedValues = {}
+    if(visibleErrors.length === 0){
+      changedValues = getChangedAttributeData(values, initial)
+      keys = Object.keys(changedValues)
+    }
     //Get latest modified field and send it to components to prevent new modification for that field until saved. 
     //Prevents only user that was editing and saving. Richtext and custominput.
     const latestModifiedKey = localStorage.getItem("changedValues")?.split(",") ? localStorage.getItem("changedValues")?.split(",") : []
@@ -720,7 +729,7 @@ function* saveProject(data) {
       yield put(lastModified(latestModifiedKey[0]))
     }
 
-    if (keys.length !== 0) {
+    if (!isEmpty(keys)) {
       if(fileOrimgSave && insideFieldset && fieldsetData && fieldsetPath){
         //Data added for front when image inside fieldset is saved without other data
         if(isEmpty(changedValues[fieldsetPath[0].parent][fieldsetPath[0].index])){
@@ -754,7 +763,9 @@ function* saveProject(data) {
       yield put(setPoll(false))
     }
     else{
-      yield put(setLastSaved("field_error",time,[],[],false))
+      if(visibleErrors.length > 0){
+        yield put(setLastSaved("field_error",time,visibleErrors,[],false))
+      }
     }
   }
   yield put(saveProjectSuccessful())

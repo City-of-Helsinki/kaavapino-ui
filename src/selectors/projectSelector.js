@@ -249,3 +249,8 @@ export const updateFloorValuesSelector = createSelector(
   selectProject, 
   project => project?.updatedFloorValue
 )
+
+export const formErrorListSelector = createSelector(
+  selectProject, 
+  project => project?.formErrorList
+)

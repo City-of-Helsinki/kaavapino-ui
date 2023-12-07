@@ -3,12 +3,13 @@ import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { TextInput } from 'hds-react'
 import { useDispatch, useSelector } from 'react-redux'
-import {updateFloorValues} from '../../actions/projectActions'
+import {updateFloorValues,formErrorList} from '../../actions/projectActions'
 import {lockedSelector,lastModifiedSelector } from '../../selectors/projectSelector'
 import moment from 'moment'
 import { useTranslation } from 'react-i18next'
 import RollingInfo from '../input/RollingInfo'
 import {useFocus} from '../../hooks/useRefFocus'
+import { useIsMount } from '../../hooks/IsMounted'
 
 const CustomInput = ({ input, meta: { error }, ...custom }) => {
   const [readonly, setReadOnly] = useState({name:"",read:false})
@@ -18,6 +19,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   const lastModified = useSelector(state => lastModifiedSelector(state))
   const lockedStatus = useSelector(state => lockedSelector(state))
 
+  const isMount = useIsMount();
   const [inputRef, setInputFocus] = useFocus()
   const oldValueRef = useRef('');
   const { t } = useTranslation()
@@ -32,6 +34,17 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
 
     };
   }, [])
+
+  useEffect(() => {
+    if(!isMount){
+      if(hasError){
+        dispatch(formErrorList(true,custom.label))
+      }
+      else{
+        dispatch(formErrorList(false,custom.label))
+      }
+    }
+  }, [hasError])
 
   useEffect(() => {
     //Chekcs that locked status has more data then inital empty object
@@ -180,7 +193,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   }
 
   const setValue = (dbValue) => {
-    if(dbValue && oldValueRef.current !== dbValue){
+    if(dbValue && custom?.attributeData[input.name] !== dbValue){
       input.onChange(dbValue, input.name)
     }
   }

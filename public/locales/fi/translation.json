@@ -133,6 +133,7 @@
     "save-success-header":"Tallennus onnistui",
     "save-success-text":"Kaikki tiedot ovat tallennettu onnistuneesti. Voit jatkaa tietojen muokkaamista.",
     "field":"Kenttä",
+    "fields-multiple":"Kentät",
     "value":"Kentän sisältö",
     "copy-value":"Kopioi kentän sisältö",
     "fieldset":"Kenttäkokonaisuus",

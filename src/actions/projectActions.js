@@ -100,7 +100,12 @@ export const SHOW_TIMETABLE = "showTimetable"
 export const SHOW_FLOOR_AREA = "showFloorArea"
 export const LAST_MODIFIED = "lastModified"
 export const UPDATE_FLOOR_VALUES = "updateFloorValues"
+export const FORM_ERROR_LIST = "formErrorList"
 
+export const formErrorList = (addOrRemove,name) => ({
+  type: FORM_ERROR_LIST,
+  payload:{addOrRemove,name}
+})
 export const updateFloorValues = (updatedFloorValues) => ({
   type: UPDATE_FLOOR_VALUES,
   payload:updatedFloorValues

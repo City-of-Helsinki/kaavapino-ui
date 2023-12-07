@@ -13,12 +13,16 @@ import {
   deleteFieldComment,
   createFieldComment
 } from '../../actions/commentActions'
+import {
+  formErrorList
+} from '../../actions/projectActions'
 import { currentProjectIdSelector,savingSelector,lockedSelector, lastModifiedSelector } from '../../selectors/projectSelector'
 import { ReactComponent as CommentIcon } from '../../assets/icons/comment-icon.svg'
 import { useTranslation } from 'react-i18next'
-import projectUtils from '../../utils/projectUtils'
 import {IconAlertCircleFill} from 'hds-react'
 import RollingInfo from '../input/RollingInfo'
+import { useIsMount } from '../../hooks/IsMounted'
+import { isEqual } from 'lodash'
 
 /* This component defines a react-quill rich text editor field to be used in redux form.
  * We are saving these rich text inputs as quill deltas - a form of JSON that
@@ -78,10 +82,14 @@ function RichTextEditor(props) {
     isCurrentPhase,
     selectedPhase,
     isFloorAreaForm,
-    floorValue
+    floorValue,
+    label,
+    attributeData
   } = props
 
   const dispatch = useDispatch()
+
+  const isMount = useIsMount();
 
   const saving =  useSelector(state => savingSelector(state))
   const lastModified = useSelector(state => lastModifiedSelector(state))
@@ -174,6 +182,17 @@ function RichTextEditor(props) {
 
     removeTabBinding();
   }, [editorRef])
+
+  useEffect(() => {
+    if(!isMount){
+      if(charLimitOver || valueIsEmpty){
+        dispatch(formErrorList(true,label))
+      }
+      else{
+        dispatch(formErrorList(false,label))
+      }
+    }
+  }, [charLimitOver,valueIsEmpty])
 
   useEffect(() => {
     //Chekcs that locked status has more data then inital empty object
@@ -485,12 +504,11 @@ function RichTextEditor(props) {
 
   const setValue = (dbValue) => {
     if (editorRef?.current) {
-      const editor = editorRef?.current?.getEditor().getContents()
       /*TODO possible bug on adding some styles from editor to text. 
       The text could come as empty string and only show up on page refresh. Example add text and add color styles to it, 
       save and check from other browser tab that does it update the difference
       */
-      if(dbValue?.ops && !projectUtils.objectsEqual(editor?.ops[0], dbValue?.ops[0])){
+      if(dbValue?.ops && !isEqual(attributeData[inputProps.name]?.ops, dbValue?.ops)){
         //set editor value from db value updated with lock call
         const cursorPosition = editorRef.current.getEditor().getSelection()
         editorRef.current.getEditor().setContents(dbValue);

@@ -58,26 +58,28 @@ class CustomField extends Component {
 
   renderNumber = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, lockField, fieldSetDisabled, insideFieldset,
-      nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase } = this.props
+      nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, attributeData } = this.props
     return (
-    <CustomInput 
-      min={0} 
-      lockField={lockField} 
-      onBlur={handleBlurSave} 
-      onChange={props.onChange} 
-      onFocus={handleLockField} 
-      handleUnlockField={handleUnlockField} 
-      fieldSetDisabled={fieldSetDisabled} 
-      insideFieldset={insideFieldset} 
-      {...props} 
-      type="number"
-      nonEditable={nonEditable}
-      rollingInfo={rollingInfo}
-      modifyText={modifyText}
-      rollingInfoText={rollingInfoText}
-      isCurrentPhase={isCurrentPhase}
-      selectedPhase={selectedPhase}
-      regex={this.props?.field?.validation_regex}
+    <CustomInput
+        min={0} 
+        lockField={lockField} 
+        onBlur={handleBlurSave} 
+        onChange={props.onChange} 
+        onFocus={handleLockField} 
+        handleUnlockField={handleUnlockField} 
+        fieldSetDisabled={fieldSetDisabled} 
+        insideFieldset={insideFieldset} 
+        {...props} 
+        type="number"
+        nonEditable={nonEditable}
+        rollingInfo={rollingInfo}
+        modifyText={modifyText}
+        rollingInfoText={rollingInfoText}
+        isCurrentPhase={isCurrentPhase}
+        selectedPhase={selectedPhase}
+        regex={this.props?.field?.validation_regex}
+        label={this.props?.field?.label}
+        attributeData={attributeData}
       />
     )
   }
@@ -110,13 +112,14 @@ class CustomField extends Component {
         rollingInfoText={rollingInfoText}
         isCurrentPhase={isCurrentPhase}
         selectedPhase={selectedPhase}
+        label={this.props?.field?.label}
       />
     )
   }
 
   renderString = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, lockField, fieldSetDisabled, insideFieldset, 
-      nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase } = this.props
+      nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, attributeData } = this.props
     return( 
       <CustomInput 
         lockField={lockField} 
@@ -135,6 +138,8 @@ class CustomField extends Component {
         isCurrentPhase={isCurrentPhase}
         selectedPhase={selectedPhase}
         regex={this.props?.field?.validation_regex}
+        label={this.props?.field?.label}
+        attributeData={attributeData}
       />
     )
   }
@@ -146,7 +151,7 @@ class CustomField extends Component {
 
   renderRichText = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, meta, formName, lockField, unlockAllFields, fieldSetDisabled,
-      insideFieldset,nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase } = this.props
+      insideFieldset,nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, attributeData } = this.props
     return (
       <RichTextEditor
         lockField={lockField}
@@ -167,13 +172,15 @@ class CustomField extends Component {
         rollingInfoText={rollingInfoText}
         isCurrentPhase={isCurrentPhase}
         selectedPhase={selectedPhase}
+        label={this.props?.field?.label}
+        attributeData={attributeData}
       />
     )
   }
 
   renderRichTextShort = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, meta, setRef, lockField,unlockAllFields,fieldSetDisabled,
-      insideFieldset, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase } = this.props
+      insideFieldset, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, attributeData } = this.props
     return (
       <RichTextEditor 
         lockField={lockField} 
@@ -193,13 +200,16 @@ class CustomField extends Component {
         rollingInfoText={rollingInfoText}
         isCurrentPhase={isCurrentPhase}
         selectedPhase={selectedPhase}
+        label={this.props?.field?.label}
+        attributeData={attributeData}
       />
     )
   }
 
   renderDate = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, deadlines, field, lockField, fieldSetDisabled, 
-      insideFieldset, disabled, isProjectTimetableEdit, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase } = this.props
+      insideFieldset, disabled, isProjectTimetableEdit, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, 
+      attributeData } = this.props
 
     let current
     if (deadlines && deadlines.length > 0) {
@@ -238,6 +248,8 @@ class CustomField extends Component {
         isCurrentPhase={isCurrentPhase}
         selectedPhase={selectedPhase}
         regex={this.props?.field?.validation_regex}
+        label={this.props?.field?.label}
+        attributeData={attributeData}
       />
     )
   }
@@ -416,7 +428,7 @@ class CustomField extends Component {
 
   renderDecimal = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, lockField, fieldSetDisabled, insideFieldset,
-      nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase } = this.props
+      nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, attributeData } = this.props
     return (
       <CustomInput 
         type="number" 
@@ -436,6 +448,8 @@ class CustomField extends Component {
         isCurrentPhase={isCurrentPhase}
         selectedPhase={selectedPhase}
         regex={this.props?.field?.validation_regex}
+        label={this.props?.field?.label}
+        attributeData={attributeData}
       />
     )
   }
