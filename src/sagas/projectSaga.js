@@ -705,7 +705,7 @@ function* lockProjectField(data) {
 
 function* saveProject(data) {
   const {fileOrimgSave,insideFieldset,fieldsetData,fieldsetPath} = data.payload
-  
+
   const currentProjectId = yield select(currentProjectIdSelector)
   const editForm = yield select(editFormSelector) || {}
   const visibleErrors = yield select(formErrorListSelector)
@@ -762,10 +762,8 @@ function* saveProject(data) {
       yield put(setAllEditFields())
       yield put(setPoll(false))
     }
-    else{
-      if(visibleErrors.length > 0){
+    else if(visibleErrors.length > 0){
         yield put(setLastSaved("field_error",time,visibleErrors,[],false))
-      }
     }
   }
   yield put(saveProjectSuccessful())
