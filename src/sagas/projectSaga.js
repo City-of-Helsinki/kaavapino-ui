@@ -763,7 +763,7 @@ function* saveProject(data) {
       yield put(setPoll(false))
     }
     else if(visibleErrors.length > 0){
-        yield put(setLastSaved("field_error",time,visibleErrors,[],false))
+      yield put(setLastSaved("field_error",time,visibleErrors,[],false))
     }
   }
   yield put(saveProjectSuccessful())
