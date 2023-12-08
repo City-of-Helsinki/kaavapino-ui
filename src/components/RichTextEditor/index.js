@@ -185,10 +185,13 @@ function RichTextEditor(props) {
 
   useEffect(() => {
     if(!isMount){
+      //!ismount skips initial render
       if(charLimitOver || valueIsEmpty){
+        //Adds field to error list that don't trigger toastr right away (too many chars,empty field etc) and shows them when trying to save
         dispatch(formErrorList(true,label))
       }
       else{
+        //removes field from error list
         dispatch(formErrorList(false,label))
       }
     }
@@ -524,7 +527,7 @@ function RichTextEditor(props) {
       }
 
       if(dbValue?.ops && !isEqual(originalData, dbValue?.ops)){
-        //set editor value from db value updated with lock call if data has changed on db
+        //set editor value from db value updated with focus and lock call if data has changed on db
         const cursorPosition = editorRef.current.getEditor().getSelection()
         editorRef.current.getEditor().setContents(dbValue);
         editorRef.current.getEditor().setSelection(cursorPosition?.index);

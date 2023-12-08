@@ -37,10 +37,13 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
 
   useEffect(() => {
     if(!isMount){
+      //!ismount skips initial render
       if(hasError){
+        //Adds field to error list that don't trigger toastr right away (too many chars,empty field etc) and shows them when trying to save
         dispatch(formErrorList(true,custom.label))
       }
       else{
+        //removes field from error list
         dispatch(formErrorList(false,custom.label))
       }
     }
@@ -208,7 +211,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
         originalData = custom?.attributeData[fieldsetName][index][fieldName]
       }
     }
-
+    //set editor value from db value updated with focus and lock call if data has changed on db
     if(dbValue && originalData !== dbValue){
       input.onChange(dbValue, input.name)
     }

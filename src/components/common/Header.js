@@ -111,6 +111,7 @@ const Header = props => {
   useEffect(() => {
     let latestUpdate
     let newErrorField
+    //If true error is already shown to user so do not pop another toastr
     const found = errorFields.some(r=> lastSaved?.fields?.includes(r))
 
     if(lastSaved?.time && lastSaved?.status){
@@ -162,6 +163,7 @@ const Header = props => {
           const fieldErrorText = t('messages.field-error-prevent-save-text')
           const errorHeader = lastSaved?.status === "error" ? connectionOrLockErrorHeader : fieldErrorHeader
           const errorTexts = lastSaved?.status === "error" ? connectionOrLockErrorText : fieldErrorText
+          //Errors that do not trigger error toastr right away(empty, too many chars etc)
           const visibleErrorFields = lastSaved?.fields ? lastSaved.fields : []
           const errorContent = lastSaved?.status === "error" && !lastSaved.lock ?
           <> 
@@ -289,18 +291,21 @@ const Header = props => {
 
   const scrollToAnchor = (type,anchor) => {
     const anchorElement = type === "id" ? document.getElementById(anchor) : document.querySelectorAll(anchor)[0]
-    //Set offset so field is not hidden under sticky filter menu
+
     if(anchorElement){
       const isFieldSet = anchorElement.closest(".fieldset-container");
       let highlighContainer 
       if(isFieldSet){
+        //Focus to fieldset main container
         isFieldSet.scrollIntoView({ block: "start" });
         highlighContainer = isFieldSet.closest(".input-container")
       }
       else{
+        //Focus to normal field
         anchorElement.scrollIntoView({ block: "start" });
         highlighContainer = anchorElement.closest(".input-container")
       }
+      //Set offset so field is not hidden under sticky filter menu
       window.scrollBy(0, -200);
       highlighContainer.classList.add("highligh-error");
       setTimeout(() => {
