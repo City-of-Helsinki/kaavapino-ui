@@ -64,7 +64,7 @@ const Header = props => {
       }
     }
     props.pollConnection()
-  }, lastSaved?.status === "error" && !lastSaved?.lock ? 1000 * count * 10 : 0);
+  }, lastSaved?.status === "error" || lastSaved?.status === "field_error" && !lastSaved?.lock ? 1000 * count * 10 : 0);
 
   const getFieldSetValues = (object) => {
     const arrayValues = []

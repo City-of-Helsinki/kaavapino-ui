@@ -193,7 +193,23 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   }
 
   const setValue = (dbValue) => {
-    if(dbValue && custom?.attributeData[input.name] !== dbValue){
+
+    let name = input.name;
+    let originalData = custom?.attributeData[name]
+    if(custom.insideFieldset && !custom.nonEditable || !custom.rollingInfo){
+      let fieldsetName
+      let fieldName
+      let index
+      //Get fieldset name, index and field of fieldset
+      fieldsetName = name.split('[')[0]
+      index = name.split('[').pop().split(']')[0];
+      fieldName = name.split('.')[1]
+      if(custom?.attributeData[fieldsetName] && custom?.attributeData[fieldsetName][index] && custom?.attributeData[fieldsetName][index][fieldName]){
+        originalData = custom?.attributeData[fieldsetName][index][fieldName]
+      }
+    }
+
+    if(dbValue && originalData !== dbValue){
       input.onChange(dbValue, input.name)
     }
   }

@@ -508,8 +508,23 @@ function RichTextEditor(props) {
       The text could come as empty string and only show up on page refresh. Example add text and add color styles to it, 
       save and check from other browser tab that does it update the difference
       */
-      if(dbValue?.ops && !isEqual(attributeData[inputProps.name]?.ops, dbValue?.ops)){
-        //set editor value from db value updated with lock call
+      let name = inputProps.name;
+      let originalData = attributeData[name]?.ops
+      if(insideFieldset && !nonEditable || !rollingInfo){
+        let fieldsetName
+        let fieldName
+        let index
+        //Get fieldset name, index and field of fieldset
+        fieldsetName = name.split('[')[0]
+        index = name.split('[').pop().split(']')[0];
+        fieldName = name.split('.')[1]
+        if(attributeData[fieldsetName] && attributeData[fieldsetName][index] && attributeData[fieldsetName][index][fieldName]?.ops){
+          originalData = attributeData[fieldsetName][index][fieldName]?.ops
+        }
+      }
+
+      if(dbValue?.ops && !isEqual(originalData, dbValue?.ops)){
+        //set editor value from db value updated with lock call if data has changed on db
         const cursorPosition = editorRef.current.getEditor().getSelection()
         editorRef.current.getEditor().setContents(dbValue);
         editorRef.current.getEditor().setSelection(cursorPosition?.index);

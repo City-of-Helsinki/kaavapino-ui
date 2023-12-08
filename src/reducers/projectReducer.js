@@ -133,7 +133,7 @@ export const reducer = (state = initialState, action) => {
 
     case FORM_ERROR_LIST: {
       let visibleErrors = state.formErrorList
-      if(action.payload.addOrRemove && action.payload.name){
+      if(action.payload.addOrRemove && action.payload.name && !visibleErrors.includes(action.payload.name)){
         visibleErrors.push(action.payload.name)
       }
       else if(!action.payload.addOrRemove && action.payload.name){
