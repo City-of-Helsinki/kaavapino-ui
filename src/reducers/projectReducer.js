@@ -77,7 +77,8 @@ import {
   RESET_PROJECT_DEADLINES_SUCCESSFUL,
   SHOW_TIMETABLE,
   SHOW_FLOOR_AREA,
-  UPDATE_FLOOR_VALUES
+  UPDATE_FLOOR_VALUES,
+  FORM_ERROR_LIST
 } from '../actions/projectActions'
 
 export const initialState = {
@@ -122,13 +123,27 @@ export const initialState = {
   showEditFloorAreaForm:false,
   showEditProjectTimetableForm:false,
   lastModified:false,
-  updatedFloorValue:{}
+  updatedFloorValue:{},
+  formErrorList:[]
 }
 
 export const reducer = (state = initialState, action) => {
 
   switch (action.type) {
 
+    case FORM_ERROR_LIST: {
+      let visibleErrors = state.formErrorList
+      if(action.payload.addOrRemove && action.payload.name && !visibleErrors.includes(action.payload.name)){
+        visibleErrors.push(action.payload.name)
+      }
+      else if(!action.payload.addOrRemove && action.payload.name){
+        visibleErrors = visibleErrors.filter(n => n !== action.payload.name);
+      }
+      return{
+        ...state,
+        formErrorList:visibleErrors,
+      }
+    }
     case UPDATE_FLOOR_VALUES: {
       return{
         ...state,

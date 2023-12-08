@@ -3,12 +3,13 @@ import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { TextInput } from 'hds-react'
 import { useDispatch, useSelector } from 'react-redux'
-import {updateFloorValues} from '../../actions/projectActions'
+import {updateFloorValues,formErrorList} from '../../actions/projectActions'
 import {lockedSelector,lastModifiedSelector } from '../../selectors/projectSelector'
 import moment from 'moment'
 import { useTranslation } from 'react-i18next'
 import RollingInfo from '../input/RollingInfo'
 import {useFocus} from '../../hooks/useRefFocus'
+import { useIsMount } from '../../hooks/IsMounted'
 
 const CustomInput = ({ input, meta: { error }, ...custom }) => {
   const [readonly, setReadOnly] = useState({name:"",read:false})
@@ -18,6 +19,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   const lastModified = useSelector(state => lastModifiedSelector(state))
   const lockedStatus = useSelector(state => lockedSelector(state))
 
+  const isMount = useIsMount();
   const [inputRef, setInputFocus] = useFocus()
   const oldValueRef = useRef('');
   const { t } = useTranslation()
@@ -32,6 +34,20 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
 
     };
   }, [])
+
+  useEffect(() => {
+    if(!isMount){
+      //!ismount skips initial render
+      if(hasError){
+        //Adds field to error list that don't trigger toastr right away (too many chars,empty field etc) and shows them when trying to save
+        dispatch(formErrorList(true,custom.label))
+      }
+      else{
+        //removes field from error list
+        dispatch(formErrorList(false,custom.label))
+      }
+    }
+  }, [hasError])
 
   useEffect(() => {
     //Chekcs that locked status has more data then inital empty object
@@ -180,7 +196,23 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   }
 
   const setValue = (dbValue) => {
-    if(dbValue && oldValueRef.current !== dbValue){
+
+    let name = input.name;
+    let originalData = custom?.attributeData[name]
+    if(custom.insideFieldset && !custom.nonEditable || !custom.rollingInfo){
+      let fieldsetName
+      let fieldName
+      let index
+      //Get fieldset name, index and field of fieldset
+      fieldsetName = name.split('[')[0]
+      index = name.split('[').pop().split(']')[0];
+      fieldName = name.split('.')[1]
+      if(custom?.attributeData[fieldsetName] && custom?.attributeData[fieldsetName][index] && custom?.attributeData[fieldsetName][index][fieldName]){
+        originalData = custom?.attributeData[fieldsetName][index][fieldName]
+      }
+    }
+    //set editor value from db value updated with focus and lock call if data has changed on db
+    if(dbValue && originalData !== dbValue){
       input.onChange(dbValue, input.name)
     }
   }

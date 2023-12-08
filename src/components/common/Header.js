@@ -64,7 +64,7 @@ const Header = props => {
       }
     }
     props.pollConnection()
-  }, lastSaved?.status === "error" && !lastSaved?.lock ? 1000 * count * 10 : 0);
+  }, lastSaved?.status === "error" || lastSaved?.status === "field_error" && !lastSaved?.lock ? 1000 * count * 10 : 0);
 
   const getFieldSetValues = (object) => {
     const arrayValues = []
@@ -111,6 +111,9 @@ const Header = props => {
   useEffect(() => {
     let latestUpdate
     let newErrorField
+    //If true error is already shown to user so do not pop another toastr
+    const found = errorFields.some(r=> lastSaved?.fields?.includes(r))
+
     if(lastSaved?.time && lastSaved?.status){
         latestUpdate = {status:t('header.edit-menu-saved'),time:lastSaved.time}
         let elements = ""
@@ -160,6 +163,8 @@ const Header = props => {
           const fieldErrorText = t('messages.field-error-prevent-save-text')
           const errorHeader = lastSaved?.status === "error" ? connectionOrLockErrorHeader : fieldErrorHeader
           const errorTexts = lastSaved?.status === "error" ? connectionOrLockErrorText : fieldErrorText
+          //Errors that do not trigger error toastr right away(empty, too many chars etc)
+          const visibleErrorFields = lastSaved?.fields ? lastSaved.fields : []
           const errorContent = lastSaved?.status === "error" && !lastSaved.lock ?
           <> 
             <p className='font-bold'>{t('messages.value')}:</p> 
@@ -177,6 +182,7 @@ const Header = props => {
             </div>
             <div className='middle-container'>
               {errorTexts}
+
               <div className='error-fields-container'>
                 <div className='error-field'>
                 {lastSaved?.status === "error" ?
@@ -185,7 +191,16 @@ const Header = props => {
                     <a className='link-underlined' type="button" onKeyDown={(event) => {if (event.key == 'Enter' || event.key === "Space"){scrollToAnchor("id",newErrorField)}}} onClick={() => scrollToAnchor("id",newErrorField)}>{newErrorField}</a>
                   </>
                   :
+                  <>
+                  <div className='visible-errors'>
+                    <p className='font-bold'>{t('messages.fields-multiple')}:</p>
+                    {visibleErrorFields.map((item,i) => (
+                      <p key={item[i]} className='font-bold'>{item}</p>
+                      ))
+                    }
+                  </div>
                   <a className='link-underlined' type="button" onKeyDown={(event) => {if (event.key == 'Enter' || event.key === "Space"){scrollToAnchor("class",".max-chars-error,.Virhe,.error-text")}}} onClick={() => scrollToAnchor("class",".max-chars-error,.Virhe,.error-text")}>{t('messages.show-errors')}</a>
+                  </>
                 }
                 </div>
                 <div className='error-value'>
@@ -220,24 +235,26 @@ const Header = props => {
           latestUpdate = {status:t('header.edit-menu-save-fail'),time:lastSaved.time}
           let errors = errorCount
           // show new toastr error
-          toast.error(elements, {
-            toastId:errorCount,
-            className: "saveFailToastr",
-            position: "top-right",
-            autoClose: false,
-            hideProgressBar: false,
-            closeOnClick: false,
-            pauseOnHover: false,
-            draggable: false,
-            progress: undefined,
-            theme: "light",
-            closeButton: <Button className='close-button' size="small" variant='supplementary' onClick={() => dismiss(errorCount)}><IconCross size="s" /></Button>
-          });
+          if(!found){
+            toast.error(elements, {
+              toastId:errorCount,
+              className: "saveFailToastr",
+              position: "top-right",
+              autoClose: false,
+              hideProgressBar: false,
+              closeOnClick: false,
+              pauseOnHover: false,
+              draggable: false,
+              progress: undefined,
+              theme: "light",
+              closeButton: <Button className='close-button' size="small" variant='supplementary' onClick={() => dismiss(errorCount)}><IconCross size="s" /></Button>
+            });
+            //Add error toast count, used as an toastid needed to close correct toast
+            setErrorCount(errors + 1)
+          }
           setErrorFields(lastSaved?.fields)
           setErrorValues(lastSaved?.values)
           setLatestErrorField(newErrorField)
-          //Add error toast count, used as an toastid needed to close correct toast
-          setErrorCount(errors + 1)
         }
         else if(lastSaved?.status === "success" && connection.connection){
           //set polling time to default
@@ -274,11 +291,22 @@ const Header = props => {
 
   const scrollToAnchor = (type,anchor) => {
     const anchorElement = type === "id" ? document.getElementById(anchor) : document.querySelectorAll(anchor)[0]
-    //Set offset so field is not hidden under sticky filter menu
+
     if(anchorElement){
-      anchorElement.scrollIntoView({ block: "start" });
+      const isFieldSet = anchorElement.closest(".fieldset-container");
+      let highlighContainer 
+      if(isFieldSet){
+        //Focus to fieldset main container
+        isFieldSet.scrollIntoView({ block: "start" });
+        highlighContainer = isFieldSet.closest(".input-container")
+      }
+      else{
+        //Focus to normal field
+        anchorElement.scrollIntoView({ block: "start" });
+        highlighContainer = anchorElement.closest(".input-container")
+      }
+      //Set offset so field is not hidden under sticky filter menu
       window.scrollBy(0, -200);
-      let highlighContainer = anchorElement.closest(".input-container")
       highlighContainer.classList.add("highligh-error");
       setTimeout(() => {
         highlighContainer.classList.remove("highligh-error");
