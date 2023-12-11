@@ -554,8 +554,8 @@ function RichTextEditor(props) {
         }
       }
     }
-    //Default maxsize 1000
-    const maxSize = props.maxSize ? props.maxSize : 1000;
+    //Default maxsize 10000
+    const maxSize = props.maxSize ? props.maxSize : 10000;
     //Render rolling info field or normal edit field
     //If clicking rolling field button makes positive lock check then show normal editable field
     //Rolling field can be nonEditable
