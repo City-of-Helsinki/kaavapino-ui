@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { connect, useDispatch } from 'react-redux'
-import { checkingSelector, savingSelector } from '../../selectors/projectSelector'
+import { checkingSelector, savingSelector, formErrorListSelector } from '../../selectors/projectSelector'
 import CustomField from './CustomField'
 import { Form, Label, Popup } from 'semantic-ui-react'
 import projectUtils from '../../utils/projectUtils'
@@ -36,9 +36,10 @@ const FieldSet = ({
   lockStatus,
   unlockAllFields,
   rollingInfo,
-  saving
+  saving,
+  visibleErrors
 }) => {
-
+  console.log(visibleErrors)
   const handleBlur = () => {
     onBlur()
   }
@@ -283,7 +284,7 @@ const FieldSet = ({
           handleBlur()
           handleOutsideClick()
         }}
-        disabled={disabled || saving}
+        disabled={disabled || saving || visibleErrors.length > 0}
         variant="supplementary"
         size='small'
         iconLeft={<IconPlus/>}
@@ -298,7 +299,8 @@ const FieldSet = ({
 
 const mapStateToProps = state => ({
   checking: checkingSelector(state),
-  saving: savingSelector(state)
+  saving: savingSelector(state),
+  visibleErrors:formErrorListSelector(state)
 })
 
 FieldSet.propTypes = {
