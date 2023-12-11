@@ -56,7 +56,9 @@
     "semantic-ui-react": "2.1.4"
   },
   "resolutions": {
-    "crypto-js": "4.2.0"
+    "crypto-js": "4.2.0",
+    "nth-check": "2.1.1",
+    "postcss": "8.4.32"
   },
   "scripts": {
     "build-css": "sass -I ./src -I ./node_modules src/:src/",
