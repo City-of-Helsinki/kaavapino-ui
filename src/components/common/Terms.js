@@ -100,7 +100,7 @@ class Terms extends Component {
           </p>
           <p>
             Sovellus on julkaistu avoimella lähdekoodilla ja se perustuu avoimiin
-            rajapintoihin. 
+            rajapintoihin.
           </p>
           <p>
             <strong>Hyväksy käyttöehdot</strong>
