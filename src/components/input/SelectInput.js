@@ -2,11 +2,10 @@ import React, { useRef, useEffect, useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { Select } from 'hds-react'
-import { isArray } from 'lodash'
+import { isArray, isEqual, uniq, uniqBy } from 'lodash'
 import { useSelector } from 'react-redux'
 import {lockedSelector } from '../../selectors/projectSelector'
 import RollingInfo from '../input/RollingInfo'
-import { isEqual, uniq, uniqBy } from 'lodash'
 
 // Label when there are more than one same option. To avoid key errors.
 const MORE_LABEL = ' (2)'
