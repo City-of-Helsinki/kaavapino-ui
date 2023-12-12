@@ -39,7 +39,6 @@ const FieldSet = ({
   saving,
   visibleErrors
 }) => {
-  console.log(visibleErrors)
   const handleBlur = () => {
     onBlur()
   }
