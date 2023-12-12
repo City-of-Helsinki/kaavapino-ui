@@ -510,9 +510,13 @@ const getChangedAttributeData = (values, initial) => {
       delete attribute_data[key]
       errorValues = true
     }
-    else if(values[key] === null || values[key]?.length === 0) {
+    else if(values[key] === null) {
       attribute_data[key] = null
-    } else {
+    }
+    else if(values[key]?.length === 0) {
+      attribute_data[key] = []
+    }
+    else {
       attribute_data[key] = values[key]
     }
   })

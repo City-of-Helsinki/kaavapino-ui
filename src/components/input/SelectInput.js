@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { Select } from 'hds-react'
-import { isArray } from 'lodash'
+import { isArray, isEqual, uniq, uniqBy } from 'lodash'
 import { useSelector } from 'react-redux'
 import {lockedSelector } from '../../selectors/projectSelector'
 import RollingInfo from '../input/RollingInfo'
@@ -32,6 +32,7 @@ const SelectInput = ({
   const oldValueRef = useRef('');
   const [selectValues, setSelectValues] = useState('')
   const lockedStatus = useSelector(state => lockedSelector(state))
+  const lockedStatusJsonString = JSON.stringify(lockedStatus);
   const [readonly, setReadOnly] = useState(false)
   const [fieldName, setFieldName] = useState("")
   const [editField,setEditField] = useState(false)
@@ -108,7 +109,7 @@ const SelectInput = ({
         }
       }
     }
-  }, [lockedStatus]);
+  }, [lockedStatusJsonString]);
 
   useEffect(() => {
     oldValueRef.current = input.value;
@@ -130,12 +131,14 @@ const SelectInput = ({
 
   if(!readonly){
     if (multiple) {
-      if (isArray(input && input.value)) {
-        input.value.forEach(value =>
-          currentValue.push({ parameter:undefined, key:value.toString(), label: getLabel(value), value: value })
+      if (isArray(input?.value)) {
+        const val = uniq(input.value);
+        val.forEach(value =>
+          currentValue.push({ key:value.toString(), label: getLabel(value), value: value })
         )
       } else {
-        currentValue.push(input.value)
+        const val = uniq(input.value);
+        currentValue.push(val)
       }
     } else {
       const current = options && options.find(option => option.value === input.value)
@@ -215,7 +218,7 @@ const SelectInput = ({
   }
 
   const setSelectValue = (dbValue) => {
-    if(oldValueRef.current !== dbValue){
+    if(!isEqual(oldValueRef.current,dbValue)){
       input.onChange(dbValue, input.name)
     }
   }
@@ -298,8 +301,9 @@ const SelectInput = ({
           defaultValue={currentValue}
           onChange={data => {
             if(!notSelectable){
-              let returnValue = data && data.map(currentValue => currentValue.value)
-              setSelectValues(data)
+              let uniqData = uniqBy(data, 'key');
+              let returnValue = uniqData && uniqData.map(currentValue => currentValue.value)
+              setSelectValues(uniqData)
               handleInputChange(returnValue)
             }
           }}
