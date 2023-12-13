@@ -94,7 +94,8 @@ CustomCard.propTypes = {
   data: PropTypes.object,
   deadlines: PropTypes.object,
   placeholder: PropTypes.string,
-  input: PropTypes.object
+  input: PropTypes.object,
+  fieldData: PropTypes.object
 }
 
 export default CustomCard
