@@ -6,6 +6,7 @@ import {showFloorArea, showTimetable} from '../../actions/projectActions'
 import {attributeDataSelector,deadlinesSelector} from '../../selectors/projectSelector'
 import { useTranslation } from 'react-i18next'
 import infoFieldUtil from '../../utils/infoFieldUtil'
+import moment from 'moment'
 
 function CustomCard({type, props, name, data, deadlines}) {
   const [cardValues, setCardValues] = useState(["","","","",true,0,0,0,0]);
@@ -29,18 +30,19 @@ function CustomCard({type, props, name, data, deadlines}) {
   let fields
   let editDataLink
   const unit = "k-m²"
-
   if(type === "Tarkasta esilläolopäivät"){
+    let startsText = props?.fieldData?.fieldset_attributes[0]?.label || ""
+    let endsText = props?.fieldData?.fieldset_attributes[1]?.label || ""
     buttonText = t('custom-card.modify-date')
     heading = t('custom-card.check-date')
     fields = <>  
     <div className='custom-card-info-container'>
-      <div className='custom-card-info'>{t('custom-card.when-starts')}</div>
-      <div className='custom-card-date'><span className='date'>{cardValues[0]}</span><span className='divider'>-</span><span className='status'> {cardValues[2] ? t('custom-card.modified') : t('custom-card.evaluation')}</span></div>
+      <div className='custom-card-info'>{startsText}</div>
+      <div className='custom-card-date'><span className='date'>{moment(cardValues[0]).format('DD.MM.YYYY')}</span><span className='divider'>-</span><span className='status'> {cardValues[2] ? t('custom-card.modified') : t('custom-card.evaluation')}</span></div>
     </div>
     <div className='custom-card-info-container'>
-      <div className='custom-card-info'>{t('custom-card.when-ends')}</div>
-      <div className='custom-card-date'><span className='date'>{cardValues[1]}</span><span className='divider'>-</span><span className='status'> {cardValues[3] ? t('custom-card.modified') : t('custom-card.evaluation')}</span></div>
+      <div className='custom-card-info'>{endsText}</div>
+      <div className='custom-card-date'><span className='date'>{moment(cardValues[1]).format('DD.MM.YYYY')}</span><span className='divider'>-</span><span className='status'> {cardValues[3] ? t('custom-card.modified') : t('custom-card.evaluation')}</span></div>
     </div>
     </>
     editDataLink = <Button size='small' iconLeft={<IconPenLine />} onClick={() => dispatch(showTimetable(true))} variant="supplementary" theme="black" role="link">{buttonText}</Button>
