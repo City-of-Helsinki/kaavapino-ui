@@ -6,13 +6,13 @@ import projectUtils from '../../utils/projectUtils'
 import PropTypes from 'prop-types'
 
 function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField,isCurrentPhase,selectedPhase}) {
-  let inputText = value 
-  if(name === "vastuuhenkilo_nimi_readonly" && value){
-    const users = useSelector(state => usersSelector(state))
-    if(users){
-      const user = projectUtils.formatUsersName(users.find(u => u.id === value))
-      inputText = user
-    }
+
+  const users = useSelector(state => usersSelector(state))
+  let inputText = value
+  
+  if(name === "vastuuhenkilo_nimi_readonly" && value && users){
+    const user = projectUtils.formatUsersName(users.find(u => u.id === value))
+    inputText = user
   } 
   //Starting page code for different sized projects(xs-xl)
   const firstPhase = selectedPhase === 1 || selectedPhase === 7 || selectedPhase === 13 || selectedPhase === 19 || selectedPhase === 25
