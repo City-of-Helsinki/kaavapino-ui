@@ -220,7 +220,7 @@ class ProjectEditPage extends Component {
     if(this.props.syncErrors && !_.isEmpty(this.props.syncErrors)) {
       const dateVariable = new Date()
       const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      this.props.setLastSaved("field_error",time,[],[])
+      this.props.setLastSaved("field_error",time,[],[],false)
       return
     }
     this.props.saveProject()

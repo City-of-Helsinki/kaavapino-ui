@@ -16,7 +16,7 @@ import {
 import {
   formErrorList
 } from '../../actions/projectActions'
-import { currentProjectIdSelector,savingSelector,lockedSelector, lastModifiedSelector } from '../../selectors/projectSelector'
+import { currentProjectIdSelector,savingSelector,lockedSelector, lastModifiedSelector, pollSelector } from '../../selectors/projectSelector'
 import { ReactComponent as CommentIcon } from '../../assets/icons/comment-icon.svg'
 import { useTranslation } from 'react-i18next'
 import {IconAlertCircleFill} from 'hds-react'
@@ -97,13 +97,13 @@ function RichTextEditor(props) {
   const fieldComments = useSelector(fieldCommentsSelector)
   const userId = useSelector(userIdSelector)
   const projectId = useSelector(currentProjectIdSelector)
+  const connection = useSelector(state => pollSelector(state))
 
   const [showComments, setShowComments] = useState(false)
   const [toolbarVisible, setToolbarVisible] = useState(false)
   const [currentTimeout, setCurrentTimeout] = useState(0)
   const [readonly, setReadOnly] = useState(false)
   const [valueIsSet, setValueIsSet] = useState(false)
-  const [currentEditor,setCurrentEditor] = useState("")
   const [valueIsEmpty,setValueIsEmpty] = useState(false)
   const [charLimitOver,setCharLimitOver] = useState(false)
   const [editField,setEditField] = useState(false)
@@ -175,9 +175,9 @@ function RichTextEditor(props) {
       if (editorRef.current === "") {
         return;
       }
-      const keyboard = editorRef.current.getEditor().getModule('keyboard');
+      const keyboard = editorRef?.current?.getEditor()?.getModule('keyboard');
       // 'hotkeys' have been renamed to 'bindings'
-      delete keyboard.bindings[9];
+      delete keyboard?.bindings[9];
     };
 
     removeTabBinding();
@@ -290,7 +290,7 @@ function RichTextEditor(props) {
         }
       }
     }
-  }, [lockedStatusJsonString]);
+  }, [lockedStatusJsonString, connection.connection]);
 
   const checkClickedElement = (e) => {
     let previousElement = localStorage.getItem("previousElement")
@@ -387,7 +387,6 @@ function RichTextEditor(props) {
     let length = editorRef.current.getEditor().getLength();
     counter.current = length -1;
     showCounter.current = true;
-    setCurrentEditor(inputProps.name)
   }
 
   const handleBlur = (readonly) => {
@@ -416,29 +415,24 @@ function RichTextEditor(props) {
       editor = editorRef?.current?.getEditor().getContents()
       editorEmpty = editorRef?.current?.getEditor().getText().trim().length === 0 ? true : false
     }
-    let richtextValue
-    if(lockedStatus.lockData?.attribute_lock?.field_data && Object.keys(lockedStatus.lockData?.attribute_lock?.field_data).length > 0){
-      //fieldset richtext
-      const fieldSetIdentifier = currentEditor.split('.').pop()
-      const fieldData = lockedStatus.lockData?.attribute_lock?.field_data
-      for (const [key, value] of Object.entries(fieldData)) {
-        if(key === fieldSetIdentifier){
-          richtextValue = value.ops[0]
-          break
-        }
-      }
-    }
-    else{
-      richtextValue = lockedStatus.lockData?.attribute_lock?.field_data?.ops[0]
-    }
 
-    if(currentEditor === inputProps.name && typeof inputValue.current === "undefined" && typeof oldValueRef.current === "undefined"
-    && JSON.stringify(richtextValue) !== JSON.stringify(editor?.ops[0])){
-      inputValue.current = editor?.ops[0]
+    let name = inputProps.name;
+    let originalData = attributeData[name]?.ops
+    if(insideFieldset && !nonEditable || !rollingInfo){
+      let fieldsetName
+      let fieldName
+      let index
+      //Get fieldset name, index and field of fieldset
+      fieldsetName = name.split('[')[0]
+      index = name.split('[').pop().split(']')[0];
+      fieldName = name.split('.')[1]
+      if(attributeData[fieldsetName] && attributeData[fieldsetName][index] && attributeData[fieldsetName][index][fieldName]?.ops){
+        originalData = attributeData[fieldsetName][index][fieldName]?.ops
+      }
     }
 
     //Prevent saving if data has not changed or is empty
-    if (!editorEmpty && inputValue.current !== oldValueRef.current) {
+    if (!editorEmpty && !isEqual(originalData, editor?.ops)) {
       //prevent saving if locked
       if (!readonly) {
         //Sent call to save changes if it is modified by user and not updated by lock call
@@ -446,9 +440,8 @@ function RichTextEditor(props) {
           if (typeof onBlur === 'function') {
             localStorage.setItem("changedValues", inputProps.name);
             onBlur();
-            oldValueRef.current = inputValue.current;
+            oldValueRef.current = editor?.ops;
             setReadOnly(true)
-            setCurrentEditor("")
           }
         }
       }
@@ -525,9 +518,9 @@ function RichTextEditor(props) {
           originalData = attributeData[fieldsetName][index][fieldName]?.ops
         }
       }
-
-      if(dbValue?.ops && !isEqual(originalData, dbValue?.ops)){
-        //set editor value from db value updated with focus and lock call if data has changed on db
+      //set editor value from db value updated with focus and lock call if data has changed on db
+      // or set it when recovering from no connection to backend
+      if(dbValue?.ops && !isEqual(originalData, dbValue?.ops) || connection.connection){
         const cursorPosition = editorRef.current.getEditor().getSelection()
         editorRef.current.getEditor().setContents(dbValue);
         editorRef.current.getEditor().setSelection(cursorPosition?.index);
