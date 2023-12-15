@@ -4,7 +4,7 @@ import inputUtils from '../../utils/inputUtils'
 import { TextInput } from 'hds-react'
 import { useDispatch, useSelector } from 'react-redux'
 import {updateFloorValues,formErrorList} from '../../actions/projectActions'
-import {lockedSelector,lastModifiedSelector } from '../../selectors/projectSelector'
+import {lockedSelector,lastModifiedSelector,pollSelector } from '../../selectors/projectSelector'
 import moment from 'moment'
 import { useTranslation } from 'react-i18next'
 import RollingInfo from '../input/RollingInfo'
@@ -18,6 +18,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
 
   const lastModified = useSelector(state => lastModifiedSelector(state))
   const lockedStatus = useSelector(state => lockedSelector(state))
+  const connection = useSelector(state => pollSelector(state))
 
   const isMount = useIsMount();
   const [inputRef, setInputFocus] = useFocus()
@@ -125,7 +126,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
         }
       }
     }
-  }, [lockedStatus]);
+  }, [lockedStatus,connection]);
 
   const handleFocus = () => {
     if (typeof custom.onFocus === 'function' && !lockedStatus?.saving && !custom.insideFieldset) {
@@ -156,8 +157,8 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       //Sent a call to unlock field to backend
       custom.handleUnlockField(input.name)
     }
-
-    if (event.target.value !== oldValueRef.current) {
+    const originalData = custom?.attributeData[input.name]
+    if (event.target.value !== originalData) {
       //prevent saving if locked
       if (!readonly) {
         //Sent call to save changes
@@ -212,13 +213,14 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       }
     }
     //set editor value from db value updated with focus and lock call if data has changed on db
-    if(dbValue && originalData !== dbValue){
+    if(dbValue && originalData !== dbValue || connection.connection){
       input.onChange(dbValue, input.name)
     }
   }
 
   const handleInputChange = useCallback((event,readonly) => {
-    if(!readonly || custom.type === "date"){
+    const isConnected = connection.connection || typeof connection.connection === "undefined" ? true : false
+    if(!readonly || custom.type === "date" || isConnected){
       if(!event.target.value?.trim()){
         setHasError(true)
       }
