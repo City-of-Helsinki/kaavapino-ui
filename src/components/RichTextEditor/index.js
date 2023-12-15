@@ -362,6 +362,12 @@ function RichTextEditor(props) {
         showCounter.current = true;
         const editorEmpty = actualDeltaText.trim().length === 0 ? true : false
         setValueIsEmpty(editorEmpty)
+        //maxsize from backend or default
+        const maxSize = props.maxSize || 10000
+        if(counter?.current <= maxSize){
+          //Set prevent save charlimit back to false and allow saving
+          setCharLimitOver(false)
+        }
       }
       else if(source === 'api'){
         //Value is updated with lock call so do not save it again
