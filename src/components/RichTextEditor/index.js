@@ -544,15 +544,8 @@ function RichTextEditor(props) {
   }
 
   const normalOrRollingElement = () => {
-    let rollingValue = []
     const val = value?.ops
-    if(nonEditable && val || rollingInfo && !editField && val){
-      if(Array.isArray(val)){
-        for (let i = 0; i < val.length; i++) {
-          rollingValue.push(val[i].insert);
-        }
-      }
-    }
+
     //Default maxsize 10000
     const maxSize = props.maxSize ? props.maxSize : 10000;
     //Render rolling info field or normal edit field
@@ -561,13 +554,14 @@ function RichTextEditor(props) {
     const elements = nonEditable || rollingInfo && !editField ?
     <RollingInfo 
       name={inputProps.name} 
-      value={Array.isArray(rollingValue) && rollingValue.length ? rollingValue : ""}
+      value={val || ""}
       nonEditable={nonEditable}
       modifyText={modifyText}
       rollingInfoText={rollingInfoText}
       editRollingField={editRollingField}
       isCurrentPhase={isCurrentPhase}
       selectedPhase={selectedPhase}
+      type="richtext"
     />
     :    
     <div

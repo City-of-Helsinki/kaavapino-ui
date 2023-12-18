@@ -3,9 +3,10 @@ import { useSelector } from 'react-redux'
 import { usersSelector } from '../../selectors/userSelector'
 import {IconPenLine,IconCheckCircle,Button } from 'hds-react'
 import projectUtils from '../../utils/projectUtils'
+import ReactQuill from 'react-quill'
 import PropTypes from 'prop-types'
 
-function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField,isCurrentPhase,selectedPhase}) {
+function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField,isCurrentPhase,selectedPhase,type}) {
 
   const users = useSelector(state => usersSelector(state))
   let inputText = value
@@ -25,7 +26,17 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
     <>
     <div className='rolling-info-container'>
       <div className={value === "" ? "text-input-italic" : "text-input"}>
+        {type === "richtext" ?
+        <ReactQuill
+          value={value === "" ? "Tieto puuttuu." : value}
+          tabIndex="0"
+          theme="snow"
+          readOnly={true}
+          className="rolling-richtext"
+        />
+        :
         <div className='content'>{value === "" ? "Tieto puuttuu." : inputText}</div>
+        }
       </div>
       {nonEditable ? 
       <></> 
@@ -58,7 +69,8 @@ RollingInfo.propTypes = {
   rollingInfoText: PropTypes.string,
   editRollingField: PropTypes.func,
   isCurrentPhase:PropTypes.bool,
-  selectedPhase:PropTypes.number
+  selectedPhase:PropTypes.number,
+  type:PropTypes.string
 }
 
 export default RollingInfo
