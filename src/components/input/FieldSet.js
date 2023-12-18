@@ -97,16 +97,42 @@ const FieldSet = ({
 
   OutsideClick(accordianRef, handleOutsideClick)
 
+  const getValueName = (values) => {
+    if(values){
+      if(Object.values(values)[1]?.ops){
+        let richText = []
+        let val = Object.values(values)[1]?.ops
+        if(Array.isArray(val)){
+          for (let i = 0; i < val.length; i++) {
+            richText.push(val[i].insert);
+          }
+        }
+        else{
+          richText = [""]
+        }
+        return richText.toString()
+      }
+      else if(Object.values(values)[1]){
+        if(Object.values(values)[1]?.description){
+          return Object.values(values)[1].description
+        }
+        return Object.values(values)[1].toString()
+      }
+    }
+    return ""
+  }
+
   return (
     <div className='fieldset-main-container' ref={accordianRef}>
     <React.Fragment>
       <div className='fieldset-info'>{t('project.fieldset-info', { fieldAmount: getNumberOfFieldsets() })}</div>
       {sets.map((set, i) => {
+        const setValues = get(formValues, set)
         const fieldsetDisabled = lockStatus?.lockStyle && !lockStatus?.owner && lockStatus?.fieldIdentifier === set ? true : false;
         const deleted = get(formValues, set + '._deleted')
         const automatically_added = get(formValues, set + '._automatically_added')
         const lockedElement = fieldsetDisabled ? <span className="input-locked"> Käyttäjä {lockStatus.lockStyle.lockData.attribute_lock.user_name} {lockStatus.lockStyle.lockData.attribute_lock.user_email} on muokkaamassa kenttää<IconLock></IconLock></span> : <></>
-        const lockName = <><span className='accoardian-header-text'>{name}</span> {lockedElement}</>
+        const lockName = <><span className='accoardian-header-text'>{getValueName(setValues)}</span> {lockedElement}</>
         return (
           <React.Fragment key={`${name}-${i}`}>
             {!deleted && hiddenIndex !== i && (
