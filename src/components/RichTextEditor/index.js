@@ -395,6 +395,22 @@ function RichTextEditor(props) {
     showCounter.current = true;
   }
 
+  const getOriginalData = (name,originalData) => {
+    let fieldsetName
+    let fieldName
+    let index
+    let data = originalData
+    //Get fieldset name, index and field of fieldset
+    fieldsetName = name.split('[')[0]
+    index = name.split('[').pop().split(']')[0];
+    fieldName = name.split('.')[1]
+    if(attributeData[fieldsetName] && attributeData[fieldsetName][index] && attributeData[fieldsetName][index][fieldName]?.ops){
+      data = attributeData[fieldsetName][index][fieldName]?.ops
+    }
+
+    return data
+  }
+
   const handleBlur = (readonly) => {
     let identifier;
     if(lockedStatus && Object.keys(lockedStatus).length > 0){
@@ -425,16 +441,7 @@ function RichTextEditor(props) {
     let name = inputProps.name;
     let originalData = attributeData[name]?.ops
     if(insideFieldset && !nonEditable || !rollingInfo){
-      let fieldsetName
-      let fieldName
-      let index
-      //Get fieldset name, index and field of fieldset
-      fieldsetName = name.split('[')[0]
-      index = name.split('[').pop().split(']')[0];
-      fieldName = name.split('.')[1]
-      if(attributeData[fieldsetName] && attributeData[fieldsetName][index] && attributeData[fieldsetName][index][fieldName]?.ops){
-        originalData = attributeData[fieldsetName][index][fieldName]?.ops
-      }
+      originalData = getOriginalData(name,originalData)
     }
 
     //Prevent saving if data has not changed or is empty
@@ -506,23 +513,10 @@ function RichTextEditor(props) {
 
   const setValue = (dbValue) => {
     if (editorRef?.current) {
-      /*TODO possible bug on adding some styles from editor to text. 
-      The text could come as empty string and only show up on page refresh. Example add text and add color styles to it, 
-      save and check from other browser tab that does it update the difference
-      */
       let name = inputProps.name;
       let originalData = attributeData[name]?.ops
       if(insideFieldset && !nonEditable || !rollingInfo){
-        let fieldsetName
-        let fieldName
-        let index
-        //Get fieldset name, index and field of fieldset
-        fieldsetName = name.split('[')[0]
-        index = name.split('[').pop().split(']')[0];
-        fieldName = name.split('.')[1]
-        if(attributeData[fieldsetName] && attributeData[fieldsetName][index] && attributeData[fieldsetName][index][fieldName]?.ops){
-          originalData = attributeData[fieldsetName][index][fieldName]?.ops
-        }
+        originalData = getOriginalData(name,originalData)
       }
       //set editor value from db value updated with focus and lock call if data has changed on db
       // or set it when recovering from no connection to backend
