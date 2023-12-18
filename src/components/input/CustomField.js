@@ -663,7 +663,8 @@ class CustomField extends Component {
       component: this.getInput(field),
       ...(field.multiple_choice ? { type: 'select-multiple' } : {}),
       updated: { updated },
-      className: getClass()
+      className: getClass(),
+      fieldData:field
     }
 
     // Some fields are autofilled to a value as per (autofill_rules)

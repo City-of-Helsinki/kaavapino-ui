@@ -244,13 +244,15 @@ const SelectInput = ({
   
     let notSelectable = readonly === true && fieldName === input.name
     let readOnlyStyle = notSelectable ? 'selection readonly' : 'selection'
+    //Show option texts instead of value ids on multi select for RollingInfo
+    const rollingInfoValue = multiple && currentValue.length ? currentValue?.map(c => c.label) : input.value
     //Render rolling info field or normal edit field
     //If clicking rolling field button makes positive lock check then show normal editable field
     //Rolling field can be nonEditable
     const elements = nonEditable || rollingInfo && !editField ?
       <RollingInfo 
         name={input.name} 
-        value={input.value.toString()} 
+        value={rollingInfoValue}
         nonEditable={nonEditable}
         modifyText={modifyText}
         rollingInfoText={rollingInfoText}
@@ -269,7 +271,7 @@ const SelectInput = ({
           error={inputUtils.hasError(error)}
           onBlur={handleBlur}
           onFocus={handleFocus}
-          clearable={true}
+          clearable={false}
           disabled={disabled}
           options={currentOptions}
           value={currentSingleValue}

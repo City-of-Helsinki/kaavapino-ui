@@ -46,7 +46,7 @@ function* downloadDocumentSaga({ payload }) {
     payload.projectCard
       ? i18next.t('document-loading.project-card-content')
       : i18next.t('document-loading.document-content'),
-    { closeOnToastrClick: false }
+    { closeOnToastrClick: false, timeOut:0, removeOnHover: false, removeOnHoverTimeOut: 0 }
   )
   try {
     res = yield call(axios.get, payload.file, { responseType: 'json' })
@@ -155,7 +155,7 @@ function* downloadDocumentPreviewSaga({ payload }) {
   toastr.info(
     i18next.t('document-loading.wait-title'),
     i18next.t('document-loading.document-preview-content'),
-    { closeOnToastrClick: false }
+    { closeOnToastrClick: false, timeOut:0, removeOnHover: false, removeOnHoverTimeOut: 0 }
   )
 
   try {

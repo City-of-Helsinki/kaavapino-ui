@@ -116,6 +116,30 @@
         padding: 0;
         word-break: break-word;
       }
+
+      .rolling-richtext{
+        .ql-toolbar{
+          display: none;
+        }
+        .ql-container{
+          border:none;
+          font-family: "Helsinki Grotesk Regular", sans-serif;
+          font-size: $size16;
+          .ql-editor{
+            padding: 0;
+            p{
+              font-family: "Helsinki Grotesk Regular", sans-serif;
+              font-size: $size16;
+              opacity: 1 !important;
+              border: none !important;
+              background: transparent;
+              height: 100%;
+              padding: 0;
+              word-break: break-word;
+            }
+          }
+        }
+      }
     }
 
     button {
@@ -141,6 +165,30 @@
         height: 100%;
         padding: 0;
         word-break: break-word;
+      }
+      .rolling-richtext{
+        .ql-toolbar{
+          display: none;
+        }
+        .ql-container{
+          border:none;
+          font-family: "Helsinki Grotesk Regular", sans-serif;
+          font-size: $size14;
+          .ql-editor{
+            padding: 0;
+            p{
+              font-family: "Helsinki Grotesk Regular", sans-serif;
+              font-size: $size14;
+              opacity: 1 !important;
+              border: none !important;
+              background: transparent;
+              font-style: italic;
+              height: 100%;
+              padding: 0;
+              word-break: break-word;
+            }
+          }
+        }
       }
     }
   }
