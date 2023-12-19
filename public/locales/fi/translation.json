@@ -232,6 +232,7 @@
     "charsover":"Merkkimäärä on ylittynyt",
     "noempty":"Kenttä ei saa olla tyhjä",
     "error":"Virhe",
+    "error-prevent-add":"Virhe lomakkeella estää lisäyksen",
     "fieldset-info":"Yhteensä {{fieldAmount}} tietuetta."
   },
   "nav-header": {

@@ -945,6 +945,9 @@
   color: $color-error-border;
   position: relative;
 }
+.add-error{
+  padding-left: $size16;
+}
 .checkbox {
   display: flex;
   .checkbox-item {

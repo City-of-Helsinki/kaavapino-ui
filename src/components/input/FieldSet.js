@@ -301,21 +301,24 @@ const FieldSet = ({
         )
       })}
       {!disable_fieldset_delete_add && (
-      <Button
-        className={`fieldset-button-add ${checking && projectUtils.hasFieldsetErrors(name, fields, attributeData) ? 'fieldset-internal-error' : null
-          }`}
-        onClick={() => {
-          sets.push({})
-          handleBlur()
-          handleOutsideClick()
-        }}
-        disabled={disabled || saving || visibleErrors.length > 0}
-        variant="supplementary"
-        size='small'
-        iconLeft={<IconPlus/>}
-      >
-        {t('project.add')}
-      </Button>
+      <>
+        <Button
+          className={`fieldset-button-add ${checking && projectUtils.hasFieldsetErrors(name, fields, attributeData) ? 'fieldset-internal-error' : null
+            }`}
+          onClick={() => {
+            sets.push({})
+            handleBlur()
+            handleOutsideClick()
+          }}
+          disabled={disabled || saving || visibleErrors.length > 0}
+          variant="supplementary"
+          size='small'
+          iconLeft={<IconPlus/>}
+        >
+          {t('project.add')}
+        </Button>
+        {visibleErrors?.length > 0 ? <div className="error-text add-error">{t('project.error-prevent-add')}</div> : ""}
+      </>
       )}
     </React.Fragment>
     </div>
