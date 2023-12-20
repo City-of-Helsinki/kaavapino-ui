@@ -33,7 +33,7 @@ const Header = props => {
   const [errorCount,setErrorCount] = useState(1)
   const [phaseTitle,setPhaseTitle] = useState("")
   const [sectionTitle,setSectionTitle] = useState("")
-  const [existingErrors,setExsistingErrors] = useState([])
+  const [existingErrors,setExistingErrors] = useState([])
 
   const history = useHistory();
   const spinnerRef = useRef(null);
@@ -261,7 +261,7 @@ const Header = props => {
               let errorList = existingErrors
               errorList.push(newError)
               //this state controls error toastr pop up
-              setExsistingErrors(errorList)
+              setExistingErrors(errorList)
             }
           }
 
