@@ -41,11 +41,11 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       //!ismount skips initial render
       if(hasError){
         //Adds field to error list that don't trigger toastr right away (too many chars,empty field etc) and shows them when trying to save
-        dispatch(formErrorList(true,custom.label))
+        dispatch(formErrorList(true,input.name))
       }
       else{
         //removes field from error list
-        dispatch(formErrorList(false,custom.label))
+        dispatch(formErrorList(false,input.name))
       }
     }
   }, [hasError])
