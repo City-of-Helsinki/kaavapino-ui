@@ -188,11 +188,11 @@ function RichTextEditor(props) {
       //!ismount skips initial render
       if(charLimitOver || valueIsEmpty){
         //Adds field to error list that don't trigger toastr right away (too many chars,empty field etc) and shows them when trying to save
-        dispatch(formErrorList(true,label))
+        dispatch(formErrorList(true,inputProps.name))
       }
       else{
         //removes field from error list
-        dispatch(formErrorList(false,label))
+        dispatch(formErrorList(false,inputProps.name))
       }
     }
   }, [charLimitOver,valueIsEmpty])
