@@ -137,7 +137,7 @@ const FieldSet = ({
       valueType = getCorrectValueType(values,valueNameKey)
     }
 
-    return valueType ? valueType : <span className='italic'>Tieto puuttuu</span>
+    return valueType || <span className='italic'>Tieto puuttuu</span>
   }
 
   return (
