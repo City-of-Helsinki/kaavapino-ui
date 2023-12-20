@@ -83,7 +83,6 @@ function RichTextEditor(props) {
     selectedPhase,
     isFloorAreaForm,
     floorValue,
-    label,
     attributeData
   } = props
 
