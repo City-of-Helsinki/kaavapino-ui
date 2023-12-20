@@ -97,29 +97,52 @@ const FieldSet = ({
 
   OutsideClick(accordianRef, handleOutsideClick)
 
-  const getValueName = (values) => {
+  const getValueName = (values,fields) => {
+    //Name for fieldset is always the first value, should be set that way in Excel for fieldsets
+    fields.fieldset_index !== null
+    let valueNameKey
+    let user = false
+    fields.some((field) => {
+      if (field.fieldset_index !== null) {
+        valueNameKey = field.name?.toString()
+        if(field.type === "personnel"){
+          user = true
+        }
+        return true;
+      }
+    })
     if(values){
-      if(Object.values(values)[1]?.ops){
-        let richText = []
-        let val = Object.values(values)[1]?.ops
-        if(Array.isArray(val)){
-          for (let i = 0; i < val.length; i++) {
-            richText.push(val[i].insert);
+      for (const [key, value] of Object.entries(values)) {
+        if(key === valueNameKey){
+          if(value?.ops){
+            let richText = []
+            let val = value?.ops
+            if(Array.isArray(val)){
+              for (let i = 0; i < val.length; i++) {
+                richText.push(val[i].insert);
+              }
+            }
+            else{
+              richText = [""]
+            }
+            return richText.toString()
+          }
+          else if(value?.name){
+            if(value?.description){
+              return value.description
+            }
+            return value.name.toString()
+          }
+          else {
+            if(user){
+              return value
+            }
+            return value
           }
         }
-        else{
-          richText = [""]
-        }
-        return richText.toString()
-      }
-      else if(Object.values(values)[1]){
-        if(Object.values(values)[1]?.description){
-          return Object.values(values)[1].description
-        }
-        return Object.values(values)[1].toString()
       }
     }
-    return ""
+    return <span className='italic'>Tieto puuttuu</span>
   }
 
   return (
@@ -132,7 +155,7 @@ const FieldSet = ({
         const deleted = get(formValues, set + '._deleted')
         const automatically_added = get(formValues, set + '._automatically_added')
         const lockedElement = fieldsetDisabled ? <span className="input-locked"> Käyttäjä {lockStatus.lockStyle.lockData.attribute_lock.user_name} {lockStatus.lockStyle.lockData.attribute_lock.user_email} on muokkaamassa kenttää<IconLock></IconLock></span> : <></>
-        const lockName = <><span className='accoardian-header-text'>{getValueName(setValues)}</span> {lockedElement}</>
+        const lockName = <><span className='accoardian-header-text'>{getValueName(setValues,fields)}</span> {lockedElement}</>
         return (
           <React.Fragment key={`${name}-${i}`}>
             {!deleted && hiddenIndex !== i && (

@@ -546,6 +546,11 @@
       }
       .accoardian-header-text{
         pointer-events: none;
+        .italic{
+          font-family: "Helsinki Grotesk Regular", sans-serif;
+          font-style: italic;
+          color:$max-markings-color;
+        }
       }
     }
     svg{
@@ -584,6 +589,11 @@
       }
       .accoardian-header-text{
         pointer-events: none;
+        .italic{
+          font-family: "Helsinki Grotesk Regular", sans-serif;
+          font-style: italic;
+          color: $max-markings-color;
+        }
       }
     }
     svg{
@@ -623,6 +633,11 @@
       }
       .accoardian-header-text{
         pointer-events: none;
+        .italic{
+          font-family: "Helsinki Grotesk Regular", sans-serif;
+          font-style: italic;
+          color: $max-markings-color;
+        }
       }
     }
     svg{
