@@ -97,52 +97,47 @@ const FieldSet = ({
 
   OutsideClick(accordianRef, handleOutsideClick)
 
-  const getValueName = (values,fields) => {
-    //Name for fieldset is always the first value, should be set that way in Excel for fieldsets
-    fields.fieldset_index !== null
-    let valueNameKey
-    let user = false
-    fields.some((field) => {
-      if (field.fieldset_index !== null) {
-        valueNameKey = field.name?.toString()
-        if(field.type === "personnel"){
-          user = true
+  const getCorrectValueType = (values,valueNameKey) => {
+    for (const [key, value] of Object.entries(values)) {
+      if(key === valueNameKey){
+        if(value?.ops){
+          let richText = []
+          let val = value?.ops
+          if(Array.isArray(val)){
+            for (let i = 0; i < val.length; i++) {
+              richText.push(val[i].insert);
+            }
+          }
+          return richText.toString()
         }
-        return true;
-      }
-    })
-    if(values){
-      for (const [key, value] of Object.entries(values)) {
-        if(key === valueNameKey){
-          if(value?.ops){
-            let richText = []
-            let val = value?.ops
-            if(Array.isArray(val)){
-              for (let i = 0; i < val.length; i++) {
-                richText.push(val[i].insert);
-              }
-            }
-            else{
-              richText = [""]
-            }
-            return richText.toString()
+        else if(value?.name){
+          if(value?.description){
+            return value.description
           }
-          else if(value?.name){
-            if(value?.description){
-              return value.description
-            }
-            return value.name.toString()
-          }
-          else {
-            if(user){
-              return value
-            }
-            return value
-          }
+          return value.name.toString()
+        }
+        else {
+          return value
         }
       }
     }
-    return <span className='italic'>Tieto puuttuu</span>
+  }
+
+  const getValueName = (values,fields) => {
+    //Name for fieldset is always the first value, should be set that way in Excel for fieldsets
+    let valueNameKey
+    let valueType
+    if(values){
+      fields.some((field) => {
+        if (field.fieldset_index !== null) {
+          valueNameKey = field.name?.toString()
+          return true;
+        }
+      })
+      valueType = getCorrectValueType(values,valueNameKey)
+    }
+
+    return valueType ? valueType : <span className='italic'>Tieto puuttuu</span>
   }
 
   return (
@@ -357,7 +352,8 @@ const mapStateToProps = state => ({
 FieldSet.propTypes = {
   rollingInfo: PropTypes.bool,
   unlockAllFields:PropTypes.func,
-  saving: PropTypes.bool
+  saving: PropTypes.bool,
+  fields: PropTypes.object
 }
 
 export default connect(mapStateToProps)(FieldSet)
