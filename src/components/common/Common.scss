@@ -559,6 +559,61 @@ header{
   }
 }
 
+.document-page-header {
+  header{
+    --header-height: 56px;
+    z-index: $z-index-sticky;
+  }
+
+  nav {
+    margin-left: 0 !important;
+  }
+
+  div:not(.spinner-container,.spinner-container *) {
+    cursor: default;
+    font-size: $size16;
+    border: none !important;
+  }
+
+  svg {
+    display: none;
+  }
+
+  button {
+    font-family: "Helsinki Grotesk Medium", sans-serif;
+    color: $color-bus;
+    pointer-events: auto;
+
+    div {
+      margin-left: -10px !important;
+    }
+
+    svg {
+      display: inline-block;
+      color: $color-bus;
+    }
+  }
+
+  button:hover,
+  button:active:hover {
+    color: $color-bus;
+    text-decoration: underline;
+    background-color: transparent;
+
+    span {
+      color: $color-bus;
+    }
+  }
+
+  button:after {
+    background-color: unset !important;
+  }
+
+  div:after {
+    background-color: unset !important;
+  }
+}
+
 .link-container{
   display: flex;
   align-items: center;
@@ -628,6 +683,14 @@ header{
     .nav-header-content {
       margin-top: 120px;
       margin-bottom: 32px;
+
+      &.edit {
+        margin-top: 106px;
+      }
+
+      &.documents {
+        margin-top: 97px;
+      }
 
       @media screen and (max-width: 725px) { 
         margin-top: 0;

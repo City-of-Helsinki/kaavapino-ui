@@ -227,8 +227,8 @@ class ProjectPage extends Component {
         <NavHeader
           routeItems={this.getRouteItems()}
           title={currentProject.name}
-          actions={this.getDocumentsNavActions()}
           infoOptions={this.getAllChanges()}
+          location={this.props.location}
         />
         <NewProjectFormModal
           currentProject={currentProject}
@@ -402,27 +402,6 @@ class ProjectPage extends Component {
           onChange={this.changeOptions}
         />
         )}
-      </span>
-    )
-  }
-
-  getDocumentsNavActions = isUserExpert => {
-    const { t } = this.props
-    return (
-      <span className="header-buttons">
-        {isUserExpert && (
-          <Button
-            variant="secondary"
-            className="header-button"
-            onClick={this.modifyContent}
-            iconLeft={<IconPen />}
-          >
-            {t('project.modify')}
-          </Button>
-        )}
-        <Button variant="primary" iconLeft={<IconPen />} onClick={this.checkProjectCard}>
-          {t('project.check-project-card')}
-        </Button>
       </span>
     )
   }

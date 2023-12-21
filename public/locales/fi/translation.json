@@ -17,6 +17,7 @@
     "sign-out": "Kirjaudu ulos",
     "choices-label": "Valikko",
     "edit-menu-back":"Palaa takaisin projektikortille",
+    "documents-menu-back": "Palaa takaisin projektin muokkaukseen",
     "edit-menu-no-save":"Ei tallentamattomia tietoja",
     "edit-menu-saved":"Tallennettu: ",
     "edit-menu-save-fail":"Tallennus epäonnistui: "
@@ -192,7 +193,7 @@
     "documents-created": "Osa tämän vaiheen dokumenteista on jo ladattu ulos. Ole tarvittaessa yhteydessä projektin vastuuhenkilöön {{email}}.",
     "no-documents": "Ei dokumentteja",
     "phase-passed": "Vaihe on ohitettu ja suljettu.",
-    "phase-preview-ended":"Et voi enää esikatsella dokumentteja.",
+    "phase-preview-ended":"Et voi enää esikatsella dokumentteja. Ne ovat ProjectWisessa.",
     "phase-load-prevented":"Vaiheen kaikkia pakollisia tietoja ei ole täytetty tai kaavoitussihteri ei ole vahvistanut vaiheen aikataulua.",
     "phase-preview-only":"Voit ainoastaan esikatsella dokumentteja.",
     "phase-ok":"Kaikki vaiheen pakolliset tiedot ovat täytetty.",

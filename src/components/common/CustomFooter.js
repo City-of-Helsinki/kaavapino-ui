@@ -105,6 +105,11 @@ class CustomFooter extends Component {
         <></>
       )
     }
+    else if(pathToCheck?.endsWith('/documents')) {
+        return(
+          <></>
+        )
+    }
     else{
       return (
         <Footer
