@@ -775,7 +775,7 @@ function* saveProject(data) {
 
 function* changeProjectPhase({ payload: phase }) {
   try {
-    yield call(saveProject)
+    yield put(saveProjectAction(false,false,false,false))
     const currentProjectId = yield select(currentProjectIdSelector)
     const updatedProject = yield call(
       projectApi.patch,
