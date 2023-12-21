@@ -46,23 +46,19 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
     </div>
     {nonEditable ?
     <div className='rolling-text'>
-      <>
-        <IconCheckCircle aria-hidden="true" />
-        <span>{rollingInfoText}</span>
-      </>
+      <IconCheckCircle aria-hidden="true" />
+      <span>{rollingInfoText}</span>
     </div> :
     <div className='rolling-text'>
+    {value ?
       <>
-        {value ?
-          <>
-            <img aria-hidden="true" src={infoBothDir} />
-            <span>{rollingInfoText}</span>
-          </>
-          :
-          <>
-          </>
-          }
+        <img alt='' aria-hidden="true" src={infoBothDir} />
+        <span>{rollingInfoText}</span>
       </>
+      :
+      <>
+      </>
+    }
     </div>
     }
   </>
@@ -76,9 +72,8 @@ RollingInfo.propTypes = {
   modifyText: PropTypes.string,
   rollingInfoText: PropTypes.string,
   editRollingField: PropTypes.func,
-  isCurrentPhase:PropTypes.bool,
-  selectedPhase:PropTypes.number,
-  type:PropTypes.string
+  type:PropTypes.string,
+  phaseIsClosed: PropTypes.bool
 }
 
 export default RollingInfo
