@@ -204,7 +204,7 @@ const FieldSet = ({
                   const fieldUpdated =
                     updated && updated.new_value && has(updated.new_value[0], field.name)
 
-                  let rollingInfoText = "Tieto siirtynyt aiemmasta vaiheesta"
+                  let rollingInfoText = "Tieto siirtyy vaiheiden välillä ja sitä voi täydentää"
                   let nonEditable = false
                   if(isReadOnly || field?.display === 'readonly_checkbox'){
                     rollingInfoText = "Tieto on automaattisesti muodostettu"

@@ -75,7 +75,8 @@ class EditForm extends Component {
       showSection,
       deadlines,
       isCurrentPhase,
-      selectedPhase
+      selectedPhase,
+      phaseIsClosed
     } = this.props
     return (
       <>
@@ -103,6 +104,7 @@ class EditForm extends Component {
             deadlines={deadlines}
             isCurrentPhase={isCurrentPhase}
             selectedPhase={selectedPhase}
+            phaseIsClosed={phaseIsClosed}
           />
         <Button
           variant="supplementary"
@@ -125,7 +127,8 @@ class EditForm extends Component {
 EditForm.propTypes = {
   deadlines:PropTypes.object,
   isCurrentPhase:PropTypes.bool,
-  selectedPhase: PropTypes.number
+  selectedPhase: PropTypes.number,
+  phaseIsClosed: PropTypes.bool
 }
 
 const decoratedForm = reduxForm({

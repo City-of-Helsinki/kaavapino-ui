@@ -31,7 +31,8 @@ const FormSection = ({
   highlightedTag,
   deadlines,
   isCurrentPhase,
-  selectedPhase
+  selectedPhase,
+  phaseIsClosed
 }) => {
   let count = 0;
   if(section?.title && section?.fields){
@@ -78,6 +79,7 @@ const FormSection = ({
             rollingInfo={rollingInfo}
             isCurrentPhase={isCurrentPhase}
             selectedPhase={selectedPhase}
+            phaseIsClosed={phaseIsClosed}
           />)
         }
         else{
@@ -93,7 +95,8 @@ const FormSection = ({
 FormSection.propTypes = {
   deadlines:PropTypes.object,
   isCurrentPhase:PropTypes.bool,
-  selectedPhase: PropTypes.number
+  selectedPhase: PropTypes.number,
+  phaseIsClosed: PropTypes.bool
 }
 
 const mapStateToProps = state => ({

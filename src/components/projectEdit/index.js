@@ -685,6 +685,7 @@ class ProjectEditPage extends Component {
             sectionIndex={this.state.sectionIndex}
             showSection={this.state.showSection}
             deadlines={currentProject.deadlines}
+            phaseIsClosed={formDisabled}
           />
           {this.props.showFloorAreaForm && (
             <EditFloorAreaFormModal
