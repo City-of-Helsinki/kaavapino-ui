@@ -74,7 +74,7 @@ function Document({
         <Grid.Column>
           <span className="document-title document-header">{name}</span>
           <span className="document-title">
-            <span>{t('project.document-last-loaded')} </span>
+            <span className="document-last-loaded">{t('project.document-last-loaded')} </span>
             {lastDownloaded ? dayjs(lastDownloaded).format('DD.MM.YYYY HH:mm') : ''}
           </span>
         </Grid.Column>

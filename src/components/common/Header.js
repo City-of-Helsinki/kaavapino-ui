@@ -379,6 +379,12 @@ const Header = props => {
     history.push(path)
   }
 
+  const navigateBackToEdit = () => {
+    let path = history.location.pathname
+    path = path.replace('documents','edit');
+    history.push(path)
+  }
+
   const pathToCheck = props.location.pathname
 
   if(pathToCheck.endsWith('/edit')){
@@ -404,6 +410,19 @@ const Header = props => {
         </Navigation.Row>
       </Navigation>
       </div>
+    )
+  }
+  else if (pathToCheck.endsWith('/documents')) {
+    return (
+        <div className='document-page-header'>
+          <Navigation
+              label="navigation"
+          >
+            <Navigation.Row variant="inline">
+              <Button onClick={() => navigateBackToEdit()} role="link" variant="supplementary" size="small" iconLeft={<IconAngleLeft />}>{t('header.documents-menu-back')}</Button>
+            </Navigation.Row>
+          </Navigation>
+        </div>
     )
   }
   else{
@@ -450,11 +469,11 @@ const Header = props => {
               as="a"
               label={t('header.projects')}
               onClick={navigateToProjects}
-              className={(props.location.pathname === "/projects")
+              className={(props.location.pathname.startsWith("/projects"))
               ? "header-nav-item active"
               : "header-nav-item " 
             }
-              active={(props.location.pathname === "/projects")
+              active={(props.location.pathname.startsWith("/projects"))
               ? true
               : false 
               }

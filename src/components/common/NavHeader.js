@@ -46,6 +46,17 @@ export const NavHeader = ({ routeItems, actions, title, infoOptions, attributes,
     return null
   }
 
+  let navHeaderContentClass = ""
+  if(pathToCheck?.endsWith('/edit')) {
+    navHeaderContentClass = "nav-header-content edit"
+  }
+  else if(pathToCheck?.endsWith('/documents')) {
+    navHeaderContentClass = "nav-header-content documents"
+  }
+  else {
+    navHeaderContentClass = "nav-header-content"
+  }
+
   return (
     <div className="nav-header-container">
       <div className="nav-header-inner-container">
@@ -60,11 +71,11 @@ export const NavHeader = ({ routeItems, actions, title, infoOptions, attributes,
             })}
           </div>
         </div>
-        <div className="nav-header-content">
+        <div className={navHeaderContentClass}>
           <div className="nav-header-titles">
             <div className="nav-menu-container">
               <div>
-                <h1 className="nav-header-title">{title}</h1>
+                <h1 className="nav-header-title">{pathToCheck?.endsWith('/documents') ? t('project.documents') : title}</h1>
               </div>
               <div className='nav-menu-buttons'>
                 <LoggingComponent infoOptions={infoOptions} attributes={attributes} />

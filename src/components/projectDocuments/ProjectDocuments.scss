@@ -6,32 +6,42 @@
       padding-left: 5px;
     }
 
+    .label {
+      font-family: "Helsinki Grotesk Medium", sans-serif;
+    }
+
     .ui.grid {
-      margin-left: 0;
-      margin-right: 0;
-      margin-top: 10px;
-      margin-bottom: 10px;
+      margin: 0 0 $size16 0;
+    }
+
+    .ui.grid:last-of-type {
+      margin-bottom: $size20;
     }
 
     .document-row {
       .document-title {
-        padding: 0px;
-        padding-left: 5px;
         margin: 0;
-        line-height: $size48;
+        line-height: $size24;
         display: block;
         font-size: $size16;
       }
+
+      .document-last-loaded {
+        font-size: $size14;
+        margin-top: $size16;
+      }
+
       .document-header{
-        font-size: $size24;
-        font-weight: bold;
+        font-family: "Helsinki Grotesk Medium", sans-serif;
+        font-size: $size20;
+        letter-spacing: 0.2px;
+        margin-bottom: $size16;
       }
-      button{
-        margin-top: 10px;
-      }
+
       button:last-of-type{
         margin-left: 15px;
       }
+
       background-color: $light-gray3;
     }
   }
@@ -42,18 +52,52 @@
     .document-group-requirements{
       display: flex;
       flex-flow: column;
-      align-items: flex-end;
+      align-items: flex-start;
       justify-content: flex-start;
+      margin-bottom: $size28;
     }
   }
 
-  .document-accordion > div {
-    padding: 10px;
-  }
   .phase-end-tag {
     font-size: $size16;
   }
   .image-template-icon {
     color: $color-bus-dark
+  }
+
+  .required-error-text {
+    color: $color-error;
+
+    p {
+      font-family: "Helsinki Grotesk Medium", sans-serif;
+      font-weight: 500;
+    }
+
+    svg {
+      vertical-align: bottom;
+      margin-right: $size8;
+    }
+  }
+
+  .document-status {
+    font-family: "Helsinki Grotesk Medium", sans-serif;
+    font-weight: 500;
+  }
+
+  .document-status-info {
+    font-family: "Helsinki Grotesk Medium Italic", sans-serif;
+    font-weight: 500;
+    font-size: $size14;
+    margin-left: $size32;
+    margin-top: $size4;
+    line-height: $size18;
+
+    > span {
+      letter-spacing: 0.2px;
+    }
+  }
+
+  .document-row .column {
+    padding: $size24 $size32 !important;
   }
 }

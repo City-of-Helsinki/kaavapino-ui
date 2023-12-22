@@ -142,12 +142,12 @@ function FloorAreaChart({
 
   const goToProjectCard = id => {
     if (history) {
-      history.push(`/${id}`)
+      history.push(`/projects/${id}`)
     }
   }
   const goToProjectEdit = id => {
     if (history) {
-      history.push(`/${id}/edit`)
+      history.push(`/projects/${id}/edit`)
     }
   }
 

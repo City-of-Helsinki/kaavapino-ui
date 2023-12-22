@@ -95,7 +95,7 @@ class App extends Component {
               />
               <Route
                 exact
-                path="/:id"
+                path="/projects/:id"
                 render={({ match }) => (
                   <ProjectPage
                     id={match.params.id}
@@ -105,7 +105,7 @@ class App extends Component {
               />
               <Route
                 exact
-                path="/:id/edit"
+                path="/projects/:id/edit"
                 render={({ match }) => (
                   <ProjectPage
                     edit
@@ -115,7 +115,7 @@ class App extends Component {
               />
               <Route
                 exact
-                path="/:id/documents"
+                path="/projects/:id/documents"
                 render={({ match }) => (
                   <ProjectPage
                     documents
