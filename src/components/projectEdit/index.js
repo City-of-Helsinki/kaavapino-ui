@@ -730,7 +730,9 @@ class ProjectEditPage extends Component {
 }
 
 ProjectEditPage.propTypes = {
-  currentProject:PropTypes.object
+  currentProject:PropTypes.object,
+  project: PropTypes.object,
+  schema: PropTypes.object
 }
 
 const mapStateToProps = state => {

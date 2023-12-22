@@ -130,7 +130,8 @@ DocumentGroup.propTypes = {
   schema: PropTypes.object,
   attribute_data: PropTypes.object,
   phase: PropTypes.object,
-  title: PropTypes.object
+  title: PropTypes.object,
+  project: PropTypes.object
 }
 
 export default DocumentGroup

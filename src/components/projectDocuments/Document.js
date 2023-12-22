@@ -113,7 +113,8 @@ function Document({
 Document.propTypes = {
   schema: PropTypes.object,
   attribute_data: PropTypes.object,
-  phaseIndex: PropTypes.number
+  phaseIndex: PropTypes.number,
+  project: PropTypes.object
 }
 
 const mapDispatchToProps = {
