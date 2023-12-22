@@ -134,14 +134,14 @@ class ProjectPage extends Component {
     const { currentProject, edit, documents, t } = this.props
     const path = [
       { value: t('project.projects'), path: '/projects' },
-      { value: `${currentProject.name}`, path: `/${currentProject.id}` }
+      { value: `${currentProject.name}`, path: `/projects/${currentProject.id}` }
     ]
     if (edit) {
-      path.push({ value: t('project.modify'), path: `/${currentProject.id}/edit` })
+      path.push({ value: t('project.modify'), path: `/projects/${currentProject.id}/edit` })
     } else if (documents) {
       path.push({
         value: t('project.documents'),
-        path: `/${currentProject.id}/documents`
+        path: `/projects/${currentProject.id}/documents`
       })
     }
     return path
@@ -347,8 +347,7 @@ class ProjectPage extends Component {
   getProjectCardNavActions = userIsExpert => {
     const { t } = this.props
     const options = [
-    {value:7,label:<><i className="icons download-icon"></i>{t('project.print-project-card')}</>},
-    {value:1,label:<><i className="icons document-icon"></i>{t('project.create-documents')}</> }]
+    {value:7,label:<><i className="icons download-icon"></i>{t('project.print-project-card')}</>}]
 
     return (
       <span className="header-buttons">
@@ -416,21 +415,14 @@ class ProjectPage extends Component {
       currentProject: { id },
       history
     } = this.props
-    history.push(`/${id}/edit`)
+    history.push(`/projects/${id}/edit`)
   }
   createDocuments = () => {
     const {
       currentProject: { id },
       history
     } = this.props
-    history.push(`/${id}/documents`)
-  }
-  checkProjectCard = () => {
-    const {
-      currentProject: { id },
-      history
-    } = this.props
-    history.push(`/${id}`)
+    history.push(`/projects/${id}/documents`)
   }
   openProjectDataModal = () => this.togglePrintProjectDataModal(true)
 

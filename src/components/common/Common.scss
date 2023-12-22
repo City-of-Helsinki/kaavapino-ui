@@ -424,7 +424,7 @@ footer{
   }
   .header-nav-item.active:after{
     background-color:$color-bus;
-    --item-active-color:$color-bus;      
+    --item-active-color:$color-bus;
     bottom: 0;
     content: "";
     height: var(--spacing-3-xs);
@@ -435,7 +435,7 @@ footer{
   }
   .header-nav-item:hover:after{
     background-color:$color-black;
-    --item-active-color:$color-bus;      
+    --item-active-color:$color-bus;
     bottom: 0;
     content: "";
     height: var(--spacing-3-xs);

@@ -482,7 +482,7 @@ function* createProject() {
     }
     yield put(createProjectSuccessful(createdProject))
     if (createdProject.public || createdProject.user === userId) {
-      yield put(push(`/${createdProject.id}/edit`))
+      yield put(push(`/projects/${createdProject.id}/edit`))
     }
     yield put(setSubmitSucceeded(NEW_PROJECT_FORM))
   } catch (e) {

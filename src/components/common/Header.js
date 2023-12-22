@@ -469,11 +469,11 @@ const Header = props => {
               as="a"
               label={t('header.projects')}
               onClick={navigateToProjects}
-              className={(props.location.pathname === "/projects")
+              className={(props.location.pathname.startsWith("/projects"))
               ? "header-nav-item active"
               : "header-nav-item " 
             }
-              active={(props.location.pathname === "/projects")
+              active={(props.location.pathname.startsWith("/projects"))
               ? true
               : false 
               }

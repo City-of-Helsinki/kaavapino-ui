@@ -17,12 +17,12 @@ const CustomMapPolygon = ({
 
   const goToProjectCard = id => {
     if (history) {
-      history.push(`/${id}`)
+      history.push(`/projects/${id}`)
     }
   }
   const goToProjectEdit = id => {
     if (history) {
-      history.push(`/${id}/edit`)
+      history.push(`/projects/${id}/edit`)
     }
   }
   const renderPopupValue = () => {

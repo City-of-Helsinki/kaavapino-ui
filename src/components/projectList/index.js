@@ -282,7 +282,7 @@ class ProjectListPage extends Component {
   }
 
   modifyProject = id => {
-    this.props.history.push(`/${id}/edit`)
+    this.props.history.push(`/projects/${id}/edit`)
   }
 
   createTabPanes = () => {
