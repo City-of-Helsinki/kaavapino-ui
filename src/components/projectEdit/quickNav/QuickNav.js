@@ -91,7 +91,7 @@ export default function QuickNav({
    const sections = currentSchema.sections
    const id = currentSchema.id
    if(currentSchema){
-    optionsArray.push({label:currentSchema.title,color:phaseColor,phaseID:currentSchema.id,status:currentSchema.status})
+    optionsArray.push({label:currentSchema.title,color:phaseColor,phaseID:currentSchema.id,status:phaseStatus})
     setOptions({optionsArray,curPhase})
     setSelectedPhase({currentPhase:sections,phaseID:id});
     //Get last section pressed from navigation when pressing back button and returning from project card

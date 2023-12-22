@@ -21,7 +21,8 @@ function Document({
   scheduleAccepted,
   schema,
   phaseIndex,
-  attribute_data
+  attribute_data,
+  project
 }) {
   const { t } = useTranslation()
 
@@ -62,7 +63,7 @@ function Document({
       currentSchemaIndex = 4
     } 
     const currentSchema = schema?.phases[currentSchemaIndex]
-    return !ended && !hide && accepted && schema && currentSchema?.status === "Vaihe käynnissä" ? false : true
+    return !ended && !hide && accepted && schema && currentSchema?.id === project?.phase ? false : true
   }
 
   const openConfirmationDialog = () => setShowConfirmation(true)
@@ -112,7 +113,8 @@ function Document({
 Document.propTypes = {
   schema: PropTypes.object,
   attribute_data: PropTypes.object,
-  phaseIndex: PropTypes.number
+  phaseIndex: PropTypes.number,
+  project: PropTypes.object
 }
 
 const mapDispatchToProps = {
