@@ -309,16 +309,16 @@ function checkErrors(errorFields,currentSchema,attributeData) {
   return errorFields
 }
 
-function getErrorFields(checkDocuments, attributeData, currentSchema) {
+function getErrorFields(checkDocuments, attributeData, currentSchema, phase) {
   let errorFields = []
   const phaseName = attributeData.kaavan_vaihe.split(".").pop().replace(/\s/g,'');
   const title = currentSchema.title.replace(/\s/g,'');
     //Check only using currentPhase sections if check checkDocuments is false and do other check when checking document downloads
-  if(checkDocuments && currentSchema?.status === "Vaihe käynnissä" && currentSchema?.sections && title === phaseName || !checkDocuments && currentSchema?.sections){
+  if(checkDocuments && currentSchema?.id === phase && currentSchema?.sections && title === phaseName || !checkDocuments && currentSchema?.sections){
     // Go through every single field
     errorFields = checkErrors(errorFields,currentSchema,attributeData)
   }
-  else if(checkDocuments && currentSchema?.status !== "Vaihe käynnissä"){
+  else if(checkDocuments && currentSchema?.id === phase){
     //Show error for hide download button on document download view if not currently active phase
     errorFields.push("notcurrentphase")
   }
@@ -331,7 +331,7 @@ function isSceduleAccepted(attributeData, currentSchema) {
     const { sections } = currentSchema
     // Go through every single field
     sections.forEach(({name,attributes }) => {
-      if(name === "2. OAS" || name === "3. Ehdotus" || name === "4. Tarkistettu ehdotus"){
+      if(name === "2. OAS" || name === "3. Ehdotus" || name === "4. Tarkistettu ehdotus" || name === "XL. Periaatteet" || name === "XL. Luonnos"){
         attributes.forEach(field => {
           if (showField(field, attributeData)) {
             if (field.name === 'vahvista_oas_esillaolo_alkaa' || field.name === 'vahvista_oas_esillaolo_paattyy' 

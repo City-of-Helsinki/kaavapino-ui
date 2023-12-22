@@ -775,15 +775,17 @@ function* saveProject(data) {
 
 function* changeProjectPhase({ payload: phase }) {
   try {
-    yield put(saveProjectAction(false,false,false,false))
-    const currentProjectId = yield select(currentProjectIdSelector)
-    const updatedProject = yield call(
-      projectApi.patch,
-      { phase },
-      { path: { id: currentProjectId } },
-      ':id/'
-    )
-    yield put(changeProjectPhaseSuccessful(updatedProject))
+    const saveReady = yield call(saveProjectAction)
+    if(saveReady){
+      const currentProjectId = yield select(currentProjectIdSelector)
+      const updatedProject = yield call(
+        projectApi.patch,
+        { phase },
+        { path: { id: currentProjectId } },
+        ':id/'
+      )
+      yield put(changeProjectPhaseSuccessful(updatedProject))
+    }
   } catch (e) {
     yield put(error(e))
     yield put(changeProjectPhaseFailure())

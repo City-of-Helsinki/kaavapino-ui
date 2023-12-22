@@ -279,29 +279,42 @@ class ProjectEditPage extends Component {
   }
   createHeadings = () => {
     const { schema } = this.props
-    const allPhases = schema && schema.phases
+    const allPhases = schema?.phases
 
     const newPhases = []
 
-    allPhases &&
-      allPhases.forEach(phase => {
-        const sections = []
-        phase.sections.forEach(section => {
-          sections.push({ title: section.title, fields: section.fields })
-        })
-
-        const newPhase = {
-          id: phase.id,
-          title: phase.title,
-          color: phase.color,
-          color_code: phase.color_code,
-          list_prefix: phase.list_prefix,
-          status:phase.status,
-          sections: sections
-        }
-
-        newPhases.push(newPhase)
+    allPhases?.forEach(phase => {
+      const sections = []
+      phase.sections.forEach(section => {
+        sections.push({ title: section.title, fields: section.fields })
       })
+
+      let phaseText
+      if(this.props.currentProject?.phase === phase?.id){
+        phaseText = "Vaihe käynnissä"
+      }
+      else if(this.props.currentProject?.phase < phase?.id){
+        phaseText = "Vaihe aloittamatta"
+      }
+      else if(this.props.currentProject?.phase > phase?.id){
+        phaseText = "Vaihe suoritettu"
+      }
+      else{
+        phaseText = ""
+      }
+
+      const newPhase = {
+        id: phase.id,
+        title: phase.title,
+        color: phase.color,
+        color_code: phase.color_code,
+        list_prefix: phase.list_prefix,
+        status:phaseText,
+        sections: sections
+      }
+
+      newPhases.push(newPhase)
+    })
     return newPhases
   }
 
@@ -369,14 +382,14 @@ class ProjectEditPage extends Component {
 
     this.props.projectSetChecking(this.props.checking)
     const {
-      project: { attribute_data },
+      project: { attribute_data,phase },
       schema,
       t
     } = this.props
 
     const currentSchemaIndex = schema.phases.findIndex(s => s.id === schemaUtils.getSelectedPhase(this.props.location.search,this.props.selectedPhase))
     const currentSchema = schema.phases[currentSchemaIndex]
-    const errorFields = projectUtils.getErrorFields(false,attribute_data, currentSchema)
+    const errorFields = projectUtils.getErrorFields(false,attribute_data,currentSchema,phase)
     this.setState({errorFields:errorFields})
     if(errorFields?.length === 0 && !documentsDownloaded){
       const elements = <div>
@@ -538,18 +551,23 @@ class ProjectEditPage extends Component {
       return <LoadingSpinner className="loader-icon" />
     }
 
-    let color;
-    if(currentSchema.status === "Vaihe käynnissä"){
+    let color
+    let phaseText
+    if(phase === currentSchema?.id){
       color = "#FFC61E"
+      phaseText = "Vaihe käynnissä"
     }
-    else if(currentSchema.status === "Vaihe aloittamatta"){
+    else if(phase < currentSchema?.id){
       color = "#0072C6"
+      phaseText = "Vaihe aloittamatta"
     }
-    else if(currentSchema.status === "Vaihe suoritettu"){
+    else if(phase > currentSchema?.id){
       color = "#008741"
+      phaseText = "Vaihe suoritettu"
     }
     else{
       color = ""
+      phaseText = ""
     }
 
     const isResponsible = authUtils.isResponsible(currentUserId, users)
@@ -636,7 +654,7 @@ class ProjectEditPage extends Component {
               setFilterAmount={this.setFilterAmount}
               phasePrefix={currentSchema.list_prefix}
               phaseTitle={currentSchema.title}
-              phaseStatus={currentSchema.status}
+              phaseStatus={phaseText}
               phaseColor={color}
               showSections={this.showSections}
               documents={documents}

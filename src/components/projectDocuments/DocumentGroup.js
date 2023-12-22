@@ -5,14 +5,14 @@ import projectUtils from '../../utils/projectUtils'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 
-const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserResponsible, schema, attribute_data, selectedPhase, search }) => {
+const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserResponsible, schema, attribute_data, selectedPhase, search, project }) => {
   const {t} = useTranslation()
 
   const checkRequired = () => {
     const index = getCorrectPhaseIndex()
     let hasErrors
     const currentSchema = schema?.phases[index]
-    const errorFields = projectUtils.getErrorFields(true,attribute_data, currentSchema)
+    const errorFields = projectUtils.getErrorFields(true,attribute_data,currentSchema,project?.phase)
     if(errorFields.length > 0){
       hasErrors = true
     }
@@ -70,7 +70,7 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
         <div className='italic-text'><p>{t('project.phase-preview-ended')}</p></div>
       </div>
     }
-    else if(schema && !requirements && scheduleAccepted && currentSchema?.status === "Vaihe käynnissä"){
+    else if(schema && !requirements && scheduleAccepted && currentSchema?.id === project?.phase){
       status = 
       <div className='document-group-requirements'>
         <div className='required-success-text'><p><IconCheck size="s" />{t('project.phase-ok')}</p></div>
@@ -117,6 +117,7 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
               search={search}
               hideButtons={schema ? hideButtons() : true}
               scheduleAccepted={schema ? isSceduleAccepted() : false}
+              project={project}
             />
           ))}
         </Accordion>
