@@ -78,7 +78,8 @@ import {
   SHOW_TIMETABLE,
   SHOW_FLOOR_AREA,
   UPDATE_FLOOR_VALUES,
-  FORM_ERROR_LIST
+  FORM_ERROR_LIST,
+  RESET_FORM_ERRORS
 } from '../actions/projectActions'
 
 export const initialState = {
@@ -131,6 +132,13 @@ export const reducer = (state = initialState, action) => {
 
   switch (action.type) {
 
+    case RESET_FORM_ERRORS: {
+      return{
+        ...state,
+        formErrorList:[],
+      }
+    }
+
     case FORM_ERROR_LIST: {
       let visibleErrors = state.formErrorList
       if(action.payload.addOrRemove && action.payload.name && !visibleErrors.includes(action.payload.name)){
@@ -144,6 +152,7 @@ export const reducer = (state = initialState, action) => {
         formErrorList:visibleErrors,
       }
     }
+
     case UPDATE_FLOOR_VALUES: {
       return{
         ...state,
