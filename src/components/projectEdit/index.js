@@ -22,7 +22,8 @@ import {
   resetTimetableSave,
   showTimetable,
   showFloorArea,
-  setLastSaved
+  setLastSaved,
+  resetFormErrors
 } from '../../actions/projectActions'
 import { fetchSchemas, setAllEditFields, clearSchemas } from '../../actions/schemaActions'
 import { fetchDocuments } from '../../actions/documentActions'
@@ -127,7 +128,6 @@ class ProjectEditPage extends Component {
   componentDidMount() {
     localStorage.removeItem("changedValues")
     window.addEventListener('resize', this.handleResize)
-    //window.addEventListener("click", this.checkClickedElement);
 
     if (window.innerWidth < 720) {
       this.setState({
@@ -169,18 +169,8 @@ class ProjectEditPage extends Component {
 
   componentWillUnmount() {
     this.props.clearSchemas()
-    //window.removeEventListener("click", this.checkClickedElement);
     window.removeEventListener('resize', this.handleResize)
   }
-
-/*    checkClickedElement = (e) => {
-    if(e.target.className && (typeof e.target.className === 'string' || e.target.className instanceof String)){
-      //Lose focus and unclock if select button is clicked
-      if(e.target.className.includes("Select-module") || e.target.parentNode.className.includes("Select-module")){
-        this.unlockAllFields()
-      }
-    }
-  }; */
 
   scroll() {
     const search = this.props.location.search
@@ -367,6 +357,7 @@ class ProjectEditPage extends Component {
   changeSection = (index,title,fields) => {
     //Show fields only from selected navigation link, not the whole phase
     this.setState({ sectionIndex: index, phaseTitle:title, fields:fields })
+    this.props.resetFormErrors()
     //Index to Header component for section title
     if(typeof this.props.getCurrentSection !== "undefined"){
       this.props.getCurrentSection(index)
@@ -732,7 +723,8 @@ class ProjectEditPage extends Component {
 ProjectEditPage.propTypes = {
   currentProject:PropTypes.object,
   project: PropTypes.object,
-  schema: PropTypes.object
+  schema: PropTypes.object,
+  resetFormErrors: PropTypes.func
 }
 
 const mapStateToProps = state => {
@@ -782,7 +774,8 @@ const mapDispatchToProps = {
   fetchDocuments,
   showTimetable,
   showFloorArea,
-  setLastSaved
+  setLastSaved,
+  resetFormErrors
 }
 
 export default withRouter(
