@@ -1044,6 +1044,7 @@
     justify-content: flex-start;
     align-items: center;
     line-height: $size18;
+    margin-bottom: $size20;
 
     .custom-card-info-container {
       display: flex;
@@ -1087,7 +1088,7 @@
     font-size: $size16;
     line-height: $size24;
     color: $color-bus;
-    margin-top: $size20;
+    margin-top: 0;
     margin-left: -$size4;
 
     div {
@@ -1099,5 +1100,16 @@
     --background-color-hover: $color-bus-light;
     text-decoration: underline;
     color: $color-bus;
+  }
+
+  .rolling-text{
+    font-family: 'Helsinki Grotesk Medium', sans-serif;
+    font-size: $size14;
+    margin-top: 0;
+    margin-left: -$size4;
+    padding-left: 0;
+    span{
+      padding-left: 0.5rem;
+    }
   }
 }

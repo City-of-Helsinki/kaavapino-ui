@@ -1,7 +1,7 @@
 import React, {useEffect,useState} from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch,useSelector } from 'react-redux';
-import {Button,IconPenLine } from 'hds-react'
+import {Button,IconPenLine,IconCheckCircle } from 'hds-react'
 import {showFloorArea, showTimetable} from '../../actions/projectActions'
 import {attributeDataSelector,deadlinesSelector} from '../../selectors/projectSelector'
 import { useTranslation } from 'react-i18next'
@@ -9,7 +9,7 @@ import infoFieldUtil from '../../utils/infoFieldUtil'
 import moment from 'moment'
 
 function CustomCard({type, props, name, data, deadlines}) {
-  const [cardValues, setCardValues] = useState(["","","","",true,0,0,0,0]);
+  const [cardValues, setCardValues] = useState(["","","","",true,0,0,0,0,"",false,""]);
   
   const attributeData = useSelector(state => attributeDataSelector(state))
   const deadlinesData = useSelector(state => deadlinesSelector(state))
@@ -18,9 +18,32 @@ function CustomCard({type, props, name, data, deadlines}) {
     setCardValues(infoFieldUtil.getInfoFieldData(type,name,data,deadlines))
   }, [])
 
-   useEffect(() => {
+  useEffect(() => {
     setCardValues(infoFieldUtil.getInfoFieldData(props.placeholder,props.input?.name,attributeData,deadlinesData))
   }, [attributeData,deadlinesData])
+
+  const getFieldsInOrder = (phase,heading,container,container2,editDataLink) => {
+    if(phase === "Ehdotus"){
+      return (
+        <div className='custom-card' >
+        <div className='heading'>{heading}</div>
+        {container}
+        {container2}
+        {editDataLink}
+      </div>
+      )
+    }
+    else{
+      return (
+        <div className='custom-card' >
+          <div className='heading'>{heading}</div>
+          {container2}
+          {container}
+          {editDataLink}
+        </div>
+      )
+    }
+  }
 
   const dispatch = useDispatch()
   const { t } = useTranslation()
@@ -29,23 +52,71 @@ function CustomCard({type, props, name, data, deadlines}) {
   let heading
   let fields
   let editDataLink
+  let boardFields = ""
+  let container
+  let container2
   const unit = "k-m²"
+
   if(type === "Tarkasta esilläolopäivät"){
     let startsText = props?.fieldData?.fieldset_attributes[0]?.label || ""
     let endsText = props?.fieldData?.fieldset_attributes[1]?.label || ""
     buttonText = t('custom-card.modify-date')
     heading = t('custom-card.check-date')
+
     fields = <>  
+    {cardValues[0] ?
     <div className='custom-card-info-container'>
       <div className='custom-card-info'>{startsText}</div>
-      <div className='custom-card-date'><span className='date'>{moment(cardValues[0]).format('DD.MM.YYYY')}</span><span className='divider'>-</span><span className='status'> {cardValues[2] ? t('custom-card.modified') : t('custom-card.evaluation')}</span></div>
+      <div className='custom-card-date'><span className='date'>{moment(cardValues[0]).format('DD.MM.YYYY')}</span><span className='divider'>-</span><span className='status'> {!cardValues[4] ? cardValues[2] ? t('custom-card.modified') : t('custom-card.evaluation') : t('custom-card.confirmed')}</span></div>
     </div>
+    :
+    ""
+    }
+    {cardValues[1] ?
     <div className='custom-card-info-container'>
       <div className='custom-card-info'>{endsText}</div>
-      <div className='custom-card-date'><span className='date'>{moment(cardValues[1]).format('DD.MM.YYYY')}</span><span className='divider'>-</span><span className='status'> {cardValues[3] ? t('custom-card.modified') : t('custom-card.evaluation')}</span></div>
+      <div className='custom-card-date'><span className='date'>{moment(cardValues[1]).format('DD.MM.YYYY')}</span><span className='divider'>-</span><span className='status'> {!cardValues[4] ? cardValues[3] ? t('custom-card.modified') : t('custom-card.evaluation') : t('custom-card.confirmed')}</span></div>
     </div>
+    :
+    ""
+    }
     </>
-    editDataLink = <Button size='small' iconLeft={<IconPenLine />} onClick={() => dispatch(showTimetable(true))} variant="supplementary" theme="black" role="link">{buttonText}</Button>
+
+    editDataLink = 
+    cardValues[4] && cardValues[10]
+    ? 
+    <div className='rolling-text'>
+      <IconCheckCircle aria-hidden="true" />
+      <span>{t('custom-card.already-confirmed')}</span>
+    </div>
+    :     
+    <Button size='small' iconLeft={<IconPenLine />} onClick={() => dispatch(showTimetable(true))} variant="supplementary" theme="black" role="link">{buttonText}</Button> 
+
+    boardFields = 
+    <div className='custom-card-info-container'>
+      <div className='custom-card-info'>{t(cardValues[11])}</div>
+      <div className='custom-card-date'><span className='date'>{moment(cardValues[9]).format('DD.MM.YYYY')}</span><span className='divider'>-</span><span className='status'> {!cardValues[10] ? cardValues[9] ? t('custom-card.modified') : t('custom-card.evaluation') : t('custom-card.confirmed')}</span></div>
+    </div>
+
+    container =       
+    cardValues[9] ?
+      <div className='custom-card-container'>
+        <div className='custom-card-item-container'>
+          {boardFields}
+        </div>
+      </div>
+      :
+      ""
+
+    container2 = 
+    cardValues[0] || cardValues[1] ?
+      <div className='custom-card-container'>
+        <div className='custom-card-item-container'>
+          {fields}
+        </div>
+      </div>
+      :
+      ""
   }
   else if(type === "Tarkasta kerrosalatiedot"){
     buttonText = t('custom-card.modify-floor-area')
@@ -69,22 +140,19 @@ function CustomCard({type, props, name, data, deadlines}) {
     </div>
     </>
     editDataLink = <Button size='small' iconLeft={<IconPenLine />} onClick={() => dispatch(showFloorArea(true))} variant="supplementary" theme="black" role="link">{buttonText}</Button>
-  }
-
-  return (
-    !cardValues[4] ?
-    <div className='custom-card' >
-      <div className='heading'>{heading}</div>
-      <div className='custom-card-container'>
-        <div className='custom-card-item-container'>
-          {fields}
-        </div>
+    container = 
+    <div className='custom-card-container'>
+      <div className='custom-card-item-container'>
+        {fields}
       </div>
-      {editDataLink}
-    </div>
-    :
-    ""
+    </div> 
+  }
+  //Order is reverse in ehdotus phase
+  return (
+    getFieldsInOrder(data?.kaavan_vaihe,heading,container,container2,editDataLink)
   )
+  
+
 }
 
 CustomCard.propTypes = {
