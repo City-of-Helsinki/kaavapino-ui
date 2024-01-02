@@ -167,11 +167,11 @@ class ProjectPage extends Component {
     this.setState({sectionIndex})
   }
 
-  getProjectEditContent = isExpert => {
+  getProjectEditContent = (isExpert,isResponsible,isAdmin) => {
     const { currentProject, users, projectSubtypes, selectedPhase, allEditFields } = this.props
     const user = projectUtils.formatUsersName(users.find(u => u.id === currentProject.user))
     const currentPhases = this.getCurrentPhases()
-
+    
     return (
       <div key="edit">
         <NavHeader
@@ -202,6 +202,7 @@ class ProjectPage extends Component {
           handleClose={() => this.toggleBaseInformationForm(false)}
           users={users}
           projectSubtypes={projectSubtypes}
+          isEditable={isResponsible || isAdmin}
         />
         <DownloadProjectDataModal
           currentProject={currentProject}
@@ -219,7 +220,7 @@ class ProjectPage extends Component {
       </div>
     )
   }
-  getProjectDocumentsContent = () => {
+  getProjectDocumentsContent = (isResponsible,isAdmin) => {
     const { currentProject, users, projectSubtypes, currentUserId, selectedPhase } = this.props
 
     return (
@@ -245,6 +246,7 @@ class ProjectPage extends Component {
           handleClose={() => this.toggleBaseInformationForm(false)}
           users={users}
           projectSubtypes={projectSubtypes}
+          isEditable={isResponsible || isAdmin}
         />
         <DownloadProjectDataModal
           currentProject={currentProject}
@@ -263,7 +265,7 @@ class ProjectPage extends Component {
     )
   }
 
-  getProjectCardContent = isUserExpert => {
+  getProjectCardContent = (isUserExpert,isResponsible,isAdmin) => {
     const { currentProject, externalDocuments, users, projectSubtypes } = this.props
 
     return (
@@ -289,6 +291,7 @@ class ProjectPage extends Component {
           handleClose={() => this.toggleBaseInformationForm(false)}
           users={users}
           projectSubtypes={projectSubtypes}
+          isEditable={isResponsible || isAdmin}
         />
         <DownloadProjectDataModal
           currentProject={currentProject}
@@ -301,15 +304,15 @@ class ProjectPage extends Component {
     )
   }
 
-  getProjectPageContent = isExpert => {
+  getProjectPageContent = (isExpert,isResponsible,isAdmin) => {
     const { edit, documents } = this.props
     if (edit) {
-      return this.getProjectEditContent(isExpert)
+      return this.getProjectEditContent(isExpert,isResponsible,isAdmin)
     }
     if (documents) {
-      return this.getProjectDocumentsContent(isExpert)
+      return this.getProjectDocumentsContent(isResponsible,isAdmin)
     }
-    return this.getProjectCardContent(isExpert)
+    return this.getProjectCardContent(isExpert,isResponsible,isAdmin)
   }
 
   changeOptions = (option) => {
@@ -344,7 +347,7 @@ class ProjectPage extends Component {
     }
   }
 
-  getProjectCardNavActions = userIsExpert => {
+  getProjectCardNavActions = (userIsExpert) => {
     const { t } = this.props
     const options = [
     {value:7,label:<><i className="icons download-icon"></i>{t('project.print-project-card')}</>}]
@@ -539,7 +542,8 @@ class ProjectPage extends Component {
     const loading = !currentProjectLoaded || !phases
 
     const userIsExpert = authUtils.isExpert(currentUserId, users)
-
+    const isResponsible = authUtils.isResponsible(currentUserId, users)
+    const isAdmin = authUtils.isAdmin(currentUserId, users)
     return (
       <>
         <Header
@@ -558,7 +562,7 @@ class ProjectPage extends Component {
         {!loading && !resettingDeadlines && (
           <div className="project-container">
             <div className="project-page-content">
-              {this.getProjectPageContent(userIsExpert)}
+              {this.getProjectPageContent(userIsExpert,isResponsible,isAdmin)}
             </div>
           </div>
         )}

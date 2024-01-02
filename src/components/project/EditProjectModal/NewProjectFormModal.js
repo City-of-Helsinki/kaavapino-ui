@@ -109,7 +109,7 @@ class NewProjectFormModal extends Component {
 
   render() {
     const { loading } = this.state
-    const { currentProject, selectedSubType, initialValues, formValues, t } = this.props
+    const { currentProject, selectedSubType, initialValues, formValues, t, isEditable } = this.props
     const showXLProjectOptions = selectedSubType === 5
     const isEdit = !!currentProject
 
@@ -171,7 +171,7 @@ class NewProjectFormModal extends Component {
                   name: PROJECT_NAME,
                   label: t('project-base.labels.name'),
                   type: 'text',
-                  editable: true
+                  editable: isEditable
                 }
               })}
               {this.getFormField({
@@ -181,7 +181,7 @@ class NewProjectFormModal extends Component {
                   label: t('project-base.labels.responsible'),
                   type: 'search-select',
                   choices: this.formatUsers(),
-                  editable: true
+                  editable: isEditable
                 }
               })}
             </Form.Group>
@@ -190,7 +190,7 @@ class NewProjectFormModal extends Component {
                 name: PUBLIC,
                 label: t('project-base.labels.is-visible'),
                 type: 'boolean',
-                editable: true
+                editable: isEditable
               },
               double: true
             })}
@@ -205,7 +205,7 @@ class NewProjectFormModal extends Component {
                   name: SUB_TYPE,
                   label: t('project-base.labels.process-size'),
                   type: 'radio',
-                  editable: true,
+                  editable: isEditable,
                   options: [
                     { value: 1, label: 'XS' },
                     { value: 2, label: 'S' },
@@ -251,7 +251,7 @@ class NewProjectFormModal extends Component {
             </Button>
             <Button
               variant="primary"
-              disabled={loading || hideSave}
+              disabled={loading || hideSave || !isEditable}
               loadingText={isEdit ? t('project.save') : t('project.create-project')}
               isLoading={loading}
               type="submit"
