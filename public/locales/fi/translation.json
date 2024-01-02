@@ -422,6 +422,10 @@
     "living":"Asuminen",
     "office":"Toimitila",
     "public":"Julkiset",
-    "other":"Muut"
+    "other":"Muut",
+    "already-confirmed":"Päivämäärät on jo vahvistettu, jos haluat muuttaa niitä ota yhteys kaavoitussihteeriin.",
+    "confirmed":"Vahvistettu",
+    "principles-board-text":"Milloin periaatteet on lautakunnassa",
+    "draft-board-text":"Milloin luonnos on lautakunnassa"
   }
 }
