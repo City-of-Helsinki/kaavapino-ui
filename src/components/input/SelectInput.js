@@ -25,7 +25,8 @@ const SelectInput = ({
   rollingInfo, 
   modifyText, 
   rollingInfoText,
-  phaseIsClosed
+  phaseIsClosed,
+  editDisabled
 }) => {
   const currentValue = []
   const oldValueRef = useRef('');
@@ -271,7 +272,7 @@ const SelectInput = ({
           onBlur={handleBlur}
           onFocus={handleFocus}
           clearable={false}
-          disabled={disabled}
+          disabled={disabled || editDisabled}
           options={currentOptions}
           value={currentSingleValue}
           onChange={data => {
@@ -297,7 +298,7 @@ const SelectInput = ({
           onBlur={handleBlur}
           onFocus={handleFocus}
           clearable={true}
-          disabled={disabled}
+          disabled={disabled || editDisabled}
           options={currentOptions}
           defaultValue={currentValue}
           onChange={data => {

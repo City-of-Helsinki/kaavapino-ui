@@ -291,6 +291,7 @@ class CustomField extends Component {
         isCurrentPhase={isCurrentPhase}
         selectedPhase={selectedPhase}
         phaseIsClosed={phaseIsClosed}
+        editDisabled={this.props.disabled}
       />
     )
   }

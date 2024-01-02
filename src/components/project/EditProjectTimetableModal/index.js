@@ -15,7 +15,7 @@ import { deadlinesSelector } from '../../../selectors/projectSelector'
 import { Button, IconInfoCircle } from 'hds-react'
 import { isArray } from 'lodash'
 import { showField } from '../../../utils/projectVisibilityUtils'
-import { isEqual } from 'lodash';
+import { isEqual } from 'lodash'
 
 class EditProjectTimeTableModal extends Component {
   constructor(props) {
@@ -114,7 +114,7 @@ class EditProjectTimeTableModal extends Component {
           formValues={formValues}
           className={className}
           isProjectTimetableEdit={true}
-          disabled={disabled?.disabled}
+          disabled={disabled?.disabled || !this.props.allowedToEdit}
         />
         {modifiedError && <div className="field-error">{modifiedError}</div>}
       </div>
@@ -186,7 +186,7 @@ class EditProjectTimeTableModal extends Component {
   render() {
     const { loading } = this.state
     const { open, formValues, deadlineSections, t, formSubmitErrors } = this.props
-
+    
     let currentSubmitErrors = Object.keys(formSubmitErrors).length > 0
 
     if (!formValues) {
@@ -226,7 +226,7 @@ class EditProjectTimeTableModal extends Component {
             </Button>
             <Button
               variant="primary"
-              disabled={loading}
+              disabled={loading || !this.props.allowedToEdit}
               loadingText={t('common.save')}
               isLoading={loading}
               type="submit"
@@ -247,7 +247,8 @@ EditProjectTimeTableModal.propTypes = {
   projectPhaseIndex: PropTypes.number,
   currentProject: PropTypes.object,
   archived: PropTypes.bool,
-  submitting: PropTypes.bool
+  submitting: PropTypes.bool,
+  allowedToEdit: PropTypes.bool
 }
 
 const mapStateToProps = state => ({

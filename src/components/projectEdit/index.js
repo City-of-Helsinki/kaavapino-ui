@@ -712,6 +712,7 @@ class ProjectEditPage extends Component {
               handleClose={() => this.handleTimetableClose()}
               projectPhaseIndex={projectPhaseIndex}
               archived={currentProject.archived}
+              allowedToEdit={isAdmin || isResponsible}
             />
           )}
         </div>
