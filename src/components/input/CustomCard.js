@@ -92,12 +92,11 @@ function CustomCard({type, props, name, data, deadlines}) {
     :     
     <Button size='small' iconLeft={<IconPenLine />} onClick={() => dispatch(showTimetable(true))} variant="supplementary" theme="black" role="link">{buttonText}</Button> 
 
-    boardFields = <>
+    boardFields = 
     <div className='custom-card-info-container'>
       <div className='custom-card-info'>{t(cardValues[11])}</div>
       <div className='custom-card-date'><span className='date'>{moment(cardValues[9]).format('DD.MM.YYYY')}</span><span className='divider'>-</span><span className='status'> {!cardValues[10] ? cardValues[9] ? t('custom-card.modified') : t('custom-card.evaluation') : t('custom-card.confirmed')}</span></div>
     </div>
-    </>
 
     container =       
     cardValues[9] ?
