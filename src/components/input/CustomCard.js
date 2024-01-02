@@ -18,9 +18,32 @@ function CustomCard({type, props, name, data, deadlines}) {
     setCardValues(infoFieldUtil.getInfoFieldData(type,name,data,deadlines))
   }, [])
 
-   useEffect(() => {
+  useEffect(() => {
     setCardValues(infoFieldUtil.getInfoFieldData(props.placeholder,props.input?.name,attributeData,deadlinesData))
   }, [attributeData,deadlinesData])
+
+  const getFieldsInOrder = (phase,heading,container,container2,editDataLink) => {
+    if(phase === "Ehdotus"){
+      return (
+        <div className='custom-card' >
+        <div className='heading'>{heading}</div>
+        {container}
+        {container2}
+        {editDataLink}
+      </div>
+      )
+    }
+    else{
+      return (
+        <div className='custom-card' >
+          <div className='heading'>{heading}</div>
+          {container2}
+          {container}
+          {editDataLink}
+        </div>
+      )
+    }
+  }
 
   const dispatch = useDispatch()
   const { t } = useTranslation()
@@ -85,7 +108,7 @@ function CustomCard({type, props, name, data, deadlines}) {
       </div>
       :
       ""
-      
+
     container2 = 
     cardValues[0] || cardValues[1] ?
       <div className='custom-card-container'>
@@ -126,26 +149,10 @@ function CustomCard({type, props, name, data, deadlines}) {
     </div> 
   }
   //Order is reverse in ehdotus phase
-  if(data?.kaavan_vaihe === "Ehdotus"){
-    return (
-      <div className='custom-card' >
-        <div className='heading'>{heading}</div>
-        {container}
-        {container2}
-        {editDataLink}
-      </div>
-    )
-  }
-  else{
-    return (
-      <div className='custom-card' >
-        <div className='heading'>{heading}</div>
-        {container2}
-        {container}
-        {editDataLink}
-      </div>
-    )
-  }
+  return (
+    getFieldsInOrder(data?.kaavan_vaihe,heading,container,container2,editDataLink)
+  )
+  
 
 }
 
