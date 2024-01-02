@@ -112,6 +112,7 @@ class EditFloorAreaFormModal extends Component {
           error={error}
           formValues={formValues}
           isFloorCalculation={true}
+          hasEditRights={this.props.allowedToEdit}
           className="modal-field"
         />
       </div>
@@ -161,7 +162,7 @@ class EditFloorAreaFormModal extends Component {
             </Button>
             <Button
               variant="primary"
-              disabled={loading}
+              disabled={loading || !this.props.allowedToEdit}
               loadingText={t('common.save')}
               isLoading={loading}
               type="submit"

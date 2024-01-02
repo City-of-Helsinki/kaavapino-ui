@@ -702,6 +702,7 @@ class ProjectEditPage extends Component {
               open
               saveProjectFloorArea={saveProjectFloorArea}
               handleClose={() => this.handleFloorAreaClose()}
+              allowedToEdit={isAdmin || isResponsible}
             />
           )}
           {this.props.showTimetableForm && (

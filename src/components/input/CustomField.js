@@ -626,7 +626,8 @@ class CustomField extends Component {
       className,
       handleSave,
       handleBlurSave,
-      insideFieldset
+      insideFieldset,
+      hasEditRights
     } = this.props
     const type = field.type
     if (type === 'file' || type === 'image') {
@@ -688,7 +689,7 @@ class CustomField extends Component {
           field.type === 'integer'
             ? val => (val || val === 0 ? Number(val) : null)
             : null,
-        disabled: field.generated || !field.editable
+        disabled: field.generated || !field.editable || !hasEditRights
       }
       return (
         <AutofillInputCalculations

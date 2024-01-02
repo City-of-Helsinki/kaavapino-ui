@@ -12,7 +12,8 @@ const Matrix = ({
   attributeData,
   formName,
   isFloorCalculation,
-  insideFieldset
+  insideFieldset,
+  hasEditRights
 }) => {
   const { rows, columns, fields } = matrix
 
@@ -87,6 +88,7 @@ const Matrix = ({
                             formName={formName}
                             isFloorCalculation={isFloorCalculation}
                             insideFieldset={insideFieldset}
+                            hasEditRights={hasEditRights}
                           />
                         </span>
                       )}

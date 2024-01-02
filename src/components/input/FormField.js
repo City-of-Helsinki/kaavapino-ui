@@ -39,6 +39,7 @@ const FormField = ({
   isCurrentPhase,
   selectedPhase,
   phaseIsClosed,
+  hasEditRights,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -86,6 +87,7 @@ const FormField = ({
             formValues={formValues}
             formName={formName}
             insideFieldset={insideFieldset}
+            hasEditRights={hasEditRights}
           />
         )
       default:
