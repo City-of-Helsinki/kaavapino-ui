@@ -165,15 +165,6 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       originalData = false
     }
 
-
-    let originalData
-    if (custom?.attributeData){
-      originalData = custom?.attributeData[input?.name]
-    }
-    else{
-      originalData = false
-    }
-
     if (event.target.value !== originalData) {
       //prevent saving if locked
       if (!readonly) {
