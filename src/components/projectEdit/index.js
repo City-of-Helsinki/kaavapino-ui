@@ -22,7 +22,8 @@ import {
   resetTimetableSave,
   showTimetable,
   showFloorArea,
-  setLastSaved
+  setLastSaved,
+  resetFormErrors
 } from '../../actions/projectActions'
 import { fetchSchemas, setAllEditFields, clearSchemas } from '../../actions/schemaActions'
 import { fetchDocuments } from '../../actions/documentActions'
@@ -127,7 +128,6 @@ class ProjectEditPage extends Component {
   componentDidMount() {
     localStorage.removeItem("changedValues")
     window.addEventListener('resize', this.handleResize)
-    //window.addEventListener("click", this.checkClickedElement);
 
     if (window.innerWidth < 720) {
       this.setState({
@@ -169,18 +169,8 @@ class ProjectEditPage extends Component {
 
   componentWillUnmount() {
     this.props.clearSchemas()
-    //window.removeEventListener("click", this.checkClickedElement);
     window.removeEventListener('resize', this.handleResize)
   }
-
-/*    checkClickedElement = (e) => {
-    if(e.target.className && (typeof e.target.className === 'string' || e.target.className instanceof String)){
-      //Lose focus and unclock if select button is clicked
-      if(e.target.className.includes("Select-module") || e.target.parentNode.className.includes("Select-module")){
-        this.unlockAllFields()
-      }
-    }
-  }; */
 
   scroll() {
     const search = this.props.location.search
@@ -279,29 +269,42 @@ class ProjectEditPage extends Component {
   }
   createHeadings = () => {
     const { schema } = this.props
-    const allPhases = schema && schema.phases
+    const allPhases = schema?.phases
 
     const newPhases = []
 
-    allPhases &&
-      allPhases.forEach(phase => {
-        const sections = []
-        phase.sections.forEach(section => {
-          sections.push({ title: section.title, fields: section.fields })
-        })
-
-        const newPhase = {
-          id: phase.id,
-          title: phase.title,
-          color: phase.color,
-          color_code: phase.color_code,
-          list_prefix: phase.list_prefix,
-          status:phase.status,
-          sections: sections
-        }
-
-        newPhases.push(newPhase)
+    allPhases?.forEach(phase => {
+      const sections = []
+      phase.sections.forEach(section => {
+        sections.push({ title: section.title, fields: section.fields })
       })
+
+      let phaseText
+      if(this.props.currentProject?.phase === phase?.id){
+        phaseText = "Vaihe käynnissä"
+      }
+      else if(this.props.currentProject?.phase < phase?.id){
+        phaseText = "Vaihe aloittamatta"
+      }
+      else if(this.props.currentProject?.phase > phase?.id){
+        phaseText = "Vaihe suoritettu"
+      }
+      else{
+        phaseText = ""
+      }
+
+      const newPhase = {
+        id: phase.id,
+        title: phase.title,
+        color: phase.color,
+        color_code: phase.color_code,
+        list_prefix: phase.list_prefix,
+        status:phaseText,
+        sections: sections
+      }
+
+      newPhases.push(newPhase)
+    })
     return newPhases
   }
 
@@ -354,6 +357,7 @@ class ProjectEditPage extends Component {
   changeSection = (index,title,fields) => {
     //Show fields only from selected navigation link, not the whole phase
     this.setState({ sectionIndex: index, phaseTitle:title, fields:fields })
+    this.props.resetFormErrors()
     //Index to Header component for section title
     if(typeof this.props.getCurrentSection !== "undefined"){
       this.props.getCurrentSection(index)
@@ -369,14 +373,14 @@ class ProjectEditPage extends Component {
 
     this.props.projectSetChecking(this.props.checking)
     const {
-      project: { attribute_data },
+      project: { attribute_data,phase },
       schema,
       t
     } = this.props
 
     const currentSchemaIndex = schema.phases.findIndex(s => s.id === schemaUtils.getSelectedPhase(this.props.location.search,this.props.selectedPhase))
     const currentSchema = schema.phases[currentSchemaIndex]
-    const errorFields = projectUtils.getErrorFields(false,attribute_data, currentSchema)
+    const errorFields = projectUtils.getErrorFields(false,attribute_data,currentSchema,phase)
     this.setState({errorFields:errorFields})
     if(errorFields?.length === 0 && !documentsDownloaded){
       const elements = <div>
@@ -538,18 +542,23 @@ class ProjectEditPage extends Component {
       return <LoadingSpinner className="loader-icon" />
     }
 
-    let color;
-    if(currentSchema.status === "Vaihe käynnissä"){
+    let color
+    let phaseText
+    if(phase === currentSchema?.id){
       color = "#FFC61E"
+      phaseText = "Vaihe käynnissä"
     }
-    else if(currentSchema.status === "Vaihe aloittamatta"){
+    else if(phase < currentSchema?.id){
       color = "#0072C6"
+      phaseText = "Vaihe aloittamatta"
     }
-    else if(currentSchema.status === "Vaihe suoritettu"){
+    else if(phase > currentSchema?.id){
       color = "#008741"
+      phaseText = "Vaihe suoritettu"
     }
     else{
       color = ""
+      phaseText = ""
     }
 
     const isResponsible = authUtils.isResponsible(currentUserId, users)
@@ -636,7 +645,7 @@ class ProjectEditPage extends Component {
               setFilterAmount={this.setFilterAmount}
               phasePrefix={currentSchema.list_prefix}
               phaseTitle={currentSchema.title}
-              phaseStatus={currentSchema.status}
+              phaseStatus={phaseText}
               phaseColor={color}
               showSections={this.showSections}
               documents={documents}
@@ -685,6 +694,7 @@ class ProjectEditPage extends Component {
             sectionIndex={this.state.sectionIndex}
             showSection={this.state.showSection}
             deadlines={currentProject.deadlines}
+            phaseIsClosed={formDisabled}
           />
           {this.props.showFloorAreaForm && (
             <EditFloorAreaFormModal
@@ -692,6 +702,7 @@ class ProjectEditPage extends Component {
               open
               saveProjectFloorArea={saveProjectFloorArea}
               handleClose={() => this.handleFloorAreaClose()}
+              allowedToEdit={isAdmin || isResponsible}
             />
           )}
           {this.props.showTimetableForm && (
@@ -702,6 +713,7 @@ class ProjectEditPage extends Component {
               handleClose={() => this.handleTimetableClose()}
               projectPhaseIndex={projectPhaseIndex}
               archived={currentProject.archived}
+              allowedToEdit={isAdmin || isResponsible}
             />
           )}
         </div>
@@ -711,7 +723,10 @@ class ProjectEditPage extends Component {
 }
 
 ProjectEditPage.propTypes = {
-  currentProject:PropTypes.object
+  currentProject:PropTypes.object,
+  project: PropTypes.object,
+  schema: PropTypes.object,
+  resetFormErrors: PropTypes.func
 }
 
 const mapStateToProps = state => {
@@ -761,7 +776,8 @@ const mapDispatchToProps = {
   fetchDocuments,
   showTimetable,
   showFloorArea,
-  setLastSaved
+  setLastSaved,
+  resetFormErrors
 }
 
 export default withRouter(

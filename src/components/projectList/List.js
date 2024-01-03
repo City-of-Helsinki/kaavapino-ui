@@ -161,7 +161,7 @@ class List extends Component {
         const modifiedField = this.props.t('projects.table.modified');
 
         let rowObject = {}
-        rowObject[nameField] = <Link to={`/${listItem.id}`}>{truncate(listItem.name, { length: 30 })}</Link>
+        rowObject[nameField] = <Link to={`/projects/${listItem.id}`}>{truncate(listItem.name, { length: 30 })}</Link>
         rowObject[projecField] = listItem.projectId
         rowObject[pinoField] = listItem.pino_number
         rowObject[sizeField] = listItem.subtype

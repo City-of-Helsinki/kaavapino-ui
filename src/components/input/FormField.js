@@ -38,6 +38,8 @@ const FormField = ({
   rollingInfo,
   isCurrentPhase,
   selectedPhase,
+  phaseIsClosed,
+  hasEditRights,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -65,7 +67,7 @@ const FormField = ({
 
   const renderField = (newProps) => {
     let newField = field
-    let rollingInfoText = "Tieto siirtynyt aiemmasta vaiheesta"
+    let rollingInfoText = "Tieto siirtyy vaiheiden välillä ja sitä voi täydentää"
     let nonEditable = false
     if(newField?.autofill_readonly || newField.display === 'readonly_checkbox'){
       rollingInfoText = "Tieto on automaattisesti muodostettu"
@@ -85,6 +87,7 @@ const FormField = ({
             formValues={formValues}
             formName={formName}
             insideFieldset={insideFieldset}
+            hasEditRights={hasEditRights}
           />
         )
       default:
@@ -114,6 +117,7 @@ const FormField = ({
             nonEditable={nonEditable}
             isCurrentPhase={isCurrentPhase}
             selectedPhase={selectedPhase}
+            phaseIsClosed={phaseIsClosed}
           />
         )
     }
@@ -302,7 +306,8 @@ FormField.propTypes = {
   isProjectTimetableEdit:PropTypes.bool,
   rollingInfo:PropTypes.bool,
   isCurrentPhase:PropTypes.bool,
-  selectedPhase: PropTypes.number
+  selectedPhase: PropTypes.number,
+  phaseIsClosed: PropTypes.bool
 }
 
 export default withTranslation()(FormField)

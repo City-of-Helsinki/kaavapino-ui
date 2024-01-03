@@ -18,9 +18,9 @@ import { authUserSelector } from '../../selectors/authSelector'
 import { lastSavedSelector,pollSelector,savingSelector,selectedPhaseSelector } from '../../selectors/projectSelector'
 import { schemaSelector } from '../../selectors/schemaSelector'
 import schemaUtils from '../../utils/schemaUtils'
-import {useInterval} from '../../hooks/connectionPoller';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.min.css';
+import {useInterval} from '../../hooks/connectionPoller'
+import { toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.min.css'
 
 const Header = props => {
   const { t } = useTranslation()
@@ -33,6 +33,7 @@ const Header = props => {
   const [errorCount,setErrorCount] = useState(1)
   const [phaseTitle,setPhaseTitle] = useState("")
   const [sectionTitle,setSectionTitle] = useState("")
+  const [existingErrors,setExistingErrors] = useState([])
 
   const history = useHistory();
   const spinnerRef = useRef(null);
@@ -111,8 +112,6 @@ const Header = props => {
   useEffect(() => {
     let latestUpdate
     let newErrorField
-    //If true error is already shown to user so do not pop another toastr
-    const found = errorFields.some(r=> lastSaved?.fields?.includes(r))
 
     if(lastSaved?.time && lastSaved?.status){
         latestUpdate = {status:t('header.edit-menu-saved'),time:lastSaved.time}
@@ -234,8 +233,10 @@ const Header = props => {
         if(lastSaved?.status === "error" || lastSaved?.status === "field_error"){
           latestUpdate = {status:t('header.edit-menu-save-fail'),time:lastSaved.time}
           let errors = errorCount
-          // show new toastr error
+          const found = lastSaved?.fields.every(r=> existingErrors.includes(r))
+          //If true every error is already shown to user so do not pop another toastr
           if(!found){
+            // show new toastr error
             toast.error(elements, {
               toastId:errorCount,
               className: "saveFailToastr",
@@ -251,10 +252,19 @@ const Header = props => {
             });
             //Add error toast count, used as an toastid needed to close correct toast
             setErrorCount(errors + 1)
+            setErrorFields(lastSaved?.fields)
+            setErrorValues(lastSaved?.values)
+            setLatestErrorField(newErrorField)
+            const newError = lastSaved?.fields[lastSaved?.fields.length - 1]
+            //Push to state if not existing in it
+            if(!existingErrors.includes(newError)){
+              let errorList = existingErrors
+              errorList.push(newError)
+              //this state controls error toastr pop up
+              setExistingErrors(errorList)
+            }
           }
-          setErrorFields(lastSaved?.fields)
-          setErrorValues(lastSaved?.values)
-          setLatestErrorField(newErrorField)
+
         }
         else if(lastSaved?.status === "success" && connection.connection){
           //set polling time to default
@@ -369,6 +379,12 @@ const Header = props => {
     history.push(path)
   }
 
+  const navigateBackToEdit = () => {
+    let path = history.location.pathname
+    path = path.replace('documents','edit');
+    history.push(path)
+  }
+
   const pathToCheck = props.location.pathname
 
   if(pathToCheck.endsWith('/edit')){
@@ -394,6 +410,19 @@ const Header = props => {
         </Navigation.Row>
       </Navigation>
       </div>
+    )
+  }
+  else if (pathToCheck.endsWith('/documents')) {
+    return (
+        <div className='document-page-header'>
+          <Navigation
+              label="navigation"
+          >
+            <Navigation.Row variant="inline">
+              <Button onClick={() => navigateBackToEdit()} role="link" variant="supplementary" size="small" iconLeft={<IconAngleLeft />}>{t('header.documents-menu-back')}</Button>
+            </Navigation.Row>
+          </Navigation>
+        </div>
     )
   }
   else{
@@ -440,11 +469,11 @@ const Header = props => {
               as="a"
               label={t('header.projects')}
               onClick={navigateToProjects}
-              className={(props.location.pathname === "/projects")
+              className={(props.location.pathname.startsWith("/projects"))
               ? "header-nav-item active"
               : "header-nav-item " 
             }
-              active={(props.location.pathname === "/projects")
+              active={(props.location.pathname.startsWith("/projects"))
               ? true
               : false 
               }

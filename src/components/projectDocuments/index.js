@@ -81,6 +81,7 @@ function ProjectDocumentsPage(props) {
           attribute_data={project.attribute_data}
           selectedPhase={selectedPhase}
           search={search}
+          project={project}
         />
       ))}
     </div>

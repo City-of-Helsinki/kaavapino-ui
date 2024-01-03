@@ -41,11 +41,11 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       //!ismount skips initial render
       if(hasError){
         //Adds field to error list that don't trigger toastr right away (too many chars,empty field etc) and shows them when trying to save
-        dispatch(formErrorList(true,custom.label))
+        dispatch(formErrorList(true,input.name))
       }
       else{
         //removes field from error list
-        dispatch(formErrorList(false,custom.label))
+        dispatch(formErrorList(false,input.name))
       }
     }
   }, [hasError])
@@ -157,7 +157,14 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       //Sent a call to unlock field to backend
       custom.handleUnlockField(input.name)
     }
-    const originalData = custom?.attributeData[input.name]
+
+    let originalData
+    if (custom?.attributeData){
+      originalData = custom?.attributeData[input?.name]
+    }
+    else{
+      originalData = false
+    }
     if (event.target.value !== originalData) {
       //prevent saving if locked
       if (!readonly) {
@@ -257,8 +264,8 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
         modifyText={custom.modifyText}
         rollingInfoText={custom.rollingInfoText}
         editRollingField={editRollingField}
-        isCurrentPhase={custom.isCurrentPhase}
-        selectedPhase={custom.selectedPhase}
+        type={"input"}
+        phaseIsClosed={custom.phaseIsClosed}
       />
       :    
       <div className={custom.disabled || !inputUtils.hasError(error).toString() || !hasError ? "text-input " : "text-input " +t('project.error')}>

@@ -482,7 +482,7 @@ function* createProject() {
     }
     yield put(createProjectSuccessful(createdProject))
     if (createdProject.public || createdProject.user === userId) {
-      yield put(push(`/${createdProject.id}/edit`))
+      yield put(push(`/projects/${createdProject.id}/edit`))
     }
     yield put(setSubmitSucceeded(NEW_PROJECT_FORM))
   } catch (e) {
@@ -775,15 +775,17 @@ function* saveProject(data) {
 
 function* changeProjectPhase({ payload: phase }) {
   try {
-    yield call(saveProject)
-    const currentProjectId = yield select(currentProjectIdSelector)
-    const updatedProject = yield call(
-      projectApi.patch,
-      { phase },
-      { path: { id: currentProjectId } },
-      ':id/'
-    )
-    yield put(changeProjectPhaseSuccessful(updatedProject))
+    const saveReady = yield call(saveProjectAction)
+    if(saveReady){
+      const currentProjectId = yield select(currentProjectIdSelector)
+      const updatedProject = yield call(
+        projectApi.patch,
+        { phase },
+        { path: { id: currentProjectId } },
+        ':id/'
+      )
+      yield put(changeProjectPhaseSuccessful(updatedProject))
+    }
   } catch (e) {
     yield put(error(e))
     yield put(changeProjectPhaseFailure())

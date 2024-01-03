@@ -16,8 +16,7 @@ const RadioBooleanButton = ({
   rollingInfo, 
   modifyText, 
   rollingInfoText,
-  isCurrentPhase,
-  selectedPhase
+  phaseIsClosed
 }) => {
   const [radioValue, setRadioValue] = useState(null)
   const [editField,setEditField] = useState(false)
@@ -62,8 +61,8 @@ const RadioBooleanButton = ({
         modifyText={modifyText}
         rollingInfoText={rollingInfoText}
         editRollingField={editRollingField}
-        isCurrentPhase={isCurrentPhase}
-        selectedPhase={selectedPhase}
+        type={"radio"}
+        phaseIsClosed={phaseIsClosed}
       />
       : 
       <div className={className}>

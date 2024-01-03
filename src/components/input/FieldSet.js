@@ -97,16 +97,60 @@ const FieldSet = ({
 
   OutsideClick(accordianRef, handleOutsideClick)
 
+  const getCorrectValueType = (values,valueNameKey) => {
+    for (const [key, value] of Object.entries(values)) {
+      if(key === valueNameKey){
+        if(value?.ops){
+          let richText = []
+          let val = value?.ops
+          if(Array.isArray(val)){
+            for (let i = 0; i < val.length; i++) {
+              richText.push(val[i].insert);
+            }
+          }
+          return richText.toString()
+        }
+        else if(value?.name){
+          if(value?.description){
+            return value.description
+          }
+          return value.name.toString()
+        }
+        else {
+          return value
+        }
+      }
+    }
+  }
+
+  const getValueName = (values,fields) => {
+    //Name for fieldset is always the first value, should be set that way in Excel for fieldsets
+    let valueNameKey
+    let valueType
+    if(values){
+      fields.some((field) => {
+        if (field.fieldset_index !== null) {
+          valueNameKey = field.name?.toString()
+          return true;
+        }
+      })
+      valueType = getCorrectValueType(values,valueNameKey)
+    }
+
+    return valueType || <span className='italic'>Tieto puuttuu</span>
+  }
+
   return (
     <div className='fieldset-main-container' ref={accordianRef}>
     <React.Fragment>
       <div className='fieldset-info'>{t('project.fieldset-info', { fieldAmount: getNumberOfFieldsets() })}</div>
       {sets.map((set, i) => {
+        const setValues = get(formValues, set)
         const fieldsetDisabled = lockStatus?.lockStyle && !lockStatus?.owner && lockStatus?.fieldIdentifier === set ? true : false;
         const deleted = get(formValues, set + '._deleted')
         const automatically_added = get(formValues, set + '._automatically_added')
         const lockedElement = fieldsetDisabled ? <span className="input-locked"> Käyttäjä {lockStatus.lockStyle.lockData.attribute_lock.user_name} {lockStatus.lockStyle.lockData.attribute_lock.user_email} on muokkaamassa kenttää<IconLock></IconLock></span> : <></>
-        const lockName = <><span className='accoardian-header-text'>{name}</span> {lockedElement}</>
+        const lockName = <><span className='accoardian-header-text'>{getValueName(setValues,fields)}</span> {lockedElement}</>
         return (
           <React.Fragment key={`${name}-${i}`}>
             {!deleted && hiddenIndex !== i && (
@@ -160,7 +204,7 @@ const FieldSet = ({
                   const fieldUpdated =
                     updated && updated.new_value && has(updated.new_value[0], field.name)
 
-                  let rollingInfoText = "Tieto siirtynyt aiemmasta vaiheesta"
+                  let rollingInfoText = "Tieto siirtyy vaiheiden välillä ja sitä voi täydentää"
                   let nonEditable = false
                   if(isReadOnly || field?.display === 'readonly_checkbox'){
                     rollingInfoText = "Tieto on automaattisesti muodostettu"
@@ -275,21 +319,24 @@ const FieldSet = ({
         )
       })}
       {!disable_fieldset_delete_add && (
-      <Button
-        className={`fieldset-button-add ${checking && projectUtils.hasFieldsetErrors(name, fields, attributeData) ? 'fieldset-internal-error' : null
-          }`}
-        onClick={() => {
-          sets.push({})
-          handleBlur()
-          handleOutsideClick()
-        }}
-        disabled={disabled || saving || visibleErrors.length > 0}
-        variant="supplementary"
-        size='small'
-        iconLeft={<IconPlus/>}
-      >
-        {t('project.add')}
-      </Button>
+      <>
+        <Button
+          className={`fieldset-button-add ${checking && projectUtils.hasFieldsetErrors(name, fields, attributeData) ? 'fieldset-internal-error' : null
+            }`}
+          onClick={() => {
+            sets.push({})
+            handleBlur()
+            handleOutsideClick()
+          }}
+          disabled={disabled || saving || visibleErrors.length > 0}
+          variant="supplementary"
+          size='small'
+          iconLeft={<IconPlus/>}
+        >
+          {t('project.add')}
+        </Button>
+        {visibleErrors?.length > 0 ? <div className="error-text add-error">{t('project.error-prevent-add')}</div> : ""}
+      </>
       )}
     </React.Fragment>
     </div>
@@ -305,7 +352,8 @@ const mapStateToProps = state => ({
 FieldSet.propTypes = {
   rollingInfo: PropTypes.bool,
   unlockAllFields:PropTypes.func,
-  saving: PropTypes.bool
+  saving: PropTypes.bool,
+  fields: PropTypes.object
 }
 
 export default connect(mapStateToProps)(FieldSet)

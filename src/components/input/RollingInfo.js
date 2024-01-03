@@ -4,9 +4,12 @@ import { usersSelector } from '../../selectors/userSelector'
 import {IconPenLine,IconCheckCircle,Button } from 'hds-react'
 import projectUtils from '../../utils/projectUtils'
 import ReactQuill from 'react-quill'
+
+import infoBothDir from '../../assets/icons/Infobothdir.svg'
 import PropTypes from 'prop-types'
 
-function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField,isCurrentPhase,selectedPhase,type}) {
+function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField,type,phaseIsClosed}) {
+
 
   const users = useSelector(state => usersSelector(state))
   let inputText = value
@@ -15,8 +18,7 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
     const user = projectUtils.formatUsersName(users.find(u => u.id === value))
     inputText = user
   } 
-  //Starting page code for different sized projects(xs-xl)
-  const firstPhase = selectedPhase === 1 || selectedPhase === 7 || selectedPhase === 13 || selectedPhase === 19 || selectedPhase === 25
+
 
   const openEdit = () => {
     editRollingField()
@@ -41,20 +43,25 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
       {nonEditable ? 
       <></> 
       : 
-      <Button disabled={!firstPhase && !isCurrentPhase} onClick={() => {openEdit()}} size="small" variant="supplementary" iconLeft={<IconPenLine />}>
+      <Button disabled={phaseIsClosed} onClick={() => {openEdit()}} size="small" variant="supplementary" iconLeft={<IconPenLine />}>
         {modifyText}
       </Button>}
     </div>
-    {!nonEditable && !firstPhase && !isCurrentPhase ?
-    <div className='rolling-text'></div> :
+    {nonEditable ?
     <div className='rolling-text'>
-      {firstPhase && rollingInfoText === "Tieto siirtynyt aiemmasta vaiheesta" ? 
-      <></> 
-      : 
+      <IconCheckCircle aria-hidden="true" />
+      <span>{rollingInfoText}</span>
+    </div> :
+    <div className='rolling-text'>
+    {value ?
       <>
-        <IconCheckCircle aria-hidden="true" /><span>{rollingInfoText}</span>
+        <img alt='' aria-hidden="true" src={infoBothDir} />
+        <span>{rollingInfoText}</span>
       </>
-      }
+      :
+      <>
+      </>
+    }
     </div>
     }
   </>
@@ -68,9 +75,8 @@ RollingInfo.propTypes = {
   modifyText: PropTypes.string,
   rollingInfoText: PropTypes.string,
   editRollingField: PropTypes.func,
-  isCurrentPhase:PropTypes.bool,
-  selectedPhase:PropTypes.number,
-  type:PropTypes.string
+  type:PropTypes.string,
+  phaseIsClosed: PropTypes.bool
 }
 
 export default RollingInfo

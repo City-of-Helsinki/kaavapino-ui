@@ -101,7 +101,11 @@ export const SHOW_FLOOR_AREA = "showFloorArea"
 export const LAST_MODIFIED = "lastModified"
 export const UPDATE_FLOOR_VALUES = "updateFloorValues"
 export const FORM_ERROR_LIST = "formErrorList"
+export const RESET_FORM_ERRORS = "resetFormErrors"
 
+export const resetFormErrors = () => ({
+  type: RESET_FORM_ERRORS
+})
 export const formErrorList = (addOrRemove,name) => ({
   type: FORM_ERROR_LIST,
   payload:{addOrRemove,name}

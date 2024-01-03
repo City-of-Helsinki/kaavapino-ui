@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="15px" height="15px" viewBox="0 0 15 15" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icons / Information flow both directions</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Vyöryvät-tiedot---Kentät---Final-1.0" transform="translate(-17.5, -340.5)" fill="#007A64">
+            <g id="Project-edit-view-/-Fields-/-Field-information-notification-/-Normal" transform="translate(16, 339)">
+                <g id="Group" transform="translate(9, 9) rotate(-90) translate(-9, -9)translate(1.5, 1.5)">
+                    <polygon id="Arrow-right" points="11.25 7.5 10.18125 6.45 12.13125 4.5 0.75 4.5 0.75 3 12.13125 3 10.18125 1.05 11.25 -2.22044605e-16 15 3.75"></polygon>
+                    <polygon id="Arrow-left" transform="translate(7.125, 11.25) rotate(-180) translate(-7.125, -11.25)" points="10.5 15 9.43125 13.95 11.38125 12 0 12 0 10.5 11.38125 10.5 9.43125 8.55 10.5 7.5 14.25 11.25"></polygon>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -16,8 +16,16 @@ const getPrincipleDates = (data,deadlines) =>{
   let hide = false
   let startModified = false
   let endModified = false
+  const boardDate = data?.milloin_periaatteet_lautakunnassa
+  const confirmBoard = data?.vahvista_periaatteet_lautakunnassa
+  const boardText = "custom-card.principles-board-text"
+
   if(data?.vahvista_periaatteet_esillaolo_alkaa_3 === true && data?.vahvista_periaatteet_esillaolo_paattyy_3 === true){
     hide = true
+    startDate = data?.milloin_periaatteet_esillaolo_alkaa_3
+    endDate = data?.milloin_periaatteet_esillaolo_paattyy_3
+    startModified = userHasModified("milloin_periaatteet_esillaolo_alkaa_3",deadlines,"Periaatteet")
+    endModified = userHasModified("milloin_periaatteet_esillaolo_paattyy_3",deadlines,"Periaatteet")
   }
   else if(data?.vahvista_periaatteet_esillaolo_alkaa_2 === true && data?.vahvista_periaatteet_esillaolo_paattyy_2 === true && data?.jarjestetaan_periaatteet_esillaolo_3 && data?.milloin_periaatteet_esillaolo_alkaa_3 && data?.milloin_periaatteet_esillaolo_paattyy_3){
     startDate = data?.milloin_periaatteet_esillaolo_alkaa_3
@@ -38,10 +46,14 @@ const getPrincipleDates = (data,deadlines) =>{
     endModified = userHasModified("milloin_periaatteet_esillaolo_paattyy",deadlines,"Periaatteet")
   }
   else{
+    startDate = data?.milloin_periaatteet_esillaolo_alkaa
+    endDate = data?.milloin_periaatteet_esillaolo_paattyy
+    startModified = userHasModified("milloin_periaatteet_esillaolo_alkaa",deadlines,"Periaatteet")
+    endModified = userHasModified("milloin_periaatteet_esillaolo_paattyy",deadlines,"Periaatteet")
     hide = true
   }
 
-  return [startDate,endDate,hide,startModified,endModified]
+  return [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText]
 }
 
 const getOASDates = (data,deadlines) =>{
@@ -54,6 +66,10 @@ const getOASDates = (data,deadlines) =>{
 
   if(data?.vahvista_oas_esillaolo_alkaa_3 === true && data?.vahvista_oas_esillaolo_paattyy_3 === true){
     hide = true
+    startDate = data?.milloin_oas_esillaolo_alkaa_3
+    endDate = data?.milloin_oas_esillaolo_paattyy_3
+    startModified = userHasModified("milloin_oas_esillaolo_alkaa_3",deadlines,"OAS")
+    endModified = userHasModified("milloin_oas_esillaolo_paattyy_3",deadlines,"OAS")
   }
   else if(data?.vahvista_oas_esillaolo_alkaa_2 === true && data?.vahvista_oas_esillaolo_paattyy_2 === true && data?.jarjestetaan_oas_esillaolo_3 && data?.milloin_oas_esillaolo_alkaa_3 && data?.milloin_oas_esillaolo_paattyy_3){
     startDate = data?.milloin_oas_esillaolo_alkaa_3
@@ -75,6 +91,10 @@ const getOASDates = (data,deadlines) =>{
   }
   else{
     hide = true
+    startDate = data?.milloin_oas_esillaolo_alkaa
+    endDate = data?.milloin_oas_esillaolo_paattyy
+    startModified = userHasModified("milloin_oas_esillaolo_alkaa",deadlines,"OAS")
+    endModified = userHasModified("milloin_oas_esillaolo_paattyy",deadlines,"OAS")
   }
 
   return [startDate,endDate,hide,startModified,endModified]
@@ -83,12 +103,20 @@ const getOASDates = (data,deadlines) =>{
 const getDraftDates = (data,deadlines) =>{
   //Date info luonnos
   const hide = data?.vahvista_luonnos_esillaolo_alkaa && data?.vahvista_luonnos_esillaolo_paattyy
-  const startDate = hide ? "" : data?.milloin_luonnos_esillaolo_alkaa
-  const endDate = hide ? "" : data?.milloin_luonnos_esillaolo_paattyy
-  const startModified = hide ? false : userHasModified("milloin_luonnos_esillaolo_alkaa",deadlines,"Luonnos")
-  const endModified = hide ? false : userHasModified("milloin_luonnos_esillaolo_paattyy",deadlines,"Luonnos")
+  let startDate = ""
+  let endDate = ""
+  const startModified = userHasModified("milloin_luonnos_esillaolo_alkaa",deadlines,"Luonnos")
+  const endModified = userHasModified("milloin_luonnos_esillaolo_paattyy",deadlines,"Luonnos")
+  const boardDate = data?.milloin_kaavaluonnos_lautakunnassa
+  const confirmBoard = data?.vahvista_kaavaluonnos_lautakunnassa
+  const boardText = "custom-card.draft-board-text"
 
-  return [startDate,endDate,hide,startModified,endModified]
+  if(data?.jarjestetaan_luonnos_esillaolo_1){
+    startDate = data?.milloin_luonnos_esillaolo_alkaa
+    endDate = data?.milloin_luonnos_esillaolo_paattyy
+  }
+
+  return [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText]
 }
 
 const getInfoFieldData = (placeholder,name,data,deadlines) => {
@@ -99,21 +127,22 @@ const getInfoFieldData = (placeholder,name,data,deadlines) => {
   const other = data?.muut_yhteensa || 0
 
   //Date info
-  let [startDate,endDate,hide,startModified,endModified] = ["","","",false,false]
-
+  let [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText] = ["","","",false,false,"",false,""]
   //There can be multiple start and end dates in one phases schedule at the same time
   //Show latest dates that has both start and end date and is not confirmed
   if(placeholder === "Tarkasta esilläolopäivät" && name === "tarkasta_esillaolo_periaatteet_fieldset"){
-    [startDate,endDate,hide,startModified,endModified] = getPrincipleDates(data,deadlines)
+    [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText] = getPrincipleDates(data,deadlines)
   }
-  else if(placeholder === "Tarkasta esilläolopäivät" && name === "tarkasta_esillaolo_luonnos_fieldset" && data?.luonnos_luotu && data?.jarjestetaan_luonnos_esillaolo_1 && data?.milloin_luonnos_esillaolo_alkaa && data?.milloin_luonnos_esillaolo_paattyy){
-    [startDate,endDate,hide,startModified,endModified] = getDraftDates(data,deadlines)
+  else if(placeholder === "Tarkasta esilläolopäivät" && name === "tarkasta_esillaolo_luonnos_fieldset" && data?.luonnos_luotu){
+    [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText] = getDraftDates(data,deadlines)
   }
   else if(placeholder === "Tarkasta esilläolopäivät" && name === "tarkasta_esillaolo_oas_fieldset"){
     [startDate,endDate,hide,startModified,endModified] = getOASDates(data,deadlines) 
   }
-  
-  return [startDate,endDate,startModified,endModified,hide,living,office,general,other]
+/*TODO later when excel is up to date name === "tarkasta_lautakunta_ehdotus_fieldset"
+  name === "tarkasta_lautakunta_tarkistettu_ehdotus_fieldset"*/
+
+  return [startDate,endDate,startModified,endModified,hide,living,office,general,other,boardDate,confirmBoard,boardText]
 }
   
 export default {

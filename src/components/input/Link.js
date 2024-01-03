@@ -63,8 +63,8 @@ const Link = props => {
         modifyText={props.modifyText}
         rollingInfoText={props.rollingInfoText}
         editRollingField={editRollingField}
-        isCurrentPhase={props.isCurrentPhase}
-        selectedPhase={props.selectedPhase}
+        type={"link"}
+        phaseIsClosed={props.phaseIsClosed}
       />
       :    
       <div className="link-container">
