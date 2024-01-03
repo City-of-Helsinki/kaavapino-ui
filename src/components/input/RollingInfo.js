@@ -4,10 +4,12 @@ import { usersSelector } from '../../selectors/userSelector'
 import {IconPenLine,IconCheckCircle,Button } from 'hds-react'
 import projectUtils from '../../utils/projectUtils'
 import ReactQuill from 'react-quill'
+
 import infoBothDir from '../../assets/icons/Infobothdir.svg'
 import PropTypes from 'prop-types'
 
 function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField,type,phaseIsClosed}) {
+
 
   const users = useSelector(state => usersSelector(state))
   let inputText = value
@@ -16,6 +18,7 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
     const user = projectUtils.formatUsersName(users.find(u => u.id === value))
     inputText = user
   } 
+
 
   const openEdit = () => {
     editRollingField()

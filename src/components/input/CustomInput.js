@@ -157,6 +157,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       //Sent a call to unlock field to backend
       custom.handleUnlockField(input.name)
     }
+
     let originalData
     if (custom?.attributeData){
       originalData = custom?.attributeData[input?.name]
@@ -164,7 +165,6 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
     else{
       originalData = false
     }
-
     if (event.target.value !== originalData) {
       //prevent saving if locked
       if (!readonly) {
