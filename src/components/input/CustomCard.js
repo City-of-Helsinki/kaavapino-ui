@@ -56,7 +56,6 @@ function CustomCard({type, props, name, data, deadlines}) {
   let container
   let container2
   const unit = "k-m²"
-
   if(type === "Tarkasta esilläolopäivät"){
     let startsText = props?.fieldData?.fieldset_attributes[0]?.label || ""
     let endsText = props?.fieldData?.fieldset_attributes[1]?.label || ""
