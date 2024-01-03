@@ -445,11 +445,11 @@ class ProjectListPage extends Component {
     }
   }
 
-  getDocumentsNavActions = isUserExpert => {
+  getDocumentsNavActions = hasEditRights => {
     const { t } = this.props
     return (
       <span className="header-buttons">
-        {isUserExpert && (
+        {hasEditRights && (
           <Button
             size="small"
             variant="secondary"
@@ -477,6 +477,9 @@ class ProjectListPage extends Component {
     const { t } = this.props
 
     const isExpert = authUtils.isExpert( currentUserId, users)
+    const isResponsible = authUtils.isResponsible(currentUserId, users)
+    const isAdmin = authUtils.isAdmin(currentUserId, users)
+
     return (
       <>
         <Header
@@ -488,7 +491,7 @@ class ProjectListPage extends Component {
           <NavHeader
             routeItems={[{ value: t('projects.title'), path: '/' }]}
             title={t('projects.title')}
-            actions={this.getDocumentsNavActions(isExpert)}
+            actions={this.getDocumentsNavActions(isResponsible || isAdmin)}
           />
           <NewProjectFormModal
             modalOpen={showBaseInformationForm}
@@ -496,6 +499,7 @@ class ProjectListPage extends Component {
             handleClose={() => this.toggleForm(false)}
             users={users}
             projectSubtypes={projectSubtypes}
+            isEditable={isResponsible || isAdmin}
           />
           <div className="project-list-container">{this.createTabList()}</div>
           <OwnProjectFilters
