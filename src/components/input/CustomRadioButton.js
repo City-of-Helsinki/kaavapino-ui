@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Checkbox } from 'hds-react'
+import PropTypes from 'prop-types'
 
 const RadioButton = ({
   input: { value, name, ...rest },
@@ -30,6 +31,13 @@ const RadioButton = ({
       ))}
     </span>
   )
+}
+
+RadioButton.propTypes = {
+  input: PropTypes.object,
+  meta: PropTypes.object,
+  options: PropTypes.array,
+  disabled: PropTypes.bool,
 }
 
 export default RadioButton
