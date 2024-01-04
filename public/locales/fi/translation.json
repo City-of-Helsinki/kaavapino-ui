@@ -41,7 +41,7 @@
     "own-short": "Omat",
     "all-short": "Kaikki",
     "own-long": "Omat projektit",
-    "all-long": "Kaikki projektit",
+    "all-long": "Aktiiviset projektit",
     "amount": "({{pieces}} kpl)",
     "title": "Projektit",
     "createNewProject": "Luo uusi projekti",
