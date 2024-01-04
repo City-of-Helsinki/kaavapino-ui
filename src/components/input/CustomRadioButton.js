@@ -4,7 +4,8 @@ import { Checkbox } from 'hds-react'
 const RadioButton = ({
   input: { value, name, ...rest },
   meta: { error },
-  options
+  options,
+  disabled
 }) => {
 
   const [checked, setChecked] = useState(value ? value : false)
@@ -24,6 +25,7 @@ const RadioButton = ({
           }}
           checked={option.value === checked}
           className="checkbox-item"
+          disabled={disabled}
         ></Checkbox>
       ))}
     </span>
