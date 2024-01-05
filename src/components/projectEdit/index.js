@@ -708,7 +708,7 @@ class ProjectEditPage extends Component {
               open
               saveProjectFloorArea={saveProjectFloorArea}
               handleClose={() => this.handleFloorAreaClose()}
-              allowedToEdit={isAdmin || isResponsible}
+              allowedToEdit={isResponsible}
             />
           )}
           {this.props.showTimetableForm && (
@@ -719,7 +719,7 @@ class ProjectEditPage extends Component {
               handleClose={() => this.handleTimetableClose()}
               projectPhaseIndex={projectPhaseIndex}
               archived={currentProject.archived}
-              allowedToEdit={isAdmin || isResponsible}
+              allowedToEdit={isResponsible}
             />
           )}
         </div>
