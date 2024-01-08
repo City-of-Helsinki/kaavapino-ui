@@ -120,7 +120,7 @@ export const initialState = {
   floorAreaSaved:false,
   timetableSaved:false,
   lastSaved:{},
-  connection:false,
+  connection:{"connection":false},
   showEditFloorAreaForm:false,
   showEditProjectTimetableForm:false,
   lastModified:false,
