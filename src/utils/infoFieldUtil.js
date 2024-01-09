@@ -46,8 +46,11 @@ const getPrincipleDates = (data,deadlines) =>{
     endModified = userHasModified("milloin_periaatteet_esillaolo_paattyy",deadlines,"Periaatteet")
   }
   else{
-    startDate = data?.milloin_periaatteet_esillaolo_alkaa
-    endDate = data?.milloin_periaatteet_esillaolo_paattyy
+     //Dates are optional and possibly hidden in projects
+    if(data?.jarjestetaan_periaatteet_esillaolo_1 || data?.jarjestetaan_periaatteet_esillaolo_2 || data?.jarjestetaan_periaatteet_esillaolo_3){
+      startDate = data?.milloin_periaatteet_esillaolo_alkaa
+      endDate = data?.milloin_periaatteet_esillaolo_paattyy
+    }
     startModified = userHasModified("milloin_periaatteet_esillaolo_alkaa",deadlines,"Periaatteet")
     endModified = userHasModified("milloin_periaatteet_esillaolo_paattyy",deadlines,"Periaatteet")
     hide = true
@@ -91,6 +94,7 @@ const getOASDates = (data,deadlines) =>{
   }
   else{
     hide = true
+    //Not optional in OAS phase, required to have
     startDate = data?.milloin_oas_esillaolo_alkaa
     endDate = data?.milloin_oas_esillaolo_paattyy
     startModified = userHasModified("milloin_oas_esillaolo_alkaa",deadlines,"OAS")
@@ -110,7 +114,7 @@ const getDraftDates = (data,deadlines) =>{
   const boardDate = data?.milloin_kaavaluonnos_lautakunnassa
   const confirmBoard = data?.vahvista_kaavaluonnos_lautakunnassa
   const boardText = "custom-card.draft-board-text"
-
+  //Dates are optional and possibly hidden in projects
   if(data?.jarjestetaan_luonnos_esillaolo_1){
     startDate = data?.milloin_luonnos_esillaolo_alkaa
     endDate = data?.milloin_luonnos_esillaolo_paattyy
