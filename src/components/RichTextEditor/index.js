@@ -277,7 +277,6 @@ function RichTextEditor(props) {
               }
             }
           }
-
           setValue(fieldData)
           lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
           setReadOnly(false)
@@ -524,6 +523,21 @@ function RichTextEditor(props) {
         editorRef.current.getEditor().setSelection(cursorPosition?.index);
         counter.current = editorRef.current.getEditor().getLength() -1
         setValueIsEmpty(false)
+        if(insideFieldset && (!nonEditable || !rollingInfo) && !isEqual(editorRef?.current?.getEditor()?.getContents()?.ops, dbValue?.ops)){
+          //Set onchange to redux form so values don't get offsync on fieldsets
+          setCurrentTimeout(() =>
+          setTimeout(
+            () =>
+              dispatch(
+                change(
+                  fieldFormName,
+                  inputProps.name,
+                  dbValue
+                )
+              ),
+            1
+          ))
+        }
       }
     }
   }
