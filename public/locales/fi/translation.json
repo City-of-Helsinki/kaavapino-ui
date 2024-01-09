@@ -234,7 +234,8 @@
     "noempty":"Kenttä ei saa olla tyhjä",
     "error":"Virhe",
     "error-prevent-add":"Virhe lomakkeella estää lisäyksen",
-    "fieldset-info":"Yhteensä {{fieldAmount}} tietuetta."
+    "fieldset-info":"Yhteensä {{fieldAmount}} tietuetta.",
+    "no-fields":"Suodatinvalinnalla ei löytynyt tämän otsikon alta suodatettavia kenttiä."
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}",
