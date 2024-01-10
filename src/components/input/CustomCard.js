@@ -8,18 +8,18 @@ import { useTranslation } from 'react-i18next'
 import infoFieldUtil from '../../utils/infoFieldUtil'
 import moment from 'moment'
 
-function CustomCard({type, props, name, data, deadlines}) {
-  const [cardValues, setCardValues] = useState(["","","","",true,0,0,0,0,"",false,""]);
+function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth}) {
+  const [cardValues, setCardValues] = useState(["","","","",true,0,0,0,0,"",false,"",false,"",""]);
   
   const attributeData = useSelector(state => attributeDataSelector(state))
   const deadlinesData = useSelector(state => deadlinesSelector(state))
 
   useEffect(() => {
-    setCardValues(infoFieldUtil.getInfoFieldData(type,name,data,deadlines))
+    setCardValues(infoFieldUtil.getInfoFieldData(type,name,data,deadlines,selectedPhase))
   }, [])
 
   useEffect(() => {
-    setCardValues(infoFieldUtil.getInfoFieldData(props.placeholder,props.input?.name,attributeData,deadlinesData))
+    setCardValues(infoFieldUtil.getInfoFieldData(props.placeholder,props.input?.name,attributeData,deadlinesData,selectedPhase))
   }, [attributeData,deadlinesData])
 
   const getFieldsInOrder = (phase,heading,container,container2,editDataLink) => {
@@ -61,6 +61,11 @@ function CustomCard({type, props, name, data, deadlines}) {
     let endsText = props?.fieldData?.fieldset_attributes[1]?.label || ""
     buttonText = t('custom-card.modify-date')
     heading = t('custom-card.check-date')
+    
+    if(showBoth){
+      startsText = cardValues[13] ? t(cardValues[13]) : ""
+      endsText = cardValues[14] ? t(cardValues[14]) : ""
+    }
 
     fields = <>  
     {cardValues[0] ?
@@ -93,8 +98,8 @@ function CustomCard({type, props, name, data, deadlines}) {
 
     boardFields = 
     <div className='custom-card-info-container'>
-      <div className='custom-card-info'>{t(cardValues[11])}</div>
-      <div className='custom-card-date'><span className='date'>{moment(cardValues[9]).format('DD.MM.YYYY')}</span><span className='divider'>-</span><span className='status'> {!cardValues[10] ? cardValues[9] ? t('custom-card.modified') : t('custom-card.evaluation') : t('custom-card.confirmed')}</span></div>
+      <div className='custom-card-info'>{cardValues[11] ? t(cardValues[11]) : ""}</div>
+      <div className='custom-card-date'><span className='date'>{moment(cardValues[9]).format('DD.MM.YYYY')}</span><span className='divider'>-</span><span className='status'> {!cardValues[10] ? cardValues[12] ? t('custom-card.modified') : t('custom-card.evaluation') : t('custom-card.confirmed')}</span></div>
     </div>
 
     container =       
@@ -117,7 +122,7 @@ function CustomCard({type, props, name, data, deadlines}) {
       :
       ""
   }
-  else if(type === "Tarkasta kerrosalatiedot"){
+  if(type === "Tarkasta kerrosalatiedot"){
     buttonText = t('custom-card.modify-floor-area')
     heading = t('custom-card.check-floor-area')
     fields = <>  
