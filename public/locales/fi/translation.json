@@ -148,7 +148,6 @@
   },
   "file": {
     "remove-question": "Oletko varma, että haluat poistaa tiedoston {{current}}",
-    "description": "Kuvaus:",
     "loading": "Ladataan...",
     "choose-file": "Valitse tiedosto",
     "change-file":"Vaihda tiedosto",
