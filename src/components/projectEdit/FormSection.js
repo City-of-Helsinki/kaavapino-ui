@@ -11,6 +11,7 @@ import { getFormValues } from 'redux-form'
 import { EDIT_PROJECT_FORM } from '../../constants'
 import { Notification } from 'hds-react'
 import PropTypes from 'prop-types'
+import { useTranslation } from "react-i18next";
 
 const FormSection = ({
   section,
@@ -34,6 +35,8 @@ const FormSection = ({
   selectedPhase,
   phaseIsClosed
 }) => {
+  const { t } = useTranslation()
+
   let count = 0;
   if(section?.title && section?.fields){
   return (
@@ -86,7 +89,7 @@ const FormSection = ({
           return <></>
         }
     })}
-    {count === 0 ? <Notification label="Suodatinvalinalla ei löytynyt tämän otsikon alta suodatettavia kenttiä."></Notification> : ""}
+    {count === 0 ? <Notification label={t('project.no-fields')}></Notification> : ""}
     </Segment>
   )
   }
