@@ -253,6 +253,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
 
 
   const normalOrRollingElement = () => {
+    const errorString = custom.customError || t('project.error')
     //Render rolling info field or normal edit field
     //If clicking rolling field button makes positive lock check then show normal editable field
     //Rolling field can be nonEditable
@@ -273,7 +274,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
           ref={inputRef}
           aria-label={input.name}
           error={inputUtils.hasError(error).toString()}
-          errorText={custom.disabled || !inputUtils.hasError(error).toString() || !hasError ? "" : t('project.error')}
+          errorText={custom.disabled || !inputUtils.hasError(error).toString() || !hasError ? "" : errorString}
           fluid="true"
           {...input}
           {...custom}
