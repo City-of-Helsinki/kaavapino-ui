@@ -9,6 +9,13 @@ const userHasModified = (field,deadlines,phase) => {
   return false
 }
 
+const isConfirmed = (shown,startDateConfirmed,endDateConfirmed,falsyCheck) => {
+  if(falsyCheck){
+    return shown !== true && startDateConfirmed === true && endDateConfirmed === true
+  }
+  return shown === true && startDateConfirmed === true && endDateConfirmed === true
+}
+
 const getPrincipleDates = (data,deadlines) =>{
   //Date info Periaatteet
   let startDate = ""
@@ -22,21 +29,21 @@ const getPrincipleDates = (data,deadlines) =>{
   const boardModified = userHasModified("milloin_periaatteet_lautakunnassa",deadlines,"Periaatteet")
 
   if(data?.jarjestetaan_periaatteet_esillaolo_3 === true && data?.vahvista_periaatteet_esillaolo_alkaa_2 === true && data?.vahvista_periaatteet_esillaolo_paattyy_2 === true && data?.milloin_periaatteet_esillaolo_alkaa_3 && data?.milloin_periaatteet_esillaolo_paattyy_3){
-    hide = data?.jarjestetaan_periaatteet_esillaolo_3 === true && data?.vahvista_periaatteet_esillaolo_alkaa_3 === true && data?.vahvista_periaatteet_esillaolo_paattyy_3 === true
+    hide = isConfirmed(data?.jarjestetaan_periaatteet_esillaolo_3,data?.vahvista_periaatteet_esillaolo_alkaa_3,data?.vahvista_periaatteet_esillaolo_paattyy_3,false) 
     startDate = data?.milloin_periaatteet_esillaolo_alkaa_3
     endDate = data?.milloin_periaatteet_esillaolo_paattyy_3
     startModified = userHasModified("milloin_periaatteet_esillaolo_alkaa_3",deadlines,"Periaatteet")
     endModified = userHasModified("milloin_periaatteet_esillaolo_paattyy_3",deadlines,"Periaatteet")
   }
   else if(data?.jarjestetaan_periaatteet_esillaolo_2 === true && data?.vahvista_periaatteet_esillaolo_alkaa === true && data?.vahvista_periaatteet_esillaolo_paattyy === true && data?.milloin_periaatteet_esillaolo_alkaa_2 && data?.milloin_periaatteet_esillaolo_paattyy_2){
-    hide = data?.jarjestetaan_periaatteet_esillaolo_2 === true && data?.vahvista_periaatteet_esillaolo_alkaa_2 === true && data?.vahvista_periaatteet_esillaolo_paattyy_2 === true
+    hide = isConfirmed(data?.jarjestetaan_periaatteet_esillaolo_2,data?.vahvista_periaatteet_esillaolo_alkaa_2,data?.vahvista_periaatteet_esillaolo_paattyy_2,false)
     startDate = data?.milloin_periaatteet_esillaolo_alkaa_2
     endDate = data?.milloin_periaatteet_esillaolo_paattyy_2
     startModified = userHasModified("milloin_periaatteet_esillaolo_alkaa_2",deadlines,"Periaatteet")
     endModified = userHasModified("milloin_periaatteet_esillaolo_paattyy_2",deadlines,"Periaatteet")
   }
   else if(data?.jarjestetaan_periaatteet_esillaolo_1 === true && data?.vahvista_periaatteet_esillaolo_alkaa !== true || data?.vahvista_periaatteet_esillaolo_paattyy !== true && data?.milloin_periaatteet_esillaolo_alkaa && data?.milloin_periaatteet_esillaolo_paattyy){
-    hide = data?.jarjestetaan_periaatteet_esillaolo_1 === true && data?.vahvista_periaatteet_esillaolo_alkaa === true && data?.vahvista_periaatteet_esillaolo_paattyy === true
+    hide = isConfirmed(data?.jarjestetaan_periaatteet_esillaolo_1,data?.vahvista_periaatteet_esillaolo_alkaa,data?.vahvista_periaatteet_esillaolo_paattyy,false)
     startDate = data?.milloin_periaatteet_esillaolo_alkaa
     endDate = data?.milloin_periaatteet_esillaolo_paattyy
     startModified = userHasModified("milloin_periaatteet_esillaolo_alkaa",deadlines,"Periaatteet")
@@ -50,7 +57,7 @@ const getPrincipleDates = (data,deadlines) =>{
     }
     startModified = userHasModified("milloin_periaatteet_esillaolo_alkaa",deadlines,"Periaatteet")
     endModified = userHasModified("milloin_periaatteet_esillaolo_paattyy",deadlines,"Periaatteet")
-    hide = data?.vahvista_periaatteet_esillaolo_alkaa === true && data?.vahvista_periaatteet_esillaolo_paattyy === true
+    hide = isConfirmed(true,data?.vahvista_periaatteet_esillaolo_alkaa,data?.vahvista_periaatteet_esillaolo_paattyy,false)
   }
 
   return [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText,boardModified]
@@ -65,14 +72,14 @@ const getOASDates = (data,deadlines) =>{
   let endModified = false
 
   if(data?.jarjestetaan_oas_esillaolo_3 && data?.vahvista_oas_esillaolo_alkaa_2 === true && data?.vahvista_oas_esillaolo_paattyy_2 === true && data?.milloin_oas_esillaolo_alkaa_3 && data?.milloin_oas_esillaolo_paattyy_3){
-    hide = data?.jarjestetaan_oas_esillaolo_3 === true && data?.vahvista_oas_esillaolo_alkaa_3 === true && data?.vahvista_oas_esillaolo_paattyy_3 === true
+    hide = isConfirmed(data?.jarjestetaan_oas_esillaolo_3,data?.vahvista_oas_esillaolo_alkaa_3,data?.vahvista_oas_esillaolo_paattyy_3,false)
     startDate = data?.milloin_oas_esillaolo_alkaa_3
     endDate = data?.milloin_oas_esillaolo_paattyy_3
     startModified = userHasModified("milloin_oas_esillaolo_alkaa_3",deadlines,"OAS")
     endModified = userHasModified("milloin_oas_esillaolo_paattyy_3",deadlines,"OAS")
   }
   else if(data?.jarjestetaan_oas_esillaolo_2 && data?.vahvista_oas_esillaolo_alkaa === true && data?.vahvista_oas_esillaolo_paattyy === true && data?.milloin_oas_esillaolo_alkaa_2 && data?.milloin_oas_esillaolo_paattyy_2){
-    hide = data?.jarjestetaan_oas_esillaolo_3 !== true && data?.vahvista_oas_esillaolo_alkaa_2 === true && data?.vahvista_oas_esillaolo_paattyy_2 === true
+    hide = isConfirmed(data?.jarjestetaan_oas_esillaolo_3,data?.vahvista_oas_esillaolo_alkaa_2,data?.vahvista_oas_esillaolo_paattyy_2,true)
     startDate = data?.milloin_oas_esillaolo_alkaa_2
     endDate = data?.milloin_oas_esillaolo_paattyy_2
     startModified = userHasModified("milloin_oas_esillaolo_alkaa_2",deadlines,"OAS")
@@ -80,7 +87,7 @@ const getOASDates = (data,deadlines) =>{
   }
   else{
     //Not optional in OAS phase, required to have
-    hide = data?.jarjestetaan_oas_esillaolo_2 !== true && data?.vahvista_oas_esillaolo_alkaa === true && data?.vahvista_oas_esillaolo_paattyy === true
+    hide = isConfirmed(data?.jarjestetaan_oas_esillaolo_2,data?.vahvista_oas_esillaolo_alkaa,data?.vahvista_oas_esillaolo_paattyy,true)
     startDate = data?.milloin_oas_esillaolo_alkaa
     endDate = data?.milloin_oas_esillaolo_paattyy
     startModified = userHasModified("milloin_oas_esillaolo_alkaa",deadlines,"OAS")
@@ -125,35 +132,35 @@ const getSuggestion = (data,deadlines) =>{
     const boardModified = userHasModified("milloin_kaavaehdotus_lautakunnassa",deadlines,"Ehdotus")
 
     if(data?.kaavaehdotus_uudelleen_nahtaville_4 === true && data?.vahvista_ehdotus_esillaolo_alkaa_iso_3 === true && data?.vahvista_ehdotus_esillaolo_paattyy_3 === true && data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_4 && data?.milloin_ehdotuksen_nahtavilla_paattyy_4){
-      hide = data?.kaavaehdotus_uudelleen_nahtaville_4 === true && data?.vahvista_ehdotus_esillaolo_alkaa_iso_4 === true && data?.vahvista_ehdotus_esillaolo_paattyy_4 === true
+      hide = isConfirmed(data?.kaavaehdotus_uudelleen_nahtaville_4,data?.vahvista_ehdotus_esillaolo_alkaa_iso_4,data?.vahvista_ehdotus_esillaolo_paattyy_4,false)
       startDate = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_4
       endDate = data?.milloin_ehdotuksen_nahtavilla_paattyy_4
       startModified = userHasModified("milloin_ehdotuksen_nahtavilla_alkaa_iso_4",deadlines,"Ehdotus")
       endModified = userHasModified("milloin_ehdotuksen_nahtavilla_paattyy_4",deadlines,"Ehdotus")
     }
     else if(data?.kaavaehdotus_uudelleen_nahtaville_3 === true && data?.vahvista_ehdotus_esillaolo_alkaa_iso_2 === true && data?.vahvista_ehdotus_esillaolo_paattyy_2 === true && data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_3 && data?.milloin_ehdotuksen_nahtavilla_paattyy_3){
-      hide = data?.kaavaehdotus_uudelleen_nahtaville_4 !== true && data?.vahvista_ehdotus_esillaolo_alkaa_iso_3 === true && data?.vahvista_ehdotus_esillaolo_paattyy_3 === true
+      hide = isConfirmed(data?.kaavaehdotus_uudelleen_nahtaville_4,data?.vahvista_ehdotus_esillaolo_alkaa_iso_3,data?.vahvista_ehdotus_esillaolo_paattyy_3,true)
       startDate = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_3
       endDate = data?.milloin_ehdotuksen_nahtavilla_paattyy_3
       startModified = userHasModified("milloin_ehdotuksen_nahtavilla_alkaa_iso_3",deadlines,"Ehdotus")
       endModified = userHasModified("milloin_ehdotuksen_nahtavilla_paattyy_3",deadlines,"Ehdotus")
     }
     else if(data?.kaavaehdotus_uudelleen_nahtaville_2 === true && data?.vahvista_ehdotus_esillaolo_alkaa_iso === true && data?.vahvista_ehdotus_esillaolo_paattyy === true && data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_2 && data?.milloin_ehdotuksen_nahtavilla_paattyy_2){
-      hide = data?.kaavaehdotus_uudelleen_nahtaville_3 !== true && data?.vahvista_ehdotus_esillaolo_alkaa_iso_2 === true && data?.vahvista_ehdotus_esillaolo_paattyy_2 === true
+      hide = isConfirmed(data?.kaavaehdotus_uudelleen_nahtaville_3,data?.vahvista_ehdotus_esillaolo_alkaa_iso_2,data?.vahvista_ehdotus_esillaolo_paattyy_2,true)
       startDate = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_2
       endDate = data?.milloin_ehdotuksen_nahtavilla_paattyy_2
       startModified = userHasModified("milloin_ehdotuksen_nahtavilla_alkaa_iso_2",deadlines,"Ehdotus")
       endModified = userHasModified("milloin_ehdotuksen_nahtavilla_paattyy_2",deadlines,"Ehdotus")
     }
     else if(data?.kaavaehdotus_nahtaville_1 === true && data?.vahvista_ehdotus_esillaolo_alkaa_iso !== true || data?.vahvista_ehdotus_esillaolo_paattyy !== true && data?.milloin_ehdotuksen_nahtavilla_alkaa_iso && data?.milloin_ehdotuksen_nahtavilla_paattyy){
-      hide = data?.kaavaehdotus_uudelleen_nahtaville_2 !== true && data?.vahvista_ehdotus_esillaolo_alkaa_iso === true && data?.vahvista_ehdotus_esillaolo_paattyy === true
+      hide = isConfirmed(data?.kaavaehdotus_uudelleen_nahtaville_2,data?.vahvista_ehdotus_esillaolo_alkaa_iso,data?.vahvista_ehdotus_esillaolo_paattyy,true)
       startDate = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso
       endDate = data?.milloin_ehdotuksen_nahtavilla_paattyy
       startModified = userHasModified("milloin_ehdotuksen_nahtavilla_alkaa_iso",deadlines,"Ehdotus")
       endModified = userHasModified("milloin_ehdotuksen_nahtavilla_paattyy",deadlines,"Ehdotus")
     }
     else{
-      hide = data?.kaavaehdotus_uudelleen_nahtaville_1 !== true && data?.vahvista_ehdotus_esillaolo_alkaa_iso === true && data?.vahvista_ehdotus_esillaolo_paattyy === true
+      hide = isConfirmed(data?.kaavaehdotus_uudelleen_nahtaville_1,data?.vahvista_ehdotus_esillaolo_alkaa_iso,data?.vahvista_ehdotus_esillaolo_paattyy,true)
       startDate = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso
       endDate = data?.milloin_ehdotuksen_nahtavilla_paattyy
       startModified = userHasModified("milloin_ehdotuksen_nahtavilla_alkaa_iso",deadlines,"Ehdotus")
