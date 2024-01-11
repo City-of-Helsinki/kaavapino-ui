@@ -1113,3 +1113,9 @@
     }
   }
 }
+
+.multi-custom-card{
+  .custom-card{
+    margin-bottom: $size20;
+  }
+}

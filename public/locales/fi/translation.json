@@ -427,6 +427,10 @@
     "already-confirmed":"Päivämäärät on jo vahvistettu, jos haluat muuttaa niitä ota yhteys kaavoitussihteeriin.",
     "confirmed":"Vahvistettu",
     "principles-board-text":"Milloin periaatteet on lautakunnassa",
-    "draft-board-text":"Milloin luonnos on lautakunnassa"
+    "draft-board-text":"Milloin luonnos on lautakunnassa",
+    "suggestion-board-text":"Milloin ehdotus on lautakunnassa",
+    "review-suggestion-board-text":"Milloin tarkistettu ehdotus on lautakunnassa",
+    "suggestion-start-text":"Milloin kaavaehdotuksen nähtävilläolo alkaa",
+    "suggestion-end-text":"Milloin kaavaehdotuksen nähtävilläolo päättyy"
   }
 }
