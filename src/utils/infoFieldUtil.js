@@ -182,8 +182,8 @@ const getReviewSuggestion = (data,deadlines) =>{
 
 const getInfoFieldData = (placeholder,name,data,deadlines,selectedPhase) => {
   //Phase id check if show both kerrosala and esilläolo and what phase data needs to be shown
-  const suggestionPhase = selectedPhase ? [29, 21, 15, 9, 3].includes(selectedPhase) : false
-  const reviewSuggestionPhase = selectedPhase ? [30, 22, 16, 10, 4].includes(selectedPhase) : false
+  const suggestionPhase = [29, 21, 15, 9, 3].includes(selectedPhase)
+  const reviewSuggestionPhase = [30, 22, 16, 10, 4].includes(selectedPhase)
 
   //Floor area info
   const living = data?.asuminen_yhteensa || 0
