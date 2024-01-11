@@ -81,6 +81,7 @@ class CustomField extends Component {
         label={this.props?.field?.label}
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
+        customError={this.props?.field?.error_text}
       />
     )
   }
@@ -143,6 +144,7 @@ class CustomField extends Component {
         label={this.props?.field?.label}
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
+        customError={this.props?.field?.error_text}
       />
     )
   }
@@ -256,6 +258,7 @@ class CustomField extends Component {
         label={this.props?.field?.label}
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
+        customError={this.props?.field?.error_text}
       />
     )
   }
@@ -461,6 +464,7 @@ class CustomField extends Component {
         label={this.props?.field?.label}
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
+        customError={this.props?.field?.error_text}
       />
     )
   }
