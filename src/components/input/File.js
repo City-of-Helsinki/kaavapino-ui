@@ -252,7 +252,9 @@ File.propTypes = {
   image: PropTypes.bool,
   projectFileUpload: PropTypes.func,
   t:PropTypes.func,
-  insideFieldset:PropTypes.bool
+  insideFieldset:PropTypes.bool,
+  src: PropTypes.string,
+  formValues: PropTypes.object
 }
 
 const mapDispatchToProps = {
