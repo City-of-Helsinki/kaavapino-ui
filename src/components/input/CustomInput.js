@@ -126,7 +126,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
         }
       }
     }
-  }, [lockedStatus,connection.connection]);
+  }, [lockedStatus,connection]);
 
   const handleFocus = () => {
     if (typeof custom.onFocus === 'function' && !lockedStatus?.saving && !custom.insideFieldset) {
