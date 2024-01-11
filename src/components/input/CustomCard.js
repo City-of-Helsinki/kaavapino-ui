@@ -55,7 +55,9 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
   let boardFields = ""
   let container
   let container2
+  let modifiedText = cardValues[12] ? t('custom-card.modified') : t('custom-card.evaluation')
   const unit = "k-m²"
+  
   if(type === "Tarkasta esilläolopäivät"){
     let startsText = props?.fieldData?.fieldset_attributes[0]?.label || ""
     let endsText = props?.fieldData?.fieldset_attributes[1]?.label || ""
@@ -99,7 +101,7 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
     boardFields = 
     <div className='custom-card-info-container'>
       <div className='custom-card-info'>{cardValues[11] ? t(cardValues[11]) : ""}</div>
-      <div className='custom-card-date'><span className='date'>{moment(cardValues[9]).format('DD.MM.YYYY')}</span><span className='divider'>-</span><span className='status'> {!cardValues[10] ? cardValues[12] ? t('custom-card.modified') : t('custom-card.evaluation') : t('custom-card.confirmed')}</span></div>
+      <div className='custom-card-date'><span className='date'>{moment(cardValues[9]).format('DD.MM.YYYY')}</span><span className='divider'>-</span><span className='status'> {!cardValues[10] ? {modifiedText} : t('custom-card.confirmed')}</span></div>
     </div>
 
     container =       
