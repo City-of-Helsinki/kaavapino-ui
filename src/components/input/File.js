@@ -109,14 +109,12 @@ class File extends Component {
   }
 
   onChangeFile = e => {
-    const { field, image, projectFileUpload, t, insideFieldset } = this.props
+    const { field, image, projectFileUpload, insideFieldset } = this.props
     const file = this.inputRef.current.files[0]
     if (!file) {
       return
     }
     const path = e.target.value.split('\\')
-    let description = prompt(t('file.description'))
-    if (!description) description = ''
     const onCompleted = () => {
       this.setState({ current: path[path.length - 1], reading: true })
       try {
@@ -138,7 +136,6 @@ class File extends Component {
     projectFileUpload({
       attribute: field.name,
       file,
-      description,
       callback: e => this.callback(e, onCompleted),
       setCancelToken: token => (this.cancelToken = token),
       insideFieldset:insideFieldset
@@ -148,7 +145,7 @@ class File extends Component {
 
   render() {
     const { current, uploading, percentCompleted } = this.state
-    const { field, image, description, src, formValues, t } = this.props
+    const { field, image, src, formValues, t } = this.props
     const disabled = field.disabled
     if (!showField(field, formValues)) {
       return null
@@ -243,10 +240,6 @@ class File extends Component {
         {current && (
           <>
           <div><b>{t('file.file-name')} </b>{this.state.current}</div>
-          <span className="file-description">
-            <b>{t('file.description')} </b>
-            {description}
-          </span>
           </>
         )}
       </div>
@@ -259,7 +252,9 @@ File.propTypes = {
   image: PropTypes.bool,
   projectFileUpload: PropTypes.func,
   t:PropTypes.func,
-  insideFieldset:PropTypes.bool
+  insideFieldset:PropTypes.bool,
+  src: PropTypes.string,
+  formValues: PropTypes.object
 }
 
 const mapDispatchToProps = {
