@@ -52,6 +52,7 @@ import Header from '../common/Header'
 import { downloadDocument } from '../../actions/documentActions'
 import authUtils from '../../utils/authUtils'
 import ConfirmationModal from '../common/ConfirmationModal'
+import PropTypes from 'prop-types'
 
 class ProjectPage extends Component {
   constructor(props) {
@@ -609,6 +610,11 @@ const mapStateToProps = state => {
     saving: savingSelector(state),
     connection: pollSelector(state)
   }
+}
+
+ProjectPage.propTypes = {
+  currentProject: PropTypes.object,
+  downloadDocument: PropTypes.func
 }
 
 export default withRouter(
