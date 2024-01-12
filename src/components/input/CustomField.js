@@ -81,6 +81,7 @@ class CustomField extends Component {
         label={this.props?.field?.label}
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
+        customError={this.props?.field?.error_text}
       />
     )
   }
@@ -143,6 +144,7 @@ class CustomField extends Component {
         label={this.props?.field?.label}
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
+        customError={this.props?.field?.error_text}
       />
     )
   }
@@ -256,6 +258,7 @@ class CustomField extends Component {
         label={this.props?.field?.label}
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
+        customError={this.props?.field?.error_text}
       />
     )
   }
@@ -461,6 +464,7 @@ class CustomField extends Component {
         label={this.props?.field?.label}
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
+        customError={this.props?.field?.error_text}
       />
     )
   }
@@ -520,27 +524,45 @@ class CustomField extends Component {
   }
 
   renderInfoFieldset = props => {
-    //Date informations
-    if(props.placeholder === "Tarkasta esilläolopäivät"){
+    //Ehdotus and Tarkistettu ehdotus phase may possibly show both floor info and dates in projektin johtaminen tab. 
+    //ID's for Ehdotus and Tarkistettu ehdotus phases in different size projects 29, 21, 15, 9, 3, 30, 22, 16, 10, 4
+    const showBoth = this.props.selectedPhase ? [29, 21, 15, 9, 3, 30, 22, 16, 10, 4].includes(this.props.selectedPhase) : false
+
+    if(showBoth && props.placeholder === "Tarkasta kerrosalatiedot"){
       return (
-        <CustomCard
-          props={props}
-          type={props.placeholder}
-          name={props.input?.name}
-          data={this.props.attributeData}
-          deadlines={this.props.deadlines}
-        />
+        <div className='multi-custom-card'>
+          <CustomCard
+            props={props}
+            type={"Tarkasta esilläolopäivät"}
+            name={props.input?.name}
+            data={this.props.attributeData}
+            deadlines={this.props.deadlines}
+            selectedPhase={this.props.selectedPhase}
+            showBoth={showBoth}
+          />
+          <CustomCard
+            props={props}
+            type={"Tarkasta kerrosalatiedot"}
+            name={props.input?.name}
+            data={this.props.attributeData}
+            deadlines={this.props.deadlines}
+            selectedPhase={this.props.selectedPhase}
+            showBoth={showBoth}
+          />
+        </div>
       )
-    }//Floor area informations
-    else if(props.placeholder === "Tarkasta kerrosalatiedot"){
+    }
+    else if(!showBoth && (props.placeholder === "Tarkasta esilläolopäivät" || props.placeholder === "Tarkasta kerrosalatiedot")){
       return (
         <CustomCard
-          type={props.placeholder}
-          props={props}
-          name={props.input?.name}
-          data={this.props.attributeData}
-          deadlines={this.props.deadlines}
-        />
+        props={props}
+        type={props.placeholder}
+        name={props.input?.name}
+        data={this.props.attributeData}
+        deadlines={this.props.deadlines}
+        selectedPhase={this.props.selectedPhase}
+        showBoth={showBoth}
+      />
       )
     }
   }

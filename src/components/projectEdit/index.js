@@ -164,10 +164,10 @@ class ProjectEditPage extends Component {
     }
 
     this.props.fetchDocuments(this.props.project.id)
-    this.unlockAllFields()
   }
 
   componentWillUnmount() {
+    this.unlockFields()
     this.props.clearSchemas()
     window.removeEventListener('resize', this.handleResize)
   }
@@ -214,6 +214,11 @@ class ProjectEditPage extends Component {
       return
     }
     this.props.saveProject()
+  }
+
+  unlockFields = () => {
+    const projectName = this.props.currentProject.name;
+    this.props.unlockAllFields(projectName)
   }
 
   handleLockField = (inputname) => {
@@ -344,6 +349,7 @@ class ProjectEditPage extends Component {
     if(!show){
       this.setState({errorFields:[]})
     }
+    this.unlockFields()
   }
 
   filterFields = (fields) => {
@@ -362,6 +368,7 @@ class ProjectEditPage extends Component {
     if(typeof this.props.getCurrentSection !== "undefined"){
       this.props.getCurrentSection(index)
     }
+    this.unlockFields()
   }
 
   handleFloorAreaClose = () => {
@@ -638,7 +645,6 @@ class ProjectEditPage extends Component {
               isResponsible={isResponsible}
               isAdmin={isAdmin}
               phase={phase}
-              unlockAllFields={this.unlockAllFields}
               changeSection={this.changeSection}
               filterFieldsArray={this.state.filterFieldsArray}
               highlightedTag={this.state.highlightedTag}
@@ -702,7 +708,7 @@ class ProjectEditPage extends Component {
               open
               saveProjectFloorArea={saveProjectFloorArea}
               handleClose={() => this.handleFloorAreaClose()}
-              allowedToEdit={isAdmin || isResponsible}
+              allowedToEdit={isResponsible}
             />
           )}
           {this.props.showTimetableForm && (
@@ -713,7 +719,7 @@ class ProjectEditPage extends Component {
               handleClose={() => this.handleTimetableClose()}
               projectPhaseIndex={projectPhaseIndex}
               archived={currentProject.archived}
-              allowedToEdit={isAdmin || isResponsible}
+              allowedToEdit={isResponsible}
             />
           )}
         </div>
@@ -726,7 +732,8 @@ ProjectEditPage.propTypes = {
   currentProject:PropTypes.object,
   project: PropTypes.object,
   schema: PropTypes.object,
-  resetFormErrors: PropTypes.func
+  resetFormErrors: PropTypes.func,
+  unlockAllFields: PropTypes.func
 }
 
 const mapStateToProps = state => {

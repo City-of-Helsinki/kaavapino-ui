@@ -26,7 +26,7 @@ body {
 
 h1 {
   font-family: 'Helsinki Grotesk Bold', sans-serif;
-  font-size: $size40;
+  font-size: $size40 !important;
   line-height: $size44;
   margin: 0 !important;
   font-weight: 700;
@@ -34,20 +34,20 @@ h1 {
 
 h2 {
   font-family: "Helsinki Grotesk Bold", sans-serif;
-  font-size: $size24;
+  font-size: $size24 !important;
   font-weight: 700;
   line-height: $size24;
 }
 
 h3 {
   font-family: "Helsinki Grotesk Bold", sans-serif;
-  font-size: $size18;
+  font-size: $size18 !important;
   font-weight: 700;
 }
 
 h4 {
   font-family: "Helsinki Grotesk Bold", sans-serif;
-  font-size: $size14;
+  font-size: $size14 !important;
   line-height: $size16;
   font-weight: 700;
   margin: 44px 0 8px;
