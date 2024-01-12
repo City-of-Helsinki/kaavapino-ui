@@ -4,7 +4,7 @@ import inputUtils from '../../utils/inputUtils'
 import { TextInput } from 'hds-react'
 import { useDispatch, useSelector } from 'react-redux'
 import {updateFloorValues,formErrorList} from '../../actions/projectActions'
-import {lockedSelector,lastModifiedSelector,pollSelector } from '../../selectors/projectSelector'
+import {lockedSelector,lastModifiedSelector,pollSelector,lastSavedSelector } from '../../selectors/projectSelector'
 import moment from 'moment'
 import { useTranslation } from 'react-i18next'
 import RollingInfo from '../input/RollingInfo'
@@ -19,6 +19,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   const lastModified = useSelector(state => lastModifiedSelector(state))
   const lockedStatus = useSelector(state => lockedSelector(state))
   const connection = useSelector(state => pollSelector(state))
+  const lastSaved = useSelector(state => lastSavedSelector(state))
 
   const isMount = useIsMount();
   const [inputRef, setInputFocus] = useFocus()
@@ -281,7 +282,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
           onChange={(event) =>{handleInputChange(event,readonly.read)}}
           onBlur={(event) => {handleBlur(event,readonly.read)}}
           onFocus={() => {handleFocus()}}
-          readOnly={readonly.read}
+          readOnly={readonly.read || lastSaved?.status === "error"}
         />
       </div>
     
