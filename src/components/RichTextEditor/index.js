@@ -16,7 +16,7 @@ import {
 import {
   formErrorList
 } from '../../actions/projectActions'
-import { currentProjectIdSelector,savingSelector,lockedSelector, lastModifiedSelector, pollSelector } from '../../selectors/projectSelector'
+import { currentProjectIdSelector,savingSelector,lockedSelector, lastModifiedSelector, pollSelector,lastSavedSelector } from '../../selectors/projectSelector'
 import { ReactComponent as CommentIcon } from '../../assets/icons/comment-icon.svg'
 import { useTranslation } from 'react-i18next'
 import {IconAlertCircleFill} from 'hds-react'
@@ -96,6 +96,7 @@ function RichTextEditor(props) {
   const userId = useSelector(userIdSelector)
   const projectId = useSelector(currentProjectIdSelector)
   const connection = useSelector(state => pollSelector(state))
+  const lastSaved = useSelector(state => lastSavedSelector(state))
 
   const [showComments, setShowComments] = useState(false)
   const [toolbarVisible, setToolbarVisible] = useState(false)
@@ -664,7 +665,7 @@ function RichTextEditor(props) {
           placeholder={placeholder}
           className={className}
           updated={updated}
-          readOnly={readonly}
+          readOnly={readonly || lastSaved?.status === "error"}
         />
       </div>
       {showComments && comments && comments.length > 0 && (
