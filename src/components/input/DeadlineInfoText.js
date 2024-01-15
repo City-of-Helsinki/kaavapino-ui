@@ -4,7 +4,7 @@ import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
 import { useSelector, useDispatch } from 'react-redux'
 import dayjs from 'dayjs'
-import { isNumber, isBoolean } from 'lodash'
+import { isNumber, isBoolean, isArray } from 'lodash'
 
 const DeadlineInfoText = props => {
   const formValues = useSelector(getFormValues(EDIT_PROJECT_TIMETABLE_FORM))
@@ -27,7 +27,7 @@ const DeadlineInfoText = props => {
         props.input.name,
         EDIT_PROJECT_TIMETABLE_FORM
       )
-
+      console.log(readonlyValue,current)
       if (current === undefined)
         dispatch(
           autofill(
@@ -47,9 +47,13 @@ const DeadlineInfoText = props => {
     value = current
   } else {
     // Expect date in value
+    console.log("else current", current)
     value = current && dayjs(current).format('DD.MM.YYYY')
     console.log("else", value)
     if (value === 'Invalid Date') {
+      if(isArray(current)){
+        console.log("array",current)
+      }
       value = current
       console.log("invalid data", value)
     }
