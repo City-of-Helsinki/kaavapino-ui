@@ -133,6 +133,7 @@ class EditProjectTimeTableModal extends Component {
 
   renderSection = (section, sectionIndex) => {
     const sections = section.sections
+    console.log(section)
     const disabled = (sectionIndex < this.props.projectPhaseIndex) || this.props.archived
     return (
       <Collapse title={section.title} key={sectionIndex}>

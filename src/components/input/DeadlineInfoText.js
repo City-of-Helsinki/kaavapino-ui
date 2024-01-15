@@ -43,13 +43,15 @@ const DeadlineInfoText = props => {
   let value
 
   if (isNumber(current) || isBoolean(current)) {
+    console.log("number or boolean", current)
     value = current
   } else {
     // Expect date in value
     value = current && dayjs(current).format('DD.MM.YYYY')
-
+    console.log("else", value)
     if (value === 'Invalid Date') {
       value = current
+      console.log("invalid data", value)
     }
   }
 
