@@ -499,7 +499,7 @@ class CustomField extends Component {
   }
   renderDeadlineInfo = props => {
     const { field } = this.props
-
+    console.log(field,props)
     return (
       <DeadlineInfoText
         label={field.label}
