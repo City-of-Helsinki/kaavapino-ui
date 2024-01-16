@@ -5,6 +5,7 @@ import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
 import { useSelector, useDispatch } from 'react-redux'
 import dayjs from 'dayjs'
 import { isNumber, isBoolean, isArray } from 'lodash'
+import PropTypes from 'prop-types'
 
 const DeadlineInfoText = props => {
   const formValues = useSelector(getFormValues(EDIT_PROJECT_TIMETABLE_FORM))
@@ -64,6 +65,11 @@ const DeadlineInfoText = props => {
       {props.label} {value}
     </div>
   )
+}
+
+DeadlineInfoText.propTypes = {
+  fieldData:PropTypes.object,
+  meta: PropTypes.object,
 }
 
 export default DeadlineInfoText
