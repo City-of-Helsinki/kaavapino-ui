@@ -5,6 +5,7 @@ import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
 import { useSelector, useDispatch } from 'react-redux'
 import dayjs from 'dayjs'
 import { isNumber, isBoolean, isArray } from 'lodash'
+import PropTypes from 'prop-types'
 
 const DeadlineInfoText = props => {
   const formValues = useSelector(getFormValues(EDIT_PROJECT_TIMETABLE_FORM))
@@ -47,15 +48,15 @@ const DeadlineInfoText = props => {
     value = current
   } else {
     // Expect date in value
-    console.log("else current", current)
     value = current && dayjs(current).format('DD.MM.YYYY')
-    console.log("else", value)
     if (value === 'Invalid Date') {
-      if(isArray(current)){
-        console.log("array",current)
+      console.log(props)
+      if(isArray(current) && props?.fieldData?.autofill_readonly && props?.fieldData?.type === "readonly" && props?.fieldData?.unit === "päivää"){
+        value = props?.meta?.initial
       }
-      value = current
-      console.log("invalid data", value)
+      else{
+        value = current
+      }
     }
   }
 
@@ -64,6 +65,11 @@ const DeadlineInfoText = props => {
       {props.label} {value}
     </div>
   )
+}
+
+DeadlineInfoText.propTypes = {
+  fieldData:PropTypes.object,
+  meta: PropTypes.object,
 }
 
 export default DeadlineInfoText
