@@ -81,7 +81,8 @@ class ProjectEditPage extends Component {
     highlightedTag: "",
     showSection:true,
     fields:[],
-    errorFields:[]
+    errorFields:[],
+    documentIndex:null
   }
 
   currentSectionIndex = 0
@@ -118,9 +119,15 @@ class ProjectEditPage extends Component {
       if(this.props.schema?.phases){
         const currentSchemaIndex = this.props.schema?.phases.findIndex(s => s.id === schemaUtils.getSelectedPhase(this.props.location.search,this.props.selectedPhase))
         const currentSchema = this.props.schema?.phases[currentSchemaIndex]
+        const field = schemaUtils.getDocumentUrlField(this.props.location.search)
+        const section = schemaUtils.getDocumentUrlSection(this.props.location.search)
         //Get number of fields for filter component
         if(currentSchema?.sections){
           this.setState({fields:currentSchema.sections})
+          if(field && section){
+            const index = currentSchema.sections.findIndex(sect => sect.title === section);
+            this.setState({documentIndex:index})
+          }
         }
       }
     }
@@ -656,6 +663,7 @@ class ProjectEditPage extends Component {
               showSections={this.showSections}
               documents={documents}
               currentSchema={currentSchema}
+              documentIndex={this.state.documentIndex}
             />
             <NavigationPrompt
               when={
