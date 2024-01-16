@@ -387,7 +387,7 @@ const Header = props => {
 
   const pathToCheck = props.location.pathname
 
-  if(pathToCheck.endsWith('/edit')){
+  if(pathToCheck.includes('edit')) {
     return (
       <div className='edit-page-header'>
       <Navigation 
