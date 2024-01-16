@@ -47,15 +47,15 @@ const DeadlineInfoText = props => {
     value = current
   } else {
     // Expect date in value
-    console.log("else current", current)
     value = current && dayjs(current).format('DD.MM.YYYY')
-    console.log("else", value)
     if (value === 'Invalid Date') {
-      if(isArray(current)){
-        console.log("array",current)
+      console.log(props)
+      if(isArray(current) && props?.fieldData?.autofill_readonly && props?.fieldData?.type === "readonly" && props?.fieldData?.unit === "päivää"){
+        value = props?.meta?.initial
       }
-      value = current
-      console.log("invalid data", value)
+      else{
+        value = current
+      }
     }
   }
 
