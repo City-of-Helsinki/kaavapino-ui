@@ -28,7 +28,6 @@ const DeadlineInfoText = props => {
         props.input.name,
         EDIT_PROJECT_TIMETABLE_FORM
       )
-      console.log(readonlyValue,current)
       if (current === undefined)
         dispatch(
           autofill(
@@ -44,13 +43,11 @@ const DeadlineInfoText = props => {
   let value
 
   if (isNumber(current) || isBoolean(current)) {
-    console.log("number or boolean", current)
     value = current
   } else {
     // Expect date in value
     value = current && dayjs(current).format('DD.MM.YYYY')
     if (value === 'Invalid Date') {
-      console.log(props)
       if(isArray(current) && props?.fieldData?.autofill_readonly && props?.fieldData?.type === "readonly" && props?.fieldData?.unit === "päivää"){
         value = props?.meta?.initial
       }
