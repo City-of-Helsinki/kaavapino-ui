@@ -741,7 +741,8 @@ ProjectEditPage.propTypes = {
   project: PropTypes.object,
   schema: PropTypes.object,
   resetFormErrors: PropTypes.func,
-  unlockAllFields: PropTypes.func
+  unlockAllFields: PropTypes.func,
+  location: PropTypes.object
 }
 
 const mapStateToProps = state => {

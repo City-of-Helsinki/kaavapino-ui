@@ -467,5 +467,6 @@ export default function QuickNav({
 }
 
 QuickNav.propTypes = {
-  phase: PropTypes.object
+  phase: PropTypes.object,
+  documentIndex: PropTypes.number
 }
