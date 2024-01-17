@@ -32,7 +32,8 @@ export default function QuickNav({
   phaseColor,
   showSections,
   documents,
-  currentSchema
+  currentSchema,
+  documentIndex
 }) {
   const [verifying, setVerifying] = useState(false)
   const [checkButtonPressed, setCheckButtonPressed] = useState(false)
@@ -90,16 +91,20 @@ export default function QuickNav({
    const optionsArray = [];
    const sections = currentSchema.sections
    const id = currentSchema.id
+   let index = 0
    if(currentSchema){
     optionsArray.push({label:currentSchema.title,color:phaseColor,phaseID:currentSchema.id,status:phaseStatus})
     setOptions({optionsArray,curPhase})
     setSelectedPhase({currentPhase:sections,phaseID:id});
     //Get last section pressed from navigation when pressing back button and returning from project card
     setCurrentSection(0)
-    handleSectionTitleClick(curPhase, 0, id,sections)
+    if(documentIndex){
+      index = documentIndex
+    }
+    handleSectionTitleClick(curPhase, index, id,sections)
     showSections(true)
    }
-  }, [currentSchema])
+  }, [currentSchema,documentIndex])
 
   useEffect(() => {
     if (firstRender.current) {
@@ -462,5 +467,6 @@ export default function QuickNav({
 }
 
 QuickNav.propTypes = {
-  phase: PropTypes.object
+  phase: PropTypes.object,
+  documentIndex: PropTypes.number
 }

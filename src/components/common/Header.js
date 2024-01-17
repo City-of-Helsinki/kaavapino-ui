@@ -21,6 +21,7 @@ import schemaUtils from '../../utils/schemaUtils'
 import {useInterval} from '../../hooks/connectionPoller'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.min.css'
+import PropTypes from 'prop-types'
 
 const Header = props => {
   const { t } = useTranslation()
@@ -387,7 +388,7 @@ const Header = props => {
 
   const pathToCheck = props.location.pathname
 
-  if(pathToCheck.endsWith('/edit')){
+  if(pathToCheck.includes('edit')) {
     return (
       <div className='edit-page-header'>
       <Navigation 
@@ -508,6 +509,10 @@ const Header = props => {
     )
   }
   
+}
+
+Header.propTypes = {
+  location:PropTypes.object
 }
 
 export default withRouter(Header)
