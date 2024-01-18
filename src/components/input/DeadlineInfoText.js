@@ -21,6 +21,13 @@ const DeadlineInfoText = props => {
     console.log(formValues)
     console.log(props)
     if(isArray(inputValue)){
+      dispatch(
+        autofill(
+          EDIT_PROJECT_TIMETABLE_FORM,
+          props.input.name,
+          props?.meta?.initial
+        )
+      )
       inputValue = props?.meta?.initial
     }
     setCurrent(inputValue)
