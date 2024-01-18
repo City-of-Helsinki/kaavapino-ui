@@ -17,10 +17,8 @@ const DeadlineInfoText = props => {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    console.log(inputValue)
-    console.log(formValues)
-    console.log(props)
-    if(isArray(inputValue)){
+    if(isArray(inputValue) && props?.fieldData?.autofill_readonly && props?.fieldData?.type === "readonly" && props?.fieldData?.unit === "päivää"){
+      //Fixes situation if int has at somepoint on old project been converted to date/array of some sort because of bug and converts it back to int
       dispatch(
         autofill(
           EDIT_PROJECT_TIMETABLE_FORM,
@@ -51,7 +49,6 @@ const DeadlineInfoText = props => {
         )
       }
       if(isArray(current) && props?.fieldData?.autofill_readonly && props?.fieldData?.type === "readonly" && props?.fieldData?.unit === "päivää"){
-        console.log(readonlyValue,props?.meta?.initial)
         dispatch(
           autofill(
             EDIT_PROJECT_TIMETABLE_FORM,
@@ -73,7 +70,7 @@ const DeadlineInfoText = props => {
     value = current && dayjs(current).format('DD.MM.YYYY')
     if (value === 'Invalid Date') {
       if(isArray(current) && props?.fieldData?.autofill_readonly && props?.fieldData?.type === "readonly" && props?.fieldData?.unit === "päivää"){
-        console.log(props,formValues,inputValue)
+        //Fixes situation if int has at somepoint on old project been converted to date/array of some sort because of bug and converts it back to int
         value = props?.meta?.initial
       }
       else{
