@@ -101,7 +101,7 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
     boardFields = 
     <div className='custom-card-info-container'>
       <div className='custom-card-info'>{cardValues[11] ? t(cardValues[11]) : ""}</div>
-      <div className='custom-card-date'><span className='date'>{moment(cardValues[9]).format('DD.MM.YYYY')}</span><span className='divider'>-</span><span className='status'> {!cardValues[10] ? {modifiedText} : t('custom-card.confirmed')}</span></div>
+      <div className='custom-card-date'><span className='date'>{moment(cardValues[9]).format('DD.MM.YYYY')}</span><span className='divider'>-</span><span className='status'> {!cardValues[10] ? modifiedText : t('custom-card.confirmed')}</span></div>
     </div>
 
     container =       

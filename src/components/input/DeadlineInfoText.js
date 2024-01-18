@@ -4,7 +4,8 @@ import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
 import { useSelector, useDispatch } from 'react-redux'
 import dayjs from 'dayjs'
-import { isNumber, isBoolean } from 'lodash'
+import { isNumber, isBoolean, isArray } from 'lodash'
+import PropTypes from 'prop-types'
 
 const DeadlineInfoText = props => {
   const formValues = useSelector(getFormValues(EDIT_PROJECT_TIMETABLE_FORM))
@@ -16,6 +17,17 @@ const DeadlineInfoText = props => {
   const dispatch = useDispatch()
 
   useEffect(() => {
+    if(isArray(inputValue) && props?.fieldData?.autofill_readonly && props?.fieldData?.type === "readonly" && props?.fieldData?.unit === "päivää"){
+      //Fixes situation if int has at somepoint on old project been converted to date/array of some sort because of bug and converts it back to int
+      dispatch(
+        autofill(
+          EDIT_PROJECT_TIMETABLE_FORM,
+          props.input.name,
+          props?.meta?.initial
+        )
+      )
+      inputValue = props?.meta?.initial
+    }
     setCurrent(inputValue)
   }, [inputValue])
 
@@ -27,8 +39,7 @@ const DeadlineInfoText = props => {
         props.input.name,
         EDIT_PROJECT_TIMETABLE_FORM
       )
-
-      if (current === undefined)
+      if (current === undefined){
         dispatch(
           autofill(
             EDIT_PROJECT_TIMETABLE_FORM,
@@ -36,6 +47,16 @@ const DeadlineInfoText = props => {
             readonlyValue !== undefined ? readonlyValue : undefined
           )
         )
+      }
+      if(isArray(current) && props?.fieldData?.autofill_readonly && props?.fieldData?.type === "readonly" && props?.fieldData?.unit === "päivää"){
+        dispatch(
+          autofill(
+            EDIT_PROJECT_TIMETABLE_FORM,
+            props.input.name,
+            props?.meta?.initial
+          )
+        )
+      }
         setCurrent( readonlyValue )
     }
   }, [])
@@ -47,9 +68,14 @@ const DeadlineInfoText = props => {
   } else {
     // Expect date in value
     value = current && dayjs(current).format('DD.MM.YYYY')
-
     if (value === 'Invalid Date') {
-      value = current
+      if(isArray(current) && props?.fieldData?.autofill_readonly && props?.fieldData?.type === "readonly" && props?.fieldData?.unit === "päivää"){
+        //Fixes situation if int has at somepoint on old project been converted to date/array of some sort because of bug and converts it back to int
+        value = props?.meta?.initial
+      }
+      else{
+        value = current
+      }
     }
   }
 
@@ -58,6 +84,11 @@ const DeadlineInfoText = props => {
       {props.label} {value}
     </div>
   )
+}
+
+DeadlineInfoText.propTypes = {
+  fieldData:PropTypes.object,
+  meta: PropTypes.object,
 }
 
 export default DeadlineInfoText

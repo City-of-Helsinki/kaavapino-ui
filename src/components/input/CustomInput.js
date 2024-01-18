@@ -52,6 +52,13 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   }, [hasError])
 
   useEffect(() => {
+    if(lastSaved?.status === "error"){
+      //Unable to lock fields and connection backend not working so prevent editing
+      document.activeElement.blur()
+    }
+  }, [lastSaved?.status === "error"])
+
+  useEffect(() => {
     //Chekcs that locked status has more data then inital empty object
     if(lockedStatus && Object.keys(lockedStatus).length > 0){
       if(lockedStatus.lock === false){
@@ -133,6 +140,11 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
     if (typeof custom.onFocus === 'function' && !lockedStatus?.saving && !custom.insideFieldset) {
       //Sent a call to lock field to backend
       custom.onFocus(input.name);
+    }
+
+    if(lastSaved?.status === "error"){
+      //Prevent focus and editing to field if not locked
+      document.activeElement.blur()
     }
   }
 

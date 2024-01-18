@@ -59,7 +59,29 @@ function getSelectedPhase (location,selectedPhase) {
   return checkedSelectedPhase
 }
 
+function getDocumentUrlField (location) {
+  let field = ""
+  const search = location
+  const params = new URLSearchParams(search)
+  if (params.get('attribute')) {
+    field = params.get('attribute')
+  }
+  return field
+}
+
+function getDocumentUrlSection (location) {
+  let section = ""
+  const search = location
+  const params = new URLSearchParams(search)
+  if (params.get('section')) {
+    section = params.get('section')
+  }
+  return section
+}
+
 export default {
   getAllFields,
-  getSelectedPhase
+  getSelectedPhase,
+  getDocumentUrlField,
+  getDocumentUrlSection
 }
