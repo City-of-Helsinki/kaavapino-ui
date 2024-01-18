@@ -19,6 +19,10 @@ const DeadlineInfoText = props => {
   useEffect(() => {
     console.log(inputValue)
     console.log(formValues)
+    console.log(props)
+    if(isArray(inputValue)){
+      inputValue = props?.meta?.initial
+    }
     setCurrent(inputValue)
   }, [inputValue])
 
