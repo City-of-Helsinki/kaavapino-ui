@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { connect, useDispatch } from 'react-redux'
-import { checkingSelector, savingSelector, formErrorListSelector } from '../../selectors/projectSelector'
+import { checkingSelector, savingSelector, formErrorListSelector, lastSavedSelector } from '../../selectors/projectSelector'
 import CustomField from './CustomField'
 import { Form, Label, Popup } from 'semantic-ui-react'
 import projectUtils from '../../utils/projectUtils'
@@ -37,7 +37,8 @@ const FieldSet = ({
   unlockAllFields,
   rollingInfo,
   saving,
-  visibleErrors
+  visibleErrors,
+  lastSaved
 }) => {
   const handleBlur = () => {
     onBlur()
@@ -51,6 +52,13 @@ const FieldSet = ({
   const [expanded, setExpanded] = useState([]);
   const accordianRef = useRef(null)
 
+  useEffect(() => {
+    if(lastSaved?.status === "error"){
+      //Unable to lock fields and connection backend not working so prevent editing
+      setExpanded([]);
+    }
+  }, [lastSaved?.status === "error"])
+
   const checkLocked = (e,set,i) => {
     let expand = false
     //Change expanded styles if close button or accordian heading element is clicked
@@ -59,8 +67,9 @@ const FieldSet = ({
         expand = true
     }
     
-    if(expand){
+    if(expand && lastSaved?.status !== "error"){
       //Expand or close element that was clicked inside fieldset array of elements
+      //Prevent focus and editing to field if not locked
       let expandedArray = expanded.slice();
       if(expandedArray.includes(i)){
         expandedArray.splice(expandedArray.indexOf(i), 1);
@@ -346,14 +355,16 @@ const FieldSet = ({
 const mapStateToProps = state => ({
   checking: checkingSelector(state),
   saving: savingSelector(state),
-  visibleErrors:formErrorListSelector(state)
+  visibleErrors:formErrorListSelector(state),
+  lastSaved: lastSavedSelector(state)
 })
 
 FieldSet.propTypes = {
   rollingInfo: PropTypes.bool,
   unlockAllFields:PropTypes.func,
   saving: PropTypes.bool,
-  fields: PropTypes.object
+  fields: PropTypes.object,
+  lastSaved: PropTypes.object
 }
 
 export default connect(mapStateToProps)(FieldSet)

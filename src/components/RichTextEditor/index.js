@@ -169,6 +169,13 @@ function RichTextEditor(props) {
   }, [JSON.stringify(floorValue)])
 
   useEffect(() => {
+    if(lastSaved?.status === "error"){
+      //Unable to lock fields and connection backend not working so prevent editing
+      editorRef.current.editor.blur()
+    }
+  }, [lastSaved?.status === "error"])
+
+  useEffect(() => {
     //Remove tab press inside editor so navigating with tab stays normal.
     const removeTabBinding = () => {
       if (editorRef.current === "") {
@@ -385,7 +392,13 @@ function RichTextEditor(props) {
         }
         localStorage.setItem("previousElementId",editorRef.current.props.id);
       }
-      setToolbarVisible(true)
+      if(lastSaved?.status === "error"){
+        //Prevent focus and editing to field if not locked
+        editorRef.current.editor.blur()
+      }
+      else{
+        setToolbarVisible(true)
+      }
     }
     
     let length = editorRef.current.getEditor().getLength();
