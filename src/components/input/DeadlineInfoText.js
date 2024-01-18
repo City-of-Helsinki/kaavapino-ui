@@ -30,7 +30,7 @@ const DeadlineInfoText = props => {
         props.input.name,
         EDIT_PROJECT_TIMETABLE_FORM
       )
-      if (current === undefined)
+      if (current === undefined){
         dispatch(
           autofill(
             EDIT_PROJECT_TIMETABLE_FORM,
@@ -38,6 +38,17 @@ const DeadlineInfoText = props => {
             readonlyValue !== undefined ? readonlyValue : undefined
           )
         )
+      }
+      if(isArray(current) && props?.fieldData?.autofill_readonly && props?.fieldData?.type === "readonly" && props?.fieldData?.unit === "päivää"){
+        console.log(readonlyValue,props?.meta?.initial)
+        dispatch(
+          autofill(
+            EDIT_PROJECT_TIMETABLE_FORM,
+            props.input.name,
+            props?.meta?.initial
+          )
+        )
+      }
         setCurrent( readonlyValue )
     }
   }, [])
