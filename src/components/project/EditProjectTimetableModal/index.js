@@ -168,7 +168,7 @@ class EditProjectTimeTableModal extends Component {
     const { formSubmitErrors } = this.props
 
     const keys = formSubmitErrors ? Object.keys(formSubmitErrors) : []
-
+    console.log(formSubmitErrors)
     return keys.map(key => {
       const errors = formSubmitErrors[key]
 

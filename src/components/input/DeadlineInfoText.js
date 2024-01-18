@@ -17,6 +17,8 @@ const DeadlineInfoText = props => {
   const dispatch = useDispatch()
 
   useEffect(() => {
+    console.log(inputValue)
+    console.log(formValues)
     setCurrent(inputValue)
   }, [inputValue])
 
@@ -49,6 +51,7 @@ const DeadlineInfoText = props => {
     value = current && dayjs(current).format('DD.MM.YYYY')
     if (value === 'Invalid Date') {
       if(isArray(current) && props?.fieldData?.autofill_readonly && props?.fieldData?.type === "readonly" && props?.fieldData?.unit === "päivää"){
+        console.log(props,formValues,inputValue)
         value = props?.meta?.initial
       }
       else{
