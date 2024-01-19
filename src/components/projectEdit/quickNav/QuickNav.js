@@ -290,16 +290,24 @@ export default function QuickNav({
   }
 
   const handleSectionTitleClick = (title, index, phaseID, fields) => {
+    let sectionIndex
     if (phaseID !== activePhase) {
       setActivePhase(phaseID)
       switchDisplayedPhase(phaseID)
+      //When navigating to different phase menu start from index 0
+      sectionIndex = 0
     }
+    else{
+      //When navigating to phase menu and back to same phase use the index user was previously
+      sectionIndex = index
+    }
+
     if(title){
-      setSelected(index)
+      setSelected(sectionIndex)
     }
     //Set last navigation menu phase section selection to memory
-    setCurrentSection(index)
-    changeSection(index,phaseID,fields)
+    setCurrentSection(sectionIndex)
+    changeSection(sectionIndex,phaseID,fields)
   }
 
   const switchPhase = (item) => {
