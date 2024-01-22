@@ -130,40 +130,55 @@ const getSuggestion = (data,deadlines) =>{
     const confirmBoard = data?.vahvista_kaavaehdotus_lautakunnassa
     const boardText = "custom-card.suggestion-board-text"
     const boardModified = userHasModified("milloin_kaavaehdotus_lautakunnassa",deadlines,"Ehdotus")
+    //Excel data attribute name is different for suggestion start date in XL,L(_iso _iso_X) and M,S,XS(_pieni _pieni_X)
+    const startAttribute = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso || data?.milloin_ehdotuksen_nahtavilla_alkaa_pieni
+    const startAttribute_2 = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_2 || data?.milloin_ehdotuksen_nahtavilla_alkaa_pieni_2
+    const startAttribute_3 = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_3 || data?.milloin_ehdotuksen_nahtavilla_alkaa_pieni_3
+    const startAttribute_4 = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_4 || data?.milloin_ehdotuksen_nahtavilla_alkaa_pieni_4
 
-    if(data?.kaavaehdotus_uudelleen_nahtaville_4 === true && data?.vahvista_ehdotus_esillaolo_alkaa_iso_3 === true && data?.vahvista_ehdotus_esillaolo_paattyy_3 === true && data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_4 && data?.milloin_ehdotuksen_nahtavilla_paattyy_4){
-      hide = isConfirmed(data?.kaavaehdotus_uudelleen_nahtaville_4,data?.vahvista_ehdotus_esillaolo_alkaa_iso_4,data?.vahvista_ehdotus_esillaolo_paattyy_4,false)
-      startDate = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_4
+    const confirmStartAttr = data?.vahvista_ehdotus_esillaolo_alkaa_iso || data?.vahvista_ehdotus_esillaolo_alkaa_pieni
+    const confirmStartAttr2 = data?.vahvista_ehdotus_esillaolo_alkaa_iso_2 || data?.vahvista_ehdotus_esillaolo_alkaa_pieni_2
+    const confirmStartAttr3 = data?.vahvista_ehdotus_esillaolo_alkaa_iso_3 || data?.vahvista_ehdotus_esillaolo_alkaa_pieni_3
+    const confirmStartAttr4 = data?.vahvista_ehdotus_esillaolo_alkaa_iso_4 || data?.vahvista_ehdotus_esillaolo_alkaa_pieni_4
+
+    if(data?.kaavaehdotus_uudelleen_nahtaville_4 === true && confirmStartAttr3 === true && data?.vahvista_ehdotus_esillaolo_paattyy_3 === true && startAttribute_4 && data?.milloin_ehdotuksen_nahtavilla_paattyy_4){
+      hide = isConfirmed(data?.kaavaehdotus_uudelleen_nahtaville_4,confirmStartAttr4,data?.vahvista_ehdotus_esillaolo_paattyy_4,false)
+      startDate = startAttribute_4
       endDate = data?.milloin_ehdotuksen_nahtavilla_paattyy_4
-      startModified = userHasModified("milloin_ehdotuksen_nahtavilla_alkaa_iso_4",deadlines,"Ehdotus")
+      const attributeStartText = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_4 ? "milloin_ehdotuksen_nahtavilla_alkaa_iso_4" : "milloin_ehdotuksen_nahtavilla_alkaa_pieni_4"
+      startModified = userHasModified(attributeStartText,deadlines,"Ehdotus")
       endModified = userHasModified("milloin_ehdotuksen_nahtavilla_paattyy_4",deadlines,"Ehdotus")
     }
-    else if(data?.kaavaehdotus_uudelleen_nahtaville_3 === true && data?.vahvista_ehdotus_esillaolo_alkaa_iso_2 === true && data?.vahvista_ehdotus_esillaolo_paattyy_2 === true && data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_3 && data?.milloin_ehdotuksen_nahtavilla_paattyy_3){
-      hide = isConfirmed(data?.kaavaehdotus_uudelleen_nahtaville_4,data?.vahvista_ehdotus_esillaolo_alkaa_iso_3,data?.vahvista_ehdotus_esillaolo_paattyy_3,true)
-      startDate = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_3
+    else if(data?.kaavaehdotus_uudelleen_nahtaville_3 === true && confirmStartAttr2 === true && data?.vahvista_ehdotus_esillaolo_paattyy_2 === true && startAttribute_3 && data?.milloin_ehdotuksen_nahtavilla_paattyy_3){
+      hide = isConfirmed(data?.kaavaehdotus_uudelleen_nahtaville_4,confirmStartAttr3,data?.vahvista_ehdotus_esillaolo_paattyy_3,true)
+      startDate = confirmStartAttr3
       endDate = data?.milloin_ehdotuksen_nahtavilla_paattyy_3
-      startModified = userHasModified("milloin_ehdotuksen_nahtavilla_alkaa_iso_3",deadlines,"Ehdotus")
+      const attributeStartText = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_3 ? "milloin_ehdotuksen_nahtavilla_alkaa_iso_3" : "milloin_ehdotuksen_nahtavilla_alkaa_pieni_3"
+      startModified = userHasModified(attributeStartText,deadlines,"Ehdotus")
       endModified = userHasModified("milloin_ehdotuksen_nahtavilla_paattyy_3",deadlines,"Ehdotus")
     }
-    else if(data?.kaavaehdotus_uudelleen_nahtaville_2 === true && data?.vahvista_ehdotus_esillaolo_alkaa_iso === true && data?.vahvista_ehdotus_esillaolo_paattyy === true && data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_2 && data?.milloin_ehdotuksen_nahtavilla_paattyy_2){
-      hide = isConfirmed(data?.kaavaehdotus_uudelleen_nahtaville_3,data?.vahvista_ehdotus_esillaolo_alkaa_iso_2,data?.vahvista_ehdotus_esillaolo_paattyy_2,true)
-      startDate = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_2
+    else if(data?.kaavaehdotus_uudelleen_nahtaville_2 === true && confirmStartAttr === true && data?.vahvista_ehdotus_esillaolo_paattyy === true && startAttribute_2 && data?.milloin_ehdotuksen_nahtavilla_paattyy_2){
+      hide = isConfirmed(data?.kaavaehdotus_uudelleen_nahtaville_3,confirmStartAttr2,data?.vahvista_ehdotus_esillaolo_paattyy_2,true)
+      startDate = startAttribute_2
       endDate = data?.milloin_ehdotuksen_nahtavilla_paattyy_2
-      startModified = userHasModified("milloin_ehdotuksen_nahtavilla_alkaa_iso_2",deadlines,"Ehdotus")
+      const attributeStartText = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_2 ? "milloin_ehdotuksen_nahtavilla_alkaa_iso_2" : "milloin_ehdotuksen_nahtavilla_alkaa_pieni_2"
+      startModified = userHasModified(attributeStartText,deadlines,"Ehdotus")
       endModified = userHasModified("milloin_ehdotuksen_nahtavilla_paattyy_2",deadlines,"Ehdotus")
     }
-    else if(data?.kaavaehdotus_nahtaville_1 === true && data?.vahvista_ehdotus_esillaolo_alkaa_iso !== true || data?.vahvista_ehdotus_esillaolo_paattyy !== true && data?.milloin_ehdotuksen_nahtavilla_alkaa_iso && data?.milloin_ehdotuksen_nahtavilla_paattyy){
-      hide = isConfirmed(data?.kaavaehdotus_uudelleen_nahtaville_2,data?.vahvista_ehdotus_esillaolo_alkaa_iso,data?.vahvista_ehdotus_esillaolo_paattyy,true)
-      startDate = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso
+    else if(data?.kaavaehdotus_nahtaville_1 === true && confirmStartAttr !== true || data?.vahvista_ehdotus_esillaolo_paattyy !== true && startAttribute && data?.milloin_ehdotuksen_nahtavilla_paattyy){
+      hide = isConfirmed(data?.kaavaehdotus_uudelleen_nahtaville_2,confirmStartAttr,data?.vahvista_ehdotus_esillaolo_paattyy,true)
+      startDate = startAttribute
       endDate = data?.milloin_ehdotuksen_nahtavilla_paattyy
-      startModified = userHasModified("milloin_ehdotuksen_nahtavilla_alkaa_iso",deadlines,"Ehdotus")
+      const attributeStartText = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso ? "milloin_ehdotuksen_nahtavilla_alkaa_iso" : "milloin_ehdotuksen_nahtavilla_alkaa_pieni"
+      startModified = userHasModified(attributeStartText,deadlines,"Ehdotus")
       endModified = userHasModified("milloin_ehdotuksen_nahtavilla_paattyy",deadlines,"Ehdotus")
     }
     else{
-      hide = isConfirmed(data?.kaavaehdotus_uudelleen_nahtaville_1,data?.vahvista_ehdotus_esillaolo_alkaa_iso,data?.vahvista_ehdotus_esillaolo_paattyy,true)
-      startDate = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso
+      hide = isConfirmed(data?.kaavaehdotus_uudelleen_nahtaville_1,confirmStartAttr,data?.vahvista_ehdotus_esillaolo_paattyy,true)
+      startDate = startAttribute
       endDate = data?.milloin_ehdotuksen_nahtavilla_paattyy
-      startModified = userHasModified("milloin_ehdotuksen_nahtavilla_alkaa_iso",deadlines,"Ehdotus")
+      const attributeStartText = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso ? "milloin_ehdotuksen_nahtavilla_alkaa_iso" : "milloin_ehdotuksen_nahtavilla_alkaa_pieni"
+      startModified = userHasModified(attributeStartText,deadlines,"Ehdotus")
       endModified = userHasModified("milloin_ehdotuksen_nahtavilla_paattyy",deadlines,"Ehdotus")
     }
   
