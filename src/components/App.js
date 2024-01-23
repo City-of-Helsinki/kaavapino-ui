@@ -32,6 +32,23 @@ import Terms from './common/Terms'
 import IdleMonitor from './auth/IdleMonitor'
 import { withTranslation } from 'react-i18next'
 class App extends Component {
+
+  componentDidMount(){
+    //Matamo analytic
+    let _mtm = window._mtm = window._mtm || [];
+    _mtm.push({'mtm.startTime': (new Date().getTime()), 'event': 'mtm.Start'});
+    /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+    _mtm.push(['trackPageView']);
+    _mtm.push(['enableLinkTracking'])
+
+    let u="//webanalytics.digiaiiris.com/js/";
+    _mtm.push(['setTrackerUrl', u+'tracker.php']);
+    _mtm.push(['setSiteId', '843']);
+
+    let d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.async=true; g.src=u+'piwik.min.js'; s.parentNode.insertBefore(g,s);
+  }
+
   componentDidUpdate(prevProps) {
     if (!prevProps.apiInitialized && this.props.apiInitialized) {
       this.props.fetchPhases()
