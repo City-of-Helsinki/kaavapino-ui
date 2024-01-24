@@ -41,7 +41,7 @@ class App extends Component {
     _mtm.push(['trackPageView']);
     _mtm.push(['enableLinkTracking'])
 
-    let u="//webanalytics.digiaiiris.com/js/";
+    let u="//webanalytics.digiaiiris.com/js/container_mWbEENCe.js";
     _mtm.push(['setTrackerUrl', u+'tracker.php']);
     _mtm.push(['setSiteId', '843']);
 
