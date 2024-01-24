@@ -18,7 +18,7 @@ RUN yarn set version 3.4.1
 COPY .yarn/ ./.yarn/
 COPY .yarnrc.yml yarn.lock ./
 
-RUN yarn install --ignore-scripts && yarn cache clean
+RUN yarn install && yarn cache clean
 
 COPY . .
 
