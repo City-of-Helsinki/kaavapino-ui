@@ -123,8 +123,22 @@ class EditProjectTimeTableModal extends Component {
   getFormFields = (sections, sectionIndex, disabled) => {
     const formFields = []
     sections.forEach(subsection => {
-      subsection.attributes &&
-        subsection.attributes.forEach((field, fieldIndex) => {
+      let attr = subsection?.attributes
+      //Swap array objects in ehdotus timetable if below terms are met
+      if(subsection.name === "3. Ehdotus"){
+        for (let i = 0; i < attr.length; i++) {
+          if(attr[i].name === "kaavaehdotus_uudelleen_nahtaville_2"){
+            if(attr[i + 1].name === "vahvista_ehdotus_esillaolo_paattyy"){
+              let temp = attr[i];
+              attr[i] = attr[i + 1];
+              attr[i + 1] = temp;
+              break
+            }
+          }
+        }
+      }
+
+      attr && attr.forEach((field, fieldIndex) => {
           formFields.push(this.getFormField({ field }, `${sectionIndex} - ${fieldIndex}`, {disabled}))
         })
     })
