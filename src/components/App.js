@@ -46,7 +46,7 @@ class App extends Component {
     _mtm.push(['setSiteId', '843']);
 
     let d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-    g.async=true; g.src=u+'piwik.min.js'; s.parentNode.insertBefore(g,s);
+    g.async=true; g.src=u; s.parentNode.insertBefore(g,s);
   }
 
   componentDidUpdate(prevProps) {
