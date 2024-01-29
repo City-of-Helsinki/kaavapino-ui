@@ -1655,7 +1655,7 @@ __metadata:
     cosmiconfig: ^7.0.1
     cosmiconfig-typescript-loader: ^1.0.0
     cross-spawn: ^7.0.3
-    lodash: ^4.17.21
+    lodash: ^4.17.19
     semver: ^7.3.7
     webpack-merge: ^5.8.0
   peerDependencies:
@@ -3361,7 +3361,7 @@ __metadata:
     chalk: ^3.0.0
     css.escape: ^1.5.1
     dom-accessibility-api: ^0.5.6
-    lodash: ^4.17.15
+    lodash: ^4.17.19
     redent: ^3.0.0
   checksum: 94911f901a8031f3e489d04ac057cb5373621230f5d92bed80e514e24b069fb58a3166d1dd86963e55f078a1bd999da595e2ab96ed95f452d477e272937d792a
   languageName: node
@@ -11253,7 +11253,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:^4.17.15, lodash@npm:^4.17.19, lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.17.4, lodash@npm:^4.7.0":
+"lodash@npm:^4.17.19, lodash@npm:^4.17.20, lodash@npm:^4.17.21":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: eb835a2e51d381e561e508ce932ea50a8e5a68f4ebdd771ea240d3048244a8d13658acbd502cd4829768c56f2e16bdd4340b9ea141297d472517b83868e677f7
@@ -13853,7 +13853,7 @@ __metadata:
   resolution: "react-quill@npm:2.0.0"
   dependencies:
     "@types/quill": ^1.3.10
-    lodash: ^4.17.4
+    lodash: ^4.17.19
     quill: ^1.3.7
   peerDependencies:
     react: ^16 || ^17 || ^18
@@ -14271,7 +14271,7 @@ __metadata:
     hoist-non-react-statics: ^3.3.2
     invariant: ^2.2.4
     is-promise: ^2.1.0
-    lodash: ^4.17.15
+    lodash: ^4.17.19
     prop-types: ^15.6.1
     react-is: ^16.4.2
   peerDependencies:
@@ -16752,7 +16752,7 @@ __metadata:
   version: 8.7.0
   resolution: "whatwg-url@npm:8.7.0"
   dependencies:
-    lodash: ^4.7.0
+    lodash: ^4.17.19
     tr46: ^2.1.0
     webidl-conversions: ^6.1.0
   checksum: a87abcc6cefcece5311eb642858c8fdb234e51ec74196bfacf8def2edae1bfbffdf6acb251646ed6301f8cee44262642d8769c707256125a91387e33f405dd1e
