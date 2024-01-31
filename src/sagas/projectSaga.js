@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { takeLatest, put, all, call, select } from 'redux-saga/effects'
-import { isEqual, isEmpty } from 'lodash'
+import { isEqual, isEmpty, isArray } from 'lodash'
 import { push } from 'connected-react-router'
 import {
   editFormSelector,
@@ -109,7 +109,10 @@ import {
   setOnholdProjects,
   setArchivedProjects,
   resetProjectDeadlinesSuccessful,
-  projectFileUploadSuccessful
+  projectFileUploadSuccessful,
+  GET_ATTRIBUTE_DATA,
+  SET_ATTRIBUTE_DATA,
+  setAttributeData
 } from '../actions/projectActions'
 import { startSubmit, stopSubmit, setSubmitSucceeded } from 'redux-form'
 import { error } from '../actions/apiActions'
@@ -128,7 +131,8 @@ import {
   attributesApiLock,
   attributesApiUnlock,
   attributesApiUnlockAll,
-  pingApi
+  pingApi,
+  getAttributeDataApi
 } from '../utils/api'
 import { usersSelector } from '../selectors/userSelector'
 import {
@@ -140,7 +144,6 @@ import {
 import i18 from 'i18next'
 import { checkDeadlines } from '../components/ProjectTimeline/helpers/helpers'
 import dayjs from 'dayjs'
-import { isArray } from 'lodash'
 import { toastr } from 'react-redux-toastr'
 
 export default function* projectSaga() {
@@ -187,8 +190,33 @@ export default function* projectSaga() {
     takeLatest(GET_PROJECT_MAP_LEGENDS, getProjectMapLegends),
     takeLatest(SAVE_PROJECT_BASE_PAYLOAD, saveProjectPayload),
     takeLatest(FETCH_ONHOLD_PROJECTS, fetchOnholdProjects),
-    takeLatest(FETCH_ARCHIVED_PROJECTS, fetchArchivedProjects)
+    takeLatest(FETCH_ARCHIVED_PROJECTS, fetchArchivedProjects),
+    takeLatest(GET_ATTRIBUTE_DATA, getAttributeData),
+    takeLatest(SET_ATTRIBUTE_DATA, setAttributeData)
   ])
+}
+
+
+function* getAttributeData(data) {
+  const project_name = data.payload.projectName;
+  const attribute_identifier = data.payload.fieldName;
+  let query
+  
+  if(project_name && attribute_identifier){
+    query = {
+      project_name: project_name,
+      attribute_identifier: attribute_identifier
+    }
+    try {
+      const getAttributeData = yield call(
+        getAttributeDataApi.get,
+        {query},
+      )
+      yield put(setAttributeData(attribute_identifier,getAttributeData))
+    } catch (e) {
+      yield put(error(e))
+    }
+  }
 }
 
 function* pollConnection() {
