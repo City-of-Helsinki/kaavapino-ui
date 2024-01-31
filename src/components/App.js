@@ -34,7 +34,7 @@ import { withTranslation } from 'react-i18next'
 class App extends Component {
 
   componentDidMount(){
-    //Matamo analytic
+    //Matomo analytic
     let _mtm = window._mtm = window._mtm || [];
     _mtm.push({'mtm.startTime': (new Date().getTime()), 'event': 'mtm.Start'});
 

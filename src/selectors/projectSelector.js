@@ -254,3 +254,8 @@ export const formErrorListSelector = createSelector(
   selectProject, 
   project => project?.formErrorList
 )
+
+export const updateFieldSelector = createSelector(
+  selectProject, 
+  project => project?.updateField
+)

@@ -102,7 +102,17 @@ export const LAST_MODIFIED = "lastModified"
 export const UPDATE_FLOOR_VALUES = "updateFloorValues"
 export const FORM_ERROR_LIST = "formErrorList"
 export const RESET_FORM_ERRORS = "resetFormErrors"
+export const GET_ATTRIBUTE_DATA = "getAttributeData"
+export const SET_ATTRIBUTE_DATA = "setAttributeData"
 
+export const setAttributeData = (fieldName,data) =>({
+  type: SET_ATTRIBUTE_DATA,
+  payload:{fieldName,data}
+})
+export const getAttributeData = (projectName,fieldName) => ({
+  type: GET_ATTRIBUTE_DATA,
+  payload:{projectName,fieldName}
+})
 export const resetFormErrors = () => ({
   type: RESET_FORM_ERRORS
 })
