@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { takeLatest, put, all, call, select } from 'redux-saga/effects'
-import { isEqual, isEmpty } from 'lodash'
+import { isEqual, isEmpty, isArray } from 'lodash'
 import { push } from 'connected-react-router'
 import {
   editFormSelector,
@@ -144,7 +144,6 @@ import {
 import i18 from 'i18next'
 import { checkDeadlines } from '../components/ProjectTimeline/helpers/helpers'
 import dayjs from 'dayjs'
-import { isArray } from 'lodash'
 import { toastr } from 'react-redux-toastr'
 
 export default function* projectSaga() {

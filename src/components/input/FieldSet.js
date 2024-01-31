@@ -6,10 +6,9 @@ import { Form, Label, Popup } from 'semantic-ui-react'
 import projectUtils from '../../utils/projectUtils'
 import Info from './Info'
 import { showField } from '../../utils/projectVisibilityUtils'
-import { has } from 'lodash'
+import { has, get } from 'lodash'
 import { Button, IconLock, IconClock, IconPlus, IconTrash, IconAngleDown, IconAngleUp } from 'hds-react'
 import { change } from 'redux-form'
-import { get } from 'lodash'
 import { useTranslation } from 'react-i18next';
 import { OutsideClick } from '../../hooks/OutsideClick'
 import {getAttributeData} from '../../actions/projectActions'
@@ -54,13 +53,13 @@ const FieldSet = ({
   const refreshFieldset = () => {
     //Fetch fieldset data from backend and see if there is new sub fieldset or data changes before adding new sub fieldset
     //After completed fetch useEffect adds new sub fieldset to updated last fieldset index and saves
-    SetAdding(true)
+    setAdding(true)
     dispatch(getAttributeData(attributeData?.projektin_nimi,name))
   }
 
   const [hiddenIndex, setHiddenIndex] = useState(-1)
   const [expanded, setExpanded] = useState([])
-  const [adding,SetAdding] = useState(false)
+  const [adding,setAdding] = useState(false)
   const accordianRef = useRef(null)
 
   useEffect(() => {
@@ -77,7 +76,7 @@ const FieldSet = ({
         sets.push({})
         handleBlur()
         handleOutsideClick()
-        SetAdding(false)
+        setAdding(false)
       }
     }
   }, [updateField?.fieldName,updateField?.data]) 
@@ -386,7 +385,9 @@ FieldSet.propTypes = {
   unlockAllFields:PropTypes.func,
   saving: PropTypes.bool,
   fields: PropTypes.object,
-  lastSaved: PropTypes.object
+  lastSaved: PropTypes.object,
+  updateField: PropTypes.object,
+  attributeData: PropTypes.object
 }
 
 export default connect(mapStateToProps)(FieldSet)
