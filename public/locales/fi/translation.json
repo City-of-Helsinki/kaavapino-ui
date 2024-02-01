@@ -193,7 +193,7 @@
     "no-documents": "Ei dokumentteja",
     "phase-passed": "Vaihe on ohitettu ja suljettu.",
     "phase-preview-ended":"Et voi enää esikatsella dokumentteja. Ne ovat ProjectWisessa.",
-    "phase-load-prevented":"Vaiheen kaikkia pakollisia tietoja ei ole täytetty tai kaavoitussihteri ei ole vahvistanut vaiheen aikataulua.",
+    "phase-load-prevented":"Vaiheen kaikkia pakollisia tietoja ei ole täytetty tai kaavoitussihteeri ei ole vahvistanut vaiheen aikataulua.",
     "phase-preview-only":"Voit ainoastaan esikatsella dokumentteja.",
     "phase-ok":"Kaikki vaiheen pakolliset tiedot ovat täytetty.",
     "phase-load-ok":"Voit ladata dokumentit ulos.",
