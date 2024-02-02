@@ -6,7 +6,7 @@ import { Form, Label, Popup } from 'semantic-ui-react'
 import projectUtils from '../../utils/projectUtils'
 import Info from './Info'
 import { showField } from '../../utils/projectVisibilityUtils'
-import { has, get } from 'lodash'
+import { has, get, startCase } from 'lodash'
 import { Button, IconLock, IconClock, IconPlus, IconTrash, IconAngleDown, IconAngleUp } from 'hds-react'
 import { change } from 'redux-form'
 import { useTranslation } from 'react-i18next';
@@ -131,6 +131,19 @@ const FieldSet = ({
   const getCorrectValueType = (values,valueNameKey) => {
     for (const [key, value] of Object.entries(values)) {
       if(key === valueNameKey){
+        const regex = /^[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+$/;
+        if(regex.test(value)){
+          for (const [k, v] of Object.entries(values)) {
+            if(k.includes("_sahkoposti")){
+              //Extract name from email in data
+              //Name info in data is ID value for api
+              let fieldsetHeader = v?.split('@')[0]
+              fieldsetHeader = fieldsetHeader?.split('.')?.join(" ")
+              fieldsetHeader = startCase(fieldsetHeader)
+              return fieldsetHeader
+            }
+          }
+        }
         if(value?.ops){
           let richText = []
           let val = value?.ops
