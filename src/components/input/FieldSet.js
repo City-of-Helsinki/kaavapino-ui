@@ -1,17 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { connect, useDispatch } from 'react-redux'
-import { checkingSelector, savingSelector, formErrorListSelector, lastSavedSelector } from '../../selectors/projectSelector'
+import { checkingSelector, savingSelector, formErrorListSelector, lastSavedSelector, updateFieldSelector} from '../../selectors/projectSelector'
 import CustomField from './CustomField'
 import { Form, Label, Popup } from 'semantic-ui-react'
 import projectUtils from '../../utils/projectUtils'
 import Info from './Info'
 import { showField } from '../../utils/projectVisibilityUtils'
-import { has } from 'lodash'
+import { has, get, startCase } from 'lodash'
 import { Button, IconLock, IconClock, IconPlus, IconTrash, IconAngleDown, IconAngleUp } from 'hds-react'
 import { change } from 'redux-form'
-import { get } from 'lodash'
 import { useTranslation } from 'react-i18next';
 import { OutsideClick } from '../../hooks/OutsideClick'
+import {getAttributeData} from '../../actions/projectActions'
+import { useIsMount } from '../../hooks/IsMounted'
 import PropTypes from 'prop-types'
 
 const FieldSet = ({
@@ -38,26 +39,47 @@ const FieldSet = ({
   rollingInfo,
   saving,
   visibleErrors,
-  lastSaved
+  lastSaved,
+  updateField
 }) => {
   const handleBlur = () => {
     onBlur()
   }
-  
-  const dispatch = useDispatch()
 
+  const dispatch = useDispatch()
   const { t } = useTranslation()
+  const isMount = useIsMount();
+
+  const refreshFieldset = () => {
+    //Fetch fieldset data from backend and see if there is new sub fieldset or data changes before adding new sub fieldset
+    //After completed fetch useEffect adds new sub fieldset to updated last fieldset index and saves
+    setAdding(true)
+    dispatch(getAttributeData(attributeData?.projektin_nimi,name))
+  }
 
   const [hiddenIndex, setHiddenIndex] = useState(-1)
-  const [expanded, setExpanded] = useState([]);
+  const [expanded, setExpanded] = useState([])
+  const [adding,setAdding] = useState(false)
   const accordianRef = useRef(null)
 
   useEffect(() => {
     if(lastSaved?.status === "error"){
       //Unable to lock fields and connection backend not working so prevent editing
-      setExpanded([]);
+      setExpanded([])
     }
   }, [lastSaved?.status === "error"])
+ 
+  useEffect(() => {
+    if(!isMount){
+      if(updateField?.fieldName === name && adding){
+        //Add new fieldset to last index after fetching latest fieldset data
+        sets.push({})
+        handleBlur()
+        handleOutsideClick()
+        setAdding(false)
+      }
+    }
+  }, [updateField?.fieldName,updateField?.data]) 
 
   const checkLocked = (e,set,i) => {
     let expand = false
@@ -109,6 +131,19 @@ const FieldSet = ({
   const getCorrectValueType = (values,valueNameKey) => {
     for (const [key, value] of Object.entries(values)) {
       if(key === valueNameKey){
+        const regex = /^[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+$/;
+        if(regex.test(value)){
+          for (const [k, v] of Object.entries(values)) {
+            if(k.includes("_sahkoposti")){
+              //Extract name from email in data
+              //Name info in data is ID value for api
+              let fieldsetHeader = v?.split('@')[0]
+              fieldsetHeader = fieldsetHeader?.split('.')?.join(" ")
+              fieldsetHeader = startCase(fieldsetHeader)
+              return fieldsetHeader
+            }
+          }
+        }
         if(value?.ops){
           let richText = []
           let val = value?.ops
@@ -333,9 +368,7 @@ const FieldSet = ({
           className={`fieldset-button-add ${checking && projectUtils.hasFieldsetErrors(name, fields, attributeData) ? 'fieldset-internal-error' : null
             }`}
           onClick={() => {
-            sets.push({})
-            handleBlur()
-            handleOutsideClick()
+            refreshFieldset()
           }}
           disabled={disabled || saving || visibleErrors.length > 0}
           variant="supplementary"
@@ -356,7 +389,8 @@ const mapStateToProps = state => ({
   checking: checkingSelector(state),
   saving: savingSelector(state),
   visibleErrors:formErrorListSelector(state),
-  lastSaved: lastSavedSelector(state)
+  lastSaved: lastSavedSelector(state),
+  updateField: updateFieldSelector(state)
 })
 
 FieldSet.propTypes = {
@@ -364,7 +398,9 @@ FieldSet.propTypes = {
   unlockAllFields:PropTypes.func,
   saving: PropTypes.bool,
   fields: PropTypes.object,
-  lastSaved: PropTypes.object
+  lastSaved: PropTypes.object,
+  updateField: PropTypes.object,
+  attributeData: PropTypes.object
 }
 
 export default connect(mapStateToProps)(FieldSet)

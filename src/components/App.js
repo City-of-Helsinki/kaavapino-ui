@@ -34,14 +34,17 @@ import { withTranslation } from 'react-i18next'
 class App extends Component {
 
   componentDidMount(){
-    //Matamo analytic
-    let _mtm = window._mtm = window._mtm || [];
-    _mtm.push({'mtm.startTime': (new Date().getTime()), 'event': 'mtm.Start'});
-
-    let u="//webanalytics.digiaiiris.com/js/container_mWbEENCe.js";
-
-    let d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-    g.async=true; g.src=u; s.parentNode.insertBefore(g,s);
+    //Matomo analytic
+    let _paq = window._paq = window._paq || [];
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+      let u="//matomo.hel.fi/";
+      _paq.push(['setTrackerUrl', u+'matomo.php']);
+      _paq.push(['setSiteId', '74']);
+      let d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+      g.type='text/javascript'; g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+    })();
   }
 
   componentDidUpdate(prevProps) {
