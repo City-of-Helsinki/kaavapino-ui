@@ -137,10 +137,10 @@ const FieldSet = ({
             if(k.includes("_sahkoposti")){
               //Extract name from email in data
               //Name info in data is ID value for api
-              let name = v.split('@')[0]
-              name = name.split('.').join(" ")
-              name = startCase(name)
-              return name
+              let fieldsetHeader = v?.split('@')[0]
+              fieldsetHeader = fieldsetHeader?.split('.')?.join(" ")
+              fieldsetHeader = startCase(fieldsetHeader)
+              return fieldsetHeader
             }
           }
         }
