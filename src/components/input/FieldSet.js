@@ -131,7 +131,7 @@ const FieldSet = ({
   const getCorrectValueType = (values,valueNameKey) => {
     for (const [key, value] of Object.entries(values)) {
       if(key === valueNameKey){
-        const regex = /[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+/i;
+        const regex = /^[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+$/;
         if(regex.test(value)){
           for (const [k, v] of Object.entries(values)) {
             if(k.includes("_sahkoposti")){
