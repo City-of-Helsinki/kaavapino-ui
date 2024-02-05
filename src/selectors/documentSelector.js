@@ -16,3 +16,8 @@ export const documentPreviewSelector = createSelector(
   selectDocument,
   ({ documentPreview }) => documentPreview
 )
+
+export const documentDownloadedSelector = createSelector(
+  selectDocument,
+  ({ documentDownloaded }) => documentDownloaded
+)

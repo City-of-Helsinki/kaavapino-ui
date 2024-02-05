@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { connect } from 'react-redux'
 import { fetchDocuments, downloadDocumentPreview } from '../../actions/documentActions'
 import { fetchSchemas} from '../../actions/schemaActions'
@@ -6,7 +6,8 @@ import { schemaSelector} from '../../selectors/schemaSelector'
 import {
   documentsSelector,
   documentsLoadingSelector,
-  documentPreviewSelector
+  documentPreviewSelector,
+  documentDownloadedSelector
 } from '../../selectors/documentSelector'
 import { currentProjectIdSelector } from '../../selectors/projectSelector'
 import { LoadingSpinner } from 'hds-react'
@@ -16,15 +17,28 @@ import authUtils from '../../utils/authUtils'
 
 
 function ProjectDocumentsPage(props) {
-  const {currentProjectId, currentUserId, users, fetchDocuments, documents, documentsLoading,project,fetchSchemas,schema,selectedPhase, search} = props
+  const {currentProjectId, currentUserId, users, fetchDocuments, documents, documentsLoading,project,fetchSchemas,schema,selectedPhase, search, documentDownloaded} = props
+
+  const [downloadingDocumentReady, setDownloadingDocumentReady] = useState(true)
+
   useEffect(() => {
       fetchDocuments(currentProjectId)
       fetchSchemas(project.id, project.subtype)
   }, [])
 
+  useEffect(() => {
+    if(documentDownloaded){
+      setDownloadingDocumentReady(true)
+    }
+  }, [documentDownloaded])
+
   const {t} = useTranslation()
 
   const isUserResponsible = authUtils.isResponsible(currentUserId, users)
+
+  const disableDownloads = () => {
+    setDownloadingDocumentReady(false)
+  }
 
   const groupDocuments = documents => {
     const result = {}
@@ -82,6 +96,8 @@ function ProjectDocumentsPage(props) {
           selectedPhase={selectedPhase}
           search={search}
           project={project}
+          disableDownloads={() => disableDownloads()}
+          downloadingDocumentReady={downloadingDocumentReady}
         />
       ))}
     </div>
@@ -98,6 +114,7 @@ const mapStateToProps = state => {
     documentsLoading: documentsLoadingSelector(state),
     currentProjectId: currentProjectIdSelector(state),
     documentPreview: documentPreviewSelector(state),
+    documentDownloaded: documentDownloadedSelector(state),
     schema: schemaSelector(state),
   }
 }
