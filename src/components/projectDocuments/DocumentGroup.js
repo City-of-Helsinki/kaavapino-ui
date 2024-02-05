@@ -135,7 +135,9 @@ DocumentGroup.propTypes = {
   attribute_data: PropTypes.object,
   phase: PropTypes.object,
   title: PropTypes.object,
-  project: PropTypes.object
+  project: PropTypes.object,
+  disableDownloads: PropTypes.func,
+  downloadingDocumentReady: PropTypes.bool
 }
 
 export default DocumentGroup

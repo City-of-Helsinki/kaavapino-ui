@@ -126,7 +126,9 @@ Document.propTypes = {
   schema: PropTypes.object,
   attribute_data: PropTypes.object,
   phaseIndex: PropTypes.number,
-  project: PropTypes.object
+  project: PropTypes.object,
+  disableDownloads: PropTypes.func,
+  downloadingDocumentReady: PropTypes.bool
 }
 
 const mapDispatchToProps = {
