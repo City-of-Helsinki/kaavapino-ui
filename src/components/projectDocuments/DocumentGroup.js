@@ -5,7 +5,7 @@ import projectUtils from '../../utils/projectUtils'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 
-const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserResponsible, schema, attribute_data, selectedPhase, search, project }) => {
+const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserResponsible, schema, attribute_data, selectedPhase, search, project, disableDownloads, downloadingDocumentReady }) => {
   const {t} = useTranslation()
 
   const checkRequired = () => {
@@ -120,6 +120,8 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
               hideButtons={schema ? hideButtons() : true}
               scheduleAccepted={schema ? isSceduleAccepted() : false}
               project={project}
+              disableDownloads={disableDownloads}
+              downloadingDocumentReady={downloadingDocumentReady}
             />
           ))}
         </Accordion>

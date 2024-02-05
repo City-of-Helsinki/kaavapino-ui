@@ -1,13 +1,15 @@
 import {
   FETCH_DOCUMENTS,
   FETCH_DOCUMENTS_SUCCESSFUL,
-  CLEAR_DOCUMENT_PREVIEW
+  CLEAR_DOCUMENT_PREVIEW,
+  DOWNLOAD_DOCUMENT_DONE
 } from '../actions/documentActions'
 
 export const initialState = {
   documents: [],
   documentsLoading: false,
-  documentPreview: null
+  documentPreview: null,
+  documentDownloaded: true
 }
 
 export const reducer = (state = initialState, action) => {
@@ -31,6 +33,13 @@ export const reducer = (state = initialState, action) => {
       return {
         ...state,
         documentPreview: null
+      }
+    }
+
+    case DOWNLOAD_DOCUMENT_DONE: {
+      return {
+        ...state,
+        documentDownloaded: action.payload
       }
     }
 
