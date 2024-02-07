@@ -200,6 +200,7 @@ export default function* projectSaga() {
 function* getAttributeData(data) {
   const project_name = data.payload.projectName;
   const attribute_identifier = data.payload.fieldName;
+  const {formName, set, nulledFields,i} = data.payload
   let query
   
   if(project_name && attribute_identifier){
@@ -212,7 +213,7 @@ function* getAttributeData(data) {
         getAttributeDataApi.get,
         {query},
       )
-      yield put(setAttributeData(attribute_identifier,getAttributeData))
+      yield put(setAttributeData(attribute_identifier,getAttributeData,formName, set, nulledFields,i))
     } catch (e) {
       yield put(error(e))
     }
