@@ -48,7 +48,17 @@ const FieldSet = ({
 
   const dispatch = useDispatch()
   const { t } = useTranslation()
-  const isMount = useIsMount();
+  const isMount = useIsMount()
+  const accordianRef = useRef(null)
+
+  const nulledFields = fields && fields.map(field => {
+    return { [field.name]: null, _deleted: true }
+  })
+
+  const [hiddenIndex, setHiddenIndex] = useState(-1)
+  const [expanded, setExpanded] = useState([])
+  const [adding,setAdding] = useState(false)
+  const [hiding,setHiding] = useState(false)
 
   const refreshFieldset = () => {
     //Fetch fieldset data from backend and see if there is new sub fieldset or data changes before adding new sub fieldset
@@ -57,10 +67,10 @@ const FieldSet = ({
     dispatch(getAttributeData(attributeData?.projektin_nimi,name))
   }
 
-  const [hiddenIndex, setHiddenIndex] = useState(-1)
-  const [expanded, setExpanded] = useState([])
-  const [adding,setAdding] = useState(false)
-  const accordianRef = useRef(null)
+  const hideFieldset = (formName, set, nulledFields,i) => {
+    setHiding(true)
+    dispatch(getAttributeData(attributeData?.projektin_nimi,name,formName, set, nulledFields,i))
+  }
 
   useEffect(() => {
     if(lastSaved?.status === "error"){
@@ -77,6 +87,13 @@ const FieldSet = ({
         handleBlur()
         handleOutsideClick()
         setAdding(false)
+      }
+      else if(updateField?.fieldName === name && hiding){
+        //Hide fieldset after fetching latest fieldset data
+        dispatch(change(updateField?.formName, updateField?.set, updateField?.nulledFields))
+        setHiddenIndex(updateField?.i)
+        handleBlur()
+        setHiding(false)
       }
     }
   }, [updateField?.fieldName,updateField?.data]) 
@@ -107,12 +124,6 @@ const FieldSet = ({
     }
 
   }
-
-  const nulledFields =
-    fields &&
-    fields.map(field => {
-      return { [field.name]: null, _deleted: true }
-  })
 
    const handleOutsideClick = () => {
     //close all accordians when clicked outside fieldset main
@@ -347,9 +358,7 @@ const FieldSet = ({
                     size='small'
                     iconLeft={<IconTrash/>}
                     onClick={() => {
-                      dispatch(change(formName, set, ...nulledFields))
-                      setHiddenIndex(i)
-                      handleBlur()
+                      hideFieldset(formName, set, ...nulledFields,i)
                     }}
                   > {t('project.remove')}</Button>
                 )}
