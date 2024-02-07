@@ -648,7 +648,8 @@ class CustomField extends Component {
       handleSave,
       handleBlurSave,
       insideFieldset,
-      hasEditRights
+      hasEditRights,
+      rollingInfoText
     } = this.props
     const type = field.type
     if (type === 'file' || type === 'image') {
@@ -667,6 +668,7 @@ class CustomField extends Component {
           handleSave={handleSave}
           onBlur={handleBlurSave}
           insideFieldset={insideFieldset}
+          rollingInfoText={rollingInfoText}
         />
       )
     }
