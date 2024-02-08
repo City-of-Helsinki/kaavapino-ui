@@ -36,7 +36,6 @@ const FieldSet = ({
   lockField,
   lockStatus,
   unlockAllFields,
-  rollingInfo,
   saving,
   visibleErrors,
   lastSaved,
@@ -255,12 +254,18 @@ const FieldSet = ({
                    * Redux form gives error information to the Field component, but that's further down the line, and we need that information
                    * here to modify the input header accordingly. */
                   const showError = required ? t('project.required-field') : error
-
-                  const fieldUpdated =
-                    updated && updated.new_value && has(updated.new_value[0], field.name)
-
+                  const fieldUpdated = updated?.new_value && has(updated?.new_value[0], field.name)
+                  let fieldRollingInfo
                   let rollingInfoText = "Tieto siirtyy vaiheiden välillä ja sitä voi täydentää"
                   let nonEditable = false
+
+                  if(field?.categorization.includes("katsottava tieto") || field?.categorization.includes("päivitettävä tieto")){
+                    fieldRollingInfo = true
+                  }
+                  else{
+                    fieldRollingInfo = false
+                  }
+
                   if(isReadOnly || field?.display === 'readonly_checkbox'){
                     rollingInfoText = "Tieto on automaattisesti muodostettu"
                     nonEditable = true
@@ -339,7 +344,7 @@ const FieldSet = ({
                           validate={validate}
                           fieldSetDisabled={fieldsetDisabled}
                           insideFieldset={true}
-                          rollingInfo={rollingInfo}
+                          rollingInfo={fieldRollingInfo}
                           modifyText={t('project.modify')}
                           rollingInfoText={rollingInfoText}
                           nonEditable={nonEditable}
@@ -403,13 +408,13 @@ const mapStateToProps = state => ({
 })
 
 FieldSet.propTypes = {
-  rollingInfo: PropTypes.bool,
   unlockAllFields:PropTypes.func,
   saving: PropTypes.bool,
   fields: PropTypes.object,
   lastSaved: PropTypes.object,
   updateField: PropTypes.object,
-  attributeData: PropTypes.object
+  attributeData: PropTypes.object,
+  updated: PropTypes.object
 }
 
 export default connect(mapStateToProps)(FieldSet)
