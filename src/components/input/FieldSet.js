@@ -414,8 +414,7 @@ FieldSet.propTypes = {
   lastSaved: PropTypes.object,
   updateField: PropTypes.object,
   attributeData: PropTypes.object,
-  updated: PropTypes.object,
-  rollingInfoText: PropTypes.string
+  updated: PropTypes.object
 }
 
 export default connect(mapStateToProps)(FieldSet)
