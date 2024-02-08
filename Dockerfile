@@ -17,7 +17,7 @@ RUN yarn set version 3.4.1
 
 COPY .yarn/ ./.yarn/
 COPY .yarnrc.yml yarn.lock ./
-
+#Ignore scripts is removed from modern yarn and is moved to .yarnrc settings as enableScripts: false
 RUN yarn install && yarn cache clean
 
 COPY . .

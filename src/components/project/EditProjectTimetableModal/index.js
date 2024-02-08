@@ -123,8 +123,8 @@ class EditProjectTimeTableModal extends Component {
   getFormFields = (sections, sectionIndex, disabled) => {
     const formFields = []
     sections.forEach(subsection => {
-      subsection.attributes &&
-        subsection.attributes.forEach((field, fieldIndex) => {
+      const attr = subsection?.attributes
+      attr && attr.forEach((field, fieldIndex) => {
           formFields.push(this.getFormField({ field }, `${sectionIndex} - ${fieldIndex}`, {disabled}))
         })
     })
@@ -168,7 +168,6 @@ class EditProjectTimeTableModal extends Component {
     const { formSubmitErrors } = this.props
 
     const keys = formSubmitErrors ? Object.keys(formSubmitErrors) : []
-
     return keys.map(key => {
       const errors = formSubmitErrors[key]
 

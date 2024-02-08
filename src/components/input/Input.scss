@@ -478,9 +478,6 @@
   }
 }
 
-.file-description {
-  color: $black1;
-}
 
 @keyframes expand {
   from {
@@ -1111,5 +1108,11 @@
     span{
       padding-left: 0.5rem;
     }
+  }
+}
+
+.multi-custom-card{
+  .custom-card{
+    margin-bottom: $size20;
   }
 }

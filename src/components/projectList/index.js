@@ -478,7 +478,6 @@ class ProjectListPage extends Component {
 
     const isExpert = authUtils.isExpert( currentUserId, users)
     const isResponsible = authUtils.isResponsible(currentUserId, users)
-    const isAdmin = authUtils.isAdmin(currentUserId, users)
 
     return (
       <>
@@ -491,7 +490,7 @@ class ProjectListPage extends Component {
           <NavHeader
             routeItems={[{ value: t('projects.title'), path: '/' }]}
             title={t('projects.title')}
-            actions={this.getDocumentsNavActions(isResponsible || isAdmin)}
+            actions={this.getDocumentsNavActions(isResponsible)}
           />
           <NewProjectFormModal
             modalOpen={showBaseInformationForm}
@@ -499,7 +498,7 @@ class ProjectListPage extends Component {
             handleClose={() => this.toggleForm(false)}
             users={users}
             projectSubtypes={projectSubtypes}
-            isEditable={isResponsible || isAdmin}
+            isEditable={isResponsible}
           />
           <div className="project-list-container">{this.createTabList()}</div>
           <OwnProjectFilters

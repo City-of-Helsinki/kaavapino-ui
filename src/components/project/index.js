@@ -45,13 +45,14 @@ import DownloadProjectDataModal from './DownloadProjectDataModal'
 import { DOWNLOAD_PROJECT_DATA_FORM } from '../../constants'
 import { getFormValues } from 'redux-form'
 import { userIdSelector } from '../../selectors/authSelector'
-import { IconPen, LoadingSpinner, Button, Select } from 'hds-react'
+import { IconPen, LoadingSpinner, Button, Select, IconDownload } from 'hds-react'
 import { withRouter } from 'react-router-dom'
 import dayjs from 'dayjs'
 import Header from '../common/Header'
 import { downloadDocument } from '../../actions/documentActions'
 import authUtils from '../../utils/authUtils'
 import ConfirmationModal from '../common/ConfirmationModal'
+import PropTypes from 'prop-types'
 
 class ProjectPage extends Component {
   constructor(props) {
@@ -167,7 +168,7 @@ class ProjectPage extends Component {
     this.setState({sectionIndex})
   }
 
-  getProjectEditContent = (isExpert,isResponsible,isAdmin) => {
+  getProjectEditContent = (isExpert,isResponsible) => {
     const { currentProject, users, projectSubtypes, selectedPhase, allEditFields } = this.props
     const user = projectUtils.formatUsersName(users.find(u => u.id === currentProject.user))
     const currentPhases = this.getCurrentPhases()
@@ -202,7 +203,7 @@ class ProjectPage extends Component {
           handleClose={() => this.toggleBaseInformationForm(false)}
           users={users}
           projectSubtypes={projectSubtypes}
-          isEditable={isResponsible || isAdmin}
+          isEditable={isResponsible}
         />
         <DownloadProjectDataModal
           currentProject={currentProject}
@@ -220,7 +221,7 @@ class ProjectPage extends Component {
       </div>
     )
   }
-  getProjectDocumentsContent = (isResponsible,isAdmin) => {
+  getProjectDocumentsContent = (isResponsible) => {
     const { currentProject, users, projectSubtypes, currentUserId, selectedPhase } = this.props
 
     return (
@@ -246,7 +247,7 @@ class ProjectPage extends Component {
           handleClose={() => this.toggleBaseInformationForm(false)}
           users={users}
           projectSubtypes={projectSubtypes}
-          isEditable={isResponsible || isAdmin}
+          isEditable={isResponsible}
         />
         <DownloadProjectDataModal
           currentProject={currentProject}
@@ -265,7 +266,7 @@ class ProjectPage extends Component {
     )
   }
 
-  getProjectCardContent = (isUserExpert,isResponsible,isAdmin) => {
+  getProjectCardContent = (isUserExpert,isResponsible) => {
     const { currentProject, externalDocuments, users, projectSubtypes } = this.props
 
     return (
@@ -291,7 +292,7 @@ class ProjectPage extends Component {
           handleClose={() => this.toggleBaseInformationForm(false)}
           users={users}
           projectSubtypes={projectSubtypes}
-          isEditable={isResponsible || isAdmin}
+          isEditable={isResponsible}
         />
         <DownloadProjectDataModal
           currentProject={currentProject}
@@ -304,15 +305,15 @@ class ProjectPage extends Component {
     )
   }
 
-  getProjectPageContent = (isExpert,isResponsible,isAdmin) => {
+  getProjectPageContent = (isExpert,isResponsible) => {
     const { edit, documents } = this.props
     if (edit) {
-      return this.getProjectEditContent(isExpert,isResponsible,isAdmin)
+      return this.getProjectEditContent(isExpert,isResponsible)
     }
     if (documents) {
-      return this.getProjectDocumentsContent(isResponsible,isAdmin)
+      return this.getProjectDocumentsContent(isResponsible)
     }
-    return this.getProjectCardContent(isExpert,isResponsible,isAdmin)
+    return this.getProjectCardContent(isExpert,isResponsible)
   }
 
   changeOptions = (option) => {
@@ -348,9 +349,7 @@ class ProjectPage extends Component {
   }
 
   getProjectCardNavActions = (userIsExpert) => {
-    const { t } = this.props
-    const options = [
-    {value:7,label:<><i className="icons download-icon"></i>{t('project.print-project-card')}</>}]
+    const { t, currentProject, downloadDocument } = this.props
 
     return (
       <span className="header-buttons">
@@ -365,23 +364,28 @@ class ProjectPage extends Component {
           >
             {t('project.modify')}
           </Button>
-          <Select
+          <Button
+            variant="secondary"
+            className="header-button"
             size="small"
-            className='edit-view-select'
-            id="editNavSelect"
-            placeholder='Projektin työkalut'
-            value='Projektin työkalut'
-            options={options}
-            onChange={this.changeOptions}
-          />
+            onClick={() => downloadDocument({
+              ...currentProject.project_card_document,
+              projectCard: true
+            })}
+            iconLeft={<IconDownload />}
+          >
+            {t('project.print-project-card')}
+          </Button>
         </>
         )}
       </span>
     )
   }
+
   showModifyProject = () => {
     this.toggleBaseInformationForm(true)
   }
+
   showProjectData = () => {
     this.togglePrintProjectDataModal(true)
   }
@@ -543,7 +547,6 @@ class ProjectPage extends Component {
 
     const userIsExpert = authUtils.isExpert(currentUserId, users)
     const isResponsible = authUtils.isResponsible(currentUserId, users)
-    const isAdmin = authUtils.isAdmin(currentUserId, users)
     return (
       <>
         <Header
@@ -562,7 +565,7 @@ class ProjectPage extends Component {
         {!loading && !resettingDeadlines && (
           <div className="project-container">
             <div className="project-page-content">
-              {this.getProjectPageContent(userIsExpert,isResponsible,isAdmin)}
+              {this.getProjectPageContent(userIsExpert,isResponsible)}
             </div>
           </div>
         )}
@@ -607,6 +610,11 @@ const mapStateToProps = state => {
     saving: savingSelector(state),
     connection: pollSelector(state)
   }
+}
+
+ProjectPage.propTypes = {
+  currentProject: PropTypes.object,
+  downloadDocument: PropTypes.func
 }
 
 export default withRouter(

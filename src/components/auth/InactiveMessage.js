@@ -79,7 +79,7 @@ function InactiveMessage(props) {
         return (
         <div>
             Istuntosi vanhenee {timer} kuluttua.
-            <a style={buttonStyle}  onClick={() => sessionExtend()}> Jatka istuntoa</a>
+            <a style={buttonStyle}  onClick={() => sessionExtend()} onKeyDown={() => sessionExtend()}> Jatka istuntoa</a>
         </div>
         )
     }

@@ -9,6 +9,7 @@ import PropTypes from 'prop-types'
 
 function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField,type,phaseIsClosed}) {
 
+
   const users = useSelector(state => usersSelector(state))
   let inputText = value
   

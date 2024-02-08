@@ -79,7 +79,8 @@ import {
   SHOW_FLOOR_AREA,
   UPDATE_FLOOR_VALUES,
   FORM_ERROR_LIST,
-  RESET_FORM_ERRORS
+  RESET_FORM_ERRORS,
+  SET_ATTRIBUTE_DATA
 } from '../actions/projectActions'
 
 export const initialState = {
@@ -120,17 +121,36 @@ export const initialState = {
   floorAreaSaved:false,
   timetableSaved:false,
   lastSaved:{},
-  connection:false,
+  connection:{"connection":false},
   showEditFloorAreaForm:false,
   showEditProjectTimetableForm:false,
   lastModified:false,
   updatedFloorValue:{},
-  formErrorList:[]
+  formErrorList:[],
+  updateField:false
 }
 
 export const reducer = (state = initialState, action) => {
 
   switch (action.type) {
+
+    case SET_ATTRIBUTE_DATA: {
+      const { fieldName, data } = action.payload
+      let updatedAttributeData
+
+      if(data[fieldName]){
+        updatedAttributeData = { ...state.currentProject.attribute_data,...data }
+      }
+
+      return {
+        ...state,
+        currentProject: {
+          ...state.currentProject,
+          attribute_data: { ...updatedAttributeData }
+        },
+        updateField:action.payload
+      }
+    }
 
     case RESET_FORM_ERRORS: {
       return{

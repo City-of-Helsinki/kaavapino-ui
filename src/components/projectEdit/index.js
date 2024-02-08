@@ -81,7 +81,8 @@ class ProjectEditPage extends Component {
     highlightedTag: "",
     showSection:true,
     fields:[],
-    errorFields:[]
+    errorFields:[],
+    documentIndex:null
   }
 
   currentSectionIndex = 0
@@ -118,9 +119,15 @@ class ProjectEditPage extends Component {
       if(this.props.schema?.phases){
         const currentSchemaIndex = this.props.schema?.phases.findIndex(s => s.id === schemaUtils.getSelectedPhase(this.props.location.search,this.props.selectedPhase))
         const currentSchema = this.props.schema?.phases[currentSchemaIndex]
+        const field = schemaUtils.getDocumentUrlField(this.props.location.search)
+        const section = schemaUtils.getDocumentUrlSection(this.props.location.search)
         //Get number of fields for filter component
         if(currentSchema?.sections){
           this.setState({fields:currentSchema.sections})
+          if(field && section){
+            const index = currentSchema.sections.findIndex(sect => sect.title === section);
+            this.setState({documentIndex:index})
+          }
         }
       }
     }
@@ -164,10 +171,10 @@ class ProjectEditPage extends Component {
     }
 
     this.props.fetchDocuments(this.props.project.id)
-    this.unlockAllFields()
   }
 
   componentWillUnmount() {
+    this.unlockFields()
     this.props.clearSchemas()
     window.removeEventListener('resize', this.handleResize)
   }
@@ -214,6 +221,11 @@ class ProjectEditPage extends Component {
       return
     }
     this.props.saveProject()
+  }
+
+  unlockFields = () => {
+    const projectName = this.props.currentProject.name;
+    this.props.unlockAllFields(projectName)
   }
 
   handleLockField = (inputname) => {
@@ -344,6 +356,7 @@ class ProjectEditPage extends Component {
     if(!show){
       this.setState({errorFields:[]})
     }
+    this.unlockFields()
   }
 
   filterFields = (fields) => {
@@ -362,6 +375,7 @@ class ProjectEditPage extends Component {
     if(typeof this.props.getCurrentSection !== "undefined"){
       this.props.getCurrentSection(index)
     }
+    this.unlockFields()
   }
 
   handleFloorAreaClose = () => {
@@ -638,7 +652,6 @@ class ProjectEditPage extends Component {
               isResponsible={isResponsible}
               isAdmin={isAdmin}
               phase={phase}
-              unlockAllFields={this.unlockAllFields}
               changeSection={this.changeSection}
               filterFieldsArray={this.state.filterFieldsArray}
               highlightedTag={this.state.highlightedTag}
@@ -650,6 +663,7 @@ class ProjectEditPage extends Component {
               showSections={this.showSections}
               documents={documents}
               currentSchema={currentSchema}
+              documentIndex={this.state.documentIndex}
             />
             <NavigationPrompt
               when={
@@ -702,7 +716,7 @@ class ProjectEditPage extends Component {
               open
               saveProjectFloorArea={saveProjectFloorArea}
               handleClose={() => this.handleFloorAreaClose()}
-              allowedToEdit={isAdmin || isResponsible}
+              allowedToEdit={isResponsible}
             />
           )}
           {this.props.showTimetableForm && (
@@ -713,7 +727,7 @@ class ProjectEditPage extends Component {
               handleClose={() => this.handleTimetableClose()}
               projectPhaseIndex={projectPhaseIndex}
               archived={currentProject.archived}
-              allowedToEdit={isAdmin || isResponsible}
+              allowedToEdit={isResponsible}
             />
           )}
         </div>
@@ -726,7 +740,9 @@ ProjectEditPage.propTypes = {
   currentProject:PropTypes.object,
   project: PropTypes.object,
   schema: PropTypes.object,
-  resetFormErrors: PropTypes.func
+  resetFormErrors: PropTypes.func,
+  unlockAllFields: PropTypes.func,
+  location: PropTypes.object
 }
 
 const mapStateToProps = state => {

@@ -41,7 +41,7 @@
     "own-short": "Omat",
     "all-short": "Kaikki",
     "own-long": "Omat projektit",
-    "all-long": "Kaikki projektit",
+    "all-long": "Aktiiviset projektit",
     "amount": "({{pieces}} kpl)",
     "title": "Projektit",
     "createNewProject": "Luo uusi projekti",
@@ -148,7 +148,6 @@
   },
   "file": {
     "remove-question": "Oletko varma, että haluat poistaa tiedoston {{current}}",
-    "description": "Kuvaus:",
     "loading": "Ladataan...",
     "choose-file": "Valitse tiedosto",
     "change-file":"Vaihda tiedosto",
@@ -194,7 +193,7 @@
     "no-documents": "Ei dokumentteja",
     "phase-passed": "Vaihe on ohitettu ja suljettu.",
     "phase-preview-ended":"Et voi enää esikatsella dokumentteja. Ne ovat ProjectWisessa.",
-    "phase-load-prevented":"Vaiheen kaikkia pakollisia tietoja ei ole täytetty tai kaavoitussihteri ei ole vahvistanut vaiheen aikataulua.",
+    "phase-load-prevented":"Vaiheen kaikkia pakollisia tietoja ei ole täytetty tai kaavoitussihteeri ei ole vahvistanut vaiheen aikataulua.",
     "phase-preview-only":"Voit ainoastaan esikatsella dokumentteja.",
     "phase-ok":"Kaikki vaiheen pakolliset tiedot ovat täytetty.",
     "phase-load-ok":"Voit ladata dokumentit ulos.",
@@ -234,7 +233,8 @@
     "noempty":"Kenttä ei saa olla tyhjä",
     "error":"Virhe",
     "error-prevent-add":"Virhe lomakkeella estää lisäyksen",
-    "fieldset-info":"Yhteensä {{fieldAmount}} tietuetta."
+    "fieldset-info":"Yhteensä {{fieldAmount}} tietuetta.",
+    "no-fields":"Suodatinvalinnalla ei löytynyt tämän otsikon alta suodatettavia kenttiä."
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}",
@@ -426,6 +426,10 @@
     "already-confirmed":"Päivämäärät on jo vahvistettu, jos haluat muuttaa niitä ota yhteys kaavoitussihteeriin.",
     "confirmed":"Vahvistettu",
     "principles-board-text":"Milloin periaatteet on lautakunnassa",
-    "draft-board-text":"Milloin luonnos on lautakunnassa"
+    "draft-board-text":"Milloin luonnos on lautakunnassa",
+    "suggestion-board-text":"Milloin ehdotus on lautakunnassa",
+    "review-suggestion-board-text":"Milloin tarkistettu ehdotus on lautakunnassa",
+    "suggestion-start-text":"Milloin kaavaehdotuksen nähtävilläolo alkaa",
+    "suggestion-end-text":"Milloin kaavaehdotuksen nähtävilläolo päättyy"
   }
 }

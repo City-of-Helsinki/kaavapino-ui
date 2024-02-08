@@ -4,7 +4,7 @@ import inputUtils from '../../utils/inputUtils'
 import { TextInput } from 'hds-react'
 import { useDispatch, useSelector } from 'react-redux'
 import {updateFloorValues,formErrorList} from '../../actions/projectActions'
-import {lockedSelector,lastModifiedSelector,pollSelector } from '../../selectors/projectSelector'
+import {lockedSelector,lastModifiedSelector,pollSelector,lastSavedSelector } from '../../selectors/projectSelector'
 import moment from 'moment'
 import { useTranslation } from 'react-i18next'
 import RollingInfo from '../input/RollingInfo'
@@ -19,6 +19,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   const lastModified = useSelector(state => lastModifiedSelector(state))
   const lockedStatus = useSelector(state => lockedSelector(state))
   const connection = useSelector(state => pollSelector(state))
+  const lastSaved = useSelector(state => lastSavedSelector(state))
 
   const isMount = useIsMount();
   const [inputRef, setInputFocus] = useFocus()
@@ -49,6 +50,13 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       }
     }
   }, [hasError])
+
+  useEffect(() => {
+    if(lastSaved?.status === "error"){
+      //Unable to lock fields and connection backend not working so prevent editing
+      document.activeElement.blur()
+    }
+  }, [lastSaved?.status === "error"])
 
   useEffect(() => {
     //Chekcs that locked status has more data then inital empty object
@@ -132,6 +140,11 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
     if (typeof custom.onFocus === 'function' && !lockedStatus?.saving && !custom.insideFieldset) {
       //Sent a call to lock field to backend
       custom.onFocus(input.name);
+    }
+
+    if(lastSaved?.status === "error"){
+      //Prevent focus and editing to field if not locked
+      document.activeElement.blur()
     }
   }
 
@@ -253,6 +266,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
 
 
   const normalOrRollingElement = () => {
+    const errorString = custom.customError || t('project.error')
     //Render rolling info field or normal edit field
     //If clicking rolling field button makes positive lock check then show normal editable field
     //Rolling field can be nonEditable
@@ -273,14 +287,14 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
           ref={inputRef}
           aria-label={input.name}
           error={inputUtils.hasError(error).toString()}
-          errorText={custom.disabled || !inputUtils.hasError(error).toString() || !hasError ? "" : t('project.error')}
+          errorText={custom.disabled || !inputUtils.hasError(error).toString() || !hasError ? "" : errorString}
           fluid="true"
           {...input}
           {...custom}
           onChange={(event) =>{handleInputChange(event,readonly.read)}}
           onBlur={(event) => {handleBlur(event,readonly.read)}}
           onFocus={() => {handleFocus()}}
-          readOnly={readonly.read}
+          readOnly={readonly.read || lastSaved?.status === "error"}
         />
       </div>
     

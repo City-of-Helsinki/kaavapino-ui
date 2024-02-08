@@ -21,6 +21,7 @@ import schemaUtils from '../../utils/schemaUtils'
 import {useInterval} from '../../hooks/connectionPoller'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.min.css'
+import PropTypes from 'prop-types'
 
 const Header = props => {
   const { t } = useTranslation()
@@ -187,7 +188,7 @@ const Header = props => {
                 {lastSaved?.status === "error" ?
                   <>
                     <p className='font-bold'>{arrayValues.length > 0 ? t('messages.fieldset') :t('messages.field')}:</p> 
-                    <a className='link-underlined' type="button" onKeyDown={(event) => {if (event.key == 'Enter' || event.key === "Space"){scrollToAnchor("id",newErrorField)}}} onClick={() => scrollToAnchor("id",newErrorField)}>{newErrorField}</a>
+                    <a className='link-underlined' type="button" onKeyDown={(event) => {if (event.key == 'Enter' || event.key === "Space"){scrollToAnchor("id",newErrorField)}}} onClick={() => scrollToAnchor("id",newErrorField)}>{document.getElementById(newErrorField)?.textContent}</a>
                   </>
                   :
                   <>
@@ -387,7 +388,7 @@ const Header = props => {
 
   const pathToCheck = props.location.pathname
 
-  if(pathToCheck.endsWith('/edit')){
+  if(pathToCheck.includes('edit')) {
     return (
       <div className='edit-page-header'>
       <Navigation 
@@ -508,6 +509,10 @@ const Header = props => {
     )
   }
   
+}
+
+Header.propTypes = {
+  location:PropTypes.object
 }
 
 export default withRouter(Header)
