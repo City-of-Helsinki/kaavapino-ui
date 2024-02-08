@@ -141,6 +141,9 @@ export const reducer = (state = initialState, action) => {
       if(data[fieldName]){
         updatedAttributeData = { ...state.currentProject.attribute_data,...data }
       }
+      else{
+        updatedAttributeData = state.currentProject.attribute_data
+      }
 
       return {
         ...state,
