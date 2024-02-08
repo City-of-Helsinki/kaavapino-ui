@@ -254,7 +254,7 @@ const FieldSet = ({
                    * Redux form gives error information to the Field component, but that's further down the line, and we need that information
                    * here to modify the input header accordingly. */
                   const showError = required ? t('project.required-field') : error
-                  const fieldUpdated = updated && updated.new_value && has(updated.new_value[0], field.name)
+                  const fieldUpdated = updated?.new_value && has(updated?.new_value[0], field.name)
                   let fieldRollingInfo
                   let rollingInfoText = "Tieto siirtyy vaiheiden välillä ja sitä voi täydentää"
                   let nonEditable = false
@@ -408,13 +408,14 @@ const mapStateToProps = state => ({
 })
 
 FieldSet.propTypes = {
-  rollingInfo: PropTypes.bool,
   unlockAllFields:PropTypes.func,
   saving: PropTypes.bool,
   fields: PropTypes.object,
   lastSaved: PropTypes.object,
   updateField: PropTypes.object,
-  attributeData: PropTypes.object
+  attributeData: PropTypes.object,
+  updated: PropTypes.object,
+  rollingInfoText: PropTypes.string
 }
 
 export default connect(mapStateToProps)(FieldSet)

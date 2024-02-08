@@ -649,6 +649,7 @@ class CustomField extends Component {
       handleBlurSave,
       insideFieldset,
       hasEditRights,
+      rollingInfo,
       rollingInfoText
     } = this.props
     const type = field.type
@@ -669,6 +670,7 @@ class CustomField extends Component {
           onBlur={handleBlurSave}
           insideFieldset={insideFieldset}
           rollingInfoText={rollingInfoText}
+          rollingInfo={rollingInfo}
         />
       )
     }

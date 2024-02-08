@@ -146,7 +146,7 @@ class File extends Component {
 
   render() {
     const { current, uploading, percentCompleted } = this.state
-    const { field, image, src, formValues, t, rollingInfoText } = this.props
+    const { field, image, src, formValues, t, rollingInfoText, rollingInfo } = this.props
     const disabled = field.disabled
     if (!showField(field, formValues)) {
       return null
@@ -165,22 +165,20 @@ class File extends Component {
       />
     )
 
-    if (current) {
-      if (current.includes('.pdf') && src) {
-        filePreview = (
-          <Document
-            style={{
-              display: `${current && image ? 'block' : 'none'}`,
-              marginBottom: '10px'
-            }}
-            className="image-preview"
-            file={src}
-            alt={current ? current : ''}
-          >
-            <Page pageNumber={1} />
-          </Document>
-        )
-      }
+    if (current?.includes('.pdf') && src) {
+      filePreview = (
+        <Document
+          style={{
+            display: `${current && image ? 'block' : 'none'}`,
+            marginBottom: '10px'
+          }}
+          className="image-preview"
+          file={src}
+          alt={current ? current : ''}
+        >
+          <Page pageNumber={1} />
+        </Document>
+      )
     }
 
     return (
@@ -244,7 +242,7 @@ class File extends Component {
           </>
         )}
         <div className='rolling-text no-padding-left'>
-        {filePreview ?
+        {rollingInfo ?
           <>
             <img alt='' aria-hidden="true" src={infoBothDir} />
             <span>{rollingInfoText}</span>
@@ -266,7 +264,9 @@ File.propTypes = {
   t:PropTypes.func,
   insideFieldset:PropTypes.bool,
   src: PropTypes.string,
-  formValues: PropTypes.object
+  formValues: PropTypes.object,
+  rollingInfo: PropTypes.bool,
+  rollingInfoText: PropTypes.string
 }
 
 const mapDispatchToProps = {
