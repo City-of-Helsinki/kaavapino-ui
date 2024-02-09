@@ -270,6 +270,11 @@ const FieldSet = ({
                     rollingInfoText = "Tieto on automaattisesti muodostettu"
                     nonEditable = true
                   }
+
+                  if(disabled){
+                    nonEditable = true
+                  }
+
                   const assistiveText = field.assistive_text
                   return (
                     <div
