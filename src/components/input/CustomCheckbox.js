@@ -17,8 +17,10 @@ const CustomCheckbox = ({
   display
 }) => {
   const formValues = useSelector(getFormValues(formName ? formName : EDIT_PROJECT_TIMETABLE_FORM))
+  const notDisabledBoxes = name === "kaavaluonnos_lautakuntaan_1" || name === "periaatteet_lautakuntaan_1"
   let checkboxDisabled
-  if(name === "kaavaluonnos_lautakuntaan_1" || name === "periaatteet_lautakuntaan_1"){
+
+  if(notDisabledBoxes){
     checkboxDisabled = disabled
   }
   else{
@@ -30,9 +32,8 @@ const CustomCheckbox = ({
 
     let inputValue = value
 
-    if (autofillRule) {
+    if (!notDisabledBoxes && autofillRule) {
       inputValue = getFieldAutofillValue(autofillRule, formValues, name)
-
       if ( display === 'readonly_checkbox') {
         onChange( inputValue )
       }
@@ -42,9 +43,10 @@ const CustomCheckbox = ({
   }, [value])
  
   const onChangeSave = () => {
-    onChange(!checked)
     setChecked( !checked )
+    onChange(!checked)
   }
+
   return (
     <Checkbox
       aria-label={name}
