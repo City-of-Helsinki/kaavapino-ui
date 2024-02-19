@@ -17,7 +17,13 @@ const CustomCheckbox = ({
   display
 }) => {
   const formValues = useSelector(getFormValues(formName ? formName : EDIT_PROJECT_TIMETABLE_FORM))
-
+  let checkboxDisabled
+  if(name === "kaavaluonnos_lautakuntaan_1" || name === "periaatteet_lautakuntaan_1"){
+    checkboxDisabled = disabled
+  }
+  else{
+    checkboxDisabled = autofillRule || disabled
+  }
   const [checked, setChecked] = useState()
 
   useEffect(() => {
@@ -42,7 +48,7 @@ const CustomCheckbox = ({
   return (
     <Checkbox
       aria-label={name}
-      disabled={autofillRule || disabled}
+      disabled={checkboxDisabled}
       label={label}
       updated={updated}
       error={error}
