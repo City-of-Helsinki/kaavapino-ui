@@ -268,7 +268,7 @@ function ProjectTimeline(props) {
                     >
                       {t('deadlines.kylk-message', {
                         date: tempDate.date(),
-                        month: tempDate.month()
+                        month: tempDate.month() === 0 ? 12 : tempDate.month()
                       })}
                     </span>
                   )
