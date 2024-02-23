@@ -32,12 +32,16 @@ const CustomCheckbox = ({
   useEffect(() => {
 
     let inputValue = value
-    
-    if(notDisabledBoxes && autofillRule){
-      onChange( inputValue )
-      setChecked( inputValue )
+    if(notDisabledBoxes){
+      //If project is just created the value is empty string, set to autofill value which is either true or false
+      //Otherwise don't do nothing
+      if(inputValue === ""){
+        inputValue = getFieldAutofillValue(autofillRule, formValues, name)
+        onChange( inputValue )
+        setChecked( inputValue )
+      }
     }
-  },[])
+  },[]) 
 
   useEffect(() => {
 
