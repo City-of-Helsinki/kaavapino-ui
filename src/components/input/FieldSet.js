@@ -47,6 +47,7 @@ const FieldSet = ({
 
   const dispatch = useDispatch()
   const { t } = useTranslation()
+
   const isMount = useIsMount()
   const accordianRef = useRef(null)
 
@@ -57,6 +58,7 @@ const FieldSet = ({
   const [hiddenIndex, setHiddenIndex] = useState(-1)
   const [expanded, setExpanded] = useState([])
   const [adding,setAdding] = useState(false)
+
   const [hiding,setHiding] = useState(false)
 
   const refreshFieldset = () => {

@@ -105,6 +105,7 @@ export const RESET_FORM_ERRORS = "resetFormErrors"
 export const GET_ATTRIBUTE_DATA = "getAttributeData"
 export const SET_ATTRIBUTE_DATA = "setAttributeData"
 
+
 export const setAttributeData = (fieldName,data,formName, set, nulledFields,i) =>({
   type: SET_ATTRIBUTE_DATA,
   payload:{fieldName,data,formName, set, nulledFields,i}
