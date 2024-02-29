@@ -386,7 +386,6 @@ function* fetchProjectDeadlines({ payload: projectId }) {
       { path: { projectId } },
       ':projectId/'
     )
-    console.log(deadlines)
     yield put(fetchProjectDeadlinesSuccessful(deadlines))
   } catch (e) {
     yield put(error(e))
@@ -952,7 +951,6 @@ function* getProjectsOverviewFloorArea({ payload }) {
   let query = {}
 
   const keys = Object.keys(payload)
-  console.log(keys)
   keys.forEach(key => {
     if (key === 'vuosi') {
       const value = payload[key]
@@ -1009,11 +1007,26 @@ function* getProjectsOverviewFloorArea({ payload }) {
           }
         }
       }
-      console.log(queryValue)
       if (queryValue.length > 0) {
         query = {
           ...query,
           ["subtype_id"]: queryValue.toString()
+        }
+      }
+    }
+    else if(key === "yksikko_tai_tiimi"){
+      const queryValue = []
+
+      const current = payload[key]
+      if (isArray(current)) {
+        for (let i = 0; i < current.length; i++) {
+          queryValue.push(current[i])
+        }
+      }
+      if (queryValue.length > 0) {
+        query = {
+          ...query,
+          ["vastuuyksikko"]: queryValue.toString()
         }
       }
     }
@@ -1039,7 +1052,6 @@ function* getProjectsOverviewFloorArea({ payload }) {
 
   try {
     const floorArea = yield call(overviewFloorAreaApi.get, { query: query })
-    console.log(floorArea)
     yield put(getProjectsOverviewFloorAreaSuccessful(floorArea))
   } catch (e) {
     yield put(error(e))
