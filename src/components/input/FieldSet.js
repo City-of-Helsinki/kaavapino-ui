@@ -36,7 +36,6 @@ const FieldSet = ({
   lockField,
   lockStatus,
   unlockAllFields,
-  rollingInfo,
   saving,
   visibleErrors,
   lastSaved,
@@ -48,7 +47,19 @@ const FieldSet = ({
 
   const dispatch = useDispatch()
   const { t } = useTranslation()
-  const isMount = useIsMount();
+
+  const isMount = useIsMount()
+  const accordianRef = useRef(null)
+
+  const nulledFields = fields && fields.map(field => {
+    return { [field.name]: null, _deleted: true }
+  })
+
+  const [hiddenIndex, setHiddenIndex] = useState(-1)
+  const [expanded, setExpanded] = useState([])
+  const [adding,setAdding] = useState(false)
+
+  const [hiding,setHiding] = useState(false)
 
   const refreshFieldset = () => {
     //Fetch fieldset data from backend and see if there is new sub fieldset or data changes before adding new sub fieldset
@@ -57,10 +68,10 @@ const FieldSet = ({
     dispatch(getAttributeData(attributeData?.projektin_nimi,name))
   }
 
-  const [hiddenIndex, setHiddenIndex] = useState(-1)
-  const [expanded, setExpanded] = useState([])
-  const [adding,setAdding] = useState(false)
-  const accordianRef = useRef(null)
+  const hideFieldset = (formName, set, nulledFields,i) => {
+    setHiding(true)
+    dispatch(getAttributeData(attributeData?.projektin_nimi,name,formName, set, nulledFields,i))
+  }
 
   useEffect(() => {
     if(lastSaved?.status === "error"){
@@ -77,6 +88,13 @@ const FieldSet = ({
         handleBlur()
         handleOutsideClick()
         setAdding(false)
+      }
+      else if(updateField?.fieldName === name && hiding){
+        //Hide fieldset after fetching latest fieldset data
+        dispatch(change(updateField?.formName, updateField?.set, updateField?.nulledFields))
+        setHiddenIndex(updateField?.i)
+        handleBlur()
+        setHiding(false)
       }
     }
   }, [updateField?.fieldName,updateField?.data]) 
@@ -107,12 +125,6 @@ const FieldSet = ({
     }
 
   }
-
-  const nulledFields =
-    fields &&
-    fields.map(field => {
-      return { [field.name]: null, _deleted: true }
-  })
 
    const handleOutsideClick = () => {
     //close all accordians when clicked outside fieldset main
@@ -244,16 +256,27 @@ const FieldSet = ({
                    * Redux form gives error information to the Field component, but that's further down the line, and we need that information
                    * here to modify the input header accordingly. */
                   const showError = required ? t('project.required-field') : error
-
-                  const fieldUpdated =
-                    updated && updated.new_value && has(updated.new_value[0], field.name)
-
+                  const fieldUpdated = updated?.new_value && has(updated?.new_value[0], field.name)
+                  let fieldRollingInfo
                   let rollingInfoText = "Tieto siirtyy vaiheiden välillä ja sitä voi täydentää"
                   let nonEditable = false
+
+                  if(field?.categorization.includes("katsottava tieto") || field?.categorization.includes("päivitettävä tieto")){
+                    fieldRollingInfo = true
+                  }
+                  else{
+                    fieldRollingInfo = false
+                  }
+
                   if(isReadOnly || field?.display === 'readonly_checkbox'){
                     rollingInfoText = "Tieto on automaattisesti muodostettu"
                     nonEditable = true
                   }
+
+                  if(disabled){
+                    nonEditable = true
+                  }
+
                   const assistiveText = field.assistive_text
                   return (
                     <div
@@ -328,7 +351,7 @@ const FieldSet = ({
                           validate={validate}
                           fieldSetDisabled={fieldsetDisabled}
                           insideFieldset={true}
-                          rollingInfo={rollingInfo}
+                          rollingInfo={fieldRollingInfo}
                           modifyText={t('project.modify')}
                           rollingInfoText={rollingInfoText}
                           nonEditable={nonEditable}
@@ -347,9 +370,7 @@ const FieldSet = ({
                     size='small'
                     iconLeft={<IconTrash/>}
                     onClick={() => {
-                      dispatch(change(formName, set, ...nulledFields))
-                      setHiddenIndex(i)
-                      handleBlur()
+                      hideFieldset(formName, set, ...nulledFields,i)
                     }}
                   > {t('project.remove')}</Button>
                 )}
@@ -394,13 +415,13 @@ const mapStateToProps = state => ({
 })
 
 FieldSet.propTypes = {
-  rollingInfo: PropTypes.bool,
   unlockAllFields:PropTypes.func,
   saving: PropTypes.bool,
   fields: PropTypes.object,
   lastSaved: PropTypes.object,
   updateField: PropTypes.object,
-  attributeData: PropTypes.object
+  attributeData: PropTypes.object,
+  updated: PropTypes.object
 }
 
 export default connect(mapStateToProps)(FieldSet)

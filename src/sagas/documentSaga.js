@@ -5,7 +5,8 @@ import {
   FETCH_DOCUMENTS,
   fetchDocumentsSuccessful,
   DOWNLOAD_DOCUMENT,
-  DOWNLOAD_DOCUMENT_PREVIEW
+  DOWNLOAD_DOCUMENT_PREVIEW,
+  downloadDocumentDone
 } from '../actions/documentActions'
 import { error } from '../actions/apiActions'
 import { documentsApi } from '../utils/api'
@@ -38,7 +39,7 @@ function* downloadDocumentSaga({ payload }) {
   let isError = false
 
   let counter = 0
-
+  yield put(downloadDocumentDone(false))
   toastr.info(
     payload.projectCard
       ? i18next.t('document-loading.project-card-title')
@@ -65,6 +66,7 @@ function* downloadDocumentSaga({ payload }) {
       )
 
       isError = true
+      yield put(downloadDocumentDone(true))
     } else {
       while ((!res || res.status === 202) && !isError && counter < MAX_COUNT) {
         if (res && res.status === 500) {
@@ -78,6 +80,7 @@ function* downloadDocumentSaga({ payload }) {
               ? i18next.t('document-loading.project-card-error')
               : i18next.t('document-loading.document-error')
           )
+          yield put(downloadDocumentDone(true))
           break
         }
 
@@ -100,6 +103,7 @@ function* downloadDocumentSaga({ payload }) {
         : i18next.t('document-loading.document-error')
     )
     isError = true
+    yield put(downloadDocumentDone(true))
   }
 
   toastr.removeByType('info')
@@ -113,6 +117,7 @@ function* downloadDocumentSaga({ payload }) {
         ? i18next.t('document-loading.project-card-error')
         : i18next.t('document-loading.document-error')
     )
+    yield put(downloadDocumentDone(true))
   }
 
   if (!isError && counter !== MAX_COUNT) {
@@ -131,6 +136,7 @@ function* downloadDocumentSaga({ payload }) {
           ? i18next.t('document-loading.project-card-loaded')
           : i18next.t('document-loading.document-loaded')
       )
+      yield put(downloadDocumentDone(true))
     } else {
       toastr.error(
         payload.projectCard
@@ -140,6 +146,7 @@ function* downloadDocumentSaga({ payload }) {
           ? i18next.t('document-loading.project-card-error')
           : i18next.t('document-loading.document-error')
       )
+      yield put(downloadDocumentDone(true))
     }
   }
 }
@@ -151,7 +158,7 @@ function* downloadDocumentPreviewSaga({ payload }) {
 
   let counter = 0
   const modifiedUrl = payload.file + '?preview=true'
-
+  yield put(downloadDocumentDone(false))
   toastr.info(
     i18next.t('document-loading.wait-title'),
     i18next.t('document-loading.document-preview-content'),
@@ -170,6 +177,7 @@ function* downloadDocumentPreviewSaga({ payload }) {
       )
 
       isError = true
+      yield put(downloadDocumentDone(true))
     } else {
       while ((!res || res.status === 202) && !isError && counter < MAX_COUNT) {
         if (res && res.status === 500) {
@@ -179,6 +187,7 @@ function* downloadDocumentPreviewSaga({ payload }) {
             i18next.t('document-loading.document-preview-error')
           )
           isError = true
+          yield put(downloadDocumentDone(true))
           break
         }
 
@@ -196,6 +205,7 @@ function* downloadDocumentPreviewSaga({ payload }) {
       i18next.t('document-loading.document-preview-error')
     )
     isError = true
+    yield put(downloadDocumentDone(true))
   }
 
   toastr.removeByType('info')
@@ -205,6 +215,7 @@ function* downloadDocumentPreviewSaga({ payload }) {
       i18next.t('document-loading.error-title'),
       i18next.t('document-loading.document-preview-error')
     )
+    yield put(downloadDocumentDone(true))
   }
 
   if (!isError && counter !== MAX_COUNT) {
@@ -219,11 +230,13 @@ function* downloadDocumentPreviewSaga({ payload }) {
         i18next.t('document-loading.ready-title'),
         i18next.t('document-loading.document-preview-loaded')
       )
+      yield put(downloadDocumentDone(true))
     } else {
       toastr.error(
         i18next.t('document-loading.error-title'),
         i18next.t('document-loading.document-preview-error')
       )
+      yield put(downloadDocumentDone(true))
     }
   }
 }

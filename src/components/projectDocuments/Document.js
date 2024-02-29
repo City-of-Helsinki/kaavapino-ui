@@ -22,7 +22,9 @@ function Document({
   schema,
   phaseIndex,
   attribute_data,
-  project
+  project,
+  disableDownloads,
+  downloadingDocumentReady
 }) {
   const { t } = useTranslation()
 
@@ -33,6 +35,9 @@ function Document({
 
     if (confirmed) {
       downloadDocument({ file, name })
+      if(typeof disableDownloads === 'function'){
+        disableDownloads()
+      }
     }
   }
 
@@ -66,6 +71,13 @@ function Document({
     return !ended && !hide && accepted && schema && currentSchema?.id === project?.phase ? false : true
   }
 
+  const preview = () => {
+    downloadDocumentPreview({ file, name })
+    if(typeof disableDownloads === 'function'){
+      disableDownloads()
+    }
+  }
+
   const openConfirmationDialog = () => setShowConfirmation(true)
   return (
     <>
@@ -84,10 +96,10 @@ function Document({
               <Button
                 size='small'
                 variant="secondary"
-                onClick={() => downloadDocumentPreview({ file, name })}
+                onClick={() => {preview()}}
                 href={file}
                 className="document-button"
-                disabled={disablePreview(phaseEnded,schema)}
+                disabled={disablePreview(phaseEnded,schema) || !downloadingDocumentReady}
               >
                 {t('project.load-preview')}
               </Button>
@@ -98,7 +110,7 @@ function Document({
                   onClick={openConfirmationDialog}
                   href={file}
                   className="document-button"
-                  disabled={disableDownload(phaseEnded,hideButtons,scheduleAccepted,schema)}
+                  disabled={disableDownload(phaseEnded,hideButtons,scheduleAccepted,schema) || !downloadingDocumentReady}
                 >
                   {t('project.load')}
                 </Button>
@@ -114,7 +126,9 @@ Document.propTypes = {
   schema: PropTypes.object,
   attribute_data: PropTypes.object,
   phaseIndex: PropTypes.number,
-  project: PropTypes.object
+  project: PropTypes.object,
+  disableDownloads: PropTypes.func,
+  downloadingDocumentReady: PropTypes.bool
 }
 
 const mapDispatchToProps = {

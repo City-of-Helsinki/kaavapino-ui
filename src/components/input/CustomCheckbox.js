@@ -17,16 +17,38 @@ const CustomCheckbox = ({
   display
 }) => {
   const formValues = useSelector(getFormValues(formName ? formName : EDIT_PROJECT_TIMETABLE_FORM))
+  const notDisabledBoxes = name === "kaavaluonnos_lautakuntaan_1" || name === "periaatteet_lautakuntaan_1" 
+  || name === "jarjestetaan_periaatteet_esillaolo_1" || name === "jarjestetaan_luonnos_esillaolo_1"
+  let checkboxDisabled
 
+  if(notDisabledBoxes){
+    checkboxDisabled = disabled
+  }
+  else{
+    checkboxDisabled = autofillRule || disabled
+  }
   const [checked, setChecked] = useState()
 
   useEffect(() => {
 
     let inputValue = value
+    if(notDisabledBoxes){
+      //If project is just created the value is empty string, set to autofill value which is either true or false
+      //Otherwise don't do nothing
+      if(inputValue === ""){
+        inputValue = getFieldAutofillValue(autofillRule, formValues, name)
+        onChange( inputValue )
+        setChecked( inputValue )
+      }
+    }
+  },[]) 
 
-    if (autofillRule) {
+  useEffect(() => {
+
+    let inputValue = value
+
+    if (!notDisabledBoxes && autofillRule) {
       inputValue = getFieldAutofillValue(autofillRule, formValues, name)
-
       if ( display === 'readonly_checkbox') {
         onChange( inputValue )
       }
@@ -36,13 +58,14 @@ const CustomCheckbox = ({
   }, [value])
  
   const onChangeSave = () => {
-    onChange(!checked)
     setChecked( !checked )
+    onChange(!checked)
   }
+
   return (
     <Checkbox
       aria-label={name}
-      disabled={autofillRule || disabled}
+      disabled={checkboxDisabled}
       label={label}
       updated={updated}
       error={error}

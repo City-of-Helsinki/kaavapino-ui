@@ -8,6 +8,7 @@ import { Document, Page, pdfjs } from 'react-pdf'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { withTranslation } from 'react-i18next'
 import { Button, IconDownload, IconCrossCircle, IconUpload } from 'hds-react'
+import infoBothDir from '../../assets/icons/Infobothdir.svg'
 import PropTypes from 'prop-types'
 
 class File extends Component {
@@ -145,7 +146,7 @@ class File extends Component {
 
   render() {
     const { current, uploading, percentCompleted } = this.state
-    const { field, image, src, formValues, t } = this.props
+    const { field, image, src, formValues, t, rollingInfoText, rollingInfo } = this.props
     const disabled = field.disabled
     if (!showField(field, formValues)) {
       return null
@@ -164,22 +165,20 @@ class File extends Component {
       />
     )
 
-    if (current) {
-      if (current.includes('.pdf') && src) {
-        filePreview = (
-          <Document
-            style={{
-              display: `${current && image ? 'block' : 'none'}`,
-              marginBottom: '10px'
-            }}
-            className="image-preview"
-            file={src}
-            alt={current ? current : ''}
-          >
-            <Page pageNumber={1} />
-          </Document>
-        )
-      }
+    if (current?.includes('.pdf') && src) {
+      filePreview = (
+        <Document
+          style={{
+            display: `${current && image ? 'block' : 'none'}`,
+            marginBottom: '10px'
+          }}
+          className="image-preview"
+          file={src}
+          alt={current ? current : ''}
+        >
+          <Page pageNumber={1} />
+        </Document>
+      )
     }
 
     return (
@@ -242,6 +241,17 @@ class File extends Component {
           <div><b>{t('file.file-name')} </b>{this.state.current}</div>
           </>
         )}
+        <div className='rolling-text no-padding-left'>
+        {rollingInfo ?
+          <>
+            <img alt='' aria-hidden="true" src={infoBothDir} />
+            <span>{rollingInfoText}</span>
+          </>
+          :
+          <>
+          </>
+        }
+        </div>
       </div>
     )
   }
@@ -254,7 +264,9 @@ File.propTypes = {
   t:PropTypes.func,
   insideFieldset:PropTypes.bool,
   src: PropTypes.string,
-  formValues: PropTypes.object
+  formValues: PropTypes.object,
+  rollingInfo: PropTypes.bool,
+  rollingInfoText: PropTypes.string
 }
 
 const mapDispatchToProps = {
