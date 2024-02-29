@@ -386,6 +386,7 @@ function* fetchProjectDeadlines({ payload: projectId }) {
       { path: { projectId } },
       ':projectId/'
     )
+    console.log(deadlines)
     yield put(fetchProjectDeadlinesSuccessful(deadlines))
   } catch (e) {
     yield put(error(e))
@@ -951,7 +952,7 @@ function* getProjectsOverviewFloorArea({ payload }) {
   let query = {}
 
   const keys = Object.keys(payload)
-
+  console.log(keys)
   keys.forEach(key => {
     if (key === 'vuosi') {
       const value = payload[key]
@@ -984,7 +985,39 @@ function* getProjectsOverviewFloorArea({ payload }) {
           [key]: currentPersonIds.toString()
         }
       }
-    } else {
+    }
+    else if (key === 'kaavaprosessi') {
+      const queryValue = []
+
+      const current = payload[key]
+      if (isArray(current)) {
+        for (let i = 0; i < current.length; i++) {
+          if(current[i] === "XL" || current[i] === "xl"){
+            queryValue.push(5)
+          }
+          if(current[i] === "L" || current[i] === "l"){
+            queryValue.push(4)
+          }
+          if(current[i] === "M" || current[i] === "m"){
+            queryValue.push(3)
+          }
+          if(current[i] === "S" || current[i] === "s"){
+            queryValue.push(2)
+          }
+          if(current[i] === "XS" || current[i] === "xs"){
+            queryValue.push(1)
+          }
+        }
+      }
+      console.log(queryValue)
+      if (queryValue.length > 0) {
+        query = {
+          ...query,
+          ["subtype_id"]: queryValue.toString()
+        }
+      }
+    }
+    else {
       const queryValue = []
 
       const current = payload[key]
@@ -1006,6 +1039,7 @@ function* getProjectsOverviewFloorArea({ payload }) {
 
   try {
     const floorArea = yield call(overviewFloorAreaApi.get, { query: query })
+    console.log(floorArea)
     yield put(getProjectsOverviewFloorAreaSuccessful(floorArea))
   } catch (e) {
     yield put(error(e))
