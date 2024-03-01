@@ -986,25 +986,17 @@ function* getProjectsOverviewFloorArea({ payload }) {
     }
     else if (key === 'kaavaprosessi') {
       const queryValue = []
-
       const current = payload[key]
+
+      //Change attributedata kaavaprosessin nimi strings to int subtype_id for nicer comparison in backend
+      const getSubtypeID = id => modifiedValuePairs[id]; 
+      const modifiedValuePairs = {
+        XS: 1, xs: 1, S: 2, s: 2, M: 3, m: 3,L: 4, l: 4, XL: 5, xl: 5 
+      };
+
       if (isArray(current)) {
         for (let i = 0; i < current.length; i++) {
-          if(current[i] === "XL" || current[i] === "xl"){
-            queryValue.push(5)
-          }
-          if(current[i] === "L" || current[i] === "l"){
-            queryValue.push(4)
-          }
-          if(current[i] === "M" || current[i] === "m"){
-            queryValue.push(3)
-          }
-          if(current[i] === "S" || current[i] === "s"){
-            queryValue.push(2)
-          }
-          if(current[i] === "XS" || current[i] === "xs"){
-            queryValue.push(1)
-          }
+          queryValue.push(getSubtypeID(current[i]))
         }
       }
       if (queryValue.length > 0) {
