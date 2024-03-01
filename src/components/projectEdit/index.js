@@ -82,7 +82,8 @@ class ProjectEditPage extends Component {
     showSection:true,
     fields:[],
     errorFields:[],
-    documentIndex:null
+    documentIndex:null,
+    urlField:null
   }
 
   currentSectionIndex = 0
@@ -127,6 +128,7 @@ class ProjectEditPage extends Component {
           if(field && section){
             const index = currentSchema.sections.findIndex(sect => sect.title === section);
             this.setState({documentIndex:index})
+            this.setState({urlField:field})
           }
         }
       }
@@ -182,18 +184,21 @@ class ProjectEditPage extends Component {
   scroll() {
     const search = this.props.location.search
     const params = new URLSearchParams(search)
-
     const param = params.get('attribute')
-
     const element = document.getElementById(param)
 
     if (param && element) {
       this.props.history.replace({ ...this.props.location, search: '' })
     }
-    if(element){
+    else if(element){
       element?.scrollIntoView({behavior: "smooth", block: "center", inline: "center"})
     }
+    else if(this.state.urlField){
+      const urlElement = document.getElementById(this.state.urlField)
+      urlElement?.scrollIntoView();
+    }
   }
+
   changePhase = () => {
     const { schema, selectedPhase } = this.props
     const currentSchemaIndex = schema.phases.findIndex(s => s.id === selectedPhase)
