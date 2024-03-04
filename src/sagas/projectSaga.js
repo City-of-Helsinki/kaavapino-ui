@@ -951,7 +951,6 @@ function* getProjectsOverviewFloorArea({ payload }) {
   let query = {}
 
   const keys = Object.keys(payload)
-
   keys.forEach(key => {
     if (key === 'vuosi') {
       const value = payload[key]
@@ -984,7 +983,46 @@ function* getProjectsOverviewFloorArea({ payload }) {
           [key]: currentPersonIds.toString()
         }
       }
-    } else {
+    }
+    else if (key === 'kaavaprosessi') {
+      const queryValue = []
+      const current = payload[key]
+
+      //Change attributedata kaavaprosessin nimi strings to int subtype_id for nicer comparison in backend
+      const getSubtypeID = id => modifiedValuePairs[id]; 
+      const modifiedValuePairs = {
+        XS: 1, xs: 1, S: 2, s: 2, M: 3, m: 3,L: 4, l: 4, XL: 5, xl: 5 
+      };
+
+      if (isArray(current)) {
+        for (let i = 0; i < current.length; i++) {
+          queryValue.push(getSubtypeID(current[i]))
+        }
+      }
+      if (queryValue.length > 0) {
+        query = {
+          ...query,
+          ["subtype_id"]: queryValue.toString()
+        }
+      }
+    }
+    else if(key === "yksikko_tai_tiimi"){
+      const queryValue = []
+
+      const current = payload[key]
+      if (isArray(current)) {
+        for (let i = 0; i < current.length; i++) {
+          queryValue.push(current[i])
+        }
+      }
+      if (queryValue.length > 0) {
+        query = {
+          ...query,
+          ["vastuuyksikko"]: queryValue.toString()
+        }
+      }
+    }
+    else {
       const queryValue = []
 
       const current = payload[key]

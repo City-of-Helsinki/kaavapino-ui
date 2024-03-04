@@ -47,8 +47,15 @@ const FieldSet = ({
 
   const dispatch = useDispatch()
   const { t } = useTranslation()
-
   const isMount = useIsMount()
+  const accordianRef = useRef(null)
+
+  const nulledFields = fields && fields.map(field => {
+    return { [field.name]: null, _deleted: true }
+  })
+
+  const [hiddenIndex, setHiddenIndex] = useState(-1)
+  const [expanded, setExpanded] = useState([]);
   const accordianRef = useRef(null)
 
   const nulledFields = fields && fields.map(field => {

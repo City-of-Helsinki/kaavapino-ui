@@ -39,6 +39,7 @@ function* downloadDocumentSaga({ payload }) {
   let isError = false
 
   let counter = 0
+  const modifiedUrl = payload.file + '?immediate=true'
   yield put(downloadDocumentDone(false))
   toastr.info(
     payload.projectCard
@@ -50,11 +51,11 @@ function* downloadDocumentSaga({ payload }) {
     { closeOnToastrClick: false, timeOut:0, removeOnHover: false, removeOnHoverTimeOut: 0 }
   )
   try {
-    res = yield call(axios.get, payload.file, { responseType: 'json' })
+    res = yield call(axios.get, modifiedUrl, { responseType: 'blob' })
 
     currentTask = res && res.data ? res.data.detail : null
 
-    if (!currentTask) {
+    if (!currentTask && res.status !== 200) {
       toastr.removeByType('info')
       toastr.error(
         payload.projectCard
@@ -157,7 +158,7 @@ function* downloadDocumentPreviewSaga({ payload }) {
   let isError = false
 
   let counter = 0
-  const modifiedUrl = payload.file + '?preview=true'
+  const modifiedUrl = payload.file + '?preview=true&immediate=true'
   yield put(downloadDocumentDone(false))
   toastr.info(
     i18next.t('document-loading.wait-title'),
@@ -166,10 +167,10 @@ function* downloadDocumentPreviewSaga({ payload }) {
   )
 
   try {
-    res = yield call(axios.get, modifiedUrl, { responseType: 'json' })
+    res = yield call(axios.get, modifiedUrl, { responseType: 'blob' })
     currentTask = res && res.data ? res.data.detail : null
 
-    if (!currentTask) {
+    if (!currentTask && res.status !== 200) {
       toastr.removeByType('info')
       toastr.error(
         i18next.t('document-loading.error-title'),
