@@ -191,11 +191,11 @@ class ProjectEditPage extends Component {
       this.props.history.replace({ ...this.props.location, search: '' })
     }
     else if(element){
-      element?.scrollIntoView({behavior: "smooth", block: "center", inline: "center"})
+      element?.scrollIntoView({block: "center", inline: "center"})
     }
     else if(this.state.urlField){
       const urlElement = document.getElementById(this.state.urlField)
-      urlElement?.scrollIntoView();
+      urlElement?.scrollIntoView({block: "center", inline: "center"});
     }
   }
 
