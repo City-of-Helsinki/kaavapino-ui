@@ -409,7 +409,8 @@ class CustomField extends Component {
       lockField,
       lockStatus,
       unlockAllFields,
-      rollingInfo
+      rollingInfo,
+      phaseIsClosed
     } = this.props
 
     return (
@@ -435,6 +436,7 @@ class CustomField extends Component {
         lockStatus={lockStatus}
         unlockAllFields={unlockAllFields}
         rollingInfo={rollingInfo}
+        phaseIsClosed={phaseIsClosed}
       />
     )
   }

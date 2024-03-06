@@ -39,7 +39,8 @@ const FieldSet = ({
   saving,
   visibleErrors,
   lastSaved,
-  updateField
+  updateField,
+  phaseIsClosed
 }) => {
   const handleBlur = () => {
     onBlur()
@@ -272,10 +273,6 @@ const FieldSet = ({
                     nonEditable = true
                   }
 
-                  if(disabled){
-                    nonEditable = true
-                  }
-
                   const assistiveText = field.assistive_text
                   return (
                     <div
@@ -354,6 +351,7 @@ const FieldSet = ({
                           modifyText={t('project.modify')}
                           rollingInfoText={rollingInfoText}
                           nonEditable={nonEditable}
+                          phaseIsClosed={phaseIsClosed}
                         />
                         {showError && <div className="error-text">{showError}</div>}
                         {assistiveText && <div className='assistive-text'>{assistiveText}.</div>}
