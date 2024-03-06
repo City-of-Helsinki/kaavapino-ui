@@ -418,7 +418,8 @@ FieldSet.propTypes = {
   lastSaved: PropTypes.object,
   updateField: PropTypes.object,
   attributeData: PropTypes.object,
-  updated: PropTypes.object
+  updated: PropTypes.object,
+  phaseIsClosed: PropTypes.bool
 }
 
 export default connect(mapStateToProps)(FieldSet)
