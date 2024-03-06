@@ -75,7 +75,8 @@ RollingInfo.propTypes = {
   rollingInfoText: PropTypes.string,
   editRollingField: PropTypes.func,
   type:PropTypes.string,
-  phaseIsClosed: PropTypes.bool
+  phaseIsClosed: PropTypes.bool,
+  factaInfo: PropTypes.string
 }
 
 export default RollingInfo
