@@ -10,6 +10,7 @@
     "core-js": "^3.33.1",
     "dayjs": "^1.10.4",
     "file-saver": "^2.0.5",
+    "frappe-gantt": "^0.6.1",
     "hds-core": "2.12.1",
     "hds-react": "2.12.1",
     "html-react-parser": "^3.0.12",
@@ -52,7 +53,10 @@
     "reselect": "^4.1.7",
     "sass": "1.69.4",
     "semantic-ui-css": "^2.4.1",
-    "semantic-ui-react": "2.1.4"
+    "semantic-ui-react": "2.1.4",
+    "vis-data": "^7.1.9",
+    "vis-timeline": "^7.7.3",
+    "vis-util": "^5.0.7"
   },
   "resolutions": {
     "crypto-js": "4.2.0",
