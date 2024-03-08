@@ -1,0 +1,22 @@
+@import '../common/colors';
+.green{
+    background: $color_phase_start;
+}
+.yellow{
+    background: $color_phase_oas;
+}
+.orange{
+    background: $color_phase_suggestion;
+}
+.blue{
+    background: $color_phase_check_suggestion;
+    color: white;
+}
+.copper{
+    background: $color_phase_approval;
+}
+
+.vis{
+    margin-top: 100px;
+    margin-bottom: 100px;
+}

@@ -4,6 +4,9 @@ import BasicInformation from './BasicInformation'
 import Contract from './Contract'
 import Description from './Description'
 import ProjectTimeline from '../ProjectTimeline/ProjectTimeline'
+import VisTimeline from '../ProjectTimeline/VisTimeline'
+import VisTimelineGroup from '../ProjectTimeline/VisTimelineGroup'
+import Frappe from '../ProjectTimeline/Frappe'
 import TimeTable from './Timetable'
 import Contacts from './Contacts'
 import FloorAreaInformation from './FloorAreaInformation'
@@ -318,11 +321,16 @@ function ProjectCardPage({
     const timelineRow = renderTimeLineRow()
 
     return (
-      <div className="project-card">
-        {firstRow}
-        {timelineRow}
-        {secondRow}
-      </div>
+      <>
+        <VisTimeline/>
+        <VisTimelineGroup/>
+        <Frappe/>
+        <div className="project-card">
+          {firstRow}
+          {timelineRow}
+          {secondRow}
+        </div>
+      </>
     )
   }
 
