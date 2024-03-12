@@ -140,7 +140,8 @@
     "fieldset":"Kenttäkokonaisuus",
     "addfield":"Kentän lisäys.",
     "total":"Yhteensä",
-    "fields":"kenttää."
+    "fields":"kenttää.",
+    "general-save-error":"Tallennus epäonnistui"
   },
   "floor-areas": {
     "title": "Päivitä kerrosalatiedot",
