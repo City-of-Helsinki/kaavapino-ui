@@ -63,7 +63,8 @@ function Documents({ documentFields, hideTitle, mapLink }) {
 }
 
 Documents.propTypes = {
-  documentFields: PropTypes.object
+  documentFields: PropTypes.object,
+  mapLink: PropTypes.string
 }
 
 export default Documents
