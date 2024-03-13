@@ -437,6 +437,7 @@ class CustomField extends Component {
         unlockAllFields={unlockAllFields}
         rollingInfo={rollingInfo}
         phaseIsClosed={phaseIsClosed}
+        fieldsetTotal={field.fieldset_total}
       />
     )
   }

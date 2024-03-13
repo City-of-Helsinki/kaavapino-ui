@@ -40,7 +40,8 @@ const FieldSet = ({
   visibleErrors,
   lastSaved,
   updateField,
-  phaseIsClosed
+  phaseIsClosed,
+  fieldsetTotal
 }) => {
   const handleBlur = () => {
     onBlur()
@@ -132,10 +133,12 @@ const FieldSet = ({
     unlockAllFields()
   }
 
-  const getNumberOfFieldsets = () => {
+  const getNumberOfFieldsets = (fieldsetTotal) => {
+   let fieldText = fieldsetTotal
    const fieldName = get(formValues, name)
    let fieldsLength = fieldName?.filter( i => i?._deleted !== true );
-   return fieldsLength?.length || 0 
+   fieldText = fieldText.replace("{{kpl}}", fieldsLength?.length || 0)
+   return fieldText 
   }
 
   OutsideClick(accordianRef, handleOutsideClick)
@@ -199,7 +202,7 @@ const FieldSet = ({
   return (
     <div className='fieldset-main-container' ref={accordianRef}>
     <React.Fragment>
-      <div className='fieldset-info'>{t('project.fieldset-info', { fieldAmount: getNumberOfFieldsets() })}</div>
+      <div className='fieldset-info'>{fieldsetTotal ? getNumberOfFieldsets(fieldsetTotal) : ""}</div>
       {sets.map((set, i) => {
         const setValues = get(formValues, set)
         const fieldsetDisabled = lockStatus?.lockStyle && !lockStatus?.owner && lockStatus?.fieldIdentifier === set ? true : false;
