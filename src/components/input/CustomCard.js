@@ -9,7 +9,7 @@ import infoFieldUtil from '../../utils/infoFieldUtil'
 import moment from 'moment'
 
 function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth}) {
-  const [cardValues, setCardValues] = useState(["","","","",true,0,0,0,0,"",false,"",false,"",""]);
+  const [cardValues, setCardValues] = useState(["","","","",true,0,0,0,0,"",false,"",false,"","",false]);
   
   const attributeData = useSelector(state => attributeDataSelector(state))
   const deadlinesData = useSelector(state => deadlinesSelector(state))
@@ -22,8 +22,8 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
     setCardValues(infoFieldUtil.getInfoFieldData(props.placeholder,props.input?.name,attributeData,deadlinesData,selectedPhase))
   }, [attributeData,deadlinesData])
 
-  const getFieldsInOrder = (phase,heading,container,container2,editDataLink) => {
-    if(phase === "Ehdotus"){
+  const getFieldsInOrder = (suggestionPhase,heading,container,container2,editDataLink) => {
+    if(suggestionPhase){
       return (
         <div className='custom-card' >
         <div className='heading'>{heading}</div>
@@ -157,7 +157,7 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
   }
   //Order is reverse in ehdotus phase
   return (
-    getFieldsInOrder(data?.kaavan_vaihe,heading,container,container2,editDataLink)
+    getFieldsInOrder(cardValues[15],heading,container,container2,editDataLink)
   )
   
 
