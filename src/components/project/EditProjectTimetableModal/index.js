@@ -115,6 +115,7 @@ class EditProjectTimeTableModal extends Component {
           className={className}
           isProjectTimetableEdit={true}
           disabled={disabled?.disabled || !this.props.allowedToEdit}
+          attributeData={this.props.attributeData}
         />
         {modifiedError && <div className="field-error">{modifiedError}</div>}
       </div>
