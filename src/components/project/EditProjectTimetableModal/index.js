@@ -248,7 +248,8 @@ EditProjectTimeTableModal.propTypes = {
   currentProject: PropTypes.object,
   archived: PropTypes.bool,
   submitting: PropTypes.bool,
-  allowedToEdit: PropTypes.bool
+  allowedToEdit: PropTypes.bool,
+  attributeData: PropTypes.object,
 }
 
 const mapStateToProps = state => ({
