@@ -478,5 +478,6 @@ export default function QuickNav({
 QuickNav.propTypes = {
   phase: PropTypes.object,
   documentIndex: PropTypes.number,
-  locationSearch: PropTypes.object
+  locationSearch: PropTypes.object,
+  currentSchema: PropTypes.object
 }
