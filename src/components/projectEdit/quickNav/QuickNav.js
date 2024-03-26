@@ -6,6 +6,7 @@ import ConfirmModal from '../ConfirmModal'
 import './styles.scss'
 import Status from '../../common/Status'
 import PropTypes from 'prop-types'
+import schemaUtils from '../../../utils/schemaUtils';
 
 export default function QuickNav({
   currentProject,
@@ -33,7 +34,8 @@ export default function QuickNav({
   showSections,
   documents,
   currentSchema,
-  documentIndex
+  documentIndex,
+  locationSearch
 }) {
   const [verifying, setVerifying] = useState(false)
   const [checkButtonPressed, setCheckButtonPressed] = useState(false)
@@ -62,26 +64,18 @@ export default function QuickNav({
   useEffect(() => {
     const optionsArray = [];
     let curPhase = ""
-  //  let phaseID = 0
-  //  let title = ""
 
     if(phases){
       phases.map(phase => {
         let option = {label:phase.title,color:phase.color_code,phaseID:phase.id,status:phase.status};
         if(phase.id === activePhase){
           curPhase = {label:phase.title}
-   //       title = phase.sections[0].title
-   //       phaseID = phase.id
           prevSelectedRef.current = option
         }
         optionsArray.push(option)
     })
     }
 
-    if(curPhase && selectedPhase.currentPhase.length === 0){
-     // switchPhase(curPhase)
-     // handleSectionTitleClick(title, 0, phaseID)
-    }
     setOptions({optionsArray,curPhase})
 
   }, [phases])
@@ -98,8 +92,10 @@ export default function QuickNav({
     setSelectedPhase({currentPhase:sections,phaseID:id});
     //Get last section pressed from navigation when pressing back button and returning from project card
     setCurrentSection(0)
-    if(documentIndex){
-      index = documentIndex
+    //If is document url
+    const section = schemaUtils.getDocumentUrlSection(locationSearch)
+    if(section){
+      index = documentIndex;
     }
     handleSectionTitleClick(curPhase, index, id,sections)
     showSections(true)
@@ -112,7 +108,7 @@ export default function QuickNav({
       return;
     }
 
-    const formTitleElement = document.getElementById("title-"+currentSchema.sections[selected].title)
+    const formTitleElement = document.getElementById("title-"+currentSchema?.sections[selected]?.title)
     const offset = 178
     let formTitleElementBoundingRectTop = 0
 
@@ -120,7 +116,7 @@ export default function QuickNav({
       formTitleElementBoundingRectTop = formTitleElement.getBoundingClientRect().top
     }
     else {
-      console.error("Selected item don't match the title of the form area. Cannot determine the right scroll position.")
+      console.log("Selected item don't match the title of the form area. Cannot determine the right scroll position.")
     }
 
     const bodyElementBoundingRectTop = document.body.getBoundingClientRect().top
@@ -291,11 +287,16 @@ export default function QuickNav({
 
   const handleSectionTitleClick = (title, index, phaseID, fields) => {
     let sectionIndex
-    if (phaseID !== activePhase) {
+    if (!locationSearch && phaseID !== activePhase) {
       setActivePhase(phaseID)
       switchDisplayedPhase(phaseID)
       //When navigating to different phase menu start from index 0
       sectionIndex = 0
+    }
+    else if(locationSearch){
+      setActivePhase(phaseID)
+      switchDisplayedPhase(phaseID)
+      sectionIndex = index
     }
     else{
       //When navigating to phase menu and back to same phase use the index user was previously
@@ -476,5 +477,6 @@ export default function QuickNav({
 
 QuickNav.propTypes = {
   phase: PropTypes.object,
-  documentIndex: PropTypes.number
+  documentIndex: PropTypes.number,
+  locationSearch: PropTypes.object
 }
