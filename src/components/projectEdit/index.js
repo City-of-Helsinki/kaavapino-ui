@@ -669,6 +669,7 @@ class ProjectEditPage extends Component {
               documents={documents}
               currentSchema={currentSchema}
               documentIndex={this.state.documentIndex}
+              locationSearch={this.props.location.search}
             />
             <NavigationPrompt
               when={
