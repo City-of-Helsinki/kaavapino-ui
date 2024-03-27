@@ -619,10 +619,6 @@ function RichTextEditor(props) {
             <select aria-label="background" className="ql-background" />
           </span>
           <span className={readonly ? "ql-formats rich-text-disabled" : "ql-formats"}>
-            <button aria-label="list" className="ql-list" value="ordered" />
-            <button aria-label="bullet" className="ql-list" value="bullet" />
-          </span>
-          <span className={readonly ? "ql-formats rich-text-disabled" : "ql-formats"}>
             <button aria-label="script" className="ql-script" value="super" />
             <button aria-label="sub" className="ql-script" value="sub" />
           </span>

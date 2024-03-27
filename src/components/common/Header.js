@@ -144,6 +144,13 @@ const Header = props => {
           }
           //Get normal or array value and make sure it is formated as string
           let errorTextValue = arrayValues.length > 0 ? arrayValues : newErrorValue.toString()
+          if (errorTextValue.includes("true") || errorTextValue.includes("false")) {
+            errorTextValue === "true" ? errorTextValue = "Kyllä" : errorTextValue = "Ei"
+          }
+          else if(errorTextValue === ""){
+            errorTextValue = "Tieto puuttuu"
+          }
+          
           let copyFieldsetValues = arrayValues.map(a => a).join("\n")
           const connectionOrLockErrorHeader = lastSaved.lock ? t('messages.could-not-lock-header') : t('messages.could-not-save-header')
           const connectionOrLockErrorText = lastSaved.lock ?       

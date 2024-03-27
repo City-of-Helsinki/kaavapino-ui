@@ -226,7 +226,7 @@ const getInfoFieldData = (placeholder,name,data,deadlines,selectedPhase) => {
     [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText,boardModified] = getReviewSuggestion(data,deadlines)
   }
 
-  return [startDate,endDate,startModified,endModified,hide,living,office,general,other,boardDate,confirmBoard,boardText,boardModified,starText,endText]
+  return [startDate,endDate,startModified,endModified,hide,living,office,general,other,boardDate,confirmBoard,boardText,boardModified,starText,endText,suggestionPhase]
 }
   
 export default {

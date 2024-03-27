@@ -255,7 +255,7 @@ function ProjectCardPage({
             <GeometryInformation field={planningRestriction} />
           </Segment>
           <Segment>
-            <Documents documentFields={externalDocuments} />
+            <Documents documentFields={externalDocuments} mapLink={currentProject?.attribute_data?.linkki_karttapalvelu}/>
           </Segment>
         </Grid.Column>
       </Grid>

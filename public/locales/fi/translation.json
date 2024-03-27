@@ -140,7 +140,8 @@
     "fieldset":"Kenttäkokonaisuus",
     "addfield":"Kentän lisäys.",
     "total":"Yhteensä",
-    "fields":"kenttää."
+    "fields":"kenttää.",
+    "general-save-error":"Tallennus epäonnistui"
   },
   "floor-areas": {
     "title": "Päivitä kerrosalatiedot",
@@ -234,7 +235,8 @@
     "error":"Virhe",
     "error-prevent-add":"Virhe lomakkeella estää lisäyksen",
     "fieldset-info":"Yhteensä {{fieldAmount}} tietuetta.",
-    "no-fields":"Suodatinvalinnalla ei löytynyt tämän otsikon alta suodatettavia kenttiä."
+    "no-fields":"Suodatinvalinnalla ei löytynyt tämän otsikon alta suodatettavia kenttiä.",
+    "link-to-map":"Linkki projektin karttapalveluun."
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}",
@@ -423,7 +425,7 @@
     "office":"Toimitila",
     "public":"Julkiset",
     "other":"Muut",
-    "already-confirmed":"Päivämäärät on jo vahvistettu, jos haluat muuttaa niitä ota yhteys kaavoitussihteeriin.",
+    "already-confirmed":"Päivämäärät ovat jo vahvistettu. Jos haluat muuttaa päivämääriä, ota yhteys kaavoitussihteeriin.",
     "confirmed":"Vahvistettu",
     "principles-board-text":"Milloin periaatteet on lautakunnassa",
     "draft-board-text":"Milloin luonnos on lautakunnassa",

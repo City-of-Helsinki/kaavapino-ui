@@ -11,6 +11,7 @@ import { Grid } from 'semantic-ui-react'
 function FilterField({ type, id, options, change, disabled, inputType, name }) {
   const [start, setStart] = useState(null)
   const [end, setEnd] = useState(null)
+  const [selectVal,setSelectVal] = useState([])
 
   useEffect(() => {
     if (!start || !end) {
@@ -19,6 +20,13 @@ function FilterField({ type, id, options, change, disabled, inputType, name }) {
     const value = `${start},${end}`
     change(REPORT_FORM, id, value)
   }, [start, end])
+
+  const changeSelection = (form, id, value) => {
+    //Visually change
+    setSelectVal(value)
+    //Redux form change
+    change(form, id, value)
+  }
 
   const renderUser = () => {
     return (
@@ -49,8 +57,8 @@ function FilterField({ type, id, options, change, disabled, inputType, name }) {
         className="filter-field"
         disabled={disabled}
         input={{
-          value: [],
-          onChange: value => change(REPORT_FORM, id, value)
+          value: selectVal,
+          onChange: value => changeSelection(REPORT_FORM, id, value)
         }}
         label={name}
       />

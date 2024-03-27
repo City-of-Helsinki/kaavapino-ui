@@ -111,6 +111,16 @@ const calculateFields = (all) => {
 const handleChange = (e) => {
     const item = e.target.name;
     const isChecked = e.target.checked;
+
+    if(item === selectedTag && isChecked === false){
+        isHighlightedTag("")
+        setSelectedTag("")
+    }
+    else if(item === selectedTag && isChecked === true){
+        isHighlightedTag(item)
+        setSelectedTag(item)
+    }
+    
     setCheckedItems({ ...checkedItems, [item]: isChecked });
 };
 
@@ -141,6 +151,8 @@ const saveSelections = () => {
 }
 
 const removeFilters = () => {
+    setSelectedTag("")
+    isHighlightedTag("")
     setCheckedItems({})
 }
 
