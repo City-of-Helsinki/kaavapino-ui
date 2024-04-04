@@ -6,7 +6,6 @@ import Description from './Description'
 import ProjectTimeline from '../ProjectTimeline/ProjectTimeline'
 import VisTimeline from '../ProjectTimeline/VisTimeline'
 import VisTimelineGroup from '../ProjectTimeline/VisTimelineGroup'
-import Frappe from '../ProjectTimeline/Frappe'
 import TimeTable from './Timetable'
 import Contacts from './Contacts'
 import FloorAreaInformation from './FloorAreaInformation'
@@ -322,9 +321,8 @@ function ProjectCardPage({
 
     return (
       <>
-        <VisTimeline/>
+        <VisTimeline deadlines={currentProject && currentProject.deadlines}/>
         <VisTimelineGroup/>
-        <Frappe/>
         <div className="project-card">
           {firstRow}
           {timelineRow}
