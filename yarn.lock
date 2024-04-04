@@ -6377,6 +6377,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"d@npm:1, d@npm:^1.0.1, d@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "d@npm:1.0.2"
+  dependencies:
+    es5-ext: ^0.10.64
+    type: ^2.7.2
+  checksum: 775db1e8ced6707cddf64a5840522fcf5475d38ef49a5d615be0ac47f86ef64d15f5a73de1522b09327cc466d4dc35ea83dbfeed456f7a0fdcab138deb800355
+  languageName: node
+  linkType: hard
+
 "damerau-levenshtein@npm:^1.0.8":
   version: 1.0.8
   resolution: "damerau-levenshtein@npm:1.0.8"
@@ -7190,10 +7200,43 @@ __metadata:
   languageName: node
   linkType: hard
 
+"es5-ext@npm:^0.10.35, es5-ext@npm:^0.10.62, es5-ext@npm:^0.10.64, es5-ext@npm:~0.10.14":
+  version: 0.10.64
+  resolution: "es5-ext@npm:0.10.64"
+  dependencies:
+    es6-iterator: ^2.0.3
+    es6-symbol: ^3.1.3
+    esniff: ^2.0.1
+    next-tick: ^1.1.0
+  checksum: 01179fab0769fdbef213062222f99d0346724dbaccf04b87c0e6ee7f0c97edabf14be647ca1321f0497425ea7145de0fd278d1b3f3478864b8933e7136a5c645
+  languageName: node
+  linkType: hard
+
 "es6-error@npm:^4.1.1":
   version: 4.1.1
   resolution: "es6-error@npm:4.1.1"
   checksum: ae41332a51ec1323da6bbc5d75b7803ccdeddfae17c41b6166ebbafc8e8beb7a7b80b884b7fab1cc80df485860ac3c59d78605e860bb4f8cd816b3d6ade0d010
+  languageName: node
+  linkType: hard
+
+"es6-iterator@npm:^2.0.3":
+  version: 2.0.3
+  resolution: "es6-iterator@npm:2.0.3"
+  dependencies:
+    d: 1
+    es5-ext: ^0.10.35
+    es6-symbol: ^3.1.1
+  checksum: 6e48b1c2d962c21dee604b3d9f0bc3889f11ed5a8b33689155a2065d20e3107e2a69cc63a71bd125aeee3a589182f8bbcb5c8a05b6a8f38fa4205671b6d09697
+  languageName: node
+  linkType: hard
+
+"es6-symbol@npm:^3.1.0, es6-symbol@npm:^3.1.1, es6-symbol@npm:^3.1.3":
+  version: 3.1.4
+  resolution: "es6-symbol@npm:3.1.4"
+  dependencies:
+    d: ^1.0.2
+    ext: ^1.7.0
+  checksum: 52125ec4b5d1b6b93b8d3d42830bb19f8da21080ffcf45253b614bc6ff3e31349be202fb745d4d1af6778cdf5e38fea30e0c7e7dc37e2aecd44acc43502055f9
   languageName: node
   linkType: hard
 
@@ -7608,6 +7651,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"esniff@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "esniff@npm:2.0.1"
+  dependencies:
+    d: ^1.0.1
+    es5-ext: ^0.10.62
+    event-emitter: ^0.3.5
+    type: ^2.7.2
+  checksum: d814c0e5c39bce9925b2e65b6d8767af72c9b54f35a65f9f3d6e8c606dce9aebe35a9599d30f15b0807743f88689f445163cfb577a425de4fb8c3c5bc16710cc
+  languageName: node
+  linkType: hard
+
 "espree@npm:^7.3.0, espree@npm:^7.3.1":
   version: 7.3.1
   resolution: "espree@npm:7.3.1"
@@ -7690,6 +7745,16 @@ __metadata:
   version: 1.8.1
   resolution: "etag@npm:1.8.1"
   checksum: 571aeb3dbe0f2bbd4e4fadbdb44f325fc75335cd5f6f6b6a091e6a06a9f25ed5392f0863c5442acb0646787446e816f13cbfc6edce5b07658541dff573cab1ff
+  languageName: node
+  linkType: hard
+
+"event-emitter@npm:^0.3.5":
+  version: 0.3.5
+  resolution: "event-emitter@npm:0.3.5"
+  dependencies:
+    d: 1
+    es5-ext: ~0.10.14
+  checksum: 27c1399557d9cd7e0aa0b366c37c38a4c17293e3a10258e8b692a847dd5ba9fb90429c3a5a1eeff96f31f6fa03ccbd31d8ad15e00540b22b22f01557be706030
   languageName: node
   linkType: hard
 
@@ -7820,6 +7885,15 @@ __metadata:
     utils-merge: 1.0.1
     vary: ~1.1.2
   checksum: 212dbd6c2c222a96a61bc927639c95970a53b06257080bb9e2838adb3bffdb966856551fdad1ab5dd654a217c35db94f987d0aa88d48fb04d306340f5f34dca5
+  languageName: node
+  linkType: hard
+
+"ext@npm:^1.7.0":
+  version: 1.7.0
+  resolution: "ext@npm:1.7.0"
+  dependencies:
+    type: ^2.7.2
+  checksum: ef481f9ef45434d8c867cfd09d0393b60945b7c8a1798bedc4514cb35aac342ccb8d8ecb66a513e6a2b4ec1e294a338e3124c49b29736f8e7c735721af352c31
   languageName: node
   linkType: hard
 
@@ -8122,13 +8196,6 @@ __metadata:
   version: 4.2.0
   resolution: "fraction.js@npm:4.2.0"
   checksum: 8c76a6e21dedea87109d6171a0ac77afa14205794a565d71cb10d2925f629a3922da61bf45ea52dbc30bce4d8636dc0a27213a88cbd600eab047d82f9a3a94c5
-  languageName: node
-  linkType: hard
-
-"frappe-gantt@npm:^0.6.1":
-  version: 0.6.1
-  resolution: "frappe-gantt@npm:0.6.1"
-  checksum: c643adafb36c4d4d9c77f71f2b6000fdb3c80b7433791767e4100b85936aa32a404ae56e6e62daa218deff503a0655d6bcc06a022929aa954afe8a630aea9d58
   languageName: node
   linkType: hard
 
@@ -10977,7 +11044,6 @@ __metadata:
     eslint-plugin-jest: ^27.2.1
     eslint-plugin-react: ^7.23.2
     file-saver: ^2.0.5
-    frappe-gantt: ^0.6.1
     hds-core: 2.12.1
     hds-react: 2.12.1
     html-react-parser: ^3.0.12
@@ -10993,6 +11059,7 @@ __metadata:
     jest-localstorage-mock: ^2.4.26
     leaflet: ^1.7.1
     moment: ^2.29.1
+    moment-range: ^4.0.2
     npm-run-all: ^4.1.5
     oidc-client-ts: ^3.0.1
     path-browserify: ^1.0.1
@@ -11762,6 +11829,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"moment-range@npm:^4.0.2":
+  version: 4.0.2
+  resolution: "moment-range@npm:4.0.2"
+  dependencies:
+    es6-symbol: ^3.1.0
+  peerDependencies:
+    moment: ">= 2"
+  checksum: ff7425eed2600b1450ae25a7d074fb1edbc7956199f9eca974d5b2bc7885912dd08205e55675eb1b8cbbdcb3647622748861822580bd7327e680ca2202f8ee31
+  languageName: node
+  linkType: hard
+
 "moment@npm:^2.29.1":
   version: 2.29.4
   resolution: "moment@npm:2.29.4"
@@ -11845,6 +11923,13 @@ __metadata:
   version: 2.6.2
   resolution: "neo-async@npm:2.6.2"
   checksum: deac9f8d00eda7b2e5cd1b2549e26e10a0faa70adaa6fdadca701cc55f49ee9018e427f424bac0c790b7c7e2d3068db97f3093f1093975f2acb8f8818b936ed9
+  languageName: node
+  linkType: hard
+
+"next-tick@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "next-tick@npm:1.1.0"
+  checksum: 83b5cf36027a53ee6d8b7f9c0782f2ba87f4858d977342bfc3c20c21629290a2111f8374d13a81221179603ffc4364f38374b5655d17b6a8f8a8c77bdea4fe8b
   languageName: node
   linkType: hard
 
@@ -16218,6 +16303,13 @@ __metadata:
     media-typer: 0.3.0
     mime-types: ~2.1.24
   checksum: 2c8e47675d55f8b4e404bcf529abdf5036c537a04c2b20177bcf78c9e3c1da69da3942b1346e6edb09e823228c0ee656ef0e033765ec39a70d496ef601a0c657
+  languageName: node
+  linkType: hard
+
+"type@npm:^2.7.2":
+  version: 2.7.2
+  resolution: "type@npm:2.7.2"
+  checksum: 0f42379a8adb67fe529add238a3e3d16699d95b42d01adfe7b9a7c5da297f5c1ba93de39265ba30ffeb37dfd0afb3fb66ae09f58d6515da442219c086219f6f4
   languageName: node
   linkType: hard
 
