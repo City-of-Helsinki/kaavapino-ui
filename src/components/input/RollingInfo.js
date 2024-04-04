@@ -7,11 +7,12 @@ import ReactQuill from 'react-quill'
 import infoBothDir from '../../assets/icons/Infobothdir.svg'
 import PropTypes from 'prop-types'
 
-function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField,type,phaseIsClosed}) {
-
+function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField,type,phaseIsClosed,factaInfo}) {
 
   const users = useSelector(state => usersSelector(state))
   let inputText = value
+  let noInfoText = name === "voimassa_asemakaavat" || name === "voimassa_olevat_rakennuskiellot" ? "Ei ole" : "Ei"
+  let noValue = factaInfo ? noInfoText : "Tieto puuttuu."
   
   if(name === "vastuuhenkilo_nimi_readonly" && value && users){
     const user = projectUtils.formatUsersName(users.find(u => u.id === value))
@@ -28,14 +29,14 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
       <div className={value === "" ? "text-input-italic" : "text-input"}>
         {type === "richtext" ?
         <ReactQuill
-          value={value === "" ? "Tieto puuttuu." : value}
+          value={value === "" ? noValue : value}
           tabIndex="0"
           theme="snow"
           readOnly={true}
           className="rolling-richtext"
         />
         :
-        <div className='content'>{value === "" ? "Tieto puuttuu." : inputText}</div>
+        <div className='content'>{value === "" ? noValue : inputText}</div>
         }
       </div>
       {nonEditable ? 
@@ -74,7 +75,8 @@ RollingInfo.propTypes = {
   rollingInfoText: PropTypes.string,
   editRollingField: PropTypes.func,
   type:PropTypes.string,
-  phaseIsClosed: PropTypes.bool
+  phaseIsClosed: PropTypes.bool,
+  factaInfo: PropTypes.string
 }
 
 export default RollingInfo

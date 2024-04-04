@@ -39,7 +39,9 @@ const FieldSet = ({
   saving,
   visibleErrors,
   lastSaved,
-  updateField
+  updateField,
+  phaseIsClosed,
+  fieldsetTotal
 }) => {
   const handleBlur = () => {
     onBlur()
@@ -131,10 +133,12 @@ const FieldSet = ({
     unlockAllFields()
   }
 
-  const getNumberOfFieldsets = () => {
+  const getNumberOfFieldsets = (fieldsetTotal) => {
+   let fieldText = fieldsetTotal
    const fieldName = get(formValues, name)
    let fieldsLength = fieldName?.filter( i => i?._deleted !== true );
-   return fieldsLength?.length || 0 
+   fieldText = fieldText.replace("{{kpl}}", fieldsLength?.length || 0)
+   return fieldText 
   }
 
   OutsideClick(accordianRef, handleOutsideClick)
@@ -198,7 +202,7 @@ const FieldSet = ({
   return (
     <div className='fieldset-main-container' ref={accordianRef}>
     <React.Fragment>
-      <div className='fieldset-info'>{t('project.fieldset-info', { fieldAmount: getNumberOfFieldsets() })}</div>
+      <div className='fieldset-info'>{fieldsetTotal ? getNumberOfFieldsets(fieldsetTotal) : ""}</div>
       {sets.map((set, i) => {
         const setValues = get(formValues, set)
         const fieldsetDisabled = lockStatus?.lockStyle && !lockStatus?.owner && lockStatus?.fieldIdentifier === set ? true : false;
@@ -269,10 +273,6 @@ const FieldSet = ({
 
                   if(isReadOnly || field?.display === 'readonly_checkbox'){
                     rollingInfoText = "Tieto on automaattisesti muodostettu"
-                    nonEditable = true
-                  }
-
-                  if(disabled){
                     nonEditable = true
                   }
 
@@ -354,6 +354,7 @@ const FieldSet = ({
                           modifyText={t('project.modify')}
                           rollingInfoText={rollingInfoText}
                           nonEditable={nonEditable}
+                          phaseIsClosed={phaseIsClosed}
                         />
                         {showError && <div className="error-text">{showError}</div>}
                         {assistiveText && <div className='assistive-text'>{assistiveText}.</div>}
@@ -420,7 +421,8 @@ FieldSet.propTypes = {
   lastSaved: PropTypes.object,
   updateField: PropTypes.object,
   attributeData: PropTypes.object,
-  updated: PropTypes.object
+  updated: PropTypes.object,
+  phaseIsClosed: PropTypes.bool
 }
 
 export default connect(mapStateToProps)(FieldSet)

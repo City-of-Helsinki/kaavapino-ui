@@ -617,6 +617,9 @@ function* saveProjectFloorArea() {
 
       yield put(toastr.success(i18.t('messages.timelines-successfully-saved')))
     } catch (e) {
+      if (e?.code === "ERR_NETWORK") {
+        yield put(toastr.error(i18.t('messages.general-save-error')))
+      }
       yield put(stopSubmit(EDIT_FLOOR_AREA_FORM, e.response && e.response.data))
     }
   }
@@ -671,6 +674,9 @@ function* saveProjectTimetable() {
         )
       }
     } catch (e) {
+      if (e?.code === "ERR_NETWORK") {
+        yield put(toastr.error(i18.t('messages.general-save-error')))
+      }
       yield put(stopSubmit(EDIT_PROJECT_TIMETABLE_FORM, e.response && e.response.data))
     }
   }
@@ -824,6 +830,8 @@ function* changeProjectPhase({ payload: phase }) {
 function* projectFileUpload({
   payload: { attribute, file, description, callback, setCancelToken, insideFieldset }
 }) {
+  const dateVariable = new Date()
+  const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
   try {
     const currentProjectId = yield select(currentProjectIdSelector)
 
@@ -862,9 +870,6 @@ function* projectFileUpload({
       formData.append('fieldset_path', JSON.stringify(fieldSetIndex))
     }
 
-    const dateVariable = new Date()
-    const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-
     // Set cancel token
     const CancelToken = axios.CancelToken
     const src = CancelToken.source()
@@ -895,6 +900,8 @@ function* projectFileUpload({
     if (!axios.isCancel(e)) {
       yield put(error(e))
     }
+    yield put(error(e))
+    yield put(setLastSaved("error",time,[attribute],["Kuva/tiedosto"],false))
   }
 }
 

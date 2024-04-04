@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
-function Documents({ documentFields, hideTitle }) {
+function Documents({ documentFields, hideTitle, mapLink }) {
   const { t } = useTranslation()
   let documentsNotReady = true
 
@@ -36,12 +36,19 @@ function Documents({ documentFields, hideTitle }) {
     documentsNotReady = true
     return (
       <div>
+        {mapLink &&
+        <div>
+          <Link key={mapLink} to={{ pathname: mapLink }} target="_blank">
+            {t('project.link-to-map')}
+          </Link>
+        </div>
+        }
         {documentFields && documentFields.sections &&
           documentFields.sections.map(section => {
             return renderSection(section)
           })
         }
-        {documentsNotReady && <label className="documents-not-ready">{t('project.documents-not-ready')}</label>}
+        {documentsNotReady && !mapLink && <label className="documents-not-ready">{t('project.documents-not-ready')}</label>}
       </div>
     )
   }
@@ -56,7 +63,8 @@ function Documents({ documentFields, hideTitle }) {
 }
 
 Documents.propTypes = {
-  documentFields: PropTypes.object
+  documentFields: PropTypes.object,
+  mapLink: PropTypes.string
 }
 
 export default Documents

@@ -280,6 +280,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
         editRollingField={editRollingField}
         type={"input"}
         phaseIsClosed={custom.phaseIsClosed}
+        factaInfo={custom?.fieldData?.assistive_text}
       />
       :    
       <div className={custom.disabled || !inputUtils.hasError(error).toString() || !hasError ? "text-input " : "text-input " +t('project.error')}>
