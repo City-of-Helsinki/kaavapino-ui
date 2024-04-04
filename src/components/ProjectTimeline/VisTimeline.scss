@@ -1,22 +1,33 @@
 @import '../common/colors';
-.green{
-    background: $color_phase_start;
+.color-tram{
+    background: $color_tram;
 }
-.yellow{
-    background: $color_phase_oas;
+.color-summer{
+    background: $color-summer;
 }
-.orange{
-    background: $color_phase_suggestion;
+.color-metro{
+    background: $color_metro;
 }
-.blue{
-    background: $color_phase_check_suggestion;
-    color: white;
+.color-bus{
+    background: $color_bus;
+    color:white;
 }
-.copper{
-    background: $color_phase_approval;
+.color-gold{
+    background: $color_gold;
+}
+.color-fog{
+    background: $color_fog;
 }
 
 .vis{
     margin-top: 100px;
     margin-bottom: 100px;
+    .vis-time-axis.vis-foreground{
+        background-color: $light-gray3;
+    }
+    .timeline-menu {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 }
