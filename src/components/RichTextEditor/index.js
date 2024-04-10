@@ -62,6 +62,7 @@ const formats = [
 function RichTextEditor(props) {
   const {
     input: { value, ...inputProps },
+    fieldData: { required },
     largeField,
     disabled,
     meta,
@@ -705,7 +706,7 @@ function RichTextEditor(props) {
       ) : null}
     </div>
       {counter.current > maxSize && charLimitOver ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.charsover')}</div> : ""}
-      {valueIsEmpty ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.noempty')}</div> : ""}
+      {valueIsEmpty && required ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.noempty')}</div> : ""}
     </div>
     
     return elements
