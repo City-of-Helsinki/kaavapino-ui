@@ -113,6 +113,7 @@
     "check-timetable": "Tekemäsi aikataulumuutos vaikuttaa myöhempiin vaiheisiin. Siirrä myöhempiä vaiheita eteenpäin, jotta saat koko aikataulun ajantasalle.",
     "timelines-successfully-saved": "Kerrosalatiedot tallennettu onnistuneesti",
     "required-fields-filled-header":"Pakolliset kentät täytetty",
+    "starting-phase-required-fields-filled-text":"Voit seuraavaksi lopettaa Käynnistys-vaiheen ja siirtyä täyttämään OAS-vaiheen tietoja.",
     "required-fields-filled-text":"Pyydä seuraavaksi kaavoitussihteeriä vahvistamaan vaiheen aikataulu, jonka jälkeen voit siirtyä lataamaan dokumentteja.",
     "required-documents-header":"Lataa dokumentit",
     "required-documents-text":"Kaikkia tarvittavia dokumentteja ei ole vielä ladattu ulos",

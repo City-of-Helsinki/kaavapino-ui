@@ -434,8 +434,7 @@ class ProjectEditPage extends Component {
           </h3>
         </div>
         <div>
-          <p>{t('messages.required-fields-filled-text')}
-          </p>
+          <p>{currentSchema.title === "Käynnistys" ? t('messages.starting-phase-required-fields-filled-text') : t('messages.required-fields-filled-text')}</p>
         </div>
       </div>
       //show toastr message
