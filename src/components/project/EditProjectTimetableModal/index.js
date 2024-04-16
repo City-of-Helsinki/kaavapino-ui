@@ -186,7 +186,7 @@ class EditProjectTimeTableModal extends Component {
   render() {
     const { loading } = this.state
     const { open, formValues, deadlineSections, t, formSubmitErrors } = this.props
-    
+    console.log(deadlineSections)
     let currentSubmitErrors = Object.keys(formSubmitErrors).length > 0
 
     if (!formValues) {
