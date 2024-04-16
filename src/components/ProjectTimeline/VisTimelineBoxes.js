@@ -25,7 +25,7 @@ import './VisTimeline.css'
   return '';
 }; */
 
-function VisTimeline({deadlines}) {
+function VisTimelineBoxes({deadlines}) {
     const moment = extendMoment(Moment);
     const container = useRef(null);
     const [timeline, setTimeline] = useState(false);
@@ -161,7 +161,7 @@ function VisTimeline({deadlines}) {
       let startDate = false
       let endDate = false
       let dashStart = false
-      let dashEnd = false
+      //let dashEnd = false
       let innerStart = false
       let innerEnd = false
       let numberOfPhases = 1
@@ -180,7 +180,7 @@ function VisTimeline({deadlines}) {
           dashedStyle = "inner"
         }
         else if(deadlines[i].deadline.deadline_types.includes('dashed_end') || deadlines[i].deadline.deadline_types.includes('inner_start')){
-          dashEnd = deadlines[i].date
+          //dashEnd = deadlines[i].date
           innerStart = deadlines[i].date
         }
         else if(deadlines[i].deadline.deadline_types.includes('inner_end')){
@@ -207,40 +207,50 @@ function VisTimeline({deadlines}) {
           startDate = false
           endDate = false
           dashStart = false
-          dashEnd = false
+         // dashEnd = false
           innerStart = false
           innerEnd = false
           numberOfPhases++
         }
-        else if(dashStart && dashEnd){
+        else if(dashStart){
           phaseData.push({
             id: numberOfPhases,
-            content: '',
+            content: 'Määräaika alkaa',
             start:dashStart,
-            end:dashEnd,
             className:dashedStyle,
             title: 'Määräaika',
             phaseID:deadlines[i].deadline.phase_id,
             phase:false,
-            type:'range'
+            type:'box'
           })
           dashStart = false
-          dashEnd = false
           numberOfPhases++
         }
-        else if(innerStart && innerEnd){
+        else if(innerStart){
           phaseData.push({
             id: numberOfPhases,
-            content: '',
+            content: 'Nähtävillä alkaa',
             start:innerStart,
-            end:innerEnd,
             className:innerStyle,
             title: 'Esilläolo',
             phaseID:deadlines[i].deadline.phase_id,
             phase:false,
-            type:'range'
+            type:'box'
           })
           innerStart = false
+          numberOfPhases++
+        }
+        else if(innerEnd){
+          phaseData.push({
+            id: numberOfPhases,
+            content: 'Nähtävillä päättyy',
+            start:innerEnd,
+            className:innerStyle,
+            title: 'Esilläolo',
+            phaseID:deadlines[i].deadline.phase_id,
+            phase:false,
+            type:'box'
+          })
           innerEnd = false
           numberOfPhases++
         }
@@ -434,7 +444,7 @@ function VisTimeline({deadlines}) {
     }, [])
     console.log(timeline)
     return (
-        <div className='vis' ref={container}>
+        <div className='vis-boxes' ref={container}>
           <VisTimelineMenu
             zoomIn={zoomIn}
             zoomOut={zoomOut}
@@ -450,4 +460,4 @@ function VisTimeline({deadlines}) {
     )
 }
 
-export default VisTimeline
+export default VisTimelineBoxes
