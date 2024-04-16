@@ -11298,7 +11298,7 @@ __metadata:
     reselect: ^4.1.7
     sass: 1.69.4
     semantic-ui-css: ^2.4.1
-    semantic-ui-react: 2.1.4
+    semantic-ui-react: 2.1.5
     vis-data: ^7.1.9
     vis-timeline: ^7.7.3
     vis-util: ^5.0.7
@@ -15277,9 +15277,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semantic-ui-react@npm:2.1.4":
-  version: 2.1.4
-  resolution: "semantic-ui-react@npm:2.1.4"
+"semantic-ui-react@npm:2.1.5":
+  version: 2.1.5
+  resolution: "semantic-ui-react@npm:2.1.5"
   dependencies:
     "@babel/runtime": ^7.10.5
     "@fluentui/react-component-event-listener": ~0.63.0
@@ -15297,7 +15297,7 @@ __metadata:
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
-  checksum: 371de9540f11c4e78189de12a6cf81c8212ea698c93ad72904389462fb46c016207ce1781684a207c47a8ac790479e5d8810add957d9061fff929b546be14861
+  checksum: 9279b986736f78f95d21836e8052d88b88a6cc60b8a6139cff557eae449ff0a7e71ca556bab69ad4c1625251fd0e1ff6fa1613c2c47274681b330a249733b89a
   languageName: node
   linkType: hard
 
