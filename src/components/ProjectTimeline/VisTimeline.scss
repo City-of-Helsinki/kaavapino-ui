@@ -21,7 +21,16 @@
 
 .vis{
     margin-top: 100px;
-    margin-bottom: 100px;
+    margin-bottom: 20px;
+    .vis-item{
+       // pointer-events: none;
+    }
+    .vis-drag-left{
+        pointer-events: auto;
+    }
+    .vis-drag-right{
+        pointer-events: auto;
+    }
     .vis-time-axis.vis-foreground{
         background-color: $light-gray3;
     }
@@ -29,5 +38,172 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+    }
+/*     .rangeItem{
+        pointer-events: auto;
+        position: relative;
+        z-index: 2000;
+    } */
+    .inner,.inner-end{
+        z-index: 1000;
+        pointer-events: auto;
+        top: 18px !important;
+        .vis-item-overflow{
+            height: 5px;
+            .vis-item-content{
+                pointer-events: auto;
+                padding:0;
+            }
+        }
+        .vis-drag-left,.vis-drag-right{
+            height: 7px;
+            width: 7px;
+            background-color: black;
+            border-radius: 50%;
+            top: -1px;
+            display: inline-block;
+        }
+    }
+
+    .locked{
+        background-color: rgba(255, 0, 0, 0.2);
+    }
+
+    .vis-ltr .vis-label.vis-nested-group .vis-inner {
+        padding-left: 10px;
+    }
+
+    /* gray background in weekends, white text color */
+    .vis-time-axis .vis-grid.vis-saturday,
+    .vis-time-axis .vis-grid.vis-sunday {
+        background: gray;
+    }
+    .negative{
+        background-color: rgba(255, 0, 0, 0.2);
+    }
+
+    .hiddenTimes{
+        display: none;
+    }
+
+    .vis-nested-group.vis-group-level-unknown-but-gte1{
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        .vis-inner{
+            padding: 0;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            height: 100%;
+            div{
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+                width: 100%;
+                height: 100%;
+                .timeline-edit-button{
+                    margin-left: auto;
+                    margin-right: 0;
+                    padding:0;
+                    background:none;
+                    width: 100%;
+                    height: 100%;
+                    background:url('../../assets/icons/pen.svg') no-repeat;
+                    background-position-x: center;
+                    background-position-y: center;
+                    background-size: 18px;
+                    border: none;
+                    cursor: pointer;
+                }
+                .timeline-lock-button{
+                    margin-left: auto;
+                    margin-right: 0;
+                    padding: 0;
+                    background:none;
+                    width: 100%;
+                    height: 100%;
+                    background:url('../../assets/icons/lock-open.svg') no-repeat;
+                    background-position-x: center;
+                    background-position-y: center;
+                    background-size: 18px;
+                    border: none;
+                    cursor: pointer;
+                }
+                .lock{
+                    margin-left: auto;
+                    margin-right: 0;
+                    padding: 0;
+                    background:none;
+                    width: 100%;
+                    height: 100%;
+                    background:url('../../assets/icons/lock.svg') no-repeat;
+                    background-position-x: center;
+                    background-position-y: center;
+                    background-size: 18px;
+                    border: none;
+                    cursor: pointer;
+                }
+            }
+        }
+    }
+}
+
+.vis-boxes{
+    margin-top: 100px;
+    margin-bottom: 20px;
+    .vis-item{
+       // pointer-events: none;
+    }
+    .vis-drag-left{
+        pointer-events: auto;
+    }
+    .vis-drag-right{
+        pointer-events: auto;
+    }
+    .vis-time-axis.vis-foreground{
+        background-color: $light-gray3;
+    }
+    .timeline-menu {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .vis-box{
+        position: absolute;
+        z-index: 2000;
+        margin-top:-30px;
+    }
+
+    .vis-dot{
+        top: -30px;
+    }
+
+    .vis-line{
+        z-index: 2001;
+        height: 50px !important;
+    }
+
+    .vis-ltr .vis-label.vis-nested-group .vis-inner {
+        padding-left: 10px;
+    }
+
+    /* gray background in weekends, white text color */
+    .vis-time-axis .vis-grid.vis-saturday,
+    .vis-time-axis .vis-grid.vis-sunday {
+        background: gray;
+    }
+    .negative{
+        background-color: rgba(255, 0, 0, 0.2);
+    }
+}
+
+.edit-timeline-button-container{
+    display: flex;
+    margin-bottom: 80px;
+    justify-content: flex-end;
+    .edit-timeline-button{
+        margin-left: 20px;
     }
 }
