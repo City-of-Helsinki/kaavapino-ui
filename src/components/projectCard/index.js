@@ -4,10 +4,6 @@ import BasicInformation from './BasicInformation'
 import Contract from './Contract'
 import Description from './Description'
 import ProjectTimeline from '../ProjectTimeline/ProjectTimeline'
-/* import VisTimeline from '../ProjectTimeline/VisTimeline'
-import VisTimelineGroup from '../ProjectTimeline/VisTimelineGroup' */
-import VisTimelineBoxes from '../ProjectTimeline/VisTimelineBoxes'
-import VisTimelinesContainer from '../ProjectTimeline/VisTimelinesContainer'
 import TimeTable from './Timetable'
 import Contacts from './Contacts'
 import FloorAreaInformation from './FloorAreaInformation'
@@ -323,10 +319,6 @@ function ProjectCardPage({
 
     return (
       <>
-        <VisTimelinesContainer deadlines={currentProject && currentProject.deadlines}/>
-        <VisTimelineBoxes deadlines={currentProject && currentProject.deadlines}/>
-{/*         <VisTimeline deadlines={currentProject && currentProject.deadlines}/>
-        <VisTimelineGroup deadlines={currentProject && currentProject.deadlines}/> */}
         <div className="project-card">
           {firstRow}
           {timelineRow}

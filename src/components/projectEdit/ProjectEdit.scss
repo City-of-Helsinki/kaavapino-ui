@@ -542,8 +542,8 @@
 }
 
 .modal-center-big{
-  height: 85%;
-  width: 60% !important;
+  height: 98%;
+  width: 98% !important;
   margin: 0 auto !important;
   position: relative !important;
 
@@ -555,6 +555,38 @@
       gap: 20px;
       div {
         flex: 1 1 45%;
+      }
+    }
+    .other-content{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 20px;
+    }
+  }
+
+  .actions{
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    margin: 0 !important;
+  }
+}
+
+.timeline-edit-right{
+  height: 98%;
+  width: 40% !important;
+  margin: auto 0 auto auto !important;
+  position: relative !important;
+
+  .content{
+    margin-top: 20px;
+    .date-content{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      div {
+        flex: 1;
       }
     }
     .other-content{
