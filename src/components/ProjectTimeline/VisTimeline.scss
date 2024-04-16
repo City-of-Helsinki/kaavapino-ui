@@ -1,22 +1,22 @@
 @import '../common/colors';
 .color-tram{
-    background: $color_tram;
+    background-color: $color_tram !important;
 }
 .color-summer{
-    background: $color-summer;
+    background-color: $color-summer !important;
 }
 .color-metro{
-    background: $color_metro;
+    background-color: $color_metro !important;
 }
 .color-bus{
-    background: $color_bus;
+    background-color: $color_bus !important;
     color:white;
 }
 .color-gold{
-    background: $color_gold;
+    background-color: $color_gold !important;
 }
 .color-fog{
-    background: $color_fog;
+    background-color: $color_fog !important;
 }
 
 .vis{
@@ -47,7 +47,7 @@
     .inner,.inner-end{
         z-index: 1000;
         pointer-events: auto;
-        top: 18px !important;
+       // top: 18px !important;
         .vis-item-overflow{
             height: 5px;
             .vis-item-content{
@@ -56,11 +56,11 @@
             }
         }
         .vis-drag-left,.vis-drag-right{
-            height: 7px;
-            width: 7px;
+            height: 7px !important;
+            width: 7px !important;
             background-color: black;
             border-radius: 50%;
-            top: -1px;
+            top: -1px !important;
             display: inline-block;
         }
     }
@@ -79,7 +79,7 @@
         background: gray;
     }
     .negative{
-        background-color: rgba(255, 0, 0, 0.2);
+        background-color: rgba(255, 0, 0, 0.2) !important;
     }
 
     .hiddenTimes{

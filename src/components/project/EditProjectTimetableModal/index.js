@@ -2,7 +2,7 @@
 
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { Modal, Form } from 'semantic-ui-react'
+import { Modal } from 'semantic-ui-react'
 import { reduxForm, getFormSubmitErrors, getFormValues } from 'redux-form'
 import { connect } from 'react-redux'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../../constants'
@@ -12,10 +12,11 @@ import './styles.scss'
 import { deadlineSectionsSelector } from '../../../selectors/schemaSelector'
 import { withTranslation } from 'react-i18next'
 import { deadlinesSelector } from '../../../selectors/projectSelector'
-import { Button, IconInfoCircle } from 'hds-react'
+import { Button } from 'hds-react'
 import { isArray } from 'lodash'
 import { showField } from '../../../utils/projectVisibilityUtils'
 import { isEqual } from 'lodash'
+import VisTimelinesContainer from '../../ProjectTimeline/VisTimelinesContainer'
 
 class EditProjectTimeTableModal extends Component {
   constructor(props) {
@@ -188,36 +189,23 @@ class EditProjectTimeTableModal extends Component {
     const { open, formValues, deadlineSections, t, formSubmitErrors } = this.props
     console.log(deadlineSections)
     let currentSubmitErrors = Object.keys(formSubmitErrors).length > 0
-
+    console.log(currentSubmitErrors)
     if (!formValues) {
       return null
     }
 
     return (
       <Modal
-        className="form-modal edit-project-timetable-form-modal"
-        size="small"
+        size="large"
         open={open}
         closeIcon={false}
         closeOnDocumentClick={false}
         closeOnDimmerClick={false}
+        className='modal-center-big'
       >
         <Modal.Header>{t('deadlines.title')}</Modal.Header>
         <Modal.Content>
-          <Form>
-            {deadlineSections.map((section, sectionIndex) =>
-              this.renderSection(section, sectionIndex)
-            )}
-          </Form>
-          <div className="warning-box">
-            <span>
-              <IconInfoCircle className="warning-icon" size="s" />
-            </span>
-            <span> {t('deadlines.warning')}</span>
-          </div>
-          {currentSubmitErrors && (
-            <div className="error-area">{this.renderSubmitErrors()}</div>
-          )}
+          <VisTimelinesContainer deadlines={this.props.deadlines}/>
         </Modal.Content>
         <Modal.Actions>
           <span className="form-buttons">
