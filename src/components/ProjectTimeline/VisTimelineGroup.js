@@ -1,6 +1,6 @@
 import React, {useRef, useEffect, useState} from 'react';
-import moment from 'moment'
-//import {extendMoment} from 'moment-range'
+import Moment from 'moment'
+import {extendMoment} from 'moment-range'
 //import { createRoot } from 'react-dom/client'
 //import ItemRange from './ItemRange'
 import TimelineModal from './TimelineModal'
@@ -28,6 +28,7 @@ import './VisTimeline.css'
 
 
 function VisTimeline({deadlines}) {
+    const moment = extendMoment(Moment);
     const container = useRef(null);
     const [timeline, setTimeline] = useState(false);
     const [lock, setLock] = useState({group:false,id:false,locked:false,abbreviation:false});
@@ -129,15 +130,49 @@ function VisTimeline({deadlines}) {
     const lockLine = (data) => {
       console.log('lock line:',data.locked)
       setLock({group:data.nestedInGroup,id:data.id,abbreviation:data.abbreviation,locked:!data.locked})
-    } 
+    }
+
+/*     const onRangeChanged = ({ start, end }) => {
+      console.log(start, end)
+      const Min = 1000 * 60 * 60 * 24; // one day in milliseconds
+      const Max = 31556952000; // 1000 * 60 * 60 * 24 * 365.25 one year in milliseconds
+      let a0 = 10;
+      let a100 = moment.duration(moment(Max).diff(moment(Min))).asMilliseconds();
+      let  distance = (a100 - a0)/ 100;
+      let startTime = moment(start);
+      let endTime = moment(end);
+      const duration = moment.duration(endTime.diff(startTime));
+      const mins = duration.asMilliseconds();
+        // Arithmatic progression variables
+      if (mins !== 0) {
+        const x = (mins - a0) / distance; // Arithmatic progression formula
+        console.log(x)
+        if(x > 50){
+          console.log("smaller then 50")
+          document.querySelectorAll('.inner, .inner-end').forEach(el => el.classList.add('hiddenTimes'));
+        }
+        else if(x < 50 && document.querySelectorAll('.hiddenTimes')){
+          console.log("bigger then 50")
+          document.querySelectorAll('.inner, .inner-end').forEach(el => el.classList.remove('hiddenTimes'));
+        }
+      } else {
+        if(!document.querySelectorAll('.hiddenTimes')){
+          console.log("100")
+          document.querySelectorAll('.inner, .inner-end').forEach(el => el.classList.add('hiddenTimes'));
+        }
+      }
+      
+    } */
 
     useEffect(() => {
       const options = {
         stack: false,
         multiselect: true,
         sequentialSelection:  false,
+        groupHeightMode:"auto",
         width: '100%',
-        groupHeightMode:"fitItems",
+        zoomMin: 1000 * 60 * 60 * 24, // one day in milliseconds
+        zoomMax: 31556952000, // 1000 * 60 * 60 * 24 * 365.25 one year in milliseconds
         margin: {
           item: 20
         },
@@ -235,6 +270,7 @@ function VisTimeline({deadlines}) {
               }
             }
             else{
+              console.log(item.start,item.end)
               const movingTimetableItem = moment.range(item.start, item.end);
               items.forEach(i => {
                 if (i.id !== item.id) {
@@ -451,9 +487,11 @@ function VisTimeline({deadlines}) {
       //timeline.on('select', onSelect);
       setTimeline(timeline)
       timeline.on('groupDragged', groupDragged)
-/*         return () => {
-        timeline.off('dragover', onDragOver)
-      } */
+      //timeline.on('rangechanged', onRangeChanged);
+      return () => {
+        timeline.off('groupDragged', groupDragged)
+        //timeline.off('rangechanged', onRangeChanged);
+      } 
     }, [])
     console.log('lock:',lock)
     return (
