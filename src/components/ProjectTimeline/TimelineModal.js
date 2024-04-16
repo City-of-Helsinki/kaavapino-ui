@@ -12,7 +12,7 @@ const TimelineModal = ({ open,id,group,content,abbreviation,deadlines,openDialog
 
     console.log(id,group,content,abbreviation,deadlines)
     return (
-      <Modal open={open} size={'large'} className='modal-center-big'>
+      <Modal open={open} size={'large'} className='timeline-edit-right'>
         <Modal.Header>{group}</Modal.Header>
         <Modal.Content>
           <div className='date-content'>
