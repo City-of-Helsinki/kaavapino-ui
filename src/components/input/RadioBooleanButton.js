@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { RadioButton } from 'hds-react'
+import { RadioButton, Button, IconPlus } from 'hds-react'
 import RollingInfo from '../input/RollingInfo'
+import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types';
 
 const RadioBooleanButton = ({
@@ -16,8 +17,10 @@ const RadioBooleanButton = ({
   rollingInfo, 
   modifyText, 
   rollingInfoText,
-  phaseIsClosed
+  phaseIsClosed,
+  isProjectTimetableEdit
 }) => {
+  const { t } = useTranslation()
   const [radioValue, setRadioValue] = useState(null)
   const [editField,setEditField] = useState(false)
 
@@ -42,6 +45,7 @@ const RadioBooleanButton = ({
 
   const normalOrRollingElement = () => {
     const showNoInformation = autofillReadonly ? value === '' : true
+    let elements
     //Render rolling info field or normal edit field
     //If clicking rolling field button makes positive lock check then show normal editable field
     //Rolling field can be nonEditable
@@ -52,8 +56,15 @@ const RadioBooleanButton = ({
     else if(value === true){
       readableValue = "Kyllä"
     }
-
-    const elements = nonEditable || rollingInfo && !editField ?
+    
+    if(isProjectTimetableEdit){
+      elements = !value ? 
+      <Button variant="supplementary" className='add-content' iconLeft={<IconPlus />} onClick={() => handleOnChange(true)}>{t('deadlines.new-esillaolo')}</Button> 
+      : 
+      <Button size='small' variant="danger" onClick={() => handleOnChange(false)}>{t('deadlines.delete-esillaolo')}</Button>
+    }
+    else{
+      elements = nonEditable || rollingInfo && !editField ?
       <RollingInfo 
         name={name} 
         value={readableValue} 
@@ -108,6 +119,7 @@ const RadioBooleanButton = ({
           />
         )}
       </div>
+    }
     
     return elements
   }

@@ -27,11 +27,11 @@ import './VisTimeline.css'
 };  */
 
 
-function VisTimeline({deadlines}) {
+function VisTimeline({attributeData, deadlines, formValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit}) {
     const moment = extendMoment(Moment);
     const container = useRef(null);
     const [timeline, setTimeline] = useState(false);
-    const [lock, setLock] = useState({group:false,id:false,locked:false,abbreviation:false});
+    //const [lock, setLock] = useState({group:false,id:false,locked:false,abbreviation:false});
     const [toggleTimelineModal, setToggleTimelineModal] = useState({open: false, group: false, content: false, id:false, abbreviation:false, locked:false});
   /*     const onSelect = (properties) => {
         alert('selected items: ' + properties.items);
@@ -123,13 +123,12 @@ function VisTimeline({deadlines}) {
     }
 
     const openDialog = (data) => {
-      console.log('open dialog:', data)
       setToggleTimelineModal({open:!toggleTimelineModal.open,content:data.content,group:data.nestedInGroup,id:data.id,abbreviation:data.abbreviation,locked:data.locked})
     }
 
     const lockLine = (data) => {
-      console.log('lock line:',data.locked)
-      setLock({group:data.nestedInGroup,id:data.id,abbreviation:data.abbreviation,locked:!data.locked})
+      console.log(data)
+      //setLock({group:data.nestedInGroup,id:data.id,abbreviation:data.abbreviation,locked:!data.locked})
     }
 
 /*     const onRangeChanged = ({ start, end }) => {
@@ -167,9 +166,9 @@ function VisTimeline({deadlines}) {
     useEffect(() => {
       const options = {
         stack: false,
-        multiselect: true,
+        multiselect: false,
         sequentialSelection:  false,
-        groupHeightMode:"auto",
+        groupHeightMode:"fitItems",
         width: '100%',
         zoomMin: 1000 * 60 * 60 * 24, // one day in milliseconds
         zoomMax: 31556952000, // 1000 * 60 * 60 * 24 * 365.25 one year in milliseconds
@@ -218,7 +217,6 @@ function VisTimeline({deadlines}) {
           return Math.round(date / hour) * hour;
         },
         onMove(item, callback) {
-          console.log(item)
           let preventMove = false
           if(item.phase){
             if(!(item.start.getDay() % 6)){
@@ -270,7 +268,6 @@ function VisTimeline({deadlines}) {
               }
             }
             else{
-              console.log(item.start,item.end)
               const movingTimetableItem = moment.range(item.start, item.end);
               items.forEach(i => {
                 if (i.id !== item.id) {
@@ -295,7 +292,6 @@ function VisTimeline({deadlines}) {
           }
         },
         groupTemplate: function (group) {
-          console.log(group,groups)
           if(group.nestedInGroup){
             let container = document.createElement("div");
             let label = document.createElement("span");
@@ -316,14 +312,9 @@ function VisTimeline({deadlines}) {
             lock.addEventListener("click", function () {
               lock.classList.toggle("lock");
               const locked = lock.classList.contains("lock") ? "inner locked" : "inner";
-              console.log(locked)
-              console.log(items)
               let visibleItems = timeline.getVisibleItems()
-              console.log(visibleItems)
               for (let i = 0; i < visibleItems.length; i++) {
-                console.log(visibleItems[i])
                 const item = items.get(visibleItems[i])
-                console.log(item)
                 if(!item.phase && item.id >= group.id){
                   items.update({ id: item.id, className: locked, locked: !item.locked });
                 }
@@ -373,7 +364,7 @@ function VisTimeline({deadlines}) {
           deadLineGroups.push({
             id: deadlines[i].deadline.phase_name,
             content: deadlines[i].deadline.phase_name,
-            showNested: true,
+            showNested: false,
             nestedGroups: []
           });
         }
@@ -493,7 +484,7 @@ function VisTimeline({deadlines}) {
         //timeline.off('rangechanged', onRangeChanged);
       } 
     }, [])
-    console.log('lock:',lock)
+
     return (
       <>
         <div className='vis' ref={container}>
@@ -518,6 +509,13 @@ function VisTimeline({deadlines}) {
           locked={toggleTimelineModal.locked}
           deadlines={deadlines}
           openDialog={openDialog}
+          attributeData={attributeData}
+          formValues={formValues}
+          deadlineSections={deadlineSections}
+          formSubmitErrors={formSubmitErrors}
+          projectPhaseIndex={projectPhaseIndex}
+          archived={archived}
+          allowedToEdit={allowedToEdit}
         />
       </>
     )
