@@ -580,25 +580,45 @@
   position: relative !important;
 
   .content{
+    min-height: 80%;
     margin-top: 20px;
     .date-content{
       display: flex;
+      flex-direction: row;
       flex-wrap: wrap;
       gap: 20px;
-      div {
-        flex: 1;
+      .timeline-accordion{
+        & > div:nth-child(2){
+          display: flex;
+          flex-wrap: wrap;
+          gap: 20px;
+        }
       }
+      .input-container{
+        flex: 1 0 48%;
+      }
+      .checkbox-container{
+        flex: 0 1 48%;
+      }
+/*       .timetable-notification{
+        flex: 0 1 100%;
+        > div{
+          align-items: center;
+          justify-content: flex-start;
+        }
+        [role=heading] {
+          margin-right: 20px;
+          flex: 0;
+        }
+      } */
     }
-    .other-content{
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      margin-top: 20px;
+    button{
+      justify-content: flex-start;
     }
   }
 
   .actions{
-    position: absolute;
+    position: relative;
     bottom: 20px;
     right: 20px;
     margin: 0 !important;
