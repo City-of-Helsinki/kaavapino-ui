@@ -331,8 +331,7 @@ class CustomField extends Component {
   }
 
   renderBooleanRadio = props => {
-    const { input, onRadioChange, defaultValue, disabled, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, phaseIsClosed } = this.props
-    
+    const { input, onRadioChange, defaultValue, disabled, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, phaseIsClosed, isProjectTimetableEdit } = this.props
     return (
       <RadioBooleanButton
         onBlur={props.handleBlurSave}
@@ -348,6 +347,7 @@ class CustomField extends Component {
         isCurrentPhase={isCurrentPhase}
         selectedPhase={selectedPhase}
         phaseIsClosed={phaseIsClosed}
+        isProjectTimetableEdit={isProjectTimetableEdit}
         {...props}
       />
     )
@@ -475,8 +475,7 @@ class CustomField extends Component {
   }
 
   renderCustomCheckbox = props => {
-    const { field, formName, disabled } = this.props
-
+    const { field, formName, disabled,isProjectTimetableEdit } = this.props
     return (
       <CustomCheckbox
         {...props}
@@ -485,6 +484,7 @@ class CustomField extends Component {
         formName={formName}
         display={field.display}
         disabled={disabled}
+        isProjectTimetableEdit={isProjectTimetableEdit}
       />
     )
   }
