@@ -1,13 +1,16 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { usersSelector } from '../../selectors/userSelector'
-import {IconPenLine,IconCheckCircle,Button } from 'hds-react'
+import {IconPenLine,IconCheckCircle,IconAlertCircleFill,Button } from 'hds-react'
 import projectUtils from '../../utils/projectUtils'
+import { useTranslation } from 'react-i18next'
 import ReactQuill from 'react-quill'
 import infoBothDir from '../../assets/icons/Infobothdir.svg'
 import PropTypes from 'prop-types'
 
-function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField,type,phaseIsClosed,factaInfo}) {
+function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField,type,phaseIsClosed,factaInfo,maxSizeOver}) {
+
+  const { t } = useTranslation()
 
   const users = useSelector(state => usersSelector(state))
   let inputText = value
@@ -52,11 +55,20 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
       <span>{rollingInfoText}</span>
     </div> :
     <div className='rolling-text'>
-    {value ?
+    {value && !maxSizeOver ?
       <>
         <img alt='' aria-hidden="true" src={infoBothDir} />
         <span>{rollingInfoText}</span>
       </>
+      :
+      <>
+      </>
+    }
+    {maxSizeOver ?
+      <div className='max-chars-error'>
+        <IconAlertCircleFill color="#B01038" aria-hidden="true"/>
+         {t('project.charsover')}
+      </div>
       :
       <>
       </>
@@ -76,7 +88,8 @@ RollingInfo.propTypes = {
   editRollingField: PropTypes.func,
   type:PropTypes.string,
   phaseIsClosed: PropTypes.bool,
-  factaInfo: PropTypes.string
+  factaInfo: PropTypes.string,
+  maxSizeOver: PropTypes.bool
 }
 
 export default RollingInfo

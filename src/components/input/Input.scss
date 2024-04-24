@@ -214,6 +214,19 @@
   .no-padding-left{
     padding-left: 0;
   }
+
+  .max-chars-error{
+    display: flex;
+    font-family: "Helsinki Grotesk Regular", sans-serif;
+    font-size: $size16;
+    color: $color-error;
+    line-height: $size24;
+    padding-top: 8px;
+  
+    svg {
+      height: $size24;
+    }
+  }
 }
 
 .highligh-error{
