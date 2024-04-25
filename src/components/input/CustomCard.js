@@ -58,7 +58,7 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
   let modifiedText = cardValues[12] ? t('custom-card.modified') : t('custom-card.evaluation')
   const unit = "k-m²"
   
-  if(type === "Tarkasta esilläolopäivät"){
+  if(type === "Tarkasta esilläolopäivät" || type === "Merkitse hyväksymispäivä"){
     let startsText = props?.fieldData?.fieldset_attributes[0]?.label || ""
     let endsText = props?.fieldData?.fieldset_attributes[1]?.label || ""
     buttonText = t('custom-card.modify-date')
@@ -90,6 +90,7 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
 
     //XL princibles and draft phases have 2 acceptance checkboxes others only one. Selecting all acceptance checkboxes in current phase disables edit button.
     const disableEdit = selectedPhase === 26 || selectedPhase === 28 ? cardValues[4] && cardValues[10] : cardValues[4] || cardValues[10]
+    const invalidDate = moment(cardValues[9]).format('DD.MM.YYYY') === "Invalid date"
     editDataLink = 
     disableEdit
     ? 
@@ -103,7 +104,7 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
     boardFields = 
     <div className='custom-card-info-container'>
       <div className='custom-card-info'>{cardValues[11] ? t(cardValues[11]) : ""}</div>
-      <div className='custom-card-date'><span className='date'>{moment(cardValues[9]).format('DD.MM.YYYY')}</span><span className='divider'>-</span><span className='status'> {!cardValues[10] ? modifiedText : t('custom-card.confirmed')}</span></div>
+      <div className='custom-card-date'><span className='date'>{invalidDate ? cardValues[9] : moment(cardValues[9]).format('DD.MM.YYYY')}</span>{type === "Merkitse hyväksymispäivä" ? <>{invalidDate ? "" :<><span className='divider'>-</span><span className='status'> {t('custom-card.modified')}</span></>}</> : <><span className='divider'>-</span><span className='status'> {!cardValues[10] ? modifiedText : t('custom-card.confirmed')}</span></>}</div>
     </div>
 
     container =       
