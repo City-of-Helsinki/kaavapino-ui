@@ -554,7 +554,7 @@ class CustomField extends Component {
         </div>
       )
     }
-    else if(!showBoth && (props.placeholder === "Tarkasta esilläolopäivät" || props.placeholder === "Tarkasta kerrosalatiedot")){
+    else if(!showBoth && (props.placeholder === "Tarkasta esilläolopäivät" || props.placeholder === "Tarkasta kerrosalatiedot") || props.placeholder === "Merkitse hyväksymispäivä"){
       return (
         <CustomCard
         props={props}

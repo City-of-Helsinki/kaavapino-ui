@@ -195,6 +195,13 @@ const getReviewSuggestion = (data,deadlines) =>{
     return ["","",confirmBoard,true,true,boardDate,confirmBoard,boardText,boardModified]
 }
 
+const getAcceptanceDate = (data) =>{
+  //Hyväksyminen phase hyväksymiskäsittely info box
+  const boardText = "custom-card.acceptance-date-text"
+  const acceptanceDate = data?.hyvaksymispaatos_pvm ? data?.hyvaksymispaatos_pvm : "Tieto puuttuu"
+  return ["","","",false,false,acceptanceDate,false,boardText,false]
+}
+
 const getInfoFieldData = (placeholder,name,data,deadlines,selectedPhase) => {
   //Phase id check if show both kerrosala and esilläolo and what phase data needs to be shown
   const suggestionPhase = [29, 21, 15, 9, 3].includes(selectedPhase)
@@ -224,6 +231,9 @@ const getInfoFieldData = (placeholder,name,data,deadlines,selectedPhase) => {
   }
   else if(reviewSuggestionPhase && placeholder === "Tarkasta kerrosalatiedot" && name === "tarkasta_kerrosala_fieldset"){
     [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText,boardModified] = getReviewSuggestion(data,deadlines)
+  }
+  else if(placeholder === "Merkitse hyväksymispäivä"){
+    [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText,boardModified] = getAcceptanceDate(data)
   }
 
   return [startDate,endDate,startModified,endModified,hide,living,office,general,other,boardDate,confirmBoard,boardText,boardModified,starText,endText,suggestionPhase]

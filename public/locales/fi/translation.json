@@ -433,6 +433,8 @@
     "suggestion-board-text":"Milloin ehdotus on lautakunnassa",
     "review-suggestion-board-text":"Milloin tarkistettu ehdotus on lautakunnassa",
     "suggestion-start-text":"Milloin kaavaehdotuksen nähtävilläolo alkaa",
-    "suggestion-end-text":"Milloin kaavaehdotuksen nähtävilläolo päättyy"
+    "suggestion-end-text":"Milloin kaavaehdotuksen nähtävilläolo päättyy",
+    "acceptance-date-text":"Hyväksymispäätöksen päivämäärä",
+    "datemissing":"Tieto puuttuu"
   }
 }
