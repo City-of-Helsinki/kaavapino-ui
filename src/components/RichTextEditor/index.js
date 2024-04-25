@@ -106,6 +106,7 @@ function RichTextEditor(props) {
   const [valueIsSet, setValueIsSet] = useState(false)
   const [valueIsEmpty,setValueIsEmpty] = useState(false)
   const [charLimitOver,setCharLimitOver] = useState(false)
+  const [maxSizeOver, setMaxSizeOver] = useState(false)
   const [editField,setEditField] = useState(false)
 
   const editorRef = useRef("")
@@ -203,6 +204,28 @@ function RichTextEditor(props) {
       }
     }
   }, [charLimitOver,valueIsEmpty])
+
+  useEffect(() => {
+    // Checks on page load and on value change if the input value character count exceeds maxSize
+    const maxSize = props.maxSize || 10000
+   //Get the maxSize from backend or use default
+    if (value && value.ops) {
+      let valueCount = 0;
+      // In some occasions value.ops returns array that has multiple objects
+      if (value.ops.length > 1) {
+        // in that case we need loop trought them and check length of each objects insert and add them up
+        for (let arr of value.ops) {
+          valueCount += arr.insert.length
+        }
+        valueCount = valueCount - 1
+      } else {
+        // otherwise we can just check the length of the value objects insert
+        valueCount = value.ops[0].insert.length - 1
+      }
+      // maxSizeOver true shows the max-chars-error
+      valueCount > maxSize ? setMaxSizeOver(true) : setMaxSizeOver(false)
+    }
+  }, [value])
 
   useEffect(() => {
     //Chekcs that locked status has more data then inital empty object
@@ -419,7 +442,6 @@ function RichTextEditor(props) {
     if(attributeData[fieldsetName] && attributeData[fieldsetName][index] && attributeData[fieldsetName][index][fieldName]?.ops){
       data = attributeData[fieldsetName][index][fieldName]?.ops
     }
-
     return data
   }
 
@@ -582,6 +604,7 @@ function RichTextEditor(props) {
       editRollingField={editRollingField}
       type="richtext"
       phaseIsClosed={phaseIsClosed}
+      maxSizeOver={maxSizeOver}
     />
     :    
     <div
@@ -705,7 +728,7 @@ function RichTextEditor(props) {
         </p>
       ) : null}
     </div>
-      {counter.current > maxSize && charLimitOver ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.charsover')}</div> : ""}
+      {counter.current > maxSize && charLimitOver || maxSizeOver ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.charsover')}</div> : ""}
       {valueIsEmpty && required ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.noempty')}</div> : ""}
     </div>
     
