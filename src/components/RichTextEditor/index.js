@@ -211,12 +211,15 @@ function RichTextEditor(props) {
    //Get the maxSize from backend or use default
     if (value && value.ops) {
       let valueCount = 0;
+      // In some occasions value.ops returns array that has multiple objects
       if (value.ops.length > 1) {
+        // in that case we need loop trought them and check length of each objects insert and add them up
         for (let arr of value.ops) {
           valueCount += arr.insert.length
         }
         valueCount = valueCount - 1
       } else {
+        // otherwise we can just check the length of the value objects insert
         valueCount = value.ops[0].insert.length - 1
       }
       // maxSizeOver true shows the max-chars-error
