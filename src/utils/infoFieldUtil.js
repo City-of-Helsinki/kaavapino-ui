@@ -233,7 +233,7 @@ const getInfoFieldData = (placeholder,name,data,deadlines,selectedPhase) => {
     [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText,boardModified] = getReviewSuggestion(data,deadlines)
   }
   else if(placeholder === "Merkitse hyväksymispäivä"){
-    [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText,boardModified] = getAcceptanceDate(data,deadlines)
+    [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText,boardModified] = getAcceptanceDate(data)
   }
 
   return [startDate,endDate,startModified,endModified,hide,living,office,general,other,boardDate,confirmBoard,boardText,boardModified,starText,endText,suggestionPhase]
