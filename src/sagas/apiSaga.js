@@ -1,23 +1,19 @@
 import axios from 'axios'
 import { takeLatest, put, all, call } from 'redux-saga/effects'
-import { USER_FOUND } from 'redux-oidc'
 import { push } from 'connected-react-router'
 import { actions as toastrActions } from 'react-redux-toastr'
 import {
   ERROR,
   error,
   INIT_API_REQUEST,
-  tokenLoaded,
   initApiRequestSuccessful,
   DOWNLOAD_FILE
 } from '../actions/apiActions'
 import apiUtils from '../utils/apiUtils'
-import { loginSuccessful } from '../actions/authActions'
 
 export default function* apiSaga() {
   yield all([
     takeLatest(ERROR, handleErrorSaga),
-    takeLatest(USER_FOUND, userFoundSaga),
     takeLatest(INIT_API_REQUEST, initApiRequestSaga),
     takeLatest(DOWNLOAD_FILE, downloadFileSaga)
   ])
@@ -53,6 +49,7 @@ function* handleErrorSaga({ payload }) {
   }
 }
 
+/*
 function* userFoundSaga({ payload }) {
   let token = null
   if (!process.env.REACT_APP_API_TOKEN) {
@@ -69,6 +66,7 @@ function* userFoundSaga({ payload }) {
     yield put(loginSuccessful())
   }
 }
+*/
 
 function* initApiRequestSaga() {
   try {
