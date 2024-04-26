@@ -1077,6 +1077,11 @@
           display: inline-flex;
           font-family: 'Helsinki Grotesk Bold', sans-serif;
           font-weight: 700;
+          .italic{
+            font-style: italic;
+            font-family: "Helsinki Grotesk Regular", sans-serif;
+            font-weight: 400;
+          }
         }
 
         .divider {
