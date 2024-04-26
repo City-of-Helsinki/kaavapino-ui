@@ -114,9 +114,13 @@ const Header = props => {
     let latestUpdate
     let newErrorField
 
+    console.log("lastSaved?.time", lastSaved?.time)
+    console.log("lastSaved?.status", lastSaved?.status)
     if(lastSaved?.time && lastSaved?.status){
         latestUpdate = {status:t('header.edit-menu-saved'),time:lastSaved.time}
+        console.log("latestUpdate", latestUpdate)
         let elements = ""
+        console.log("lastSaved?.fields", lastSaved?.fields)
         if(lastSaved?.fields){
           //Get the latest field and value from error fields and set the values for this toast
           newErrorField = lastSaved?.fields.filter(x => !errorFields.includes(x));
