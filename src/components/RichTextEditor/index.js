@@ -194,7 +194,7 @@ function RichTextEditor(props) {
   useEffect(() => {
     if(!isMount){
       //!ismount skips initial render
-      if(charLimitOver || valueIsEmpty){
+      if(charLimitOver || valueIsEmpty && required){
         //Adds field to error list that don't trigger toastr right away (too many chars,empty field etc) and shows them when trying to save
         dispatch(formErrorList(true,inputProps.name))
       }
@@ -479,7 +479,10 @@ function RichTextEditor(props) {
     }
 
     //Prevent saving if data has not changed or is empty
-    if (!editorEmpty && !isEqual(originalData, editor?.ops)) {
+    console.log("!isEqual(originalData, editor?.ops) && !editorEmpty && required", !isEqual(originalData, editor?.ops) && !editorEmpty && required)
+    console.log("!isEqual(originalData, editor?.ops) && !required", !isEqual(originalData, editor?.ops) && !required)
+
+    if (!isEqual(originalData, editor?.ops) && !editorEmpty && required || !isEqual(originalData, editor?.ops) && !required) {
       //prevent saving if locked
       if (!readonly) {
         //Sent call to save changes if it is modified by user and not updated by lock call
