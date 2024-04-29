@@ -55,7 +55,6 @@ function* handleErrorSaga({ payload }) {
 
 
 function* loadApiTokenSaga({ payload }) {
-  console.log(payload)
   let token = null
   if (!process.env.REACT_APP_API_TOKEN) {
     const audience = process.env.REACT_APP_OPENID_AUDIENCE

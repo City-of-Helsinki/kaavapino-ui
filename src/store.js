@@ -52,10 +52,10 @@ userManager.getUser().then(async (user) => {
 }).catch((e) => console.error(e))
 
 userManager.events.addUserLoaded((user) => {
-  if (skipNextTokenLoad) { 
-    skipNextTokenLoad = false 
+  if (skipNextTokenLoad) {
+    skipNextTokenLoad = false
   }
-  else { 
+  else {
     store.dispatch(loadApiToken(user.access_token))
   }
 })
