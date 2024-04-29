@@ -18,7 +18,7 @@ import './i18n'
 // still missing. When all required components are available, semantic-ui-react could be removed and use hds-react
 // as a common style. 
 if (window.location.pathname === '/silent-renew') {
-  var mgr = new UserManager();
+  const mgr = new UserManager();
   mgr.signinSilentCallback().catch(error => {
     console.error('silent renew error', error);
   });
