@@ -5,15 +5,19 @@ import { actions as toastrActions } from 'react-redux-toastr'
 import {
   ERROR,
   error,
+  LOAD_API_TOKEN,
+  tokenLoaded,
   INIT_API_REQUEST,
   initApiRequestSuccessful,
   DOWNLOAD_FILE
 } from '../actions/apiActions'
+import { loginSuccessful } from '../actions/authActions'
 import apiUtils from '../utils/apiUtils'
 
 export default function* apiSaga() {
   yield all([
     takeLatest(ERROR, handleErrorSaga),
+    takeLatest(LOAD_API_TOKEN, loadApiTokenSaga),
     takeLatest(INIT_API_REQUEST, initApiRequestSaga),
     takeLatest(DOWNLOAD_FILE, downloadFileSaga)
   ])
@@ -49,12 +53,13 @@ function* handleErrorSaga({ payload }) {
   }
 }
 
-/*
-function* userFoundSaga({ payload }) {
+
+function* loadApiTokenSaga({ payload }) {
+  console.log(payload)
   let token = null
   if (!process.env.REACT_APP_API_TOKEN) {
     const audience = process.env.REACT_APP_OPENID_AUDIENCE
-    apiUtils.setToken(payload.access_token)
+    apiUtils.setToken(payload)
     const data = yield apiUtils.get(process.env.REACT_APP_OPENID_ENDPOINT + '/api-tokens/')
     token = data[audience]
   } else {
@@ -66,7 +71,7 @@ function* userFoundSaga({ payload }) {
     yield put(loginSuccessful())
   }
 }
-*/
+
 
 function* initApiRequestSaga() {
   try {

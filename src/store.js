@@ -7,9 +7,8 @@ import { createBrowserHistory } from 'history'
 import reducers from './reducers'
 import sagas from './sagas'
 import userManager from './utils/userManager'
-import apiUtils from './utils/apiUtils'
 import { userLoaded, userUnloaded } from './actions/authActions'
-import { tokenLoaded } from './actions/apiActions'
+import { loadApiToken } from './actions/apiActions'
 
 export const history = createBrowserHistory()
 const sagaMiddleware = createSagaMiddleware()
@@ -39,32 +38,27 @@ const store = createStore(
 sagaMiddleware.run(sagas)
 
 
-// Hack to prevent initial double loading of token
-let skipNextRenew = false
-
-const renewApiToken = async (accessToken) => {
-  if (skipNextRenew) {
-    skipNextRenew = false
-    return
-  }
-  apiUtils.setToken(accessToken)
-  const data = await apiUtils.get(process.env.REACT_APP_OPENID_ENDPOINT + '/api-tokens/')
-  const apiToken = data[process.env.REACT_APP_OPENID_AUDIENCE]
-  apiUtils.setToken(apiToken)
-  store.dispatch(tokenLoaded(apiToken))
-}
+// Prevent initial double loading of token
+let skipNextTokenLoad = false
 
 userManager.getUser().then(async (user) => {
   if (user && !user.expired) {
     store.dispatch(userLoaded(user))
-    await renewApiToken(user.access_token)
-    skipNextRenew = true
+    store.dispatch(loadApiToken(user.access_token))
+    skipNextTokenLoad = true
   } else {
     store.dispatch(userUnloaded())
   }
 }).catch((e) => console.error(e))
 
-userManager.events.addUserLoaded((user) => renewApiToken(user.access_token))
+userManager.events.addUserLoaded((user) => {
+  if (skipNextTokenLoad) { 
+    skipNextTokenLoad = false 
+  }
+  else { 
+    store.dispatch(loadApiToken(user.access_token))
+  }
+})
 userManager.events.addUserUnloaded(() => store.dispatch(userUnloaded()))
 
 export default store
