@@ -1,12 +1,11 @@
 import React, { Suspense } from 'react'
 import ReactDOM from "react-dom/client";
 import { Provider } from 'react-redux'
-import { OidcProvider, processSilentRenew } from 'redux-oidc'
+import { UserManager } from 'oidc-client'
 import { init as sentryInit } from '@sentry/browser'
 import ReduxToastr from 'react-redux-toastr'
 import App from './components/App'
 import store from './store'
-import userManager from './utils/userManager'
 import apiUtils from './utils/apiUtils'
 import 'semantic-ui-css/semantic.min.css'
 import 'hds-core'
@@ -19,7 +18,10 @@ import './i18n'
 // still missing. When all required components are available, semantic-ui-react could be removed and use hds-react
 // as a common style. 
 if (window.location.pathname === '/silent-renew') {
-  processSilentRenew()
+  const mgr = new UserManager();
+  mgr.signinSilentCallback().catch(error => {
+    console.error('silent renew error', error);
+  });
 } else {
   // Initialize axios
   apiUtils.initAxios()
@@ -33,7 +35,6 @@ if (window.location.pathname === '/silent-renew') {
   
   root.render(
     <Provider store={store}>
-      <OidcProvider userManager={userManager} store={store}>
         <React.Fragment>
           <ReduxToastr
             closeOnToastrClick={true}
@@ -47,7 +48,6 @@ if (window.location.pathname === '/silent-renew') {
             <App />
           </Suspense>
         </React.Fragment>
-      </OidcProvider>
     </Provider>
   )
 }

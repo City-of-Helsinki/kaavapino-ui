@@ -1,20 +1,10 @@
 import { reducer as api, initialState } from '../../reducers/apiReducer'
-import { USER_FOUND } from 'redux-oidc'
 import { INIT_API_REQUEST_SUCCESSFUL, TOKEN_LOADED } from '../../actions/apiActions'
 
 describe('api reducer', () => {
   it('should return the initial state', () => {
     expect(api(undefined, {})).toEqual({
       ...initialState
-    })
-  })
-
-  it('should handle USER_FOUND', () => {
-    expect(api(initialState, { type: USER_FOUND })).toEqual({
-      ...initialState,
-      apiToken: null,
-      loadingToken: true,
-      apiInitialized: false
     })
   })
 

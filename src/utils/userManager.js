@@ -1,5 +1,4 @@
-import { createUserManager } from 'redux-oidc'
-import { WebStorageStateStore, InMemoryWebStorage, Log } from 'oidc-client'
+import { WebStorageStateStore, InMemoryWebStorage, Log, UserManager } from 'oidc-client'
 import { logout } from '../actions/authActions'
 
 Log.logger = console;
@@ -34,7 +33,7 @@ if (process.env.NODE_ENV === 'test') {
   userManagerConfig.userStore = new WebStorageStateStore({ store: userStoreStorage })
 }
 
-const userManager = createUserManager(userManagerConfig)
+const userManager = new UserManager(userManagerConfig)
 
 userManager.events.addSilentRenewError( () => {
   logout()
