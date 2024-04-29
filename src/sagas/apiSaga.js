@@ -53,7 +53,6 @@ function* handleErrorSaga({ payload }) {
   }
 }
 
-
 function* loadApiTokenSaga({ payload }) {
   let token = null
   if (!process.env.REACT_APP_API_TOKEN) {
@@ -70,7 +69,6 @@ function* loadApiTokenSaga({ payload }) {
     yield put(loginSuccessful())
   }
 }
-
 
 function* initApiRequestSaga() {
   try {
