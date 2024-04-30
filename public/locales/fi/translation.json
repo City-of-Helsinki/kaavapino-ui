@@ -101,7 +101,8 @@
     "confirm-dates":"Vahvista päivämäärät",
     "dates-confirmed":"Päivämäärät on vahvistettu",
     "new-esillaolo":"Lisää uusi esilläolo",
-    "delete-esillaolo":"Poista esilläolo"
+    "delete-esillaolo":"Poista esilläolo",
+    "modify-timeline":"Muokkaa aikataulua"
   },
   "common": {
     "cancel": "Peruuta",

@@ -546,6 +546,13 @@
   width: 98% !important;
   margin: 0 auto !important;
   position: relative !important;
+  font-family: 'Helsinki Grotesk Regular', sans-serif;
+
+  .header{
+    display: flex !important;
+    font-family: 'Helsinki Grotesk Bold', sans-serif;
+    border-top: #2001bf solid;
+  }
 
   .content{
     margin-top: 20px;
@@ -568,8 +575,9 @@
   .actions{
     position: absolute;
     bottom: 20px;
-    right: 20px;
+    left: 20px;
     margin: 0 !important;
+    border-top: 1px solid black;
   }
 }
 
@@ -578,6 +586,28 @@
   width: 40% !important;
   margin: auto 0 auto auto !important;
   position: relative !important;
+
+  .header{
+    .breadcrumb {
+      padding: 10px 16px;
+      list-style: none;
+      background-color: #fff;
+      li {
+        display: inline;
+        font-size: 18px;
+        a {
+          color: #2a2a2a;
+          text-decoration: none;
+          pointer-events: none;
+        }
+      }
+      li+li:before {
+        padding: 8px;
+        color: black;
+        content: "\203A";
+      }
+    }
+  }
 
   .content{
     min-height: 80%;
@@ -600,17 +630,6 @@
       .checkbox-container{
         flex: 0 1 48%;
       }
-/*       .timetable-notification{
-        flex: 0 1 100%;
-        > div{
-          align-items: center;
-          justify-content: flex-start;
-        }
-        [role=heading] {
-          margin-right: 20px;
-          flex: 0;
-        }
-      } */
     }
     button{
       justify-content: flex-start;
