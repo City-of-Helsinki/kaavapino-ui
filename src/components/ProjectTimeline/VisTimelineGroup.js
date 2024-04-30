@@ -1,5 +1,6 @@
 import React, {useRef, useEffect, useState} from 'react';
 import Moment from 'moment'
+import 'moment/locale/fi';
 import {extendMoment} from 'moment-range'
 //import { createRoot } from 'react-dom/client'
 //import ItemRange from './ItemRange'
@@ -9,7 +10,7 @@ import * as vis from 'vis-timeline'
 import * as visdata from 'vis-data'
 import 'vis-timeline/dist/vis-timeline-graph2d.min.css'
 import './VisTimeline.css'
-
+Moment().locale('fi');
 /* const createRootForTimelineItem = (
   item,
   element,
@@ -60,6 +61,7 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
       var currentYear = now.getFullYear();
       var startOfYear = new Date(currentYear, 0, 1);
       var endOfYear = new Date(currentYear, 11, 31);
+      timeline.setOptions({timeAxis: {scale: 'month'}});
       timeline.setWindow(startOfYear, endOfYear);
     }
 
@@ -68,6 +70,7 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
       var currentYear = now.getFullYear();
       var startOfMonth = new Date(currentYear, now.getMonth(), 1);
       var endOfMonth = new Date(currentYear, now.getMonth() + 1, 0);
+      timeline.setOptions({timeAxis: {scale: 'weekday'}});
       timeline.setWindow(startOfMonth, endOfMonth);
     }
 
@@ -126,6 +129,120 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
       setToggleTimelineModal({open:!toggleTimelineModal.open,content:data.content,group:data.nestedInGroup,id:data.id,abbreviation:data.abbreviation,locked:data.locked})
     }
 
+    const getTimelineData = (deadlines) => {
+      const phaseData = []
+      let deadLineGroups = []
+      let nestedDeadlines = []
+
+      let startDate = false
+      let endDate = false
+      let dashStart = false
+      let dashEnd = false
+      let innerStart = false
+      let innerEnd = false
+      let numberOfPhases = 1
+      let style = ""
+      let dashedStyle = ""
+      let innerStyle = ""
+
+      for (let i = 0; i < deadlines.length; i++) {
+        if (!deadLineGroups.some(item => item.id === deadlines[i].deadline.phase_name)) {
+          deadLineGroups.push({
+            id: deadlines[i].deadline.phase_name,
+            content: deadlines[i].deadline.phase_name,
+            showNested: true,
+            nestedGroups: deadlines[i].deadline.phase_name === "Käynnistys" ? false : []
+          });
+        }
+
+        if(deadlines[i].deadline.deadline_types.includes('phase_start')){
+          startDate = deadlines[i].date
+          style = deadlines[i].deadline.phase_color
+          //.setHours(23,59,59,0)
+        }
+        else if(deadlines[i].deadline.deadline_types.includes('dashed_start')){
+          dashStart = deadlines[i].date
+          dashedStyle = "inner"
+        }
+        else if(deadlines[i].deadline.deadline_types.includes('dashed_end') || deadlines[i].deadline.deadline_types.includes('inner_start')){
+          dashEnd = deadlines[i].date
+          innerStart = deadlines[i].date
+        }
+        else if(deadlines[i].deadline.deadline_types.includes('inner_end')){
+          innerEnd = deadlines[i].date
+          innerStyle = "inner-end"
+        }
+        else if(deadlines[i].deadline.deadline_types.includes('phase_end') && deadlines[i].deadline.date_type !== "Arkipäivät"){
+          endDate = deadlines[i].date
+          //new Date .setHours(0,0,0,0)
+        }
+
+        if(startDate && endDate){
+          phaseData.push({
+            id: numberOfPhases,
+            content: '',
+            start:startDate,
+            end:endDate,
+            className:style,
+            phaseID:deadlines[i].deadline.phase_id,
+            phase:true,
+            group:deadlines[i].deadline.phase_name,
+          })
+          startDate = false
+          endDate = false
+          numberOfPhases++
+        }
+        else if(dashStart && dashEnd){
+          phaseData.push({
+            id: numberOfPhases,
+            content: "",
+            start:dashStart,
+            end:dashEnd,
+            className:dashedStyle,
+            title: deadlines[i].deadline.attribute,
+            phaseID:deadlines[i].deadline.phase_id,
+            phase:false,
+            group:numberOfPhases,
+            locked:false
+          })
+          dashEnd = false
+          deadLineGroups.at(-1).nestedGroups.push(numberOfPhases)
+          nestedDeadlines.push({
+            id: numberOfPhases,
+            content: "Määräaika",
+            abbreviation:deadlines[i].abbreviation,
+            locked:false
+          });
+          numberOfPhases++
+        }
+        else if(innerStart && innerEnd){
+          phaseData.push({
+            id: numberOfPhases,
+            content: "",
+            start:innerStart,
+            end:innerEnd,
+            className:innerStyle,
+            title: deadlines[i].deadline.attribute,
+            phaseID:deadlines[i].deadline.phase_id,
+            phase:false,
+            group:numberOfPhases,
+            locked:false
+          })
+          innerEnd = false
+          deadLineGroups.at(-1).nestedGroups.push(numberOfPhases)
+          nestedDeadlines.push({
+            id: numberOfPhases,
+            content: "Esilläolo",
+            abbreviation:deadlines[i].abbreviation,
+            locked:false
+          });
+          numberOfPhases++
+        }
+      }
+      
+      return [deadLineGroups,nestedDeadlines,phaseData]
+    }
+
     const lockLine = (data) => {
       console.log(data)
       //setLock({group:data.nestedInGroup,id:data.id,abbreviation:data.abbreviation,locked:!data.locked})
@@ -165,10 +282,20 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
 
     useEffect(() => {
       const options = {
+        locales: {
+          fi: {
+            current: "Nykyinen",
+            time: "Aika",
+          }
+        },
+        locale: 'fi',
         stack: false,
+        selectable: false,
         multiselect: false,
         sequentialSelection:  false,
-        groupHeightMode:"fitItems",
+        moveable:true,
+        zoomable:false,
+        groupHeightMode:"fixed",
         width: '100%',
         zoomMin: 1000 * 60 * 60 * 24, // one day in milliseconds
         zoomMax: 31556952000, // 1000 * 60 * 60 * 24 * 365.25 one year in milliseconds
@@ -186,6 +313,9 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
         itemsAlwaysDraggable: {
             item:true,
             range:true
+        },
+        orientation:{
+          axis: "top",
         },
         format: {
           minorLabels: {
@@ -344,115 +474,7 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
 
       let items = new visdata.DataSet()
       let groups = new visdata.DataSet();
-      let deadLineGroups = []
-      let nestedDeadlines = []
-
-      const phaseData = []
-      let startDate = false
-      let endDate = false
-      let dashStart = false
-      let dashEnd = false
-      let innerStart = false
-      let innerEnd = false
-      let numberOfPhases = 1
-      let style = ""
-      let dashedStyle = ""
-      let innerStyle = ""
-
-      for (let i = 0; i < deadlines.length; i++) {
-        if (!deadLineGroups.some(item => item.id === deadlines[i].deadline.phase_name)) {
-          deadLineGroups.push({
-            id: deadlines[i].deadline.phase_name,
-            content: deadlines[i].deadline.phase_name,
-            showNested: false,
-            nestedGroups: []
-          });
-        }
-
-        if(deadlines[i].deadline.deadline_types.includes('phase_start')){
-          startDate = deadlines[i].date
-          style = deadlines[i].deadline.phase_color
-          //.setHours(23,59,59,0)
-        }
-        else if(deadlines[i].deadline.deadline_types.includes('dashed_start')){
-          dashStart = deadlines[i].date
-          dashedStyle = "inner"
-        }
-        else if(deadlines[i].deadline.deadline_types.includes('dashed_end') || deadlines[i].deadline.deadline_types.includes('inner_start')){
-          dashEnd = deadlines[i].date
-          innerStart = deadlines[i].date
-        }
-        else if(deadlines[i].deadline.deadline_types.includes('inner_end')){
-          innerEnd = deadlines[i].date
-          innerStyle = "inner-end"
-        }
-        else if(deadlines[i].deadline.deadline_types.includes('phase_end') && deadlines[i].deadline.date_type !== "Arkipäivät"){
-          endDate = deadlines[i].date
-          //new Date .setHours(0,0,0,0)
-        }
-
-        if(startDate && endDate){
-          phaseData.push({
-            id: numberOfPhases,
-            content: '',
-            start:startDate,
-            end:endDate,
-            className:style,
-            phaseID:deadlines[i].deadline.phase_id,
-            phase:true,
-            group:deadlines[i].deadline.phase_name,
-          })
-          startDate = false
-          endDate = false
-          numberOfPhases++
-        }
-        else if(dashStart && dashEnd){
-          phaseData.push({
-            id: numberOfPhases,
-            content: "",
-            start:dashStart,
-            end:dashEnd,
-            className:dashedStyle,
-            title: deadlines[i].deadline.attribute,
-            phaseID:deadlines[i].deadline.phase_id,
-            phase:false,
-            group:numberOfPhases,
-            locked:false
-          })
-          dashEnd = false
-          deadLineGroups.at(-1).nestedGroups.push(numberOfPhases)
-          nestedDeadlines.push({
-            id: numberOfPhases,
-            content: "Määräaika",
-            abbreviation:deadlines[i].abbreviation,
-            locked:false
-          });
-          numberOfPhases++
-        }
-        else if(innerStart && innerEnd){
-          phaseData.push({
-            id: numberOfPhases,
-            content: "",
-            start:innerStart,
-            end:innerEnd,
-            className:innerStyle,
-            title: deadlines[i].deadline.attribute,
-            phaseID:deadlines[i].deadline.phase_id,
-            phase:false,
-            group:numberOfPhases,
-            locked:false
-          })
-          innerEnd = false
-          deadLineGroups.at(-1).nestedGroups.push(numberOfPhases)
-          nestedDeadlines.push({
-            id: numberOfPhases,
-            content: "Esilläolo",
-            abbreviation:deadlines[i].abbreviation,
-            locked:false
-          });
-          numberOfPhases++
-        }
-      }
+      let [deadLineGroups,nestedDeadlines,phaseData] = getTimelineData(deadlines)
 
       groups.add(deadLineGroups);
       groups.add(nestedDeadlines);
@@ -472,6 +494,7 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
         className: "negative",
       },]
       )
+
       const timeline = container.current &&
       new vis.Timeline(container.current, items, options, groups);
       // add event listener

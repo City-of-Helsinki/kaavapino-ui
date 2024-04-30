@@ -61,11 +61,10 @@ const CustomCheckbox = ({
   }, [value])
  
   const onChangeSave = () => {
-    console.log(checked)
     setChecked( !checked )
     onChange(!checked)
   }
-  console.log(autofillRule || disabled, name)
+
   if(isProjectTimetableEdit){
     return (
       <>

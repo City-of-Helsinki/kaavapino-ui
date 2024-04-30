@@ -10,7 +10,7 @@ import './styles.scss'
 import { deadlineSectionsSelector } from '../../../selectors/schemaSelector'
 import { withTranslation } from 'react-i18next'
 import { deadlinesSelector } from '../../../selectors/projectSelector'
-import { Button } from 'hds-react'
+import { Button,IconInfoCircle } from 'hds-react'
 import { isEqual } from 'lodash'
 import VisTimelineGroup from '../../ProjectTimeline/VisTimelineGroup'
 
@@ -87,7 +87,7 @@ class EditProjectTimeTableModal extends Component {
         closeOnDimmerClick={false}
         className='modal-center-big'
       >
-        <Modal.Header>{t('deadlines.title')}</Modal.Header>
+        <Modal.Header><IconInfoCircle size="m" aria-hidden="true"/>{t('deadlines.modify-timeline')}</Modal.Header>
         <Modal.Content>
           <VisTimelineGroup
             attributeData={attributeData}

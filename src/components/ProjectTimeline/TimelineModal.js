@@ -1,6 +1,6 @@
 import React from 'react'
 import { Modal } from 'semantic-ui-react'
-import { Button, Accordion } from 'hds-react'
+import { Button,Tabs } from 'hds-react'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { useTranslation } from 'react-i18next'
 import FormField from '../input/FormField'
@@ -8,9 +8,7 @@ import { isArray } from 'lodash'
 import { showField } from '../../utils/projectVisibilityUtils'
 import './VisTimeline.css'
 
-const TimelineModal = ({ open,group,deadlines,openDialog,attributeData,formValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit }) => {
-    console.log(attributeData,formValues)
-    console.log(deadlineSections,deadlines)
+const TimelineModal = ({ open,group,content,deadlines,openDialog,attributeData,formValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit }) => {
     const { t } = useTranslation()
 
     const getFormField = (fieldProps, key, disabled) => {
@@ -119,15 +117,25 @@ const TimelineModal = ({ open,group,deadlines,openDialog,attributeData,formValue
 
     return (
       <Modal open={open} size={'large'} className='timeline-edit-right'>
-        <Modal.Header>{group}</Modal.Header>
+        <Modal.Header>
+          <ul className="breadcrumb">
+            <li><a href="#">{group}</a></li>
+            <li><a href="#">{content}</a></li>
+          </ul>
+        </Modal.Header>
         <Modal.Content>
           <div className='date-content'>
             {deadlineSections.map((section, i) => {
               if (section.title === group) {
                 return(
-                  <Accordion className='timeline-accordion' heading={"Esilläolo"} key={i + section.title + "esillaolo"} initiallyOpen={true}>
+                  <Tabs key={i + section.title}>
+                  <Tabs.TabList style={{ marginBottom: 'var(--spacing-m)' }}>
+                    <Tabs.Tab>{section.title}</Tabs.Tab>
+                  </Tabs.TabList>
+                  <Tabs.TabPanel>
                     {renderSection(section, i)}
-                  </Accordion>
+                  </Tabs.TabPanel>
+                </Tabs>
                 )
               }
             })}

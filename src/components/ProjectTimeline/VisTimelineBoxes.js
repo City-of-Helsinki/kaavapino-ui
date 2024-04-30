@@ -125,7 +125,6 @@ function VisTimelineBoxes({deadlines}) {
     }
 
     const onRangeChanged = ({ start, end }) => {
-      console.log(start, end)
       const Min = 1000 * 60 * 60 * 24; // one day in milliseconds
       const Max = 31556952000; // 1000 * 60 * 60 * 24 * 365.25 one year in milliseconds
       let a0 = 10;
@@ -138,18 +137,14 @@ function VisTimelineBoxes({deadlines}) {
         // Arithmatic progression variables
       if (mins !== 0) {
         const x = (mins - a0) / distance; // Arithmatic progression formula
-        console.log(x)
         if(x > 50){
-          console.log("smaller then 50")
           document.querySelectorAll('.inner, .inner-end').forEach(el => el.classList.add('hiddenTimes'));
         }
         else if(x < 50 && document.querySelectorAll('.hiddenTimes')){
-          console.log("bigger then 50")
           document.querySelectorAll('.inner, .inner-end').forEach(el => el.classList.remove('hiddenTimes'));
         }
       } else {
         if(!document.querySelectorAll('.hiddenTimes')){
-          console.log("100")
           document.querySelectorAll('.inner, .inner-end').forEach(el => el.classList.add('hiddenTimes'));
         }
       }
