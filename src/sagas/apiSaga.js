@@ -58,7 +58,8 @@ function* loadApiTokenSaga({ payload }) {
   if (!process.env.REACT_APP_API_TOKEN) {
     const audience = process.env.REACT_APP_OPENID_AUDIENCE
     apiUtils.setToken(payload)
-    const data = yield apiUtils.get(process.env.REACT_APP_OPENID_ENDPOINT + '/api-tokens/')
+    const data = yield apiUtils.get(process.env.REACT_APP_OPENID_ENDPOINT + '/api-tokens/',
+      {}, false, false, true, true)
     token = data[audience]
   } else {
     token = process.env.REACT_APP_API_TOKEN
