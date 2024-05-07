@@ -755,11 +755,9 @@ function* saveProject(data) {
   const dateVariable = new Date()
   const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
 
-  console.log("projectSaga values", values)
   if (values) {
     let keys = {}
     let changedValues = {}
-    console.log("projectSaga visibleErrors.length === 0", visibleErrors.length === 0)
     if(visibleErrors.length === 0){
       changedValues = getChangedAttributeData(values, initial)
       keys = Object.keys(changedValues)
@@ -779,7 +777,6 @@ function* saveProject(data) {
         }
       }
       const attribute_data = changedValues
-      console.log("attribute_data", attribute_data)
       try {
         const updatedProject = yield call(
           projectApi.patch,
@@ -793,8 +790,6 @@ function* saveProject(data) {
         //success will show if error toastr is last visible toastr
         yield put(setLastSaved("success",time,[],[],false))
       } catch (e) {
-        console.log("e.response && e.response.status === 400", e.response && e.response.status === 400)
-        console.log("e.response.data", e.response.data)
         if (e.response && e.response.status === 400) {
           yield put(setLastSaved("field_error",time,Object.keys(attribute_data),Object.values(attribute_data),false))
           yield put(stopSubmit(EDIT_PROJECT_FORM, e.response.data))
