@@ -34,7 +34,7 @@
     "react-i18next": "^12.2.0",
     "react-leaflet": "^4.2.1",
     "react-papaparse": "^4.1.0",
-    "react-pdf": "6.2.2",
+    "react-pdf": "7.7.3",
     "react-quill": "^2.0.0",
     "react-redux": "^8.0.5",
     "react-redux-toastr": "^7.4.5",
