@@ -535,8 +535,6 @@ const getChangedAttributeData = (values, initial) => {
       return
     }
      if(values[key] === '' || values[key]?.ops && values[key]?.ops[0] && values[key]?.ops[0]?.insert.replace(wSpaceRegex, '').length === 0){
-      //delete attribute_data[key]
-      //errorValues = true
       //empty text values saved as null
       attribute_data[key] = null
     }
