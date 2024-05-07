@@ -478,10 +478,7 @@ function RichTextEditor(props) {
       originalData = getOriginalData(name,originalData)
     }
 
-    //Prevent saving if data has not changed or is empty
-    console.log("!isEqual(originalData, editor?.ops) && !editorEmpty && required", !isEqual(originalData, editor?.ops) && !editorEmpty && required)
-    console.log("!isEqual(originalData, editor?.ops) && !required", !isEqual(originalData, editor?.ops) && !required)
-
+    //Prevent saving if data has not changed or is empty and field is required
     if (!isEqual(originalData, editor?.ops) && !editorEmpty && required || !isEqual(originalData, editor?.ops) && !required) {
       //prevent saving if locked
       if (!readonly) {
