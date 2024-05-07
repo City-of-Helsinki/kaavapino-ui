@@ -119,7 +119,7 @@
     "required-documents-text":"Kaikkia tarvittavia dokumentteja ei ole vielä ladattu ulos",
     "could-not-save-header":"Tallennus epäonnistui",
     "could-not-lock-header":"Lukitus epäonnistui",
-    "could-not-save-fields-text":"Tallennus epäonnistui yhteysongelmien takia. Kopioi kentän sisältö talteen itsellesi. Yhteyden palauduttua tarkista kentän tiedot ja päivitä ne tarvittaessa.",
+    "could-not-save-fields-text":"Tallennus epäonnistui yhteysongelmien takia. Kopioi kentän sisältö talteen. Yhteyden palauduttua tarkista kentän tiedot ja päivitä ne tarvittaessa.",
     "could-not-save-fields-text2":"Mikäli poistut näkymästä, menetät muutokset.",
     "could-not-lock-text":"Kentän lukitus kaavapinoon epäonnistui yhteysongelmien takia.",
     "field-error-prevent-save-header":"Lomakkeella on virheitä.",
