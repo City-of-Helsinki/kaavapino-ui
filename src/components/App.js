@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Route, Switch, Redirect } from 'react-router-dom'
 import { ConnectedRouter } from 'connected-react-router'
+import PropTypes from 'prop-types'
 import { history } from '../store'
 import { connect } from 'react-redux'
 import { logout } from '../actions/authActions'
@@ -9,7 +10,8 @@ import { fetchProjectTypes } from '../actions/projectTypeActions'
 import { initApiRequest } from '../actions/apiActions'
 import {
   apiTokenSelector,
-  apiInitializedSelector
+  apiInitializedSelector,
+  loadingTokenSelector
 } from '../selectors/apiSelector'
 import { phasesSelector } from '../selectors/phaseSelector'
 import LoginPage from './auth/Login'
@@ -58,7 +60,7 @@ class App extends Component {
 
   render() {
     const { t} = this.props
-    if (this.props.apiToken !== null && !this.props.apiInitialized ) {
+    if (this.props.loadingToken || (this.props.apiToken !== null && !this.props.apiInitialized)) {
       return (<p>{t('loading')}</p>)
     }
    
@@ -147,6 +149,11 @@ class App extends Component {
   }
 }
 
+App.propTypes = {
+  loadingToken: PropTypes.bool,
+  apiInitialized: PropTypes.bool
+}
+
 const mapDispatchToProps = {
   logout,
   fetchPhases,
@@ -158,7 +165,8 @@ const mapStateToProps = state => {
   return {
     phases: phasesSelector(state),
     apiToken: apiTokenSelector(state),
-    apiInitialized: apiInitializedSelector(state)
+    apiInitialized: apiInitializedSelector(state),
+    loadingToken: loadingTokenSelector(state)
   }
 }
 
