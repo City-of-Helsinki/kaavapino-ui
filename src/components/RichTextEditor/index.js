@@ -171,7 +171,7 @@ function RichTextEditor(props) {
   }, [JSON.stringify(floorValue)])
 
   useEffect(() => {
-    if(lastSaved?.status === "error"){
+    if(lastSaved?.status === "error" && editorRef.current){
       //Unable to lock fields and connection backend not working so prevent editing
       editorRef.current.editor.blur()
     }
