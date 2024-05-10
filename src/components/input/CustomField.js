@@ -182,6 +182,7 @@ class CustomField extends Component {
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
         isTabActive={this.props.isTabActive}
+        fieldDisabled={this.props.disabled}
       />
     )
   }
@@ -212,6 +213,7 @@ class CustomField extends Component {
         label={this.props?.field?.label}
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
+        fieldDisabled={this.props.disabled}
       />
     )
   }

@@ -71,14 +71,18 @@ const CustomCheckbox = ({
         {checked 
         ? 
         <>
-          <Notification size="small" label="Päivämäärä vahvistettu" type="success" >{t('deadlines.dates-confirmed')}</Notification>
-          <Button size='small' variant="danger" onClick={onChangeSave}>
-            {t('deadlines.cancel-confirmation')}
-          </Button>
+          <div className='deadlines-col'>
+            <Notification className='deadlines-confirmed-notification' size="small" label="Päivämäärä vahvistettu" type="success" >{t('deadlines.dates-confirmed')}</Notification>
+          </div>
+          <div className='deadlines-col'>
+            <Button className='deadlines-cancel-button' size='small' variant="danger" onClick={onChangeSave}>
+              {t('deadlines.cancel-confirmation')}
+            </Button>
+          </div>
         </> 
         : 
         <>
-          <Button size='small' onClick={onChangeSave}>
+          <Button className='deadlines-confirm-button' size='small' onClick={onChangeSave}>
             {t('deadlines.confirm-dates')}
           </Button>
         </>
