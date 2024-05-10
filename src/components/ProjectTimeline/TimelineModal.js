@@ -131,6 +131,7 @@ const TimelineModal = ({ open,group,content,deadlines,openDialog,attributeData,f
                   <Tabs key={i + section.title}>
                   <Tabs.TabList style={{ marginBottom: 'var(--spacing-m)' }}>
                     <Tabs.Tab>{section.title}</Tabs.Tab>
+                    <Tabs.Tab>{section.title}</Tabs.Tab>
                   </Tabs.TabList>
                   <Tabs.TabPanel>
                     {renderSection(section, i)}
