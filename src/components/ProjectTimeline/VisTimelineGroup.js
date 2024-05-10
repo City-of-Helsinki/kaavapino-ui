@@ -2,6 +2,7 @@ import React, {useRef, useEffect, useState} from 'react';
 import Moment from 'moment'
 import 'moment/locale/fi';
 import {extendMoment} from 'moment-range'
+import { LoadingSpinner } from 'hds-react'
 //import { createRoot } from 'react-dom/client'
 //import ItemRange from './ItemRange'
 import TimelineModal from './TimelineModal'
@@ -65,6 +66,24 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
       timeline.setWindow(startOfYear, endOfYear);
     }
 
+    const show2Yers = () => {
+      var now = new Date();
+      var currentYear = now.getFullYear();
+      var startOf2Years = new Date(currentYear, now.getMonth(), 1);
+      var endOf2Years = new Date(currentYear + 2, now.getMonth(), 0);
+      timeline.setOptions({timeAxis: {scale: 'month'}});
+      timeline.setWindow(startOf2Years, endOf2Years);
+    }
+
+    const show5Yers = () => {
+      var now = new Date();
+      var currentYear = now.getFullYear();
+      var startOf5Years = new Date(currentYear, now.getMonth(), 1);
+      var endOf5Years = new Date(currentYear + 5, now.getMonth(), 0);
+      timeline.setOptions({timeAxis: {scale: 'month'}});
+      timeline.setWindow(startOf5Years, endOf5Years);
+    }
+
     const showMonths = () => {
       var now = new Date();
       var currentYear = now.getFullYear();
@@ -72,6 +91,24 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
       var endOfMonth = new Date(currentYear, now.getMonth() + 1, 0);
       timeline.setOptions({timeAxis: {scale: 'weekday'}});
       timeline.setWindow(startOfMonth, endOfMonth);
+    }
+
+    const show3Months = () => {
+      var now = new Date();
+      var currentYear = now.getFullYear();
+      var startOf3Months = new Date(currentYear, now.getMonth(), 1);
+      var endOf3Months = new Date(currentYear, now.getMonth() + 3, 0);
+      timeline.setOptions({timeAxis: {scale: 'weekday'}});
+      timeline.setWindow(startOf3Months, endOf3Months);
+    }
+
+    const show6Months = () => {
+      var now = new Date();
+      var currentYear = now.getFullYear();
+      var startOf6Months = new Date(currentYear, now.getMonth(), 1);
+      var endOf6Months = new Date(currentYear, now.getMonth() + 6, 0);
+      timeline.setOptions({timeAxis: {scale: 'weekday'}});
+      timeline.setWindow(startOf6Months, endOf6Months);
     }
 
     const showWeeks = () => {
@@ -129,6 +166,10 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
       setToggleTimelineModal({open:!toggleTimelineModal.open,content:data.content,group:data.nestedInGroup,id:data.id,abbreviation:data.abbreviation,locked:data.locked})
     }
 
+    const openAddDialog = (data) => {
+      console.log(data)
+    }
+
     const getTimelineData = (deadlines) => {
       const phaseData = []
       let deadLineGroups = []
@@ -151,7 +192,7 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
             id: deadlines[i].deadline.phase_name,
             content: deadlines[i].deadline.phase_name,
             showNested: true,
-            nestedGroups: deadlines[i].deadline.phase_name === "Käynnistys" ? false : []
+            nestedGroups: deadlines[i].deadline.phase_name === "Käynnistys" || deadlines[i].deadline.phase_name === "Hyväksyminen" || deadlines[i].deadline.phase_name === "Voimaantulo" ? false : []
           });
         }
 
@@ -238,6 +279,24 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
           });
           numberOfPhases++
         }
+
+        if (i === deadlines.length - 1 || deadlines[i].deadline.phase_name === "Käynnistys" || deadlines[i].deadline.phase_name === "Hyväksyminen" || deadlines[i].deadline.phase_name === "Voimaantulo") {
+          console.log("dont add");
+        } else {
+          console.log("not last");
+          if (deadlines[i].deadline.phase_name !== deadlines[i + 1].deadline.phase_name) {
+            console.log("asf");
+            console.log(deadlines[i], deadlines[i].deadline.phase_name);
+            deadLineGroups.at(-1).nestedGroups.push(numberOfPhases + deadlines[i].abbreviation)
+            nestedDeadlines.push({
+              id: numberOfPhases + deadlines[i].abbreviation,
+              content: "Lisää uusi",
+              abbreviation:deadlines[i].abbreviation,
+              locked:false,
+              addButton:true
+            });
+          }
+        }
       }
       
       return [deadLineGroups,nestedDeadlines,phaseData]
@@ -296,9 +355,10 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
         moveable:true,
         zoomable:false,
         groupHeightMode:"fixed",
-        width: '100%',
+        start: new Date(),
+        end: new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 365.25),
         zoomMin: 1000 * 60 * 60 * 24, // one day in milliseconds
-        zoomMax: 31556952000, // 1000 * 60 * 60 * 24 * 365.25 one year in milliseconds
+        zoomMax: 157784760000, // 1000 * 60 * 60 * 24 * 5 * 365.25 5 year in milliseconds
         margin: {
           item: 20
         },
@@ -422,8 +482,22 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
           }
         },
         groupTemplate: function (group) {
-          if(group.nestedInGroup){
-            let container = document.createElement("div");
+          let container = document.createElement("div");
+          if(group?.addButton){
+            console.log(group)
+            let label = document.createElement("span");
+            label.innerHTML = group.content + " ";
+            container.insertAdjacentElement("afterBegin", label);
+            let add = document.createElement("button");
+            add.classList.add("timeline-add-button");
+            add.style.fontSize = "small";
+            add.addEventListener("click", function () {
+              openAddDialog(group);
+            });
+            container.insertAdjacentElement("beforeEnd", add);
+            return container;
+          }
+          else if(group.nestedInGroup){
             let label = document.createElement("span");
             label.innerHTML = group.content + " ";
             container.insertAdjacentElement("afterBegin", label);
@@ -494,21 +568,23 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
         className: "negative",
       },]
       )
-
       const timeline = container.current &&
       new vis.Timeline(container.current, items, options, groups);
       // add event listener
       //timeline.on('select', onSelect);
       setTimeline(timeline)
       timeline.on('groupDragged', groupDragged)
+      timeline.focus(0);
       //timeline.on('rangechanged', onRangeChanged);
       return () => {
         timeline.off('groupDragged', groupDragged)
         //timeline.off('rangechanged', onRangeChanged);
-      } 
+      }
     }, [])
 
     return (
+      !deadlines ? <LoadingSpinner />
+      :
       <>
         <div className='vis' ref={container}>
           <VisTimelineMenu
@@ -521,6 +597,10 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
             showMonths={showMonths}
             showWeeks={showWeeks}
             showDays={showDays}
+            show6Months={show6Months}
+            show2Yers={show2Yers}
+            show5Yers={show5Yers}
+            show3Months={show3Months}
           />
         </div>
         <TimelineModal 

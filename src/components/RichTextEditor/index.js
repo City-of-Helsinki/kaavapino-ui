@@ -85,7 +85,8 @@ function RichTextEditor(props) {
     isFloorAreaForm,
     floorValue,
     attributeData,
-    phaseIsClosed
+    phaseIsClosed,
+    fieldDisabled
   } = props
 
   const dispatch = useDispatch()
@@ -644,7 +645,7 @@ function RichTextEditor(props) {
     <input className='visually-hidden' ref={myRefname}/>
     <div
       role="textbox"
-      className={`rich-text-editor-wrapper ${fieldSetDisabled || disabled || lastModified === inputProps.name && saving ? 'rich-text-disabled' : ''}`}
+      className={`rich-text-editor-wrapper ${fieldSetDisabled || disabled || fieldDisabled || lastModified === inputProps.name && saving ? 'rich-text-disabled' : ''}`}
       aria-label="tooltip"
       onFocus={checkLocked}
     >

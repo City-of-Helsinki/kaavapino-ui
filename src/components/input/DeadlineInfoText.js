@@ -86,7 +86,7 @@ const DeadlineInfoText = props => {
   }
 
   return (
-    <Notification size="small" label={props.input.name} >{props.label} {value}</Notification>
+    <Notification className='deadline-info-notification' size="small" label={props.input.name} >{props.label} {value}</Notification>
   )
 }
 
