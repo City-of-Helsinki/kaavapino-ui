@@ -1,8 +1,12 @@
 @import '../common/colors';
 
 .vis{
-    margin-top: 100px;
-    margin-bottom: 20px;
+    margin-top: 0;
+    margin-bottom: 0;
+    border-color: RGBA(0,0,0,0);
+    .vis-left{
+        width: 300px;
+    }
     .vis-drag-left{
         pointer-events: auto;
     }
@@ -16,14 +20,18 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        padding-left: $size15;
+        .time-menu{
+            padding-left: 275px;
+        }
     }
     .inner,.inner-end{
         z-index: 1000;
         pointer-events: auto;
         border-width: 0;
         .vis-item-overflow{
-            height: 5px;
-            border-top: 4px dotted rgba(0, 0, 0, .95);
+            height: $size5;
+            border-top: $size4 dotted rgba(0, 0, 0, .95);
             color: #fff;
             background-color: #fff;
             width: 100%;
@@ -33,13 +41,13 @@
             }
         }
         .vis-drag-left,.vis-drag-right{
-            height: 18px !important;
-            width: 18px !important;
+            height: $size18 !important;
+            width: $size18 !important;
             background-color:#f2f2f2;
             border-radius: 50%;
             top: -8px !important;
             display: inline-block;
-            border: 1px solid black;
+            border: $size1 solid black;
         }
     }
 
@@ -48,7 +56,7 @@
     }
 
     .vis-ltr .vis-label.vis-nested-group .vis-inner {
-        padding-left: 10px;
+        padding-left: $size10;
     }
 
     .negative{
@@ -76,29 +84,27 @@
                 align-items: center;
                 width: 100%;
                 height: 100%;
+                padding-left: $size13;
                 .timeline-edit-button{
                     margin-left: auto;
-                    margin-right: 0;
                     padding:0;
-                    width: 100%;
+                    width: 40px;
                     height: 100%;
                     background:url('../../assets/icons/pen.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;
-                    background-size: 18px;
+                    background-size: $size18;
                     border: none;
                     cursor: pointer;
                 }
                 .timeline-lock-button{
-                    margin-left: auto;
-                    margin-right: 0;
                     padding: 0;
-                    width: 100%;
+                    width: 40px;
                     height: 100%;
-                    background:url('../../assets/icons/lock-open.svg') no-repeat;
+                    background:url('../../assets/icons/lock-open-blue.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;
-                    background-size: 18px;
+                    background-size: $size18;
                     border: none;
                     cursor: pointer;
                 }
@@ -108,10 +114,10 @@
                     padding: 0;
                     width: 100%;
                     height: 100%;
-                    background:url('../../assets/icons/lock.svg') no-repeat;
+                    background:url('../../assets/icons/lock-blue.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;
-                    background-size: 18px;
+                    background-size: $size18;
                     border: none;
                     cursor: pointer;
                 }
@@ -119,8 +125,45 @@
         }
     }
 
+    .vis-labelset{
+        .vis-label{
+            .vis-inner{
+                height: $size32;
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+            }
+        }
+    }
+
     .vis-label{
         background-color: #F2F2F2;
+    }
+
+    .vis-group-level-0{
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        padding-left: $size32;
+        .vis-inner{
+            font-family: 'Helsinki Grotesk Medium', sans-serif !important;
+            font-weight: 500;
+            font-size: $size16;
+        }
+    }
+
+    .vis-group-level-0.expanded{
+        padding-left: $size15;
+        .vis-inner{
+            padding-left: $size5;
+        }
+    }
+
+    .vis-group-level-0.collapsed{
+        padding-left: $size15;
+        .vis-inner{
+            padding-left: $size5;
+        }
     }
 
     .vis-nesting-group{
@@ -132,29 +175,29 @@
 
     .vis-label.vis-nesting-group.expanded:before {
         content: "";
-        width: 18px;
+        width: $size18;
         height: 100%;
         background: url('../../assets/icons/angle-up.svg') no-repeat;
         background-position-x: center;
         background-position-y: center;
-        background-size: 18px;
+        background-size: $size18;
     }
 
     .vis-label.vis-nesting-group.collapsed:before{
         content: "";
-        width: 18px;
+        width: $size18;
         height: 100%;
         background: url('../../assets/icons/angle-down.svg') no-repeat;
         background-position-x: center;
         background-position-y: center;
-        background-size: 18px;
+        background-size: $size18;
     }
 
     .vis-minor{
         background-color: white;
-        border-left: 1px solid #b4b4b4;
-        border-top: 1px solid #b4b4b4;
-        border-bottom: 1px solid #b4b4b4;
+        border-left: $size1 solid #b4b4b4;
+        border-top: $size1 solid #b4b4b4;
+        border-bottom: $size1 solid #b4b4b4;
     }
 
     .vis-time-axis .vis-grid.vis-saturday,
@@ -186,4 +229,8 @@
         background-color: $color_fog !important;
     }
 
+}
+
+.dimmer{
+    padding: $size10 0 0 0 !important;
 }
