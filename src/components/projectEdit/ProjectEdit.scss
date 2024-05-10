@@ -546,16 +546,27 @@
   width: 98% !important;
   margin: 0 auto !important;
   position: relative !important;
-  font-family: 'Helsinki Grotesk Regular', sans-serif;
+  font-family: 'Helsinki Grotesk Regular', sans-serif !important;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
 
   .header{
     display: flex !important;
-    font-family: 'Helsinki Grotesk Bold', sans-serif;
-    border-top: #2001bf solid;
+    font-family: 'Helsinki Grotesk Bold', sans-serif !important;
+    border-top: 4px #2001bf solid;
+    font-size: 1em !important;
+    align-items: flex-end;
+    svg{
+      width: 24px;
+      height: 24px;
+    }
   }
 
   .content{
     margin-top: 20px;
+    margin-left: 0px !important;
+    margin-right: 20px !important;
+    //max-height: 700px !important;
+    overflow: auto !important;
     .date-content{
       display: flex;
       flex-wrap: wrap;
@@ -573,37 +584,64 @@
   }
 
   .actions{
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    margin: 0 !important;
-    border-top: 1px solid black;
+    display: flex;
+    position: relative;
+    bottom: 0;
+    left: 0;
+    margin: 20px 0 0 0 !important;
+    border-top: 1px solid #AEAEAE !important;
+    .form-buttons{
+      margin-top: 20px;
+      margin-bottom: 20px;
+      margin-left: 22px;
+    }
   }
 }
 
 .timeline-edit-right{
-  height: 98%;
-  width: 40% !important;
+  max-height: calc(100% - 172px);
+  max-width: 513px !important;
   margin: auto 0 auto auto !important;
   position: relative !important;
+  margin-top: 72px !important;
+  margin-bottom: 100px !important;
+  overflow-y: auto;
 
   .header{
+    padding-bottom: 16px !important;
+    padding-top: 24px !important;
     .breadcrumb {
       padding: 10px 16px;
       list-style: none;
       background-color: #fff;
-      li {
+      margin: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      padding-left: 8px;
+      li:first-of-type {
         display: inline;
-        font-size: 18px;
+        font-size: $size16;
+        font-family: 'Helsinki Grotesk Regular', sans-serif;
+        font-weight: 400;
+        line-height: $size24;
+        text-align: left;
+      }
+      li{
+        display: inline;
+        font-size: $size16;
+        font-family: 'Helsinki Grotesk Bold', sans-serif;
+        font-weight: 700;
+        line-height: $size24;
+        text-align: left;
         a {
-          color: #2a2a2a;
+          color: #1A1A1A;
           text-decoration: none;
           pointer-events: none;
         }
       }
       li+li:before {
         padding: 8px;
-        color: black;
+        color: #1A1A1A;
         content: "\203A";
       }
     }
@@ -611,7 +649,9 @@
 
   .content{
     min-height: 80%;
-    margin-top: 20px;
+    margin-top: 0;
+    margin-left: 32px !important;
+    margin-right: 32px !important;
     .date-content{
       display: flex;
       flex-direction: row;
@@ -627,8 +667,32 @@
       .input-container{
         flex: 1 0 48%;
       }
+
       .checkbox-container{
-        flex: 0 1 48%;
+        display: flex;
+        flex-flow: column;
+        justify-content: flex-start;
+        margin-top: $size16;
+        margin-bottom: $size16;
+        .checkbox{
+          display: flex;
+          flex-flow: column;
+          .deadlines-col{
+            
+          }
+        }
+      }
+
+      .deadline-info-notification,.deadlines-confirmed-notification{
+        margin-top: $size16;
+        margin-bottom: $size16;
+      }
+
+      .deadlines-cancel-button{
+        margin-left: 0;
+      }
+      .deadlines-confirm-button{
+        max-width: 210px;
       }
     }
     button{
