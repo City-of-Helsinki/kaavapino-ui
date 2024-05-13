@@ -37,27 +37,18 @@ const store = createStore(
 
 sagaMiddleware.run(sagas)
 
-
-// Prevent initial double loading of token
-let skipNextTokenLoad = false
-
-userManager.getUser().then(async (user) => {
+userManager.getUser().then((user) => {
   if (user && !user.expired) {
     store.dispatch(userLoaded(user))
     store.dispatch(loadApiToken(user.access_token))
-    skipNextTokenLoad = true
   } else {
     store.dispatch(userUnloaded())
   }
 }).catch((e) => console.error(e))
 
 userManager.events.addUserLoaded((user) => {
-  if (skipNextTokenLoad) {
-    skipNextTokenLoad = false
-  }
-  else {
+    store.dispatch(userLoaded(user))
     store.dispatch(loadApiToken(user.access_token))
-  }
 })
 userManager.events.addUserUnloaded(() => store.dispatch(userUnloaded()))
 
