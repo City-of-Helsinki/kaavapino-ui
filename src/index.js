@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react'
 import ReactDOM from "react-dom/client";
 import { Provider } from 'react-redux'
-import { UserManager } from 'oidc-client'
+import { UserManager } from 'oidc-client-ts'
 import { init as sentryInit } from '@sentry/browser'
 import ReduxToastr from 'react-redux-toastr'
 import App from './components/App'
