@@ -62,7 +62,7 @@ const formats = [
 function RichTextEditor(props) {
   const {
     input: { value, ...inputProps },
-    fieldData: { required },
+    fieldData: { required, name },
     largeField,
     disabled,
     meta,
@@ -589,6 +589,20 @@ function RichTextEditor(props) {
   const normalOrRollingElement = () => {
     const val = value?.ops
 
+    let filteredComments = []
+    
+    if (comments && comments.length > 0) {
+      filteredComments = comments.filter((comment) => {
+        if (comment.fieldset_path.length > 0) {
+          if (name.includes(comment.fieldset_path[0].parent && comment.fieldset_path[0].index)) {
+            return comment
+          }
+        } else {
+          return comment
+        }
+      })
+    }
+
     //Default maxsize 10000
     const maxSize = props.maxSize ? props.maxSize : 10000;
     //Render rolling info field or normal edit field
@@ -658,10 +672,10 @@ function RichTextEditor(props) {
               className="show-comments-button"
               aria-label="Näytä kommentit"
               onClick={() => setShowComments(!showComments)}
-              disabled={!comments || !comments.length}
+              disabled={!filteredComments || !filteredComments.length}
             >
               {showComments ? 'Piilota' : 'Näytä'} kommentit (
-              {comments ? comments.length : 0})
+              {filteredComments ? filteredComments.length : 0})
             </button>
           </span>
         </div>
@@ -701,19 +715,19 @@ function RichTextEditor(props) {
           readOnly={readonly || lastSaved?.status === "error"}
         />
       </div>
-      {showComments && comments && comments.length > 0 && (
+      {showComments && filteredComments && filteredComments.length > 0 && (
         <div className="comment-list">
-          {comments.map((comment, i) => (
-            <Comment
-              key={`${i}-${comment.id}`}
-              {...comment}
-              editable={userId === comment.user}
-              onSave={content =>
-                dispatch(editFieldComment(projectId, comment.id, content, reducedName))
-              }
-              onDelete={() =>
-                dispatch(deleteFieldComment(projectId, comment.id, reducedName))
-              }
+          {filteredComments.map((comment, i) => (
+            <Comment 
+            key={`${i}-${comment.id}`}
+            {...comment}
+            editable={userId === comment.user}
+            onSave={content =>
+              dispatch(editFieldComment(projectId, comment.id, content, reducedName))
+            }
+            onDelete={() =>
+              dispatch(deleteFieldComment(projectId, comment.id, reducedName))
+            }
             />
           ))}
         </div>
