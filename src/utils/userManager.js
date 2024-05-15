@@ -13,7 +13,7 @@ const userManagerConfig = {
   redirect_uri: `${baseUrl}/callback`,
   response_type: 'code',
   scope: `openid profile email ${process.env.REACT_APP_OPENID_AUDIENCE}`,
-  authority: process.env.REACT_APP_OPENID_ENDPOINT + '/openid/',
+  authority: process.env.REACT_APP_OPENID_ENDPOINT,
   post_logout_redirect_uri: `${baseUrl}/logout/callback`,
   automaticSilentRenew: true,
   silent_redirect_uri: `${baseUrl}/silent-renew`,
