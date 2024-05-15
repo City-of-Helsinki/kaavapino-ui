@@ -9,11 +9,11 @@ Log.setLevel(Log.DEBUG);
 }`
 
 const userManagerConfig = {
-  client_id: process.env.REACT_APP_OPENID_CONNECT_CLIENT_ID,
+  client_id: 'kaavapino-ui-dev',//process.env.REACT_APP_OPENID_CONNECT_CLIENT_ID,
   redirect_uri: `${baseUrl}/callback`,
   response_type: 'code',
-  scope: `openid profile email`, //${process.env.REACT_APP_OPENID_AUDIENCE}`,
-  authority: process.env.REACT_APP_OPENID_ENDPOINT,
+  scope: 'openid profile email',
+  authority: 'https://tunnistus.test.hel.ninja/auth/realms/helsinki-tunnistus', //process.env.REACT_APP_OPENID_ENDPOINT,
   post_logout_redirect_uri: `${baseUrl}/logout/callback`,
   automaticSilentRenew: true,
   silent_redirect_uri: `${baseUrl}/silent-renew`,
