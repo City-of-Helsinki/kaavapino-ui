@@ -65,6 +65,7 @@ class Comments extends Component {
 
   componentWillUnmount() {
     clearInterval(this.poll)
+    clearInterval(this.pollFieldComments)
     this.props.clearComments()
   }
 
