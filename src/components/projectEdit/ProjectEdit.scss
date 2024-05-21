@@ -542,8 +542,9 @@
 }
 
 .modal-center-big{
-  height: 98%;
-  width: 98% !important;
+  max-height: 98vh;
+  height: 100%;
+  width: 99% !important;
   margin: 0 auto !important;
   position: relative !important;
   font-family: 'Helsinki Grotesk Regular', sans-serif !important;
@@ -562,6 +563,7 @@
   }
 
   .content{
+    height: 75vh;
     margin-top: 20px;
     margin-left: 0px !important;
     margin-right: 20px !important;
@@ -599,12 +601,11 @@
 }
 
 .timeline-edit-right{
-  max-height: calc(100% - 172px);
+  max-height: 79vh;
   max-width: 513px !important;
-  margin: auto 0 auto auto !important;
+  margin: auto 8px auto auto !important;
   position: relative !important;
-  margin-top: 72px !important;
-  margin-bottom: 100px !important;
+  margin-top: 70px !important;
   overflow-y: auto;
 
   .header{
@@ -643,6 +644,11 @@
         padding: 8px;
         color: #1A1A1A;
         content: "\203A";
+      }
+      button{
+        position: absolute;
+        right: 0;
+        color: #1A1A1A;
       }
     }
   }
