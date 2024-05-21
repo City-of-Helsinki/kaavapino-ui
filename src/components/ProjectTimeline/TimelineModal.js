@@ -1,15 +1,50 @@
 import React from 'react'
 import { Modal } from 'semantic-ui-react'
-import { Button,Tabs } from 'hds-react'
+import { Button,Tabs,IconCross } from 'hds-react'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
-import { useTranslation } from 'react-i18next'
 import FormField from '../input/FormField'
 import { isArray } from 'lodash'
 import { showField } from '../../utils/projectVisibilityUtils'
 import './VisTimeline.css'
 
-const TimelineModal = ({ open,group,content,deadlines,openDialog,attributeData,formValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit }) => {
-    const { t } = useTranslation()
+const TimelineModal = ({ open,group,content,deadlines,deadlinegroup,openDialog,attributeData,formValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit }) => {
+
+    const getErrorLabel = (fieldName) => {
+      let label
+
+      deadlineSections.forEach(deadline_section => {
+        const sections = deadline_section.sections
+
+        sections.forEach(section => {
+          const attributes = section.attributes
+
+          attributes.forEach(attribute => {
+            if (attribute.name === fieldName) {
+              label = attribute.label
+            }
+          })
+        })
+      })
+      return <span>{label}: </span>
+    }
+
+    const renderSubmitErrors = () => {
+      const keys = formSubmitErrors ? Object.keys(formSubmitErrors) : []
+      return keys.map(key => {
+        const errors = formSubmitErrors[key]
+
+        return (
+          <div key={key} className="submit-error">
+            {getErrorLabel(key)}
+            {errors.map(error => (
+              <span key={error}>{error} </span>
+            ))}
+          </div>
+        )
+      })
+    }
+
+    let currentSubmitErrors = Object.keys(formSubmitErrors).length > 0
 
     const getFormField = (fieldProps, key, disabled) => {
       if (!showField(fieldProps.field, formValues)) {
@@ -61,59 +96,35 @@ const TimelineModal = ({ open,group,content,deadlines,openDialog,attributeData,f
     }
     const getFormFields = (sections, sectionIndex, disabled) => {
       const formFields = []
-      sections.forEach(subsection => {
-        const attr = subsection?.attributes
-        attr && attr.forEach((field, fieldIndex) => {
+      sections.forEach((field, fieldIndex) => {
           formFields.push(getFormField({ field }, `${sectionIndex} - ${fieldIndex}`, {disabled}))
-        })
       })
       return formFields
     }
   
     const renderSection = (section,sectionIndex) => {
       const sections = section.sections
-      const disabled = archived ? true : sectionIndex < projectPhaseIndex 
-      return (
-          getFormFields(sections, sectionIndex, disabled)
-      )
-    }
-
-    const getErrorLabel = (fieldName) => {
-      let label
-  
-      deadlineSections.forEach(deadline_section => {
-        const sections = deadline_section.sections
-  
-        sections.forEach(section => {
-          const attributes = section.attributes
-  
-          attributes.forEach(attribute => {
-            if (attribute.name === fieldName) {
-              label = attribute.label
-            }
-          })
-        })
+      const disabled = archived ? true : sectionIndex < projectPhaseIndex
+      const renderedSections = []
+      sections.forEach(subsection => {
+        const attr = subsection?.attributes
+        if(attr[deadlinegroup]){
+          renderedSections.push(
+            <Tabs key={"tab" + sectionIndex}>
+              <Tabs.TabList style={{ marginBottom: 'var(--spacing-m)' }}>
+                {Object.keys(attr[deadlinegroup]).map((key) => {
+                  return <Tabs.Tab key={key}>{key === "default" ? content : key}</Tabs.Tab>
+                })}
+              </Tabs.TabList>
+                {Object.values(attr[deadlinegroup]).map((subsection,index) => {
+                  return  <Tabs.TabPanel key={index}>{getFormFields(subsection, sectionIndex, disabled)}</Tabs.TabPanel>
+                })}
+            </Tabs>
+          )
+        }
       })
-      return <span>{label}: </span>
+      return renderedSections
     }
-
-    const renderSubmitErrors = () => {
-      const keys = formSubmitErrors ? Object.keys(formSubmitErrors) : []
-      return keys.map(key => {
-        const errors = formSubmitErrors[key]
-  
-        return (
-          <div key={key} className="submit-error">
-            {getErrorLabel(key)}
-            {errors.map(error => (
-              <span key={error}>{error} </span>
-            ))}
-          </div>
-        )
-      })
-    }
-
-    let currentSubmitErrors = Object.keys(formSubmitErrors).length > 0
 
     return (
       <Modal open={open} size={'large'} className='timeline-edit-right'>
@@ -121,23 +132,14 @@ const TimelineModal = ({ open,group,content,deadlines,openDialog,attributeData,f
           <ul className="breadcrumb">
             <li><a href="#">{group}</a></li>
             <li><a href="#">{content}</a></li>
+            <Button size='small' variant="supplementary" onClick={openDialog}><IconCross /></Button>
           </ul>
         </Modal.Header>
         <Modal.Content>
           <div className='date-content'>
             {deadlineSections.map((section, i) => {
               if (section.title === group) {
-                return(
-                  <Tabs key={i + section.title}>
-                  <Tabs.TabList style={{ marginBottom: 'var(--spacing-m)' }}>
-                    <Tabs.Tab>{section.title}</Tabs.Tab>
-                    <Tabs.Tab>{section.title}</Tabs.Tab>
-                  </Tabs.TabList>
-                  <Tabs.TabPanel>
-                    {renderSection(section, i)}
-                  </Tabs.TabPanel>
-                </Tabs>
-                )
+                return renderSection(section, i)
               }
             })}
             {currentSubmitErrors && (
@@ -145,16 +147,6 @@ const TimelineModal = ({ open,group,content,deadlines,openDialog,attributeData,f
             )}
           </div>
         </Modal.Content>
-        <Modal.Actions>
-          <div className="form-buttons">
-            <Button size='default' variant="secondary" onClick={openDialog}>
-              {t('common.cancel')}
-            </Button>
-            <Button size='default' variant="primary">
-              {t('common.save')}
-            </Button>
-          </div>
-        </Modal.Actions>
       </Modal>
     )
   }

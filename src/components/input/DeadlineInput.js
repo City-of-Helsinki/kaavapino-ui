@@ -2,10 +2,11 @@ import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { useTranslation } from 'react-i18next'
-import { TextInput, IconAlertCircle } from 'hds-react'
+import { TextInput, DateInput, IconAlertCircle } from 'hds-react'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
 import { useSelector } from 'react-redux'
 import { getFormValues } from 'redux-form'
+import moment from 'moment'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 
 const DeadLineInput = ({
@@ -85,10 +86,28 @@ const DeadLineInput = ({
     currentClassName = `${currentClassName} error-border`
   }
 
+  const isWeekend = (date) => {
+    const tenYearsAgo = new Date();
+    tenYearsAgo.setFullYear(tenYearsAgo.getFullYear() - 10);
+    const tenYearsLater = new Date();
+    tenYearsLater.setFullYear(tenYearsLater.getFullYear() + 10);
+  
+    if (date < tenYearsAgo || date > tenYearsLater) {
+      return false;
+    }
+  
+    const day = date.getDay();
+    return day === 0 || day === 6;
+  }
+
   return (
     <div className='deadline-input'>
-      <TextInput
-        value={currentValue}
+      {type === 'date' 
+      ?
+       <DateInput
+       readOnly
+       isDateDisabledBy={isWeekend}
+        value={moment(currentValue).format("YYYY-MM-DD")}
         name={input.name}
         type={type}
         disabled={typeof timeTableDisabled !== "undefined" ? timeTableDisabled : disabled}
@@ -96,9 +115,11 @@ const DeadLineInput = ({
         error={error}
         aria-label={input.name}
         onChange={event => {
-          const value = event.target.value
-          setCurrentValue(value)
-          input.onChange(value)
+          const value = moment(event, "yyyy-MM-dd");
+          if(value){
+            setCurrentValue(value)
+            input.onChange(value)
+          }
         }}
         className={currentClassName}
         onBlur={() => {
@@ -108,7 +129,32 @@ const DeadLineInput = ({
             setValueGenerated(true)
           }
         }}
-      />
+       /> 
+      :
+        <TextInput
+          //onKeyDown={(e) => e.preventDefault()}
+          value={currentValue}
+          name={input.name}
+          type={type}
+          disabled={typeof timeTableDisabled !== "undefined" ? timeTableDisabled : disabled}
+          placeholder={placeholder}
+          error={error}
+          aria-label={input.name}
+          onChange={event => {
+            const value = event.target.value
+            setCurrentValue(value)
+            input.onChange(value)
+          }}
+          className={currentClassName}
+          onBlur={() => {
+            if (input.value !== input.defaultValue) {
+              setValueGenerated(false)
+            } else {
+              setValueGenerated(true)
+            }
+          }}
+        />
+      }
       {editable && valueGenerated ? (
         <span className="deadline-estimated">{t('deadlines.estimated')}</span>
       ) : (
