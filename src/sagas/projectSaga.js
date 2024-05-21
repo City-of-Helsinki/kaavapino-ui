@@ -645,7 +645,7 @@ function* saveProjectTimetable() {
     // fields which can be hidden according the user selection. 
     // If old values are left, it will break the timelines.
     deadlineAttributes.forEach(attribute => {
-      if (!registeredFields[attribute]) {
+      if (registeredFields && !registeredFields[attribute]) {
         attribute_data = { ...attribute_data, [attribute]: null }
       }
     })

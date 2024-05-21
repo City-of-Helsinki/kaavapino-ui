@@ -34,7 +34,7 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
     const container = useRef(null);
     const [timeline, setTimeline] = useState(false);
     //const [lock, setLock] = useState({group:false,id:false,locked:false,abbreviation:false});
-    const [toggleTimelineModal, setToggleTimelineModal] = useState({open: false, group: false, content: false, id:false, abbreviation:false, locked:false});
+    const [toggleTimelineModal, setToggleTimelineModal] = useState({open: false, group: false, content: false, id:false, abbreviation:false, locked:false,deadlinegroup:false, deadlinesubgroup:false});
   /*     const onSelect = (properties) => {
         alert('selected items: ' + properties.items);
       } */
@@ -163,7 +163,12 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
     }
 
     const openDialog = (data) => {
-      setToggleTimelineModal({open:!toggleTimelineModal.open,content:data.content,group:data.nestedInGroup,id:data.id,abbreviation:data.abbreviation,locked:data.locked})
+      const modifiedDeadlineGroup = data?.deadlinegroup?.includes(';') ? data.deadlinegroup.split(';')[0] : data.deadlinegroup;
+      setToggleTimelineModal({open:!toggleTimelineModal.open,content:data.content,group:data.nestedInGroup,id:data.id,abbreviation:data.abbreviation,locked:data.locked,deadlinegroup: modifiedDeadlineGroup,deadlinesubgroup: data.deadlinesubgroup})
+    }
+
+    const reDrawTimeline = () => {
+      setToggleTimelineModal({open:!toggleTimelineModal.open})
     }
 
     const openAddDialog = (data) => {
@@ -174,17 +179,20 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
       const phaseData = []
       let deadLineGroups = []
       let nestedDeadlines = []
+      let numberOfPhases = 1
+      let type = ""
 
       let startDate = false
       let endDate = false
+      let style = ""
+
       let dashStart = false
       let dashEnd = false
+      let dashedStyle = ""
+
       let innerStart = false
       let innerEnd = false
-      let numberOfPhases = 1
-      let style = ""
-      let dashedStyle = ""
-      let innerStyle = ""
+      let innerStyle = "" 
 
       for (let i = 0; i < deadlines.length; i++) {
         if (!deadLineGroups.some(item => item.id === deadlines[i].deadline.phase_name)) {
@@ -196,6 +204,13 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
           });
         }
 
+        if(formValues[deadlines[i].deadline.attribute]){
+          if(formValues[deadlines[i].deadline.attribute] !== deadlines[i].date){
+            deadlines[i].date = formValues[deadlines[i].deadline.attribute]
+            //UPDATE ITEM SOMEHOW with formvalues info
+          }
+        }
+
         if(deadlines[i].deadline.deadline_types.includes('phase_start')){
           startDate = deadlines[i].date
           style = deadlines[i].deadline.phase_color
@@ -205,11 +220,18 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
           dashStart = deadlines[i].date
           dashedStyle = "inner"
         }
-        else if(deadlines[i].deadline.deadline_types.includes('dashed_end') || deadlines[i].deadline.deadline_types.includes('inner_start')){
+        else if(deadlines[i].deadline.deadline_types.includes('dashed_end') && deadlines[i].deadline.deadline_types.includes('inner_start')){
+          //Esilläolo
+          type="esillaolo"
           dashEnd = deadlines[i].date
           innerStart = deadlines[i].date
         }
-        else if(deadlines[i].deadline.deadline_types.includes('inner_end')){
+        else if(deadlines[i].deadline.deadline_types.includes('dashed_end') && deadlines[i].deadline.deadline_types.includes('milestone')){
+          //Lautakunta
+          type="lautakunta"
+          dashEnd = deadlines[i].date
+        }
+        else if(deadlines[i].deadline.deadline_types.includes('inner_end') && deadlines[i].deadline.date_type !== "Arkipäivät"){
           innerEnd = deadlines[i].date
           innerStyle = "inner-end"
         }
@@ -233,7 +255,7 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
           endDate = false
           numberOfPhases++
         }
-        else if(dashStart && dashEnd){
+        else if(dashStart && dashEnd && type === "lautakunta"){
           phaseData.push({
             id: numberOfPhases,
             content: "",
@@ -250,17 +272,19 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
           deadLineGroups.at(-1).nestedGroups.push(numberOfPhases)
           nestedDeadlines.push({
             id: numberOfPhases,
-            content: "Määräaika",
+            content: deadlines[i].deadline.deadlinegroup?.includes("lautakunta") ? "Lautakunta" : "Esilläolo",
             abbreviation:deadlines[i].abbreviation,
+            deadlinegroup: deadlines[i].deadline.deadlinegroup,
+            deadlinesubgroup: deadlines[i].deadline.deadlinesubgroup,
             locked:false
           });
           numberOfPhases++
         }
-        else if(innerStart && innerEnd){
+        else if(innerStart && innerEnd && type === "esillaolo"){
           phaseData.push({
             id: numberOfPhases,
             content: "",
-            start:innerStart,
+            start:dashStart,
             end:innerEnd,
             className:innerStyle,
             title: deadlines[i].deadline.attribute,
@@ -273,20 +297,20 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
           deadLineGroups.at(-1).nestedGroups.push(numberOfPhases)
           nestedDeadlines.push({
             id: numberOfPhases,
-            content: "Esilläolo",
+            content: deadlines[i].deadline.deadlinegroup?.includes("lautakunta") ? "Lautakunta" : "Esilläolo",
             abbreviation:deadlines[i].abbreviation,
+            deadlinegroup: deadlines[i].deadline.deadlinegroup,
+            deadlinesubgroup: deadlines[i].deadline.deadlinesubgroup,
             locked:false
           });
           numberOfPhases++
         }
 
         if (i === deadlines.length - 1 || deadlines[i].deadline.phase_name === "Käynnistys" || deadlines[i].deadline.phase_name === "Hyväksyminen" || deadlines[i].deadline.phase_name === "Voimaantulo") {
-          console.log("dont add");
+         console.log("wrong phase or last")
         } else {
-          console.log("not last");
+
           if (deadlines[i].deadline.phase_name !== deadlines[i + 1].deadline.phase_name) {
-            console.log("asf");
-            console.log(deadlines[i], deadlines[i].deadline.phase_name);
             deadLineGroups.at(-1).nestedGroups.push(numberOfPhases + deadlines[i].abbreviation)
             nestedDeadlines.push({
               id: numberOfPhases + deadlines[i].abbreviation,
@@ -484,7 +508,6 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
         groupTemplate: function (group) {
           let container = document.createElement("div");
           if(group?.addButton){
-            console.log(group)
             let label = document.createElement("span");
             label.innerHTML = group.content + " ";
             container.insertAdjacentElement("afterBegin", label);
@@ -580,7 +603,7 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
         timeline.off('groupDragged', groupDragged)
         //timeline.off('rangechanged', onRangeChanged);
       }
-    }, [])
+    }, [formValues])
 
     return (
       !deadlines ? <LoadingSpinner />
@@ -610,8 +633,11 @@ function VisTimeline({attributeData, deadlines, formValues, deadlineSections, fo
           content={toggleTimelineModal.content}
           abbreviation={toggleTimelineModal.abbreviation}
           locked={toggleTimelineModal.locked}
+          deadlinegroup={toggleTimelineModal.deadlinegroup}
+          deadlinesubgroup={toggleTimelineModal.deadlinesubgroup}
           deadlines={deadlines}
           openDialog={openDialog}
+          reDrawTimeline={reDrawTimeline}
           attributeData={attributeData}
           formValues={formValues}
           deadlineSections={deadlineSections}
