@@ -479,7 +479,7 @@ function RichTextEditor(props) {
     }
 
     //Prevent saving if data has not changed or is empty and field is required
-    if (!isEqual(originalData, editor?.ops) && !editorEmpty && required || !isEqual(originalData, editor?.ops) && !required) {
+    if (!isEqual(originalData, editor?.ops) && (!editorEmpty || !required)) {
       //prevent saving if locked
       if (!readonly) {
         //Sent call to save changes if it is modified by user and not updated by lock call
