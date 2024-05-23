@@ -383,7 +383,7 @@ const Header = props => {
 
   const navigateBack = () => {
     let path = history.location.pathname
-    path = path.replace('edit','');
+    path = path.replace('/edit','');
     history.push(path)
   }
 
