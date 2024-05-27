@@ -235,6 +235,7 @@ class CustomField extends Component {
           type="date"
           editable={field.editable}
           currentDeadline={current}
+          attributeData={attributeData}
           autofillRule={field.autofill_rule}
           timeTableDisabled={disabled}
           {...props}

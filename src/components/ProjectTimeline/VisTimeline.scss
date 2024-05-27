@@ -86,7 +86,7 @@
                 height: 100%;
                 padding-left: $size13;
                 .timeline-edit-button{
-                    margin-left: auto;
+                    margin-left: 0;
                     padding:0;
                     width: 40px;
                     height: 100%;
@@ -99,6 +99,7 @@
                 }
                 .timeline-lock-button{
                     padding: 0;
+                    margin-left: auto;
                     width: 40px;
                     height: 100%;
                     background:url('../../assets/icons/lock-open-blue.svg') no-repeat;
@@ -121,6 +122,9 @@
                     border: none;
                     cursor: pointer;
                 }
+            }
+            .highlight-selected{
+                border: 1px solid $color-bus;
             }
         }
     }
@@ -156,6 +160,26 @@
         padding-left: $size15;
         .vis-inner{
             padding-left: $size5;
+            .timeline-buttons-container{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                .timeline-add-button{
+                    z-index: 1000;
+                    position: absolute;
+                    right: 0;
+                    top: 0;
+                    padding: 0;
+                    width: 40px;
+                    height: 40px;
+                    background:url('../../assets/icons/plus-blue.svg') no-repeat;
+                    background-position-x: center;
+                    background-position-y: center;
+                    background-size: $size18;
+                    border: none;
+                    cursor: pointer;
+                }
+            }
         }
     }
 
@@ -163,6 +187,14 @@
         padding-left: $size15;
         .vis-inner{
             padding-left: $size5;
+            .timeline-buttons-container{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                .timeline-add-button{
+                    display: none;
+                }
+            }
         }
     }
 

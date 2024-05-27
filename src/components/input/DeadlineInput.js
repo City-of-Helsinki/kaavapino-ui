@@ -6,12 +6,12 @@ import { TextInput, DateInput, IconAlertCircle } from 'hds-react'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
 import { useSelector } from 'react-redux'
 import { getFormValues } from 'redux-form'
-import moment from 'moment'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 
 const DeadLineInput = ({
   input,
   error,
+  attributeData,
   currentDeadline,
   editable,
   type,
@@ -42,9 +42,12 @@ const DeadLineInput = ({
   }
   let currentDeadlineDate = ''
 
-  if ( currentDeadline && currentDeadline.date ) [
+  if(attributeData[currentDeadline.deadline.attribute]){
+    currentDeadlineDate = attributeData[currentDeadline.deadline.attribute]
+  }
+  else if ( currentDeadline && currentDeadline.date ) {
     currentDeadlineDate = currentDeadline.date
-  ]
+  }
 
   const [currentValue, setCurrentValue] = useState(
     currentDeadline ? currentDeadlineDate : inputValue 
@@ -105,9 +108,9 @@ const DeadLineInput = ({
       {type === 'date' 
       ?
        <DateInput
-       readOnly
-       isDateDisabledBy={isWeekend}
-        value={moment(currentValue).format("YYYY-MM-DD")}
+        readOnly
+        isDateDisabledBy={isWeekend}
+        value={currentValue}
         name={input.name}
         type={type}
         disabled={typeof timeTableDisabled !== "undefined" ? timeTableDisabled : disabled}
@@ -115,7 +118,13 @@ const DeadLineInput = ({
         error={error}
         aria-label={input.name}
         onChange={event => {
-          const value = moment(event, "yyyy-MM-dd");
+          const dateParts = event.split(".");
+          const eventDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
+          const year = eventDate.getFullYear();
+          const month = ("0" + (eventDate.getMonth() + 1)).slice(-2); // Months are 0-based, so add 1 and pad with 0 if necessary
+          const day = ("0" + eventDate.getDate()).slice(-2); // Pad with 0 if necessary
+          const value = `${year}-${month}-${day}`;
+
           if(value){
             setCurrentValue(value)
             input.onChange(value)
@@ -123,6 +132,7 @@ const DeadLineInput = ({
         }}
         className={currentClassName}
         onBlur={() => {
+          console.log(input.value, input.defaultValue)
           if (input.value !== input.defaultValue) {
             setValueGenerated(false)
           } else {
