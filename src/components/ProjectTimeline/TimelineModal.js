@@ -7,21 +7,20 @@ import { isArray } from 'lodash'
 import { showField } from '../../utils/projectVisibilityUtils'
 import './VisTimeline.css'
 
-const TimelineModal = ({ open,group,content,deadlines,deadlinegroup,openDialog,attributeData,formValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit }) => {
-
+const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit }) => {
+  console.log(visValues)
     const getErrorLabel = (fieldName) => {
       let label
-
       deadlineSections.forEach(deadline_section => {
         const sections = deadline_section.sections
-
         sections.forEach(section => {
           const attributes = section.attributes
-
-          attributes.forEach(attribute => {
-            if (attribute.name === fieldName) {
-              label = attribute.label
-            }
+          Object.values(attributes).map((v) => {
+            Object.values(v).map((values) => {
+              if (values.name === fieldName) {
+                label = values.label
+              }
+            })
           })
         })
       })
@@ -32,11 +31,11 @@ const TimelineModal = ({ open,group,content,deadlines,deadlinegroup,openDialog,a
       const keys = formSubmitErrors ? Object.keys(formSubmitErrors) : []
       return keys.map(key => {
         const errors = formSubmitErrors[key]
-
+        console.log(errors)
         return (
           <div key={key} className="submit-error">
             {getErrorLabel(key)}
-            {errors.map(error => (
+            {errors?.map(error => (
               <span key={error}>{error} </span>
             ))}
           </div>
@@ -47,7 +46,7 @@ const TimelineModal = ({ open,group,content,deadlines,deadlinegroup,openDialog,a
     let currentSubmitErrors = Object.keys(formSubmitErrors).length > 0
 
     const getFormField = (fieldProps, key, disabled) => {
-      if (!showField(fieldProps.field, formValues)) {
+      if (!showField(fieldProps.field, visValues)) {
         return null
       }
       const error =
@@ -75,7 +74,7 @@ const TimelineModal = ({ open,group,content,deadlines,deadlinegroup,openDialog,a
       } else {
         modifiedError = error
       }
-
+      //Visvalues state saves only after timelineform submit
       return (
         <>
           <FormField
@@ -84,11 +83,11 @@ const TimelineModal = ({ open,group,content,deadlines,deadlinegroup,openDialog,a
             formName={EDIT_PROJECT_TIMETABLE_FORM}
             deadlines={deadlines}
             error={modifiedError}
-            formValues={formValues}
+            formValues={visValues}
             className={className}
             isProjectTimetableEdit={true}
             disabled={disabled?.disabled || !allowedToEdit}
-            attributeData={attributeData}
+            attributeData={visValues}
           />
           {modifiedError && <div className="field-error">{modifiedError}</div>}
         </>
