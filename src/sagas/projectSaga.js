@@ -654,7 +654,7 @@ function* saveProjectTimetable() {
     }
     
     const deadlineAttributes = currentProject.deadline_attributes
-    
+    console.log(attribute_data,currentProjectId)
     // Add missing fields as a null to payload since there are
     // fields which can be hidden according the user selection. 
     // If old values are left, it will break the timelines.
@@ -671,6 +671,7 @@ function* saveProjectTimetable() {
         { path: { id: currentProjectId } },
         ':id/'
       )
+      console.log(updatedProject)
       yield put(updateProject(updatedProject))
       yield put(setSubmitSucceeded(EDIT_PROJECT_TIMETABLE_FORM))
       yield put(saveProjectTimetableSuccessful(true))
