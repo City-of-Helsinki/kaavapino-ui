@@ -565,7 +565,7 @@ class ProjectEditPage extends Component {
       documents
     } = this.props
     const { highlightGroup } = this.state
-
+    console.log(attribute_data)
     if (!schema) {
       return <LoadingSpinner className="loader-icon" />
     }
