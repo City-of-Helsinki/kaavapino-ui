@@ -107,6 +107,7 @@
   "common": {
     "cancel": "Peruuta",
     "save": "Tallenna",
+    "save-timeline":"Tallenna aikataulu",
     "continue": "Jatka",
     "person":"Henkilö",
     "unit":"Yksikkö tai tiimi",
