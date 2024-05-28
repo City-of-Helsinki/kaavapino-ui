@@ -672,6 +672,12 @@
       }
       .input-container{
         flex: 1 0 48%;
+        .deadline-input{
+          border:2px solid $border-gray2;
+          input{
+            text-indent: 8px;
+          }
+        }
       }
 
       .checkbox-container{

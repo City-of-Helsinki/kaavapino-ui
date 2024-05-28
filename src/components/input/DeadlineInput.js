@@ -104,45 +104,13 @@ const DeadLineInput = ({
   }
 
   return (
-    <div className='deadline-input'>
-      {type === 'date' 
-      ?
-       <DateInput
-        readOnly
-        isDateDisabledBy={isWeekend}
-        value={currentValue}
-        name={input.name}
-        type={type}
-        disabled={typeof timeTableDisabled !== "undefined" ? timeTableDisabled : disabled}
-        placeholder={placeholder}
-        error={error}
-        aria-label={input.name}
-        onChange={event => {
-          const dateParts = event.split(".");
-          const eventDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
-          const year = eventDate.getFullYear();
-          const month = ("0" + (eventDate.getMonth() + 1)).slice(-2); // Months are 0-based, so add 1 and pad with 0 if necessary
-          const day = ("0" + eventDate.getDate()).slice(-2); // Pad with 0 if necessary
-          const value = `${year}-${month}-${day}`;
-
-          if(value){
-            setCurrentValue(value)
-            input.onChange(value)
-          }
-        }}
-        className={currentClassName}
-        onBlur={() => {
-          console.log(input.value, input.defaultValue)
-          if (input.value !== input.defaultValue) {
-            setValueGenerated(false)
-          } else {
-            setValueGenerated(true)
-          }
-        }}
-       /> 
-      :
-        <TextInput
-          //onKeyDown={(e) => e.preventDefault()}
+    <>
+      <div className='deadline-input'>
+        {type === 'date' 
+        ?
+        <DateInput
+          readOnly
+          isDateDisabledBy={isWeekend}
           value={currentValue}
           name={input.name}
           type={type}
@@ -151,9 +119,17 @@ const DeadLineInput = ({
           error={error}
           aria-label={input.name}
           onChange={event => {
-            const value = event.target.value
-            setCurrentValue(value)
-            input.onChange(value)
+            const dateParts = event.split(".");
+            const eventDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
+            const year = eventDate.getFullYear();
+            const month = ("0" + (eventDate.getMonth() + 1)).slice(-2); // Months are 0-based, so add 1 and pad with 0 if necessary
+            const day = ("0" + eventDate.getDate()).slice(-2); // Pad with 0 if necessary
+            const value = `${year}-${month}-${day}`;
+
+            if(value){
+              setCurrentValue(value)
+              input.onChange(value)
+            }
           }}
           className={currentClassName}
           onBlur={() => {
@@ -163,8 +139,33 @@ const DeadLineInput = ({
               setValueGenerated(true)
             }
           }}
-        />
-      }
+        /> 
+        :
+          <TextInput
+            //onKeyDown={(e) => e.preventDefault()}
+            value={currentValue}
+            name={input.name}
+            type={type}
+            disabled={typeof timeTableDisabled !== "undefined" ? timeTableDisabled : disabled}
+            placeholder={placeholder}
+            error={error}
+            aria-label={input.name}
+            onChange={event => {
+              const value = event.target.value
+              setCurrentValue(value)
+              input.onChange(value)
+            }}
+            className={currentClassName}
+            onBlur={() => {
+              if (input.value !== input.defaultValue) {
+                setValueGenerated(false)
+              } else {
+                setValueGenerated(true)
+              }
+            }}
+          />
+        }
+      </div>
       {editable && valueGenerated ? (
         <span className="deadline-estimated">{t('deadlines.estimated')}</span>
       ) : (
@@ -175,7 +176,7 @@ const DeadLineInput = ({
           <IconAlertCircle size="xs" /> {currentError}{' '}
         </div>
       )}
-    </div>
+    </>
   )
 }
 
