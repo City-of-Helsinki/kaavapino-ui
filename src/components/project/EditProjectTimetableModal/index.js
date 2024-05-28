@@ -331,18 +331,18 @@ class EditProjectTimeTableModal extends Component {
         </Modal.Content>
         <Modal.Actions>
           <span className="form-buttons">
-            <Button variant="secondary" disabled={loading} onClick={this.handleClose}>
-              {t('common.cancel')}
-            </Button>
             <Button
               variant="primary"
               disabled={loading || !this.props.allowedToEdit}
-              loadingText={t('common.save')}
+              loadingText={t('common.save-timeline')}
               isLoading={loading}
               type="submit"
               onClick={this.handleSubmit}
             >
-              {t('common.save')}
+              {t('common.save-timeline')}
+            </Button>
+            <Button variant="secondary" disabled={loading} onClick={this.handleClose}>
+              {t('common.cancel')}
             </Button>
           </span>
         </Modal.Actions>

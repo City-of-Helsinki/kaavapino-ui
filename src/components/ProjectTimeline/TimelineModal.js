@@ -32,14 +32,16 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       return keys.map(key => {
         const errors = formSubmitErrors[key]
         console.log(errors)
-        return (
-          <div key={key} className="submit-error">
-            {getErrorLabel(key)}
-            {errors?.map(error => (
-              <span key={error}>{error} </span>
-            ))}
-          </div>
-        )
+        if (Array.isArray(errors)) {
+          return (
+            <div key={key} className="submit-error">
+              {getErrorLabel(key)}
+              {errors?.map(error => (
+                <span key={error}>{error} </span>
+              ))}
+            </div>
+          )
+        }
       })
     }
 
