@@ -1,23 +1,23 @@
 import axios from 'axios'
 import { takeLatest, put, all, call } from 'redux-saga/effects'
-import { USER_FOUND } from 'redux-oidc'
 import { push } from 'connected-react-router'
 import { actions as toastrActions } from 'react-redux-toastr'
 import {
   ERROR,
   error,
-  INIT_API_REQUEST,
+  LOAD_API_TOKEN,
   tokenLoaded,
+  INIT_API_REQUEST,
   initApiRequestSuccessful,
   DOWNLOAD_FILE
 } from '../actions/apiActions'
-import apiUtils from '../utils/apiUtils'
 import { loginSuccessful } from '../actions/authActions'
+import apiUtils from '../utils/apiUtils'
 
 export default function* apiSaga() {
   yield all([
     takeLatest(ERROR, handleErrorSaga),
-    takeLatest(USER_FOUND, userFoundSaga),
+    takeLatest(LOAD_API_TOKEN, loadApiTokenSaga),
     takeLatest(INIT_API_REQUEST, initApiRequestSaga),
     takeLatest(DOWNLOAD_FILE, downloadFileSaga)
   ])
@@ -53,12 +53,13 @@ function* handleErrorSaga({ payload }) {
   }
 }
 
-function* userFoundSaga({ payload }) {
+function* loadApiTokenSaga({ payload }) {
   let token = null
   if (!process.env.REACT_APP_API_TOKEN) {
     const audience = process.env.REACT_APP_OPENID_AUDIENCE
-    apiUtils.setToken(payload.access_token)
-    const data = yield apiUtils.get(process.env.REACT_APP_OPENID_ENDPOINT + '/api-tokens/')
+    apiUtils.setToken(payload)
+    const data = yield apiUtils.get(process.env.REACT_APP_OPENID_ENDPOINT + '/api-tokens/',
+      {}, false, false, true, true)
     token = data[audience]
   } else {
     token = process.env.REACT_APP_API_TOKEN

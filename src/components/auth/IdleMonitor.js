@@ -10,8 +10,8 @@ function IdleMonitor() {
   const history = useHistory();
   const isMount = useIsMount();
   const [idleModal, setIdleModal] = useState(false);
-  let idleTimeout = 1000 * 30 * 60;  //30 minute
-  let idleLogout = 1000 * 40 * 60; //40 minutes
+  let idleTimeout = 1000 * 50 * 60;  //50 minute
+  let idleLogout = 1000 * 60 * 60; //60 minutes
   let idleEvent;
   let idleLogoutEvent;
 

@@ -144,7 +144,16 @@ const FormField = ({
 
     if (isArray(submitErrorObject)) {
       submitErrorObject.forEach(
-        errorText => (submitErrorText = submitErrorText + errorText)
+        errorText => {
+          // Errors in fieldsets sometimes return as objects within an object...
+          if (Object.getPrototypeOf(errorText) === Object.prototype) {
+            for (let key in errorText) {
+              submitErrorText += Object.values(errorText[key]).join('')
+            }
+          } else {
+            submitErrorText += submitErrorText + errorText
+          }
+        }
       )
     }
   }

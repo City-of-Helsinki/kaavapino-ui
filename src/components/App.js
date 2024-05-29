@@ -1,18 +1,17 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
 import { Route, Switch, Redirect } from 'react-router-dom'
 import { ConnectedRouter } from 'connected-react-router'
+import PropTypes from 'prop-types'
 import { history } from '../store'
 import { connect } from 'react-redux'
 import { logout } from '../actions/authActions'
 import { fetchPhases } from '../actions/phaseActions'
 import { fetchProjectTypes } from '../actions/projectTypeActions'
-import { authUserLoadingSelector } from '../selectors/authSelector'
 import { initApiRequest } from '../actions/apiActions'
 import {
-  apiLoadingTokenSelector,
   apiTokenSelector,
-  apiInitializedSelector
+  apiInitializedSelector,
+  loadingTokenSelector
 } from '../selectors/apiSelector'
 import { phasesSelector } from '../selectors/phaseSelector'
 import LoginPage from './auth/Login'
@@ -61,12 +60,8 @@ class App extends Component {
 
   render() {
     const { t} = this.props
-    if (
-      this.props.loadingApiToken ||
-      this.props.userLoading ||
-      !this.props.apiInitialized
-    ) {
-      return <p>{t('loading')}</p>
+    if (this.props.loadingToken || (this.props.apiToken !== null && !this.props.apiInitialized)) {
+      return (<p>{t('loading')}</p>)
     }
    
     return (
@@ -155,7 +150,8 @@ class App extends Component {
 }
 
 App.propTypes = {
-  userLoading: PropTypes.bool
+  loadingToken: PropTypes.bool,
+  apiInitialized: PropTypes.bool
 }
 
 const mapDispatchToProps = {
@@ -167,12 +163,10 @@ const mapDispatchToProps = {
 
 const mapStateToProps = state => {
   return {
-    userLoading: authUserLoadingSelector(state),
     phases: phasesSelector(state),
     apiToken: apiTokenSelector(state),
-    loadingApiToken: apiLoadingTokenSelector(state),
     apiInitialized: apiInitializedSelector(state),
-   
+    loadingToken: loadingTokenSelector(state)
   }
 }
 

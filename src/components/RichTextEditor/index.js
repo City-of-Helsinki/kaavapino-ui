@@ -62,6 +62,7 @@ const formats = [
 function RichTextEditor(props) {
   const {
     input: { value, ...inputProps },
+    fieldData: { required, name },
     largeField,
     disabled,
     meta,
@@ -105,6 +106,7 @@ function RichTextEditor(props) {
   const [valueIsSet, setValueIsSet] = useState(false)
   const [valueIsEmpty,setValueIsEmpty] = useState(false)
   const [charLimitOver,setCharLimitOver] = useState(false)
+  const [maxSizeOver, setMaxSizeOver] = useState(false)
   const [editField,setEditField] = useState(false)
 
   const editorRef = useRef("")
@@ -169,7 +171,7 @@ function RichTextEditor(props) {
   }, [JSON.stringify(floorValue)])
 
   useEffect(() => {
-    if(lastSaved?.status === "error"){
+    if(lastSaved?.status === "error" && editorRef.current){
       //Unable to lock fields and connection backend not working so prevent editing
       editorRef.current.editor.blur()
     }
@@ -192,7 +194,7 @@ function RichTextEditor(props) {
   useEffect(() => {
     if(!isMount){
       //!ismount skips initial render
-      if(charLimitOver || valueIsEmpty){
+      if(charLimitOver || valueIsEmpty && required){
         //Adds field to error list that don't trigger toastr right away (too many chars,empty field etc) and shows them when trying to save
         dispatch(formErrorList(true,inputProps.name))
       }
@@ -202,6 +204,28 @@ function RichTextEditor(props) {
       }
     }
   }, [charLimitOver,valueIsEmpty])
+
+  useEffect(() => {
+    // Checks on page load and on value change if the input value character count exceeds maxSize
+    const maxSize = props.maxSize || 10000
+   //Get the maxSize from backend or use default
+    if (value && value.ops) {
+      let valueCount = 0;
+      // In some occasions value.ops returns array that has multiple objects
+      if (value.ops.length > 1) {
+        // in that case we need loop trought them and check length of each objects insert and add them up
+        for (let arr of value.ops) {
+          valueCount += arr.insert.length
+        }
+        valueCount = valueCount - 1
+      } else {
+        // otherwise we can just check the length of the value objects insert
+        valueCount = value.ops[0].insert.length - 1
+      }
+      // maxSizeOver true shows the max-chars-error
+      valueCount > maxSize ? setMaxSizeOver(true) : setMaxSizeOver(false)
+    }
+  }, [value])
 
   useEffect(() => {
     //Chekcs that locked status has more data then inital empty object
@@ -418,7 +442,6 @@ function RichTextEditor(props) {
     if(attributeData[fieldsetName] && attributeData[fieldsetName][index] && attributeData[fieldsetName][index][fieldName]?.ops){
       data = attributeData[fieldsetName][index][fieldName]?.ops
     }
-
     return data
   }
 
@@ -455,8 +478,8 @@ function RichTextEditor(props) {
       originalData = getOriginalData(name,originalData)
     }
 
-    //Prevent saving if data has not changed or is empty
-    if (!editorEmpty && !isEqual(originalData, editor?.ops)) {
+    //Prevent saving if data has not changed or is empty and field is required
+    if (!isEqual(originalData, editor?.ops) && (!editorEmpty || !required)) {
       //prevent saving if locked
       if (!readonly) {
         //Sent call to save changes if it is modified by user and not updated by lock call
@@ -566,6 +589,20 @@ function RichTextEditor(props) {
   const normalOrRollingElement = () => {
     const val = value?.ops
 
+    let filteredComments = []
+    
+    if (comments && comments.length > 0) {
+      filteredComments = comments.filter((comment) => {
+        if (comment.fieldset_path.length > 0) {
+          if (name.includes(comment.fieldset_path[0].parent && comment.fieldset_path[0].index)) {
+            return comment
+          }
+        } else {
+          return comment
+        }
+      })
+    }
+
     //Default maxsize 10000
     const maxSize = props.maxSize ? props.maxSize : 10000;
     //Render rolling info field or normal edit field
@@ -581,6 +618,7 @@ function RichTextEditor(props) {
       editRollingField={editRollingField}
       type="richtext"
       phaseIsClosed={phaseIsClosed}
+      maxSizeOver={maxSizeOver}
     />
     :    
     <div
@@ -634,10 +672,10 @@ function RichTextEditor(props) {
               className="show-comments-button"
               aria-label="Näytä kommentit"
               onClick={() => setShowComments(!showComments)}
-              disabled={!comments || !comments.length}
+              disabled={!filteredComments || !filteredComments.length}
             >
               {showComments ? 'Piilota' : 'Näytä'} kommentit (
-              {comments ? comments.length : 0})
+              {filteredComments ? filteredComments.length : 0})
             </button>
           </span>
         </div>
@@ -677,19 +715,19 @@ function RichTextEditor(props) {
           readOnly={readonly || lastSaved?.status === "error"}
         />
       </div>
-      {showComments && comments && comments.length > 0 && (
+      {showComments && filteredComments && filteredComments.length > 0 && (
         <div className="comment-list">
-          {comments.map((comment, i) => (
-            <Comment
-              key={`${i}-${comment.id}`}
-              {...comment}
-              editable={userId === comment.user}
-              onSave={content =>
-                dispatch(editFieldComment(projectId, comment.id, content, reducedName))
-              }
-              onDelete={() =>
-                dispatch(deleteFieldComment(projectId, comment.id, reducedName))
-              }
+          {filteredComments.map((comment, i) => (
+            <Comment 
+            key={`${i}-${comment.id}`}
+            {...comment}
+            editable={userId === comment.user}
+            onSave={content =>
+              dispatch(editFieldComment(projectId, comment.id, content, reducedName))
+            }
+            onDelete={() =>
+              dispatch(deleteFieldComment(projectId, comment.id, reducedName))
+            }
             />
           ))}
         </div>
@@ -704,8 +742,8 @@ function RichTextEditor(props) {
         </p>
       ) : null}
     </div>
-      {counter.current > maxSize && charLimitOver ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.charsover')}</div> : ""}
-      {valueIsEmpty ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.noempty')}</div> : ""}
+      {counter.current > maxSize && charLimitOver || maxSizeOver ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.charsover')}</div> : ""}
+      {valueIsEmpty && required ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.noempty')}</div> : ""}
     </div>
     
     return elements

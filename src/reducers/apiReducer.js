@@ -1,20 +1,23 @@
-import { TOKEN_LOADED, INIT_API_REQUEST_SUCCESSFUL } from '../actions/apiActions'
-import { USER_FOUND } from 'redux-oidc'
+import { TOKEN_LOADED, INIT_API_REQUEST_SUCCESSFUL, LOAD_API_TOKEN} from '../actions/apiActions'
+import { USER_UNLOADED } from '../actions/authActions'
 
 export const initialState = {
   apiToken: null,
-  loadingToken: false,
-  apiInitialized: true
+  apiInitialized: false,
+  loadingToken: false
 }
 
 export const reducer = (state = initialState, action) => {
   switch (action.type) {
-    case USER_FOUND: {
+
+    case LOAD_API_TOKEN: {
+      // Don't set loadingToken during silent renew (causes refresh)
+      if (state.apiToken) {
+        return state
+      }
       return {
         ...state,
-        apiToken: null,
-        loadingToken: true,
-        apiInitialized: false
+        loadingToken:true
       }
     }
 
@@ -22,7 +25,14 @@ export const reducer = (state = initialState, action) => {
       return {
         ...state,
         apiToken: action.payload,
-        loadingToken: false
+        loadingToken:false
+      }
+    }
+
+    case USER_UNLOADED: {
+      return {
+        apiToken: null,
+        apiInitialized: false
       }
     }
 
