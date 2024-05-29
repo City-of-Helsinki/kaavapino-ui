@@ -56,7 +56,7 @@ function* handleErrorSaga({ payload }) {
 function* loadApiTokenSaga({ payload }) {
   let token = null
   if (!process.env.REACT_APP_API_TOKEN) {
-    const audience = process.env.REACT_APP_OPENID_AUDIENCE
+    //const audience = process.env.REACT_APP_OPENID_AUDIENCE
     apiUtils.setToken(payload)
   /*
     const data = yield apiUtils.get(process.env.REACT_APP_OPENID_ENDPOINT + '/api-tokens/',
@@ -64,12 +64,15 @@ function* loadApiTokenSaga({ payload }) {
     */
    const data = yield apiUtils.post('https://tunnistus.test.hel.ninja/auth/realms/helsinki-tunnistus/protocol/openid-connect/token',
     {
-      'audience': process.env.REACT_APP_OPENID_AUDIENCE,
+      'audience': 'kaavapino-api-dev',
       'grant_type':'urn:ietf:params:oauth:grant-type:uma-ticket',
       'permission':'#access'
+    }, {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Accept': 'application/json',
     })
     console.log(data)
-    token = data[audience]
+    token = data['access_token']
   } else {
     token = process.env.REACT_APP_API_TOKEN
   }
