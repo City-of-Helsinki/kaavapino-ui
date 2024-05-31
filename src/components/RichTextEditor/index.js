@@ -69,6 +69,7 @@ function RichTextEditor(props) {
     placeholder,
     onBlur,
     onFocus,
+    checkLocked,
     className,
     updated,
     formName,
@@ -632,6 +633,7 @@ function RichTextEditor(props) {
       role="textbox"
       className={`rich-text-editor-wrapper ${fieldSetDisabled || disabled || lastModified === inputProps.name && saving ? 'rich-text-disabled' : ''}`}
       aria-label="tooltip"
+      onFocus={checkLocked}
     >
       <div
         className={counter.current > maxSize ? 

@@ -285,7 +285,6 @@ const FieldSet = ({
                     <div
                       className={`input-container ${showError ? 'error' : ''} ${fieldsetDisabled ? 'disabled-fieldset' : ''}`}
                       key={j}
-                      onClick={(e) => {if(!fieldsetDisabled){checkLocked(e,set,i)}}}
                     >
                       <Form.Field required={required}>
                         <div className="input-header">
@@ -350,6 +349,7 @@ const FieldSet = ({
                               handleBlur()
                             }
                           }}
+                          checkLocked={(e) => {checkLocked(e,set,i)}}
                           lockField={lockField}
                           unlockAllFields={unlockAllFields}
                           validate={validate}
@@ -427,7 +427,8 @@ FieldSet.propTypes = {
   updateField: PropTypes.object,
   attributeData: PropTypes.object,
   updated: PropTypes.object,
-  phaseIsClosed: PropTypes.bool
+  phaseIsClosed: PropTypes.bool,
+  lockStatus: PropTypes.object,
 }
 
 export default connect(mapStateToProps)(FieldSet)

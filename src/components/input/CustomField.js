@@ -155,7 +155,7 @@ class CustomField extends Component {
   }
 
   renderRichText = props => {
-    const { handleBlurSave, handleLockField, handleUnlockField, meta, formName, lockField, unlockAllFields, fieldSetDisabled,
+    const { handleBlurSave, handleLockField, handleUnlockField, checkLocked, meta, formName, lockField, unlockAllFields, fieldSetDisabled,
       insideFieldset,nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, attributeData, phaseIsClosed } = this.props
     return (
       <RichTextEditor
@@ -163,6 +163,7 @@ class CustomField extends Component {
         onBlur={handleBlurSave}
         onChange={props.onChange}
         onFocus={handleLockField}
+        checkLocked={checkLocked}
         handleUnlockField={handleUnlockField}
         unlockAllFields={unlockAllFields}
         meta={meta}
@@ -185,7 +186,7 @@ class CustomField extends Component {
   }
 
   renderRichTextShort = props => {
-    const { handleBlurSave, handleLockField, handleUnlockField, meta, setRef, lockField,unlockAllFields,fieldSetDisabled,
+    const { handleBlurSave, handleLockField, handleUnlockField, checkLocked, meta, setRef, lockField,unlockAllFields,fieldSetDisabled,
       insideFieldset, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, attributeData, phaseIsClosed } = this.props
     return (
       <RichTextEditor 
@@ -194,6 +195,7 @@ class CustomField extends Component {
         onBlur={handleBlurSave} 
         onChange={props.onChange} 
         onFocus={handleLockField} 
+        checkLocked={checkLocked}
         handleUnlockField={handleUnlockField} 
         unlockAllFields={unlockAllFields} 
         fieldSetDisabled={fieldSetDisabled} 
