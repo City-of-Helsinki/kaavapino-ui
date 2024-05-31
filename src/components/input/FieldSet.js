@@ -101,6 +101,9 @@ const FieldSet = ({
   }, [updateField?.fieldName,updateField?.data]) 
 
   const checkLocked = (e,set,i) => {
+    //Fetch fieldset data from backend and see if there is new sub fieldset or data changes
+    dispatch(getAttributeData(attributeData?.projektin_nimi,name,formName, set, nulledFields,i))
+
     let expand = false
     //Change expanded styles if close button or accordian heading element is clicked
     const substrings = ["fieldset-accordian-close","accordion-button"];
@@ -128,9 +131,10 @@ const FieldSet = ({
   }
 
    const handleOutsideClick = () => {
-    //close all accordians when clicked outside fieldset main
+    const lockedField = lockStatus.fieldIdentifier
+    //close all accordians and unlock locked field when clicked outside fieldset main
     setExpanded([]);
-    unlockAllFields()
+    handleUnlockField(lockedField)
   }
 
   const getNumberOfFieldsets = (fieldsetTotal) => {
@@ -281,6 +285,7 @@ const FieldSet = ({
                     <div
                       className={`input-container ${showError ? 'error' : ''} ${fieldsetDisabled ? 'disabled-fieldset' : ''}`}
                       key={j}
+                      onClick={(e) => {if(!fieldsetDisabled){checkLocked(e,set,i)}}}
                     >
                       <Form.Field required={required}>
                         <div className="input-header">
