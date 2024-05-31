@@ -810,7 +810,8 @@ CustomField.propTypes = {
   ]),
   isCurrentPhase:PropTypes.bool,
   selectedPhase: PropTypes.number,
-  phaseIsClosed: PropTypes.bool
+  phaseIsClosed: PropTypes.bool,
+  checkLocked: PropTypes.func,
 }
 
 export default CustomField
