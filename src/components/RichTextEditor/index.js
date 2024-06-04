@@ -589,17 +589,19 @@ function RichTextEditor(props) {
 
   const normalOrRollingElement = () => {
     const val = value?.ops
-
+    
     let filteredComments = []
     
     if (comments && comments.length > 0) {
       filteredComments = comments.filter((comment) => {
-        if (comment.fieldset_path.length > 0) {
-          if (name.includes(comment.fieldset_path[0].parent && comment.fieldset_path[0].index)) {
+        if (comment.project === projectId) {
+          if (comment.fieldset_path.length > 0) {
+            if (name.includes(comment.fieldset_path[0].parent && comment.fieldset_path[0].index)) {
+              return comment
+            }
+          } else {
             return comment
           }
-        } else {
-          return comment
         }
       })
     }
