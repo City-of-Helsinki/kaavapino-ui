@@ -175,7 +175,7 @@
                     background:url('../../assets/icons/plus-blue.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;
-                    background-size: $size18;
+                    background-size: $size24;
                     border: none;
                     cursor: pointer;
                 }
@@ -203,6 +203,10 @@
         justify-content: flex-start;
         align-items: center;
         margin-right: -1px;
+        .vis-group-level-0{
+            display: block;
+            padding-left: $size16;
+        }
     }
 
     .vis-label.vis-nesting-group.expanded:before {

@@ -245,7 +245,9 @@
     "error-prevent-add":"Virhe lomakkeella estää lisäyksen",
     "fieldset-info":"Yhteensä {{fieldAmount}} tietuetta.",
     "no-fields":"Suodatinvalinnalla ei löytynyt tämän otsikon alta suodatettavia kenttiä.",
-    "link-to-map":"Linkki projektin karttapalveluun."
+    "link-to-map":"Linkki projektin karttapalveluun.",
+    "add-new-board":"Lisää uusi lautakunta",
+    "add-new-presence":"Lisää uusi esillöolo"
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}",

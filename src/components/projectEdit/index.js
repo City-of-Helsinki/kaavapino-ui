@@ -565,7 +565,7 @@ class ProjectEditPage extends Component {
       documents
     } = this.props
     const { highlightGroup } = this.state
-    console.log(attribute_data)
+
     if (!schema) {
       return <LoadingSpinner className="loader-icon" />
     }
@@ -773,7 +773,8 @@ class ProjectEditPage extends Component {
                 handleClose={() => this.handleTimetableClose()}
                 projectPhaseIndex={projectPhaseIndex}
                 archived={currentProject.archived}
-                allowedToEdit={isResponsible}
+                isAdmin={isAdmin}
+              allowedToEdit={isResponsible}
               />
             )}
           </div>
