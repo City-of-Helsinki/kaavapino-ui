@@ -611,7 +611,7 @@ function RichTextEditor(props) {
     //Render rolling info field or normal edit field
     //If clicking rolling field button makes positive lock check then show normal editable field
     //Rolling field can be nonEditable
-    const elements = nonEditable || rollingInfo && !editField ?
+    const elements = nonEditable || rollingInfo && !editField && !showComments ?
     <RollingInfo 
       name={inputProps.name} 
       value={val || ""}
