@@ -5,26 +5,33 @@ import {extendMoment} from 'moment-range'
 import { LoadingSpinner } from 'hds-react'
 //import { createRoot } from 'react-dom/client'
 //import ItemRange from './ItemRange'
-import TimelineModal from './TimelineModal'
-import VisTimelineMenu from './VisTimelineMenu'
 import * as vis from 'vis-timeline'
 import 'vis-timeline/dist/vis-timeline-graph2d.min.css'
+import TimelineModal from './TimelineModal'
+import VisTimelineMenu from './VisTimelineMenu'
+import AddGroupModal from './AddGroupModal';
 import './VisTimeline.css'
 Moment().locale('fi');
 
-const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit}, ref) => {
+const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin}, ref) => {
     const moment = extendMoment(Moment);
+
     const timelineRef = useRef(null);
     const timelineInstanceRef = useRef(null);
+    const visValuesRef = useRef(visValues);
+
     const [toggleTimelineModal, setToggleTimelineModal] = useState({open: false, highlight: false, deadlinegroup: false});
     const [timelineData, setTimelineData] = useState({group: false, content: false});
     const [timeline, setTimeline] = useState(false);
-    console.log(visValues)
+    const [addDialogStyle, setAddDialogStyle] = useState({ left: 0, top: 0 });
+    const [addDialogData, setAddDialogData] = useState({group:false,deadlineSections:false,showPresence:false,showBoard:false,nextEsillaolo:false,nextLautakunta:false});
+    const [toggleOpenAddDialog, setToggleOpenAddDialog] = useState(false)
+    //const [lock, setLock] = useState({group:false,id:false,locked:false,abbreviation:false});
+
     useImperativeHandle(ref, () => ({
       getTimelineInstance: () => timelineInstanceRef.current,
     }));
 
-    //const [lock, setLock] = useState({group:false,id:false,locked:false,abbreviation:false});
 
     const groupDragged = (id) => {
       console.log('onChange:', id)
@@ -58,7 +65,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           if (groupId) {
             let group = groups.get(groupId);
             if (group) {
-              console.log(group)
               group.showNested = !group.showNested;
               groups.update(group);
             }
@@ -68,9 +74,82 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
     }
 
-    const openAddDialog = (data) => {
-      console.log(data)
+    const canGroupBeAdded = (visValRef,data,deadlineSections) => {
+      //Find out how many groups in clicked phase has been added to timeline
+      const matchingGroups = groups.get().filter(group => data.nestedGroups.includes(group.id));
+      const esillaoloCount = matchingGroups.filter(group => group.content === 'Esilläolo').length > 1 ? '_'+matchingGroups.filter(group => group.content === 'Esilläolo').length : '';
+      const lautakuntaCount = matchingGroups.filter(group => group.content === 'Lautakunta').length > 1 ? '_'+matchingGroups.filter(group => group.content === 'Lautakunta').length : '';
+      const phase = data.content.toLowerCase();
+      let esillaoloConfirmed = false
+      let lautakuntaConfirmed = false
+      //Returned values
+      let canAddEsillaolo = false
+      let canAddLautakunta = false
+      let nextEsillaoloClean = false
+      let nextLautakuntaClean = false
+      //Check if existing groups have been confirmed
+      //Only when existing esilläolo or lautakunta is confirmed, new group of that type can be added 
+
+      //vahvista_periaatteet_esillaolo_alkaa
+      if (Object.prototype.hasOwnProperty.call(visValRef, 'vahvista_'+phase+'_esillaolo_alkaa'+esillaoloCount) && visValRef['vahvista_'+phase+'_esillaolo_alkaa'+esillaoloCount] === true) {
+        //can add
+        esillaoloConfirmed = true
+      } else {
+        //cannot add
+        esillaoloConfirmed = false
+      }
+      
+      if (Object.prototype.hasOwnProperty.call(visValRef, 'vahvista_'+phase+'_lautakunnassa'+lautakuntaCount) && visValRef['vahvista_'+phase+'_lautakunnassa'+lautakuntaCount] === true) {
+        lautakuntaConfirmed = true
+      } else {
+        lautakuntaConfirmed = false
+      }
+
+      //Get keys for comparising from attribute_data and deadlineSections and check if more groups can be added to timeline
+      const matchingKeys = Object.keys(deadlineSections).filter(key => data.content === deadlineSections[key].title);
+
+      let attributeKeys = [];
+      if (matchingKeys.length > 0 && deadlineSections[matchingKeys[0]].sections[0].attributes) {
+        attributeKeys = Object.keys(deadlineSections[matchingKeys[0]].sections[0].attributes);
+      }
+      
+      if(esillaoloConfirmed){
+        const deadlineEsillaolokertaKeys = attributeKeys.filter(key => key.includes('_esillaolokerta_'));
+        const esillaoloRegex = new RegExp(`${phase}_esillaolo_\\d+$`);
+        const attributeEsillaoloKeys = Object.keys(visValRef).filter(key => esillaoloRegex.test(key));
+        canAddEsillaolo = attributeEsillaoloKeys.length < deadlineEsillaolokertaKeys.length;
+        const nextEsillaoloStr = canAddEsillaolo ? `jarjestetaan_${phase}_esillaolo_${attributeEsillaoloKeys.length + 1}$` : false;
+        nextEsillaoloClean = nextEsillaoloStr ? nextEsillaoloStr.replace(/[/$]/g, '') : nextEsillaoloStr;
+      }
+
+      if(lautakuntaConfirmed){
+        const deadlineLautakuntakertaKeys = attributeKeys.filter(key => key.includes('_lautakuntakerta_'));
+        const lautakuntaanRegex = new RegExp(`${phase}_lautakuntaan_\\d+$`);
+        const attributeLautakuntaanKeys = Object.keys(visValRef).filter(key => lautakuntaanRegex.test(key));
+        canAddLautakunta = attributeLautakuntaanKeys.length < deadlineLautakuntakertaKeys.length;
+        const nextLautakuntaStr = canAddLautakunta ? `${phase}_lautakuntaan_${attributeLautakuntaanKeys.length + 1}$` : false;
+        nextLautakuntaClean = nextLautakuntaStr ? nextLautakuntaStr.replace(/[/$]/g, '') : nextLautakuntaStr;
+      }
+
+      return [canAddEsillaolo,nextEsillaoloClean,canAddLautakunta,nextLautakuntaClean]
     }
+
+
+    const openAddDialog = (visValRef,data,event) => {
+      const [addEsillaolo,nextEsillaolo,addLautakunta,nextLautakunta] = canGroupBeAdded(visValRef,data,deadlineSections)
+      const rect = event.target.getBoundingClientRect();
+      
+      setAddDialogStyle({
+        left: `${rect.left - 12}px`,
+        top: `${rect.bottom - 10}px`
+      })
+      setAddDialogData({group:data,deadlineSections:deadlineSections,showPresence:addEsillaolo,showBoard:addLautakunta,nextEsillaolo:nextEsillaolo,nextLautakunta:nextLautakunta})
+      setToggleOpenAddDialog(prevState => !prevState)
+    }
+
+    const closeAddDialog = () => {
+      setToggleOpenAddDialog(prevState => !prevState)
+    };
   
   
     const lockLine = (data) => {
@@ -80,10 +159,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   
   
     const openDialog = (data,container) => {
-      console.log(data,container)
-      console.log(visValues)
       container ? container.classList.toggle("highlight-selected") : toggleTimelineModal.highlight.classList.toggle("highlight-selected");
-  
       const modifiedDeadlineGroup = data?.deadlinegroup?.includes(';') ? data.deadlinegroup.split(';')[0] : data.deadlinegroup;
       setToggleTimelineModal({open:!toggleTimelineModal.open, highlight:container, deadlinegroup:modifiedDeadlineGroup})
      // if(toggleTimelineModal.open){
@@ -94,11 +170,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         //Close side modal and update vistimeline visually
        // changeItemRange(item.start > i.start, item, i)
      // }
-      console.log(data)
     }
 
     const changeItemRange = (subtract, item, i) => {
-      console.log(subtract, item, i)
       const timeline = this.timelineRef?.current?.getTimelineInstance();
       if(timeline){
         let timeData = i
@@ -268,6 +342,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         sequentialSelection:  false,
         moveable:true,
         zoomable:false,
+        horizontalScroll:true,
         groupHeightMode:"fixed",
         start: new Date(),
         end: new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 365.25),
@@ -321,7 +396,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           return Math.round(date / hour) * hour;
         },
         onMove(item, callback) {
-          console.log(item)
           let preventMove = false
           if(item.phase){
             if(!(item.start.getDay() % 6)){
@@ -406,8 +480,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             let add = document.createElement("button");
             add.classList.add("timeline-add-button");
             add.style.fontSize = "small";
-            add.addEventListener("click", function () {
-              openAddDialog(group);
+            add.addEventListener("click", function (event) {
+              openAddDialog(visValuesRef.current,group,event);
             });
             container.insertAdjacentElement("beforeEnd", add);
             return container;
@@ -442,6 +516,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               lockLine(group);
             });
             container.insertAdjacentElement("beforeEnd", lock);
+            return container;
+          }
+          else{
+            let label = document.createElement("span");
+            label.innerHTML = group?.content + " ";
+            container.insertAdjacentElement("afterBegin", label);
             return container;
           }
         },
@@ -486,9 +566,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }, [])
 
      useEffect(() => {
+      visValuesRef.current = visValues;
       if (timelineRef.current) {
         if (timelineInstanceRef.current) {
-          console.log(items)
+          //Update timeline when values change from side modal
           timelineInstanceRef.current.setItems(items);
           timelineInstanceRef.current.redraw();
         }
@@ -528,6 +609,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           formSubmitErrors={formSubmitErrors}
           projectPhaseIndex={projectPhaseIndex}
           archived={archived}
+          allowedToEdit={allowedToEdit}
+        />
+        <AddGroupModal
+          toggleOpenAddDialog={toggleOpenAddDialog}
+          addDialogStyle={addDialogStyle}
+          addDialogData={addDialogData}
+          closeAddDialog={closeAddDialog}
+          isAdmin={isAdmin}
           allowedToEdit={allowedToEdit}
         />
       </>

@@ -8,7 +8,6 @@ import { showField } from '../../utils/projectVisibilityUtils'
 import './VisTimeline.css'
 
 const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit }) => {
-  console.log(visValues)
     const getErrorLabel = (fieldName) => {
       let label
       deadlineSections.forEach(deadline_section => {
@@ -31,7 +30,6 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       const keys = formSubmitErrors ? Object.keys(formSubmitErrors) : []
       return keys.map(key => {
         const errors = formSubmitErrors[key]
-        console.log(errors)
         if (Array.isArray(errors)) {
           return (
             <div key={key} className="submit-error">
@@ -127,11 +125,12 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       return renderedSections
     }
 
+    const title = deadlineSections.find(section => section?.id === group)?.title
     return (
       <Modal open={open} size={'large'} className='timeline-edit-right'>
         <Modal.Header>
           <ul className="breadcrumb">
-            <li><a href="#">{group}</a></li>
+            <li><a href="#">{title}</a></li>
             <li><a href="#">{content}</a></li>
             <Button size='small' variant="supplementary" onClick={openDialog}><IconCross /></Button>
           </ul>
@@ -139,7 +138,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
         <Modal.Content>
           <div className='date-content'>
             {deadlineSections.map((section, i) => {
-              if (section.title === group) {
+              if (section.id === group) {
                 return renderSection(section, i)
               }
             })}
