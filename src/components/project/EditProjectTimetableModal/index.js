@@ -3,7 +3,7 @@
 import React, { Component, createRef } from 'react'
 import PropTypes from 'prop-types'
 import { Modal } from 'semantic-ui-react'
-import { reduxForm, getFormSubmitErrors, getFormValues } from 'redux-form'
+import { reduxForm, getFormSubmitErrors, getFormValues, change } from 'redux-form'
 import { connect } from 'react-redux'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../../constants'
 import './styles.scss'
@@ -29,9 +29,10 @@ class EditProjectTimeTableModal extends Component {
     this.timelineRef = createRef();
   }
 
-  getTimelineData = (deadlines,formValues) => {
+  getTimelineData = (deadlineSections,deadlines) => {
       const phaseData = []
       let deadLineGroups = []
+      let dlIndex = 0
       let nestedDeadlines = []
       let numberOfPhases = 1
       let type = ""
@@ -47,23 +48,21 @@ class EditProjectTimeTableModal extends Component {
       let innerStart = false
       let innerEnd = false
       let innerStyle = "" 
-      
-      for (let i = 0; i < deadlines.length; i++) {
-        if (!deadLineGroups.some(item => item.id === deadlines[i].deadline.phase_name)) {
-          deadLineGroups.push({
-            id: deadlines[i].deadline.phase_name,
-            content: deadlines[i].deadline.phase_name,
-            showNested: true,
-            nestedGroups: deadlines[i].deadline.phase_name === "Käynnistys" || deadlines[i].deadline.phase_name === "Hyväksyminen" || deadlines[i].deadline.phase_name === "Voimaantulo" ? false : []
-          });
-        }
 
-        if(formValues[deadlines[i].deadline.attribute]){
-          if(formValues[deadlines[i].deadline.attribute] !== deadlines[i].date){
-            deadlines[i].date = formValues[deadlines[i].deadline.attribute]
-            //UPDATE ITEM SOMEHOW with formvalues info
+      for (let i = 0; i < deadlineSections.length; i++) {
+          for (let x = 0; x < deadlineSections[i].sections.length; x++) {
+            if (!deadLineGroups.some(item => item.content === deadlineSections[i].title)) {
+              deadLineGroups.push({
+                id: deadlineSections[i].id,
+                content: deadlineSections[i].title,
+                showNested: true,
+                nestedGroups: deadlineSections[i].title === "Käynnistys" || deadlineSections[i].title === "Hyväksyminen" || deadlineSections[i].title === "Voimaantulo" ? false : []
+              })
+            }
           }
-        }
+      }
+
+      for (let i = 0; i < deadlines.length; i++) {
 
         if(deadlines[i].deadline.deadline_types.includes('phase_start')){
           startDate = deadlines[i].date
@@ -103,7 +102,7 @@ class EditProjectTimeTableModal extends Component {
             className:style,
             phaseID:deadlines[i].deadline.phase_id,
             phase:true,
-            group:deadlines[i].deadline.phase_name,
+            group:deadlines[i].deadline.phase_id,
           })
           startDate = false
           endDate = false
@@ -123,7 +122,9 @@ class EditProjectTimeTableModal extends Component {
             locked:false
           })
           dashEnd = false
-          deadLineGroups.at(-1).nestedGroups.push(numberOfPhases)
+          dlIndex = deadLineGroups.findIndex(group => group.content === deadlines[i].deadline.phase_name);
+          deadLineGroups.at(dlIndex).nestedGroups.push(numberOfPhases)
+
           nestedDeadlines.push({
             id: numberOfPhases,
             content: deadlines[i].deadline.deadlinegroup?.includes("lautakunta") ? "Lautakunta" : "Esilläolo",
@@ -148,7 +149,9 @@ class EditProjectTimeTableModal extends Component {
             locked:false
           })
           innerEnd = false
-          deadLineGroups.at(-1).nestedGroups.push(numberOfPhases)
+          dlIndex = deadLineGroups.findIndex(group => group.content === deadlines[i].deadline.phase_name);
+          deadLineGroups.at(dlIndex).nestedGroups.push(numberOfPhases)
+
           nestedDeadlines.push({
             id: numberOfPhases,
             content: deadlines[i].deadline.deadlinegroup?.includes("lautakunta") ? "Lautakunta" : "Esilläolo",
@@ -188,7 +191,6 @@ class EditProjectTimeTableModal extends Component {
     //Updates all items
     console.log(prevValues,values)
 /*     const changedItem = this.getChangedItem(prevValues, values);
-    console.log(changedItem)
     this.state.items.map(item => console.log(item));
     if (changedItem) {
       this.setState(prevState => ({
@@ -198,15 +200,14 @@ class EditProjectTimeTableModal extends Component {
   };
 
   componentDidMount() {
-    const { initialize, attributeData, deadlines } = this.props
+    const { initialize, attributeData, deadlines, deadlineSections } = this.props
     initialize(attributeData)
 
-    if(deadlines && attributeData){
-
+    if(attributeData && deadlines && deadlineSections){
       let items = new visdata.DataSet()
       let groups = new visdata.DataSet();
 
-      let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlines,attributeData)
+      let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,deadlines)
 
       groups.add(deadLineGroups);
       groups.add(nestedDeadlines);
@@ -226,7 +227,7 @@ class EditProjectTimeTableModal extends Component {
         className: "negative",
       },]
       )
-      console.log("changevisvalues")
+
       this.setState({items,groups,visValues:attributeData})
     }
   }
@@ -244,6 +245,204 @@ class EditProjectTimeTableModal extends Component {
     }
   }
 
+  addGroup = (changedValues) => {
+    // Get the keys from changedValues
+    const keys = Object.keys(changedValues);
+    let phase = '';
+    let content = '';
+    let index = null;
+    let idt = ""
+    let deadlinegroup = ""
+    let groupID = null
+    const groups = this.state.groups.get();
+    let className = ""
+    let matchingValues = Object.entries(this.props.formValues)
+    // Iterate over the keys
+    for (let key of keys) {
+      // Split the key into an array of substrings
+      const parts = key.split('_');
+      // Check if there are at least two underscores in the key
+      if (parts.length > 3) {
+        // Get the string between the first and second underscore
+        phase = parts[1];
+        content = parts[2];
+        index = parts[3];
+
+        // Find the group where phase equals content (converted to lowercase)
+        const group = groups.find(group => phase === group.content.toLowerCase());
+        // Get the id of the group
+        groupID = group ? group.id : null;
+        // Filter the groups
+        let filteredGroups = groups.filter(group => {
+          // Check if the group contains stringBetweenUnderscores and content in deadlineGroups
+          return typeof group?.deadlinegroup === 'string' && group?.deadlinegroup.includes(phase) && group?.deadlinegroup.includes(content);
+        });
+
+        if (filteredGroups.length > 0) {
+          // Get the deadlinegroup
+          deadlinegroup = filteredGroups[0].deadlinegroup;
+            // Get the length of groups
+          const length = groups.length;
+
+          // Update the id
+          idt = length + 1;
+        
+          // Use the replace method with a regex to find the number after the underscore
+          deadlinegroup = deadlinegroup.replace(/_(\d+)/, (match,number) => {
+            // Parse the number, increase it by one, and return it with the underscore
+            return '_' + (parseInt(number, 10) + 1);
+          });
+          //const id = filteredGroups[0].id;
+          // Create a new array with the updated groups
+          const updatedGroups = groups.map(group => {
+            // Check if the id of the group (in lowercase) is equal to phase
+            if (String(group.content).toLowerCase() === String(phase).toLowerCase()) {
+              // Push the id to nestedGroups
+              group.nestedGroups.push(idt);
+                  // Update the parent group
+              //this.state.groups.update(group);
+            }
+
+            // Return the group
+            return group;
+          });
+          console.log(updatedGroups)
+            // Update the groups
+            if(updatedGroups.length > 0){
+              //this.state.groups.add(updatedGroups);
+            }
+        }
+      }
+    }
+
+    if(content === "esillaolo"){
+      className = "inner-end"
+      let indexKey = ''
+      if(index > 2){
+        indexKey = "_"+index - 1
+      }
+      matchingValues = Object.entries(this.props.formValues)
+      .filter(([key]) =>  
+        key === 'milloin_'+phase+'_'+content+'_alkaa'+indexKey ||
+        key === 'milloin_'+phase+'_'+content+'_paattyy'+indexKey
+      )
+      .map(([key,value]) => ({key,value}));
+
+      matchingValues = matchingValues.map(({key, value}) => {
+        let date = new Date(value);
+        if(key.includes('_paattyy')) {
+          date.setDate(date.getDate() + 20);
+        }
+        else{
+          const endVal = matchingValues.find(({key}) => key.includes('_paattyy')).value;
+          date.setDate(new Date(endVal).getDate() + 40);
+        }
+        // Check if the date falls on a weekend
+        while (date.getDay() === 0 || date.getDay() === 6) {
+          // If it does, add days to the date to get to next Monday
+          date.setDate(date.getDate() + (date.getDay() === 0 ? 1 : 2));
+        }
+        /**
+          @todo: messes calendar commented for now date.setHours(12, 0, 0, 0); // Set the time to midday
+        **/
+        return { key:key +"_"+index , value: date.toISOString().slice(0, 10) };
+      });
+    
+      //Määräaika
+      let deadlineDate = new Date(matchingValues[0].value);
+      let day = deadlineDate.getDay();
+      let difference = (day >= 2 ? 2 : -5) - day;
+      deadlineDate.setDate(deadlineDate.getDate() - 7 + difference);
+      let deadlineDateOnly = deadlineDate.toISOString().slice(0, 10);
+
+      let deadlineValue = { key: "periaatteet_esillaolo_aineiston_maaraaika_" +index, value: deadlineDateOnly };
+      matchingValues.push(deadlineValue);
+    } //if esillaolo
+    
+    //Add new item to vis for group
+    const newItems = {
+      className: className,
+      content: "",
+      group: idt,
+      id: this.state.items.length + 1,
+      locked: false,
+      phase: false,
+      phaseID: groupID,
+      start: matchingValues[0].value,
+      end: matchingValues[1].value,
+      title: content === "esillaolo" ? "milloin_"+phase+"_esillaolo_paattyy_"+index : +phase+"_lautakunta_aineiston_maaraaika_"+index,
+    }
+    //Add new vis subgroup
+    const newSubGroup = {
+      id: idt,
+      content: content === "esillaolo" ? "Esilläolo-" + index : "Lautakunta-" + index,
+      abbreviation:"",
+      deadlinegroup: content === "esillaolo" ? phase+"_esillaolokerta_"+index : phase+"_lautakuntakerta_"+index,
+      deadlinesubgroup: "",
+      locked:false,
+    }
+
+    // Update the main group in the DataSet
+    this.state.items.add(newItems);
+    // Add the new subgroup to the DataSet
+    this.state.groups.add(newSubGroup);
+    // Find the group where group.content equals phase
+    const phaseCapitalized = phase.charAt(0).toUpperCase() + phase.slice(1);
+    const updateGroups = this.state.groups.get();
+    const phaseGroup = updateGroups.find(group => group.content === phaseCapitalized);
+
+    if (phaseGroup && phaseGroup.nestedGroups) {
+      // Get the nestedGroups array from that group
+      const nestedGroupIds = phaseGroup.nestedGroups;
+
+      // Compare the numbers in nestedGroups to the id of each group in groups
+      // Put the matching groups into a new array
+      const nestedGroups = updateGroups.filter(group => nestedGroupIds.includes(group.id));
+
+      // Sort the new array by content
+      nestedGroups.sort((a, b) => a.content.localeCompare(b.content));
+
+      // Separate groups into those that have nestedInGroup info and those that don't
+      const groupsWithNestedInGroup = updateGroups.filter(group => group.nestedInGroup);
+      const groupsWithoutNestedInGroup = updateGroups.filter(group => !group.nestedInGroup);
+
+      // Sort only the groups that have nestedInGroup info
+      groupsWithNestedInGroup.sort((a, b) => a.content.localeCompare(b.content));
+
+      // Concatenate the sorted groups with the rest of the groups
+      const sortedGroups = groupsWithoutNestedInGroup.concat(groupsWithNestedInGroup);
+
+      // Remove all groups from the DataSet
+      this.state.groups.clear();
+
+      // Add the groups back to the DataSet in the sorted order
+      this.state.groups.add(sortedGroups);
+    }
+
+    //Dispatch values to formValues so they are visible at calendar component
+    matchingValues.forEach(({key, value}) => {
+      this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, key, value));
+    });
+
+  }
+
+  getChangedValues = (prevValues, currentValues) => {
+    const changedValues = {};
+  
+    Object.keys(currentValues).forEach((key) => {
+      if (prevValues[key] !== currentValues[key]) {
+        changedValues[key] = currentValues[key];
+      }
+    });
+    
+    const isAddRemove = Object.keys(changedValues).some(key => 
+      (key.includes('jarjestetaan') || key.includes('lautakuntaan')) && 
+      typeof changedValues[key] === 'boolean'
+    );
+
+    return [isAddRemove,changedValues];
+  }
+
   componentDidUpdate(prevProps) {
     const {
       saving,
@@ -251,26 +450,29 @@ class EditProjectTimeTableModal extends Component {
       attributeData,
       submitFailed,
       formValues,
-      deadlines
+      deadlines,
+      deadlineSections
     } = this.props
 
     if(prevProps.formValues && prevProps.formValues !== formValues){
-      console.log(prevProps.formValues,formValues,"Change visvalues")
-      if(deadlines && formValues){
-  
-        let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlines,formValues)
-        
-        // Update the existing data
-        this.state.groups.update(deadLineGroups);
-        this.state.groups.update(nestedDeadlines);
-        this.state.items.update(phaseData)
+      if(deadlineSections && deadlines && formValues){
+        // Check if changedValues contains 'jarjestetaan' or 'lautakuntaan' and the value is a boolean
+        const [isGroupAddRemove,changedValues] = this.getChangedValues(prevProps.formValues, formValues);
 
-        console.log("changevisvalues")
+        if (isGroupAddRemove) {
+          this.addGroup(changedValues)
+        }
+        else{
+          //Form items and groups
+          let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,deadlines)
+
+          // Update the existing data
+          this.state.groups.update(deadLineGroups);
+          this.state.groups.update(nestedDeadlines);
+          this.state.items.update(phaseData)
+        }
         this.setState({visValues:formValues})
       }
-      //this.handleSubmit()
-      //For visupdate planning below
-      //this.updateTimeline(prevProps.formValues,formValues)
     }
 
     if (prevProps.submitting && submitFailed) {
@@ -296,7 +498,7 @@ class EditProjectTimeTableModal extends Component {
 
   render() {
     const { loading } = this.state
-    const { open, formValues, deadlines, deadlineSections, t, formSubmitErrors, projectPhaseIndex, currentProject, allowedToEdit } = this.props
+    const { open, formValues, deadlines, deadlineSections, t, formSubmitErrors, projectPhaseIndex, currentProject, allowedToEdit, isAdmin } = this.props
 
     if (!formValues) {
       return null
@@ -326,6 +528,7 @@ class EditProjectTimeTableModal extends Component {
               projectPhaseIndex={projectPhaseIndex}
               archived={currentProject?.archived}
               allowedToEdit={allowedToEdit}
+              isAdmin={isAdmin}
               toggleTimelineModal={this.state.toggleTimelineModal}
             />
         </Modal.Content>
@@ -360,6 +563,7 @@ EditProjectTimeTableModal.propTypes = {
   submitting: PropTypes.bool,
   allowedToEdit: PropTypes.bool,
   attributeData: PropTypes.object,
+  isAdmin: PropTypes.bool,
 }
 
 const mapStateToProps = state => ({
