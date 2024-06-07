@@ -14,6 +14,7 @@ import { Button,IconInfoCircle } from 'hds-react'
 import { isEqual } from 'lodash'
 import VisTimelineGroup from '../../ProjectTimeline/VisTimelineGroup'
 import * as visdata from 'vis-data'
+import ConfirmCancelModal from '../../common/ConfirmModal';
 
 class EditProjectTimeTableModal extends Component {
   constructor(props) {
@@ -24,7 +25,8 @@ class EditProjectTimeTableModal extends Component {
       visValues:false,
       item: null,
       items: false,
-      groups: false
+      groups: false,
+      showModal: false
     }
     this.timelineRef = createRef();
   }
@@ -48,7 +50,7 @@ class EditProjectTimeTableModal extends Component {
       let innerStart = false
       let innerEnd = false
       let innerStyle = "" 
-
+      console.log(deadlineSections,deadlines)
       for (let i = 0; i < deadlineSections.length; i++) {
           for (let x = 0; x < deadlineSections[i].sections.length; x++) {
             if (!deadLineGroups.some(item => item.content === deadlineSections[i].title)) {
@@ -56,7 +58,7 @@ class EditProjectTimeTableModal extends Component {
                 id: deadlineSections[i].id,
                 content: deadlineSections[i].title,
                 showNested: true,
-                nestedGroups: deadlineSections[i].title === "Käynnistys" || deadlineSections[i].title === "Hyväksyminen" || deadlineSections[i].title === "Voimaantulo" ? false : []
+                nestedGroups: []
               })
             }
           }
@@ -106,6 +108,19 @@ class EditProjectTimeTableModal extends Component {
           })
           startDate = false
           endDate = false
+
+          if(deadlines[i].deadline.phase_name === "Käynnistys" || deadlines[i].deadline.phase_name === "Hyväksyminen" || deadlines[i].deadline.phase_name === "Voimaantulo"){
+            dlIndex = deadLineGroups.findIndex(group => group.content === deadlines[i].deadline.phase_name);
+            deadLineGroups.at(dlIndex).nestedGroups.push(numberOfPhases)
+            nestedDeadlines.push({
+              id: numberOfPhases,
+              content: "Vaiheen kesto",
+              abbreviation:deadlines[i].abbreviation,
+              deadlinegroup: deadlines[i].deadline.deadlinegroup,
+              deadlinesubgroup: deadlines[i].deadline.deadlinesubgroup,
+              locked:false
+            });
+          }
           numberOfPhases++
         }
         else if(dashStart && dashEnd && type === "lautakunta"){
@@ -492,6 +507,19 @@ class EditProjectTimeTableModal extends Component {
     }
   }
 
+  openConfirmCancel = () => {
+    this.setState({ showModal: true });
+  }
+
+  handleContinueCancel = () => {
+    this.setState({ showModal: false });
+    this.handleClose()
+  }
+
+  handleCancelCancel = () => {
+    this.setState({ showModal: false });
+  }
+
   handleClose = () => {
     this.props.handleClose()
   }
@@ -531,8 +559,19 @@ class EditProjectTimeTableModal extends Component {
               isAdmin={isAdmin}
               toggleTimelineModal={this.state.toggleTimelineModal}
             />
+            {this.state.showModal && 
+            <ConfirmCancelModal 
+              headerText={"Haluatko peruuttaa tekemäsi muutokset?"} 
+              contentText={"Olet muuttanut aikataulun tietoja. Mikäli jatkat, tekemäsi muutokset peruutetaan. Haluatko jatkaa?"} 
+              button1Text={"Jatka"} 
+              button2Text={"Peruuta"} 
+              onContinue={this.handleContinueCancel} 
+              onCancel={this.handleCancelCancel}
+            />
+            }
         </Modal.Content>
         <Modal.Actions>
+        {this.props.allowedToEdit ? (
           <span className="form-buttons">
             <Button
               variant="primary"
@@ -544,10 +583,17 @@ class EditProjectTimeTableModal extends Component {
             >
               {t('common.save-timeline')}
             </Button>
-            <Button variant="secondary" disabled={loading} onClick={this.handleClose}>
+            <Button variant="secondary" disabled={loading} onClick={this.openConfirmCancel}>
               {t('common.cancel')}
             </Button>
           </span>
+        ) : (
+          <span className="form-buttons">
+            <Button variant="secondary" disabled={loading} onClick={this.handleClose}>
+            {t('common.close')}
+            </Button>
+          </span>
+        )}
         </Modal.Actions>
       </Modal>
     )
