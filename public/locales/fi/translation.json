@@ -111,7 +111,8 @@
     "continue": "Jatka",
     "person":"Henkilö",
     "unit":"Yksikkö tai tiimi",
-    "keyword":"Hakusana"
+    "keyword":"Hakusana",
+    "close":"Sulje"
   },
   "messages": {
     "deadlines-successfully-saved": "Aikataulut tallennettu",

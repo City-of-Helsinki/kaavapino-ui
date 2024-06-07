@@ -26,6 +26,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [addDialogStyle, setAddDialogStyle] = useState({ left: 0, top: 0 });
     const [addDialogData, setAddDialogData] = useState({group:false,deadlineSections:false,showPresence:false,showBoard:false,nextEsillaolo:false,nextLautakunta:false});
     const [toggleOpenAddDialog, setToggleOpenAddDialog] = useState(false)
+    const [currentFormat, setCurrentFormat] = useState("showMonths");
     //const [lock, setLock] = useState({group:false,id:false,locked:false,abbreviation:false});
 
     useImperativeHandle(ref, () => ({
@@ -147,6 +148,20 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       setToggleOpenAddDialog(prevState => !prevState)
     }
 
+    const openRemoveDialog = (visValRef,data,event) => {
+      console.log(visValRef,data,event)
+/*       const [addEsillaolo,nextEsillaolo,addLautakunta,nextLautakunta] = canGroupBeAdded(visValRef,data,deadlineSections)
+      const rect = event.target.getBoundingClientRect();
+      
+      setAddDialogStyle({
+        left: `${rect.left - 12}px`,
+        top: `${rect.bottom - 10}px`
+      })
+      setAddDialogData({group:data,deadlineSections:deadlineSections,showPresence:addEsillaolo,showBoard:addLautakunta,nextEsillaolo:nextEsillaolo,nextLautakunta:nextLautakunta})
+      setToggleOpenAddDialog(prevState => !prevState) */
+    }
+
+
     const closeAddDialog = () => {
       setToggleOpenAddDialog(prevState => !prevState)
     };
@@ -204,6 +219,16 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       });
     }
 
+    const showMonths = () => {
+      var now = new Date();
+      var currentYear = now.getFullYear();
+      var startOfMonth = new Date(currentYear, now.getMonth(), 1);
+      var endOfMonth = new Date(currentYear, now.getMonth() + 1, 0);
+      timeline.setOptions({timeAxis: {scale: 'weekday'}});
+      timeline.setWindow(startOfMonth, endOfMonth);
+      setCurrentFormat("showMonths");
+    }
+
     const showYers = () => {
       var now = new Date();
       var currentYear = now.getFullYear();
@@ -211,6 +236,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       var endOfYear = new Date(currentYear, 11, 31);
       timeline.setOptions({timeAxis: {scale: 'month'}});
       timeline.setWindow(startOfYear, endOfYear);
+      setCurrentFormat("showYers");
     }
 
     const show2Yers = () => {
@@ -229,15 +255,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       var endOf5Years = new Date(currentYear + 5, now.getMonth(), 0);
       timeline.setOptions({timeAxis: {scale: 'month'}});
       timeline.setWindow(startOf5Years, endOf5Years);
-    }
-
-    const showMonths = () => {
-      var now = new Date();
-      var currentYear = now.getFullYear();
-      var startOfMonth = new Date(currentYear, now.getMonth(), 1);
-      var endOfMonth = new Date(currentYear, now.getMonth() + 1, 0);
-      timeline.setOptions({timeAxis: {scale: 'weekday'}});
-      timeline.setWindow(startOfMonth, endOfMonth);
     }
 
     const show3Months = () => {
@@ -283,11 +300,20 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const moveLeft = () =>  {
-      move(0.2);
+      move(0.25);
     }
 
     const moveRight = () =>  {
-      move(-0.2);
+      move(-0.25);
+    }
+
+    const goToToday = () => {
+      if(currentFormat === "showMonths"){
+        showMonths();
+      }
+      else{
+        showYers();
+      }
     }
 
     const toggleRollingMode = () =>  {
@@ -471,19 +497,28 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           }
         },
         groupTemplate: function (group) {
+          if (group === null) {
+            return;
+          }
           let container = document.createElement("div");
           container.classList.add("timeline-buttons-container");
-          if(group?.nestedGroups?.length > 0){
+          //Don't show buttons in these groups
+          const stringsToCheck = ["Käynnistys", "Hyväksyminen", "Voimaantulo", "Vaiheen kesto"];
+          const contentIncludesString = stringsToCheck.some(str => group?.content.includes(str));
+
+          if(group?.nestedGroups?.length > 0 && allowedToEdit && !contentIncludesString){
             let label = document.createElement("span");
             label.innerHTML = group.content + " ";
             container.insertAdjacentElement("afterBegin", label);
             let add = document.createElement("button");
             add.classList.add("timeline-add-button");
             add.style.fontSize = "small";
+
             add.addEventListener("click", function (event) {
               openAddDialog(visValuesRef.current,group,event);
             });
             container.insertAdjacentElement("beforeEnd", add);
+
             return container;
           }
           else if(group?.nestedInGroup){
@@ -492,30 +527,44 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             container.insertAdjacentElement("afterBegin", label);
             let edit = document.createElement("button");
             edit.classList.add("timeline-edit-button");
-            let lock = document.createElement("button");
-            lock.classList.add("timeline-lock-button");
-            //edit.innerHTML = "Muokkaa";
             edit.style.fontSize = "small";
+
             edit.addEventListener("click", function () {
               openDialog(group,container);
             });
             container.insertAdjacentElement("beforeEnd", edit);
 
-            lock.style.fontSize = "small";
-            lock.addEventListener("click", function () {
-              lock.classList.toggle("lock");
-              const locked = lock.classList.contains("lock") ? "inner locked" : "inner";
-              let visibleItems = timeline.getVisibleItems()
-              for (let i = 0; i < visibleItems.length; i++) {
-                const item = items.get(visibleItems[i])
-                if(!item.phase && item.id >= group.id){
-                  items.update({ id: item.id, className: locked, locked: !item.locked });
+            if(allowedToEdit && !contentIncludesString){
+              let labelRemove = document.createElement("span");
+              label.innerHTML = group.content + " ";
+              container.insertAdjacentElement("afterBegin", labelRemove);
+              let remove = document.createElement("button");
+              remove.classList.add("timeline-remove-button");
+              remove.style.fontSize = "small";
+
+              remove.addEventListener("click", function (event) {
+                openRemoveDialog(visValuesRef.current,group,event);
+              });
+              container.insertAdjacentElement("beforeEnd", remove);
+
+              let lock = document.createElement("button");
+              lock.classList.add("timeline-lock-button");
+              lock.style.fontSize = "small";
+              lock.addEventListener("click", function () {
+                lock.classList.toggle("lock");
+                const locked = lock.classList.contains("lock") ? "inner locked" : "inner";
+                let visibleItems = timeline.getVisibleItems()
+                for (let i = 0; i < visibleItems.length; i++) {
+                  const item = items.get(visibleItems[i])
+                  if(!item.phase && item.id >= group.id){
+                    items.update({ id: item.id, className: locked, locked: !item.locked });
+                  }
                 }
-              }
-              //groups.update({ id: group.id, locked: !group.locked });
-              lockLine(group);
-            });
-            container.insertAdjacentElement("beforeEnd", lock);
+                //groups.update({ id: group.id, locked: !group.locked });
+                lockLine(group);
+              });
+              container.insertAdjacentElement("beforeEnd", lock);
+            }
             return container;
           }
           else{
@@ -582,6 +631,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       <>
         <div className='vis' ref={timelineRef}>
           <VisTimelineMenu
+            goToToday={goToToday}
             zoomIn={zoomIn}
             zoomOut={zoomOut}
             moveLeft={moveLeft}
