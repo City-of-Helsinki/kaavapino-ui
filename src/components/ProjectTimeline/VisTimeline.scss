@@ -23,6 +23,53 @@
         padding-left: $size15;
         .time-menu{
             padding-left: 275px;
+            button {
+                --min-size: $size32; //hds syntax
+                width: $size32;
+                height: $size32;
+                padding: 0; // Add this line
+                box-sizing: border-box; // Add this line
+                margin-bottom: $size16;
+                position: relative;
+                &:nth-child(2) {
+                    margin-left: $size12;
+                }
+            }
+        }
+        .today-menu{
+            button {
+                font-family: 'Helsinki Grotesk Medium', sans-serif;
+                color: $color-bus;
+                padding: 0;
+                box-sizing: border-box;
+                margin-bottom: $size16;
+                font-weight: 500;
+                line-height: $size24;
+                text-align: left;
+                position: relative;
+            }
+        }
+        .zoom-menu{
+            button{
+                --min-size: $size32; //hds syntax
+                height: $size32;
+                background: $dropdown-divider-color;
+                color: $black1;
+                border: none;
+                border-radius: $size16;
+                margin-bottom: $size16;
+                margin-right: $size12;
+            }
+            .selected {
+                --min-size: $size32; //hds syntax
+                height: $size32;
+                background: $dropdown-divider-color;
+                color: $black1;
+                border: 3px solid $color-coat-of-arms;
+                border-radius: $size16;
+                margin-bottom: $size16;
+                margin-right: $size12;
+            }
         }
     }
     .inner,.inner-end{
@@ -88,7 +135,7 @@
                 .timeline-edit-button{
                     margin-left: 0;
                     padding:0;
-                    width: 40px;
+                    width: $size40;
                     height: 100%;
                     background:url('../../assets/icons/pen.svg') no-repeat;
                     background-position-x: center;
@@ -97,10 +144,22 @@
                     border: none;
                     cursor: pointer;
                 }
-                .timeline-lock-button{
+                .timeline-remove-button{
                     padding: 0;
                     margin-left: auto;
-                    width: 40px;
+                    width: $size40;
+                    height: 100%;
+                    background:url('../../assets/icons/trash-blue.svg') no-repeat;
+                    background-position-x: center;
+                    background-position-y: center;
+                    background-size: $size18;
+                    border: none;
+                    cursor: pointer;
+                }
+                .timeline-lock-button{
+                    padding: 0;
+                    margin-left: 0;
+                    width: $size40;
                     height: 100%;
                     background:url('../../assets/icons/lock-open-blue.svg') no-repeat;
                     background-position-x: center;
@@ -170,8 +229,8 @@
                     right: 0;
                     top: 0;
                     padding: 0;
-                    width: 40px;
-                    height: 40px;
+                    width: $size40;
+                    height: $size40;
                     background:url('../../assets/icons/plus-blue.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;

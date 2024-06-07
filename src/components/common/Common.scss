@@ -1044,3 +1044,47 @@ header{
   box-shadow: 0px 2px 8px rgba(0, 0, 0, .5);
   z-index: 80;
 }
+
+.timetable-confirm-modal.timetable-confirm-modal  {
+  height: auto;
+  position: fixed;
+  bottom: 0;
+  top: auto;
+  margin-left: 0.5rem;
+  margin-bottom: 0.5rem;
+  max-width: 558px;
+
+  .header{
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    font-family: 'Helsinki Grotesk Medium', sans-serif;
+    font-size: $size18 !important;
+    font-weight: 700 !important;
+    line-height: $size18 !important;
+    letter-spacing: 0.004em;
+    text-align: left;
+    color: $black1;
+    padding-top: 0;
+    .header-icon{
+      width: $size24;
+      height: $size24;
+    }
+  }
+
+  .header, .content, .actions {
+    padding-left: $size32 !important;
+    margin-left: $size16 !important;
+    margin-bottom: $size24 !important;
+    margin-top: $size24 !important;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: flex-start;
+
+    .button-primary {
+      margin-right: $size16;
+    }
+  }
+}
