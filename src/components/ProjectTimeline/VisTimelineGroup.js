@@ -187,7 +187,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const changeItemRange = (subtract, item, i) => {
-      const timeline = this.timelineRef?.current?.getTimelineInstance();
+      const timeline = timelineRef?.current?.getTimelineInstance();
       if(timeline){
         let timeData = i
         if(!subtract){
