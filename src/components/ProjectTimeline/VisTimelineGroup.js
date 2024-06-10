@@ -3,8 +3,6 @@ import Moment from 'moment'
 import 'moment/locale/fi';
 import {extendMoment} from 'moment-range'
 import { LoadingSpinner } from 'hds-react'
-//import { createRoot } from 'react-dom/client'
-//import ItemRange from './ItemRange'
 import * as vis from 'vis-timeline'
 import 'vis-timeline/dist/vis-timeline-graph2d.min.css'
 import TimelineModal from './TimelineModal'
@@ -204,6 +202,38 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         timeline.itemSet.items[i.id].repositionX()
       }
     }
+    //For vis timeline dragging 1.2v
+  /*const onRangeChanged = ({ start, end }) => {
+      console.log(start, end)
+      const Min = 1000 * 60 * 60 * 24; // one day in milliseconds
+      const Max = 31556952000; // 1000 * 60 * 60 * 24 * 365.25 one year in milliseconds
+      let a0 = 10;
+      let a100 = moment.duration(moment(Max).diff(moment(Min))).asMilliseconds();
+      let  distance = (a100 - a0)/ 100;
+      let startTime = moment(start);
+      let endTime = moment(end);
+      const duration = moment.duration(endTime.diff(startTime));
+      const mins = duration.asMilliseconds();
+        // Arithmatic progression variables
+      if (mins !== 0) {
+        const x = (mins - a0) / distance; // Arithmatic progression formula
+        console.log(x)
+        if(x > 50){
+          console.log("smaller then 50")
+          document.querySelectorAll('.inner, .inner-end').forEach(el => el.classList.add('hiddenTimes'));
+        }
+        else if(x < 50 && document.querySelectorAll('.hiddenTimes')){
+          console.log("bigger then 50")
+          document.querySelectorAll('.inner, .inner-end').forEach(el => el.classList.remove('hiddenTimes'));
+        }
+      } else {
+        if(!document.querySelectorAll('.hiddenTimes')){
+          console.log("100")
+          document.querySelectorAll('.inner, .inner-end').forEach(el => el.classList.add('hiddenTimes'));
+        }
+      }
+      
+    } */
 
     /**
    * Move the timeline a given percentage to left or right
@@ -319,38 +349,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const toggleRollingMode = () =>  {
       timeline.toggleRollingMode();
     }
-
-/*     const onRangeChanged = ({ start, end }) => {
-      console.log(start, end)
-      const Min = 1000 * 60 * 60 * 24; // one day in milliseconds
-      const Max = 31556952000; // 1000 * 60 * 60 * 24 * 365.25 one year in milliseconds
-      let a0 = 10;
-      let a100 = moment.duration(moment(Max).diff(moment(Min))).asMilliseconds();
-      let  distance = (a100 - a0)/ 100;
-      let startTime = moment(start);
-      let endTime = moment(end);
-      const duration = moment.duration(endTime.diff(startTime));
-      const mins = duration.asMilliseconds();
-        // Arithmatic progression variables
-      if (mins !== 0) {
-        const x = (mins - a0) / distance; // Arithmatic progression formula
-        console.log(x)
-        if(x > 50){
-          console.log("smaller then 50")
-          document.querySelectorAll('.inner, .inner-end').forEach(el => el.classList.add('hiddenTimes'));
-        }
-        else if(x < 50 && document.querySelectorAll('.hiddenTimes')){
-          console.log("bigger then 50")
-          document.querySelectorAll('.inner, .inner-end').forEach(el => el.classList.remove('hiddenTimes'));
-        }
-      } else {
-        if(!document.querySelectorAll('.hiddenTimes')){
-          console.log("100")
-          document.querySelectorAll('.inner, .inner-end').forEach(el => el.classList.add('hiddenTimes'));
-        }
-      }
-      
-    } */
 
     useEffect(() => {
 
