@@ -1,8 +1,9 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Modal } from 'semantic-ui-react';
 import { Button,IconInfoCircle } from 'hds-react';
 
-function ConfirmCancelModal({ headerText, contentText, button1Text, button2Text, onContinue, onCancel }) {
+function ConfirmModal({ headerText, contentText, button1Text, button2Text, onContinue, onCancel }) {
   return (
     <Modal open={true} className="timetable-confirm-modal">
       <Modal.Header><IconInfoCircle className='header-icon' size="s" aria-hidden="true"/>{headerText}</Modal.Header>
@@ -17,4 +18,13 @@ function ConfirmCancelModal({ headerText, contentText, button1Text, button2Text,
   );
 }
 
-export default ConfirmCancelModal;
+ConfirmModal.propTypes = {
+  headerText: PropTypes.string,
+  contentText: PropTypes.string,
+  button1Text: PropTypes.string,
+  button2Text: PropTypes.string,
+  onContinue: PropTypes.func,
+  onCancel: PropTypes.func
+};
+
+export default ConfirmModal;
