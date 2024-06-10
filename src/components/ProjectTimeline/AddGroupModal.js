@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { IconPlus,Button } from 'hds-react'
 import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 
 const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAddDialog, allowedToEdit, isAdmin}) => {
   const {t} = useTranslation()
@@ -30,5 +31,14 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
     </div>
   );
 }
+
+AddGroupModal.propTypes = {
+  toggleOpenAddDialog: PropTypes.func,
+  addDialogStyle: PropTypes.object,
+  addDialogData: PropTypes.object,
+  closeAddDialog: PropTypes.func,
+  allowedToEdit: PropTypes.bool,
+  isAdmin: PropTypes.bool
+};
 
 export default AddGroupModal;
