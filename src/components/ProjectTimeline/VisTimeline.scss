@@ -8,10 +8,14 @@
         width: 300px;
     }
     .vis-drag-left{
-        pointer-events: auto;
+        //Disabled for now because we don't want to allow dragging the timeline at this point
+        //pointer-events: auto;
+        pointer-events:none;
     }
     .vis-drag-right{
-        pointer-events: auto;
+        //Disabled for now because we don't want to allow dragging the timeline at this point
+        //pointer-events: auto;
+        pointer-events:none;
     }
     .vis-time-axis.vis-foreground{
         background-color: $light-gray3;
