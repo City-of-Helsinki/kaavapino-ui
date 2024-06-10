@@ -5,6 +5,7 @@ import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import FormField from '../input/FormField'
 import { isArray } from 'lodash'
 import { showField } from '../../utils/projectVisibilityUtils'
+import PropTypes from 'prop-types'
 import './VisTimeline.css'
 
 const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit }) => {
@@ -150,5 +151,20 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       </Modal>
     )
   }
+
+  TimelineModal.propTypes = {
+    open: PropTypes.bool,
+    group: PropTypes.object,
+    content: PropTypes.string,
+    deadlinegroup: PropTypes.object,
+    deadlines: PropTypes.array,
+    openDialog: PropTypes.func,
+    visValues: PropTypes.object,
+    deadlineSections: PropTypes.array,
+    formSubmitErrors: PropTypes.object,
+    projectPhaseIndex: PropTypes.number,
+    archived: PropTypes.bool,
+    allowedToEdit: PropTypes.bool
+  };
   
   export default TimelineModal

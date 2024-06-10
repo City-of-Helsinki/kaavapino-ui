@@ -182,6 +182,15 @@ const DeadLineInput = ({
 
 DeadLineInput.propTypes = {
   input: PropTypes.object.isRequired,
+  error: PropTypes.string,
+  attributeData: PropTypes.object,
+  currentDeadline: PropTypes.object,
+  editable: PropTypes.bool,
+  type: PropTypes.string,
+  disabled: PropTypes.bool,
+  placeholder: PropTypes.string,
+  className: PropTypes.string,
+  autofillRule: PropTypes.string,
   timeTableDisabled: PropTypes.bool
 }
 
