@@ -297,13 +297,13 @@ class ProjectEditPage extends Component {
       })
 
       let phaseText
-      if(this.props.currentProject?.phase === phase?.id){
+      if(this.props.currentProject?.phase === phase?.id && !this.props.currentProject?.archived){
         phaseText = "Vaihe käynnissä"
       }
       else if(this.props.currentProject?.phase < phase?.id){
         phaseText = "Vaihe aloittamatta"
       }
-      else if(this.props.currentProject?.phase > phase?.id){
+      else if(this.props.currentProject?.phase > phase?.id || this.props.currentProject?.archived){
         phaseText = "Vaihe suoritettu"
       }
       else{
@@ -562,7 +562,7 @@ class ProjectEditPage extends Component {
 
     let color
     let phaseText
-    if(phase === currentSchema?.id){
+    if(phase === currentSchema?.id && !this.props.currentProject?.archived){
       color = "#FFC61E"
       phaseText = "Vaihe käynnissä"
     }
@@ -570,7 +570,7 @@ class ProjectEditPage extends Component {
       color = "#0072C6"
       phaseText = "Vaihe aloittamatta"
     }
-    else if(phase > currentSchema?.id){
+    else if(phase > currentSchema?.id || this.props.currentProject?.archived){
       color = "#008741"
       phaseText = "Vaihe suoritettu"
     }
