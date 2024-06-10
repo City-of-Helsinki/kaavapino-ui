@@ -366,7 +366,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         selectable: false,
         multiselect: false,
         sequentialSelection:  false,
-        moveable:true,
+        moveable:true, // Dragging is disabled from VisTimeline.scss allow in v1.2
         zoomable:false,
         horizontalScroll:true,
         groupHeightMode:"fixed",
@@ -385,7 +385,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           remove: false,       // delete an item by tapping the delete button top right
           overrideItems: false  // allow these options to override item.editable
         },
-        itemsAlwaysDraggable: {
+        itemsAlwaysDraggable: { // Dragging is disabled from VisTimeline.scss allow in v1.2
             item:true,
             range:true
         },
