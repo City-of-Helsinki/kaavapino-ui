@@ -8,6 +8,7 @@ import 'vis-timeline/dist/vis-timeline-graph2d.min.css'
 import TimelineModal from './TimelineModal'
 import VisTimelineMenu from './VisTimelineMenu'
 import AddGroupModal from './AddGroupModal';
+import PropTypes from 'prop-types';
 import './VisTimeline.css'
 Moment().locale('fi');
 
@@ -671,4 +672,16 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     )
 });
 VisTimelineGroup.displayName = 'VisTimelineGroup';
+VisTimelineGroup.propTypes = {
+  groups: PropTypes.array,
+  items: PropTypes.array,
+  deadlines: PropTypes.array,
+  visValues: PropTypes.object,
+  deadlineSections: PropTypes.array,
+  formSubmitErrors: PropTypes.object,
+  projectPhaseIndex: PropTypes.number,
+  archived: PropTypes.bool,
+  allowedToEdit: PropTypes.bool,
+  isAdmin: PropTypes.bool
+};
 export default VisTimelineGroup

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import {Button,IconAngleLeft,IconAngleRight} from 'hds-react'
+import PropTypes from 'prop-types';
 
 function VisTimelineMenu({goToToday, moveLeft, moveRight,showYers,showMonths}) {
   const [selectedButton, setSelectedButton] = useState(null);
@@ -37,5 +38,13 @@ function VisTimelineMenu({goToToday, moveLeft, moveRight,showYers,showMonths}) {
     </div>
   )
 }
+
+VisTimelineMenu.propTypes = {
+  goToToday: PropTypes.func,
+  moveLeft: PropTypes.func,
+  moveRight: PropTypes.func,
+  showYers: PropTypes.func,
+  showMonths: PropTypes.func
+};
 
 export default VisTimelineMenu

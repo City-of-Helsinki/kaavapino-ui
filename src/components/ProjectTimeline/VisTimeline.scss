@@ -8,13 +8,11 @@
         width: 300px;
     }
     .vis-drag-left{
-        //Disabled for now because we don't want to allow dragging the timeline at this point
-        //pointer-events: auto;
+        /*TODO: v1.2 Disabled for now because we don't want to allow dragging the timeline at this point set to auto*/
         pointer-events:none;
     }
     .vis-drag-right{
-        //Disabled for now because we don't want to allow dragging the timeline at this point
-        //pointer-events: auto;
+        /*TODO: v1.2 Disabled for now because we don't want to allow dragging the timeline at this point set to auto*/
         pointer-events:none;
     }
     .vis-time-axis.vis-foreground{

@@ -14,7 +14,7 @@ import { Button,IconInfoCircle } from 'hds-react'
 import { isEqual } from 'lodash'
 import VisTimelineGroup from '../../ProjectTimeline/VisTimelineGroup'
 import * as visdata from 'vis-data'
-import ConfirmCancelModal from '../../common/ConfirmModal';
+import ConfirmModal from '../../common/ConfirmModal';
 
 class EditProjectTimeTableModal extends Component {
   constructor(props) {
@@ -579,7 +579,7 @@ class EditProjectTimeTableModal extends Component {
               toggleTimelineModal={this.state.toggleTimelineModal}
             />
             {this.state.showModal && 
-            <ConfirmCancelModal 
+            <ConfirmModal 
               headerText={"Haluatko peruuttaa tekemäsi muutokset?"} 
               contentText={"Olet muuttanut aikataulun tietoja. Mikäli jatkat, tekemäsi muutokset peruutetaan. Haluatko jatkaa?"} 
               button1Text={"Jatka"} 
@@ -629,6 +629,10 @@ EditProjectTimeTableModal.propTypes = {
   allowedToEdit: PropTypes.bool,
   attributeData: PropTypes.object,
   isAdmin: PropTypes.bool,
+  formSubmitErrors: PropTypes.object,
+  deadlineSections: PropTypes.array,
+  formValues: PropTypes.object,
+  deadlines: PropTypes.array
 }
 
 const mapStateToProps = state => ({
