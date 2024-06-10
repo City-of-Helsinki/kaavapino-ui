@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import PropTypes from 'prop-types';
 import { getFormValues } from 'redux-form'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
@@ -107,5 +108,24 @@ const CustomCheckbox = ({
     )
   }
 }
+
+CustomCheckbox.propTypes = {
+  input: PropTypes.shape({
+    name: PropTypes.string,
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.bool]),
+    onChange: PropTypes.func,
+  }),
+  meta: PropTypes.shape({
+    error: PropTypes.string,
+  }),
+  autofillRule: PropTypes.string,
+  label: PropTypes.string,
+  className: PropTypes.string,
+  disabled: PropTypes.bool,
+  updated: PropTypes.bool,
+  formName: PropTypes.string,
+  display: PropTypes.string,
+  isProjectTimetableEdit: PropTypes.bool
+};
 
 export default CustomCheckbox
