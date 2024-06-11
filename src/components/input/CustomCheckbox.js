@@ -82,11 +82,9 @@ const CustomCheckbox = ({
           </div>
         </> 
         : 
-        <>
-          <Button className='deadlines-confirm-button' size='small' onClick={onChangeSave}>
-            {t('deadlines.confirm-dates')}
-          </Button>
-        </>
+        <Button className='deadlines-confirm-button' size='small' onClick={onChangeSave}>
+          {t('deadlines.confirm-dates')}
+        </Button>
         }
       </>
     )

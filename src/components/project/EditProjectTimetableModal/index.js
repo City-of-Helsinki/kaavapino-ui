@@ -111,173 +111,230 @@ class EditProjectTimeTableModal extends Component {
     return true
   }
 
+  addDeadLineGroups = (deadlineSections,deadLineGroups) => {
+    for (let i = 0; i < deadlineSections.length; i++) {
+      for (let x = 0; x < deadlineSections[i].sections.length; x++) {
+        if (!deadLineGroups.some(item => item.content === deadlineSections[i].title)) {
+          deadLineGroups.push({
+            id: deadlineSections[i].id,
+            content: deadlineSections[i].title,
+            showNested: true,
+            nestedGroups: []
+          })
+        }
+      }
+    }
+    return deadLineGroups
+  }
+
+  getDeadlineValues(deadlines, i, formValues) {
+    if(deadlines[i].deadline.deadline_types.includes('phase_start')){
+      return [
+        'phase_start', 
+        formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date, 
+        deadlines[i].deadline.phase_color,
+        false, "", false, false, false, false
+      ];
+    }
+    else if(deadlines[i].deadline.deadline_types.includes('dashed_start')){
+      return [
+        'dashed_start', 
+        false, "", 
+        formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date, 
+        "inner", false, false, false, false
+      ];
+    }
+    else if(deadlines[i].deadline.deadline_types.includes('dashed_end') && deadlines[i].deadline.deadline_types.includes('inner_start')){
+      return [
+        'esillaolo', 
+        false, "", false, "", 
+        formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date, 
+        formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date, 
+        false, false
+      ];
+    }
+    else if(deadlines[i].deadline.deadline_types.includes('dashed_end') && deadlines[i].deadline.deadline_types.includes('milestone')){
+      return [
+        'lautakunta', 
+        false, "", false, "", 
+        formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date, 
+        false, false, false
+      ];
+    }
+    else if(deadlines[i].deadline.deadline_types.includes('inner_end') && deadlines[i].deadline.date_type !== "Arkipäivät"){
+      return [
+        'inner_end', 
+        false, "", false, "", false, false, 
+        formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date, 
+        false
+      ];
+    }
+    else if(deadlines[i].deadline.deadline_types.includes('phase_end') && deadlines[i].deadline.date_type !== "Arkipäivät"){
+      return [
+        'phase_end', 
+        false, "", false, "", false, false, false, 
+        formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date
+      ];
+    }
+  
+    return ["", false, "", false, "", false, false, false, false];
+  }
+
+  addMainGroup = (deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines) => {
+    phaseData.push({
+      id: numberOfPhases,
+      content: '',
+      start: startDate,
+      end: endDate,
+      className: style,
+      phaseID: deadlines[i].deadline.phase_id,
+      phase: true,
+      group: deadlines[i].deadline.phase_id,
+    });
+  
+    if (deadlines[i].deadline.phase_name === "Käynnistys" || deadlines[i].deadline.phase_name === "Hyväksyminen" || deadlines[i].deadline.phase_name === "Voimaantulo") {
+      phaseData.push({
+        id: numberOfPhases + deadlines[i].deadline.phase_name,
+        content: "",
+        start: startDate,
+        end: endDate,
+        className: "inner-end",
+        title: deadlines[i].deadline.attribute,
+        phaseID: deadlines[i].deadline.phase_id,
+        phase: false,
+        group: numberOfPhases,
+        locked: false
+      });
+  
+      let dlIndex = deadLineGroups.findIndex(group => group.content === deadlines[i].deadline.phase_name);
+      deadLineGroups.at(dlIndex).nestedGroups.push(numberOfPhases);
+  
+      nestedDeadlines.push({
+        id: numberOfPhases,
+        content: "Vaiheen kesto",
+        abbreviation: deadlines[i].abbreviation,
+        deadlinegroup: deadlines[i].deadline.deadlinegroup,
+        deadlinesubgroup: deadlines[i].deadline.deadlinesubgroup,
+        locked: false
+      });
+    }
+  
+    return [phaseData, deadLineGroups, nestedDeadlines];
+  }
+
+  addSubgroup = (deadlines, i, numberOfPhases, dashStart, dashEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines) => {
+    phaseData.push({
+      id: numberOfPhases,
+      content: "",
+      start: dashStart,
+      end: dashEnd,
+      className: dashedStyle,
+      title: deadlines[i].deadline.attribute,
+      phaseID: deadlines[i].deadline.phase_id,
+      phase: false,
+      group: numberOfPhases,
+      locked: false
+    });
+  
+    let dlIndex = deadLineGroups.findIndex(group => group.content === deadlines[i].deadline.phase_name);
+    deadLineGroups.at(dlIndex).nestedGroups.push(numberOfPhases);
+  
+    nestedDeadlines.push({
+      id: numberOfPhases,
+      content: deadlines[i].deadline.deadlinegroup?.includes("lautakunta") ? "Lautakunta" : "Esilläolo",
+      abbreviation: deadlines[i].abbreviation,
+      deadlinegroup: deadlines[i].deadline.deadlinegroup,
+      deadlinesubgroup: deadlines[i].deadline.deadlinesubgroup,
+      locked: false
+    });
+  
+    return [phaseData, deadLineGroups, nestedDeadlines];
+  }
+
+  generateVisItems = (deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData) => {
+
+    let numberOfPhases = 1
+    let type = ""
+
+    let startDate = false
+    let endDate = false
+    let style = ""
+
+    let dashStart = false
+    let dashEnd = false
+    let dashedStyle = ""
+
+    let innerStart = false
+    let innerEnd = false
+    let innerStyle = ""
+
+    for (let i = 0; i < deadlines.length; i++) {
+
+      if(deadlines[i].deadline.deadline_types.includes('phase_start')){
+        //If formValues has deadlines[i].deadline.attribute use that values, it if not then use deadline[i].date in startDate.
+        startDate = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+        style = deadlines[i].deadline.phase_color
+        //.setHours(23,59,59,0)
+      }
+      else if(deadlines[i].deadline.deadline_types.includes('dashed_start')){
+        dashStart = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+        dashedStyle = "inner"
+      }
+      else if(deadlines[i].deadline.deadline_types.includes('dashed_end') && deadlines[i].deadline.deadline_types.includes('inner_start')){
+        //Esilläolo
+        type="esillaolo"
+        dashEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+        innerStart = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+      }
+      else if(deadlines[i].deadline.deadline_types.includes('dashed_end') && deadlines[i].deadline.deadline_types.includes('milestone')){
+        //Lautakunta
+        type="lautakunta"
+        dashEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+      }
+      else if(deadlines[i].deadline.deadline_types.includes('inner_end') && deadlines[i].deadline.date_type !== "Arkipäivät"){
+        innerEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+        innerStyle = "inner-end"
+      }
+      else if(deadlines[i].deadline.deadline_types.includes('phase_end') && deadlines[i].deadline.date_type !== "Arkipäivät"){
+        endDate = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+        //new Date .setHours(0,0,0,0)
+      }
+
+      if(startDate && endDate){
+        //Main group items not movable(Käynnistys, Periaatteet, OAS etc)
+        let mainGroup = this.addMainGroup(deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines);
+        [phaseData, deadLineGroups, nestedDeadlines] = mainGroup;
+        startDate = false
+        endDate = false
+        numberOfPhases++
+      }
+      else if(dashStart && dashEnd && type === "lautakunta"){
+        //Lautakunta item that will be movable from timeline
+        let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, dashStart, dashEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines);
+        [phaseData, deadLineGroups, nestedDeadlines] = subgroup;
+        dashEnd = false
+        numberOfPhases++
+      }
+      else if(innerStart && innerEnd && type === "esillaolo"){
+        //Esilläolo item that will be movable from timeline
+        let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, dashStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines);
+        [phaseData, deadLineGroups, nestedDeadlines] = subgroup2;
+        innerEnd = false
+        numberOfPhases++
+      }
+    }
+    return [deadLineGroups,nestedDeadlines,phaseData]
+  }
+
   getTimelineData = (deadlineSections,formValues,deadlines) => {
-      const phaseData = []
+      let phaseData = []
       let deadLineGroups = []
-      let dlIndex = 0
       let nestedDeadlines = []
-      let numberOfPhases = 1
-      let type = ""
 
-      let startDate = false
-      let endDate = false
-      let style = ""
-
-      let dashStart = false
-      let dashEnd = false
-      let dashedStyle = ""
-
-      let innerStart = false
-      let innerEnd = false
-      let innerStyle = "" 
-
-      for (let i = 0; i < deadlineSections.length; i++) {
-          for (let x = 0; x < deadlineSections[i].sections.length; x++) {
-            if (!deadLineGroups.some(item => item.content === deadlineSections[i].title)) {
-              deadLineGroups.push({
-                id: deadlineSections[i].id,
-                content: deadlineSections[i].title,
-                showNested: true,
-                nestedGroups: []
-              })
-            }
-          }
-      }
-
-      for (let i = 0; i < deadlines.length; i++) {
-
-        if(deadlines[i].deadline.deadline_types.includes('phase_start')){
-          //If formValues has deadlines[i].deadline.attribute use that values, it if not then use deadline[i].date in startDate.
-          startDate = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
-          style = deadlines[i].deadline.phase_color
-          //.setHours(23,59,59,0)
-        }
-        else if(deadlines[i].deadline.deadline_types.includes('dashed_start')){
-          dashStart = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
-          dashedStyle = "inner"
-        }
-        else if(deadlines[i].deadline.deadline_types.includes('dashed_end') && deadlines[i].deadline.deadline_types.includes('inner_start')){
-          //Esilläolo
-          type="esillaolo"
-          dashEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
-          innerStart = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
-        }
-        else if(deadlines[i].deadline.deadline_types.includes('dashed_end') && deadlines[i].deadline.deadline_types.includes('milestone')){
-          //Lautakunta
-          type="lautakunta"
-          dashEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
-        }
-        else if(deadlines[i].deadline.deadline_types.includes('inner_end') && deadlines[i].deadline.date_type !== "Arkipäivät"){
-          innerEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
-          innerStyle = "inner-end"
-        }
-        else if(deadlines[i].deadline.deadline_types.includes('phase_end') && deadlines[i].deadline.date_type !== "Arkipäivät"){
-          endDate = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
-          //new Date .setHours(0,0,0,0)
-        }
-
-        if(startDate && endDate){
-          //Main group items not movable(Käynnistys, Periaatteet, OAS etc)
-          phaseData.push({
-            id: numberOfPhases,
-            content: '',
-            start:startDate,
-            end:endDate,
-            className:style,
-            phaseID:deadlines[i].deadline.phase_id,
-            phase:true,
-            group:deadlines[i].deadline.phase_id,
-          })
-
-          if(deadlines[i].deadline.phase_name === "Käynnistys" || deadlines[i].deadline.phase_name === "Hyväksyminen" || deadlines[i].deadline.phase_name === "Voimaantulo"){
-            //Groups that have one item, no add or remove
-            phaseData.push({
-              id: numberOfPhases + deadlines[i].deadline.phase_name,
-              content: "",
-              start:startDate,
-              end:endDate,
-              className:"inner-end",
-              title: deadlines[i].deadline.attribute,
-              phaseID:deadlines[i].deadline.phase_id,
-              phase:false,
-              group:numberOfPhases,
-              locked:false
-            })
-            dlIndex = deadLineGroups.findIndex(group => group.content === deadlines[i].deadline.phase_name);
-            deadLineGroups.at(dlIndex).nestedGroups.push(numberOfPhases)
-            //Sub groups
-            nestedDeadlines.push({
-              id: numberOfPhases,
-              content: "Vaiheen kesto",
-              abbreviation:deadlines[i].abbreviation,
-              deadlinegroup: deadlines[i].deadline.deadlinegroup,
-              deadlinesubgroup: deadlines[i].deadline.deadlinesubgroup,
-              locked:false
-            });
-          }
-
-          startDate = false
-          endDate = false
-          numberOfPhases++
-        }
-        else if(dashStart && dashEnd && type === "lautakunta"){
-          //Lautakunta item that will be movable from timeline
-          phaseData.push({
-            id: numberOfPhases,
-            content: "",
-            start:dashStart,
-            end:dashEnd,
-            className:dashedStyle,
-            title: deadlines[i].deadline.attribute,
-            phaseID:deadlines[i].deadline.phase_id,
-            phase:false,
-            group:numberOfPhases,
-            locked:false
-          })
-          dashEnd = false
-          dlIndex = deadLineGroups.findIndex(group => group.content === deadlines[i].deadline.phase_name);
-          deadLineGroups.at(dlIndex).nestedGroups.push(numberOfPhases)
-          //Sub groups
-          nestedDeadlines.push({
-            id: numberOfPhases,
-            content: deadlines[i].deadline.deadlinegroup?.includes("lautakunta") ? "Lautakunta" : "Esilläolo",
-            abbreviation:deadlines[i].abbreviation,
-            deadlinegroup: deadlines[i].deadline.deadlinegroup,
-            deadlinesubgroup: deadlines[i].deadline.deadlinesubgroup,
-            locked:false
-          });
-          numberOfPhases++
-        }
-        else if(innerStart && innerEnd && type === "esillaolo"){
-          //Esilläolo item that will be movable from timeline
-          phaseData.push({
-            id: numberOfPhases,
-            content: "",
-            start:dashStart,
-            end:innerEnd,
-            className:innerStyle,
-            title: deadlines[i].deadline.attribute,
-            phaseID:deadlines[i].deadline.phase_id,
-            phase:false,
-            group:numberOfPhases,
-            locked:false
-          })
-          innerEnd = false
-          dlIndex = deadLineGroups.findIndex(group => group.content === deadlines[i].deadline.phase_name);
-          deadLineGroups.at(dlIndex).nestedGroups.push(numberOfPhases)
-          //Sub groups
-          nestedDeadlines.push({
-            id: numberOfPhases,
-            content: deadlines[i].deadline.deadlinegroup?.includes("lautakunta") ? "Lautakunta" : "Esilläolo",
-            abbreviation:deadlines[i].abbreviation,
-            deadlinegroup: deadlines[i].deadline.deadlinegroup,
-            deadlinesubgroup: deadlines[i].deadline.deadlinesubgroup,
-            locked:false
-          });
-          numberOfPhases++
-        }
-      }
-
+      deadLineGroups = this.addDeadLineGroups(deadlineSections,deadLineGroups)
+      const results = this.generateVisItems(deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData);
+      [deadLineGroups, nestedDeadlines, phaseData] = results;
+      
       return [deadLineGroups,nestedDeadlines,phaseData]
   }
 
@@ -632,7 +689,11 @@ EditProjectTimeTableModal.propTypes = {
   formSubmitErrors: PropTypes.object,
   deadlineSections: PropTypes.array,
   formValues: PropTypes.object,
-  deadlines: PropTypes.array
+  deadlines: PropTypes.array,
+  initialize: PropTypes.func.isRequired,
+  submitFailed: PropTypes.bool.isRequired,
+  dispatch: PropTypes.func.isRequired,
+  t: PropTypes.func.isRequired
 }
 
 const mapStateToProps = state => ({
