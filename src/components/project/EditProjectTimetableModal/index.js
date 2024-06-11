@@ -127,56 +127,40 @@ class EditProjectTimeTableModal extends Component {
     return deadLineGroups
   }
 
-  getDeadlineValues(deadlines, i, formValues) {
-    if(deadlines[i].deadline.deadline_types.includes('phase_start')){
-      return [
-        'phase_start', 
-        formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date, 
-        deadlines[i].deadline.phase_color,
-        false, "", false, false, false, false
-      ];
+  getValueOrDefault = (deadline, formValues) => {
+    return formValues && formValues[deadline.attribute] ? formValues[deadline.attribute] : deadline.date;
+  }
+
+  etDeadlineValues = (deadlines, i, formValues) => {
+    const deadline = deadlines[i].deadline;
+    const deadlineTypes = deadline.deadline_types;
+    const defaultValue = this.getValueOrDefault(deadline, formValues);
+
+    if (deadlineTypes.includes('phase_start')) {
+      return ['phase_start', defaultValue, deadline.phase_color, false, "", false, false, false, false];
     }
-    else if(deadlines[i].deadline.deadline_types.includes('dashed_start')){
-      return [
-        'dashed_start', 
-        false, "", 
-        formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date, 
-        "inner", false, false, false, false
-      ];
+
+    if (deadlineTypes.includes('dashed_start')) {
+      return ['dashed_start', false, "", defaultValue, "inner", false, false, false, false];
     }
-    else if(deadlines[i].deadline.deadline_types.includes('dashed_end') && deadlines[i].deadline.deadline_types.includes('inner_start')){
-      return [
-        'esillaolo', 
-        false, "", false, "", 
-        formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date, 
-        formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date, 
-        false, false
-      ];
+
+    if (deadlineTypes.includes('dashed_end')) {
+      if (deadlineTypes.includes('inner_start')) {
+        return ['esillaolo', false, "", false, "", defaultValue, defaultValue, false, false];
+      }
+      if (deadlineTypes.includes('milestone')) {
+        return ['lautakunta', false, "", false, "", defaultValue, false, false, false];
+      }
     }
-    else if(deadlines[i].deadline.deadline_types.includes('dashed_end') && deadlines[i].deadline.deadline_types.includes('milestone')){
-      return [
-        'lautakunta', 
-        false, "", false, "", 
-        formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date, 
-        false, false, false
-      ];
+
+    if (deadlineTypes.includes('inner_end') && deadline.date_type !== "Arkipäivät") {
+      return ['inner_end', false, "", false, "", false, false, defaultValue, false];
     }
-    else if(deadlines[i].deadline.deadline_types.includes('inner_end') && deadlines[i].deadline.date_type !== "Arkipäivät"){
-      return [
-        'inner_end', 
-        false, "", false, "", false, false, 
-        formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date, 
-        false
-      ];
+
+    if (deadlineTypes.includes('phase_end') && deadline.date_type !== "Arkipäivät") {
+      return ['phase_end', false, "", false, "", false, false, false, defaultValue];
     }
-    else if(deadlines[i].deadline.deadline_types.includes('phase_end') && deadlines[i].deadline.date_type !== "Arkipäivät"){
-      return [
-        'phase_end', 
-        false, "", false, "", false, false, false, 
-        formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date
-      ];
-    }
-  
+
     return ["", false, "", false, "", false, false, false, false];
   }
 
