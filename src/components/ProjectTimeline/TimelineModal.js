@@ -129,8 +129,8 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       <Modal open={open} size={'large'} className='timeline-edit-right'>
         <Modal.Header>
           <ul className="breadcrumb">
-            <li><a href="javascript:void(0)">{title}</a></li>
-            <li><a href="javascript:void(0)">{content}</a></li>
+            <li><a href="#" role="button">{title}</a></li>
+            <li><a href="#" role="button">{content}</a></li>
             <Button size='small' variant="supplementary" onClick={openDialog}><IconCross /></Button>
           </ul>
         </Modal.Header>
