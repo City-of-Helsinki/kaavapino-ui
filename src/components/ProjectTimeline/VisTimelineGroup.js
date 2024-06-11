@@ -37,83 +37,67 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       console.log('onChange:', id)
     }
 
-    const timelineGroupClick = (properties,groups) => {
-      if (properties.group) {
-        // Access the actual DOM event to inspect the clicked element
-        let clickedElement = properties.event.target;
-
-        if(clickedElement.classList.contains('timeline-add-button')){
-          properties.event.preventDefault();
-          properties.event.stopPropagation();
-          // Ensure the group remains expanded if add button is clicked
-          // add button has own listener that triggers openAddDialog
-          let groupId = properties.group;
-          if (groupId) {
-            let group = groups.get(groupId);
-            if (group) {
-              group.showNested = true;
-              groups.update(group);
-            }
-          }
-          return;
+    const preventDefaultAndStopPropagation = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    const updateGroupShowNested = (groups, groupId, showNested) => {
+      if (groupId) {
+        let group = groups.get(groupId);
+        if (group) {
+          group.showNested = showNested;
+          groups.update(group);
         }
-        else{
-          properties.event.preventDefault();
-          properties.event.stopPropagation();
-
+      }
+    }
+    
+    const timelineGroupClick = (properties, groups) => {
+      if (properties.group) {
+        let clickedElement = properties.event.target;
+    
+        preventDefaultAndStopPropagation(properties.event);
+    
+        if(clickedElement.classList.contains('timeline-add-button')){
+          updateGroupShowNested(groups, properties.group, true);
+        } else {
           let groupId = properties.group;
           if (groupId) {
             let group = groups.get(groupId);
             if (group) {
-              group.showNested = !group.showNested;
-              groups.update(group);
+              updateGroupShowNested(groups, properties.group, !group.showNested);
             }
           }
-          return;
         }
       }
     }
 
-    const canGroupBeAdded = (visValRef,data,deadlineSections) => {
-      //Find out how many groups in clicked phase has been added to timeline
+    const canGroupBeAdded = (visValRef, data, deadlineSections) => {
+      // Find out how many groups in the clicked phase have been added to the timeline
       const matchingGroups = groups.get().filter(group => data.nestedGroups.includes(group.id));
-      const esillaoloCount = matchingGroups.filter(group => group.content === 'Esilläolo').length > 1 ? '_'+matchingGroups.filter(group => group.content === 'Esilläolo').length : '';
-      const lautakuntaCount = matchingGroups.filter(group => group.content === 'Lautakunta').length > 1 ? '_'+matchingGroups.filter(group => group.content === 'Lautakunta').length : '';
+      const esillaoloCount = matchingGroups.filter(group => group.content === 'Esilläolo').length > 1 ? '_' + matchingGroups.filter(group => group.content === 'Esilläolo').length : '';
+      const lautakuntaCount = matchingGroups.filter(group => group.content === 'Lautakunta').length > 1 ? '_' + matchingGroups.filter(group => group.content === 'Lautakunta').length : '';
       const phase = data.content.toLowerCase();
-      let esillaoloConfirmed = false
-      let lautakuntaConfirmed = false
-      //Returned values
-      let canAddEsillaolo = false
-      let canAddLautakunta = false
-      let nextEsillaoloClean = false
-      let nextLautakuntaClean = false
-      //Check if existing groups have been confirmed
-      //Only when existing esilläolo or lautakunta is confirmed, new group of that type can be added 
-
-      //vahvista_periaatteet_esillaolo_alkaa
-      if (Object.prototype.hasOwnProperty.call(visValRef, 'vahvista_'+phase+'_esillaolo_alkaa'+esillaoloCount) && visValRef['vahvista_'+phase+'_esillaolo_alkaa'+esillaoloCount] === true) {
-        //can add
-        esillaoloConfirmed = true
-      } else {
-        //cannot add
-        esillaoloConfirmed = false
-      }
-      
-      if (Object.prototype.hasOwnProperty.call(visValRef, 'vahvista_'+phase+'_lautakunnassa'+lautakuntaCount) && visValRef['vahvista_'+phase+'_lautakunnassa'+lautakuntaCount] === true) {
-        lautakuntaConfirmed = true
-      } else {
-        lautakuntaConfirmed = false
-      }
-
-      //Get keys for comparising from attribute_data and deadlineSections and check if more groups can be added to timeline
+    
+      // Check if existing groups have been confirmed
+      const esillaoloConfirmed = Object.prototype.hasOwnProperty.call(visValRef, `vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`) && visValRef[`vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`] === true;
+      const lautakuntaConfirmed = Object.prototype.hasOwnProperty.call(visValRef, `vahvista_${phase}_lautakunnassa${lautakuntaCount}`) && visValRef[`vahvista_${phase}_lautakunnassa${lautakuntaCount}`] === true;
+    
+      // Initialize returned values
+      let canAddEsillaolo = false;
+      let nextEsillaoloClean = false;
+      let canAddLautakunta = false;
+      let nextLautakuntaClean = false;
+    
+      // Get attribute keys for comparison from deadlineSections
       const matchingKeys = Object.keys(deadlineSections).filter(key => data.content === deadlineSections[key].title);
-
       let attributeKeys = [];
       if (matchingKeys.length > 0 && deadlineSections[matchingKeys[0]].sections[0].attributes) {
         attributeKeys = Object.keys(deadlineSections[matchingKeys[0]].sections[0].attributes);
       }
-      
-      if(esillaoloConfirmed){
+    
+      // Check if more Esillaolo groups can be added
+      if (esillaoloConfirmed) {
         const deadlineEsillaolokertaKeys = attributeKeys.filter(key => key.includes('_esillaolokerta_'));
         const esillaoloRegex = new RegExp(`${phase}_esillaolo_\\d+$`);
         const attributeEsillaoloKeys = Object.keys(visValRef).filter(key => esillaoloRegex.test(key));
@@ -121,8 +105,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         const nextEsillaoloStr = canAddEsillaolo ? `jarjestetaan_${phase}_esillaolo_${attributeEsillaoloKeys.length + 1}$` : false;
         nextEsillaoloClean = nextEsillaoloStr ? nextEsillaoloStr.replace(/[/$]/g, '') : nextEsillaoloStr;
       }
-
-      if(lautakuntaConfirmed){
+    
+      // Check if more Lautakunta groups can be added
+      if (lautakuntaConfirmed) {
         const deadlineLautakuntakertaKeys = attributeKeys.filter(key => key.includes('_lautakuntakerta_'));
         const lautakuntaanRegex = new RegExp(`${phase}_lautakuntaan_\\d+$`);
         const attributeLautakuntaanKeys = Object.keys(visValRef).filter(key => lautakuntaanRegex.test(key));
@@ -130,10 +115,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         const nextLautakuntaStr = canAddLautakunta ? `${phase}_lautakuntaan_${attributeLautakuntaanKeys.length + 1}$` : false;
         nextLautakuntaClean = nextLautakuntaStr ? nextLautakuntaStr.replace(/[/$]/g, '') : nextLautakuntaStr;
       }
-
-      return [canAddEsillaolo,nextEsillaoloClean,canAddLautakunta,nextLautakuntaClean]
-    }
-
+    
+      return [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean];
+    };
 
     const openAddDialog = (visValRef,data,event) => {
       const [addEsillaolo,nextEsillaolo,addLautakunta,nextLautakunta] = canGroupBeAdded(visValRef,data,deadlineSections)
