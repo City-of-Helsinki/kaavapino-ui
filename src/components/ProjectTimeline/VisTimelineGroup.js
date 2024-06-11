@@ -72,6 +72,30 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
     }
 
+    const checkConfirmedGroups = (esillaoloConfirmed, lautakuntaConfirmed, attributeKeys, visValRef, phase, canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean) => {
+      // Check if more Esillaolo groups can be added
+      if (esillaoloConfirmed) {
+        const deadlineEsillaolokertaKeys = attributeKeys.filter(key => key.includes('_esillaolokerta_'));
+        const esillaoloRegex = new RegExp(`${phase}_esillaolo_\\d+$`);
+        const attributeEsillaoloKeys = Object.keys(visValRef).filter(key => esillaoloRegex.test(key));
+        canAddEsillaolo = attributeEsillaoloKeys.length < deadlineEsillaolokertaKeys.length;
+        const nextEsillaoloStr = canAddEsillaolo ? `jarjestetaan_${phase}_esillaolo_${attributeEsillaoloKeys.length + 1}$` : false;
+        nextEsillaoloClean = nextEsillaoloStr ? nextEsillaoloStr.replace(/[/$]/g, '') : nextEsillaoloStr;
+      }
+    
+      // Check if more Lautakunta groups can be added
+      if (lautakuntaConfirmed) {
+        const deadlineLautakuntakertaKeys = attributeKeys.filter(key => key.includes('_lautakuntakerta_'));
+        const lautakuntaanRegex = new RegExp(`${phase}_lautakuntaan_\\d+$`);
+        const attributeLautakuntaanKeys = Object.keys(visValRef).filter(key => lautakuntaanRegex.test(key));
+        canAddLautakunta = attributeLautakuntaanKeys.length < deadlineLautakuntakertaKeys.length;
+        const nextLautakuntaStr = canAddLautakunta ? `${phase}_lautakuntaan_${attributeLautakuntaanKeys.length + 1}$` : false;
+        nextLautakuntaClean = nextLautakuntaStr ? nextLautakuntaStr.replace(/[/$]/g, '') : nextLautakuntaStr;
+      }
+
+      return [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean];
+    }
+
     const canGroupBeAdded = (visValRef, data, deadlineSections) => {
       // Find out how many groups in the clicked phase have been added to the timeline
       const matchingGroups = groups.get().filter(group => data.nestedGroups.includes(group.id));
@@ -95,27 +119,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       if (matchingKeys.length > 0 && deadlineSections[matchingKeys[0]].sections[0].attributes) {
         attributeKeys = Object.keys(deadlineSections[matchingKeys[0]].sections[0].attributes);
       }
-    
-      // Check if more Esillaolo groups can be added
-      if (esillaoloConfirmed) {
-        const deadlineEsillaolokertaKeys = attributeKeys.filter(key => key.includes('_esillaolokerta_'));
-        const esillaoloRegex = new RegExp(`${phase}_esillaolo_\\d+$`);
-        const attributeEsillaoloKeys = Object.keys(visValRef).filter(key => esillaoloRegex.test(key));
-        canAddEsillaolo = attributeEsillaoloKeys.length < deadlineEsillaolokertaKeys.length;
-        const nextEsillaoloStr = canAddEsillaolo ? `jarjestetaan_${phase}_esillaolo_${attributeEsillaoloKeys.length + 1}$` : false;
-        nextEsillaoloClean = nextEsillaoloStr ? nextEsillaoloStr.replace(/[/$]/g, '') : nextEsillaoloStr;
-      }
-    
-      // Check if more Lautakunta groups can be added
-      if (lautakuntaConfirmed) {
-        const deadlineLautakuntakertaKeys = attributeKeys.filter(key => key.includes('_lautakuntakerta_'));
-        const lautakuntaanRegex = new RegExp(`${phase}_lautakuntaan_\\d+$`);
-        const attributeLautakuntaanKeys = Object.keys(visValRef).filter(key => lautakuntaanRegex.test(key));
-        canAddLautakunta = attributeLautakuntaanKeys.length < deadlineLautakuntakertaKeys.length;
-        const nextLautakuntaStr = canAddLautakunta ? `${phase}_lautakuntaan_${attributeLautakuntaanKeys.length + 1}$` : false;
-        nextLautakuntaClean = nextLautakuntaStr ? nextLautakuntaStr.replace(/[/$]/g, '') : nextLautakuntaStr;
-      }
-    
+      
+      const results = checkConfirmedGroups(esillaoloConfirmed, lautakuntaConfirmed, attributeKeys, visValRef, phase, canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean);
+      [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean] = results;
+      
       return [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean];
     };
 
