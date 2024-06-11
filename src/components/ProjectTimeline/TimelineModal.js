@@ -9,23 +9,24 @@ import PropTypes from 'prop-types'
 import './VisTimeline.css'
 
 const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit }) => {
-    const getErrorLabel = (fieldName) => {
-      let label
-      deadlineSections.forEach(deadline_section => {
-        const sections = deadline_section.sections
-        sections.forEach(section => {
-          const attributes = section.attributes
-          Object.values(attributes).map((v) => {
-            Object.values(v).map((values) => {
-              if (values.name === fieldName) {
-                label = values.label
-              }
-            })
-          })
-        })
-      })
-      return <span>{label}: </span>
-    }
+    
+  const getAttributeValues = (attributes) => {
+    return Object.values(attributes).flatMap((v) => Object.values(v));
+  };
+  
+  const findLabel = (fieldName, attributeValues) => {
+    const field = attributeValues.find((value) => value.name === fieldName);
+    return field ? field.label : null;
+  };
+  
+  const getErrorLabel = (fieldName) => {
+    const attributeValues = deadlineSections.flatMap((deadline_section) =>
+      deadline_section.sections.flatMap((section) => getAttributeValues(section.attributes))
+    );
+  
+    const label = findLabel(fieldName, attributeValues);
+    return <span>{label}: </span>;
+  };
 
     const renderSubmitErrors = () => {
       const keys = formSubmitErrors ? Object.keys(formSubmitErrors) : []
@@ -50,12 +51,9 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       if (!showField(fieldProps.field, visValues)) {
         return null
       }
-      const error =
-        formSubmitErrors &&
-        fieldProps &&
-        formSubmitErrors &&
-        formSubmitErrors[fieldProps.field.name]
-      let className = ''
+
+      const error = formSubmitErrors?.[fieldProps?.field?.name];
+      let className = '';
   
       if (error !== undefined) {
         className = 'modal-field error-border'
@@ -116,9 +114,9 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
                   return <Tabs.Tab key={key}>{key === "default" ? content : key}</Tabs.Tab>
                 })}
               </Tabs.TabList>
-                {Object.values(attr[deadlinegroup]).map((subsection,index) => {
-                  return  <Tabs.TabPanel key={index}>{getFormFields(subsection, sectionIndex, disabled)}</Tabs.TabPanel>
-                })}
+              {Object.values(attr[deadlinegroup]).map((subsection, index) => {
+                return  <Tabs.TabPanel key={`tabPanel-${index}-${subsection}`}>{getFormFields(subsection, sectionIndex, disabled)}</Tabs.TabPanel>
+              })}
             </Tabs>
           )
         }
@@ -131,8 +129,8 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       <Modal open={open} size={'large'} className='timeline-edit-right'>
         <Modal.Header>
           <ul className="breadcrumb">
-            <li><a href="#">{title}</a></li>
-            <li><a href="#">{content}</a></li>
+            <li><a href="javascript:void(0)">{title}</a></li>
+            <li><a href="javascript:void(0)">{content}</a></li>
             <Button size='small' variant="supplementary" onClick={openDialog}><IconCross /></Button>
           </ul>
         </Modal.Header>

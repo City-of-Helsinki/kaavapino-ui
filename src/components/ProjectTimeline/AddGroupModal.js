@@ -22,10 +22,10 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
 
   return (
     <div className={toggleOpenAddDialog === true ? "vis-add-dialog" : "vis-hide-dialog"} style={addDialogStyle}>
-        <Button size="small" disabled={addDialogData.showPresence === true && allowedToEdit ? false : true} className={addDialogData.showPresence === true && allowedToEdit ? '' : 'disabled'} variant="supplementary" onClick={() => addNew(addDialogData.nextEsillaolo)} iconLeft={<IconPlus />}>
+        <Button size="small" disabled={!(addDialogData.showPresence && allowedToEdit)} className={addDialogData.showPresence && allowedToEdit ? '' : 'disabled'} variant="supplementary" onClick={() => addNew(addDialogData.nextEsillaolo)} iconLeft={<IconPlus />}>
             {t('project.add-new-presence')}
         </Button>
-        <Button size="small" disabled={addDialogData.showBoard === true && isAdmin ? false : true} className={addDialogData.showBoard === true && isAdmin ? '' : 'disabled'} variant="supplementary" onClick={() => addNew(addDialogData.nextLautakunta)} iconLeft={<IconPlus />}>
+        <Button size="small" disabled={!(addDialogData.showBoard && isAdmin)} className={addDialogData.showBoard && isAdmin ? '' : 'disabled'} variant="supplementary" onClick={() => addNew(addDialogData.nextLautakunta)} iconLeft={<IconPlus />}>
             {t('project.add-new-board')}
         </Button>
     </div>
