@@ -122,7 +122,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       
       const results = checkConfirmedGroups(esillaoloConfirmed, lautakuntaConfirmed, attributeKeys, visValRef, phase, canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean);
       [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean] = results;
-      
+
       return [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean];
     };
 
@@ -232,8 +232,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
    * @param {Number} percentage   For example 0.1 (left) or -0.1 (right)
    */
     const move = (percentage) => {
-      var range = timeline.getWindow();
-      var interval = range.end - range.start;
+      let range = timeline.getWindow();
+      let interval = range.end - range.start;
 
       timeline.setWindow({
         start: range.start.valueOf() - interval * percentage,
@@ -242,74 +242,74 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const showMonths = () => {
-      var now = new Date();
-      var currentYear = now.getFullYear();
-      var startOfMonth = new Date(currentYear, now.getMonth(), 1);
-      var endOfMonth = new Date(currentYear, now.getMonth() + 1, 0);
+      let now = new Date();
+      let currentYear = now.getFullYear();
+      let startOfMonth = new Date(currentYear, now.getMonth(), 1);
+      let endOfMonth = new Date(currentYear, now.getMonth() + 1, 0);
       timeline.setOptions({timeAxis: {scale: 'weekday'}});
       timeline.setWindow(startOfMonth, endOfMonth);
       setCurrentFormat("showMonths");
     }
 
     const showYers = () => {
-      var now = new Date();
-      var currentYear = now.getFullYear();
-      var startOfYear = new Date(currentYear, 0, 1);
-      var endOfYear = new Date(currentYear, 11, 31);
+      let now = new Date();
+      let currentYear = now.getFullYear();
+      let startOfYear = new Date(currentYear, 0, 1);
+      let endOfYear = new Date(currentYear, 11, 31);
       timeline.setOptions({timeAxis: {scale: 'month'}});
       timeline.setWindow(startOfYear, endOfYear);
       setCurrentFormat("showYers");
     }
 
     const show2Yers = () => {
-      var now = new Date();
-      var currentYear = now.getFullYear();
-      var startOf2Years = new Date(currentYear, now.getMonth(), 1);
-      var endOf2Years = new Date(currentYear + 2, now.getMonth(), 0);
+      let now = new Date();
+      let currentYear = now.getFullYear();
+      let startOf2Years = new Date(currentYear, now.getMonth(), 1);
+      let endOf2Years = new Date(currentYear + 2, now.getMonth(), 0);
       timeline.setOptions({timeAxis: {scale: 'month'}});
       timeline.setWindow(startOf2Years, endOf2Years);
     }
 
     const show5Yers = () => {
-      var now = new Date();
-      var currentYear = now.getFullYear();
-      var startOf5Years = new Date(currentYear, now.getMonth(), 1);
-      var endOf5Years = new Date(currentYear + 5, now.getMonth(), 0);
+      let now = new Date();
+      let currentYear = now.getFullYear();
+      let startOf5Years = new Date(currentYear, now.getMonth(), 1);
+      let endOf5Years = new Date(currentYear + 5, now.getMonth(), 0);
       timeline.setOptions({timeAxis: {scale: 'month'}});
       timeline.setWindow(startOf5Years, endOf5Years);
     }
 
     const show3Months = () => {
-      var now = new Date();
-      var currentYear = now.getFullYear();
-      var startOf3Months = new Date(currentYear, now.getMonth(), 1);
-      var endOf3Months = new Date(currentYear, now.getMonth() + 3, 0);
+      let now = new Date();
+      let currentYear = now.getFullYear();
+      let startOf3Months = new Date(currentYear, now.getMonth(), 1);
+      let endOf3Months = new Date(currentYear, now.getMonth() + 3, 0);
       timeline.setOptions({timeAxis: {scale: 'weekday'}});
       timeline.setWindow(startOf3Months, endOf3Months);
     }
 
     const show6Months = () => {
-      var now = new Date();
-      var currentYear = now.getFullYear();
-      var startOf6Months = new Date(currentYear, now.getMonth(), 1);
-      var endOf6Months = new Date(currentYear, now.getMonth() + 6, 0);
+      let now = new Date();
+      let currentYear = now.getFullYear();
+      let startOf6Months = new Date(currentYear, now.getMonth(), 1);
+      let endOf6Months = new Date(currentYear, now.getMonth() + 6, 0);
       timeline.setOptions({timeAxis: {scale: 'weekday'}});
       timeline.setWindow(startOf6Months, endOf6Months);
     }
 
     const showWeeks = () => {
-      var now = new Date();
-      var currentYear = now.getFullYear();
-      var startOfWeek = new Date(currentYear, now.getMonth(), now.getDate() - now.getDay());
-      var endOfWeek = new Date(currentYear, now.getMonth(), now.getDate() - now.getDay() + 6);
+      let now = new Date();
+      let currentYear = now.getFullYear();
+      let startOfWeek = new Date(currentYear, now.getMonth(), now.getDate() - now.getDay());
+      let endOfWeek = new Date(currentYear, now.getMonth(), now.getDate() - now.getDay() + 6);
       timeline.setWindow(startOfWeek, endOfWeek);
     }
 
     const showDays = () => {
-      var ONE_DAY_IN_MS = 1000 * 60 * 60 * 24;
-      var now = new Date();
-      var nowInMs = now.getTime();
-      var oneDayFromNow = nowInMs + ONE_DAY_IN_MS;
+      let ONE_DAY_IN_MS = 1000 * 60 * 60 * 24;
+      let now = new Date();
+      let nowInMs = now.getTime();
+      let oneDayFromNow = nowInMs + ONE_DAY_IN_MS;
       timeline.setWindow(nowInMs, oneDayFromNow);
     }
     // attach events to the navigation buttons
@@ -340,6 +340,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
     const toggleRollingMode = () =>  {
       timeline.toggleRollingMode();
+    }
+
+    const adjustWeekend = (date) => {
+      if (date.getDay() === 0) {
+        date.setTime(date.getTime() + 86400000); // Move from Sunday to Monday
+      } else if (date.getDay() === 6) {
+        date.setTime(date.getTime() - 86400000); // Move from Saturday to Friday
+      }
     }
 
     useEffect(() => {
@@ -408,81 +416,56 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         },
         // always snap to full hours, independent of the scale
         snap: function (date) {
-          var hour = 60 * 60 * 1000;
+          let hour = 60 * 60 * 1000;
           return Math.round(date / hour) * hour;
         },
         onMove(item, callback) {
-          let preventMove = false
-          if(item.phase){
-            if(!(item.start.getDay() % 6)){
-              if(item.start.getDay() === 0){
-                item.start.setTime(item.start.getTime() + 86400000);
-              }
-              else if(item.start.getDay() === 6){
-                item.start.setTime(item.start.getTime() - 86400000);
-              }
-            }
-            else if(!(item.end.getDay() % 6)){
-              if(item.end.getDay() === 0){
-                item.end.setTime(item.end.getTime() + 86400000);
-              }
-              else if(item.end.getDay() === 6){
-                item.end.setTime(item.end.getTime() - 86400000);
-              }
-            }
-            else{
+          let preventMove = false;
+        
+          if (item.phase) {
+            if (!(item.start.getDay() % 6)) {
+              adjustWeekend(item.start);
+            } else if (!(item.end.getDay() % 6)) {
+              adjustWeekend(item.end);
+            } else {
               const movingTimetableItem = moment.range(item.start, item.end);
               items.forEach(i => {
-                if(i.phase){
+                if (i.phase) {
                   if (i.id !== item.id) {
                     const statickTimetables = moment.range(i.start, i.end);
                     if (movingTimetableItem.overlaps(statickTimetables)) {
-                      preventMove = false
-                      changeItemRange(item.start > i.start, item, i)
+                      preventMove = false;
+                      changeItemRange(item.start > i.start, item, i);
                     }
                   }
                 }
-              })
+              });
             }
-          }
-          else{
-            if(!(item.start.getDay() % 6)){
-              if(item.start.getDay() === 0){
-                item.start.setTime(item.start.getTime() + 86400000);
-              }
-              else if(item.start.getDay() === 6){
-                item.start.setTime(item.start.getTime() - 86400000);
-              }
-            }
-            else if(!(item.end.getDay() % 6)){
-              if(item.end.getDay() === 0){
-                item.end.setTime(item.end.getTime() + 86400000);
-              }
-              else if(item.end.getDay() === 6){
-                item.end.setTime(item.end.getTime() - 86400000);
-              }
-            }
-            else{
+          } else {
+            if (!(item.start.getDay() % 6)) {
+              adjustWeekend(item.start);
+            } else if (!(item.end.getDay() % 6)) {
+              adjustWeekend(item.end);
+            } else {
               const movingTimetableItem = moment.range(item.start, item.end);
               items.forEach(i => {
                 if (i.id !== item.id) {
-                  if(item.phaseID === i.phaseID && !preventMove && !i.locked){
-                    preventMove = false
-                  }
-                  else{
+                  if (item.phaseID === i.phaseID && !preventMove && !i.locked) {
+                    preventMove = false;
+                  } else {
                     const statickTimetables = moment.range(i.start, i.end);
                     if (movingTimetableItem.overlaps(statickTimetables)) {
-                      preventMove = true
+                      preventMove = true;
                     }
                   }
                 }
-              })
+              });
             }
           }
+        
           if (item.content != null && !preventMove) {
             callback(item); // send back adjusted item
-          }
-          else {
+          } else {
             callback(null); // cancel updating the item
           }
         },
