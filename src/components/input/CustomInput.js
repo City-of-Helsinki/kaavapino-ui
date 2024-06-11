@@ -168,7 +168,9 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
     }
     if (typeof custom.handleUnlockField === 'function' && !custom.insideFieldset) {
       //Sent a call to unlock field to backend
-      custom.handleUnlockField(input.name)
+      if (lockedStatus.lockData.attribute_lock.owner) {
+        custom.handleUnlockField(input.name)
+      }
     }
     let originalData
     if (custom?.attributeData){

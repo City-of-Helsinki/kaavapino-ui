@@ -199,7 +199,9 @@ const SelectInput = ({
     
     if (typeof handleUnlockField === 'function' && !insideFieldset) {
       //Sent a call to unlock field to backend
-      handleUnlockField(input.name)
+      if (lockedStatus.lockData.attribute_lock.owner) {
+        handleUnlockField(input.name)
+      }
     }
     if (selectValues !== oldValueRef.current) {
       //prevent saving if locked
