@@ -45,7 +45,7 @@ const DeadLineInput = ({
   if(currentDeadline?.deadline?.attribute && attributeData[currentDeadline.deadline.attribute]){
     currentDeadlineDate = attributeData[currentDeadline.deadline.attribute]
   }
-  else if ( currentDeadline && currentDeadline.date ) {
+  else if (currentDeadline?.date) {
     currentDeadlineDate = currentDeadline.date
   }
 

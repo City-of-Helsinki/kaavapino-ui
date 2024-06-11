@@ -318,13 +318,11 @@ function ProjectCardPage({
     const timelineRow = renderTimeLineRow()
 
     return (
-      <>
-        <div className="project-card">
-          {firstRow}
-          {timelineRow}
-          {secondRow}
-        </div>
-      </>
+      <div className="project-card">
+        {firstRow}
+        {timelineRow}
+        {secondRow}
+      </div>
     )
   }
 
