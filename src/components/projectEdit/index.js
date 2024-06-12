@@ -23,7 +23,8 @@ import {
   showTimetable,
   showFloorArea,
   setLastSaved,
-  resetFormErrors
+  resetFormErrors,
+  fetchDisabledDatesStart
 } from '../../actions/projectActions'
 import { fetchSchemas, setAllEditFields, clearSchemas } from '../../actions/schemaActions'
 import { fetchDocuments } from '../../actions/documentActions'
@@ -37,7 +38,8 @@ import {
   floorAreaSavedSelector,
   timetableSavedSelector,
   showFloorAreaSelector,
-  showTimetableSelector
+  showTimetableSelector,
+  selectDisabledDates
 } from '../../selectors/projectSelector'
 import {
   documentsSelector
@@ -133,6 +135,13 @@ class ProjectEditPage extends Component {
         }
       }
     }
+    if(prevProps.formValues != this.props.formValues){
+      console.log(this.props.formValues)
+      if(prevProps.formValues?.projektin_kaynnistys_pvm != this.props.formValues?.projektin_kaynnistys_pvm){
+        console.log("fetching disabled dates")
+        this.fetchDisabledDates(this.props.formValues.projektin_kaynnistys_pvm,this.props.formValues?.projektin_kaynnistys_pvm)
+      }
+    }
   }
   componentDidMount() {
     this.props.switchDisplayedPhase(this.props.currentProject.phase)
@@ -198,6 +207,14 @@ class ProjectEditPage extends Component {
       const urlElement = document.getElementById(this.state.urlField)
       urlElement?.scrollIntoView({block: "center", inline: "center"});
     }
+  }
+
+  fetchDisabledDates = (startDate,endDate) => {
+    const endDateObj = new Date(endDate);
+    endDateObj.setFullYear(endDateObj.getFullYear() + 20);
+    const newEndDate = endDateObj.toISOString().split('T')[0];
+    console.log(newEndDate)
+    this.props.fetchDisabledDatesStart(startDate, newEndDate);
   }
 
   changePhase = () => {
@@ -538,10 +555,11 @@ class ProjectEditPage extends Component {
       currentPhases,
       users,
       currentUserId,
-      documents
+      documents,
+      disabledDates
     } = this.props
     const { highlightGroup } = this.state
-
+    console.log(disabledDates)
     if (!schema) {
       return <LoadingSpinner className="loader-icon" />
     }
@@ -750,6 +768,7 @@ class ProjectEditPage extends Component {
               archived={currentProject.archived}
               isAdmin={isAdmin}
               allowedToEdit={isResponsible}
+              disabledDates={disabledDates}
             />
           )}
           </div>
@@ -789,7 +808,8 @@ const mapStateToProps = state => {
     timetableSavedSelector: timetableSavedSelector(state),
     documents: documentsSelector(state),
     showTimetableForm:showTimetableSelector(state),
-    showFloorAreaForm:showFloorAreaSelector(state) 
+    showFloorAreaForm:showFloorAreaSelector(state),
+    disabledDates: selectDisabledDates(state),
   }
 }
 
@@ -817,7 +837,8 @@ const mapDispatchToProps = {
   showTimetable,
   showFloorArea,
   setLastSaved,
-  resetFormErrors
+  resetFormErrors,
+  fetchDisabledDatesStart,
 }
 
 export default withRouter(
