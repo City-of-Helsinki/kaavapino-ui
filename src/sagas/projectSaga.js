@@ -113,7 +113,10 @@ import {
   projectFileUploadSuccessful,
   GET_ATTRIBUTE_DATA,
   SET_ATTRIBUTE_DATA,
-  setAttributeData
+  setAttributeData,
+  FETCH_DISABLED_DATES_START,
+  fetchDisabledDatesSuccess,
+  fetchDisabledDatesFailure
 } from '../actions/projectActions'
 import { startSubmit, stopSubmit, setSubmitSucceeded } from 'redux-form'
 import { error } from '../actions/apiActions'
@@ -193,10 +196,24 @@ export default function* projectSaga() {
     takeLatest(FETCH_ONHOLD_PROJECTS, fetchOnholdProjects),
     takeLatest(FETCH_ARCHIVED_PROJECTS, fetchArchivedProjects),
     takeLatest(GET_ATTRIBUTE_DATA, getAttributeData),
-    takeLatest(SET_ATTRIBUTE_DATA, setAttributeData)
+    takeLatest(SET_ATTRIBUTE_DATA, setAttributeData),
+    takeLatest(FETCH_DISABLED_DATES_START, getProjectDisabledDeadlineDates)
   ])
 }
 
+function* getProjectDisabledDeadlineDates(action) {
+  try {
+    const startYear = action.payload.startDate
+    const endYear = action.payload.endDate
+    console.log(startYear, endYear)
+    const disabledDates = yield call(projectDeadlinesApi.get, "/date_types");
+
+    console.log(disabledDates)
+    yield put(fetchDisabledDatesSuccess(disabledDates));
+  } catch (e) {
+    yield put(fetchDisabledDatesFailure(e));
+  }
+}
 
 function* getAttributeData(data) {
   const project_name = data.payload.projectName;
