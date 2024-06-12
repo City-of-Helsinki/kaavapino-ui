@@ -134,7 +134,9 @@ const FieldSet = ({
     const lockedField = lockStatus.fieldIdentifier
     //close all accordians and unlock locked field when clicked outside fieldset main
     setExpanded([]);
-    handleUnlockField(lockedField)
+    if (lockStatus.owner) {
+      handleUnlockField(lockedField)
+    }
   }
 
   const getNumberOfFieldsets = (fieldsetTotal) => {
