@@ -80,7 +80,10 @@ import {
   UPDATE_FLOOR_VALUES,
   FORM_ERROR_LIST,
   RESET_FORM_ERRORS,
-  SET_ATTRIBUTE_DATA
+  SET_ATTRIBUTE_DATA,
+  FETCH_DISABLED_DATES_START,
+  FETCH_DISABLED_DATES_SUCCESS,
+  FETCH_DISABLED_DATES_FAILURE
 } from '../actions/projectActions'
 
 export const initialState = {
@@ -127,12 +130,27 @@ export const initialState = {
   lastModified:false,
   updatedFloorValue:{},
   formErrorList:[],
-  updateField:false
+  updateField:false,
+  loading: false,
+  disabledDates: [],
+  error: null,
 }
 
 export const reducer = (state = initialState, action) => {
 
   switch (action.type) {
+
+    case FETCH_DISABLED_DATES_START: {
+      return { ...state, loading: true, error: null };
+    }
+
+    case FETCH_DISABLED_DATES_SUCCESS: {
+      return { ...state, loading: false, disabledDates: action.payload };
+    }
+
+    case FETCH_DISABLED_DATES_FAILURE:{
+      return { ...state, loading: false, error: action.payload };
+    }
 
     case SET_ATTRIBUTE_DATA: {
       const { fieldName, data } = action.payload
