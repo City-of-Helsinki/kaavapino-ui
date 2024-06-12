@@ -166,7 +166,8 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       //Send identifier data to change styles from FormField.js
       custom.lockField(false,false,identifier)
     }
-    if (typeof custom.handleUnlockField === 'function' && !custom.insideFieldset) {
+    if (typeof custom.handleUnlockField === 'function' && !custom.insideFieldset && 
+      lockedStatus.lockData.attribute_lock.owner) {
       //Sent a call to unlock field to backend
       custom.handleUnlockField(input.name)
     }
