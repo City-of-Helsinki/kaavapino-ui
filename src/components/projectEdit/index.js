@@ -136,9 +136,7 @@ class ProjectEditPage extends Component {
       }
     }
     if(prevProps.formValues != this.props.formValues){
-      console.log(this.props.formValues)
       if(prevProps.formValues?.projektin_kaynnistys_pvm != this.props.formValues?.projektin_kaynnistys_pvm){
-        console.log("fetching disabled dates")
         this.fetchDisabledDates(this.props.formValues.projektin_kaynnistys_pvm,this.props.formValues?.projektin_kaynnistys_pvm)
       }
     }
@@ -216,7 +214,7 @@ class ProjectEditPage extends Component {
     const endDateObj = new Date(endDate);
     endDateObj.setFullYear(endDateObj.getFullYear() + 20);
     const newEndDate = endDateObj.toISOString().split('T')[0];
-    console.log(newEndDate)
+
     this.props.fetchDisabledDatesStart(startDate, newEndDate);
   }
 
@@ -583,7 +581,7 @@ class ProjectEditPage extends Component {
       disabledDates
     } = this.props
     const { highlightGroup } = this.state
-    console.log(disabledDates)
+
     if (!schema) {
       return <LoadingSpinner className="loader-icon" />
     }
