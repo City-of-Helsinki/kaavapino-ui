@@ -109,7 +109,7 @@
     }
 
     .negative{
-        background-color: rgba(255, 0, 0, 0.2) !important;
+        background-color: #F2F2F2 !important;
     }
 
     .hiddenTimes{
@@ -326,6 +326,11 @@
         background-color: $color_fog !important;
     }
 
+    .vis-foreground .vis-group {
+        position: relative;
+        box-sizing: border-box;
+        border-bottom: none;
+    }
 }
 
 .dimmer{

@@ -8,7 +8,7 @@ import { showField } from '../../utils/projectVisibilityUtils'
 import PropTypes from 'prop-types'
 import './VisTimeline.css'
 
-const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit }) => {
+const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit,disabledDates }) => {
     
   const getAttributeValues = (attributes) => {
     return Object.values(attributes).flatMap((v) => Object.values(v));
@@ -87,6 +87,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
             isProjectTimetableEdit={true}
             disabled={disabled?.disabled || !allowedToEdit}
             attributeData={visValues}
+            disabledDates={disabledDates}
           />
           {modifiedError && <div className="field-error">{modifiedError}</div>}
         </>
