@@ -135,6 +135,7 @@ class ProjectEditPage extends Component {
     }
   }
   componentDidMount() {
+    this.props.switchDisplayedPhase(this.props.currentProject.phase)
     localStorage.removeItem("changedValues")
     window.addEventListener('resize', this.handleResize)
 
@@ -747,7 +748,8 @@ ProjectEditPage.propTypes = {
   schema: PropTypes.object,
   resetFormErrors: PropTypes.func,
   unlockAllFields: PropTypes.func,
-  location: PropTypes.object
+  location: PropTypes.object,
+  switchDisplayedPhase: PropTypes.func
 }
 
 const mapStateToProps = state => {
