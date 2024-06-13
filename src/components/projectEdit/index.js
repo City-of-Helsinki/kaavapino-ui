@@ -135,6 +135,7 @@ class ProjectEditPage extends Component {
     }
   }
   componentDidMount() {
+    this.props.switchDisplayedPhase(this.props.currentProject.phase)
     localStorage.removeItem("changedValues")
     window.addEventListener('resize', this.handleResize)
 
