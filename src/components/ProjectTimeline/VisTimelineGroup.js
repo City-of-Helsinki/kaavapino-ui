@@ -12,7 +12,7 @@ import PropTypes from 'prop-types';
 import './VisTimeline.css'
 Moment().locale('fi');
 
-const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin}, ref) => {
+const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates}, ref) => {
     const moment = extendMoment(Moment);
 
     const timelineRef = useRef(null);
@@ -633,6 +633,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           projectPhaseIndex={projectPhaseIndex}
           archived={archived}
           allowedToEdit={allowedToEdit}
+          disabledDates={disabledDates}
         />
         <AddGroupModal
           toggleOpenAddDialog={toggleOpenAddDialog}

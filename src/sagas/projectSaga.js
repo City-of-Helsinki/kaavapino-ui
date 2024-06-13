@@ -135,7 +135,8 @@ import {
   attributesApiUnlock,
   attributesApiUnlockAll,
   pingApi,
-  getAttributeDataApi
+  getAttributeDataApi,
+  projectDateTypesApi
 } from '../utils/api'
 import { usersSelector } from '../selectors/userSelector'
 import {
@@ -200,15 +201,10 @@ export default function* projectSaga() {
   ])
 }
 
-function* getProjectDisabledDeadlineDates(action) {
+function* getProjectDisabledDeadlineDates() {
   try {
-    const startYear = action.payload.startDate
-    const endYear = action.payload.endDate
-    console.log(startYear, endYear)
-    const disabledDates = yield call(projectDeadlinesApi.get, "/date_types");
-
-    console.log(disabledDates)
-    yield put(fetchDisabledDatesSuccess(disabledDates));
+    const dates = yield call(projectDateTypesApi.get);
+    yield put(fetchDisabledDatesSuccess(dates?.date_types?.disabled_dates?.dates));
   } catch (e) {
     yield put(fetchDisabledDatesFailure(e));
   }
@@ -657,7 +653,6 @@ function* saveProjectTimetable() {
     }
     
     const deadlineAttributes = currentProject.deadline_attributes
-    console.log(attribute_data,currentProjectId)
     // Add missing fields as a null to payload since there are
     // fields which can be hidden according the user selection. 
     // If old values are left, it will break the timelines.
@@ -674,7 +669,6 @@ function* saveProjectTimetable() {
         { path: { id: currentProjectId } },
         ':id/'
       )
-      console.log(updatedProject)
       yield put(updateProject(updatedProject))
       yield put(setSubmitSucceeded(EDIT_PROJECT_TIMETABLE_FORM))
       yield put(saveProjectTimetableSuccessful(true))
