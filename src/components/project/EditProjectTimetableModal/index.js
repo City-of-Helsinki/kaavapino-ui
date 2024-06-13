@@ -32,36 +32,63 @@ class EditProjectTimeTableModal extends Component {
   }
 
   componentDidMount() {
-    const { initialize, attributeData, deadlines, deadlineSections } = this.props
+    const { initialize, attributeData, deadlines, deadlineSections,disabledDates } = this.props
     initialize(attributeData)
 
     if(attributeData && deadlines && deadlineSections){
       let items = new visdata.DataSet()
       let groups = new visdata.DataSet();
-      console.log(deadlineSections,attributeData,deadlines)
+
       let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,attributeData,deadlines)
 
       groups.add(deadLineGroups);
       groups.add(nestedDeadlines);
       items.add(phaseData)
-      items.add([{
-        id: "holiday_summer",
-        start: "2024-07-01",
-        end: "2024-07-31",
-        type: "background",
-        className: "negative",
-      },
-      {
-        id: "holiday_winter",
-        start: "2024-12-27",
-        end: "2024-12-31",
-        type: "background",
-        className: "negative",
-      },]
-      )
+      items = this.findConsecutivePeriods(disabledDates,items);
 
       this.setState({items,groups,visValues:attributeData})
     }
+  }
+
+  findConsecutivePeriods = (dates,items) => {
+    if (!Array.isArray(dates) || dates.length === 0) {
+      return [];
+    }
+  
+    let start = dates[0];
+    let end = dates[0];
+  
+    for (let i = 1; i < dates.length; i++) {
+      const currentDate = new Date(dates[i]);
+      const previousDate = new Date(dates[i - 1]);
+      const differenceInTime = currentDate - previousDate;
+      const differenceInDays = differenceInTime / (1000 * 3600 * 24);
+  
+      if (differenceInDays === 1) {
+        end = dates[i];
+      } else {
+        items.add([{
+          id: `disabled_date_${i}`,
+          start: start,
+          end: end,
+          type: "background",
+          className: "negative",
+        }]);
+        start = dates[i];
+        end = dates[i];
+      }
+    }
+  
+    // Push the last period
+    items.add([{
+      id: `disabled_date_${dates.length}`,
+      start: start,
+      end: end,
+      type: "background",
+      className: "negative",
+    }]);
+  
+    return items;
   }
 
   componentDidUpdate(prevProps) {
@@ -131,39 +158,6 @@ class EditProjectTimeTableModal extends Component {
     return formValues && formValues[deadline.attribute] ? formValues[deadline.attribute] : deadline.date;
   }
 
-  etDeadlineValues = (deadlines, i, formValues) => {
-    const deadline = deadlines[i].deadline;
-    const deadlineTypes = deadline.deadline_types;
-    const defaultValue = this.getValueOrDefault(deadline, formValues);
-
-    if (deadlineTypes.includes('phase_start')) {
-      return ['phase_start', defaultValue, deadline.phase_color, false, "", false, false, false, false];
-    }
-
-    if (deadlineTypes.includes('dashed_start')) {
-      return ['dashed_start', false, "", defaultValue, "inner", false, false, false, false];
-    }
-
-    if (deadlineTypes.includes('dashed_end')) {
-      if (deadlineTypes.includes('inner_start')) {
-        return ['esillaolo', false, "", false, "", defaultValue, defaultValue, false, false];
-      }
-      if (deadlineTypes.includes('milestone')) {
-        return ['lautakunta', false, "", false, "", defaultValue, false, false, false];
-      }
-    }
-
-    if (deadlineTypes.includes('inner_end') && deadline.date_type !== "Arkipäivät") {
-      return ['inner_end', false, "", false, "", false, false, defaultValue, false];
-    }
-
-    if (deadlineTypes.includes('phase_end') && deadline.date_type !== "Arkipäivät") {
-      return ['phase_end', false, "", false, "", false, false, false, defaultValue];
-    }
-
-    return ["", false, "", false, "", false, false, false, false];
-  }
-
   addMainGroup = (deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines) => {
     phaseData.push({
       id: numberOfPhases,
@@ -222,7 +216,7 @@ class EditProjectTimeTableModal extends Component {
   
     let dlIndex = deadLineGroups.findIndex(group => group.content === deadlines[i].deadline.phase_name);
     deadLineGroups.at(dlIndex).nestedGroups.push(numberOfPhases);
-  
+
     nestedDeadlines.push({
       id: numberOfPhases,
       content: deadlines[i].deadline.deadlinegroup?.includes("lautakunta") ? "Lautakunta" : "Esilläolo",
@@ -266,7 +260,7 @@ class EditProjectTimeTableModal extends Component {
       }
       else if(deadlines[i].deadline.deadline_types.includes('dashed_end') && deadlines[i].deadline.deadline_types.includes('inner_start')){
         //Esilläolo
-        type="esillaolo"
+        type=deadlines[i].deadline.phase_name === "Ehdotus" ? "nahtavillaolo" : "esillaolo"
         dashEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
         innerStart = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
       }
@@ -274,6 +268,10 @@ class EditProjectTimeTableModal extends Component {
         //Lautakunta
         type="lautakunta"
         dashEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+      }
+      else if(deadlines[i].deadline.phase_name === "Ehdotus" && deadlines[i].deadline.deadline_types.includes('inner_end') && deadlines[i].deadline.date_type === "Arkipäivät"){
+        innerEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+        innerStyle = "inner-end"
       }
       else if(deadlines[i].deadline.deadline_types.includes('inner_end') && deadlines[i].deadline.date_type !== "Arkipäivät"){
         innerEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
@@ -302,6 +300,12 @@ class EditProjectTimeTableModal extends Component {
       else if(innerStart && innerEnd && type === "esillaolo"){
         //Esilläolo item that will be movable from timeline
         let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, dashStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines);
+        [phaseData, deadLineGroups, nestedDeadlines] = subgroup2;
+        innerEnd = false
+        numberOfPhases++
+      }
+      else if(innerStart && innerEnd && type === "nahtavillaolo"){
+        let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines);
         [phaseData, deadLineGroups, nestedDeadlines] = subgroup2;
         innerEnd = false
         numberOfPhases++
@@ -430,7 +434,7 @@ class EditProjectTimeTableModal extends Component {
       }
     }
 
-    if(content === "esillaolo"){
+    if(content === "esillaolo" || content === "nahtavillaolo"){
       className = "inner-end"
       let indexKey = ''
       if(index > 2){
@@ -470,10 +474,17 @@ class EditProjectTimeTableModal extends Component {
       deadlineDate.setDate(deadlineDate.getDate() - 7 + difference);
       let deadlineDateOnly = deadlineDate.toISOString().slice(0, 10);
 
-      let deadlineValue = { key: "periaatteet_esillaolo_aineiston_maaraaika_" +index, value: deadlineDateOnly };
+      let deadlineValue 
+      if(content === "nahtavillaolo"){
+        deadlineValue = { key: phase+"_kylk_aineiston_maaraaika" +indexKey, value: deadlineDateOnly };
+      }
+      else{
+        deadlineValue = { key: phase+"_esillaolo_aineiston_maaraaika" +indexKey, value: deadlineDateOnly };
+      }
+
       matchingValues.push(deadlineValue);
     } //if esillaolo
-    
+
     //Add new item to vis for group
     const newItems = {
       className: className,
@@ -586,7 +597,7 @@ class EditProjectTimeTableModal extends Component {
 
   render() {
     const { loading } = this.state
-    const { open, formValues, deadlines, deadlineSections, t, formSubmitErrors, projectPhaseIndex, currentProject, allowedToEdit, isAdmin } = this.props
+    const { open, formValues, deadlines, deadlineSections, t, formSubmitErrors, projectPhaseIndex, currentProject, allowedToEdit, isAdmin, disabledDates } = this.props
 
     if (!formValues) {
       return null
@@ -618,6 +629,7 @@ class EditProjectTimeTableModal extends Component {
               allowedToEdit={allowedToEdit}
               isAdmin={isAdmin}
               toggleTimelineModal={this.state.toggleTimelineModal}
+              disabledDates={disabledDates}
             />
             {this.state.showModal && 
             <ConfirmModal 

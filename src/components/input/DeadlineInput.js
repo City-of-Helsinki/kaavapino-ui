@@ -19,7 +19,8 @@ const DeadLineInput = ({
   placeholder,
   className,
   autofillRule,
-  timeTableDisabled
+  timeTableDisabled,
+  disabledDates
 }) => {
   
   const { t } = useTranslation()
@@ -44,6 +45,9 @@ const DeadLineInput = ({
 
   if(currentDeadline?.deadline?.attribute && attributeData[currentDeadline.deadline.attribute]){
     currentDeadlineDate = attributeData[currentDeadline.deadline.attribute]
+  }
+  else if(currentDeadline?.deadline?.attribute && currentDeadline?.deadline?.attribute === 'ehdotus_nahtaville_aineiston_maaraaika' && attributeData['ehdotus_kylk_aineiston_maaraaika']){
+    currentDeadlineDate = attributeData['ehdotus_kylk_aineiston_maaraaika']
   }
   else if (currentDeadline?.date) {
     currentDeadlineDate = currentDeadline.date
@@ -89,7 +93,16 @@ const DeadLineInput = ({
     currentClassName = `${currentClassName} error-border`
   }
 
-  const isWeekend = (date) => {
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    // Pad the month and day with leading zeros if needed
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  }
+
+  const isDisabledDate = (date) => {
     const tenYearsAgo = new Date();
     tenYearsAgo.setFullYear(tenYearsAgo.getFullYear() - 10);
     const tenYearsLater = new Date();
@@ -100,7 +113,8 @@ const DeadLineInput = ({
     }
   
     const day = date.getDay();
-    return day === 0 || day === 6;
+
+    return day === 0 || day === 6 || disabledDates.includes(formatDate(date));
   }
 
   return (
@@ -110,7 +124,7 @@ const DeadLineInput = ({
         ?
         <DateInput
           readOnly
-          isDateDisabledBy={isWeekend}
+          isDateDisabledBy={isDisabledDate}
           value={currentValue}
           name={input.name}
           type={type}
