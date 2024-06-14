@@ -127,7 +127,7 @@
             justify-content: flex-start;
             align-items: center;
             height: 100%;
-            div{
+            .timeline-buttons-container{
                 display: flex;
                 justify-content: flex-start;
                 align-items: center;
@@ -135,18 +135,20 @@
                 height: 100%;
                 padding-left: $size13;
                 .timeline-edit-button{
-                    margin-left: 0;
-                    padding:0;
-                    width: $size40;
+                    position: absolute;
+                    margin-left: -40px;
+                    padding: 0;
+                    width: 70%;
                     height: 100%;
-                    background:url('../../assets/icons/pen.svg') no-repeat;
+                    background: transparent;
                     background-position-x: center;
                     background-position-y: center;
-                    background-size: $size18;
+                    background-size: 1.125rem;
                     border: none;
                     cursor: pointer;
                 }
                 .timeline-remove-button{
+                    display: none;
                     padding: 0;
                     margin-left: auto;
                     width: $size40;
@@ -159,6 +161,7 @@
                     cursor: pointer;
                 }
                 .timeline-lock-button{
+                    display: none;
                     padding: 0;
                     margin-left: 0;
                     width: $size40;
@@ -183,9 +186,36 @@
                     border: none;
                     cursor: pointer;
                 }
+                &:focus {
+                    .timeline-remove-button{
+                        display: block;
+                    }
+                    .timeline-lock-button{
+                        display: block;
+                    }
+                }
+            }
+            .show-buttons{
+                .timeline-remove-button{
+                    display: block;
+                }
+                .timeline-lock-button{
+                    display: block;
+                }
             }
             .highlight-selected{
                 border: 1px solid $color-bus;
+                .timeline-remove-button{
+                    display: block;
+                }
+                .timeline-lock-button{
+                    display: block;
+                }
+            }
+            .button-disabled{
+                cursor: not-allowed;
+                opacity: 0.5;
+                color: gray;
             }
         }
     }

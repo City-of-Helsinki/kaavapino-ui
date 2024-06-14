@@ -8,6 +8,7 @@ import 'vis-timeline/dist/vis-timeline-graph2d.min.css'
 import TimelineModal from './TimelineModal'
 import VisTimelineMenu from './VisTimelineMenu'
 import AddGroupModal from './AddGroupModal';
+import ConfirmModal from '../common/ConfirmModal'
 import PropTypes from 'prop-types';
 import './VisTimeline.css'
 Moment().locale('fi');
@@ -26,6 +27,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [addDialogData, setAddDialogData] = useState({group:false,deadlineSections:false,showPresence:false,showBoard:false,nextEsillaolo:false,nextLautakunta:false});
     const [toggleOpenAddDialog, setToggleOpenAddDialog] = useState(false)
     const [currentFormat, setCurrentFormat] = useState("showMonths");
+    const [openConfirmModal, setOpenConfirmModal] = useState(false);
     //const [lock, setLock] = useState({group:false,id:false,locked:false,abbreviation:false});
 
     useImperativeHandle(ref, () => ({
@@ -140,6 +142,19 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
     const openRemoveDialog = (visValRef,data,event) => {
       console.log(visValRef,data,event)
+      setOpenConfirmModal(!openConfirmModal)
+      //data.deadlinegroup is not _1
+      /* 
+      content
+      : 
+      "Esilläolo"
+      deadlinegroup
+      : 
+      "periaatteet_esillaolokerta_1" */
+      //if content "Esilläolo" visValRef has vahvista_phase_esillaolo_alkaa_2/3/4 then unable to remove
+      //or 
+      //content "Lautakunta" vahvista_phase_lautakunnassa then unable to remove
+
 /*       const [addEsillaolo,nextEsillaolo,addLautakunta,nextLautakunta] = canGroupBeAdded(visValRef,data,deadlineSections)
       const rect = event.target.getBoundingClientRect();
       
@@ -151,6 +166,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       setToggleOpenAddDialog(prevState => !prevState) */
     }
 
+    const handleCancelRemove = () => {
+      setOpenConfirmModal(!openConfirmModal)
+    }
+
+    const handleRemoveGroup = () => {
+      //Todo add actual logic to remove group too
+      setOpenConfirmModal(!openConfirmModal)
+    }
 
     const closeAddDialog = () => {
       setToggleOpenAddDialog(prevState => !prevState)
@@ -475,9 +498,20 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           }
           let container = document.createElement("div");
           container.classList.add("timeline-buttons-container");
+          container.setAttribute("tabindex", "0");
           //Don't show buttons in these groups
           const stringsToCheck = ["Käynnistys", "Hyväksyminen", "Voimaantulo", "Vaiheen kesto"];
           const contentIncludesString = stringsToCheck.some(str => group?.content.includes(str));
+
+            // Hover effect
+          container.addEventListener("mouseenter", function() {
+            // Action to perform on hover enter, e.g., change background color
+            this.classList.add("show-buttons");
+          });
+          container.addEventListener("mouseleave", function() {
+            // Action to perform on hover leave
+            this.classList.remove("show-buttons");
+          });
 
           if(group?.nestedGroups?.length > 0 && allowedToEdit && !contentIncludesString){
             let label = document.createElement("span");
@@ -513,6 +547,22 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               container.insertAdjacentElement("afterBegin", labelRemove);
               let remove = document.createElement("button");
               remove.classList.add("timeline-remove-button");
+              //vahvista_oas_esillaolo_alkaa_2
+              //deadlinegroup: "oas_esillaolokerta_2"
+              let words = group.deadlinegroup?.split("_") || [];
+              let words2 = group.content?.split("-") || [];
+              let normalizedString = words2[0]
+              .replace(/[äå]/gi, 'a') // Replace ä and å with a
+              .replace(/[ö]/gi, 'o')  // Replace ö with o
+              // Add more replacements as needed
+              .toLowerCase(); // Convert to lowercase
+              console.log(group)
+              console.log(words[2])
+              console.log(visValuesRef) //visValuesRef.current not updating here?
+              console.log(visValuesRef?.current[`vahvista_${words[0]}_${normalizedString}_alkaa_${words[2]}`])
+              if(group?.generated || visValuesRef?.current[`vahvista_${words[0]}_${normalizedString}_alkaa_${words[2]}`]){
+                remove.classList.add("button-disabled")
+              }
               remove.style.fontSize = "small";
 
               remove.addEventListener("click", function (event) {
@@ -642,6 +692,18 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           closeAddDialog={closeAddDialog}
           isAdmin={isAdmin}
           allowedToEdit={allowedToEdit}
+        />
+        <ConfirmModal
+          openConfirmModal={openConfirmModal}
+          headerText={"Haluatko poistaa rivin?"} 
+          contentText={"Jos poistat tämän rivin, et voi palauttaa sitä myöhemmin."} 
+          button1Text={"Peruuta"} 
+          button2Text={"Poista rivi"}
+          onButtonPress1={handleCancelRemove} 
+          onButtonPress2={handleRemoveGroup}
+          style={"timetable-danger-modal"}
+          buttonStyle1={"secondary"}
+          buttonStyle2={"danger"}
         />
       </>
     )

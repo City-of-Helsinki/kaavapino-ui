@@ -219,11 +219,12 @@ class EditProjectTimeTableModal extends Component {
 
     nestedDeadlines.push({
       id: numberOfPhases,
-      content: deadlines[i].deadline.deadlinegroup?.includes("lautakunta") ? "Lautakunta" : "Esilläolo",
+      content: deadlines[i].deadline.deadlinegroup?.includes("lautakunta") ? "Lautakunta" : (deadlines[i].deadline.deadlinegroup?.includes("nahtavillaolo") ? "Nahtavillaolo" : "Esilläolo"),
       abbreviation: deadlines[i].abbreviation,
       deadlinegroup: deadlines[i].deadline.deadlinegroup,
       deadlinesubgroup: deadlines[i].deadline.deadlinesubgroup,
-      locked: false
+      locked: false,
+      generated:deadlines[i].generated
     });
   
     return [phaseData, deadLineGroups, nestedDeadlines];
@@ -630,17 +631,19 @@ class EditProjectTimeTableModal extends Component {
               isAdmin={isAdmin}
               toggleTimelineModal={this.state.toggleTimelineModal}
               disabledDates={disabledDates}
-            />
-            {this.state.showModal && 
+            /> 
             <ConfirmModal 
-              headerText={"Haluatko peruuttaa tekemäsi muutokset?"} 
-              contentText={"Olet muuttanut aikataulun tietoja. Mikäli jatkat, tekemäsi muutokset peruutetaan. Haluatko jatkaa?"} 
-              button1Text={"Jatka"} 
-              button2Text={"Peruuta"} 
-              onContinue={this.handleContinueCancel} 
-              onCancel={this.handleCancelCancel}
+              openConfirmModal={this.state.showModal}
+              headerText={"Haluatko hylätä muutokset?"} 
+              contentText={"Olet muuttanut aikataulun tietoja. Jos hylkäät muutokset, et voi palauttaa niitä myöhemmin."} 
+              button1Text={"Peruuta"} 
+              button2Text={"Hylkää muutokset"} 
+              onButtonPress1={this.handleCancelCancel} 
+              onButtonPress2={this.handleContinueCancel}
+              style={"timetable-danger-modal"}
+              buttonStyle1={"secondary"}
+              buttonStyle2={"danger"}
             />
-            }
         </Modal.Content>
         <Modal.Actions>
         {this.props.allowedToEdit ? (
