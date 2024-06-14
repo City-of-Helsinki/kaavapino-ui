@@ -1050,6 +1050,7 @@ header{
   margin: auto;
   max-width: 558px;
   max-height: 245px;
+  border-top:4px solid $color-bus;
 
   .header{
     display: flex;
@@ -1080,8 +1081,59 @@ header{
     display: flex;
     justify-content: flex-start;
 
-    .button-primary {
+    .button-primary,.button-danger,.button-secondary {
       margin-right: $size16;
+    }
+  }
+}
+
+.timetable-danger-modal.timetable-danger-modal  {
+  height: auto;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  margin: auto;
+  max-width: 558px;
+  max-height: 245px;
+  border-top:4px solid $color-error;
+
+  .header{
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    font-family: 'Helsinki Grotesk Medium', sans-serif;
+    font-size: $size18 !important;
+    font-weight: 700 !important;
+    line-height: $size18 !important;
+    letter-spacing: 0.004em;
+    text-align: left;
+    color: $black1;
+    padding-top: 0;
+    .header-icon{
+      width: $size24;
+      height: $size24;
+    }
+  }
+
+  .header, .content, .actions {
+    padding-left: $size32 !important;
+    margin-left: $size16 !important;
+    margin-bottom: $size24 !important;
+    margin-top: $size24 !important;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: flex-start;
+
+    .button-primary,.button-danger,.button-secondary {
+      margin-right: $size16;
+    }
+    .button-secondary{
+      border: 1px solid $color-error;
+      color: $color-error
     }
   }
 }
