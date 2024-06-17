@@ -108,10 +108,17 @@ export const FETCH_DISABLED_DATES_START = 'fetchDisabledDatesStart';
 export const FETCH_DISABLED_DATES_SUCCESS = 'fetchDisabledDatesSuccess';
 export const FETCH_DISABLED_DATES_FAILURE = 'fetchDisabledDatesFailure';
 export const VALIDATE_DATE = 'validateDate';
+export const SET_DATE_VALIDATION_RESULT = 'setDateValidationResult';
 
-export const validateDateAction = (field,projectName,date) => ({
+export const setDateValidationResult = (valid,result,callback) => ({
+    type: SET_DATE_VALIDATION_RESULT,
+    payload: {valid,result},
+    callback
+});
+export const validateDateAction = (field,projectName,date,callback) => ({
     type: VALIDATE_DATE,
     payload: {field,projectName,date},
+    callback
 });
 export const fetchDisabledDatesStart = (startDate, endDate) => ({
   type: FETCH_DISABLED_DATES_START,

@@ -83,7 +83,8 @@ import {
   SET_ATTRIBUTE_DATA,
   FETCH_DISABLED_DATES_START,
   FETCH_DISABLED_DATES_SUCCESS,
-  FETCH_DISABLED_DATES_FAILURE
+  FETCH_DISABLED_DATES_FAILURE,
+  SET_DATE_VALIDATION_RESULT
 } from '../actions/projectActions'
 
 export const initialState = {
@@ -134,11 +135,26 @@ export const initialState = {
   loading: false,
   disabledDates: [],
   error: null,
+  dateValidationResult: {valid: false, result: {}}
 }
 
 export const reducer = (state = initialState, action) => {
 
   switch (action.type) {
+
+    case SET_DATE_VALIDATION_RESULT: {
+      if (typeof action.callback === 'function') {
+        action.callback(action.payload.result); // pass the result to the callback
+      }
+      return { 
+        ...state, 
+        dateValidationResult: {
+          ...state.dateValidationResult,
+          valid: action.payload.valid, 
+          result: action.payload.result 
+        } 
+      };
+    }
 
     case FETCH_DISABLED_DATES_START: {
       return { ...state, loading: true, error: null };

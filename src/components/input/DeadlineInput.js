@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { useTranslation } from 'react-i18next'
-import { TextInput, DateInput, IconAlertCircle } from 'hds-react'
+import { TextInput, DateInput, IconAlertCircle, Notification } from 'hds-react'
 import {validateDateAction} from '../../actions/projectActions'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
 import { useSelector, useDispatch } from 'react-redux'
@@ -27,6 +27,7 @@ const DeadLineInput = ({
   
   const { t } = useTranslation()
   const dispatch = useDispatch();
+  const [warning, setWarning] = useState({warning:false,response:{reason:"",suggested_date:"",conflicting_deadline:""}})
 
   let inputValue = input.value
   if (autofillRule) {
@@ -123,9 +124,41 @@ const DeadLineInput = ({
 
   const validateDate = (date) => {
     const formattedDate = moment(date, ['DD.MM.YYYY', 'YYYY-MM-DD']).format('YYYY-MM-DD');
-    console.log(date,"validate")
-    dispatch(validateDateAction(input.name,attributeData['projektin_nimi'],formattedDate));
-    return date
+    //Wait for the promise to resolve and callback to see validity of the date and return results
+    return new Promise((resolve, reject) => {
+      dispatch(validateDateAction(input.name,attributeData['projektin_nimi'],formattedDate, (response) => {
+        if (response) {
+          if(response.error_reason !== null){
+            //Show warning notification with suggested date and reasons
+            setWarning({
+              warning:true,
+              response:{
+                reason:response.error_reason,
+                suggested_date:response.suggested_date,
+                conflicting_deadline:response.conflicting_deadline
+              }
+            });
+            //Return suggested date
+            resolve(response.suggested_date);
+          }
+          else{
+            //Reset warning
+            setWarning({
+              warning:false,
+              response:{
+                reason:"",
+                suggested_date:"",
+                conflicting_deadline:""
+              }
+            });
+            //Return valid date
+            resolve(response.date);
+          }
+        } else {
+          reject(new Error('validateDateAction call error'));
+        }
+      }));
+    });
   }
 
   return (
@@ -144,19 +177,27 @@ const DeadLineInput = ({
           error={error}
           aria-label={input.name}
           onChange={event => {
-            validateDate(event)
-            console.log(event)
-            const dateParts = event.split(".");
-            const eventDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
-            const year = eventDate.getFullYear();
-            const month = ("0" + (eventDate.getMonth() + 1)).slice(-2); // Months are 0-based, so add 1 and pad with 0 if necessary
-            const day = ("0" + eventDate.getDate()).slice(-2); // Pad with 0 if necessary
-            const value = `${year}-${month}-${day}`;
-
-            if(value){
-              setCurrentValue(value)
-              input.onChange(value)
-            }
+            const handleDateChange = async (event) => {
+              let date = await validateDate(event); // Use await
+              let value
+              if(date.includes('.')){
+                const dateParts = date.split(".");
+                const eventDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
+                const year = eventDate.getFullYear();
+                const month = ("0" + (eventDate.getMonth() + 1)).slice(-2); // Months are 0-based, so add 1 and pad with 0 if necessary
+                const day = ("0" + eventDate.getDate()).slice(-2); // Pad with 0 if necessary
+                value = `${year}-${month}-${day}`;
+              }
+              else{
+                value = date
+              }
+              if (value) {
+                setCurrentValue(value);
+                input.onChange(event);
+              }
+            };
+          
+            handleDateChange(event); // Call the async function
           }}
           className={currentClassName}
           onBlur={() => {
@@ -202,6 +243,11 @@ const DeadLineInput = ({
         <div className="error-text">
           <IconAlertCircle size="xs" /> {currentError}{' '}
         </div>
+      )}
+      {warning.warning && (
+        <Notification label={warning.response.reason} type="alert" style={{marginTop: 'var(--spacing-s)'}}>
+        Seuraavien päivämäärien siirtäminen ei ole mahdollista, koska minimietäisyys viereisiin etappeihin on täyttynyt.
+        {warning.response.conflicting_deadline}. Asetettu seuraava kelvollinen päivä {warning.response.suggested_date}</Notification>
       )}
     </>
   )
