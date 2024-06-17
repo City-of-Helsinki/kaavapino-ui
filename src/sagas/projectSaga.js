@@ -117,7 +117,8 @@ import {
   FETCH_DISABLED_DATES_START,
   fetchDisabledDatesSuccess,
   fetchDisabledDatesFailure,
-  VALIDATE_DATE
+  VALIDATE_DATE,
+  setDateValidationResult
 } from '../actions/projectActions'
 import { startSubmit, stopSubmit, setSubmitSucceeded } from 'redux-form'
 import { error } from '../actions/apiActions'
@@ -205,21 +206,18 @@ export default function* projectSaga() {
   ])
 }
 
-function* validateDate({payload}) {
+function* validateDate({payload, callback}) {
   try {
-    console.log(payload)
     const query = {
       identifier: payload.field,
       project: payload.projectName,
       date: payload.date,
     };
-    console.log(query)
     const result = yield call(projectDateValidateApi.get, { query });
-    console.log(result)
-    //yield put(fetchDisabledDatesSuccess(dates?.date_types?.disabled_dates?.dates));
+    const valid = result.conflicting_deadline === null && result.error_reason === null && result.suggested_date === null ? true : false;
+    yield put(setDateValidationResult(valid,result,callback))
   } catch (e) {
-    console.log(e)
-    //yield put(fetchDisabledDatesFailure(e));
+    yield put(error(e))
   }
 }
 
