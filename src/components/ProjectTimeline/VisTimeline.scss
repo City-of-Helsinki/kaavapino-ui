@@ -7,14 +7,7 @@
     .vis-left{
         width: 300px;
     }
-    .vis-drag-left{
-        /*TODO: v1.2 Disabled for now because we don't want to allow dragging the timeline at this point set to auto*/
-        pointer-events:none;
-    }
-    .vis-drag-right{
-        /*TODO: v1.2 Disabled for now because we don't want to allow dragging the timeline at this point set to auto*/
-        pointer-events:none;
-    }
+
     .vis-time-axis.vis-foreground{
         background-color: $light-gray3;
     }
@@ -361,6 +354,25 @@
         box-sizing: border-box;
         border-bottom: none;
     }
+
+    /*TODO: v1.2 Disabled for now because we don't want to allow dragging the timeline at this point set to auto*/
+    .vis-drag-left{
+        pointer-events:none;
+    }
+    .vis-drag-right{
+        pointer-events:none;
+    }
+    .vis-item{
+        pointer-events: none;
+    }
+
+    .inner{
+        pointer-events: none;
+    }
+    .inner-end{
+        pointer-events: none;
+    }
+    /*1.2v end*/
 }
 
 .dimmer{
