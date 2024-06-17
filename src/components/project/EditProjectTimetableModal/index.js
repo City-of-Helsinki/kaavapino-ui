@@ -434,7 +434,9 @@ class EditProjectTimeTableModal extends Component {
         }
       }
     }
-
+    //Todo lautakunta
+    console.log(this.props.formValues,content,phase,index)
+    //periaatteet_lautakunta_aineiston_maaraaika
     if(content === "esillaolo" || content === "nahtavillaolo"){
       className = "inner-end"
       let indexKey = ''
@@ -485,7 +487,7 @@ class EditProjectTimeTableModal extends Component {
 
       matchingValues.push(deadlineValue);
     } //if esillaolo
-
+    console.log(content,matchingValues[0].value,matchingValues[1].value)
     //Add new item to vis for group
     const newItems = {
       className: className,
