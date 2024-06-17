@@ -107,7 +107,12 @@ export const SET_ATTRIBUTE_DATA = "setAttributeData"
 export const FETCH_DISABLED_DATES_START = 'fetchDisabledDatesStart';
 export const FETCH_DISABLED_DATES_SUCCESS = 'fetchDisabledDatesSuccess';
 export const FETCH_DISABLED_DATES_FAILURE = 'fetchDisabledDatesFailure';
+export const VALIDATE_DATE = 'validateDate';
 
+export const validateDateAction = (field,projectName,date) => ({
+    type: VALIDATE_DATE,
+    payload: {field,projectName,date},
+});
 export const fetchDisabledDatesStart = (startDate, endDate) => ({
   type: FETCH_DISABLED_DATES_START,
   payload: { startDate, endDate },

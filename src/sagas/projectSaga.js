@@ -116,7 +116,8 @@ import {
   setAttributeData,
   FETCH_DISABLED_DATES_START,
   fetchDisabledDatesSuccess,
-  fetchDisabledDatesFailure
+  fetchDisabledDatesFailure,
+  VALIDATE_DATE
 } from '../actions/projectActions'
 import { startSubmit, stopSubmit, setSubmitSucceeded } from 'redux-form'
 import { error } from '../actions/apiActions'
@@ -137,7 +138,8 @@ import {
   attributesApiUnlockAll,
   pingApi,
   getAttributeDataApi,
-  projectDateTypesApi
+  projectDateTypesApi,
+  projectDateValidateApi
 } from '../utils/api'
 import { usersSelector } from '../selectors/userSelector'
 import {
@@ -198,8 +200,27 @@ export default function* projectSaga() {
     takeLatest(FETCH_ARCHIVED_PROJECTS, fetchArchivedProjects),
     takeLatest(GET_ATTRIBUTE_DATA, getAttributeData),
     takeLatest(SET_ATTRIBUTE_DATA, setAttributeData),
-    takeLatest(FETCH_DISABLED_DATES_START, getProjectDisabledDeadlineDates)
+    takeLatest(FETCH_DISABLED_DATES_START, getProjectDisabledDeadlineDates),
+    takeLatest(VALIDATE_DATE, validateDate)
   ])
+}
+
+function* validateDate({payload}) {
+  try {
+    console.log(payload)
+    const query = {
+      identifier: payload.field,
+      project: payload.projectName,
+      date: payload.date,
+    };
+    console.log(query)
+    const result = yield call(projectDateValidateApi.get, { query });
+    console.log(result)
+    //yield put(fetchDisabledDatesSuccess(dates?.date_types?.disabled_dates?.dates));
+  } catch (e) {
+    console.log(e)
+    //yield put(fetchDisabledDatesFailure(e));
+  }
 }
 
 function* getProjectDisabledDeadlineDates() {
