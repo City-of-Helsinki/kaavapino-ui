@@ -3,10 +3,12 @@ import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { useTranslation } from 'react-i18next'
 import { TextInput, DateInput, IconAlertCircle } from 'hds-react'
+import {validateDateAction} from '../../actions/projectActions'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { getFormValues } from 'redux-form'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
+import moment from 'moment'
 
 const DeadLineInput = ({
   input,
@@ -24,6 +26,8 @@ const DeadLineInput = ({
 }) => {
   
   const { t } = useTranslation()
+  const dispatch = useDispatch();
+
   let inputValue = input.value
   if (autofillRule) {
     const formValues = useSelector(getFormValues(EDIT_PROJECT_TIMETABLE_FORM))
@@ -117,6 +121,13 @@ const DeadLineInput = ({
     return day === 0 || day === 6 || disabledDates.includes(formatDate(date));
   }
 
+  const validateDate = (date) => {
+    const formattedDate = moment(date, ['DD.MM.YYYY', 'YYYY-MM-DD']).format('YYYY-MM-DD');
+    console.log(date,"validate")
+    dispatch(validateDateAction(input.name,attributeData['projektin_nimi'],formattedDate));
+    return date
+  }
+
   return (
     <>
       <div className='deadline-input'>
@@ -133,6 +144,8 @@ const DeadLineInput = ({
           error={error}
           aria-label={input.name}
           onChange={event => {
+            validateDate(event)
+            console.log(event)
             const dateParts = event.split(".");
             const eventDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
             const year = eventDate.getFullYear();
