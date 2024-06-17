@@ -58,7 +58,8 @@
     "crypto-js": "4.2.0",
     "nth-check": "2.1.1",
     "postcss": "8.4.32",
-    "semver": "7.5.2"
+    "semver": "7.5.2",
+    "socks": "2.7.4"
   },
   "scripts": {
     "build-css": "sass -I ./src -I ./node_modules src/:src/",
