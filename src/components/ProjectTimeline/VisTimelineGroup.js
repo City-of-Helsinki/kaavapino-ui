@@ -506,11 +506,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             // Hover effect
           container.addEventListener("mouseenter", function() {
             // Action to perform on hover enter, e.g., change background color
-            this.classList.add("show-buttons");
+            container.classList.add("show-buttons");
           });
           container.addEventListener("mouseleave", function() {
             // Action to perform on hover leave
-            this.classList.remove("show-buttons");
+            container.classList.remove("show-buttons");
           });
 
           if(group?.nestedGroups?.length > 0 && allowedToEdit && !contentIncludesString){
