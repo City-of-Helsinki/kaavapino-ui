@@ -684,7 +684,7 @@ function* saveProjectTimetable() {
     if(attribute_data.oikaisukehoituksen_alainen_readonly){
       delete attribute_data.oikaisukehoituksen_alainen_readonly
     }
-    
+
     const deadlineAttributes = currentProject.deadline_attributes
     // Add missing fields as a null to payload since there are
     // fields which can be hidden according the user selection. 
@@ -721,7 +721,8 @@ function* saveProjectTimetable() {
       if (e?.code === "ERR_NETWORK") {
         yield put(toastr.error(i18.t('messages.general-save-error')))
       }
-      yield put(stopSubmit(EDIT_PROJECT_TIMETABLE_FORM, e.response && e.response.data))
+      yield put(stopSubmit(EDIT_PROJECT_TIMETABLE_FORM, e?.response?.data))
+      yield put(toastr.error(i18.t('messages.general-save-error')))
     }
   }
 }
