@@ -228,7 +228,6 @@ class CustomField extends Component {
       current = deadlines.find(
         deadline => deadline.deadline.attribute === props.input.name
       )
-      console.log('current', props.input.name, current, attributeData)
     }
 
     if (current && deadlines && deadlines.length > 0 || isProjectTimetableEdit) {
