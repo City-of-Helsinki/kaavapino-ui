@@ -4,7 +4,7 @@ import { projectFileUpload, projectFileRemove } from '../../actions/projectActio
 import { downloadFile } from '../../actions/apiActions'
 import { Progress } from 'semantic-ui-react'
 import 'core-js/features/array/at';
-import { Document, Page, pdfjs } from 'react-pdf'
+import { Document, Page } from 'react-pdf'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { withTranslation } from 'react-i18next'
 import { Button, IconDownload, IconCrossCircle, IconUpload } from 'hds-react'
@@ -55,7 +55,8 @@ class File extends Component {
 
   componentDidMount() {
     const { src, image } = this.props
-    pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js'
+    //PDF preview is currently not supported. If fixed in the future, update pdf.worker.js file
+    //pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js'
 
     if (src && image) {
       this.imageRef.current.src = src
