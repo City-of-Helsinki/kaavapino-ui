@@ -136,7 +136,6 @@ class ProjectEditPage extends Component {
       }
     }
     if(prevProps.formValues != this.props.formValues){
-      console.log("formValues",this.props.formValues)
       if(prevProps.formValues?.projektin_kaynnistys_pvm != this.props.formValues?.projektin_kaynnistys_pvm){
         this.fetchDisabledDates(this.props.formValues.projektin_kaynnistys_pvm,this.props.formValues?.projektin_kaynnistys_pvm)
       }

@@ -3,11 +3,11 @@ import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { useTranslation } from 'react-i18next'
 import { TextInput, DateInput, IconAlertCircle, Notification } from 'hds-react'
-import {validateDateAction} from '../../actions/projectActions'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { getFormValues } from 'redux-form'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
+import { useValidateDate } from '../../utils/dateUtils';
 import moment from 'moment'
 
 const DeadLineInput = ({
@@ -26,7 +26,7 @@ const DeadLineInput = ({
 }) => {
   
   const { t } = useTranslation()
-  const dispatch = useDispatch();
+  const validateDate = useValidateDate();
   const [warning, setWarning] = useState({warning:false,response:{reason:"",suggested_date:"",conflicting_deadline:""}})
 
   let inputValue = input.value
@@ -122,44 +122,32 @@ const DeadLineInput = ({
     return day === 0 || day === 6 || disabledDates.includes(formatDate(date));
   }
 
-  const validateDate = (date) => {
-    const formattedDate = moment(date, ['DD.MM.YYYY', 'YYYY-MM-DD']).format('YYYY-MM-DD');
-    //Wait for the promise to resolve and callback to see validity of the date and return results
-    return new Promise((resolve, reject) => {
-      dispatch(validateDateAction(input.name,attributeData['projektin_nimi'],formattedDate, (response) => {
-        if (response) {
-          if(response.error_reason !== null){
-            //Show warning notification with suggested date and reasons
-            setWarning({
-              warning:true,
-              response:{
-                reason:response.error_reason,
-                suggested_date:response.suggested_date,
-                conflicting_deadline:response.conflicting_deadline
-              }
-            });
-            //Return suggested date
-            resolve(response.suggested_date);
-          }
-          else{
-            //Reset warning
-            setWarning({
-              warning:false,
-              response:{
-                reason:"",
-                suggested_date:"",
-                conflicting_deadline:""
-              }
-            });
-            //Return valid date
-            resolve(response.date);
-          }
-        } else {
-          reject(new Error('validateDateAction call error'));
-        }
-      }));
-    });
-  }
+  const handleDateChange = async (event) => {
+    try {
+      const field = input.name;
+      const projectName = attributeData['projektin_nimi'];
+      const formattedDate = moment(event, ['DD.MM.YYYY', 'YYYY-MM-DD']).format('YYYY-MM-DD');
+
+      let date = await validateDate(field, projectName, formattedDate, setWarning); // Use await
+      let value;
+      if (date.includes('.')) {
+        const dateParts = date.split(".");
+        const eventDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
+        const year = eventDate.getFullYear();
+        const month = ("0" + (eventDate.getMonth() + 1)).slice(-2); // Months are 0-based, so add 1 and pad with 0 if necessary
+        const day = ("0" + eventDate.getDate()).slice(-2); // Pad with 0 if necessary
+        value = `${year}-${month}-${day}`;
+      } else {
+        value = date;
+      }
+      if (value) {
+        setCurrentValue(value);
+        input.onChange(value);
+      }
+    } catch (error) {
+      console.error('Validation error:', error);
+    }
+  };
 
   return (
     <>
@@ -176,28 +164,8 @@ const DeadLineInput = ({
           placeholder={placeholder}
           error={error}
           aria-label={input.name}
-          onChange={event => {
-            const handleDateChange = async (event) => {
-              let date = await validateDate(event); // Use await
-              let value
-              if(date.includes('.')){
-                const dateParts = date.split(".");
-                const eventDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
-                const year = eventDate.getFullYear();
-                const month = ("0" + (eventDate.getMonth() + 1)).slice(-2); // Months are 0-based, so add 1 and pad with 0 if necessary
-                const day = ("0" + eventDate.getDate()).slice(-2); // Pad with 0 if necessary
-                value = `${year}-${month}-${day}`;
-              }
-              else{
-                value = date
-              }
-              if (value) {
-                setCurrentValue(value);
-                input.onChange(event);
-              }
-            };
-          
-            handleDateChange(event); // Call the async function
+          onChange={(event) => {
+            handleDateChange(event);
           }}
           className={currentClassName}
           onBlur={() => {

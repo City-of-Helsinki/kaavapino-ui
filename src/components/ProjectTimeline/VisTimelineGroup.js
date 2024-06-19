@@ -556,10 +556,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               .replace(/[ö]/gi, 'o')  // Replace ö with o
               // Add more replacements as needed
               .toLowerCase(); // Convert to lowercase
-              console.log(group)
-              console.log(words[2])
-              console.log(visValuesRef) //visValuesRef.current not updating here?
-              console.log(visValuesRef?.current[`vahvista_${words[0]}_${normalizedString}_alkaa_${words[2]}`])
+
               if(group?.generated || visValuesRef?.current[`vahvista_${words[0]}_${normalizedString}_alkaa_${words[2]}`]){
                 remove.classList.add("button-disabled")
               }
