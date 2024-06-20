@@ -138,7 +138,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
         <Modal.Content>
           <div className='date-content'>
             {deadlineSections.map((section, i) => {
-              if (section.id === group) {
+              if (section.title === group) {
                 return renderSection(section, i)
               }
             })}

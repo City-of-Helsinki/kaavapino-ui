@@ -144,7 +144,7 @@ class EditProjectTimeTableModal extends Component {
       for (let x = 0; x < deadlineSections[i].sections.length; x++) {
         if (!deadLineGroups.some(item => item.content === deadlineSections[i].title)) {
           deadLineGroups.push({
-            id: deadlineSections[i].id,
+            id: deadlineSections[i].title,
             content: deadlineSections[i].title,
             showNested: true,
             nestedGroups: []
@@ -168,7 +168,7 @@ class EditProjectTimeTableModal extends Component {
       className: style,
       phaseID: deadlines[i].deadline.phase_id,
       phase: true,
-      group: deadlines[i].deadline.phase_id,
+      group: deadlines[i].deadline.phase_name,
     });
   
     if (deadlines[i].deadline.phase_name === "Käynnistys" || deadlines[i].deadline.phase_name === "Hyväksyminen" || deadlines[i].deadline.phase_name === "Voimaantulo") {
