@@ -80,45 +80,45 @@ class EditForm extends Component {
     } = this.props
     return (
       <>
-      {showSection ?
-      <Form className="form-container" autoComplete="off" aria-live="polite" aria-atomic="true" id="accordion-title" tabIndex="0">
-        <div className="edit-form-buttons">
-          <Shoutbox project={projectId} />
-        </div>
-          <FormSection
-            syncronousErrors={syncronousErrors}
-            submitErrors={submitErrors}
-            formName={EDIT_PROJECT_FORM}
-            key={sections + sectionIndex}
-            handleSave={this.props.handleSave}
-            handleLockField={this.props.handleLockField}
-            handleUnlockField={this.props.handleUnlockField}
-            section={sections[sectionIndex]}
-            disabled={disabled}
-            attributeData={attributeData}
-            setRef={this.props.setRef}
-            unlockAllFields={this.props.unlockAllFields}
-            filterFieldsArray={filterFieldsArray}
-            highlightedTag={highlightedTag}
-            fieldCount={fieldCount}
-            deadlines={deadlines}
-            isCurrentPhase={isCurrentPhase}
-            selectedPhase={selectedPhase}
-            phaseIsClosed={phaseIsClosed}
-          />
-        <Button
-          variant="supplementary"
-          iconRight={<IconArrowUp />}
-          className="scroll-to-top"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        >
-          <div>{t('footer.to-start')}</div>
-        </Button>
-      </Form>
-      :
-      <>
-      </>
-      }
+        {showSection ?
+        <Form className="form-container" autoComplete="off" aria-live="polite" aria-atomic="true" id="accordion-title" tabIndex="0">
+          <div className="edit-form-buttons">
+            <Shoutbox project={projectId} />
+          </div>
+            <FormSection
+              syncronousErrors={syncronousErrors}
+              submitErrors={submitErrors}
+              formName={EDIT_PROJECT_FORM}
+              key={sections + sectionIndex}
+              handleSave={this.props.handleSave}
+              handleLockField={this.props.handleLockField}
+              handleUnlockField={this.props.handleUnlockField}
+              section={sections[sectionIndex]}
+              disabled={disabled}
+              attributeData={attributeData}
+              setRef={this.props.setRef}
+              unlockAllFields={this.props.unlockAllFields}
+              filterFieldsArray={filterFieldsArray}
+              highlightedTag={highlightedTag}
+              fieldCount={fieldCount}
+              deadlines={deadlines}
+              isCurrentPhase={isCurrentPhase}
+              selectedPhase={selectedPhase}
+              phaseIsClosed={phaseIsClosed}
+            />
+          <Button
+            variant="supplementary"
+            iconRight={<IconArrowUp />}
+            className="scroll-to-top"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          >
+            <div>{t('footer.to-start')}</div>
+          </Button>
+        </Form>
+        :
+        <>
+        </>
+        }
       </>
     )
   }
