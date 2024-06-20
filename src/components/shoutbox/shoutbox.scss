@@ -33,7 +33,7 @@ $comment-list-height-mobile: calc(
   right: 0;
   top: 0;
   transition: max-width 0.25s ease-in-out;
-  z-index: 5;
+  z-index: 1200;
 
   .comment-list-wrapper {
     width: calc(100vw - 16px);
