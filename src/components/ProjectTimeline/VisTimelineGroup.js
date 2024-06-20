@@ -1,4 +1,7 @@
 import React, {useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import { change } from 'redux-form'
+import { useDispatch } from 'react-redux';
+import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import Moment from 'moment'
 import 'moment/locale/fi';
 import {extendMoment} from 'moment-range'
@@ -14,6 +17,7 @@ import './VisTimeline.css'
 Moment().locale('fi');
 
 const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates}, ref) => {
+    const dispatch = useDispatch();
     const moment = extendMoment(Moment);
 
     const timelineRef = useRef(null);
@@ -28,6 +32,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [toggleOpenAddDialog, setToggleOpenAddDialog] = useState(false)
     const [currentFormat, setCurrentFormat] = useState("showMonths");
     const [openConfirmModal, setOpenConfirmModal] = useState(false);
+    const [dataToRemove, setDataToRemove] = useState({});
     //const [lock, setLock] = useState({group:false,id:false,locked:false,abbreviation:false});
 
     useImperativeHandle(ref, () => ({
@@ -140,30 +145,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       setToggleOpenAddDialog(prevState => !prevState)
     }
 
-    const openRemoveDialog = (visValRef,data,event) => {
-      console.log(visValRef,data,event)
+    const openRemoveDialog = (data) => {
       setOpenConfirmModal(!openConfirmModal)
-      //data.deadlinegroup is not _1
-      /* 
-      content
-      : 
-      "Esilläolo"
-      deadlinegroup
-      : 
-      "periaatteet_esillaolokerta_1" */
-      //if content "Esilläolo" visValRef has vahvista_phase_esillaolo_alkaa_2/3/4 then unable to remove
-      //or 
-      //content "Lautakunta" vahvista_phase_lautakunnassa then unable to remove
-
-/*       const [addEsillaolo,nextEsillaolo,addLautakunta,nextLautakunta] = canGroupBeAdded(visValRef,data,deadlineSections)
-      const rect = event.target.getBoundingClientRect();
-      
-      setAddDialogStyle({
-        left: `${rect.left - 12}px`,
-        top: `${rect.bottom - 10}px`
-      })
-      setAddDialogData({group:data,deadlineSections:deadlineSections,showPresence:addEsillaolo,showBoard:addLautakunta,nextEsillaolo:nextEsillaolo,nextLautakunta:nextLautakunta})
-      setToggleOpenAddDialog(prevState => !prevState) */
+      setDataToRemove(data)
     }
 
     const handleCancelRemove = () => {
@@ -171,7 +155,47 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const handleRemoveGroup = () => {
-      //Todo add actual logic to remove group too
+      //TODO split this to smaller functions
+      let removeFromTimeline = dataToRemove?.deadlinegroup
+      //Remove from vis groups
+      let updatedGroups = groups.get({
+        filter: function(group) {
+          return !(group.deadlinegroup && group.deadlinegroup === removeFromTimeline);
+        }
+      });
+      //Remove from vis sub groups
+      updatedGroups.forEach(group => {
+        if (group.nestedGroups) {
+          group.nestedGroups = group.nestedGroups.filter(subgroup => subgroup !== dataToRemove.id);
+        }
+      });
+      //Remove from vis items
+      const updatedItems = items.get().filter(item => item.group !== dataToRemove.id);
+      //Update timeline visually
+      groups.clear();
+      items.clear();
+      groups.add(updatedGroups);
+      items.add(updatedItems)
+
+      let toRemoveFromCalendar = dataToRemove?.nestedInGroup?.toLowerCase() + "_" + dataToRemove?.content?.toLowerCase().replace(/[äöå]/g, match => {
+        switch (match) {
+          case 'ä': return 'a';
+          case 'ö': return 'o';
+          case 'å': return 'a';
+          default: return match;
+        }
+      });
+      let index = "_" + dataToRemove.deadlinegroup.split('_').pop()
+      //remove from attribute data/calendar
+      for (const key in visValues) {
+        if (Object.prototype.hasOwnProperty.call(visValues, key)) {
+          if (key.includes(toRemoveFromCalendar) && key.includes(index)) {
+            dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, key, false));
+            //delete visValues[key];
+          }
+        }
+      }
+
       setOpenConfirmModal(!openConfirmModal)
     }
 
@@ -563,7 +587,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               remove.style.fontSize = "small";
 
               remove.addEventListener("click", function (event) {
-                openRemoveDialog(visValuesRef.current,group,event);
+                openRemoveDialog(group,event);
               });
               container.insertAdjacentElement("beforeEnd", remove);
 
