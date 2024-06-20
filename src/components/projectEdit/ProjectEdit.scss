@@ -127,10 +127,6 @@
     display: flex;
     padding-right: $size16;
   }
-  @media screen and (min-height: 768px) {
-    position: sticky;
-    top: 150px;
-  }
 }
 
 .project-input-right {
