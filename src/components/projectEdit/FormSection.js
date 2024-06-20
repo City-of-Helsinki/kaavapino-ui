@@ -41,12 +41,6 @@ const FormSection = ({
   if(section?.title && section?.fields){
   return (
     <Segment id="field-segment">
-      <h2 tabIndex="0" id={`title-${section.title}`} className="section-title">
-        {section.title}
-      </h2>
-      <div className='section-ingress'>
-        {section?.ingress}
-      </div>
       {section.fields.map((field, i) => {
         let rollingInfo
         if(field?.categorization.includes("katsottava tieto") || field?.categorization.includes("päivitettävä tieto")){

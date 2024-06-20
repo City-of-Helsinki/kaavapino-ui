@@ -580,6 +580,9 @@ class ProjectEditPage extends Component {
       phaseText = ""
     }
 
+    const title = currentSchema.sections[this.state.sectionIndex].title || ''
+    const ingress = currentSchema.sections[this.state.sectionIndex].ingress || ''
+
     const isResponsible = authUtils.isResponsible(currentUserId, users)
     const isAdmin = authUtils.isAdmin(currentUserId, users)
     const isExpert = authUtils.isExpert(currentUserId, users)
@@ -630,6 +633,7 @@ class ProjectEditPage extends Component {
         :
         ""
         }
+        <div aria-hidden="true" className="block-div"></div>
         <div className={`project-input-container ${highlightGroup}`}>
           <div className="project-input-left">
             <QuickNav
@@ -687,6 +691,17 @@ class ProjectEditPage extends Component {
               )}
             </NavigationPrompt>
           </div>
+        <div className='project-input-right'>
+            {this.state?.showSection &&
+              <div className='sticky-title'>
+              <h2 tabIndex="0" className="section-title">
+                {title}
+              </h2>
+              <div className='section-ingress'>
+                {ingress}
+              </div>
+            </div>
+            }
           <EditForm
             handleSave={this.handleAutoSave}
             handleLockField={this.handleLockField}
@@ -736,6 +751,7 @@ class ProjectEditPage extends Component {
               allowedToEdit={isResponsible}
             />
           )}
+          </div>
         </div>
       </div>
     )
