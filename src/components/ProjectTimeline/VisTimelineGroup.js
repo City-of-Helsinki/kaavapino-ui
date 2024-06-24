@@ -586,8 +586,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               }
               remove.style.fontSize = "small";
 
-              remove.addEventListener("click", function (event) {
-                openRemoveDialog(group,event);
+              remove.addEventListener("click", function () {
+                openRemoveDialog(group);
               });
               container.insertAdjacentElement("beforeEnd", remove);
 
