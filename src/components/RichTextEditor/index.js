@@ -235,98 +235,72 @@ function RichTextEditor(props) {
   }, [value])
 
   useEffect(() => {
-    //Chekcs that locked status has more data then inital empty object
-    if(!insideFieldset && lockedStatus && Object.keys(lockedStatus).length > 0){
-      if(lockedStatus.lock === false){
-        let identifier;
-        //Field is fieldset field and has different type of identifier
-        //else is normal field
-        if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
-          identifier = lockedStatus.lockData.attribute_lock.field_identifier;
-        }
-        else{
-          identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
-        }
 
-        const lock = inputProps.name === identifier
-        //Check if locked field name matches with instance and that owner is true to allow edit
-        //else someone else is editing and prevent editing
-        if(lock && lockedStatus.lockData.attribute_lock.owner){
-          if(lastModified === inputProps.name && lockedStatus?.saving){
-            setReadOnly(true)
-          }
-          else{
-            setReadOnly(false)
-            //Add changed value from db if there has been changes
-            setValue(lockedStatus.lockData.attribute_lock.field_data)
+    const getIdentifier =() => {
+      // Fieldset fields have different type of identifier
+      return lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier
+      ? lockedStatus.lockData.attribute_lock.field_identifier
+      : lockedStatus.lockData.attribute_lock.attribute_identifier;
+    }
 
-            if (typeof lockField === 'function') {
-              //Change styles from FormField
-              lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
-            }
-            //Focus to editor input so user does not need to click twice
-            const fieldToFocus = document.getElementById(toolbarName + "input")?.querySelector("p");
-            fieldToFocus?.focus()
-          }
+    const updateFieldAccess = (isLocked, identifier) => {
+      const isOwner = lockedStatus?.lockData.attribute_lock.owner
+      const isSaving = lockedStatus?.saving
+      const fieldData = lockedStatus?.lockData.attribute_lock.field_data
+
+      // determine readOnly status
+      const shouldBeReadOnly = !isLocked || !isOwner || (lastModified === inputProps.name && isSaving)
+      setReadOnly(shouldBeReadOnly)
+
+      if (!shouldBeReadOnly) {
+        // if the field is not locked, set the value from the lock data
+        setValue(fieldData)
+      }
+
+      if (!shouldBeReadOnly || isLocked && !isOwner) {
+        // Enhance user experience by auto-focusing
+        const fieldToFocus = document.getElementById(`${toolbarName}input`)?.querySelector("p");
+        fieldToFocus?.focus();
+        setTimeout(() => fieldToFocus?.scrollIntoView({ behavior: "smooth", block: "center" }), 300);
+      }
+
+      // Apply custom lock field styling if applicable
+      if (typeof lockField === 'function') {
+        lockField(lockedStatus, isOwner, identifier);
+      }
+    }
+
+    const updateFieldsetFieldAccess = (isLocked, identifier) => {
+      const lockData = lockedStatus.lockData.attribute_lock;
+      const isOwner = lockData.owner;
+      if (isLocked) {
+        const field = inputProps.name.split('.')[1]
+        const fieldData = field ? lockData.field_data[field] : undefined;
+        setValue(fieldData)
+      }
+      lockField(lockedStatus, isOwner, identifier);
+      setReadOnly(false);
+    }
+
+    // Check if the field is locked and if the lock data is available
+    if (lockedStatus && Object.keys(lockedStatus).length > 0) {
+      if (!insideFieldset) {
+        if (lockedStatus.lock === false) {
+          let identifier = getIdentifier()
+          const isLocked = inputProps.name === identifier
+          updateFieldAccess(isLocked, identifier);
         }
-        else{
-          setReadOnly(true)
-          if (typeof lockField === 'function') {
-            //Change styles from FormField
-            lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
-          }
+      } else {
+        if (lockedStatus.lock === false) {
+          let identifier = getIdentifier()
+          let name = inputProps.name?.split('.')[0];
+          const isLocked = name === identifier
+          updateFieldsetFieldAccess(isLocked, identifier);
         }
       }
     }
-    else if(insideFieldset && lockedStatus && Object.keys(lockedStatus).length > 0){
-      //Fieldsets lock happends on Fieldset.js
-      //Get most recent data for all fields inside fieldset when accordian is clicked and whole fieldset is locked.
-      if(lockedStatus.lock === false){
-        let identifier;
-        let name = inputProps.name;
-        if(name){
-          //Get index of fieldset
-          name = name.split('.')[0]
-        }
-        //Field is fieldset field and has different type of identifier
-        //else is normal field
-        if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
-          identifier = lockedStatus.lockData.attribute_lock.field_identifier;
-        }
-        else{
-          identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
-        }
-        //Compares which index not which field
-        const lock = name === identifier
-        if(lock){
-          let fieldData
-          let field = inputProps.name
-          const fieldSetFields = lockedStatus.lockData.attribute_lock.field_data
 
-          if(field){
-            //Get single field
-            field = field.split('.')[1]
-          }
-          
-          if(fieldSetFields){
-            for (const [key, value] of Object.entries(fieldSetFields)) {
-              if(key === field){
-                //If field is this instance of component then set value for it from db
-                fieldData = value
-              }
-            }
-          }
-          setValue(fieldData)
-          lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
-          setReadOnly(false)
-        }
-        else{
-          lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
-          setReadOnly(false)
-        }
-      }
-    }
-  }, [lockedStatusJsonString, connection.connection]);
+  }, [lockedStatusJsonString, connection.connection, inputProps.name]);
 
   const checkClickedElement = (e) => {
     let previousElement = localStorage.getItem("previousElement")
