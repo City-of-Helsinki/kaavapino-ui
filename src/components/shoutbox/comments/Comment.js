@@ -17,8 +17,8 @@ class Comment extends Component {
   }
 
   handleMouseEnter = () => {
-    const { editable } = this.props
-    if (!editable) {
+    const { editable, readOnly } = this.props
+    if (!editable || readOnly) {
       return
     }
     this.setState({ showEdit: true })

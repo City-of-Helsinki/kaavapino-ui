@@ -179,6 +179,12 @@ function RichTextEditor(props) {
   }, [lastSaved?.status === "error"])
 
   useEffect(() => {
+    if (readonly) {
+      setShowComments(false)
+    }
+  }, [readonly])
+
+  useEffect(() => {
     //Remove tab press inside editor so navigating with tab stays normal.
     const removeTabBinding = () => {
       if (editorRef.current === "") {
@@ -640,9 +646,9 @@ function RichTextEditor(props) {
     >
       <div
         className={counter.current > maxSize ? 
-        `rich-text-editor ${toolbarVisible || showComments ? 'toolbar-visible-error' : ''
+        `rich-text-editor ${toolbarVisible ? 'toolbar-visible-error' : ''
         } ${largeField ? 'large' : ''}`
-        : `rich-text-editor ${toolbarVisible || showComments ? 'toolbar-visible' : ''
+        : `rich-text-editor ${toolbarVisible ? 'toolbar-visible' : ''
       } ${largeField ? 'large' : ''}`}
       >
         <div
@@ -727,6 +733,7 @@ function RichTextEditor(props) {
             key={`${i}-${comment.id}`}
             {...comment}
             editable={userId === comment.user}
+            readOnly={readonly}
             onSave={content =>
               dispatch(editFieldComment(projectId, comment.id, content, reducedName))
             }
