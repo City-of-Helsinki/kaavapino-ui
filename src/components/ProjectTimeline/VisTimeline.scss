@@ -67,13 +67,28 @@
             }
         }
     }
-    .inner,.inner-end{
+    .inner-end{
         z-index: 1000;
         pointer-events: auto;
         border-width: 0;
+        height: $size24;
+        border-radius: 15px;
+        .vis-item-overflow{
+            border: 1px solid #000000;
+            background: #fff;
+            border-radius: 15px;
+            .vis-item-content{
+                pointer-events: auto;
+                padding:0;
+            }
+        }
+    }
+
+    .board{
+        //Makes range item apper to be two single items
         .vis-item-overflow{
             height: $size5;
-            border-top: $size4 dotted rgba(0, 0, 0, .95);
+            border-top: $size4 solid rgba(0, 0, 0, .95);
             color: #fff;
             background-color: #fff;
             width: 100%;
@@ -82,15 +97,71 @@
                 padding:0;
             }
         }
-        .vis-drag-left,.vis-drag-right{
+        .vis-drag-left{
             height: $size18 !important;
             width: $size18 !important;
             background-color:#f2f2f2;
             border-radius: 50%;
             top: -8px !important;
             display: inline-block;
-            border: $size1 solid black;
+            border: $size1 solid #1a1a1a;
+            border-radius: 8px;
+            padding: 5px;
+            background-color: #fff;
         }
+        .vis-drag-right{
+            height: $size18 !important;
+            width: $size18 !important;
+            background-color:#f2f2f2;
+            border-radius: 50%;
+            top: -8px !important;
+            display: inline-block;
+            border: $size1 solid #fff;
+            border-radius: 8px;
+            padding: 5px;
+            background-color: #1a1a1a;
+            box-shadow: 0 0 0 2px #1a1a1a;
+        }
+    }
+
+    .phase-length{
+        z-index: 1000;
+        pointer-events: auto;
+        border-width: 0;
+        height: $size24;
+        .vis-item-overflow{
+            border: 1px solid #000000;
+            background: #fff;
+            border-radius: 6px;
+            .vis-item-content{
+                pointer-events: auto;
+                padding:0;
+            }
+        }
+    }
+
+    .vis-dot-board{
+        position: absolute;
+        padding: 5px;
+        border-width: 1px !important;
+        border-style: solid;
+        border-radius: 8px;
+        background-color: #1a1a1a;
+        border-color: #fff;
+        box-shadow: 0 0 0 2px #1a1a1a;
+    }
+
+    .vis-dot{
+        position: absolute;
+        padding: 0px;
+        border-width: 1px !important;
+        border-style: solid;
+        border-radius: 12px;
+        position: absolute;
+        background-color: #fff;
+        border-color: #1a1a1a;
+        height: 24px;
+        width: 24px;
     }
 
     .locked{
@@ -331,22 +402,36 @@
 
     .color-tram{
         background-color: $color_tram !important;
+        height: $size8;
     }
     .color-summer{
         background-color: $color-summer !important;
+        height: $size8;
     }
     .color-metro{
         background-color: $color_metro !important;
+        height: $size8;
     }
     .color-bus{
         background-color: $color_bus !important;
         color:white;
+        height: $size8;
     }
     .color-gold{
         background-color: $color_gold !important;
+        height: $size8;
     }
     .color-fog{
         background-color: $color_fog !important;
+        height: $size8;
+    }
+    .color-green{
+        background-color: $color_phase_principles !important;
+        height: $size8;
+    }
+    .color-suomenlinna{
+        background-color: $color_phase_draft !important;
+        height: $size8;
     }
 
     .vis-foreground .vis-group {
