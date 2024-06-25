@@ -35,7 +35,7 @@ class EditProjectTimeTableModal extends Component {
   componentDidMount() {
     const { initialize, attributeData, deadlines, deadlineSections,disabledDates } = this.props
     initialize(attributeData)
-
+   // Check if the key exists and its value is true
     if(attributeData && deadlines && deadlineSections){
       let items = new visdata.DataSet()
       let groups = new visdata.DataSet();
@@ -177,7 +177,7 @@ class EditProjectTimeTableModal extends Component {
         content: "",
         start: startDate,
         end: endDate,
-        className: "inner-end",
+        className: "phase-length",
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -201,19 +201,62 @@ class EditProjectTimeTableModal extends Component {
     return [phaseData, deadLineGroups, nestedDeadlines];
   }
 
-  addSubgroup = (deadlines, i, numberOfPhases, dashStart, dashEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines) => {
-    phaseData.push({
-      id: numberOfPhases,
-      content: "",
-      start: dashStart,
-      end: dashEnd,
-      className: dashedStyle,
-      title: deadlines[i].deadline.attribute,
-      phaseID: deadlines[i].deadline.phase_id,
-      phase: false,
-      group: numberOfPhases,
-      locked: false
-    });
+  addSubgroup = (deadlines, i, numberOfPhases, dashStart, dashEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone) => {
+    console.log(dashStart,dashEnd,milestone)
+    if(dashEnd === null){
+      phaseData.push({
+        start: dashStart,
+        id: numberOfPhases,
+        content: "",
+        className: dashedStyle,
+        title: deadlines[i].deadline.attribute,
+        phaseID: deadlines[i].deadline.phase_id,
+        phase: false,
+        group: numberOfPhases,
+        locked: false,
+        type: 'point'
+      });
+    }
+    else if(dashStart && dashEnd && milestone){
+      phaseData.push({
+        start: milestone,
+        id: numberOfPhases + " maaraaika",
+        content: "",
+        className: dashedStyle,
+        title: deadlines[i].deadline.attribute,
+        phaseID: deadlines[i].deadline.phase_id,
+        phase: false,
+        group: numberOfPhases,
+        locked: false,
+        type: 'point'
+      });
+      phaseData.push({
+        start: dashStart,
+        end: dashEnd,
+        id: numberOfPhases,
+        content: "",
+        className: dashedStyle,
+        title: deadlines[i].deadline.attribute,
+        phaseID: deadlines[i].deadline.phase_id,
+        phase: false,
+        group: numberOfPhases,
+        locked: false
+      });
+    }
+    else{
+      phaseData.push({
+        start: dashStart,
+        end: dashEnd,
+        id: numberOfPhases,
+        content: "",
+        className: dashedStyle,
+        title: deadlines[i].deadline.attribute,
+        phaseID: deadlines[i].deadline.phase_id,
+        phase: false,
+        group: numberOfPhases,
+        locked: false
+      });
+    }
   
     let dlIndex = deadLineGroups.findIndex(group => group.content === deadlines[i].deadline.phase_name);
     deadLineGroups.at(dlIndex).nestedGroups.push(numberOfPhases);
@@ -234,23 +277,82 @@ class EditProjectTimeTableModal extends Component {
   generateVisItems = (deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData) => {
 
     let numberOfPhases = 1
-    let type = ""
+    //let type = ""
 
     let startDate = false
     let endDate = false
     let style = ""
 
-    let dashStart = false
-    let dashEnd = false
-    let dashedStyle = ""
+    //let dashStart = false
+    //let dashEnd = false
+    let dashedStyle = "inner"
 
     let innerStart = false
     let innerEnd = false
-    let innerStyle = ""
+    let innerStyle = "inner-end"
+
+    let milestone = false
+
+/*     let array1 = []
+    let array2 = []
+    let array3 = []
+    let array4 = [] */
 
     for (let i = 0; i < deadlines.length; i++) {
-
       if(deadlines[i].deadline.deadline_types.includes('phase_start')){
+        //If formValues has deadlines[i].deadline.attribute use that values, it if not then use deadline[i].date in startDate.
+        startDate = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+        style = deadlines[i].deadline.phase_color
+        //.setHours(23,59,59,0)
+      }
+      else if(deadlines[i]?.deadline?.attribute?.includes("esillaolo") || deadlines[i]?.deadline?.attribute?.includes("luonnosaineiston_maaraaika")){
+        if(deadlines[i].deadline.deadline_types.includes('milestone') && deadlines[i].deadline.deadline_types.includes('dashed_start')){
+          milestone = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+        }
+        else if(deadlines[i].deadline.deadline_types.includes('inner_start')){
+          innerStart = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+        }
+        else if(deadlines[i].deadline.deadline_types.includes('inner_end')){
+          innerEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+          innerStyle = "inner-end"
+        }
+      }
+      else if(deadlines[i]?.deadline?.attribute?.includes("nahtavilla") || deadlines[i]?.deadline?.deadlinegroup?.includes("nahtavillaolokerta") || deadlines[i]?.deadline?.attribute?.includes("ehdotus_nahtaville_aineiston_maaraaika")){
+        if(deadlines[i].deadline.deadline_types.includes('milestone') && deadlines[i].deadline.deadline_types.includes('dashed_start')){
+          milestone = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+        }
+        else if(deadlines[i].deadline.deadline_types.includes('inner_start')){
+          innerStart = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+        }
+        else if(deadlines[i].deadline.deadline_types.includes('inner_end')){
+          innerEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+          innerStyle = "inner-end"
+        }
+      }
+      else if(deadlines[i]?.deadline?.attribute?.includes("lautakunta") || deadlines[i]?.deadline?.attribute?.includes("lautakunnassa") || 
+      deadlines[i]?.deadline?.attribute?.includes("tarkistettu_ehdotus_kylk_maaraaika") || 
+      deadlines[i]?.deadline?.attribute?.includes("ehdotus_kylk_aineiston_maaraaika") ||
+      deadlines[i]?.deadline?.attribute?.includes("kaavaluonnos_kylk_aineiston_maaraaika")){
+        if(deadlines[i].deadline.deadline_types.includes('milestone') && deadlines[i].deadline.deadline_types.includes('dashed_start')){
+          innerStart = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+        }
+        else if(deadlines[i].deadline.deadline_types.includes('milestone') && deadlines[i].deadline.deadline_types.includes('dashed_end')){
+          innerEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+          innerStyle = "board"
+        }
+        else if(deadlines[i].deadline.deadline_types.includes('inner_start')){
+          innerStart = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+        }
+        else if(deadlines[i].deadline.deadline_types.includes('inner_end')){
+          innerEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+        }
+      }
+      else if(deadlines[i].deadline.deadline_types.includes('phase_end') && deadlines[i].deadline.date_type !== "Arkipäivät"){
+        endDate = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+        //new Date .setHours(0,0,0,0)
+      }
+
+      /* if(deadlines[i].deadline.deadline_types.includes('phase_start')){
         //If formValues has deadlines[i].deadline.attribute use that values, it if not then use deadline[i].date in startDate.
         startDate = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
         style = deadlines[i].deadline.phase_color
@@ -282,7 +384,7 @@ class EditProjectTimeTableModal extends Component {
       else if(deadlines[i].deadline.deadline_types.includes('phase_end') && deadlines[i].deadline.date_type !== "Arkipäivät"){
         endDate = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
         //new Date .setHours(0,0,0,0)
-      }
+      } */
 
       if(startDate && endDate){
         //Main group items not movable(Käynnistys, Periaatteet, OAS etc)
@@ -292,27 +394,22 @@ class EditProjectTimeTableModal extends Component {
         endDate = false
         numberOfPhases++
       }
-      else if(dashStart && dashEnd && type === "lautakunta"){
-        //Lautakunta item that will be movable from timeline
-        let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, dashStart, dashEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines);
+      else if(milestone && deadlines[i].deadline.phase_name === "Ehdotus" && deadlines[i].deadline.deadlinegroup !== "ehdotus_lautakuntakerta_1" && formValues.kaavaprosessin_kokoluokka === "XL" || deadlines[i].deadline.phase_name === "Ehdotus" && deadlines[i].deadline.deadlinegroup !== "ehdotus_lautakuntakerta_1" && formValues.kaavaprosessin_kokoluokka === "L"){
+        let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, milestone, null, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone);
         [phaseData, deadLineGroups, nestedDeadlines] = subgroup;
-        dashEnd = false
+        milestone = false
         numberOfPhases++
       }
-      else if(innerStart && innerEnd && type === "esillaolo"){
-        //Esilläolo item that will be movable from timeline
-        let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, dashStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines);
+      else if(milestone && innerStart && innerEnd || innerStart && innerEnd){
+        let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, milestone);
         [phaseData, deadLineGroups, nestedDeadlines] = subgroup2;
+        innerStart = false
         innerEnd = false
-        numberOfPhases++
-      }
-      else if(innerStart && innerEnd && type === "nahtavillaolo"){
-        let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines);
-        [phaseData, deadLineGroups, nestedDeadlines] = subgroup2;
-        innerEnd = false
+        milestone = false
         numberOfPhases++
       }
     }
+    console.log(deadLineGroups,nestedDeadlines,phaseData)
     return [deadLineGroups,nestedDeadlines,phaseData]
   }
 
