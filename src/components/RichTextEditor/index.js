@@ -179,7 +179,7 @@ function RichTextEditor(props) {
   }, [lastSaved?.status === "error"])
 
   useEffect(() => {
-    if (readonly) {
+    if (readonly && !saving) {
       setShowComments(false)
     }
   }, [readonly])
@@ -300,7 +300,7 @@ function RichTextEditor(props) {
       }
     }
 
-  }, [lockedStatusJsonString, connection.connection, inputProps.name]);
+  }, [lockedStatusJsonString, connection.connection, inputProps.name])
 
   const checkClickedElement = (e) => {
     let previousElement = localStorage.getItem("previousElement")
