@@ -3,6 +3,7 @@ import { Dropdown } from 'semantic-ui-react'
 import projectUtils from '../../../utils/projectUtils'
 import { TextInput, Button } from 'hds-react'
 import { withTranslation } from 'react-i18next';
+import PropTypes from 'prop-types';
 
 class Comment extends Component {
   constructor(props) {
@@ -124,5 +125,22 @@ class Comment extends Component {
     )
   }
 }
+
+Comment.propTypes = {
+  editable: PropTypes.bool,
+  readOnly: PropTypes.bool,
+  content: PropTypes.string,
+  created_at: PropTypes.string.isRequired,
+  user: PropTypes.string.isRequired,
+  _metadata: PropTypes.shape({
+    users: PropTypes.arrayOf(PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string,
+    })).isRequired,
+  }).isRequired,
+  generated: PropTypes.bool,
+  onSave: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+};
 
 export default withTranslation()(Comment)
