@@ -284,14 +284,12 @@ function RichTextEditor(props) {
 
     // Check if the field is locked and if the lock data is available
     if (lockedStatus && Object.keys(lockedStatus).length > 0) {
-      if (!insideFieldset) {
-        if (lockedStatus.lock === false) {
+      if (lockedStatus.lock === false) {
+        if (!insideFieldset) {
           let identifier = getIdentifier()
           const isLocked = inputProps.name === identifier
           updateFieldAccess(isLocked, identifier);
-        }
-      } else {
-        if (lockedStatus.lock === false) {
+        } else {
           let identifier = getIdentifier()
           let name = inputProps.name?.split('.')[0];
           const isLocked = name === identifier
@@ -588,6 +586,15 @@ function RichTextEditor(props) {
 
     //Default maxsize 10000
     const maxSize = props.maxSize ? props.maxSize : 10000;
+    let RichTextClassName = "rich-text-editor"
+    
+    if (counter.current > maxSize) {
+      RichTextClassName += toolbarVisible ? ' toolbar-visible-error' : ''
+    } else {
+      RichTextClassName += toolbarVisible ? ' toolbar-visible' : ''
+    }
+    RichTextClassName += largeField ? ' large' : ''
+
     //Render rolling info field or normal edit field
     //If clicking rolling field button makes positive lock check then show normal editable field
     //Rolling field can be nonEditable
@@ -617,13 +624,7 @@ function RichTextEditor(props) {
       aria-label="tooltip"
       onFocus={checkLocked}
     >
-      <div
-        className={counter.current > maxSize ? 
-        `rich-text-editor ${toolbarVisible ? 'toolbar-visible-error' : ''
-        } ${largeField ? 'large' : ''}`
-        : `rich-text-editor ${toolbarVisible ? 'toolbar-visible' : ''
-      } ${largeField ? 'large' : ''}`}
-      >
+      <div className={RichTextClassName}>
         <div
           role="toolbar"
           id={toolbarName}
