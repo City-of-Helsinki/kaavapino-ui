@@ -470,7 +470,6 @@ function RichTextEditor(props) {
             localStorage.setItem("changedValues", inputProps.name);
             onBlur();
             oldValueRef.current = editor?.ops;
-            setReadOnly(true)
           }
         }
       }
