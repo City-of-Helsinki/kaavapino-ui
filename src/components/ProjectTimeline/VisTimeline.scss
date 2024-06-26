@@ -87,8 +87,8 @@
     .board{
         //Makes range item apper to be two single items
         .vis-item-overflow{
-            height: $size5;
-            border-top: $size4 solid rgba(0, 0, 0, .95);
+            height: $size4;
+            border-top: 0.2rem solid rgba(0, 0, 0, .95);
             color: #fff;
             background-color: #fff;
             width: 100%;
@@ -98,26 +98,26 @@
             }
         }
         .vis-drag-left{
-            height: $size18 !important;
-            width: $size18 !important;
+            height: $size24 !important;
+            width: $size24 !important;
             background-color:#f2f2f2;
             border-radius: 50%;
-            top: -8px !important;
+            top: -11px !important;
             display: inline-block;
             border: $size1 solid #1a1a1a;
-            border-radius: 8px;
+            border-radius: 14px;
             padding: 5px;
             background-color: #fff;
         }
         .vis-drag-right{
-            height: $size18 !important;
-            width: $size18 !important;
+            height: 1.3rem !important;
+            width: 1.3rem !important;
             background-color:#f2f2f2;
             border-radius: 50%;
-            top: -8px !important;
+            top: -10px !important;
             display: inline-block;
             border: $size1 solid #fff;
-            border-radius: 8px;
+            border-radius: 14px;
             padding: 5px;
             background-color: #1a1a1a;
             box-shadow: 0 0 0 2px #1a1a1a;
@@ -151,6 +151,14 @@
         box-shadow: 0 0 0 2px #1a1a1a;
     }
 
+    .divider{
+        position: absolute;
+        background-color: #1a1a1a;
+        border-color: #1a1a1a;
+        height: 4px;
+        top: 22px !important;
+    }
+
     .vis-dot{
         position: absolute;
         padding: 0px;
@@ -162,6 +170,10 @@
         border-color: #1a1a1a;
         height: 24px;
         width: 24px;
+    }
+
+    .vis-range{
+        border-color: #1a1a1a;
     }
 
     .locked{

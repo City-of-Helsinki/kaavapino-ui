@@ -231,6 +231,18 @@ class EditProjectTimeTableModal extends Component {
         type: 'point'
       });
       phaseData.push({
+        start: milestone,
+        end: dashStart,
+        id: numberOfPhases + " divider",
+        content: "",
+        className: "divider",
+        title: "divider",
+        phaseID: deadlines[i].deadline.phase_id,
+        phase: false,
+        group: numberOfPhases,
+        locked: false,
+      });
+      phaseData.push({
         start: dashStart,
         end: dashEnd,
         id: numberOfPhases,
