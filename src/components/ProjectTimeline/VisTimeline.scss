@@ -85,6 +85,7 @@
     }
 
     .board{
+        z-index: 1000;
         //Makes range item apper to be two single items
         .vis-item-overflow{
             height: $size4;

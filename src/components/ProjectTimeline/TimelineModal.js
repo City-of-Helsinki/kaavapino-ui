@@ -107,7 +107,6 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       const renderedSections = []
       sections.forEach(subsection => {
         const attr = subsection?.attributes
-        console.log('attr', attr, deadlinegroup)
         if(attr[deadlinegroup]){
           renderedSections.push(
             <Tabs key={"tab" + sectionIndex}>
@@ -125,7 +124,6 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       })
       return renderedSections
     }
-    console.log('deadlineSections', deadlineSections)
     const title = deadlineSections.find(section => section?.id === group)?.title
     return (
       <Modal open={open} size={'large'} className='timeline-edit-right'>
