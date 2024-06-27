@@ -501,7 +501,7 @@ class EditProjectTimeTableModal extends Component {
     }
 
     const validValues = [];
-    for (const { key, value } of matchingValues) {
+    for (const { key } of matchingValues) {
       try {          
         let valueToCheck
         if (!key.includes("_alkaa") && validValues.length > 0){
