@@ -184,9 +184,9 @@ class EditProjectTimeTableModal extends Component {
         group: numberOfPhases,
         locked: false
       });
-  
+      console.log(deadLineGroups)
       let dlIndex = deadLineGroups.findIndex(group => group.content === deadlines[i].deadline.phase_name);
-      deadLineGroups.at(dlIndex).nestedGroups.push(numberOfPhases);
+      deadLineGroups?.at(dlIndex)?.nestedGroups?.push(numberOfPhases);
   
       nestedDeadlines.push({
         id: numberOfPhases,
@@ -270,7 +270,7 @@ class EditProjectTimeTableModal extends Component {
     }
   
     let dlIndex = deadLineGroups.findIndex(group => group.content === deadlines[i].deadline.phase_name);
-    deadLineGroups.at(dlIndex).nestedGroups.push(numberOfPhases);
+    deadLineGroups?.at(dlIndex)?.nestedGroups.push(numberOfPhases);
     const lastChar = deadlines[i].deadline.deadlinegroup.charAt(deadlines[i].deadline.deadlinegroup.length - 1); // Get the last character of the string
     const isLastCharNumber = !isNaN(lastChar) && lastChar !== ""; // Check if the last character is a number
     let indexString = "";
@@ -292,7 +292,7 @@ class EditProjectTimeTableModal extends Component {
   }
 
   generateVisItems = (deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData) => {
-
+    console.log(deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData)
     let numberOfPhases = 1
     //let type = ""
 
@@ -524,6 +524,7 @@ class EditProjectTimeTableModal extends Component {
         }
         const adjustedKey = newIndex !== '' ? key + newIndex : key;
         const date = await this.getNewValidDates(adjustedKey, this.props.formValues['projektin_nimi'], valueToCheck);
+        console.log(adjustedKey, date)
         validValues.push({ key: adjustedKey, value: date });
       } catch (error) {
         const adjustedKey = newIndex !== '' ? key + newIndex : key;
@@ -637,36 +638,8 @@ class EditProjectTimeTableModal extends Component {
             }
 
             console.log(validValues)
-            const newItems = {
-              className: className,
-              content: "",
-              group: idt,
-              id: this.state.items.length + 1,
-              locked: false,
-              phase: false,
-              phaseID: groupID,
-              start: validValues[0].value,
-              end: validValues[1].value,
-              title: content === "esillaolo" ? "milloin_" + phase + "_esillaolo_paattyy" + indexString : +phase + "_lautakunta_aineiston_maaraaika" + indexString,
-            };
-            this.state.items.add(newItems);
             console.log(validValues[2].key.includes("maaraaika"), validValues.length)
             if(validValues.length > 2 && validValues[2].key.includes("maaraaika")){
-              console.log("IF")
-              const diveverItem = {
-                className: "divider",
-                content: "",
-                group: idt,
-                id: this.state.items.length + 1,
-                locked: false,
-                phase: false,
-                phaseID: groupID,
-                start: validValues[2].value,
-                end: validValues[0].value,
-                title: "divider"
-              }
-              this.state.items.add(diveverItem);
-
               const deadlineItem = {
                 className: "board",
                 content: "",
@@ -680,7 +653,35 @@ class EditProjectTimeTableModal extends Component {
                 title: "maaraaika"
               };
               this.state.items.add(deadlineItem);
+
+              const diveverItem = {
+                className: "divider",
+                content: "",
+                group: idt,
+                id: this.state.items.length + 1,
+                locked: false,
+                phase: false,
+                phaseID: groupID,
+                start: validValues[2].value,
+                end: validValues[0].value,
+                title: "divider"
+              }
+              this.state.items.add(diveverItem);
             }
+
+            const newItems = {
+              className: className,
+              content: "",
+              group: idt,
+              id: this.state.items.length + 1,
+              locked: false,
+              phase: false,
+              phaseID: groupID,
+              start: validValues[0].value,
+              end: validValues[1].value,
+              title: content === "esillaolo" ? "milloin_" + phase + "_esillaolo_paattyy" + indexString : +phase + "_lautakunta_aineiston_maaraaika" + indexString,
+            };
+            this.state.items.add(newItems);
           
             const newSubGroup = {
               id: idt,
