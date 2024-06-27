@@ -202,7 +202,6 @@ class EditProjectTimeTableModal extends Component {
   }
 
   addSubgroup = (deadlines, i, numberOfPhases, dashStart, dashEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone) => {
-    console.log(dashStart,dashEnd,milestone)
     if(dashEnd === null){
       phaseData.push({
         start: dashStart,
@@ -272,10 +271,16 @@ class EditProjectTimeTableModal extends Component {
   
     let dlIndex = deadLineGroups.findIndex(group => group.content === deadlines[i].deadline.phase_name);
     deadLineGroups.at(dlIndex).nestedGroups.push(numberOfPhases);
+    const lastChar = deadlines[i].deadline.deadlinegroup.charAt(deadlines[i].deadline.deadlinegroup.length - 1); // Get the last character of the string
+    const isLastCharNumber = !isNaN(lastChar) && lastChar !== ""; // Check if the last character is a number
+    let indexString = "";
+    if(isLastCharNumber){
+      indexString = "-" + lastChar;
+    }
 
     nestedDeadlines.push({
       id: numberOfPhases,
-      content: deadlines[i].deadline.deadlinegroup?.includes("lautakunta") ? "Lautakunta" : (deadlines[i].deadline.deadlinegroup?.includes("nahtavillaolo") ? "Nahtavillaolo" : "Esilläolo"),
+      content: deadlines[i].deadline.deadlinegroup?.includes("lautakunta") ? "Lautakunta" +indexString : (deadlines[i].deadline.deadlinegroup?.includes("nahtavillaolo") ? "Nahtavillaolo" +indexString : "Esilläolo" +indexString),
       abbreviation: deadlines[i].abbreviation,
       deadlinegroup: deadlines[i].deadline.deadlinegroup,
       deadlinesubgroup: deadlines[i].deadline.deadlinesubgroup,
@@ -421,7 +426,7 @@ class EditProjectTimeTableModal extends Component {
         numberOfPhases++
       }
     }
-    console.log(deadLineGroups,nestedDeadlines,phaseData)
+
     return [deadLineGroups,nestedDeadlines,phaseData]
   }
 
@@ -487,9 +492,16 @@ class EditProjectTimeTableModal extends Component {
   };
   
    processValuesSequentially = async (matchingValues, index) => {
+    let newIndex = '';
+    if(index > 0){
+      newIndex = "_" + (index - 1).toString();
+      if (newIndex === "_0") {
+        newIndex = '';
+      }
+    }
+
     const validValues = [];
     for (const { key, value } of matchingValues) {
-      console.log(`Processing key: ${key}`, value);
       try {          
         let valueToCheck
         if (!key.includes("_alkaa") && validValues.length > 0){
@@ -510,12 +522,12 @@ class EditProjectTimeTableModal extends Component {
           //alkaa is calculated from previous end date by backend call and returning valid date
           valueToCheck = matchingValues[0].value
         }
-        const date = await this.getNewValidDates(key + "_" + index, this.props.formValues['projektin_nimi'], valueToCheck);
-        console.log(`Updated date for key ${key}: ${date}`);
-        validValues.push({ key: key + "_" + index, value: date });
+        const adjustedKey = newIndex !== '' ? key + newIndex : key;
+        const date = await this.getNewValidDates(adjustedKey, this.props.formValues['projektin_nimi'], valueToCheck);
+        validValues.push({ key: adjustedKey, value: date });
       } catch (error) {
-        console.error(`Error processing key ${key}:`, error);
-        validValues.push({ key: key + "_" + index, value: null });
+        const adjustedKey = newIndex !== '' ? key + newIndex : key;
+        validValues.push({ key: adjustedKey, value: null });
       }
     }
   
@@ -610,57 +622,103 @@ class EditProjectTimeTableModal extends Component {
       // waits for all values to be ready so vis does not give error if missing start or end date
       this.processValuesSequentially(matchingValues, index).then(validValues => {
           if (validValues.length >= 2) {
-          const newItems = {
-            className: className,
-            content: "",
-            group: idt,
-            id: this.state.items.length + 1,
-            locked: false,
-            phase: false,
-            phaseID: groupID,
-            start: validValues[0].value,
-            end: validValues[1].value,
-            title: content === "esillaolo" ? "milloin_" + phase + "_esillaolo_paattyy_" + index : +phase + "_lautakunta_aineiston_maaraaika_" + index,
-          };
-        
-          const newSubGroup = {
-            id: idt,
-            content: content === "esillaolo" ? "Esilläolo-" + index : "Lautakunta-" + index,
-            abbreviation: "",
-            deadlinegroup: content === "esillaolo" ? phase + "_esillaolokerta_" + index : phase + "_lautakuntakerta_" + index,
-            deadlinesubgroup: "",
-            locked: false,
-          };
-        
-          this.state.items.add(newItems);
-          this.state.groups.add(newSubGroup);
-        
-          const phaseCapitalized = phase.charAt(0).toUpperCase() + phase.slice(1);
-          const updateGroups = this.state.groups.get();
-          const phaseGroup = updateGroups.find(group => group.content === phaseCapitalized);
-        
-          if (phaseGroup && phaseGroup.nestedGroups) {
-            const nestedGroupIds = phaseGroup.nestedGroups;
-            const nestedGroups = updateGroups.filter(group => nestedGroupIds.includes(group.id));
-            nestedGroups.sort((a, b) => a.content.localeCompare(b.content));
-        
-            const groupsWithNestedInGroup = updateGroups.filter(group => group.nestedInGroup);
-            const groupsWithoutNestedInGroup = updateGroups.filter(group => !group.nestedInGroup);
-        
-            groupsWithNestedInGroup.sort((a, b) => a.content.localeCompare(b.content));
-            const sortedGroups = groupsWithoutNestedInGroup.concat(groupsWithNestedInGroup);
-        
-            this.state.groups.clear();
-            this.state.groups.add(sortedGroups);
+            let newIndex
+            let indexString
+            // Check if index is greater than 1
+            if (index > 1) {
+              newIndex = (Number(index) + 1).toString(); // Increment index by 1 and convert to string
+              indexString = "_" + newIndex; // Prefix the incremented index with "_"
+            }
+            else {
+              // If index is not greater than 1, set newIndex to "1"
+              // and prepare to set indexString to "_2" since it's the default for non-positive indexes
+              newIndex = "2";
+              indexString = "_2"; // Directly set to "_2" as this block only executes when index <= 1
+            }
+
+            console.log(validValues)
+            const newItems = {
+              className: className,
+              content: "",
+              group: idt,
+              id: this.state.items.length + 1,
+              locked: false,
+              phase: false,
+              phaseID: groupID,
+              start: validValues[0].value,
+              end: validValues[1].value,
+              title: content === "esillaolo" ? "milloin_" + phase + "_esillaolo_paattyy" + indexString : +phase + "_lautakunta_aineiston_maaraaika" + indexString,
+            };
+            this.state.items.add(newItems);
+            console.log(validValues[2].key.includes("maaraaika"), validValues.length)
+            if(validValues.length > 2 && validValues[2].key.includes("maaraaika")){
+              console.log("IF")
+              const diveverItem = {
+                className: "divider",
+                content: "",
+                group: idt,
+                id: this.state.items.length + 1,
+                locked: false,
+                phase: false,
+                phaseID: groupID,
+                start: validValues[2].value,
+                end: validValues[0].value,
+                title: "divider"
+              }
+              this.state.items.add(diveverItem);
+
+              const deadlineItem = {
+                className: "board",
+                content: "",
+                group: idt,
+                id: this.state.items.length + 1,
+                locked: false,
+                phase: false,
+                phaseID: groupID,
+                start: validValues[2].value,
+                type: 'point',
+                title: "maaraaika"
+              };
+              this.state.items.add(deadlineItem);
+            }
+          
+            const newSubGroup = {
+              id: idt,
+              content: content === "esillaolo" ? "Esilläolo-" + newIndex : "Lautakunta-" + newIndex,
+              abbreviation: "",
+              deadlinegroup: content === "esillaolo" ? phase + "_esillaolokerta" + indexString : phase + "_lautakuntakerta" + indexString,
+              deadlinesubgroup: "",
+              locked: false,
+            };
+            this.state.groups.add(newSubGroup);
+          
+            const phaseCapitalized = phase.charAt(0).toUpperCase() + phase.slice(1);
+            const updateGroups = this.state.groups.get();
+            const phaseGroup = updateGroups.find(group => group.content === phaseCapitalized);
+          
+            if (phaseGroup && phaseGroup.nestedGroups) {
+              const nestedGroupIds = phaseGroup.nestedGroups;
+              const nestedGroups = updateGroups.filter(group => nestedGroupIds.includes(group.id));
+              nestedGroups.sort((a, b) => a.content.localeCompare(b.content));
+          
+              const groupsWithNestedInGroup = updateGroups.filter(group => group.nestedInGroup);
+              const groupsWithoutNestedInGroup = updateGroups.filter(group => !group.nestedInGroup);
+          
+              groupsWithNestedInGroup.sort((a, b) => a.content.localeCompare(b.content));
+              const sortedGroups = groupsWithoutNestedInGroup.concat(groupsWithNestedInGroup);
+          
+              this.state.groups.clear();
+              this.state.groups.add(sortedGroups);
+            }
+
+            validValues.forEach(({ key, value }) => {
+              this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, key + indexString, value));
+            });
+            this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, 'jarjestetaan_' + phase + "_" + content + indexString, true));
           }
-        
-          validValues.forEach(({ key, value }) => {
-            this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, key, value));
-          });
-        }
-        else{
-          console.error("Not enough matching values to create new items.");
-        }
+          else{
+            console.error("Not enough matching values to create new items.");
+          }
       });
     }
     catch (error) {
