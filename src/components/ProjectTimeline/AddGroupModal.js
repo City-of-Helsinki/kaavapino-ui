@@ -12,8 +12,8 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
 
   const addNew = (addedKey) => {
     if(addedKey){
-        dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, addedKey, true));
-        closeAddDialog()
+      dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, addedKey, true));
+      closeAddDialog()
     }
     else{
       closeAddDialog()

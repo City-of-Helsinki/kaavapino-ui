@@ -184,7 +184,7 @@ class EditProjectTimeTableModal extends Component {
         group: numberOfPhases,
         locked: false
       });
-      console.log(deadLineGroups)
+      
       let dlIndex = deadLineGroups.findIndex(group => group.content === deadlines[i].deadline.phase_name);
       deadLineGroups?.at(dlIndex)?.nestedGroups?.push(numberOfPhases);
   
@@ -292,7 +292,7 @@ class EditProjectTimeTableModal extends Component {
   }
 
   generateVisItems = (deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData) => {
-    console.log(deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData)
+
     let numberOfPhases = 1
     //let type = ""
 
@@ -491,14 +491,7 @@ class EditProjectTimeTableModal extends Component {
     }
   };
   
-   processValuesSequentially = async (matchingValues, index) => {
-    let newIndex = '';
-    if(index > 0){
-      newIndex = "_" + (index - 1).toString();
-      if (newIndex === "_0") {
-        newIndex = '';
-      }
-    }
+   processValuesSequentially = async (matchingValues) => { 
 
     const validValues = [];
     for (const { key } of matchingValues) {
@@ -522,13 +515,10 @@ class EditProjectTimeTableModal extends Component {
           //alkaa is calculated from previous end date by backend call and returning valid date
           valueToCheck = matchingValues[0].value
         }
-        const adjustedKey = newIndex !== '' ? key + newIndex : key;
-        const date = await this.getNewValidDates(adjustedKey, this.props.formValues['projektin_nimi'], valueToCheck);
-        console.log(adjustedKey, date)
-        validValues.push({ key: adjustedKey, value: date });
+        const date = await this.getNewValidDates(key, this.props.formValues['projektin_nimi'], valueToCheck);
+        validValues.push({ key: key, value: date });
       } catch (error) {
-        const adjustedKey = newIndex !== '' ? key + newIndex : key;
-        validValues.push({ key: adjustedKey, value: null });
+        validValues.push({ key: key, value: null });
       }
     }
   
@@ -627,7 +617,7 @@ class EditProjectTimeTableModal extends Component {
             let indexString
             // Check if index is greater than 1
             if (index > 1) {
-              newIndex = (Number(index) + 1).toString(); // Increment index by 1 and convert to string
+              newIndex = index; // Increment index by 1 and convert to string
               indexString = "_" + newIndex; // Prefix the incremented index with "_"
             }
             else {
@@ -636,9 +626,7 @@ class EditProjectTimeTableModal extends Component {
               newIndex = "2";
               indexString = "_2"; // Directly set to "_2" as this block only executes when index <= 1
             }
-
-            console.log(validValues)
-            console.log(validValues[2].key.includes("maaraaika"), validValues.length)
+            
             if(validValues.length > 2 && validValues[2].key.includes("maaraaika")){
               const deadlineItem = {
                 className: "board",
@@ -715,7 +703,7 @@ class EditProjectTimeTableModal extends Component {
             validValues.forEach(({ key, value }) => {
               this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, key + indexString, value));
             });
-            this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, 'jarjestetaan_' + phase + "_" + content + indexString, true));
+            //this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, 'jarjestetaan_' + phase + "_" + content + indexString, true));
           }
           else{
             console.error("Not enough matching values to create new items.");
