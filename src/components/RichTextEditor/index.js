@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next'
 import {IconAlertCircleFill} from 'hds-react'
 import RollingInfo from '../input/RollingInfo'
 import { useIsMount } from '../../hooks/IsMounted'
+import { useIsTabActive } from '../../hooks/IsTabActive'
 import { isEqual } from 'lodash'
 
 /* This component defines a react-quill rich text editor field to be used in redux form.
@@ -90,6 +91,7 @@ function RichTextEditor(props) {
   const dispatch = useDispatch()
 
   const isMount = useIsMount();
+  const isTabActive = useIsTabActive();
 
   const saving =  useSelector(state => savingSelector(state))
   const lastModified = useSelector(state => lastModifiedSelector(state))
@@ -134,6 +136,15 @@ function RichTextEditor(props) {
       return fieldComments[fieldName]
     }
   }
+
+  // I moved this here as it might be needed in multiple places
+  const getIdentifier =() => {
+    // Fieldset fields have different type of identifier
+    return lockedStatus?.lockData?.attribute_lock?.fieldset_attribute_identifier
+    ? lockedStatus?.lockData?.attribute_lock?.field_identifier
+    : lockedStatus?.lockData?.attribute_lock?.attribute_identifier;
+  }
+
   const comments = getFieldComments()
 
   const { t } = useTranslation()
@@ -236,12 +247,57 @@ function RichTextEditor(props) {
 
   useEffect(() => {
 
-    const getIdentifier =() => {
+    // TODO: need to focus back to the same field user left when tab becomes active again
+
+    if (!isTabActive && lockedStatus?.lockData?.attribute_lock?.owner) {
+
+        // This code is copied from handleBlur, but needed here also. Maybe it could be refactored to a separate function
+        let editor = null, editorEmpty = true;
+        if (editorRef.current) {
+          editor = editorRef.current.getEditor().getContents();
+          editorEmpty = editorRef.current.getEditor().getText().trim().length === 0;
+        }
+
+        let name = inputProps.name;
+        let originalData = attributeData[name]?.ops;
+        if (insideFieldset && !nonEditable || !rollingInfo) {
+          originalData = getOriginalData(name, originalData);
+        }
+
+        // Saving seems to work when user leaves the tab
+        //Prevent saving if data has not changed or is empty and field is required
+        if (!isEqual(originalData, editor?.ops) && (!editorEmpty || !required)) {
+          //prevent saving if locked
+          if (!readonly) {
+            //Sent call to save changes if it is modified by user and not updated by lock call
+            if(!valueIsSet){
+              console.log("typeof onBlur === 'function'", typeof onBlur === 'function')
+              if (typeof onBlur === 'function') {
+                localStorage.setItem("changedValues", inputProps.name);
+                onBlur();
+                oldValueRef.current = editor?.ops;
+              }
+            }
+          }
+        }
+        // copied code ends here
+        
+        // Unlock the field if the tab is not active
+        if (props.handleUnlockField && !insideFieldset) {
+          props.handleUnlockField(inputProps.name)
+        }   
+    }
+  }, [isTabActive])
+
+  useEffect(() => {
+    
+    // still commented out as I moved this to the top of the file, can be deleted
+    /* const getIdentifier =() => {
       // Fieldset fields have different type of identifier
       return lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier
       ? lockedStatus.lockData.attribute_lock.field_identifier
       : lockedStatus.lockData.attribute_lock.attribute_identifier;
-    }
+    } */
 
     const updateFieldAccess = (isLocked, identifier) => {
       const isOwner = lockedStatus?.lockData.attribute_lock.owner
