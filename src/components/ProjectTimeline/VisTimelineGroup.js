@@ -86,7 +86,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         const esillaoloRegex = new RegExp(`${phase}_esillaolo_\\d+$`);
         const attributeEsillaoloKeys = Object.keys(visValRef).filter(key => esillaoloRegex.test(key));
         canAddEsillaolo = attributeEsillaoloKeys.length < deadlineEsillaolokertaKeys.length;
-        const nextEsillaoloStr = canAddEsillaolo ? `jarjestetaan_${phase}_esillaolo_${attributeEsillaoloKeys.length + 1}$` : false;
+        const esillaoloCount = attributeEsillaoloKeys.length === 0 ? attributeEsillaoloKeys.length + 2 : attributeEsillaoloKeys.length + 1;
+        const nextEsillaoloStr = canAddEsillaolo ? `jarjestetaan_${phase}_esillaolo_${esillaoloCount}$` : false;
         nextEsillaoloClean = nextEsillaoloStr ? nextEsillaoloStr.replace(/[/$]/g, '') : nextEsillaoloStr;
       }
     
@@ -96,7 +97,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         const lautakuntaanRegex = new RegExp(`${phase}_lautakuntaan_\\d+$`);
         const attributeLautakuntaanKeys = Object.keys(visValRef).filter(key => lautakuntaanRegex.test(key));
         canAddLautakunta = attributeLautakuntaanKeys.length < deadlineLautakuntakertaKeys.length;
-        const nextLautakuntaStr = canAddLautakunta ? `${phase}_lautakuntaan_${attributeLautakuntaanKeys.length + 1}$` : false;
+        const lautakuntaCount = attributeLautakuntaanKeys.length === 0 ? attributeLautakuntaanKeys.length + 2 : attributeLautakuntaanKeys.length + 1;
+        attributeLautakuntaanKeys.length === attributeLautakuntaanKeys.length + 1
+        const nextLautakuntaStr = canAddLautakunta ? `${phase}_lautakuntaan_${lautakuntaCount}$` : false;
         nextLautakuntaClean = nextLautakuntaStr ? nextLautakuntaStr.replace(/[/$]/g, '') : nextLautakuntaStr;
       }
 
@@ -112,7 +115,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       // Check if existing groups have been confirmed
       let esillaoloConfirmed = Object.prototype.hasOwnProperty.call(visValRef, `vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`) && visValRef[`vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`] === true;
       let lautakuntaConfirmed = Object.prototype.hasOwnProperty.call(visValRef, `vahvista_${phase}_lautakunnassa${lautakuntaCount}`) && visValRef[`vahvista_${phase}_lautakunnassa${lautakuntaCount}`] === true;
-      console.log(phase)
+
       if(phase === "periaatteet" && !(phase + "_lautakuntaan_1" in visValRef)|| phase === "luonnos" && !(phase + "_lautakuntaan_1")){
         lautakuntaConfirmed = true
       }
@@ -220,14 +223,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       container ? container.classList.toggle("highlight-selected") : toggleTimelineModal.highlight.classList.toggle("highlight-selected");
       const modifiedDeadlineGroup = data?.deadlinegroup?.includes(';') ? data.deadlinegroup.split(';')[0] : data.deadlinegroup;
       setToggleTimelineModal({open:!toggleTimelineModal.open, highlight:container, deadlinegroup:modifiedDeadlineGroup})
-     // if(toggleTimelineModal.open){
         //Set data from items
       setTimelineData({group:data.nestedInGroup, content:data.content})
-     // }
-     // else{
-        //Close side modal and update vistimeline visually
-       // changeItemRange(item.start > i.start, item, i)
-     // }
     }
 
     const changeItemRange = (subtract, item, i) => {
