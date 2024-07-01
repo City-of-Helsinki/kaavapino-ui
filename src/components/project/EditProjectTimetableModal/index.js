@@ -492,36 +492,34 @@ class EditProjectTimeTableModal extends Component {
   };
   
    processValuesSequentially = async (matchingValues) => { 
-
+    
     const validValues = [];
+    let foundItem = matchingValues.find(item => item.key.includes("_paattyy")) || matchingValues[0].value;
+
     for (const { key } of matchingValues) {
       try {          
         let valueToCheck
-        if (!key.includes("_alkaa") && validValues.length > 0){
           //Add required range between dates
-          let newDate = new Date(validValues[0].value);
-          let daysToAdd = key.includes("_maaraaika") ? 15 : 30; //Replace with excel info later
-          while (daysToAdd > 0) {
-              newDate.setDate(newDate.getDate() + 1);
-              const dateStr = newDate.toISOString().split('T')[0];
-              //Skip weekends and holidays
-              if (newDate.getDay() != 0 && newDate.getDay() != 6 && !this.props.disabledDates.includes(dateStr)) { // Skip Sundays (0) and Saturdays (6)
-                  daysToAdd--;
-              }
-          }
-          valueToCheck = newDate.toISOString().split('T')[0];
+        let newDate = new Date(foundItem.value ? foundItem.value : foundItem);
+        let daysToAdd = key.includes("_maaraaika") ? 15 : 30; //Replace with excel info later
+        daysToAdd = key.includes("_paattyy") ? daysToAdd + 30 : daysToAdd;
+        while (daysToAdd > 0) {
+            newDate.setDate(newDate.getDate() + 1);
+            const dateStr = newDate.toISOString().split('T')[0];
+            //Skip weekends and holidays
+            if (newDate.getDay() != 0 && newDate.getDay() != 6 && !this.props.disabledDates.includes(dateStr)) { // Skip Sundays (0) and Saturdays (6)
+                daysToAdd--;
+            }
         }
-        else{
-          //alkaa is calculated from previous end date by backend call and returning valid date
-          valueToCheck = matchingValues[0].value
-        }
-        const date = await this.getNewValidDates(key, this.props.formValues['projektin_nimi'], valueToCheck);
-        validValues.push({ key: key, value: date });
+        valueToCheck = newDate.toISOString().split('T')[0];
+        //Is check needed when logic is in frontend?
+        //const date = await this.getNewValidDates(key, this.props.formValues['projektin_nimi'], valueToCheck);
+        validValues.push({ key: key, value: valueToCheck });
       } catch (error) {
         validValues.push({ key: key, value: null });
       }
     }
-  
+
     return validValues;
   }
 
@@ -537,7 +535,7 @@ class EditProjectTimeTableModal extends Component {
         }
     }
     return result.filter(Boolean);
-};
+  };
 
   addGroup = async (changedValues) => {
     try{
@@ -630,7 +628,7 @@ class EditProjectTimeTableModal extends Component {
             key === phase + "_kylk_maaraaika" + indexKey ||
             key === 'milloin_' + phase + '_lautakunnassa' + indexKey
           )
-          .map(([key, value]) => ({ key, value }));
+          .map(([key, value]) => ({ key, value }))
       }
       // Process the values sequentially and return new validated values from backend
       // waits for all values to be ready so vis does not give error if missing start or end date
@@ -747,7 +745,6 @@ class EditProjectTimeTableModal extends Component {
             validValues.forEach(({ key, value }) => {
               this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, key + indexString, value));
             });
-            //this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, 'jarjestetaan_' + phase + "_" + content + indexString, true));
           }
           else{
             console.error("Not enough matching values to create new items.");
