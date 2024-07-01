@@ -111,7 +111,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const matchingGroups = groups.get().filter(group => data.nestedGroups.includes(group.id));
       const esillaoloCount = matchingGroups.filter(group => group.content === 'Esilläolo').length > 1 ? '_' + matchingGroups.filter(group => group.content === 'Esilläolo').length : '';
       const lautakuntaCount = matchingGroups.filter(group => group.content === 'Lautakunta').length > 1 ? '_' + matchingGroups.filter(group => group.content === 'Lautakunta').length : '';
-      const phase = data.content.toLowerCase();
+      const phase = data.content.toLowerCase().replace(/\s+/g, '_');
       // Check if existing groups have been confirmed
       let esillaoloConfirmed = Object.prototype.hasOwnProperty.call(visValRef, `vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`) && visValRef[`vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`] === true;
       let lautakuntaConfirmed = Object.prototype.hasOwnProperty.call(visValRef, `vahvista_${phase}_lautakunnassa${lautakuntaCount}`) && visValRef[`vahvista_${phase}_lautakunnassa${lautakuntaCount}`] === true;
