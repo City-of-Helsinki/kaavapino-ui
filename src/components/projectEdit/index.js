@@ -106,7 +106,6 @@ class ProjectEditPage extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     this.scroll()
-    //this.setState({urlField:null})
     this.headings = this.createHeadings()
     if(prevState.errorFields != this.state.errorFields){
       if(this.state.errorFields.length > 0){
