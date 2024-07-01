@@ -2,7 +2,6 @@ import { includes, get } from 'lodash'
 import projectUtils from './projectUtils'
 // Field returns info whether field given as a parameter should be shown or not.
 export const showField = (field, formValues, currentName) => {
-  console.log('showField', field, formValues)
   let returnValue = false
 
   if (!field) {
@@ -118,6 +117,6 @@ export const showField = (field, formValues, currentName) => {
   else {
     returnValue = true
   }
-  console.log(returnValue)
+
   return returnValue
 }
