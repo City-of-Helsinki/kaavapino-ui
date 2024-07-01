@@ -106,6 +106,7 @@ class ProjectEditPage extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     this.scroll()
+    //this.setState({urlField:null})
     this.headings = this.createHeadings()
     if(prevState.errorFields != this.state.errorFields){
       if(this.state.errorFields.length > 0){
@@ -196,7 +197,10 @@ class ProjectEditPage extends Component {
     }
     else if(this.state.urlField){
       const urlElement = document.getElementById(this.state.urlField)
-      urlElement?.scrollIntoView({block: "center", inline: "center"});
+      if (urlElement) {
+        urlElement?.scrollIntoView({block: "center", inline: "center"});
+        this.setState({urlField:null})
+      }
     }
   }
 
