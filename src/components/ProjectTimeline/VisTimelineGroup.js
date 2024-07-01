@@ -98,7 +98,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         const attributeLautakuntaanKeys = Object.keys(visValRef).filter(key => lautakuntaanRegex.test(key));
         canAddLautakunta = attributeLautakuntaanKeys.length < deadlineLautakuntakertaKeys.length;
         const lautakuntaCount = attributeLautakuntaanKeys.length === 0 ? attributeLautakuntaanKeys.length + 2 : attributeLautakuntaanKeys.length + 1;
-        attributeLautakuntaanKeys.length === attributeLautakuntaanKeys.length + 1
         const nextLautakuntaStr = canAddLautakunta ? `${phase}_lautakuntaan_${lautakuntaCount}$` : false;
         nextLautakuntaClean = nextLautakuntaStr ? nextLautakuntaStr.replace(/[/$]/g, '') : nextLautakuntaStr;
       }
