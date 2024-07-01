@@ -525,6 +525,20 @@ class EditProjectTimeTableModal extends Component {
     return validValues;
   }
 
+  splitKey = (key, exceptionKey) => {
+    const regex = new RegExp(`(${exceptionKey})|_`, 'g');
+    const parts = key.split(regex).filter(Boolean);
+    let result = [];
+    for (let i = 0; i < parts.length; i++) {
+        if (parts[i] === exceptionKey) {
+            result.push(parts[i]);
+        } else {
+            result = result.concat(parts[i].split('_'));
+        }
+    }
+    return result.filter(Boolean);
+};
+
   addGroup = async (changedValues) => {
     try{
       // Get the keys from changedValues
@@ -542,24 +556,27 @@ class EditProjectTimeTableModal extends Component {
       // Iterate over the keys
       for (let key of keys) {
         // Split the key into an array of substrings
-        const parts = key.split('_');
+        const exceptionKey = "tarkistettu_ehdotus";
+        const parts = this.splitKey(key, exceptionKey);
+
         // Check if there are at least two underscores in the key
-        if (parts.length > 3) {
+        if (parts.length > 3 && key.includes("esillaolo") || parts.length > 2 && key.includes("lautakuntaan")) {
           // Get the string between the first and second underscore
-          phase = parts[1];
-          content = parts[2];
-          index = parts[3];
-    
+          phase = parts[key.includes("lautakuntaan") ? 0 : 1];
+          content = parts[key.includes("lautakuntaan") ? 1 : 2];
+          index = parts[key.includes("lautakuntaan") ? 2 : 3];
           // Find the group where phase equals content (converted to lowercase)
-          const group = groups.find(group => phase === group.content.toLowerCase());
+          const group = groups.find(group => phase === "tarkistettu_ehdotus" ? phase.replace(/_/g, ' ') : phase === group.content.toLowerCase());
           // Get the id of the group
           groupID = group ? group.id : null;
           // Filter the groups
           let filteredGroups = groups.filter(group => {
+            if(content === "lautakuntaan"){
+              content = "lautakunta"
+            }
             // Check if the group contains stringBetweenUnderscores and content in deadlineGroups
-            return typeof group?.deadlinegroup === 'string' && group?.deadlinegroup.includes(phase) && group?.deadlinegroup.includes(content);
+            return typeof group?.deadlinegroup === 'string' && group?.deadlinegroup.includes(phase === "tarkistettu ehdotus" ? phase.replace(/\s+/g, '_') : phase) && group?.deadlinegroup.includes(content);
           });
-    
           if (filteredGroups.length > 0) {
             // Get the deadlinegroup
             deadlinegroup = filteredGroups[0].deadlinegroup;
@@ -568,7 +585,6 @@ class EditProjectTimeTableModal extends Component {
     
             // Update the id
             idt = length + 1;
-    
             // Use the replace method with a regex to find the number after the underscore
             deadlinegroup = deadlinegroup.replace(/_(\d+)/, (match, number) => {
               // Parse the number, increase it by one, and return it with the underscore
@@ -577,8 +593,12 @@ class EditProjectTimeTableModal extends Component {
     
             // Create a new array with the updated groups
             const updatedGroups = groups.map(group => {
+              let content = group?.content;
+              if(content === "lautakuntaan"){
+                content = "lautakunta"
+              }
               // Check if the id of the group (in lowercase) is equal to phase
-              if (String(group.content).toLowerCase() === String(phase).toLowerCase()) {
+              if (String(content).toLowerCase() === String(phase === "tarkistettu_ehdotus" ? phase.replace(/_/g, ' ') : phase).toLowerCase()) {
                 // Push the id to nestedGroups
                 group.nestedGroups.push(idt);
               }
@@ -593,19 +613,22 @@ class EditProjectTimeTableModal extends Component {
           }
         }
       }
-    
-      if (content === "esillaolo" || content === "nahtavillaolo" ) {
+
+      if (content === "esillaolo" || content === "nahtavillaolo" || content === "lautakuntaan" || content === "lautakunta") {
         className = "inner-end";
         let indexKey = '';
         if (index > 2) {
           indexKey = "_" + (index - 1);
         }
+        phase = phase.toLowerCase().replace(/\s+/g, '_');
         matchingValues = Object.entries(this.props.formValues)
           .filter(([key]) =>
             key === 'milloin_' + phase + '_' + content + '_alkaa' + indexKey ||
             key === 'milloin_' + phase + '_' + content + '_paattyy' + indexKey ||
             key === phase + "_kylk_aineiston_maaraaika" + indexKey ||
-            key === phase + "_esillaolo_aineiston_maaraaika" + indexKey
+            key === phase + "_esillaolo_aineiston_maaraaika" + indexKey ||
+            key === phase + "_kylk_maaraaika" + indexKey ||
+            key === 'milloin_' + phase + '_lautakunnassa' + indexKey
           )
           .map(([key, value]) => ({ key, value }));
       }
@@ -626,7 +649,7 @@ class EditProjectTimeTableModal extends Component {
               newIndex = "2";
               indexString = "_2"; // Directly set to "_2" as this block only executes when index <= 1
             }
-            
+
             if(validValues.length > 2 && validValues[2].key.includes("maaraaika")){
               const deadlineItem = {
                 className: "board",
@@ -657,19 +680,37 @@ class EditProjectTimeTableModal extends Component {
               this.state.items.add(diveverItem);
             }
 
-            const newItems = {
-              className: className,
-              content: "",
-              group: idt,
-              id: this.state.items.length + 1,
-              locked: false,
-              phase: false,
-              phaseID: groupID,
-              start: validValues[0].value,
-              end: validValues[1].value,
-              title: content === "esillaolo" ? "milloin_" + phase + "_esillaolo_paattyy" + indexString : +phase + "_lautakunta_aineiston_maaraaika" + indexString,
-            };
-            this.state.items.add(newItems);
+            if(validValues[0].key.includes("alkaa") && validValues[1].key.includes("paattyy")){
+              const newItems = {
+                className: className,
+                content: "",
+                group: idt,
+                id: this.state.items.length + 1,
+                locked: false,
+                phase: false,
+                phaseID: groupID,
+                start: validValues[0].value,
+                end: validValues[1].value,
+                title: content === "esillaolo" ? "milloin_" + phase + "_esillaolo_paattyy" + indexString : +phase + "_lautakunta_aineiston_maaraaika" + indexString,
+              };
+              this.state.items.add(newItems);
+            }
+
+            if(validValues[0].key.includes("maaraaika") && validValues[1].key.includes("lautakunnassa")){
+              const newItems = {
+                className: "board",
+                content: "",
+                group: idt,
+                id: this.state.items.length + 1,
+                locked: false,
+                phase: false,
+                phaseID: groupID,
+                start: validValues[0].value,
+                end: validValues[1].value,
+                title: phase + "_lautakunta_aineiston_maaraaika" + indexString,
+              };
+              this.state.items.add(newItems);
+            }
           
             const newSubGroup = {
               id: idt,
@@ -681,11 +722,14 @@ class EditProjectTimeTableModal extends Component {
             };
             this.state.groups.add(newSubGroup);
           
-            const phaseCapitalized = phase.charAt(0).toUpperCase() + phase.slice(1);
+            let phaseCapitalized = phase.charAt(0).toUpperCase() + phase.slice(1);
+            if(phaseCapitalized === "Tarkistettu_ehdotus"){
+              phaseCapitalized = phaseCapitalized.replace(/_/g, ' ');
+            }
             const updateGroups = this.state.groups.get();
             const phaseGroup = updateGroups.find(group => group.content === phaseCapitalized);
-          
-            if (phaseGroup && phaseGroup.nestedGroups) {
+
+            if (phaseGroup?.nestedGroups) {
               const nestedGroupIds = phaseGroup.nestedGroups;
               const nestedGroups = updateGroups.filter(group => nestedGroupIds.includes(group.id));
               nestedGroups.sort((a, b) => a.content.localeCompare(b.content));
@@ -695,7 +739,7 @@ class EditProjectTimeTableModal extends Component {
           
               groupsWithNestedInGroup.sort((a, b) => a.content.localeCompare(b.content));
               const sortedGroups = groupsWithoutNestedInGroup.concat(groupsWithNestedInGroup);
-          
+
               this.state.groups.clear();
               this.state.groups.add(sortedGroups);
             }

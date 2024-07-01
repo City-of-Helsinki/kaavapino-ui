@@ -2,6 +2,7 @@ import { includes, get } from 'lodash'
 import projectUtils from './projectUtils'
 // Field returns info whether field given as a parameter should be shown or not.
 export const showField = (field, formValues, currentName) => {
+  console.log('showField', field, formValues)
   let returnValue = false
 
   if (!field) {
@@ -58,11 +59,9 @@ export const showField = (field, formValues, currentName) => {
     if (!hasTrue) {
       returnValue = true
     }
-  } else if (
-    field &&
-    field.visibility_conditions &&
-    field.visibility_conditions.length > 0
-  ) {
+  } 
+  else if (field && field.visibility_conditions && field.visibility_conditions.length > 0) 
+  {
     field.visibility_conditions.forEach(visibilityCondition => {
       const { variable } = visibilityCondition
       const { operator } = visibilityCondition
@@ -115,8 +114,10 @@ export const showField = (field, formValues, currentName) => {
         }
       }
     })
-  } else {
+  } 
+  else {
     returnValue = true
   }
+  console.log(returnValue)
   return returnValue
 }
