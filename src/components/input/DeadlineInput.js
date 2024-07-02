@@ -2,15 +2,18 @@ import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { useTranslation } from 'react-i18next'
-import { TextInput, IconAlertCircle } from 'hds-react'
+import { TextInput, DateInput, IconAlertCircle, Notification } from 'hds-react'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
 import { useSelector } from 'react-redux'
 import { getFormValues } from 'redux-form'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
+import { useValidateDate } from '../../utils/dateUtils';
+import moment from 'moment'
 
 const DeadLineInput = ({
   input,
   error,
+  attributeData,
   currentDeadline,
   editable,
   type,
@@ -18,10 +21,14 @@ const DeadLineInput = ({
   placeholder,
   className,
   autofillRule,
-  timeTableDisabled
+  timeTableDisabled,
+  disabledDates
 }) => {
   
   const { t } = useTranslation()
+  const validateDate = useValidateDate();
+  const [warning, setWarning] = useState({warning:false,response:{reason:"",suggested_date:"",conflicting_deadline:""}})
+
   let inputValue = input.value
   if (autofillRule) {
     const formValues = useSelector(getFormValues(EDIT_PROJECT_TIMETABLE_FORM))
@@ -41,9 +48,15 @@ const DeadLineInput = ({
   }
   let currentDeadlineDate = ''
 
-  if ( currentDeadline && currentDeadline.date ) [
+  if(currentDeadline?.deadline?.attribute && attributeData[currentDeadline.deadline.attribute]){
+    currentDeadlineDate = attributeData[currentDeadline.deadline.attribute]
+  }
+  else if(currentDeadline?.deadline?.attribute && currentDeadline?.deadline?.attribute === 'ehdotus_nahtaville_aineiston_maaraaika' && attributeData['ehdotus_kylk_aineiston_maaraaika']){
+    currentDeadlineDate = attributeData['ehdotus_kylk_aineiston_maaraaika']
+  }
+  else if (currentDeadline?.date) {
     currentDeadlineDate = currentDeadline.date
-  ]
+  }
 
   const [currentValue, setCurrentValue] = useState(
     currentDeadline ? currentDeadlineDate : inputValue 
@@ -85,30 +98,110 @@ const DeadLineInput = ({
     currentClassName = `${currentClassName} error-border`
   }
 
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    // Pad the month and day with leading zeros if needed
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  }
+
+  const isDisabledDate = (date) => {
+    const tenYearsAgo = new Date();
+    tenYearsAgo.setFullYear(tenYearsAgo.getFullYear() - 10);
+    const tenYearsLater = new Date();
+    tenYearsLater.setFullYear(tenYearsLater.getFullYear() + 10);
+  
+    if (date < tenYearsAgo || date > tenYearsLater) {
+      return false;
+    }
+  
+    const day = date.getDay();
+
+    return day === 0 || day === 6 || disabledDates.includes(formatDate(date));
+  }
+
+  const handleDateChange = async (event) => {
+    try {
+      const field = input.name;
+      const projectName = attributeData['projektin_nimi'];
+      const formattedDate = moment(event, ['DD.MM.YYYY', 'YYYY-MM-DD']).format('YYYY-MM-DD');
+
+      let date = await validateDate(field, projectName, formattedDate, setWarning); // Use await
+      let value;
+      if (date.includes('.')) {
+        const dateParts = date.split(".");
+        const eventDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
+        const year = eventDate.getFullYear();
+        const month = ("0" + (eventDate.getMonth() + 1)).slice(-2); // Months are 0-based, so add 1 and pad with 0 if necessary
+        const day = ("0" + eventDate.getDate()).slice(-2); // Pad with 0 if necessary
+        value = `${year}-${month}-${day}`;
+      } else {
+        value = date;
+      }
+      if (value) {
+        setCurrentValue(value);
+        input.onChange(value);
+      }
+    } catch (error) {
+      console.error('Validation error:', error);
+    }
+  };
+
   return (
-    <div className='deadline-input'>
-      <TextInput
-        value={currentValue}
-        name={input.name}
-        type={type}
-        disabled={typeof timeTableDisabled !== "undefined" ? timeTableDisabled : disabled}
-        placeholder={placeholder}
-        error={error}
-        aria-label={input.name}
-        onChange={event => {
-          const value = event.target.value
-          setCurrentValue(value)
-          input.onChange(value)
-        }}
-        className={currentClassName}
-        onBlur={() => {
-          if (input.value !== input.defaultValue) {
-            setValueGenerated(false)
-          } else {
-            setValueGenerated(true)
-          }
-        }}
-      />
+    <>
+      <div className='deadline-input'>
+        {type === 'date' 
+        ?
+        <DateInput
+          readOnly
+          isDateDisabledBy={isDisabledDate}
+          value={currentValue}
+          name={input.name}
+          type={type}
+          disabled={typeof timeTableDisabled !== "undefined" ? timeTableDisabled : disabled}
+          placeholder={placeholder}
+          error={error}
+          aria-label={input.name}
+          onChange={(event) => {
+            handleDateChange(event);
+          }}
+          className={currentClassName}
+          onBlur={() => {
+            if (input.value !== input.defaultValue) {
+              setValueGenerated(false)
+            } else {
+              setValueGenerated(true)
+            }
+          }}
+        /> 
+        :
+          <TextInput
+            //onKeyDown={(e) => e.preventDefault()}
+            value={currentValue}
+            name={input.name}
+            type={type}
+            disabled={typeof timeTableDisabled !== "undefined" ? timeTableDisabled : disabled}
+            placeholder={placeholder}
+            error={error}
+            aria-label={input.name}
+            onChange={event => {
+              const value = event.target.value
+              setCurrentValue(value)
+              input.onChange(value)
+            }}
+            className={currentClassName}
+            onBlur={() => {
+              if (input.value !== input.defaultValue) {
+                setValueGenerated(false)
+              } else {
+                setValueGenerated(true)
+              }
+            }}
+          />
+        }
+      </div>
       {editable && valueGenerated ? (
         <span className="deadline-estimated">{t('deadlines.estimated')}</span>
       ) : (
@@ -119,12 +212,26 @@ const DeadLineInput = ({
           <IconAlertCircle size="xs" /> {currentError}{' '}
         </div>
       )}
-    </div>
+      {warning.warning && (
+        <Notification label={warning.response.reason} type="alert" style={{marginTop: 'var(--spacing-s)'}}>
+        Seuraavien päivämäärien siirtäminen ei ole mahdollista, koska minimietäisyys viereisiin etappeihin on täyttynyt.
+        {warning.response.conflicting_deadline}. Asetettu seuraava kelvollinen päivä {warning.response.suggested_date}</Notification>
+      )}
+    </>
   )
 }
 
 DeadLineInput.propTypes = {
   input: PropTypes.object.isRequired,
+  error: PropTypes.string,
+  attributeData: PropTypes.object,
+  currentDeadline: PropTypes.object,
+  editable: PropTypes.bool,
+  type: PropTypes.string,
+  disabled: PropTypes.bool,
+  placeholder: PropTypes.string,
+  className: PropTypes.string,
+  autofillRule: PropTypes.string,
   timeTableDisabled: PropTypes.bool
 }
 

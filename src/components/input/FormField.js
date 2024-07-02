@@ -40,6 +40,7 @@ const FormField = ({
   selectedPhase,
   phaseIsClosed,
   hasEditRights,
+  disabledDates,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -118,6 +119,7 @@ const FormField = ({
             isCurrentPhase={isCurrentPhase}
             selectedPhase={selectedPhase}
             phaseIsClosed={phaseIsClosed}
+            disabledDates={disabledDates}
           />
         )
     }
@@ -165,7 +167,10 @@ const FormField = ({
       ...field,
       type: 'checkbox'
     }
+
+    const timetableBoolean = isProjectTimetableEdit && field.autofill_readonly && !field.editable
     return (
+      !timetableBoolean ?
       <Form.Field
         className={`checkbox-container small-margin'} ${showError ? 'error' : ''}`}
       >
@@ -173,6 +178,8 @@ const FormField = ({
           <span className="checkbox">{renderField(newProps)}</span>
         </Label>
       </Form.Field>
+      :
+      <></>
     )
   }
 
@@ -201,6 +208,7 @@ const FormField = ({
   }
 
   const renderNormalField = () => {
+    const timetableBoolean = isProjectTimetableEdit && field.type === "boolean"
     const status = lockStatus
     let title = (field.character_limit
       ? `${field.label}  (${t('project.char-limit', { amount: field.character_limit })})`
@@ -220,7 +228,7 @@ const FormField = ({
         } ${highlightStyle}`}
       >
         {highlightStyle === "yellow" ? <div className={highlightStyle + " highlight-flag"}>{highlightedTag}</div> : ''}
-        {!isOneLineField && (
+        {!isOneLineField && !timetableBoolean && (
           <div className='input-header-container'>
             <div className="input-header">
               <Label

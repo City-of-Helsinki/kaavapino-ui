@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import dayjs from 'dayjs'
 import { isNumber, isBoolean, isArray } from 'lodash'
 import PropTypes from 'prop-types'
+import { Notification } from 'hds-react'
 
 const DeadlineInfoText = props => {
   const formValues = useSelector(getFormValues(EDIT_PROJECT_TIMETABLE_FORM))
@@ -80,15 +81,18 @@ const DeadlineInfoText = props => {
   }
 
   return (
-    <div name={props.input.name} className="deadline-info-text">
-      {props.label} {value}
-    </div>
+    <Notification className='deadline-info-notification' size="small" label={props.input.name} >{props.label} {value}</Notification>
   )
 }
 
 DeadlineInfoText.propTypes = {
   fieldData:PropTypes.object,
   meta: PropTypes.object,
+  input: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.bool,
+  ])
 }
 
 export default DeadlineInfoText

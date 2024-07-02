@@ -104,7 +104,34 @@ export const FORM_ERROR_LIST = "formErrorList"
 export const RESET_FORM_ERRORS = "resetFormErrors"
 export const GET_ATTRIBUTE_DATA = "getAttributeData"
 export const SET_ATTRIBUTE_DATA = "setAttributeData"
+export const FETCH_DISABLED_DATES_START = 'fetchDisabledDatesStart';
+export const FETCH_DISABLED_DATES_SUCCESS = 'fetchDisabledDatesSuccess';
+export const FETCH_DISABLED_DATES_FAILURE = 'fetchDisabledDatesFailure';
+export const VALIDATE_DATE = 'validateDate';
+export const SET_DATE_VALIDATION_RESULT = 'setDateValidationResult';
 
+export const setDateValidationResult = (valid,result,callback) => ({
+    type: SET_DATE_VALIDATION_RESULT,
+    payload: {valid,result},
+    callback
+});
+export const validateDateAction = (field,projectName,date,callback) => ({
+    type: VALIDATE_DATE,
+    payload: {field,projectName,date},
+    callback
+});
+export const fetchDisabledDatesStart = (startDate, endDate) => ({
+  type: FETCH_DISABLED_DATES_START,
+  payload: { startDate, endDate },
+});
+export const fetchDisabledDatesSuccess = (disabledDates) => ({
+  type: FETCH_DISABLED_DATES_SUCCESS,
+  payload: disabledDates,
+});
+export const fetchDisabledDatesFailure = (error) => ({
+  type: FETCH_DISABLED_DATES_FAILURE,
+  payload: error,
+});
 export const setAttributeData = (fieldName,data,formName, set, nulledFields,i) =>({
   type: SET_ATTRIBUTE_DATA,
   payload:{fieldName,data,formName, set, nulledFields,i}
