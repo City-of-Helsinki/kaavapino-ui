@@ -163,8 +163,34 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const handleRemoveGroup = () => {
+      console.log("handeremove",dataToRemove)
       //TODO split this to smaller functions
       let removeFromTimeline = dataToRemove?.deadlinegroup
+      let phase = dataToRemove?.nestedInGroup.toLowerCase()
+      let esillaolo = dataToRemove?.content?.includes("Esilläolo") ? true : false
+
+      let toRemoveFromCalendar = dataToRemove?.nestedInGroup?.toLowerCase() + "_" + dataToRemove?.content?.toLowerCase().replace(/[äöå]/g, match => {
+        switch (match) {
+          case 'ä': return 'a';
+          case 'ö': return 'o';
+          case 'å': return 'a';
+          default: return match;
+        }
+      }).replace(/-/g, "_").replace(/_\d+/g, "");
+      console.log(toRemoveFromCalendar)
+      let index = "_" + dataToRemove.deadlinegroup.split('_').pop()
+      console.log(index)
+      //remove from attribute data/calendar
+      for (const key in visValues) {
+        if (Object.prototype.hasOwnProperty.call(visValues, key)) {
+          console.log(key,key.includes(toRemoveFromCalendar) && key.includes(index))
+          if (key.includes(toRemoveFromCalendar) && key.includes(index) || esillaolo && key.includes("mielipiteet_"+phase+index)) {
+            console.log(key)
+            dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, key, null));
+            //delete visValues[key];
+          }
+        }
+      }
       //Remove from vis groups
       let updatedGroups = groups.get({
         filter: function(group) {
@@ -184,26 +210,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       items.clear();
       groups.add(updatedGroups);
       items.add(updatedItems)
-
-      let toRemoveFromCalendar = dataToRemove?.nestedInGroup?.toLowerCase() + "_" + dataToRemove?.content?.toLowerCase().replace(/[äöå]/g, match => {
-        switch (match) {
-          case 'ä': return 'a';
-          case 'ö': return 'o';
-          case 'å': return 'a';
-          default: return match;
-        }
-      });
-      let index = "_" + dataToRemove.deadlinegroup.split('_').pop()
-      //remove from attribute data/calendar
-      for (const key in visValues) {
-        if (Object.prototype.hasOwnProperty.call(visValues, key)) {
-          if (key.includes(toRemoveFromCalendar) && key.includes(index)) {
-            dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, key, false));
-            //delete visValues[key];
-          }
-        }
-      }
-
+      console.log(updatedGroups,updatedItems)
       setOpenConfirmModal(!openConfirmModal)
     }
 
