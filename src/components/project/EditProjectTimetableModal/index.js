@@ -104,6 +104,7 @@ class EditProjectTimeTableModal extends Component {
     } = this.props
 
     if(prevProps.formValues && prevProps.formValues !== formValues){
+  
       if(deadlineSections && deadlines && formValues){
         // Check if changedValues contains 'jarjestetaan' or 'lautakuntaan' and the value is a boolean
         const [isGroupAddRemove,changedValues] = this.getChangedValues(prevProps.formValues, formValues);
@@ -114,7 +115,6 @@ class EditProjectTimeTableModal extends Component {
         else{
           //Form items and groups
           let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,formValues,deadlines)
-
           // Update the existing data
           this.state.groups.update(deadLineGroups);
           this.state.groups.update(nestedDeadlines);
@@ -292,16 +292,13 @@ class EditProjectTimeTableModal extends Component {
   }
 
   generateVisItems = (deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData) => {
-
+    console.log(deadlines)
     let numberOfPhases = 1
-    //let type = ""
 
     let startDate = false
     let endDate = false
     let style = ""
 
-    //let dashStart = false
-    //let dashEnd = false
     let dashedStyle = "inner"
 
     let innerStart = false
@@ -309,11 +306,6 @@ class EditProjectTimeTableModal extends Component {
     let innerStyle = "inner-end"
 
     let milestone = false
-
-/*     let array1 = []
-    let array2 = []
-    let array3 = []
-    let array4 = [] */
 
     for (let i = 0; i < deadlines.length; i++) {
       if(deadlines[i].deadline.deadline_types.includes('phase_start')){
@@ -369,40 +361,6 @@ class EditProjectTimeTableModal extends Component {
         //new Date .setHours(0,0,0,0)
       }
 
-      /* if(deadlines[i].deadline.deadline_types.includes('phase_start')){
-        //If formValues has deadlines[i].deadline.attribute use that values, it if not then use deadline[i].date in startDate.
-        startDate = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
-        style = deadlines[i].deadline.phase_color
-        //.setHours(23,59,59,0)
-      }
-      else if(deadlines[i].deadline.deadline_types.includes('dashed_start')){
-        dashStart = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
-        dashedStyle = "inner"
-      }
-      else if(deadlines[i].deadline.deadline_types.includes('dashed_end') && deadlines[i].deadline.deadline_types.includes('inner_start')){
-        //Esilläolo
-        type=deadlines[i].deadline.phase_name === "Ehdotus" ? "nahtavillaolo" : "esillaolo"
-        dashEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
-        innerStart = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
-      }
-      else if(deadlines[i].deadline.deadline_types.includes('dashed_end') && deadlines[i].deadline.deadline_types.includes('milestone')){
-        //Lautakunta
-        type="lautakunta"
-        dashEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
-      }
-      else if(deadlines[i].deadline.phase_name === "Ehdotus" && deadlines[i].deadline.deadline_types.includes('inner_end') && deadlines[i].deadline.date_type === "Arkipäivät"){
-        innerEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
-        innerStyle = "inner-end"
-      }
-      else if(deadlines[i].deadline.deadline_types.includes('inner_end') && deadlines[i].deadline.date_type !== "Arkipäivät"){
-        innerEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
-        innerStyle = "inner-end"
-      }
-      else if(deadlines[i].deadline.deadline_types.includes('phase_end') && deadlines[i].deadline.date_type !== "Arkipäivät"){
-        endDate = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
-        //new Date .setHours(0,0,0,0)
-      } */
-
       if(startDate && endDate){
         //Main group items not movable(Käynnistys, Periaatteet, OAS etc)
         let mainGroup = this.addMainGroup(deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines);
@@ -434,7 +392,7 @@ class EditProjectTimeTableModal extends Component {
       let phaseData = []
       let deadLineGroups = []
       let nestedDeadlines = []
-
+      console.log(formValues)
       deadLineGroups = this.addDeadLineGroups(deadlineSections,deadLineGroups)
       const results = this.generateVisItems(deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData);
       [deadLineGroups, nestedDeadlines, phaseData] = results;
@@ -454,25 +412,6 @@ class EditProjectTimeTableModal extends Component {
     }
     return false;
   }
-
-  updateItem = (prevValues, values) => {
-    //Update one item
-    console.log(prevValues,values)
-    //const changedItem = this.getChangedItem(prevValues, values);
-
-  };
-
-  updateTimeline = (prevValues, values) => {
-    //Updates all items
-    console.log(prevValues,values)
-/*     const changedItem = this.getChangedItem(prevValues, values);
-    this.state.items.map(item => console.log(item));
-    if (changedItem) {
-      this.setState(prevState => ({
-        items: changedItem ? prevState.items.map(item => item.id === changedItem.id ? changedItem : item) : prevState.items,
-      }))
-    } */
-  };
 
   setLoadingFalse = () => {
     if (this.state.loading) {
