@@ -13,6 +13,7 @@ import VisTimelineMenu from './VisTimelineMenu'
 import AddGroupModal from './AddGroupModal';
 import ConfirmModal from '../common/ConfirmModal'
 import PropTypes from 'prop-types';
+import { removeDeadlines } from '../../actions/projectActions';
 import './VisTimeline.css'
 Moment().locale('fi');
 
@@ -185,6 +186,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }).replace(/-/g, "_").replace(/_\d+/g, "");
       console.log(toRemoveFromCalendar)
       let index = "_" + dataToRemove.deadlinegroup.split('_').pop()
+      let keysToRemove = []
       console.log(index)
       //remove from attribute data/calendar
       for (const key in visValues) {
@@ -192,6 +194,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           console.log(key,key.includes(toRemoveFromCalendar) && key.includes(index))
           if (key.includes(toRemoveFromCalendar) && key.includes(index) || esillaolo && key.includes("mielipiteet_"+phase+index)) {
             console.log(key)
+            keysToRemove.push(key)
+           // Filter out the matching deadline from deadlines
             dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, key, null));
             //delete visValues[key];
           }
@@ -209,6 +213,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           group.nestedGroups = group.nestedGroups.filter(subgroup => subgroup !== dataToRemove.id);
         }
       });
+      // Remove from local deadlines data, backend removes the actual data on save
+      dispatch(removeDeadlines(keysToRemove));
       //Remove from vis items
       const updatedItems = items.get().filter(item => item.group !== dataToRemove.id);
       //Update timeline visually

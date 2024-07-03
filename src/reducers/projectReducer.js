@@ -84,7 +84,8 @@ import {
   FETCH_DISABLED_DATES_START,
   FETCH_DISABLED_DATES_SUCCESS,
   FETCH_DISABLED_DATES_FAILURE,
-  SET_DATE_VALIDATION_RESULT
+  SET_DATE_VALIDATION_RESULT,
+  REMOVE_DEADLINES
 } from '../actions/projectActions'
 
 export const initialState = {
@@ -142,6 +143,15 @@ export const reducer = (state = initialState, action) => {
 
   switch (action.type) {
 
+    case REMOVE_DEADLINES:
+      return {
+        ...state,
+        currentProject: {
+          ...state.currentProject,
+          deadlines: state.currentProject.deadlines.filter(deadline => !action.payload.includes(deadline.deadline.attribute)),
+        },
+    };
+      
     case SET_DATE_VALIDATION_RESULT: {
       if (typeof action.callback === 'function') {
         action.callback(action.payload.result); // pass the result to the callback
