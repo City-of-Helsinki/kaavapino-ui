@@ -5,9 +5,13 @@ export const useValidateDate = () => {
   const dispatch = useDispatch();
   //Util to call validateDateAction and return suggested date from backend if validation fails.
   const validateDate = (field, projectName, formattedDate, setWarning) => {
+    console.log("validateDate")
     return new Promise((resolve, reject) => {
+      console.log(field, projectName, formattedDate)
       dispatch(validateDateAction(field, projectName, formattedDate, (response) => {
+        console.log(response)
         if (response) {
+          console.log(response.error_reason)
           if (response.error_reason !== null) {
             // Show warning notification with suggested date and reasons
             if (typeof setWarning === 'function') {
@@ -20,6 +24,7 @@ export const useValidateDate = () => {
                 }
                 });
             }
+            console.log("if repsone",response.date)
             // Return suggested date
             resolve(response.suggested_date);
           } else {
@@ -34,10 +39,12 @@ export const useValidateDate = () => {
                 }
                 });
             }
+            console.log("else repsone",response.date)
             // Return valid date
             resolve(response.date);
           }
         } else {
+          console.log("error")
           reject(new Error('validateDateAction call error'));
         }
       }));

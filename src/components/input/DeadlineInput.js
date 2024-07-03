@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux'
 import { getFormValues } from 'redux-form'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { useValidateDate } from '../../utils/dateUtils';
-import moment from 'moment'
+//import moment from 'moment'
 
 const DeadLineInput = ({
   input,
@@ -61,7 +61,6 @@ const DeadLineInput = ({
   const [currentValue, setCurrentValue] = useState(
     currentDeadline ? currentDeadlineDate : inputValue 
   )
-
   let currentError
   const generated = currentDeadline && currentDeadline.generated
 
@@ -121,28 +120,32 @@ const DeadLineInput = ({
 
     return day === 0 || day === 6 || disabledDates.includes(formatDate(date));
   }
+  
+  const formatDateToYYYYMMDD = (date) => {
+    if(date.includes('.')){
+    const dateParts = date.split(".");
+    const eventDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
+    const year = eventDate.getFullYear();
+    const month = ("0" + (eventDate.getMonth() + 1)).slice(-2); // Months are 0-based, so add 1 and pad with 0 if necessary
+    const day = ("0" + eventDate.getDate()).slice(-2); // Pad with 0 if necessary
+    return `${year}-${month}-${day}`;
+    } else {
+      return date;
+    }
+  };
 
-  const handleDateChange = async (event) => {
+  const handleDateChange = async (formattedDate) => {
     try {
+      console.log("try", formattedDate)
       const field = input.name;
       const projectName = attributeData['projektin_nimi'];
-      const formattedDate = moment(event, ['DD.MM.YYYY', 'YYYY-MM-DD']).format('YYYY-MM-DD');
-
+      console.log('formattedDate', formattedDate)
       let date = await validateDate(field, projectName, formattedDate, setWarning); // Use await
-      let value;
-      if (date.includes('.')) {
-        const dateParts = date.split(".");
-        const eventDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
-        const year = eventDate.getFullYear();
-        const month = ("0" + (eventDate.getMonth() + 1)).slice(-2); // Months are 0-based, so add 1 and pad with 0 if necessary
-        const day = ("0" + eventDate.getDate()).slice(-2); // Pad with 0 if necessary
-        value = `${year}-${month}-${day}`;
-      } else {
-        value = date;
-      }
-      if (value) {
-        setCurrentValue(value);
-        input.onChange(value);
+      console.log('date', date)
+      if (date) {
+        console.log('onChange', date)
+        setCurrentValue(date);
+        input.onChange(date);
       }
     } catch (error) {
       console.error('Validation error:', error);
@@ -156,8 +159,9 @@ const DeadLineInput = ({
         ?
         <DateInput
           readOnly
+          language='fi'
           isDateDisabledBy={isDisabledDate}
-          value={currentValue}
+          value={formatDateToYYYYMMDD(currentValue)}
           name={input.name}
           type={type}
           disabled={typeof timeTableDisabled !== "undefined" ? timeTableDisabled : disabled}
@@ -165,7 +169,15 @@ const DeadLineInput = ({
           error={error}
           aria-label={input.name}
           onChange={(event) => {
-            handleDateChange(event);
+            let formattedDate
+            const dateString = event;
+            if (dateString.includes('.')) {
+              formattedDate = formatDateToYYYYMMDD(dateString);
+            } else {
+              formattedDate = dateString;
+            }
+            console.log('event', formattedDate)
+            handleDateChange(formattedDate);
           }}
           className={currentClassName}
           onBlur={() => {

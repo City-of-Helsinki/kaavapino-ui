@@ -79,26 +79,30 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
     }
 
-    const checkConfirmedGroups = (esillaoloConfirmed, lautakuntaConfirmed, attributeKeys, visValRef, phase, canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean) => {
+    const checkConfirmedGroups = (esillaoloConfirmed, lautakuntaConfirmed, attributeKeys, visValRef, phase, canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, data) => {
       // Check if more Esillaolo groups can be added
       if (esillaoloConfirmed) {
-        const deadlineEsillaolokertaKeys = attributeKeys.filter(key => key.includes('_esillaolokerta_'));
+        const deadlineEsillaolokertaKeys = data.maxEsillaolo
         const esillaoloRegex = new RegExp(`${phase}_esillaolo_\\d+$`);
         const attributeEsillaoloKeys = Object.keys(visValRef).filter(key => esillaoloRegex.test(key));
-        canAddEsillaolo = attributeEsillaoloKeys.length < deadlineEsillaolokertaKeys.length;
-        const esillaoloCount = attributeEsillaoloKeys.length === 0 ? attributeEsillaoloKeys.length + 2 : attributeEsillaoloKeys.length + 1;
-        const nextEsillaoloStr = canAddEsillaolo ? `jarjestetaan_${phase}_esillaolo_${esillaoloCount}$` : false;
+        let esillaoloCount = 1
+        esillaoloCount = esillaoloCount + attributeEsillaoloKeys.length;
+        console.log(esillaoloCount)
+        canAddEsillaolo = esillaoloCount < deadlineEsillaolokertaKeys;
+        const nextEsillaoloStr = canAddEsillaolo ? `jarjestetaan_${phase}_esillaolo_${esillaoloCount +1}$` : false;
         nextEsillaoloClean = nextEsillaoloStr ? nextEsillaoloStr.replace(/[/$]/g, '') : nextEsillaoloStr;
+        console.log(nextEsillaoloClean)
       }
     
       // Check if more Lautakunta groups can be added
       if (lautakuntaConfirmed) {
-        const deadlineLautakuntakertaKeys = attributeKeys.filter(key => key.includes('_lautakuntakerta_'));
+        const deadlineLautakuntakertaKeys = data.maxLautakunta
         const lautakuntaanRegex = new RegExp(`${phase}_lautakuntaan_\\d+$`);
         const attributeLautakuntaanKeys = Object.keys(visValRef).filter(key => lautakuntaanRegex.test(key));
-        canAddLautakunta = attributeLautakuntaanKeys.length < deadlineLautakuntakertaKeys.length;
-        const lautakuntaCount = attributeLautakuntaanKeys.length === 0 ? attributeLautakuntaanKeys.length + 2 : attributeLautakuntaanKeys.length + 1;
-        const nextLautakuntaStr = canAddLautakunta ? `${phase}_lautakuntaan_${lautakuntaCount}$` : false;
+        let lautakuntaCount = 1
+        lautakuntaCount = lautakuntaCount + attributeLautakuntaanKeys.length;
+        canAddLautakunta = lautakuntaCount < deadlineLautakuntakertaKeys;
+        const nextLautakuntaStr = canAddLautakunta ? `${phase}_lautakuntaan_${lautakuntaCount +1}$` : false;
         nextLautakuntaClean = nextLautakuntaStr ? nextLautakuntaStr.replace(/[/$]/g, '') : nextLautakuntaStr;
       }
 
@@ -108,6 +112,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const canGroupBeAdded = (visValRef, data, deadlineSections) => {
       // Find out how many groups in the clicked phase have been added to the timeline
       const matchingGroups = groups.get().filter(group => data.nestedGroups.includes(group.id));
+      console.log(matchingGroups,data)
       const esillaoloCount = matchingGroups.filter(group => group.content === 'Esilläolo').length > 1 ? '_' + matchingGroups.filter(group => group.content === 'Esilläolo').length : '';
       const lautakuntaCount = matchingGroups.filter(group => group.content === 'Lautakunta').length > 1 ? '_' + matchingGroups.filter(group => group.content === 'Lautakunta').length : '';
       const phase = data.content.toLowerCase().replace(/\s+/g, '_');
@@ -135,13 +140,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         attributeKeys = Object.keys(deadlineSections[matchingKeys[0]].sections[0].attributes);
       }
       
-      const results = checkConfirmedGroups(esillaoloConfirmed, lautakuntaConfirmed, attributeKeys, visValRef, phase, canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean);
+      const results = checkConfirmedGroups(esillaoloConfirmed, lautakuntaConfirmed, attributeKeys, visValRef, phase, canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean,data);
       [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean] = results;
 
       return [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean];
     };
 
     const openAddDialog = (visValRef,data,event) => {
+      console.log(visValRef)
       const [addEsillaolo,nextEsillaolo,addLautakunta,nextLautakunta] = canGroupBeAdded(visValRef,data,deadlineSections)
       const rect = event.target.getBoundingClientRect();
       
