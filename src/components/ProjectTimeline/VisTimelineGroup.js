@@ -88,11 +88,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         const attributeEsillaoloKeys = Object.keys(visValRef).filter(key => esillaoloRegex.test(key));
         let esillaoloCount = 1
         esillaoloCount = esillaoloCount + attributeEsillaoloKeys.length;
-        console.log(esillaoloCount)
         canAddEsillaolo = esillaoloCount < deadlineEsillaolokertaKeys;
         const nextEsillaoloStr = canAddEsillaolo ? `jarjestetaan_${phase}_esillaolo_${esillaoloCount +1}$` : false;
         nextEsillaoloClean = nextEsillaoloStr ? nextEsillaoloStr.replace(/[/$]/g, '') : nextEsillaoloStr;
-        console.log(nextEsillaoloClean)
       }
     
       // Check if more Lautakunta groups can be added
@@ -113,7 +111,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const canGroupBeAdded = (visValRef, data, deadlineSections) => {
       // Find out how many groups in the clicked phase have been added to the timeline
       const matchingGroups = groups.get().filter(group => data.nestedGroups.includes(group.id));
-      console.log(matchingGroups,data)
       const esillaoloCount = matchingGroups.filter(group => group.content === 'Esilläolo').length > 1 ? '_' + matchingGroups.filter(group => group.content === 'Esilläolo').length : '';
       const lautakuntaCount = matchingGroups.filter(group => group.content === 'Lautakunta').length > 1 ? '_' + matchingGroups.filter(group => group.content === 'Lautakunta').length : '';
       const phase = data.content.toLowerCase().replace(/\s+/g, '_');
@@ -148,7 +145,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     };
 
     const openAddDialog = (visValRef,data,event) => {
-      console.log(visValRef)
       const [addEsillaolo,nextEsillaolo,addLautakunta,nextLautakunta] = canGroupBeAdded(visValRef,data,deadlineSections)
       const rect = event.target.getBoundingClientRect();
       
@@ -170,8 +166,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const handleRemoveGroup = () => {
-      console.log("handeremove",dataToRemove)
-      //TODO split this to smaller functions
+      //TODO review logic and split this to smaller functions
       let removeFromTimeline = dataToRemove?.deadlinegroup
       let phase = dataToRemove?.nestedInGroup.toLowerCase()
       let esillaolo = dataToRemove?.content?.includes("Esilläolo") ? true : false
@@ -184,20 +179,17 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           default: return match;
         }
       }).replace(/-/g, "_").replace(/_\d+/g, "");
-      console.log(toRemoveFromCalendar)
+
       let index = "_" + dataToRemove.deadlinegroup.split('_').pop()
       let keysToRemove = []
-      console.log(index)
+
       //remove from attribute data/calendar
       for (const key in visValues) {
         if (Object.prototype.hasOwnProperty.call(visValues, key)) {
-          console.log(key,key.includes(toRemoveFromCalendar) && key.includes(index))
           if (key.includes(toRemoveFromCalendar) && key.includes(index) || esillaolo && key.includes("mielipiteet_"+phase+index)) {
-            console.log(key)
             keysToRemove.push(key)
            // Filter out the matching deadline from deadlines
             dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, key, null));
-            //delete visValues[key];
           }
         }
       }
@@ -222,7 +214,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       items.clear();
       groups.add(updatedGroups);
       items.add(updatedItems)
-      console.log(updatedGroups,updatedItems)
       setOpenConfirmModal(!openConfirmModal)
     }
 
@@ -544,14 +535,56 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           let container = document.createElement("div");
           container.classList.add("timeline-buttons-container");
           container.setAttribute("tabindex", "0");
+          let words = group.deadlinegroup?.split("_") || [];
+          let words2 = group.content?.split("-") || [];
+          let normalizedString = words2[0]
+          .replace(/[äå]/gi, 'a') // Replace ä and å with a
+          .replace(/[ö]/gi, 'o')  // Replace ö with o
+          .toLowerCase(); // Convert to lowercase
+
           //Don't show buttons in these groups
           const stringsToCheck = ["Käynnistys", "Hyväksyminen", "Voimaantulo", "Vaiheen kesto"];
           const contentIncludesString = stringsToCheck.some(str => group?.content.includes(str));
-
             // Hover effect
           container.addEventListener("mouseenter", function() {
+            let words = group.deadlinegroup?.split("_") || [];
+            let words2 = group.content?.split("-") || [];
+            let normalizedString = words2[0]
+            .replace(/[äå]/gi, 'a') // Replace ä and å with a
+            .replace(/[ö]/gi, 'o')  // Replace ö with o
+            .toLowerCase(); // Convert to lowercase
+            let wordsToCheck = ["vahvista_",words[0], normalizedString, words[2] === "1" ? "" : words[2]];
             // Action to perform on hover enter, e.g., change background color
             container.classList.add("show-buttons");
+            const keys = Object.entries(visValuesRef?.current);
+            const deletableGroup = keys.some(([key, value]) =>{
+              const allWordsInKey = wordsToCheck.every(word => key.includes(word))
+              if(allWordsInKey){
+                if(value){
+                  return true
+                }
+                else{
+                  return false; // stop iterating and return false
+                }
+              }
+            });
+            //only not confirmed groups can be deleted
+            if(!deletableGroup){
+               // Select the button within the container
+              const button = container.querySelector('.timeline-buttons-container .timeline-remove-button');
+              if(button){
+                // Remove the "button-disabled" class
+                if(button?.classList.contains('button-disabled')){
+                  button?.classList.remove('button-disabled');
+                }
+              }
+            }
+            else{
+              const button = container.querySelector('.timeline-buttons-container .timeline-remove-button');
+              if(!button?.classList.contains('button-disabled')){
+                button?.classList.add('button-disabled');
+              }
+            }
           });
           container.addEventListener("mouseleave", function() {
             // Action to perform on hover leave
@@ -592,23 +625,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               container.insertAdjacentElement("afterBegin", labelRemove);
               let remove = document.createElement("button");
               remove.classList.add("timeline-remove-button");
-              //vahvista_oas_esillaolo_alkaa_2
-              //deadlinegroup: "oas_esillaolokerta_2"
-              let words = group.deadlinegroup?.split("_") || [];
-              let words2 = group.content?.split("-") || [];
-              let normalizedString = words2[0]
-              .replace(/[äå]/gi, 'a') // Replace ä and å with a
-              .replace(/[ö]/gi, 'o')  // Replace ö with o
-              // Add more replacements as needed
-              .toLowerCase(); // Convert to lowercase
 
-              if(group?.generated || visValuesRef?.current[`vahvista_${words[0]}_${normalizedString}_alkaa_${words[2]}`]){
+              if(visValuesRef?.current[`vahvista_${words[0]}_${normalizedString}_alkaa_${words[2]}`]){
                 remove.classList.add("button-disabled")
               }
               remove.style.fontSize = "small";
 
               remove.addEventListener("click", function () {
-                openRemoveDialog(group);
+                  openRemoveDialog(group);
               });
               container.insertAdjacentElement("beforeEnd", remove);
 
@@ -625,7 +649,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                     items.update({ id: item.id, className: locked, locked: !item.locked });
                   }
                 }
-                //groups.update({ id: group.id, locked: !group.locked });
                 lockLine(group);
               });
               container.insertAdjacentElement("beforeEnd", lock);
