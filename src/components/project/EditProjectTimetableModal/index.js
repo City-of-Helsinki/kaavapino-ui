@@ -39,7 +39,7 @@ class EditProjectTimeTableModal extends Component {
     if(attributeData && deadlines && deadlineSections){
       let items = new visdata.DataSet()
       let groups = new visdata.DataSet();
-
+      console.log(deadlineSections)
       let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,attributeData,deadlines)
 
       groups.add(deadLineGroups);
@@ -106,6 +106,7 @@ class EditProjectTimeTableModal extends Component {
     if(prevProps.formValues && prevProps.formValues !== formValues){
   
       if(deadlineSections && deadlines && formValues){
+        console.log(formValues)
         // Check if changedValues contains 'jarjestetaan' or 'lautakuntaan' and the value is a boolean
         const [isGroupAddRemove,changedValues] = this.getChangedValues(prevProps.formValues, formValues);
 
@@ -143,11 +144,24 @@ class EditProjectTimeTableModal extends Component {
     for (let i = 0; i < deadlineSections.length; i++) {
       for (let x = 0; x < deadlineSections[i].sections.length; x++) {
         if (!deadLineGroups.some(item => item.content === deadlineSections[i].title)) {
+          let esillaolokerta = 0
+          let lautakuntakerta = 0
+          Object.keys(deadlineSections[i].sections[x].attributes).forEach(key => {
+            // add max count for esilläolo and lautakunta groups
+            if (key.includes('esillaolokerta') || key.includes('nahtavillaolokerta')) {
+              esillaolokerta++
+            }
+            if(key.includes('lautakuntakerta')){
+              lautakuntakerta++
+            }
+          });
           deadLineGroups.push({
             id: deadlineSections[i].title,
             content: deadlineSections[i].title,
             showNested: true,
-            nestedGroups: []
+            nestedGroups: [],
+            maxEsillaolo: esillaolokerta,
+            maxLautakunta: lautakuntakerta
           })
         }
       }
@@ -581,12 +595,10 @@ class EditProjectTimeTableModal extends Component {
               indexString = "_" + newIndex; // Prefix the incremented index with "_"
             }
             else {
-              // If index is not greater than 1, set newIndex to "1"
-              // and prepare to set indexString to "_2" since it's the default for non-positive indexes
               newIndex = "2";
               indexString = "_2"; // Directly set to "_2" as this block only executes when index <= 1
             }
-
+            console.log(newIndex,indexString)
             if(validValues.length > 2 && validValues[2].key.includes("maaraaika")){
               const deadlineItem = {
                 className: "board",
@@ -680,9 +692,18 @@ class EditProjectTimeTableModal extends Component {
               this.state.groups.clear();
               this.state.groups.add(sortedGroups);
             }
-
+            console.log(indexString)
             validValues.forEach(({ key, value }) => {
-              this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, key + indexString, value));
+              let modifiedKey
+              const numericRegex = /_\d+$/; // Matches keys that end with an underscore followed by one or more digits
+              if(numericRegex.test(key)){
+                modifiedKey = key.replace(numericRegex, indexString);
+              }
+              else{
+                modifiedKey = key + indexString
+              }
+              console.log(modifiedKey)
+              this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, modifiedKey, value));
             });
           }
           else{
