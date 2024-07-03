@@ -136,22 +136,18 @@ const DeadLineInput = ({
 
   const handleDateChange = async (formattedDate) => {
     try {
-      console.log("try", formattedDate)
       const field = input.name;
       const projectName = attributeData['projektin_nimi'];
-      console.log('formattedDate', formattedDate)
       let date = await validateDate(field, projectName, formattedDate, setWarning); // Use await
-      console.log('date', date)
-      if (date) {
-        console.log('onChange', date)
-        setCurrentValue(date);
+      if (date !== currentValue) {
         input.onChange(date);
+        setCurrentValue(date);
       }
     } catch (error) {
       console.error('Validation error:', error);
     }
   };
-
+  console.log(currentValue)
   return (
     <>
       <div className='deadline-input'>
@@ -176,7 +172,6 @@ const DeadLineInput = ({
             } else {
               formattedDate = dateString;
             }
-            console.log('event', formattedDate)
             handleDateChange(formattedDate);
           }}
           className={currentClassName}
