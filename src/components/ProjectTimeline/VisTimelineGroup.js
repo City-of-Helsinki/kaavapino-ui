@@ -569,7 +569,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               }
             });
             //only not confirmed groups can be deleted
-            if(!deletableGroup){
+            if(!deletableGroup && !group.undeletable){
                // Select the button within the container
               const button = container.querySelector('.timeline-buttons-container .timeline-remove-button');
               if(button){
