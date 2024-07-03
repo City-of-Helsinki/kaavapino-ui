@@ -106,7 +106,6 @@ class EditProjectTimeTableModal extends Component {
     if(prevProps.formValues && prevProps.formValues !== formValues){
   
       if(deadlineSections && deadlines && formValues){
-        console.log(formValues)
         // Check if changedValues contains 'jarjestetaan' or 'lautakuntaan' and the value is a boolean
         const [isGroupAddRemove,changedValues] = this.getChangedValues(prevProps.formValues, formValues);
 
