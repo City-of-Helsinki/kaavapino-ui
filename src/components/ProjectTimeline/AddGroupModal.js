@@ -11,6 +11,7 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
   const dispatch = useDispatch();
 
   const addNew = (addedKey) => {
+    console.log(addedKey)
     if(addedKey){
       dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, addedKey, true));
       closeAddDialog()

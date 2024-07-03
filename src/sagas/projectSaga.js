@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { takeLatest, put, all, call, select } from 'redux-saga/effects'
+import { takeLatest, put, all, call, select, takeEvery } from 'redux-saga/effects'
 import { isEqual, isEmpty, isArray } from 'lodash'
 import { push } from 'connected-react-router'
 import {
@@ -215,10 +215,20 @@ function* validateDate({payload, callback}) {
     };
     const result = yield call(projectDateValidateApi.get, { query });
     const valid = result.conflicting_deadline === null && result.error_reason === null && result.suggested_date === null ? true : false;
-    yield put(setDateValidationResult(valid,result,callback))
+    yield put(setDateValidationResult(valid,result))
+    if (callback) {
+      callback(result);
+    }
   } catch (e) {
     yield put(error(e))
+    if (callback) {
+      callback({ error: e.message });
+    }
   }
+}
+
+export function* watchValidateDate() {
+  yield takeEvery(VALIDATE_DATE, validateDate);
 }
 
 function* getProjectDisabledDeadlineDates() {
