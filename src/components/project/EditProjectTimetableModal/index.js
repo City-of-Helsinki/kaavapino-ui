@@ -39,7 +39,7 @@ class EditProjectTimeTableModal extends Component {
     if(attributeData && deadlines && deadlineSections){
       let items = new visdata.DataSet()
       let groups = new visdata.DataSet();
-      console.log(deadlineSections)
+
       let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,attributeData,deadlines)
 
       groups.add(deadLineGroups);
@@ -207,7 +207,8 @@ class EditProjectTimeTableModal extends Component {
         abbreviation: deadlines[i].abbreviation,
         deadlinegroup: deadlines[i].deadline.deadlinegroup,
         deadlinesubgroup: deadlines[i].deadline.deadlinesubgroup,
-        locked: false
+        locked: false,
+        undeletable: true
       });
     }
   
@@ -291,6 +292,10 @@ class EditProjectTimeTableModal extends Component {
       indexString = "-" + lastChar;
     }
 
+    let undeletable = false;
+    if(indexString === "-1" && (deadlines[i].deadline.phase_name === "Ehdotus" || deadlines[i].deadline.phase_name === "OAS" || deadlines[i].deadline.phase_name === "Tarkistettu ehdotus")){
+      undeletable = true
+    }
     nestedDeadlines.push({
       id: numberOfPhases,
       content: deadlines[i].deadline.deadlinegroup?.includes("lautakunta") ? "Lautakunta" +indexString : (deadlines[i].deadline.deadlinegroup?.includes("nahtavillaolo") ? "Nahtavillaolo" +indexString : "Esilläolo" +indexString),
@@ -298,14 +303,15 @@ class EditProjectTimeTableModal extends Component {
       deadlinegroup: deadlines[i].deadline.deadlinegroup,
       deadlinesubgroup: deadlines[i].deadline.deadlinesubgroup,
       locked: false,
-      generated:deadlines[i].generated
+      generated:deadlines[i].generated,
+      undeletable:undeletable
     });
   
     return [phaseData, deadLineGroups, nestedDeadlines];
   }
 
   generateVisItems = (deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData) => {
-    console.log(deadlines)
+
     let numberOfPhases = 1
 
     let startDate = false
@@ -405,7 +411,7 @@ class EditProjectTimeTableModal extends Component {
       let phaseData = []
       let deadLineGroups = []
       let nestedDeadlines = []
-      console.log(formValues)
+
       deadLineGroups = this.addDeadLineGroups(deadlineSections,deadLineGroups)
       const results = this.generateVisItems(deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData);
       [deadLineGroups, nestedDeadlines, phaseData] = results;
@@ -597,7 +603,7 @@ class EditProjectTimeTableModal extends Component {
               newIndex = "2";
               indexString = "_2"; // Directly set to "_2" as this block only executes when index <= 1
             }
-            console.log(newIndex,indexString)
+
             if(validValues.length > 2 && validValues[2].key.includes("maaraaika")){
               const deadlineItem = {
                 className: "board",
@@ -691,7 +697,7 @@ class EditProjectTimeTableModal extends Component {
               this.state.groups.clear();
               this.state.groups.add(sortedGroups);
             }
-            console.log(indexString)
+
             validValues.forEach(({ key, value }) => {
               let modifiedKey
               const numericRegex = /_\d+$/; // Matches keys that end with an underscore followed by one or more digits
@@ -701,7 +707,7 @@ class EditProjectTimeTableModal extends Component {
               else{
                 modifiedKey = key + indexString
               }
-              console.log(modifiedKey)
+
               this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, modifiedKey, value));
             });
           }
