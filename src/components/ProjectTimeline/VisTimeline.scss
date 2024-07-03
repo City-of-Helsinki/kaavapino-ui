@@ -274,6 +274,17 @@
                 .timeline-lock-button{
                     display: block;
                 }
+                .button-disabled{
+                    pointer-events: none;
+                    cursor: not-allowed;
+                    opacity: 0.5;
+                    color: gray;
+                }
+                .button-enabled{
+                    pointer-events: all;
+                    cursor: pointer;
+                    opacity: 1;
+                }
             }
             .highlight-selected{
                 border: 1px solid $color-bus;
@@ -283,11 +294,6 @@
                 .timeline-lock-button{
                     display: block;
                 }
-            }
-            .button-disabled{
-                cursor: not-allowed;
-                opacity: 0.5;
-                color: gray;
             }
         }
     }
