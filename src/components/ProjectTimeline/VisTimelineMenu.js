@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import {Button,IconAngleLeft,IconAngleRight} from 'hds-react'
 import PropTypes from 'prop-types';
 
-function VisTimelineMenu({goToToday, moveLeft, moveRight,showYers,showMonths}) {
+function VisTimelineMenu({goToToday, moveLeft, moveRight,showYears,showMonths}) {
   const [selectedButton, setSelectedButton] = useState(null);
 
   const handleClick = (buttonName) => {
@@ -26,7 +26,7 @@ function VisTimelineMenu({goToToday, moveLeft, moveRight,showYers,showMonths}) {
           </div>
           <div className='zoom-menu'>
             <Button size="small" variant="secondary" className={selectedButton === 'showMonths' ? 'selected' : ''}  onClick={() => {showMonths(); handleClick('showMonths');}}>1 Kuukausi</Button>
-            <Button size="small" variant="secondary" className={selectedButton === 'showYers' ? 'selected' : ''}  onClick={() => {showYers(); handleClick('showYers');}}>1 Vuosi</Button>
+            <Button size="small" variant="secondary" className={selectedButton === 'showYears' ? 'selected' : ''}  onClick={() => {showYears(); handleClick('showYears');}}>1 Vuosi</Button>
              {/*<Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {show5Yers()}}>5 Vuotta</Button>
             <Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {show2Yers()}}>2 Vuotta</Button>
             <Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {show6Months()}}>6 kuukautta</Button>
@@ -43,7 +43,7 @@ VisTimelineMenu.propTypes = {
   goToToday: PropTypes.func,
   moveLeft: PropTypes.func,
   moveRight: PropTypes.func,
-  showYers: PropTypes.func,
+  showYears: PropTypes.func,
   showMonths: PropTypes.func
 };
 

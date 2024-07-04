@@ -33,7 +33,7 @@ class EditProjectTimeTableModal extends Component {
   }
 
   componentDidMount() {
-    const { initialize, attributeData, deadlines, deadlineSections,disabledDates } = this.props
+    const { initialize, attributeData, deadlines, deadlineSections, disabledDates } = this.props
     initialize(attributeData)
    // Check if the key exists and its value is true
     if(attributeData && deadlines && deadlineSections){
@@ -64,7 +64,7 @@ class EditProjectTimeTableModal extends Component {
       const previousDate = new Date(dates[i - 1]);
       const differenceInTime = currentDate - previousDate;
       const differenceInDays = differenceInTime / (1000 * 3600 * 24);
-  
+
       if (differenceInDays === 1) {
         end = dates[i];
       } else {
@@ -73,7 +73,7 @@ class EditProjectTimeTableModal extends Component {
           start: start,
           end: end,
           type: "background",
-          className: "negative",
+          className: new Date(start).getDate() - new Date(end).getDate() === 0 || new Date(start).getDate() - new Date(end).getDate() === -1 ? "negative normal-weekend" : "negative",
         }]);
         start = dates[i];
         end = dates[i];
@@ -766,7 +766,19 @@ class EditProjectTimeTableModal extends Component {
 
   render() {
     const { loading } = this.state
-    const { open, formValues, deadlines, deadlineSections, t, formSubmitErrors, projectPhaseIndex, currentProject, allowedToEdit, isAdmin, disabledDates } = this.props
+    const { 
+      open, 
+      formValues, 
+      deadlines, 
+      deadlineSections, 
+      t, 
+      formSubmitErrors, 
+      projectPhaseIndex, 
+      currentProject, 
+      allowedToEdit, 
+      isAdmin, 
+      disabledDates, 
+      esillaolopaivat } = this.props
 
     if (!formValues) {
       return null
@@ -799,6 +811,7 @@ class EditProjectTimeTableModal extends Component {
               isAdmin={isAdmin}
               toggleTimelineModal={this.state.toggleTimelineModal}
               disabledDates={disabledDates}
+              esillaolopaivat={esillaolopaivat}
             /> 
             <ConfirmModal 
               openConfirmModal={this.state.showModal}
