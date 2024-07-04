@@ -29,7 +29,6 @@
   background-color: white;
   padding: 0;
   position: initial !important;
-  padding-right: $size16;
   padding-left: $size16;
 
   #field-segment {
@@ -63,12 +62,6 @@
     h2 {
       margin-left: 0;
     }
-  }
-}
-
-@media screen and (max-width: 600px){
-  .form-container{
-      padding-top: 120px !important;
   }
 }
 
@@ -141,14 +134,18 @@
   display: flex;
   flex-direction: column;
   flex: 1;
+
+  min-width: 50%;
   max-width: 100%;
+
+  padding: 1.25rem 0 0 1.25rem;
+
+  margin-left: 1rem;
 
   .sticky-title {
     position: sticky;
     top: 150px;
     background-color: $white-background;
-    padding: $size16;
-    margin-left: $size16;
     z-index: 90;
 
     .section-title {
@@ -170,6 +167,11 @@
       border-bottom: 2px solid $black1;
       min-height: 35px;
     }
+  }
+
+  #field-segment {
+    position: initial;
+    padding: 0;
   }
 }
 
