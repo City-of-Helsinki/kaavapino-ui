@@ -590,7 +590,7 @@ class ProjectEditPage extends Component {
     const isAdmin = authUtils.isAdmin(currentUserId, users)
     const isExpert = authUtils.isExpert(currentUserId, users)
     return (
-      <div>
+      <div className='project-page-container'>
         {!this.state.isMobile && (
           <div className="timeline" onClick={() => this.showTimelineModal(true)}>
             <ProjectTimeline
@@ -694,7 +694,7 @@ class ProjectEditPage extends Component {
               )}
             </NavigationPrompt>
           </div>
-        <div id={`title-${title}`} className='project-input-right'>
+          <div id={`title-${title}`} className='project-input-right'>
             {this.state?.showSection &&
             <div className='sticky-title'>
               <h2 tabIndex='0' className='section-title'>
@@ -705,55 +705,55 @@ class ProjectEditPage extends Component {
               </div>
             </div>
             }
-          <EditForm
-            handleSave={this.handleAutoSave}
-            handleLockField={this.handleLockField}
-            handleUnlockField={this.handleUnlockField}
-            sections={currentSchema.sections}
-            attributeData={attribute_data}
-            geoServerData={geoserver_data}
-            saving={saving}
-            initialValues={Object.assign(attribute_data, geoserver_data)}
-            phase={phase}
-            selectedPhase={selectedPhase}
-            isCurrentPhase={selectedPhase === phase}
-            disabled={formDisabled}
-            projectId={id}
-            syncronousErrors={syncErrors}
-            submitErrors={submitErrors}
-            title={`${currentSchema.list_prefix}. ${currentSchema.title}`}
-            isExpert={isExpert}
-            setRef={this.setRef}
-            setFormInitialized={this.setFormInitialized}
-            unlockAllFields={this.unlockAllFields}
-            phaseTitle={this.state.phaseTitle}
-            filterFieldsArray={this.state.filterFieldsArray}
-            highlightedTag={this.state.highlightedTag}
-            sectionIndex={this.state.sectionIndex}
-            showSection={this.state.showSection}
-            deadlines={currentProject.deadlines}
-            phaseIsClosed={formDisabled}
-          />
-          {this.props.showFloorAreaForm && (
-            <EditFloorAreaFormModal
+            <EditForm
+              handleSave={this.handleAutoSave}
+              handleLockField={this.handleLockField}
+              handleUnlockField={this.handleUnlockField}
+              sections={currentSchema.sections}
               attributeData={attribute_data}
-              open
-              saveProjectFloorArea={saveProjectFloorArea}
-              handleClose={() => this.handleFloorAreaClose()}
-              allowedToEdit={isResponsible}
+              geoServerData={geoserver_data}
+              saving={saving}
+              initialValues={Object.assign(attribute_data, geoserver_data)}
+              phase={phase}
+              selectedPhase={selectedPhase}
+              isCurrentPhase={selectedPhase === phase}
+              disabled={formDisabled}
+              projectId={id}
+              syncronousErrors={syncErrors}
+              submitErrors={submitErrors}
+              title={`${currentSchema.list_prefix}. ${currentSchema.title}`}
+              isExpert={isExpert}
+              setRef={this.setRef}
+              setFormInitialized={this.setFormInitialized}
+              unlockAllFields={this.unlockAllFields}
+              phaseTitle={this.state.phaseTitle}
+              filterFieldsArray={this.state.filterFieldsArray}
+              highlightedTag={this.state.highlightedTag}
+              sectionIndex={this.state.sectionIndex}
+              showSection={this.state.showSection}
+              deadlines={currentProject.deadlines}
+              phaseIsClosed={formDisabled}
             />
-          )}
-          {this.props.showTimetableForm && (
-            <EditProjectTimetableModal
-              attributeData={attribute_data}
-              open
-              handleSubmit={() => this.handleTimetableSave()}
-              handleClose={() => this.handleTimetableClose()}
-              projectPhaseIndex={projectPhaseIndex}
-              archived={currentProject.archived}
-              allowedToEdit={isResponsible}
-            />
-          )}
+            {this.props.showFloorAreaForm && (
+              <EditFloorAreaFormModal
+                attributeData={attribute_data}
+                open
+                saveProjectFloorArea={saveProjectFloorArea}
+                handleClose={() => this.handleFloorAreaClose()}
+                allowedToEdit={isResponsible}
+              />
+            )}
+            {this.props.showTimetableForm && (
+              <EditProjectTimetableModal
+                attributeData={attribute_data}
+                open
+                handleSubmit={() => this.handleTimetableSave()}
+                handleClose={() => this.handleTimetableClose()}
+                projectPhaseIndex={projectPhaseIndex}
+                archived={currentProject.archived}
+                allowedToEdit={isResponsible}
+              />
+            )}
           </div>
         </div>
       </div>
