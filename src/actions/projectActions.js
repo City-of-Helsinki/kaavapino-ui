@@ -129,9 +129,9 @@ export const fetchDisabledDatesStart = (startDate, endDate) => ({
   type: FETCH_DISABLED_DATES_START,
   payload: { startDate, endDate },
 });
-export const fetchDisabledDatesSuccess = (disabledDates) => ({
+export const fetchDisabledDatesSuccess = (disabledDates,esillaolopaivat) => ({
   type: FETCH_DISABLED_DATES_SUCCESS,
-  payload: disabledDates,
+  payload: {disabledDates,esillaolopaivat},
 });
 export const fetchDisabledDatesFailure = (error) => ({
   type: FETCH_DISABLED_DATES_FAILURE,

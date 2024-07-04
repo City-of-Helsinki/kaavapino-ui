@@ -22,7 +22,8 @@ const DeadLineInput = ({
   className,
   autofillRule,
   timeTableDisabled,
-  disabledDates
+  disabledDates,
+  esillaolopaivat
 }) => {
   
   const { t } = useTranslation()
@@ -111,14 +112,24 @@ const DeadLineInput = ({
     tenYearsAgo.setFullYear(tenYearsAgo.getFullYear() - 10);
     const tenYearsLater = new Date();
     tenYearsLater.setFullYear(tenYearsLater.getFullYear() + 10);
-  
+    const ehdotusNahtavillaolo = currentDeadline?.deadline?.phase_name === "Ehdotus" && currentDeadline?.deadline?.deadlinegroup?.includes('nahtavillaolo')
+    let datesToDisable = disabledDates?.includes(formatDate(date))
+
+    if (ehdotusNahtavillaolo) {
+      // Format esillaolopaivat dates
+      console.log(esillaolopaivat)
+      datesToDisable = esillaolopaivat?.includes(formatDate(date))
+      // Remove holidays from datesToDisable
+      //datesToDisable = datesToDisable.filter(d => !test.includes(d));
+    }
+
     if (date < tenYearsAgo || date > tenYearsLater) {
       return false;
     }
   
     const day = date.getDay();
 
-    return day === 0 || day === 6 || disabledDates.includes(formatDate(date));
+    return day === 0 || day === 6 || datesToDisable;
   }
   
   const formatDateToYYYYMMDD = (date) => {
@@ -147,7 +158,7 @@ const DeadLineInput = ({
       console.error('Validation error:', error);
     }
   };
-  console.log(currentValue)
+
   return (
     <>
       <div className='deadline-input'>
