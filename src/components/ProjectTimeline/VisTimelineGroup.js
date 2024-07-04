@@ -17,7 +17,7 @@ import { removeDeadlines } from '../../actions/projectActions';
 import './VisTimeline.css'
 Moment().locale('fi');
 
-const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates}, ref) => {
+const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, esillaolopaivat}, ref) => {
     const dispatch = useDispatch();
     const moment = extendMoment(Moment);
 
@@ -305,19 +305,21 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       let currentYear = now.getFullYear();
       let startOfMonth = new Date(currentYear, now.getMonth(), 1);
       let endOfMonth = new Date(currentYear, now.getMonth() + 1, 0);
+      timelineRef.current.classList.remove("years")
       timeline.setOptions({timeAxis: {scale: 'weekday'}});
       timeline.setWindow(startOfMonth, endOfMonth);
       setCurrentFormat("showMonths");
     }
 
-    const showYers = () => {
+    const showYears = () => {
       let now = new Date();
       let currentYear = now.getFullYear();
       let startOfYear = new Date(currentYear, 0, 1);
       let endOfYear = new Date(currentYear, 11, 31);
+      timelineRef.current.classList.add("years")
       timeline.setOptions({timeAxis: {scale: 'month'}});
       timeline.setWindow(startOfYear, endOfYear);
-      setCurrentFormat("showYers");
+      setCurrentFormat("showYears");
     }
 
     const show2Yers = () => {
@@ -393,7 +395,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         showMonths();
       }
       else{
-        showYers();
+        showYears();
       }
     }
 
@@ -717,7 +719,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       !deadlines ? <LoadingSpinner />
       :
       <>
-        <div className='vis' ref={timelineRef}>
+        <div className='vis years' ref={timelineRef}>
           <VisTimelineMenu
             goToToday={goToToday}
             zoomIn={zoomIn}
@@ -725,7 +727,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             moveLeft={moveLeft}
             moveRight={moveRight}
             toggleRollingMode={toggleRollingMode}
-            showYers={showYers}
+            showYears={showYears}
             showMonths={showMonths}
             showWeeks={showWeeks}
             showDays={showDays}
@@ -749,6 +751,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           archived={archived}
           allowedToEdit={allowedToEdit}
           disabledDates={disabledDates}
+          esillaolopaivat={esillaolopaivat}
         />
         <AddGroupModal
           toggleOpenAddDialog={toggleOpenAddDialog}

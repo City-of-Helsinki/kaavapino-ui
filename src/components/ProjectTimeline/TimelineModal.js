@@ -5,10 +5,11 @@ import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import FormField from '../input/FormField'
 import { isArray } from 'lodash'
 import { showField } from '../../utils/projectVisibilityUtils'
+import scandicUtil from '../../utils/scandicUtil'
 import PropTypes from 'prop-types'
 import './VisTimeline.css'
 
-const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit,disabledDates }) => {
+const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit,disabledDates, esillaolopaivat }) => {
     
   const getAttributeValues = (attributes) => {
     return Object.values(attributes).flatMap((v) => Object.values(v));
@@ -88,6 +89,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
             disabled={disabled?.disabled || !allowedToEdit}
             attributeData={visValues}
             disabledDates={disabledDates}
+            esillaolopaivat={esillaolopaivat}
           />
           {modifiedError && <div className="field-error">{modifiedError}</div>}
         </>
@@ -101,9 +103,21 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       return formFields
     }
   
-    const renderSection = (section,sectionIndex) => {
+    const renderSection = (section,sectionIndex,title) => {
       const sections = section.sections
-      const disabled = archived ? true : sectionIndex < projectPhaseIndex
+      const splitTitle = title.split('-').map(part => part.toLowerCase())
+      splitTitle[1] = splitTitle[1] === "1" ? "" : "_"+splitTitle[1]
+      let confirmedValue = "vahvista_"+group.toLowerCase()+"_"+splitTitle[0]+"_alkaa"+splitTitle[1]
+      confirmedValue = scandicUtil.replaceScandics(confirmedValue)
+      if(group === "Ehdotus" && splitTitle[0] === "nahtavillaolo"){
+        splitTitle[0] = "esillaolo"
+        confirmedValue = "vahvista_"+group.toLowerCase()+"_"+splitTitle[0]+splitTitle[1]
+      }
+      else if(group === "Tarkistettu ehdotus" && splitTitle[0] === "lautakunta"){
+        confirmedValue = "vahvista_"+"tarkistettu_ehdotus_"+"lautakunnassa"+splitTitle[1]
+      }
+      const isConfirmed = visValues[confirmedValue]
+      const disabled = archived || isConfirmed ? true : sectionIndex < projectPhaseIndex
       const renderedSections = []
       sections.forEach(subsection => {
         const attr = subsection?.attributes
@@ -138,7 +152,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
           <div className='date-content'>
             {deadlineSections.map((section, i) => {
               if (section.title === group) {
-                return renderSection(section, i)
+                return renderSection(section, i, content)
               }
             })}
             {currentSubmitErrors && (

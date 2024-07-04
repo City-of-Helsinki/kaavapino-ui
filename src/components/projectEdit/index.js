@@ -556,7 +556,7 @@ class ProjectEditPage extends Component {
         });
     });
   }
-
+  
   render() {
     const {
       schema,
@@ -791,7 +791,8 @@ class ProjectEditPage extends Component {
                 archived={currentProject.archived}
                 isAdmin={isAdmin}
               allowedToEdit={isResponsible}
-              disabledDates={disabledDates}
+              disabledDates={disabledDates?.disabledDates}
+              esillaolopaivat={disabledDates?.esillaolopaivat}
               />
             )}
           </div>
