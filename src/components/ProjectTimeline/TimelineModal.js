@@ -9,7 +9,7 @@ import scandicUtil from '../../utils/scandicUtil'
 import PropTypes from 'prop-types'
 import './VisTimeline.css'
 
-const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit,disabledDates, esillaolopaivat }) => {
+const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit,disabledDates, lomapaivat }) => {
     
   const getAttributeValues = (attributes) => {
     return Object.values(attributes).flatMap((v) => Object.values(v));
@@ -89,7 +89,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
             disabled={disabled?.disabled || !allowedToEdit}
             attributeData={visValues}
             disabledDates={disabledDates}
-            esillaolopaivat={esillaolopaivat}
+            lomapaivat={lomapaivat}
           />
           {modifiedError && <div className="field-error">{modifiedError}</div>}
         </>
