@@ -770,7 +770,7 @@ class ProjectEditPage extends Component {
                 isAdmin={isAdmin}
               allowedToEdit={isResponsible}
               disabledDates={disabledDates?.disabledDates}
-              esillaolopaivat={disabledDates?.esillaolopaivat}
+              lomapaivat={disabledDates?.lomapaivat}
               />
             )}
           </div>
