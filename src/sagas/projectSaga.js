@@ -221,7 +221,6 @@ function* getAttributeData(data) {
 }
 
 function* pollConnection() {
-  
   try {
     yield call(
       pingApi.get
