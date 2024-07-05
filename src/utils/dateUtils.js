@@ -40,7 +40,6 @@ export const useValidateDate = () => {
           }
           resolve(returnDate);
         } else {
-          console.log("error")
           reject(new Error('validateDateAction call error'));
         }
       }));

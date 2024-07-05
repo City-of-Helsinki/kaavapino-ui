@@ -23,7 +23,7 @@ const DeadLineInput = ({
   autofillRule,
   timeTableDisabled,
   disabledDates,
-  esillaolopaivat
+  lomapaivat
 }) => {
   
   const { t } = useTranslation()
@@ -113,14 +113,14 @@ const DeadLineInput = ({
     const tenYearsLater = new Date();
     tenYearsLater.setFullYear(tenYearsLater.getFullYear() + 10);
     const ehdotusNahtavillaolo = currentDeadline?.deadline?.phase_name === "Ehdotus" && currentDeadline?.deadline?.deadlinegroup?.includes('nahtavillaolo')
-    let datesToDisable = disabledDates?.includes(formatDate(date))
-
+    let datesToDisable
     if (ehdotusNahtavillaolo) {
-      // Format esillaolopaivat dates
-      console.log(esillaolopaivat)
-      datesToDisable = esillaolopaivat?.includes(formatDate(date))
-      // Remove holidays from datesToDisable
-      //datesToDisable = datesToDisable.filter(d => !test.includes(d));
+      // Allow lomapaivat dates on nahatavillaolo
+      const filteredArray = disabledDates.filter(date => !lomapaivat.includes(date));
+      datesToDisable = filteredArray?.includes(formatDate(date))
+    }
+    else{
+      datesToDisable = disabledDates?.includes(formatDate(date))
     }
 
     if (date < tenYearsAgo || date > tenYearsLater) {
