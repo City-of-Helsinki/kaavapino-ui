@@ -51,6 +51,22 @@ class EditProjectTimeTableModal extends Component {
     }
   }
 
+  addOneDay = (dateString) => {
+    // Parse the input string into a Date object
+    const date = new Date(dateString);
+    
+    // Add one day (24 hours * 60 minutes * 60 seconds * 1000 milliseconds)
+    date.setTime(date.getTime() + (24 * 60 * 60 * 1000));
+    
+    // Format the new date back into "YYYY-MM-DD" format
+    const year = date.getFullYear();
+    // getMonth() returns 0-11; adding 1 to get 1-12 for months
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  }
+
   findConsecutivePeriods = (dates,items,holidays) => {
     if (!Array.isArray(dates) || dates.length === 0) {
       return [];
@@ -70,6 +86,7 @@ class EditProjectTimeTableModal extends Component {
           end = dates[i];
         }
         else {
+          end = this.addOneDay(end);
           items.add([{
             id: `holiday_${i}`,
             start: start,
