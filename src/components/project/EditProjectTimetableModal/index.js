@@ -33,7 +33,7 @@ class EditProjectTimeTableModal extends Component {
   }
 
   componentDidMount() {
-    const { initialize, attributeData, deadlines, deadlineSections, disabledDates } = this.props
+    const { initialize, attributeData, deadlines, deadlineSections, disabledDates,lomapaivat } = this.props
     initialize(attributeData)
    // Check if the key exists and its value is true
     if(attributeData && deadlines && deadlineSections){
@@ -45,13 +45,13 @@ class EditProjectTimeTableModal extends Component {
       groups.add(deadLineGroups);
       groups.add(nestedDeadlines);
       items.add(phaseData)
-      items = this.findConsecutivePeriods(disabledDates,items);
-
+      items = this.findConsecutivePeriods(disabledDates,items,false);
+      items = this.findConsecutivePeriods(lomapaivat,items,true)
       this.setState({items,groups,visValues:attributeData})
     }
   }
 
-  findConsecutivePeriods = (dates,items) => {
+  findConsecutivePeriods = (dates,items,holidays) => {
     if (!Array.isArray(dates) || dates.length === 0) {
       return [];
     }
@@ -64,30 +64,59 @@ class EditProjectTimeTableModal extends Component {
       const previousDate = new Date(dates[i - 1]);
       const differenceInTime = currentDate - previousDate;
       const differenceInDays = differenceInTime / (1000 * 3600 * 24);
-
-      if (differenceInDays === 1) {
-        end = dates[i];
-      } else {
-        items.add([{
-          id: `disabled_date_${i}`,
-          start: start,
-          end: end,
-          type: "background",
-          className: new Date(start).getDate() - new Date(end).getDate() === 0 || new Date(start).getDate() - new Date(end).getDate() === -1 ? "negative normal-weekend" : "negative",
-        }]);
-        start = dates[i];
-        end = dates[i];
+      
+      if(holidays){
+        if (differenceInDays === 1) {
+          end = dates[i];
+        }
+        else {
+          items.add([{
+            id: `holiday_${i}`,
+            start: start,
+            end: end,
+            type: "background",
+            className: "holiday",
+          }]);
+          start = dates[i];
+          end = dates[i];
+        }
       }
-    }
-  
+      else{
+        if (differenceInDays === 1) {
+          end = dates[i];
+        }
+        else {
+          items.add([{
+            id: `disabled_date_${i}`,
+            start: start,
+            end: end,
+            type: "background",
+            className: new Date(start).getDate() - new Date(end).getDate() === 0 || new Date(start).getDate() - new Date(end).getDate() === -1 ? "negative normal-weekend" : "negative",
+          }]);
+          start = dates[i];
+          end = dates[i];
+        }
+      }
+    }//end of iteration
     // Push the last period
-    items.add([{
-      id: `disabled_date_${dates.length}`,
-      start: start,
-      end: end,
-      type: "background",
-      className: "negative",
-    }]);
+    if(holidays){
+      items.add([{
+        id: `holiday_${dates.length}`,
+        start: start,
+        end: end,
+        type: "background",
+        className: "holiday",
+      }]);
+    }
+    else{
+      items.add([{
+        id: `disabled_date_${dates.length}`,
+        start: start,
+        end: end,
+        type: "background",
+        className: "negative",
+      }]);
+    }
   
     return items;
   }
@@ -778,7 +807,7 @@ class EditProjectTimeTableModal extends Component {
       allowedToEdit, 
       isAdmin, 
       disabledDates, 
-      esillaolopaivat } = this.props
+      lomapaivat } = this.props
 
     if (!formValues) {
       return null
@@ -811,7 +840,7 @@ class EditProjectTimeTableModal extends Component {
               isAdmin={isAdmin}
               toggleTimelineModal={this.state.toggleTimelineModal}
               disabledDates={disabledDates}
-              esillaolopaivat={esillaolopaivat}
+              lomapaivat={lomapaivat}
             /> 
             <ConfirmModal 
               openConfirmModal={this.state.showModal}
