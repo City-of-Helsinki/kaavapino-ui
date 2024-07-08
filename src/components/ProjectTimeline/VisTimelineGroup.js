@@ -29,7 +29,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [timelineData, setTimelineData] = useState({group: false, content: false});
     const [timeline, setTimeline] = useState(false);
     const [addDialogStyle, setAddDialogStyle] = useState({ left: 0, top: 0 });
-    const [addDialogData, setAddDialogData] = useState({group:false,deadlineSections:false,showPresence:false,showBoard:false,nextEsillaolo:false,nextLautakunta:false});
+    const [addDialogData, setAddDialogData] = useState({group:false,deadlineSections:false,showPresence:false,showBoard:false,nextEsillaolo:false,nextLautakunta:false,esillaoloReason:"",lautakuntaReason:""});
     const [toggleOpenAddDialog, setToggleOpenAddDialog] = useState(false)
     const [currentFormat, setCurrentFormat] = useState("showMonths");
     const [openConfirmModal, setOpenConfirmModal] = useState(false);
@@ -82,6 +82,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
     const checkConfirmedGroups = (esillaoloConfirmed, lautakuntaConfirmed, attributeKeys, visValRef, phase, canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, data) => {
       // Check if more Esillaolo groups can be added
+      let esillaoloReason = !esillaoloConfirmed ? "noconfirmation" : "";
+      let lautakuntaReason = !lautakuntaConfirmed ? "noconfirmation" : "";
       if (esillaoloConfirmed) {
         const deadlineEsillaolokertaKeys = data.maxEsillaolo
         const esillaoloRegex = new RegExp(`${phase}_esillaolo_\\d+$`);
@@ -91,8 +93,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         canAddEsillaolo = esillaoloCount < deadlineEsillaolokertaKeys;
         const nextEsillaoloStr = canAddEsillaolo ? `jarjestetaan_${phase}_esillaolo_${esillaoloCount +1}$` : false;
         nextEsillaoloClean = nextEsillaoloStr ? nextEsillaoloStr.replace(/[/$]/g, '') : nextEsillaoloStr;
+        if(esillaoloCount === deadlineEsillaolokertaKeys){
+          esillaoloReason = "max"
+        }
       }
-    
       // Check if more Lautakunta groups can be added
       if (lautakuntaConfirmed) {
         const deadlineLautakuntakertaKeys = data.maxLautakunta
@@ -103,9 +107,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         canAddLautakunta = lautakuntaCount < deadlineLautakuntakertaKeys;
         const nextLautakuntaStr = canAddLautakunta ? `${phase}_lautakuntaan_${lautakuntaCount +1}$` : false;
         nextLautakuntaClean = nextLautakuntaStr ? nextLautakuntaStr.replace(/[/$]/g, '') : nextLautakuntaStr;
+        if(lautakuntaCount === deadlineLautakuntakertaKeys){
+          lautakuntaReason = "max"
+        }
       }
 
-      return [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean];
+      return [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, esillaoloReason, lautakuntaReason];
     }
 
     const canGroupBeAdded = (visValRef, data, deadlineSections) => {
@@ -130,6 +137,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       let nextEsillaoloClean = false;
       let canAddLautakunta = false;
       let nextLautakuntaClean = false;
+      let esillaoloReason = "";
+      let lautakuntaReason = "";
     
       // Get attribute keys for comparison from deadlineSections
       const matchingKeys = Object.keys(deadlineSections).filter(key => data.content === deadlineSections[key].title);
@@ -139,20 +148,20 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
       
       const results = checkConfirmedGroups(esillaoloConfirmed, lautakuntaConfirmed, attributeKeys, visValRef, phase, canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean,data);
-      [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean] = results;
+      [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, esillaoloReason, lautakuntaReason] = results;
 
-      return [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean];
+      return [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, esillaoloReason, lautakuntaReason];
     };
 
     const openAddDialog = (visValRef,data,event) => {
-      const [addEsillaolo,nextEsillaolo,addLautakunta,nextLautakunta] = canGroupBeAdded(visValRef,data,deadlineSections)
+      const [addEsillaolo,nextEsillaolo,addLautakunta,nextLautakunta,esillaoloReason,lautakuntaReason] = canGroupBeAdded(visValRef,data,deadlineSections)
       const rect = event.target.getBoundingClientRect();
       
       setAddDialogStyle({
         left: `${rect.left - 12}px`,
         top: `${rect.bottom - 10}px`
       })
-      setAddDialogData({group:data,deadlineSections:deadlineSections,showPresence:addEsillaolo,showBoard:addLautakunta,nextEsillaolo:nextEsillaolo,nextLautakunta:nextLautakunta})
+      setAddDialogData({group:data,deadlineSections:deadlineSections,showPresence:addEsillaolo,showBoard:addLautakunta,nextEsillaolo:nextEsillaolo,nextLautakunta:nextLautakunta,esillaoloReason:esillaoloReason,lautakuntaReason:lautakuntaReason})
       setToggleOpenAddDialog(prevState => !prevState)
     }
 
@@ -229,7 +238,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   
   
     const openDialog = (data,container) => {
-      container ? container.classList.toggle("highlight-selected") : toggleTimelineModal.highlight.classList.toggle("highlight-selected");
+      //remove already highlighted 
+      timelineRef?.current?.querySelectorAll('.highlight-selected').forEach(el => {
+        el.classList.remove('highlight-selected');
+      });
+      //highlight the latest group
+      container ? container.classList.toggle("highlight-selected") : "";
       const modifiedDeadlineGroup = data?.deadlinegroup?.includes(';') ? data.deadlinegroup.split(';')[0] : data.deadlinegroup;
       setToggleTimelineModal({open:!toggleTimelineModal.open, highlight:container, deadlinegroup:modifiedDeadlineGroup})
         //Set data from items

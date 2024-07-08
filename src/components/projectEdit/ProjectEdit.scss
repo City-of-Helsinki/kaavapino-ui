@@ -625,6 +625,17 @@
     .vis-hide-dialog {
       display: none;
     }
+
+    .add-button-info{
+      color: $color-info;
+      padding-left: $size40;
+      padding-right: $size24;
+      padding-bottom: $size12;
+      font-size: $size14;
+      font-weight: 400;
+      line-height: $size17;
+      letter-spacing: 0.03em;
+    }
   }
 
   .actions{
@@ -643,11 +654,18 @@
 }
 
 .timeline-edit-right{
-  max-height: 79vh;
+/*   max-height: 79vh;
   max-width: 513px !important;
   margin: auto 8px auto auto !important;
   position: relative !important;
   margin-top: 70px !important;
+  overflow-y: auto; */
+  max-height: 79vh;
+  max-width: 513px !important;
+  position: absolute !important;
+  top: 79px;
+  right: 8px;
+  left: auto;
   overflow-y: auto;
 
   .header{
@@ -757,4 +775,13 @@
     right: 20px;
     margin: 0 !important;
   }
+}
+
+//Allow clicking other elements when modal is open
+.ui.dimmer {
+  pointer-events: none;
+}
+
+.ui.modal {
+  pointer-events: auto;
 }
