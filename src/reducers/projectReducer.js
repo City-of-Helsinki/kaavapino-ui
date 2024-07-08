@@ -134,7 +134,7 @@ export const initialState = {
   formErrorList:[],
   updateField:false,
   loading: false,
-  disabledDates: {disabledDates:[],lomapaivat:[]},
+  disabledDates: {},
   error: null,
   dateValidationResult: {valid: false, result: {}}
 }
@@ -171,7 +171,7 @@ export const reducer = (state = initialState, action) => {
     }
 
     case FETCH_DISABLED_DATES_SUCCESS: {
-      return { ...state, loading: false, disabledDates: {disabledDates:action.payload.disabledDates, lomapaivat: action.payload.lomapaivat}};
+      return { ...state, loading: false, disabledDates: action.payload};
     }
 
     case FETCH_DISABLED_DATES_FAILURE:{

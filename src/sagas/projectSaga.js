@@ -234,8 +234,7 @@ export function* watchValidateDate() {
 function* getProjectDisabledDeadlineDates() {
   try {
     const dates = yield call(projectDateTypesApi.get);
-    console.log(dates?.date_types?.lomapäivät?.dates)
-    yield put(fetchDisabledDatesSuccess(dates?.date_types?.disabled_dates?.dates, dates?.date_types?.lomapäivät?.dates));
+    yield put(fetchDisabledDatesSuccess(dates));
   } catch (e) {
     yield put(fetchDisabledDatesFailure(e));
   }
