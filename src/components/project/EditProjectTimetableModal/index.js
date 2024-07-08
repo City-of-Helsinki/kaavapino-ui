@@ -824,7 +824,8 @@ class EditProjectTimeTableModal extends Component {
       allowedToEdit, 
       isAdmin, 
       disabledDates, 
-      lomapaivat } = this.props
+      lomapaivat,
+      dateTypes } = this.props
 
     if (!formValues) {
       return null
@@ -858,6 +859,7 @@ class EditProjectTimeTableModal extends Component {
               toggleTimelineModal={this.state.toggleTimelineModal}
               disabledDates={disabledDates}
               lomapaivat={lomapaivat}
+              dateTypes={dateTypes}
             /> 
             <ConfirmModal 
               openConfirmModal={this.state.showModal}

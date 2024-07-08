@@ -22,8 +22,7 @@ const DeadLineInput = ({
   className,
   autofillRule,
   timeTableDisabled,
-  disabledDates,
-  lomapaivat
+  dateTypes
 }) => {
   
   const { t } = useTranslation()
@@ -115,12 +114,26 @@ const DeadLineInput = ({
     const ehdotusNahtavillaolo = currentDeadline?.deadline?.phase_name === "Ehdotus" && currentDeadline?.deadline?.deadlinegroup?.includes('nahtavillaolo')
     let datesToDisable
     if (ehdotusNahtavillaolo) {
-      // Allow lomapaivat dates on nahatavillaolo
-      const filteredArray = disabledDates.filter(date => !lomapaivat.includes(date));
-      datesToDisable = filteredArray?.includes(formatDate(date))
+      if (attributeData?.kaavaprosessin_kokoluokka === 'L' || attributeData?.kaavaprosessin_kokoluokka === 'XL') {
+        datesToDisable = !dateTypes?.arkipäivät?.dates?.includes(formatDate(date));
+      } else if (currentDeadline?.deadline?.attribute?.includes('maaraaika')) {
+        datesToDisable = !dateTypes?.työpäivät?.dates?.includes(formatDate(date));
+      } else {
+        datesToDisable = !dateTypes?.arkipäivät?.dates?.includes(formatDate(date));
+      }
     }
-    else{
-      datesToDisable = disabledDates?.includes(formatDate(date))
+    else {
+      let dateType;
+      
+      if (currentDeadline?.deadline?.deadlinegroup?.includes('esillaolo')) {
+        dateType = currentDeadline?.deadline?.attribute?.includes('maaraaika') ? 'työpäivät' : 'esilläolopäivät';
+      } else if (currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')) {
+        dateType = currentDeadline?.deadline?.attribute?.includes('maaraaika') ? 'työpäivät' : 'lautakunnan_kokouspäivät';
+      } else {
+        dateType = 'arkipäivät';
+      }
+    
+      datesToDisable = !dateTypes?.[dateType]?.dates?.includes(formatDate(date));
     }
 
     if (date < tenYearsAgo || date > tenYearsLater) {

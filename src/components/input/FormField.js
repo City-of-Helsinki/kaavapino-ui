@@ -43,6 +43,7 @@ const FormField = ({
   isTabActive,
   disabledDates,
   lomapaivat,
+  dateTypes,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -124,6 +125,7 @@ const FormField = ({
             isTabActive={isTabActive}
             disabledDates={disabledDates}
             lomapaivat={lomapaivat}
+            dateTypes={dateTypes}
           />
         )
     }
