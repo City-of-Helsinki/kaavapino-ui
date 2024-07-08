@@ -243,7 +243,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         el.classList.remove('highlight-selected');
       });
       //highlight the latest group
-      container ? container.classList.toggle("highlight-selected") : "";
+      if (container) {
+        container.classList.toggle("highlight-selected");
+      }
       const modifiedDeadlineGroup = data?.deadlinegroup?.includes(';') ? data.deadlinegroup.split(';')[0] : data.deadlinegroup;
       setToggleTimelineModal({open:!toggleTimelineModal.open, highlight:container, deadlinegroup:modifiedDeadlineGroup})
         //Set data from items
