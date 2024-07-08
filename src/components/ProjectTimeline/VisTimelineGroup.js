@@ -17,7 +17,7 @@ import { removeDeadlines } from '../../actions/projectActions';
 import './VisTimeline.css'
 Moment().locale('fi');
 
-const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat}, ref) => {
+const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes}, ref) => {
     const dispatch = useDispatch();
     const moment = extendMoment(Moment);
 
@@ -752,6 +752,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           allowedToEdit={allowedToEdit}
           disabledDates={disabledDates}
           lomapaivat={lomapaivat}
+          dateTypes={dateTypes}
         />
         <AddGroupModal
           toggleOpenAddDialog={toggleOpenAddDialog}

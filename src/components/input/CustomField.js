@@ -221,7 +221,7 @@ class CustomField extends Component {
   renderDate = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, deadlines, field, lockField, fieldSetDisabled, 
       insideFieldset, disabled, isProjectTimetableEdit, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, 
-      attributeData, phaseIsClosed, disabledDates, lomapaivat } = this.props
+      attributeData, phaseIsClosed, disabledDates, lomapaivat, dateTypes } = this.props
 
     let current
     if (deadlines && deadlines.length > 0) {
@@ -241,6 +241,7 @@ class CustomField extends Component {
           timeTableDisabled={disabled}
           disabledDates={disabledDates}
           lomapaivat={lomapaivat}
+          dateTypes={dateTypes}
           {...props}
         />
       )
