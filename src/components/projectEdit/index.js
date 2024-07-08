@@ -768,9 +768,10 @@ class ProjectEditPage extends Component {
                 projectPhaseIndex={projectPhaseIndex}
                 archived={currentProject.archived}
                 isAdmin={isAdmin}
-              allowedToEdit={isResponsible}
-              disabledDates={disabledDates?.disabledDates}
-              lomapaivat={disabledDates?.lomapaivat}
+                allowedToEdit={isResponsible}
+                disabledDates={disabledDates?.date_types?.disabled_dates?.dates}
+                lomapaivat={disabledDates?.date_types?.lomapäivät?.dates}
+                dateTypes={disabledDates?.date_types}
               />
             )}
           </div>
