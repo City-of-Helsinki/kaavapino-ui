@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/nodejs-18 AS builder
+FROM registry.access.redhat.com/ubi9/nodejs-20-minimal AS builder
 
 USER 1001
 
