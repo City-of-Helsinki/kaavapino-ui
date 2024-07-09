@@ -51,8 +51,8 @@ const DeadLineInput = ({
   if(currentDeadline?.deadline?.attribute && attributeData[currentDeadline.deadline.attribute]){
     currentDeadlineDate = attributeData[currentDeadline.deadline.attribute]
   }
-  else if(currentDeadline?.deadline?.attribute && currentDeadline?.deadline?.attribute === 'ehdotus_nahtaville_aineiston_maaraaika' && attributeData['ehdotus_kylk_aineiston_maaraaika']){
-    currentDeadlineDate = attributeData['ehdotus_kylk_aineiston_maaraaika']
+  else if(input.name === 'ehdotus_nahtaville_aineiston_maaraaika' && attributeData['ehdotus_kylk_aineiston_maaraaika']){
+    inputValue = attributeData['ehdotus_kylk_aineiston_maaraaika']
   }
   else if (currentDeadline?.date) {
     currentDeadlineDate = currentDeadline.date
