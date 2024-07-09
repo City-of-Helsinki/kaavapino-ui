@@ -32,15 +32,23 @@ class EditProjectTimeTableModal extends Component {
     this.timelineRef = createRef();
   }
 
+  trimPhase = (phase) => {
+    let phaseOnly = phase.split('.', 2); // Split the string at the first dot
+    if (!isNaN(phaseOnly[0])) {  // Check if the part before the dot is a number
+      phaseOnly = phaseOnly[1].trim();  // The part after the dot, with leading/trailing spaces removed
+    }
+    return phaseOnly
+  } 
+
   componentDidMount() {
     const { initialize, attributeData, deadlines, deadlineSections, disabledDates,lomapaivat } = this.props
     initialize(attributeData)
    // Check if the key exists and its value is true
-    if(attributeData && deadlines && deadlineSections){
+    if(attributeData && deadlines && deadlineSections && disabledDates && lomapaivat){
       let items = new visdata.DataSet()
       let groups = new visdata.DataSet();
-
-      let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,attributeData,deadlines)
+      let ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe)
+      let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,attributeData,deadlines,ongoingPhase)
 
       groups.add(deadLineGroups);
       groups.add(nestedDeadlines);
@@ -159,8 +167,9 @@ class EditProjectTimeTableModal extends Component {
           this.addGroup(changedValues)
         }
         else{
+          let ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe)
           //Form items and groups
-          let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,formValues,deadlines)
+          let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,formValues,deadlines,ongoingPhase)
           // Update the existing data
           this.state.groups.update(deadLineGroups);
           this.state.groups.update(nestedDeadlines);
@@ -185,7 +194,7 @@ class EditProjectTimeTableModal extends Component {
     return true
   }
 
-  addDeadLineGroups = (deadlineSections,deadLineGroups) => {
+  addDeadLineGroups = (deadlineSections,deadLineGroups,ongoingPhase) => {
     for (let i = 0; i < deadlineSections.length; i++) {
       for (let x = 0; x < deadlineSections[i].sections.length; x++) {
         if (!deadLineGroups.some(item => item.content === deadlineSections[i].title)) {
@@ -203,7 +212,7 @@ class EditProjectTimeTableModal extends Component {
           deadLineGroups.push({
             id: deadlineSections[i].title,
             content: deadlineSections[i].title,
-            showNested: true,
+            showNested: deadlineSections[i].title === ongoingPhase ? true : false,
             nestedGroups: [],
             maxEsillaolo: esillaolokerta,
             maxLautakunta: lautakuntakerta
@@ -453,12 +462,12 @@ class EditProjectTimeTableModal extends Component {
     return [deadLineGroups,nestedDeadlines,phaseData]
   }
 
-  getTimelineData = (deadlineSections,formValues,deadlines) => {
+  getTimelineData = (deadlineSections,formValues,deadlines,ongoingPhase) => {
       let phaseData = []
       let deadLineGroups = []
       let nestedDeadlines = []
 
-      deadLineGroups = this.addDeadLineGroups(deadlineSections,deadLineGroups)
+      deadLineGroups = this.addDeadLineGroups(deadlineSections,deadLineGroups,ongoingPhase)
       const results = this.generateVisItems(deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData);
       [deadLineGroups, nestedDeadlines, phaseData] = results;
       
