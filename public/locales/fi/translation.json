@@ -97,9 +97,9 @@
     "reset-project-deadlines": "Tyhjennä aikataulut",
     "reset-confirm-dialog-title": "Aikataulujen uudelleen luominen",
     "reset-confirm-dialog-question": "Oletko varma, että haluat luoda aikataulut uudestaan? Tapahtumaa ei voi perua.",
-    "cancel-confirmation":"Peru vahvistus",
+    "cancel-confirmation":"Peruuta päivämäärien vahvistus",
     "confirm-dates":"Vahvista päivämäärät",
-    "dates-confirmed":"Päivämäärät on vahvistettu",
+    "dates-confirmed":"Aikataulutiedot on vahvistettu",
     "new-esillaolo":"Lisää uusi esilläolo",
     "delete-esillaolo":"Poista esilläolo",
     "modify-timeline":"Muokkaa aikataulua"
