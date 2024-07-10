@@ -78,7 +78,6 @@ class CustomField extends Component {
         isCurrentPhase={isCurrentPhase}
         selectedPhase={selectedPhase}
         regex={this.props?.field?.validation_regex}
-        label={this.props?.field?.label}
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
         customError={this.props?.field?.error_text}
