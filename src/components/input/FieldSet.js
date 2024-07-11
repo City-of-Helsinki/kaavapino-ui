@@ -41,7 +41,8 @@ const FieldSet = ({
   lastSaved,
   updateField,
   phaseIsClosed,
-  fieldsetTotal
+  fieldsetTotal,
+  isTabActive
 }) => {
   const handleBlur = () => {
     onBlur()
@@ -362,6 +363,7 @@ const FieldSet = ({
                           rollingInfoText={rollingInfoText}
                           nonEditable={nonEditable}
                           phaseIsClosed={phaseIsClosed}
+                          isTabActive={isTabActive}
                         />
                         {showError && <div className="error-text">{showError}</div>}
                         {assistiveText && <div className='assistive-text'>{assistiveText}.</div>}
@@ -431,6 +433,7 @@ FieldSet.propTypes = {
   updated: PropTypes.object,
   phaseIsClosed: PropTypes.bool,
   lockStatus: PropTypes.object,
+  isTabActive: PropTypes.bool
 }
 
 export default connect(mapStateToProps)(FieldSet)

@@ -40,6 +40,7 @@ const FormField = ({
   selectedPhase,
   phaseIsClosed,
   hasEditRights,
+  isTabActive,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -118,6 +119,7 @@ const FormField = ({
             isCurrentPhase={isCurrentPhase}
             selectedPhase={selectedPhase}
             phaseIsClosed={phaseIsClosed}
+            isTabActive={isTabActive}
           />
         )
     }
@@ -316,7 +318,8 @@ FormField.propTypes = {
   rollingInfo:PropTypes.bool,
   isCurrentPhase:PropTypes.bool,
   selectedPhase: PropTypes.number,
-  phaseIsClosed: PropTypes.bool
+  phaseIsClosed: PropTypes.bool,
+  isTabActive: PropTypes.bool
 }
 
 export default withTranslation()(FormField)

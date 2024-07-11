@@ -109,6 +109,7 @@ function RichTextEditor(props) {
   const [charLimitOver,setCharLimitOver] = useState(false)
   const [maxSizeOver, setMaxSizeOver] = useState(false)
   const [editField,setEditField] = useState(false)
+  const [hadFocusBeforeTabOut, setHadFocusBeforeTabOut] = useState(false)
 
   const editorRef = useRef("")
   const counter = useRef(props.currentSize)
@@ -134,6 +135,7 @@ function RichTextEditor(props) {
       return fieldComments[fieldName]
     }
   }
+
   const comments = getFieldComments()
 
   const { t } = useTranslation()
@@ -235,7 +237,20 @@ function RichTextEditor(props) {
   }, [value])
 
   useEffect(() => {
+    if (props.isTabActive){
+      if (!saving && hadFocusBeforeTabOut) {
+        editorRef.current.editor.focus()
+        setHadFocusBeforeTabOut(false)
+      }
+    }
+    else if (toolbarVisible){
+      setHadFocusBeforeTabOut(true)
+      editorRef.current.editor.blur()
+    }
+  }, [props.isTabActive, saving])
 
+  useEffect(() => {
+    
     const getIdentifier =() => {
       // Fieldset fields have different type of identifier
       return lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier
@@ -328,6 +343,7 @@ function RichTextEditor(props) {
         editorRef.current.editor.focus()
         setToolbarVisible(true)
         handleFocus("api",true)
+
       }
     }
     else{

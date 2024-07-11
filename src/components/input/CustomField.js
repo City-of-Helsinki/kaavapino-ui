@@ -144,6 +144,7 @@ class CustomField extends Component {
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
         customError={this.props?.field?.error_text}
+        isTabActive={this.props.isTabActive}
       />
     )
   }
@@ -180,6 +181,7 @@ class CustomField extends Component {
         label={this.props?.field?.label}
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
+        isTabActive={this.props.isTabActive}
       />
     )
   }
@@ -439,6 +441,7 @@ class CustomField extends Component {
         rollingInfo={rollingInfo}
         phaseIsClosed={phaseIsClosed}
         fieldsetTotal={field.fieldset_total}
+        isTabActive={this.props.isTabActive}
       />
     )
   }
@@ -757,6 +760,7 @@ class CustomField extends Component {
           formName={formName}
           className={`${this.props.className} ${error ? error : ''}`}
           maxSize={field.character_limit}
+          isTabActive={this.props.isTabActive}
         />
       )
     }
@@ -773,6 +777,7 @@ class CustomField extends Component {
         {...fieldProps}
         validate={[this.validateFieldSize]}
         className={`${this.props.className} ${error ? error : ''}`}
+        isTabActive={this.props.isTabActive}
       />
     )
   }
@@ -811,6 +816,7 @@ CustomField.propTypes = {
   selectedPhase: PropTypes.number,
   phaseIsClosed: PropTypes.bool,
   checkLocked: PropTypes.func,
+  isTabActive: PropTypes.bool
 }
 
 export default CustomField
