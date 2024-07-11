@@ -136,13 +136,6 @@ function RichTextEditor(props) {
     }
   }
 
-  // I moved this here as it might be needed in multiple places
-  const getIdentifier =() => {
-    // Fieldset fields have different type of identifier
-    return lockedStatus?.lockData?.attribute_lock?.fieldset_attribute_identifier
-    ? lockedStatus?.lockData?.attribute_lock?.field_identifier
-    : lockedStatus?.lockData?.attribute_lock?.attribute_identifier;
-  }
 
   const comments = getFieldComments()
 
@@ -246,8 +239,7 @@ function RichTextEditor(props) {
 
   useEffect(() => {
     if (props.isTabActive){
-      if (hadFocusBeforeTabOut) {
-        // TODO: Wait for editor to finish saving before focusing
+      if (!saving && hadFocusBeforeTabOut) {
         editorRef.current.editor.focus()
         setHadFocusBeforeTabOut(false)
       }
@@ -256,20 +248,18 @@ function RichTextEditor(props) {
       if (props.fieldData.name === lockedStatus?.lockData?.attribute_lock.attribute_identifier){
         setHadFocusBeforeTabOut(true)
         editorRef.current.editor.blur()
-        console.log("BLUR")
       }
     }
-  }, [props.isTabActive])
+  }, [props.isTabActive, saving])
 
   useEffect(() => {
     
-    // still commented out as I moved this to the top of the file, can be deleted
-    /* const getIdentifier =() => {
+    const getIdentifier =() => {
       // Fieldset fields have different type of identifier
       return lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier
       ? lockedStatus.lockData.attribute_lock.field_identifier
       : lockedStatus.lockData.attribute_lock.attribute_identifier;
-    } */
+    }
 
     const updateFieldAccess = (isLocked, identifier) => {
       const isOwner = lockedStatus?.lockData.attribute_lock.owner

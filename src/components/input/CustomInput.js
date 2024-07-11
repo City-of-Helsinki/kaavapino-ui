@@ -4,7 +4,7 @@ import inputUtils from '../../utils/inputUtils'
 import { TextInput } from 'hds-react'
 import { useDispatch, useSelector } from 'react-redux'
 import {updateFloorValues,formErrorList} from '../../actions/projectActions'
-import {lockedSelector,lastModifiedSelector,pollSelector,lastSavedSelector } from '../../selectors/projectSelector'
+import {lockedSelector,lastModifiedSelector,pollSelector,lastSavedSelector,savingSelector } from '../../selectors/projectSelector'
 import moment from 'moment'
 import { useTranslation } from 'react-i18next'
 import RollingInfo from '../input/RollingInfo'
@@ -21,6 +21,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   const lockedStatus = useSelector(state => lockedSelector(state))
   const connection = useSelector(state => pollSelector(state))
   const lastSaved = useSelector(state => lastSavedSelector(state))
+  const saving =  useSelector(state => savingSelector(state))
 
   const isMount = useIsMount();
   const [inputRef, setInputFocus] = useFocus()
@@ -39,19 +40,19 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   }, [])
 
   useEffect(() => {
-    if (custom.isTabActive){
+    if (!saving && custom.isTabActive){
       if (hadFocusBeforeTabOut) {
         setInputFocus()
         setHadFocusBeforeTabOut(false)
       }
     }
-    else{
+    else {
       if (custom.fieldData.name === lockedStatus?.lockData?.attribute_lock.attribute_identifier){
         setHadFocusBeforeTabOut(true)
         document.activeElement.blur()
       }
     }
-  }, [custom.isTabActive])
+  }, [custom.isTabActive, saving])
 
   useEffect(() => {
     if(!isMount){
