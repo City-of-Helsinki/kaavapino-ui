@@ -540,9 +540,34 @@ export const reducer = (state = initialState, action) => {
 
     case UPDATE_PROJECT:
     case FETCH_PROJECT_SUCCESSFUL: {
+      // Clone the payload to avoid direct mutation
+      const updatedPayload = { ...action.payload };
+
+      // Check conditions and update attribute_data if necessary
+      // Add the key with a value of true because first one should be always visible at start 
+      // on periaate and luonnos phase if they have been created and value is not set to false later
+      // if not true data is not visible for modification on edit timetable side panel
+      if (updatedPayload?.attribute_data?.periaatteet_luotu === true){
+        if(updatedPayload?.attribute_data["jarjestetaan_periaatteet_esillaolo_1"] === undefined) {
+          updatedPayload.attribute_data["jarjestetaan_periaatteet_esillaolo_1"] = true;
+        }
+        if(updatedPayload.attribute_data["periaatteet_lautakuntaan_1"] === undefined) {
+          updatedPayload.attribute_data["periaatteet_lautakuntaan_1"] = true;
+        }
+      }
+
+      if (updatedPayload?.attribute_data?.luonnos_luotu === true){
+        if(updatedPayload?.attribute_data["jarjestetaan_luonnos_esillaolo_1"] === undefined) {
+          updatedPayload.attribute_data["jarjestetaan_luonnos_esillaolo_1"] = true;
+        }
+        if(updatedPayload?.attribute_data["kaavaluonnos_lautakuntaan_1"] === undefined) {
+          updatedPayload.attribute_data["kaavaluonnos_lautakuntaan_1"] = true;
+        }
+      } 
+
       return {
         ...state,
-        currentProject: action.payload,
+        currentProject: updatedPayload,
         saving: false
       }
     }
