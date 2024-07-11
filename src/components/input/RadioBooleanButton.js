@@ -57,7 +57,7 @@ const RadioBooleanButton = ({
     return !value ? 
       <Button variant="supplementary" className='add-content' iconLeft={<IconPlus />} onClick={() => handleOnChange(true)}>{t('deadlines.new-esillaolo')}</Button> 
       : 
-      <Button size='small' variant="danger" onClick={() => handleOnChange(false)}>{t('deadlines.delete-esillaolo')}</Button>
+      <Button size='small' variant="danger" className='remove-content' onClick={() => handleOnChange(false)}>{t('deadlines.delete-esillaolo')}</Button>
   }
   
   const getRadioButton = (testId, label, id, key, disabled, className, value, error, name, onChange, checked) => {
