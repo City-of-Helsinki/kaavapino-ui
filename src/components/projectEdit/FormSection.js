@@ -12,6 +12,7 @@ import { EDIT_PROJECT_FORM } from '../../constants'
 import { Notification } from 'hds-react'
 import PropTypes from 'prop-types'
 import { useTranslation } from "react-i18next";
+import { useIsTabActive } from '../../hooks/IsTabActive'
 
 const FormSection = ({
   section,
@@ -36,6 +37,8 @@ const FormSection = ({
   phaseIsClosed
 }) => {
   const { t } = useTranslation()
+
+  const isTabActive = useIsTabActive()
 
   let count = 0;
   if(section?.title && section?.fields){
@@ -77,6 +80,7 @@ const FormSection = ({
             isCurrentPhase={isCurrentPhase}
             selectedPhase={selectedPhase}
             phaseIsClosed={phaseIsClosed}
+            isTabActive={isTabActive}
           />)
         }
         else{

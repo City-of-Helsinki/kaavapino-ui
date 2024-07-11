@@ -3,14 +3,20 @@ import { useCallback, useEffect, useState } from 'react'
 export const useIsTabActive = () => {
     const [isTabVisible, setIsTabVisible] = useState(true)
 
-    const handleVisibilityChange = useCallback(() => {
-        setIsTabVisible(document.visibilityState === 'visible')
+    const handleFocus = useCallback(() => {
+        setIsTabVisible(true)
+    }, [])
+
+    const handeBlur = useCallback(() => {
+        setIsTabVisible(false)
     }, [])
 
     useEffect(() => {
-    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleFocus)
+    window.addEventListener('blur', handeBlur)
     return () => {
-        document.removeEventListener('visibilitychange', handleVisibilityChange)
+        window.removeEventListener('focus', handleFocus)
+        window.removeEventListener('blur', handeBlur)
     };
     }, [])
 

@@ -15,6 +15,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   const [readonly, setReadOnly] = useState({name:"",read:false})
   const [hasError,setHasError] = useState(false)
   const [editField,setEditField] = useState(false)
+  const [hadFocusBeforeTabOut, setHadFocusBeforeTabOut] = useState(false)
 
   const lastModified = useSelector(state => lastModifiedSelector(state))
   const lockedStatus = useSelector(state => lockedSelector(state))
@@ -36,6 +37,21 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
 
     };
   }, [])
+
+  useEffect(() => {
+    if (custom.isTabActive){
+      if (hadFocusBeforeTabOut) {
+        setInputFocus()
+        setHadFocusBeforeTabOut(false)
+      }
+    }
+    else{
+      if (custom.fieldData.name === lockedStatus?.lockData?.attribute_lock.attribute_identifier){
+        setHadFocusBeforeTabOut(true)
+        document.activeElement.blur()
+      }
+    }
+  }, [custom.isTabActive])
 
   useEffect(() => {
     if(!isMount){

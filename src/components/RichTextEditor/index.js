@@ -22,7 +22,6 @@ import { useTranslation } from 'react-i18next'
 import {IconAlertCircleFill} from 'hds-react'
 import RollingInfo from '../input/RollingInfo'
 import { useIsMount } from '../../hooks/IsMounted'
-import { useIsTabActive } from '../../hooks/IsTabActive'
 import { isEqual } from 'lodash'
 
 /* This component defines a react-quill rich text editor field to be used in redux form.
@@ -91,7 +90,6 @@ function RichTextEditor(props) {
   const dispatch = useDispatch()
 
   const isMount = useIsMount();
-  const isTabActive = useIsTabActive();
 
   const saving =  useSelector(state => savingSelector(state))
   const lastModified = useSelector(state => lastModifiedSelector(state))
@@ -111,6 +109,7 @@ function RichTextEditor(props) {
   const [charLimitOver,setCharLimitOver] = useState(false)
   const [maxSizeOver, setMaxSizeOver] = useState(false)
   const [editField,setEditField] = useState(false)
+  const [hadFocusBeforeTabOut, setHadFocusBeforeTabOut] = useState(false)
 
   const editorRef = useRef("")
   const counter = useRef(props.currentSize)
@@ -246,48 +245,21 @@ function RichTextEditor(props) {
   }, [value])
 
   useEffect(() => {
-
-    // TODO: need to focus back to the same field user left when tab becomes active again
-
-    if (!isTabActive && lockedStatus?.lockData?.attribute_lock?.owner) {
-
-        // This code is copied from handleBlur, but needed here also. Maybe it could be refactored to a separate function
-        let editor = null, editorEmpty = true;
-        if (editorRef.current) {
-          editor = editorRef.current.getEditor().getContents();
-          editorEmpty = editorRef.current.getEditor().getText().trim().length === 0;
-        }
-
-        let name = inputProps.name;
-        let originalData = attributeData[name]?.ops;
-        if (insideFieldset && !nonEditable || !rollingInfo) {
-          originalData = getOriginalData(name, originalData);
-        }
-
-        // Saving seems to work when user leaves the tab
-        //Prevent saving if data has not changed or is empty and field is required
-        if (!isEqual(originalData, editor?.ops) && (!editorEmpty || !required)) {
-          //prevent saving if locked
-          if (!readonly) {
-            //Sent call to save changes if it is modified by user and not updated by lock call
-            if(!valueIsSet){
-              console.log("typeof onBlur === 'function'", typeof onBlur === 'function')
-              if (typeof onBlur === 'function') {
-                localStorage.setItem("changedValues", inputProps.name);
-                onBlur();
-                oldValueRef.current = editor?.ops;
-              }
-            }
-          }
-        }
-        // copied code ends here
-        
-        // Unlock the field if the tab is not active
-        if (props.handleUnlockField && !insideFieldset) {
-          props.handleUnlockField(inputProps.name)
-        }   
+    if (props.isTabActive){
+      if (hadFocusBeforeTabOut) {
+        // TODO: Wait for editor to finish saving before focusing
+        editorRef.current.editor.focus()
+        setHadFocusBeforeTabOut(false)
+      }
     }
-  }, [isTabActive])
+    else {
+      if (props.fieldData.name === lockedStatus?.lockData?.attribute_lock.attribute_identifier){
+        setHadFocusBeforeTabOut(true)
+        editorRef.current.editor.blur()
+        console.log("BLUR")
+      }
+    }
+  }, [props.isTabActive])
 
   useEffect(() => {
     
