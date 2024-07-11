@@ -442,6 +442,7 @@ class CustomField extends Component {
         rollingInfo={rollingInfo}
         phaseIsClosed={phaseIsClosed}
         fieldsetTotal={field.fieldset_total}
+        isTabActive={this.props.isTabActive}
       />
     )
   }

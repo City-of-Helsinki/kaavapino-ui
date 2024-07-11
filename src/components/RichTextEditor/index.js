@@ -136,7 +136,6 @@ function RichTextEditor(props) {
     }
   }
 
-
   const comments = getFieldComments()
 
   const { t } = useTranslation()
@@ -245,7 +244,7 @@ function RichTextEditor(props) {
       }
     }
     else {
-      if (props.fieldData.name === lockedStatus?.lockData?.attribute_lock.attribute_identifier){
+      if (toolbarVisible){
         setHadFocusBeforeTabOut(true)
         editorRef.current.editor.blur()
       }
@@ -346,6 +345,7 @@ function RichTextEditor(props) {
         editorRef.current.editor.focus()
         setToolbarVisible(true)
         handleFocus("api",true)
+
       }
     }
     else{

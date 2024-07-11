@@ -47,9 +47,9 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       }
     }
     else {
-      if (custom.fieldData.name === lockedStatus?.lockData?.attribute_lock.attribute_identifier){
+      if (document.activeElement == inputRef.current){
         setHadFocusBeforeTabOut(true)
-        document.activeElement.blur()
+        inputRef.current.blur()
       }
     }
   }, [custom.isTabActive, saving])
