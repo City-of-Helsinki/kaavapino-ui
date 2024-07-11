@@ -29,7 +29,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [timelineData, setTimelineData] = useState({group: false, content: false});
     const [timeline, setTimeline] = useState(false);
     const [addDialogStyle, setAddDialogStyle] = useState({ left: 0, top: 0 });
-    const [addDialogData, setAddDialogData] = useState({group:false,deadlineSections:false,showPresence:false,showBoard:false,nextEsillaolo:false,nextLautakunta:false,esillaoloReason:"",lautakuntaReason:""});
+    const [addDialogData, setAddDialogData] = useState({group:false,deadlineSections:false,showPresence:false,showBoard:false,nextEsillaolo:false,nextLautakunta:false,esillaoloReason:"",lautakuntaReason:"",hidePresence:false,hideBoard:false});
     const [toggleOpenAddDialog, setToggleOpenAddDialog] = useState(false)
     const [currentFormat, setCurrentFormat] = useState("showMonths");
     const [openConfirmModal, setOpenConfirmModal] = useState(false);
@@ -115,6 +115,21 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       return [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, esillaoloReason, lautakuntaReason];
     }
 
+    const hideSelection = (phase,data) => {
+      //hide add options for certain phases
+      if(phase === "Tarkistettu ehdotus"){
+        return [true,false]
+      }
+      else if(phase === "Ehdotus" && (data?.kaavaprosessin_kokoluokka === "XS" || data?.kaavaprosessin_kokoluokka === "S" || data?.kaavaprosessin_kokoluokka === "M")){
+        return [false,true]
+      }
+      else if(phase === "OAS"){
+        return [false,true]
+      }
+
+      return [false,false]
+    }
+
     const canGroupBeAdded = (visValRef, data, deadlineSections) => {
       // Find out how many groups in the clicked phase have been added to the timeline
       const matchingGroups = groups.get().filter(group => data.nestedGroups.includes(group.id));
@@ -161,7 +176,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         left: `${rect.left - 12}px`,
         top: `${rect.bottom - 10}px`
       })
-      setAddDialogData({group:data,deadlineSections:deadlineSections,showPresence:addEsillaolo,showBoard:addLautakunta,nextEsillaolo:nextEsillaolo,nextLautakunta:nextLautakunta,esillaoloReason:esillaoloReason,lautakuntaReason:lautakuntaReason})
+
+      const [hidePresence,hideBoard] = hideSelection(data.content,visValRef)
+      setAddDialogData({group:data,deadlineSections:deadlineSections,showPresence:addEsillaolo,showBoard:addLautakunta,
+        nextEsillaolo:nextEsillaolo,nextLautakunta:nextLautakunta,esillaoloReason:esillaoloReason,lautakuntaReason:lautakuntaReason,
+        hidePresence:hidePresence,hideBoard:hideBoard})
       setToggleOpenAddDialog(prevState => !prevState)
     }
 
