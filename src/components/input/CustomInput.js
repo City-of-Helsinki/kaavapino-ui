@@ -46,11 +46,9 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
         setHadFocusBeforeTabOut(false)
       }
     }
-    else {
-      if (document.activeElement == inputRef.current){
-        setHadFocusBeforeTabOut(true)
-        inputRef.current.blur()
-      }
+    else if (document.activeElement == inputRef.current){
+      setHadFocusBeforeTabOut(true)
+      inputRef.current.blur()
     }
   }, [custom.isTabActive, saving])
 
@@ -326,7 +324,8 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
 }
 
 CustomInput.propTypes = {
-  input: PropTypes.object.isRequired
+  input: PropTypes.object.isRequired,
+  isTabActive: PropTypes.bool
 }
 
 export default CustomInput

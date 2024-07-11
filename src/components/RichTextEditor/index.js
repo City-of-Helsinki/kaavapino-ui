@@ -243,11 +243,9 @@ function RichTextEditor(props) {
         setHadFocusBeforeTabOut(false)
       }
     }
-    else {
-      if (toolbarVisible){
-        setHadFocusBeforeTabOut(true)
-        editorRef.current.editor.blur()
-      }
+    else if (toolbarVisible){
+      setHadFocusBeforeTabOut(true)
+      editorRef.current.editor.blur()
     }
   }, [props.isTabActive, saving])
 

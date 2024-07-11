@@ -318,7 +318,8 @@ FormField.propTypes = {
   rollingInfo:PropTypes.bool,
   isCurrentPhase:PropTypes.bool,
   selectedPhase: PropTypes.number,
-  phaseIsClosed: PropTypes.bool
+  phaseIsClosed: PropTypes.bool,
+  isTabActive: PropTypes.bool
 }
 
 export default withTranslation()(FormField)
