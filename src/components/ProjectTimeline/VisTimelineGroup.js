@@ -17,7 +17,7 @@ import { removeDeadlines } from '../../actions/projectActions';
 import './VisTimeline.css'
 Moment().locale('fi');
 
-const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes}, ref) => {
+const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups}, ref) => {
     const dispatch = useDispatch();
     const moment = extendMoment(Moment);
 
@@ -78,6 +78,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           }
         }
       }
+    }
+
+    const trackExpanded = (event) => {
+      trackExpandedGroups(event)
     }
 
     const checkConfirmedGroups = (esillaoloConfirmed, lautakuntaConfirmed, attributeKeys, visValRef, phase, canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, data) => {
@@ -720,6 +724,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                 timelineGroupClick(timeline.itemSet.options,groups)
             } 
             else {
+              trackExpanded(event)
               // if not add button, forward the event to the vis event handler
               timeline.itemSet._onGroupClick(event);
             }
