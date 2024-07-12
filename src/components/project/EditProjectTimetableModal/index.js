@@ -27,7 +27,8 @@ class EditProjectTimeTableModal extends Component {
       item: null,
       items: false,
       groups: false,
-      showModal: false
+      showModal: false,
+      collapseData: {}
     }
     this.timelineRef = createRef();
   }
@@ -209,10 +210,19 @@ class EditProjectTimeTableModal extends Component {
               lautakuntakerta++
             }
           });
+
+          let expanded
+          if(this.state.collapseData[deadlineSections[i].title]){
+            expanded = this.state.collapseData[deadlineSections[i].title]
+          }
+          else{
+            expanded = deadlineSections[i].title === ongoingPhase ? true : false
+          }
+
           deadLineGroups.push({
             id: deadlineSections[i].title,
             content: deadlineSections[i].title,
-            showNested: deadlineSections[i].title === ongoingPhase ? true : false,
+            showNested: expanded,
             nestedGroups: [],
             maxEsillaolo: esillaolokerta,
             maxLautakunta: lautakuntakerta
@@ -819,6 +829,14 @@ class EditProjectTimeTableModal extends Component {
     this.props.handleClose()
   }
 
+  trackExpandedGroups = (e) => {
+    const { collapseData } = this.state;
+    const key = e.target.innerText;
+    const value = e.target.classList.value.includes("expanded") ? false : true;
+    const updatedCollapseData = { ...collapseData, [key]: value };
+    this.setState({ collapseData: updatedCollapseData });
+  }
+
   render() {
     const { loading } = this.state
     const { 
@@ -869,6 +887,7 @@ class EditProjectTimeTableModal extends Component {
               disabledDates={disabledDates}
               lomapaivat={lomapaivat}
               dateTypes={dateTypes}
+              trackExpandedGroups={this.trackExpandedGroups}
             /> 
             <ConfirmModal 
               openConfirmModal={this.state.showModal}
