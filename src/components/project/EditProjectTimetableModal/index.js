@@ -515,9 +515,8 @@ class EditProjectTimeTableModal extends Component {
   };
   
    processValuesSequentially = async (matchingValues) => { 
-
     const validValues = [];
-    let foundItem = matchingValues.find(item => item.key.includes("_paattyy")) || matchingValues[0].value;
+    let foundItem = matchingValues.find(item => item?.key?.includes("_paattyy")) || matchingValues[0].value;
 
     for (const { key } of matchingValues) {
       try {          
@@ -661,6 +660,8 @@ class EditProjectTimeTableModal extends Component {
             key === phase + '_kylk_aineiston_maaraaika' + indexKey ||
             key === phase + '_kylk_maaraaika' + indexKey ||
             key === 'milloin_' + phase + '_lautakunnassa' + indexKey || 
+            key === 'milloin_kaava' + phase + '_lautakunnassa' + indexKey || 
+            key === 'kaava' + phase + '_kylk_aineiston_maaraaika' + indexKey || 
             key === phase + '_lautakunta_aineiston_maaraaika' + indexKey
           )
           .map(([key, value]) => ({ key, value }))
