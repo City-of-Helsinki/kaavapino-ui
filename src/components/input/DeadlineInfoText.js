@@ -7,14 +7,12 @@ import dayjs from 'dayjs'
 import { isNumber, isBoolean, isArray } from 'lodash'
 import PropTypes from 'prop-types'
 import { Notification } from 'hds-react'
-import { deadlinesSelector } from '../../selectors/projectSelector'
+import { editProjectTimetableFormSelector } from '../../selectors/formSelector'
 
 const DeadlineInfoText = props => {
   const formValues = useSelector(getFormValues(EDIT_PROJECT_TIMETABLE_FORM))
   let inputValue = props.input && props.input.value
   let readonlyValue
-
-  const deadlines = props.deadlines
 
   const [current, setCurrent] = useState()
 
@@ -69,22 +67,18 @@ const DeadlineInfoText = props => {
 
   useEffect(() => {
     if (props.input?.name == 'nahtavillaolopaivien_lukumaara'){
-      let start_date, end_date
-      for (const index in props.deadlines){
-        let dl = props.deadlines[index]
-        if (dl.deadline.attribute == 'milloin_ehdotuksen_nahtavilla_alkaa_pieni'){
-          start_date = new Date(dl.date)
-        }
-        else if (dl.deadline.attribute == 'milloin_ehdotuksen_nahtavilla_paattyy'){
-          end_date = new Date(dl.date)
-        }
-      }
+      const start_name = 'milloin_ehdotuksen_nahtavilla_alkaa_pieni'
+      const end_name = 'milloin_ehdotuksen_nahtavilla_paattyy'
+      const start_date = start_name in props.timetableValues ? 
+        new Date(props.timetableValues['milloin_ehdotuksen_nahtavilla_alkaa_pieni']) : null
+      const end_date = end_name in props.timetableValues ?
+        new Date(props.timetableValues['milloin_ehdotuksen_nahtavilla_paattyy']) : null
       if (end_date && start_date){
         const days = ((end_date - start_date) / 86400000) +1
         setCurrent(days)
       }
     }
-  }, [deadlines])
+  }, [props.timetableValues])
 
   if (isNumber(current) || isBoolean(current)) {
     value = current
@@ -110,6 +104,7 @@ const DeadlineInfoText = props => {
 DeadlineInfoText.propTypes = {
   fieldData:PropTypes.object,
   meta: PropTypes.object,
+  timetableValues: PropTypes.object,
   input: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.number,
@@ -119,7 +114,7 @@ DeadlineInfoText.propTypes = {
 
 const mapStateToProps = (state) => {
   return {
-    deadlines: deadlinesSelector(state)
+    timetableValues: editProjectTimetableFormSelector(state).values
   }
 }
 
