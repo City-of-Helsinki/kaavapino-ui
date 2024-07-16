@@ -62,6 +62,14 @@ const DeadlineInfoText = props => {
     }
   }, [])
 
+  const calculateDaysBetweenDates = (startDate, endDate) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const differenceInMilliseconds = end - start;
+    const differenceInDays = differenceInMilliseconds / (1000 * 60 * 60 * 24);
+    return differenceInDays;
+  }
+
   let value
 
   if (isNumber(current) || isBoolean(current)) {
@@ -83,6 +91,16 @@ const DeadlineInfoText = props => {
   if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
     value = '';
     console.warn("Plain object found in DeadlineInfoText value");
+  }
+
+  if(!value && props.input.name.includes("nahtavillaolopaivien_lukumaara")){
+    const regex = /_x(\d+)/;
+    const match = props.input.name.match(regex);
+    const index = match ? "_"+match[1] : "";
+    let start = formValues["milloin_ehdotuksen_nahtavilla_alkaa_iso"+index]
+    let end = formValues["milloin_ehdotuksen_nahtavilla_paattyy"+index]
+    const calendarDatesBetween = calculateDaysBetweenDates(start, end)
+    value = calendarDatesBetween
   }
 
   return (
