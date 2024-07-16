@@ -92,10 +92,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         const deadlineEsillaolokertaKeys = data.maxEsillaolo
         const esillaoloRegex = new RegExp(`${phase}_esillaolo_\\d+$`);
         const attributeEsillaoloKeys = Object.keys(visValRef).filter(key => esillaoloRegex.test(key));
-        let esillaoloCount = 1
-        esillaoloCount = esillaoloCount + attributeEsillaoloKeys.length;
+        let esillaoloCount = attributeEsillaoloKeys.length
+        if(data.content === "OAS" && attributeEsillaoloKeys.length === 0 || data.content === "Ehdotus"){
+          esillaoloCount += 1
+        }
+        esillaoloCount = esillaoloCount + 1;
         canAddEsillaolo = esillaoloCount < deadlineEsillaolokertaKeys;
-        const nextEsillaoloStr = canAddEsillaolo ? `jarjestetaan_${phase}_esillaolo_${esillaoloCount +1}$` : false;
+        const nextEsillaoloStr = canAddEsillaolo ? `jarjestetaan_${phase}_esillaolo_${esillaoloCount}$` : false;
         nextEsillaoloClean = nextEsillaoloStr ? nextEsillaoloStr.replace(/[/$]/g, '') : nextEsillaoloStr;
         if(esillaoloCount === deadlineEsillaolokertaKeys){
           esillaoloReason = "max"
@@ -106,10 +109,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         const deadlineLautakuntakertaKeys = data.maxLautakunta
         const lautakuntaanRegex = new RegExp(`${phase}_lautakuntaan_\\d+$`);
         const attributeLautakuntaanKeys = Object.keys(visValRef).filter(key => lautakuntaanRegex.test(key));
-        let lautakuntaCount = 1
-        lautakuntaCount = lautakuntaCount + attributeLautakuntaanKeys.length;
+        let lautakuntaCount = attributeLautakuntaanKeys.length
+        if(attributeLautakuntaanKeys.length === 0){
+          lautakuntaCount += 1
+        } 
+        lautakuntaCount = lautakuntaCount + 1;
         canAddLautakunta = lautakuntaCount < deadlineLautakuntakertaKeys;
-        const nextLautakuntaStr = canAddLautakunta ? `${phase}_lautakuntaan_${lautakuntaCount +1}$` : false;
+        const nextLautakuntaStr = canAddLautakunta ? `${phase}_lautakuntaan_${lautakuntaCount}$` : false;
         nextLautakuntaClean = nextLautakuntaStr ? nextLautakuntaStr.replace(/[/$]/g, '') : nextLautakuntaStr;
         if(lautakuntaCount === deadlineLautakuntakertaKeys){
           lautakuntaReason = "max"
@@ -137,11 +143,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const canGroupBeAdded = (visValRef, data, deadlineSections) => {
       // Find out how many groups in the clicked phase have been added to the timeline
       const matchingGroups = groups.get().filter(group => data.nestedGroups.includes(group.id));
-      const esillaoloCount = matchingGroups.filter(group => group.content === 'Esilläolo').length > 1 ? '_' + matchingGroups.filter(group => group.content === 'Esilläolo').length : '';
+
+      const esillaoloCount = matchingGroups.filter(group => group.content === 'Esilläolo' || group.content === 'Nahtavillaolo').length > 1 ? '_' + matchingGroups.filter(group => group.content === 'Esilläolo' || group.content === 'Nahtavillaolo').length : '';
       const lautakuntaCount = matchingGroups.filter(group => group.content === 'Lautakunta').length > 1 ? '_' + matchingGroups.filter(group => group.content === 'Lautakunta').length : '';
       const phase = data.content.toLowerCase().replace(/\s+/g, '_');
       // Check if existing groups have been confirmed
-      let esillaoloConfirmed = Object.prototype.hasOwnProperty.call(visValRef, `vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`) && visValRef[`vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`] === true;
+      let esillaoloConfirmed = Object.prototype.hasOwnProperty.call(visValRef, `vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`) && visValRef[`vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`] === true
+      || Object.prototype.hasOwnProperty.call(visValRef, `vahvista_${phase}_esillaolo${esillaoloCount}`) && visValRef[`vahvista_${phase}_esillaolo${esillaoloCount}`] === true;
       let lautakuntaConfirmed = Object.prototype.hasOwnProperty.call(visValRef, `vahvista_${phase}_lautakunnassa${lautakuntaCount}`) && visValRef[`vahvista_${phase}_lautakunnassa${lautakuntaCount}`] === true;
 
       if(phase === "periaatteet" && !(phase + "_lautakuntaan_1" in visValRef)|| phase === "luonnos" && !(phase + "_lautakuntaan_1")){
