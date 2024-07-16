@@ -24,7 +24,7 @@ const DeadLineInput = ({
   timeTableDisabled,
   dateTypes
 }) => {
-  
+
   const { t } = useTranslation()
   const validateDate = useValidateDate();
   const [warning, setWarning] = useState({warning:false,response:{reason:"",suggested_date:"",conflicting_deadline:""}})
@@ -146,13 +146,13 @@ const DeadLineInput = ({
   }
   
   const formatDateToYYYYMMDD = (date) => {
-    if(date.includes('.')){
-    const dateParts = date.split(".");
-    const eventDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
-    const year = eventDate.getFullYear();
-    const month = ("0" + (eventDate.getMonth() + 1)).slice(-2); // Months are 0-based, so add 1 and pad with 0 if necessary
-    const day = ("0" + eventDate.getDate()).slice(-2); // Pad with 0 if necessary
-    return `${year}-${month}-${day}`;
+    if(date?.includes('.')){
+      const dateParts = date.split(".");
+      const eventDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
+      const year = eventDate.getFullYear();
+      const month = ("0" + (eventDate.getMonth() + 1)).slice(-2); // Months are 0-based, so add 1 and pad with 0 if necessary
+      const day = ("0" + eventDate.getDate()).slice(-2); // Pad with 0 if necessary
+      return `${year}-${month}-${day}`;
     } else {
       return date;
     }
