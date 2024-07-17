@@ -105,7 +105,8 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
     }
   
     const renderSection = (section,sectionIndex,title) => {
-      const sections = section.sections
+      //grouped_sections specific to timeline with groups and subgroups
+      const sections = section?.grouped_sections
       const splitTitle = title.split('-').map(part => part.toLowerCase())
       splitTitle[1] = splitTitle[1] === "1" ? "" : "_"+splitTitle[1]
       let confirmedValue = "vahvista_"+group.toLowerCase()+"_"+splitTitle[0]+"_alkaa"+splitTitle[1]
@@ -139,12 +140,12 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       })
       return renderedSections
     }
-    const title = deadlineSections.find(section => section?.id === group)?.title
+
     return (
       <Modal open={open} size={'large'} className='timeline-edit-right'>
         <Modal.Header>
           <ul className="breadcrumb">
-            <li><a href="#" role="button">{title}</a></li>
+            <li><a href="#" role="button">{group}</a></li>
             <li><a href="#" role="button">{content}</a></li>
             <Button size='small' variant="supplementary" onClick={openDialog}><IconCross /></Button>
           </ul>
