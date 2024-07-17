@@ -197,11 +197,11 @@ class EditProjectTimeTableModal extends Component {
 
   addDeadLineGroups = (deadlineSections,deadLineGroups,ongoingPhase) => {
     for (let i = 0; i < deadlineSections.length; i++) {
-      for (let x = 0; x < deadlineSections[i].sections.length; x++) {
+      for (let x = 0; x < deadlineSections[i].grouped_sections.length; x++) {
         if (!deadLineGroups.some(item => item.content === deadlineSections[i].title)) {
           let esillaolokerta = 0
           let lautakuntakerta = 0
-          Object.keys(deadlineSections[i].sections[x].attributes).forEach(key => {
+          Object.keys(deadlineSections[i].grouped_sections[x].attributes).forEach(key => {
             // add max count for esilläolo and lautakunta groups
             if (key.includes('esillaolokerta') || key.includes('nahtavillaolokerta')) {
               esillaolokerta++
@@ -523,6 +523,7 @@ class EditProjectTimeTableModal extends Component {
         let valueToCheck
           //Add required range between dates
         let newDate = new Date(foundItem.value ? foundItem.value : foundItem);
+        //TODO Oikeat etäisyydet tuoda excel->backend->frontend esilläolo/lautakunta +vaihe. date_types. dateTypes 
         let daysToAdd = key.includes("_maaraaika") ? 15 : 30; //Replace with excel info later
         daysToAdd = key.includes("_paattyy") ? daysToAdd + 30 : daysToAdd;
         while (daysToAdd > 0) {
