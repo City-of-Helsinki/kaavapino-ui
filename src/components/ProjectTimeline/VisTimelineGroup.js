@@ -55,6 +55,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         let group = groups.get(groupId);
         if (group) {
           group.showNested = showNested;
+          console.log(group)
           groups.update(group);
         }
       }
@@ -86,18 +87,23 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
     const checkConfirmedGroups = (esillaoloConfirmed, lautakuntaConfirmed, attributeKeys, visValRef, phase, canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, data) => {
       // Check if more Esillaolo groups can be added
+      console.log(esillaoloConfirmed)
       let esillaoloReason = !esillaoloConfirmed ? "noconfirmation" : "";
       let lautakuntaReason = !lautakuntaConfirmed ? "noconfirmation" : "";
       if (esillaoloConfirmed) {
         const deadlineEsillaolokertaKeys = data.maxEsillaolo
         const esillaoloRegex = new RegExp(`${phase}_esillaolo_\\d+$`);
         const attributeEsillaoloKeys = Object.keys(visValRef).filter(key => esillaoloRegex.test(key));
-        let esillaoloCount = 1
-        esillaoloCount = esillaoloCount + attributeEsillaoloKeys.length;
-        canAddEsillaolo = esillaoloCount < deadlineEsillaolokertaKeys;
-        const nextEsillaoloStr = canAddEsillaolo ? `jarjestetaan_${phase}_esillaolo_${esillaoloCount +1}$` : false;
+        let esillaoloCount = attributeEsillaoloKeys.length
+        if(attributeEsillaoloKeys.length === 0 || data.content === "OAS" || data.content === "Ehdotus"){
+          esillaoloCount += 1
+        }
+        esillaoloCount = esillaoloCount + 1;
+        canAddEsillaolo = esillaoloCount <= deadlineEsillaolokertaKeys;
+        const nextEsillaoloStr = canAddEsillaolo ? `jarjestetaan_${phase}_esillaolo_${esillaoloCount}$` : false;
         nextEsillaoloClean = nextEsillaoloStr ? nextEsillaoloStr.replace(/[/$]/g, '') : nextEsillaoloStr;
-        if(esillaoloCount === deadlineEsillaolokertaKeys){
+        console.log("esillaoloCount",esillaoloCount - 1,deadlineEsillaolokertaKeys)
+        if(esillaoloCount - 1 === deadlineEsillaolokertaKeys){
           esillaoloReason = "max"
         }
       }
@@ -106,12 +112,16 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         const deadlineLautakuntakertaKeys = data.maxLautakunta
         const lautakuntaanRegex = new RegExp(`${phase}_lautakuntaan_\\d+$`);
         const attributeLautakuntaanKeys = Object.keys(visValRef).filter(key => lautakuntaanRegex.test(key));
-        let lautakuntaCount = 1
-        lautakuntaCount = lautakuntaCount + attributeLautakuntaanKeys.length;
-        canAddLautakunta = lautakuntaCount < deadlineLautakuntakertaKeys;
-        const nextLautakuntaStr = canAddLautakunta ? `${phase}_lautakuntaan_${lautakuntaCount +1}$` : false;
+        let lautakuntaCount = attributeLautakuntaanKeys.length
+        if(attributeLautakuntaanKeys.length === 0 || phase === "tarkistettu_ehdotus"){
+          lautakuntaCount += 1
+        } 
+        lautakuntaCount = lautakuntaCount + 1;
+        console.log(lautakuntaCount -1,deadlineLautakuntakertaKeys,phase)
+        canAddLautakunta = lautakuntaCount <= deadlineLautakuntakertaKeys;
+        const nextLautakuntaStr = canAddLautakunta ? `${phase}_lautakuntaan_${lautakuntaCount}$` : false;
         nextLautakuntaClean = nextLautakuntaStr ? nextLautakuntaStr.replace(/[/$]/g, '') : nextLautakuntaStr;
-        if(lautakuntaCount === deadlineLautakuntakertaKeys){
+        if(lautakuntaCount - 1 === deadlineLautakuntakertaKeys){
           lautakuntaReason = "max"
         }
       }
@@ -137,13 +147,21 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const canGroupBeAdded = (visValRef, data, deadlineSections) => {
       // Find out how many groups in the clicked phase have been added to the timeline
       const matchingGroups = groups.get().filter(group => data.nestedGroups.includes(group.id));
-      const esillaoloCount = matchingGroups.filter(group => group.content === 'Esilläolo').length > 1 ? '_' + matchingGroups.filter(group => group.content === 'Esilläolo').length : '';
-      const lautakuntaCount = matchingGroups.filter(group => group.content === 'Lautakunta').length > 1 ? '_' + matchingGroups.filter(group => group.content === 'Lautakunta').length : '';
+      console.log(matchingGroups)
+      const esillaoloCount = matchingGroups.filter(group => group.content.includes('Esilläolo') || group.content.includes('Nahtavillaolo')).length > 1 ? '_' + matchingGroups.filter(group => group.content.includes('Esilläolo') || group.content.includes('Nahtavillaolo')).length : '';
+      const lautakuntaCount = matchingGroups.filter(group => group.content.includes('Lautakunta')).length > 1 ? '_' + matchingGroups.filter(group => group.content.includes('Lautakunta')).length : '';
       const phase = data.content.toLowerCase().replace(/\s+/g, '_');
       // Check if existing groups have been confirmed
-      let esillaoloConfirmed = Object.prototype.hasOwnProperty.call(visValRef, `vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`) && visValRef[`vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`] === true;
+      console.log(esillaoloCount)
+      let esillaoloConfirmed = Object.prototype.hasOwnProperty.call(visValRef, `vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`) && visValRef[`vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`] === true
+      || Object.prototype.hasOwnProperty.call(visValRef, `vahvista_${phase}_esillaolo${esillaoloCount}`) && visValRef[`vahvista_${phase}_esillaolo${esillaoloCount}`] === true;
+      console.log(esillaoloConfirmed)
       let lautakuntaConfirmed = Object.prototype.hasOwnProperty.call(visValRef, `vahvista_${phase}_lautakunnassa${lautakuntaCount}`) && visValRef[`vahvista_${phase}_lautakunnassa${lautakuntaCount}`] === true;
-
+      
+      if(phase === "luonnos"){
+        lautakuntaConfirmed = Object.prototype.hasOwnProperty.call(visValRef, `vahvista_kaavaluonnos_lautakunnassa${lautakuntaCount}`) && visValRef[`vahvista_kaavaluonnos_lautakunnassa${lautakuntaCount}`] === true;
+      }
+      console.log(visValRef,phase,esillaoloCount,esillaoloConfirmed)
       if(phase === "periaatteet" && !(phase + "_lautakuntaan_1" in visValRef)|| phase === "luonnos" && !(phase + "_lautakuntaan_1")){
         lautakuntaConfirmed = true
       }

@@ -515,9 +515,8 @@ class EditProjectTimeTableModal extends Component {
   };
   
    processValuesSequentially = async (matchingValues) => { 
-    
     const validValues = [];
-    let foundItem = matchingValues.find(item => item.key.includes("_paattyy")) || matchingValues[0].value;
+    let foundItem = matchingValues.find(item => item?.key?.includes("_paattyy")) || matchingValues[0].value;
 
     for (const { key } of matchingValues) {
       try {          
@@ -579,7 +578,6 @@ class EditProjectTimeTableModal extends Component {
         // Split the key into an array of substrings
         const exceptionKey = "tarkistettu_ehdotus";
         const parts = this.splitKey(key, exceptionKey);
-
         // Check if there are at least two underscores in the key
         if (parts.length > 3 && key.includes("esillaolo") || parts.length > 2 && key.includes("lautakuntaan")) {
           // Get the string between the first and second underscore
@@ -595,6 +593,9 @@ class EditProjectTimeTableModal extends Component {
             if(content === "lautakuntaan"){
               content = "lautakunta"
             }
+            else if(phase === "ehdotus" && content === "esillaolo"){
+              content = "nahtavillaolo"
+            }
             // Check if the group contains stringBetweenUnderscores and content in deadlineGroups
             return typeof group?.deadlinegroup === 'string' && group?.deadlinegroup.includes(phase === "tarkistettu ehdotus" ? phase.replace(/\s+/g, '_') : phase) && group?.deadlinegroup.includes(content);
           });
@@ -603,7 +604,6 @@ class EditProjectTimeTableModal extends Component {
             deadlinegroup = filteredGroups[0].deadlinegroup;
             // Get the length of groups
             const length = groups.length;
-    
             // Update the id
             idt = length + 1;
             // Use the replace method with a regex to find the number after the underscore
@@ -617,6 +617,9 @@ class EditProjectTimeTableModal extends Component {
               let content = group?.content;
               if(content === "lautakuntaan"){
                 content = "lautakunta"
+              }
+              else if(phase === "ehdotus" && content === "esillaolo"){
+                content = "nahtavillaolo"
               }
               // Check if the id of the group (in lowercase) is equal to phase
               if (String(content).toLowerCase() === String(phase === "tarkistettu_ehdotus" ? phase.replace(/_/g, ' ') : phase).toLowerCase()) {
@@ -636,22 +639,47 @@ class EditProjectTimeTableModal extends Component {
       }
 
       if (content === "esillaolo" || content === "nahtavillaolo" || content === "lautakuntaan" || content === "lautakunta") {
+        let filterContent
+        if(content === "nahtavillaolo"){
+          filterContent = "nahtavilla"
+        }
         className = "inner-end";
         let indexKey = '';
         if (index > 2) {
           indexKey = "_" + (index - 1);
         }
         phase = phase.toLowerCase().replace(/\s+/g, '_');
-        matchingValues = Object.entries(this.props.formValues)
+        let syntaxToCheck = ""
+        if(phase === "ehdotus"){
+          syntaxToCheck = "ehdotuksen"
+        }
+
+        if(content === "lautakuntaan" || content === "lautakunta"){
+          matchingValues = Object.entries(this.props.formValues)
           .filter(([key]) =>
-            key === 'milloin_' + phase + '_' + content + '_alkaa' + indexKey ||
-            key === 'milloin_' + phase + '_' + content + '_paattyy' + indexKey ||
-            key === phase + "_kylk_aineiston_maaraaika" + indexKey ||
-            key === phase + "_esillaolo_aineiston_maaraaika" + indexKey ||
-            key === phase + "_kylk_maaraaika" + indexKey ||
-            key === 'milloin_' + phase + '_lautakunnassa' + indexKey
+            key === phase + '_kylk_aineiston_maaraaika' + indexKey ||
+            key === phase + '_kylk_maaraaika' + indexKey ||
+            key === 'milloin_' + phase + '_lautakunnassa' + indexKey || 
+            key === 'milloin_kaava' + phase + '_lautakunnassa' + indexKey || 
+            key === 'kaava' + phase + '_kylk_aineiston_maaraaika' + indexKey || 
+            key === phase + '_lautakunta_aineiston_maaraaika' + indexKey
           )
           .map(([key, value]) => ({ key, value }))
+        }
+        else{
+          matchingValues = Object.entries(this.props.formValues)
+          .filter(([key]) =>
+            key === 'milloin_' + phase + '_' + content + '_alkaa' + indexKey ||
+            key === 'milloin_' + syntaxToCheck + '_' + filterContent + '_alkaa_iso' + indexKey ||
+            key === 'milloin_' + phase + '_' + content + '_paattyy' + indexKey ||
+            key === 'milloin_' + syntaxToCheck + '_' + filterContent + '_paattyy' + indexKey ||
+            key === phase + '_kylk_aineiston_maaraaika' + indexKey ||
+            key === phase + '_esillaolo_aineiston_maaraaika' + indexKey ||
+            key === phase + '_kylk_maaraaika' + indexKey
+          )
+          .map(([key, value]) => ({ key, value }))
+        }
+
       }
       // Process the values sequentially and return new validated values from backend
       // waits for all values to be ready so vis does not give error if missing start or end date
@@ -669,7 +697,37 @@ class EditProjectTimeTableModal extends Component {
               indexString = "_2"; // Directly set to "_2" as this block only executes when index <= 1
             }
 
-            if(validValues.length > 2 && validValues[2].key.includes("maaraaika")){
+            let start = null;
+            let end = null;
+            let deadline = null;
+            let atBoard = null;
+            let nahtavillaolo = false;
+
+            for (let i = 0; i < validValues.length; i++) {
+              if (validValues[i].key.includes("alkaa") || validValues[i].key.includes("alkaa_iso")) {
+                start = validValues[i].value;
+                if(validValues[i].key.includes("nahtavilla")){
+                  nahtavillaolo = true
+                }
+              }
+              else if (validValues[i].key.includes("paattyy")) {
+                end = validValues[i].value;
+              }
+              else if(validValues[i].key.includes("maaraaika")){
+                if(validValues[i].key.includes("ehdotus") && (matchingValues.kaavaprosessin_kokoluokka === "XL" || matchingValues.kaavaprosessin_kokoluokka === "L")){
+                  deadline = null
+                }
+                else{
+                  deadline = validValues[i].value;
+                }
+              }
+              else if(validValues[i].key.includes("lautakunnassa")){
+                atBoard = validValues[i].value;
+              }
+              if (start && end && deadline && atBoard) break; // Exit the loop early
+            }
+
+            if(validValues.length > 2 && deadline){
               const deadlineItem = {
                 className: "board",
                 content: "",
@@ -678,7 +736,7 @@ class EditProjectTimeTableModal extends Component {
                 locked: false,
                 phase: false,
                 phaseID: groupID,
-                start: validValues[2].value,
+                start: deadline,
                 type: 'point',
                 title: "maaraaika"
               };
@@ -699,7 +757,7 @@ class EditProjectTimeTableModal extends Component {
               this.state.items.add(diveverItem);
             }
 
-            if(validValues[0].key.includes("alkaa") && validValues[1].key.includes("paattyy")){
+            if(start && end){
               const newItems = {
                 className: className,
                 content: "",
@@ -708,14 +766,14 @@ class EditProjectTimeTableModal extends Component {
                 locked: false,
                 phase: false,
                 phaseID: groupID,
-                start: validValues[0].value,
-                end: validValues[1].value,
-                title: content === "esillaolo" ? "milloin_" + phase + "_esillaolo_paattyy" + indexString : +phase + "_lautakunta_aineiston_maaraaika" + indexString,
+                start: start,
+                end: end,
+                title: content === "esillaolo" || content === "nahtavillaolo" ? nahtavillaolo === true ? "milloin_" + phase + "_nahtavillaolo_paattyy" + indexString : "milloin_" + phase + "_esillaolo_paattyy" + indexString : +phase + "_lautakunta_aineiston_maaraaika" + indexString,
               };
               this.state.items.add(newItems);
             }
 
-            if(validValues[0].key.includes("maaraaika") && validValues[1].key.includes("lautakunnassa")){
+            if(deadline && atBoard){
               const newItems = {
                 className: "board",
                 content: "",
@@ -724,23 +782,23 @@ class EditProjectTimeTableModal extends Component {
                 locked: false,
                 phase: false,
                 phaseID: groupID,
-                start: validValues[0].value,
-                end: validValues[1].value,
+                start: deadline,
+                end: atBoard,
                 title: phase + "_lautakunta_aineiston_maaraaika" + indexString,
               };
               this.state.items.add(newItems);
             }
-          
+
             const newSubGroup = {
               id: idt,
-              content: content === "esillaolo" ? "Esilläolo-" + newIndex : "Lautakunta-" + newIndex,
+              content: content === "esillaolo" || content === "nahtavillaolo" ? nahtavillaolo === true ? "Nahtavillaolo-" + newIndex : "Esilläolo-" + newIndex : "Lautakunta-" + newIndex,
               abbreviation: "",
-              deadlinegroup: content === "esillaolo" ? phase + "_esillaolokerta" + indexString : phase + "_lautakuntakerta" + indexString,
+              deadlinegroup: content === "esillaolo" || content === "nahtavillaolo" ? nahtavillaolo === true ? phase + "_nahtavillaolokerta" + indexString : phase + "_esillaolokerta" + indexString : phase + "_lautakuntakerta" + indexString,
               deadlinesubgroup: "",
               locked: false,
             };
             this.state.groups.add(newSubGroup);
-          
+
             let phaseCapitalized = phase.charAt(0).toUpperCase() + phase.slice(1);
             if(phaseCapitalized === "Tarkistettu_ehdotus"){
               phaseCapitalized = phaseCapitalized.replace(/_/g, ' ');
