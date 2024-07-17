@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react'
 import { getFormValues, autofill } from 'redux-form'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
-import { useSelector, useDispatch, connect } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import dayjs from 'dayjs'
 import { isNumber, isBoolean, isArray } from 'lodash'
 import PropTypes from 'prop-types'
 import { Notification } from 'hds-react'
-import { editProjectTimetableFormSelector } from '../../selectors/formSelector'
 
 const DeadlineInfoText = props => {
   const formValues = useSelector(getFormValues(EDIT_PROJECT_TIMETABLE_FORM))
@@ -73,20 +72,6 @@ const DeadlineInfoText = props => {
 
   let value
 
-  useEffect(() => {
-    if (props.input?.name == 'nahtavillaolopaivien_lukumaara'){
-      const start_name = 'milloin_ehdotuksen_nahtavilla_alkaa_pieni'
-      const end_name = 'milloin_ehdotuksen_nahtavilla_paattyy'
-      const start_date = start_name in props.timetableValues ? 
-        new Date(props.timetableValues['milloin_ehdotuksen_nahtavilla_alkaa_pieni']) : null
-      const end_date = end_name in props.timetableValues ?
-        new Date(props.timetableValues['milloin_ehdotuksen_nahtavilla_paattyy']) : null
-      if (end_date && start_date){
-        const days = ((end_date - start_date) / 86400000) +1
-        setCurrent(days)
-      }
-    }
-  }, [props.timetableValues])
 
   if (isNumber(current) || isBoolean(current)) {
     value = current
@@ -108,21 +93,22 @@ const DeadlineInfoText = props => {
     const regex = /_x(\d+)/;
     const match = props.input.name.match(regex);
     const index = match ? "_"+match[1] : "";
-    let start = formValues["milloin_ehdotuksen_nahtavilla_alkaa_iso"+index]
+    let start = formValues["milloin_ehdotuksen_nahtavilla_alkaa_iso"+index] ? formValues["milloin_ehdotuksen_nahtavilla_alkaa_iso"+index]
+      : formValues["milloin_ehdotuksen_nahtavilla_alkaa_pieni"+index]
     let end = formValues["milloin_ehdotuksen_nahtavilla_paattyy"+index]
     const calendarDatesBetween = calculateDaysBetweenDates(start, end)
     value = calendarDatesBetween
   }
 
-  return (
-    <Notification className='deadline-info-notification' size="small" label={props.input.name} >{props.label} {value}</Notification>
+  return (props.input.name.includes("nahtavillaolopaivien_lukumaara") ? 
+    <p className="deadline-info-readonlytext">{props.label}: {value} pv </p>
+    : <Notification className='deadline-info-notification' size="small" label={props.input.name} >{props.label} {value}</Notification>
   )
 }
 
 DeadlineInfoText.propTypes = {
   fieldData:PropTypes.object,
   meta: PropTypes.object,
-  timetableValues: PropTypes.object,
   input: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.number,
@@ -130,10 +116,4 @@ DeadlineInfoText.propTypes = {
   ])
 }
 
-const mapStateToProps = (state) => {
-  return {
-    timetableValues: editProjectTimetableFormSelector(state).values
-  }
-}
-
-export default connect(mapStateToProps, null)(DeadlineInfoText)
+export default DeadlineInfoText
