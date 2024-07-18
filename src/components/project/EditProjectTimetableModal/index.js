@@ -159,7 +159,6 @@ class EditProjectTimeTableModal extends Component {
     } = this.props
 
     if(prevProps.formValues && prevProps.formValues !== formValues){
-  
       if(deadlineSections && deadlines && formValues){
         // Check if changedValues contains 'jarjestetaan' or 'lautakuntaan' and the value is a boolean
         const [isGroupAddRemove,changedValues] = this.getChangedValues(prevProps.formValues, formValues);
@@ -172,8 +171,19 @@ class EditProjectTimeTableModal extends Component {
           //Form items and groups
           let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,formValues,deadlines,ongoingPhase)
           // Update the existing data
-          this.state.groups.update(deadLineGroups);
-          this.state.groups.update(nestedDeadlines);
+          // Get the existing groups from the state
+          let existingGroups = this.state.groups.get() || deadLineGroups;
+          // Merge nestedDeadlines into deadLineGroups based on deadlineGroup key
+          nestedDeadlines.forEach(nestedDeadline => {
+            let matchingGroup = existingGroups.find(group => group.content.trim().toLowerCase() === nestedDeadline.content.trim().toLowerCase() && group.deadlinegroup.trim().toLowerCase() === nestedDeadline.deadlinegroup.trim().toLowerCase());
+            if (matchingGroup !== -1) {
+              //replace the existing group with the new matching group
+              existingGroups[matchingGroup] = { ...existingGroups[matchingGroup], ...nestedDeadline };
+            } else {
+              existingGroups.push(nestedDeadline);
+            }
+          });
+          this.state.groups.update(existingGroups);
           this.state.items.update(phaseData)
         }
         this.setState({visValues:formValues})
@@ -530,7 +540,7 @@ class EditProjectTimeTableModal extends Component {
             newDate.setDate(newDate.getDate() + 1);
             const dateStr = newDate.toISOString().split('T')[0];
             //Skip weekends and holidays
-            if (newDate.getDay() != 0 && newDate.getDay() != 6 && !this.props.disabledDates.includes(dateStr)) { // Skip Sundays (0) and Saturdays (6)
+            if (newDate.getDay() != 0 && newDate.getDay() != 6 && !this.props.disabledDates.includes(dateStr) && !this.props.lomapaivat.includes(dateStr)) { // Skip Sundays (0) and Saturdays (6)
                 daysToAdd--;
             }
         }
