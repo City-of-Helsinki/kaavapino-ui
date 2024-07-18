@@ -368,7 +368,7 @@ const Header = props => {
   }
 
   const backgroundColor =
-    currentEnv === 'production' ? 'transparent' : 'var(--color-brick-light)'
+    (!currentEnv || currentEnv === 'production') ? 'transparent' : 'var(--color-brick-light)'
 
   const getTitle = ()  => {
     if ( currentEnv === 'production' ) {
@@ -397,7 +397,7 @@ const Header = props => {
 
   if(pathToCheck.includes('edit')) {
     return (
-      <div className='edit-page-header'>
+      <div className={'edit-page-header' + ((!currentEnv || currentEnv === 'production') ? '' : ' edit-header-dev')}>
       <Navigation 
         label="navigation"
       >

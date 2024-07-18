@@ -525,6 +525,11 @@ header{
       }
     }
   }
+  &.edit-header-dev {
+    div:not(.spinner-container,.spinner-container *){
+    background-color: $color-brick-light;
+    }
+  }
   svg{
     display: none;
   }
