@@ -405,7 +405,7 @@ footer{
 
 .header {
   margin-bottom: 0;
-  --header-background-color: transparent !important;
+  --header-background-color: transparent;
   border-bottom: 1px solid $light-gray;
   font-size: $size16;
   font-family: "Helsinki Grotesk Regular", sans-serif;
@@ -523,6 +523,11 @@ header{
       .check-icon{
         display: flex;
       }
+    }
+  }
+  &.edit-header-dev {
+    div:not(.spinner-container,.spinner-container *){
+    background-color: $color-brick-light;
     }
   }
   svg{
