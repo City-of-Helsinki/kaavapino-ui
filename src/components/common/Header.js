@@ -368,7 +368,7 @@ const Header = props => {
   }
 
   const backgroundColor =
-    currentEnv === 'production' ? 'var(--color-fog-light)' : 'var(--color-brick-light)'
+    currentEnv === 'production' ? 'transparent' : 'var(--color-brick-light)'
 
   const getTitle = ()  => {
     if ( currentEnv === 'production' ) {

@@ -405,7 +405,7 @@ footer{
 
 .header {
   margin-bottom: 0;
-  --header-background-color: transparent !important;
+  --header-background-color: transparent;
   border-bottom: 1px solid $light-gray;
   font-size: $size16;
   font-family: "Helsinki Grotesk Regular", sans-serif;
