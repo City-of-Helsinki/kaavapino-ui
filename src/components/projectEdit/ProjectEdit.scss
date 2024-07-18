@@ -757,6 +757,14 @@
         margin-bottom: $size16;
       }
 
+      .deadline-info-readonlytext {
+        margin-top: $size16;
+        margin-bottom: $size24;
+        font-size: $size14;
+        font-family: "Helsinki Grotesk Medium", sans-serif;
+        font-weight:500;
+      }
+
       .deadlines-cancel-button{
         margin-left: 0;
       }

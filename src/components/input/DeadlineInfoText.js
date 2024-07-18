@@ -10,7 +10,7 @@ import { Notification } from 'hds-react'
 
 const DeadlineInfoText = props => {
   const formValues = useSelector(getFormValues(EDIT_PROJECT_TIMETABLE_FORM))
-  let inputValue = props.input && props.input.value
+  let inputValue = props.input?.value
   let readonlyValue
 
   const [current, setCurrent] = useState()
@@ -70,36 +70,37 @@ const DeadlineInfoText = props => {
     return differenceInDays;
   }
 
-  let value
+  const determineFieldValue = (current, props) => {
 
-  if (isNumber(current) || isBoolean(current)) {
-    value = current
-  } else {
+    if (isNumber(current) || isBoolean(current)) {
+      return current
+    }
+
+    if(props.input.name.includes("nahtavillaolopaivien_lukumaara")){
+      const regex = /_x(\d+)/;
+      const match = props.input.name.match(regex);
+      const index = match ? "_"+match[1] : "";
+      let start = formValues["milloin_ehdotuksen_nahtavilla_alkaa_iso"+index] ?? formValues["milloin_ehdotuksen_nahtavilla_alkaa_pieni"+index]
+      let end = formValues["milloin_ehdotuksen_nahtavilla_paattyy"+index]
+      return calculateDaysBetweenDates(start, end)
+    }
     // Expect date in value
-    value = current && dayjs(current).format('DD.MM.YYYY')
-    if (value === 'Invalid Date') {
+    const dateValue = current && dayjs(current).format('DD.MM.YYYY')
+    if (dateValue === 'Invalid Date') {
       if(isArray(current) && props?.fieldData?.autofill_readonly && props?.fieldData?.type === "readonly" && props?.fieldData?.unit === "päivää"){
         //Fixes situation if int has at somepoint on old project been converted to date/array of some sort because of bug and converts it back to int
-        value = props?.meta?.initial
+        return props?.meta?.initial
       }
-      else{
-        value = current
-      }
+      return current
     }
+    return dateValue
   }
 
-  if(!value && props.input.name.includes("nahtavillaolopaivien_lukumaara")){
-    const regex = /_x(\d+)/;
-    const match = props.input.name.match(regex);
-    const index = match ? "_"+match[1] : "";
-    let start = formValues["milloin_ehdotuksen_nahtavilla_alkaa_iso"+index]
-    let end = formValues["milloin_ehdotuksen_nahtavilla_paattyy"+index]
-    const calendarDatesBetween = calculateDaysBetweenDates(start, end)
-    value = calendarDatesBetween
-  }
+  const value = determineFieldValue(current, props)
 
-  return (
-    <Notification className='deadline-info-notification' size="small" label={props.input.name} >{props.label} {value}</Notification>
+  return (props.input.name.includes("nahtavillaolopaivien_lukumaara") ? 
+    <p className="deadline-info-readonlytext">{props.label}: {value} pv </p>
+    : <Notification className='deadline-info-notification' size="small" label={props.input.name} >{props.label} {value}</Notification>
   )
 }
 
