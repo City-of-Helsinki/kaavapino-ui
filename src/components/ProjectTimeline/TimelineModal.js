@@ -16,7 +16,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
   };
   
   const findLabel = (fieldName, attributeValues) => {
-    const field = attributeValues.find((value) => value.name === fieldName);
+    const field = attributeValues.find((value) => value?.name === fieldName);
     return field ? field.label : null;
   };
   

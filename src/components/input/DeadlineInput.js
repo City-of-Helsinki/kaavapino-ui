@@ -8,7 +8,6 @@ import { useSelector } from 'react-redux'
 import { getFormValues } from 'redux-form'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { useValidateDate } from '../../utils/dateUtils';
-//import moment from 'moment'
 
 const DeadLineInput = ({
   input,
@@ -162,7 +161,7 @@ const DeadLineInput = ({
     try {
       const field = input.name;
       const projectName = attributeData['projektin_nimi'];
-      let date = await validateDate(field, projectName, formattedDate, setWarning); // Use await
+      let date = await validateDate(field, projectName, formattedDate, setWarning);
       if (date !== currentValue) {
         input.onChange(date);
         setCurrentValue(date);
@@ -209,7 +208,6 @@ const DeadLineInput = ({
         /> 
         :
           <TextInput
-            //onKeyDown={(e) => e.preventDefault()}
             value={currentValue}
             name={input.name}
             type={type}
