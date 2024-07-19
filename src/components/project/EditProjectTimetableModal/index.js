@@ -9,7 +9,7 @@ import { EDIT_PROJECT_TIMETABLE_FORM } from '../../../constants'
 import './styles.scss'
 import { deadlineSectionsSelector } from '../../../selectors/schemaSelector'
 import { withTranslation } from 'react-i18next'
-import { deadlinesSelector } from '../../../selectors/projectSelector'
+import { deadlinesSelector,validatedSelector,dateValidationResultSelector } from '../../../selectors/projectSelector'
 import { Button,IconInfoCircle } from 'hds-react'
 import { isEqual } from 'lodash'
 import VisTimelineGroup from '../../ProjectTimeline/VisTimelineGroup'
@@ -165,28 +165,31 @@ class EditProjectTimeTableModal extends Component {
 
         if (isGroupAddRemove) {
           this.addGroup(changedValues)
+          this.setState({visValues:formValues})
         }
         else{
-          let ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe)
-          //Form items and groups
-          let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,formValues,deadlines,ongoingPhase)
-          // Update the existing data
-          // Get the existing groups from the state
-          let existingGroups = this.state.groups.get() || deadLineGroups;
-          // Merge nestedDeadlines into deadLineGroups based on deadlineGroup key
-          nestedDeadlines.forEach(nestedDeadline => {
-            let matchingGroup = existingGroups.find(group => group.content.trim().toLowerCase() === nestedDeadline.content.trim().toLowerCase() && group.deadlinegroup.trim().toLowerCase() === nestedDeadline.deadlinegroup.trim().toLowerCase());
-            if (matchingGroup !== -1) {
-              //replace the existing group with the new matching group
-              existingGroups[matchingGroup] = { ...existingGroups[matchingGroup], ...nestedDeadline };
-            } else {
-              existingGroups.push(nestedDeadline);
-            }
-          });
-          this.state.groups.update(existingGroups);
-          this.state.items.update(phaseData)
+          if(!this.props.validated){
+            let ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe)
+            //Form items and groups
+            let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,formValues,deadlines,ongoingPhase)
+            // Update the existing data
+            // Get the existing groups from the state
+            let existingGroups = this.state.groups.get() || deadLineGroups;
+            // Merge nestedDeadlines into deadLineGroups based on deadlineGroup key
+            nestedDeadlines.forEach(nestedDeadline => {
+              let matchingGroup = existingGroups.find(group => group.content.trim().toLowerCase() === nestedDeadline.content.trim().toLowerCase() && group.deadlinegroup.trim().toLowerCase() === nestedDeadline.deadlinegroup.trim().toLowerCase());
+              if (matchingGroup !== -1) {
+                //replace the existing group with the new matching group
+                existingGroups[matchingGroup] = { ...existingGroups[matchingGroup], ...nestedDeadline };
+              } else {
+                existingGroups.push(nestedDeadline);
+              }
+            });
+            this.state.groups.update(existingGroups);
+            this.state.items.update(phaseData)
+            this.setState({visValues:formValues})
+          }
         }
-        this.setState({visValues:formValues})
       }
     }
 
@@ -1025,7 +1028,9 @@ const mapStateToProps = state => ({
   formSubmitErrors: getFormSubmitErrors(EDIT_PROJECT_TIMETABLE_FORM)(state),
   deadlineSections: deadlineSectionsSelector(state),
   formValues: getFormValues(EDIT_PROJECT_TIMETABLE_FORM)(state),
-  deadlines: deadlinesSelector(state)
+  deadlines: deadlinesSelector(state),
+  validated: validatedSelector(state),
+  dateValidationResult : dateValidationResultSelector(state)
 })
 
 const decoratedForm = reduxForm({

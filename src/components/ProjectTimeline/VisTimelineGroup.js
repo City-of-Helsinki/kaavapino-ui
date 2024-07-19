@@ -55,7 +55,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         let group = groups.get(groupId);
         if (group) {
           group.showNested = showNested;
-          console.log(group)
           groups.update(group);
         }
       }
@@ -87,7 +86,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
     const checkConfirmedGroups = (esillaoloConfirmed, lautakuntaConfirmed, attributeKeys, visValRef, phase, canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, data) => {
       // Check if more Esillaolo groups can be added
-      console.log(esillaoloConfirmed)
       let esillaoloReason = !esillaoloConfirmed ? "noconfirmation" : "";
       let lautakuntaReason = !lautakuntaConfirmed ? "noconfirmation" : "";
       if (esillaoloConfirmed) {
@@ -102,7 +100,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         canAddEsillaolo = esillaoloCount <= deadlineEsillaolokertaKeys;
         const nextEsillaoloStr = canAddEsillaolo ? `jarjestetaan_${phase}_esillaolo_${esillaoloCount}$` : false;
         nextEsillaoloClean = nextEsillaoloStr ? nextEsillaoloStr.replace(/[/$]/g, '') : nextEsillaoloStr;
-        console.log("esillaoloCount",esillaoloCount - 1,deadlineEsillaolokertaKeys)
+
         if(esillaoloCount - 1 === deadlineEsillaolokertaKeys){
           esillaoloReason = "max"
         }
@@ -117,7 +115,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           lautakuntaCount += 1
         } 
         lautakuntaCount = lautakuntaCount + 1;
-        console.log(lautakuntaCount -1,deadlineLautakuntakertaKeys,phase)
         canAddLautakunta = lautakuntaCount <= deadlineLautakuntakertaKeys;
         const nextLautakuntaStr = canAddLautakunta ? `${phase}_lautakuntaan_${lautakuntaCount}$` : false;
         nextLautakuntaClean = nextLautakuntaStr ? nextLautakuntaStr.replace(/[/$]/g, '') : nextLautakuntaStr;
@@ -147,21 +144,17 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const canGroupBeAdded = (visValRef, data, deadlineSections) => {
       // Find out how many groups in the clicked phase have been added to the timeline
       const matchingGroups = groups.get().filter(group => data.nestedGroups.includes(group.id));
-      console.log(matchingGroups)
       const esillaoloCount = matchingGroups.filter(group => group.content.includes('Esilläolo') || group.content.includes('Nahtavillaolo')).length > 1 ? '_' + matchingGroups.filter(group => group.content.includes('Esilläolo') || group.content.includes('Nahtavillaolo')).length : '';
       const lautakuntaCount = matchingGroups.filter(group => group.content.includes('Lautakunta')).length > 1 ? '_' + matchingGroups.filter(group => group.content.includes('Lautakunta')).length : '';
       const phase = data.content.toLowerCase().replace(/\s+/g, '_');
       // Check if existing groups have been confirmed
-      console.log(esillaoloCount)
       let esillaoloConfirmed = Object.prototype.hasOwnProperty.call(visValRef, `vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`) && visValRef[`vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`] === true
       || Object.prototype.hasOwnProperty.call(visValRef, `vahvista_${phase}_esillaolo${esillaoloCount}`) && visValRef[`vahvista_${phase}_esillaolo${esillaoloCount}`] === true;
-      console.log(esillaoloConfirmed)
       let lautakuntaConfirmed = Object.prototype.hasOwnProperty.call(visValRef, `vahvista_${phase}_lautakunnassa${lautakuntaCount}`) && visValRef[`vahvista_${phase}_lautakunnassa${lautakuntaCount}`] === true;
       
       if(phase === "luonnos"){
         lautakuntaConfirmed = Object.prototype.hasOwnProperty.call(visValRef, `vahvista_kaavaluonnos_lautakunnassa${lautakuntaCount}`) && visValRef[`vahvista_kaavaluonnos_lautakunnassa${lautakuntaCount}`] === true;
       }
-      console.log(visValRef,phase,esillaoloCount,esillaoloConfirmed)
       if(phase === "periaatteet" && !(phase + "_lautakuntaan_1" in visValRef)|| phase === "luonnos" && !(phase + "_lautakuntaan_1")){
         lautakuntaConfirmed = true
       }
