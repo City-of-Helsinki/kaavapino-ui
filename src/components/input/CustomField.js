@@ -78,7 +78,6 @@ class CustomField extends Component {
         isCurrentPhase={isCurrentPhase}
         selectedPhase={selectedPhase}
         regex={this.props?.field?.validation_regex}
-        label={this.props?.field?.label}
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
         customError={this.props?.field?.error_text}
@@ -145,6 +144,7 @@ class CustomField extends Component {
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
         customError={this.props?.field?.error_text}
+        isTabActive={this.props.isTabActive}
       />
     )
   }
@@ -155,7 +155,7 @@ class CustomField extends Component {
   }
 
   renderRichText = props => {
-    const { handleBlurSave, handleLockField, handleUnlockField, meta, formName, lockField, unlockAllFields, fieldSetDisabled,
+    const { handleBlurSave, handleLockField, handleUnlockField, checkLocked, meta, formName, lockField, unlockAllFields, fieldSetDisabled,
       insideFieldset,nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, attributeData, phaseIsClosed } = this.props
     return (
       <RichTextEditor
@@ -163,6 +163,7 @@ class CustomField extends Component {
         onBlur={handleBlurSave}
         onChange={props.onChange}
         onFocus={handleLockField}
+        checkLocked={checkLocked}
         handleUnlockField={handleUnlockField}
         unlockAllFields={unlockAllFields}
         meta={meta}
@@ -180,12 +181,13 @@ class CustomField extends Component {
         label={this.props?.field?.label}
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
+        isTabActive={this.props.isTabActive}
       />
     )
   }
 
   renderRichTextShort = props => {
-    const { handleBlurSave, handleLockField, handleUnlockField, meta, setRef, lockField,unlockAllFields,fieldSetDisabled,
+    const { handleBlurSave, handleLockField, handleUnlockField, checkLocked, meta, setRef, lockField,unlockAllFields,fieldSetDisabled,
       insideFieldset, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, attributeData, phaseIsClosed } = this.props
     return (
       <RichTextEditor 
@@ -194,6 +196,7 @@ class CustomField extends Component {
         onBlur={handleBlurSave} 
         onChange={props.onChange} 
         onFocus={handleLockField} 
+        checkLocked={checkLocked}
         handleUnlockField={handleUnlockField} 
         unlockAllFields={unlockAllFields} 
         fieldSetDisabled={fieldSetDisabled} 
@@ -438,6 +441,7 @@ class CustomField extends Component {
         rollingInfo={rollingInfo}
         phaseIsClosed={phaseIsClosed}
         fieldsetTotal={field.fieldset_total}
+        isTabActive={this.props.isTabActive}
       />
     )
   }
@@ -756,6 +760,7 @@ class CustomField extends Component {
           formName={formName}
           className={`${this.props.className} ${error ? error : ''}`}
           maxSize={field.character_limit}
+          isTabActive={this.props.isTabActive}
         />
       )
     }
@@ -772,6 +777,7 @@ class CustomField extends Component {
         {...fieldProps}
         validate={[this.validateFieldSize]}
         className={`${this.props.className} ${error ? error : ''}`}
+        isTabActive={this.props.isTabActive}
       />
     )
   }
@@ -808,7 +814,9 @@ CustomField.propTypes = {
   ]),
   isCurrentPhase:PropTypes.bool,
   selectedPhase: PropTypes.number,
-  phaseIsClosed: PropTypes.bool
+  phaseIsClosed: PropTypes.bool,
+  checkLocked: PropTypes.func,
+  isTabActive: PropTypes.bool
 }
 
 export default CustomField

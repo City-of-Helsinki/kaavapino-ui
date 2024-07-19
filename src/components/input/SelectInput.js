@@ -197,7 +197,8 @@ const SelectInput = ({
       lockField(false,false,identifier)
     }
     
-    if (typeof handleUnlockField === 'function' && !insideFieldset) {
+    if (typeof handleUnlockField === 'function' && !insideFieldset && 
+      lockedStatus.lockData.attribute_lock.owner) {
       //Sent a call to unlock field to backend
       handleUnlockField(input.name)
     }

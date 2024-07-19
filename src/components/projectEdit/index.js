@@ -135,6 +135,7 @@ class ProjectEditPage extends Component {
     }
   }
   componentDidMount() {
+    this.props.switchDisplayedPhase(this.props.currentProject.phase)
     localStorage.removeItem("changedValues")
     window.addEventListener('resize', this.handleResize)
 
@@ -195,7 +196,10 @@ class ProjectEditPage extends Component {
     }
     else if(this.state.urlField){
       const urlElement = document.getElementById(this.state.urlField)
-      urlElement?.scrollIntoView({block: "center", inline: "center"});
+      if (urlElement) {
+        urlElement?.scrollIntoView({block: "center", inline: "center"});
+        this.setState({urlField:null})
+      }
     }
   }
 
@@ -297,13 +301,13 @@ class ProjectEditPage extends Component {
       })
 
       let phaseText
-      if(this.props.currentProject?.phase === phase?.id){
+      if(this.props.currentProject?.phase === phase?.id && !this.props.currentProject?.archived){
         phaseText = "Vaihe käynnissä"
       }
       else if(this.props.currentProject?.phase < phase?.id){
         phaseText = "Vaihe aloittamatta"
       }
-      else if(this.props.currentProject?.phase > phase?.id){
+      else if(this.props.currentProject?.phase > phase?.id || this.props.currentProject?.archived){
         phaseText = "Vaihe suoritettu"
       }
       else{
@@ -562,7 +566,7 @@ class ProjectEditPage extends Component {
 
     let color
     let phaseText
-    if(phase === currentSchema?.id){
+    if(phase === currentSchema?.id && !this.props.currentProject?.archived){
       color = "#FFC61E"
       phaseText = "Vaihe käynnissä"
     }
@@ -570,7 +574,7 @@ class ProjectEditPage extends Component {
       color = "#0072C6"
       phaseText = "Vaihe aloittamatta"
     }
-    else if(phase > currentSchema?.id){
+    else if(phase > currentSchema?.id || this.props.currentProject?.archived){
       color = "#008741"
       phaseText = "Vaihe suoritettu"
     }
@@ -579,11 +583,14 @@ class ProjectEditPage extends Component {
       phaseText = ""
     }
 
+    const title = currentSchema.sections[this.state.sectionIndex].title || ''
+    const ingress = currentSchema.sections[this.state.sectionIndex].ingress || ''
+
     const isResponsible = authUtils.isResponsible(currentUserId, users)
     const isAdmin = authUtils.isAdmin(currentUserId, users)
     const isExpert = authUtils.isExpert(currentUserId, users)
     return (
-      <div>
+      <div className='project-page-container'>
         {!this.state.isMobile && (
           <div className="timeline" onClick={() => this.showTimelineModal(true)}>
             <ProjectTimeline
@@ -629,6 +636,7 @@ class ProjectEditPage extends Component {
         :
         ""
         }
+        <div aria-hidden="true" className="block-div"></div>
         <div className={`project-input-container ${highlightGroup}`}>
           <div className="project-input-left">
             <QuickNav
@@ -686,55 +694,67 @@ class ProjectEditPage extends Component {
               )}
             </NavigationPrompt>
           </div>
-          <EditForm
-            handleSave={this.handleAutoSave}
-            handleLockField={this.handleLockField}
-            handleUnlockField={this.handleUnlockField}
-            sections={currentSchema.sections}
-            attributeData={attribute_data}
-            geoServerData={geoserver_data}
-            saving={saving}
-            initialValues={Object.assign(attribute_data, geoserver_data)}
-            phase={phase}
-            selectedPhase={selectedPhase}
-            isCurrentPhase={selectedPhase === phase}
-            disabled={formDisabled}
-            projectId={id}
-            syncronousErrors={syncErrors}
-            submitErrors={submitErrors}
-            title={`${currentSchema.list_prefix}. ${currentSchema.title}`}
-            isExpert={isExpert}
-            setRef={this.setRef}
-            setFormInitialized={this.setFormInitialized}
-            unlockAllFields={this.unlockAllFields}
-            phaseTitle={this.state.phaseTitle}
-            filterFieldsArray={this.state.filterFieldsArray}
-            highlightedTag={this.state.highlightedTag}
-            sectionIndex={this.state.sectionIndex}
-            showSection={this.state.showSection}
-            deadlines={currentProject.deadlines}
-            phaseIsClosed={formDisabled}
-          />
-          {this.props.showFloorAreaForm && (
-            <EditFloorAreaFormModal
+          <div id={`title-${title}`} className='project-input-right'>
+            {this.state?.showSection &&
+            <div className='sticky-title'>
+              <h2 tabIndex='0' className='section-title'>
+                {title}
+              </h2>
+              <div className='section-ingress'>
+                {ingress}
+              </div>
+            </div>
+            }
+            <EditForm
+              handleSave={this.handleAutoSave}
+              handleLockField={this.handleLockField}
+              handleUnlockField={this.handleUnlockField}
+              sections={currentSchema.sections}
               attributeData={attribute_data}
-              open
-              saveProjectFloorArea={saveProjectFloorArea}
-              handleClose={() => this.handleFloorAreaClose()}
-              allowedToEdit={isResponsible}
+              geoServerData={geoserver_data}
+              saving={saving}
+              initialValues={Object.assign(attribute_data, geoserver_data)}
+              phase={phase}
+              selectedPhase={selectedPhase}
+              isCurrentPhase={selectedPhase === phase}
+              disabled={formDisabled}
+              projectId={id}
+              syncronousErrors={syncErrors}
+              submitErrors={submitErrors}
+              title={`${currentSchema.list_prefix}. ${currentSchema.title}`}
+              isExpert={isExpert}
+              setRef={this.setRef}
+              setFormInitialized={this.setFormInitialized}
+              unlockAllFields={this.unlockAllFields}
+              phaseTitle={this.state.phaseTitle}
+              filterFieldsArray={this.state.filterFieldsArray}
+              highlightedTag={this.state.highlightedTag}
+              sectionIndex={this.state.sectionIndex}
+              showSection={this.state.showSection}
+              deadlines={currentProject.deadlines}
+              phaseIsClosed={formDisabled}
             />
-          )}
-          {this.props.showTimetableForm && (
-            <EditProjectTimetableModal
-              attributeData={attribute_data}
-              open
-              handleSubmit={() => this.handleTimetableSave()}
-              handleClose={() => this.handleTimetableClose()}
-              projectPhaseIndex={projectPhaseIndex}
-              archived={currentProject.archived}
-              allowedToEdit={isResponsible}
-            />
-          )}
+            {this.props.showFloorAreaForm && (
+              <EditFloorAreaFormModal
+                attributeData={attribute_data}
+                open
+                saveProjectFloorArea={saveProjectFloorArea}
+                handleClose={() => this.handleFloorAreaClose()}
+                allowedToEdit={isResponsible}
+              />
+            )}
+            {this.props.showTimetableForm && (
+              <EditProjectTimetableModal
+                attributeData={attribute_data}
+                open
+                handleSubmit={() => this.handleTimetableSave()}
+                handleClose={() => this.handleTimetableClose()}
+                projectPhaseIndex={projectPhaseIndex}
+                archived={currentProject.archived}
+                allowedToEdit={isResponsible}
+              />
+            )}
+          </div>
         </div>
       </div>
     )
@@ -747,7 +767,8 @@ ProjectEditPage.propTypes = {
   schema: PropTypes.object,
   resetFormErrors: PropTypes.func,
   unlockAllFields: PropTypes.func,
-  location: PropTypes.object
+  location: PropTypes.object,
+  switchDisplayedPhase: PropTypes.func
 }
 
 const mapStateToProps = state => {

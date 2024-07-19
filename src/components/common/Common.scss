@@ -195,8 +195,7 @@ ul {
 
 .project-input-container .ui.segment .field {
   border-left: 6px solid transparent;
-  padding-left: 12px;
-  margin-left: -18px;
+  margin-left: -22px;
 }
 
 .project-input-container .ui.segment {
@@ -406,7 +405,7 @@ footer{
 
 .header {
   margin-bottom: 0;
-  --header-background-color: transparent !important;
+  --header-background-color: transparent;
   border-bottom: 1px solid $light-gray;
   font-size: $size16;
   font-family: "Helsinki Grotesk Regular", sans-serif;
@@ -524,6 +523,11 @@ header{
       .check-icon{
         display: flex;
       }
+    }
+  }
+  &.edit-header-dev {
+    div:not(.spinner-container,.spinner-container *){
+    background-color: $color-brick-light;
     }
   }
   svg{
@@ -1038,4 +1042,5 @@ header{
 
 .tooltip {
   box-shadow: 0px 2px 8px rgba(0, 0, 0, .5);
+  z-index: 80;
 }

@@ -12,6 +12,7 @@ import { EDIT_PROJECT_FORM } from '../../constants'
 import { Notification } from 'hds-react'
 import PropTypes from 'prop-types'
 import { useTranslation } from "react-i18next";
+import { useIsTabActive } from '../../hooks/IsTabActive'
 
 const FormSection = ({
   section,
@@ -37,16 +38,12 @@ const FormSection = ({
 }) => {
   const { t } = useTranslation()
 
+  const isTabActive = useIsTabActive()
+
   let count = 0;
   if(section?.title && section?.fields){
   return (
     <Segment id="field-segment">
-      <h2 tabIndex="0" id={`title-${section.title}`} className="section-title">
-        {section.title}
-      </h2>
-      <div className='section-ingress'>
-        {section?.ingress}
-      </div>
       {section.fields.map((field, i) => {
         let rollingInfo
         if(field?.categorization.includes("katsottava tieto") || field?.categorization.includes("päivitettävä tieto")){
@@ -83,6 +80,7 @@ const FormSection = ({
             isCurrentPhase={isCurrentPhase}
             selectedPhase={selectedPhase}
             phaseIsClosed={phaseIsClosed}
+            isTabActive={isTabActive}
           />)
         }
         else{

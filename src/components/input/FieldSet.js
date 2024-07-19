@@ -41,7 +41,8 @@ const FieldSet = ({
   lastSaved,
   updateField,
   phaseIsClosed,
-  fieldsetTotal
+  fieldsetTotal,
+  isTabActive
 }) => {
   const handleBlur = () => {
     onBlur()
@@ -101,6 +102,9 @@ const FieldSet = ({
   }, [updateField?.fieldName,updateField?.data]) 
 
   const checkLocked = (e,set,i) => {
+    //Fetch fieldset data from backend and see if there is new sub fieldset or data changes
+    dispatch(getAttributeData(attributeData?.projektin_nimi,name,formName, set, nulledFields,i))
+
     let expand = false
     //Change expanded styles if close button or accordian heading element is clicked
     const substrings = ["fieldset-accordian-close","accordion-button"];
@@ -128,9 +132,12 @@ const FieldSet = ({
   }
 
    const handleOutsideClick = () => {
-    //close all accordians when clicked outside fieldset main
+    const lockedField = lockStatus.fieldIdentifier
+    //close all accordians and unlock locked field when clicked outside fieldset main
     setExpanded([]);
-    unlockAllFields()
+    if (lockStatus.owner) {
+      handleUnlockField(lockedField)
+    }
   }
 
   const getNumberOfFieldsets = (fieldsetTotal) => {
@@ -345,6 +352,7 @@ const FieldSet = ({
                               handleBlur()
                             }
                           }}
+                          checkLocked={(e) => {checkLocked(e,set,i)}}
                           lockField={lockField}
                           unlockAllFields={unlockAllFields}
                           validate={validate}
@@ -355,6 +363,7 @@ const FieldSet = ({
                           rollingInfoText={rollingInfoText}
                           nonEditable={nonEditable}
                           phaseIsClosed={phaseIsClosed}
+                          isTabActive={isTabActive}
                         />
                         {showError && <div className="error-text">{showError}</div>}
                         {assistiveText && <div className='assistive-text'>{assistiveText}.</div>}
@@ -422,7 +431,9 @@ FieldSet.propTypes = {
   updateField: PropTypes.object,
   attributeData: PropTypes.object,
   updated: PropTypes.object,
-  phaseIsClosed: PropTypes.bool
+  phaseIsClosed: PropTypes.bool,
+  lockStatus: PropTypes.object,
+  isTabActive: PropTypes.bool
 }
 
 export default connect(mapStateToProps)(FieldSet)

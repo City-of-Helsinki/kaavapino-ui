@@ -4,7 +4,7 @@ import inputUtils from '../../utils/inputUtils'
 import { TextInput } from 'hds-react'
 import { useDispatch, useSelector } from 'react-redux'
 import {updateFloorValues,formErrorList} from '../../actions/projectActions'
-import {lockedSelector,lastModifiedSelector,pollSelector,lastSavedSelector } from '../../selectors/projectSelector'
+import {lockedSelector,lastModifiedSelector,pollSelector,lastSavedSelector,savingSelector } from '../../selectors/projectSelector'
 import moment from 'moment'
 import { useTranslation } from 'react-i18next'
 import RollingInfo from '../input/RollingInfo'
@@ -15,11 +15,13 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   const [readonly, setReadOnly] = useState({name:"",read:false})
   const [hasError,setHasError] = useState(false)
   const [editField,setEditField] = useState(false)
+  const [hadFocusBeforeTabOut, setHadFocusBeforeTabOut] = useState(false)
 
   const lastModified = useSelector(state => lastModifiedSelector(state))
   const lockedStatus = useSelector(state => lockedSelector(state))
   const connection = useSelector(state => pollSelector(state))
   const lastSaved = useSelector(state => lastSavedSelector(state))
+  const saving =  useSelector(state => savingSelector(state))
 
   const isMount = useIsMount();
   const [inputRef, setInputFocus] = useFocus()
@@ -36,6 +38,19 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
 
     };
   }, [])
+
+  useEffect(() => {
+    if (!saving && custom.isTabActive){
+      if (hadFocusBeforeTabOut) {
+        setInputFocus()
+        setHadFocusBeforeTabOut(false)
+      }
+    }
+    else if (document.activeElement == inputRef.current){
+      setHadFocusBeforeTabOut(true)
+      inputRef.current.blur()
+    }
+  }, [custom.isTabActive, saving])
 
   useEffect(() => {
     if(!isMount){
@@ -166,7 +181,8 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       //Send identifier data to change styles from FormField.js
       custom.lockField(false,false,identifier)
     }
-    if (typeof custom.handleUnlockField === 'function' && !custom.insideFieldset) {
+    if (typeof custom.handleUnlockField === 'function' && !custom.insideFieldset && 
+      lockedStatus.lockData.attribute_lock.owner) {
       //Sent a call to unlock field to backend
       custom.handleUnlockField(input.name)
     }
@@ -308,7 +324,8 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
 }
 
 CustomInput.propTypes = {
-  input: PropTypes.object.isRequired
+  input: PropTypes.object.isRequired,
+  isTabActive: PropTypes.bool
 }
 
 export default CustomInput

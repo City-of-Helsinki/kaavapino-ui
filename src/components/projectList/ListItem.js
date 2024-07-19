@@ -33,7 +33,7 @@ const ListItem = ({
         <span className="project-list-item-name left field-ellipsis">
           <Popup
             trigger={
-              <Link className="project-name" to={`/${id}`}>
+              <Link className="project-name" to={`/projects/${id}`}>
                 {truncate(name, { length: MAX_PROJECT_NAME_LENGTH })}
               </Link>
             }
