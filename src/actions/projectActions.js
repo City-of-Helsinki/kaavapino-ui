@@ -115,15 +115,13 @@ export const removeDeadlines = (deadlines) => ({
   type: REMOVE_DEADLINES,
   payload: deadlines,
 });
-export const setDateValidationResult = (valid,result,callback) => ({
+export const setDateValidationResult = (valid,result) => ({
     type: SET_DATE_VALIDATION_RESULT,
-    payload: {valid,result},
-    callback
+    payload: {valid,result}
 });
-export const validateDateAction = (field,projectName,date,callback) => ({
+export const validateDateAction = (field,projectName,date) => ({
     type: VALIDATE_DATE,
-    payload: {field,projectName,date},
-    callback
+    payload: {field,projectName,date}
 });
 export const fetchDisabledDatesStart = (startDate, endDate) => ({
   type: FETCH_DISABLED_DATES_START,
