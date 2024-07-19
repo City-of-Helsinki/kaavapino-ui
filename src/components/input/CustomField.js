@@ -182,6 +182,7 @@ class CustomField extends Component {
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
         isTabActive={this.props.isTabActive}
+        fieldDisabled={this.props.disabled}
       />
     )
   }
@@ -212,6 +213,7 @@ class CustomField extends Component {
         label={this.props?.field?.label}
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
+        fieldDisabled={this.props.disabled}
       />
     )
   }
@@ -219,7 +221,7 @@ class CustomField extends Component {
   renderDate = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, deadlines, field, lockField, fieldSetDisabled, 
       insideFieldset, disabled, isProjectTimetableEdit, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, 
-      attributeData, phaseIsClosed } = this.props
+      attributeData, phaseIsClosed, disabledDates, lomapaivat, dateTypes } = this.props
 
     let current
     if (deadlines && deadlines.length > 0) {
@@ -234,8 +236,12 @@ class CustomField extends Component {
           type="date"
           editable={field.editable}
           currentDeadline={current}
+          attributeData={attributeData}
           autofillRule={field.autofill_rule}
           timeTableDisabled={disabled}
+          disabledDates={disabledDates}
+          lomapaivat={lomapaivat}
+          dateTypes={dateTypes}
           {...props}
         />
       )
@@ -332,8 +338,7 @@ class CustomField extends Component {
   }
 
   renderBooleanRadio = props => {
-    const { input, onRadioChange, defaultValue, disabled, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, phaseIsClosed } = this.props
-    
+    const { input, onRadioChange, defaultValue, disabled, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, phaseIsClosed, isProjectTimetableEdit } = this.props
     return (
       <RadioBooleanButton
         onBlur={props.handleBlurSave}
@@ -349,6 +354,7 @@ class CustomField extends Component {
         isCurrentPhase={isCurrentPhase}
         selectedPhase={selectedPhase}
         phaseIsClosed={phaseIsClosed}
+        isProjectTimetableEdit={isProjectTimetableEdit}
         {...props}
       />
     )
@@ -477,8 +483,7 @@ class CustomField extends Component {
   }
 
   renderCustomCheckbox = props => {
-    const { field, formName, disabled } = this.props
-
+    const { field, formName, disabled,isProjectTimetableEdit } = this.props
     return (
       <CustomCheckbox
         {...props}
@@ -487,6 +492,7 @@ class CustomField extends Component {
         formName={formName}
         display={field.display}
         disabled={disabled}
+        isProjectTimetableEdit={isProjectTimetableEdit}
       />
     )
   }

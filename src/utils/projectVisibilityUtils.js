@@ -58,11 +58,9 @@ export const showField = (field, formValues, currentName) => {
     if (!hasTrue) {
       returnValue = true
     }
-  } else if (
-    field &&
-    field.visibility_conditions &&
-    field.visibility_conditions.length > 0
-  ) {
+  } 
+  else if (field && field.visibility_conditions && field.visibility_conditions.length > 0) 
+  {
     field.visibility_conditions.forEach(visibilityCondition => {
       const { variable } = visibilityCondition
       const { operator } = visibilityCondition
@@ -115,8 +113,10 @@ export const showField = (field, formValues, currentName) => {
         }
       }
     })
-  } else {
+  } 
+  else {
     returnValue = true
   }
+
   return returnValue
 }

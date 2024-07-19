@@ -80,7 +80,13 @@ import {
   UPDATE_FLOOR_VALUES,
   FORM_ERROR_LIST,
   RESET_FORM_ERRORS,
-  SET_ATTRIBUTE_DATA
+  SET_ATTRIBUTE_DATA,
+  FETCH_DISABLED_DATES_START,
+  FETCH_DISABLED_DATES_SUCCESS,
+  FETCH_DISABLED_DATES_FAILURE,
+  SET_DATE_VALIDATION_RESULT,
+  REMOVE_DEADLINES,
+  VALIDATE_DATE
 } from '../actions/projectActions'
 
 export const initialState = {
@@ -127,12 +133,57 @@ export const initialState = {
   lastModified:false,
   updatedFloorValue:{},
   formErrorList:[],
-  updateField:false
+  updateField:false,
+  loading: false,
+  disabledDates: {},
+  error: null,
+  dateValidationResult: {valid: false, result: {}},
+  validated:false
 }
 
 export const reducer = (state = initialState, action) => {
 
   switch (action.type) {
+
+    case REMOVE_DEADLINES:
+      return {
+        ...state,
+        currentProject: {
+          ...state.currentProject,
+          deadlines: state.currentProject.deadlines.filter(deadline => !action.payload.includes(deadline.deadline.attribute)),
+        },
+    };
+
+    case VALIDATE_DATE: {
+      return { 
+        ...state,
+        validated: true
+      };
+    }
+      
+    case SET_DATE_VALIDATION_RESULT: {
+      return { 
+        ...state, 
+        dateValidationResult: {
+          ...state.dateValidationResult,
+          valid: action.payload.valid, 
+          result: action.payload.result 
+        },
+        validated: false
+      };
+    }
+
+    case FETCH_DISABLED_DATES_START: {
+      return { ...state, loading: true, error: null };
+    }
+
+    case FETCH_DISABLED_DATES_SUCCESS: {
+      return { ...state, loading: false, disabledDates: action.payload};
+    }
+
+    case FETCH_DISABLED_DATES_FAILURE:{
+      return { ...state, loading: false, error: action.payload };
+    }
 
     case SET_ATTRIBUTE_DATA: {
       const { fieldName, data } = action.payload
@@ -496,9 +547,34 @@ export const reducer = (state = initialState, action) => {
 
     case UPDATE_PROJECT:
     case FETCH_PROJECT_SUCCESSFUL: {
+      // Clone the payload to avoid direct mutation
+      const updatedPayload = { ...action.payload };
+
+      // Check conditions and update attribute_data if necessary
+      // Add the key with a value of true because first one should be always visible at start 
+      // on periaate and luonnos phase if they have been created and value is not set to false later
+      // if not true data is not visible for modification on edit timetable side panel
+      if (updatedPayload?.attribute_data?.periaatteet_luotu === true){
+        if(updatedPayload?.attribute_data["jarjestetaan_periaatteet_esillaolo_1"] === undefined) {
+          updatedPayload.attribute_data["jarjestetaan_periaatteet_esillaolo_1"] = true;
+        }
+        if(updatedPayload.attribute_data["periaatteet_lautakuntaan_1"] === undefined) {
+          updatedPayload.attribute_data["periaatteet_lautakuntaan_1"] = true;
+        }
+      }
+
+      if (updatedPayload?.attribute_data?.luonnos_luotu === true){
+        if(updatedPayload?.attribute_data["jarjestetaan_luonnos_esillaolo_1"] === undefined) {
+          updatedPayload.attribute_data["jarjestetaan_luonnos_esillaolo_1"] = true;
+        }
+        if(updatedPayload?.attribute_data["kaavaluonnos_lautakuntaan_1"] === undefined) {
+          updatedPayload.attribute_data["kaavaluonnos_lautakuntaan_1"] = true;
+        }
+      } 
+
       return {
         ...state,
-        currentProject: action.payload,
+        currentProject: updatedPayload,
         saving: false
       }
     }

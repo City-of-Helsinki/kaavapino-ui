@@ -1,0 +1,491 @@
+@import '../common/colors';
+
+.vis{
+    margin-top: 0;
+    margin-bottom: 0;
+    border-color: RGBA(0,0,0,0);
+    .vis-left{
+        width: 300px;
+    }
+
+    .vis-time-axis.vis-foreground{
+        background-color: $light-gray3;
+    }
+    .timeline-menu {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        padding-left: $size15;
+        .time-menu{
+            padding-left: 275px;
+            button {
+                --min-size: $size32; //hds syntax
+                width: $size32;
+                height: $size32;
+                padding: 0; // Add this line
+                box-sizing: border-box; // Add this line
+                margin-bottom: $size16;
+                position: relative;
+                &:nth-child(2) {
+                    margin-left: $size12;
+                }
+            }
+        }
+        .today-menu{
+            button {
+                font-family: 'Helsinki Grotesk Medium', sans-serif;
+                color: $color-bus;
+                padding: 0;
+                box-sizing: border-box;
+                margin-bottom: $size16;
+                font-weight: 500;
+                line-height: $size24;
+                text-align: left;
+                position: relative;
+            }
+        }
+        .zoom-menu{
+            margin-left: 16.5rem;
+            button{
+                --min-size: $size32; //hds syntax
+                height: $size32;
+                background: $dropdown-divider-color;
+                color: $black1;
+                border: none;
+                border-radius: $size16;
+                margin-bottom: $size16;
+                margin-right: $size12;
+            }
+            .selected {
+                --min-size: $size32; //hds syntax
+                height: $size32;
+                background: $dropdown-divider-color;
+                color: $black1;
+                border: 3px solid $color-coat-of-arms;
+                border-radius: $size16;
+                margin-bottom: $size16;
+                margin-right: $size12;
+            }
+        }
+    }
+    .inner-end{
+        z-index: 1000;
+        pointer-events: auto;
+        border-width: 0;
+        height: $size24;
+        border-radius: 15px;
+        .vis-item-overflow{
+            border: 1px solid #000000;
+            background: #fff;
+            border-radius: 15px;
+            .vis-item-content{
+                pointer-events: auto;
+                padding:0;
+            }
+        }
+    }
+
+    .board{
+        z-index: 1000;
+        //Makes range item apper to be two single items
+        .vis-item-overflow{
+            height: $size4;
+            border-top: 0.2rem solid rgba(0, 0, 0, .95);
+            color: #fff;
+            background-color: #fff;
+            width: 100%;
+            .vis-item-content{
+                pointer-events: auto;
+                padding:0;
+            }
+        }
+        .vis-drag-left{
+            height: $size24 !important;
+            width: $size24 !important;
+            top: -11px !important;
+            display: inline-block;
+            border: $size1 solid #1a1a1a;
+            border-radius: 14px;
+            padding: 5px;
+            background-color: #fff;
+        }
+        .vis-drag-right{
+            height: 1.3rem !important;
+            width: 1.3rem !important;
+            top: -10px !important;
+            display: inline-block;
+            border: $size1 solid #fff;
+            border-radius: 14px;
+            padding: 5px;
+            background-color: #1a1a1a;
+            box-shadow: 0 0 0 2px #1a1a1a;
+        }
+    }
+
+    .phase-length{
+        z-index: 1000;
+        pointer-events: auto;
+        border-width: 0;
+        height: $size24;
+        .vis-item-overflow{
+            border: 1px solid #000000;
+            background: #fff;
+            border-radius: 6px;
+            .vis-item-content{
+                pointer-events: auto;
+                padding:0;
+            }
+        }
+    }
+
+    .vis-dot-board{
+        position: absolute;
+        padding: 5px;
+        border-width: 1px !important;
+        border-style: solid;
+        border-radius: 8px;
+        background-color: #1a1a1a;
+        border-color: #fff;
+        box-shadow: 0 0 0 2px #1a1a1a;
+    }
+
+    .divider{
+        position: absolute;
+        background-color: #1a1a1a;
+        border-color: #1a1a1a;
+        height: 4px;
+        top: 22px !important;
+    }
+
+    .vis-dot{
+        position: absolute;
+        padding: 0px;
+        border-width: 1px !important;
+        border-style: solid;
+        border-radius: 12px;
+        background-color: #fff;
+        border-color: #1a1a1a;
+        height: 24px;
+        width: 24px;
+    }
+
+    .vis-range{
+        border-color: #1a1a1a;
+    }
+
+    .locked{
+        background-color: rgba(255, 0, 0, 0.2);
+    }
+
+    .vis-ltr .vis-label.vis-nested-group .vis-inner {
+        padding-left: $size10;
+    }
+
+    .negative{
+        background-color: #F2F2F2 !important;
+    }
+    .holiday{
+        background-color: rgba(255, 200, 50, 0.2) !important;
+        z-index: 100;
+    }
+
+    .hiddenTimes{
+        display: none;
+    }
+
+    .vis-nested-group.vis-group-level-unknown-but-gte1{
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        background: #ffffff !important;
+        .vis-inner{
+            padding: 0;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            height: 100%;
+            .timeline-buttons-container{
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+                width: 100%;
+                height: 100%;
+                padding-left: $size13;
+                .timeline-edit-button{
+                    position: absolute;
+                    margin-left: -40px;
+                    padding: 0;
+                    width: 70%;
+                    height: 100%;
+                    background: transparent;
+                    background-position-x: center;
+                    background-position-y: center;
+                    background-size: 1.125rem;
+                    border: none;
+                    cursor: pointer;
+                }
+                .timeline-remove-button{
+                    display: none;
+                    padding: 0;
+                    margin-left: auto;
+                    width: $size40;
+                    height: 100%;
+                    background:url('../../assets/icons/trash-blue.svg') no-repeat;
+                    background-position-x: center;
+                    background-position-y: center;
+                    background-size: $size18;
+                    border: none;
+                    cursor: pointer;
+                }
+                .timeline-lock-button{
+                    display: none;
+                    padding: 0;
+                    margin-left: 0;
+                    width: $size40;
+                    height: 100%;
+                    background:url('../../assets/icons/lock-open-blue.svg') no-repeat;
+                    background-position-x: center;
+                    background-position-y: center;
+                    background-size: $size18;
+                    border: none;
+                    cursor: pointer;
+                }
+                .lock{
+                    margin-left: auto;
+                    margin-right: 0;
+                    padding: 0;
+                    width: 100%;
+                    height: 100%;
+                    background:url('../../assets/icons/lock-blue.svg') no-repeat;
+                    background-position-x: center;
+                    background-position-y: center;
+                    background-size: $size18;
+                    border: none;
+                    cursor: pointer;
+                }
+                &:focus {
+                    .timeline-remove-button{
+                        display: block;
+                    }
+                    .timeline-lock-button{
+                        display: block;
+                    }
+                }
+            }
+            .show-buttons{
+                .timeline-remove-button{
+                    display: block;
+                }
+                .timeline-lock-button{
+                    display: block;
+                }
+                .button-disabled{
+                    pointer-events: none;
+                    cursor: not-allowed;
+                    opacity: 0.5;
+                    color: gray;
+                }
+                .button-enabled{
+                    pointer-events: all;
+                    cursor: pointer;
+                    opacity: 1;
+                }
+            }
+            .highlight-selected{
+                border: 1px solid $color-bus;
+                .timeline-remove-button{
+                    display: block;
+                }
+                .timeline-lock-button{
+                    display: block;
+                }
+            }
+        }
+    }
+
+    .vis-labelset{
+        .vis-label{
+            .vis-inner{
+                height: $size32;
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+            }
+        }
+    }
+
+    .vis-label{
+        background-color: #F2F2F2;
+    }
+
+    .vis-group-level-0{
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        padding-left: $size32;
+        .vis-inner{
+            font-family: 'Helsinki Grotesk Medium', sans-serif !important;
+            font-weight: 500;
+            font-size: $size16;
+        }
+    }
+
+    .vis-group-level-0.expanded{
+        padding-left: $size15;
+        .vis-inner{
+            padding-left: $size5;
+            .timeline-buttons-container{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                .timeline-add-button{
+                    z-index: 1000;
+                    position: absolute;
+                    right: 0;
+                    top: 0;
+                    padding: 0;
+                    width: $size40;
+                    height: $size40;
+                    background:url('../../assets/icons/plus-blue.svg') no-repeat;
+                    background-position-x: center;
+                    background-position-y: center;
+                    background-size: $size24;
+                    border: none;
+                    cursor: pointer;
+                }
+            }
+        }
+    }
+
+    .vis-group-level-0.collapsed{
+        padding-left: $size15;
+        .vis-inner{
+            padding-left: $size5;
+            .timeline-buttons-container{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                .timeline-add-button{
+                    display: none;
+                }
+            }
+        }
+    }
+
+    .vis-nesting-group{
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin-right: -1px;
+        .vis-group-level-0{
+            display: block;
+            padding-left: $size16;
+        }
+    }
+
+    .vis-label.vis-nesting-group.expanded:before {
+        content: "";
+        width: $size18;
+        height: 100%;
+        background: url('../../assets/icons/angle-up.svg') no-repeat;
+        background-position-x: center;
+        background-position-y: center;
+        background-size: $size18;
+    }
+
+    .vis-label.vis-nesting-group.collapsed:before{
+        content: "";
+        width: $size18;
+        height: 100%;
+        background: url('../../assets/icons/angle-down.svg') no-repeat;
+        background-position-x: center;
+        background-position-y: center;
+        background-size: $size18;
+    }
+
+    .vis-minor{
+        background-color: white;
+        border-left: $size1 solid #b4b4b4;
+        border-top: $size1 solid #b4b4b4;
+        border-bottom: $size1 solid #b4b4b4;
+    }
+
+    .vis-time-axis .vis-grid.vis-saturday,
+    .vis-time-axis .vis-grid.vis-sunday {
+        background: #F2F2F2;
+    }
+
+    .vis-saturday,.vis-sunday{
+        background: #F2F2F2;
+    }
+
+    .color-tram{
+        background-color: $color_tram !important;
+        height: $size8;
+    }
+    .color-summer{
+        background-color: $color-summer !important;
+        height: $size8;
+    }
+    .color-metro{
+        background-color: $color_metro !important;
+        height: $size8;
+    }
+    .color-bus{
+        background-color: $color_bus !important;
+        color:white;
+        height: $size8;
+    }
+    .color-gold{
+        background-color: $color_gold !important;
+        height: $size8;
+    }
+    .color-fog{
+        background-color: $color_fog !important;
+        height: $size8;
+    }
+    .color-green{
+        background-color: $color_phase_principles !important;
+        height: $size8;
+    }
+    .color-suomenlinna{
+        background-color: $color_phase_draft !important;
+        height: $size8;
+    }
+
+    .vis-foreground .vis-group {
+        position: relative;
+        box-sizing: border-box;
+        border-bottom: none;
+    }
+
+    /*TODO: v1.2 Disabled for now because we don't want to allow dragging the timeline at this point set to auto*/
+    .vis-drag-left{
+        pointer-events:none;
+    }
+    .vis-drag-right{
+        pointer-events:none;
+    }
+    .vis-item{
+        pointer-events: none;
+    }
+
+    .inner{
+        pointer-events: none;
+    }
+    .inner-end{
+        pointer-events: none;
+    }
+    /*1.2v end*/
+}
+
+.dimmer{
+    padding: $size10 0 0 0 !important;
+    background-color: rgba(255, 255, 255, 0) !important;
+}
+
+.years{
+    .normal-weekend{
+        background-color: white !important;
+    }
+}
