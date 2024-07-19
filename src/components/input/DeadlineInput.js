@@ -1,13 +1,14 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { useTranslation } from 'react-i18next'
 import { TextInput, DateInput, IconAlertCircle, Notification } from 'hds-react'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
-import { useSelector } from 'react-redux'
-import { getFormValues } from 'redux-form'
+import { useSelector,useDispatch } from 'react-redux'
+import { getFormValues,change } from 'redux-form'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { useValidateDate } from '../../utils/dateUtils';
+import { validatedSelector,dateValidationResultSelector } from '../../selectors/projectSelector';
 
 const DeadLineInput = ({
   input,
@@ -27,6 +28,9 @@ const DeadLineInput = ({
   const { t } = useTranslation()
   const validateDate = useValidateDate();
   const [warning, setWarning] = useState({warning:false,response:{reason:"",suggested_date:"",conflicting_deadline:""}})
+  const validated = useSelector(validatedSelector);
+  const dateValidationResult = useSelector(dateValidationResultSelector);
+  const dispatch = useDispatch();
 
   let inputValue = input.value
   if (autofillRule) {
@@ -57,13 +61,20 @@ const DeadLineInput = ({
     currentDeadlineDate = currentDeadline.date
   }
 
+  useEffect(() => {
+    if(dateValidationResult?.result?.date && input.name === dateValidationResult?.result?.identifier){
+      const validValue = dateValidationResult?.result?.suggested_date ? dateValidationResult?.result?.suggested_date : dateValidationResult?.result?.date;
+      setCurrentValue(validValue);
+      //update redux formValues and re render
+      dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, input.name, validValue));
+    }
+  }, [dateValidationResult])
+
   const [currentValue, setCurrentValue] = useState(
     currentDeadline ? currentDeadlineDate : inputValue 
   )
   let currentError
   const generated = currentDeadline && currentDeadline.generated
-
- 
 
   const [valueGenerated, setValueGenerated] = useState(generated)
 
@@ -145,23 +156,24 @@ const DeadLineInput = ({
   }
   
   const formatDateToYYYYMMDD = (date) => {
-    if(date?.includes('.')){
+    if(typeof date !== 'object' && date?.includes('.')){
       const dateParts = date.split(".");
       const eventDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
       const year = eventDate.getFullYear();
       const month = ("0" + (eventDate.getMonth() + 1)).slice(-2); // Months are 0-based, so add 1 and pad with 0 if necessary
       const day = ("0" + eventDate.getDate()).slice(-2); // Pad with 0 if necessary
       return `${year}-${month}-${day}`;
-    } else {
+    }
+     else {
       return date;
     }
   };
 
-  const handleDateChange = async (formattedDate) => {
+  const handleDateChange = (formattedDate) => {
     try {
       const field = input.name;
       const projectName = attributeData['projektin_nimi'];
-      let date = await validateDate(field, projectName, formattedDate, setWarning);
+      let date = validateDate(field, projectName, formattedDate, setWarning);
       if (date !== currentValue) {
         input.onChange(date);
         setCurrentValue(date);
@@ -174,8 +186,8 @@ const DeadLineInput = ({
   return (
     <>
       <div className='deadline-input'>
-        {type === 'date' 
-        ?
+        {type === 'date' ?
+        !validated ?
         <DateInput
           readOnly
           language='fi'
@@ -205,7 +217,7 @@ const DeadLineInput = ({
               setValueGenerated(true)
             }
           }}
-        /> 
+        /> : "Ladataan..."
         :
           <TextInput
             value={currentValue}

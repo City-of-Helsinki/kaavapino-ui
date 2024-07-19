@@ -206,7 +206,7 @@ export default function* projectSaga() {
   ])
 }
 
-function* validateDate({payload, callback}) {
+function* validateDate({payload}) {
   try {
     const query = {
       identifier: payload.field,
@@ -216,14 +216,8 @@ function* validateDate({payload, callback}) {
     const result = yield call(projectDateValidateApi.get, { query });
     const valid = result.conflicting_deadline === null && result.error_reason === null && result.suggested_date === null ? true : false;
     yield put(setDateValidationResult(valid,result))
-    if (callback) {
-      callback(result);
-    }
   } catch (e) {
     yield put(error(e))
-    if (callback) {
-      callback({ error: e.message });
-    }
   }
 }
 
