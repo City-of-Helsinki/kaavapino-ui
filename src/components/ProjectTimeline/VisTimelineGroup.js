@@ -179,6 +179,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       
       const results = checkConfirmedGroups(esillaoloConfirmed, lautakuntaConfirmed, attributeKeys, visValRef, phase, canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean,data);
       [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, esillaoloReason, lautakuntaReason] = results;
+      let phaseWithoutSpace = phase.toLowerCase().replace(/\s+/g, '-');
+
+      if(visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "hyvaksytty"){
+        canAddLautakunta = false
+      }
 
       return [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, esillaoloReason, lautakuntaReason];
     };
