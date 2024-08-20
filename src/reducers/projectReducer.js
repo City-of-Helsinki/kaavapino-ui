@@ -572,6 +572,15 @@ export const reducer = (state = initialState, action) => {
         }
       } 
 
+      if (updatedPayload?.attribute_data?.kaavaprosessin_kokoluokka === "XL" || updatedPayload?.attribute_data?.kaavaprosessin_kokoluokka === "L"){
+        if(updatedPayload?.attribute_data["kaavaehdotus_lautakuntaan_1"] === undefined) {
+          updatedPayload.attribute_data["kaavaehdotus_lautakuntaan_1"] = true;
+        }
+        if(updatedPayload?.attribute_data["ehdotus_lautakuntaan_1"] === undefined) {
+          updatedPayload.attribute_data["ehdotus_lautakuntaan_1"] = true;
+        }
+      } 
+
       return {
         ...state,
         currentProject: updatedPayload,
