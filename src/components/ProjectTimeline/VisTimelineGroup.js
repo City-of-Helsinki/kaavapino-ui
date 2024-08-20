@@ -113,8 +113,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         let lautakuntaCount = attributeLautakuntaanKeys.length
         if(attributeLautakuntaanKeys.length === 0 || phase === "tarkistettu_ehdotus"){
           lautakuntaCount += 1
-        } 
-        lautakuntaCount = lautakuntaCount + 1;
+        }
+        lautakuntaCount = phase === "ehdotus" ? lautakuntaCount : lautakuntaCount + 1;
         canAddLautakunta = lautakuntaCount <= deadlineLautakuntakertaKeys;
         const nextLautakuntaStr = canAddLautakunta ? `${phase}_lautakuntaan_${lautakuntaCount}$` : false;
         nextLautakuntaClean = nextLautakuntaStr ? nextLautakuntaStr.replace(/[/$]/g, '') : nextLautakuntaStr;
@@ -160,6 +160,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
       if(phase === "luonnos" && !("jarjestetaan_" + phase + "_esillaolo_1" in visValRef) || phase === "periaatteet" && !("jarjestetaan_"+phase+"_esillaolo_1" in visValRef)){
         esillaoloConfirmed = true
+      }
+      if(phase === "ehdotus" && "vahvista_kaavaehdotus_lautakunnassa" in visValRef){
+        lautakuntaConfirmed = true
       }
 
       // Initialize returned values
