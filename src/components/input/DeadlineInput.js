@@ -107,6 +107,17 @@ const DeadLineInput = ({
     currentClassName = `${currentClassName} error-border`
   }
 
+  const getInitialMonth = (dateString) => {
+    let date;
+    if (dateString) {
+        date = new Date(dateString);
+    } else {
+        date = new Date(); // Use current date if no date string is provided
+    }
+    console.log(date)
+    return date;
+  }
+
   const formatDate = (date) => {
     const year = date.getFullYear();
     // Pad the month and day with leading zeros if needed
@@ -191,6 +202,7 @@ const DeadLineInput = ({
         <DateInput
           readOnly
           language='fi'
+          initialMonth={getInitialMonth(currentValue)}
           isDateDisabledBy={isDisabledDate}
           value={formatDateToYYYYMMDD(currentValue)}
           name={input.name}
