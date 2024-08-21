@@ -195,10 +195,20 @@ const getReviewSuggestion = (data,deadlines) =>{
     return ["","",confirmBoard,true,true,boardDate,confirmBoard,boardText,boardModified]
 }
 
-const getAcceptanceDate = (data) =>{
+const getAcceptanceDate = (data,name) =>{
+  let date = "Tieto puuttuu"
+  if(name === "Merkitse hyväksymispäivä"){
+    date = data?.hyvaksymispaatos_pvm ? data?.hyvaksymispaatos_pvm : "Tieto puuttuu" 
+  }
+  else if(name === "Merkitse muutoksenhakua koskevat päivämäärät"){
+    date = data?.hyvaksymispaatos_valitusaika_paattyy ? data?.hyvaksymispaatos_valitusaika_paattyy : "Tieto puuttuu" 
+  }
+  else if(name === "Merkitse voimaantuloa koskevat päivämäärät"){
+    date = data?.voimaantulo_pvm ? data?.voimaantulo_pvm : "Tieto puuttuu"
+  }
   //Hyväksyminen phase hyväksymiskäsittely info box
   const boardText = "custom-card.acceptance-date-text"
-  const acceptanceDate = data?.hyvaksymispaatos_pvm ? data?.hyvaksymispaatos_pvm : "Tieto puuttuu"
+  const acceptanceDate = date
   return ["","","",false,false,acceptanceDate,false,boardText,false]
 }
 
@@ -232,8 +242,8 @@ const getInfoFieldData = (placeholder,name,data,deadlines,selectedPhase) => {
   else if(reviewSuggestionPhase && placeholder === "Tarkasta kerrosalatiedot" && name === "tarkasta_kerrosala_fieldset"){
     [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText,boardModified] = getReviewSuggestion(data,deadlines)
   }
-  else if(placeholder === "Merkitse hyväksymispäivä"){
-    [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText,boardModified] = getAcceptanceDate(data)
+  else if(placeholder === "Merkitse hyväksymispäivä" || placeholder === "Merkitse muutoksenhakua koskevat päivämäärät" || placeholder === "Merkitse voimaantuloa koskevat päivämäärät"){
+    [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText,boardModified] = getAcceptanceDate(data,placeholder)
   }
 
   return [startDate,endDate,startModified,endModified,hide,living,office,general,other,boardDate,confirmBoard,boardText,boardModified,starText,endText,suggestionPhase]
