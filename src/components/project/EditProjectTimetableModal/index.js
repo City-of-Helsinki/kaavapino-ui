@@ -685,11 +685,14 @@ class EditProjectTimeTableModal extends Component {
           .filter(([key]) =>
             key === 'milloin_' + phase + '_' + content + '_alkaa' + indexKey ||
             key === 'milloin_' + syntaxToCheck + '_' + filterContent + '_alkaa_iso' + indexKey ||
+            key === 'milloin_' + syntaxToCheck + '_' + filterContent + '_alkaa_pieni' + indexKey ||
             key === 'milloin_' + phase + '_' + content + '_paattyy' + indexKey ||
             key === 'milloin_' + syntaxToCheck + '_' + filterContent + '_paattyy' + indexKey ||
             key === phase + '_kylk_aineiston_maaraaika' + indexKey ||
+            key === phase + '_nahtaville_aineiston_maaraaika' + indexKey ||
             key === phase + '_esillaolo_aineiston_maaraaika' + indexKey ||
-            key === phase + '_kylk_maaraaika' + indexKey
+            key === phase + '_kylk_maaraaika' + indexKey ||
+            key === 'viimeistaan_lausunnot_ehdotuksesta' + indexKey
           )
           .map(([key, value]) => ({ key, value }))
         }
@@ -718,7 +721,7 @@ class EditProjectTimeTableModal extends Component {
             let nahtavillaolo = false;
 
             for (let i = 0; i < validValues.length; i++) {
-              if (validValues[i].key.includes("alkaa") || validValues[i].key.includes("alkaa_iso")) {
+              if (validValues[i].key.includes("alkaa") || validValues[i].key.includes("alkaa_iso") || validValues[i].key.includes("alkaa") || validValues[i].key.includes("alkaa_pieni")) {
                 start = validValues[i].value;
                 if(validValues[i].key.includes("nahtavilla")){
                   nahtavillaolo = true
