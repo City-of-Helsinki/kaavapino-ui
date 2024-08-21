@@ -114,7 +114,6 @@ const DeadLineInput = ({
     } else {
         date = new Date(); // Use current date if no date string is provided
     }
-    console.log(date)
     return date;
   }
 
