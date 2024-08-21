@@ -428,7 +428,12 @@ class EditProjectTimeTableModal extends Component {
           milestone = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
         }
         else if(deadlines[i].deadline.deadline_types.includes('inner_start')){
-          innerStart = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+          if(formValues.kaavaprosessin_kokoluokka === "XL" && deadlines[i].deadline.attribute.includes("iso") || formValues.kaavaprosessin_kokoluokka === "L" && deadlines[i].deadline.attribute.includes("iso")){
+            innerStart = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+          }
+          if(formValues.kaavaprosessin_kokoluokka === "XS" && deadlines[i].deadline.attribute.includes("pieni") || formValues.kaavaprosessin_kokoluokka === "S" && deadlines[i].deadline.attribute.includes("pieni") || formValues.kaavaprosessin_kokoluokka === "M" && deadlines[i].deadline.attribute.includes("pieni")){
+            innerStart = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
+          }
         }
         else if(deadlines[i].deadline.deadline_types.includes('inner_end')){
           innerEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
@@ -538,7 +543,7 @@ class EditProjectTimeTableModal extends Component {
         let newDate = new Date(foundItem.value ? foundItem.value : foundItem);
         //TODO Oikeat etäisyydet tuoda excel->backend->frontend esilläolo/lautakunta +vaihe. date_types. dateTypes 
         let daysToAdd = key.includes("_maaraaika") ? 15 : 30; //Replace with excel info later
-        daysToAdd = key.includes("_paattyy") ? daysToAdd + 30 : daysToAdd;
+        daysToAdd = key.includes("_paattyy") || key.includes("viimeistaan_lausunnot") ? daysToAdd + 30 : daysToAdd;
         while (daysToAdd > 0) {
             newDate.setDate(newDate.getDate() + 1);
             const dateStr = newDate.toISOString().split('T')[0];
