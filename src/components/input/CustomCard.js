@@ -62,7 +62,7 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
     let startsText = props?.fieldData?.fieldset_attributes[0]?.label || ""
     let endsText = props?.fieldData?.fieldset_attributes[1]?.label || ""
     buttonText = t('custom-card.modify-date')
-    heading = type === "Merkitse muutoksenhakua koskevat päivämäärät" || type === "Merkitse voimaantuloa koskevat päivämäärät" ? props?.fieldData?.label : t('custom-card.check-date')
+    heading = type === "Merkitse hyväksymispäivä" || type === "Merkitse muutoksenhakua koskevat päivämäärät" || type === "Merkitse voimaantuloa koskevat päivämäärät" ? props?.fieldData?.label : t('custom-card.check-date')
     if(showBoth){
       startsText = cardValues[13] ? t(cardValues[13]) : ""
       endsText = cardValues[14] ? t(cardValues[14]) : ""
