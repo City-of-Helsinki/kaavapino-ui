@@ -58,12 +58,11 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
   let modifiedText = cardValues[12] ? t('custom-card.modified') : t('custom-card.evaluation')
   const unit = "k-m²"
   
-  if(type === "Tarkasta esilläolopäivät" || type === "Merkitse hyväksymispäivä"){
+  if(type === "Tarkasta esilläolopäivät" || type === "Merkitse hyväksymispäivä" || type === "Merkitse muutoksenhakua koskevat päivämäärät" || type === "Merkitse voimaantuloa koskevat päivämäärät"){
     let startsText = props?.fieldData?.fieldset_attributes[0]?.label || ""
     let endsText = props?.fieldData?.fieldset_attributes[1]?.label || ""
     buttonText = t('custom-card.modify-date')
-    heading = t('custom-card.check-date')
-    
+    heading = type === "Merkitse hyväksymispäivä" || type === "Merkitse muutoksenhakua koskevat päivämäärät" || type === "Merkitse voimaantuloa koskevat päivämäärät" ? props?.fieldData?.label : t('custom-card.check-date')
     if(showBoth){
       startsText = cardValues[13] ? t(cardValues[13]) : ""
       endsText = cardValues[14] ? t(cardValues[14]) : ""
@@ -104,8 +103,10 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
 
     boardFields = 
     <div className='custom-card-info-container'>
-      <div className='custom-card-info'>{cardValues[11] ? t(cardValues[11]) : ""}</div>
-      <div className='custom-card-date'><span className='date'>{invalidDate ? <span className='italic'>{cardValues[9]}</span> : moment(cardValues[9]).format('DD.MM.YYYY')}</span>{type === "Merkitse hyväksymispäivä" ? <>{invalidDate ? "" :<><span className='divider'>-</span><span className='status'> {t('custom-card.modified')}</span></>}</> : <><span className='divider'>-</span><span className='status'> {!cardValues[10] ? modifiedText : t('custom-card.confirmed')}</span></>}</div>
+      <div className='custom-card-info'>{type === "Merkitse muutoksenhakua koskevat päivämäärät" || type === "Merkitse voimaantuloa koskevat päivämäärät" ? startsText : cardValues[11] ? t(cardValues[11]) : ""}</div>
+      <div className='custom-card-date'>
+        <span className='date'>{invalidDate ? <span className='italic'>{cardValues[9]}</span> : moment(cardValues[9]).format('DD.MM.YYYY')}</span>{type === "Merkitse hyväksymispäivä" || type === "Merkitse muutoksenhakua koskevat päivämäärät" || type === "Merkitse voimaantuloa koskevat päivämäärät" ? <>{invalidDate ? "" :<><span className='divider'>-</span><span className='status'> {t('custom-card.modified')}</span></>}</> : <><span className='divider'>-</span><span className='status'> {!cardValues[10] ? modifiedText : t('custom-card.confirmed')}</span></>}
+      </div>
     </div>
 
     container =       
