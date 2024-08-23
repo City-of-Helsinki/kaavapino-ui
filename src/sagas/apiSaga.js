@@ -37,10 +37,10 @@ function* handleErrorSaga({ payload }) {
         })
       )
     } else {
-      if(payload?.config?.url === "/v1/attributes/unlock/" || payload?.config?.url === "/v1/attributes/lock/"){
+      if (payload?.config?.url === "/v1/attributes/unlock/" || payload?.config?.url === "/v1/attributes/lock/") {
         console.log("lock error")
       }
-      else{
+      else {
         yield put(
           toastrActions.add({ type: 'error', title: 'Virhe', message: status })
         )
@@ -56,11 +56,18 @@ function* handleErrorSaga({ payload }) {
 function* loadApiTokenSaga({ payload }) {
   let token = null
   if (!process.env.REACT_APP_API_TOKEN) {
-    const audience = process.env.REACT_APP_OPENID_AUDIENCE
     apiUtils.setToken(payload)
-    const data = yield apiUtils.get(process.env.REACT_APP_OPENID_ENDPOINT + '/api-tokens/',
-      {}, false, false, true, true)
-    token = data[audience]
+    const data = yield apiUtils.post(process.env.REACT_APP_OPENID_ENDPOINT + '/protocol/openid-connect/token',
+      {
+        'audience': process.env.REACT_APP_OPENID_AUDIENCE,
+        'grant_type': 'urn:ietf:params:oauth:grant-type:uma-ticket',
+        'permission': '#access'
+      }, 
+      {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Accept': 'application/json',
+      }, true)
+    token = data['access_token']
   } else {
     token = process.env.REACT_APP_API_TOKEN
   }

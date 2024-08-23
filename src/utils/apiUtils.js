@@ -40,12 +40,8 @@ export const get = async (
   all = false,
   pages = false,
   force = true,
-  renewingToken=false
 ) => {
   await delay_if_token_renewing()
-  if (renewingToken) {
-    isApiTokenRenewing=true
-  }
   let retVal = null
   let res = await axios.get(apiUrl, { ...config })
   if (all) retVal = res
@@ -63,15 +59,14 @@ export const get = async (
   } else {
     retVal = res.data
   }
-  if (renewingToken) {
-    isApiTokenRenewing=false
-  }
   return retVal
 }
 
-export const post = async (apiUrl, body = {}, headers = {}) => {
+export const post = async (apiUrl, body = {}, headers = {}, renewingApiToken=false) => {
   await delay_if_token_renewing()
+  if (renewingApiToken) { isApiTokenRenewing = true}
   const { data } = await axios.post(apiUrl, body, { headers })
+  if (renewingApiToken) { isApiTokenRenewing = false}
   return data
 }
 
