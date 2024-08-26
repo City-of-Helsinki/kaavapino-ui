@@ -478,12 +478,22 @@ class EditProjectTimeTableModal extends Component {
         numberOfPhases++
       }
       else if(milestone && innerStart && innerEnd || innerStart && innerEnd){
-        let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, milestone);
-        [phaseData, deadLineGroups, nestedDeadlines] = subgroup2;
-        innerStart = false
-        innerEnd = false
-        milestone = false
-        numberOfPhases++
+        if (
+          !(
+            (deadlines[i].deadline.deadlinegroup === "luonnos_lautakuntakerta_1" && formValues && formValues["kaavaluonnos_lautakuntaan_1"] === false) || 
+            (deadlines[i].deadline.deadlinegroup === "luonnos_esillaolokerta_1" && formValues && formValues["jarjestetaan_luonnos_esillaolo_1"] === false) ||
+            (deadlines[i].deadline.deadlinegroup === "periaatteet_lautakuntakerta_1" && formValues && formValues["periaatteet_lautakuntaan_1"] === false) ||
+            (deadlines[i].deadline.deadlinegroup === "periaatteet_esillaolokerta_1" && formValues && formValues["jarjestetaan_periaatteet_esillaolo_1"] === false)
+          )
+        ) {
+          let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, milestone);
+          [phaseData, deadLineGroups, nestedDeadlines] = subgroup2;
+          innerStart = false;
+          innerEnd = false;
+          milestone = false;
+          numberOfPhases++;
+        }
+
       }
     }
 

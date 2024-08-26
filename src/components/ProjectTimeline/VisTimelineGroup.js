@@ -114,7 +114,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         if(attributeLautakuntaanKeys.length === 0 || phase === "tarkistettu_ehdotus"){
           lautakuntaCount += 1
         }
-        lautakuntaCount = phase === "ehdotus" ? lautakuntaCount : lautakuntaCount + 1;
+        lautakuntaCount = phase === "ehdotus" || phase === "luonnos" || phase === "periaatteet" ? lautakuntaCount : lautakuntaCount + 1;
         canAddLautakunta = lautakuntaCount <= deadlineLautakuntakertaKeys;
         const nextLautakuntaStr = canAddLautakunta ? `${phase}_lautakuntaan_${lautakuntaCount}$` : false;
         nextLautakuntaClean = nextLautakuntaStr ? nextLautakuntaStr.replace(/[/$]/g, '') : nextLautakuntaStr;
@@ -155,7 +155,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       if(phase === "luonnos"){
         lautakuntaConfirmed = Object.prototype.hasOwnProperty.call(visValRef, `vahvista_kaavaluonnos_lautakunnassa${lautakuntaCount}`) && visValRef[`vahvista_kaavaluonnos_lautakunnassa${lautakuntaCount}`] === true;
       }
-      if(phase === "periaatteet" && !(phase + "_lautakuntaan_1" in visValRef)|| phase === "luonnos" && !(phase + "_lautakuntaan_1")){
+      if(phase === "periaatteet" && !(phase + "_lautakuntaan_1" in visValRef) || phase === "periaatteet" && visValRef["periaatteet_lautakuntaan_1"]  || phase === "luonnos" && !(phase + "_lautakuntaan_1") || phase === "luonnos" && visValRef["kaavaluonnos_lautakuntaan_1"] === false){
         lautakuntaConfirmed = true
       }
       if(phase === "luonnos" && !("jarjestetaan_" + phase + "_esillaolo_1" in visValRef) || phase === "periaatteet" && !("jarjestetaan_"+phase+"_esillaolo_1" in visValRef)){
@@ -187,6 +187,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       if(typeof visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "undefined" || visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "hyvaksytty" || visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "palautettu_uudelleen_valmisteltavaksi"){
         canAddLautakunta = false
       }
+
+      /* TODO if(visValRef["kaavaluonnos_lautakuntaan_1"] === false){
+        //adds second one althou when false needs to just show first one if deleted once
+        canAddLautakunta = true
+      } */
 
       return [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, esillaoloReason, lautakuntaReason];
     };
@@ -220,7 +225,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       //TODO review logic and split this to smaller functions
       let removeFromTimeline = dataToRemove?.deadlinegroup
       let phase = dataToRemove?.nestedInGroup.toLowerCase()
-      let esillaolo = dataToRemove?.content?.includes("Esilläolo") ? true : false
+      const esillaolo = dataToRemove?.content?.includes("Esilläolo") ? true : false
+      const luonnos = dataToRemove?.content?.includes("Lautakunta") ? true : false
 
       let toRemoveFromCalendar = dataToRemove?.nestedInGroup?.toLowerCase() + "_" + dataToRemove?.content?.toLowerCase().replace(/[äöå]/g, match => {
         switch (match) {
@@ -237,10 +243,27 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       //remove from attribute data/calendar
       for (const key in visValues) {
         if (Object.prototype.hasOwnProperty.call(visValues, key)) {
-          if (key.includes(toRemoveFromCalendar) && key.includes(index) || esillaolo && key.includes("mielipiteet_"+phase+index)) {
-            keysToRemove.push(key)
-           // Filter out the matching deadline from deadlines
-            dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, key, null));
+          if (
+            (key.includes(toRemoveFromCalendar) && key.includes(index)) || 
+            (esillaolo && key.includes("mielipiteet_" + phase + index)) || 
+            (luonnos && key.includes("kaavaluonnos_") || luonnos && key.includes("periaatteet_lautakuntaan"))
+          )
+          {
+            if(luonnos && index === "_1" || esillaolo && index === "_1"){
+              if(!(key.includes("_2") || key.includes("_3") || key.includes("_4"))){
+                keysToRemove.push(key)
+              }
+            }
+            else{
+              keysToRemove.push(key)
+            }
+            // Filter out the matching deadline from deadlines
+            let deleteValue = null
+            if(key.includes("kaavaluonnos_lautakuntaan_") || key.includes("jarjestetaan_luonnos_esillaolo_") || key.includes("periaatteet_lautakuntaan_") || key.includes("jarjestetaan_periaatteet_esillaolo_")){
+              deleteValue = false
+            }
+            console.log("dispatch",key,deleteValue)
+            dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, key, deleteValue));
           }
         }
       }
