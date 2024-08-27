@@ -56,8 +56,8 @@ const DeadLineInput = ({
   if(currentDeadline?.deadline?.attribute && attributeData[currentDeadline.deadline.attribute]){
     currentDeadlineDate = attributeData[currentDeadline.deadline.attribute]
   }
-  else if(input.name === 'ehdotus_nahtaville_aineiston_maaraaika' && attributeData['ehdotus_kylk_aineiston_maaraaika']){
-    inputValue = attributeData['ehdotus_kylk_aineiston_maaraaika']
+  else if(input.name === 'ehdotus_nahtaville_aineiston_maaraaika'+indexString  && attributeData['ehdotus_kylk_aineiston_maaraaika'+indexString ]){
+    inputValue = attributeData['ehdotus_kylk_aineiston_maaraaika'+indexString ]
   }
   else if(input.name === 'luonnosaineiston_maaraaika'+indexString && attributeData['kaavaluonnos_kylk_aineiston_maaraaika'+indexString]){
     inputValue = attributeData['kaavaluonnos_kylk_aineiston_maaraaika'+indexString]
