@@ -783,8 +783,8 @@ class EditProjectTimeTableModal extends Component {
                 locked: false,
                 phase: false,
                 phaseID: groupID,
-                start: phase === "luonnos" ? validValues[3].value : validValues[2].value,
-                end: validValues[0].value,
+                start: deadline,
+                end: start,
                 title: "divider"
               }
               this.state.items.add(diveverItem);
