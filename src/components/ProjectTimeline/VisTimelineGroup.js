@@ -262,7 +262,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             if(key.includes("kaavaluonnos_lautakuntaan_") || key.includes("jarjestetaan_luonnos_esillaolo_") || key.includes("periaatteet_lautakuntaan_") || key.includes("jarjestetaan_periaatteet_esillaolo_")){
               deleteValue = false
             }
-            console.log("dispatch",key,deleteValue)
             dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, key, deleteValue));
           }
         }

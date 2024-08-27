@@ -601,7 +601,7 @@ class EditProjectTimeTableModal extends Component {
       const groups = this.state.groups.get();
       let className = "";
       let matchingValues = Object.entries(this.props.formValues);
-    
+
       // Iterate over the keys
       for (let key of keys) {
         // Split the key into an array of substrings
@@ -704,6 +704,7 @@ class EditProjectTimeTableModal extends Component {
             key === 'milloin_' + phase + '_' + content + '_paattyy' + indexKey ||
             key === 'milloin_' + syntaxToCheck + '_' + filterContent + '_paattyy' + indexKey ||
             key === phase + '_kylk_aineiston_maaraaika' + indexKey ||
+            key === "kaava"+phase + '_kylk_aineiston_maaraaika' + indexKey ||
             key === phase + '_nahtaville_aineiston_maaraaika' + indexKey ||
             key === phase + '_esillaolo_aineiston_maaraaika' + indexKey ||
             key === phase + '_kylk_maaraaika' + indexKey ||
@@ -782,7 +783,7 @@ class EditProjectTimeTableModal extends Component {
                 locked: false,
                 phase: false,
                 phaseID: groupID,
-                start: validValues[2].value,
+                start: phase === "luonnos" ? validValues[3].value : validValues[2].value,
                 end: validValues[0].value,
                 title: "divider"
               }
