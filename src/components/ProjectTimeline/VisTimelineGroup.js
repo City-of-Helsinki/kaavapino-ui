@@ -90,13 +90,27 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       let lautakuntaReason = !lautakuntaConfirmed ? "noconfirmation" : "";
       if (esillaoloConfirmed) {
         const deadlineEsillaolokertaKeys = data.maxEsillaolo
-        const esillaoloRegex = new RegExp(`${phase}_esillaolo_\\d+$`);
+        const esillaoloRegex = new RegExp(`jarjestetaan_${phase}_esillaolo_\\d+$`);
         const attributeEsillaoloKeys = Object.keys(visValRef).filter(key => esillaoloRegex.test(key));
-        let esillaoloCount = attributeEsillaoloKeys.length
-        if(attributeEsillaoloKeys.length === 0 || data.content === "OAS" || data.content === "Ehdotus"){
+        let largestIndex = 0;
+        //find largest index
+        attributeEsillaoloKeys.forEach(key => {
+          const match = key.match(/_(\d+)$/);
+          if (match) {
+              const number = parseInt(match[1], 10);
+              if (number > largestIndex) {
+                largestIndex = number;
+              }
+          }
+        });
+
+        let esillaoloCount = largestIndex
+        //If no index found add one
+        if(esillaoloCount === 0){
           esillaoloCount += 1
         }
         esillaoloCount = esillaoloCount + 1;
+
         canAddEsillaolo = esillaoloCount <= deadlineEsillaolokertaKeys;
         const nextEsillaoloStr = canAddEsillaolo ? `jarjestetaan_${phase}_esillaolo_${esillaoloCount}$` : false;
         nextEsillaoloClean = nextEsillaoloStr ? nextEsillaoloStr.replace(/[/$]/g, '') : nextEsillaoloStr;
