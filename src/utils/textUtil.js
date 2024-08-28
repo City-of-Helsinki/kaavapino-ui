@@ -21,6 +21,18 @@ const replaceScandics = (str) =>  {
     });
 }
 
+const capitalizeAndRemoveUnderscores = (str) => {
+    // Replace all underscores with spaces
+    let formattedStr = str.replace(/_/g, ' ');
+    // Trim leading and trailing spaces just in case
+    formattedStr = formattedStr.trim();
+    // Capitalize the first character and concatenate with the rest of the string
+    formattedStr = formattedStr.charAt(0).toUpperCase() + formattedStr.slice(1);
+
+    return formattedStr;
+}
+
 export default {
     replaceScandics,
+    capitalizeAndRemoveUnderscores
 }

@@ -542,18 +542,35 @@ class EditProjectTimeTableModal extends Component {
     }
   };
   
-   processValuesSequentially = async (matchingValues) => { 
+   processValuesSequentially = async (matchingValues,index,phase) => { 
     const validValues = [];
     let foundItem = matchingValues.find(item => item?.key?.includes("_paattyy")) || matchingValues[0].value;
+    // Replace all underscores with spaces
+    let phaseNormalized = phase.replace(/_/g, ' ');
+    // Trim leading and trailing spaces just in case
+    phaseNormalized = phaseNormalized.trim();
+    // Capitalize the first character and concatenate with the rest of the string
+    phaseNormalized = phaseNormalized.charAt(0).toUpperCase() + phaseNormalized.slice(1);
+    console.log(matchingValues)
+    let distanceArray = []
+    for (let i = 0; i < this.props.deadlineSections.length; i++) {
+      if(this.props.deadlineSections[i].title === phaseNormalized){
+        const sections = this.props.deadlineSections[i].sections[0].attributes
+        for (let x = 0; x < sections.length; x++) {
+          distanceArray.push({"name":sections[x].name,"distance":sections[x].distance_from_previous})
+          console.log(sections[x].name,sections[x]?.distance_from_previous)
+        }
+      }  
+    }
 
     for (const { key } of matchingValues) {
       try {          
         let valueToCheck
           //Add required range between dates
         let newDate = new Date(foundItem.value ? foundItem.value : foundItem);
-        //TODO Oikeat etäisyydet tuoda excel->backend->frontend esilläolo/lautakunta +vaihe. date_types. dateTypes 
-        let daysToAdd = key.includes("_maaraaika") ? 15 : 30; //Replace with excel info later
-        daysToAdd = key.includes("_paattyy") || key.includes("viimeistaan_lausunnot") ? daysToAdd + 30 : daysToAdd;
+        let matchingSection = distanceArray.find(section => section.name === key)
+        let daysToAdd = matchingSection.distance 
+
         while (daysToAdd > 0) {
             newDate.setDate(newDate.getDate() + 1);
             const dateStr = newDate.toISOString().split('T')[0];
@@ -716,7 +733,7 @@ class EditProjectTimeTableModal extends Component {
       }
       // Process the values sequentially and return new validated values from backend
       // waits for all values to be ready so vis does not give error if missing start or end date
-      this.processValuesSequentially(matchingValues, index).then(validValues => {
+      this.processValuesSequentially(matchingValues, index, phase).then(validValues => {
           if (validValues.length >= 2) {
             let newIndex
             let indexString
