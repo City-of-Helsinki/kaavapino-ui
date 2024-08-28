@@ -544,6 +544,7 @@ class EditProjectTimeTableModal extends Component {
   
    processValuesSequentially = async (matchingValues,index,phase) => { 
     const validValues = [];
+    //find last value to match from previous values
     let foundItem = matchingValues.find(item => item?.key?.includes("_paattyy")) || matchingValues[0].value;
     // Replace all underscores with spaces
     let phaseNormalized = phase.replace(/_/g, ' ');
@@ -551,14 +552,13 @@ class EditProjectTimeTableModal extends Component {
     phaseNormalized = phaseNormalized.trim();
     // Capitalize the first character and concatenate with the rest of the string
     phaseNormalized = phaseNormalized.charAt(0).toUpperCase() + phaseNormalized.slice(1);
-    console.log(matchingValues)
+    //Add distance values,matching name and from what data was value calculated from to check later from deadlinesection data
     let distanceArray = []
     for (let i = 0; i < this.props.deadlineSections.length; i++) {
       if(this.props.deadlineSections[i].title === phaseNormalized){
         const sections = this.props.deadlineSections[i].sections[0].attributes
         for (let x = 0; x < sections.length; x++) {
-          distanceArray.push({"name":sections[x].name,"distance":sections[x].distance_from_previous})
-          console.log(sections[x].name,sections[x]?.distance_from_previous)
+          distanceArray.push({"name":sections[x].name,"distance":sections[x].distance_from_previous,"linkedData":sections[x].previous_deadline})
         }
       }  
     }
@@ -569,7 +569,16 @@ class EditProjectTimeTableModal extends Component {
           //Add required range between dates
         let newDate = new Date(foundItem.value ? foundItem.value : foundItem);
         let matchingSection = distanceArray.find(section => section.name === key)
-        let daysToAdd = matchingSection.distance 
+        
+        let daysToAdd 
+        if(matchingSection.name.includes("_paattyy")){
+          //get the start value from the distance array to be combined with end value
+          let startSection = distanceArray.find(section => section.name.includes("_alkaa"))
+          daysToAdd = matchingSection.distance + startSection.distance 
+        }
+        else{
+          daysToAdd = matchingSection.distance
+        }
 
         while (daysToAdd > 0) {
             newDate.setDate(newDate.getDate() + 1);
