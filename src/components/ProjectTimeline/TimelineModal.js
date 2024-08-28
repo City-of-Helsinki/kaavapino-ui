@@ -5,7 +5,7 @@ import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import FormField from '../input/FormField'
 import { isArray } from 'lodash'
 import { showField } from '../../utils/projectVisibilityUtils'
-import scandicUtil from '../../utils/scandicUtil'
+import textUtil from '../../utils/textUtil'
 import PropTypes from 'prop-types'
 import './VisTimeline.css'
 
@@ -110,7 +110,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       const splitTitle = title.split('-').map(part => part.toLowerCase())
       splitTitle[1] = splitTitle[1] === "1" ? "" : "_"+splitTitle[1]
       let confirmedValue = "vahvista_"+group.toLowerCase()+"_"+splitTitle[0]+"_alkaa"+splitTitle[1]
-      confirmedValue = scandicUtil.replaceScandics(confirmedValue)
+      confirmedValue = textUtil.replaceScandics(confirmedValue)
       if(group === "Ehdotus" && splitTitle[0] === "nahtavillaolo"){
         splitTitle[0] = "esillaolo"
         confirmedValue = "vahvista_"+group.toLowerCase()+"_"+splitTitle[0]+splitTitle[1]
