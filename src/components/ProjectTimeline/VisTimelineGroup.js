@@ -121,7 +121,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
       // Check if more Lautakunta groups can be added
       if (lautakuntaConfirmed) {
-        console.log(lautakuntaConfirmed,"Test")
         const deadlineLautakuntakertaKeys = data.maxLautakunta
         const lautakuntaanRegex = new RegExp(`${phase}_lautakuntaan_\\d+$`);
         const attributeLautakuntaanKeys = Object.keys(visValRef).filter(key => lautakuntaanRegex.test(key));
@@ -136,19 +135,16 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               }
           }
         });
-        console.log(attributeLautakuntaanKeys)
+
         let lautakuntaCount = largestIndex
-        console.log(lautakuntaCount)
         if(lautakuntaCount === 0){
           lautakuntaCount += 1
         }
         lautakuntaCount = lautakuntaCount + 1;
-        console.log(lautakuntaCount,deadlineLautakuntakertaKeys)
         canAddLautakunta = lautakuntaCount <= deadlineLautakuntakertaKeys;
         const nextLautakuntaStr = canAddLautakunta ? `${phase}_lautakuntaan_${lautakuntaCount}$` : false;
         nextLautakuntaClean = nextLautakuntaStr ? nextLautakuntaStr.replace(/[/$]/g, '') : nextLautakuntaStr;
         if(lautakuntaCount - 1 === deadlineLautakuntakertaKeys){
-          console.log("max")
           lautakuntaReason = "max"
         }
       }
@@ -257,7 +253,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       let phase = dataToRemove?.nestedInGroup.toLowerCase()
       const esillaolo = dataToRemove?.content?.includes("Esilläolo") ? true : false
       const luonnos = dataToRemove?.content?.includes("Lautakunta") ? true : false
-
+      //Group that is to be removed
       let toRemoveFromCalendar = dataToRemove?.nestedInGroup?.toLowerCase() + "_" + dataToRemove?.content?.toLowerCase().replace(/[äöå]/g, match => {
         switch (match) {
           case 'ä': return 'a';
@@ -276,7 +272,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           if (
             (key.includes(toRemoveFromCalendar) && key.includes(index)) || 
             (esillaolo && key.includes("mielipiteet_" + phase + index)) || 
-            (luonnos && key.includes("kaavaluonnos_") || luonnos && key.includes("periaatteet_lautakuntaan"))
+            (luonnos && key.includes("kaavaluonnos_") && toRemoveFromCalendar.includes("luonnos_lautakunta") || 
+             luonnos && key.includes("periaatteet_lautakuntaan") && toRemoveFromCalendar.includes("periaatteet_lautakunta")
+            )
           )
           {
             if(luonnos && index === "_1" || esillaolo && index === "_1"){
@@ -289,7 +287,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             }
             // Filter out the matching deadline from deadlines
             let deleteValue = null
-            if(key.includes("kaavaluonnos_lautakuntaan_") || key.includes("jarjestetaan_luonnos_esillaolo_") || key.includes("periaatteet_lautakuntaan_") || key.includes("jarjestetaan_periaatteet_esillaolo_")){
+            if(key.includes("kaavaluonnos_lautakuntaan_") && toRemoveFromCalendar.includes("luonnos_lautakunta") || 
+              key.includes("jarjestetaan_luonnos_esillaolo_") && toRemoveFromCalendar.includes("luonnos_esillaolo") || 
+              key.includes("periaatteet_lautakuntaan_") && toRemoveFromCalendar.includes("periaatteet_lautakunta") || 
+              key.includes("jarjestetaan_periaatteet_esillaolo_") && toRemoveFromCalendar.includes("periaatteet_esillaolo")){
               deleteValue = false
             }
             dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, key, deleteValue));

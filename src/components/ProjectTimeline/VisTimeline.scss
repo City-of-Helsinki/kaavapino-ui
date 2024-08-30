@@ -154,7 +154,7 @@
         background-color: #1a1a1a;
         border-color: #1a1a1a;
         height: 4px;
-        top: 22px !important;
+        top: $size22 !important;
     }
 
     .vis-dot{
@@ -162,11 +162,21 @@
         padding: 0px;
         border-width: 1px !important;
         border-style: solid;
-        border-radius: 12px;
+        border-radius: $size12;
         background-color: #fff;
         border-color: #1a1a1a;
-        height: 24px;
-        width: 24px;
+        height: $size24;
+        width: $size24;
+    }
+
+    .vis-dot.board-only{
+        border: 0.063rem solid #fff;
+        border-radius: 14px;
+        padding: 5px;
+        background-color: #1a1a1a;
+        box-shadow: 0 0 0 2px #1a1a1a;
+        height: $size20;
+        width: $size20;
     }
 
     .vis-range{
