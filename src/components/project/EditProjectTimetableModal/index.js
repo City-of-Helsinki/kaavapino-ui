@@ -541,11 +541,33 @@ class EditProjectTimeTableModal extends Component {
       console.error('Validation error:', error);
     }
   };
+
+  getNextAvailableDate(dateString, availableDates) {
+    // Convert the input date string to a Date object
+    let inputDate = new Date(dateString);
+
+    // Sort the available dates array
+    availableDates.sort();
+
+    // Loop through the available dates
+    for (let i = 0; i < availableDates.length; i++) {
+        // Convert the current available date to a Date object
+        let availableDate = new Date(availableDates[i]);
+
+        // Check if the available date is the same or after the input date
+        if (availableDate >= inputDate) {
+            return availableDates[i]; // Return the next available date
+        }
+    }
+
+    // If no available dates are after the input date, return null or a message
+    return null;
+}
   
    processValuesSequentially = async (matchingValues,index,phase) => { 
     const validValues = [];
     //find last value to match from previous values
-    let foundItem = matchingValues.find(item => item?.key?.includes("_paattyy")) || matchingValues[0].value;
+    let foundItem = matchingValues.find(item => item?.key?.includes("_paattyy") || item?.key?.includes("_lautakunnassa")) || matchingValues[0]?.value;
     // Replace all underscores with spaces
     let phaseNormalized = phase.replace(/_/g, ' ');
     // Trim leading and trailing spaces just in case
@@ -566,27 +588,57 @@ class EditProjectTimeTableModal extends Component {
     for (const { key } of matchingValues) {
       try {          
         let valueToCheck
-          //Add required range between dates
+        let nextKey
+        let numberString;
+        let daysToAdd
+        // Use regex to find the last number in the string
+        // used to find next steps distance to currenct one
+        const indexNumber = key.match(/(\d+)(?!.*\d)/);
+
+        if (indexNumber) {
+            // If a index number is found, increment it by 1
+            numberString = parseInt(indexNumber[1], 10) + 1;
+            nextKey = key.replace(/(\d+)(?!.*\d)/, numberString);
+        }
+        else {
+            // If no number is found, set numberString to 2
+            numberString = 2;
+            nextKey = key + "_" + numberString;
+        }
+
         let newDate = new Date(foundItem.value ? foundItem.value : foundItem);
-        let matchingSection = distanceArray.find(section => section.name === key)
-        
-        let daysToAdd 
+        let matchingSection = distanceArray.find(section => section.name === nextKey)
+
         if(matchingSection.name.includes("_paattyy")){
           //get the start value from the distance array to be combined with end value
           let startSection = distanceArray.find(section => section.name.includes("_alkaa"))
           daysToAdd = matchingSection.distance + startSection.distance 
         }
-        else{
+        else{ 
           daysToAdd = matchingSection.distance
         }
 
-        while (daysToAdd > 0) {
+        if(matchingSection.name.includes("_lautakunnassa")){
+          // Loop through the board meeting dates to find next available date(tuesday)
+           const boardMeetingDates = this.props.dateTypes?.lautakunnan_kokouspäivät?.dates
+          for (let i = 0; i < boardMeetingDates.length; i++) {
+            let availableDate = new Date(boardMeetingDates[i]);
+            // Check if the available date is the same or after the input date
+            if (availableDate > newDate) {
+              newDate = new Date(availableDate); 
+              break
+            }
+          } 
+        }
+        else{
+          while (daysToAdd > 0) {
             newDate.setDate(newDate.getDate() + 1);
             const dateStr = newDate.toISOString().split('T')[0];
             //Skip weekends and holidays
             if (newDate.getDay() != 0 && newDate.getDay() != 6 && !this.props.disabledDates.includes(dateStr) && !this.props.lomapaivat.includes(dateStr)) { // Skip Sundays (0) and Saturdays (6)
                 daysToAdd--;
             }
+          }
         }
         valueToCheck = newDate.toISOString().split('T')[0];
         //Is check needed when logic is in frontend?
@@ -832,7 +884,7 @@ class EditProjectTimeTableModal extends Component {
               this.state.items.add(newItems);
             }
 
-            if(deadline && atBoard){
+            if(deadline && atBoard && index < 2){
               const newItems = {
                 className: "board",
                 content: "",
@@ -846,6 +898,22 @@ class EditProjectTimeTableModal extends Component {
                 title: phase + "_lautakunta_aineiston_maaraaika" + indexString,
               };
               this.state.items.add(newItems);
+            }
+
+            if(atBoard && index > 1){
+              const boardItem = {
+                className: "board-only",
+                content: "",
+                group: idt,
+                id: this.state.items.length + 1,
+                locked: false,
+                phase: false,
+                phaseID: groupID,
+                start: atBoard,
+                type: 'point',
+                title: "Lautakunta"
+              };
+              this.state.items.add(boardItem);
             }
 
             const newSubGroup = {
@@ -889,7 +957,6 @@ class EditProjectTimeTableModal extends Component {
               else{
                 modifiedKey = key + indexString
               }
-
               this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, modifiedKey, value));
             });
           }
@@ -905,18 +972,18 @@ class EditProjectTimeTableModal extends Component {
 
   getChangedValues = (prevValues, currentValues) => {
     const changedValues = {};
-  
+
     Object.keys(currentValues).forEach((key) => {
       if (prevValues[key] !== currentValues[key]) {
         changedValues[key] = currentValues[key];
       }
     });
     
-    const isAddRemove = Object.keys(changedValues).some(key => 
+    const isAddRemove = Object.entries(changedValues).some(([key, value]) => 
       (key.includes('jarjestetaan') || key.includes('lautakuntaan')) && 
-      typeof changedValues[key] === 'boolean'
+      typeof value === 'boolean' && value === true
     );
-
+    //If isAddRemove is false then it is a delete and add is true
     return [isAddRemove,changedValues];
   }
 
