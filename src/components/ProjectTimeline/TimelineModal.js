@@ -52,6 +52,11 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       if (!showField(fieldProps.field, visValues)) {
         return null
       }
+      //Hide ehdotus_nahtaville_aineiston_maaraaika if kaavaprosessin_kokoluokka is L or XL 
+      // TODO: should be fixed in backend or Excel, remove this when mistake is found there
+      if(fieldProps.field.name.includes("ehdotus_nahtaville_aineiston_maaraaika") && (visValues['kaavaprosessin_kokoluokka'] === 'L' || visValues['kaavaprosessin_kokoluokka'] === 'XL')){
+        return null
+      }
 
       const error = formSubmitErrors?.[fieldProps?.field?.name];
       let className = '';

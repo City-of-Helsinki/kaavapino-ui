@@ -766,8 +766,10 @@ class EditProjectTimeTableModal extends Component {
         }
         phase = phase.toLowerCase().replace(/\s+/g, '_');
         let syntaxToCheck = ""
+        let syntaxToCheck2 = ""
         if(phase === "ehdotus"){
           syntaxToCheck = "ehdotuksen"
+          syntaxToCheck2 = "ehdotuksesta"
         }
 
         if(content === "lautakuntaan" || content === "lautakunta"){
@@ -790,12 +792,11 @@ class EditProjectTimeTableModal extends Component {
             key === 'milloin_' + syntaxToCheck + '_' + filterContent + '_alkaa_pieni' + indexKey ||
             key === 'milloin_' + phase + '_' + content + '_paattyy' + indexKey ||
             key === 'milloin_' + syntaxToCheck + '_' + filterContent + '_paattyy' + indexKey ||
-            key === phase + '_kylk_aineiston_maaraaika' + indexKey ||
-            key === "kaava"+phase + '_kylk_aineiston_maaraaika' + indexKey ||
             key === phase + '_nahtaville_aineiston_maaraaika' + indexKey ||
             key === phase + '_esillaolo_aineiston_maaraaika' + indexKey ||
-            key === phase + '_kylk_maaraaika' + indexKey ||
-            key === 'viimeistaan_lausunnot_ehdotuksesta' + indexKey
+            key === phase + 'aineiston_maaraaika' + indexKey ||
+            key === 'viimeistaan_lausunnot_' + syntaxToCheck2 + indexKey ||
+            key === 'viimeistaan_mielipiteet_'+ phase + indexKey
           )
           .map(([key, value]) => ({ key, value }))
         }
