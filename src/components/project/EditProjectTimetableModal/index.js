@@ -478,6 +478,7 @@ class EditProjectTimeTableModal extends Component {
         numberOfPhases++
       }
       else if(milestone && innerStart && innerEnd || innerStart && innerEnd){
+        const indexString = deadlines[i]?.deadline?.deadlinegroup.match(/\d+/);
         if (
           !(
             (deadlines[i].deadline.deadlinegroup === "luonnos_lautakuntakerta_1" && formValues && formValues["kaavaluonnos_lautakuntaan_1"] === false) || 
@@ -486,12 +487,20 @@ class EditProjectTimeTableModal extends Component {
             (deadlines[i].deadline.deadlinegroup === "periaatteet_esillaolokerta_1" && formValues && formValues["jarjestetaan_periaatteet_esillaolo_1"] === false)
           )
         ) {
-          let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, milestone);
-          [phaseData, deadLineGroups, nestedDeadlines] = subgroup2;
-          innerStart = false;
-          innerEnd = false;
-          milestone = false;
-          numberOfPhases++;
+          if(deadlines[i].deadline.deadlinegroup === "luonnos_lautakuntakerta_"+indexString && formValues["kaavaluonnos_lautakuntaan_"+indexString] == undefined){
+            //For some reason deadlines 2 exists when 1 does not so this check is necassery at the moment. TODO: check backend generating code for deadlines
+            innerStart = false;
+            innerEnd = false;
+            milestone = false;
+          }
+          else{
+            let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, milestone);
+            [phaseData, deadLineGroups, nestedDeadlines] = subgroup2;
+            innerStart = false;
+            innerEnd = false;
+            milestone = false;
+            numberOfPhases++;
+          }
         }
 
       }
