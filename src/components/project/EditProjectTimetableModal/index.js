@@ -602,12 +602,12 @@ class EditProjectTimeTableModal extends Component {
         let daysToAdd
         // Use regex to find the last number in the string
         // used to find next steps distance to currenct one
-        const indexNumber = key.match(/(\d+)(?!.*\d)/);
+        const indexNumber = key.match(/\d+(?=\D*$)/);
 
         if (indexNumber) {
             // If a index number is found, increment it by 1
-            numberString = parseInt(indexNumber[1], 10) + 1;
-            nextKey = key.replace(/(\d+)(?!.*\d)/, numberString);
+            numberString = parseInt(indexNumber[0], 10) + 1;
+            nextKey = key.replace(/\d+(?=\D*$)/, numberString);
         }
         else {
             // If no number is found, set numberString to 2
