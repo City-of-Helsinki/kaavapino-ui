@@ -90,7 +90,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       let lautakuntaReason = !lautakuntaConfirmed ? "noconfirmation" : "";
       if (esillaoloConfirmed) {
         const deadlineEsillaolokertaKeys = data.maxEsillaolo
-        const esillaoloRegex = new RegExp(`jarjestetaan_${phase}_esillaolo_\\d+$`);
+        const esillaoloRegex = new RegExp(`(jarjestetaan_${phase}_esillaolo_\\d+$|kaava${phase}_uudelleen_nahtaville_\\d+$)`);
         const attributeEsillaoloKeys = Object.keys(visValRef).filter(key => esillaoloRegex.test(key));
         let largestIndex = 0;
         //find largest index
