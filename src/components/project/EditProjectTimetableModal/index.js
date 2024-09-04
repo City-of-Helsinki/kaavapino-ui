@@ -1061,7 +1061,7 @@ class EditProjectTimeTableModal extends Component {
         closeOnDimmerClick={false}
         className='modal-center-big'
       >
-        <Modal.Header><IconInfoCircle size="m" aria-hidden="true"/>{t('deadlines.modify-timeline')}</Modal.Header>
+        <Modal.Header><IconInfoCircle size="m" aria-hidden="true"/><span className='header-title'>{t('deadlines.modify-timeline')}</span></Modal.Header>
         <Modal.Content>
             <VisTimelineGroup
               timelineRef={this.timelineRef}
