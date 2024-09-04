@@ -553,18 +553,23 @@
   .header{
     display: flex !important;
     font-family: 'Helsinki Grotesk Bold', sans-serif !important;
-    border-top: 4px #2001bf solid;
+    border-top: 8px #2001bf solid;
+    border-bottom: 1px #808080 solid !important;
     font-size: 1em !important;
     align-items: flex-end;
     svg{
       width: 24px;
       height: 24px;
     }
+    .header-title {
+      font-size: 1.125rem;
+      padding-left: 8px;
+    }
   }
 
   .content{
     height: 75vh;
-    margin-top: 20px;
+    padding-bottom: 20px !important;
     margin-left: 0px !important;
     margin-right: 20px !important;
     overflow: auto !important;
@@ -643,12 +648,18 @@
     position: relative;
     bottom: 0;
     left: 0;
-    margin: 20px 0 0 0 !important;
-    border-top: 1px solid #AEAEAE !important;
+    margin: 0px 0 0 0 !important;
+    border-top: 1px solid #808080 !important;
     .form-buttons{
       margin-top: 20px;
       margin-bottom: 20px;
       margin-left: 22px;
+      button {
+        height: 56px;
+      }
+      span {
+        line-height: $size24;
+      }
     }
   }
 }
