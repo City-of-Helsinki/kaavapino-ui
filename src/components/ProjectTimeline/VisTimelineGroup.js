@@ -336,10 +336,16 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       //remove already highlighted 
       timelineRef?.current?.querySelectorAll('.highlight-selected').forEach(el => {
         el.classList.remove('highlight-selected');
+        if (el.parentElement.parentElement) {
+          el.parentElement.parentElement.classList.remove('highlight-selected');
+        }
       });
       //highlight the latest group
       if (container) {
         container.classList.toggle("highlight-selected");
+        if (container.parentElement.parentElement) {
+          container.parentElement.parentElement.classList.toggle("highlight-selected");
+        }
       }
       const modifiedDeadlineGroup = data?.deadlinegroup?.includes(';') ? data.deadlinegroup.split(';')[0] : data.deadlinegroup;
       setToggleTimelineModal({open:!toggleTimelineModal.open, highlight:container, deadlinegroup:modifiedDeadlineGroup})
@@ -721,6 +727,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           }
           else if(group?.nestedInGroup){
             let label = document.createElement("span");
+            label.classList.add("timeline-button-label");
             label.innerHTML = group.content + " ";
             container.insertAdjacentElement("afterBegin", label);
             let edit = document.createElement("button");
@@ -770,6 +777,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           }
           else{
             let label = document.createElement("span");
+            label.classList.add("timeline-phase-label");
             label.innerHTML = group?.content + " ";
             container.insertAdjacentElement("afterBegin", label);
             return container;
