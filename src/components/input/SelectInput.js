@@ -245,8 +245,22 @@ const SelectInput = ({
   
     let notSelectable = readonly === true && fieldName === input.name
     let readOnlyStyle = notSelectable ? 'selection readonly' : 'selection'
-    //Show option texts instead of value ids on multi select for RollingInfo
-    const rollingInfoValue = multiple && currentValue.length ? currentValue?.map(c => c.label) : input.value
+    let rollingInfoValue
+    if (multiple && currentValue.length) {
+      //Show option texts instead of value ids on multi select for RollingInfo
+      rollingInfoValue = currentValue?.map(c => c.label)
+    }
+    else if (input.name === "vastuuhenkilo_nimi_readonly"){
+      // Formatted separately in RollingInfo
+      rollingInfoValue = input.value
+    }
+    else {
+      rollingInfoValue = currentOptions.reduce((info_label, option) => 
+        option.key === input.value ? option.label : info_label
+      , input.value)
+    }
+    //console.log(`multiple: ${multiple} currentValue.length: ${currentValue.length}`)
+    //console.log(rollingInfoValue)
     //Render rolling info field or normal edit field
     //If clicking rolling field button makes positive lock check then show normal editable field
     //Rolling field can be nonEditable
