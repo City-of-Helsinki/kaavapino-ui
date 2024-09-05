@@ -255,12 +255,11 @@ const SelectInput = ({
       rollingInfoValue = input.value
     }
     else {
-      rollingInfoValue = currentOptions.reduce((info_label, option) => 
-        option.key === input.value ? option.label : info_label
+      rollingInfoValue = currentOptions.reduce((info_value, option) => 
+        option.key === input.value ? option.label : info_value
       , input.value)
     }
-    //console.log(`multiple: ${multiple} currentValue.length: ${currentValue.length}`)
-    //console.log(rollingInfoValue)
+
     //Render rolling info field or normal edit field
     //If clicking rolling field button makes positive lock check then show normal editable field
     //Rolling field can be nonEditable
