@@ -255,7 +255,7 @@ const SelectInput = ({
       rollingInfoValue = input.value
     }
     else {
-      rollingInfoValue = currentOptions.reduce((info_value, option) => 
+      rollingInfoValue = options.reduce((info_value, option) => 
         option.key === input.value ? option.label : info_value
       , input.value)
     }
