@@ -865,6 +865,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           disabledDates={disabledDates}
           lomapaivat={lomapaivat}
           dateTypes={dateTypes}
+          groups={groups?.get()}
         />
         <AddGroupModal
           toggleOpenAddDialog={toggleOpenAddDialog}

@@ -158,6 +158,11 @@ class EditProjectTimeTableModal extends Component {
       deadlineSections
     } = this.props
 
+    if (prevProps.attributeData && prevProps.attributeData !== attributeData) {
+      //when UPDATE_DATE_TIMELINE updates attribute values
+      initialize(attributeData)
+    }
+
     if(prevProps.formValues && prevProps.formValues !== formValues){
       if(deadlineSections && deadlines && formValues){
         // Check if changedValues contains 'jarjestetaan' or 'lautakuntaan' and the value is a boolean

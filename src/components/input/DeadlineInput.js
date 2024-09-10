@@ -1,14 +1,18 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { useTranslation } from 'react-i18next'
-import { TextInput, DateInput, IconAlertCircle, Notification } from 'hds-react'
+import { TextInput, DateInput, IconAlertCircle } from 'hds-react'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
+import textUtil from '../../utils/textUtil'
+import timeUtil from '../../utils/timeUtil'
+import objectUtil from '../../utils/objectUtil'
 import { useSelector,useDispatch } from 'react-redux'
-import { getFormValues,change } from 'redux-form'
+import { getFormValues } from 'redux-form'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
-import { useValidateDate } from '../../utils/dateUtils';
-import { validatedSelector,dateValidationResultSelector } from '../../selectors/projectSelector';
+//import { useValidateDate } from '../../utils/dateUtils';
+import { updateDateTimeline } from '../../actions/projectActions';
+import { validatedSelector } from '../../selectors/projectSelector';
 
 const DeadLineInput = ({
   input,
@@ -22,14 +26,18 @@ const DeadLineInput = ({
   className,
   autofillRule,
   timeTableDisabled,
-  dateTypes
+  dateTypes,
+  deadlineSection,
+  maxMoveGroup,
+  maxDateToMove,
+  groupName
 }) => {
 
   const { t } = useTranslation()
-  const validateDate = useValidateDate();
-  const [warning, setWarning] = useState({warning:false,response:{reason:"",suggested_date:"",conflicting_deadline:""}})
+  //const validateDate = useValidateDate();
+  //const [warning, setWarning] = useState({warning:false,response:{reason:"",suggested_date:"",conflicting_deadline:""}})
   const validated = useSelector(validatedSelector);
-  const dateValidationResult = useSelector(dateValidationResultSelector);
+  //const dateValidationResult = useSelector(dateValidationResultSelector);
   const dispatch = useDispatch();
 
   let inputValue = input.value
@@ -63,14 +71,14 @@ const DeadLineInput = ({
     currentDeadlineDate = currentDeadline.date
   }
 
-  useEffect(() => {
+/*   useEffect(() => {
     if(dateValidationResult?.result?.date && input.name === dateValidationResult?.result?.identifier){
       const validValue = dateValidationResult?.result?.suggested_date ? dateValidationResult?.result?.suggested_date : dateValidationResult?.result?.date;
       setCurrentValue(validValue);
       //update redux formValues and re render
       dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, input.name, validValue));
     }
-  }, [dateValidationResult])
+  }, [dateValidationResult]) */
 
   const [currentValue, setCurrentValue] = useState(
     currentDeadline ? currentDeadlineDate : inputValue 
@@ -109,6 +117,12 @@ const DeadLineInput = ({
     currentClassName = `${currentClassName} error-border`
   }
 
+  useEffect(() => {
+    //TODO add all other values to in useEffect so no spam render
+    //Update when calendar is updated and UPDATE_DATE_TIMELINE logic happens
+    setCurrentValue(input.value); 
+  }, [attributeData])
+
   const getInitialMonth = (dateString) => {
     let date;
     if (dateString) {
@@ -146,9 +160,47 @@ const DeadLineInput = ({
     }
     else {
       let dateType;
-      
       if (currentDeadline?.deadline?.deadlinegroup?.includes('esillaolo')) {
         dateType = currentDeadline?.deadline?.attribute?.includes('maaraaika') ? 'työpäivät' : 'esilläolopäivät';
+        if(groupName !== maxMoveGroup && input.name.includes("_maaraaika")){
+          //Disable maaraika dates when editing it from calendar when group IS NOT THE LAST ONE OF PHASE possible group of phase.
+          //Disable to max next date taking inconsideration the lenghts of start and end dates before next phase
+          //and min to next possible phase minium. If maaraaika is in lastly added group then it's date can be editet freely.
+          const splitInputName = input.name.split("_");
+          const firstElements = splitInputName.slice(0, 2); // Get the first two elements
+          const dynamicKey = Object.keys(deadlineSection.deadlineSection)[0];
+          const deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey]
+          const endingKeyName = objectUtil.findValuesWithStrings(deadlineSectionValues,firstElements[0],firstElements[1],"_alkaa","milloin")
+          const distanceTo = endingKeyName?.distance_from_previous + endingKeyName?.distance_to_next
+          const lastPossibleDateToSelect = timeUtil.subtractDays("esilläolo",maxDateToMove,distanceTo,dateTypes?.[dateType]?.dates,true)
+          let newDisabledDates = dateTypes?.[dateType]?.dates
+          if(currentDeadline?.deadline?.phase_name === "Periaatteet"){
+            //Add check to previous phase end date + minium length
+            const dataToCompate = attributeData["kaynnistys_paattyy_pvm"]
+            const minEndDate = timeUtil.addDays("esilläolo",dataToCompate,5,dateTypes?.[dateType]?.dates,true)
+            newDisabledDates = newDisabledDates.filter(date => date >= minEndDate)
+          }
+          if(currentDeadline?.deadline?.phase_name === "Luonnos"){
+            const attributeValue = objectUtil.findLargestSuffix(attributeData,/^milloin_oas_esillaolo_paattyy(?:_(\d+))?/)
+            if(attributeData){
+              const minEndDate = timeUtil.addDays("esilläolo",attributeValue,5,dateTypes?.[dateType]?.dates,true)
+              newDisabledDates = newDisabledDates.filter(date => date >= minEndDate)
+            }
+          }
+          newDisabledDates = newDisabledDates.filter(date => date <= lastPossibleDateToSelect);
+          return !newDisabledDates.includes(formatDate(date));
+        }
+        if(input.name.includes("_alkaa") || input.name.includes("_paattyy")){
+          //Disable dates when editing dates from calendar start and end and min start date and max end date
+          const endingDateKey = textUtil.replacePattern(input.name,"_alkaa","_paattyy")
+          const dynamicKey = Object.keys(deadlineSection.deadlineSection)[0];
+          const deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey]
+          const distanceTo = input.name.includes("_paattyy") ? deadlineSectionValues.find(({ name }) => name === input.name).distance_from_previous : deadlineSectionValues.find(({ name }) => name === input.name).distance_to_next
+          let newDisabledDates = dateTypes?.[dateType]?.dates
+          const lastPossibleDateToSelect = timeUtil.subtractDays("esilläolo",attributeData[endingDateKey],distanceTo,dateTypes?.[dateType]?.dates,true)
+          newDisabledDates = input.name.includes("_paattyy") ? newDisabledDates.filter(date => date >= lastPossibleDateToSelect) : newDisabledDates.filter(date => date <= lastPossibleDateToSelect);
+          return !newDisabledDates.includes(formatDate(date));
+        }
       } else if (currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')) {
         dateType = currentDeadline?.deadline?.attribute?.includes('maaraaika') ? 'työpäivät' : 'lautakunnan_kokouspäivät';
       } else {
@@ -184,12 +236,16 @@ const DeadLineInput = ({
   const handleDateChange = (formattedDate) => {
     try {
       const field = input.name;
-      const projectName = attributeData['projektin_nimi'];
-      let date = validateDate(field, projectName, formattedDate, setWarning);
-      if (date !== currentValue) {
-        input.onChange(date);
-        setCurrentValue(date);
-      }
+      //const projectName = attributeData['projektin_nimi'];
+      //Get date type objects and send them to reducer to be moved according to input date changed
+      const dynamicKey = Object.keys(deadlineSection.deadlineSection)[0];
+      const deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey].filter(section => section.type === "date");
+      dispatch(updateDateTimeline(field,formattedDate,deadlineSectionValues));
+      //let date = validateDate(field, projectName, formattedDate, setWarning);
+      //if (date !== currentValue) {
+      //input.onChange(formattedDate);
+      //setCurrentValue(formattedDate);
+      //}
     } catch (error) {
       console.error('Validation error:', error);
     }
@@ -266,11 +322,11 @@ const DeadLineInput = ({
           <IconAlertCircle size="xs" /> {currentError}{' '}
         </div>
       )}
-      {warning.warning && (
+{/*       {warning.warning && (
         <Notification label={warning.response.reason} type="alert" style={{marginTop: 'var(--spacing-s)'}}>
         Seuraavien päivämäärien siirtäminen ei ole mahdollista, koska minimietäisyys viereisiin etappeihin on täyttynyt.
         {warning.response.conflicting_deadline}. Asetettu seuraava kelvollinen päivä {warning.response.suggested_date}</Notification>
-      )}
+      )} */}
     </>
   )
 }

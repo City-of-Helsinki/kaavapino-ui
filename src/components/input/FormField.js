@@ -44,6 +44,10 @@ const FormField = ({
   disabledDates,
   lomapaivat,
   dateTypes,
+  deadlineSection,
+  maxMoveGroup, 
+  maxDateToMove,
+  groupName,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -126,6 +130,10 @@ const FormField = ({
             disabledDates={disabledDates}
             lomapaivat={lomapaivat}
             dateTypes={dateTypes}
+            deadlineSection={deadlineSection}
+            maxMoveGroup={maxMoveGroup}
+            maxDateToMove={maxDateToMove}
+            groupName={groupName}
           />
         )
     }
