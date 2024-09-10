@@ -25,6 +25,16 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
   const openEdit = () => {
     editRollingField()
   }
+  
+  const formatInputText = (input) => {
+    if (input.constructor !== Array) {
+      return value === "" ? noValue : input
+    }
+    return <>{
+      input.map((str) => 
+      <p key={str}>{str.charAt(0).toUpperCase() + str.slice(1)}</p>)
+    }</>
+  }
 
   return (
     <>
@@ -39,7 +49,7 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
           className="rolling-richtext"
         />
         :
-        <div className='content'>{value === "" ? noValue : inputText}</div>
+        <div className='content'>{formatInputText(inputText)}</div>
         }
       </div>
       {nonEditable ? 
