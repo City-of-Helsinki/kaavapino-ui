@@ -9,7 +9,7 @@ function VisTimelineMenu({goToToday, moveLeft, moveRight,showYears,showMonths}) 
     setSelectedButton(buttonName);
   }
   return (
-    <div>
+    <div className="timeline-menu-container">
         <div className="timeline-menu">
           <div className='time-menu'>
             <Button size="small" variant="secondary" onClick={() => {moveLeft()}}><IconAngleLeft /></Button>
