@@ -151,6 +151,19 @@ const DeadLineInput = ({
     let datesToDisable
     if (ehdotusNahtavillaolo) {
       if (attributeData?.kaavaprosessin_kokoluokka === 'L' || attributeData?.kaavaprosessin_kokoluokka === 'XL') {
+        //TODO move all of these checks to some util file
+        if(input.name.includes("_alkaa") || input.name.includes("_paattyy")){
+          //Disable dates when editing dates from calendar start and end and min start date and max end date
+          let endingDateKey = textUtil.replacePattern(input.name,"_alkaa","_paattyy")
+          const dynamicKey = Object.keys(deadlineSection.deadlineSection)[0];
+          const deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey]
+          const distanceTo = input.name.includes("_paattyy") ? deadlineSectionValues.find(({ name }) => name === input.name).distance_from_previous : deadlineSectionValues.find(({ name }) => name === input.name).distance_to_next
+          let newDisabledDates = dateTypes?.arkipäivät?.dates
+          const lastPossibleDateToSelect = timeUtil.subtractDays("esilläolo",attributeData[endingDateKey],distanceTo,dateTypes?.arkipäivät?.dates,false)
+          newDisabledDates = input.name.includes("_paattyy") ? newDisabledDates.filter(date => date >= lastPossibleDateToSelect) : newDisabledDates.filter(date => date <= lastPossibleDateToSelect);
+          return !newDisabledDates.includes(formatDate(date));
+        }
+
         datesToDisable = !dateTypes?.arkipäivät?.dates?.includes(formatDate(date));
       } else if (currentDeadline?.deadline?.attribute?.includes('maaraaika')) {
         datesToDisable = !dateTypes?.työpäivät?.dates?.includes(formatDate(date));
@@ -162,6 +175,7 @@ const DeadLineInput = ({
       let dateType;
       if (currentDeadline?.deadline?.deadlinegroup?.includes('esillaolo')) {
         dateType = currentDeadline?.deadline?.attribute?.includes('maaraaika') ? 'työpäivät' : 'esilläolopäivät';
+        //TODO move all of these checks to some util file
         if(groupName !== maxMoveGroup && input.name.includes("_maaraaika")){
           //Disable maaraika dates when editing it from calendar when group IS NOT THE LAST ONE OF PHASE possible group of phase.
           //Disable to max next date taking inconsideration the lenghts of start and end dates before next phase
@@ -191,6 +205,7 @@ const DeadLineInput = ({
           return !newDisabledDates.includes(formatDate(date));
         }
         if(input.name.includes("_alkaa") || input.name.includes("_paattyy")){
+          //TODO move all of these checks to some util file
           //Disable dates when editing dates from calendar start and end and min start date and max end date
           const endingDateKey = textUtil.replacePattern(input.name,"_alkaa","_paattyy")
           const dynamicKey = Object.keys(deadlineSection.deadlineSection)[0];
