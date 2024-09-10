@@ -33,7 +33,15 @@ const capitalizeAndRemoveUnderscores = (str) => {
 }
 //Replaces string patterns with another
 const replacePattern = (key,patternToReplace,replaceablePattern) => {
-    const newKey = key.replace(patternToReplace, replaceablePattern);
+    let newKey = key.replace(patternToReplace, replaceablePattern);
+    if (newKey.includes("milloin_ehdotuksen_nahtavilla_paattyy_iso")) {
+        // Remove '_iso' part
+        newKey = newKey.replace("_iso", "");
+    }
+    if(newKey.includes("milloin_ehdotuksen_nahtavilla_paattyy_pieni")){
+        // Remove '_pieni' part
+        newKey = newKey.replace("_pieni", "");
+    }
     return newKey;
 }
 
