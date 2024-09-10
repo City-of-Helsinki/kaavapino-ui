@@ -553,20 +553,25 @@
   .header{
     display: flex !important;
     font-family: 'Helsinki Grotesk Bold', sans-serif !important;
-    border-top: 4px #2001bf solid;
+    border-top: 8px #2001bf solid;
+    border-bottom: 1px #808080 solid !important;
     font-size: 1em !important;
     align-items: flex-end;
     svg{
       width: 24px;
       height: 24px;
     }
+    .header-title {
+      font-size: 1.125rem;
+      padding-left: 8px;
+    }
   }
 
   .content{
     height: 75vh;
-    margin-top: 20px;
+    padding-bottom: 0px !important;
     margin-left: 0px !important;
-    margin-right: 20px !important;
+    margin-right: 33px !important;
     overflow: auto !important;
     .date-content{
       display: flex;
@@ -643,12 +648,21 @@
     position: relative;
     bottom: 0;
     left: 0;
-    margin: 20px 0 0 0 !important;
-    border-top: 1px solid #AEAEAE !important;
+    margin: 0px 0 0 0 !important;
+    border-top: 1px solid #808080 !important;
     .form-buttons{
-      margin-top: 20px;
-      margin-bottom: 20px;
+      margin-top: $size24;
+      margin-bottom: $size24;
       margin-left: 22px;
+      button {
+        height: 56px;
+        &:last-child {
+          margin-left: $size16;
+        }
+      }
+      span {
+        line-height: $size24;
+      }
     }
   }
 }
@@ -660,13 +674,15 @@
   position: relative !important;
   margin-top: 70px !important;
   overflow-y: auto; */
-  max-height: 79vh;
+  max-height: 75vh;
   max-width: 513px !important;
   position: absolute !important;
-  top: 79px;
+  top: 83px;
   right: 8px;
   left: auto;
   overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
 
   .header{
     padding-bottom: 16px !important;
@@ -716,13 +732,16 @@
   .content{
     min-height: 80%;
     margin-top: 0;
-    margin-left: 32px !important;
-    margin-right: 32px !important;
+    margin-left: 33px !important;
+    margin-right: 33px !important;
     .date-content{
       display: flex;
       flex-direction: row;
       flex-wrap: wrap;
       gap: 20px;
+      & > div{
+        width: 100%;
+      }
       .timeline-accordion{
         & > div:nth-child(2){
           display: flex;
@@ -732,12 +751,29 @@
       }
       .input-container{
         flex: 1 0 48%;
+        max-width: 328px;
+        .input-header-container {
+          margin-top: 32px;
+        }
         .deadline-input{
           border:2px solid $border-gray2;
+          margin-bottom: 4px;
           input{
             text-indent: 8px;
           }
         }
+        .error-text {
+          margin-top: 4px;
+          margin-bottom: 16px
+        }
+        .assistive-text {
+          font-weight: 400;
+          margin-top: 4px;
+          margin-bottom: 16px
+        }
+      }
+      .input-container:last-child{
+        margin-bottom: 0;
       }
 
       .checkbox-container{
@@ -745,7 +781,7 @@
         flex-flow: column;
         justify-content: flex-start;
         margin-top: $size16;
-        margin-bottom: $size16;
+        margin-bottom: $size32;
         .checkbox{
           display: flex;
           flex-flow: column;
@@ -753,12 +789,11 @@
       }
 
       .deadline-info-notification,.deadlines-confirmed-notification{
-        margin-top: $size16;
         margin-bottom: $size16;
       }
 
       .deadline-info-readonlytext {
-        margin-top: $size16;
+        margin-top: $size8;
         margin-bottom: $size24;
         font-size: $size14;
         font-family: "Helsinki Grotesk Medium", sans-serif;

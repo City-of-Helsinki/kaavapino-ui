@@ -6,74 +6,168 @@
     border-color: RGBA(0,0,0,0);
     .vis-left{
         width: 300px;
+        .vis-content {
+            top: 0 !important;
+        }
+    }
+    .vis-timeline .vis-content {
+        transform: translateY(0px) !important;
+        .vis-itemset {
+            height: 75vh !important;
+        }
+    }
+    .vis-timeline {
+        border-top: none;
+        border-bottom: none;
+        border-color: $color-black-20;
+        overflow-y: visible !important;
+        overflow-x: clip !important;
+        .vis-vertical .vis-current-time {
+            top: 84px !important;
+            z-index: 0;
+        }
+        .vis-center, .vis-left {
+            border-bottom: none
+        }
+    }
+
+    .vis-panel.vis-top {
+        border: 1px solid $color-black-20;
+        border-top: none;
+        height: 85px;
+        position: sticky;
+        top: 81px !important;
+        left: 301px !important;
+        margin-right: -3.5px;
     }
 
     .vis-time-axis.vis-foreground{
-        background-color: $light-gray3;
+        background-color: $dropdown-divider-color;
+        left: -0.5px !important;
+        height: 85px !important;
+        & > div {
+            color: #000000;
+            font-size: $size14;
+        }
+    }
+    .vis-time-axis.vis-background{
+        .vis-grid.vis-major {
+            border-left: 1px solid #999999;
+            border-color: #999999 !important;
+        }
+        .vis-grid.vis-minor {
+            border-left: 1px solid $color-black-20;
+            border-color: $color-black-20 !important;
+        }
+    }
+
+    .timeline-menu-container {
+        padding-top: 20px;
+        position: sticky;
+        top: 0;
+        background-color: #ffffff;
+        z-index: 1000;
+        border-bottom: 1px solid $color-black-20;
     }
     .timeline-menu {
         display: flex;
         justify-content: flex-start;
         align-items: center;
-        padding-left: $size15;
         .time-menu{
-            padding-left: 275px;
+            padding-left: 300px;
             button {
                 --min-size: $size32; //hds syntax
-                width: $size32;
-                height: $size32;
+                width: $size44;
+                height: $size44;
                 padding: 0; // Add this line
                 box-sizing: border-box; // Add this line
                 margin-bottom: $size16;
                 position: relative;
                 &:nth-child(2) {
-                    margin-left: $size12;
+                    margin-left: -2px;
+                }
+                svg {
+                    margin-top: 3px;
                 }
             }
         }
         .today-menu{
             button {
+                --min-size: $size32; //hds syntax
+                height: $size44;
                 font-family: 'Helsinki Grotesk Medium', sans-serif;
                 color: $color-bus;
                 padding: 0;
                 box-sizing: border-box;
                 margin-bottom: $size16;
+                margin-left: $size16;
                 font-weight: 500;
                 line-height: $size24;
                 text-align: left;
                 position: relative;
+                &::after {
+                    content: '';
+                    width: 0;
+                    height: 32px;
+                    border: none;
+                    border-left: 1px solid #cccccc;
+                    position: absolute;
+                    right: -33.5px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                  }
             }
         }
         .zoom-menu{
-            margin-left: 16.5rem;
+            margin-left: 62px;
             button{
                 --min-size: $size32; //hds syntax
                 height: $size32;
                 background: $dropdown-divider-color;
                 color: $black1;
-                border: none;
+                border: 1px #1A1A1A solid;
                 border-radius: $size16;
                 margin-bottom: $size16;
-                margin-right: $size12;
+                margin-right: $size10;
             }
             .selected {
                 --min-size: $size32; //hds syntax
                 height: $size32;
-                background: $dropdown-divider-color;
+                background: $color-black-20;
                 color: $black1;
-                border: 3px solid $color-coat-of-arms;
+                border: 1px #1A1A1A solid;
                 border-radius: $size16;
+                outline: 3px solid $color-coat-of-arms;
+                outline-offset: 2px;
                 margin-bottom: $size16;
                 margin-right: $size12;
             }
+            span {
+                font-family: 'Helsinki Grotesk Medium', sans-serif;
+                font-weight: 500;
+                font-size: $size14;
+                line-height: $size24;
+            }
         }
     }
+
+    .vis-item:not(.inner-end){
+        border:none;
+    }
+    .vis-item.vis-dot {
+        border: 1px solid #000000;
+        &.board {
+            transform: translate(-12px, -24px) !important;
+        }
+    }
+
     .inner-end{
         z-index: 1000;
         pointer-events: auto;
         border-width: 0;
         height: $size24;
         border-radius: 15px;
+        top: 5.5px !important;
         .vis-item-overflow{
             border: 1px solid #000000;
             background: #fff;
@@ -87,6 +181,7 @@
 
     .board{
         z-index: 1000;
+        top: 15.5px !important;
         //Makes range item apper to be two single items
         .vis-item-overflow{
             height: $size4;
@@ -102,7 +197,7 @@
         .vis-drag-left{
             height: $size24 !important;
             width: $size24 !important;
-            top: -11px !important;
+            top: -10px !important;
             display: inline-block;
             border: $size1 solid #1a1a1a;
             border-radius: 14px;
@@ -112,7 +207,7 @@
         .vis-drag-right{
             height: 1.3rem !important;
             width: 1.3rem !important;
-            top: -10px !important;
+            top: -9px !important;
             display: inline-block;
             border: $size1 solid #fff;
             border-radius: 14px;
@@ -124,11 +219,12 @@
 
     .phase-length{
         z-index: 1000;
+        top: 5.5px !important;
         pointer-events: auto;
         border-width: 0;
         height: $size24;
         .vis-item-overflow{
-            border: 1px solid #000000;
+            border: 2px solid #000000;
             background: #fff;
             border-radius: 6px;
             .vis-item-content{
@@ -154,11 +250,12 @@
         background-color: #1a1a1a;
         border-color: #1a1a1a;
         height: 4px;
-        top: $size22 !important;
+        top: 15.5px !important;
     }
 
     .vis-dot{
         position: absolute;
+        top: -9.5px !important;
         padding: 0px;
         border-width: 1px !important;
         border-style: solid;
@@ -193,6 +290,8 @@
 
     .negative{
         background-color: #F2F2F2 !important;
+        border-right: 0.5px solid #ccc !important;
+        border-left: 0.5px solid #ccc !important;
     }
     .holiday{
         background-color: rgba(255, 200, 50, 0.2) !important;
@@ -208,6 +307,7 @@
         border-left: none;
         border-right: none;
         background: #ffffff !important;
+        height: 35px !important;
         .vis-inner{
             padding: 0;
             display: flex;
@@ -220,7 +320,10 @@
                 align-items: center;
                 width: 100%;
                 height: 100%;
-                padding-left: $size13;
+                padding-left: $size15;
+                .timeline-button-label{
+                    padding-top: 5px;
+                }
                 .timeline-edit-button{
                     position: absolute;
                     margin-left: -40px;
@@ -238,38 +341,43 @@
                     display: none;
                     padding: 0;
                     margin-left: auto;
-                    width: $size40;
-                    height: 100%;
-                    background:url('../../assets/icons/trash-blue.svg') no-repeat;
+                    width: 24px;
+                    height: 24px;
+                    background:url('../../assets/icons/trash-red.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;
-                    background-size: $size18;
+                    background-size: $size24;
                     border: none;
                     cursor: pointer;
+                    &.button-disabled{
+                        background:url('../../assets/icons/trash.svg') no-repeat;
+                        opacity: 0.2;
+                    }
                 }
                 .timeline-lock-button{
                     display: none;
                     padding: 0;
-                    margin-left: 0;
-                    width: $size40;
-                    height: 100%;
+                    margin-right: 12px;
+                    margin-left: 12px;
+                    width: 24px;
+                    height: 24px;
                     background:url('../../assets/icons/lock-open-blue.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;
-                    background-size: $size18;
+                    background-size: $size24;
                     border: none;
                     cursor: pointer;
                 }
                 .lock{
-                    margin-left: auto;
-                    margin-right: 0;
+                    margin-right: 12px;
+                    margin-left: 12px;
                     padding: 0;
-                    width: 100%;
-                    height: 100%;
+                    width: 24px;
+                    height: 24px;
                     background:url('../../assets/icons/lock-blue.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;
-                    background-size: $size18;
+                    background-size: $size24;
                     border: none;
                     cursor: pointer;
                 }
@@ -302,14 +410,26 @@
                 }
             }
             .highlight-selected{
-                border: 1px solid $color-bus;
                 .timeline-remove-button{
                     display: block;
+                    margin-top: -3px;
                 }
                 .timeline-lock-button{
                     display: block;
+                    margin-top: -3px;
+                    margin-right: 10px;
+                    margin-left: 12px;
                 }
             }
+        }
+    }
+
+    .vis-nested-group.vis-group-level-unknown-but-gte1.highlight-selected{
+        border: 2px solid $color-bus;
+        background-color: $color-bus-light !important;
+        .vis-inner .timeline-buttons-container .timeline-button-label {
+            padding-top: 0;
+            margin-left: -2px;
         }
     }
 
@@ -326,6 +446,7 @@
 
     .vis-label{
         background-color: #F2F2F2;
+        border-bottom: 1px solid #CCCCCC;
     }
 
     .vis-group-level-0{
@@ -341,9 +462,9 @@
     }
 
     .vis-group-level-0.expanded{
-        padding-left: $size15;
+        padding-left: $size13;
         .vis-inner{
-            padding-left: $size5;
+            padding-left: $size8;
             .timeline-buttons-container{
                 display: flex;
                 justify-content: center;
@@ -351,26 +472,29 @@
                 .timeline-add-button{
                     z-index: 1000;
                     position: absolute;
-                    right: 0;
-                    top: 0;
+                    right: 11px;
+                    top: 5px;
                     padding: 0;
-                    width: $size40;
-                    height: $size40;
+                    width: 24px;
+                    height: 24px;
                     background:url('../../assets/icons/plus-blue.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;
                     background-size: $size24;
                     border: none;
                     cursor: pointer;
+                    &:hover {
+                        background-color: #CCCCFF;
+                    }
                 }
             }
         }
     }
 
     .vis-group-level-0.collapsed{
-        padding-left: $size15;
+        padding-left: $size13;
         .vis-inner{
-            padding-left: $size5;
+            padding-left: $size8;
             .timeline-buttons-container{
                 display: flex;
                 justify-content: center;
@@ -387,6 +511,7 @@
         justify-content: flex-start;
         align-items: center;
         margin-right: -1px;
+        height: 35px !important;
         .vis-group-level-0{
             display: block;
             padding-left: $size16;
@@ -413,11 +538,47 @@
         background-size: $size18;
     }
 
+    .vis-text.vis-major {
+        text-align: center;
+        margin-left: -0.5px;
+        border-color: #999999;
+    }
+
+    .vis-text.vis-minor {
+        color: #000000;
+        &.vis-current-month, &.vis-even, &.vis-odd {
+            padding-top: $size17;
+            text-align: center;
+            margin-left: -0.5px;
+            border-color: $color-black-20;
+            border-bottom: none;
+        }
+    }
+
+    .vis-major {
+        border-left: $size1 solid #999999;
+        &::first-letter{
+            text-transform: capitalize;
+        }
+        & > div {
+            background-color: #e6e6e6;
+            font-weight: 500;
+            padding: 6px 3px 3px 9px;
+            margin: -4.5px -3px -4px -3.5px;
+        }
+    }
+
     .vis-minor{
+        height: 57px;
         background-color: white;
-        border-left: $size1 solid #b4b4b4;
-        border-top: $size1 solid #b4b4b4;
-        border-bottom: $size1 solid #b4b4b4;
+        border-left: $size1 solid $color-black-20;
+        border-top: $size1 solid $color-black-20;
+        border-bottom: $size1 solid $color-black-20;
+        font-size: $size14;
+        font-weight: 700;
+        &::first-letter{
+            text-transform: capitalize;
+        }
     }
 
     .vis-time-axis .vis-grid.vis-saturday,
@@ -430,43 +591,52 @@
     }
 
     .color-tram{
-        background-color: $color_tram !important;
+        background-color: $color-copper !important;
         height: $size8;
+        border-radius: 20px;
     }
     .color-summer{
         background-color: $color-summer !important;
         height: $size8;
+        border-radius: 20px;
     }
     .color-metro{
         background-color: $color_metro !important;
         height: $size8;
+        border-radius: 20px;
     }
     .color-bus{
         background-color: $color_bus !important;
         color:white;
         height: $size8;
+        border-radius: 20px;
     }
     .color-gold{
         background-color: $color_gold !important;
         height: $size8;
+        border-radius: 20px;
     }
     .color-fog{
         background-color: $color_fog !important;
         height: $size8;
+        border-radius: 20px;
     }
     .color-green{
         background-color: $color_phase_principles !important;
         height: $size8;
+        border-radius: 20px;
     }
     .color-suomenlinna{
         background-color: $color_phase_draft !important;
         height: $size8;
+        border-radius: 20px;
     }
 
     .vis-foreground .vis-group {
         position: relative;
         box-sizing: border-box;
         border-bottom: none;
+        height: 35px !important;
     }
 
     /*TODO: v1.2 Disabled for now because we don't want to allow dragging the timeline at this point set to auto*/
@@ -497,5 +667,8 @@
 .years{
     .normal-weekend{
         background-color: white !important;
+    }
+    .negative{
+        border: none !important
     }
 }
