@@ -31,8 +31,14 @@ const capitalizeAndRemoveUnderscores = (str) => {
 
     return formattedStr;
 }
+//Replaces string patterns with another
+const replacePattern = (key,patternToReplace,replaceablePattern) => {
+    const newKey = key.replace(patternToReplace, replaceablePattern);
+    return newKey;
+}
 
 export default {
     replaceScandics,
-    capitalizeAndRemoveUnderscores
+    capitalizeAndRemoveUnderscores,
+    replacePattern
 }

@@ -110,7 +110,12 @@ export const FETCH_DISABLED_DATES_FAILURE = 'fetchDisabledDatesFailure';
 export const VALIDATE_DATE = 'validateDate';
 export const SET_DATE_VALIDATION_RESULT = 'setDateValidationResult';
 export const REMOVE_DEADLINES = 'removeDeadlines';
+export const UPDATE_DATE_TIMELINE = "updateDateTimeline"
 
+export const updateDateTimeline = (field, newDate, deadlineSectionValues) => ({
+  type: UPDATE_DATE_TIMELINE,
+  payload: { field, newDate, deadlineSectionValues },
+});
 export const removeDeadlines = (deadlines) => ({
   type: REMOVE_DEADLINES,
   payload: deadlines,
