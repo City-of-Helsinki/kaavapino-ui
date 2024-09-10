@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import { Modal } from 'semantic-ui-react'
 import { Button,Tabs,IconCross } from 'hds-react'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
@@ -6,11 +6,11 @@ import FormField from '../input/FormField'
 import { isArray } from 'lodash'
 import { showField } from '../../utils/projectVisibilityUtils'
 import textUtil from '../../utils/textUtil'
+import objectUtil from '../../utils/objectUtil';
 import PropTypes from 'prop-types'
 import './VisTimeline.css'
 
-const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit,disabledDates, lomapaivat, dateTypes }) => {
-    
+const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit,disabledDates,lomapaivat,dateTypes,groups }) => {
   const getAttributeValues = (attributes) => {
     return Object.values(attributes).flatMap((v) => Object.values(v));
   };
@@ -48,7 +48,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
 
     let currentSubmitErrors = Object.keys(formSubmitErrors).length > 0
 
-    const getFormField = (fieldProps, key, disabled) => {
+    const getFormField = (fieldProps, key, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title) => {
       if (!showField(fieldProps.field, visValues)) {
         return null
       }
@@ -79,7 +79,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       } else {
         modifiedError = error
       }
-      //Visvalues state saves only after timelineform submit
+      
       return (
         <>
           <FormField
@@ -96,17 +96,43 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
             disabledDates={disabledDates}
             lomapaivat={lomapaivat}
             dateTypes={dateTypes}
+            deadlineSection={deadlineSection}
+            maxMoveGroup={maxMoveGroup}
+            maxDateToMove={maxDateToMove}
+            groupName={title}
           />
           {modifiedError && <div className="field-error">{modifiedError}</div>}
         </>
       )
     }
-    const getFormFields = (sections, sectionIndex, disabled) => {
+    const getFormFields = (sections, sectionIndex, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title) => {
       const formFields = []
       sections.forEach((field, fieldIndex) => {
-          formFields.push(getFormField({ field }, `${sectionIndex} - ${fieldIndex}`, {disabled}))
+          formFields.push(getFormField({ field }, `${sectionIndex} - ${fieldIndex}`, {disabled}, {deadlineSection}, maxMoveGroup, maxDateToMove, title))
       })
       return formFields
+    }
+
+    const getMaxiumDateToMove = (attr) => {
+      const foundGroups = groups.filter(g => g.nestedInGroup === group);
+      const esillaolo = foundGroups.filter(obj => obj.content.startsWith('Esilläolo-'));
+      const nahtavillaolo = foundGroups.filter(obj => obj.content.startsWith('Nahtavillaolo-'));
+      const lautakunta = foundGroups.filter(obj => obj.content.startsWith('Lautakunta-'));
+
+      let latestGroup
+      let latestObject
+      let miniumObject
+
+      const phaseObject = lautakunta.length != 0 && lautakunta.length >= esillaolo.length || lautakunta.length != 0 && lautakunta.length >= nahtavillaolo.length ? lautakunta : esillaolo.length > 0 ? esillaolo : nahtavillaolo
+      latestGroup = objectUtil.getHighestNumberedObject(phaseObject,groups);
+      latestObject = attr[latestGroup?.deadlinegroup]
+      if(latestObject){
+        miniumObject = objectUtil.getMinObject(latestObject)
+        if(visValues[miniumObject]){
+          return [visValues[miniumObject], latestGroup.content]
+        }
+      }
+      return [null,null]
     }
   
     const renderSection = (section,sectionIndex,title) => {
@@ -128,6 +154,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       const renderedSections = []
       sections.forEach(subsection => {
         const attr = subsection?.attributes
+        const [maxDateToMove,maxMoveGroup] = getMaxiumDateToMove(attr)
         if(attr[deadlinegroup]){
           renderedSections.push(
             <Tabs key={"tab" + sectionIndex}>
@@ -137,7 +164,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
                 })}
               </Tabs.TabList>
               {Object.values(attr[deadlinegroup]).map((subsection, index) => {
-                return  <Tabs.TabPanel key={`tabPanel-${index}-${subsection}`}>{getFormFields(subsection, sectionIndex, disabled)}</Tabs.TabPanel>
+                return  <Tabs.TabPanel key={`tabPanel-${index}-${subsection}`}>{getFormFields(subsection, sectionIndex, disabled, attr[deadlinegroup], maxMoveGroup, maxDateToMove, title)}</Tabs.TabPanel>
               })}
             </Tabs>
           )
