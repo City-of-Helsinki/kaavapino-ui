@@ -221,7 +221,7 @@ class CustomField extends Component {
   renderDate = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, deadlines, field, lockField, fieldSetDisabled, 
       insideFieldset, disabled, isProjectTimetableEdit, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, 
-      attributeData, phaseIsClosed, disabledDates, lomapaivat, dateTypes, deadlineSection, maxMoveGroup, maxDateToMove, groupName } = this.props
+      attributeData, phaseIsClosed, disabledDates, lomapaivat, dateTypes, deadlineSection, maxMoveGroup, maxDateToMove, groupName, visGroups, visItems } = this.props
 
     let current
     if (deadlines && deadlines.length > 0) {
@@ -246,6 +246,8 @@ class CustomField extends Component {
           maxMoveGroup={maxMoveGroup}
           maxDateToMove={maxDateToMove}
           groupName={groupName}
+          visGroups={visGroups}
+          visItems={visItems}
           {...props}
         />
       )
