@@ -173,6 +173,7 @@ const DeadLineInput = ({
     }
     else {
       let dateType;
+      //currentDeadline?.deadline?.deadlinegroup.includes("kaynnistys")
       if (currentDeadline?.deadline?.deadlinegroup?.includes('esillaolo')) {
         dateType = currentDeadline?.deadline?.attribute?.includes('maaraaika') ? 'työpäivät' : 'esilläolopäivät';
         //TODO move all of these checks to some util file
@@ -254,7 +255,8 @@ const DeadLineInput = ({
       //const projectName = attributeData['projektin_nimi'];
       //Get date type objects and send them to reducer to be moved according to input date changed
       const dynamicKey = Object.keys(deadlineSection.deadlineSection)[0];
-      const deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey].filter(section => section.type === "date");
+      const deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey]
+      .filter(section => section.type === "date" && section.display !== "readonly");
       dispatch(updateDateTimeline(field,formattedDate,deadlineSectionValues));
       //let date = validateDate(field, projectName, formattedDate, setWarning);
       //if (date !== currentValue) {
