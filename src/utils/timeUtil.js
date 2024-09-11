@@ -23,6 +23,10 @@ const isWeekend = (date) => {
       filter = disabledDates
       isInFilter = false
     }
+    else if(type === "arkipäivät"){
+      filter = disabledDates
+      isInFilter = false
+    }
     // Subtract the specified number of days
     while (days > 0) {
       newDate.setDate(newDate.getDate() + 1);
@@ -65,6 +69,10 @@ const isWeekend = (date) => {
     //Some disabledDates have allowed array values and some not allowed array values
     let isInFilter = true
     if(type === "esilläolo"){
+      filter = disabledDates
+      isInFilter = false
+    }
+    else if(type === "arkipäivät"){
       filter = disabledDates
       isInFilter = false
     }

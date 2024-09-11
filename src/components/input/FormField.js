@@ -48,6 +48,8 @@ const FormField = ({
   maxMoveGroup, 
   maxDateToMove,
   groupName,
+  visGroups,
+  visItems,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -134,6 +136,8 @@ const FormField = ({
             maxMoveGroup={maxMoveGroup}
             maxDateToMove={maxDateToMove}
             groupName={groupName}
+            visGroups={visGroups}
+            visItems={visItems}
           />
         )
     }
