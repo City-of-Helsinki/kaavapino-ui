@@ -30,7 +30,9 @@ const DeadLineInput = ({
   deadlineSection,
   maxMoveGroup,
   maxDateToMove,
-  groupName
+  groupName,
+  visGroups, 
+  visItems
 }) => {
 
   const { t } = useTranslation()
@@ -149,8 +151,7 @@ const DeadLineInput = ({
     tenYearsLater.setFullYear(tenYearsLater.getFullYear() + 10);
     const ehdotusNahtavillaolo = currentDeadline?.deadline?.phase_name === "Ehdotus" && currentDeadline?.deadline?.deadlinegroup?.includes('nahtavillaolo')
     let datesToDisable
-    if (ehdotusNahtavillaolo) {
-      if (attributeData?.kaavaprosessin_kokoluokka === 'L' || attributeData?.kaavaprosessin_kokoluokka === 'XL') {
+    if (ehdotusNahtavillaolo && attributeData?.kaavaprosessin_kokoluokka === 'L' || attributeData?.kaavaprosessin_kokoluokka === 'XL') {
         //TODO move all of these checks to some util file
         if(input.name.includes("_alkaa") || input.name.includes("_paattyy")){
           //Disable dates when editing dates from calendar start and end and min start date and max end date
@@ -163,19 +164,23 @@ const DeadLineInput = ({
           newDisabledDates = input.name.includes("_paattyy") ? newDisabledDates.filter(date => date >= lastPossibleDateToSelect) : newDisabledDates.filter(date => date <= lastPossibleDateToSelect);
           return !newDisabledDates.includes(formatDate(date));
         }
-
-        datesToDisable = !dateTypes?.arkipäivät?.dates?.includes(formatDate(date));
-      } else if (currentDeadline?.deadline?.attribute?.includes('maaraaika')) {
-        datesToDisable = !dateTypes?.työpäivät?.dates?.includes(formatDate(date));
-      } else {
-        datesToDisable = !dateTypes?.arkipäivät?.dates?.includes(formatDate(date));
-      }
+        else if (currentDeadline?.deadline?.attribute?.includes('maaraaika')) {
+          datesToDisable = !dateTypes?.työpäivät?.dates?.includes(formatDate(date));
+        } 
+        else {
+          datesToDisable = !dateTypes?.arkipäivät?.dates?.includes(formatDate(date));
+        }
     }
     else {
       let dateType;
       //currentDeadline?.deadline?.deadlinegroup.includes("kaynnistys")
-      if (currentDeadline?.deadline?.deadlinegroup?.includes('esillaolo')) {
-        dateType = currentDeadline?.deadline?.attribute?.includes('maaraaika') ? 'työpäivät' : 'esilläolopäivät';
+      if (currentDeadline?.deadline?.deadlinegroup?.includes('esillaolo') || ehdotusNahtavillaolo) {
+        if(ehdotusNahtavillaolo){
+          dateType = 'arkipäivät';
+        }
+        else{
+          dateType = currentDeadline?.deadline?.attribute?.includes('maaraaika') ? 'työpäivät' : 'esilläolopäivät';
+        }
         //TODO move all of these checks to some util file
         if(groupName !== maxMoveGroup && input.name.includes("_maaraaika")){
           //Disable maaraika dates when editing it from calendar when group IS NOT THE LAST ONE OF PHASE possible group of phase.
@@ -195,7 +200,7 @@ const DeadLineInput = ({
             const minEndDate = timeUtil.addDays("esilläolo",dataToCompate,5,dateTypes?.[dateType]?.dates,true)
             newDisabledDates = newDisabledDates.filter(date => date >= minEndDate)
           }
-          if(currentDeadline?.deadline?.phase_name === "Luonnos"){
+          else if(currentDeadline?.deadline?.phase_name === "Luonnos"){
             const attributeValue = objectUtil.findLargestSuffix(attributeData,/^milloin_oas_esillaolo_paattyy(?:_(\d+))?/)
             if(attributeData){
               const minEndDate = timeUtil.addDays("esilläolo",attributeValue,5,dateTypes?.[dateType]?.dates,true)
@@ -205,7 +210,25 @@ const DeadLineInput = ({
           newDisabledDates = newDisabledDates.filter(date => date <= lastPossibleDateToSelect);
           return !newDisabledDates.includes(formatDate(date));
         }
-        if(input.name.includes("_alkaa") || input.name.includes("_paattyy")){
+        else if(input.name.includes("_maaraaika") && (attributeData?.kaavaprosessin_kokoluokka === 'XS' || attributeData?.kaavaprosessin_kokoluokka === 'S' || attributeData?.kaavaprosessin_kokoluokka === 'M')){
+          let newDisabledDates = dateTypes?.[dateType]?.dates
+          if(currentDeadline?.deadline?.phase_name === "OAS"){
+            //Add check to previous phase end date + minium length
+            const dataToCompate = attributeData["kaynnistys_paattyy_pvm"]
+            const minEndDate = timeUtil.addDays("arkipäivät",dataToCompate,5,dateTypes?.[dateType]?.dates,true)
+            newDisabledDates = newDisabledDates.filter(date => date >= minEndDate)
+            return !newDisabledDates.includes(formatDate(date));
+          }
+          if(currentDeadline?.deadline?.phase_name === "Ehdotus"){
+            const attributeValue = objectUtil.findLargestSuffix(attributeData,/^milloin_oas_esillaolo_paattyy(?:_(\d+))?/)
+            if(attributeData){
+              const minEndDate = timeUtil.addDays("arkipäivät",attributeValue,5,dateTypes?.[dateType]?.dates,true)
+              newDisabledDates = newDisabledDates.filter(date => date >= minEndDate)
+              return !newDisabledDates.includes(formatDate(date));
+            }
+          }
+        }
+        else if(input.name.includes("_alkaa") || input.name.includes("_paattyy")){
           //TODO move all of these checks to some util file
           //Disable dates when editing dates from calendar start and end and min start date and max end date
           const endingDateKey = textUtil.replacePattern(input.name,"_alkaa","_paattyy")
@@ -213,8 +236,17 @@ const DeadLineInput = ({
           const deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey]
           const distanceTo = input.name.includes("_paattyy") ? deadlineSectionValues.find(({ name }) => name === input.name).distance_from_previous : deadlineSectionValues.find(({ name }) => name === input.name).distance_to_next
           let newDisabledDates = dateTypes?.[dateType]?.dates
-          const lastPossibleDateToSelect = timeUtil.subtractDays("esilläolo",attributeData[endingDateKey],distanceTo,dateTypes?.[dateType]?.dates,true)
+          const lastPossibleDateToSelect = dateType === "arkipäivät" ? timeUtil.subtractDays("arkipäivät",attributeData[endingDateKey],distanceTo,dateTypes?.[dateType]?.dates,true) : timeUtil.subtractDays("esilläolo",attributeData[endingDateKey],distanceTo,dateTypes?.[dateType]?.dates,true)
           newDisabledDates = input.name.includes("_paattyy") ? newDisabledDates.filter(date => date >= lastPossibleDateToSelect) : newDisabledDates.filter(date => date <= lastPossibleDateToSelect);
+          if(input.name.includes("_alkaa")){
+            //include phase start date + minium and make dates after that unselectable, take määräaika and its length to alkaa inconsideration too.
+            const currentPhase = objectUtil.getObjectByName(visGroups,currentDeadline?.deadline?.phase_name)
+            let visItemsFiltered = visItems.filter(info => info.type !== "background")
+            let phaseToCheck = visItemsFiltered.find(({group}) => group === currentPhase.id)
+            let phaseStartDate = phaseToCheck.start
+            const minEndDate = timeUtil.addDays("arkipäivät",phaseStartDate,distanceTo+5,dateTypes?.[dateType]?.dates,false)
+            newDisabledDates = newDisabledDates.filter(date => date >= minEndDate)
+          }
           return !newDisabledDates.includes(formatDate(date));
         }
       } else if (currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')) {

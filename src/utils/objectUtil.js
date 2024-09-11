@@ -87,9 +87,37 @@ const getHighestNumberedObject = (obj1,arr) => {
     return resultKey !== null ? object[resultKey] : false;
   }
 
+  const getPreviousObjectByName = (arr, id) => {
+    // Find the index of the object where object.name === name
+    const index = arr.findIndex(obj => obj.id === id);
+  
+    // If the index is greater than 0, return the object at one index earlier
+    if (index > 0) {
+      return arr[index - 1];
+    }
+  
+    // Return null or undefined if it's the first index or not found
+    return null;
+  }
+
+  const getObjectByName = (arr, id) => {
+    // Find the index of the object where object.name === name
+    const index = arr.findIndex(obj => obj.id === id);
+  
+    // return the object
+    if (index) {
+      return arr[index];
+    }
+  
+    // Return null or undefined if it's the first index or not found
+    return null;
+  }
+
 export default {
     getHighestNumberedObject,
     getMinObject,
     findValuesWithStrings,
-    findLargestSuffix
+    findLargestSuffix,
+    getPreviousObjectByName,
+    getObjectByName
 }
