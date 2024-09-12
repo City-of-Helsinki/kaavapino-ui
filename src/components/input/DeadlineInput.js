@@ -151,7 +151,7 @@ const DeadLineInput = ({
     tenYearsLater.setFullYear(tenYearsLater.getFullYear() + 10);
     const ehdotusNahtavillaolo = currentDeadline?.deadline?.phase_name === "Ehdotus" && currentDeadline?.deadline?.deadlinegroup?.includes('nahtavillaolo')
     let datesToDisable
-    if (ehdotusNahtavillaolo && attributeData?.kaavaprosessin_kokoluokka === 'L' || attributeData?.kaavaprosessin_kokoluokka === 'XL') {
+    if (ehdotusNahtavillaolo && (attributeData?.kaavaprosessin_kokoluokka === 'L' || attributeData?.kaavaprosessin_kokoluokka === 'XL') ) {
         //TODO move all of these checks to some util file
         if(input.name.includes("_alkaa") || input.name.includes("_paattyy")){
           //Disable dates when editing dates from calendar start and end and min start date and max end date
@@ -249,9 +249,26 @@ const DeadLineInput = ({
           }
           return !newDisabledDates.includes(formatDate(date));
         }
-      } else if (currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')) {
+      } 
+      else if (currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')) {
+         /*
+        const dynamicKey = Object.keys(deadlineSection.deadlineSection)[0];
+        const deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey]
+        const distanceTo = input.name.includes("maaraaika") ? deadlineSectionValues.find(({ name }) => name === input.name).distance_from_previous : deadlineSectionValues.find(({ name }) => name === input.name).distance_to_next */
+        //Ei tuu minimejä backend, ota yllä oleva käyttöön kun tulee? Alla väliaikanen kovakoodaus.
+        const distanceTo = input.name.includes("maaraaika") ? 5 : 27 
+
+        const currentPhase = objectUtil.getPreviousObjectByGroup(visGroups,currentDeadline?.deadline?.deadlinegroup)
+        let visItemsFiltered = visItems.filter(info => info.type !== "background")
+        let phaseToCheck = visItemsFiltered.find(({id}) => id === currentPhase.id)
+        let previousGroupEndDate = phaseToCheck.end
         dateType = currentDeadline?.deadline?.attribute?.includes('maaraaika') ? 'työpäivät' : 'lautakunnan_kokouspäivät';
-      } else {
+        const minEndDate = timeUtil.addDays("esillesilläolo",previousGroupEndDate,distanceTo,dateTypes?.[dateType]?.dates,true)
+        let newDisabledDates = dateTypes?.[dateType]?.dates
+        newDisabledDates = newDisabledDates.filter(date => date >= minEndDate)
+        return !newDisabledDates.includes(formatDate(date));
+      } 
+      else {
         dateType = 'arkipäivät';
       }
     
@@ -287,8 +304,15 @@ const DeadLineInput = ({
       //const projectName = attributeData['projektin_nimi'];
       //Get date type objects and send them to reducer to be moved according to input date changed
       const dynamicKey = Object.keys(deadlineSection.deadlineSection)[0];
-      const deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey]
-      .filter(section => section.type === "date" && section.display !== "readonly");
+      let deadlineSectionValues
+      if(currentDeadline?.deadline?.phase_name === "Ehdotus" && (attributeData?.kaavaprosessin_kokoluokka === 'L' || attributeData?.kaavaprosessin_kokoluokka === 'XL')){
+        //for some reason määräaika is on data when L XL nahtavillaolo even though it should never be, filter it out because it cannot be saved if not existing in backend
+        deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey].filter(section => section.type === "date" && section.display !== "readonly" && section.name !== "ehdotus_nahtaville_aineiston_maaraaika");
+      }
+      else{
+        deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey].filter(section => section.type === "date" && section.display !== "readonly");
+      }
+
       dispatch(updateDateTimeline(field,formattedDate,deadlineSectionValues));
       //let date = validateDate(field, projectName, formattedDate, setWarning);
       //if (date !== currentValue) {

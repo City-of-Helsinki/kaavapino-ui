@@ -159,17 +159,29 @@ export const reducer = (state = initialState, action) => {
       const updatedAttributeData = { 
         ...state.currentProject.attribute_data, // Shallow copy of attribute_data
       };
-      
+
       // Update the specific date at the given field
       updatedAttributeData[field] = timeUtil.formatDate(newDateObj);
       //Iterate through deadlineSectionValues and match with keys in attribute_data
       deadlineSectionValues.forEach(section => {
         const matchingKey = section.name;  // Get the name to match the key in attribute_data
         if (matchingKey !== field) {  // Avoid updating the already changed field
+          let dateType = "esilläolopäivät"
+          if(matchingKey.includes("_lautakunnassa")){
+            dateType = "lautakunnan_kokouspäivät"
+          }
+          else if(matchingKey.includes("_maaraaika")){
+            dateType = "työpäivät"
+          }
+          else if(matchingKey.includes("_nahtavilla") || matchingKey.includes("_lausunnot")){
+            dateType = "arkipäivät"
+          }
+
           if (daysDifference > 0 && !(field.includes("_alkaa") && matchingKey.includes("_paattyy")) && !(field.includes("_paattyy") && matchingKey.includes("_maaraaika"))) {
-            updatedAttributeData[matchingKey] = timeUtil.addDays("esilläolo",updatedAttributeData[matchingKey], daysDifference, state.disabledDates.date_types.esilläolopäivät.dates,true);  // Move forward
-          } else if (daysDifference < 0 && !(field.includes("_alkaa") && matchingKey.includes("_paattyy")) && !(field.includes("_paattyy") && matchingKey.includes("_alkaa")) && !(field.includes("_paattyy") && matchingKey.includes("_maaraaika"))) {
-            updatedAttributeData[matchingKey] = timeUtil.subtractDays("esilläolo",updatedAttributeData[matchingKey], -daysDifference, state.disabledDates.date_types.esilläolopäivät.dates,true);  // Move backward
+            updatedAttributeData[matchingKey] = timeUtil.addDays("esilläolo",updatedAttributeData[matchingKey], daysDifference, state.disabledDates.date_types[dateType].dates,true);  // Move forward
+          } 
+          else if (daysDifference < 0 && !(field.includes("_alkaa") && matchingKey.includes("_paattyy")) && !(field.includes("_paattyy") && matchingKey.includes("_alkaa")) && !(field.includes("_paattyy") && matchingKey.includes("_maaraaika"))) {
+            updatedAttributeData[matchingKey] = timeUtil.subtractDays("esilläolo",updatedAttributeData[matchingKey], -daysDifference, state.disabledDates.date_types[dateType].dates,true);  // Move backward
           }
         }
       });
