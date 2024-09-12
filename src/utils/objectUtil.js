@@ -112,6 +112,19 @@ const getHighestNumberedObject = (obj1,arr) => {
     // Return null or undefined if it's the first index or not found
     return null;
   }
+  //Make these one and the same and add parameter for what type find is
+  const getPreviousObjectByGroup = (arr, deadlinegroup) => {
+    // Find the index of the object where object.name === name
+    const index = arr.findIndex(obj => obj.deadlinegroup === deadlinegroup);
+  
+    // If the index is greater than 0, return the object at one index earlier
+    if (index > 0) {
+      return arr[index - 1];
+    }
+  
+    // Return null or undefined if it's the first index or not found
+    return null;
+  }
 
 export default {
     getHighestNumberedObject,
@@ -119,5 +132,6 @@ export default {
     findValuesWithStrings,
     findLargestSuffix,
     getPreviousObjectByName,
-    getObjectByName
+    getObjectByName,
+    getPreviousObjectByGroup
 }
