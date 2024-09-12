@@ -651,10 +651,10 @@ function* saveProjectFloorArea() {
       yield put(saveProjectFloorAreaSuccessful(true))
       yield put(setAllEditFields())
 
-      yield put(toastr.success(i18.t('messages.timelines-successfully-saved')))
+      toastr.success(i18.t('messages.timelines-successfully-saved'))
     } catch (e) {
       if (e?.code === "ERR_NETWORK") {
-        yield put(toastr.error(i18.t('messages.general-save-error')))
+        toastr.error(i18.t('messages.general-save-error'))
       }
       yield put(stopSubmit(EDIT_FLOOR_AREA_FORM, e.response && e.response.data))
     }
@@ -699,21 +699,19 @@ function* saveProjectTimetable() {
       yield put(setAllEditFields())
 
       if (!checkDeadlines(updatedProject.deadlines)) {
-        yield put(toastr.success(i18.t('messages.deadlines-successfully-saved')))
+        toastr.success(i18.t('messages.deadlines-successfully-saved'))
       } else {
-        yield put(
           toastr.warning(
             i18.t('messages.deadlines-successfully-saved'),
             i18.t('messages.check-timetable')
           )
-        )
       }
     } catch (e) {
       if (e?.code === "ERR_NETWORK") {
-        yield put(toastr.error(i18.t('messages.general-save-error')))
+        toastr.error(i18.t('messages.general-save-error'))
       }
       yield put(stopSubmit(EDIT_PROJECT_TIMETABLE_FORM, e?.response?.data))
-      yield put(toastr.error(i18.t('messages.general-save-error')))
+      toastr.error(i18.t('messages.general-save-error'))
     }
   }
 }
