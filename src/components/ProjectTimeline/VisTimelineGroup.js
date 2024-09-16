@@ -34,6 +34,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [currentFormat, setCurrentFormat] = useState("showMonths");
     const [openConfirmModal, setOpenConfirmModal] = useState(false);
     const [dataToRemove, setDataToRemove] = useState({});
+    const [timelineAddButton, setTimelineAddButton] = useState();
     //const [lock, setLock] = useState({group:false,id:false,locked:false,abbreviation:false});
 
     useImperativeHandle(ref, () => ({
@@ -225,6 +226,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const openAddDialog = (visValRef,data,event) => {
       const [addEsillaolo,nextEsillaolo,addLautakunta,nextLautakunta,esillaoloReason,lautakuntaReason] = canGroupBeAdded(visValRef,data,deadlineSections)
       const rect = event.target.getBoundingClientRect();
+
+      if (event.target.classList.contains('timeline-add-button')) {
+        setTimelineAddButton(event.target);
+      }
       
       setAddDialogStyle({
         left: `${rect.left - 12}px`,
@@ -883,6 +888,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           closeAddDialog={closeAddDialog}
           isAdmin={isAdmin}
           allowedToEdit={allowedToEdit}
+          timelineAddButton={timelineAddButton}
         />
         <ConfirmModal
           openConfirmModal={openConfirmModal}
