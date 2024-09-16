@@ -422,7 +422,6 @@ class EditProjectTimeTableModal extends Component {
         //.setHours(23,59,59,0)
       }
       else if(deadlines[i]?.deadline?.attribute?.includes("esillaolo") || deadlines[i]?.deadline?.attribute?.includes("luonnosaineiston_maaraaika")){
-        console.log("deadlines[i]",deadlines[i])
         if(deadlines[i].deadline.deadline_types.includes('milestone') && deadlines[i].deadline.deadline_types.includes('dashed_start')){
           milestone = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
         }
