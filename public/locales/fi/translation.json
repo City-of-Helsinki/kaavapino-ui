@@ -74,8 +74,10 @@
     "error": "Virhe: {{error}}",
     "warning": "Päivitettyjen aikataulutietojen tallentaminen saattaa kestää hieman pidempään kun Kaavapino tekee laskutoimituksia.",
     "estimated": "Kaavapinon arvio",
-    "project-stopped": "Projekti on toistaiseksi keskeytetty.",
-    "timeline-error": "Projekti ei ole ajan tasalla.",
+    "project-stopped": "Projekti on keskeytetty",
+    "project-stopped-text": "Projekti vastuuhenkilö on keskeyttänyt projektin toistaiseksi. Hän voi aktivoida projektin uudelleen muokkausnäkymästä.",
+    "timeline-error": "Projekti ei ole ajan tasalla",
+    "timeline-error-text": "Projektin vastuuhenkilön tulee päivittää aikataulu.",
     "months": {
       "jan": "Tammi",
       "feb": "Helmi",
