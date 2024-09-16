@@ -5,7 +5,6 @@ import { createDeadlines } from './helpers/createDeadlines'
 import { connect } from 'react-redux'
 import { getProject, getProjectSuccessful } from '../../actions/projectActions'
 import { findWeek } from './helpers/helpers'
-import { IconError } from 'hds-react'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
 
@@ -348,14 +347,16 @@ function ProjectTimeline(props) {
     <div className={containerClass}>
       {onhold ? (
         <div className="timeline-onhold-message">
-          <IconError />
+          <span className='alert-icon-yellow'></span>
           <span>{t('deadlines.project-stopped')}</span>
+          <p>{t('deadlines.project-stopped-text')}</p>
         </div>
       ) : null}
       {showError && !onhold ? (
         <div className="timeline-error-message">
-          <IconError />
+          <span className='icon-error-red'></span>
           <span>{t('deadlines.timeline-error')}</span>
+          <p>{t('deadlines.timeline-error-text')}</p>
         </div>
       ) : null}
       <div
