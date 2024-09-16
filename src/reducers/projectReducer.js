@@ -91,6 +91,7 @@ import {
 } from '../actions/projectActions'
 
 import timeUtil from '../utils/timeUtil'
+import objectUtil from '../utils/objectUtil'
 
 export const initialState = {
   projects: [],
@@ -150,15 +151,17 @@ export const reducer = (state = initialState, action) => {
 
     case UPDATE_DATE_TIMELINE: {
       const { field, newDate, deadlineSectionValues } = action.payload;
+      // Create a copy of the state and attribute_data
+      const updatedAttributeData = { 
+        ...state.currentProject.attribute_data, // Shallow copy of attribute_data
+      };
+      //Sort array by date
+      const origSortedData = timeUtil.sortObjectByDate(updatedAttributeData);
       const newDateObj = new Date(newDate);
       const current = new Date(state.currentProject.attribute_data[field]);
 
       // Calculate the difference in days between the new date and the current date
       const daysDifference = (newDateObj - current) / (1000 * 60 * 60 * 24);
-      // Create a copy of the state and attribute_data
-      const updatedAttributeData = { 
-        ...state.currentProject.attribute_data, // Shallow copy of attribute_data
-      };
 
       // Update the specific date at the given field
       updatedAttributeData[field] = timeUtil.formatDate(newDateObj);
@@ -167,6 +170,7 @@ export const reducer = (state = initialState, action) => {
         const matchingKey = section.name;  // Get the name to match the key in attribute_data
         if (matchingKey !== field) {  // Avoid updating the already changed field
           let dateType = "esilläolopäivät"
+          //Date types determinate what dates can or cannot be selected
           if(matchingKey.includes("_lautakunnassa")){
             dateType = "lautakunnan_kokouspäivät"
           }
@@ -177,20 +181,30 @@ export const reducer = (state = initialState, action) => {
             dateType = "arkipäivät"
           }
 
-          if (daysDifference > 0 && !(field.includes("_alkaa") && matchingKey.includes("_paattyy")) && !(field.includes("_paattyy") && matchingKey.includes("_maaraaika"))) {
-            updatedAttributeData[matchingKey] = timeUtil.addDays("esilläolo",updatedAttributeData[matchingKey], daysDifference, state.disabledDates.date_types[dateType].dates,true);  // Move forward
+          if (daysDifference > 0 && !(matchingKey.includes("_alkaa") && field.includes("_paattyy")) && !(matchingKey.includes("kaynnistys_pvm") && field.includes("_paattyy"))  && !(field.includes("_alkaa") && matchingKey.includes("_paattyy")) && !(field.includes("_paattyy") && matchingKey.includes("_maaraaika"))) {
+            // Move forward
+            updatedAttributeData[matchingKey] = timeUtil.addDays("esilläolo",updatedAttributeData[matchingKey], daysDifference, state.disabledDates.date_types[dateType].dates,true);
           } 
           else if (daysDifference < 0 && !(field.includes("_alkaa") && matchingKey.includes("_paattyy")) && !(field.includes("_paattyy") && matchingKey.includes("_alkaa")) && !(field.includes("_paattyy") && matchingKey.includes("_maaraaika"))) {
-            updatedAttributeData[matchingKey] = timeUtil.subtractDays("esilläolo",updatedAttributeData[matchingKey], -daysDifference, state.disabledDates.date_types[dateType].dates,true);  // Move backward
+            // Move backward
+            updatedAttributeData[matchingKey] = timeUtil.subtractDays("esilläolo",updatedAttributeData[matchingKey], -daysDifference, state.disabledDates.date_types[dateType].dates,true);
           }
         }
       });
+      // Generate array from updatedAttributeData for comparison
+      const updateAttributeArray = objectUtil.generateDateStringArray(updatedAttributeData)
+      //Compare for changes with dates in order sorted array
+      const changes = objectUtil.compareAndUpdateArrays(origSortedData,updateAttributeArray)
+      //Find out is next date below minium and add difference of those days to all values after and move them forward 
+      const decreasingValues = objectUtil.checkForDecreasingValues(changes,daysDifference);
+      //Add new values from array to updatedAttributeData object
+      objectUtil.updateOriginalObject(updatedAttributeData,decreasingValues)
       // Return the updated state with the modified currentProject and attribute_data
       return {
         ...state,
         currentProject: {
           ...state.currentProject,
-          attribute_data: updatedAttributeData, // Use the updated attribute_data directly
+          attribute_data: updatedAttributeData,
         },
       };
     }    

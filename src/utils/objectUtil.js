@@ -1,3 +1,5 @@
+import timeUtil from "./timeUtil";
+
 const getHighestNumberedObject = (obj1,arr) => {
     // Helper function to extract the number from a content string
     const extractNumber = str => parseInt(str.match(/\d+$/), 10);
@@ -126,6 +128,125 @@ const getHighestNumberedObject = (obj1,arr) => {
     return null;
   }
 
+  const generateDateStringArray = (updatedAttributeData) => {
+    const updateAttributeArray = [];
+
+    // Process only the keys with date strings
+    Object.keys(updatedAttributeData)
+      .filter(key => timeUtil.isDate(updatedAttributeData[key])) // Filter only date keys
+      .map(key => ({ key, date: new Date(updatedAttributeData[key]), value: updatedAttributeData[key] })) // Map keys to real Date objects and values
+      .forEach(item => {
+        updateAttributeArray.push({ key: item.key, value: item.value }); // Push each sorted key-value pair into the array
+    });
+
+    return updateAttributeArray
+  }
+
+  const compareAndUpdateArrays = (arr1, arr2) => {
+    let changes = [];
+
+    // Convert arr2 to a map for easier lookups
+    const map2 = new Map(arr2.map(item => [item.key, item.value]));
+  
+    // Iterate through arr1 and update values if a matching key is found in arr2
+    for (let i = 0; i < arr1.length; i++) {
+      const key = arr1[i].key;
+      const value1 = arr1[i].value;
+  
+      if (map2.has(key)) {
+        const value2 = map2.get(key);
+  
+        // If values differ, update the value in arr1 and record the change
+        if (value1 !== value2) {
+          changes.push({
+            key: key,
+            oldValue: value1,
+            newValue: value2
+          });
+          arr1[i].value = value2; // Update the value in arr1
+        }
+      }
+    }
+  
+    // Check for keys in arr2 that are missing in arr1
+    for (let [key, value2] of map2) {
+      if (!arr1.find(item => item.key === key)) {
+        changes.push({
+          key: key,
+          oldValue: 'Not found in first array',
+          newValue: value2
+        });
+        // Optionally, add the missing key-value pair to arr1
+        arr1.push({ key: key, value: value2 });
+      }
+    }
+    //console.log(changes.length > 0 ? changes : "No changes found.")
+    return arr1
+  }
+
+  const checkForDecreasingValues = (arr,daysDifference) => {
+    let decreasingValues = [];
+    let addDaysToFollowing = false;
+    //TODO: move forward only if over minium distance to next
+    //TODO: add same logic when moving phase backwards
+    //TODO: Use logic when adding new groups
+  
+    for (let i = 1; i < arr.length; i++) {
+      let prevValue = new Date(arr[i - 1].value);
+      let currentValue = new Date(arr[i].value); 
+      // If a decreasing value was found previously, apply the daysDifference to this value
+      if (addDaysToFollowing ) {
+        const newDate = new Date(currentValue);
+        newDate.setDate(currentValue.getDate() + daysDifference); // Add the previous difference + 5 days
+        arr[i].value = newDate.toISOString().split('T')[0];
+        // Add the change
+        decreasingValues.push({
+          key: arr[i].key,
+          oldValue: currentValue.toISOString().split('T')[0],
+          newValue: newDate.toISOString().split('T')[0]
+        });
+      }
+  
+      // Check if the current value is smaller than the previous value
+      if (!addDaysToFollowing) {
+        const newDate = new Date(currentValue);
+        // Add the change
+        decreasingValues.push({
+          key: arr[i].key,
+          oldValue: arr[i].value,
+          newValue: newDate.toISOString().split('T')[0]
+        });
+
+        if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet")){
+          //Mielipiteet is same as paattyy
+          newDate.setDate(prevValue.getDate())
+        } 
+        if(timeUtil.dateDifference(arr[i - 1].value,arr[i].value) < 5){
+          const difference = timeUtil.dateDifference(arr[i - 1].value,arr[i].value)
+          //TODO add min days from data not hardcoded number
+          newDate.setDate(currentValue.getDate() + difference + 5); // Add the previous difference + min days
+          // Set flag to true to start applying the difference + 5 to all subsequent values
+          addDaysToFollowing = true;
+        }
+        // Update the array with the new date
+        arr[i].value = newDate.toISOString().split('T')[0];
+        
+      }
+    }
+    //console.log(arr,decreasingValues)
+    return arr
+  }
+
+    // Function to update original object by comparing keys
+  const updateOriginalObject = (originalObj, updatedArr) => {
+    updatedArr.forEach(item => {
+      if (Object.prototype.hasOwnProperty.call(originalObj, item.key)) {
+        originalObj[item.key] = item.value; // Update value if key exists
+      }
+    });
+    return originalObj;
+  }
+
 export default {
     getHighestNumberedObject,
     getMinObject,
@@ -133,5 +254,9 @@ export default {
     findLargestSuffix,
     getPreviousObjectByName,
     getObjectByName,
-    getPreviousObjectByGroup
+    getPreviousObjectByGroup,
+    compareAndUpdateArrays,
+    checkForDecreasingValues,
+    generateDateStringArray,
+    updateOriginalObject
 }
