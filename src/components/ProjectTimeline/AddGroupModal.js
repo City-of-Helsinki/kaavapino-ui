@@ -1,4 +1,4 @@
-import React  from 'react';
+import React, { useEffect }  from 'react';
 import { change } from 'redux-form'
 import { useDispatch } from 'react-redux';
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
@@ -6,7 +6,7 @@ import { IconPlus,Button } from 'hds-react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 
-const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAddDialog, allowedToEdit, isAdmin}) => {
+const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAddDialog, allowedToEdit, isAdmin, timelineAddButton}) => {
   const {t} = useTranslation()
   const dispatch = useDispatch();
 
@@ -24,6 +24,19 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
       closeAddDialog()
     }
   }
+
+  useEffect(() => {
+    if (timelineAddButton) {
+      if (toggleOpenAddDialog) {
+        timelineAddButton.classList.add("menu-open");
+      } else {
+        const timelineAddButtons = document.getElementsByClassName('timeline-add-button');
+        Array.from(timelineAddButtons).forEach(button => {
+          button.classList.remove("menu-open");
+        });
+      }
+    }
+  }, [toggleOpenAddDialog])
 
   return (
     <div className={toggleOpenAddDialog === true ? "vis-add-dialog" : "vis-hide-dialog"} style={addDialogStyle}>
