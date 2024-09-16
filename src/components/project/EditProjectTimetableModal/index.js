@@ -160,7 +160,8 @@ class EditProjectTimeTableModal extends Component {
 
     if (prevProps.attributeData && prevProps.attributeData !== attributeData) {
       //when UPDATE_DATE_TIMELINE updates attribute values
-      initialize(attributeData)
+      Object.keys(attributeData).forEach(fieldName => 
+        this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, fieldName, attributeData[fieldName])));
     }
 
     if(prevProps.formValues && prevProps.formValues !== formValues){
