@@ -286,6 +286,8 @@ class EditProjectTimeTableModal extends Component {
   }
 
   addMainGroup = (deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines) => {
+    const currentDate = new Date().toJSON().slice(0, 10);
+
     phaseData.push({
       id: numberOfPhases,
       content: '',
@@ -303,7 +305,7 @@ class EditProjectTimeTableModal extends Component {
         content: "",
         start: startDate,
         end: endDate,
-        className: "phase-length",
+        className: currentDate > endDate ? "phase-length past" : "phase-length",
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -439,6 +441,8 @@ class EditProjectTimeTableModal extends Component {
 
     let milestone = false
 
+    const currentDate = new Date().toJSON().slice(0, 10);
+
     for (let i = 0; i < deadlines.length; i++) {
       if(deadlines[i].deadline.deadline_types.includes('phase_start')){
         //If formValues has deadlines[i].deadline.attribute use that values, it if not then use deadline[i].date in startDate.
@@ -447,6 +451,7 @@ class EditProjectTimeTableModal extends Component {
         //.setHours(23,59,59,0)
       }
       else if(deadlines[i]?.deadline?.attribute?.includes("esillaolo") || deadlines[i]?.deadline?.attribute?.includes("luonnosaineiston_maaraaika")){
+        console.log("deadlines[i]",deadlines[i])
         if(deadlines[i].deadline.deadline_types.includes('milestone') && deadlines[i].deadline.deadline_types.includes('dashed_start')){
           milestone = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
         }
@@ -456,9 +461,13 @@ class EditProjectTimeTableModal extends Component {
         else if(deadlines[i].deadline.deadline_types.includes('inner_end')){
           innerEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
           innerStyle = "inner-end"
+          if (innerEnd < currentDate) {
+            innerStyle += " past";
+          }
         }
       }
       else if(deadlines[i]?.deadline?.attribute?.includes("nahtavilla") || deadlines[i]?.deadline?.deadlinegroup?.includes("nahtavillaolokerta") || deadlines[i]?.deadline?.attribute?.includes("ehdotus_nahtaville_aineiston_maaraaika")){
+        
         if(deadlines[i].deadline.deadline_types.includes('milestone') && deadlines[i].deadline.deadline_types.includes('dashed_start')){
           milestone = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
         }
@@ -473,6 +482,9 @@ class EditProjectTimeTableModal extends Component {
         else if(deadlines[i].deadline.deadline_types.includes('inner_end')){
           innerEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
           innerStyle = "inner-end"
+          if (innerEnd < currentDate) {
+            innerStyle += " past";
+          }
         }
       }
       else if(deadlines[i]?.deadline?.attribute?.includes("lautakunta") || deadlines[i]?.deadline?.attribute?.includes("lautakunnassa") || 
@@ -485,6 +497,9 @@ class EditProjectTimeTableModal extends Component {
         else if(deadlines[i].deadline.deadline_types.includes('milestone') && deadlines[i].deadline.deadline_types.includes('dashed_end')){
           innerEnd = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
           innerStyle = "board"
+          if (innerEnd < currentDate) {
+            innerStyle += " past";
+          }
         }
         else if(deadlines[i].deadline.deadline_types.includes('inner_start')){
           innerStart = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;

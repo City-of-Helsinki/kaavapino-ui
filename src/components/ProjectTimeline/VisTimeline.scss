@@ -155,9 +155,12 @@
         border:none;
     }
     .vis-item.vis-dot {
-        border: 1px solid #000000;
+        border: 2px solid #000000;
         &.board {
             transform: translate(-12px, -24px) !important;
+        }
+        &.past {
+            background: #B3B3B3;
         }
     }
 
@@ -169,13 +172,16 @@
         border-radius: 15px;
         top: 5.5px !important;
         .vis-item-overflow{
-            border: 1px solid #000000;
+            border: 2px solid #000000;
             background: #fff;
             border-radius: 15px;
             .vis-item-content{
                 pointer-events: auto;
                 padding:0;
             }
+        }
+        &.past .vis-item-overflow {
+            background: #B3B3B3;
         }
     }
 
@@ -197,9 +203,10 @@
         .vis-drag-left{
             height: $size24 !important;
             width: $size24 !important;
+            max-width: 100%;
             top: -10px !important;
             display: inline-block;
-            border: $size1 solid #1a1a1a;
+            border: 2px solid #1a1a1a;
             border-radius: 14px;
             padding: 5px;
             background-color: #fff;
@@ -214,6 +221,15 @@
             padding: 5px;
             background-color: #1a1a1a;
             box-shadow: 0 0 0 2px #1a1a1a;
+        }
+    }
+    .board.past {
+        .vis-drag-left {
+            background-color: #B3B3B3;
+        }
+        .vis-drag-right {
+            outline: 1px solid #B3B3B3;
+            outline-offset: -1px;
         }
     }
 
@@ -231,6 +247,9 @@
                 pointer-events: auto;
                 padding:0;
             }
+        }
+        &.past .vis-item-overflow {
+            background: #B3B3B3;
         }
     }
 
@@ -257,7 +276,6 @@
         position: absolute;
         top: -9.5px !important;
         padding: 0px;
-        border-width: 1px !important;
         border-style: solid;
         border-radius: $size12;
         background-color: #fff;
@@ -485,6 +503,15 @@
                     cursor: pointer;
                     &:hover {
                         background-color: #CCCCFF;
+                    }
+                    &:active, &.menu-open {
+                        background-color: #CCCCFF;
+                        outline: 2px solid #0072c6;
+                        outline-offset: 2px;
+                    }
+                    &:focus, &:focus-visible {
+                        outline: 2px solid #0072c6;
+                        outline-offset: 2px;
                     }
                 }
             }
