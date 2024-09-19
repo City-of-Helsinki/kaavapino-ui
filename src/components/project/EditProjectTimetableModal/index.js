@@ -16,6 +16,8 @@ import VisTimelineGroup from '../../ProjectTimeline/VisTimelineGroup'
 import * as visdata from 'vis-data'
 import ConfirmModal from '../../common/ConfirmModal';
 import withValidateDate from '../../../hocs/withValidateDate';
+import objectUtil from '../../../utils/objectUtil'
+import { updateDateTimeline } from '../../../actions/projectActions';
 
 class EditProjectTimeTableModal extends Component {
   constructor(props) {
@@ -193,6 +195,33 @@ class EditProjectTimeTableModal extends Component {
             });
             this.state.groups.update(existingGroups);
             this.state.items.update(phaseData)
+            const newObjectArray = objectUtil.findDifferencesInObjects(prevProps.formValues,formValues)
+
+            //No dispatch when confirmed is added to formValues as new data
+            if(newObjectArray.length === 0 || (typeof newObjectArray[0]?.obj1 === "undefined"  && typeof newObjectArray[0]?.obj2 === "undefined") || newObjectArray[0]?.key.includes("vahvista")){
+              console.log("no disptach")
+            }
+            else if(typeof newObjectArray[0]?.obj1 === "undefined" && typeof newObjectArray[0]?.obj2 === "string" || newObjectArray[1] && typeof newObjectArray[1]?.obj1 === "undefined" && typeof newObjectArray[1]?.obj2 === "string"){
+              //Get added groups last date field and update all timelines ahead
+              let field
+              let formattedDate
+              for (let i = 0; i < newObjectArray.length; i++) {
+                if(newObjectArray[i]?.key.includes("paattyy") && typeof newObjectArray[i]?.obj2 === "string"){
+                  field = newObjectArray[i]?.key
+                  formattedDate = newObjectArray[i]?.obj2
+                  break;
+                }
+                else if(newObjectArray[i]?.key.includes("lautakunnassa") && typeof newObjectArray[i]?.obj2 === "string"){
+                  field = newObjectArray[i]?.key
+                  formattedDate = newObjectArray[i]?.obj2
+                  break;
+                }
+              }
+              //Dispatch added values to move other values in projectReducer if miniums are reached
+              if(field && formattedDate){
+                this.props.dispatch(updateDateTimeline(field,formattedDate,false,formValues,true,deadlineSections));
+              }
+            }
             this.setState({visValues:formValues})
           }
         }

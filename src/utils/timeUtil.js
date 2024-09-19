@@ -22,7 +22,7 @@
     const differenceInTime = end.getTime() - start.getTime();
 
     // Convert milliseconds to days (1 day = 24 * 60 * 60 * 1000 ms)
-    const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
+    let differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
 
     return differenceInDays;
   }

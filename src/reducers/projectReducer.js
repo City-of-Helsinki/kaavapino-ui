@@ -150,15 +150,22 @@ export const reducer = (state = initialState, action) => {
   switch (action.type) {
 
     case UPDATE_DATE_TIMELINE: {
-      const { field, newDate, deadlineSectionValues } = action.payload;
+      const { field, newDate, deadlineSectionValues, formValues, isAdd, deadlineSections } = action.payload;
+
       // Create a copy of the state and attribute_data
-      const updatedAttributeData = { 
-        ...state.currentProject.attribute_data, // Shallow copy of attribute_data
-      };
+      let updatedAttributeData
+      if(formValues){
+        updatedAttributeData = formValues
+      }
+      else{
+        updatedAttributeData = { 
+          ...state.currentProject.attribute_data, // Shallow copy of attribute_data
+        };
+      }
       //Sort array by date
       const origSortedData = timeUtil.sortObjectByDate(updatedAttributeData);
       const newDateObj = new Date(newDate);
-      const current = new Date(state.currentProject.attribute_data[field]);
+      const current = new Date(updatedAttributeData[field]);
 
       // Calculate the difference in days between the new date and the current date
       const daysDifference = (newDateObj - current) / (1000 * 60 * 60 * 24);
@@ -166,37 +173,40 @@ export const reducer = (state = initialState, action) => {
       // Update the specific date at the given field
       updatedAttributeData[field] = timeUtil.formatDate(newDateObj);
       //Iterate through deadlineSectionValues and match with keys in attribute_data
-      deadlineSectionValues.forEach(section => {
-        const matchingKey = section.name;  // Get the name to match the key in attribute_data
-        if (matchingKey !== field) {  // Avoid updating the already changed field
-          let dateType = "esilläolopäivät"
-          //Date types determinate what dates can or cannot be selected
-          if(matchingKey.includes("_lautakunnassa")){
-            dateType = "lautakunnan_kokouspäivät"
+      // deadlineSectionValues is not used when adding new groups to timeline
+      if(deadlineSectionValues){
+        deadlineSectionValues.forEach(section => {
+          const matchingKey = section.name;  // Get the name to match the key in attribute_data
+          if (matchingKey !== field) {  // Avoid updating the already changed field
+            let dateType = "esilläolopäivät"
+            //Date types determinate what dates can or cannot be selected
+            if(matchingKey.includes("_lautakunnassa")){
+              dateType = "lautakunnan_kokouspäivät"
+            }
+            else if(matchingKey.includes("_maaraaika")){
+              dateType = "työpäivät"
+            }
+            else if(matchingKey.includes("_nahtavilla") || matchingKey.includes("_lausunnot")){
+              dateType = "arkipäivät"
+            }
+  
+            if (daysDifference > 0 && !(matchingKey.includes("_alkaa") && field.includes("_paattyy")) && !(matchingKey.includes("kaynnistys_pvm") && field.includes("_paattyy"))  && !(field.includes("_alkaa") && matchingKey.includes("_paattyy")) && !(field.includes("_paattyy") && matchingKey.includes("_maaraaika"))) {
+              // Move forward
+              updatedAttributeData[matchingKey] = timeUtil.addDays("esilläolo",updatedAttributeData[matchingKey], daysDifference, state.disabledDates.date_types[dateType].dates,true);
+            } 
+            else if (daysDifference < 0 && !(field.includes("_alkaa") && matchingKey.includes("_paattyy")) && !(field.includes("_paattyy") && matchingKey.includes("_alkaa")) && !(field.includes("_paattyy") && matchingKey.includes("_maaraaika"))) {
+              // Move backward
+              updatedAttributeData[matchingKey] = timeUtil.subtractDays("esilläolo",updatedAttributeData[matchingKey], -daysDifference, state.disabledDates.date_types[dateType].dates,true);
+            }
           }
-          else if(matchingKey.includes("_maaraaika")){
-            dateType = "työpäivät"
-          }
-          else if(matchingKey.includes("_nahtavilla") || matchingKey.includes("_lausunnot")){
-            dateType = "arkipäivät"
-          }
-
-          if (daysDifference > 0 && !(matchingKey.includes("_alkaa") && field.includes("_paattyy")) && !(matchingKey.includes("kaynnistys_pvm") && field.includes("_paattyy"))  && !(field.includes("_alkaa") && matchingKey.includes("_paattyy")) && !(field.includes("_paattyy") && matchingKey.includes("_maaraaika"))) {
-            // Move forward
-            updatedAttributeData[matchingKey] = timeUtil.addDays("esilläolo",updatedAttributeData[matchingKey], daysDifference, state.disabledDates.date_types[dateType].dates,true);
-          } 
-          else if (daysDifference < 0 && !(field.includes("_alkaa") && matchingKey.includes("_paattyy")) && !(field.includes("_paattyy") && matchingKey.includes("_alkaa")) && !(field.includes("_paattyy") && matchingKey.includes("_maaraaika"))) {
-            // Move backward
-            updatedAttributeData[matchingKey] = timeUtil.subtractDays("esilläolo",updatedAttributeData[matchingKey], -daysDifference, state.disabledDates.date_types[dateType].dates,true);
-          }
-        }
-      });
+        });
+      }
       // Generate array from updatedAttributeData for comparison
       const updateAttributeArray = objectUtil.generateDateStringArray(updatedAttributeData)
       //Compare for changes with dates in order sorted array
-      const changes = objectUtil.compareAndUpdateArrays(origSortedData,updateAttributeArray)
+      const changes = objectUtil.compareAndUpdateArrays(origSortedData,updateAttributeArray,deadlineSections)
       //Find out is next date below minium and add difference of those days to all values after and move them forward 
-      const decreasingValues = objectUtil.checkForDecreasingValues(changes,daysDifference);
+      const decreasingValues = objectUtil.checkForDecreasingValues(changes,isAdd,field);
       //Add new values from array to updatedAttributeData object
       objectUtil.updateOriginalObject(updatedAttributeData,decreasingValues)
       // Return the updated state with the modified currentProject and attribute_data

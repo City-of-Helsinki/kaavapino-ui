@@ -32,7 +32,8 @@ const DeadLineInput = ({
   maxDateToMove,
   groupName,
   visGroups, 
-  visItems
+  visItems,
+  deadlineSections
 }) => {
 
   const { t } = useTranslation()
@@ -261,7 +262,7 @@ const DeadLineInput = ({
         const currentPhase = objectUtil.getPreviousObjectByGroup(visGroups,currentDeadline?.deadline?.deadlinegroup)
         let visItemsFiltered = visItems.filter(info => info.type !== "background")
         let phaseToCheck = visItemsFiltered.find(({id}) => id === currentPhase.id)
-        let previousGroupEndDate = phaseToCheck.end
+        let previousGroupEndDate = phaseToCheck?.end
         dateType = currentDeadline?.deadline?.attribute?.includes('maaraaika') ? 'työpäivät' : 'lautakunnan_kokouspäivät';
         const minEndDate = timeUtil.addDays("esillesilläolo",previousGroupEndDate,distanceTo,dateTypes?.[dateType]?.dates,true)
         let newDisabledDates = dateTypes?.[dateType]?.dates
@@ -312,8 +313,7 @@ const DeadLineInput = ({
       else{
         deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey].filter(section => section.type === "date" && section.display !== "readonly");
       }
-
-      dispatch(updateDateTimeline(field,formattedDate,deadlineSectionValues));
+      dispatch(updateDateTimeline(field,formattedDate,deadlineSectionValues,false,false,deadlineSections));
       //let date = validateDate(field, projectName, formattedDate, setWarning);
       //if (date !== currentValue) {
       //input.onChange(formattedDate);
