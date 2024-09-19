@@ -112,9 +112,9 @@ export const SET_DATE_VALIDATION_RESULT = 'setDateValidationResult';
 export const REMOVE_DEADLINES = 'removeDeadlines';
 export const UPDATE_DATE_TIMELINE = "updateDateTimeline"
 
-export const updateDateTimeline = (field, newDate, deadlineSectionValues) => ({
+export const updateDateTimeline = (field, newDate, deadlineSectionValues, formValues, isAdd, deadlineSections) => ({
   type: UPDATE_DATE_TIMELINE,
-  payload: { field, newDate, deadlineSectionValues },
+  payload: { field, newDate, deadlineSectionValues, formValues, isAdd, deadlineSections},
 });
 export const removeDeadlines = (deadlines) => ({
   type: REMOVE_DEADLINES,

@@ -103,6 +103,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
             groupName={title}
             visGroups={groups}
             visItems={items}
+            deadlineSections={deadlineSections}
           />
           {modifiedError && <div className="field-error">{modifiedError}</div>}
         </>
