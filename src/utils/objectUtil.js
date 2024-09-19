@@ -142,9 +142,8 @@ const getHighestNumberedObject = (obj1,arr) => {
     return updateAttributeArray
   }
 
-  const compareAndUpdateArrays = (arr1, arr2) => {
+  const compareAndUpdateArrays = (arr1, arr2, deadlineSections) => {
     let changes = [];
-
     // Convert arr2 to a map for easier lookups
     const map2 = new Map(arr2.map(item => [item.key, item.value]));
   
@@ -180,60 +179,112 @@ const getHighestNumberedObject = (obj1,arr) => {
         arr1.push({ key: key, value: value2 });
       }
     }
-    //console.log(changes.length > 0 ? changes : "No changes found.")
+    // Adding distance_from_previous and distance_to_next to arr1 from deadlineSections
+    for (let i = 0; i < arr1.length; i++) {
+      const arr1Key = arr1[i].key;
+
+      // Iterate over each section in deadlineSections
+      for (let section of deadlineSections) {
+        // Iterate over each attribute in section's attributes array
+        for (let sec of section.sections) {
+          for (let attribute of sec.attributes) {
+            if (attribute.name === arr1Key) {
+              // Found a match, now add distance_from_previous and distance_to_next
+              arr1[i].distance_from_previous = attribute.distance_from_previous || null;
+              arr1[i].distance_to_next = attribute.distance_to_next || null;
+              arr1[i].order = i
+              break; // Exit the loop once the match is found
+            }
+          }
+        }
+      }
+    }
+
+    // Extract the order of keys (names) from deadlineSections
+    //DeadlineSections has the correct order always
+    let keyOrder = [];
+    for (let section of deadlineSections) {
+      for (let sec of section.sections) {
+        for (let attribute of sec.attributes) {
+          keyOrder.push(attribute.name);  // Get the order of names
+        }
+      }
+    }
+
+    // Sort arr1 based on the keyOrder extracted from deadlineSections
+    arr1.sort((a, b) => {
+      return keyOrder.indexOf(a.key) - keyOrder.indexOf(b.key);
+    });
+    //Return in order array ready for comparing next and previous value distances
     return arr1
   }
 
-  const checkForDecreasingValues = (arr,daysDifference) => {
-    let decreasingValues = [];
-    let addDaysToFollowing = false;
-    //TODO: move forward only if over minium distance to next
+  const checkForDecreasingValues = (arr,isAdd,field) => {
     //TODO: add same logic when moving phase backwards
-    //TODO: Use logic when adding new groups
-  
-    for (let i = 1; i < arr.length; i++) {
-      let prevValue = new Date(arr[i - 1].value);
-      let currentValue = new Date(arr[i].value); 
-      // If a decreasing value was found previously, apply the daysDifference to this value
-      if (addDaysToFollowing ) {
-        const newDate = new Date(currentValue);
-        newDate.setDate(currentValue.getDate() + daysDifference); // Add the previous difference + 5 days
-        arr[i].value = newDate.toISOString().split('T')[0];
-        // Add the change
-        decreasingValues.push({
-          key: arr[i].key,
-          oldValue: currentValue.toISOString().split('T')[0],
-          newValue: newDate.toISOString().split('T')[0]
-        });
-      }
-  
-      // Check if the current value is smaller than the previous value
-      if (!addDaysToFollowing) {
-        const newDate = new Date(currentValue);
-        // Add the change
-        decreasingValues.push({
-          key: arr[i].key,
-          oldValue: arr[i].value,
-          newValue: newDate.toISOString().split('T')[0]
-        });
-
-        if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet")){
-          //Mielipiteet is same as paattyy
-          newDate.setDate(prevValue.getDate())
-        } 
-        if(timeUtil.dateDifference(arr[i - 1].value,arr[i].value) < 5){
-          const difference = timeUtil.dateDifference(arr[i - 1].value,arr[i].value)
-          //TODO add min days from data not hardcoded number
-          newDate.setDate(currentValue.getDate() + difference + 5); // Add the previous difference + min days
-          // Set flag to true to start applying the difference + 5 to all subsequent values
-          addDaysToFollowing = true;
+    // Find the index of the next item where dates should start being pushed
+    const nextIndex = arr.findIndex(item => item?.key === field) + 1
+    // If adding items
+    if (isAdd) {
+      // Move the nextItem and all following items forward if item minium is exceeded
+      for (let i = nextIndex; i < arr.length; i++) {
+        let newDate = new Date(arr[i].value);
+        let dateDiff = timeUtil.dateDifference(arr[i - 1].value, arr[i].value)
+        //At the moment some previous values are falsely null for some reason, can be remove when is fixed on backend and Excel.
+        const miniumGap = arr[i].distance_from_previous === null ? arr[i].key.includes("lautakunnassa") ? 27 : 5 : arr[i].distance_from_previous 
+        //If difference in previous and current value is below minium
+        if(dateDiff < miniumGap){
+          if(arr[i - 1].key.includes("mielipiteet") && arr[i].key.includes("paattyy")){
+            //mielipiteet and paattyy is always the same value
+            dateDiff = 0
+          }
+          else{
+            //Check if value is negative. Added value went further in timeline then next value. Convert to positive + minium
+            if(dateDiff < 0){
+              dateDiff = Math.abs(dateDiff)
+              dateDiff = dateDiff + miniumGap
+            }
+            else{
+              //Positive so reduce from gap 
+              dateDiff = miniumGap - dateDiff
+            }
+          }
+          //Add difference to date and move it forward in timeline
+          newDate.setDate(newDate.getDate() + dateDiff);
         }
         // Update the array with the new date
         arr[i].value = newDate.toISOString().split('T')[0];
-        
       }
     }
-    //console.log(arr,decreasingValues)
+    else{
+      for (let i = nextIndex; i < arr.length; i++) {
+        let newDate = new Date(arr[i].value);
+        let dateDiff = timeUtil.dateDifference(arr[i - 1].value,arr[i].value)
+        //At the moment some previous values are falsely null for some reason, can be remove when is fixed on backend and Excel.
+        const miniumGap = arr[i].distance_from_previous === null ? arr[i].key.includes("lautakunnassa") ? 27 : 5 : arr[i].distance_from_previous 
+        //If difference in previous and current value is below minium
+        if(dateDiff < miniumGap){
+          if(arr[i - 1].key.includes("mielipiteet") && arr[i].key.includes("paattyy")){
+            //mielipiteet and paattyy is always the same value
+            dateDiff = 0
+          }
+          else{
+            //Check if value is negative. Added value went further in timeline then next value. Convert to positive + minium
+            if(dateDiff < 0){
+              dateDiff = Math.abs(dateDiff)
+              dateDiff = dateDiff + miniumGap
+            }
+            else{
+              //Positive so reduce from gap 
+              dateDiff = miniumGap - dateDiff
+            }
+          }
+          //Add difference to date and move it forward in timeline
+          newDate.setDate(newDate.getDate() + dateDiff);
+        }
+        // Update the array with the new date
+        arr[i].value = newDate.toISOString().split('T')[0];
+      }
+    }
     return arr
   }
 
@@ -247,6 +298,40 @@ const getHighestNumberedObject = (obj1,arr) => {
     return originalObj;
   }
 
+  // Helper function to compare values
+  const compareObjectValues = (key, value1, value2) => {
+      if (typeof value1 === 'object' && typeof value2 === 'object') {
+        return findDifferencesInObjects(value1, value2).map(diff => ({
+          key: `${key}.${diff.key}`, // Nesting the key to show hierarchy
+          obj1: diff.obj1,
+          obj2: diff.obj2
+      })); // Recursively compare if both are objects
+      } else if (value1 !== value2) {
+        return [{ key, obj1: value1, obj2: value2 }]; // Return an array of differences
+      }
+      return []; // No difference
+    }
+  // compare 2 objects and get differences and return them in array
+  const findDifferencesInObjects = (obj1, obj2) => {
+    let differences = [];
+
+    // Compare properties of obj1 and obj2
+    for (let key in obj1) {
+        if (Object.hasOwn(obj1, key)) {
+          const diff = compareObjectValues(key, obj1[key], obj2[key]);
+          differences = [...differences, ...diff];
+        }
+    }
+    // Check for properties that are in obj2 but not in obj1
+    for (let key in obj2) {
+        if (Object.hasOwn(obj2, key) && !(key in obj1)) {
+            differences.push({ key, obj1: undefined, obj2: obj2[key] });
+        }
+    }
+
+    return differences;
+}
+
 export default {
     getHighestNumberedObject,
     getMinObject,
@@ -258,5 +343,7 @@ export default {
     compareAndUpdateArrays,
     checkForDecreasingValues,
     generateDateStringArray,
-    updateOriginalObject
+    updateOriginalObject,
+    findDifferencesInObjects,
+    compareObjectValues
 }

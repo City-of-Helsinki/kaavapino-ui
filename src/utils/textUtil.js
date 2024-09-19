@@ -45,8 +45,15 @@ const replacePattern = (key,patternToReplace,replaceablePattern) => {
     return newKey;
 }
 
+// Return the first matching substring
+const getFirstMatchingSubstring = (str, substrings) => {
+    const lowerCaseStr = str.toLowerCase();
+    return substrings.find(substring => lowerCaseStr.includes(substring.toLowerCase())) || null;
+};
+
 export default {
     replaceScandics,
     capitalizeAndRemoveUnderscores,
-    replacePattern
+    replacePattern,
+    getFirstMatchingSubstring
 }
