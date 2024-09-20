@@ -1,6 +1,7 @@
 import React, {useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { change } from 'redux-form'
 import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import Moment from 'moment'
 import 'moment/locale/fi';
@@ -20,6 +21,8 @@ Moment().locale('fi');
 const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups}, ref) => {
     const dispatch = useDispatch();
     const moment = extendMoment(Moment);
+
+    const { t } = useTranslation()
 
     const timelineRef = useRef(null);
     const timelineInstanceRef = useRef(null);
@@ -666,49 +669,29 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           .replace(/[ö]/gi, 'o')  // Replace ö with o
           .toLowerCase(); // Convert to lowercase
 
+          let wordsToCheck = ["vahvista_",words[0], normalizedString, words[2] === "1" ? "" : words[2]];
+          const keys = Object.entries(visValuesRef?.current);
+
+          const deletableGroup = keys.some(([key, value]) =>{
+            const allWordsInKey = wordsToCheck.every(word => key.includes(word))
+            if(allWordsInKey){
+              if(value){
+                return true
+              }
+              else{
+                return false; // stop iterating and return false
+              }
+            }
+          });
+
           //Don't show buttons in these groups
           const stringsToCheck = ["Käynnistys", "Hyväksyminen", "Voimaantulo", "Vaiheen kesto"];
           const contentIncludesString = stringsToCheck.some(str => group?.content.includes(str));
+
             // Hover effect
           container.addEventListener("mouseenter", function() {
-            let words = group.deadlinegroup?.split("_") || [];
-            let words2 = group.content?.split("-") || [];
-            let normalizedString = words2[0]
-            .replace(/[äå]/gi, 'a') // Replace ä and å with a
-            .replace(/[ö]/gi, 'o')  // Replace ö with o
-            .toLowerCase(); // Convert to lowercase
-            let wordsToCheck = ["vahvista_",words[0], normalizedString, words[2] === "1" ? "" : words[2]];
             // Action to perform on hover enter, e.g., change background color
             container.classList.add("show-buttons");
-            const keys = Object.entries(visValuesRef?.current);
-            const deletableGroup = keys.some(([key, value]) =>{
-              const allWordsInKey = wordsToCheck.every(word => key.includes(word))
-              if(allWordsInKey){
-                if(value){
-                  return true
-                }
-                else{
-                  return false; // stop iterating and return false
-                }
-              }
-            });
-            //only not confirmed groups can be deleted
-            if(!deletableGroup && !group.undeletable){
-               // Select the button within the container
-              const button = container.querySelector('.timeline-buttons-container .timeline-remove-button');
-              if(button){
-                // Remove the "button-disabled" class
-                if(button?.classList.contains('button-disabled')){
-                  button?.classList.remove('button-disabled');
-                }
-              }
-            }
-            else{
-              const button = container.querySelector('.timeline-buttons-container .timeline-remove-button');
-              if(!button?.classList.contains('button-disabled')){
-                button?.classList.add('button-disabled');
-              }
-            }
           });
           container.addEventListener("mouseleave", function() {
             // Action to perform on hover leave
@@ -751,15 +734,34 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               let remove = document.createElement("button");
               remove.classList.add("timeline-remove-button");
 
-              if(visValuesRef?.current[`vahvista_${words[0]}_${normalizedString}_alkaa_${words[2]}`]){
+              // Tooltip for disabled remove button
+              let removeTextDiv = "";
+              if (label.innerHTML.includes("Esilläolo")) {
+                removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-first-esillaolo')}</div>`;
+              } else if (label.innerHTML.includes("Lautakunta")) {
+                removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-first-lautakunta')}</div>`;
+              } else if (label.innerHTML.includes("Nahtavillaolo")) {
+                removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-first-nahtavillaolo')}</div>`;
+              }
+
+              //only not confirmed groups can be deleted
+              if(deletableGroup || group.undeletable || visValuesRef?.current[`vahvista_${words[0]}_${normalizedString}_alkaa_${words[2]}`]){
+                // add button-disabled class to the remove button if the group is not deletable
                 remove.classList.add("button-disabled")
               }
               remove.style.fontSize = "small";
 
               remove.addEventListener("click", function () {
+                // disabled button can't be clicked
+                if (!remove.classList.contains("button-disabled")) {
                   openRemoveDialog(group);
+                }
               });
+
               container.insertAdjacentElement("beforeEnd", remove);
+
+              // add tooltip for disaqbled remove buttons
+              deletableGroup || group.undeletable ? container.insertAdjacentHTML("beforeEnd", removeTextDiv) : "";
 
               let lock = document.createElement("button");
               lock.classList.add("timeline-lock-button");
