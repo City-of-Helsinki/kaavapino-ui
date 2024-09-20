@@ -230,6 +230,16 @@ class CustomField extends Component {
       )
     }
 
+    //temp fix because data is not added in backend to deadlines
+    if(typeof current === "undefined"){
+      if(props.input.name === "viimeistaan_lausunnot_ehdotuksesta"){
+        current = deadlines.find(
+          deadline => deadline.deadline.abbreviation === "E9"
+        )
+        current.deadline.attribute = "viimeistaan_lausunnot_ehdotuksesta"
+      }
+    }
+
     if (current && deadlines && deadlines.length > 0 || isProjectTimetableEdit) {
       return (
         <DeadLineInput
