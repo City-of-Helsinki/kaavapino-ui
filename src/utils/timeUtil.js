@@ -50,7 +50,7 @@
   }
   
   // Function to add days to a date and return in "YYYY-MM-DD" format
-  const addDays = (type, date, days, disabledDates,excludeWeekends) => {
+  const addDays = (type, date, days, disabledDates,excludeWeekends,constantDistance) => {
     let newDate = new Date(date);
     let filter = ""
     //if date is supposed to be in filter or not be in filter
@@ -62,6 +62,13 @@
       isInFilter = false
     }
     else if(type === "arkipäivät"){
+      filter = disabledDates
+      isInFilter = false
+    }
+    else if(type === "lautakunta"){
+      //TODO add logic to check constant distance between two items somewhere
+      console.log(date,constantDistance,days)
+      //keep distance between dates the same if possible
       filter = disabledDates
       isInFilter = false
     }
