@@ -663,10 +663,9 @@ function* saveProjectFloorArea() {
 function* saveProjectTimetable() {
   yield put(startSubmit(EDIT_PROJECT_TIMETABLE_FORM))
 
-  const { initial, values, registeredFields } = yield select(
+  const { initial, values } = yield select(
     editProjectTimetableFormSelector
   )
-  const currentProject = yield select(currentProjectSelector)
   const currentProjectId = yield select(currentProjectIdSelector)
 
   if (values) {
@@ -675,16 +674,6 @@ function* saveProjectTimetable() {
     if(attribute_data.oikaisukehoituksen_alainen_readonly){
       delete attribute_data.oikaisukehoituksen_alainen_readonly
     }
-
-    const deadlineAttributes = currentProject.deadline_attributes
-    // Add missing fields as a null to payload since there are
-    // fields which can be hidden according the user selection. 
-    // If old values are left, it will break the timelines.
-    deadlineAttributes.forEach(attribute => {
-      if (registeredFields && !registeredFields[attribute]) {
-        attribute_data = { ...attribute_data, [attribute]: null }
-      }
-    })
 
     try {
       const updatedProject = yield call(
