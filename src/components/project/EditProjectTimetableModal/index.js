@@ -635,7 +635,7 @@ class EditProjectTimeTableModal extends Component {
     //Add distance values,matching name and from what data was value calculated from to check later from deadlinesection data
     let distanceArray = []
     for (let i = 0; i < this.props.deadlineSections.length; i++) {
-      if(this.props.deadlineSections[i].title === phaseNormalized){
+      if(this.props.deadlineSections[i].title.toLowerCase() === phaseNormalized.toLowerCase()){
         const sections = this.props.deadlineSections[i].sections[0].attributes
         for (let x = 0; x < sections.length; x++) {
           distanceArray.push({"name":sections[x].name,"distance":sections[x].distance_from_previous,"linkedData":sections[x].previous_deadline})
