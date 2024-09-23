@@ -37,55 +37,12 @@ const DeadLineInput = ({
 }) => {
 
   const { t } = useTranslation()
-  //const validateDate = useValidateDate();
-  //const [warning, setWarning] = useState({warning:false,response:{reason:"",suggested_date:"",conflicting_deadline:""}})
   const validated = useSelector(validatedSelector);
-  //const dateValidationResult = useSelector(dateValidationResultSelector);
+  const formValues = useSelector(getFormValues(EDIT_PROJECT_TIMETABLE_FORM))
   const dispatch = useDispatch();
+  const [currentValue, setCurrentValue] = useState("")
 
-  let inputValue = input.value
-  if (autofillRule) {
-    const formValues = useSelector(getFormValues(EDIT_PROJECT_TIMETABLE_FORM))
-    
-    if (autofillRule && autofillRule.length > 0) {
-      inputValue = getFieldAutofillValue(
-        autofillRule,
-        formValues,
-        input.name,
-        EDIT_PROJECT_TIMETABLE_FORM
-      )
-    }
-  }
 
-  if ( inputValue === null ) {
-    inputValue = ''
-  }
-  let currentDeadlineDate = ''
-  const index = input.name.match(/\d+/);
-  const indexString = index ? "_"+index[0] : '';
-
-  if(currentDeadline?.deadline?.attribute && attributeData[currentDeadline.deadline.attribute]){
-    currentDeadlineDate = attributeData[currentDeadline.deadline.attribute]
-  }
-  else if(input.name === 'luonnosaineiston_maaraaika'+indexString && attributeData['kaavaluonnos_kylk_aineiston_maaraaika'+indexString]){
-    inputValue = attributeData['kaavaluonnos_kylk_aineiston_maaraaika'+indexString]
-  }
-  else if (currentDeadline?.date) {
-    currentDeadlineDate = currentDeadline.date
-  }
-
-/*   useEffect(() => {
-    if(dateValidationResult?.result?.date && input.name === dateValidationResult?.result?.identifier){
-      const validValue = dateValidationResult?.result?.suggested_date ? dateValidationResult?.result?.suggested_date : dateValidationResult?.result?.date;
-      setCurrentValue(validValue);
-      //update redux formValues and re render
-      dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, input.name, validValue));
-    }
-  }, [dateValidationResult]) */
-
-  const [currentValue, setCurrentValue] = useState(
-    currentDeadline ? currentDeadlineDate : inputValue 
-  )
   let currentError
   const generated = currentDeadline && currentDeadline.generated
 
@@ -121,10 +78,45 @@ const DeadLineInput = ({
   }
 
   useEffect(() => {
-    //TODO add all other values to in useEffect so no spam render
-    //Update when calendar is updated and UPDATE_DATE_TIMELINE logic happens
-    setCurrentValue(input.value); 
-  }, [attributeData])
+    let inputValue = input.value
+    if (autofillRule) {
+      
+      if (autofillRule && autofillRule.length > 0) {
+        inputValue = getFieldAutofillValue(
+          autofillRule,
+          formValues,
+          input.name,
+          EDIT_PROJECT_TIMETABLE_FORM
+        )
+      }
+    }
+
+    if ( inputValue === null ) {
+      inputValue = ''
+    }
+    let currentDeadlineDate = ''
+    const index = input.name.match(/\d+/);
+    const indexString = index ? "_"+index[0] : '';
+  
+    if(currentDeadline?.deadline?.attribute && attributeData[currentDeadline.deadline.attribute]){
+      currentDeadlineDate = attributeData[currentDeadline.deadline.attribute]
+    }
+    else if(input.name === 'luonnosaineiston_maaraaika'+indexString && attributeData['kaavaluonnos_kylk_aineiston_maaraaika'+indexString]){
+      inputValue = attributeData['kaavaluonnos_kylk_aineiston_maaraaika'+indexString]
+    }
+    else if (currentDeadline?.date) {
+      currentDeadlineDate = currentDeadline.date
+    }
+  
+    setCurrentValue(currentDeadline ? currentDeadlineDate : inputValue ); 
+  },[])
+
+  useEffect(() => {
+    //Update calendar values when value has changed
+    if(currentValue !== input.value){
+      setCurrentValue(input.value); 
+    }
+  }, [input.value])
 
   const getInitialMonth = (dateString) => {
     let date;
@@ -284,7 +276,7 @@ const DeadLineInput = ({
 
     return day === 0 || day === 6 || datesToDisable;
   }
-  
+
   const formatDateToYYYYMMDD = (date) => {
     if(typeof date !== 'object' && date?.includes('.')){
       const dateParts = date.split(".");
@@ -302,7 +294,6 @@ const DeadLineInput = ({
   const handleDateChange = (formattedDate) => {
     try {
       const field = input.name;
-      //const projectName = attributeData['projektin_nimi'];
       //Get date type objects and send them to reducer to be moved according to input date changed
       const dynamicKey = Object.keys(deadlineSection.deadlineSection)[0];
       let deadlineSectionValues
@@ -313,12 +304,9 @@ const DeadLineInput = ({
       else{
         deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey].filter(section => section.type === "date" && section.display !== "readonly");
       }
+      setCurrentValue(formattedDate)
       dispatch(updateDateTimeline(field,formattedDate,deadlineSectionValues,false,false,deadlineSections));
-      //let date = validateDate(field, projectName, formattedDate, setWarning);
-      //if (date !== currentValue) {
-      //input.onChange(formattedDate);
-      //setCurrentValue(formattedDate);
-      //}
+
     } catch (error) {
       console.error('Validation error:', error);
     }
