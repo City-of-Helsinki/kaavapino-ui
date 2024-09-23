@@ -233,9 +233,10 @@ const getHighestNumberedObject = (obj1,arr) => {
         const miniumGap = arr[i].distance_from_previous === null ? arr[i].key.includes("lautakunnassa") ? 27 : 5 : arr[i].distance_from_previous 
         //If difference in previous and current value is below minium
         if(dateDiff < miniumGap){
-          if(arr[i - 1].key.includes("mielipiteet") && arr[i].key.includes("paattyy")){
+          if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")){
             //mielipiteet and paattyy is always the same value
             dateDiff = 0
+            newDate = new Date(arr[i - 1].value);
           }
           else{
             //Check if value is negative. Added value went further in timeline then next value. Convert to positive + minium
@@ -244,8 +245,13 @@ const getHighestNumberedObject = (obj1,arr) => {
               dateDiff = dateDiff + miniumGap
             }
             else{
-              //Positive so reduce from gap 
-              dateDiff = miniumGap - dateDiff
+              if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")){
+                dateDiff = 0
+              }
+              else{
+                //Positive so reduce from gap 
+                dateDiff = miniumGap - dateDiff
+              }
             }
           }
           //Add difference to date and move it forward in timeline
@@ -263,22 +269,19 @@ const getHighestNumberedObject = (obj1,arr) => {
         const miniumGap = arr[i].distance_from_previous === null ? arr[i].key.includes("lautakunnassa") ? 27 : 5 : arr[i].distance_from_previous 
         //If difference in previous and current value is below minium
         if(dateDiff < miniumGap){
-          console.log(arr[i - 1])
           if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")){
             //mielipiteet and paattyy is always the same value
             dateDiff = 0
+            newDate = new Date(arr[i - 1].value);
           }
           else{
             //Check if value is negative. Added value went further in timeline then next value. Convert to positive + minium
             if(dateDiff < 0){
-              console.log(arr[i - 1],arr[i])
               dateDiff = Math.abs(dateDiff)
               dateDiff = dateDiff + miniumGap
             }
             else{
-              console.log(arr[i - 1],arr[i])
               if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")){
-                console.log("nolla")
                 dateDiff = 0
               }
               else{
@@ -289,7 +292,6 @@ const getHighestNumberedObject = (obj1,arr) => {
           }
           //Add difference to date and move it forward in timeline
           newDate.setDate(newDate.getDate() + dateDiff);
-          console.log(arr[i],dateDiff,newDate)
         }
         // Update the array with the new date
         arr[i].value = newDate.toISOString().split('T')[0];
