@@ -244,19 +244,19 @@ const DeadLineInput = ({
         }
       } 
       else if (currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')) {
-         /*
+        
         const dynamicKey = Object.keys(deadlineSection.deadlineSection)[0];
         const deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey]
-        const distanceTo = input.name.includes("maaraaika") ? deadlineSectionValues.find(({ name }) => name === input.name).distance_from_previous : deadlineSectionValues.find(({ name }) => name === input.name).distance_to_next */
+        //const distanceTo = input.name.includes("maaraaika") ? deadlineSectionValues.find(({ name }) => name === input.name).distance_from_previous : deadlineSectionValues.find(({ name }) => name === input.name).distance_to_next
         //Ei tuu minimejä backend, ota yllä oleva käyttöön kun tulee? Alla väliaikanen kovakoodaus.
-        const distanceTo = input.name.includes("maaraaika") ? 5 : 27 
-
+        const distanceTo = input.name.includes("maaraaika") ? 5 : 27
+        const constDistance = deadlineSectionValues.find(({ name }) => name.includes("_lautakunnassa"))?.initial_distance?.distance
         const currentPhase = objectUtil.getPreviousObjectByGroup(visGroups,currentDeadline?.deadline?.deadlinegroup)
         let visItemsFiltered = visItems.filter(info => info.type !== "background")
         let phaseToCheck = visItemsFiltered.find(({id}) => id === currentPhase.id)
         let previousGroupEndDate = phaseToCheck?.end
         dateType = currentDeadline?.deadline?.attribute?.includes('maaraaika') ? 'työpäivät' : 'lautakunnan_kokouspäivät';
-        const minEndDate = timeUtil.addDays("esillesilläolo",previousGroupEndDate,distanceTo,dateTypes?.[dateType]?.dates,true)
+        const minEndDate = timeUtil.addDays("lautakunta",previousGroupEndDate,distanceTo,dateTypes?.[dateType]?.dates,true,constDistance)
         let newDisabledDates = dateTypes?.[dateType]?.dates
         newDisabledDates = newDisabledDates.filter(date => date >= minEndDate)
         return !newDisabledDates.includes(formatDate(date));
