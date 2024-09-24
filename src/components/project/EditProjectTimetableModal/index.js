@@ -35,14 +35,6 @@ class EditProjectTimeTableModal extends Component {
     this.timelineRef = createRef();
   }
 
-  trimPhase = (phase) => {
-    let phaseOnly = phase.split('.', 2); // Split the string at the first dot
-    if (!isNaN(phaseOnly[0])) {  // Check if the part before the dot is a number
-      phaseOnly = phaseOnly[1].trim();  // The part after the dot, with leading/trailing spaces removed
-    }
-    return phaseOnly
-  } 
-
   componentDidMount() {
     const { initialize, attributeData, deadlines, deadlineSections, disabledDates,lomapaivat } = this.props
     initialize(attributeData)
@@ -60,93 +52,6 @@ class EditProjectTimeTableModal extends Component {
       items = this.findConsecutivePeriods(lomapaivat,items,true)
       this.setState({items,groups,visValues:attributeData})
     }
-  }
-
-  addOneDay = (dateString) => {
-    // Parse the input string into a Date object
-    const date = new Date(dateString);
-    
-    // Add one day (24 hours * 60 minutes * 60 seconds * 1000 milliseconds)
-    date.setTime(date.getTime() + (24 * 60 * 60 * 1000));
-    
-    // Format the new date back into "YYYY-MM-DD" format
-    const year = date.getFullYear();
-    // getMonth() returns 0-11; adding 1 to get 1-12 for months
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    
-    return `${year}-${month}-${day}`;
-  }
-
-  findConsecutivePeriods = (dates,items,holidays) => {
-    if (!Array.isArray(dates) || dates.length === 0) {
-      return [];
-    }
-  
-    let start = dates[0];
-    let end = dates[0];
-  
-    for (let i = 1; i < dates.length; i++) {
-      const currentDate = new Date(dates[i]);
-      const previousDate = new Date(dates[i - 1]);
-      const differenceInTime = currentDate - previousDate;
-      const differenceInDays = differenceInTime / (1000 * 3600 * 24);
-      
-      if(holidays){
-        if (differenceInDays === 1) {
-          end = dates[i];
-        }
-        else {
-          end = this.addOneDay(end);
-          items.add([{
-            id: `holiday_${i}`,
-            start: start,
-            end: end,
-            type: "background",
-            className: "holiday",
-          }]);
-          start = dates[i];
-          end = dates[i];
-        }
-      }
-      else{
-        if (differenceInDays === 1) {
-          end = dates[i];
-        }
-        else {
-          items.add([{
-            id: `disabled_date_${i}`,
-            start: start,
-            end: end,
-            type: "background",
-            className: new Date(start).getDate() - new Date(end).getDate() === 0 || new Date(start).getDate() - new Date(end).getDate() === -1 ? "negative normal-weekend" : "negative",
-          }]);
-          start = dates[i];
-          end = dates[i];
-        }
-      }
-    }//end of iteration
-    // Push the last period
-    if(holidays){
-      items.add([{
-        id: `holiday_${dates.length}`,
-        start: start,
-        end: end,
-        type: "background",
-        className: "holiday",
-      }]);
-    }
-    else{
-      items.add([{
-        id: `disabled_date_${dates.length}`,
-        start: start,
-        end: end,
-        type: "background",
-        className: "negative",
-      }]);
-    }
-  
-    return items;
   }
 
   componentDidUpdate(prevProps) {
@@ -241,6 +146,101 @@ class EditProjectTimeTableModal extends Component {
       return false
     }
     return true
+  }
+
+  trimPhase = (phase) => {
+    let phaseOnly = phase.split('.', 2); // Split the string at the first dot
+    if (!isNaN(phaseOnly[0])) {  // Check if the part before the dot is a number
+      phaseOnly = phaseOnly[1].trim();  // The part after the dot, with leading/trailing spaces removed
+    }
+    return phaseOnly
+  } 
+
+  addOneDay = (dateString) => {
+    // Parse the input string into a Date object
+    const date = new Date(dateString);
+    
+    // Add one day (24 hours * 60 minutes * 60 seconds * 1000 milliseconds)
+    date.setTime(date.getTime() + (24 * 60 * 60 * 1000));
+    
+    // Format the new date back into "YYYY-MM-DD" format
+    const year = date.getFullYear();
+    // getMonth() returns 0-11; adding 1 to get 1-12 for months
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  }
+
+  findConsecutivePeriods = (dates,items,holidays) => {
+    if (!Array.isArray(dates) || dates.length === 0) {
+      return [];
+    }
+  
+    let start = dates[0];
+    let end = dates[0];
+  
+    for (let i = 1; i < dates.length; i++) {
+      const currentDate = new Date(dates[i]);
+      const previousDate = new Date(dates[i - 1]);
+      const differenceInTime = currentDate - previousDate;
+      const differenceInDays = differenceInTime / (1000 * 3600 * 24);
+      
+      if(holidays){
+        if (differenceInDays === 1) {
+          end = dates[i];
+        }
+        else {
+          end = this.addOneDay(end);
+          items.add([{
+            id: `holiday_${i}`,
+            start: start,
+            end: end,
+            type: "background",
+            className: "holiday",
+          }]);
+          start = dates[i];
+          end = dates[i];
+        }
+      }
+      else{
+        if (differenceInDays === 1) {
+          end = dates[i];
+        }
+        else {
+          items.add([{
+            id: `disabled_date_${i}`,
+            start: start,
+            end: end,
+            type: "background",
+            className: new Date(start).getDate() - new Date(end).getDate() === 0 || new Date(start).getDate() - new Date(end).getDate() === -1 ? "negative normal-weekend" : "negative",
+          }]);
+          start = dates[i];
+          end = dates[i];
+        }
+      }
+    }//end of iteration
+    // Push the last period
+    if(holidays){
+      items.add([{
+        id: `holiday_${dates.length}`,
+        start: start,
+        end: end,
+        type: "background",
+        className: "holiday",
+      }]);
+    }
+    else{
+      items.add([{
+        id: `disabled_date_${dates.length}`,
+        start: start,
+        end: end,
+        type: "background",
+        className: "negative",
+      }]);
+    }
+  
+    return items;
   }
 
   addDeadLineGroups = (deadlineSections,deadLineGroups,ongoingPhase) => {
@@ -397,8 +397,8 @@ class EditProjectTimeTableModal extends Component {
         locked: false
       });
     }
-  
-    let dlIndex = deadLineGroups.findIndex(group => group.content === deadlines[i].deadline.phase_name);
+
+    let dlIndex = deadLineGroups.findIndex(group => group.content.toLowerCase() === deadlines[i].deadline.phase_name.toLowerCase());
     deadLineGroups?.at(dlIndex)?.nestedGroups.push(numberOfPhases);
     const lastChar = deadlines[i].deadline.deadlinegroup.charAt(deadlines[i].deadline.deadlinegroup.length - 1); // Get the last character of the string
     const isLastCharNumber = !isNaN(lastChar) && lastChar !== ""; // Check if the last character is a number
@@ -421,13 +421,13 @@ class EditProjectTimeTableModal extends Component {
       generated:deadlines[i].generated,
       undeletable:undeletable
     });
-  
+
     return [phaseData, deadLineGroups, nestedDeadlines];
   }
 
   generateVisItems = (deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData) => {
 
-    let numberOfPhases = 1
+    let numberOfPhases
 
     let startDate = false
     let endDate = false
@@ -444,6 +444,9 @@ class EditProjectTimeTableModal extends Component {
     const currentDate = new Date().toJSON().slice(0, 10);
 
     for (let i = 0; i < deadlines.length; i++) {
+
+      numberOfPhases = deadlines[i].deadline.index
+
       if(deadlines[i].deadline.deadline_types.includes('phase_start')){
         //If formValues has deadlines[i].deadline.attribute use that values, it if not then use deadline[i].date in startDate.
         startDate = formValues && formValues[deadlines[i].deadline.attribute] ? formValues[deadlines[i].deadline.attribute] : deadlines[i].date;
@@ -518,13 +521,13 @@ class EditProjectTimeTableModal extends Component {
         [phaseData, deadLineGroups, nestedDeadlines] = mainGroup;
         startDate = false
         endDate = false
-        numberOfPhases++
+ 
       }
       else if(milestone && deadlines[i].deadline.phase_name === "Ehdotus" && deadlines[i].deadline.deadlinegroup !== "ehdotus_lautakuntakerta_1" && formValues.kaavaprosessin_kokoluokka === "XL" || milestone && deadlines[i].deadline.phase_name === "Ehdotus" && deadlines[i].deadline.deadlinegroup !== "ehdotus_lautakuntakerta_1" && formValues.kaavaprosessin_kokoluokka === "L"){
         let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, null, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone);
         [phaseData, deadLineGroups, nestedDeadlines] = subgroup;
         milestone = false
-        numberOfPhases++
+
       }
       else if(milestone && innerStart && innerEnd || innerStart && innerEnd){
         const indexString = deadlines[i]?.deadline?.deadlinegroup.match(/\d+/);
@@ -548,10 +551,9 @@ class EditProjectTimeTableModal extends Component {
             innerStart = false;
             innerEnd = false;
             milestone = false;
-            numberOfPhases++;
+ 
           }
         }
-
       }
     }
 
@@ -566,7 +568,7 @@ class EditProjectTimeTableModal extends Component {
       deadLineGroups = this.addDeadLineGroups(deadlineSections,deadLineGroups,ongoingPhase)
       const results = this.generateVisItems(deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData);
       [deadLineGroups, nestedDeadlines, phaseData] = results;
-      
+
       return [deadLineGroups,nestedDeadlines,phaseData]
   }
 
@@ -990,7 +992,7 @@ class EditProjectTimeTableModal extends Component {
               phaseCapitalized = phaseCapitalized.replace(/_/g, ' ');
             }
             const updateGroups = this.state.groups.get();
-            const phaseGroup = updateGroups.find(group => group.content === phaseCapitalized);
+            let phaseGroup = updateGroups.find(group => group.content.toLowerCase() === phaseCapitalized.toLowerCase());
 
             if (phaseGroup?.nestedGroups) {
               const nestedGroupIds = phaseGroup.nestedGroups;

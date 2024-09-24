@@ -253,8 +253,9 @@ const DeadLineInput = ({
         const constDistance = deadlineSectionValues.find(({ name }) => name.includes("_lautakunnassa"))?.initial_distance?.distance
         const currentPhase = objectUtil.getPreviousObjectByGroup(visGroups,currentDeadline?.deadline?.deadlinegroup)
         let visItemsFiltered = visItems.filter(info => info.type !== "background")
-        let phaseToCheck = visItemsFiltered.find(({id}) => id === currentPhase.id)
-        let previousGroupEndDate = phaseToCheck?.end
+        let phaseToCheck = visItemsFiltered.filter(({group}) => group === currentPhase.id)
+        let lastElement = phaseToCheck.at(-1);
+        let previousGroupEndDate = lastElement?.end
         dateType = currentDeadline?.deadline?.attribute?.includes('maaraaika') ? 'työpäivät' : 'lautakunnan_kokouspäivät';
         const minEndDate = timeUtil.addDays("lautakunta",previousGroupEndDate,distanceTo,dateTypes?.[dateType]?.dates,true,constDistance)
         let newDisabledDates = dateTypes?.[dateType]?.dates
