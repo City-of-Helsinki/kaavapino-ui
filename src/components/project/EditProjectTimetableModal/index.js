@@ -575,8 +575,10 @@ class EditProjectTimeTableModal extends Component {
  
       }
       else if(milestone && deadlines[i].deadline.phase_name === "Ehdotus" && deadlines[i].deadline.deadlinegroup !== "ehdotus_lautakuntakerta_1" && formValues.kaavaprosessin_kokoluokka === "XL" || milestone && deadlines[i].deadline.phase_name === "Ehdotus" && deadlines[i].deadline.deadlinegroup !== "ehdotus_lautakuntakerta_1" && formValues.kaavaprosessin_kokoluokka === "L"){
-        let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, null, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone);
-        [phaseData, deadLineGroups, nestedDeadlines] = subgroup;
+        if(formValues[deadlines[i].deadline.attribute]){
+          let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, null, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone);
+          [phaseData, deadLineGroups, nestedDeadlines] = subgroup;
+        }
         milestone = false
 
       }
@@ -597,8 +599,10 @@ class EditProjectTimeTableModal extends Component {
             milestone = false;
           }
           else{
-            let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, milestone);
-            [phaseData, deadLineGroups, nestedDeadlines] = subgroup2;
+            if(formValues[deadlines[i].deadline.attribute]){
+              let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, milestone);
+              [phaseData, deadLineGroups, nestedDeadlines] = subgroup2;
+            }
             innerStart = false;
             innerEnd = false;
             milestone = false;
