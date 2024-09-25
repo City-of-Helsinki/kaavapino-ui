@@ -49,7 +49,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
 
     let currentSubmitErrors = Object.keys(formSubmitErrors).length > 0
 
-    const getFormField = (fieldProps, key, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title) => {
+    const getFormField = (fieldProps, key, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title, confirmedValue) => {
       if (!showField(fieldProps.field, visValues)) {
         return null
       }
@@ -104,15 +104,16 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
             visGroups={groups}
             visItems={items}
             deadlineSections={deadlineSections}
+            confirmedValue={confirmedValue}
           />
           {modifiedError && <div className="field-error">{modifiedError}</div>}
         </>
       )
     }
-    const getFormFields = (sections, sectionIndex, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title) => {
+    const getFormFields = (sections, sectionIndex, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title, confirmedValue) => {
       const formFields = []
       sections.forEach((field, fieldIndex) => {
-          formFields.push(getFormField({ field }, `${sectionIndex} - ${fieldIndex}`, {disabled}, {deadlineSection}, maxMoveGroup, maxDateToMove, title))
+          formFields.push(getFormField({ field }, `${sectionIndex} - ${fieldIndex}`, {disabled}, {deadlineSection}, maxMoveGroup, maxDateToMove, title, confirmedValue))
       })
       return formFields
     }
@@ -168,7 +169,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
                 })}
               </Tabs.TabList>
               {Object.values(attr[deadlinegroup]).map((subsection, index) => {
-                return  <Tabs.TabPanel key={`tabPanel-${index}-${subsection}`}>{getFormFields(subsection, sectionIndex, disabled, attr[deadlinegroup], maxMoveGroup, maxDateToMove, title)}</Tabs.TabPanel>
+                return  <Tabs.TabPanel key={`tabPanel-${index}-${subsection}`}>{getFormFields(subsection, sectionIndex, disabled, attr[deadlinegroup], maxMoveGroup, maxDateToMove, title, confirmedValue)}</Tabs.TabPanel>
               })}
             </Tabs>
           )
