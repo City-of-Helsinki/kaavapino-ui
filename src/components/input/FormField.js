@@ -51,6 +51,7 @@ const FormField = ({
   visGroups,
   visItems,
   deadlineSections,
+  confirmedValue,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -140,6 +141,7 @@ const FormField = ({
             visGroups={visGroups}
             visItems={visItems}
             deadlineSections={deadlineSections}
+            confirmedValue={confirmedValue}
           />
         )
     }
