@@ -714,10 +714,21 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             return container;
           }
           else if(group?.nestedInGroup){
+            // Get, format and add labels
             let label = document.createElement("span");
+            let content = group.content;
             label.classList.add("timeline-button-label");
-            label.innerHTML = group.content + " ";
+            if (content.includes("-1")) {
+              content = content.replace("-1", "");
+              label.innerHTML = content + " ";
+            } else if (content.includes("-")) {
+              content = content.replace("-", " ");
+              label.innerHTML = content + " ";
+            } else {
+              label.innerHTML = content + " ";
+            }
             container.insertAdjacentElement("afterBegin", label);
+
             let edit = document.createElement("button");
             edit.classList.add("timeline-edit-button");
             edit.style.fontSize = "small";
@@ -729,7 +740,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
             if(allowedToEdit && !contentIncludesString){
               let labelRemove = document.createElement("span");
-              label.innerHTML = group.content + " ";
               container.insertAdjacentElement("afterBegin", labelRemove);
               let remove = document.createElement("button");
               remove.classList.add("timeline-remove-button");
