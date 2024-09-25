@@ -167,14 +167,13 @@ export const reducer = (state = initialState, action) => {
       const newDateObj = new Date(newDate);
       const current = new Date(updatedAttributeData[field]);
 
-      // Calculate the difference in days between the new date and the current date
-      const daysDifference = (newDateObj - current) / (1000 * 60 * 60 * 24);
-
       // Update the specific date at the given field
       updatedAttributeData[field] = timeUtil.formatDate(newDateObj);
       //Iterate through deadlineSectionValues and match with keys in attribute_data
       // deadlineSectionValues is not used when adding new groups to timeline
       if(deadlineSectionValues){
+        // Calculate the difference in days between the new date and the current date
+        const daysDifference = (newDateObj - current) / (1000 * 60 * 60 * 24);
         deadlineSectionValues.forEach(section => {
           const matchingKey = section.name;  // Get the name to match the key in attribute_data
           if (matchingKey !== field) {  // Avoid updating the already changed field

@@ -33,14 +33,16 @@ const DeadLineInput = ({
   groupName,
   visGroups, 
   visItems,
-  deadlineSections
+  deadlineSections,
+  confirmedValue
 }) => {
 
+  const dispatch = useDispatch();
   const { t } = useTranslation()
   const validated = useSelector(validatedSelector);
   const formValues = useSelector(getFormValues(EDIT_PROJECT_TIMETABLE_FORM))
-  const dispatch = useDispatch();
   const [currentValue, setCurrentValue] = useState("")
+  const [disabledState, setDisabledState] = useState(true)
 
 
   let currentError
@@ -109,6 +111,7 @@ const DeadLineInput = ({
     }
   
     setCurrentValue(currentDeadline ? currentDeadlineDate : inputValue ); 
+    setDisabledState(typeof timeTableDisabled !== "undefined" ? timeTableDisabled : disabled)
   },[])
 
   useEffect(() => {
@@ -117,6 +120,10 @@ const DeadLineInput = ({
       setCurrentValue(input.value); 
     }
   }, [input.value])
+
+  useEffect(() => {
+    setDisabledState(formValues[confirmedValue])
+  },[formValues[confirmedValue]])
 
   const getInitialMonth = (dateString) => {
     let date;
@@ -326,7 +333,7 @@ const DeadLineInput = ({
           value={formatDateToYYYYMMDD(currentValue)}
           name={input.name}
           type={type}
-          disabled={typeof timeTableDisabled !== "undefined" ? timeTableDisabled : disabled}
+          disabled={disabledState}
           placeholder={placeholder}
           error={error}
           aria-label={input.name}
