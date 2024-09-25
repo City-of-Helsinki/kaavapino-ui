@@ -154,11 +154,9 @@
     .vis-item:not(.inner-end){
         border:none;
     }
+
     .vis-item.vis-dot {
         border: 2px solid #000000;
-        &.board {
-            transform: translate(-12px, -24px) !important;
-        }
         &.past {
             background: #B3B3B3;
         }
@@ -185,9 +183,12 @@
         }
     }
 
+    .board:not(.vis-point):not(.vis-dot) {
+        top: 15.5px !important;
+    }
+
     .board{
         z-index: 1000;
-        top: 15.5px !important;
         //Makes range item apper to be two single items
         .vis-item-overflow{
             height: $size4;
@@ -205,6 +206,7 @@
             width: $size24 !important;
             max-width: 100%;
             top: -10px !important;
+            left: -12px;
             display: inline-block;
             border: 2px solid #1a1a1a;
             border-radius: 14px;
@@ -216,6 +218,7 @@
             width: 1.3rem !important;
             max-width: 100%;
             top: -9px !important;
+            right: -12px;
             display: inline-block;
             border: $size1 solid #fff;
             border-radius: 14px;
@@ -308,11 +311,13 @@
     }
 
     .negative{
+        top: 0;
         background-color: #F2F2F2 !important;
         border-right: 0.5px solid #ccc !important;
         border-left: 0.5px solid #ccc !important;
     }
     .holiday{
+        top: 0;
         background-color: rgba(255, 200, 50, 0.2) !important;
         z-index: 100;
     }
@@ -420,6 +425,8 @@
                     padding: 8px;
                     box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.6);
                     z-index: 1005;
+                    font-size: $size14;
+                    font-weight: 400;
                 }
                 .timeline-remove-button.button-disabled:hover + .timeline-remove-text {
                     display: block;
@@ -716,5 +723,8 @@
     }
     .negative{
         border: none !important
+    }
+    .vis-item.vis-dot.board {
+        top: -18.5px !important;
     }
 }
