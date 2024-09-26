@@ -718,6 +718,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             let label = document.createElement("span");
             let content = group.content;
             label.classList.add("timeline-button-label");
+
             if (content.includes("-1")) {
               content = content.replace("-1", "");
               label.innerHTML = content + " ";
@@ -727,6 +728,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             } else {
               label.innerHTML = content + " ";
             }
+
+            if (content === "Nahtavillaolo") {
+              label.innerHTML = "Nähtävilläolo";
+            }
+
             container.insertAdjacentElement("afterBegin", label);
 
             let edit = document.createElement("button");
