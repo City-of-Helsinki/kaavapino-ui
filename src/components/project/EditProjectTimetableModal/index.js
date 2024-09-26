@@ -172,25 +172,34 @@ class EditProjectTimeTableModal extends Component {
     return `${year}-${month}-${day}`;
   }
 
-  findConsecutivePeriods = (dates,items,holidays) => {
+  findConsecutivePeriods = (dates, items, holidays) => {
     if (!Array.isArray(dates) || dates.length === 0) {
       return [];
     }
   
-    let start = dates[0];
-    let end = dates[0];
+    let start = new Date(dates[0]);
+    start.setHours(0, 0, 0, 0);
+    let end = new Date(dates[0]);
+    end.setHours(23, 59, 59, 999);
+
+    const isWeekend = (date) => {
+      const day = date.getDay();
+      return day === 0 || day === 6; // Sunday or Saturday
+    };
   
     for (let i = 1; i < dates.length; i++) {
       const currentDate = new Date(dates[i]);
       const previousDate = new Date(dates[i - 1]);
+      currentDate.setHours(0, 0, 0, 0);
+      previousDate.setHours(0, 0, 0, 0);
       const differenceInTime = currentDate - previousDate;
       const differenceInDays = differenceInTime / (1000 * 3600 * 24);
-      
-      if(holidays){
+
+      if (holidays) {
         if (differenceInDays === 1) {
-          end = dates[i];
-        }
-        else {
+          end = new Date(dates[i]);
+          end.setHours(23, 59, 59, 999);
+        } else {
           end = this.addOneDay(end);
           items.add([{
             id: `holiday_${i}`,
@@ -199,29 +208,33 @@ class EditProjectTimeTableModal extends Component {
             type: "background",
             className: "holiday",
           }]);
-          start = dates[i];
-          end = dates[i];
+          start = new Date(dates[i]);
+          start.setHours(0, 0, 0, 0);
+          end = new Date(dates[i]);
+          end.setHours(23, 59, 59, 999);
         }
-      }
-      else{
+      } else {
         if (differenceInDays === 1) {
-          end = dates[i];
-        }
-        else {
+          end = new Date(dates[i]);
+          end.setHours(23, 59, 59, 999);
+        } else {
           items.add([{
             id: `disabled_date_${i}`,
             start: start,
             end: end,
             type: "background",
-            className: new Date(start).getDate() - new Date(end).getDate() === 0 || new Date(start).getDate() - new Date(end).getDate() === -1 ? "negative normal-weekend" : "negative",
+            className: isWeekend(start) && isWeekend(end) ? "negative normal-weekend" : "negative",
           }]);
-          start = dates[i];
-          end = dates[i];
+          start = new Date(dates[i]);
+          start.setHours(0, 0, 0, 0);
+          end = new Date(dates[i]);
+          end.setHours(23, 59, 59, 999);
         }
       }
-    }//end of iteration
-    // Push the last period
-    if(holidays){
+    }
+
+    // Ensure the last period is added
+    if (holidays) {
       items.add([{
         id: `holiday_${dates.length}`,
         start: start,
@@ -229,14 +242,13 @@ class EditProjectTimeTableModal extends Component {
         type: "background",
         className: "holiday",
       }]);
-    }
-    else{
+    } else {
       items.add([{
         id: `disabled_date_${dates.length}`,
         start: start,
         end: end,
         type: "background",
-        className: "negative",
+        className: isWeekend(start) && isWeekend(end) ? "negative normal-weekend" : "negative",
       }]);
     }
   
