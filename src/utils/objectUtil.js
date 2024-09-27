@@ -231,7 +231,7 @@ const getHighestNumberedObject = (obj1,arr) => {
         let newDate = new Date(arr[i].value);
         let dateDiff = timeUtil.dateDifference(arr[i - 1].value, arr[i].value)
         //At the moment some previous values are falsely null for some reason, can be remove when is fixed on backend and Excel.
-        const miniumGap = arr[i].distance_from_previous === null ? arr[i].key.includes("lautakunnassa") ? 27 : 5 : arr[i].distance_from_previous 
+        const miniumGap = arr[i].distance_from_previous === null ? arr[i].key.includes("lautakunnassa") ? 22 : 5 : arr[i].distance_from_previous 
         //If difference in previous and current value is below minium
         if(dateDiff < miniumGap){
           if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")){
@@ -246,7 +246,7 @@ const getHighestNumberedObject = (obj1,arr) => {
               dateDiff = dateDiff + miniumGap
             }
             else{
-              if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")){
+              if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot") || arr[i - 1].key.includes("maaraaika") && arr[i].key.includes("lautakunnassa")){
                 dateDiff = 0
               }
               else{
@@ -267,7 +267,7 @@ const getHighestNumberedObject = (obj1,arr) => {
         let newDate = new Date(arr[i].value);
         let dateDiff = timeUtil.dateDifference(arr[i - 1].value,arr[i].value)
         //At the moment some previous values are falsely null for some reason, can be remove when is fixed on backend and Excel.
-        const miniumGap = arr[i].distance_from_previous === null ? arr[i].key.includes("lautakunnassa") ? 27 : 5 : arr[i].distance_from_previous 
+        const miniumGap = arr[i].distance_from_previous === null ? arr[i].key.includes("lautakunnassa") ? 22 : 5 : arr[i].distance_from_previous
         //If difference in previous and current value is below minium
         if(dateDiff < miniumGap){
           if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")){
@@ -282,7 +282,7 @@ const getHighestNumberedObject = (obj1,arr) => {
               dateDiff = dateDiff + miniumGap
             }
             else{
-              if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")){
+              if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot") || arr[i - 1].key.includes("maaraaika") && arr[i].key.includes("lautakunnassa")){
                 dateDiff = 0
               }
               else{
