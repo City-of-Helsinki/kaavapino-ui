@@ -473,21 +473,29 @@ class EditProjectTimeTableModal extends Component {
         if(deadlines[i].deadline.deadline_types.includes('milestone') && deadlines[i].deadline.deadline_types.includes('dashed_start')){
           milestone = formValues && formValues[deadlines[i].deadline.attribute]
             ? new Date(formValues[deadlines[i].deadline.attribute])
-            : new Date(deadlines[i].date);
-          milestone.setHours(12, 0, 0, 0);
+            : deadlines[i].date;
 
+            if (milestone instanceof Date && !isNaN(milestone.getTime())) {
+              milestone.setHours(12, 0, 0, 0);
+            }
         }
         else if (deadlines[i].deadline.deadline_types.includes('inner_start')) {
           innerStart = formValues && formValues[deadlines[i].deadline.attribute]
             ? new Date(formValues[deadlines[i].deadline.attribute])
-            : new Date(deadlines[i].date);
-          innerStart.setHours(12, 0, 0, 0);
+            : deadlines[i].date;
+
+          if (innerStart instanceof Date && !isNaN(innerStart.getTime())) {
+            innerStart.setHours(12, 0, 0, 0);
+          }
         }
         else if(deadlines[i].deadline.deadline_types.includes('inner_end')){
           innerEnd = formValues && formValues[deadlines[i].deadline.attribute]
             ? new Date(formValues[deadlines[i].deadline.attribute])
-            : new Date(deadlines[i].date);
-          innerEnd.setHours(12, 0, 0, 0);
+            : deadlines[i].date;
+
+          if (innerEnd instanceof Date && !isNaN(innerEnd.getTime())) {
+            innerEnd.setHours(12, 0, 0, 0);
+          }
 
           innerStyle = "inner-end"
           if (innerEnd < currentDate) {
@@ -500,21 +508,30 @@ class EditProjectTimeTableModal extends Component {
         if(deadlines[i].deadline.deadline_types.includes('milestone') && deadlines[i].deadline.deadline_types.includes('dashed_start')){
           milestone = formValues && formValues[deadlines[i].deadline.attribute]
             ? new Date(formValues[deadlines[i].deadline.attribute])
-            : new Date(deadlines[i].date);
-          milestone.setHours(12, 0, 0, 0);
+            : deadlines[i].date;
+
+          if (milestone instanceof Date && !isNaN(milestone.getTime())) {
+            milestone.setHours(12, 0, 0, 0);
+          }
         }
         else if(deadlines[i].deadline.deadline_types.includes('inner_start')){
           if(formValues.kaavaprosessin_kokoluokka === "XL" && deadlines[i].deadline.attribute.includes("iso") || formValues.kaavaprosessin_kokoluokka === "L" && deadlines[i].deadline.attribute.includes("iso")){
             innerStart = formValues && formValues[deadlines[i].deadline.attribute]
               ? new Date(formValues[deadlines[i].deadline.attribute])
-              : new Date(deadlines[i].date);
-            innerStart.setHours(12, 0, 0, 0);
+              : deadlines[i].date;
+
+            if (innerStart instanceof Date && !isNaN(innerStart.getTime())) {
+              innerStart.setHours(12, 0, 0, 0);
+            }
           }
           if(formValues.kaavaprosessin_kokoluokka === "XS" && deadlines[i].deadline.attribute.includes("pieni") || formValues.kaavaprosessin_kokoluokka === "S" && deadlines[i].deadline.attribute.includes("pieni") || formValues.kaavaprosessin_kokoluokka === "M" && deadlines[i].deadline.attribute.includes("pieni")){
             innerStart = formValues && formValues[deadlines[i].deadline.attribute]
               ? new Date(formValues[deadlines[i].deadline.attribute])
-              : new Date(deadlines[i].date);
-            innerStart.setHours(12, 0, 0, 0);
+              : deadlines[i].date;
+
+            if (innerStart instanceof Date && !isNaN(innerStart.getTime())) {
+              innerStart.setHours(12, 0, 0, 0);
+            }
           }
         }
         else if(deadlines[i].deadline.deadline_types.includes('inner_end')){
@@ -522,9 +539,9 @@ class EditProjectTimeTableModal extends Component {
             ? new Date(formValues[deadlines[i].deadline.attribute])
             : deadlines[i].date;
 
-            if (innerEnd instanceof Date && !isNaN(innerEnd.getTime())) {
-              innerEnd.setHours(12, 0, 0, 0);
-            }
+          if (innerEnd instanceof Date && !isNaN(innerEnd.getTime())) {
+            innerEnd.setHours(12, 0, 0, 0);
+          }
 
           innerStyle = "inner-end"
           if (innerEnd < currentDate) {
@@ -540,8 +557,11 @@ class EditProjectTimeTableModal extends Component {
         if(deadlines[i].deadline.deadline_types.includes('milestone') && deadlines[i].deadline.deadline_types.includes('dashed_start')){
           innerStart = formValues && formValues[deadlines[i].deadline.attribute]
             ? new Date(formValues[deadlines[i].deadline.attribute])
-            : new Date(deadlines[i].date);
-          innerStart.setHours(12, 0, 0, 0);
+            : deadlines[i].date;
+
+          if (innerStart instanceof Date && !isNaN(innerStart.getTime())) {
+            innerStart.setHours(12, 0, 0, 0);
+          }
         }
         else if(deadlines[i].deadline.deadline_types.includes('milestone') && deadlines[i].deadline.deadline_types.includes('dashed_end')){
           innerEnd = formValues && formValues[deadlines[i].deadline.attribute]
@@ -560,21 +580,30 @@ class EditProjectTimeTableModal extends Component {
         else if(deadlines[i].deadline.deadline_types.includes('inner_start')){
           innerStart = formValues && formValues[deadlines[i].deadline.attribute]
             ? new Date(formValues[deadlines[i].deadline.attribute])
-            : new Date(deadlines[i].date);
-          innerStart.setHours(12, 0, 0, 0);
+            : deadlines[i].date;
+
+          if (innerStart instanceof Date && !isNaN(innerStart.getTime())) {
+            innerStart.setHours(12, 0, 0, 0);
+          }
         }
         else if(deadlines[i].deadline.deadline_types.includes('inner_end')){
           innerEnd = formValues && formValues[deadlines[i].deadline.attribute]
             ? new Date(formValues[deadlines[i].deadline.attribute])
-            : new Date(deadlines[i].date);
-          innerEnd.setHours(12, 0, 0, 0);
+            : deadlines[i].date;
+
+          if (innerEnd instanceof Date && !isNaN(innerEnd.getTime())) {
+            innerEnd.setHours(12, 0, 0, 0);
+          }
         }
       }
       else if(deadlines[i].deadline.deadline_types.includes('phase_end') && deadlines[i].deadline.date_type !== "Arkipäivät"){
         endDate = formValues && formValues[deadlines[i].deadline.attribute]
           ? new Date(formValues[deadlines[i].deadline.attribute])
-          : new Date(deadlines[i].date);
-        endDate.setHours(0, 0, 0, 0);
+          : deadlines[i].date;
+
+        if (endDate instanceof Date && !isNaN(endDate.getTime())) {
+          endDate.setHours(12, 0, 0, 0);
+        }
       }
 
       if(startDate && endDate){
