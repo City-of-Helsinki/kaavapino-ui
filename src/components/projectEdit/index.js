@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { getFormSyncErrors, getFormSubmitErrors, getFormValues } from 'redux-form'
+import { getFormSyncErrors, getFormSubmitErrors, getFormValues, reset } from 'redux-form'
 import { LoadingSpinner, Notification, IconCross } from 'hds-react'
 import { isDirty } from 'redux-form/immutable'
 import {
@@ -24,7 +24,8 @@ import {
   showFloorArea,
   setLastSaved,
   resetFormErrors,
-  fetchDisabledDatesStart
+  fetchDisabledDatesStart,
+  resetAttributeData
 } from '../../actions/projectActions'
 import { fetchSchemas, setAllEditFields, clearSchemas } from '../../actions/schemaActions'
 import { fetchDocuments } from '../../actions/documentActions'
@@ -56,6 +57,7 @@ import EditProjectTimetableModal from '../project/EditProjectTimetableModal'
 import ProjectTimeline from '../ProjectTimeline/ProjectTimeline'
 import { usersSelector } from '../../selectors/userSelector'
 import { userIdSelector } from '../../selectors/authSelector'
+import { editProjectTimetableFormSelector } from '../../selectors/formSelector'
 import { withRouter } from 'react-router-dom'
 import projectUtils from '../../utils/projectUtils'
 import InfoComponent from '../common/InfoComponent'
@@ -268,8 +270,12 @@ class ProjectEditPage extends Component {
   }
 
   handleTimetableClose = () => {
+    //Close timetable and reset data to initial
     this.props.showTimetable(false)
     this.props.resetTimetableSave()
+    const originalValues = this.props.formSelector
+    this.props.reset("editProjectTimetableForm");
+    this.props.resetAttributeData(originalValues.initial);
   }
 
   handleTimetableSave = () => {
@@ -813,6 +819,7 @@ const mapStateToProps = state => {
     showTimetableForm:showTimetableSelector(state),
     showFloorAreaForm:showFloorAreaSelector(state),
     disabledDates: selectDisabledDates(state),
+    formSelector: editProjectTimetableFormSelector(state)
   }
 }
 
@@ -842,6 +849,8 @@ const mapDispatchToProps = {
   setLastSaved,
   resetFormErrors,
   fetchDisabledDatesStart,
+  reset,
+  resetAttributeData
 }
 
 export default withRouter(

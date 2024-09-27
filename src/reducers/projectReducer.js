@@ -87,7 +87,8 @@ import {
   SET_DATE_VALIDATION_RESULT,
   REMOVE_DEADLINES,
   VALIDATE_DATE,
-  UPDATE_DATE_TIMELINE
+  UPDATE_DATE_TIMELINE,
+  RESET_ATTRIBUTE_DATA
 } from '../actions/projectActions'
 
 import timeUtil from '../utils/timeUtil'
@@ -174,28 +175,34 @@ export const reducer = (state = initialState, action) => {
       if(deadlineSectionValues){
         // Calculate the difference in days between the new date and the current date
         const daysDifference = (newDateObj - current) / (1000 * 60 * 60 * 24);
+        let initialDistance
         deadlineSectionValues.forEach(section => {
           const matchingKey = section.name;  // Get the name to match the key in attribute_data
           if (matchingKey !== field) {  // Avoid updating the already changed field
             let dateType = "esilläolopäivät"
+            let type = "esilläolo"
             //Date types determinate what dates can or cannot be selected
             if(matchingKey.includes("_lautakunnassa")){
               dateType = "lautakunnan_kokouspäivät"
+              type = "lautakunta"
+              initialDistance = section?.initial_distance?.distance
             }
             else if(matchingKey.includes("_maaraaika")){
               dateType = "työpäivät"
+              type = "esilläolo"
             }
             else if(matchingKey.includes("_nahtavilla") || matchingKey.includes("_lausunnot")){
               dateType = "arkipäivät"
+              type = "arkipäivät"
             }
   
             if (daysDifference > 0 && !(matchingKey.includes("_alkaa") && field.includes("_paattyy")) && !(matchingKey.includes("kaynnistys_pvm") && field.includes("_paattyy"))  && !(field.includes("_alkaa") && matchingKey.includes("_paattyy")) && !(field.includes("_paattyy") && matchingKey.includes("_maaraaika"))) {
               // Move forward
-              updatedAttributeData[matchingKey] = timeUtil.addDays("esilläolo",updatedAttributeData[matchingKey], daysDifference, state.disabledDates.date_types[dateType].dates,true);
+              updatedAttributeData[matchingKey] = timeUtil.addDays(type,updatedAttributeData[matchingKey], daysDifference, state.disabledDates.date_types[dateType].dates,true);
             } 
             else if (daysDifference < 0 && !(field.includes("_alkaa") && matchingKey.includes("_paattyy")) && !(field.includes("_paattyy") && matchingKey.includes("_alkaa")) && !(field.includes("_paattyy") && matchingKey.includes("_maaraaika"))) {
               // Move backward
-              updatedAttributeData[matchingKey] = timeUtil.subtractDays("esilläolo",updatedAttributeData[matchingKey], -daysDifference, state.disabledDates.date_types[dateType].dates,true);
+              updatedAttributeData[matchingKey] = timeUtil.subtractDays(type,updatedAttributeData[matchingKey], -daysDifference, state.disabledDates.date_types[dateType].dates,true,updatedAttributeData[field],state.disabledDates,initialDistance);
             }
           }
         });
@@ -277,6 +284,19 @@ export const reducer = (state = initialState, action) => {
           attribute_data: { ...updatedAttributeData }
         },
         updateField:action.payload
+      }
+    }
+
+    case RESET_ATTRIBUTE_DATA: {
+      const { initialData } = action.payload
+      let updatedAttributeData
+      updatedAttributeData = { ...state.currentProject.attribute_data,...initialData }
+      return {
+        ...state,
+        currentProject: {
+          ...state.currentProject,
+          attribute_data: { ...updatedAttributeData }
+        }
       }
     }
 
