@@ -256,7 +256,7 @@ const DeadLineInput = ({
         const deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey]
         //const distanceTo = input.name.includes("maaraaika") ? deadlineSectionValues.find(({ name }) => name === input.name).distance_from_previous : deadlineSectionValues.find(({ name }) => name === input.name).distance_to_next
         //Ei tuu minimejä backend, ota yllä oleva käyttöön kun tulee? Alla väliaikanen kovakoodaus.
-        const distanceTo = input.name.includes("maaraaika") ? 5 : 27
+        const distanceTo = input.name.includes("maaraaika") ? 5 : 22
         const constDistance = deadlineSectionValues.find(({ name }) => name.includes("_lautakunnassa"))?.initial_distance?.distance
         const currentPhase = objectUtil.getPreviousObjectByGroup(visGroups,currentDeadline?.deadline?.deadlinegroup)
         let visItemsFiltered = visItems.filter(info => info.type !== "background")

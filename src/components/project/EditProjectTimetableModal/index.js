@@ -300,7 +300,6 @@ class EditProjectTimeTableModal extends Component {
   addMainGroup = (deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines) => {
     const currentDateString = new Date().toJSON().slice(0, 10);
     const currentDate = new Date(currentDateString);
-
     phaseData.push({
       id: numberOfPhases,
       content: '',
