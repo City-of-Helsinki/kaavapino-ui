@@ -188,8 +188,14 @@ export const reducer = (state = initialState, action) => {
               initialDistance = section?.initial_distance?.distance
             }
             else if(matchingKey.includes("_maaraaika")){
+              if(section.name.includes("kylk_aineiston_maaraaika") || section.name.includes("kylk_maaraaika") || section.name.includes("lautakunta_aineiston_maaraaika")){
+                type = "lautakunta_määräaika"
+                initialDistance = 22
+              }
+              else{
+                type = "esilläolo"
+              }
               dateType = "työpäivät"
-              type = "esilläolo"
             }
             else if(matchingKey.includes("_nahtavilla") || matchingKey.includes("_lausunnot")){
               dateType = "arkipäivät"
@@ -198,7 +204,7 @@ export const reducer = (state = initialState, action) => {
   
             if (daysDifference > 0 && !(matchingKey.includes("_alkaa") && field.includes("_paattyy")) && !(matchingKey.includes("kaynnistys_pvm") && field.includes("_paattyy"))  && !(field.includes("_alkaa") && matchingKey.includes("_paattyy")) && !(field.includes("_paattyy") && matchingKey.includes("_maaraaika"))) {
               // Move forward
-              updatedAttributeData[matchingKey] = timeUtil.addDays(type,updatedAttributeData[matchingKey], daysDifference, state.disabledDates.date_types[dateType].dates,true);
+              updatedAttributeData[matchingKey] = timeUtil.addDays(type,updatedAttributeData[matchingKey], daysDifference, state.disabledDates.date_types[dateType].dates,true,updatedAttributeData[field],state.disabledDates,initialDistance);
             } 
             else if (daysDifference < 0 && !(field.includes("_alkaa") && matchingKey.includes("_paattyy")) && !(field.includes("_paattyy") && matchingKey.includes("_alkaa")) && !(field.includes("_paattyy") && matchingKey.includes("_maaraaika"))) {
               // Move backward

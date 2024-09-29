@@ -264,7 +264,7 @@ const DeadLineInput = ({
         let lastElement = phaseToCheck.at(-1);
         let previousGroupEndDate = lastElement?.end
         dateType = currentDeadline?.deadline?.attribute?.includes('maaraaika') ? 'työpäivät' : 'lautakunnan_kokouspäivät';
-        const minEndDate = timeUtil.addDays("lautakunta",previousGroupEndDate,distanceTo,dateTypes?.[dateType]?.dates,true,constDistance)
+        const minEndDate = timeUtil.addDays("lautakunta",previousGroupEndDate,distanceTo,dateTypes?.[dateType]?.dates,true,false,false,constDistance)
         let newDisabledDates = dateTypes?.[dateType]?.dates
         newDisabledDates = newDisabledDates.filter(date => date >= minEndDate)
         return !newDisabledDates.includes(formatDate(date));
