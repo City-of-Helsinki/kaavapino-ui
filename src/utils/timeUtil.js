@@ -14,6 +14,47 @@
     return `${year}-${month}-${day}`;
   };
 
+  // Helper function to check if a date is a holiday
+  const isHoliday = (date,isInFilter,holidays) => {
+    const dateStr = date.toISOString().split('T')[0]; // Convert to 'YYYY-MM-DD' format
+    return isInFilter ? holidays.includes(dateStr) : !holidays.includes(dateStr);
+  }
+
+  // Function to get the date x weekdays earlier, excluding holidays
+  const getPastDate = (startDate, validDaysToSubtract, isInFilter, excludedDays) => {
+    let currentDate = new Date(startDate); // Start from the original date
+    let subtractedDays = 0;
+
+    // Loop until we have subtracted the required number of valid days
+    while (subtractedDays < validDaysToSubtract) {
+        currentDate.setDate(currentDate.getDate() - 1); // Move to the previous day
+
+        // Check if the current date is not a weekend and not a holiday
+        if (!isWeekend(currentDate) && !isHoliday(currentDate,isInFilter,excludedDays)) {
+            subtractedDays++; // Increment valid days counter
+        }
+    }
+    return currentDate;
+  }
+
+  const calculateWeekdayDifference = (startDate, endDate) => {
+    let currentDate = new Date(startDate);
+    let daysDifference = 0;
+
+    // Loop from start date to end date
+    while (currentDate <= endDate) { 
+        // Check if it's a weekday (Monday to Friday)
+        if (!isWeekend(currentDate)) {
+            daysDifference++;
+        }
+        
+        // Move to the next day
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return daysDifference;
+  }
+
   // Function to calculate the difference in days between two dates
   const dateDifference = (startDate, endDate) => {
     // Get the difference in milliseconds
@@ -50,12 +91,15 @@
   }
   
   // Function to add days to a date and return in "YYYY-MM-DD" format
-  const addDays = (type, date, days, disabledDates,excludeWeekends) => {
+  const addDays = (type, date, days, disabledDates, excludeWeekends, origDate, allDisabledDates, initialDistance) => {
     let newDate = new Date(date);
+    let originalDate = origDate ? new Date(origDate) : false
     let filter = ""
     //if date is supposed to be in filter or not be in filter
     //Some disabledDates have allowed array values and some not allowed array values
     let isInFilter = true
+    let addDays = true
+    let finalDateStr
 
     if(type === "esilläolo"){
       filter = disabledDates
@@ -65,43 +109,78 @@
       filter = disabledDates
       isInFilter = false
     }
-    else if(type === "lautakunta"){
-      //TODO add logic to check constant distance between two items somewhere
+    else if(type === "lautakunta" || type === "lautakunta_määräaika"){
       //keep distance between dates the same if possible
       filter = disabledDates
       isInFilter = false
+      const workdays = allDisabledDates?.date_types?.työpäivät?.dates
+      let actualDifference = 0;
+      let tempDate = new Date(newDate);
+      // Iterate from tempDate backwards to the originalDate
+      if(originalDate && initialDistance){
+        while (originalDate <= tempDate) {
+          // Skip weekends if excludeWeekends is true
+          if ((originalDate.getDay() === 0 || originalDate.getDay() === 6)) {
+            originalDate.setDate(originalDate.getDate() + 1);
+            continue;
+          }
+          else if(!checkArrayForValue(workdays,originalDate)){
+            originalDate.setDate(originalDate.getDate() + 1);
+            continue;
+          }
+          else{
+            originalDate.setDate(originalDate.getDate() + 1);
+            actualDifference++;
+            continue;
+          }
+        }
+        actualDifference = actualDifference + 4
+        if(actualDifference > initialDistance){
+          addDays = false
+        }
+      }
     }
-    // Subtract the specified number of days
-    while (days > 0) {
-      newDate.setDate(newDate.getDate() + 1);
-      if(excludeWeekends){
-        if(newDate.getDay() != 0 && newDate.getDay() != 6){
-          days--;
+    if(type === "lautakunta_määräaika"){
+      const resultPastDate = getPastDate(originalDate, initialDistance, isInFilter, filter);
+      finalDateStr = formatDate(resultPastDate);
+    }
+    else{
+      if(addDays){
+        // Subtract the specified number of days
+        while (days > 0) {
+          newDate.setDate(newDate.getDate() + 1);
+          if(excludeWeekends){
+            if(newDate.getDay() != 0 && newDate.getDay() != 6){
+              days--;
+            }
+          }
+          else{
+            days--;
+          }
+
+        }
+
+        // After adding days, check if the final date is in the filter
+        finalDateStr = formatDate(newDate);
+        if(isInFilter){
+          // If the final date is in the filter, find the next available valid date (that is in the filter)
+          while (filter.includes(finalDateStr)) {
+            newDate.setDate(newDate.getDate() + 1);
+            finalDateStr = formatDate(newDate);
+          }
+        }
+        else{
+          // If the final date is NOT in the filter, find the next available valid date (that is in the filter)
+          while (!filter.includes(finalDateStr)) {
+            newDate.setDate(newDate.getDate() + 1);
+            finalDateStr = formatDate(newDate);
+          }
         }
       }
       else{
-        days--;
-      }
-
-    }
-
-    // After adding days, check if the final date is in the filter
-    let finalDateStr = formatDate(newDate);
-    if(isInFilter){
-      // If the final date is in the filter, find the next available valid date (that is in the filter)
-      while (filter.includes(finalDateStr)) {
-        newDate.setDate(newDate.getDate() + 1);
-        finalDateStr = formatDate(newDate);
+        finalDateStr = date;
       }
     }
-    else{
-      // If the final date is NOT in the filter, find the next available valid date (that is in the filter)
-      while (!filter.includes(finalDateStr)) {
-        newDate.setDate(newDate.getDate() + 1);
-        finalDateStr = formatDate(newDate);
-      }
-    }
-
     return finalDateStr;
   };
   
@@ -115,7 +194,7 @@
     //if date is supposed to be in filter or not be in filter
     //Some disabledDates have allowed array values and some not allowed array values
     let isInFilter = true
-    if(type === "esilläolo"){
+    if(type === "esilläolo" ){
       filter = disabledDates
       isInFilter = false
     }
@@ -123,8 +202,7 @@
       filter = disabledDates
       isInFilter = false
     }
-    else if(type === "lautakunta"){
-      //TODO add logic to check constant distance between two items somewhere
+    else if(type === "lautakunta" || type === "lautakunta_määräaika"){
       //keep distance between dates the same if possible
       filter = disabledDates
       isInFilter = false
@@ -149,48 +227,52 @@
             continue;
           }
         }
-
         actualDifference = actualDifference - 4
         if(actualDifference < initialDistance){
           subtractDays = false
         }
       }
     }
-
-    if(subtractDays){
-      // Subtract the specified number of days
-      while (days > 0) {
-        newDate.setDate(newDate.getDate() - 1);
-        if(excludeWeekends){
-          if(newDate.getDay() != 0 && newDate.getDay() != 6){
+    if(type === "lautakunta_määräaika"){
+      const resultPastDate = getPastDate(originalDate, initialDistance, isInFilter, filter);
+      finalDateStr = formatDate(resultPastDate);
+    }
+    else{
+      if(subtractDays){
+        // Subtract the specified number of days
+        while (days > 0) {
+          newDate.setDate(newDate.getDate() - 1);
+          if(excludeWeekends){
+            if(newDate.getDay() != 0 && newDate.getDay() != 6){
+              days--;
+            }
+          }
+          else{
             days--;
           }
         }
-        else{
-          days--;
+        // After subtracting days, find the next available valid date (not blocked)
+        finalDateStr = formatDate(newDate);
+        if(isInFilter){
+          // If the final date is in the filter, find the next available valid date (that is in the filter)
+          while (filter.includes(finalDateStr)) {
+            newDate.setDate(newDate.getDate() - 1);
+            finalDateStr = formatDate(newDate);
+          }
         }
-      }
-
-      // After subtracting days, find the next available valid date (not blocked)
-      finalDateStr = formatDate(newDate);
-      if(isInFilter){
-        // If the final date is in the filter, find the next available valid date (that is in the filter)
-        while (filter.includes(finalDateStr)) {
-          newDate.setDate(newDate.getDate() - 1);
-          finalDateStr = formatDate(newDate);
+        else{
+          // If the final date is NOT in the filter, find the next available valid date (that is in the filter)
+          while (!filter.includes(finalDateStr)) {
+            newDate.setDate(newDate.getDate() - 1);
+            finalDateStr = formatDate(newDate);
+          }
         }
       }
       else{
-        // If the final date is NOT in the filter, find the next available valid date (that is in the filter)
-        while (!filter.includes(finalDateStr)) {
-          newDate.setDate(newDate.getDate() - 1);
-          finalDateStr = formatDate(newDate);
-        }
+        finalDateStr = date;
       }
     }
-    else{
-      finalDateStr = date;
-    }
+
     return finalDateStr;
   };
 
@@ -288,5 +370,7 @@ export default {
     sortObjectByDate,
     dateDifference,
     adjustDates,
-    isDate
+    isDate,
+    calculateWeekdayDifference,
+    isHoliday
 }
