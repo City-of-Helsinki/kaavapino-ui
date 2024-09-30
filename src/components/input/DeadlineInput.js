@@ -427,8 +427,21 @@ DeadLineInput.propTypes = {
   disabled: PropTypes.bool,
   placeholder: PropTypes.string,
   className: PropTypes.string,
-  autofillRule: PropTypes.string,
-  timeTableDisabled: PropTypes.bool
+  autofillRule: PropTypes.array,
+  timeTableDisabled: PropTypes.bool,
+  dateTypes: PropTypes.object,
+  deadlineSection: PropTypes.object,
+  maxMoveGroup: PropTypes.object,
+  maxDateToMove: PropTypes.string,
+  groupName: PropTypes.string,
+  visGroups: PropTypes.array,
+  visItems: PropTypes.array,
+  deadlineSections: PropTypes.array,
+  confirmedValue: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.bool,
+  ])
 }
 
 export default DeadLineInput

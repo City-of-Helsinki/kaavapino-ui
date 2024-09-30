@@ -817,7 +817,7 @@ CustomField.propTypes = {
   defaultValue:PropTypes.bool,
   formName:PropTypes.string,
   attributeData:PropTypes.object,
-  deadlines:PropTypes.object,
+  deadlines:PropTypes.array,
   isProjectTimetableEdit:PropTypes.bool,
   nonEditable: PropTypes.bool,
   rollingInfo: PropTypes.bool,

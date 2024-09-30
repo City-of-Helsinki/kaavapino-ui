@@ -19,12 +19,16 @@ function ConfirmModal({ openConfirmModal,headerText, contentText, button1Text, b
 }
 
 ConfirmModal.propTypes = {
+  openConfirmModal: PropTypes.bool,
   headerText: PropTypes.string,
   contentText: PropTypes.string,
   button1Text: PropTypes.string,
   button2Text: PropTypes.string,
-  onContinue: PropTypes.func,
-  onCancel: PropTypes.func
+  onButtonPress1: PropTypes.func,
+  onButtonPress2: PropTypes.func,
+  style: PropTypes.string,
+  buttonStyle1: PropTypes.string,
+  buttonStyle2: PropTypes.string
 };
 
 export default ConfirmModal;
