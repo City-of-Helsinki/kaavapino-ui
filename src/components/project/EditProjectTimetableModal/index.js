@@ -1299,12 +1299,15 @@ EditProjectTimeTableModal.propTypes = {
   isAdmin: PropTypes.bool,
   formSubmitErrors: PropTypes.object,
   deadlineSections: PropTypes.array,
+  disabledDates: PropTypes.array,
+  lomapaivat: PropTypes.array,
   formValues: PropTypes.object,
   deadlines: PropTypes.array,
   initialize: PropTypes.func.isRequired,
   submitFailed: PropTypes.bool.isRequired,
   dispatch: PropTypes.func.isRequired,
-  t: PropTypes.func.isRequired
+  t: PropTypes.func.isRequired,
+  validated: PropTypes.bool.isRequired,
 }
 
 const mapStateToProps = state => ({

@@ -94,7 +94,7 @@ const FormSection = ({
 }
 
 FormSection.propTypes = {
-  deadlines:PropTypes.object,
+  deadlines:PropTypes.array,
   isCurrentPhase:PropTypes.bool,
   selectedPhase: PropTypes.number,
   phaseIsClosed: PropTypes.bool
