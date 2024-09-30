@@ -414,7 +414,10 @@ DeadLineInput.propTypes = {
   timeTableDisabled: PropTypes.bool,
   dateTypes: PropTypes.object,
   deadlineSection: PropTypes.object,
-  maxMoveGroup: PropTypes.object,
+  maxMoveGroup: PropTypes.oneOfType([
+    PropTypes.object,
+    PropTypes.string
+  ]),
   maxDateToMove: PropTypes.string,
   groupName: PropTypes.string,
   visGroups: PropTypes.array,
