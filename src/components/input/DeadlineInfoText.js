@@ -107,11 +107,13 @@ const DeadlineInfoText = props => {
 DeadlineInfoText.propTypes = {
   fieldData:PropTypes.object,
   meta: PropTypes.object,
-  input: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.number,
-    PropTypes.bool,
-  ])
+  input: PropTypes.shape({
+    value: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number,
+      PropTypes.bool,
+    ])
+  })
 }
 
 export default DeadlineInfoText

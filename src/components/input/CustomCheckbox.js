@@ -120,7 +120,7 @@ CustomCheckbox.propTypes = {
   label: PropTypes.string,
   className: PropTypes.string,
   disabled: PropTypes.bool,
-  updated: PropTypes.bool,
+  updated: PropTypes.object,
   formName: PropTypes.string,
   display: PropTypes.string,
   isProjectTimetableEdit: PropTypes.bool

@@ -205,9 +205,9 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
 
   TimelineModal.propTypes = {
     open: PropTypes.bool,
-    group: PropTypes.object,
-    content: PropTypes.string,
-    deadlinegroup: PropTypes.object,
+    group: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
+    content: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
+    deadlinegroup: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
     deadlines: PropTypes.array,
     openDialog: PropTypes.func,
     visValues: PropTypes.object,
@@ -215,7 +215,12 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
     formSubmitErrors: PropTypes.object,
     projectPhaseIndex: PropTypes.number,
     archived: PropTypes.bool,
-    allowedToEdit: PropTypes.bool
+    allowedToEdit: PropTypes.bool,
+    disabledDates: PropTypes.array,
+    lomapaivat: PropTypes.array,
+    dateTypes: PropTypes.object,
+    groups: PropTypes.array,
+    items: PropTypes.array
   };
   
   export default TimelineModal
