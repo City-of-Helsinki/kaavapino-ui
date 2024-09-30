@@ -713,7 +713,8 @@ class ProjectEditPage extends Component {
               attributeData={attribute_data}
               geoServerData={geoserver_data}
               saving={saving}
-              initialValues={Object.assign(attribute_data, geoserver_data)}
+              initialValues={Object.assign(attribute_data,
+                projectUtils.getMissingGeoData(attribute_data,geoserver_data))}
               phase={phase}
               selectedPhase={selectedPhase}
               isCurrentPhase={selectedPhase === phase}

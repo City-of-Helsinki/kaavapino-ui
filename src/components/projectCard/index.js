@@ -125,7 +125,7 @@ function ProjectCardPage({
 
     const projectData = Object.assign(
       currentProject && currentProject.attribute_data,
-      currentProject && currentProject.geoserver_data
+      projectUtils.getMissingGeoData(currentProject?.attribute_data,currentProject?.geoserver_data)
     )
     projectCardFields &&
       projectCardFields.forEach(field => {
