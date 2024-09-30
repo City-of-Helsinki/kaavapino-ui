@@ -19,22 +19,37 @@ const order = [
   'voimaantulovaihe_paattyy_pvm'
 ];
 
-const getHighestNumberedObject = (obj1,arr) => {
-    // Helper function to extract the number from a content string
-    const extractNumber = str => parseInt(str.match(/\d+$/), 10);
-    // If no objects exist in the array, return null
-    if (arr.length === 0) return null;
-
-    // If 'asd_x' objects exist, find the one with the highest number
-    if (obj1.length > 0) {
-        return obj1.reduce((maxObj, currentObj) => 
-            extractNumber(currentObj.content) > extractNumber(maxObj.content) ? currentObj : maxObj
-        );
+const getHighestNumberedObject = (obj1, arr) => {
+  // Helper function to extract the number from a content string
+  const extractNumber = str => {
+    // Find the last digit in the string
+    let i = str.length - 1;
+    while (i >= 0 && !/\d/.test(str[i])) {
+      i--;
     }
-    
-    // Return null if no valid objects are found
-    return null;
+    // Extract the number
+    let numStr = '';
+    while (i >= 0 && /\d/.test(str[i])) {
+      numStr = str[i] + numStr;
+      i--;
+    }
+    return numStr ? parseInt(numStr, 10) : -Infinity; // Return -Infinity if no number is found
+  };
+
+  // If no objects exist in the array, return null
+  if (arr.length === 0) return null;
+
+  // If 'asd_x' objects exist, find the one with the highest number
+  if (obj1.length > 0) {
+    return obj1.reduce((maxObj, currentObj) =>
+      extractNumber(currentObj.content) > extractNumber(maxObj.content) ? currentObj : maxObj
+    );
   }
+
+  // Return null if no valid objects are found
+  return null;
+};
+
   const getMinObject = (latestObject) => {
     // Iterate over the keys of the object
     for (let key in latestObject) {
