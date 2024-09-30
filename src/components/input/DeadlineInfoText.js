@@ -122,8 +122,10 @@ DeadlineInfoText.propTypes = {
       PropTypes.string,
       PropTypes.number,
       PropTypes.bool,
-    ])
-  })
+    ]),
+    name: PropTypes.string,
+  }),
+  label: PropTypes.string,
 }
 
 export default DeadlineInfoText

@@ -828,9 +828,6 @@ ProjectEditPage.propTypes = {
   showTimetableForm: PropTypes.bool,
   attribute_data: PropTypes.object,
   saveProjectFloorArea: PropTypes.func,
-  isResponsible: PropTypes.bool,
-  projectPhaseIndex: PropTypes.number,
-  isAdmin: PropTypes.bool,
 }
 
 const mapStateToProps = state => {
