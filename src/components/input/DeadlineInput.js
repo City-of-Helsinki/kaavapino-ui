@@ -275,7 +275,17 @@ const DeadLineInput = ({
         let newDisabledDates = dateTypes?.[dateType]?.dates
         newDisabledDates = newDisabledDates.filter(date => date >= minEndDate)
         return !newDisabledDates.includes(formatDate(date));
-      } 
+      }
+      else if(input.name.includes("projektin_kaynnistys_pvm")){
+        const endingDateKey = "kaynnistys_paattyy_pvm"
+        const dynamicKey = Object.keys(deadlineSection.deadlineSection)[0];
+        const deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey]
+        const distanceTo = deadlineSectionValues.find(({ name }) => name === endingDateKey).distance_from_previous
+        let newDisabledDates = dateTypes?.["arkipäivät"]?.dates
+        const lastPossibleDateToSelect = timeUtil.subtractDays("arkipäivät",attributeData[endingDateKey],distanceTo,dateTypes?.["arkipäivät"]?.dates,true)
+        newDisabledDates = newDisabledDates.filter(date => date <= lastPossibleDateToSelect);
+        return !newDisabledDates.includes(formatDate(date));
+      }
       else {
         dateType = 'arkipäivät';
       }

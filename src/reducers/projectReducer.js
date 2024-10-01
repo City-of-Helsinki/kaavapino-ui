@@ -201,13 +201,13 @@ export const reducer = (state = initialState, action) => {
               dateType = "arkipäivät"
               type = "arkipäivät"
             }
-  
-            if (daysDifference > 0 && !(matchingKey.includes("_alkaa") && field.includes("_paattyy")) && !(matchingKey.includes("kaynnistys_pvm") && field.includes("_paattyy"))  && !(field.includes("_alkaa") && matchingKey.includes("_paattyy")) && !(field.includes("_paattyy") && matchingKey.includes("_maaraaika"))) {
-              // Move forward
+            //Check matching key and field and determine is matching key allowed to be moved when field is moved
+            if (daysDifference > 0 && !(matchingKey.includes("_paattyy") && field.includes("projektin_kaynnistys_pvm")) && !(matchingKey.includes("_alkaa") && field.includes("_paattyy")) && !(matchingKey.includes("kaynnistys_pvm") && field.includes("_paattyy"))  && !(field.includes("_alkaa") && matchingKey.includes("_paattyy")) && !(field.includes("_paattyy") && matchingKey.includes("_maaraaika"))) {
+              // Move matchingKey days forward
               updatedAttributeData[matchingKey] = timeUtil.addDays(type,updatedAttributeData[matchingKey], daysDifference, state.disabledDates.date_types[dateType].dates,true,updatedAttributeData[field],state.disabledDates,initialDistance);
             } 
             else if (daysDifference < 0 && !(field.includes("_alkaa") && matchingKey.includes("_paattyy")) && !(field.includes("_paattyy") && matchingKey.includes("_alkaa")) && !(field.includes("_paattyy") && matchingKey.includes("_maaraaika"))) {
-              // Move backward
+              // Move matchingKey days backward
               updatedAttributeData[matchingKey] = timeUtil.subtractDays(type,updatedAttributeData[matchingKey], -daysDifference, state.disabledDates.date_types[dateType].dates,true,updatedAttributeData[field],state.disabledDates,initialDistance);
             }
           }
