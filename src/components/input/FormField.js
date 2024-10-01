@@ -341,13 +341,31 @@ const FormField = ({
 FormField.propTypes = {
   disabled: PropTypes.bool,
   field: PropTypes.object,
-  deadlines:PropTypes.object,
+  deadlines:PropTypes.array,
   isProjectTimetableEdit:PropTypes.bool,
   rollingInfo:PropTypes.bool,
   isCurrentPhase:PropTypes.bool,
   selectedPhase: PropTypes.number,
   phaseIsClosed: PropTypes.bool,
-  isTabActive: PropTypes.bool
+  isTabActive: PropTypes.bool,
+  disabledDates: PropTypes.array,
+  lomapaivat: PropTypes.array,
+  dateTypes: PropTypes.object,
+  deadlineSection: PropTypes.object,
+  maxMoveGroup: PropTypes.oneOfType([
+    PropTypes.object,
+    PropTypes.string
+  ]),
+  maxDateToMove: PropTypes.string,
+  groupName: PropTypes.string,
+  visGroups: PropTypes.array,
+  visItems: PropTypes.array,
+  deadlineSections: PropTypes.array,
+  confirmedValue: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.bool,
+  ]),
 }
 
 export default withTranslation()(FormField)

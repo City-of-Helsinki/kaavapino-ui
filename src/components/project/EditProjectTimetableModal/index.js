@@ -746,19 +746,30 @@ class EditProjectTimeTableModal extends Component {
         let nextKey
         let numberString;
         let daysToAdd
-        // Use regex to find the last number in the string
-        // used to find next steps distance to currenct one
-        const indexNumber = key.match(/\d+(?=\D*$)/);
 
-        if (indexNumber) {
-            // If a index number is found, increment it by 1
-            numberString = parseInt(indexNumber[0], 10) + 1;
-            nextKey = key.replace(/\d+(?=\D*$)/, numberString);
+        // Use string manipulation to find the last number in the string
+        // used to find next steps distance to currenct one
+        let lastDigitIndex = -1;
+        for (let i = key.length - 1; i >= 0; i--) {
+          if (/\d/.test(key[i])) {
+            lastDigitIndex = i;
+            break;
+          }
         }
-        else {
-            // If no number is found, set numberString to 2
-            numberString = 2;
-            nextKey = key + "_" + numberString;
+
+        if (lastDigitIndex !== -1) {
+          let startIndex = lastDigitIndex;
+          while (startIndex >= 0 && /\d/.test(key[startIndex])) {
+            startIndex--;
+          }
+          startIndex++;
+          const indexNumber = key.substring(startIndex, lastDigitIndex + 1);
+          numberString = parseInt(indexNumber, 10) + 1;
+          nextKey = key.substring(0, startIndex) + numberString + key.substring(lastDigitIndex + 1);
+        } else {
+          // If no number is found, set numberString to 2
+          numberString = 2;
+          nextKey = key + "_" + numberString;
         }
 
         let newDate = new Date(foundItem.value ? foundItem.value : foundItem);
@@ -1288,12 +1299,15 @@ EditProjectTimeTableModal.propTypes = {
   isAdmin: PropTypes.bool,
   formSubmitErrors: PropTypes.object,
   deadlineSections: PropTypes.array,
+  disabledDates: PropTypes.array,
+  lomapaivat: PropTypes.array,
   formValues: PropTypes.object,
   deadlines: PropTypes.array,
   initialize: PropTypes.func.isRequired,
   submitFailed: PropTypes.bool.isRequired,
   dispatch: PropTypes.func.isRequired,
-  t: PropTypes.func.isRequired
+  t: PropTypes.func.isRequired,
+  validated: PropTypes.bool.isRequired,
 }
 
 const mapStateToProps = state => ({

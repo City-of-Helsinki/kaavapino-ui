@@ -788,13 +788,24 @@ class ProjectEditPage extends Component {
 }
 
 ProjectEditPage.propTypes = {
-  currentProject:PropTypes.object,
+  currentProject: PropTypes.object,
   project: PropTypes.object,
   schema: PropTypes.object,
   resetFormErrors: PropTypes.func,
   unlockAllFields: PropTypes.func,
   location: PropTypes.object,
-  switchDisplayedPhase: PropTypes.func
+  switchDisplayedPhase: PropTypes.func,
+  formValues: PropTypes.object,
+  fetchDisabledDatesStart: PropTypes.func,
+  formSelector: PropTypes.object,
+  reset: PropTypes.func,
+  resetAttributeData: PropTypes.func,
+  documents: PropTypes.array,
+  disabledDates: PropTypes.object,
+  showFloorAreaForm: PropTypes.bool,
+  showTimetableForm: PropTypes.bool,
+  attribute_data: PropTypes.object,
+  saveProjectFloorArea: PropTypes.func,
 }
 
 const mapStateToProps = state => {

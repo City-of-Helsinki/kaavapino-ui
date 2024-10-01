@@ -811,14 +811,14 @@ class CustomField extends Component {
 
 CustomField.propTypes = {
   disabled: PropTypes.bool,
-  field:PropTypes.object,
-  input:PropTypes.func,
-  onRadioChange:PropTypes.func,
-  defaultValue:PropTypes.bool,
-  formName:PropTypes.string,
-  attributeData:PropTypes.object,
-  deadlines:PropTypes.object,
-  isProjectTimetableEdit:PropTypes.bool,
+  field: PropTypes.object,
+  input: PropTypes.func,
+  onRadioChange: PropTypes.func,
+  defaultValue: PropTypes.bool,
+  formName: PropTypes.string,
+  attributeData: PropTypes.object,
+  deadlines: PropTypes.array,
+  isProjectTimetableEdit: PropTypes.bool,
   nonEditable: PropTypes.bool,
   rollingInfo: PropTypes.bool,
   modifyText: PropTypes.string,
@@ -838,11 +838,27 @@ CustomField.propTypes = {
     PropTypes.bool,
     PropTypes.object
   ]),
-  isCurrentPhase:PropTypes.bool,
+  isCurrentPhase: PropTypes.bool,
   selectedPhase: PropTypes.number,
   phaseIsClosed: PropTypes.bool,
   checkLocked: PropTypes.func,
-  isTabActive: PropTypes.bool
-}
+  isTabActive: PropTypes.bool,
+  disabledDates: PropTypes.array,
+  lomapaivat: PropTypes.array,
+  dateTypes: PropTypes.object,
+  deadlineSection: PropTypes.object,
+  maxMoveGroup: PropTypes.object,
+  maxDateToMove: PropTypes.string,
+  groupName: PropTypes.string,
+  visItems: PropTypes.array,
+  visGroups: PropTypes.array,
+  deadlineSections: PropTypes.array,
+  formValues: PropTypes.object,
+  confirmedValue: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.bool,
+  ])
+};
 
 export default CustomField

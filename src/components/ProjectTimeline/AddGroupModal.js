@@ -61,12 +61,13 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
 }
 
 AddGroupModal.propTypes = {
-  toggleOpenAddDialog: PropTypes.func,
+  toggleOpenAddDialog: PropTypes.bool,
   addDialogStyle: PropTypes.object,
   addDialogData: PropTypes.object,
   closeAddDialog: PropTypes.func,
   allowedToEdit: PropTypes.bool,
-  isAdmin: PropTypes.bool
+  isAdmin: PropTypes.bool,
+  timelineAddButton: PropTypes.instanceOf(HTMLElement)
 };
 
 export default AddGroupModal;

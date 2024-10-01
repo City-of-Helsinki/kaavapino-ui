@@ -725,6 +725,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             } else if (content.includes("-")) {
               content = content.replace("-", " ");
               label.innerHTML = content + " ";
+            }
+            else if (content.includes("Vaiheen kesto")) {
+              label.innerHTML = "Vaiheen lisätiedot";
             } else {
               label.innerHTML = content + " ";
             }
@@ -925,8 +928,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 });
 VisTimelineGroup.displayName = 'VisTimelineGroup';
 VisTimelineGroup.propTypes = {
-  groups: PropTypes.array,
-  items: PropTypes.array,
+  groups: PropTypes.oneOfType([
+    PropTypes.object,
+    PropTypes.bool
+  ]),
+  items: PropTypes.object,
   deadlines: PropTypes.array,
   visValues: PropTypes.object,
   deadlineSections: PropTypes.array,
@@ -934,6 +940,10 @@ VisTimelineGroup.propTypes = {
   projectPhaseIndex: PropTypes.number,
   archived: PropTypes.bool,
   allowedToEdit: PropTypes.bool,
-  isAdmin: PropTypes.bool
+  isAdmin: PropTypes.bool,
+  disabledDates: PropTypes.array,
+  lomapaivat: PropTypes.array,
+  dateTypes: PropTypes.object,
+  trackExpandedGroups: PropTypes.func,
 };
 export default VisTimelineGroup
