@@ -236,7 +236,7 @@ const DeadLineInput = ({
           }
         }
         else if(input.name.includes("_alkaa") || input.name.includes("_paattyy")){
-          //TODO move all of these checks to some util file
+          //TODO move all of these checks to some util file and refactor
           //Disable dates when editing dates from calendar start and end and min start date and max end date
           const endingDateKey = textUtil.replacePattern(input.name,"_alkaa","_paattyy")
           const dynamicKey = Object.keys(deadlineSection.deadlineSection)[0];
@@ -276,20 +276,19 @@ const DeadLineInput = ({
         newDisabledDates = newDisabledDates.filter(date => date >= minEndDate)
         return !newDisabledDates.includes(formatDate(date));
       }
-      else if(input.name.includes("projektin_kaynnistys_pvm")){
+      else if(input.name.includes("projektin_kaynnistys_pvm") || input.name.includes("kaynnistys_paattyy_pvm")){
         const endingDateKey = "kaynnistys_paattyy_pvm"
         const dynamicKey = Object.keys(deadlineSection.deadlineSection)[0];
         const deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey]
         const distanceTo = deadlineSectionValues.find(({ name }) => name === endingDateKey).distance_from_previous
         let newDisabledDates = dateTypes?.["arkipäivät"]?.dates
-        const lastPossibleDateToSelect = timeUtil.subtractDays("arkipäivät",attributeData[endingDateKey],distanceTo,dateTypes?.["arkipäivät"]?.dates,true)
-        newDisabledDates = newDisabledDates.filter(date => date <= lastPossibleDateToSelect);
+        const lastPossibleDateToSelect = input.name.includes("projektin_kaynnistys_pvm") ? timeUtil.subtractDays("arkipäivät",attributeData[endingDateKey],distanceTo,dateTypes?.["arkipäivät"]?.dates,true) : timeUtil.addDays("arkipäivät",attributeData["projektin_kaynnistys_pvm"],distanceTo,dateTypes?.["arkipäivät"]?.dates,true)
+        newDisabledDates = input.name.includes("projektin_kaynnistys_pvm") ? newDisabledDates.filter(date => date <= lastPossibleDateToSelect) : newDisabledDates.filter(date => date >= lastPossibleDateToSelect)
         return !newDisabledDates.includes(formatDate(date));
       }
       else {
         dateType = 'arkipäivät';
       }
-    
       datesToDisable = !dateTypes?.[dateType]?.dates?.includes(formatDate(date));
     }
 
