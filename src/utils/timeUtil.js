@@ -135,7 +135,7 @@
       }
     };
 
-    const findNextValidDate = (newDate, finalDateStr, filter, isInFilter) => {
+    const findNextValidDateAdd = (newDate, finalDateStr, filter, isInFilter) => {
       const isDateInFilter = (dateStr) => filter.includes(dateStr);
       while (isInFilter ? isDateInFilter(finalDateStr) : !isDateInFilter(finalDateStr)) {
         newDate.setDate(newDate.getDate() + 1);
@@ -165,7 +165,7 @@
       if (addDays) {
         adjustNewDate(newDate, days);
         finalDateStr = formatDate(newDate);
-        finalDateStr = findNextValidDate(newDate, finalDateStr, filter, isInFilter);
+        finalDateStr = findNextValidDateAdd(newDate, finalDateStr, filter, isInFilter);
       } else {
         finalDateStr = date;
       }
@@ -216,7 +216,7 @@
       }
     };
 
-    const findNextValidDate = (newDate, finalDateStr, filter, isInFilter) => {
+    const findNextValidDateSubstract = (newDate, finalDateStr, filter, isInFilter) => {
       const isDateInFilter = (dateStr) => filter.includes(dateStr);
       while (isInFilter ? isDateInFilter(finalDateStr) : !isDateInFilter(finalDateStr)) {
         newDate.setDate(newDate.getDate() - 1);
@@ -246,7 +246,7 @@
       if (subtractDays) {
         adjustNewDate(newDate, days);
         finalDateStr = formatDate(newDate);
-        finalDateStr = findNextValidDate(newDate, finalDateStr, filter, isInFilter);
+        finalDateStr = findNextValidDateSubstract(newDate, finalDateStr, filter, isInFilter);
       } else {
         finalDateStr = date;
       }

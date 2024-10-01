@@ -461,11 +461,20 @@ class EditProjectTimeTableModal extends Component {
       numberOfPhases = deadlines[i].deadline.index
 
       if(deadlines[i].deadline.deadline_types.includes('phase_start')){
-        //If formValues has deadlines[i].deadline.attribute use that values, it if not then use deadline[i].date in startDate.
-        startDate = formValues && formValues[deadlines[i].deadline.attribute]
-          ? new Date(formValues[deadlines[i].deadline.attribute])
-          : new Date(deadlines[i].date);
-        startDate.setHours(0, 0, 0, 0);
+        //Special case for project start date
+        if(deadlines[i].deadline.attribute === null && deadlines[i].abbreviation === "K1"){
+          startDate = formValues && formValues["projektin_kaynnistys_pvm"]
+            ? new Date(formValues["projektin_kaynnistys_pvm"])
+            : new Date(deadlines[i].date);
+          startDate.setHours(0, 0, 0, 0);
+        }
+        else{
+          //If formValues has deadlines[i].deadline.attribute use that values, it if not then use deadline[i].date in startDate.
+          startDate = formValues && formValues[deadlines[i].deadline.attribute]
+            ? new Date(formValues[deadlines[i].deadline.attribute])
+            : new Date(deadlines[i].date);
+          startDate.setHours(0, 0, 0, 0);
+        }
 
         style = deadlines[i].deadline.phase_color
       }
