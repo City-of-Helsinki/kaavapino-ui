@@ -99,7 +99,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         let largestIndex = 0;
         //find largest index
         attributeEsillaoloKeys.forEach(key => {
-          const match = key.match(/_(\d+)$/);
+          const match = /_(\d+)$/.exec(key);
           if (match) {
               const number = parseInt(match[1], 10);
               if (number > largestIndex) {
@@ -131,7 +131,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         let largestIndex = 0;
         //find largest index
         attributeLautakuntaanKeys.forEach(key => {
-          const match = key.match(/_(\d+)$/);
+          const match = /_(\d+)$/.exec(key);
           if (match) {
               const number = parseInt(match[1], 10);
               if (number > largestIndex) {
@@ -178,12 +178,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const lautakuntaCount = matchingGroups.filter(group => group.content.includes('Lautakunta')).length > 1 ? '_' + matchingGroups.filter(group => group.content.includes('Lautakunta')).length : '';
       const phase = data.content.toLowerCase().replace(/\s+/g, '_');
       // Check if existing groups have been confirmed
-      let esillaoloConfirmed = Object.prototype.hasOwnProperty.call(visValRef, `vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`) && visValRef[`vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`] === true
-      || Object.prototype.hasOwnProperty.call(visValRef, `vahvista_${phase}_esillaolo${esillaoloCount}`) && visValRef[`vahvista_${phase}_esillaolo${esillaoloCount}`] === true;
-      let lautakuntaConfirmed = Object.prototype.hasOwnProperty.call(visValRef, `vahvista_${phase}_lautakunnassa${lautakuntaCount}`) && visValRef[`vahvista_${phase}_lautakunnassa${lautakuntaCount}`] === true;
+      let esillaoloConfirmed = Object.hasOwn(visValRef, `vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`) && visValRef[`vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`] === true
+      || Object.hasOwn(visValRef, `vahvista_${phase}_esillaolo${esillaoloCount}`) && visValRef[`vahvista_${phase}_esillaolo${esillaoloCount}`] === true;
+      let lautakuntaConfirmed = Object.hasOwn(visValRef, `vahvista_${phase}_lautakunnassa${lautakuntaCount}`) && visValRef[`vahvista_${phase}_lautakunnassa${lautakuntaCount}`] === true;
 
       if(phase === "luonnos"){
-        lautakuntaConfirmed = Object.prototype.hasOwnProperty.call(visValRef, `vahvista_kaavaluonnos_lautakunnassa${lautakuntaCount}`) && visValRef[`vahvista_kaavaluonnos_lautakunnassa${lautakuntaCount}`] === true;
+        lautakuntaConfirmed = Object.hasOwn(visValRef, `vahvista_kaavaluonnos_lautakunnassa${lautakuntaCount}`) && visValRef[`vahvista_kaavaluonnos_lautakunnassa${lautakuntaCount}`] === true;
       }
       if(phase === "periaatteet" && !(phase + "_lautakuntaan_1" in visValRef) || phase === "periaatteet" && visValRef["periaatteet_lautakuntaan_1"]  || phase === "luonnos" && !(phase + "_lautakuntaan_1") || phase === "luonnos" && visValRef["kaavaluonnos_lautakuntaan_1"] === false){
         lautakuntaConfirmed = true
@@ -259,8 +259,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       //TODO review logic and split this to smaller functions
       let removeFromTimeline = dataToRemove?.deadlinegroup
       let phase = dataToRemove?.nestedInGroup.toLowerCase()
-      const esillaolo = dataToRemove?.content?.includes("Esilläolo") ? true : false
-      const luonnos = dataToRemove?.content?.includes("Lautakunta") ? true : false
+      const esillaolo = dataToRemove?.content?.includes("Esilläolo");
+      const luonnos = dataToRemove?.content?.includes("Lautakunta");
       //Group that is to be removed
       let toRemoveFromCalendar = dataToRemove?.nestedInGroup?.toLowerCase() + "_" + dataToRemove?.content?.toLowerCase().replace(/[äöå]/g, match => {
         switch (match) {
@@ -276,7 +276,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
       //remove from attribute data/calendar
       for (const key in visValues) {
-        if (Object.prototype.hasOwnProperty.call(visValues, key)) {
+        if (Object.hasOwn(visValues, key)) {
           if (
             (key.includes(toRemoveFromCalendar) && key.includes(index)) || 
             (esillaolo && key.includes("mielipiteet_" + phase + index)) || 
@@ -616,9 +616,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             return false;
           }
         
-          if (item.phase) {
-            if (!adjustIfWeekend(item.start) && !adjustIfWeekend(item.end)) {
-              const movingTimetableItem = moment.range(item.start, item.end);
+          if (!adjustIfWeekend(item.start) && !adjustIfWeekend(item.end)) {
+            const movingTimetableItem = moment.range(item.start, item.end);
+            if (item.phase) {
               items.forEach(i => {
                 if (i.phase && i.id !== item.id) {
                   const statickTimetables = moment.range(i.start, i.end);
@@ -628,10 +628,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                   }
                 }
               });
-            }
-          } else {
-            if (!adjustIfWeekend(item.start) && !adjustIfWeekend(item.end)) {
-              const movingTimetableItem = moment.range(item.start, item.end);
+            } else {
               items.forEach(i => {
                 if (i.id !== item.id) {
                   if (item.phaseID === i.phaseID && !preventMove && !i.locked) {
@@ -672,14 +669,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
           const deletableGroup = keys.some(([key, value]) =>{
             const allWordsInKey = wordsToCheck.every(word => key.includes(word))
-            if(allWordsInKey){
-              if(value){
-                return true
-              }
-              else{
-                return false; // stop iterating and return false
-              }
-            }
+            return allWordsInKey && value;
           });
 
           //Don't show buttons in these groups
@@ -730,8 +720,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               label.innerHTML = content + " ";
             }
 
-            if (content === "Nahtavillaolo") {
-              label.innerHTML = "Nähtävilläolo";
+            if (content.includes("Nahtavillaolo")) {
+              content = content.replace("Nahtavillaolo", "Nähtävilläolo");
+              label.innerHTML = content + " ";
             }
 
             container.insertAdjacentElement("afterBegin", label);
@@ -757,7 +748,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                 removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-first-esillaolo')}</div>`;
               } else if (label.innerHTML.includes("Lautakunta")) {
                 removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-first-lautakunta')}</div>`;
-              } else if (label.innerHTML.includes("Nahtavillaolo")) {
+              } else if (label.innerHTML.includes("Nähtävilläolo")) {
                 removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-first-nahtavillaolo')}</div>`;
               }
 
@@ -789,9 +780,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                 lock.classList.toggle("lock");
                 const locked = lock.classList.contains("lock") ? "inner locked" : "inner";
                 let visibleItems = timeline.getVisibleItems()
-                for (let i = 0; i < visibleItems.length; i++) {
-                  const item = items.get(visibleItems[i])
-                  if(!item.phase && item.id >= group.id){
+                for (const visibleItem of visibleItems) {
+                  const item = items.get(visibleItem);
+                  if (!item.phase && item.id >= group.id) {
                     items.update({ id: item.id, className: locked, locked: !item.locked });
                   }
                 }
