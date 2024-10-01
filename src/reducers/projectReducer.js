@@ -206,7 +206,7 @@ export const reducer = (state = initialState, action) => {
               // Move matchingKey days forward
               updatedAttributeData[matchingKey] = timeUtil.addDays(type,updatedAttributeData[matchingKey], daysDifference, state.disabledDates.date_types[dateType].dates,true,updatedAttributeData[field],state.disabledDates,initialDistance);
             } 
-            else if (daysDifference < 0 && !(field.includes("_alkaa") && matchingKey.includes("_paattyy")) && !(field.includes("_paattyy") && matchingKey.includes("_alkaa")) && !(field.includes("_paattyy") && matchingKey.includes("_maaraaika"))) {
+            else if (daysDifference < 0 && !(matchingKey.includes("_paattyy") && field.includes("projektin_kaynnistys_pvm")) && !(field.includes("_alkaa") && matchingKey.includes("_paattyy")) && !(field.includes("_paattyy") && matchingKey.includes("_alkaa")) && !(field.includes("_paattyy") && matchingKey.includes("_maaraaika"))) {
               // Move matchingKey days backward
               updatedAttributeData[matchingKey] = timeUtil.subtractDays(type,updatedAttributeData[matchingKey], -daysDifference, state.disabledDates.date_types[dateType].dates,true,updatedAttributeData[field],state.disabledDates,initialDistance);
             }

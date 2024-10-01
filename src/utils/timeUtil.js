@@ -251,7 +251,6 @@
         finalDateStr = date;
       }
     }
-
     return finalDateStr;
   };
 
