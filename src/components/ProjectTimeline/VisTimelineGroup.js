@@ -725,6 +725,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             } else if (content.includes("-")) {
               content = content.replace("-", " ");
               label.innerHTML = content + " ";
+            }
+            else if (content.includes("Vaiheen kesto")) {
+              label.innerHTML = "Vaiheen lisätiedot";
             } else {
               label.innerHTML = content + " ";
             }
