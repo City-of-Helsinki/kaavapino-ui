@@ -1,4 +1,23 @@
 import timeUtil from "./timeUtil";
+//Phase main start and end value order should always be the same
+const order = [
+  'projektin_kaynnistys_pvm',
+  'kaynnistys_paattyy_pvm',
+  'periaatteetvaihe_alkaa_pvm',
+  'periaatteetvaihe_paattyy_pvm',
+  'oasvaihe_alkaa_pvm',
+  'oasvaihe_paattyy_pvm',
+  'luonnosvaihe_alkaa_pvm',
+  'luonnosvaihe_paattyy_pvm',
+  'ehdotusvaihe_alkaa_pvm',
+  'ehdotusvaihe_paattyy_pvm',
+  'tarkistettuehdotusvaihe_alkaa_pvm',
+  'tarkistettuehdotusvaihe_paattyy_pvm',
+  'hyvaksyminenvaihe_alkaa_pvm',
+  'hyvaksyminenvaihe_paattyy_pvm',
+  'voimaantulovaihe_alkaa_pvm',
+  'voimaantulovaihe_paattyy_pvm'
+];
 
 const getHighestNumberedObject = (obj1,arr) => {
     // Helper function to extract the number from a content string
@@ -214,10 +233,71 @@ const getHighestNumberedObject = (obj1,arr) => {
 
     // Sort arr1 based on the keyOrder extracted from deadlineSections
     arr1.sort((a, b) => {
-      return keyOrder.indexOf(a.key) - keyOrder.indexOf(b.key);
+      const indexA = keyOrder.indexOf(a.key);
+      const indexB = keyOrder.indexOf(b.key);
+    
+      // If both keys exist in keyOrder, sort based on their index
+      if (indexA !== -1 && indexB !== -1) {
+        return indexA - indexB;
+      }
+    
+      // If only one key exists in keyOrder, prioritize that one
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+    
+      // If neither key exists in keyOrder, maintain their original order
+      return 0;
     });
+
+    //Sort phase start end data by order const
+    arr1 = sortPhaseData(arr1,order)
     //Return in order array ready for comparing next and previous value distances
     return arr1
+  }
+  //Sort by certain predetermined order
+  const sortPhaseData = (arr,order) => {
+    arr.sort((a, b) => {
+      // check for the 'order' property
+      const aHasOrder = Object.prototype.hasOwnProperty.call(a, 'order');
+      const bHasOrder = Object.prototype.hasOwnProperty.call(b, 'order');
+      
+      // If both items have 'order', keep their relative positions
+      if (aHasOrder && bHasOrder) {
+          return 0; // Maintain original order for these items
+      }
+      // If only one of them has 'order', prioritize that one to stay in place
+      if (aHasOrder) return -1;
+      if (bHasOrder) return 1;
+  
+      // Otherwise, sort based on the provided order array
+      return order.indexOf(a.key) - order.indexOf(b.key);
+    });
+  
+    arr = increasePhaseValues(arr)
+    return arr
+  }
+
+  const increasePhaseValues = (arr) => {
+    const filteredArr = arr.filter(item => order.includes(item.key));
+    // Ensure each subsequent value is equal to or greater than the previous one
+    for (let i = 1; i < filteredArr.length; i++) {
+      if (filteredArr[i - 1].key.includes("paattyy_pvm") && filteredArr[i].key.includes("alkaa_pvm") || filteredArr[i].key.includes("kaynnistys_pvm")) {
+        // Convert values to Date objects for comparison
+        const previousValue = new Date(filteredArr[i - 1].value);
+        const currentValue = new Date(filteredArr[i].value);
+
+        // Adjust the current value if it's less than the previous value
+        if (currentValue < previousValue) {
+          filteredArr[i].value = filteredArr[i - 1].value;
+        }
+      }
+    }
+    // Replace the original elements in arr with updated elements from filteredArr
+    const result = arr.map(item => {
+      const updatedItem = filteredArr.find(filteredItem => filteredItem.key === item.key);
+      return updatedItem ? updatedItem : item;
+    });
+    return result
   }
 
   const checkForDecreasingValues = (arr,isAdd,field) => {
@@ -296,10 +376,52 @@ const getHighestNumberedObject = (obj1,arr) => {
         }
         // Update the array with the new date
         arr[i].value = newDate.toISOString().split('T')[0];
-      }
+
+        if(arr[i].distance_from_previous === undefined && arr[i].key.endsWith('_pvm') && arr[i].key.includes("_paattyy_")){
+          const targetSubstring = arr[i].key.split('vaihe')[0];
+          // Iterate backwards from the given index
+          const res = reverseIterateArray(arr,i,targetSubstring)
+          const differenceInTime = new Date(res) - new Date(arr[i].value)
+          const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
+          if(differenceInDays >= 5){
+            // TODO: minium gap here?
+            //Create a Date object for 2026-06-03
+            //let date = new Date(res);
+            //date.setDate(date.getDate() + 5);
+            //const dateString = timeUtil.formatDate(date)
+            arr[i].value = res
+          }
+        }
+      } 
     }
+    sortPhaseData(arr,order)
     return arr
   }
+
+   const reverseIterateArray = (arr,index,target) => {
+    let targetString = target
+    if(target === "tarkistettuehdotus"){
+      //other values in array at tarkistettu ehdotus phase are with _ but phase values are without
+      targetString = "tarkistettu_ehdotus"
+    }
+    else if(target === "ehdotus"){
+      targetString = ["ehdotuksen", "kaavaehdotus", "ehdotus"]
+    }
+    for (let i = index - 1; arr.length >= 0 && i >= 0; i--) {
+      // Check if 'distance_from_previous' attribute does not exist and if the key contains the target substring
+      if(target === "ehdotus"){
+        for (let j = 0; j < targetString.length; j++) {
+          if (!arr[i].key.includes('tarkistettu_ehdotus') && !arr[i].key.endsWith('_pvm') && arr[i].key.includes(targetString[j])) {
+            return arr[i].value;
+          }
+        }
+      }
+      else if (arr[i].key.includes(targetString) && !arr[i].key.endsWith('_pvm')) {
+        return arr[i].value;
+      }
+    }
+    return null; // Return null if no such key is found
+  } 
 
     // Function to update original object by comparing keys
   const updateOriginalObject = (originalObj, updatedArr) => {
