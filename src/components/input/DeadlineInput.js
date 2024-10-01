@@ -258,7 +258,6 @@ const DeadLineInput = ({
         }
       } 
       else if (currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')) {
-        
         const dynamicKey = Object.keys(deadlineSection.deadlineSection)[0];
         const deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey]
         //const distanceTo = input.name.includes("maaraaika") ? deadlineSectionValues.find(({ name }) => name === input.name).distance_from_previous : deadlineSectionValues.find(({ name }) => name === input.name).distance_to_next
@@ -269,7 +268,7 @@ const DeadLineInput = ({
         let visItemsFiltered = visItems.filter(info => info.type !== "background")
         let phaseToCheck = visItemsFiltered.filter(({group}) => group === currentPhase.id)
         let lastElement = phaseToCheck.at(-1);
-        let previousGroupEndDate = lastElement?.end
+        let previousGroupEndDate = lastElement?.end ? lastElement?.end : lastElement?.start
         dateType = currentDeadline?.deadline?.attribute?.includes('maaraaika') ? 'työpäivät' : 'lautakunnan_kokouspäivät';
         const minEndDate = timeUtil.addDays("lautakunta",previousGroupEndDate,distanceTo,dateTypes?.[dateType]?.dates,true,false,false,constDistance)
         let newDisabledDates = dateTypes?.[dateType]?.dates
@@ -297,7 +296,6 @@ const DeadLineInput = ({
     }
   
     const day = date.getDay();
-
     return day === 0 || day === 6 || datesToDisable;
   }
 
@@ -354,7 +352,7 @@ const DeadLineInput = ({
         <DateInput
           readOnly
           language='fi'
-          initialMonth={getInitialMonth(currentValue)}
+          initialMonth={getInitialMonth(currentValue ? currentValue : input.value)}
           isDateDisabledBy={isDisabledDate}
           value={formatDateToYYYYMMDD(currentValue)}
           name={input.name}
