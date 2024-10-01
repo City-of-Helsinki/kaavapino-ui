@@ -44,6 +44,10 @@
 
     // Loop from start date to end date
     while (currentDate <= end) {
+        // Extra safety check to prevent an infinite loop
+        if (currentDate > end) {
+          break;
+        }
         // Check if it's a weekday (Monday to Friday)
         if (!isWeekend(currentDate)) {
             daysDifference++;
@@ -110,6 +114,10 @@
     const calculateActualDifference = (originalDate, tempDate, workdays) => {
       let actualDifference = 0;
       while (originalDate <= tempDate) {
+          // Extra safety check to break the loop
+        if (originalDate > tempDate) {
+          break;
+        }
         if (excludeWeekends && (originalDate.getDay() === 0 || originalDate.getDay() === 6)) {
           originalDate.setDate(originalDate.getDate() + 1);
         } else if (!checkArrayForValue(workdays, originalDate)) {
@@ -189,6 +197,11 @@
     const calculateActualDifference = (originalDate, tempDate, workdays) => {
       let actualDifference = 0;
       while (tempDate >= originalDate) {
+        // Extra safety check to prevent an infinite loop
+        if (tempDate < originalDate) {
+          break;
+        }
+
         if (excludeWeekends && (tempDate.getDay() === 0 || tempDate.getDay() === 6)) {
           tempDate.setDate(tempDate.getDate() - 1);
         } else if (!checkArrayForValue(workdays, tempDate)) {
