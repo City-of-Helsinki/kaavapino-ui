@@ -847,7 +847,10 @@ CustomField.propTypes = {
   lomapaivat: PropTypes.array,
   dateTypes: PropTypes.object,
   deadlineSection: PropTypes.object,
-  maxMoveGroup: PropTypes.object,
+  maxMoveGroup: PropTypes.oneOfType([
+    PropTypes.object,
+    PropTypes.string
+  ]),
   maxDateToMove: PropTypes.string,
   groupName: PropTypes.string,
   visItems: PropTypes.array,
