@@ -129,7 +129,14 @@ const DeadLineInput = ({
     let date;
     if (dateString) {
         date = new Date(dateString);
-    } else {
+    }
+    else if(input.name === "tullut_osittain_voimaan_pvm" || input.name === "voimaantulo_pvm" || input.name === "kumottu_pvm" || input.name === "rauennut"){
+      date = new Date(attributeData['voimaantulovaihe_paattyy_pvm']);
+    }
+    else if(input.name === "hyvaksymispaatos_pvm"){
+      date = new Date(attributeData['hyvaksyminenvaihe_paattyy_pvm']);
+    }
+    else {
         date = new Date(); // Use current date if no date string is provided
     }
     return date;
@@ -301,7 +308,7 @@ const DeadLineInput = ({
 
   const handleDateChange = (formattedDate) => {
     try {
-      const field = input.name;
+      let field = input.name;
       //Get date type objects and send them to reducer to be moved according to input date changed
       const dynamicKey = Object.keys(deadlineSection.deadlineSection)[0];
       let deadlineSectionValues
@@ -311,6 +318,16 @@ const DeadLineInput = ({
       }
       else{
         deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey].filter(section => section.type === "date" && section.display !== "readonly");
+      }
+
+      if(field === "tullut_osittain_voimaan_pvm" || field === "voimaantulo_pvm" || field === "kumottu_pvm" || field === "rauennut"){
+        field = "voimaantulovaihe_paattyy_pvm"
+        deadlineSectionValues = false
+      }
+
+      if(field === "hyvaksymispaatos_pvm"){
+        field = "hyvaksyminenvaihe_paattyy_pvm"
+        deadlineSectionValues = false
       }
       setCurrentValue(formattedDate)
       dispatch(updateDateTimeline(field,formattedDate,deadlineSectionValues,false,false,deadlineSections));
