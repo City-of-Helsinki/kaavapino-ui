@@ -607,32 +607,30 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         },
         onMove(item, callback) {
           let preventMove = false;
+
+          const adjustIfWeekend = (date) => {
+            if (!(date.getDay() % 6)) {
+              adjustWeekend(date);
+              return true;
+            }
+            return false;
+          }
         
           if (item.phase) {
-            if (!(item.start.getDay() % 6)) {
-              adjustWeekend(item.start);
-            } else if (!(item.end.getDay() % 6)) {
-              adjustWeekend(item.end);
-            } else {
+            if (!adjustIfWeekend(item.start) && !adjustIfWeekend(item.end)) {
               const movingTimetableItem = moment.range(item.start, item.end);
               items.forEach(i => {
-                if (i.phase) {
-                  if (i.id !== item.id) {
-                    const statickTimetables = moment.range(i.start, i.end);
-                    if (movingTimetableItem.overlaps(statickTimetables)) {
-                      preventMove = false;
-                      changeItemRange(item.start > i.start, item, i);
-                    }
+                if (i.phase && i.id !== item.id) {
+                  const statickTimetables = moment.range(i.start, i.end);
+                  if (movingTimetableItem.overlaps(statickTimetables)) {
+                    preventMove = false;
+                    changeItemRange(item.start > i.start, item, i);
                   }
                 }
               });
             }
           } else {
-            if (!(item.start.getDay() % 6)) {
-              adjustWeekend(item.start);
-            } else if (!(item.end.getDay() % 6)) {
-              adjustWeekend(item.end);
-            } else {
+            if (!adjustIfWeekend(item.start) && !adjustIfWeekend(item.end)) {
               const movingTimetableItem = moment.range(item.start, item.end);
               items.forEach(i => {
                 if (i.id !== item.id) {
@@ -666,7 +664,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           let words2 = group.content?.split("-") || [];
           let normalizedString = words2[0]
           .replace(/[äå]/gi, 'a') // Replace ä and å with a
-          .replace(/[ö]/gi, 'o')  // Replace ö with o
+          .replace(/ö/gi, 'o')  // Replace ö with o
           .toLowerCase(); // Convert to lowercase
 
           let wordsToCheck = ["vahvista_",words[0], normalizedString, words[2] === "1" ? "" : words[2]];
@@ -779,8 +777,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
               container.insertAdjacentElement("beforeEnd", remove);
 
-              // add tooltip for disaqbled remove buttons
-              deletableGroup || group.undeletable ? container.insertAdjacentHTML("beforeEnd", removeTextDiv) : "";
+              // Add tooltip for disabled remove buttons
+              if (deletableGroup || group.undeletable) {
+                container.insertAdjacentHTML("beforeEnd", removeTextDiv);
+              }
 
               let lock = document.createElement("button");
               lock.classList.add("timeline-lock-button");
