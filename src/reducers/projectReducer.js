@@ -180,7 +180,7 @@ export const reducer = (state = initialState, action) => {
           const matchingKey = section.name;  // Get the name to match the key in attribute_data
           if (matchingKey !== field) {  // Avoid updating the already changed field
             let dateType = "esilläolopäivät"
-            let type = "esilläolo"
+            let type = "esilläolopäivät"
             //Date types determinate what dates can or cannot be selected
             if(matchingKey.includes("_lautakunnassa")){
               dateType = "lautakunnan_kokouspäivät"
@@ -193,7 +193,7 @@ export const reducer = (state = initialState, action) => {
                 initialDistance = 22
               }
               else{
-                type = "esilläolo"
+                type = "esilläolopäivät"
               }
               dateType = "työpäivät"
             }

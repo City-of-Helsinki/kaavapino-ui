@@ -168,7 +168,7 @@ const DeadLineInput = ({
           const deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey]
           const distanceTo = input.name.includes("_paattyy") ? deadlineSectionValues.find(({ name }) => name === input.name).distance_from_previous : deadlineSectionValues.find(({ name }) => name === input.name).distance_to_next
           let newDisabledDates = dateTypes?.arkipäivät?.dates
-          const lastPossibleDateToSelect = timeUtil.subtractDays("esilläolo",attributeData[endingDateKey],distanceTo,dateTypes?.arkipäivät?.dates,false)
+          const lastPossibleDateToSelect = timeUtil.subtractDays("esilläolopäivät",attributeData[endingDateKey],distanceTo,dateTypes?.arkipäivät?.dates,false)
           newDisabledDates = input.name.includes("_paattyy") ? newDisabledDates.filter(date => date >= lastPossibleDateToSelect) : newDisabledDates.filter(date => date <= lastPossibleDateToSelect);
           return !newDisabledDates.includes(formatDate(date));
         }
@@ -200,18 +200,18 @@ const DeadLineInput = ({
           const deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey]
           const endingKeyName = objectUtil.findValuesWithStrings(deadlineSectionValues,firstElements[0],firstElements[1],"_alkaa","milloin")
           const distanceTo = endingKeyName?.distance_from_previous + endingKeyName?.distance_to_next
-          const lastPossibleDateToSelect = timeUtil.subtractDays("esilläolo",maxDateToMove,distanceTo,dateTypes?.[dateType]?.dates,true)
+          const lastPossibleDateToSelect = timeUtil.subtractDays("esilläolopäivät",maxDateToMove,distanceTo,dateTypes?.[dateType]?.dates,true)
           let newDisabledDates = dateTypes?.[dateType]?.dates
           if(currentDeadline?.deadline?.phase_name === "Periaatteet"){
             //Add check to previous phase end date + minium length
             const dataToCompate = attributeData["kaynnistys_paattyy_pvm"]
-            const minEndDate = timeUtil.addDays("esilläolo",dataToCompate,5,dateTypes?.[dateType]?.dates,true)
+            const minEndDate = timeUtil.addDays("esilläolopäivät",dataToCompate,5,dateTypes?.[dateType]?.dates,true)
             newDisabledDates = newDisabledDates.filter(date => date >= minEndDate)
           }
           else if(currentDeadline?.deadline?.phase_name === "Luonnos"){
             const attributeValue = objectUtil.findLargestSuffix(attributeData,/^milloin_oas_esillaolo_paattyy(?:_(\d+))?/)
             if(attributeData){
-              const minEndDate = timeUtil.addDays("esilläolo",attributeValue,5,dateTypes?.[dateType]?.dates,true)
+              const minEndDate = timeUtil.addDays("esilläolopäivät",attributeValue,5,dateTypes?.[dateType]?.dates,true)
               newDisabledDates = newDisabledDates.filter(date => date >= minEndDate)
             }
           }
@@ -239,20 +239,28 @@ const DeadLineInput = ({
         else if(input.name.includes("_alkaa") || input.name.includes("_paattyy")){
           //TODO move all of these checks to some util file and refactor
           //Disable dates when editing dates from calendar start and end and min start date and max end date
-          const endingDateKey = textUtil.replacePattern(input.name,"_alkaa","_paattyy")
+          const endingDateKey = input.name.includes("_alkaa") ? textUtil.replacePattern(input.name,"_alkaa","_paattyy") : textUtil.replacePattern(input.name,"_paattyy","_alkaa")
           const dynamicKey = Object.keys(deadlineSection.deadlineSection)[0];
           const deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey]
           const distanceTo = input.name.includes("_paattyy") ? deadlineSectionValues.find(({ name }) => name === input.name).distance_from_previous : deadlineSectionValues.find(({ name }) => name === input.name).distance_to_next
           let newDisabledDates = dateTypes?.[dateType]?.dates
-          const lastPossibleDateToSelect = dateType === "arkipäivät" ? timeUtil.subtractDays("arkipäivät",attributeData[endingDateKey],distanceTo,dateTypes?.[dateType]?.dates,true) : timeUtil.subtractDays("esilläolo",attributeData[endingDateKey],distanceTo,dateTypes?.[dateType]?.dates,true)
-          newDisabledDates = input.name.includes("_paattyy") ? newDisabledDates.filter(date => date >= lastPossibleDateToSelect) : newDisabledDates.filter(date => date <= lastPossibleDateToSelect);
-          if(input.name.includes("_alkaa")){
-            //include phase start date + minium and make dates after that unselectable, take määräaika and its length to alkaa inconsideration too.
+          const lastPossibleDateToSelect = dateType === "arkipäivät" ? timeUtil.subtractDays("arkipäivät",attributeData[endingDateKey],distanceTo,dateTypes?.[dateType]?.dates,true) : timeUtil.subtractDays("esilläolopäivät",attributeData[endingDateKey],distanceTo,dateTypes?.[dateType]?.dates,true)
+          if(endingDateKey.includes("_alkaa")){
+            const minDist1 = deadlineSectionValues.find(({ name }) => name.includes('_alkaa')).distance_to_next
+            const pastPossibleDate = timeUtil.addDays("esilläolopäivät",attributeData[endingDateKey],minDist1,dateTypes?.[dateType]?.dates,true)
+            newDisabledDates = newDisabledDates.filter(date => date >= pastPossibleDate)
+          }
+          else if(endingDateKey.includes("_paattyy")){
+            newDisabledDates = newDisabledDates.filter(date => date <= lastPossibleDateToSelect);
             const currentPhase = objectUtil.getObjectByName(visGroups,currentDeadline?.deadline?.phase_name)
+            //include phase start date + minium and make dates after that unselectable, take määräaika and its length to alkaa inconsideration too.
+            const minDist1 = deadlineSectionValues.find(({ name }) => name.includes('maaraaika')).distance_from_previous
+            const minDist2 = deadlineSectionValues.find(({ name }) => name.includes('_alkaa')).distance_from_previous
+            const minDist3 = deadlineSectionValues.find(({ name }) => name.includes('_alkaa')).distance_to_next
             let visItemsFiltered = visItems.filter(info => info.type !== "background")
             let phaseToCheck = visItemsFiltered.find(({group}) => group === currentPhase.id)
             let phaseStartDate = phaseToCheck.start
-            const minEndDate = timeUtil.addDays("arkipäivät",phaseStartDate,distanceTo+5,dateTypes?.[dateType]?.dates,false)
+            const minEndDate = timeUtil.addDays("arkipäivät",phaseStartDate,minDist1+minDist2+minDist3+minDist3,dateTypes?.arkipäivät?.dates,false)
             newDisabledDates = newDisabledDates.filter(date => date >= minEndDate)
           }
           return !newDisabledDates.includes(formatDate(date));
