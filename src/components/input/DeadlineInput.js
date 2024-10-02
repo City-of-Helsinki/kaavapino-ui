@@ -263,7 +263,9 @@ const DeadLineInput = ({
         const deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey]
         //const distanceTo = input.name.includes("maaraaika") ? deadlineSectionValues.find(({ name }) => name === input.name).distance_from_previous : deadlineSectionValues.find(({ name }) => name === input.name).distance_to_next
         //Ei tuu minimejä backend, ota yllä oleva käyttöön kun tulee? Alla väliaikanen kovakoodaus.
-        const distanceTo = input.name.includes("maaraaika") ? 5 : 22
+        const regex = /_(\d+)$/;  // Regex to match underscore followed by a number at the end of the string
+        const match = input.name.match(regex) //true if is lautakunta 2 or later
+        const distanceTo = match ? 5 : input.name.includes("maaraaika") ? 5 : 22 //distance to is 5 when not first lautakunta
         const constDistance = deadlineSectionValues.find(({ name }) => name.includes("_lautakunnassa"))?.initial_distance?.distance
         const currentPhase = objectUtil.getPreviousObjectByGroup(visGroups,currentDeadline?.deadline?.deadlinegroup)
         let visItemsFiltered = visItems.filter(info => info.type !== "background")
