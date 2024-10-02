@@ -99,6 +99,7 @@
     "reset-project-deadlines": "Tyhjennä aikataulut",
     "reset-confirm-dialog-title": "Aikataulujen uudelleen luominen",
     "reset-confirm-dialog-question": "Oletko varma, että haluat luoda aikataulut uudestaan? Tapahtumaa ei voi perua.",
+    "dates-are-preliminary": "Aikataulutiedot ovat alustavia, kunnes kaavoitussihteeri vahvistaa ne.",
     "cancel-confirmation":"Peruuta päivämäärien vahvistus",
     "confirm-dates":"Vahvista päivämäärät",
     "dates-confirmed":"Aikataulutiedot on vahvistettu",

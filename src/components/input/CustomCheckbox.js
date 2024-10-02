@@ -81,10 +81,15 @@ const CustomCheckbox = ({
             </Button>
           </div>
         </> 
-        : 
-        <Button className='deadlines-confirm-button' size='small' onClick={onChangeSave}>
-          {t('deadlines.confirm-dates')}
-        </Button>
+        :
+        <>
+          <Notification className='deadlines-preliminary-notification' size="small" label="Aikataulutiedot ovat alustavia" type="info">
+            {t('deadlines.dates-are-preliminary')}
+          </Notification>
+          <Button className='deadlines-confirm-button' size='small' onClick={onChangeSave}>
+            {t('deadlines.confirm-dates')}
+          </Button>
+        </>
         }
       </>
     )

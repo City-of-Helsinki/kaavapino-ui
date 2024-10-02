@@ -791,6 +791,11 @@
       .deadline-info-notification,.deadlines-confirmed-notification{
         margin-bottom: $size16;
       }
+      .deadlines-preliminary-notification{
+        margin-bottom: $size16;
+        font-family: "Helsinki Grotesk Regular", sans-serif;
+        font-weight:500;
+      }
 
       .deadline-info-readonlytext {
         margin-top: $size8;
