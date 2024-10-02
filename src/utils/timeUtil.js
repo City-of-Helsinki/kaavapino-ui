@@ -103,7 +103,7 @@
     let finalDateStr;
 
     const setFilterAndInFilter = (type) => {
-      if (["esilläolo", "arkipäivät", "lautakunta", "lautakunta_määräaika"].includes(type)) {
+      if (["työpäivät", "esilläolopäivät", "arkipäivät", "lautakunta", "lautakunta_määräaika"].includes(type)) {
         filter = disabledDates;
         isInFilter = false;
       }
@@ -184,7 +184,7 @@
     let isInFilter = true;
 
     const setFilterAndInFilter = (type) => {
-      if (["esilläolo", "arkipäivät", "lautakunta", "lautakunta_määräaika"].includes(type)) {
+      if (["työpäivät", "esilläolopäivät", "arkipäivät", "lautakunta", "lautakunta_määräaika"].includes(type)) {
         filter = disabledDates;
         isInFilter = false;
       }
