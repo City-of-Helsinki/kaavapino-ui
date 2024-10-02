@@ -152,10 +152,11 @@ const DeadLineInput = ({
   }
 
   const isDisabledDate = (date) => {
-    const tenYearsAgo = new Date();
-    tenYearsAgo.setFullYear(tenYearsAgo.getFullYear() - 10);
-    const tenYearsLater = new Date();
-    tenYearsLater.setFullYear(tenYearsLater.getFullYear() + 10);
+    //20 years is the calendars range to check work days, holidays etc from current date
+    const twentyYearsAgo = new Date();
+    twentyYearsAgo.setFullYear(twentyYearsAgo.getFullYear() - 20);
+    const twentyYearsLater = new Date();
+    twentyYearsLater.setFullYear(twentyYearsLater.getFullYear() + 20);
     const ehdotusNahtavillaolo = currentDeadline?.deadline?.phase_name === "Ehdotus" && currentDeadline?.deadline?.deadlinegroup?.includes('nahtavillaolo')
     let datesToDisable
     if (ehdotusNahtavillaolo && (attributeData?.kaavaprosessin_kokoluokka === 'L' || attributeData?.kaavaprosessin_kokoluokka === 'XL') ) {
@@ -291,7 +292,7 @@ const DeadLineInput = ({
       datesToDisable = !dateTypes?.[dateType]?.dates?.includes(formatDate(date));
     }
 
-    if (date < tenYearsAgo || date > tenYearsLater) {
+    if (date < twentyYearsAgo || date > twentyYearsLater) {
       return false;
     }
   
