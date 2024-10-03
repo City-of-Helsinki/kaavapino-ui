@@ -92,67 +92,66 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       // Check if more Esillaolo groups can be added
       let esillaoloReason = !esillaoloConfirmed ? "noconfirmation" : "";
       let lautakuntaReason = !lautakuntaConfirmed ? "noconfirmation" : "";
-      if (esillaoloConfirmed) {
-        const deadlineEsillaolokertaKeys = data.maxEsillaolo
-        const esillaoloRegex = new RegExp(`(jarjestetaan_${phase}_esillaolo_\\d+$|kaava${phase}_uudelleen_nahtaville_\\d+$)`);
-        const attributeEsillaoloKeys = Object.keys(visValRef).filter(key => esillaoloRegex.test(key));
-        let largestIndex = 0;
-        //find largest index
-        attributeEsillaoloKeys.forEach(key => {
-          const match = /_(\d+)$/.exec(key);
-          if (match) {
-              const number = parseInt(match[1], 10);
-              if (number > largestIndex) {
-                largestIndex = number;
-              }
-          }
-        });
-
-        let esillaoloCount = largestIndex
-        //If no index found add one
-        if(esillaoloCount === 0){
-          esillaoloCount += 1
+      const deadlineEsillaolokertaKeys = data.maxEsillaolo
+      const esillaoloRegex = new RegExp(`(jarjestetaan_${phase}_esillaolo_\\d+$|kaava${phase}_uudelleen_nahtaville_\\d+$)`);
+      const attributeEsillaoloKeys = Object.keys(visValRef).filter(key => esillaoloRegex.test(key));
+      let largestIndex = 0;
+      //find largest index
+      attributeEsillaoloKeys.forEach(key => {
+        const match = /_(\d+)$/.exec(key);
+        if (match) {
+            const number = parseInt(match[1], 10);
+            if (number > largestIndex) {
+              largestIndex = number;
+            }
         }
-        esillaoloCount = esillaoloCount + 1;
-
+      });
+      let esillaoloCount = largestIndex
+      //If no index found add one
+      if(esillaoloCount === 0){
+        esillaoloCount += 1
+      }
+      esillaoloCount = esillaoloCount + 1;
+      if(esillaoloCount - 1 === deadlineEsillaolokertaKeys){
+        esillaoloReason = "max"
+      }
+      
+      if (esillaoloConfirmed) {
         canAddEsillaolo = esillaoloCount <= deadlineEsillaolokertaKeys;
         const nextEsillaoloStr = canAddEsillaolo ? `jarjestetaan_${phase}_esillaolo_${esillaoloCount}$` : false;
         nextEsillaoloClean = nextEsillaoloStr ? nextEsillaoloStr.replace(/[/$]/g, '') : nextEsillaoloStr;
-
-        if(esillaoloCount - 1 === deadlineEsillaolokertaKeys){
-          esillaoloReason = "max"
-        }
       }
       // Check if more Lautakunta groups can be added
-      if (lautakuntaConfirmed) {
-        const deadlineLautakuntakertaKeys = data.maxLautakunta
-        const lautakuntaanRegex = new RegExp(`${phase}_lautakuntaan_\\d+$`);
-        const attributeLautakuntaanKeys = Object.keys(visValRef).filter(key => lautakuntaanRegex.test(key));
-        let largestIndex = 0;
-        //find largest index
-        attributeLautakuntaanKeys.forEach(key => {
-          const match = /_(\d+)$/.exec(key);
-          if (match) {
-              const number = parseInt(match[1], 10);
-              if (number > largestIndex) {
-                largestIndex = number;
-              }
-          }
-        });
-
-        let lautakuntaCount = largestIndex
-        if(lautakuntaCount === 0){
-          lautakuntaCount += 1
+      const deadlineLautakuntakertaKeys = data.maxLautakunta
+      const lautakuntaanRegex = new RegExp(`${phase}_lautakuntaan_\\d+$`);
+      const attributeLautakuntaanKeys = Object.keys(visValRef).filter(key => lautakuntaanRegex.test(key));
+      let largestIndexLautakunta = 0;
+      //find largest index
+      attributeLautakuntaanKeys.forEach(key => {
+        const match = /_(\d+)$/.exec(key);
+        if (match) {
+            const number = parseInt(match[1], 10);
+            if (number > largestIndexLautakunta) {
+              largestIndexLautakunta = number;
+            }
         }
-        lautakuntaCount = lautakuntaCount + 1;
+      });
+
+      let lautakuntaCount = largestIndexLautakunta
+      if(lautakuntaCount === 0){
+        lautakuntaCount += 1
+      }
+      lautakuntaCount = lautakuntaCount + 1;
+      if(lautakuntaCount - 1 === deadlineLautakuntakertaKeys){
+        lautakuntaReason = "max"
+      }
+
+      if (lautakuntaConfirmed) {
         canAddLautakunta = lautakuntaCount <= deadlineLautakuntakertaKeys;
         const nextLautakuntaStr = canAddLautakunta ? `${phase}_lautakuntaan_${lautakuntaCount}$` : false;
         nextLautakuntaClean = nextLautakuntaStr ? nextLautakuntaStr.replace(/[/$]/g, '') : nextLautakuntaStr;
-        if(lautakuntaCount - 1 === deadlineLautakuntakertaKeys){
-          lautakuntaReason = "max"
-        }
       }
-
+      
       return [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, esillaoloReason, lautakuntaReason];
     }
 
@@ -181,13 +180,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       let esillaoloConfirmed = Object.hasOwn(visValRef, `vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`) && visValRef[`vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`] === true
       || Object.hasOwn(visValRef, `vahvista_${phase}_esillaolo${esillaoloCount}`) && visValRef[`vahvista_${phase}_esillaolo${esillaoloCount}`] === true;
       let lautakuntaConfirmed = Object.hasOwn(visValRef, `vahvista_${phase}_lautakunnassa${lautakuntaCount}`) && visValRef[`vahvista_${phase}_lautakunnassa${lautakuntaCount}`] === true;
-
-      if(phase === "luonnos"){
+      //this could be needed when confirmation is no longer needed
+      /*if(phase === "luonnos"){
         lautakuntaConfirmed = Object.hasOwn(visValRef, `vahvista_kaavaluonnos_lautakunnassa${lautakuntaCount}`) && visValRef[`vahvista_kaavaluonnos_lautakunnassa${lautakuntaCount}`] === true;
       }
       if(phase === "periaatteet" && !(phase + "_lautakuntaan_1" in visValRef) || phase === "periaatteet" && visValRef["periaatteet_lautakuntaan_1"]  || phase === "luonnos" && !(phase + "_lautakuntaan_1") || phase === "luonnos" && visValRef["kaavaluonnos_lautakuntaan_1"] === false){
         lautakuntaConfirmed = true
-      }
+      } */
       if(phase === "luonnos" && !("jarjestetaan_" + phase + "_esillaolo_1" in visValRef) || phase === "periaatteet" && !("jarjestetaan_"+phase+"_esillaolo_1" in visValRef)){
         esillaoloConfirmed = true
       }
@@ -217,7 +216,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       if(typeof visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "undefined" || visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "hyvaksytty" || visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "palautettu_uudelleen_valmisteltavaksi"){
         canAddLautakunta = false
       }
-
       /* TODO if(visValRef["kaavaluonnos_lautakuntaan_1"] === false){
         //adds second one althou when false needs to just show first one if deleted once
         canAddLautakunta = true
