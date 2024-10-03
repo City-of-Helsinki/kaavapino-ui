@@ -789,8 +789,9 @@ class EditProjectTimeTableModal extends Component {
           let startSection = distanceArray.find(section => section.name.includes("_alkaa"))
           daysToAdd = matchingSection.distance + startSection.distance 
         }
-        else{ 
-          daysToAdd = matchingSection.distance
+        else{
+          //5 if for some reason there is no distance value set in backend/Excel
+          daysToAdd = matchingSection.distance ? matchingSection.distance : 5
         }
 
         if(matchingSection.name.includes("_lautakunnassa")){
