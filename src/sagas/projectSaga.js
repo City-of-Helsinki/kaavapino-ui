@@ -123,6 +123,7 @@ import { startSubmit, stopSubmit, setSubmitSucceeded } from 'redux-form'
 import { error } from '../actions/apiActions'
 import { setAllEditFields } from '../actions/schemaActions'
 import projectUtils from '../utils/projectUtils'
+import errorUtil from '../utils/errorUtil'
 import {
   projectApi,
   projectDeadlinesApi,
@@ -699,7 +700,16 @@ function* saveProjectTimetable() {
         toastr.error(i18.t('messages.general-save-error'))
       }
       yield put(stopSubmit(EDIT_PROJECT_TIMETABLE_FORM, e?.response?.data))
-      toastr.error(i18.t('messages.general-save-error'))
+      // Get the error message string dynamically
+      const errorMessage = errorUtil.getErrorMessage(e?.response?.data);
+
+      // Display the error message in a toastr
+      toastr.error(i18.t('messages.general-save-error'), errorMessage, {
+        timeOut: 0,
+        removeOnHover: false,
+        showCloseButton: true,
+        className: 'large-scrollable-toastr rrt-error'
+      });
     }
   }
 }

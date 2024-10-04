@@ -1142,3 +1142,42 @@ header{
     }
   }
 }
+
+// Style for the custom toastr with default error animation
+.redux-toastr{
+  .large-scrollable-toastr {
+    &.rrt-error {
+      // This applies to error toastr with animation
+    }
+
+    .toast {
+      width:  400px; // Make the toastr wider
+      height: auto;
+      padding: 20px;
+    }
+
+    .toast-message {
+      max-height: 300px; // Limit the height to make it scrollable
+      overflow-y: auto; // Enable vertical scrolling
+      font-size: 16px; // Make the font size larger for readability
+    }
+
+    .toast-title {
+      font-size: 18px !important; // Increase the size of the title
+    }
+  }
+
+  // Style for default container classes (left, middle, right)
+  .rrt-left-container, .rrt-middle-container, .rrt-right-container {
+    padding: 10px !important; // Add padding for spacing
+    .rrt-text{
+      word-wrap: break-word !important;
+      overflow: auto !important;
+      max-height: 200px !important;
+    }
+    .toast {
+      width: 400px; // Ensure consistent width across all containers
+    }
+  }
+}
+
