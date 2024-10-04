@@ -18,7 +18,7 @@ import { removeDeadlines } from '../../actions/projectActions';
 import './VisTimeline.css'
 Moment().locale('fi');
 
-const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups}, ref) => {
+const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes}, ref) => {
     const dispatch = useDispatch();
     const moment = extendMoment(Moment);
 
@@ -151,7 +151,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         const nextLautakuntaStr = canAddLautakunta ? `${phase}_lautakuntaan_${lautakuntaCount}$` : false;
         nextLautakuntaClean = nextLautakuntaStr ? nextLautakuntaStr.replace(/[/$]/g, '') : nextLautakuntaStr;
       }
-      
+
       return [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, esillaoloReason, lautakuntaReason];
     }
 
@@ -890,6 +890,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           dateTypes={dateTypes}
           groups={groups?.get()}
           items={items?.get()}
+          sectionAttributes={sectionAttributes}
         />
         <AddGroupModal
           toggleOpenAddDialog={toggleOpenAddDialog}
@@ -934,5 +935,6 @@ VisTimelineGroup.propTypes = {
   lomapaivat: PropTypes.array,
   dateTypes: PropTypes.object,
   trackExpandedGroups: PropTypes.func,
+  sectionAttributes: PropTypes.array
 };
 export default VisTimelineGroup

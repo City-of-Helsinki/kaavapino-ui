@@ -52,6 +52,7 @@ const FormField = ({
   visItems,
   deadlineSections,
   confirmedValue,
+  sectionAttributes,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -142,6 +143,7 @@ const FormField = ({
             visItems={visItems}
             deadlineSections={deadlineSections}
             confirmedValue={confirmedValue}
+            sectionAttributes={sectionAttributes}
           />
         )
     }
@@ -366,6 +368,7 @@ FormField.propTypes = {
     PropTypes.number,
     PropTypes.bool,
   ]),
+  sectionAttributes: PropTypes.array
 }
 
 export default withTranslation()(FormField)

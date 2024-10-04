@@ -222,7 +222,7 @@ class CustomField extends Component {
     const { handleBlurSave, handleLockField, handleUnlockField, deadlines, field, lockField, fieldSetDisabled, 
       insideFieldset, disabled, isProjectTimetableEdit, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, 
       attributeData, phaseIsClosed, disabledDates, lomapaivat, dateTypes, deadlineSection, maxMoveGroup, maxDateToMove, groupName, visGroups, visItems, 
-      deadlineSections, formValues, confirmedValue } = this.props
+      deadlineSections, formValues, confirmedValue, sectionAttributes } = this.props
 
     let current
     if (deadlines && deadlines.length > 0) {
@@ -262,6 +262,7 @@ class CustomField extends Component {
           deadlineSections={deadlineSections}
           formValues={formValues}
           confirmedValue={confirmedValue}
+          sectionAttributes={sectionAttributes}
           {...props}
         />
       )
@@ -861,7 +862,8 @@ CustomField.propTypes = {
     PropTypes.string,
     PropTypes.number,
     PropTypes.bool,
-  ])
+  ]),
+  sectionAttributes: PropTypes.array
 };
 
 export default CustomField

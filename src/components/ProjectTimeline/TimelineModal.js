@@ -10,7 +10,7 @@ import objectUtil from '../../utils/objectUtil';
 import PropTypes from 'prop-types'
 import './VisTimeline.css'
 
-const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit,disabledDates,lomapaivat,dateTypes,groups, items }) => {
+const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit,disabledDates,lomapaivat,dateTypes,groups, items, sectionAttributes }) => {
 
   const getAttributeValues = (attributes) => {
     return Object.values(attributes).flatMap((v) => Object.values(v));
@@ -105,6 +105,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
             visItems={items}
             deadlineSections={deadlineSections}
             confirmedValue={confirmedValue}
+            sectionAttributes={sectionAttributes}
           />
           {modifiedError && <div className="field-error">{modifiedError}</div>}
         </>
@@ -220,7 +221,8 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
     lomapaivat: PropTypes.array,
     dateTypes: PropTypes.object,
     groups: PropTypes.array,
-    items: PropTypes.array
+    items: PropTypes.array,
+    sectionAttributes: PropTypes.array
   };
   
   export default TimelineModal

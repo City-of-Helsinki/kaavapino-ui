@@ -30,7 +30,8 @@ class EditProjectTimeTableModal extends Component {
       items: false,
       groups: false,
       showModal: false,
-      collapseData: {}
+      collapseData: {},
+      sectionAttributes: []
     }
     this.timelineRef = createRef();
   }
@@ -51,6 +52,21 @@ class EditProjectTimeTableModal extends Component {
       items = this.findConsecutivePeriods(disabledDates,items,false);
       items = this.findConsecutivePeriods(lomapaivat,items,true)
       this.setState({items,groups,visValues:attributeData})
+      let sectionAttributes = []
+      for (let index = 0; index < deadlineSections.length; index++) {
+        const phaseSection = deadlineSections[index].sections
+        for (let x = 0; x < phaseSection.length; x++) {
+          const attributes = phaseSection[x].attributes
+          for (let y = 0; y < attributes.length; y++) {
+            if(attributes[y].type === "date" && attributes[y].display !== "readonly" && attributeData[attributes[y].name]){
+              //Create section attributes which are always in correct order to check dates in timeline
+              sectionAttributes.push(attributes[y])
+            }
+          }
+    
+        }
+      }
+      this.setState({sectionAttributes})
     }
   }
 
@@ -66,6 +82,21 @@ class EditProjectTimeTableModal extends Component {
     } = this.props
 
     if (prevProps.attributeData && prevProps.attributeData !== attributeData) {
+      let sectionAttributes = []
+      for (let index = 0; index < deadlineSections.length; index++) {
+        const phaseSection = deadlineSections[index].sections
+        for (let x = 0; x < phaseSection.length; x++) {
+          const attributes = phaseSection[x].attributes
+          for (let y = 0; y < attributes.length; y++) {
+            if(attributes[y].type === "date" && attributes[y].display !== "readonly" && attributeData[attributes[y].name]){
+              //Create section attributes which are always in correct order to check dates in timeline
+              sectionAttributes.push(attributes[y])
+            }
+          }
+    
+        }
+      }
+      this.setState({sectionAttributes})
       //when UPDATE_DATE_TIMELINE updates attribute values
       Object.keys(attributeData).forEach(fieldName => 
         this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, fieldName, attributeData[fieldName])));
@@ -1253,6 +1284,7 @@ class EditProjectTimeTableModal extends Component {
               lomapaivat={lomapaivat}
               dateTypes={dateTypes}
               trackExpandedGroups={this.trackExpandedGroups}
+              sectionAttributes={this.state.sectionAttributes}
             /> 
             <ConfirmModal 
               openConfirmModal={this.state.showModal}
