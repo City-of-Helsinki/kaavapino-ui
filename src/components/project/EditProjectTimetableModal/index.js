@@ -443,7 +443,7 @@ class EditProjectTimeTableModal extends Component {
 
     let dlIndex = deadLineGroups.findIndex(group => group.content.toLowerCase() === deadlines[i].deadline.phase_name.toLowerCase());
     deadLineGroups?.at(dlIndex)?.nestedGroups.push(numberOfPhases);
-    const lastChar = deadlines[i].deadline.deadlinegroup.charAt(deadlines[i].deadline.deadlinegroup.length - 1); // Get the last character of the string
+    const lastChar = deadlines[i]?.deadline?.deadlinegroup?.charAt(deadlines[i].deadline.deadlinegroup.length - 1); // Get the last character of the string
     const isLastCharNumber = !isNaN(lastChar) && lastChar !== ""; // Check if the last character is a number
     let indexString = "";
     if(isLastCharNumber){
