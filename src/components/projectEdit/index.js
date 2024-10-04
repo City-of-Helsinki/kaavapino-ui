@@ -392,6 +392,27 @@ class ProjectEditPage extends Component {
     this.props.resetFloorAreaSave()
   }
 
+  getReqFieldsSuccessText = (currentPhaseTitle) => {
+    if (this.props.project.user !== this.props.currentUserId){
+      return this.props.t('messages.required-fields-filled-text-generic')
+    }
+
+    switch(currentPhaseTitle){
+      case 'Käynnistys':
+        return this.props.t('messages.starting-phase-required-fields-filled-text')
+      case 'Periaatteet':
+      case 'OAS':
+      case 'Luonnos':
+      case 'Ehdotus':
+      case 'Tarkistettu ehdotus':
+        return this.props.t('messages.middle-phase-required-fields-filled-text')
+      case 'Hyväksyminen':
+      case 'Voimaantulo':
+        return this.props.t('messages.required-fields-filled-text-generic')
+    }
+    return this.props.t('messages.required-fields-filled-text-generic')
+  }
+
   checkRequiredFields = (documentsDownloaded,origin) => {
 
     this.props.projectSetChecking(this.props.checking)
@@ -438,7 +459,7 @@ class ProjectEditPage extends Component {
           </h3>
         </div>
         <div>
-          <p>{currentSchema.title === "Käynnistys" ? t('messages.starting-phase-required-fields-filled-text') : t('messages.required-fields-filled-text')}</p>
+          <p>{this.getReqFieldsSuccessText(currentSchema.title)}</p>
         </div>
       </div>
       //show toastr message
