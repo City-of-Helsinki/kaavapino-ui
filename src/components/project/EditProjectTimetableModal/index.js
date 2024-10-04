@@ -58,7 +58,7 @@ class EditProjectTimeTableModal extends Component {
         for (let x = 0; x < phaseSection.length; x++) {
           const attributes = phaseSection[x].attributes
           for (let y = 0; y < attributes.length; y++) {
-            if(attributes[y].type === "date" && attributes[y].display !== "readonly" && attributeData[attributes[y].name]){
+            if(attributes[y].type === "date" && attributes[y].display !== "readonly" && attributes[y].label !== "Lausunnot viimeistään" && attributeData[attributes[y].name]){
               //Create section attributes which are always in correct order to check dates in timeline
               sectionAttributes.push(attributes[y])
             }
@@ -88,7 +88,7 @@ class EditProjectTimeTableModal extends Component {
         for (let x = 0; x < phaseSection.length; x++) {
           const attributes = phaseSection[x].attributes
           for (let y = 0; y < attributes.length; y++) {
-            if(attributes[y].type === "date" && attributes[y].display !== "readonly" && attributeData[attributes[y].name]){
+            if(attributes[y].type === "date" && attributes[y].display !== "readonly" && attributes[y].label !== "Lausunnot viimeistään" && attributeData[attributes[y].name]){
               //Create section attributes which are always in correct order to check dates in timeline
               sectionAttributes.push(attributes[y])
             }
