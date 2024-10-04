@@ -206,7 +206,6 @@ const DeadLineInput = ({
     else if(!nahtavillaolo && size === 'L' || size === 'XL'){
       console.log("määräaika työpäivä muut esilläolopäivään")
       if(input.name.includes("_maaraaika")){
-        //VOIKO MÄÄRÄAIKA TOSISSAAN KASVAA YLI VAIHEIDEN RAJATTOMASTI?
         //Määräaika kasvaa loputtomasta.
         //Määräaika pienenee minimiin. Vetää mukana alkaa ja loppuu päivämäärät.
         const miniumDaysBetween = matchingItem?.distance_from_previous
