@@ -4,7 +4,7 @@ import inputUtils from '../../utils/inputUtils'
 import { useTranslation } from 'react-i18next'
 import { TextInput, DateInput, IconAlertCircle } from 'hds-react'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
-import textUtil from '../../utils/textUtil'
+//import textUtil from '../../utils/textUtil'
 import timeUtil from '../../utils/timeUtil'
 import objectUtil from '../../utils/objectUtil'
 import { useSelector,useDispatch } from 'react-redux'
@@ -28,13 +28,9 @@ const DeadLineInput = ({
   timeTableDisabled,
   dateTypes,
   deadlineSection,
-  maxMoveGroup,
-  maxDateToMove,
-  groupName,
-  visGroups, 
-  visItems,
   deadlineSections,
-  confirmedValue
+  confirmedValue,
+  sectionAttributes
 }) => {
 
   const dispatch = useDispatch();
@@ -119,7 +115,7 @@ const DeadLineInput = ({
     if(currentValue !== input.value){
       setCurrentValue(input.value); 
     }
-  }, [input.value])
+  }, [input.value,formValues])
 
   useEffect(() => {
     setDisabledState(formValues[confirmedValue])
@@ -151,6 +147,219 @@ const DeadLineInput = ({
     return `${year}-${month}-${day}`;
   }
 
+  const calculateDisabledDates = (date,nahtavillaolo,size) => {
+    const matchingItem = objectUtil.findMatchingName(sectionAttributes, input.name, "name");
+    const previousItem = objectUtil.findItem(sectionAttributes, input.name, "name", -1);
+    const nextItem = objectUtil.findItem(sectionAttributes, input.name, "name", 1);
+    console.log("--------------------")
+    console.log("Previous item name",previousItem?.name)
+    console.log("Previous item PREV dist",previousItem?.distance_from_previous)
+    console.log("Previous item NEXT dist",previousItem?.distance_to_next)
+    console.log("--------------------")
+    console.log("This item name",matchingItem?.name)
+    console.log("This item PREV dist",matchingItem?.distance_from_previous)
+    console.log("This item NEXT dist",matchingItem?.distance_to_next)
+    console.log("--------------------")
+    console.log("Next item name",nextItem?.name)
+    console.log("Next item PREV DIST",nextItem?.distance_from_previous)
+    console.log("Next item NEXT DIST",nextItem?.distance_to_next)
+    console.log("--------------------")
+    console.log("Attribute PREVIOUS",formValues[previousItem?.name])
+    console.log("Attribute NEXT",formValues[nextItem?.name])
+    console.log("--------------------")
+
+    console.log(date,input.name,nahtavillaolo,size,sectionAttributes)
+    if(input.name.includes("projektin_kaynnistys_pvm") || input.name.includes("kaynnistys_paattyy_pvm")){
+      const miniumDaysBetween = nextItem?.distance_from_previous
+      const dateToCompare = input.name.includes("kaynnistys_paattyy_pvm") ? formValues[previousItem?.name] : formValues[nextItem?.name]
+      let newDisabledDates = dateTypes?.arkipäivät?.dates
+      const lastPossibleDateToSelect = input.name.includes("kaynnistys_paattyy_pvm") ? timeUtil.addDays("arkipäivät",dateToCompare,miniumDaysBetween,dateTypes?.arkipäivät?.dates,true) : timeUtil.subtractDays("arkipäivät",dateToCompare,miniumDaysBetween,dateTypes?.arkipäivät?.dates,true)
+      newDisabledDates = input.name.includes("kaynnistys_paattyy_pvm") ? newDisabledDates.filter(date => date >= lastPossibleDateToSelect) : newDisabledDates.filter(date => date <= lastPossibleDateToSelect)
+      return newDisabledDates
+    }
+    else if(currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')){
+      //Lautakunnat
+      console.log("määräaika työpäivä, lautakunta lautakuntapäivä")
+      if(input.name.includes("_maaraaika")){
+        //Määräaika kasvaa loputtomasta. Puskee lautakuntaa eteenpäin
+        //Määräaika pienenee aiemman esilläolon loppuu minimiin. 
+        console.log("maaraaika")
+        const miniumDaysPast = matchingItem?.distance_from_previous ? matchingItem?.distance_from_previous : 5 //bug somewhere in backend should be 5 but is null
+        const dateToComparePast = formValues[previousItem?.name]
+        let newDisabledDates = dateTypes?.työpäivät?.dates
+        const firstPossibleDateToSelect = timeUtil.addDays("työpäivät",dateToComparePast,miniumDaysPast,dateTypes?.työpäivät?.dates,true)
+        newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
+        return newDisabledDates
+      }
+      else if(input.name.includes("_lautakunnassa")){
+        //Lautakunta siirtyy eteenpäin loputtomasti. Vetää mukana määräaikaa.
+        //Lautakunta siirtyy taaksepäin minimiin. Vetää mukana määräaikaa ja pysähtyy minimiin.
+        console.log("lautakunta")
+        const miniumDaysPast = matchingItem.initial_distance.distance
+        const dateToComparePast = formValues[previousItem?.name]
+        let newDisabledDates = dateTypes?.lautakunnan_kokouspäivät?.dates
+        const firstPossibleDateToSelect = timeUtil.addDays("lautakunta",dateToComparePast,miniumDaysPast,dateTypes?.lautakunnan_kokouspäivät?.dates,true)
+        newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
+        return newDisabledDates
+      }
+    }
+    else if(!nahtavillaolo && size === 'L' || size === 'XL'){
+      console.log("määräaika työpäivä muut esilläolopäivään")
+      if(input.name.includes("_maaraaika")){
+        //VOIKO MÄÄRÄAIKA TOSISSAAN KASVAA YLI VAIHEIDEN RAJATTOMASTI?
+        //Määräaika kasvaa loputtomasta.
+        //Määräaika pienenee minimiin. Vetää mukana alkaa ja loppuu päivämäärät.
+        const miniumDaysBetween = matchingItem?.distance_from_previous
+        const dateToCompare = formValues[previousItem?.name]
+        let newDisabledDates = dateTypes?.työpäivät?.dates
+        const firstPossibleDateToSelect = timeUtil.addDays("työpäivät",dateToCompare,miniumDaysBetween,dateTypes?.työpäivät?.dates,true)
+        newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
+        return newDisabledDates
+      }
+      else if(input.name.includes("_alkaa")){
+        //Alku kasvaa päättyy minimiin asti. Vetää mukana määräajan.
+        //Alku pienenee minimiin eli määräaika minimiin. Määräaika liikkuu mukana.
+        console.log("alkaa")
+        const miniumDaysPast = matchingItem?.distance_from_previous
+        const miniumDaysFuture = matchingItem?.distance_to_next
+        const dateToComparePast = formValues[previousItem?.name]
+        const dateToCompareFuture = formValues[nextItem?.name]
+        let newDisabledDates = dateTypes?.esilläolopäivät?.dates
+        const firstPossibleDateToSelect = timeUtil.addDays("esilläolopäivät",dateToComparePast,miniumDaysPast,dateTypes?.esilläolopäivät?.dates,true)
+        const lastPossibleDateToSelect = timeUtil.subtractDays("esilläolopäivät",dateToCompareFuture,miniumDaysFuture,dateTypes?.esilläolopäivät?.dates,true)
+        newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && date <= lastPossibleDateToSelect)
+        return newDisabledDates
+      }
+      else if(input.name.includes("_paattyy")){
+        //Loppu kasvaa loputtomasti.
+        //Loppu pienenee alku minimiin asti.
+        console.log("paattyy")
+        const miniumDaysPast = matchingItem?.distance_from_previous
+        const dateToComparePast = formValues[previousItem?.name]
+        let newDisabledDates = dateTypes?.esilläolopäivät?.dates
+        const firstPossibleDateToSelect = timeUtil.addDays("esilläolopäivät",dateToComparePast,miniumDaysPast,dateTypes?.esilläolopäivät?.dates,true)
+        newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
+        return newDisabledDates
+      } 
+    }
+    else if(!nahtavillaolo && (size === 'XS' || size === 'S' || size === 'M')){
+      console.log("määräaika työpäivä muut arkipäivä")
+      if(input.name.includes("_maaraaika")){
+        //Määräaika kasvaa loputtomasta.
+        //Määräaika pienenee minimiin. Vetää mukana alkaa ja loppuu päivämäärät.
+        console.log("maaraaika")
+        const miniumDaysBetween = matchingItem?.distance_from_previous
+        const dateToCompare = formValues[previousItem?.name]
+        let newDisabledDates = dateTypes?.työpäivät?.dates
+        const firstPossibleDateToSelect = timeUtil.addDays("työpäivät",dateToCompare,miniumDaysBetween,dateTypes?.työpäivät?.dates,true)
+        console.log(firstPossibleDateToSelect)
+        newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
+        console.log(newDisabledDates)
+        return newDisabledDates
+      }
+      else if(input.name.includes("_alkaa")){
+        //Alku kasvaa päättyy minimiin asti. Vetää mukana määräajan.
+        //Alku pienenee minimiin eli määräaika minimiin. Määräaika liikkuu mukana.
+        console.log("alkaa")
+        const miniumDaysPast = matchingItem?.distance_from_previous
+        const miniumDaysFuture = matchingItem?.distance_to_next
+        const dateToComparePast = formValues[previousItem?.name]
+        const dateToCompareFuture = formValues[nextItem?.name]
+        let newDisabledDates = dateTypes?.arkipäivät?.dates
+        const firstPossibleDateToSelect = timeUtil.addDays("arkipäivät",dateToComparePast,miniumDaysPast,dateTypes?.arkipäivät?.dates,true)
+        const lastPossibleDateToSelect = timeUtil.subtractDays("arkipäivät",dateToCompareFuture,miniumDaysFuture,dateTypes?.arkipäivät?.dates,true)
+        newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && date <= lastPossibleDateToSelect)
+        return newDisabledDates
+      }
+      else if(input.name.includes("_paattyy")){
+        //Loppu kasvaa loputtomasti.
+        //Loppu pienenee alku minimiin asti.
+        console.log("paattyy")
+        const miniumDaysPast = matchingItem?.distance_from_previous
+        const dateToComparePast = formValues[previousItem?.name]
+        let newDisabledDates = dateTypes?.esilläolopäivät?.dates
+        const firstPossibleDateToSelect = timeUtil.addDays("esilläolopäivät",dateToComparePast,miniumDaysPast,dateTypes?.esilläolopäivät?.dates,true)
+        console.log(firstPossibleDateToSelect,newDisabledDates)
+        newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
+        return newDisabledDates
+      } 
+    }
+    else if(nahtavillaolo && size === 'L' || size === 'XL'){
+      console.log("arkipäivä")
+      if(input.name.includes("_alkaa")){
+        //Alku kasvaa min. Päättyy ei muutu.
+        //Alku pienenee min. Päättyy ei muutu.
+        console.log("alkaa")
+        const miniumDaysPast = matchingItem?.distance_from_previous
+        const miniumDaysFuture = matchingItem?.distance_to_next
+        const dateToComparePast = formValues[previousItem?.name]
+        const dateToCompareFuture = formValues[nextItem?.name]
+        console.log(miniumDaysPast,miniumDaysFuture,dateToComparePast,dateToCompareFuture)
+        let newDisabledDates = dateTypes?.arkipäivät?.dates
+        const firstPossibleDateToSelect = timeUtil.addDays("arkipäivät",dateToComparePast,miniumDaysPast,dateTypes?.arkipäivät?.dates,true)
+        const lastPossibleDateToSelect = timeUtil.subtractDays("arkipäivät",dateToCompareFuture,miniumDaysFuture,dateTypes?.arkipäivät?.dates,true)
+        console.log(firstPossibleDateToSelect,lastPossibleDateToSelect)
+        newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && date <= lastPossibleDateToSelect)
+        return newDisabledDates
+      }
+      else if(input.name.includes("_paattyy")){
+        //Loppu kasvaa loputtomasti. Alku ei muutu.
+        //Loppu pienenee alku minimiin asti. Alku ei muutu.
+        console.log("paattyy")
+        const miniumDaysPast = matchingItem?.distance_from_previous
+        const dateToComparePast = formValues[previousItem?.name]
+        let newDisabledDates = dateTypes?.esilläolopäivät?.dates
+        const firstPossibleDateToSelect = timeUtil.addDays("esilläolopäivät",dateToComparePast,miniumDaysPast,dateTypes?.esilläolopäivät?.dates,true)
+        newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
+        return newDisabledDates
+      } 
+    }
+    else if(nahtavillaolo && size === 'XS' || size === 'S' || size === 'M'){
+      if(input.name.includes("_maaraaika")){
+        //Määräaika kasvaa loputtomasta.
+        //Määräaika pienenee minimiin. Vetää mukana alkaa ja loppuu päivämäärät.
+        console.log("maaraaika")
+        const miniumDaysBetween = matchingItem?.distance_from_previous
+        const dateToCompare = formValues[previousItem?.name]
+        let newDisabledDates = dateTypes?.työpäivät?.dates
+        const firstPossibleDateToSelect = timeUtil.addDays("työpäivät",dateToCompare,miniumDaysBetween,dateTypes?.työpäivät?.dates,true)
+        console.log(firstPossibleDateToSelect)
+        newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
+        console.log(newDisabledDates)
+        return newDisabledDates
+      }
+      if(input.name.includes("_alkaa")){
+        //Alku kasvaa min. Päättyy ei muutu.
+        //Alku pienenee min. Päättyy ei muutu.
+        console.log("alkaa")
+        const miniumDaysPast = matchingItem?.distance_from_previous
+        const miniumDaysFuture = matchingItem?.distance_to_next
+        const dateToComparePast = formValues[previousItem?.name]
+        const dateToCompareFuture = formValues[nextItem?.name]
+        console.log(miniumDaysPast,miniumDaysFuture,dateToComparePast,dateToCompareFuture)
+        let newDisabledDates = dateTypes?.arkipäivät?.dates
+        const firstPossibleDateToSelect = timeUtil.addDays("arkipäivät",dateToComparePast,miniumDaysPast,dateTypes?.arkipäivät?.dates,true)
+        const lastPossibleDateToSelect = timeUtil.subtractDays("arkipäivät",dateToCompareFuture,miniumDaysFuture,dateTypes?.arkipäivät?.dates,true)
+        console.log(firstPossibleDateToSelect,lastPossibleDateToSelect)
+        newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && date <= lastPossibleDateToSelect)
+        return newDisabledDates
+      }
+      else if(input.name.includes("_paattyy")){
+        //Loppu kasvaa loputtomasti. Alku ei muutu.
+        //Loppu pienenee alku minimiin asti. Alku ei muutu.
+        console.log("paattyy")
+        const miniumDaysPast = matchingItem?.distance_from_previous
+        const dateToComparePast = formValues[previousItem?.name]
+        let newDisabledDates = dateTypes?.esilläolopäivät?.dates
+        const firstPossibleDateToSelect = timeUtil.addDays("esilläolopäivät",dateToComparePast,miniumDaysPast,dateTypes?.esilläolopäivät?.dates,true)
+        newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
+        return newDisabledDates
+      } 
+    }
+    //If not any of the above return arkipäivät
+    return dateTypes?.arkipäivät?.dates
+  }
+
   const isDisabledDate = (date) => {
     //20 years is the calendars range to check work days, holidays etc from current date
     const twentyYearsAgo = new Date();
@@ -158,8 +367,10 @@ const DeadLineInput = ({
     const twentyYearsLater = new Date();
     twentyYearsLater.setFullYear(twentyYearsLater.getFullYear() + 20);
     const ehdotusNahtavillaolo = currentDeadline?.deadline?.phase_name === "Ehdotus" && currentDeadline?.deadline?.deadlinegroup?.includes('nahtavillaolo')
-    let datesToDisable
-    if (ehdotusNahtavillaolo && (attributeData?.kaavaprosessin_kokoluokka === 'L' || attributeData?.kaavaprosessin_kokoluokka === 'XL') ) {
+    //let datesToDisable
+    const datesToDisable = calculateDisabledDates(date,ehdotusNahtavillaolo,attributeData?.kaavaprosessin_kokoluokka)
+    console.log(datesToDisable)
+    /* if (ehdotusNahtavillaolo && (attributeData?.kaavaprosessin_kokoluokka === 'L' || attributeData?.kaavaprosessin_kokoluokka === 'XL') ) {
         //TODO move all of these checks to some util file
         if(input.name.includes("_alkaa") || input.name.includes("_paattyy")){
           //Disable dates when editing dates from calendar start and end and min start date and max end date
@@ -244,6 +455,7 @@ const DeadLineInput = ({
           const deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey]
           const distanceTo = input.name.includes("_paattyy") ? deadlineSectionValues.find(({ name }) => name === input.name).distance_from_previous : deadlineSectionValues.find(({ name }) => name === input.name).distance_to_next
           let newDisabledDates = dateTypes?.[dateType]?.dates
+          console.log(endingDateKey,distanceTo)
           const lastPossibleDateToSelect = dateType === "arkipäivät" ? timeUtil.subtractDays("arkipäivät",attributeData[endingDateKey],distanceTo,dateTypes?.[dateType]?.dates,true) : timeUtil.subtractDays("esilläolopäivät",attributeData[endingDateKey],distanceTo,dateTypes?.[dateType]?.dates,true)
           if(endingDateKey.includes("_alkaa")){
             const minDist1 = deadlineSectionValues.find(({ name }) => name.includes('_alkaa')).distance_to_next
@@ -263,6 +475,7 @@ const DeadLineInput = ({
             const minEndDate = timeUtil.addDays("arkipäivät",phaseStartDate,minDist1+minDist2+minDist3+minDist3,dateTypes?.arkipäivät?.dates,false)
             newDisabledDates = newDisabledDates.filter(date => date >= minEndDate)
           }
+          console.log(newDisabledDates,"test")
           return !newDisabledDates.includes(formatDate(date));
         }
       } 
@@ -304,10 +517,11 @@ const DeadLineInput = ({
 
     if (date < twentyYearsAgo || date > twentyYearsLater) {
       return false;
-    }
-  
-    const day = date.getDay();
-    return day === 0 || day === 6 || datesToDisable;
+    } */
+
+   /*  const day = date.getDay();
+    return day === 0 || day === 6 || datesToDisable; */
+    return !datesToDisable.includes(formatDate(date));
   }
 
   const formatDateToYYYYMMDD = (date) => {
@@ -462,7 +676,8 @@ DeadLineInput.propTypes = {
     PropTypes.string,
     PropTypes.number,
     PropTypes.bool,
-  ])
+  ]),
+  sectionAttributes: PropTypes.array
 }
 
 export default DeadLineInput

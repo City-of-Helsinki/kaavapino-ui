@@ -480,7 +480,28 @@ const getHighestNumberedObject = (obj1, arr) => {
     }
 
     return differences;
-}
+  }
+  // Function to find the item for example where item.name === inputName
+  const findMatchingName = (array, inputName, key) => {
+    console.log(array,inputName,key)
+    return array.find(item => item[key] === inputName);
+  };
+  // Function to find the item before the one for example where item.name === inputName
+  const findItem = (array, inputName, key, direction) => {
+    //if direction is 1 then find next item or -1 for previous
+    console.log(array,inputName,key,direction)
+    const index = array.findIndex(item => item[key] === inputName);
+    // If index is valid and direction is either 1 (next) or -1 (previous)
+    if (index !== -1) {
+      const newIndex = index + direction;
+      // Ensure the new index is within bounds of the array
+      if (newIndex >= 0 && newIndex < array.length) {
+        return array[newIndex]; // Return the next or previous item based on direction
+      }
+    }
+
+    return null; // Return null if no next or previous item is found
+  };
 
 export default {
     getHighestNumberedObject,
@@ -495,5 +516,7 @@ export default {
     generateDateStringArray,
     updateOriginalObject,
     findDifferencesInObjects,
-    compareObjectValues
+    compareObjectValues,
+    findMatchingName,
+    findItem
 }
