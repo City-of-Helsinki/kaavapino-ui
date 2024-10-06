@@ -67,6 +67,22 @@ class EditProjectTimeTableModal extends Component {
         }
       }
       this.setState({sectionAttributes})
+      
+      const unfilteredSectionAttributes = []
+      for (let index = 0; index < deadlineSections.length; index++) {
+        const phaseSection = deadlineSections[index].sections
+        for (let x = 0; x < phaseSection.length; x++) {
+          const attributes = phaseSection[x].attributes
+          for (let y = 0; y < attributes.length; y++) {
+            if(attributes[y].type === "date" && attributes[y].display !== "readonly"){
+              //Create section attributes which are always in correct order to check dates in timeline
+              unfilteredSectionAttributes.push(attributes[y])
+            }
+          }
+    
+        }
+      }
+      this.setState({unfilteredSectionAttributes})
     }
   }
 
@@ -488,7 +504,6 @@ class EditProjectTimeTableModal extends Component {
     const currentDate = new Date(currentDateString);
 
     for (let i = 0; i < deadlines.length; i++) {
-
       numberOfPhases = deadlines[i].deadline.index
 
       if(deadlines[i].deadline.deadline_types.includes('phase_start')){
@@ -761,6 +776,14 @@ class EditProjectTimeTableModal extends Component {
   
    processValuesSequentially = async (matchingValues,index,phase) => { 
     const validValues = [];
+    // Find the index of the object with the key 'viimeistaan_lausunnot_ehdotuksesta'
+    const lausunnotIndex = matchingValues.findIndex(item => item.key.includes('viimeistaan_lausunnot'));
+
+    // If the object is found, move it to the end
+    if (lausunnotIndex !== -1) {
+        const [item] = matchingValues.splice(lausunnotIndex, 1); // Remove the object from the array
+        matchingValues.push(item); // Add it to the end of the array
+    }
     //find last value to match from previous values
     let foundItem = matchingValues.find(item => item?.key?.includes("_paattyy") || item?.key?.includes("_lautakunnassa")) || matchingValues[0]?.value;
     // Replace all underscores with spaces
@@ -775,10 +798,13 @@ class EditProjectTimeTableModal extends Component {
       if(this.props.deadlineSections[i].title.toLowerCase() === phaseNormalized.toLowerCase()){
         const sections = this.props.deadlineSections[i].sections[0].attributes
         for (let x = 0; x < sections.length; x++) {
-          distanceArray.push({"name":sections[x].name,"distance":sections[x].distance_from_previous,"linkedData":sections[x].previous_deadline})
+          if(sections[x].type === "date" && sections[x].display !== "readonly" && sections[x].label !== "Mielipiteet viimeistään" && (sections[x].attributesubgroup === "Nähtäville" || sections[x].attributesubgroup === "Esille" || sections[x].attributesubgroup === "Esityslistalle")){
+            distanceArray.push({"name":sections[x].name,"distance":sections[x].distance_from_previous,"linkedData":sections[x].previous_deadline})
+          }
         }
       }  
     }
+    let newItem
 
     for (const { key } of matchingValues) {
       try {          
@@ -813,44 +839,84 @@ class EditProjectTimeTableModal extends Component {
         }
 
         let newDate = new Date(foundItem.value ? foundItem.value : foundItem);
-        let matchingSection = distanceArray.find(section => section.name === nextKey)
 
-        if(matchingSection.name.includes("_paattyy")){
-          //get the start value from the distance array to be combined with end value
-          let startSection = distanceArray.find(section => section.name.includes("_alkaa"))
-          daysToAdd = matchingSection.distance + startSection.distance 
+        //let matchingSection = distanceArray.find(section => section.name === nextKey)
+        let matchingSection
+        console.log(foundItem)
+        if(validValues.length === 0){
+          matchingSection = objectUtil.findItem(distanceArray,foundItem.key,"name",1)
+          if(matchingSection.name.includes("viimeistaan_lausunnot")){
+            matchingSection = objectUtil.findItem(distanceArray,matchingSection.name,"name",1)
+          }
+          console.log(matchingSection.name)
+          if(!matchingSection.name.includes("_lautakunnassa")){
+            newItem = matchingSection.name
+          }
+        }
+        else{
+          if(newItem){
+            const newVal = validValues.find(item => item.key === newItem)
+            newDate = new Date(newVal.value)
+            console.log(newDate,newItem)
+            matchingSection = objectUtil.findItem(distanceArray,newItem,"name",1)
+            console.log(matchingSection.name)
+          }
+          else{
+            matchingSection = objectUtil.findItem(distanceArray,foundItem.key,"name",1)
+          }
+        }
+        const matchingItem = objectUtil.findMatchingName(this.state.unfilteredSectionAttributes, nextKey, "name");
+        //const previousItem = objectUtil.findItem(this.state.unfilteredSectionAttributes, nextKey, "name", -1);
+        //const nextItem = objectUtil.findItem(this.state.unfilteredSectionAttributes, nextKey, "name", 1);
+        let dateFilter
+        console.log(matchingItem.attributesubgroup,this.props.attributeData?.kaavaprosessin_kokoluokka)
+        console.log(matchingItem.attributesubgroup === "Nähtäville" && (this.props.attributeData?.kaavaprosessin_kokoluokka === "XS" || this.props.attributeData?.kaavaprosessin_kokoluokka === "S" || this.props.attributeData?.kaavaprosessin_kokoluokka === "M"))
+        if(matchingItem.attributesubgroup === "Esille" && (this.props.attributeData?.kaavaprosessin_kokoluokka === "XL" || this.props.attributeData?.kaavaprosessin_kokoluokka === "L")){
+          dateFilter = matchingSection.name.includes("_maaraaika") ? this.props.dateTypes?.työpäivät?.dates : this.props.dateTypes?.esilläolopäivät?.dates  //määräaika or alkaa/paattyy
+        }
+        else if(matchingItem.attributesubgroup === "Esille" && (this.props.attributeData?.kaavaprosessin_kokoluokka === "XS" || this.props.attributeData?.kaavaprosessin_kokoluokka === "S" || this.props.attributeData?.kaavaprosessin_kokoluokka === "M")){
+          dateFilter = matchingSection.name.includes("_maaraaika") ? this.props.dateTypes?.työpäivät?.dates : this.props.dateTypes?.arkipäivät?.dates //määräaika or alkaa paattyy
+        }
+        else if(matchingItem.attributesubgroup === "Nähtäville" && (this.props.attributeData?.kaavaprosessin_kokoluokka === "XL" || this.props.attributeData?.kaavaprosessin_kokoluokka === "L")){
+          dateFilter = matchingSection.name.includes("_maaraaika") ? this.props.dateTypes?.työpäivät?.dates : this.props.dateTypes?.arkipäivät?.dates //määräaika or alkaa paattyy
+        }
+        else if(matchingItem.attributesubgroup === "Nähtäville" && (this.props.attributeData?.kaavaprosessin_kokoluokka === "XS" || this.props.attributeData?.kaavaprosessin_kokoluokka === "S" || this.props.attributeData?.kaavaprosessin_kokoluokka === "M")){
+          dateFilter = matchingSection.name.includes("_maaraaika") ? this.props.dateTypes?.työpäivät?.dates :  this.props.dateTypes?.arkipäivät?.dates//määräaika or alkaa paattyy
+        }
+        else{
+          dateFilter = matchingSection.name.includes("_maaraaika") ? this.props.dateTypes?.työpäivät?.dates :  this.props.dateTypes?.lautakunnan_kokouspäivät?.dates//määräaika or lautakuntapäivä
+        }
+
+        if(matchingSection.name.includes("_alkaa")){
+          daysToAdd = matchingSection.distance
+        }
+        else if(matchingSection.name.includes("_paattyy")){
+          daysToAdd = matchingSection.distance
         }
         else{
           //5 if for some reason there is no distance value set in backend/Excel
           daysToAdd = matchingSection.distance ? matchingSection.distance : 5
         }
 
-        if(matchingSection.name.includes("_lautakunnassa")){
-          // Loop through the board meeting dates to find next available date(tuesday)
-           const boardMeetingDates = this.props.dateTypes?.lautakunnan_kokouspäivät?.dates
-          for (let i = 0; i < boardMeetingDates.length; i++) {
-            let availableDate = new Date(boardMeetingDates[i]);
-            // Check if the available date is the same or after the input date
-            if (availableDate > newDate) {
-              newDate = new Date(availableDate); 
-              break
-            }
-          } 
+        if(matchingSection.name.includes("viimeistaan_lausunnot")){
+          //Should always be last item in the list so paattyy is already there
+          const endingObjectValue = validValues.find(item => item?.key?.includes('_paattyy'))?.value;
+          valueToCheck = endingObjectValue
         }
         else{
           while (daysToAdd > 0) {
             newDate.setDate(newDate.getDate() + 1);
             const dateStr = newDate.toISOString().split('T')[0];
-            //Skip weekends and holidays
-            if (newDate.getDay() != 0 && newDate.getDay() != 6 && !this.props.disabledDates.includes(dateStr) && !this.props.lomapaivat.includes(dateStr)) { // Skip Sundays (0) and Saturdays (6)
+            //Skip dates that are not compatible
+            if (dateFilter?.includes(dateStr) && !this.props.lomapaivat?.includes(dateStr)) {
                 daysToAdd--;
             }
           }
         }
+
         valueToCheck = newDate.toISOString().split('T')[0];
-        //Is check needed when logic is in frontend?
-        //const date = await this.getNewValidDates(key, this.props.formValues['projektin_nimi'], valueToCheck);
-        validValues.push({ key: key, value: valueToCheck });
+        validValues.push({ key: matchingSection.name, value: valueToCheck });
+        newItem = matchingSection.name
       } catch (error) {
         validValues.push({ key: key, value: null });
       }
@@ -1250,7 +1316,7 @@ class EditProjectTimeTableModal extends Component {
       lomapaivat,
       dateTypes } = this.props
 
-    if (!formValues) {
+    if (!formValues || !this.state.groups) {
       return null
     }
 
