@@ -51,9 +51,27 @@ const getFirstMatchingSubstring = (str, substrings) => {
     return substrings.find(substring => lowerCaseStr.includes(substring.toLowerCase())) || null;
 };
 
+const modifyLastNumberInString = (str) => {
+    // Regular expression to check if the string ends with an underscore followed by a number
+    const regex = /_(\d+)$/;
+
+    // Check if the string matches the pattern
+    const match = str.match(regex);
+
+    if (match) {
+        // If there's a match, increment the number and return the modified string
+        let number = parseInt(match[1], 10); // Extract and convert the number part
+        return str.replace(regex, `_${number + 1}`); // Replace the number with the incremented one
+    } else {
+        // If no match, append "_2" to the string
+        return `${str}_2`;
+    }
+}
+
 export default {
     replaceScandics,
     capitalizeAndRemoveUnderscores,
     replacePattern,
-    getFirstMatchingSubstring
+    getFirstMatchingSubstring,
+    modifyLastNumberInString
 }

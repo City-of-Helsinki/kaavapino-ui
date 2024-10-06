@@ -267,6 +267,7 @@ const getHighestNumberedObject = (obj1, arr) => {
     //Sort phase start end data by order const
     arr1 = sortPhaseData(arr1,order)
     //Return in order array ready for comparing next and previous value distances
+    arr1 = arr1.filter(item => !item.key.includes("viimeistaan_lausunnot_")); //filter out has no next and prev values and is same as päättyy key
     return arr1
   }
   //Sort by certain predetermined order
@@ -483,13 +484,11 @@ const getHighestNumberedObject = (obj1, arr) => {
   }
   // Function to find the item for example where item.name === inputName
   const findMatchingName = (array, inputName, key) => {
-    console.log(array,inputName,key)
     return array.find(item => item[key] === inputName);
   };
   // Function to find the item before the one for example where item.name === inputName
   const findItem = (array, inputName, key, direction) => {
     //if direction is 1 then find next item or -1 for previous
-    console.log(array,inputName,key,direction)
     const index = array.findIndex(item => item[key] === inputName);
     // If index is valid and direction is either 1 (next) or -1 (previous)
     if (index !== -1) {

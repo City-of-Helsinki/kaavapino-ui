@@ -1,3 +1,5 @@
+  import objectUtil from "./objectUtil";
+
   const isWeekend = (date) => {
       const day = new Date(date).getDay();
       return day === 0 || day === 6; // 0 = Sunday, 6 = Saturday
@@ -337,6 +339,218 @@ const sortObjectByDate = (obj) => {
 
   return sortedArray; // Returning an array guarantees the order
 }
+
+const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sectionAttributes,currentDeadline) => {
+  console.log(nahtavillaolo,size,dateTypes,name,formValues,sectionAttributes,currentDeadline)
+  const matchingItem = objectUtil.findMatchingName(sectionAttributes, name, "name");
+  const previousItem = objectUtil.findItem(sectionAttributes, name, "name", -1);
+  const nextItem = objectUtil.findItem(sectionAttributes, name, "name", 1);
+  console.log("--------------------")
+  console.log("Previous item name",previousItem?.name)
+  console.log("Previous item PREV dist",previousItem?.distance_from_previous)
+  console.log("Previous item NEXT dist",previousItem?.distance_to_next)
+  console.log("--------------------")
+  console.log("This item name",matchingItem?.name)
+  console.log("This item PREV dist",matchingItem?.distance_from_previous)
+  console.log("This item NEXT dist",matchingItem?.distance_to_next)
+  console.log("--------------------")
+  console.log("Next item name",nextItem?.name)
+  console.log("Next item PREV DIST",nextItem?.distance_from_previous)
+  console.log("Next item NEXT DIST",nextItem?.distance_to_next)
+  console.log("--------------------")
+  console.log("Attribute PREVIOUS",formValues[previousItem?.name])
+  console.log("Attribute NEXT",formValues[nextItem?.name])
+  console.log("--------------------")
+
+  if(name.includes("projektin_kaynnistys_pvm") || name.includes("kaynnistys_paattyy_pvm")){
+    const miniumDaysBetween = nextItem?.distance_from_previous
+    const dateToCompare = name.includes("kaynnistys_paattyy_pvm") ? formValues[previousItem?.name] : formValues[nextItem?.name]
+    let newDisabledDates = dateTypes?.arkipäivät?.dates
+    const lastPossibleDateToSelect = name.includes("kaynnistys_paattyy_pvm") ? addDays("arkipäivät",dateToCompare,miniumDaysBetween,dateTypes?.arkipäivät?.dates,true) : subtractDays("arkipäivät",dateToCompare,miniumDaysBetween,dateTypes?.arkipäivät?.dates,true)
+    newDisabledDates = name.includes("kaynnistys_paattyy_pvm") ? newDisabledDates.filter(date => date >= lastPossibleDateToSelect) : newDisabledDates.filter(date => date <= lastPossibleDateToSelect)
+    return newDisabledDates
+  }
+  else if(currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')){
+    //Lautakunnat
+    console.log("määräaika työpäivä, lautakunta lautakuntapäivä")
+    if(name.includes("_maaraaika")){
+      //Määräaika kasvaa loputtomasta. Puskee lautakuntaa eteenpäin
+      //Määräaika pienenee aiemman esilläolon loppuu minimiin. 
+      console.log("maaraaika")
+      const miniumDaysPast = matchingItem?.distance_from_previous ? matchingItem?.distance_from_previous : 5 //bug somewhere in backend should be 5 but is null
+      const dateToComparePast = formValues[previousItem?.name]
+      let newDisabledDates = dateTypes?.työpäivät?.dates
+      const firstPossibleDateToSelect = addDays("työpäivät",dateToComparePast,miniumDaysPast,dateTypes?.työpäivät?.dates,true)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
+      return newDisabledDates
+    }
+    else if(name.includes("_lautakunnassa")){
+      //Lautakunta siirtyy eteenpäin loputtomasti. Vetää mukana määräaikaa.
+      //Lautakunta siirtyy taaksepäin minimiin. Vetää mukana määräaikaa ja pysähtyy minimiin.
+      console.log("lautakunta")
+      const miniumDaysPast = matchingItem.initial_distance.distance
+      const dateToComparePast = formValues[previousItem?.name]
+      let newDisabledDates = dateTypes?.lautakunnan_kokouspäivät?.dates
+      const firstPossibleDateToSelect = addDays("lautakunta",dateToComparePast,miniumDaysPast,dateTypes?.lautakunnan_kokouspäivät?.dates,true)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
+      return newDisabledDates
+    }
+  }
+  else if(!nahtavillaolo && (size === 'L' || size === 'XL')){
+    console.log("määräaika työpäivä muut esilläolopäivään")
+    if(name.includes("_maaraaika")){
+      //Määräaika kasvaa loputtomasta.
+      //Määräaika pienenee minimiin. Vetää mukana alkaa ja loppuu päivämäärät.
+      const miniumDaysBetween = matchingItem?.distance_from_previous
+      const dateToCompare = formValues[previousItem?.name]
+      let newDisabledDates = dateTypes?.työpäivät?.dates
+      const firstPossibleDateToSelect = addDays("työpäivät",dateToCompare,miniumDaysBetween,dateTypes?.työpäivät?.dates,true)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
+      return newDisabledDates
+    }
+    else if(name.includes("_alkaa")){
+      //Alku kasvaa päättyy minimiin asti. Vetää mukana määräajan.
+      //Alku pienenee minimiin eli määräaika minimiin. Määräaika liikkuu mukana.
+      console.log("alkaa")
+      const miniumDaysPast = matchingItem?.distance_from_previous
+      const miniumDaysFuture = matchingItem?.distance_to_next
+      const dateToComparePast = formValues[previousItem?.name]
+      const dateToCompareFuture = formValues[nextItem?.name]
+      let newDisabledDates = dateTypes?.esilläolopäivät?.dates
+      const firstPossibleDateToSelect = addDays("esilläolopäivät",dateToComparePast,miniumDaysPast,dateTypes?.esilläolopäivät?.dates,true)
+      const lastPossibleDateToSelect = subtractDays("esilläolopäivät",dateToCompareFuture,miniumDaysFuture,dateTypes?.esilläolopäivät?.dates,true)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && date <= lastPossibleDateToSelect)
+      return newDisabledDates
+    }
+    else if(name.includes("_paattyy")){
+      //Loppu kasvaa loputtomasti.
+      //Loppu pienenee alku minimiin asti.
+      console.log("paattyy")
+      const miniumDaysPast = matchingItem?.distance_from_previous
+      const dateToComparePast = formValues[previousItem?.name]
+      let newDisabledDates = dateTypes?.esilläolopäivät?.dates
+      const firstPossibleDateToSelect = addDays("esilläolopäivät",dateToComparePast,miniumDaysPast,dateTypes?.esilläolopäivät?.dates,true)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
+      return newDisabledDates
+    } 
+  }
+  else if(!nahtavillaolo && (size === 'XS' || size === 'S' || size === 'M')){
+    console.log("määräaika työpäivä muut arkipäivä")
+    if(name.includes("_maaraaika")){
+      //Määräaika kasvaa loputtomasta.
+      //Määräaika pienenee minimiin. Vetää mukana alkaa ja loppuu päivämäärät.
+      console.log("maaraaika")
+      const miniumDaysBetween = matchingItem?.distance_from_previous
+      const dateToCompare = formValues[previousItem?.name]
+      let newDisabledDates = dateTypes?.työpäivät?.dates
+      const firstPossibleDateToSelect = addDays("työpäivät",dateToCompare,miniumDaysBetween,dateTypes?.työpäivät?.dates,true)
+      console.log(firstPossibleDateToSelect)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
+      console.log(newDisabledDates)
+      return newDisabledDates
+    }
+    else if(name.includes("_alkaa")){
+      //Alku kasvaa päättyy minimiin asti. Vetää mukana määräajan.
+      //Alku pienenee minimiin eli määräaika minimiin. Määräaika liikkuu mukana.
+      console.log("alkaa")
+      const miniumDaysPast = matchingItem?.distance_from_previous
+      const miniumDaysFuture = matchingItem?.distance_to_next
+      const dateToComparePast = formValues[previousItem?.name]
+      const dateToCompareFuture = formValues[nextItem?.name]
+      let newDisabledDates = dateTypes?.esilläolopäivät?.dates
+      const firstPossibleDateToSelect = addDays("esilläolopäivät",dateToComparePast,miniumDaysPast,dateTypes?.esilläolopäivät?.dates,true)
+      const lastPossibleDateToSelect = subtractDays("esilläolopäivät",dateToCompareFuture,miniumDaysFuture,dateTypes?.esilläolopäivät?.dates,true)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && date <= lastPossibleDateToSelect)
+      return newDisabledDates
+    }
+    else if(name.includes("_paattyy")){
+      //Loppu kasvaa loputtomasti.
+      //Loppu pienenee alku minimiin asti.
+      console.log("paattyy")
+      const miniumDaysPast = matchingItem?.distance_from_previous
+      const dateToComparePast = formValues[previousItem?.name]
+      let newDisabledDates = dateTypes?.esilläolopäivät?.dates
+      const firstPossibleDateToSelect = addDays("esilläolopäivät",dateToComparePast,miniumDaysPast,dateTypes?.esilläolopäivät?.dates,true)
+      console.log(firstPossibleDateToSelect,newDisabledDates)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
+      return newDisabledDates
+    } 
+  }
+  else if(nahtavillaolo && size === 'L' || size === 'XL'){
+    console.log("arkipäivä")
+    if(name.includes("_alkaa")){
+      //Alku kasvaa min. Päättyy ei muutu.
+      //Alku pienenee min. Päättyy ei muutu.
+      console.log("alkaa")
+      const miniumDaysPast = matchingItem?.distance_from_previous
+      const miniumDaysFuture = matchingItem?.distance_to_next
+      const dateToComparePast = formValues[previousItem?.name]
+      const dateToCompareFuture = formValues[nextItem?.name]
+      console.log(miniumDaysPast,miniumDaysFuture,dateToComparePast,dateToCompareFuture)
+      let newDisabledDates = dateTypes?.arkipäivät?.dates
+      const firstPossibleDateToSelect = addDays("arkipäivät",dateToComparePast,miniumDaysPast,dateTypes?.arkipäivät?.dates,true)
+      const lastPossibleDateToSelect = subtractDays("arkipäivät",dateToCompareFuture,miniumDaysFuture,dateTypes?.arkipäivät?.dates,true)
+      console.log(firstPossibleDateToSelect,lastPossibleDateToSelect)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && date <= lastPossibleDateToSelect)
+      return newDisabledDates
+    }
+    else if(name.includes("_paattyy")){
+      //Loppu kasvaa loputtomasti. Alku ei muutu.
+      //Loppu pienenee alku minimiin asti. Alku ei muutu.
+      console.log("paattyy")
+      const miniumDaysPast = matchingItem?.distance_from_previous
+      const dateToComparePast = formValues[previousItem?.name]
+      let newDisabledDates = dateTypes?.arkipäivät?.dates
+      const firstPossibleDateToSelect = addDays("arkipäivät",dateToComparePast,miniumDaysPast,dateTypes?.arkipäivät?.dates,true)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
+      return newDisabledDates
+    } 
+  }
+  else if(nahtavillaolo && size === 'XS' || size === 'S' || size === 'M'){
+    if(name.includes("_maaraaika")){
+      //Määräaika kasvaa loputtomasta.
+      //Määräaika pienenee minimiin. Vetää mukana alkaa ja loppuu päivämäärät.
+      console.log("maaraaika")
+      const miniumDaysBetween = matchingItem?.distance_from_previous
+      const dateToCompare = formValues[previousItem?.name]
+      let newDisabledDates = dateTypes?.työpäivät?.dates
+      const firstPossibleDateToSelect = addDays("työpäivät",dateToCompare,miniumDaysBetween,dateTypes?.työpäivät?.dates,true)
+      console.log(firstPossibleDateToSelect)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
+      console.log(newDisabledDates)
+      return newDisabledDates
+    }
+    if(name.includes("_alkaa")){
+      //Alku kasvaa min. Päättyy ei muutu.
+      //Alku pienenee min. Päättyy ei muutu.
+      console.log("alkaa")
+      const miniumDaysPast = matchingItem?.distance_from_previous
+      const miniumDaysFuture = matchingItem?.distance_to_next
+      const dateToComparePast = formValues[previousItem?.name]
+      const dateToCompareFuture = formValues[nextItem?.name]
+      console.log(miniumDaysPast,miniumDaysFuture,dateToComparePast,dateToCompareFuture)
+      let newDisabledDates = dateTypes?.arkipäivät?.dates
+      const firstPossibleDateToSelect = addDays("arkipäivät",dateToComparePast,miniumDaysPast,dateTypes?.arkipäivät?.dates,true)
+      const lastPossibleDateToSelect = subtractDays("arkipäivät",dateToCompareFuture,miniumDaysFuture,dateTypes?.arkipäivät?.dates,true)
+      console.log(firstPossibleDateToSelect,lastPossibleDateToSelect)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && date <= lastPossibleDateToSelect)
+      return newDisabledDates
+    }
+    else if(name.includes("_paattyy")){
+      //Loppu kasvaa loputtomasti. Alku ei muutu.
+      //Loppu pienenee alku minimiin asti. Alku ei muutu.
+      console.log("paattyy")
+      const miniumDaysPast = matchingItem?.distance_from_previous
+      const dateToComparePast = formValues[previousItem?.name]
+      let newDisabledDates = dateTypes?.arkipäivät?.dates
+      const firstPossibleDateToSelect = addDays("arkipäivät",dateToComparePast,miniumDaysPast,dateTypes?.arkipäivät?.dates,true)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
+      return newDisabledDates
+    } 
+  }
+  //If not any of the above return arkipäivät
+  return dateTypes?.arkipäivät?.dates
+}
  
 export default {
     isWeekend,
@@ -350,5 +564,6 @@ export default {
     adjustDates,
     isDate,
     calculateWeekdayDifference,
-    isHoliday
+    isHoliday,
+    calculateDisabledDates
 }
