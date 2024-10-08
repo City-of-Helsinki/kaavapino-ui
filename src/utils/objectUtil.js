@@ -224,9 +224,9 @@ const getHighestNumberedObject = (obj1, arr) => {
           for (let attribute of sec.attributes) {
             if (attribute.name === arr1Key) {
               // Found a match, now add distance_from_previous and distance_to_next
-              arr1[i].distance_from_previous = attribute.distance_from_previous || null;
-              arr1[i].distance_to_next = attribute.distance_to_next || null;
-              arr1[i].initial_distance = attribute.initial_distance.distance || null
+              arr1[i].distance_from_previous = attribute?.distance_from_previous || null;
+              arr1[i].distance_to_next = attribute?.distance_to_next || null;
+              arr1[i].initial_distance = attribute?.initial_distance?.distance || null
               arr1[i].order = i;
               break; // Exit the loop once the match is found
             }
