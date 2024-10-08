@@ -68,10 +68,22 @@ const modifyLastNumberInString = (str) => {
     }
 }
 
+const getNumberAfterSuffix = (str) => {
+    const regex = /_(\d+)$/;  // Regex to match underscore followed by a number at the end of the string
+    const match = str.match(regex);
+    if (match) {
+        const number = match[1];  // Extracted number
+        return number
+    }
+    //if nothing found return null
+    return null;
+}
+
 export default {
     replaceScandics,
     capitalizeAndRemoveUnderscores,
     replacePattern,
     getFirstMatchingSubstring,
-    modifyLastNumberInString
+    modifyLastNumberInString,
+    getNumberAfterSuffix
 }

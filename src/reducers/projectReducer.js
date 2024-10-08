@@ -661,6 +661,9 @@ export const reducer = (state = initialState, action) => {
         if(updatedPayload.attribute_data["periaatteet_lautakuntaan_1"] === undefined) {
           updatedPayload.attribute_data["periaatteet_lautakuntaan_1"] = true;
         }
+        if(updatedPayload.attribute_data["vahvista_periaatteet_lautakunnassa"]) {
+          updatedPayload.attribute_data["periaatteet_lautakuntaan_2"] = true;
+        }
       }
 
       if (updatedPayload?.attribute_data?.luonnos_luotu === true){
@@ -678,6 +681,9 @@ export const reducer = (state = initialState, action) => {
         }
         if(updatedPayload?.attribute_data["ehdotus_lautakuntaan_1"] === undefined) {
           updatedPayload.attribute_data["ehdotus_lautakuntaan_1"] = true;
+        }
+        if(updatedPayload?.attribute_data["vahvista_kaavaehdotus_lautakunnassa"]) {
+          updatedPayload.attribute_data["ehdotus_lautakuntaan_2"] = true;
         }
       } 
 

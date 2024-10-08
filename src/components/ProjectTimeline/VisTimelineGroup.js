@@ -181,10 +181,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       || Object.hasOwn(visValRef, `vahvista_${phase}_esillaolo${esillaoloCount}`) && visValRef[`vahvista_${phase}_esillaolo${esillaoloCount}`] === true;
       let lautakuntaConfirmed = Object.hasOwn(visValRef, `vahvista_${phase}_lautakunnassa${lautakuntaCount}`) && visValRef[`vahvista_${phase}_lautakunnassa${lautakuntaCount}`] === true;
       //this could be needed when confirmation is no longer needed
-      /*if(phase === "luonnos"){
+      if(phase === "luonnos"){
         lautakuntaConfirmed = Object.hasOwn(visValRef, `vahvista_kaavaluonnos_lautakunnassa${lautakuntaCount}`) && visValRef[`vahvista_kaavaluonnos_lautakunnassa${lautakuntaCount}`] === true;
       }
-      if(phase === "periaatteet" && !(phase + "_lautakuntaan_1" in visValRef) || phase === "periaatteet" && visValRef["periaatteet_lautakuntaan_1"]  || phase === "luonnos" && !(phase + "_lautakuntaan_1") || phase === "luonnos" && visValRef["kaavaluonnos_lautakuntaan_1"] === false){
+/*       if(phase === "periaatteet" && !(phase + "_lautakuntaan_1" in visValRef) || phase === "periaatteet" && visValRef["periaatteet_lautakuntaan_1"]  || phase === "luonnos" && !(phase + "_lautakuntaan_1") || phase === "luonnos" && visValRef["kaavaluonnos_lautakuntaan_1"] === false){
         lautakuntaConfirmed = true
       } */
       if(phase === "luonnos" && !("jarjestetaan_" + phase + "_esillaolo_1" in visValRef) || phase === "periaatteet" && !("jarjestetaan_"+phase+"_esillaolo_1" in visValRef)){
