@@ -796,6 +796,7 @@ class EditProjectTimeTableModal extends Component {
   processValuesSequentially = (matchingValues,index,phase) => { 
     let validValues = [];
     const sortOrder = ['maaraaika', 'alkaa', 'paattyy', 'lautakunta', "viimeistaan_lausunnot", 'mielipiteet'];
+    const isLargeProject = this.props.formValues.kaavaprosessin_kokoluokka === "XL" || this.props.formValues.kaavaprosessin_kokoluokka === "L" 
     //Sort to to order where viimeistaan and mielipiteet are last
     matchingValues = matchingValues.sort((a, b) => {
       const aIndex = sortOrder.findIndex(order => a.key.includes(order));
@@ -820,9 +821,19 @@ class EditProjectTimeTableModal extends Component {
         const sections = this.props.deadlineSections[i].sections[0].attributes
         for (let x = 0; x < sections.length; x++) {
           //Remove unwanted sections, ehdotus phase määräaika is not currently used in the timeline, possibly in the future, otherwise messes the allocation of keys and values
-          if(sections[x].type === "date" && sections[x].display !== "readonly" && sections[x].label !== "Mielipiteet viimeistään" 
-            && sections[x].name !== "ehdotus_nahtaville_aineiston_maaraaika_2" && sections[x].name !== "ehdotus_nahtaville_aineiston_maaraaika_3" && sections[x].name !== "ehdotus_nahtaville_aineiston_maaraaika_4"
-            && (sections[x].attributesubgroup === "Nähtäville" || sections[x].attributesubgroup === "Esille" || sections[x].attributesubgroup === "Esityslistalle")){
+          if(
+            sections[x].type === "date" && 
+            sections[x].display !== "readonly" && 
+            sections[x].label !== "Mielipiteet viimeistään" &&
+            (isLargeProject 
+              ? sections[x].name !== "ehdotus_nahtaville_aineiston_maaraaika_2" && 
+                sections[x].name !== "ehdotus_nahtaville_aineiston_maaraaika_3" && 
+                sections[x].name !== "ehdotus_nahtaville_aineiston_maaraaika_4"
+              : true) &&
+            (sections[x].attributesubgroup === "Nähtäville" || 
+              sections[x].attributesubgroup === "Esille" || 
+              sections[x].attributesubgroup === "Esityslistalle")
+            ){
             distanceArray.push({"name":sections[x].name,"distance":sections[x].distance_from_previous,"linkedData":sections[x].previous_deadline})
           }
         }
@@ -841,11 +852,11 @@ class EditProjectTimeTableModal extends Component {
         let matchingSection
         if(!newItem){
           matchingSection = objectUtil.findItem(distanceArray,foundItem.key,"name",1)
-          if(matchingSection.name.includes("viimeistaan_lausunnot")){
+          if(matchingSection?.name.includes("viimeistaan_lausunnot")){
             matchingSection = objectUtil.findItem(distanceArray,matchingSection.name,"name",1)
           }
-          if(!matchingSection.name.includes("_lautakunnassa")){
-            newItem = matchingSection.name
+          if(!matchingSection?.name.includes("_lautakunnassa")){
+            newItem = matchingSection?.name
           }
         }
         else{

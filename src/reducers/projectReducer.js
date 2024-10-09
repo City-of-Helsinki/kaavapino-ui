@@ -674,7 +674,6 @@ export const reducer = (state = initialState, action) => {
           updatedPayload.attribute_data["kaavaluonnos_lautakuntaan_1"] = true;
         }
         if(updatedPayload?.attribute_data["vahvista_luonnos_esillaolo_alkaa"]) {
-          console.log("vahvista_luonnos_esillaolo_alkaa")
           updatedPayload.attribute_data["jarjestetaan_luonnos_esillaolo_2"] = true;
         }
       } 

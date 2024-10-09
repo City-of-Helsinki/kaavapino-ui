@@ -115,7 +115,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       if(esillaoloCount - 1 === deadlineEsillaolokertaKeys){
         esillaoloReason = "max"
       }
-      
+
       if (esillaoloConfirmed) {
         canAddEsillaolo = esillaoloCount <= deadlineEsillaolokertaKeys;
         const nextEsillaoloStr = canAddEsillaolo ? `jarjestetaan_${phase}_esillaolo_${esillaoloCount}$` : false;
@@ -124,7 +124,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       // Check if more Lautakunta groups can be added
       const deadlineLautakuntakertaKeys = data.maxLautakunta
       const lautakuntaanRegex = new RegExp(`${phase}_lautakuntaan_\\d+$`);
-      const attributeLautakuntaanKeys = Object.keys(visValRef).filter(key => lautakuntaanRegex.test(key));
+      const lautakuntaanRegex2 = new RegExp(`${phase}_lautakunnassa_\\d+$`);
+      const attributeLautakuntaanKeys = Object.keys(visValRef).filter(key => lautakuntaanRegex.test(key) || lautakuntaanRegex2.test(key));
       let largestIndexLautakunta = 0;
       //find largest index
       attributeLautakuntaanKeys.forEach(key => {
