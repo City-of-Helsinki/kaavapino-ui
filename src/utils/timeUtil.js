@@ -341,7 +341,6 @@ const sortObjectByDate = (obj) => {
 }
 
 const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sectionAttributes,currentDeadline) => {
-  console.log(nahtavillaolo,size,dateTypes,name,formValues,sectionAttributes,currentDeadline)
   const matchingItem = objectUtil.findMatchingName(sectionAttributes, name, "name");
   const previousItem = objectUtil.findItem(sectionAttributes, name, "name", -1);
   const nextItem = objectUtil.findItem(sectionAttributes, name, "name", 1);
