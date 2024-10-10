@@ -227,6 +227,7 @@ const getHighestNumberedObject = (obj1, arr) => {
               arr1[i].distance_from_previous = attribute?.distance_from_previous || null;
               arr1[i].distance_to_next = attribute?.distance_to_next || null;
               arr1[i].initial_distance = attribute?.initial_distance?.distance || null
+              arr1[i].date_type = attribute?.date_type || "arkipäivät"
               arr1[i].order = i;
               break; // Exit the loop once the match is found
             }
@@ -316,7 +317,7 @@ const getHighestNumberedObject = (obj1, arr) => {
     return result
   }
 
-  const checkForDecreasingValues = (arr,isAdd,field) => {
+  const checkForDecreasingValues = (arr,isAdd,field,disabledDates) => {
     //TODO: add same logic when moving phase backwards
     // Find the index of the next item where dates should start being pushed
     const nextIndex = arr.findIndex(item => item?.key === field) + 1
@@ -325,74 +326,21 @@ const getHighestNumberedObject = (obj1, arr) => {
       // Move the nextItem and all following items forward if item minium is exceeded
       for (let i = nextIndex; i < arr.length; i++) {
         let newDate = new Date(arr[i].value);
-        let dateDiff = timeUtil.dateDifference(arr[i - 1].value, arr[i].value)
-        //At the moment some previous values are falsely null for some reason, can be remove when is fixed on backend and Excel.
-        const miniumGap = arr[i].distance_from_previous === null ? arr[i].key.includes("lautakunnassa") ? 22 : 5 : arr[i].distance_from_previous 
-        //If difference in previous and current value is below minium
-        if(dateDiff < miniumGap){
-          if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")){
-            //mielipiteet and paattyy is always the same value
-            dateDiff = 0
-            newDate = new Date(arr[i - 1].value);
-          }
-          else{
-            //Check if value is negative. Added value went further in timeline then next value. Convert to positive + minium
-            if(dateDiff < 0){
-              dateDiff = Math.abs(dateDiff)
-              dateDiff = dateDiff + miniumGap
-            }
-            else{
-              if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot") || arr[i - 1].key.includes("maaraaika") && arr[i].key.includes("lautakunnassa")){
-                dateDiff = 0
-              }
-              else{
-                //Positive so reduce from gap 
-                dateDiff = miniumGap - dateDiff
-              }
-            }
-          }
-          //Add difference to date and move it forward in timeline
-          newDate.setDate(newDate.getDate() + dateDiff);
+         //At the moment some previous values are falsely null for some reason, can be remove when is fixed on backend and Excel.
+         //Get minium gap for two dates next to each other that are moved
+         const miniumGap = arr[i].distance_from_previous === null ? arr[i].key.includes("lautakunnassa") ? 22 : 5 : arr[i].distance_from_previous 
+        if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")){
+          //mielipiteet and paattyy is always the same value
+          newDate = new Date(arr[i - 1].value);
+        }
+        else{
+          //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
+          newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,miniumGap) : newDate
         }
         // Update the array with the new date
+        newDate.setDate(newDate.getDate());
         arr[i].value = newDate.toISOString().split('T')[0];
-      }
-    }
-    else{
-      for (let i = nextIndex; i < arr.length; i++) {
-        let newDate = new Date(arr[i].value);
-        let dateDiff = timeUtil.dateDifference(arr[i - 1].value,arr[i].value)
-        //At the moment some previous values are falsely null for some reason, can be remove when is fixed on backend and Excel.
-        const miniumGap = arr[i].distance_from_previous === null ? arr[i].key.includes("lautakunnassa") ? 22 : 5 : arr[i].distance_from_previous
-        //If difference in previous and current value is below minium
-        if(dateDiff < miniumGap){
-          if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")){
-            //mielipiteet and paattyy is always the same value
-            dateDiff = 0
-            newDate = new Date(arr[i - 1].value);
-          }
-          else{
-            //Check if value is negative. Added value went further in timeline then next value. Convert to positive + minium
-            if(dateDiff < 0){
-              dateDiff = Math.abs(dateDiff)
-              dateDiff = dateDiff + miniumGap
-            }
-            else{
-              if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot") || arr[i - 1].key.includes("maaraaika") && arr[i].key.includes("lautakunnassa")){
-                dateDiff = 0
-              }
-              else{
-                //Positive so reduce from gap 
-                dateDiff = miniumGap - dateDiff
-              }
-            }
-          }
-          //Add difference to date and move it forward in timeline
-          newDate.setDate(newDate.getDate() + dateDiff);
-        }
-        // Update the array with the new date
-        arr[i].value = newDate.toISOString().split('T')[0];
-
+        //Move phase start and end dates
         if(arr[i].distance_from_previous === undefined && arr[i].key.endsWith('_pvm') && arr[i].key.includes("_paattyy_")){
           const targetSubstring = arr[i].key.split('vaihe')[0];
           // Iterate backwards from the given index
@@ -408,7 +356,42 @@ const getHighestNumberedObject = (obj1, arr) => {
             arr[i].value = res
           }
         }
-      } 
+      }
+    }
+    else{
+      for (let i = nextIndex; i < arr.length; i++) {
+        let newDate = new Date(arr[i].value);
+         //At the moment some previous values are falsely null for some reason, can be remove when is fixed on backend and Excel.
+         //Get minium gap for two dates next to each other that are moved
+         const miniumGap = arr[i].distance_from_previous === null ? arr[i].key.includes("lautakunnassa") ? 22 : 5 : arr[i].distance_from_previous 
+        if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")){
+          //mielipiteet and paattyy is always the same value
+          newDate = new Date(arr[i - 1].value);
+        }
+        else{
+          //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
+          newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,miniumGap) : newDate
+        }
+        // Update the array with the new date
+        newDate.setDate(newDate.getDate());
+        arr[i].value = newDate.toISOString().split('T')[0];
+        //Move phase start and end dates
+        if(arr[i].distance_from_previous === undefined && arr[i].key.endsWith('_pvm') && arr[i].key.includes("_paattyy_")){
+          const targetSubstring = arr[i].key.split('vaihe')[0];
+          // Iterate backwards from the given index
+          const res = reverseIterateArray(arr,i,targetSubstring)
+          const differenceInTime = new Date(res) - new Date(arr[i].value)
+          const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
+          if(differenceInDays >= 5){
+            // TODO: minium gap here?
+            //Create a Date object for 2026-06-03
+            //let date = new Date(res);
+            //date.setDate(date.getDate() + 5);
+            //const dateString = timeUtil.formatDate(date)
+            arr[i].value = res
+          }
+        }
+      }
     }
     sortPhaseData(arr,order)
     return arr
