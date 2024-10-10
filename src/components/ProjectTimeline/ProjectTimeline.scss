@@ -14,45 +14,83 @@
     margin-left: -160px;
     left: 50%;
     top: 20px;
-    width: 320px;
-    height: 56px;
-    border-left: 4px solid #d8000c;
-    background-color: #ff8179;
+    width: 336px;
+    height: 119px;
+    border-left: 8px solid #B01038;
+    background-color: #F6E2E6;
     text-align: center;
-    svg {
-      position: absolute;
-      top: 10px !important;
-      left: 26px !important;
-    }
+    font-size: $size18;
+    font-weight: 700;
     span {
       position: absolute;
       top: 18px;
-      left: 68px;
+      left: 48px;
       opacity: 1;
+    }
+    p {
+      font-size: $size14;
+      font-weight: 400;
+      position: absolute;
+      top: 55px;
+      left: 16px;
+      width: 80%;
+      text-align: start;
+    }
+    .icon-error-red {
+      z-index: 1000;
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      padding: 0;
+      width: 24px;
+      height: 24px;
+      background: url('../../assets/icons/icon-error-red.svg') no-repeat;
+      background-position-x: center;
+      background-position-y: center;
+      background-size: $size24;
     }
   }
   .timeline-onhold-message {
     position: absolute;
     z-index: 4;
     margin-left: -160px;
-    left: 50%;
-    top: 10px;
-    width: 320px;
-    height: 56px;
-    border-left: 4px solid $color-warning;
-    background-color: $color-warning2;
+    left: 40%;
+    top: 20px;
+    width: 603px;
+    height: 120px;
+    border-left: 8px solid #D18200;
+    background-color: #FFF4B4;
     text-align: center;
+    font-size: $size18;
+    font-weight: 700;
 
-    svg {
-      position: absolute;
-      top: 10px !important;
-      left: 26px !important;
-    }
     span {
       position: absolute;
       top: 18px;
-      left: 68px;
+      left: 48px;
       opacity: 1;
+    }
+    p {
+      font-size: $size14;
+      font-weight: 400;
+      position: absolute;
+      top: 55px;
+      left: 16px;
+      width: 80%;
+      text-align: start;
+    }
+    .alert-icon-yellow {
+      z-index: 1000;
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      padding: 0;
+      width: 24px;
+      height: 24px;
+      background: url('../../assets/icons/alert-icon-yellow.svg') no-repeat;
+      background-position-x: center;
+      background-position-y: center;
+      background-size: $size24;
     }
   }
 

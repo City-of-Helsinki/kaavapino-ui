@@ -41,6 +41,18 @@ const FormField = ({
   phaseIsClosed,
   hasEditRights,
   isTabActive,
+  disabledDates,
+  lomapaivat,
+  dateTypes,
+  deadlineSection,
+  maxMoveGroup, 
+  maxDateToMove,
+  groupName,
+  visGroups,
+  visItems,
+  deadlineSections,
+  confirmedValue,
+  sectionAttributes,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -120,6 +132,18 @@ const FormField = ({
             selectedPhase={selectedPhase}
             phaseIsClosed={phaseIsClosed}
             isTabActive={isTabActive}
+            disabledDates={disabledDates}
+            lomapaivat={lomapaivat}
+            dateTypes={dateTypes}
+            deadlineSection={deadlineSection}
+            maxMoveGroup={maxMoveGroup}
+            maxDateToMove={maxDateToMove}
+            groupName={groupName}
+            visGroups={visGroups}
+            visItems={visItems}
+            deadlineSections={deadlineSections}
+            confirmedValue={confirmedValue}
+            sectionAttributes={sectionAttributes}
           />
         )
     }
@@ -167,7 +191,10 @@ const FormField = ({
       ...field,
       type: 'checkbox'
     }
+
+    const timetableBoolean = isProjectTimetableEdit && field.autofill_readonly && !field.editable
     return (
+      !timetableBoolean ?
       <Form.Field
         className={`checkbox-container small-margin'} ${showError ? 'error' : ''}`}
       >
@@ -175,6 +202,8 @@ const FormField = ({
           <span className="checkbox">{renderField(newProps)}</span>
         </Label>
       </Form.Field>
+      :
+      <></>
     )
   }
 
@@ -203,6 +232,7 @@ const FormField = ({
   }
 
   const renderNormalField = () => {
+    const timetableBoolean = isProjectTimetableEdit && field.type === "boolean"
     const status = lockStatus
     let title = (field.character_limit
       ? `${field.label}  (${t('project.char-limit', { amount: field.character_limit })})`
@@ -222,7 +252,7 @@ const FormField = ({
         } ${highlightStyle}`}
       >
         {highlightStyle === "yellow" ? <div className={highlightStyle + " highlight-flag"}>{highlightedTag}</div> : ''}
-        {!isOneLineField && (
+        {!isOneLineField && !timetableBoolean && (
           <div className='input-header-container'>
             <div className="input-header">
               <Label
@@ -313,13 +343,32 @@ const FormField = ({
 FormField.propTypes = {
   disabled: PropTypes.bool,
   field: PropTypes.object,
-  deadlines:PropTypes.object,
+  deadlines:PropTypes.array,
   isProjectTimetableEdit:PropTypes.bool,
   rollingInfo:PropTypes.bool,
   isCurrentPhase:PropTypes.bool,
   selectedPhase: PropTypes.number,
   phaseIsClosed: PropTypes.bool,
-  isTabActive: PropTypes.bool
+  isTabActive: PropTypes.bool,
+  disabledDates: PropTypes.array,
+  lomapaivat: PropTypes.array,
+  dateTypes: PropTypes.object,
+  deadlineSection: PropTypes.object,
+  maxMoveGroup: PropTypes.oneOfType([
+    PropTypes.object,
+    PropTypes.string
+  ]),
+  maxDateToMove: PropTypes.string,
+  groupName: PropTypes.string,
+  visGroups: PropTypes.array,
+  visItems: PropTypes.array,
+  deadlineSections: PropTypes.array,
+  confirmedValue: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.bool,
+  ]),
+  sectionAttributes: PropTypes.array
 }
 
 export default withTranslation()(FormField)
