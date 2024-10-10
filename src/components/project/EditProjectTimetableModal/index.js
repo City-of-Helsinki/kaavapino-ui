@@ -732,7 +732,13 @@ class EditProjectTimeTableModal extends Component {
   // Helper function to check if dates are confirmed
   isDeadlineConfirmed = (formValues, deadlineGroup) => {
     // Extract the number from deadlineGroup if it exists
-    const match = deadlineGroup?.match(/(\d+)$/);
+    const extractDigitsFromEnd = (str) => {
+      if (!str) return null;
+      const digits = str.split('').reverse().filter(char => !isNaN(char) && char !== ' ').reverse().join('');
+      return digits || null;
+    };
+
+    const matchNumber = extractDigitsFromEnd(deadlineGroup);
     let confirmationKey;
 
     const baseKeys = {
@@ -744,12 +750,12 @@ class EditProjectTimeTableModal extends Component {
 
     for (const key in baseKeys) {
       if (deadlineGroup.includes(key)) {
-        if (match && match[1] === "1") {
+        if (matchNumber && matchNumber === "1") {
           // If number is 1, use the base key
           confirmationKey = baseKeys[key];
-        } else if (match) {
+        } else if (matchNumber) {
           // If number is bigger, construct the confirmationKey using the number
-          const number = `_${match[1]}`;
+          const number = `_${matchNumber[1]}`;
           confirmationKey = `${baseKeys[key]}${number}`;
         } else {
           // If no number, use the base key
