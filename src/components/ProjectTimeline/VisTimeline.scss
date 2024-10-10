@@ -300,6 +300,22 @@
 
     .vis-range{
         border-color: #1a1a1a;
+        &.confirmed::after {
+            content: "";
+            position: absolute;
+            top: -9px;
+            right: -10px;
+            width: 21px;
+            height: 21px;
+            background: #fff url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
+            background-position: center;
+            background-size: contain;
+            border-radius: 50%;
+        }
+        &.confirmed.board::after {
+            top: -18px;
+            right: -20px;
+        }
     }
 
     .locked{
