@@ -218,7 +218,7 @@ export const reducer = (state = initialState, action) => {
       //Compare for changes with dates in order sorted array
       const changes = objectUtil.compareAndUpdateArrays(origSortedData,updateAttributeArray,deadlineSections)
       //Find out is next date below minium and add difference of those days to all values after and move them forward 
-      const decreasingValues = objectUtil.checkForDecreasingValues(changes,isAdd,field);
+      const decreasingValues = objectUtil.checkForDecreasingValues(changes,isAdd,field,state.disabledDates);
       //Add new values from array to updatedAttributeData object
       objectUtil.updateOriginalObject(updatedAttributeData,decreasingValues)
       // Return the updated state with the modified currentProject and attribute_data
