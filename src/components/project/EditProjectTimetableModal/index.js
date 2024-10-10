@@ -502,6 +502,7 @@ class EditProjectTimeTableModal extends Component {
   generateVisItems = (deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData) => {
 
     let numberOfPhases
+    let deadlineGroup
 
     let startDate = false
     let endDate = false
@@ -520,6 +521,8 @@ class EditProjectTimeTableModal extends Component {
 
     for (let i = 0; i < deadlines.length; i++) {
       numberOfPhases = deadlines[i].deadline.index
+      deadlineGroup = deadlines[i].deadline.deadlinegroup;
+
       if(deadlines[i].deadline.deadline_types.includes('phase_start')){
         //Special case for project start date
         if(deadlines[i].deadline.attribute === null && deadlines[i].abbreviation === "K1"){
@@ -570,6 +573,9 @@ class EditProjectTimeTableModal extends Component {
           if (innerEnd < currentDate) {
             innerStyle += " past";
           }
+          if (this.isDeadlineConfirmed(formValues, deadlineGroup)) {
+            innerStyle += " confirmed";
+          }
         }
       }
       else if(deadlines[i]?.deadline?.attribute?.includes("nahtavilla") || deadlines[i]?.deadline?.deadlinegroup?.includes("nahtavillaolokerta") || deadlines[i]?.deadline?.attribute?.includes("ehdotus_nahtaville_aineiston_maaraaika")){
@@ -616,6 +622,10 @@ class EditProjectTimeTableModal extends Component {
           if (innerEnd < currentDate) {
             innerStyle += " past";
           }
+
+          if (this.isDeadlineConfirmed(formValues, deadlineGroup)) {
+            innerStyle += " confirmed";
+          }
         }
       }
       else if(deadlines[i]?.deadline?.attribute?.includes("lautakunta") || deadlines[i]?.deadline?.attribute?.includes("lautakunnassa") || 
@@ -643,6 +653,10 @@ class EditProjectTimeTableModal extends Component {
           innerStyle = "board"
           if (innerEnd < currentDate) {
             innerStyle += " past";
+          }
+
+          if (this.isDeadlineConfirmed(formValues, deadlineGroup)) {
+            innerStyle += " confirmed";
           }
         }
         else if(deadlines[i].deadline.deadline_types.includes('inner_start')){
@@ -714,6 +728,45 @@ class EditProjectTimeTableModal extends Component {
 
     return [deadLineGroups,nestedDeadlines,phaseData]
   }
+
+  // Helper function to check if dates are confirmed
+  isDeadlineConfirmed = (formValues, deadlineGroup) => {
+    // Extract the number from deadlineGroup if it exists
+    const extractDigitsFromEnd = (str) => {
+      if (!str) return null;
+      const digits = str.split('').reverse().filter(char => !isNaN(char) && char !== ' ').reverse().join('');
+      return digits || null;
+    };
+
+    const matchNumber = extractDigitsFromEnd(deadlineGroup);
+    let confirmationKey;
+
+    const baseKeys = {
+      "tarkistettu_ehdotus": "vahvista_tarkistettu_ehdotus_lautakunnassa",
+      "ehdotus_pieni": "vahvista_ehdotus_esillaolo_pieni",
+      "ehdotus": "vahvista_ehdotus_esillaolo",
+      "oas": "vahvista_oas_esillaolo_alkaa"
+    };
+
+    for (const key in baseKeys) {
+      if (deadlineGroup.includes(key)) {
+        if (matchNumber && matchNumber === "1") {
+          // If number is 1, use the base key
+          confirmationKey = baseKeys[key];
+        } else if (matchNumber) {
+          // If number is bigger, construct the confirmationKey using the number
+          const number = `_${matchNumber[1]}`;
+          confirmationKey = `${baseKeys[key]}${number}`;
+        } else {
+          // If no number, use the base key
+          confirmationKey = baseKeys[key];
+        }
+        break;
+      }
+    }
+
+    return formValues[confirmationKey] === true;
+  };
 
   getTimelineData = (deadlineSections,formValues,deadlines,ongoingPhase) => {
       let phaseData = []
