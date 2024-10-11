@@ -167,7 +167,9 @@ export const reducer = (state = initialState, action) => {
       const origSortedData = timeUtil.sortObjectByDate(updatedAttributeData);
       const newDateObj = new Date(newDate);
       const current = new Date(updatedAttributeData[field]);
-
+      if(field === "hyvaksymispaatos_pvm" && updatedAttributeData["hyvaksyminenvaihe_paattyy_pvm"]){
+        updatedAttributeData["hyvaksyminenvaihe_paattyy_pvm"] = timeUtil.formatDate(newDateObj);
+      }
       // Update the specific date at the given field
       updatedAttributeData[field] = timeUtil.formatDate(newDateObj);
       //Iterate through deadlineSectionValues and match with keys in attribute_data

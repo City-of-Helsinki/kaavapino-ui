@@ -102,8 +102,8 @@ const DeadLineInput = ({
     else if (currentDeadline?.date) {
       currentDeadlineDate = currentDeadline.date
     }
-    else if(input.name === "hyvaksymispaatos_pvm"){
-      attributeData["hyvaksyminenvaihe_paattyy_pvm"] = inputValue
+    else if(input.name === "hyvaksymispaatos_pvm" && attributeData["hyvaksyminenvaihe_paattyy_pvm"]){
+      attributeData["hyvaksyminenvaihe_paattyy_pvm"] = inputValue === '' ? attributeData["hyvaksyminenvaihe_paattyy_pvm"] : inputValue
     }
     else if(input.name === "tullut_osittain_voimaan_pvm" || input.name === "voimaantulo_pvm" || input.name === "kumottu_pvm" || input.name === "rauennut"){
       //Modify the end date of voimaantulovaihe if any of the dates are changed
@@ -132,10 +132,10 @@ const DeadLineInput = ({
     if (dateString) {
         date = new Date(dateString);
     }
-    else if(input.name === "tullut_osittain_voimaan_pvm" || input.name === "voimaantulo_pvm" || input.name === "kumottu_pvm" || input.name === "rauennut"){
+    else if(attributeData['voimaantulovaihe_paattyy_pvm'] && (input.name === "tullut_osittain_voimaan_pvm" || input.name === "voimaantulo_pvm" || input.name === "kumottu_pvm" || input.name === "rauennut")){
       date = new Date(attributeData['voimaantulovaihe_paattyy_pvm']);
     }
-    else if(input.name === "hyvaksymispaatos_pvm"){
+    else if(input.name === "hyvaksymispaatos_pvm" && attributeData["hyvaksyminenvaihe_paattyy_pvm"]){
       date = new Date(attributeData['hyvaksyminenvaihe_paattyy_pvm']);
     }
     else {
@@ -196,16 +196,12 @@ const DeadLineInput = ({
       else{
         deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey].filter(section => section.type === "date" && section.display !== "readonly");
       }
-
       setCurrentValue(formattedDate)
       if(field === "tullut_osittain_voimaan_pvm" || field === "voimaantulo_pvm" || field === "kumottu_pvm" || field === "rauennut"){
         //Modify the end date of voimaantulovaihe if any of the dates are changed
-        if (new Date(formattedDate) > new Date(attributeData["voimaantulovaihe_paattyy_pvm"])) {
+        if (attributeData["voimaantulovaihe_paattyy_pvm"] && new Date(formattedDate) > new Date(attributeData["voimaantulovaihe_paattyy_pvm"])) {
           dispatch(updateDateTimeline("voimaantulovaihe_paattyy_pvm",formattedDate,deadlineSectionValues,false,false,deadlineSections));
         }
-      }
-      else if(field === "hyvaksymispaatos_pvm"){
-        dispatch(updateDateTimeline("hyvaksyminenvaihe_paattyy_pvm",formattedDate,deadlineSectionValues,false,false,deadlineSections));
       }
       dispatch(updateDateTimeline(field,formattedDate,deadlineSectionValues,false,false,deadlineSections));
 
