@@ -376,6 +376,9 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
     newDisabledDates = name.includes("kaynnistys_paattyy_pvm") ? newDisabledDates.filter(date => date >= lastPossibleDateToSelect) : newDisabledDates.filter(date => date <= lastPossibleDateToSelect)
     return newDisabledDates
   }
+  else if(name === "hyvaksymispaatos_valitusaika_paattyy" || name === "valitusaika_paattyy_hallinto_oikeus"){
+    return dateTypes?.arkipäivät?.dates
+  }
   else if(currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')){
     //Lautakunnat
     if(name.includes("_maaraaika")){

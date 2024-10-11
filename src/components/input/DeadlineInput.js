@@ -102,8 +102,17 @@ const DeadLineInput = ({
     else if (currentDeadline?.date) {
       currentDeadlineDate = currentDeadline.date
     }
-  
-    setCurrentValue(currentDeadline ? currentDeadlineDate : inputValue ); 
+    else if(input.name === "hyvaksymispaatos_pvm"){
+      attributeData["hyvaksyminenvaihe_paattyy_pvm"] = inputValue
+    }
+    else if(input.name === "tullut_osittain_voimaan_pvm" || input.name === "voimaantulo_pvm" || input.name === "kumottu_pvm" || input.name === "rauennut"){
+      //Modify the end date of voimaantulovaihe if any of the dates are changed
+      if (new Date(inputValue) > new Date(attributeData["voimaantulovaihe_paattyy_pvm"])) {
+        attributeData["voimaantulovaihe_paattyy_pvm"] = inputValue
+      }
+    }
+
+    setCurrentValue(currentDeadline ? currentDeadlineDate : inputValue )
     setDisabledState(typeof timeTableDisabled !== "undefined" ? timeTableDisabled : disabled)
   },[])
 
@@ -188,16 +197,16 @@ const DeadLineInput = ({
         deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey].filter(section => section.type === "date" && section.display !== "readonly");
       }
 
-      if(field === "tullut_osittain_voimaan_pvm" || field === "voimaantulo_pvm" || field === "kumottu_pvm" || field === "rauennut"){
-        field = "voimaantulovaihe_paattyy_pvm"
-        deadlineSectionValues = false
-      }
-
-      if(field === "hyvaksymispaatos_pvm"){
-        field = "hyvaksyminenvaihe_paattyy_pvm"
-        deadlineSectionValues = false
-      }
       setCurrentValue(formattedDate)
+      if(field === "tullut_osittain_voimaan_pvm" || field === "voimaantulo_pvm" || field === "kumottu_pvm" || field === "rauennut"){
+        //Modify the end date of voimaantulovaihe if any of the dates are changed
+        if (new Date(formattedDate) > new Date(attributeData["voimaantulovaihe_paattyy_pvm"])) {
+          dispatch(updateDateTimeline("voimaantulovaihe_paattyy_pvm",formattedDate,deadlineSectionValues,false,false,deadlineSections));
+        }
+      }
+      else if(field === "hyvaksymispaatos_pvm"){
+        dispatch(updateDateTimeline("hyvaksyminenvaihe_paattyy_pvm",formattedDate,deadlineSectionValues,false,false,deadlineSections));
+      }
       dispatch(updateDateTimeline(field,formattedDate,deadlineSectionValues,false,false,deadlineSections));
 
     } catch (error) {
