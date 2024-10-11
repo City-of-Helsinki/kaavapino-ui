@@ -253,7 +253,7 @@
     "no-fields":"Suodatinvalinnalla ei löytynyt tämän otsikon alta suodatettavia kenttiä.",
     "link-to-map":"Linkki projektin karttapalveluun.",
     "add-new-board":"Lisää uusi lautakunta",
-    "add-new-presence":"Lisää uusi esillöolo"
+    "add-new-presence":"Lisää uusi esilläolo"
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}",
