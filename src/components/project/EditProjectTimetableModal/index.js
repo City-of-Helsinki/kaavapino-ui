@@ -744,8 +744,14 @@ class EditProjectTimeTableModal extends Component {
     const baseKeys = {
       "tarkistettu_ehdotus": "vahvista_tarkistettu_ehdotus_lautakunnassa",
       "ehdotus_pieni": "vahvista_ehdotus_esillaolo_pieni",
-      "ehdotus": "vahvista_ehdotus_esillaolo",
-      "oas": "vahvista_oas_esillaolo_alkaa"
+      "ehdotus_nahtavillaolokerta": "vahvista_ehdotus_esillaolo",
+      "ehdotus_esillaolo": "vahvista_ehdotus_esillaolo",
+      "ehdotus_lautakunta": "vahvista_kaavaehdotus_lautakunnassa",
+      "oas": "vahvista_oas_esillaolo_alkaa",
+      "periaatteet_esillaolokerta": "vahvista_periaatteet_esillaolo_alkaa",
+      "periaatteet_lautakuntakerta": "vahvista_periaatteet_lautakunnassa",
+      "luonnos_esillaolokerta": "vahvista_luonnos_esillaolo_alkaa",
+      "luonnos_lautakuntakerta": "vahvista_kaavaluonnos_lautakunnassa"
     };
 
     for (const key in baseKeys) {
@@ -755,8 +761,7 @@ class EditProjectTimeTableModal extends Component {
           confirmationKey = baseKeys[key];
         } else if (matchNumber) {
           // If number is bigger, construct the confirmationKey using the number
-          const number = `_${matchNumber[1]}`;
-          confirmationKey = `${baseKeys[key]}${number}`;
+          confirmationKey = `${baseKeys[key]}_${matchNumber}`;
         } else {
           // If no number, use the base key
           confirmationKey = baseKeys[key];
