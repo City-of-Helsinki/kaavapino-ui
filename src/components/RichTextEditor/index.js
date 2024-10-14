@@ -239,7 +239,7 @@ function RichTextEditor(props) {
   useEffect(() => {
     if (props.isTabActive){
       if (!saving && hadFocusBeforeTabOut) {
-        editorRef.current.editor.focus()
+        editorRef?.current?.editor.focus()
         setHadFocusBeforeTabOut(false)
       }
     }
