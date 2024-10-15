@@ -170,6 +170,12 @@ export const reducer = (state = initialState, action) => {
       if(field === "hyvaksymispaatos_pvm" && updatedAttributeData["hyvaksyminenvaihe_paattyy_pvm"]){
         updatedAttributeData["hyvaksyminenvaihe_paattyy_pvm"] = timeUtil.formatDate(newDateObj);
       }
+      if(field === "tullut_osittain_voimaan_pvm" || field === "voimaantulo_pvm" || field === "kumottu_pvm" || field === "rauennut"){
+        //Modify the end date of voimaantulovaihe if any of the dates are changed
+        if (updatedAttributeData["voimaantulovaihe_paattyy_pvm"] && new Date(newDate) > new Date(updatedAttributeData["voimaantulovaihe_paattyy_pvm"])) {
+          updatedAttributeData["voimaantulovaihe_paattyy_pvm"] = timeUtil.formatDate(newDateObj);
+        }
+      }
       // Update the specific date at the given field
       updatedAttributeData[field] = timeUtil.formatDate(newDateObj);
       //Iterate through deadlineSectionValues and match with keys in attribute_data
