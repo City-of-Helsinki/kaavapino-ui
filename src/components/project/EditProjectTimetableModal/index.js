@@ -679,9 +679,17 @@ class EditProjectTimeTableModal extends Component {
         }
       }
       else if(deadlines[i].deadline.deadline_types.includes('phase_end') && deadlines[i].deadline.date_type !== "Arkipäivät"){
-        endDate = formValues && formValues[deadlines[i].deadline.attribute]
+        if(deadlines[i].deadline.attribute === "voimaantulovaihe_paattyy_pvm"){
+          endDate = formValues && formValues["voimaantulovaihe_paattyy_pvm"] 
+          ? new Date(formValues["voimaantulovaihe_paattyy_pvm"]) 
+          : deadlines[i].date;
+        }
+        else{
+          endDate = formValues && formValues[deadlines[i].deadline.attribute]
           ? new Date(formValues[deadlines[i].deadline.attribute])
           : deadlines[i].date;
+        }
+
 
         if (endDate instanceof Date && !isNaN(endDate.getTime())) {
           endDate.setHours(12, 0, 0, 0);

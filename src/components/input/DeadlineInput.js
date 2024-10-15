@@ -197,12 +197,7 @@ const DeadLineInput = ({
         deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey].filter(section => section.type === "date" && section.display !== "readonly");
       }
       setCurrentValue(formattedDate)
-      if(field === "tullut_osittain_voimaan_pvm" || field === "voimaantulo_pvm" || field === "kumottu_pvm" || field === "rauennut"){
-        //Modify the end date of voimaantulovaihe if any of the dates are changed
-        if (attributeData["voimaantulovaihe_paattyy_pvm"] && new Date(formattedDate) > new Date(attributeData["voimaantulovaihe_paattyy_pvm"])) {
-          dispatch(updateDateTimeline("voimaantulovaihe_paattyy_pvm",formattedDate,deadlineSectionValues,false,false,deadlineSections));
-        }
-      }
+
       dispatch(updateDateTimeline(field,formattedDate,deadlineSectionValues,false,false,deadlineSections));
 
     } catch (error) {
