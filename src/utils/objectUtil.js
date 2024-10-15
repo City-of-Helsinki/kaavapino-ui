@@ -377,7 +377,7 @@ const getHighestNumberedObject = (obj1, arr) => {
           }
           else{
             //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
-            newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i - 1].key,arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,miniumGap) : newDate
+            newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,miniumGap) : newDate
           }
           // Update the array with the new date
           newDate.setDate(newDate.getDate());
