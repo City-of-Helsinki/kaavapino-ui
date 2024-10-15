@@ -60,7 +60,7 @@
     return daysDifference;
   }
 
-  const dateDifference = (prev,cur,previousValue, currentValue, allowedDays, holidays, miniumGap) => {
+  const dateDifference = (previousValue, currentValue, allowedDays, holidays, miniumGap) => {
     let previousDate = new Date(previousValue);
     let currentDate = new Date(currentValue);
     let gap = miniumGap;
