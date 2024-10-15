@@ -8,6 +8,7 @@ import { Button, IconArrowUp } from 'hds-react'
 import { withTranslation } from 'react-i18next'
 import { isEqual } from 'lodash'
 import PropTypes from 'prop-types'
+import projectUtils from '../../utils/projectUtils'
 
 class EditForm extends Component {
   componentWillUnmount() {
@@ -34,7 +35,8 @@ class EditForm extends Component {
     } = this.props
 
     if (prevProps.selectedPhase !== selectedPhase) {
-      const newInitialize = Object.assign(attributeData, geoServerData)
+      const newInitialize = Object.assign(attributeData,
+        projectUtils.getMissingGeoData(attributeData,geoServerData))
 
       initialize(newInitialize)
     }
@@ -44,7 +46,8 @@ class EditForm extends Component {
       !submitErrors &&
       Object.keys(submitErrors).length > 0
     ) {
-      const newInitialize = Object.assign(attributeData, geoServerData)
+      const newInitialize = Object.assign(attributeData,
+        projectUtils.getMissingGeoData(attributeData,geoServerData))
 
       initialize(newInitialize)
     }
@@ -53,7 +56,8 @@ class EditForm extends Component {
     }
 
     if (!isEqual(prevProps.attributeData, this.props.attributeData)) {
-      const newInitialize = Object.assign(attributeData, geoServerData)
+      const newInitialize = Object.assign(attributeData,
+        projectUtils.getMissingGeoData(attributeData,geoServerData))
 
       initialize(newInitialize, true)
     }

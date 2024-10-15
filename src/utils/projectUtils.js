@@ -530,6 +530,22 @@ const diffArrayObject = (array1, array2) => {
   })
 }
 
+// Returns entries of geoData if they are missing in att_data, or have truthy, non-zero values
+// Used so manually entered values don't get overwritten by invalid data from geoserver api (broken atm)
+const getMissingGeoData = (attData, geoData) => {
+  if (!geoData || typeof geoData !== 'object' || Array.isArray(geoData)){ 
+    return {}
+  }
+  const newGeoData = {}
+  for (const [key, value] of Object.entries(geoData)){
+    if (!(key in attData) || (value !== attData[key] && value && value !== "0.0")){
+      newGeoData[key] = value
+    }
+  }
+  return newGeoData
+}
+
+
 export default {
   formatDate,
   formatTime,
@@ -560,5 +576,6 @@ export default {
   isSceduleAccepted,
   objectsEqual,
   diffArray,
-  diffArrayObject
+  diffArrayObject,
+  getMissingGeoData
 }
