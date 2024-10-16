@@ -27,7 +27,8 @@ const DeadLineInput = ({
   deadlineSection,
   deadlineSections,
   confirmedValue,
-  sectionAttributes
+  sectionAttributes,
+  phase
 }) => {
 
   const dispatch = useDispatch();
@@ -189,22 +190,20 @@ const DeadLineInput = ({
       //Get date type objects and send them to reducer to be moved according to input date changed
       const dynamicKey = Object.keys(deadlineSection.deadlineSection)[0];
       let deadlineSectionValues
-      if(currentDeadline?.deadline?.phase_name === "Ehdotus" && (attributeData?.kaavaprosessin_kokoluokka === 'L' || attributeData?.kaavaprosessin_kokoluokka === 'XL')){
+      if(currentDeadline?.deadline?.phase_name === "Ehdotus" || phase === "Ehdotus" && (attributeData?.kaavaprosessin_kokoluokka === 'L' || attributeData?.kaavaprosessin_kokoluokka === 'XL')){
         //for some reason määräaika is on data when L XL nahtavillaolo even though it should never be, filter it out because it cannot be saved if not existing in backend
-        deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey].filter(section => section.type === "date" && section.display !== "readonly" && section.name !== "ehdotus_nahtaville_aineiston_maaraaika");
+        deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey].filter(section => section.type === "date" && section.display !== "readonly" && !section.name.includes("ehdotus_nahtaville_aineiston_maaraaika"));
       }
       else{
         deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey].filter(section => section.type === "date" && section.display !== "readonly");
       }
       setCurrentValue(formattedDate)
-
       dispatch(updateDateTimeline(field,formattedDate,deadlineSectionValues,false,false,deadlineSections));
 
     } catch (error) {
       console.error('Validation error:', error);
     }
   };
-
   return (
     <>
       <div className='deadline-input'>
@@ -215,7 +214,7 @@ const DeadLineInput = ({
           language='fi'
           initialMonth={getInitialMonth(currentValue ? currentValue : input.value)}
           isDateDisabledBy={isDisabledDate}
-          value={formatDateToYYYYMMDD(currentValue)}
+          value={formatDateToYYYYMMDD(currentValue ? currentValue : input.value)}
           name={input.name}
           type={type}
           disabled={disabledState}
