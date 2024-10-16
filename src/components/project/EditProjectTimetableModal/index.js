@@ -390,6 +390,39 @@ class EditProjectTimeTableModal extends Component {
     return [phaseData, deadLineGroups, nestedDeadlines];
   }
 
+  shouldAddSubgroup = (deadline, formValues) => {
+    if (!deadline.deadlinegroup){
+      console.warn("Deadline group missing for deadline " + deadline.attribute);
+      return false;
+    }
+    // Consider if most values could be just hardcoded as a map (+ iter number)
+
+    // Assumes group name = phase_type_iteration
+    const splitGroup = deadline.deadlinegroup.split('_');
+    const iteration = splitGroup.pop();
+    const subGroupType = splitGroup.pop() === 'esillaolokerta'? 'esillaolo' : 'lautakuntaan';
+    const phaseName = splitGroup.join('_');
+    if (subGroupType == 'esillaolo') {
+      if (["periaatteet", "oas", "luonnos"].includes(phaseName)){
+        if (iteration === '1' && phaseName == 'oas'){
+          return true;
+        }
+        const bool_attribute_name = ['jarjestetaan', phaseName, subGroupType, iteration].join('_');
+        const bool_attribute = formValues[bool_attribute_name];
+        return bool_attribute;
+      } else if (phaseName === "ehdotus"){
+        if (iteration === '1') {
+          return formValues['kaavaehdotus_nahtaville_1'];
+        }
+        return formValues['kaavaehdotus_uudelleen_nahtaville_' + iteration];
+      }
+    } else {
+      //TODO Lautakunnat
+      console.log(deadline.attribute + " not implemented");
+      return true;
+    }
+  }
+
   addSubgroup = (deadlines, i, numberOfPhases, dashStart, dashEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone) => {
     if(dashStart === null && milestone === null && dashEnd){
       phaseData.push({
@@ -500,7 +533,7 @@ class EditProjectTimeTableModal extends Component {
   }
 
   generateVisItems = (deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData) => {
-
+    console.log(deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData)
     let numberOfPhases
     let deadlineGroup
 
@@ -724,7 +757,7 @@ class EditProjectTimeTableModal extends Component {
         innerEnd = false
       } 
       else if(milestone && innerStart && innerEnd || innerStart && innerEnd){
-        if(formValues[deadlines[i].deadline.attribute]){
+        if(formValues[deadlines[i].deadline.attribute] && this.shouldAddSubgroup(deadlines[i].deadline, formValues)){
           let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, milestone);
           [phaseData, deadLineGroups, nestedDeadlines] = subgroup2;
         }
