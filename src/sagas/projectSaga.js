@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { takeLatest, put, all, call, select } from 'redux-saga/effects'
+import { takeLatest, put, all, call, select, takeEvery } from 'redux-saga/effects'
 import { isEqual, isEmpty, isArray } from 'lodash'
 import { push } from 'connected-react-router'
 import {
@@ -112,12 +112,18 @@ import {
   projectFileUploadSuccessful,
   GET_ATTRIBUTE_DATA,
   SET_ATTRIBUTE_DATA,
-  setAttributeData
+  setAttributeData,
+  FETCH_DISABLED_DATES_START,
+  fetchDisabledDatesSuccess,
+  fetchDisabledDatesFailure,
+  VALIDATE_DATE,
+  setDateValidationResult
 } from '../actions/projectActions'
 import { startSubmit, stopSubmit, setSubmitSucceeded } from 'redux-form'
 import { error } from '../actions/apiActions'
 import { setAllEditFields } from '../actions/schemaActions'
 import projectUtils from '../utils/projectUtils'
+import errorUtil from '../utils/errorUtil'
 import {
   projectApi,
   projectDeadlinesApi,
@@ -132,7 +138,9 @@ import {
   attributesApiUnlock,
   attributesApiUnlockAll,
   pingApi,
-  getAttributeDataApi
+  getAttributeDataApi,
+  projectDateTypesApi,
+  projectDateValidateApi
 } from '../utils/api'
 import { usersSelector } from '../selectors/userSelector'
 import {
@@ -192,10 +200,39 @@ export default function* projectSaga() {
     takeLatest(FETCH_ONHOLD_PROJECTS, fetchOnholdProjects),
     takeLatest(FETCH_ARCHIVED_PROJECTS, fetchArchivedProjects),
     takeLatest(GET_ATTRIBUTE_DATA, getAttributeData),
-    takeLatest(SET_ATTRIBUTE_DATA, setAttributeData)
+    takeLatest(SET_ATTRIBUTE_DATA, setAttributeData),
+    takeLatest(FETCH_DISABLED_DATES_START, getProjectDisabledDeadlineDates),
+    takeLatest(VALIDATE_DATE, validateDate)
   ])
 }
 
+function* validateDate({payload}) {
+  try {
+    const query = {
+      identifier: payload.field,
+      project: payload.projectName,
+      date: payload.date,
+    };
+    const result = yield call(projectDateValidateApi.get, { query });
+    const valid = result.conflicting_deadline === null && result.error_reason === null && result.suggested_date === null ? true : false;
+    yield put(setDateValidationResult(valid,result))
+  } catch (e) {
+    yield put(error(e))
+  }
+}
+
+export function* watchValidateDate() {
+  yield takeEvery(VALIDATE_DATE, validateDate);
+}
+
+function* getProjectDisabledDeadlineDates() {
+  try {
+    const dates = yield call(projectDateTypesApi.get);
+    yield put(fetchDisabledDatesSuccess(dates));
+  } catch (e) {
+    yield put(fetchDisabledDatesFailure(e));
+  }
+}
 
 function* getAttributeData(data) {
   const project_name = data.payload.projectName;
@@ -614,10 +651,10 @@ function* saveProjectFloorArea() {
       yield put(saveProjectFloorAreaSuccessful(true))
       yield put(setAllEditFields())
 
-      yield put(toastr.success(i18.t('messages.timelines-successfully-saved')))
+      toastr.success(i18.t('messages.timelines-successfully-saved'))
     } catch (e) {
       if (e?.code === "ERR_NETWORK") {
-        yield put(toastr.error(i18.t('messages.general-save-error')))
+        toastr.error(i18.t('messages.general-save-error'))
       }
       yield put(stopSubmit(EDIT_FLOOR_AREA_FORM, e.response && e.response.data))
     }
@@ -626,10 +663,9 @@ function* saveProjectFloorArea() {
 function* saveProjectTimetable() {
   yield put(startSubmit(EDIT_PROJECT_TIMETABLE_FORM))
 
-  const { initial, values, registeredFields } = yield select(
+  const { initial, values } = yield select(
     editProjectTimetableFormSelector
   )
-  const currentProject = yield select(currentProjectSelector)
   const currentProjectId = yield select(currentProjectIdSelector)
 
   if (values) {
@@ -638,17 +674,6 @@ function* saveProjectTimetable() {
     if(attribute_data.oikaisukehoituksen_alainen_readonly){
       delete attribute_data.oikaisukehoituksen_alainen_readonly
     }
-    
-    const deadlineAttributes = currentProject.deadline_attributes
-    
-    // Add missing fields as a null to payload since there are
-    // fields which can be hidden according the user selection. 
-    // If old values are left, it will break the timelines.
-    deadlineAttributes.forEach(attribute => {
-      if (!registeredFields[attribute]) {
-        attribute_data = { ...attribute_data, [attribute]: null }
-      }
-    })
 
     try {
       const updatedProject = yield call(
@@ -663,20 +688,28 @@ function* saveProjectTimetable() {
       yield put(setAllEditFields())
 
       if (!checkDeadlines(updatedProject.deadlines)) {
-        yield put(toastr.success(i18.t('messages.deadlines-successfully-saved')))
+        toastr.success(i18.t('messages.deadlines-successfully-saved'))
       } else {
-        yield put(
           toastr.warning(
             i18.t('messages.deadlines-successfully-saved'),
             i18.t('messages.check-timetable')
           )
-        )
       }
     } catch (e) {
       if (e?.code === "ERR_NETWORK") {
-        yield put(toastr.error(i18.t('messages.general-save-error')))
+        toastr.error(i18.t('messages.general-save-error'))
       }
-      yield put(stopSubmit(EDIT_PROJECT_TIMETABLE_FORM, e.response && e.response.data))
+      yield put(stopSubmit(EDIT_PROJECT_TIMETABLE_FORM, e?.response?.data))
+      // Get the error message string dynamically
+      const errorMessage = errorUtil.getErrorMessage(e?.response?.data);
+
+      // Display the error message in a toastr
+      toastr.error(i18.t('messages.general-save-error'), errorMessage, {
+        timeOut: 0,
+        removeOnHover: false,
+        showCloseButton: true,
+        className: 'large-scrollable-toastr rrt-error'
+      });
     }
   }
 }

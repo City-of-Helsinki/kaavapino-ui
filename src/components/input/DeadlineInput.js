@@ -1,16 +1,20 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { useTranslation } from 'react-i18next'
-import { TextInput, IconAlertCircle } from 'hds-react'
+import { TextInput, DateInput, IconAlertCircle } from 'hds-react'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
-import { useSelector } from 'react-redux'
+import timeUtil from '../../utils/timeUtil'
+import { useSelector,useDispatch } from 'react-redux'
 import { getFormValues } from 'redux-form'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
+import { updateDateTimeline } from '../../actions/projectActions';
+import { validatedSelector } from '../../selectors/projectSelector';
 
 const DeadLineInput = ({
   input,
   error,
+  attributeData,
   currentDeadline,
   editable,
   type,
@@ -18,41 +22,25 @@ const DeadLineInput = ({
   placeholder,
   className,
   autofillRule,
-  timeTableDisabled
+  timeTableDisabled,
+  dateTypes,
+  deadlineSection,
+  deadlineSections,
+  confirmedValue,
+  sectionAttributes,
+  phase
 }) => {
-  
+
+  const dispatch = useDispatch();
   const { t } = useTranslation()
-  let inputValue = input.value
-  if (autofillRule) {
-    const formValues = useSelector(getFormValues(EDIT_PROJECT_TIMETABLE_FORM))
-    
-    if (autofillRule && autofillRule.length > 0) {
-      inputValue = getFieldAutofillValue(
-        autofillRule,
-        formValues,
-        input.name,
-        EDIT_PROJECT_TIMETABLE_FORM
-      )
-    }
-  }
+  const validated = useSelector(validatedSelector);
+  const formValues = useSelector(getFormValues(EDIT_PROJECT_TIMETABLE_FORM))
+  const [currentValue, setCurrentValue] = useState("")
+  const [disabledState, setDisabledState] = useState(true)
 
-  if ( inputValue === null ) {
-    inputValue = ''
-  }
-  let currentDeadlineDate = ''
-
-  if ( currentDeadline && currentDeadline.date ) [
-    currentDeadlineDate = currentDeadline.date
-  ]
-
-  const [currentValue, setCurrentValue] = useState(
-    currentDeadline ? currentDeadlineDate : inputValue 
-  )
 
   let currentError
   const generated = currentDeadline && currentDeadline.generated
-
- 
 
   const [valueGenerated, setValueGenerated] = useState(generated)
 
@@ -85,30 +73,198 @@ const DeadLineInput = ({
     currentClassName = `${currentClassName} error-border`
   }
 
+  useEffect(() => {
+    let inputValue = input.value
+    if (autofillRule) {
+      
+      if (autofillRule && autofillRule.length > 0) {
+        inputValue = getFieldAutofillValue(
+          autofillRule,
+          formValues,
+          input.name,
+          EDIT_PROJECT_TIMETABLE_FORM
+        )
+      }
+    }
+
+    if ( inputValue === null ) {
+      inputValue = ''
+    }
+    let currentDeadlineDate = ''
+    const index = input.name.match(/\d+/);
+    const indexString = index ? "_"+index[0] : '';
+  
+    if(currentDeadline?.deadline?.attribute && attributeData[currentDeadline.deadline.attribute]){
+      currentDeadlineDate = attributeData[currentDeadline.deadline.attribute]
+    }
+    else if(input.name === 'luonnosaineiston_maaraaika'+indexString && attributeData['kaavaluonnos_kylk_aineiston_maaraaika'+indexString]){
+      inputValue = attributeData['kaavaluonnos_kylk_aineiston_maaraaika'+indexString]
+    }
+    else if (currentDeadline?.date) {
+      currentDeadlineDate = currentDeadline.date
+    }
+    else if(input.name === "hyvaksymispaatos_pvm" && attributeData["hyvaksyminenvaihe_paattyy_pvm"]){
+      attributeData["hyvaksyminenvaihe_paattyy_pvm"] = inputValue === '' ? attributeData["hyvaksyminenvaihe_paattyy_pvm"] : inputValue
+    }
+    else if(input.name === "tullut_osittain_voimaan_pvm" || input.name === "voimaantulo_pvm" || input.name === "kumottu_pvm" || input.name === "rauennut"){
+      //Modify the end date of voimaantulovaihe if any of the dates are changed
+      if (new Date(inputValue) > new Date(attributeData["voimaantulovaihe_paattyy_pvm"])) {
+        attributeData["voimaantulovaihe_paattyy_pvm"] = inputValue
+      }
+    }
+
+    setCurrentValue(currentDeadline ? currentDeadlineDate : inputValue )
+    setDisabledState(typeof timeTableDisabled !== "undefined" ? timeTableDisabled : disabled)
+  },[])
+
+  useEffect(() => {
+    //Update calendar values when value has changed
+    if(currentValue !== input.value){
+      setCurrentValue(input.value); 
+    }
+  }, [input.value,formValues])
+
+  useEffect(() => {
+    setDisabledState(formValues[confirmedValue])
+  },[formValues[confirmedValue]])
+
+  const getInitialMonth = (dateString) => {
+    let date;
+    if (dateString) {
+        date = new Date(dateString);
+    }
+    else if(attributeData['voimaantulovaihe_paattyy_pvm'] && (input.name === "tullut_osittain_voimaan_pvm" || input.name === "voimaantulo_pvm" || input.name === "kumottu_pvm" || input.name === "rauennut")){
+      date = new Date(attributeData['voimaantulovaihe_paattyy_pvm']);
+    }
+    else if(input.name === "hyvaksymispaatos_pvm" && attributeData["hyvaksyminenvaihe_paattyy_pvm"]){
+      date = new Date(attributeData['hyvaksyminenvaihe_paattyy_pvm']);
+    }
+    else {
+        date = new Date(); // Use current date if no date string is provided
+    }
+    return date;
+  }
+
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    // Pad the month and day with leading zeros if needed
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  }
+
+  
+
+  const isDisabledDate = (date) => {
+    //20 years is the calendars range to check work days, holidays etc from current date
+    const twentyYearsAgo = new Date();
+    twentyYearsAgo.setFullYear(twentyYearsAgo.getFullYear() - 20);
+    const twentyYearsLater = new Date();
+    twentyYearsLater.setFullYear(twentyYearsLater.getFullYear() + 20);
+    const ehdotusNahtavillaolo = currentDeadline?.deadline?.phase_name === "Ehdotus" && currentDeadline?.deadline?.deadlinegroup?.includes('nahtavillaolo')
+    const datesToDisable = timeUtil.calculateDisabledDates(ehdotusNahtavillaolo,attributeData?.kaavaprosessin_kokoluokka,dateTypes,input.name,formValues,sectionAttributes,currentDeadline)
+    if (date < twentyYearsAgo || date > twentyYearsLater) {
+      return false;
+    }
+    return !datesToDisable.includes(formatDate(date));
+  }
+
+  const formatDateToYYYYMMDD = (date) => {
+    if(typeof date !== 'object' && date?.includes('.')){
+      const dateParts = date.split(".");
+      const eventDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
+      const year = eventDate.getFullYear();
+      const month = ("0" + (eventDate.getMonth() + 1)).slice(-2); // Months are 0-based, so add 1 and pad with 0 if necessary
+      const day = ("0" + eventDate.getDate()).slice(-2); // Pad with 0 if necessary
+      return `${year}-${month}-${day}`;
+    }
+     else {
+      return date;
+    }
+  };
+
+  const handleDateChange = (formattedDate) => {
+    try {
+      let field = input.name;
+      //Get date type objects and send them to reducer to be moved according to input date changed
+      const dynamicKey = Object.keys(deadlineSection.deadlineSection)[0];
+      let deadlineSectionValues
+      if(currentDeadline?.deadline?.phase_name === "Ehdotus" || phase === "Ehdotus" && (attributeData?.kaavaprosessin_kokoluokka === 'L' || attributeData?.kaavaprosessin_kokoluokka === 'XL')){
+        //for some reason määräaika is on data when L XL nahtavillaolo even though it should never be, filter it out because it cannot be saved if not existing in backend
+        deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey].filter(section => section.type === "date" && section.display !== "readonly" && !section.name.includes("ehdotus_nahtaville_aineiston_maaraaika"));
+      }
+      else{
+        deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey].filter(section => section.type === "date" && section.display !== "readonly");
+      }
+      setCurrentValue(formattedDate)
+      dispatch(updateDateTimeline(field,formattedDate,deadlineSectionValues,false,false,deadlineSections));
+
+    } catch (error) {
+      console.error('Validation error:', error);
+    }
+  };
   return (
-    <div className='deadline-input'>
-      <TextInput
-        value={currentValue}
-        name={input.name}
-        type={type}
-        disabled={typeof timeTableDisabled !== "undefined" ? timeTableDisabled : disabled}
-        placeholder={placeholder}
-        error={error}
-        aria-label={input.name}
-        onChange={event => {
-          const value = event.target.value
-          setCurrentValue(value)
-          input.onChange(value)
-        }}
-        className={currentClassName}
-        onBlur={() => {
-          if (input.value !== input.defaultValue) {
-            setValueGenerated(false)
-          } else {
-            setValueGenerated(true)
-          }
-        }}
-      />
+    <>
+      <div className='deadline-input'>
+        {type === 'date' ?
+        !validated ?
+        <DateInput
+          readOnly
+          language='fi'
+          initialMonth={getInitialMonth(currentValue ? currentValue : input.value)}
+          isDateDisabledBy={isDisabledDate}
+          value={formatDateToYYYYMMDD(currentValue ? currentValue : input.value)}
+          name={input.name}
+          type={type}
+          disabled={disabledState}
+          placeholder={placeholder}
+          error={error}
+          aria-label={input.name}
+          onChange={(event) => {
+            let formattedDate
+            const dateString = event;
+            if (dateString.includes('.')) {
+              formattedDate = formatDateToYYYYMMDD(dateString);
+            } else {
+              formattedDate = dateString;
+            }
+            handleDateChange(formattedDate);
+          }}
+          className={currentClassName}
+          onBlur={() => {
+            if (input.value !== input.defaultValue) {
+              setValueGenerated(false)
+            } else {
+              setValueGenerated(true)
+            }
+          }}
+        /> : "Ladataan..."
+        :
+          <TextInput
+            value={currentValue}
+            name={input.name}
+            type={type}
+            disabled={typeof timeTableDisabled !== "undefined" ? timeTableDisabled : disabled}
+            placeholder={placeholder}
+            error={error}
+            aria-label={input.name}
+            onChange={event => {
+              const value = event.target.value
+              setCurrentValue(value)
+              input.onChange(value)
+            }}
+            className={currentClassName}
+            onBlur={() => {
+              if (input.value !== input.defaultValue) {
+                setValueGenerated(false)
+              } else {
+                setValueGenerated(true)
+              }
+            }}
+          />
+        }
+      </div>
       {editable && valueGenerated ? (
         <span className="deadline-estimated">{t('deadlines.estimated')}</span>
       ) : (
@@ -119,13 +275,44 @@ const DeadLineInput = ({
           <IconAlertCircle size="xs" /> {currentError}{' '}
         </div>
       )}
-    </div>
+{/*       {warning.warning && (
+        <Notification label={warning.response.reason} type="alert" style={{marginTop: 'var(--spacing-s)'}}>
+        Seuraavien päivämäärien siirtäminen ei ole mahdollista, koska minimietäisyys viereisiin etappeihin on täyttynyt.
+        {warning.response.conflicting_deadline}. Asetettu seuraava kelvollinen päivä {warning.response.suggested_date}</Notification>
+      )} */}
+    </>
   )
 }
 
 DeadLineInput.propTypes = {
   input: PropTypes.object.isRequired,
-  timeTableDisabled: PropTypes.bool
+  error: PropTypes.string,
+  attributeData: PropTypes.object,
+  currentDeadline: PropTypes.object,
+  editable: PropTypes.bool,
+  type: PropTypes.string,
+  disabled: PropTypes.bool,
+  placeholder: PropTypes.string,
+  className: PropTypes.string,
+  autofillRule: PropTypes.array,
+  timeTableDisabled: PropTypes.bool,
+  dateTypes: PropTypes.object,
+  deadlineSection: PropTypes.object,
+  maxMoveGroup: PropTypes.oneOfType([
+    PropTypes.object,
+    PropTypes.string
+  ]),
+  maxDateToMove: PropTypes.string,
+  groupName: PropTypes.string,
+  visGroups: PropTypes.array,
+  visItems: PropTypes.array,
+  deadlineSections: PropTypes.array,
+  confirmedValue: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.bool,
+  ]),
+  sectionAttributes: PropTypes.array
 }
 
 export default DeadLineInput

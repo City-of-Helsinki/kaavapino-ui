@@ -6,10 +6,11 @@ import { useSelector, useDispatch } from 'react-redux'
 import dayjs from 'dayjs'
 import { isNumber, isBoolean, isArray } from 'lodash'
 import PropTypes from 'prop-types'
+import { Notification } from 'hds-react'
 
 const DeadlineInfoText = props => {
   const formValues = useSelector(getFormValues(EDIT_PROJECT_TIMETABLE_FORM))
-  let inputValue = props.input && props.input.value
+  let inputValue = props.input?.value
   let readonlyValue
 
   const [current, setCurrent] = useState()
@@ -61,34 +62,60 @@ const DeadlineInfoText = props => {
     }
   }, [])
 
-  let value
-
-  if (isNumber(current) || isBoolean(current)) {
-    value = current
-  } else {
-    // Expect date in value
-    value = current && dayjs(current).format('DD.MM.YYYY')
-    if (value === 'Invalid Date') {
-      if(isArray(current) && props?.fieldData?.autofill_readonly && props?.fieldData?.type === "readonly" && props?.fieldData?.unit === "päivää"){
-        //Fixes situation if int has at somepoint on old project been converted to date/array of some sort because of bug and converts it back to int
-        value = props?.meta?.initial
-      }
-      else{
-        value = current
-      }
-    }
+  const calculateDaysBetweenDates = (startDate, endDate) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const differenceInMilliseconds = end - start;
+    const differenceInDays = differenceInMilliseconds / (1000 * 60 * 60 * 24);
+    return differenceInDays;
   }
 
-  return (
-    <div name={props.input.name} className="deadline-info-text">
-      {props.label} {value}
-    </div>
+  const determineFieldValue = (current, props) => {
+
+    if (isNumber(current) || isBoolean(current)) {
+      return current
+    }
+
+    if(props.input.name.includes("nahtavillaolopaivien_lukumaara")){
+      const regex = /_x(\d+)/;
+      const match = props.input.name.match(regex);
+      const index = match ? "_"+match[1] : "";
+      let start = formValues["milloin_ehdotuksen_nahtavilla_alkaa_iso"+index] ?? formValues["milloin_ehdotuksen_nahtavilla_alkaa_pieni"+index]
+      let end = formValues["milloin_ehdotuksen_nahtavilla_paattyy"+index]
+      return calculateDaysBetweenDates(start, end)
+    }
+    // Expect date in value
+    const dateValue = current && dayjs(current).format('DD.MM.YYYY')
+    if (dateValue === 'Invalid Date') {
+      if(isArray(current) && props?.fieldData?.autofill_readonly && props?.fieldData?.type === "readonly" && props?.fieldData?.unit === "päivää"){
+        //Fixes situation if int has at somepoint on old project been converted to date/array of some sort because of bug and converts it back to int
+        return props?.meta?.initial
+      }
+      return current
+    }
+    return dateValue
+  }
+
+  const value = determineFieldValue(current, props)
+
+  return (props.input.name.includes("nahtavillaolopaivien_lukumaara") ? 
+    <p className="deadline-info-readonlytext">{props.label}: {value} pv </p>
+    : <Notification className='deadline-info-notification' size="small" label={props.input.name} >{props.label} {value}</Notification>
   )
 }
 
 DeadlineInfoText.propTypes = {
   fieldData:PropTypes.object,
   meta: PropTypes.object,
+  input: PropTypes.shape({
+    value: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number,
+      PropTypes.bool,
+    ]),
+    name: PropTypes.string,
+  }),
+  label: PropTypes.string,
 }
 
 export default DeadlineInfoText
