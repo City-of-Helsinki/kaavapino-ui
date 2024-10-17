@@ -67,6 +67,7 @@
     if(gap === 45){
       gap = 5
     }
+    gap = gap + 1
     // Check if the previous date is greater than or equal to the current date
     if (previousDate >= currentDate) {
       // Set the previous date to the current date and add the miniumGap
@@ -75,7 +76,7 @@
     }
     // Ensure the final date is in allowedDays and not in holidays
     let dateStr = currentDate.toISOString().split('T')[0]; // Convert to YYYY-MM-DD format
-    while (!allowedDays.includes(dateStr) || holidays.includes(dateStr) || calculateWeekdayDifference(previousDate, currentDate) < gap) {
+    while (!allowedDays.includes(dateStr) || holidays.includes(dateStr) || calculateWeekdayDifference(previousDate, currentDate) <= gap) {
       currentDate.setDate(currentDate.getDate() + 1); // Increment the date by one day
       dateStr = currentDate.toISOString().split('T')[0]; // Update dateStr to the new date
     }
