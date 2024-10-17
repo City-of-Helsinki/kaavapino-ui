@@ -1,12 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal } from 'semantic-ui-react';
-import { Button,IconInfoCircle } from 'hds-react';
+import { Button,IconAlertCircle } from 'hds-react';
 
 function ConfirmModal({ openConfirmModal,headerText, contentText, button1Text, button2Text, onButtonPress1, onButtonPress2, style, buttonStyle1, buttonStyle2 }) {
   return (
     <Modal open={openConfirmModal} className={style}>
-      <Modal.Header><IconInfoCircle className='header-icon' size="s" aria-hidden="true"/>{headerText}</Modal.Header>
+      <Modal.Header><IconAlertCircle className='header-icon' size="s" aria-hidden="true"/><span className='header-text'>{headerText}</span></Modal.Header>
       <Modal.Content>
         {contentText}
       </Modal.Content>

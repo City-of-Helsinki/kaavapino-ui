@@ -1101,10 +1101,16 @@ header{
   top: 0;
   margin: auto;
   max-width: 558px;
-  max-height: 245px;
-  border-top:4px solid $color-error;
+  min-height: 200px;
+  height: fit-content;
+  max-height: 250px;
+  border-top:8px solid $color-error;
 
   .header{
+    padding-top: $size34 !important;
+    padding-left: $size34 !important;
+    padding-bottom: $size16 !important;
+    border-bottom: none;
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -1115,23 +1121,30 @@ header{
     letter-spacing: 0.004em;
     text-align: left;
     color: $black1;
-    padding-top: 0;
+    .header-text {
+      margin-left: 8px;
+    }
     .header-icon{
       width: $size24;
       height: $size24;
     }
   }
 
-  .header, .content, .actions {
-    padding-left: $size32 !important;
-    margin-left: $size16 !important;
-    margin-bottom: $size24 !important;
-    margin-top: $size24 !important;
+  .content {
+    font-weight: 400;
+    font-size: $size16;
+    line-height: $size24;
+    padding-left: $size34 !important;
+    margin-left: 0 !important;
   }
 
   .actions {
     display: flex;
     justify-content: flex-start;
+    margin: 0 !important;
+    padding-left: $size34 !important;
+    padding-top: $size16 !important;
+    padding-bottom: $size24 !important;
 
     .button-primary,.button-danger,.button-secondary {
       margin-right: $size16;
