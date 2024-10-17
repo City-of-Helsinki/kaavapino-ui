@@ -395,13 +395,12 @@ class EditProjectTimeTableModal extends Component {
       console.warn("Deadline group missing for deadline " + deadline.attribute);
       return false;
     }
-    // Consider if most values could be just hardcoded as a map (+ iter number)
-
     // Assumes group name = phase_type_iteration
     const splitGroup = deadline.deadlinegroup.split('_');
     const iteration = splitGroup.pop();
-    const subGroupType = splitGroup.pop() === 'esillaolokerta'? 'esillaolo' : 'lautakuntaan';
+    const subGroupType = ['esillaolokerta', 'nahtavillaolokerta'].includes(splitGroup.pop())? 'esillaolo' : 'lautakuntaan';
     const phaseName = splitGroup.join('_');
+
     if (subGroupType == 'esillaolo') {
       if (["periaatteet", "oas", "luonnos"].includes(phaseName)){
         if (iteration === '1' && phaseName == 'oas'){
@@ -416,11 +415,16 @@ class EditProjectTimeTableModal extends Component {
         }
         return formValues['kaavaehdotus_uudelleen_nahtaville_' + iteration];
       }
-    } else {
-      //TODO Lautakunnat
-      console.log(deadline.attribute + " not implemented");
-      return true;
+    } else if (iteration == '1'){ // Bool don't exist for iterations after 1. Nice! Handled in generateVisValues
+      if (phaseName === 'tarkistettu_ehdotus'){
+        return true // Bool missing from data. Despite being in excel. No problem!
+      }
+      const attributePhaseName = ['ehdotus', 'luonnos'].includes(phaseName)? 'kaava' + phaseName : phaseName;
+      const bool_attribute = formValues[`${attributePhaseName}_lautakuntaan_1`];
+      return bool_attribute;
     }
+    console.warn(deadline.attribute + " not implemented in shouldAddSubgroup");
+    return false;
   }
 
   addSubgroup = (deadlines, i, numberOfPhases, dashStart, dashEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone) => {
@@ -756,9 +760,9 @@ class EditProjectTimeTableModal extends Component {
         }
         innerEnd = false
       } 
-      else if(milestone && innerStart && innerEnd || innerStart && innerEnd){
+      else if(innerStart && innerEnd){
         if(formValues[deadlines[i].deadline.attribute] && this.shouldAddSubgroup(deadlines[i].deadline, formValues)){
-          let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, milestone);
+          let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, milestone?milestone:null);
           [phaseData, deadLineGroups, nestedDeadlines] = subgroup2;
         }
         innerStart = false;
