@@ -178,49 +178,6 @@ export const reducer = (state = initialState, action) => {
       }
       // Update the specific date at the given field
       updatedAttributeData[field] = timeUtil.formatDate(newDateObj);
-      //Iterate through deadlineSectionValues and match with keys in attribute_data
-      // deadlineSectionValues is not used when adding new groups to timeline
-      if(deadlineSectionValues){
-        // Calculate the difference in days between the new date and the current date
-        const daysDifference = (newDateObj - current) / (1000 * 60 * 60 * 24);
-        let initialDistance
-        deadlineSectionValues.forEach(section => {
-          const matchingKey = section.name;  // Get the name to match the key in attribute_data
-          if (matchingKey !== field) {  // Avoid updating the already changed field
-            let dateType = "esilläolopäivät"
-            let type = "esilläolopäivät"
-            //Date types determinate what dates can or cannot be selected
-            if(matchingKey.includes("_lautakunnassa")){
-              dateType = "lautakunnan_kokouspäivät"
-              type = "lautakunta"
-              initialDistance = section?.initial_distance?.distance
-            }
-            else if(matchingKey.includes("_maaraaika")){
-              if(section.name.includes("kylk_aineiston_maaraaika") || section.name.includes("kylk_maaraaika") || section.name.includes("lautakunta_aineiston_maaraaika")){
-                type = "lautakunta_määräaika"
-                initialDistance = 22
-              }
-              else{
-                type = "esilläolopäivät"
-              }
-              dateType = "työpäivät"
-            }
-            else if(matchingKey.includes("_nahtavilla") || matchingKey.includes("_lausunnot")){
-              dateType = "arkipäivät"
-              type = "arkipäivät"
-            }
-            //Check matching key and field and determine is matching key allowed to be moved when field is moved
-            if (daysDifference > 0 && !(matchingKey.includes("_paattyy") && field.includes("projektin_kaynnistys_pvm")) && !(matchingKey.includes("_alkaa") && field.includes("_paattyy")) && !(matchingKey.includes("kaynnistys_pvm") && field.includes("_paattyy"))  && !(field.includes("_alkaa") && matchingKey.includes("_paattyy")) && !(field.includes("_paattyy") && matchingKey.includes("_maaraaika"))) {
-              // Move matchingKey days forward
-              updatedAttributeData[matchingKey] = timeUtil.addDays(type,updatedAttributeData[matchingKey], daysDifference, state.disabledDates.date_types[dateType].dates,true,updatedAttributeData[field],state.disabledDates,initialDistance);
-            } 
-            else if (daysDifference < 0 && !(matchingKey.includes("_paattyy") && field.includes("projektin_kaynnistys_pvm")) && !(field.includes("_alkaa") && matchingKey.includes("_paattyy")) && !(field.includes("_paattyy") && matchingKey.includes("_alkaa")) && !(field.includes("_paattyy") && matchingKey.includes("_maaraaika"))) {
-              // Move matchingKey days backward
-              updatedAttributeData[matchingKey] = timeUtil.subtractDays(type,updatedAttributeData[matchingKey], -daysDifference, state.disabledDates.date_types[dateType].dates,true,updatedAttributeData[field],state.disabledDates,initialDistance);
-            }
-          }
-        });
-      }
       // Generate array from updatedAttributeData for comparison
       const updateAttributeArray = objectUtil.generateDateStringArray(updatedAttributeData)
       //Compare for changes with dates in order sorted array
