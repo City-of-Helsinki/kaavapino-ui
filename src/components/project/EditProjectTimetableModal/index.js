@@ -402,22 +402,19 @@ class EditProjectTimeTableModal extends Component {
     const phaseName = splitGroup.join('_');
 
     if (is_esillaolo) {
+      if (iteration === '1' && ['oas','ehdotus'].includes(phaseName)){
+        return true;
+      }
       if (["periaatteet", "oas", "luonnos"].includes(phaseName)){
-        if (iteration === '1' && phaseName === 'oas'){
-          return true;
-        }
         const bool_attribute_name = ['jarjestetaan', phaseName, 'esillaolo', iteration].join('_');
         return formValues[bool_attribute_name];
       } else if (phaseName === "ehdotus"){
-        if (iteration === '1') {
-          return formValues['kaavaehdotus_nahtaville_1'];
-        }
         return formValues['kaavaehdotus_uudelleen_nahtaville_' + iteration];
       }
     } else if (iteration == '1') {
-       // Bool don't exist for iterations after 1. Nice! Handled in generateVisValues
+       // Bools don't exist for iterations after 1. Nice! Handled in generateVisValues
       if (phaseName === 'tarkistettu_ehdotus') {
-        return true // Bool missing from data. Despite being in excel. No problem!
+        return true
       }
       const attributePhaseName = ['ehdotus', 'luonnos'].includes(phaseName)? 'kaava' + phaseName : phaseName;
       return formValues[`${attributePhaseName}_lautakuntaan_1`];
