@@ -537,7 +537,6 @@ class EditProjectTimeTableModal extends Component {
   }
 
   generateVisItems = (deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData) => {
-    console.log(deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData)
     let numberOfPhases
     let deadlineGroup
 
