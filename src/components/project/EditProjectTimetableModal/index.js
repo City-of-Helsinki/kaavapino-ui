@@ -398,30 +398,29 @@ class EditProjectTimeTableModal extends Component {
     // Assumes group name = phase_type_iteration
     const splitGroup = deadline.deadlinegroup.split('_');
     const iteration = splitGroup.pop();
-    const subGroupType = ['esillaolokerta', 'nahtavillaolokerta'].includes(splitGroup.pop())? 'esillaolo' : 'lautakuntaan';
+    const is_esillaolo = ['esillaolokerta', 'nahtavillaolokerta'].includes(splitGroup.pop());
     const phaseName = splitGroup.join('_');
 
-    if (subGroupType == 'esillaolo') {
+    if (is_esillaolo) {
       if (["periaatteet", "oas", "luonnos"].includes(phaseName)){
-        if (iteration === '1' && phaseName == 'oas'){
+        if (iteration === '1' && phaseName === 'oas'){
           return true;
         }
-        const bool_attribute_name = ['jarjestetaan', phaseName, subGroupType, iteration].join('_');
-        const bool_attribute = formValues[bool_attribute_name];
-        return bool_attribute;
+        const bool_attribute_name = ['jarjestetaan', phaseName, 'esillaolo', iteration].join('_');
+        return formValues[bool_attribute_name];
       } else if (phaseName === "ehdotus"){
         if (iteration === '1') {
           return formValues['kaavaehdotus_nahtaville_1'];
         }
         return formValues['kaavaehdotus_uudelleen_nahtaville_' + iteration];
       }
-    } else if (iteration == '1'){ // Bool don't exist for iterations after 1. Nice! Handled in generateVisValues
-      if (phaseName === 'tarkistettu_ehdotus'){
+    } else if (iteration == '1') {
+       // Bool don't exist for iterations after 1. Nice! Handled in generateVisValues
+      if (phaseName === 'tarkistettu_ehdotus') {
         return true // Bool missing from data. Despite being in excel. No problem!
       }
       const attributePhaseName = ['ehdotus', 'luonnos'].includes(phaseName)? 'kaava' + phaseName : phaseName;
-      const bool_attribute = formValues[`${attributePhaseName}_lautakuntaan_1`];
-      return bool_attribute;
+      return formValues[`${attributePhaseName}_lautakuntaan_1`];
     }
     console.warn(deadline.attribute + " not implemented in shouldAddSubgroup");
     return false;
