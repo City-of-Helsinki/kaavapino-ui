@@ -5,6 +5,18 @@
       return day === 0 || day === 6; // 0 = Sunday, 6 = Saturday
   };
 
+  const getHighestDate = (attributeValues) => {
+    const datesToCompare = ["tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauennut"]
+    .map(dateField => attributeValues[dateField])
+    .filter(date => date)
+    .map(date => new Date(date));
+    let highestDate = datesToCompare.length ? new Date(Math.max(...datesToCompare)) : null;
+    if (highestDate) {
+      highestDate = formatDate(highestDate,false,false);
+    }
+    return highestDate
+  }
+
   // Helper function to format a Date object to "YYYY-MM-DD"
   const formatDate = (date,addDay,addDayNumber) => {
     if(addDay){
@@ -553,5 +565,6 @@ export default {
     isDate,
     calculateWeekdayDifference,
     isHoliday,
-    calculateDisabledDates
+    calculateDisabledDates,
+    getHighestDate
 }

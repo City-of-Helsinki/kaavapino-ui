@@ -172,7 +172,7 @@ class EditProjectTimeTableModal extends Component {
               }
               //Dispatch added values to move other values in projectReducer if miniums are reached
               if(field && formattedDate){
-                this.props.dispatch(updateDateTimeline(field,formattedDate,false,formValues,true,deadlineSections));
+                this.props.dispatch(updateDateTimeline(field,formattedDate,formValues,true,deadlineSections));
               }
             }
             this.setState({visValues:formValues})
