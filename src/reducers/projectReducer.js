@@ -151,7 +151,7 @@ export const reducer = (state = initialState, action) => {
   switch (action.type) {
 
     case UPDATE_DATE_TIMELINE: {
-      const { field, newDate, deadlineSectionValues, formValues, isAdd, deadlineSections } = action.payload;
+      const { field, newDate, formValues, isAdd, deadlineSections } = action.payload;
 
       // Create a copy of the state and attribute_data
       let updatedAttributeData
@@ -166,18 +166,20 @@ export const reducer = (state = initialState, action) => {
       //Sort array by date
       const origSortedData = timeUtil.sortObjectByDate(updatedAttributeData);
       const newDateObj = new Date(newDate);
-      const current = new Date(updatedAttributeData[field]);
+      // Update the specific date at the given field
+      updatedAttributeData[field] = timeUtil.formatDate(newDateObj);
       if(field === "hyvaksymispaatos_pvm" && updatedAttributeData["hyvaksyminenvaihe_paattyy_pvm"]){
         updatedAttributeData["hyvaksyminenvaihe_paattyy_pvm"] = timeUtil.formatDate(newDateObj);
       }
-      if(field === "tullut_osittain_voimaan_pvm" || field === "voimaantulo_pvm" || field === "kumottu_pvm" || field === "rauennut"){
-        //Modify the end date of voimaantulovaihe if any of the dates are changed
-        if (updatedAttributeData["voimaantulovaihe_paattyy_pvm"] && new Date(newDate) > new Date(updatedAttributeData["voimaantulovaihe_paattyy_pvm"])) {
-          updatedAttributeData["voimaantulovaihe_paattyy_pvm"] = timeUtil.formatDate(newDateObj);
+      if (field === "tullut_osittain_voimaan_pvm" || field === "voimaantulo_pvm" || field === "kumottu_pvm" || field === "rauennut") {
+        // Find the highest date among the specified fields
+        const highestDate = timeUtil.getHighestDate(updatedAttributeData);
+        // Modify the end date of voimaantulovaihe if any of the dates are changed and the new date is higher
+        if ((highestDate) || (!highestDate && newDate)) {
+          const higherDate = highestDate ? highestDate : newDate;
+          updatedAttributeData["voimaantulovaihe_paattyy_pvm"] = higherDate;
         }
       }
-      // Update the specific date at the given field
-      updatedAttributeData[field] = timeUtil.formatDate(newDateObj);
       // Generate array from updatedAttributeData for comparison
       const updateAttributeArray = objectUtil.generateDateStringArray(updatedAttributeData)
       //Compare for changes with dates in order sorted array
