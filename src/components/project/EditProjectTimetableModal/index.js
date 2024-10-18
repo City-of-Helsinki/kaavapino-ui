@@ -411,16 +411,13 @@ class EditProjectTimeTableModal extends Component {
       } else if (phaseName === "ehdotus"){
         return formValues['kaavaehdotus_uudelleen_nahtaville_' + iteration];
       }
-    } else if (iteration == '1') {
-       // Bools don't exist for iterations after 1. Nice! Handled in generateVisValues
-      if (phaseName === 'tarkistettu_ehdotus') {
-        return true
+    } else {
+      if (phaseName === 'tarkistettu_ehdotus' && iteration == '1') {
+        return true; // Bool missing from backend, but is always true
       }
       const attributePhaseName = ['ehdotus', 'luonnos'].includes(phaseName)? 'kaava' + phaseName : phaseName;
-      return formValues[`${attributePhaseName}_lautakuntaan_1`];
+      return formValues[`${attributePhaseName}_lautakuntaan_` + iteration];
     }
-    console.warn(deadline.attribute + " not implemented in shouldAddSubgroup");
-    return false;
   }
 
   addSubgroup = (deadlines, i, numberOfPhases, dashStart, dashEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone) => {
@@ -535,6 +532,7 @@ class EditProjectTimeTableModal extends Component {
   generateVisItems = (deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData) => {
     let numberOfPhases
     let deadlineGroup
+    let deadline
 
     let startDate = false
     let endDate = false
@@ -552,49 +550,50 @@ class EditProjectTimeTableModal extends Component {
     const currentDate = new Date(currentDateString);
 
     for (let i = 0; i < deadlines.length; i++) {
-      numberOfPhases = deadlines[i].deadline.index
-      deadlineGroup = deadlines[i].deadline.deadlinegroup;
+      deadline = deadlines[i].deadline
+      numberOfPhases = deadline.index
+      deadlineGroup = deadline.deadlinegroup;
 
-      if(deadlines[i].deadline.deadline_types.includes('phase_start')){
+      if(deadline.deadline_types.includes('phase_start')){
         //Special case for project start date
-        if(deadlines[i].deadline.attribute === null && deadlines[i].abbreviation === "K1"){
+        if(deadline.attribute === null && deadlines[i].abbreviation === "K1"){
           startDate = formValues && formValues["projektin_kaynnistys_pvm"]
             ? new Date(formValues["projektin_kaynnistys_pvm"])
             : new Date(deadlines[i].date);
           startDate.setHours(0, 0, 0, 0);
         }
         else{
-          //If formValues has deadlines[i].deadline.attribute use that values, it if not then use deadline[i].date in startDate.
-          startDate = formValues && formValues[deadlines[i].deadline.attribute]
-            ? new Date(formValues[deadlines[i].deadline.attribute])
+          //If formValues has deadline.attribute use that values, it if not then use deadline[i].date in startDate.
+          startDate = formValues && formValues[deadline.attribute]
+            ? new Date(formValues[deadline.attribute])
             : new Date(deadlines[i].date);
           startDate.setHours(0, 0, 0, 0);
         }
 
-        style = deadlines[i].deadline.phase_color
+        style = deadline.phase_color
       }
       else if(deadlines[i]?.deadline?.attribute?.includes("esillaolo") || deadlines[i]?.deadline?.attribute?.includes("luonnosaineiston_maaraaika")){
-        if(deadlines[i].deadline.deadline_types.includes('milestone') && deadlines[i].deadline.deadline_types.includes('dashed_start')){
-          milestone = formValues && formValues[deadlines[i].deadline.attribute]
-            ? new Date(formValues[deadlines[i].deadline.attribute])
+        if(deadline.deadline_types.includes('milestone') && deadline.deadline_types.includes('dashed_start')){
+          milestone = formValues && formValues[deadline.attribute]
+            ? new Date(formValues[deadline.attribute])
             : deadlines[i].date;
 
             if (milestone instanceof Date && !isNaN(milestone.getTime())) {
               milestone.setHours(12, 0, 0, 0);
             }
         }
-        else if (deadlines[i].deadline.deadline_types.includes('inner_start')) {
-          innerStart = formValues && formValues[deadlines[i].deadline.attribute]
-            ? new Date(formValues[deadlines[i].deadline.attribute])
+        else if (deadline.deadline_types.includes('inner_start')) {
+          innerStart = formValues && formValues[deadline.attribute]
+            ? new Date(formValues[deadline.attribute])
             : deadlines[i].date;
 
           if (innerStart instanceof Date && !isNaN(innerStart.getTime())) {
             innerStart.setHours(12, 0, 0, 0);
           }
         }
-        else if(deadlines[i].deadline.deadline_types.includes('inner_end')){
-          innerEnd = formValues && formValues[deadlines[i].deadline.attribute]
-            ? new Date(formValues[deadlines[i].deadline.attribute])
+        else if(deadline.deadline_types.includes('inner_end')){
+          innerEnd = formValues && formValues[deadline.attribute]
+            ? new Date(formValues[deadline.attribute])
             : deadlines[i].date;
 
           if (innerEnd instanceof Date && !isNaN(innerEnd.getTime())) {
@@ -612,28 +611,28 @@ class EditProjectTimeTableModal extends Component {
       }
       else if(deadlines[i]?.deadline?.attribute?.includes("nahtavilla") || deadlines[i]?.deadline?.deadlinegroup?.includes("nahtavillaolokerta") || deadlines[i]?.deadline?.attribute?.includes("ehdotus_nahtaville_aineiston_maaraaika")){
         
-        if(deadlines[i].deadline.deadline_types.includes('milestone') && deadlines[i].deadline.deadline_types.includes('dashed_start')){
-          milestone = formValues && formValues[deadlines[i].deadline.attribute]
-            ? new Date(formValues[deadlines[i].deadline.attribute])
+        if(deadline.deadline_types.includes('milestone') && deadline.deadline_types.includes('dashed_start')){
+          milestone = formValues && formValues[deadline.attribute]
+            ? new Date(formValues[deadline.attribute])
             : deadlines[i].date;
 
           if (milestone instanceof Date && !isNaN(milestone.getTime())) {
             milestone.setHours(12, 0, 0, 0);
           }
         }
-        else if(deadlines[i].deadline.deadline_types.includes('inner_start')){
-          if(formValues.kaavaprosessin_kokoluokka === "XL" && deadlines[i].deadline.attribute.includes("iso") || formValues.kaavaprosessin_kokoluokka === "L" && deadlines[i].deadline.attribute.includes("iso")){
-            innerStart = formValues && formValues[deadlines[i].deadline.attribute]
-              ? new Date(formValues[deadlines[i].deadline.attribute])
+        else if(deadline.deadline_types.includes('inner_start')){
+          if(formValues.kaavaprosessin_kokoluokka === "XL" && deadline.attribute.includes("iso") || formValues.kaavaprosessin_kokoluokka === "L" && deadline.attribute.includes("iso")){
+            innerStart = formValues && formValues[deadline.attribute]
+              ? new Date(formValues[deadline.attribute])
               : deadlines[i].date;
 
             if (innerStart instanceof Date && !isNaN(innerStart.getTime())) {
               innerStart.setHours(12, 0, 0, 0);
             }
           }
-          if(formValues.kaavaprosessin_kokoluokka === "XS" && deadlines[i].deadline.attribute.includes("pieni") || formValues.kaavaprosessin_kokoluokka === "S" && deadlines[i].deadline.attribute.includes("pieni") || formValues.kaavaprosessin_kokoluokka === "M" && deadlines[i].deadline.attribute.includes("pieni")){
-            innerStart = formValues && formValues[deadlines[i].deadline.attribute]
-              ? new Date(formValues[deadlines[i].deadline.attribute])
+          if(formValues.kaavaprosessin_kokoluokka === "XS" && deadline.attribute.includes("pieni") || formValues.kaavaprosessin_kokoluokka === "S" && deadline.attribute.includes("pieni") || formValues.kaavaprosessin_kokoluokka === "M" && deadline.attribute.includes("pieni")){
+            innerStart = formValues && formValues[deadline.attribute]
+              ? new Date(formValues[deadline.attribute])
               : deadlines[i].date;
 
             if (innerStart instanceof Date && !isNaN(innerStart.getTime())) {
@@ -641,9 +640,9 @@ class EditProjectTimeTableModal extends Component {
             }
           }
         }
-        else if(deadlines[i].deadline.deadline_types.includes('inner_end')){
-          innerEnd = formValues && formValues[deadlines[i].deadline.attribute]
-            ? new Date(formValues[deadlines[i].deadline.attribute])
+        else if(deadline.deadline_types.includes('inner_end')){
+          innerEnd = formValues && formValues[deadline.attribute]
+            ? new Date(formValues[deadline.attribute])
             : deadlines[i].date;
 
           if (innerEnd instanceof Date && !isNaN(innerEnd.getTime())) {
@@ -664,18 +663,18 @@ class EditProjectTimeTableModal extends Component {
       deadlines[i]?.deadline?.attribute?.includes("tarkistettu_ehdotus_kylk_maaraaika") || 
       deadlines[i]?.deadline?.attribute?.includes("ehdotus_kylk_aineiston_maaraaika") ||
       deadlines[i]?.deadline?.attribute?.includes("kaavaluonnos_kylk_aineiston_maaraaika")){
-        if(deadlines[i].deadline.deadline_types.includes('milestone') && deadlines[i].deadline.deadline_types.includes('dashed_start')){
-          innerStart = formValues && formValues[deadlines[i].deadline.attribute]
-            ? new Date(formValues[deadlines[i].deadline.attribute])
+        if(deadline.deadline_types.includes('milestone') && deadline.deadline_types.includes('dashed_start')){
+          innerStart = formValues && formValues[deadline.attribute]
+            ? new Date(formValues[deadline.attribute])
             : deadlines[i].date;
 
           if (innerStart instanceof Date && !isNaN(innerStart.getTime())) {
             innerStart.setHours(12, 0, 0, 0);
           }
         }
-        else if(deadlines[i].deadline.deadline_types.includes('milestone') && deadlines[i].deadline.deadline_types.includes('dashed_end')){
-          innerEnd = formValues && formValues[deadlines[i].deadline.attribute]
-            ? new Date(formValues[deadlines[i].deadline.attribute])
+        else if(deadline.deadline_types.includes('milestone') && deadline.deadline_types.includes('dashed_end')){
+          innerEnd = formValues && formValues[deadline.attribute]
+            ? new Date(formValues[deadline.attribute])
             : deadlines[i].date;
 
           if (innerEnd instanceof Date && !isNaN(innerEnd.getTime())) {
@@ -691,18 +690,18 @@ class EditProjectTimeTableModal extends Component {
             innerStyle += " confirmed";
           }
         }
-        else if(deadlines[i].deadline.deadline_types.includes('inner_start')){
-          innerStart = formValues && formValues[deadlines[i].deadline.attribute]
-            ? new Date(formValues[deadlines[i].deadline.attribute])
+        else if(deadline.deadline_types.includes('inner_start')){
+          innerStart = formValues && formValues[deadline.attribute]
+            ? new Date(formValues[deadline.attribute])
             : deadlines[i].date;
 
           if (innerStart instanceof Date && !isNaN(innerStart.getTime())) {
             innerStart.setHours(12, 0, 0, 0);
           }
         }
-        else if(deadlines[i].deadline.deadline_types.includes('inner_end')){
-          innerEnd = formValues && formValues[deadlines[i].deadline.attribute]
-            ? new Date(formValues[deadlines[i].deadline.attribute])
+        else if(deadline.deadline_types.includes('inner_end')){
+          innerEnd = formValues && formValues[deadline.attribute]
+            ? new Date(formValues[deadline.attribute])
             : deadlines[i].date;
 
           if (innerEnd instanceof Date && !isNaN(innerEnd.getTime())) {
@@ -710,15 +709,15 @@ class EditProjectTimeTableModal extends Component {
           }
         }
       }
-      else if(deadlines[i].deadline.deadline_types.includes('phase_end') && deadlines[i].deadline.date_type !== "Arkipäivät"){
-        if(deadlines[i].deadline.attribute === "voimaantulovaihe_paattyy_pvm"){
+      else if(deadline.deadline_types.includes('phase_end') && deadline.date_type !== "Arkipäivät"){
+        if(deadline.attribute === "voimaantulovaihe_paattyy_pvm"){
           endDate = formValues && formValues["voimaantulovaihe_paattyy_pvm"] 
           ? new Date(formValues["voimaantulovaihe_paattyy_pvm"]) 
           : deadlines[i].date;
         }
         else{
-          endDate = formValues && formValues[deadlines[i].deadline.attribute]
-          ? new Date(formValues[deadlines[i].deadline.attribute])
+          endDate = formValues && formValues[deadline.attribute]
+          ? new Date(formValues[deadline.attribute])
           : deadlines[i].date;
         }
 
@@ -736,27 +735,27 @@ class EditProjectTimeTableModal extends Component {
         endDate = false
  
       }
-      else if(milestone && deadlines[i].deadline.phase_name === "Ehdotus" && deadlines[i].deadline.deadlinegroup !== "ehdotus_lautakuntakerta_1" && formValues.kaavaprosessin_kokoluokka === "XL" 
-        || milestone && deadlines[i].deadline.phase_name === "Ehdotus" && deadlines[i].deadline.deadlinegroup !== "ehdotus_lautakuntakerta_1" && formValues.kaavaprosessin_kokoluokka === "L"){
-        if(formValues[deadlines[i].deadline.attribute]){
+      else if(milestone && deadline.phase_name === "Ehdotus" && deadline.deadlinegroup !== "ehdotus_lautakuntakerta_1"
+        && ["XL","L"].includes(formValues.kaavaprosessin_kokoluokka)) {
+          if(formValues[deadline.attribute] && this.shouldAddSubgroup(deadline,formValues)){
           let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, null, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone);
           [phaseData, deadLineGroups, nestedDeadlines] = subgroup;
         }
         milestone = false
       }
-      else if(innerEnd && deadlines[i].deadline.phase_name === "Periaatteet" && (deadlines[i].deadline.deadlinegroup === "periaatteet_lautakuntakerta_2" || deadlines[i].deadline.deadlinegroup === "periaatteet_lautakuntakerta_3" || deadlines[i].deadline.deadlinegroup === "periaatteet_lautakuntakerta_4")
-        || innerEnd && deadlines[i].deadline.phase_name === "Luonnos" && (deadlines[i].deadline.deadlinegroup === "luonnos_lautakuntakerta_2" || deadlines[i].deadline.deadlinegroup === "luonnos_lautakuntakerta_3" || deadlines[i].deadline.deadlinegroup === "luonnos_lautakuntakerta_4")
-        || innerEnd && deadlines[i].deadline.phase_name === "Ehdotus" && (deadlines[i].deadline.deadlinegroup === "ehdotus_lautakuntakerta_2" || deadlines[i].deadline.deadlinegroup === "ehdotus_lautakuntakerta_3" || deadlines[i].deadline.deadlinegroup === "ehdotus_lautakuntakerta_4")
-        || innerEnd && deadlines[i].deadline.phase_name === "Tarkistettu ehdotus" && (deadlines[i].deadline.deadlinegroup === "tarkistettu_ehdotus_lautakuntakerta_2" || deadlines[i].deadline.deadlinegroup === "tarkistettu_ehdotus_lautakuntakerta_3" || deadlines[i].deadline.deadlinegroup === "tarkistettu_ehdotus_lautakuntakerta_4") 
+      else if(innerEnd && deadline.phase_name === "Periaatteet" && (deadline.deadlinegroup === "periaatteet_lautakuntakerta_2" || deadline.deadlinegroup === "periaatteet_lautakuntakerta_3" || deadline.deadlinegroup === "periaatteet_lautakuntakerta_4")
+        || innerEnd && deadline.phase_name === "Luonnos" && (deadline.deadlinegroup === "luonnos_lautakuntakerta_2" || deadline.deadlinegroup === "luonnos_lautakuntakerta_3" || deadline.deadlinegroup === "luonnos_lautakuntakerta_4")
+        || innerEnd && deadline.phase_name === "Ehdotus" && (deadline.deadlinegroup === "ehdotus_lautakuntakerta_2" || deadline.deadlinegroup === "ehdotus_lautakuntakerta_3" || deadline.deadlinegroup === "ehdotus_lautakuntakerta_4")
+        || innerEnd && deadline.phase_name === "Tarkistettu ehdotus" && (deadline.deadlinegroup === "tarkistettu_ehdotus_lautakuntakerta_2" || deadline.deadlinegroup === "tarkistettu_ehdotus_lautakuntakerta_3" || deadline.deadlinegroup === "tarkistettu_ehdotus_lautakuntakerta_4") 
       ){
-        if(formValues[deadlines[i].deadline.attribute]){
+        if(formValues[deadline.attribute] && this.shouldAddSubgroup(deadline,formValues)){
           let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, null, innerEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, null);
           [phaseData, deadLineGroups, nestedDeadlines] = subgroup;
         }
         innerEnd = false
       } 
       else if(innerStart && innerEnd){
-        if(formValues[deadlines[i].deadline.attribute] && this.shouldAddSubgroup(deadlines[i].deadline, formValues)){
+        if(formValues[deadline.attribute] && this.shouldAddSubgroup(deadline, formValues)){
           let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, milestone?milestone:null);
           [phaseData, deadLineGroups, nestedDeadlines] = subgroup2;
         }
