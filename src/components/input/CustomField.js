@@ -221,11 +221,10 @@ class CustomField extends Component {
   renderDate = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, deadlines, field, lockField, fieldSetDisabled, 
       insideFieldset, disabled, isProjectTimetableEdit, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, 
-      attributeData, phaseIsClosed, disabledDates, lomapaivat, dateTypes, deadlineSection, maxMoveGroup, maxDateToMove, groupName, visGroups, visItems, 
+      attributeData, phaseIsClosed, disabledDates, lomapaivat, dateTypes, maxMoveGroup, maxDateToMove, groupName, visGroups, visItems, 
       deadlineSections, formValues, confirmedValue, sectionAttributes } = this.props
 
     let current
-    let phase
     if (deadlines && deadlines.length > 0) {
       current = deadlines.find(
         deadline => deadline.deadline.attribute === props.input.name
@@ -239,11 +238,6 @@ class CustomField extends Component {
           deadline => deadline.deadline.abbreviation === "E9"
         )
         current.deadline.attribute = "viimeistaan_lausunnot_ehdotuksesta"
-      }
-      if(props.input.name.includes("ehdotuksen") || props.input.name.includes("ehdotuksesta")){
-        //No values at deadlines before saving the timeline to get the phase for DeadlineInput so needs extra check
-        //Check is needed for filtering out määräaika
-        phase = "Ehdotus"
       }
     }
 
@@ -259,7 +253,6 @@ class CustomField extends Component {
           disabledDates={disabledDates}
           lomapaivat={lomapaivat}
           dateTypes={dateTypes}
-          deadlineSection={deadlineSection}
           maxMoveGroup={maxMoveGroup}
           maxDateToMove={maxDateToMove}
           groupName={groupName}
@@ -269,7 +262,6 @@ class CustomField extends Component {
           formValues={formValues}
           confirmedValue={confirmedValue}
           sectionAttributes={sectionAttributes}
-          phase={phase}
           {...props}
         />
       )

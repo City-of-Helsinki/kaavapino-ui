@@ -24,11 +24,9 @@ const DeadLineInput = ({
   autofillRule,
   timeTableDisabled,
   dateTypes,
-  deadlineSection,
   deadlineSections,
   confirmedValue,
-  sectionAttributes,
-  phase
+  sectionAttributes
 }) => {
 
   const dispatch = useDispatch();
@@ -106,12 +104,6 @@ const DeadLineInput = ({
     else if(input.name === "hyvaksymispaatos_pvm" && attributeData["hyvaksyminenvaihe_paattyy_pvm"]){
       attributeData["hyvaksyminenvaihe_paattyy_pvm"] = inputValue === '' ? attributeData["hyvaksyminenvaihe_paattyy_pvm"] : inputValue
     }
-    else if(input.name === "tullut_osittain_voimaan_pvm" || input.name === "voimaantulo_pvm" || input.name === "kumottu_pvm" || input.name === "rauennut"){
-      //Modify the end date of voimaantulovaihe if any of the dates are changed
-      if (new Date(inputValue) > new Date(attributeData["voimaantulovaihe_paattyy_pvm"])) {
-        attributeData["voimaantulovaihe_paattyy_pvm"] = inputValue
-      }
-    }
 
     setCurrentValue(currentDeadline ? currentDeadlineDate : inputValue )
     setDisabledState(typeof timeTableDisabled !== "undefined" ? timeTableDisabled : disabled)
@@ -130,14 +122,14 @@ const DeadLineInput = ({
 
   const getInitialMonth = (dateString) => {
     let date;
-    if (dateString) {
-        date = new Date(dateString);
-    }
-    else if(attributeData['voimaantulovaihe_paattyy_pvm'] && (input.name === "tullut_osittain_voimaan_pvm" || input.name === "voimaantulo_pvm" || input.name === "kumottu_pvm" || input.name === "rauennut")){
+    if(attributeData['voimaantulovaihe_paattyy_pvm'] && (input.name === "tullut_osittain_voimaan_pvm" || input.name === "voimaantulo_pvm" || input.name === "kumottu_pvm" || input.name === "rauennut")){
       date = new Date(attributeData['voimaantulovaihe_paattyy_pvm']);
     }
     else if(input.name === "hyvaksymispaatos_pvm" && attributeData["hyvaksyminenvaihe_paattyy_pvm"]){
       date = new Date(attributeData['hyvaksyminenvaihe_paattyy_pvm']);
+    }
+    else if (dateString) {
+      date = new Date(dateString);
     }
     else {
         date = new Date(); // Use current date if no date string is provided
@@ -187,19 +179,8 @@ const DeadLineInput = ({
   const handleDateChange = (formattedDate) => {
     try {
       let field = input.name;
-      //Get date type objects and send them to reducer to be moved according to input date changed
-      const dynamicKey = Object.keys(deadlineSection.deadlineSection)[0];
-      let deadlineSectionValues
-      if(currentDeadline?.deadline?.phase_name === "Ehdotus" || phase === "Ehdotus" && (attributeData?.kaavaprosessin_kokoluokka === 'L' || attributeData?.kaavaprosessin_kokoluokka === 'XL')){
-        //for some reason määräaika is on data when L XL nahtavillaolo even though it should never be, filter it out because it cannot be saved if not existing in backend
-        deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey].filter(section => section.type === "date" && section.display !== "readonly" && !section.name.includes("ehdotus_nahtaville_aineiston_maaraaika"));
-      }
-      else{
-        deadlineSectionValues = deadlineSection.deadlineSection[dynamicKey].filter(section => section.type === "date" && section.display !== "readonly");
-      }
       setCurrentValue(formattedDate)
-      dispatch(updateDateTimeline(field,formattedDate,deadlineSectionValues,false,false,deadlineSections));
-
+      dispatch(updateDateTimeline(field,formattedDate,false,false,deadlineSections));
     } catch (error) {
       console.error('Validation error:', error);
     }
