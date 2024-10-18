@@ -931,7 +931,7 @@ class EditProjectTimeTableModal extends Component {
               sections[x].attributesubgroup === "Esille" || 
               sections[x].attributesubgroup === "Esityslistalle")
             ){
-            distanceArray.push({"name":sections[x].name,"distance":sections[x].distance_from_previous,"linkedData":sections[x].previous_deadline})
+            distanceArray.push({"name":sections[x].name,"distance":sections[x]?.initial_distance?.distance,"linkedData":sections[x].previous_deadline})
           }
         }
       }  
