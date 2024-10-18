@@ -101,7 +101,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         const match = /_(\d+)$/.exec(key);
         if (match) {
             const number = parseInt(match[1], 10);
-            if (number > largestIndex) {
+            if (number > largestIndex && visValRef[key]) {
               largestIndex = number;
             }
         }
@@ -132,7 +132,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         const match = /_(\d+)$/.exec(key);
         if (match) {
             const number = parseInt(match[1], 10);
-            if (number > largestIndexLautakunta) {
+            if (number > largestIndexLautakunta && visValRef[key]) {
               largestIndexLautakunta = number;
             }
         }
