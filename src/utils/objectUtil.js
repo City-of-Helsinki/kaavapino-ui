@@ -338,7 +338,7 @@ const getHighestNumberedObject = (obj1, arr) => {
           }
           else{
             //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
-            newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,miniumGap) : newDate
+            newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,miniumGap) : newDate
           }
           // Update the array with the new date
           newDate.setDate(newDate.getDate());
@@ -377,7 +377,7 @@ const getHighestNumberedObject = (obj1, arr) => {
           }
           else{
             //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
-            newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,miniumGap) : newDate
+            newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,miniumGap) : newDate
           }
           // Update the array with the new date
           newDate.setDate(newDate.getDate());
@@ -494,6 +494,50 @@ const getHighestNumberedObject = (obj1, arr) => {
     return null; // Return null if no next or previous item is found
   };
 
+  const filterHiddenKeys = (updatedAttributeData) => {
+    //Remove all keys that are still hidden in vistimeline so they are not moved in data and later saved
+    const phaseNames = [
+      "periaatteet","oas","luonnos","ehdotus","ehdotuksesta","ehdotuksen","tarkistettu_ehdotus"
+    ];
+    const lautakunnat = ["periaatteet_lautakuntaan_2","periaatteet_lautakuntaan_3","periaatteet_lautakuntaan_4",
+      "kaavaluonnos_lautakuntaan_2","kaavaluonnos_lautakuntaan_3","kaavaluonnos_lautakuntaan_4",
+      "ehdotus_lautakuntaan_2","ehdotus_lautakuntaan_3","ehdotus_lautakuntaan_4",
+      "tarkistettu_ehdotus_lautakuntaan_2","tarkistettu_ehdotus_lautakuntaan_3","tarkistettu_ehdotus_lautakuntaan_4"
+    ];
+    const esillaolot = ["jarjestetaan_periaatteet_esillaolo_2","jarjestetaan_periaatteet_esillaolo_3",
+      "jarjestetaan_oas_esillaolo_2","jarjestetaan_oas_esillaolo_3","jarjestetaan_luonnos_esillaolo_2","jarjestetaan_luonnos_esillaolo_3",
+      "kaavaehdotus_uudelleen_nahtaville_2","kaavaehdotus_uudelleen_nahtaville_3","kaavaehdotus_uudelleen_nahtaville_4"
+    ];
+    //find index keys that exist in data
+    const presentLautakunnat = lautakunnat.filter(key => key in updatedAttributeData);
+    const presentEsillaolot = esillaolot.filter(key => key in updatedAttributeData);
+
+    //find index and phase from presentLautakunnat and presentEsillaolot
+    const lautakunnatPhases = presentLautakunnat.map(key => {
+      const phase = phaseNames.find(phaseName => key.includes(phaseName));
+      const number = key.match(/\d+/)[0];
+      return { phase, number };
+    });
+
+    const esillaolotPhases = presentEsillaolot.map(key => {
+      const phase = phaseNames.find(phaseName => key.includes(phaseName));
+      const number = key.match(/\d+/)[0];
+      return { phase, number };
+    });
+
+    //filter all but index keys from data
+    return Object.entries(updatedAttributeData).reduce((acc, [key, value]) => {
+      const indexMatch = key.match(/\d+/);
+      const index = indexMatch ? parseInt(indexMatch[0], 10) : null;
+      const isLautakunnatPhase = lautakunnatPhases.some(phase => key.includes(phase.phase) && key.includes(phase.number));
+      const isEsillaolotPhase = esillaolotPhases.some(phase => key.includes(phase.phase) && key.includes(phase.number));
+      if (index === null || index === 1 || (index <= 2 && (isLautakunnatPhase || isEsillaolotPhase))) {
+    acc[key] = value;
+      }
+      return acc;
+    }, {});
+  }
+
 export default {
     getHighestNumberedObject,
     getMinObject,
@@ -509,5 +553,6 @@ export default {
     findDifferencesInObjects,
     compareObjectValues,
     findMatchingName,
-    findItem
+    findItem,
+    filterHiddenKeys
 }

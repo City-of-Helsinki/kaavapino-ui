@@ -163,37 +163,39 @@ export const reducer = (state = initialState, action) => {
           ...state.currentProject.attribute_data, // Shallow copy of attribute_data
         };
       }
+      //Remove all keys that are still hidden in vistimeline so they are not moved in data and later saved
+      const filteredAttributeData = objectUtil.filterHiddenKeys(updatedAttributeData);
       //Sort array by date
-      const origSortedData = timeUtil.sortObjectByDate(updatedAttributeData);
+      const origSortedData = timeUtil.sortObjectByDate(filteredAttributeData);
       const newDateObj = new Date(newDate);
       // Update the specific date at the given field
-      updatedAttributeData[field] = timeUtil.formatDate(newDateObj);
-      if(field === "hyvaksymispaatos_pvm" && updatedAttributeData["hyvaksyminenvaihe_paattyy_pvm"]){
-        updatedAttributeData["hyvaksyminenvaihe_paattyy_pvm"] = timeUtil.formatDate(newDateObj);
+      filteredAttributeData[field] = timeUtil.formatDate(newDateObj);
+      if(field === "hyvaksymispaatos_pvm" && filteredAttributeData["hyvaksyminenvaihe_paattyy_pvm"]){
+        filteredAttributeData["hyvaksyminenvaihe_paattyy_pvm"] = timeUtil.formatDate(newDateObj);
       }
       if (field === "tullut_osittain_voimaan_pvm" || field === "voimaantulo_pvm" || field === "kumottu_pvm" || field === "rauennut") {
         // Find the highest date among the specified fields
-        const highestDate = timeUtil.getHighestDate(updatedAttributeData);
+        const highestDate = timeUtil.getHighestDate(filteredAttributeData);
         // Modify the end date of voimaantulovaihe if any of the dates are changed and the new date is higher
         if ((highestDate) || (!highestDate && newDate)) {
           const higherDate = highestDate ? highestDate : newDate;
-          updatedAttributeData["voimaantulovaihe_paattyy_pvm"] = higherDate;
+          filteredAttributeData["voimaantulovaihe_paattyy_pvm"] = higherDate;
         }
       }
       // Generate array from updatedAttributeData for comparison
-      const updateAttributeArray = objectUtil.generateDateStringArray(updatedAttributeData)
+      const updateAttributeArray = objectUtil.generateDateStringArray(filteredAttributeData)
       //Compare for changes with dates in order sorted array
       const changes = objectUtil.compareAndUpdateArrays(origSortedData,updateAttributeArray,deadlineSections)
       //Find out is next date below minium and add difference of those days to all values after and move them forward 
       const decreasingValues = objectUtil.checkForDecreasingValues(changes,isAdd,field,state.disabledDates);
       //Add new values from array to updatedAttributeData object
-      objectUtil.updateOriginalObject(updatedAttributeData,decreasingValues)
+      objectUtil.updateOriginalObject(filteredAttributeData,decreasingValues)
       // Return the updated state with the modified currentProject and attribute_data
       return {
         ...state,
         currentProject: {
           ...state.currentProject,
-          attribute_data: updatedAttributeData,
+          attribute_data: filteredAttributeData,
         },
       };
     }    

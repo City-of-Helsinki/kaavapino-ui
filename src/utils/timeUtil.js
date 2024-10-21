@@ -54,7 +54,7 @@
   const calculateWeekdayDifference = (startDate, endDate) => {
     let end = new Date(endDate);
     let currentDate = new Date(startDate);
-    let daysDifference = 0;
+    let daysDifference = 1;
     let calculate = true
 
     // Loop from start date to end date
@@ -72,11 +72,13 @@
     return daysDifference;
   }
 
-  const dateDifference = (previousValue, currentValue, allowedDays, holidays, miniumGap) => {
+  const dateDifference = (cur,previousValue, currentValue, allowedDays, holidays, miniumGap) => {
     let previousDate = new Date(previousValue);
     let currentDate = new Date(currentValue);
     let gap = miniumGap;
-    if(gap === 45){
+    //There is only generated values field in Excel but in the future should have separate contanst distances and generated values
+    //maaraiaka constant distnace should be 5 always
+    if(cur.includes("maaraaika")){
       gap = 5
     }
     // Check if the previous date is greater than or equal to the current date
