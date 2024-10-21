@@ -15,6 +15,7 @@ import AddGroupModal from './AddGroupModal';
 import ConfirmModal from '../common/ConfirmModal'
 import PropTypes from 'prop-types';
 import { removeDeadlines } from '../../actions/projectActions';
+import { getVisibilityBoolName } from '../../utils/projectVisibilityUtils';
 import './VisTimeline.css'
 Moment().locale('fi');
 
@@ -272,6 +273,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
       let index = "_" + dataToRemove.deadlinegroup.split('_').pop()
       let keysToRemove = []
+
+      const visiblityBool = getVisibilityBoolName(dataToRemove.deadlinegroup)
+      if (visiblityBool) {
+        dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, visiblityBool, false));
+      }
 
       //remove from attribute data/calendar
       for (const key in visValues) {
