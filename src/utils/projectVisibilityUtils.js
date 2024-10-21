@@ -120,3 +120,28 @@ export const showField = (field, formValues, currentName) => {
 
   return returnValue
 }
+
+
+// Gets the name of the attribute used to control deadline group visiblity
+export const getVisibilityBoolName = (deadlineGroup) => {
+  const splitGroup = deadlineGroup.split('_');
+  const iteration = splitGroup.pop();
+  const is_esillaolo = ['esillaolokerta', 'nahtavillaolokerta'].includes(splitGroup.pop());
+  const phaseName = splitGroup.join('_');
+  if (is_esillaolo) {
+    if (iteration === '1' && ['oas','ehdotus'].includes(phaseName)){
+      return null; // No bool exists, always true (handle separately)
+    }
+    if (["periaatteet", "oas", "luonnos"].includes(phaseName)){
+      return ['jarjestetaan', phaseName, 'esillaolo', iteration].join('_');
+    } else if (phaseName === "ehdotus"){
+      return 'kaavaehdotus_uudelleen_nahtaville_' + iteration;
+    }
+  } else {
+    // Known issue: tarkistettu_ehdotus_lautakuntaan_1 is sometimes missing in project data
+    // (Handle separately, should always be true)
+    const attributePhaseName = ['ehdotus', 'luonnos'].includes(phaseName)? 'kaava' + phaseName : phaseName;
+    return `${attributePhaseName}_lautakuntaan_` + iteration;
+  }
+  return null;
+};
