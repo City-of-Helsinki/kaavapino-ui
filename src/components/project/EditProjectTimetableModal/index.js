@@ -19,6 +19,7 @@ import withValidateDate from '../../../hocs/withValidateDate';
 import objectUtil from '../../../utils/objectUtil'
 import textUtil from '../../../utils/textUtil'
 import { updateDateTimeline } from '../../../actions/projectActions';
+import { getVisibilityBoolName } from '../../../utils/projectVisibilityUtils';
 
 class EditProjectTimeTableModal extends Component {
   constructor(props) {
@@ -395,29 +396,15 @@ class EditProjectTimeTableModal extends Component {
       console.warn("Deadline group missing for deadline " + deadline.attribute);
       return false;
     }
-    // Assumes group name = phase_type_iteration
-    const splitGroup = deadline.deadlinegroup.split('_');
-    const iteration = splitGroup.pop();
-    const is_esillaolo = ['esillaolokerta', 'nahtavillaolokerta'].includes(splitGroup.pop());
-    const phaseName = splitGroup.join('_');
-
-    if (is_esillaolo) {
-      if (iteration === '1' && ['oas','ehdotus'].includes(phaseName)){
+    // Special cases where bool is missing
+    if (['oas_esillaolokerta_1','ehdotus_nahtavillaolokerta_1','tarkistettu_ehdotus_lautakuntakerta_1'].includes(deadline.deadlinegroup)){
         return true;
-      }
-      if (["periaatteet", "oas", "luonnos"].includes(phaseName)){
-        const bool_attribute_name = ['jarjestetaan', phaseName, 'esillaolo', iteration].join('_');
-        return formValues[bool_attribute_name];
-      } else if (phaseName === "ehdotus"){
-        return formValues['kaavaehdotus_uudelleen_nahtaville_' + iteration];
-      }
-    } else {
-      if (phaseName === 'tarkistettu_ehdotus' && iteration == '1') {
-        return true; // Bool missing from backend, but is always true
-      }
-      const attributePhaseName = ['ehdotus', 'luonnos'].includes(phaseName)? 'kaava' + phaseName : phaseName;
-      return formValues[`${attributePhaseName}_lautakuntaan_` + iteration];
     }
+    const visibilityBool = getVisibilityBoolName(deadline.deadlinegroup);
+    if (visibilityBool){
+      return formValues[visibilityBool];
+    }
+    return false;
   }
 
   addSubgroup = (deadlines, i, numberOfPhases, dashStart, dashEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone) => {
