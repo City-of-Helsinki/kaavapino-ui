@@ -191,10 +191,7 @@ const FormField = ({
       ...field,
       type: 'checkbox'
     }
-
-    const timetableBoolean = isProjectTimetableEdit && field.autofill_readonly && !field.editable
     return (
-      !timetableBoolean ?
       <Form.Field
         className={`checkbox-container small-margin'} ${showError ? 'error' : ''}`}
       >
@@ -202,8 +199,6 @@ const FormField = ({
           <span className="checkbox">{renderField(newProps)}</span>
         </Label>
       </Form.Field>
-      :
-      <></>
     )
   }
 
