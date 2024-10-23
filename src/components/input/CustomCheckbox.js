@@ -75,20 +75,24 @@ const CustomCheckbox = ({
           <div className='deadlines-col'>
             <Notification className='deadlines-confirmed-notification' size="small" label="Päivämäärä vahvistettu" type="success" >{t('deadlines.dates-confirmed')}</Notification>
           </div>
+          {display !== 'readonly_checkbox' &&
           <div className='deadlines-col'>
             <Button className='deadlines-cancel-button' size='small' variant="danger" onClick={onChangeSave}>
               {t('deadlines.cancel-confirmation')}
             </Button>
           </div>
+          }
         </> 
         :
         <>
           <Notification className='deadlines-preliminary-notification' size="small" label="Aikataulutiedot ovat alustavia" type="info">
             {t('deadlines.dates-are-preliminary')}
           </Notification>
+          {display !== 'readonly_checkbox' &&
           <Button className='deadlines-confirm-button' size='small' onClick={onChangeSave}>
             {t('deadlines.confirm-dates')}
           </Button>
+          }
         </>
         }
       </>
