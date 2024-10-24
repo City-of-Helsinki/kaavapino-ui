@@ -163,8 +163,12 @@ export const reducer = (state = initialState, action) => {
           ...state.currentProject.attribute_data, // Shallow copy of attribute_data
         };
       }
+      const projectSize = updatedAttributeData?.kaavaprosessin_kokoluokka
       //Remove all keys that are still hidden in vistimeline so they are not moved in data and later saved
       const filteredAttributeData = objectUtil.filterHiddenKeys(updatedAttributeData);
+      const moveToPast = filteredAttributeData[field] > newDate;
+      //Save oldDate for comparison in checkforDecreasingValues
+      const oldDate = filteredAttributeData[field];
       //Sort array by date
       const origSortedData = timeUtil.sortObjectByDate(filteredAttributeData);
       const newDateObj = new Date(newDate);
@@ -187,7 +191,7 @@ export const reducer = (state = initialState, action) => {
       //Compare for changes with dates in order sorted array
       const changes = objectUtil.compareAndUpdateArrays(origSortedData,updateAttributeArray,deadlineSections)
       //Find out is next date below minium and add difference of those days to all values after and move them forward 
-      const decreasingValues = objectUtil.checkForDecreasingValues(changes,isAdd,field,state.disabledDates);
+      const decreasingValues = objectUtil.checkForDecreasingValues(changes,isAdd,field,state.disabledDates,oldDate,newDate,moveToPast,projectSize);
       //Add new values from array to updatedAttributeData object
       objectUtil.updateOriginalObject(filteredAttributeData,decreasingValues)
       // Return the updated state with the modified currentProject and attribute_data
