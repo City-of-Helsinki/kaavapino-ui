@@ -78,7 +78,7 @@
     let gap = miniumGap;
     //There is only generated values field in Excel but in the future should have separate contanst distances and generated values
     //maaraiaka constant distnace should be 5 always
-    if(cur.includes("maaraaika")){
+    if(!cur.includes("_lautakunta_aineiston_maaraaika") && !cur.includes("kylk_aineiston_maaraaika") && cur.includes("maaraaika") || miniumGap >= 31){
       gap = 5
     }
     // Check if the previous date is greater than or equal to the current date
@@ -96,6 +96,77 @@
     return new Date(currentDate);
   }
 
+  const moveDateToDirection = (prevDate, oldDate, newDate, allowedDays, holidays,lautakunta,moveToPast) => {
+    console.log(prevDate, oldDate, newDate,lautakunta,moveToPast)
+    let previousDate = new Date(prevDate);
+    const oldDateObj = new Date(oldDate);
+    let newDateObj = new Date(newDate);
+    let timeDifference = lautakunta ? previousDate - newDateObj : newDateObj - oldDateObj;
+    let daysDifference = timeDifference / (1000 * 3600 * 24);// Calculate the difference in days
+    let direction = daysDifference > 0 ? 1 : -1; // 1 for forward, -1 for backward
+    // Make daysDifference positive for loop
+    daysDifference = Math.abs(daysDifference);
+
+    // Helper function to check if a date is allowed
+    const isAllowedDate = (date) => {
+      const dateStr = date.toISOString().split('T')[0];
+      return (
+        allowedDays.includes(dateStr) &&
+        !holidays.includes(dateStr) &&
+        !isWeekend(dateStr)
+      );
+     };
+
+    if (lautakunta) {
+      let movedDays = daysDifference;
+      while (movedDays > 27) {
+        // Move date by one day in the specified direction
+        if(moveToPast){
+          previousDate.setDate(previousDate.getDate() - 1);
+        }
+        else{
+          previousDate.setDate(previousDate.getDate() + 1);
+        }
+        movedDays--;
+      }
+
+      // Move previousDate to the next available allowed day
+      while (!allowedDays.includes(previousDate.toISOString().split('T')[0]) || holidays.includes(previousDate.toISOString().split('T')[0]) || isWeekend(previousDate)) {
+        previousDate.setDate(previousDate.getDate() + direction);
+      }
+
+      return previousDate;
+    } 
+    else {
+      // Move previousDate forward or backward by daysDifference
+      let movedDays = 0;
+      while (movedDays < daysDifference) {
+        // Move date by one day in the specified direction
+        if(moveToPast){
+          previousDate.setDate(previousDate.getDate() - 1);
+        }
+        else{
+          previousDate.setDate(previousDate.getDate() + 1);
+        }
+        // Skip non-allowed days
+        while (!isAllowedDate(previousDate)) {
+          if(moveToPast){
+            previousDate.setDate(previousDate.getDate() - 1);
+          }
+          else{
+            previousDate.setDate(previousDate.getDate() + 1);
+          }
+          movedDays += 1;
+        }
+        // Increment movedDays only when on an allowed day
+        if (isAllowedDate(previousDate)) {
+          movedDays += 1;
+        }
+      }
+      return previousDate;
+    }
+  };
+  
 
   // Function to adjust dates if the difference is less than or equal to 5 days
   const adjustDates = (dataArray) => {
@@ -567,5 +638,6 @@ export default {
     calculateWeekdayDifference,
     isHoliday,
     calculateDisabledDates,
-    getHighestDate
+    getHighestDate,
+    moveDateToDirection
 }

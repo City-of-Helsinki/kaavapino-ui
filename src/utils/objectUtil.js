@@ -317,10 +317,11 @@ const getHighestNumberedObject = (obj1, arr) => {
     return result
   }
 
-  const checkForDecreasingValues = (arr,isAdd,field,disabledDates) => {
-    //TODO: add same logic when moving phase backwards
+  const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize) => {
     // Find the index of the next item where dates should start being pushed
-    const nextIndex = arr.findIndex(item => item?.key === field) + 1
+    const currentIndex = arr.findIndex(item => item.key === field);
+    const nextIndex = arr.findIndex(item => item?.key === field) + 1;
+    //TODO NÄHTÄVILLÄ OLOT EI MUUTU KUN ALKUA TAI LOPPUA SIIRRETÄÄN L - XL
     // If adding items
     if (isAdd) {
       // Move the nextItem and all following items forward if item minium is exceeded
@@ -351,11 +352,6 @@ const getHighestNumberedObject = (obj1, arr) => {
             const differenceInTime = new Date(res) - new Date(arr[i].value)
             const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
             if(differenceInDays >= 5){
-              // TODO: minium gap here?
-              //Create a Date object for 2026-06-03
-              //let date = new Date(res);
-              //date.setDate(date.getDate() + 5);
-              //const dateString = timeUtil.formatDate(date)
               arr[i].value = res
             }
           }
@@ -363,13 +359,15 @@ const getHighestNumberedObject = (obj1, arr) => {
       }
     }
     else{
-      for (let i = nextIndex; i < arr.length; i++) {
+      for (let i = 1; i < arr.length; i++) {
         if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
           && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
           && !arr[i].key.includes("hyvaksymispaatos_pvm")){
           let newDate = new Date(arr[i].value);
-          //At the moment some previous values are falsely null for some reason, can be remove when is fixed on backend and Excel.
-          //Get minium gap for two dates next to each other that are moved
+          let prevDate = i === arr.length - 1 ? null : new Date(arr[i - 1].value);
+          let nextDate = i < arr.length - 1 ? new Date(arr[i + 1].value) : null;
+          let nextOfNextDate = i < arr.length - 2 ? new Date(arr[i + 2].value) : null;
+          //Get minium gap for two dates next to each other that are moved. At the moment some previous values are falsely null for some reason, can be remove when is fixed on backend and Excel.
           const miniumGap = arr[i].initial_distance === null ? arr[i].key.includes("lautakunnassa") ? 22 : 5 : arr[i].initial_distance 
           if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")){
             //mielipiteet and paattyy is always the same value
@@ -377,7 +375,36 @@ const getHighestNumberedObject = (obj1, arr) => {
           }
           else{
             //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
-            newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,miniumGap) : newDate
+            //arr[i]?.key?.includes("lautakunnassa") ||
+            newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,miniumGap,moveToPast) : newDate
+            //Paattyy and nahtavillaolo l-xl are independent of other values
+            if(i === currentIndex && !arr[currentIndex]?.key?.includes("paattyy") && ((projectSize === "XL" || projectSize === "L") && !arr[currentIndex]?.key.includes("nahtavilla_alkaa") && !arr[currentIndex]?.key.includes("nahtavilla_paattyy"))){
+              //Make next date follow the moved date if needed
+              //move next value backward as many days as is the difference between old and new date
+              let lautakunta = false
+              //ALKAA LOGIC TODO
+              if(arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") || arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika")){
+                lautakunta = true
+                nextDate = timeUtil.moveDateToDirection(nextDate,oldDate,movedDate,disabledDates?.date_types[arr[i + 1]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,lautakunta,moveToPast)
+                nextDate.setDate(nextDate.getDate());
+                arr[i + 1].value = nextDate.toISOString().split('T')[0];
+              }
+              else if(arr[currentIndex]?.key?.includes("lautakunnassa")){
+                prevDate = timeUtil.moveDateToDirection(prevDate,oldDate,movedDate,disabledDates?.date_types[arr[i + 1]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,lautakunta,moveToPast)
+                prevDate.setDate(prevDate.getDate());
+                arr[i - 1].value = prevDate.toISOString().split('T')[0];
+              }
+              else{
+                nextDate = timeUtil.moveDateToDirection(nextDate,oldDate,movedDate,disabledDates?.date_types[arr[i + 1]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,lautakunta,moveToPast)
+                nextDate.setDate(nextDate.getDate());
+                arr[i + 1].value = nextDate.toISOString().split('T')[0];
+                if(!arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("lautakunnassa") && arr[currentIndex]?.key?.includes("maaraaika")){
+                  nextOfNextDate = timeUtil.moveDateToDirection(nextOfNextDate,oldDate,movedDate,disabledDates?.date_types[arr[i + 2]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,moveToPast)
+                  nextOfNextDate.setDate(nextOfNextDate.getDate());
+                  arr[i + 2].value = nextOfNextDate.toISOString().split('T')[0];
+                }
+              }
+            }
           }
           // Update the array with the new date
           newDate.setDate(newDate.getDate());
@@ -391,11 +418,6 @@ const getHighestNumberedObject = (obj1, arr) => {
             const differenceInTime = new Date(res) - new Date(arr[i].value)
             const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
             if(differenceInDays >= 5){
-              // TODO: minium gap here?
-              //Create a Date object for 2026-06-03
-              //let date = new Date(res);
-              //date.setDate(date.getDate() + 5);
-              //const dateString = timeUtil.formatDate(date)
               arr[i].value = res
             }
           }
@@ -404,6 +426,29 @@ const getHighestNumberedObject = (obj1, arr) => {
     }
     sortPhaseData(arr,order)
     return arr
+  }
+
+  const iterateArray = (arr, index, target) => {
+    let targetString = target;
+    if (target === "tarkistettuehdotus") {
+      // other values in array at tarkistettu ehdotus phase are with _ but phase values are without
+      targetString = "tarkistettu_ehdotus";
+    } else if (target === "ehdotus") {
+      targetString = ["ehdotuksen", "kaavaehdotus", "ehdotus"];
+    }
+    for (let i = index + 1; i < arr.length; i++) {
+      // Check if 'distance_from_previous' attribute does not exist and if the key contains the target substring
+      if (target === "ehdotus") {
+        for (let j = 0; j < targetString.length; j++) {
+          if (!arr[i].key.includes('tarkistettu_ehdotus') && !arr[i].key.endsWith('_pvm') && arr[i].key.includes(targetString[j])) {
+            return arr[i].value;
+          }
+        }
+      } else if (arr[i].key.includes(targetString) && !arr[i].key.endsWith('_pvm')) {
+        return arr[i].value;
+      }
+    }
+    return null; // Return null if no such key is found
   }
 
    const reverseIterateArray = (arr,index,target) => {
