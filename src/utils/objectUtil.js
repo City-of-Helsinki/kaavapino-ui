@@ -321,7 +321,6 @@ const getHighestNumberedObject = (obj1, arr) => {
     // Find the index of the next item where dates should start being pushed
     const currentIndex = arr.findIndex(item => item.key === field);
     const nextIndex = arr.findIndex(item => item?.key === field) + 1;
-    //TODO NÄHTÄVILLÄ OLOT EI MUUTU KUN ALKUA TAI LOPPUA SIIRRETÄÄN L - XL
     // If adding items
     if (isAdd) {
       // Move the nextItem and all following items forward if item minium is exceeded
@@ -375,30 +374,33 @@ const getHighestNumberedObject = (obj1, arr) => {
           }
           else{
             //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
-            //arr[i]?.key?.includes("lautakunnassa") ||
             newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,miniumGap,moveToPast) : newDate
             //Paattyy and nahtavillaolo l-xl are independent of other values
-            if(i === currentIndex && !arr[currentIndex]?.key?.includes("paattyy") && ((projectSize === "XL" || projectSize === "L") && !arr[currentIndex]?.key.includes("nahtavilla_alkaa") && !arr[currentIndex]?.key.includes("nahtavilla_paattyy"))){
-              //Make next date follow the moved date if needed
-              //move next value backward as many days as is the difference between old and new date
+            if( (projectSize === "XS" || projectSize === "S" || projectSize === "M") && i === currentIndex && !arr[currentIndex]?.key?.includes("paattyy") ||
+             (projectSize === "XL" || projectSize === "L") && i === currentIndex && !arr[currentIndex]?.key?.includes("paattyy") && !arr[currentIndex]?.key.includes("nahtavilla_alkaa") && !arr[currentIndex]?.key.includes("nahtavilla_paattyy")){
+              //Make next or previous or both dates follow the moved date if needed
+              //move next or previous value backward as many days as is the difference between old and new date
               let lautakunta = false
-              //ALKAA LOGIC TODO
               if(arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") || arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika")){
+                //maaraika in lautakunta moving
                 lautakunta = true
                 nextDate = timeUtil.moveDateToDirection(nextDate,oldDate,movedDate,disabledDates?.date_types[arr[i + 1]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,lautakunta,moveToPast)
                 nextDate.setDate(nextDate.getDate());
                 arr[i + 1].value = nextDate.toISOString().split('T')[0];
               }
-              else if(arr[currentIndex]?.key?.includes("lautakunnassa")){
+              else if(arr[currentIndex]?.key?.includes("lautakunnassa") || arr[currentIndex]?.key?.includes("alkaa")){
+                //lautakunta and alkaa values
                 prevDate = timeUtil.moveDateToDirection(prevDate,oldDate,movedDate,disabledDates?.date_types[arr[i + 1]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,lautakunta,moveToPast)
                 prevDate.setDate(prevDate.getDate());
                 arr[i - 1].value = prevDate.toISOString().split('T')[0];
               }
               else{
+                //Maaraiaka moving
                 nextDate = timeUtil.moveDateToDirection(nextDate,oldDate,movedDate,disabledDates?.date_types[arr[i + 1]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,lautakunta,moveToPast)
                 nextDate.setDate(nextDate.getDate());
                 arr[i + 1].value = nextDate.toISOString().split('T')[0];
                 if(!arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("lautakunnassa") && arr[currentIndex]?.key?.includes("maaraaika")){
+                  //When moving maaraaika in esillaolo or nahtavillaolo not in lautakunta
                   nextOfNextDate = timeUtil.moveDateToDirection(nextOfNextDate,oldDate,movedDate,disabledDates?.date_types[arr[i + 2]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,moveToPast)
                   nextOfNextDate.setDate(nextOfNextDate.getDate());
                   arr[i + 2].value = nextOfNextDate.toISOString().split('T')[0];

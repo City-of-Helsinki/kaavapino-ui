@@ -97,7 +97,6 @@
   }
 
   const moveDateToDirection = (prevDate, oldDate, newDate, allowedDays, holidays,lautakunta,moveToPast) => {
-    console.log(prevDate, oldDate, newDate,lautakunta,moveToPast)
     let previousDate = new Date(prevDate);
     const oldDateObj = new Date(oldDate);
     let newDateObj = new Date(newDate);
