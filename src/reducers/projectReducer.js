@@ -661,7 +661,11 @@ export const reducer = (state = initialState, action) => {
         if(updatedPayload?.attribute_data["vahvista_kaavaehdotus_lautakunnassa"]) {
           updatedPayload.attribute_data["ehdotus_lautakuntaan_2"] = true;
         }
-      } 
+      }
+
+      //When project is fetched it has all phase data, hide phases from data that are not in use when project is create
+      //(like oas esillaolo 2,3 etc)
+      updatedPayload.attribute_data = objectUtil.filterHiddenKeys(updatedPayload.attribute_data);
 
       return {
         ...state,
