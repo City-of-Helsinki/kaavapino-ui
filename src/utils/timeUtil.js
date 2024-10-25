@@ -482,7 +482,7 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       //Lautakunta siirtyy eteenpäin loputtomasti. Vetää mukana määräaikaa.
       //Lautakunta siirtyy taaksepäin minimiin. Vetää mukana määräaikaa ja pysähtyy minimiin.
       const miniumDaysPast = matchingItem.initial_distance.distance
-      const dateToComparePast = formValues[matchingItem?.previous_deadline]
+      const dateToComparePast = formValues[matchingItem?.previous_deadline] ? formValues[matchingItem?.previous_deadline] : formValues[matchingItem?.initial_distance?.base_deadline]
       let newDisabledDates = dateTypes?.lautakunnan_kokouspäivät?.dates
       const firstPossibleDateToSelect = addDays("lautakunta",dateToComparePast,miniumDaysPast,dateTypes?.lautakunnan_kokouspäivät?.dates,true)
       newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
