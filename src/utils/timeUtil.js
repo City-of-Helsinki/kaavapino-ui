@@ -146,9 +146,33 @@
       // Make daysDifference positive for loop
       daysDifference = Math.abs(daysDifference);
       // Move previousDate forward or backward by daysDifference
-      let movedDays = 0;
-      while (movedDays < daysDifference) {
-        // Move date by one day in the specified direction
+      let movedDays = 1;
+      if(movedDays < daysDifference){
+        while (movedDays < daysDifference) {
+          // Move date by one day in the specified direction
+          if(moveToPast){
+            previousDate.setDate(previousDate.getDate() - 1);
+          }
+          else{
+            previousDate.setDate(previousDate.getDate() + 1);
+          }
+          // Skip non-allowed days
+          while (!isAllowedDate(previousDate)) {
+            if(moveToPast){
+              previousDate.setDate(previousDate.getDate() - 1);
+            }
+            else{
+              previousDate.setDate(previousDate.getDate() + 1);
+            }
+            movedDays += 1;
+          }
+          // Increment movedDays only when on an allowed day
+          if (isAllowedDate(previousDate)) {
+            movedDays += 1;
+          }
+        }
+      }
+      else{//If just one day difference
         if(moveToPast){
           previousDate.setDate(previousDate.getDate() - 1);
         }
@@ -163,11 +187,6 @@
           else{
             previousDate.setDate(previousDate.getDate() + 1);
           }
-          movedDays += 1;
-        }
-        // Increment movedDays only when on an allowed day
-        if (isAllowedDate(previousDate)) {
-          movedDays += 1;
         }
       }
       return previousDate;
