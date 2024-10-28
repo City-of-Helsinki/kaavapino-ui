@@ -96,15 +96,12 @@
     return new Date(currentDate);
   }
 
-  const moveDateToDirection = (prevDate, oldDate, newDate, allowedDays, holidays,lautakunta,moveToPast) => {
+  const moveDateToDirection = (prevDate, oldDate, newDate, allowedDays, holidays,lautakunta,moveToPast,miniumGap) => {
     let previousDate = new Date(prevDate);
     const oldDateObj = new Date(oldDate);
     let newDateObj = new Date(newDate);
     let timeDifference = lautakunta ? previousDate - newDateObj : newDateObj - oldDateObj;
     let daysDifference = timeDifference / (1000 * 3600 * 24);// Calculate the difference in days
-    let direction = daysDifference > 0 ? 1 : -1; // 1 for forward, -1 for backward
-    // Make daysDifference positive for loop
-    daysDifference = Math.abs(daysDifference);
 
     // Helper function to check if a date is allowed
     const isAllowedDate = (date) => {
@@ -117,26 +114,37 @@
      };
 
     if (lautakunta) {
-      let movedDays = daysDifference;
-      while (movedDays > 27) {
-        // Move date by one day in the specified direction
-        if(moveToPast){
-          previousDate.setDate(previousDate.getDate() - 1);
+      //22 + 5 gap because lautakunta is moved to next/previous available lautakuntapäivä tuesday
+      const initialDistance = miniumGap + 5;
+      if(moveToPast){
+        //Moving to past
+        if(daysDifference > initialDistance){
+          daysDifference = daysDifference - initialDistance
+          previousDate.setDate(previousDate.getDate() - daysDifference);
+          console.log(previousDate)
+          // Move previousDate to the next available allowed day
+          while (!allowedDays.includes(previousDate.toISOString().split('T')[0]) || holidays.includes(previousDate.toISOString().split('T')[0]) || isWeekend(previousDate)) {
+            //Calculate so that always lands to direction(previous or next) weeks tuesday 
+            previousDate.setDate(previousDate.getDate() - 1);
+          }
         }
-        else{
-          previousDate.setDate(previousDate.getDate() + 1);
+      }
+      else{
+        //Check if date moving is needed
+        if(daysDifference < initialDistance){
+          // Move previousDate to the next available allowed day
+          while (!allowedDays.includes(previousDate.toISOString().split('T')[0]) || holidays.includes(previousDate.toISOString().split('T')[0]) || isWeekend(previousDate)) {
+            //Calculate so that always lands to direction(previous or next) weeks tuesday
+            //Probably not needed because the date is already in the future
+            previousDate.setDate(previousDate.getDate() + 1);
+          }
         }
-        movedDays--;
       }
-
-      // Move previousDate to the next available allowed day
-      while (!allowedDays.includes(previousDate.toISOString().split('T')[0]) || holidays.includes(previousDate.toISOString().split('T')[0]) || isWeekend(previousDate)) {
-        previousDate.setDate(previousDate.getDate() + direction);
-      }
-
       return previousDate;
     } 
     else {
+      // Make daysDifference positive for loop
+      daysDifference = Math.abs(daysDifference);
       // Move previousDate forward or backward by daysDifference
       let movedDays = 0;
       while (movedDays < daysDifference) {
