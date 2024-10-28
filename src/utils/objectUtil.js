@@ -390,7 +390,7 @@ const getHighestNumberedObject = (obj1, arr) => {
               }
               else if(arr[currentIndex]?.key?.includes("lautakunnassa") || arr[currentIndex]?.key?.includes("alkaa")){
                 //lautakunta and alkaa values
-                prevDate = timeUtil.moveDateToDirection(prevDate,oldDate,movedDate,disabledDates?.date_types[arr[i + 1]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,lautakunta,moveToPast)
+                prevDate = timeUtil.moveDateToDirection(prevDate,oldDate,movedDate,disabledDates?.date_types[arr[i - 1]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,lautakunta,moveToPast)
                 prevDate.setDate(prevDate.getDate());
                 arr[i - 1].value = prevDate.toISOString().split('T')[0];
               }
