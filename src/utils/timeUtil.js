@@ -72,14 +72,20 @@
     return daysDifference;
   }
 
-  const dateDifference = (cur,previousValue, currentValue, allowedDays, holidays, miniumGap) => {
+  const dateDifference = (cur,previousValue, currentValue, allowedDays, holidays, miniumGap, projectSize, addingNew) => {
     let previousDate = new Date(previousValue);
     let currentDate = new Date(currentValue);
     let gap = miniumGap;
     //There is only generated values field in Excel but in the future should have separate contanst distances and generated values
     //maaraiaka constant distnace should be 5 always
-    if(!cur.includes("_lautakunta_aineiston_maaraaika") && !cur.includes("kylk_aineiston_maaraaika") && cur.includes("maaraaika") || miniumGap >= 31){
-      gap = 5
+    if(!addingNew){
+      if(!cur.includes("_lautakunta_aineiston_maaraaika") && !cur.includes("kylk_aineiston_maaraaika") && cur.includes("maaraaika") || miniumGap >= 31){
+        gap = 5
+      }
+    }
+    else if( (addingNew && (projectSize === 'M' || projectSize === 'S') && cur.includes("milloin_ehdotuksen_nahtavilla_paattyy")) ){
+      //not like this in Excel but is cheked this way in backend, maybe needs to be changed in Excel or backend check but hardcoded for now, otherwise saving not possible.
+      gap = 30
     }
     // Check if the previous date is greater than or equal to the current date
     if (previousDate >= currentDate) {
@@ -121,7 +127,6 @@
         if(daysDifference > initialDistance){
           daysDifference = daysDifference - initialDistance
           previousDate.setDate(previousDate.getDate() - daysDifference);
-          console.log(previousDate)
           // Move previousDate to the next available allowed day
           while (!allowedDays.includes(previousDate.toISOString().split('T')[0]) || holidays.includes(previousDate.toISOString().split('T')[0]) || isWeekend(previousDate)) {
             //Calculate so that always lands to direction(previous or next) weeks tuesday 
