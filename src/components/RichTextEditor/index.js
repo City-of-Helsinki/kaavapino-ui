@@ -239,13 +239,17 @@ function RichTextEditor(props) {
   useEffect(() => {
     if (props.isTabActive){
       if (!saving && hadFocusBeforeTabOut) {
-        editorRef?.current?.editor.focus()
-        setHadFocusBeforeTabOut(false)
+        if (rollingInfo){
+          editRollingField();
+        } else {
+          editorRef?.current?.editor.focus();
+        }
+        setHadFocusBeforeTabOut(false);
       }
     }
     else if (toolbarVisible){
-      setHadFocusBeforeTabOut(true)
-      editorRef.current.editor.blur()
+      setHadFocusBeforeTabOut(true);
+      editorRef.current.editor.blur();
     }
   }, [props.isTabActive, saving])
 
@@ -577,7 +581,7 @@ function RichTextEditor(props) {
   const editRollingField = () => {
     setEditField(true)
     setTimeout(function(){
-      editorRef.current.editor.focus()
+      editorRef?.current?.editor.focus()
     }, 200);
   }
 
