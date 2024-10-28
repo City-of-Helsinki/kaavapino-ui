@@ -338,7 +338,7 @@ const getHighestNumberedObject = (obj1, arr) => {
           }
           else{
             //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
-            newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,miniumGap) : newDate
+            newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,miniumGap,projectSize,true) : newDate
           }
           // Update the array with the new date
           newDate.setDate(newDate.getDate());
@@ -374,7 +374,7 @@ const getHighestNumberedObject = (obj1, arr) => {
           }
           else{
             //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
-            newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,miniumGap,moveToPast) : newDate
+            newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,miniumGap,projectSize,false) : newDate
             //Paattyy and nahtavillaolo l-xl are independent of other values
             if( ((projectSize === "XS" || projectSize === "S" || projectSize === "M") && i === currentIndex && !arr[currentIndex]?.key?.includes("paattyy")) ||
              ((projectSize === "XL" || projectSize === "L") && i === currentIndex && !arr[currentIndex]?.key?.includes("paattyy") && !arr[currentIndex]?.key.includes("nahtavilla_alkaa") && !arr[currentIndex]?.key.includes("nahtavilla_paattyy")) ){

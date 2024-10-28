@@ -20,6 +20,7 @@ import objectUtil from '../../../utils/objectUtil'
 import textUtil from '../../../utils/textUtil'
 import { updateDateTimeline } from '../../../actions/projectActions';
 import { getVisibilityBoolName } from '../../../utils/projectVisibilityUtils';
+import timeUtil from '../../../utils/timeUtil'
 
 class EditProjectTimeTableModal extends Component {
   constructor(props) {
@@ -918,7 +919,7 @@ class EditProjectTimeTableModal extends Component {
               sections[x].attributesubgroup === "Esille" || 
               sections[x].attributesubgroup === "Esityslistalle")
             ){
-            distanceArray.push({"name":sections[x].name,"distance":sections[x]?.initial_distance?.distance,"linkedData":sections[x].previous_deadline})
+            distanceArray.push({"name":sections[x].name,"distance":sections[x]?.initial_distance?.distance,"previous":sections[x]?.distance_from_previous,"linkedData":sections[x].previous_deadline})
           }
         }
       }  
@@ -975,7 +976,7 @@ class EditProjectTimeTableModal extends Component {
         }
 
         if(matchingSection.name.includes("_alkaa")){
-          daysToAdd = matchingSection.distance
+          daysToAdd = matchingSection.previous
         }
         else if(matchingSection.name.includes("_paattyy")){
           daysToAdd = matchingSection.distance
@@ -996,7 +997,7 @@ class EditProjectTimeTableModal extends Component {
             newDate.setDate(newDate.getDate() + 1);
             const dateStr = newDate.toISOString().split('T')[0];
             //Skip dates that are not compatible
-            if (dateFilter?.includes(dateStr) && !this.props.lomapaivat?.includes(dateStr)) {
+            if (dateFilter?.includes(dateStr) && !this.props.lomapaivat?.includes(dateStr) && !timeUtil.isWeekend(dateStr)) {
                 daysToAdd--;
             }
           }
