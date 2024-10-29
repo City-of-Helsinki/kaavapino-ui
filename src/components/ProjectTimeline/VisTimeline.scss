@@ -663,42 +663,50 @@
         background-color: $color-copper !important;
         height: $size8;
         border-radius: 20px;
+        z-index: 100;
     }
     .color-summer{
         background-color: $color-summer !important;
         height: $size8;
         border-radius: 20px;
+        z-index: 100;
     }
     .color-metro{
         background-color: $color_metro !important;
         height: $size8;
         border-radius: 20px;
+        z-index: 100;
     }
     .color-bus{
         background-color: $color_bus !important;
         color:white;
         height: $size8;
         border-radius: 20px;
+        z-index: 100;
     }
     .color-gold{
         background-color: $color_gold !important;
         height: $size8;
         border-radius: 20px;
+        z-index: 100;
     }
     .color-fog{
         background-color: $color_fog !important;
         height: $size8;
         border-radius: 20px;
+        z-index: 100;
     }
     .color-green{
         background-color: $color_phase_principles !important;
         height: $size8;
         border-radius: 20px;
+        z-index: 100;
     }
     .color-suomenlinna{
         background-color: $color_phase_draft !important;
         height: $size8;
         border-radius: 20px;
+        z-index: 100;
     }
 
     .vis-foreground .vis-group {
