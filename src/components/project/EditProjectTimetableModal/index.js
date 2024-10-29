@@ -55,36 +55,15 @@ class EditProjectTimeTableModal extends Component {
       items = this.findConsecutivePeriods(disabledDates,items,false);
       items = this.findConsecutivePeriods(lomapaivat,items,true)
       this.setState({items,groups,visValues:attributeData})
+
       let sectionAttributes = []
-      for (let index = 0; index < deadlineSections.length; index++) {
-        const phaseSection = deadlineSections[index].sections
-        for (let x = 0; x < phaseSection.length; x++) {
-          const attributes = phaseSection[x].attributes
-          for (let y = 0; y < attributes.length; y++) {
-            if(attributes[y].type === "date" && attributes[y].display !== "readonly" && attributes[y].label !== "Lausunnot viimeistään" && attributeData[attributes[y].name]){
-              //Create section attributes which are always in correct order to check dates in timeline
-              sectionAttributes.push(attributes[y])
-            }
-          }
-    
-        }
-      }
+      this.extractAttributes(deadlineSections, attributeData, sectionAttributes, (attribute, attributeData) =>
+        attribute.label !== "Lausunnot viimeistään" && attributeData[attribute.name]
+      );
       this.setState({sectionAttributes})
       
       const unfilteredSectionAttributes = []
-      for (let index = 0; index < deadlineSections.length; index++) {
-        const phaseSection = deadlineSections[index].sections
-        for (let x = 0; x < phaseSection.length; x++) {
-          const attributes = phaseSection[x].attributes
-          for (let y = 0; y < attributes.length; y++) {
-            if(attributes[y].type === "date" && attributes[y].display !== "readonly"){
-              //Create section attributes which are always in correct order to check dates in timeline
-              unfilteredSectionAttributes.push(attributes[y])
-            }
-          }
-    
-        }
-      }
+      this.extractAttributes(deadlineSections, attributeData, unfilteredSectionAttributes);
       this.setState({unfilteredSectionAttributes})
     }
   }
@@ -101,20 +80,10 @@ class EditProjectTimeTableModal extends Component {
     } = this.props
 
     if (prevProps.attributeData && prevProps.attributeData !== attributeData) {
-      let sectionAttributes = []
-      for (let index = 0; index < deadlineSections.length; index++) {
-        const phaseSection = deadlineSections[index].sections
-        for (let x = 0; x < phaseSection.length; x++) {
-          const attributes = phaseSection[x].attributes
-          for (let y = 0; y < attributes.length; y++) {
-            if(attributes[y].type === "date" && attributes[y].display !== "readonly" && attributes[y].label !== "Lausunnot viimeistään" && attributeData[attributes[y].name]){
-              //Create section attributes which are always in correct order to check dates in timeline
-              sectionAttributes.push(attributes[y])
-            }
-          }
-    
-        }
-      }
+      let sectionAttributes = [];
+      this.extractAttributes(deadlineSections, attributeData, sectionAttributes, (attribute, attributeData) =>
+        attribute.label !== "Lausunnot viimeistään" && attributeData[attribute.name]
+      );
       this.setState({sectionAttributes})
       //when UPDATE_DATE_TIMELINE updates attribute values
       Object.keys(attributeData).forEach(fieldName => 
@@ -158,20 +127,7 @@ class EditProjectTimeTableModal extends Component {
             }
             else if(typeof newObjectArray[0]?.obj1 === "undefined" && typeof newObjectArray[0]?.obj2 === "string" || newObjectArray[1] && typeof newObjectArray[1]?.obj1 === "undefined" && typeof newObjectArray[1]?.obj2 === "string"){
               //Get added groups last date field and update all timelines ahead
-              let field
-              let formattedDate
-              for (let i = 0; i < newObjectArray.length; i++) {
-                if(newObjectArray[i]?.key.includes("paattyy") && typeof newObjectArray[i]?.obj2 === "string"){
-                  field = newObjectArray[i]?.key
-                  formattedDate = newObjectArray[i]?.obj2
-                  break;
-                }
-                else if(newObjectArray[i]?.key.includes("lautakunnassa") && typeof newObjectArray[i]?.obj2 === "string"){
-                  field = newObjectArray[i]?.key
-                  formattedDate = newObjectArray[i]?.obj2
-                  break;
-                }
-              }
+              const { field, formattedDate } = this.getLastDateField(newObjectArray);
               //Dispatch added values to move other values in projectReducer if miniums are reached
               if(field && formattedDate){
                 this.props.dispatch(updateDateTimeline(field,formattedDate,formValues,true,deadlineSections));
@@ -196,6 +152,40 @@ class EditProjectTimeTableModal extends Component {
       return false
     }
     return true
+  }
+
+  extractAttributes(deadlineSections, attributeData, targetArray, additionalConditions = () => true) {
+    for (let index = 0; index < deadlineSections.length; index++) {
+      const phaseSection = deadlineSections[index].sections;
+      for (let x = 0; x < phaseSection.length; x++) {
+        const attributes = phaseSection[x].attributes;
+        for (let y = 0; y < attributes.length; y++) {
+          if (attributes[y].type === "date" && attributes[y].display !== "readonly" && additionalConditions(attributes[y], attributeData)) {
+            // Create section attributes which are always in correct order to check dates in timeline
+            targetArray.push(attributes[y]);
+          }
+        }
+      }
+    }
+  }
+
+  getLastDateField(newObjectArray) {
+    let field;
+    let formattedDate;
+
+    for (let i = 0; i < newObjectArray.length; i++) {
+      if (this.isMatchingKey(newObjectArray[i], "paattyy") || this.isMatchingKey(newObjectArray[i], "lautakunnassa")) {
+        field = newObjectArray[i]?.key;
+        formattedDate = newObjectArray[i]?.obj2;
+        break;
+      }
+    }
+
+    return { field, formattedDate };
+  }
+
+  isMatchingKey(obj, substr) {
+    return obj?.key.includes(substr) && typeof obj?.obj2 === "string";
   }
 
   trimPhase = (phase) => {
