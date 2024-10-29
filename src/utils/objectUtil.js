@@ -390,18 +390,18 @@ const getHighestNumberedObject = (obj1, arr) => {
               }
               else if(arr[currentIndex]?.key?.includes("lautakunnassa") || arr[currentIndex]?.key?.includes("alkaa")){
                 //lautakunta and alkaa values
-                prevDate = timeUtil.moveDateToDirection(prevDate,oldDate,movedDate,disabledDates?.date_types[arr[i - 1]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,lautakunta,moveToPast)
+                prevDate = timeUtil.moveDateToDirection(prevDate,oldDate,movedDate,disabledDates?.date_types[arr[i - 1]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,lautakunta,moveToPast,false)
                 prevDate.setDate(prevDate.getDate());
                 arr[i - 1].value = prevDate.toISOString().split('T')[0];
               }
               else{
                 //Maaraiaka moving
-                nextDate = timeUtil.moveDateToDirection(nextDate,oldDate,movedDate,disabledDates?.date_types[arr[i + 1]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,lautakunta,moveToPast)
+                nextDate = timeUtil.moveDateToDirection(nextDate,oldDate,movedDate,disabledDates?.date_types[arr[i + 1]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,lautakunta,moveToPast,false)
                 nextDate.setDate(nextDate.getDate());
                 arr[i + 1].value = nextDate.toISOString().split('T')[0];
                 if(!arr[currentIndex]?.key?.includes("kylk_maaraaika") && !arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("lautakunnassa") && arr[currentIndex]?.key?.includes("maaraaika")){
                   //When moving maaraaika in esillaolo or nahtavillaolo not in lautakunta
-                  nextOfNextDate = timeUtil.moveDateToDirection(nextOfNextDate,oldDate,movedDate,disabledDates?.date_types[arr[i + 2]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,moveToPast)
+                  nextOfNextDate = timeUtil.moveDateToDirection(nextOfNextDate,oldDate,movedDate,disabledDates?.date_types[arr[i + 2]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,lautakunta,moveToPast,false)
                   nextOfNextDate.setDate(nextOfNextDate.getDate());
                   arr[i + 2].value = nextOfNextDate.toISOString().split('T')[0];
                 }
