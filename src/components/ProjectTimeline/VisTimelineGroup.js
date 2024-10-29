@@ -712,23 +712,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             let content = group.content;
             label.classList.add("timeline-button-label");
 
-            if (content.includes("-1")) {
-              content = content.replace("-1", "");
-              label.innerHTML = content + " ";
-            } else if (content.includes("-")) {
-              content = content.replace("-", " ");
-              label.innerHTML = content + " ";
-            }
-            else if (content.includes("Vaiheen kesto")) {
-              label.innerHTML = "Vaiheen lisätiedot";
-            } else {
-              label.innerHTML = content + " ";
-            }
-
-            if (content.includes("Nahtavillaolo")) {
-              content = content.replace("Nahtavillaolo", "Nähtävilläolo");
-              label.innerHTML = content + " ";
-            }
+            const formattedContent = formatContent(content);
+            label.innerHTML = formattedContent + " ";
 
             container.insertAdjacentElement("afterBegin", label);
 
@@ -857,6 +842,24 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
     }, [visValues]);
 
+    const formatContent = (content, keepNumberOne = false) => {
+      if (content) {
+        if (content.includes("-1" && !keepNumberOne)) {
+          content = content.replace("-1", "");
+        } else if (content.includes("-")) {
+          content = content.replace("-", " - ");
+        } else if (content.includes("Vaiheen kesto")) {
+          content = "Vaiheen lisätiedot";
+        }
+
+        if (content.includes("Nahtavillaolo")) {
+          content = content.replace("Nahtavillaolo", "Nähtävilläolo");
+        }
+
+        return content;
+      }
+    };
+
     return (
       !deadlines ? <LoadingSpinner />
       :
@@ -882,7 +885,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         <TimelineModal 
           open={toggleTimelineModal.open}
           group={timelineData.group}
-          content={timelineData.content}
+          content={formatContent(timelineData.content, true)}
           deadlinegroup={toggleTimelineModal.deadlinegroup}
           deadlines={deadlines}
           openDialog={openDialog}
