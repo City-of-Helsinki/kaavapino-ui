@@ -712,7 +712,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             let content = group.content;
             label.classList.add("timeline-button-label");
 
-            const formattedContent = formatContent(content);
+            const formattedContent = formatContent(content, false);
             label.innerHTML = formattedContent + " ";
 
             container.insertAdjacentElement("afterBegin", label);
@@ -844,7 +844,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
     const formatContent = (content, keepNumberOne = false) => {
       if (content) {
-        if (content.includes("-1" && !keepNumberOne)) {
+        if (content.includes("-1") && !keepNumberOne) {
           content = content.replace("-1", "");
         } else if (content.includes("-")) {
           content = content.replace("-", " - ");
