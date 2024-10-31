@@ -571,8 +571,27 @@
     height: 75vh;
     padding-bottom: 0px !important;
     margin-left: 0px !important;
-    margin-right: 33px !important;
+    margin-right: 28px !important;
+    padding-right: 5px !important;
     overflow: auto !important;
+    scrollbar-gutter: stable;
+
+    &::-webkit-scrollbar {
+      width: 7px;
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      color: #808080;
+      background-clip: padding-box;
+      position: relative;
+    }
+
+    &::-webkit-scrollbar-track {
+      background-color: transparent;
+      margin-block-start: 165px;
+    }
+
     .date-content{
       display: flex;
       flex-wrap: wrap;
@@ -675,18 +694,21 @@
   margin-top: 70px !important;
   overflow-y: auto; */
   max-height: 75vh;
-  max-width: 513px !important;
+  max-width: 529px !important;
   position: absolute !important;
   top: 83px;
-  right: 8px;
+  right: 9px;
   left: auto;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-gutter: stable;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
 
   .header{
-    padding-bottom: 16px !important;
-    padding-top: 24px !important;
+    padding: 16px 0 !important;
+    margin-left: 16px !important;
     border-bottom: none !important;
     .breadcrumb {
       padding: 10px 16px;
@@ -695,7 +717,7 @@
       margin: 0;
       padding-top: 0;
       padding-bottom: 0;
-      padding-left: 8px;
+      padding-left: 33px;
       li:first-of-type {
         display: inline;
         font-size: $size16;
@@ -731,15 +753,16 @@
   }
 
   .content{
-    min-height: 80%;
+    height: 94vh;
     margin-top: 0;
-    margin-left: 33px !important;
-    margin-right: 33px !important;
+    margin-left: 16px !important;
+    margin-right: 16px !important;
     .date-content{
       display: flex;
       flex-direction: row;
       flex-wrap: wrap;
       gap: 20px;
+      padding: 0 33px;
       & > div{
         width: 100%;
       }
@@ -812,6 +835,17 @@
       .deadlines-confirm-button{
         max-width: 210px;
       }
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 16px;
+        height: 101vh;
+        background-color: transparent !important;
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.01) 30%, rgba(153, 153, 153, 0.2) 100%);
+        border-right: 1px solid #808080 !important;
+      }
     }
     button{
       justify-content: flex-start;
@@ -822,6 +856,13 @@
     .remove-content{
       display: none;
     }
+    span.content {
+      margin-left: 0 !important;
+      display: inline;
+    }
+  }
+  .content:not(span.content){
+    background-color: #fff;
   }
 
   .actions{
