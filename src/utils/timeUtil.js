@@ -72,7 +72,7 @@
     return daysDifference;
   }
 
-  const dateDifference = (cur,previousValue, currentValue, allowedDays, holidays, miniumGap, projectSize, addingNew) => {
+  const dateDifference = (cur,previousValue, currentValue, allowedDays, disabledDays, miniumGap, projectSize, addingNew) => {
     let previousDate = new Date(previousValue);
     let currentDate = new Date(currentValue);
     let gap = miniumGap;
@@ -85,7 +85,7 @@
     }
     else if( (addingNew && (projectSize === 'M' || projectSize === 'S') && cur.includes("milloin_ehdotuksen_nahtavilla_paattyy")) ){
       //not like this in Excel but is cheked this way in backend, maybe needs to be changed in Excel or backend check but hardcoded for now, otherwise saving not possible.
-      gap = 30
+      gap = 23
     }
     // Check if the previous date is greater than or equal to the current date
     if (previousDate >= currentDate) {
@@ -95,107 +95,111 @@
     }
     // Ensure the final date is in allowedDays and not in holidays
     let dateStr = currentDate.toISOString().split('T')[0]; // Convert to YYYY-MM-DD format
-    while (!allowedDays.includes(dateStr) || holidays.includes(dateStr) || calculateWeekdayDifference(previousDate, currentDate) < gap) {
+    while (!allowedDays.includes(dateStr) || disabledDays.includes(dateStr) || calculateWeekdayDifference(previousDate, currentDate) < gap) {
       currentDate.setDate(currentDate.getDate() + 1); // Increment the date by one day
       dateStr = currentDate.toISOString().split('T')[0]; // Update dateStr to the new date
     }
     return new Date(currentDate);
   }
 
-  const moveDateToDirection = (prevDate, oldDate, newDate, allowedDays, holidays,lautakunta,moveToPast,miniumGap) => {
-    let previousDate = new Date(prevDate);
-    const oldDateObj = new Date(oldDate);
-    let newDateObj = new Date(newDate);
-    let timeDifference = lautakunta ? previousDate - newDateObj : newDateObj - oldDateObj;
-    let daysDifference = timeDifference / (1000 * 3600 * 24);// Calculate the difference in days
+  const countHolidaysInRange = (startDate, endDate, holidays) => {
+    let holidayCount = 0;
+    let currentDate = new Date(startDate);
 
-    // Helper function to check if a date is allowed
-    const isAllowedDate = (date) => {
-      const dateStr = date.toISOString().split('T')[0];
-      return (
-        allowedDays.includes(dateStr) &&
-        !holidays.includes(dateStr) &&
-        !isWeekend(dateStr)
-      );
-     };
+    while (currentDate <= endDate) {
+        const dayOfWeek = currentDate.getDay();
+        const formattedDate = currentDate.toISOString().slice(0, 10);
+        if (holidays.includes(formattedDate) && dayOfWeek !== 0 && dayOfWeek !== 6) {
+            holidayCount++;
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
 
-    if (lautakunta) {
-      //22 + 5 gap because lautakunta is moved to next/previous available lautakuntapäivä tuesday
-      const initialDistance = miniumGap + 5;
-      if(moveToPast){
-        //Moving to past
-        if(daysDifference > initialDistance){
-          daysDifference = daysDifference - initialDistance
-          previousDate.setDate(previousDate.getDate() - daysDifference);
-          // Move previousDate to the next available allowed day
-          while (!allowedDays.includes(previousDate.toISOString().split('T')[0]) || holidays.includes(previousDate.toISOString().split('T')[0]) || isWeekend(previousDate)) {
-            //Calculate so that always lands to direction(previous or next) weeks tuesday 
-            previousDate.setDate(previousDate.getDate() - 1);
-          }
-        }
+    return holidayCount;
+  }
+
+  const calculateWorkingDaysWithExactGap = (startDate, endDate, changingPrevious, minGap, holidays, allowedDays, lautakuntamaaraaika) => {
+    function isWorkingDay(date) {
+      const day = date.getDay();
+      const formattedDate = date.toISOString().slice(5, 10);
+      // Check if it's an allowed day, which can override weekends and holidays
+      if (allowedDays.includes(formattedDate)) {
+        return true;
       }
-      else{
-        //Check if date moving is needed
-        if(daysDifference < initialDistance){
-          // Move previousDate to the next available allowed day
-          while (!allowedDays.includes(previousDate.toISOString().split('T')[0]) || holidays.includes(previousDate.toISOString().split('T')[0]) || isWeekend(previousDate)) {
-            //Calculate so that always lands to direction(previous or next) weeks tuesday
-            //Probably not needed because the date is already in the future
-            previousDate.setDate(previousDate.getDate() + 1);
-          }
-        }
-      }
-      return previousDate;
-    } 
-    else {
-      // Make daysDifference positive for loop
-      daysDifference = Math.abs(daysDifference);
-      // Move previousDate forward or backward by daysDifference
-      let movedDays = 1;
-      if(movedDays < daysDifference){
-        while (movedDays < daysDifference) {
-          // Move date by one day in the specified direction
-          if(moveToPast){
-            previousDate.setDate(previousDate.getDate() - 1);
-          }
-          else{
-            previousDate.setDate(previousDate.getDate() + 1);
-          }
-          // Skip non-allowed days
-          while (!isAllowedDate(previousDate)) {
-            if(moveToPast){
-              previousDate.setDate(previousDate.getDate() - 1);
-            }
-            else{
-              previousDate.setDate(previousDate.getDate() + 1);
-            }
-            movedDays += 1;
-          }
-          // Increment movedDays only when on an allowed day
-          if (isAllowedDate(previousDate)) {
-            movedDays += 1;
-          }
-        }
-      }
-      else{//If just one day difference
-        if(moveToPast){
-          previousDate.setDate(previousDate.getDate() - 1);
+      // Otherwise, check if it's a regular working day (not weekend or holiday)
+      return day !== 0 && day !== 6 && !holidays.includes(formattedDate);
+    }
+
+    // Initialize the start date as a Date object
+    const start = new Date(startDate);
+    let current = new Date(start);
+    let workingDays = 0;
+    
+    // Adjust the date to reach exactly minGap working days
+    while (workingDays < minGap) {
+        // Move the date in the specified direction
+        if(changingPrevious){
+          current.setDate(current.getDate() - 1);
         }
         else{
-          previousDate.setDate(previousDate.getDate() + 1);
+          current.setDate(current.getDate() + 1);
         }
-        // Skip non-allowed days
-        while (!isAllowedDate(previousDate)) {
-          if(moveToPast){
-            previousDate.setDate(previousDate.getDate() - 1);
-          }
-          else{
-            previousDate.setDate(previousDate.getDate() + 1);
-          }
+
+        // Increment working days count only if it’s a valid working day
+        if (isWorkingDay(current)) {
+            workingDays++;
         }
-      }
-      return previousDate;
     }
+
+    // 'current' date is now the adjusted new end date
+    let newEndDate = current;
+    // Move backwards until newEndDate is in allowedDays
+    // Check if newEndDate is a holiday or weekend and move backwards if necessary
+    while (!allowedDays.includes(newEndDate.toISOString().split('T')[0])) {
+      //gap can be creater but not smaller
+      newEndDate.setDate(newEndDate.getDate() - 1);
+    }
+
+    // If lautakuntamaaraaika is true, adjust newEndDate to the nearest working Tuesday
+    if (lautakuntamaaraaika) {
+      while (newEndDate.getDay() !== 2 || !isWorkingDay(newEndDate)) {
+          // Move to the next day
+          newEndDate.setDate(newEndDate.getDate() + 1);
+      }
+    }
+
+    // Calculate total working days between start and newEndDate
+    let calendarDays = 0;
+    let tempDate = new Date(start);
+    if (start < newEndDate) {
+      // Moving forward in time
+      while (tempDate < newEndDate) {
+        if (isWorkingDay(tempDate)) {
+            calendarDays++;
+        }
+        tempDate.setDate(tempDate.getDate() + 1);
+      }
+      } else {
+      // Moving backward in time
+      while (tempDate > newEndDate) {
+        if (isWorkingDay(tempDate)) {
+            calendarDays++;
+        }
+        tempDate.setDate(tempDate.getDate() - 1);
+      }
+    }
+    const holidayCount = countHolidaysInRange(startDate, newEndDate, holidays)
+    console.log(holidayCount)
+    if(holidayCount > 0){
+      if(changingPrevious){
+        newEndDate.setDate(newEndDate.getDate() - holidayCount);
+      }
+      else{
+        newEndDate.setDate(newEndDate.getDate() + holidayCount);
+      }
+    }
+    console.log("daysbetween:",calendarDays,"added holidays",calendarDays+holidayCount,"Minium gap",minGap,"Start date",start.toISOString().split('T')[0],"New date:",newEndDate.toISOString().split('T')[0])
+    return newEndDate.toISOString().split('T')[0];
   };
   
 
@@ -670,5 +674,5 @@ export default {
     isHoliday,
     calculateDisabledDates,
     getHighestDate,
-    moveDateToDirection
+    calculateWorkingDaysWithExactGap
 }
