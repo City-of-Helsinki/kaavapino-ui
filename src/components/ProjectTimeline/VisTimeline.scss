@@ -12,9 +12,6 @@
     }
     .vis-timeline .vis-content {
         transform: translateY(0px) !important;
-        .vis-itemset {
-            height: 75vh !important;
-        }
     }
     .vis-timeline {
         border-top: none;
@@ -39,6 +36,13 @@
         top: 81px !important;
         left: 301px !important;
         margin-right: -3.5px;
+    }
+
+    .vis-panel.vis-center .vis-content {
+        .vis-itemset {
+            height: auto !important;
+            min-height: 57.5vh !important;
+        }
     }
 
     .vis-time-axis.vis-foreground{
