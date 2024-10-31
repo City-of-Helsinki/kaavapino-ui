@@ -224,6 +224,10 @@ export const getFieldAutofillValue = (
           formExtraValue = extraVariables
             ? projectUtils.findValueFromObject(formValues, extraVariables[0])
             : ''
+          
+          if (formExtraValue?.ops) {
+            formExtraValue = toPlaintext(formValue.ops).trim()
+          }
         }
 
         // List rule
@@ -279,7 +283,12 @@ export const getFieldAutofillValue = (
               } else {
                 if (!projectNameAdded) {
                   if (thenBranch && thenBranch !== '') {
-                    returnValue = `${formExtraValue} ${thenBranch}`
+                    if (callerFormName === EDIT_PROJECT_TIMETABLE_FORM){
+                      // Dirty hack, but so is the rest of this entire file
+                      returnValue = `${formExtraValue}`
+                    } else {
+                      returnValue = `${formExtraValue} ${thenBranch}`
+                    }
                   } else {
                     returnValue = formExtraValue
                   }

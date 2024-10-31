@@ -298,10 +298,10 @@ class CustomField extends Component {
   }
 
   renderSelect = props => {
-    const { choices, multiple_choice, placeholder_text, formName } = this.props.field
+    const { choices, multiple_choice, placeholder_text, autofill_rule } = this.props.field
     const { handleBlurSave, handleLockField, handleUnlockField, lockField, fieldSetDisabled, 
-      insideFieldset, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, phaseIsClosed } = this.props
-
+      insideFieldset, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, phaseIsClosed,
+    formValues, formName } = this.props
     return (
       <SelectInput
         {...props}
@@ -324,6 +324,8 @@ class CustomField extends Component {
         selectedPhase={selectedPhase}
         phaseIsClosed={phaseIsClosed}
         editDisabled={this.props.disabled}
+        autofillRule={autofill_rule}
+        formValues={formValues}
       />
     )
   }
