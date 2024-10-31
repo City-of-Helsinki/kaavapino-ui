@@ -160,7 +160,7 @@ const FormField = ({
   const isCheckBox =
     field && (field.display === 'checkbox' || field.display === 'readonly_checkbox')
 
-  const isDeadlineInfo = field && field.display === 'readonly'
+  const isDeadlineInfo = field && field.display === 'readonly' && field.type !== 'choice'
 
   const syncError = syncronousErrors && syncronousErrors[field.name]
 
