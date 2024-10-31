@@ -97,10 +97,9 @@ const DeadlineInfoText = props => {
   }
 
   const value = determineFieldValue(current, props)
-
   return (props.input.name.includes("nahtavillaolopaivien_lukumaara") ? 
     <p className="deadline-info-readonlytext">{props.label}: {value} pv </p>
-    : <Notification className='deadline-info-notification' size="small" label={props.input.name} >{props.label} {value}</Notification>
+    : <Notification className='deadline-info-notification' size="small" label={props.input.name}>{props.label + ':'}<br/>{value}</Notification>
   )
 }
 
