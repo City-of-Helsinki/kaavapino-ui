@@ -338,7 +338,7 @@ const getHighestNumberedObject = (obj1, arr) => {
           }
           else{
             //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
-            newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,miniumGap,projectSize,true) : newDate
+            newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.disabled_dates?.dates,miniumGap,projectSize,true) : newDate
           }
           // Update the array with the new date
           newDate.setDate(newDate.getDate());
@@ -361,11 +361,8 @@ const getHighestNumberedObject = (obj1, arr) => {
       for (let i = 1; i < arr.length; i++) {
         if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
           && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
-          && !arr[i].key.includes("hyvaksymispaatos_pvm")){
+          && !arr[i].key.includes("hyvaksymispaatos_pvm") && !arr[i].key.includes("lautakunassa_")){
           let newDate = new Date(arr[i].value);
-          let prevDate = i === arr.length - 1 ? null : new Date(arr[i - 1].value);
-          let nextDate = i < arr.length - 1 ? new Date(arr[i + 1].value) : null;
-          let nextOfNextDate = i < arr.length - 2 ? new Date(arr[i + 2].value) : null;
           //Get minium gap for two dates next to each other that are moved. At the moment some previous values are falsely null for some reason, can be remove when is fixed on backend and Excel.
           const miniumGap = arr[i].initial_distance === null ? arr[i].key.includes("lautakunnassa") ? 22 : 5 : arr[i].initial_distance 
           if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")){
@@ -373,39 +370,39 @@ const getHighestNumberedObject = (obj1, arr) => {
             newDate = new Date(arr[i - 1].value);
           }
           else{
-            //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
-            newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,miniumGap,projectSize,false) : newDate
             //Paattyy and nahtavillaolo l-xl are independent of other values
-            if( ((projectSize === "XS" || projectSize === "S" || projectSize === "M") && i === currentIndex && !arr[currentIndex]?.key?.includes("paattyy")) ||
-             ((projectSize === "XL" || projectSize === "L") && i === currentIndex && !arr[currentIndex]?.key?.includes("paattyy") && !arr[currentIndex]?.key.includes("nahtavilla_alkaa") && !arr[currentIndex]?.key.includes("nahtavilla_paattyy")) ){
+            if(((projectSize === "XS" || projectSize === "S" || projectSize === "M") && i === currentIndex && !arr[currentIndex]?.key?.includes("paattyy") && !arr[i]?.key.includes("lautakunassa_")) ||
+             ((projectSize === "XL" || projectSize === "L") && i === currentIndex && !arr[currentIndex]?.key?.includes("paattyy") && !arr[currentIndex]?.key.includes("nahtavilla_alkaa") && !arr[currentIndex]?.key.includes("nahtavilla_paattyy") && !arr[i]?.key.includes("lautakunassa_")) ){
               //Make next or previous or both dates follow the moved date if needed
               //move next or previous value backward as many days as is the difference between old and new date
-              let lautakunta = false
               if(arr[currentIndex]?.key?.includes("kylk_maaraaika") || arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") || arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika")){
                 //maaraika in lautakunta moving
-                lautakunta = true
-                nextDate = timeUtil.moveDateToDirection(nextDate,oldDate,movedDate,disabledDates?.date_types[arr[i + 1]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,lautakunta,moveToPast,arr[i + 1].initial_distance)
-                nextDate.setDate(nextDate.getDate());
-                arr[i + 1].value = nextDate.toISOString().split('T')[0];
+                const result = timeUtil.calculateWorkingDaysWithExactGap(movedDate, arr[i + 1].value, false, arr[i + 1].initial_distance,disabledDates?.date_types?.disabled_dates?.dates,disabledDates?.date_types[arr[i + 1]?.date_type]?.dates,true);
+                arr[i + 1].value = result
               }
-              else if(arr[currentIndex]?.key?.includes("lautakunnassa") || arr[currentIndex]?.key?.includes("alkaa")){
+              else if(arr[currentIndex]?.key?.includes("lautakunnassa") && !arr[currentIndex]?.key?.includes("lautakunnassa_") || arr[currentIndex]?.key?.includes("alkaa")){
                 //lautakunta and alkaa values
-                prevDate = timeUtil.moveDateToDirection(prevDate,oldDate,movedDate,disabledDates?.date_types[arr[i - 1]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,lautakunta,moveToPast,false)
-                prevDate.setDate(prevDate.getDate());
-                arr[i - 1].value = prevDate.toISOString().split('T')[0];
+                const result = timeUtil.calculateWorkingDaysWithExactGap(movedDate, arr[i - 1].value, true, arr[i].initial_distance,disabledDates?.date_types?.disabled_dates?.dates,disabledDates?.date_types[arr[i - 1]?.date_type]?.dates,false);
+                arr[i - 1].value = result
               }
-              else{
+              else if(arr[currentIndex]?.key?.includes("maaraaika")){
                 //Maaraiaka moving
-                nextDate = timeUtil.moveDateToDirection(nextDate,oldDate,movedDate,disabledDates?.date_types[arr[i + 1]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,lautakunta,moveToPast,false)
-                nextDate.setDate(nextDate.getDate());
-                arr[i + 1].value = nextDate.toISOString().split('T')[0];
+                const result = timeUtil.calculateWorkingDaysWithExactGap(movedDate, arr[i + 1].value, false, arr[i + 1].initial_distance, disabledDates?.date_types?.disabled_dates?.dates,disabledDates?.date_types[arr[i + 1]?.date_type]?.dates,false);
+                arr[i + 1].value = result
                 if(!arr[currentIndex]?.key?.includes("kylk_maaraaika") && !arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("lautakunnassa") && arr[currentIndex]?.key?.includes("maaraaika")){
+                  const result2 = timeUtil.calculateWorkingDaysWithExactGap(result, arr[i + 2].value, false, moveToPast ? arr[i + 2].initial_distance : arr[i + 2].initial_distance + 1, disabledDates?.date_types?.disabled_dates?.dates,disabledDates?.date_types[arr[i + 2]?.date_type]?.dates,false);
                   //When moving maaraaika in esillaolo or nahtavillaolo not in lautakunta
-                  nextOfNextDate = timeUtil.moveDateToDirection(nextOfNextDate,oldDate,movedDate,disabledDates?.date_types[arr[i + 2]?.date_type]?.dates,disabledDates?.date_types?.lomapäivät?.dates,lautakunta,moveToPast,false)
-                  nextOfNextDate.setDate(nextOfNextDate.getDate());
-                  arr[i + 2].value = nextOfNextDate.toISOString().split('T')[0];
+                  arr[i + 2].value = result2
                 }
               }
+              else{
+                //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
+                newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.disabled_dates?.dates,miniumGap,projectSize,false) : newDate
+              }
+            }
+            else{
+              //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
+              newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.disabled_dates?.dates,miniumGap,projectSize,false) : newDate
             }
           }
           // Update the array with the new date
@@ -428,29 +425,6 @@ const getHighestNumberedObject = (obj1, arr) => {
     }
     sortPhaseData(arr,order)
     return arr
-  }
-
-  const iterateArray = (arr, index, target) => {
-    let targetString = target;
-    if (target === "tarkistettuehdotus") {
-      // other values in array at tarkistettu ehdotus phase are with _ but phase values are without
-      targetString = "tarkistettu_ehdotus";
-    } else if (target === "ehdotus") {
-      targetString = ["ehdotuksen", "kaavaehdotus", "ehdotus"];
-    }
-    for (let i = index + 1; i < arr.length; i++) {
-      // Check if 'distance_from_previous' attribute does not exist and if the key contains the target substring
-      if (target === "ehdotus") {
-        for (let j = 0; j < targetString.length; j++) {
-          if (!arr[i].key.includes('tarkistettu_ehdotus') && !arr[i].key.endsWith('_pvm') && arr[i].key.includes(targetString[j])) {
-            return arr[i].value;
-          }
-        }
-      } else if (arr[i].key.includes(targetString) && !arr[i].key.endsWith('_pvm')) {
-        return arr[i].value;
-      }
-    }
-    return null; // Return null if no such key is found
   }
 
    const reverseIterateArray = (arr,index,target) => {
