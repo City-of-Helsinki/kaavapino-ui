@@ -72,134 +72,151 @@
     return daysDifference;
   }
 
-  const dateDifference = (cur,previousValue, currentValue, allowedDays, disabledDays, miniumGap, projectSize, addingNew) => {
-    let previousDate = new Date(previousValue);
-    let currentDate = new Date(currentValue);
+  const normalizeDate = (date) => {
+    const normalizedDate = new Date(date);
+    normalizedDate.setUTCHours(0, 0, 0, 0);
+    return new Date(normalizedDate);
+  }
+
+  const dateDifference = (cur, previousValue, currentValue, allowedDays, disabledDays, miniumGap, projectSize, addingNew) => {
+    let previousDate = normalizeDate(previousValue);
+    let currentDate = normalizeDate(currentValue);
     let gap = miniumGap;
-    //There is only generated values field in Excel but in the future should have separate contanst distances and generated values
-    //maaraiaka constant distnace should be 5 always
-    if(!addingNew){
-      if(!cur.includes("_lautakunta_aineiston_maaraaika") && !cur.includes("kylk_aineiston_maaraaika") && cur.includes("maaraaika") || miniumGap >= 31){
-        gap = 5
+
+    if (!addingNew) {
+      if (!cur.includes("_lautakunta_aineiston_maaraaika") && !cur.includes("kylk_aineiston_maaraaika") && cur.includes("maaraaika") || miniumGap >= 31) {
+        gap = 6;
       }
+    } else if ((addingNew && (projectSize === 'M' || projectSize === 'S') && cur.includes("milloin_ehdotuksen_nahtavilla_paattyy"))) {
+      gap = 23;
     }
-    else if( (addingNew && (projectSize === 'M' || projectSize === 'S') && cur.includes("milloin_ehdotuksen_nahtavilla_paattyy")) ){
-      //not like this in Excel but is cheked this way in backend, maybe needs to be changed in Excel or backend check but hardcoded for now, otherwise saving not possible.
-      gap = 23
-    }
-    // Check if the previous date is greater than or equal to the current date
+
     if (previousDate >= currentDate) {
-      // Set the previous date to the current date and add the miniumGap
-      currentDate = new Date(previousValue);
+      currentDate = normalizeDate(previousDate);
       currentDate.setDate(currentDate.getDate() + gap);
     }
-    // Ensure the final date is in allowedDays and not in holidays
-    let dateStr = currentDate.toISOString().split('T')[0]; // Convert to YYYY-MM-DD format
+
+    let dateStr = currentDate.toISOString().split('T')[0];
     while (!allowedDays.includes(dateStr) || disabledDays.includes(dateStr) || calculateWeekdayDifference(previousDate, currentDate) < gap) {
-      currentDate.setDate(currentDate.getDate() + 1); // Increment the date by one day
-      dateStr = currentDate.toISOString().split('T')[0]; // Update dateStr to the new date
-    }
-    return new Date(currentDate);
-  }
-
-  const countHolidaysInRange = (startDate, endDate, holidays) => {
-    let holidayCount = 0;
-    let currentDate = new Date(startDate);
-
-    while (currentDate <= endDate) {
-        const dayOfWeek = currentDate.getDay();
-        const formattedDate = currentDate.toISOString().slice(0, 10);
-        if (holidays.includes(formattedDate) && dayOfWeek !== 0 && dayOfWeek !== 6) {
-            holidayCount++;
-        }
-        currentDate.setDate(currentDate.getDate() + 1);
+      currentDate.setDate(currentDate.getDate() + 1);
+      dateStr = currentDate.toISOString().split('T')[0];
     }
 
-    return holidayCount;
-  }
-
-  const calculateWorkingDaysWithExactGap = (startDate, endDate, changingPrevious, minGap, holidays, allowedDays, lautakuntamaaraaika) => {
-    function isWorkingDay(date) {
-      const day = date.getDay();
-      const formattedDate = date.toISOString().slice(5, 10);
-      // Check if it's an allowed day, which can override weekends and holidays
-      if (allowedDays.includes(formattedDate)) {
-        return true;
-      }
-      // Otherwise, check if it's a regular working day (not weekend or holiday)
-      return day !== 0 && day !== 6 && !holidays.includes(formattedDate);
-    }
-
-    // Initialize the start date as a Date object
-    const start = new Date(startDate);
-    let current = new Date(start);
-    let workingDays = 0;
-    
-    // Adjust the date to reach exactly minGap working days
-    while (workingDays < minGap) {
-        // Move the date in the specified direction
-        if(changingPrevious){
-          current.setDate(current.getDate() - 1);
-        }
-        else{
-          current.setDate(current.getDate() + 1);
-        }
-
-        // Increment working days count only if it’s a valid working day
-        if (isWorkingDay(current)) {
-            workingDays++;
-        }
-    }
-
-    // 'current' date is now the adjusted new end date
-    let newEndDate = current;
-    // Move backwards until newEndDate is in allowedDays
-    // Check if newEndDate is a holiday or weekend and move backwards if necessary
-    while (!allowedDays.includes(newEndDate.toISOString().split('T')[0])) {
-      //gap can be creater but not smaller
-      newEndDate.setDate(newEndDate.getDate() - 1);
-    }
-
-    // If lautakuntamaaraaika is true, adjust newEndDate to the nearest working Tuesday
-    if (lautakuntamaaraaika) {
-      while (newEndDate.getDay() !== 2 || !isWorkingDay(newEndDate)) {
-          // Move to the next day
-          newEndDate.setDate(newEndDate.getDate() + 1);
-      }
-    }
-
-    // Calculate total working days between start and newEndDate
     let calendarDays = 0;
-    let tempDate = new Date(start);
-    if (start < newEndDate) {
-      // Moving forward in time
-      while (tempDate < newEndDate) {
-        if (isWorkingDay(tempDate)) {
-            calendarDays++;
+    let tempDate = normalizeDate(previousDate);
+    if (previousDate < currentDate) {
+      while (tempDate < new Date(currentDate)) {
+        if (isWorkingDay(tempDate, allowedDays, disabledDays)) {
+          calendarDays++;
         }
         tempDate.setDate(tempDate.getDate() + 1);
       }
-      } else {
-      // Moving backward in time
-      while (tempDate > newEndDate) {
-        if (isWorkingDay(tempDate)) {
-            calendarDays++;
+    }
+
+    if (calendarDays < gap) {
+      while (calendarDays <= gap) {
+        if (isWorkingDay(currentDate, allowedDays, disabledDays)) {
+          calendarDays++;
         }
-        tempDate.setDate(tempDate.getDate() - 1);
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      if (cur.includes("lautakunnassa")) {
+        while (currentDate.getDay() !== 2 || !isWorkingDay(currentDate, allowedDays, disabledDays)) {
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
       }
     }
-    const holidayCount = countHolidaysInRange(startDate, newEndDate, holidays)
-    console.log(holidayCount)
-    if(holidayCount > 0){
-      if(changingPrevious){
-        newEndDate.setDate(newEndDate.getDate() - holidayCount);
-      }
-      else{
-        newEndDate.setDate(newEndDate.getDate() + holidayCount);
-      }
+    return normalizeDate(currentDate);
+  };
+
+  const isWorkingDay = (date, allowedDays, holidays) => {
+    const day = date.getDay();
+    const formattedDate = formatDate(date);
+    if (allowedDays.includes(formattedDate)) {
+      return true;
     }
-    console.log("daysbetween:",calendarDays,"added holidays",calendarDays+holidayCount,"Minium gap",minGap,"Start date",start.toISOString().split('T')[0],"New date:",newEndDate.toISOString().split('T')[0])
-    return newEndDate.toISOString().split('T')[0];
+    return day !== 0 && day !== 6 && !holidays.includes(formattedDate);
+  };
+
+  const findAllowedLautakuntaDate = (newDate, miniumGap, allowedDays, moveToPast, maaraaikaAllowedDates) => {
+    // Check for direct match in maaraaikaAllowedDates
+    let maaraaikaMatch = maaraaikaAllowedDates.find(date => date === newDate);
+    let maaraaikaDate;
+    if (maaraaikaMatch) {
+      const closestIndex = maaraaikaAllowedDates.indexOf(maaraaikaMatch);
+      maaraaikaDate = moveToPast ? maaraaikaAllowedDates[closestIndex - miniumGap] : maaraaikaAllowedDates[closestIndex + miniumGap];
+    }
+    else{
+      // Find the closest date from maaraaikaAllowedDates considering the miniumGap
+      let closestDate = null;
+      let smallestDiff = Infinity;
+
+      maaraaikaAllowedDates.forEach(date => {
+          const diff = new Date(date) - new Date(newDate);
+
+          if (diff >= 0 && diff < smallestDiff) {
+              smallestDiff = diff;
+              closestDate = date;
+          }
+      });
+
+      if (!closestDate) {
+          return null; // Return null if no closest date is found
+      }
+
+      const closestIndex = maaraaikaAllowedDates.indexOf(closestDate);
+      maaraaikaDate = moveToPast ? maaraaikaAllowedDates[closestIndex - miniumGap] : maaraaikaAllowedDates[closestIndex + miniumGap];
+    }
+    // Find the matching or closest date from allowedDays using the maaraaikaDate
+    let match = allowedDays.find(date => date === maaraaikaDate);
+    if (match) {
+        return match;
+    }
+
+    // If no exact match is found, find the closest date from allowedDays
+    let closestDate = null;
+    let smallestDiff = Infinity;
+
+    allowedDays.forEach(date => {
+        const diff = new Date(date) - new Date(maaraaikaDate);
+
+        if (diff >= 0 && diff < smallestDiff) {
+            smallestDiff = diff;
+            closestDate = date;
+        }
+    });
+
+    return closestDate; // Return the closest date from allowedDays
+  };
+
+  const findAllowedDate = (newDate, miniumGap, allowedDays, moveToPast) => {
+    //Find newDate from allowedDays, add miniumGap to it and return the date, moveToPast is reverse iteration of array
+    // Check for direct match
+    let match = allowedDays.find(date => date === newDate);
+    if (match) {
+      const matchIndex = allowedDays.indexOf(match);
+      return moveToPast ? allowedDays[matchIndex - miniumGap] : allowedDays[matchIndex + miniumGap];
+    }
+
+    // Find the closest date if no exact match is found
+    let closestDate = null;
+    let smallestDiff = Infinity;
+
+    allowedDays.forEach(date => {
+      const diff = new Date(date) - new Date(newDate);
+
+      if (diff >= 0 && diff < smallestDiff) {
+        smallestDiff = diff;
+        closestDate = date;
+      }
+    });
+
+    if (closestDate) {
+      const closestIndex = allowedDays.indexOf(closestDate);
+      return moveToPast ? allowedDays[closestIndex - miniumGap] : allowedDays[closestIndex + miniumGap];
+    }
+  
+    return null; // Return the date that meets the gap condition, or null if none
   };
   
 
@@ -511,13 +528,15 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       const dateToComparePast = formValues[matchingItem?.previous_deadline]
       let newDisabledDates = dateTypes?.työpäivät?.dates
       const firstPossibleDateToSelect = addDays("työpäivät",dateToComparePast,miniumDaysPast,dateTypes?.työpäivät?.dates,true)
-      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
+      newDisabledDates = newDisabledDates.filter(date => date > firstPossibleDateToSelect)
       return newDisabledDates
     }
     else if(name.includes("_lautakunnassa")){
       //Lautakunta siirtyy eteenpäin loputtomasti. Vetää mukana määräaikaa.
       //Lautakunta siirtyy taaksepäin minimiin. Vetää mukana määräaikaa ja pysähtyy minimiin.
-      const miniumDaysPast = matchingItem.initial_distance.distance
+
+      //Needs to take inconcideration that the gap is 22 between lautakunta and määräaika so 44 if moving to past
+      const miniumDaysPast = matchingItem.initial_distance.distance + matchingItem.initial_distance.distance
       const dateToComparePast = formValues[matchingItem?.previous_deadline] ? formValues[matchingItem?.previous_deadline] : formValues[matchingItem?.initial_distance?.base_deadline]
       let newDisabledDates = dateTypes?.lautakunnan_kokouspäivät?.dates
       const firstPossibleDateToSelect = addDays("lautakunta",dateToComparePast,miniumDaysPast,dateTypes?.lautakunnan_kokouspäivät?.dates,true)
@@ -674,5 +693,6 @@ export default {
     isHoliday,
     calculateDisabledDates,
     getHighestDate,
-    calculateWorkingDaysWithExactGap
+    findAllowedDate,
+    findAllowedLautakuntaDate
 }

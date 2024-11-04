@@ -118,7 +118,9 @@ import {
   fetchDisabledDatesSuccess,
   fetchDisabledDatesFailure,
   VALIDATE_DATE,
-  setDateValidationResult
+  setDateValidationResult,
+  VALIDATE_PROJECT_TIMETABLE,
+  UPDATE_PROJECT_FAILURE
 } from '../actions/projectActions'
 import { startSubmit, stopSubmit, setSubmitSucceeded } from 'redux-form'
 import { error } from '../actions/apiActions'
@@ -169,6 +171,7 @@ export default function* projectSaga() {
     takeLatest(SAVE_PROJECT_FLOOR_AREA, saveProjectFloorArea),
     takeLatest(SAVE_PROJECT_FLOOR_AREA_SUCCESSFUL, saveProjectFloorAreaSuccessful),
     takeLatest(SAVE_PROJECT_TIMETABLE, saveProjectTimetable),
+    takeLatest(VALIDATE_PROJECT_TIMETABLE,validateProjectTimetable),
     takeLatest(SAVE_PROJECT_TIMETABLE_SUCCESSFUL, saveProjectTimetableSuccessful),
     takeLatest(SAVE_PROJECT, saveProject),
     takeLatest(SET_LAST_SAVED, setLastSaved),
@@ -661,6 +664,68 @@ function* saveProjectFloorArea() {
     }
   }
 }
+
+function* validateProjectTimetable() {
+  // Show a loading icon at the start of the saga
+  toastr.info(i18.t('messages.checking-dates'), {
+    timeOut: 0, // Keep it showing until manually removed
+    removeOnHover: false,
+    showCloseButton: false,
+  });
+  yield put(startSubmit(EDIT_PROJECT_TIMETABLE_FORM))
+
+  const { initial, values } = yield select(
+    editProjectTimetableFormSelector
+  )
+  const currentProjectId = yield select(currentProjectIdSelector)
+
+  if (values) {
+    let attribute_data = getChangedAttributeData(values, initial)
+    if(attribute_data.oikaisukehoituksen_alainen_readonly){
+      delete attribute_data.oikaisukehoituksen_alainen_readonly
+    }
+
+    try {
+      yield call(
+        projectApi.patch,
+        { attribute_data },
+        { path: { id: currentProjectId } },
+        ':id/?fake=true'
+      )
+    // Remove the loading icon
+    toastr.removeByType('info');
+    toastr.success(i18.t('messages.dates-confirmed'), {
+      timeOut: 5000,
+      removeOnHover: false,
+      showCloseButton: true,
+    });
+    // All dates good no need to do anything
+    } catch (e) {
+      if (e?.code === "ERR_NETWORK") {
+        toastr.error(i18.t('messages.general-save-error'))
+      }
+      //Catch reached so dates were not correct, get days and update them to form 
+      //from projectReducer UPDATE_PROJECT_FAILURE
+      // Get the error message string dynamically
+      const errorMessage = errorUtil.getErrorMessage(e?.response?.data);
+      // Remove loading icon and show error toastr
+      toastr.removeByType('info');
+      // Display message in a toastr
+      toastr.info(i18.t('messages.fixed-timeline-dates'), errorMessage, {
+        timeOut: 10000,
+        removeOnHover: false,
+        showCloseButton: true,
+        className: 'large-scrollable-toastr rrt-info'
+      });
+     // Dispatch failure action with error data for the reducer to handle date correction to timeline form
+      yield put({
+        type: UPDATE_PROJECT_FAILURE,
+        payload: { errorData: e?.response?.data },
+      });
+    }
+  }
+}
+
 function* saveProjectTimetable() {
   yield put(startSubmit(EDIT_PROJECT_TIMETABLE_FORM))
 
@@ -681,7 +746,7 @@ function* saveProjectTimetable() {
         projectApi.patch,
         { attribute_data },
         { path: { id: currentProjectId } },
-        ':id/'
+        ':id/?fake=true'
       )
       yield put(updateProject(updatedProject))
       yield put(setSubmitSucceeded(EDIT_PROJECT_TIMETABLE_FORM))
