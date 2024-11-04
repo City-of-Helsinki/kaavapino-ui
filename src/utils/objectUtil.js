@@ -371,14 +371,18 @@ const getHighestNumberedObject = (obj1, arr) => {
           }
           else{
             //Paattyy and nahtavillaolo l-xl are independent of other values
-            if(((projectSize === "XS" || projectSize === "S" || projectSize === "M") && i === currentIndex && !arr[currentIndex]?.key?.includes("paattyy") && !arr[i]?.key.includes("lautakunassa_")) ||
-             ((projectSize === "XL" || projectSize === "L") && i === currentIndex && !arr[currentIndex]?.key?.includes("paattyy") && !arr[currentIndex]?.key.includes("nahtavilla_alkaa") && !arr[currentIndex]?.key.includes("nahtavilla_paattyy") && !arr[i]?.key.includes("lautakunassa_")) ){
+            if(((projectSize === "XS" || projectSize === "S" || projectSize === "M") && i === currentIndex && !arr[i]?.key.includes("lautakunassa_")) ||
+             ((projectSize === "XL" || projectSize === "L") && i === currentIndex  && !arr[currentIndex]?.key.includes("nahtavilla_alkaa") && !arr[currentIndex]?.key.includes("nahtavilla_paattyy") && !arr[i]?.key.includes("lautakunassa_")) ){
               //Make next or previous or previous and 1 after previous dates follow the moved date if needed
               if(arr[currentIndex]?.key?.includes("kylk_maaraaika") || arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") || arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika")){
                 //maaraika in lautakunta moving
                 const lautakuntaResult = timeUtil.findAllowedLautakuntaDate(movedDate, arr[i + 1].initial_distance, disabledDates?.date_types[arr[i + 1]?.date_type]?.dates, false, disabledDates?.date_types[arr[i]?.date_type]?.dates);
                 arr[i + 1].value = new Date(lautakuntaResult).toISOString().split('T')[0];
                 indexToContinue = i + 1
+              }
+              else if(arr[currentIndex]?.key?.includes("paattyy")){
+                newDate = new Date(arr[i].value);
+                indexToContinue = i
               }
               else if(arr[currentIndex]?.key?.includes("lautakunnassa") && !arr[currentIndex]?.key?.includes("lautakunnassa_") || arr[currentIndex]?.key?.includes("alkaa")){
                 //lautakunta and alkaa values
@@ -400,8 +404,7 @@ const getHighestNumberedObject = (obj1, arr) => {
               }
             }
             else{
-              //ei mee tähän jos muokkaa päättyy arvoa
-              if(!moveToPast && i > indexToContinue){
+              //if(!moveToPast && i > indexToContinue){
                 //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
                 if(arr[i]?.key?.includes("lautakunnassa")){
                   newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.disabled_dates?.dates,arr[i].initial_distance,projectSize,false) : newDate
@@ -411,7 +414,7 @@ const getHighestNumberedObject = (obj1, arr) => {
                   newDate = arr[i]?.date_type ? timeUtil.findAllowedDate(arr[i - 1].value, arr[i].distance_from_previous, disabledDates?.date_types[arr[i]?.date_type]?.dates, false)  : newDate;
                   newDate = new Date(newDate)
                 }
-              }
+              //}
             }
           }
           // Update the array with the new date
