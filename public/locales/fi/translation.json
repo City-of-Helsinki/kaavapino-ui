@@ -157,7 +157,10 @@
     "addfield":"Kentän lisäys.",
     "total":"Yhteensä",
     "fields":"kenttää.",
-    "general-save-error":"Tallennus epäonnistui"
+    "general-save-error":"Tallennus epäonnistui",
+    "fixed-timeline-dates":"Päivämäärät validoitu:",
+    "checking-dates":"Tarkistetaan päivämääriä",
+    "dates-confirmed":"Päivämäärät validoitu"
   },
   "floor-areas": {
     "title": "Päivitä kerrosalatiedot",

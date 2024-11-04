@@ -88,7 +88,8 @@ import {
   REMOVE_DEADLINES,
   VALIDATE_DATE,
   UPDATE_DATE_TIMELINE,
-  RESET_ATTRIBUTE_DATA
+  RESET_ATTRIBUTE_DATA,
+  UPDATE_PROJECT_FAILURE
 } from '../actions/projectActions'
 
 import timeUtil from '../utils/timeUtil'
@@ -202,7 +203,36 @@ export const reducer = (state = initialState, action) => {
           attribute_data: filteredAttributeData,
         },
       };
-    }    
+    }
+
+    case UPDATE_PROJECT_FAILURE: {
+      //Update dates that were returned unvalid from backend
+      const { errorData } = action.payload;
+      const dateRegex = /\d{1,2}\.\d{1,2}\.\d{4}/;
+
+      // Create a copy of attribute_data to modify
+      const updatedAttributeData = { ...state.currentProject.attribute_data };
+
+      // Apply date format corrections based on errorData
+      for (const key in updatedAttributeData) {
+        if (errorData?.[key]) {
+          const dateMatch = errorData[key].find(msg => dateRegex.test(msg));
+          if (dateMatch) {
+            const date = dateMatch.match(dateRegex)[0];
+            const [day, month, year] = date.split('.');
+            updatedAttributeData[key] = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+          }
+        }
+      }
+
+      return {
+        ...state,
+        currentProject: {
+          ...state.currentProject,
+          attribute_data: updatedAttributeData,
+        }
+      };
+    }
 
     case REMOVE_DEADLINES:{
       return {
