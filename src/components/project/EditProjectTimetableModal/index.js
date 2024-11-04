@@ -18,7 +18,7 @@ import ConfirmModal from '../../common/ConfirmModal';
 import withValidateDate from '../../../hocs/withValidateDate';
 import objectUtil from '../../../utils/objectUtil'
 import textUtil from '../../../utils/textUtil'
-import { updateDateTimeline } from '../../../actions/projectActions';
+import { updateDateTimeline,validateProjectTimetable } from '../../../actions/projectActions';
 import { getVisibilityBoolName } from '../../../utils/projectVisibilityUtils';
 import timeUtil from '../../../utils/timeUtil'
 
@@ -134,6 +134,8 @@ class EditProjectTimeTableModal extends Component {
               }
             }
             this.setState({visValues:formValues})
+            // Call validateProjectTimetable after all fields are updated
+            this.props.dispatch(validateProjectTimetable());
           }
         }
       }

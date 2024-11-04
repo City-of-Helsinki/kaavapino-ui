@@ -112,7 +112,16 @@ export const SET_DATE_VALIDATION_RESULT = 'setDateValidationResult';
 export const REMOVE_DEADLINES = 'removeDeadlines';
 export const UPDATE_DATE_TIMELINE = "updateDateTimeline"
 export const RESET_ATTRIBUTE_DATA = "resetAttributeData"
+export const VALIDATE_PROJECT_TIMETABLE = "validateProjectTimetable"
+export const UPDATE_PROJECT_FAILURE = 'updateProjectFailure';
 
+export const updateProjectFailure = (errorData) => ({
+  type: UPDATE_PROJECT_FAILURE,
+  payload: errorData,
+});
+export const validateProjectTimetable = () => ({
+   type: VALIDATE_PROJECT_TIMETABLE 
+});
 export const resetAttributeData = (initialData) => ({
   type: RESET_ATTRIBUTE_DATA,
   payload: {initialData},
