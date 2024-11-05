@@ -225,7 +225,7 @@ export const getFieldAutofillValue = (
             ? projectUtils.findValueFromObject(formValues, extraVariables[0])
             : ''
           
-          if (formExtraValue?.ops) {
+          if (formExtraValue?.ops && formValue?.ops) {
             formExtraValue = toPlaintext(formValue.ops).trim()
           }
         }
