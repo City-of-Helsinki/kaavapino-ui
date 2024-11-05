@@ -300,8 +300,10 @@ footer{
       top: $size24;
       transform: translateX(-50%);
       max-width: calc(100vw - 48px);
+      height: 80vh;
       width: 740px;
       margin-top: 0;
+      scrollbar-gutter: stable;
 
       > .header {
         border-bottom: 0;
@@ -314,6 +316,9 @@ footer{
       @media screen and (min-width: 600px) {
         top: 32px;
       }
+    }
+    &.tiny {
+      height: 350px;
     }
     .close.icon {
       position: relative;

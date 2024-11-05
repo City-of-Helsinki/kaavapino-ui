@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { Notification } from 'hds-react'
 import './ProjectTimeline.scss'
 import { createMonths } from './helpers/createMonths'
 import { createDeadlines } from './helpers/createDeadlines'
@@ -346,18 +347,14 @@ function ProjectTimeline(props) {
   return (
     <div className={containerClass}>
       {onhold ? (
-        <div className="timeline-onhold-message">
-          <span className='alert-icon-yellow'></span>
-          <span>{t('deadlines.project-stopped')}</span>
+        <Notification className='timeline-onhold-message' type='alert' label={t('deadlines.project-stopped')}>
           <p>{t('deadlines.project-stopped-text')}</p>
-        </div>
+        </Notification>
       ) : null}
       {showError && !onhold ? (
-        <div className="timeline-error-message">
-          <span className='icon-error-red'></span>
-          <span>{t('deadlines.timeline-error')}</span>
+        <Notification className='timeline-error-message' type='error' label={t('deadlines.timeline-error')}>
           <p>{t('deadlines.timeline-error-text')}</p>
-        </div>
+        </Notification>
       ) : null}
       <div
         className={`timeline-item-container ${showError ? 'timeline-error' : ''}`}
