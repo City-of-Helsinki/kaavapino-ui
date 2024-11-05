@@ -404,7 +404,7 @@ const getHighestNumberedObject = (obj1, arr) => {
               }
             }
             else{
-              //if(!moveToPast && i > indexToContinue){
+              if(!moveToPast && i > indexToContinue){
                 //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
                 if(arr[i]?.key?.includes("lautakunnassa")){
                   newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.disabled_dates?.dates,arr[i].initial_distance,projectSize,false) : newDate
@@ -414,7 +414,7 @@ const getHighestNumberedObject = (obj1, arr) => {
                   newDate = arr[i]?.date_type ? timeUtil.findAllowedDate(arr[i - 1].value, arr[i].distance_from_previous, disabledDates?.date_types[arr[i]?.date_type]?.dates, false)  : newDate;
                   newDate = new Date(newDate)
                 }
-              //}
+              }
             }
           }
           // Update the array with the new date
