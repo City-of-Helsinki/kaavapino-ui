@@ -112,8 +112,17 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       )
     }
     const getFormFields = (sections, sectionIndex, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title, confirmedValue) => {
+      // Separate the section with the label "Mielipiteet viimeistään"
+      const filteredSections = sections.filter(section => section.label !== "Mielipiteet viimeistään");
+      const lastSection = sections.find(section => section.label === "Mielipiteet viimeistään");
+
+      // If the section exists, push it to the end of the filteredSections array
+      if (lastSection) {
+        filteredSections.push(lastSection);
+      }
+
       const formFields = []
-      sections.forEach((field, fieldIndex) => {
+      filteredSections.forEach((field, fieldIndex) => {
           formFields.push(getFormField({ field }, `${sectionIndex} - ${fieldIndex}`, {disabled}, {deadlineSection}, maxMoveGroup, maxDateToMove, title, confirmedValue))
       })
       return formFields
@@ -164,13 +173,17 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
         if(attr[deadlinegroup]){
           renderedSections.push(
             <Tabs key={"tab" + sectionIndex}>
-              <Tabs.TabList style={{ marginBottom: 'var(--spacing-m)' }}>
+              <Tabs.TabList className='tab-header' style={{ marginBottom: 'var(--spacing-m)' }}>
                 {Object.keys(attr[deadlinegroup]).map((key) => {
-                  return <Tabs.Tab key={key}>{key === "default" ? content : key}</Tabs.Tab>
+                  let tabContent = key === "default" ? content : key
+                  if (key === "Esille") tabContent = "Päivämäärät"
+                  return <Tabs.Tab key={key}>{tabContent}</Tabs.Tab>
                 })}
               </Tabs.TabList>
               {Object.values(attr[deadlinegroup]).map((subsection, index) => {
-                return  <Tabs.TabPanel key={`tabPanel-${index}-${subsection}`}>{getFormFields(subsection, sectionIndex, disabled, attr[deadlinegroup], maxMoveGroup, maxDateToMove, title, confirmedValue)}</Tabs.TabPanel>
+                return <Tabs.TabPanel style={{ marginBottom: 'var(--spacing-m)' }} key={`tabPanel-${index}-${subsection}`}>
+                    {getFormFields(subsection, sectionIndex, disabled, attr[deadlinegroup], maxMoveGroup, maxDateToMove, title, confirmedValue)}
+                  </Tabs.TabPanel>
               })}
             </Tabs>
           )
@@ -181,27 +194,29 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
 
     return (
       <Modal open={open} size={'large'} className='timeline-edit-right'>
-        <Modal.Header>
-          <ul className="breadcrumb">
-            <li><a href="#" role="button">{group}</a></li>
-            <li><a href="#" role="button">{content}</a></li>
-            <Button size='small' variant="supplementary" onClick={openDialog}><IconCross /></Button>
-          </ul>
-        </Modal.Header>
-        <Modal.Content>
-          <div className='date-content'>
-            {deadlineSections.map((section, i) => {
-              if (section.title === group) {
-                return renderSection(section, i, content)
-              }
-            })}
-            {currentSubmitErrors && (
-              <div className="error-area">{renderSubmitErrors()}</div>
-            )}
+        <div className="timeline-edit-container">
+          {open && <div className="timeline-edit-shadow"></div>}
+          <div className="timeline-edit-content">
+            <Modal.Header>
+              <ul className="breadcrumb">
+                <li><a href="#" role="button">{group}</a></li>
+                <li><a href="#" role="button">{content}</a></li>
+                <Button variant="supplementary" onClick={openDialog}><IconCross /></Button>
+              </ul>
+            </Modal.Header>
+            <Modal.Content>
+              <div className='date-content'>
+                {deadlineSections.map((section, i) => {
+                  if (section.title === group) {
+                    return renderSection(section, i, content);
+                  }
+                })}
+              </div>
+            </Modal.Content>
           </div>
-        </Modal.Content>
+        </div>
       </Modal>
-    )
+    );
   }
 
   TimelineModal.propTypes = {
