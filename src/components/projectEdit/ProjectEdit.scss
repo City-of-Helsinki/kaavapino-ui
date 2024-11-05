@@ -28,6 +28,7 @@
   width: 100%;
   background-color: white;
   padding: 0;
+  margin-top: -12px;
   position: initial !important;
   padding-left: $size16;
 
@@ -138,15 +139,16 @@
   min-width: 50%;
   max-width: 100%;
 
-  padding: 1.25rem 0 0 1.25rem;
+  padding: 1rem 0 0 1.25rem;
 
   margin-left: 1rem;
 
   .sticky-title {
     position: sticky;
-    top: 150px;
+    top: 166px;
     background-color: $white-background;
     z-index: 90;
+    padding-bottom: 12px;
 
     .section-title {
       font-family: 'Helsinki Grotesk Bold', sans-serif;
@@ -704,12 +706,42 @@
   scrollbar-gutter: stable;
   border-radius: 0 !important;
   box-shadow: none !important;
-  background-color: transparent !important;
+  background: linear-gradient(to right, transparent 15px, white 15px) !important;
+  display: flex;
+
+  .timeline-edit-container {
+    display: flex;
+    height: 100%;
+    width: 529px;
+
+    .timeline-edit-shadow {
+      width: 16px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.01) 30%, rgba(153, 153, 153, 0.2) 100%);
+      border-right: 1px solid #808080 !important;
+      z-index: 1000;
+      flex-shrink: 0;
+    }
+
+    .timeline-edit-content {
+      flex-grow: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-gutter: stable;
+
+      &::-webkit-scrollbar-track {
+        margin-block-start: 130px;
+      }
+    }
+  }
 
   .header{
-    padding: 16px 0 !important;
+    padding: 26px 0 16px 0 !important;
     margin-left: 16px !important;
     border-bottom: none !important;
+    position: sticky !important;
+    top: 0;
+    z-index: 100;
+    background-color: #fff !important;
     .breadcrumb {
       padding: 10px 16px;
       list-style: none;
@@ -717,7 +749,6 @@
       margin: 0;
       padding-top: 0;
       padding-bottom: 0;
-      padding-left: 33px;
       li:first-of-type {
         display: inline;
         font-size: $size16;
@@ -746,25 +777,47 @@
       }
       button{
         position: absolute;
-        right: 0;
+        top: 20px;
+        right: 4px;
         color: #1A1A1A;
+        width: 24px;
+        height: 24px;
+        span {
+          padding: 8px !important;
+          svg {
+            position: absolute;
+            top: 50%;
+            right: 8px;
+            -webkit-transform: translateY(-50%);
+            transform: translateY(-50%);
+          }
+        }
       }
     }
   }
 
   .content{
-    height: 94vh;
+    height: auto;
     margin-top: 0;
-    margin-left: 16px !important;
-    margin-right: 16px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
     .date-content{
       display: flex;
       flex-direction: row;
       flex-wrap: wrap;
       gap: 20px;
-      padding: 0 33px;
+      padding: 0 30px 16px 33px;
       & > div{
         width: 100%;
+      }
+      .tab-header {
+        position: sticky;
+        top: 56px;
+        z-index: 100;
+        width: 473px;
+        background-color: #fff;
+        padding-bottom: 24px;
+        margin-bottom: 0!important;
       }
       .timeline-accordion{
         & > div:nth-child(2){
@@ -776,12 +829,12 @@
       .input-container{
         flex: 1 0 48%;
         max-width: 328px;
+        margin-bottom: 32px;
         .input-header-container {
-          margin-top: 32px;
+          margin-top: 0;
         }
         .deadline-input{
           border:2px solid $border-gray2;
-          margin-bottom: 4px;
           input{
             text-indent: 8px;
           }
@@ -793,7 +846,6 @@
         .assistive-text {
           font-weight: 400;
           margin-top: 4px;
-          margin-bottom: 16px
         }
       }
       .input-container:last-child{
@@ -804,25 +856,48 @@
         display: flex;
         flex-flow: column;
         justify-content: flex-start;
-        margin-top: $size16;
-        margin-bottom: $size32;
+        margin-top: $size32;
+        margin-bottom: $size48;
         .checkbox{
           display: flex;
           flex-flow: column;
         }
       }
 
-      .deadline-info-notification,.deadlines-confirmed-notification{
+      .event-info-notification {
+        width: 450px;
         margin-bottom: $size16;
       }
-      .deadlines-preliminary-notification{
+
+      .deadline-info-notification{
+        width: 450px;
+        margin-bottom: $size16;
+      }
+
+      .deadlines-preliminary-notification, .deadlines-confirmed-notification{
+        width: 450px;
         margin-bottom: $size16;
         font-family: "Helsinki Grotesk Regular", sans-serif;
         font-weight:500;
       }
 
+      .deadlines-alert-notification {
+        width: 450px;
+        margin-top: 32px;
+        p {
+          margin-bottom: 0;
+        }
+        ul {
+          margin-top: 0;
+          padding-left: 20px;
+          margin-bottom: 24px;
+          font-weight: 600;
+        }
+      }
+
       .deadline-info-readonlytext {
-        margin-top: $size8;
+        //margin-top: $size8;
+        margin-top: -16px;
         margin-bottom: $size24;
         font-size: $size14;
         font-family: "Helsinki Grotesk Medium", sans-serif;
@@ -835,20 +910,9 @@
       .deadlines-confirm-button{
         max-width: 210px;
       }
-      &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 16px;
-        height: 101vh;
-        background-color: transparent !important;
-        background: linear-gradient(90deg, rgba(255, 255, 255, 0.01) 30%, rgba(153, 153, 153, 0.2) 100%);
-        border-right: 1px solid #808080 !important;
+      .deadlines-col section {
+        font-weight: 400;
       }
-    }
-    button{
-      justify-content: flex-start;
     }
     .add-content{
       display: none;
