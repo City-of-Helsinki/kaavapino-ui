@@ -82,13 +82,12 @@
     let previousDate = normalizeDate(previousValue);
     let currentDate = normalizeDate(currentValue);
     let gap = miniumGap;
-
     if (!addingNew) {
       if (!cur.includes("_lautakunta_aineiston_maaraaika") && !cur.includes("kylk_aineiston_maaraaika") && cur.includes("maaraaika") || miniumGap >= 31) {
-        gap = 6;
+        gap = 5;
       }
     } else if ((addingNew && (projectSize === 'M' || projectSize === 'S') && cur.includes("milloin_ehdotuksen_nahtavilla_paattyy"))) {
-      gap = 23;
+      gap = 22;
     }
 
     if (previousDate >= currentDate) {
@@ -488,6 +487,7 @@ const sortObjectByDate = (obj) => {
 }
 
 const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sectionAttributes,currentDeadline) => {
+  console.log(name,sectionAttributes)
   const matchingItem = objectUtil.findMatchingName(sectionAttributes, name, "name");
   const previousItem = objectUtil.findItem(sectionAttributes, name, "name", -1);
   const nextItem = objectUtil.findItem(sectionAttributes, name, "name", 1);
@@ -618,6 +618,7 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
     if(name.includes("_alkaa")){
       //Alku kasvaa min. Päättyy ei muutu.
       //Alku pienenee min. Päättyy ei muutu.
+      console.log(matchingItem)
       const miniumDaysPast = matchingItem?.distance_from_previous
       const miniumDaysFuture = matchingItem?.distance_to_next
       const dateToComparePast = formValues[matchingItem?.previous_deadline]
