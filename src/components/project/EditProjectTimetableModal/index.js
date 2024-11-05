@@ -138,6 +138,11 @@ class EditProjectTimeTableModal extends Component {
             this.props.dispatch(validateProjectTimetable());
           }
         }
+        let sectionAttributes = [];
+        this.extractAttributes(deadlineSections, formValues, sectionAttributes, (attribute, formValues) =>
+          attribute.label !== "Lausunnot viimeistään" && formValues[attribute.name]
+        );
+        this.setState({sectionAttributes})
       }
     }
 
