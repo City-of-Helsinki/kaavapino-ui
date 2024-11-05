@@ -746,7 +746,7 @@ function* saveProjectTimetable() {
         projectApi.patch,
         { attribute_data },
         { path: { id: currentProjectId } },
-        ':id/?fake=true'
+        ':id/'
       )
       yield put(updateProject(updatedProject))
       yield put(setSubmitSucceeded(EDIT_PROJECT_TIMETABLE_FORM))
