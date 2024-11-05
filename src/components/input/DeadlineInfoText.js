@@ -107,10 +107,34 @@ const DeadlineInfoText = props => {
   }
 
   const value = determineFieldValue(current, props)
-  return (props.input.name.includes("nahtavillaolopaivien_lukumaara") ? 
-    <p className="deadline-info-readonlytext">{props.label}: {value} pv </p>
-    : <Notification className='deadline-info-notification' size="small" label={props.input.name}>{props.label + ':'}<br/>{value}</Notification>
-  )
+
+  const phaseMap = {
+    periaatteista: "Periaatteet",
+    oas: "OAS",
+    luonnos: "Luonnos"
+  };
+
+  const phaseKey = Object.keys(phaseMap).find(key => props.input.name.includes(key));
+  const phase = phaseMap[phaseKey];
+
+  return (
+    <>
+      {phase && (
+        <Notification
+          className="event-info-notification"
+          size="small"
+          label={`${phase}${phase === "Luonnos" ? "" : "-"}vaiheen tilaisuus: ${value}.`}
+        >
+          {`${phase}${phase === "Luonnos" ? "" : "-"}vaiheen tilaisuus: ${value}.`}
+        </Notification>
+      )}
+      {props.input.name.includes("nahtavillaolopaivien_lukumaara") ?
+        <p className="deadline-info-readonlytext">{props.label}: {value} pv </p>
+        : <Notification className='deadline-info-notification' size="small" label={props.input.name}>{props.label + ': '}{value}.</Notification>
+      }
+    </>
+  );
+
 }
 
 DeadlineInfoText.propTypes = {
