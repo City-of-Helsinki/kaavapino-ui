@@ -180,7 +180,12 @@ const DeadLineInput = ({
     try {
       let field = input.name;
       setCurrentValue(formattedDate)
-      dispatch(updateDateTimeline(field,formattedDate,false,false,deadlineSections));
+      if(field.includes("viimeistaan_lausunnot_")){
+        input.onChange(formattedDate)
+      }
+      else{
+        dispatch(updateDateTimeline(field,formattedDate,false,false,deadlineSections));
+      }
     } catch (error) {
       console.error('Validation error:', error);
     }

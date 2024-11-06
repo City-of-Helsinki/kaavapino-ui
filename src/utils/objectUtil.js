@@ -268,7 +268,7 @@ const getHighestNumberedObject = (obj1, arr) => {
     //Sort phase start end data by order const
     arr1 = sortPhaseData(arr1,order)
     //Return in order array ready for comparing next and previous value distances
-    arr1 = arr1.filter(item => !item.key.includes("viimeistaan_lausunnot_")); //filter out has no next and prev values and is same as päättyy key
+    arr1 = arr1.filter(item => !item.key.includes("viimeistaan_lausunnot_")); //filter out has no next and prev values
     return arr1
   }
   //Sort by certain predetermined order
@@ -365,7 +365,7 @@ const getHighestNumberedObject = (obj1, arr) => {
           && !arr[i].key.includes("hyvaksymispaatos_pvm") && !arr[i].key.includes("lautakunassa_")){
           let newDate = new Date(arr[i].value);
 
-          if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")){
+          if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet")){
             //mielipiteet and paattyy is always the same value
             newDate = new Date(arr[i - 1].value);
           }
