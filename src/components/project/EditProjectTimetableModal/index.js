@@ -107,19 +107,11 @@ class EditProjectTimeTableModal extends Component {
             //Form items and groups
             let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,formValues,deadlines,ongoingPhase)
             // Update the existing data
-            // Get the existing groups from the state
-            let existingGroups = this.state.groups.get() || deadLineGroups;
-            // Merge nestedDeadlines into deadLineGroups based on deadlineGroup key
-            nestedDeadlines.forEach(nestedDeadline => {
-              let matchingGroup = existingGroups.find(group => group.content.trim().toLowerCase() === nestedDeadline.content.trim().toLowerCase() && group.deadlinegroup.trim().toLowerCase() === nestedDeadline.deadlinegroup.trim().toLowerCase());
-              if (matchingGroup !== -1) {
-                //replace the existing group with the new matching group
-                existingGroups[matchingGroup] = { ...existingGroups[matchingGroup], ...nestedDeadline };
-              } else {
-                existingGroups.push(nestedDeadline);
-              }
-            });
-            this.state.groups.update(existingGroups);
+            let existingGroups = deadLineGroups;
+            existingGroups = nestedDeadlines? existingGroups.concat(nestedDeadlines) : existingGroups
+            console.log("Now setting groups to",existingGroups)
+            this.state.groups.clear();
+            this.state.groups.add(existingGroups)
             this.state.items.update(phaseData)
             const newObjectArray = objectUtil.findDifferencesInObjects(prevProps.formValues,formValues)
 
@@ -1023,7 +1015,6 @@ class EditProjectTimeTableModal extends Component {
     let index = textUtil.getNumberAfterSuffix(Object.keys(changedValues)[0]); //get index from added value, null if not found aka first
     let idt = "";
     let deadlinegroup = "";
-    let groupID = null;
     const groups = this.state.groups.get();
     let className = "";
     let matchingValues = Object.entries(this.props.formValues);
@@ -1041,9 +1032,6 @@ class EditProjectTimeTableModal extends Component {
           phase = phase.charAt(0).toUpperCase() + phase.slice(1);
           phase = phase.replace(/_/g, ' ');
         }
-
-        const group = groups.find(group => phase.toLowerCase() === group.content.toLowerCase());
-        groupID = group ? group.id : null;
         
         //Find correct group by phase and content of vis items
         let filteredGroups = groups.filter(group => {
@@ -1086,10 +1074,6 @@ class EditProjectTimeTableModal extends Component {
             }
             return group;
           });
-  
-          if (updatedGroups.length > 0) {
-            // this.state.groups.add(updatedGroups);
-          }
         }
       }
     }
@@ -1147,153 +1131,18 @@ class EditProjectTimeTableModal extends Component {
     const validValues = this.processValuesSequentially(matchingValues, index, phase);
 
     if (validValues.length >= 2 || validValues.length === 1 && validValues[0].key.includes("_lautakunnassa")) {
-      let newIndex;
       let indexString;
        if (index > 2) {
-        newIndex = index;
         indexString = "_" + index;
       } else {
-        newIndex = "2";
         indexString = "_2";
-      } 
-  
-      let start = null;
-      let end = null;
-      let deadline = null;
-      let atBoard = null;
-      let nahtavillaolo = false;
-  
-      for (let i = 0; i < validValues.length; i++) {
-        if (validValues[i].key.includes("alkaa") || validValues[i].key.includes("alkaa_iso") || validValues[i].key.includes("alkaa_pieni")) {
-          start = new Date(validValues[i].value);
-          start.setHours(12, 0, 0, 0);
-          if (validValues[i].key.includes("nahtavilla")) {
-            nahtavillaolo = true;
-          }
-        } else if (validValues[i].key.includes("paattyy")) {
-          end = new Date(validValues[i].value);
-          end.setHours(12, 0, 0, 0);
-        } else if (validValues[i].key.includes("maaraaika")) {
-          if (validValues[i].key.includes("ehdotus") && (matchingValues.kaavaprosessin_kokoluokka === "XL" || matchingValues.kaavaprosessin_kokoluokka === "L")) {
-            deadline = null;
-          } else {
-            deadline = new Date(validValues[i].value);
-            deadline.setHours(12, 0, 0, 0);
-          }
-        } else if (validValues[i].key.includes("lautakunnassa")) {
-          atBoard = new Date(validValues[i].value);
-          atBoard.setHours(12, 0, 0, 0);
-        }
-        if (start && end && deadline && atBoard) break;
       }
-  
-      if (validValues.length > 2 && deadline) {
-        const deadlineItem = {
-          className: "board",
-          content: "",
-          group: idt,
-          id: this.state.items.length + 1,
-          locked: false,
-          phase: false,
-          phaseID: groupID,
-          start: deadline,
-          type: 'point',
-          title: "maaraaika"
-        };
-        this.state.items.add(deadlineItem);
-  
-        const dividerItem = {
-          className: "divider",
-          content: "",
-          group: idt,
-          id: this.state.items.length + 1,
-          locked: false,
-          phase: false,
-          phaseID: groupID,
-          start: deadline,
-          end: start,
-          title: "divider"
-        };
-        this.state.items.add(dividerItem);
-      }
-  
-      if (start && end) {
-        const newItems = {
-          className: className,
-          content: "",
-          group: idt,
-          id: this.state.items.length + 1,
-          locked: false,
-          phase: false,
-          phaseID: groupID,
-          start: start,
-          end: end,
-          title: content === "esillaolo" || content === "nahtavillaolo" 
-            ? nahtavillaolo === true 
-              ? "milloin_" + phase + "_nahtavillaolo_paattyy" + indexString 
-              : "milloin_" + phase + "_esillaolo_paattyy" + indexString 
-            : phase + "_lautakunta_aineiston_maaraaika" + indexString,
-        };
-        this.state.items.add(newItems);
-      }
-  
-      if (deadline && atBoard && index < 2) {
-        const newItems = {
-          className: "board",
-          content: "",
-          group: idt,
-          id: this.state.items.length + 1,
-          locked: false,
-          phase: false,
-          phaseID: groupID,
-          start: deadline,
-          end: atBoard,
-          title: phase + "_lautakunta_aineiston_maaraaika" + indexString,
-        };
-        this.state.items.add(newItems);
-      }
-  
-      if (atBoard && index > 1) {
-        const boardItem = {
-          className: "board-only",
-          content: "",
-          group: idt,
-          id: this.state.items.length + 1,
-          locked: false,
-          phase: false,
-          phaseID: groupID,
-          start: atBoard,
-          type: 'point',
-          title: "Lautakunta",
-        };
-        this.state.items.add(boardItem);
-      }
-  
-      const newSubGroup = {
-        id: idt,
-        content: content === "esillaolo" || content === "nahtavillaolo" 
-          ? nahtavillaolo === true 
-            ? "Nahtavillaolo-" + newIndex 
-            : "Esilläolo-" + newIndex 
-          : "Lautakunta-" + newIndex,
-        abbreviation: "",
-        deadlinegroup: content === "esillaolo" || content === "nahtavillaolo" 
-          ? nahtavillaolo === true 
-            ? phase + "_nahtavillaolokerta" + indexString 
-            : phase + "_esillaolokerta" + indexString 
-          : phase + "_lautakuntakerta" + indexString,
-        deadlinesubgroup: "",
-        locked: false
-      };
-      this.state.groups.add(newSubGroup);
-  
+      const updateGroups = this.state.groups.get();
       let phaseCapitalized = phase.charAt(0).toUpperCase() + phase.slice(1);
       if (phaseCapitalized === "Tarkistettu_ehdotus") {
         phaseCapitalized = phaseCapitalized.replace(/_/g, ' ');
       }
-      const updateGroups = this.state.groups.get();
       let phaseGroup = updateGroups.find(group => group.content.toLowerCase() === phaseCapitalized.toLowerCase());
-  
       if (phaseGroup?.nestedGroups) {
         const nestedGroupIds = phaseGroup.nestedGroups;
         const nestedGroups = updateGroups.filter(group => nestedGroupIds.includes(group.id));
