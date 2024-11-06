@@ -256,81 +256,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const handleRemoveGroup = () => {
-      //TODO review logic and split this to smaller functions
-      let removeFromTimeline = dataToRemove?.deadlinegroup
-      let phase = dataToRemove?.nestedInGroup.toLowerCase()
-      const esillaolo = dataToRemove?.content?.includes("Esilläolo");
-      const luonnos = dataToRemove?.content?.includes("Lautakunta");
-      //Group that is to be removed
-      let toRemoveFromCalendar = dataToRemove?.nestedInGroup?.toLowerCase() + "_" + dataToRemove?.content?.toLowerCase().replace(/[äöå]/g, match => {
-        switch (match) {
-          case 'ä': return 'a';
-          case 'ö': return 'o';
-          case 'å': return 'a';
-          default: return match;
-        }
-      }).replace(/-/g, "_").replace(/_\d+/g, "");
-
-      let index = "_" + dataToRemove.deadlinegroup.split('_').pop()
-      let keysToRemove = []
-
       const visiblityBool = getVisibilityBoolName(dataToRemove.deadlinegroup)
       if (visiblityBool) {
         dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, visiblityBool, false));
       }
-
-      //remove from attribute data/calendar
-      for (const key in visValues) {
-        if (Object.hasOwn(visValues, key)) {
-          if (
-            (key.includes(toRemoveFromCalendar) && key.includes(index)) || 
-            (esillaolo && key.includes("mielipiteet_" + phase + index)) || 
-            (luonnos && key.includes("kaavaluonnos_") && toRemoveFromCalendar.includes("luonnos_lautakunta") || 
-             luonnos && key.includes("periaatteet_lautakuntaan") && toRemoveFromCalendar.includes("periaatteet_lautakunta")
-            )
-          )
-          {
-            if(luonnos && index === "_1" || esillaolo && index === "_1"){
-              if(!(key.includes("_2") || key.includes("_3") || key.includes("_4"))){
-                keysToRemove.push(key)
-              }
-            }
-            else{
-              keysToRemove.push(key)
-            }
-            // Filter out the matching deadline from deadlines
-            let deleteValue = null
-            if(key.includes("kaavaluonnos_lautakuntaan_") && toRemoveFromCalendar.includes("luonnos_lautakunta") || 
-              key.includes("jarjestetaan_luonnos_esillaolo_") && toRemoveFromCalendar.includes("luonnos_esillaolo") || 
-              key.includes("periaatteet_lautakuntaan_") && toRemoveFromCalendar.includes("periaatteet_lautakunta") || 
-              key.includes("jarjestetaan_periaatteet_esillaolo_") && toRemoveFromCalendar.includes("periaatteet_esillaolo")){
-              deleteValue = false
-            }
-            dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, key, deleteValue));
-          }
-        }
-      }
-      //Remove from vis groups
-      let updatedGroups = groups.get({
-        filter: function(group) {
-          return !(group.deadlinegroup && group.deadlinegroup === removeFromTimeline);
-        }
-      });
-      //Remove from vis sub groups
-      updatedGroups.forEach(group => {
-        if (group.nestedGroups) {
-          group.nestedGroups = group.nestedGroups.filter(subgroup => subgroup !== dataToRemove.id);
-        }
-      });
-      // Remove from local deadlines data, backend removes the actual data on save
-      dispatch(removeDeadlines(keysToRemove));
-      //Remove from vis items
-      const updatedItems = items.get().filter(item => item.group !== dataToRemove.id);
-      //Update timeline visually
-      groups.clear();
-      items.clear();
-      groups.add(updatedGroups);
-      items.add(updatedItems)
       setOpenConfirmModal(!openConfirmModal)
     }
 
