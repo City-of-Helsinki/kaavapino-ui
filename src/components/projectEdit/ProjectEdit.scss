@@ -736,7 +736,6 @@
 
   .header{
     padding: 26px 0 16px 0 !important;
-    margin-left: 16px !important;
     border-bottom: none !important;
     position: sticky !important;
     top: 0;
@@ -744,6 +743,7 @@
     background-color: #fff !important;
     .breadcrumb {
       padding: 10px 16px;
+      margin-left: 16px !important;
       list-style: none;
       background-color: #fff;
       margin: 0;
@@ -834,6 +834,13 @@
         margin-bottom: 32px;
         .input-header-container {
           margin-top: 0;
+          .input-header-icons {
+            position: relative;
+            top: 3px;
+            .tooltip {
+              z-index: 100 !important;
+            }
+          }
         }
         .deadline-input{
           border:2px solid $border-gray2;
