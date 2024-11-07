@@ -676,6 +676,26 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
   //If not any of the above return arkipäivät
   return dateTypes?.arkipäivät?.dates
 }
+
+const compareAndUpdateDates = (data) => {
+  //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
+  const pairs = [
+    ["viimeistaan_lausunnot_ehdotuksesta", "milloin_ehdotuksen_nahtavilla_paattyy"],
+    ["viimeistaan_lausunnot_ehdotuksesta_2", "milloin_ehdotuksen_nahtavilla_paattyy_2"],
+    ["viimeistaan_lausunnot_ehdotuksesta_3", "milloin_ehdotuksen_nahtavilla_paattyy_3"],
+    ["viimeistaan_lausunnot_ehdotuksesta_4", "milloin_ehdotuksen_nahtavilla_paattyy_4"]
+  ];
+
+  pairs.forEach(([key1, key2]) => {
+    if (data[key1] && data[key2]) {
+      const date1 = new Date(data[key1]).toISOString().slice(0, 10);
+      const date2 = new Date(data[key2]).toISOString().slice(0, 10);
+      if (date1 < date2) {
+        data[key1] = date2;
+      }
+    }
+  });
+};
  
 export default {
     isWeekend,
@@ -693,5 +713,6 @@ export default {
     calculateDisabledDates,
     getHighestDate,
     findAllowedDate,
-    findAllowedLautakuntaDate
+    findAllowedLautakuntaDate,
+    compareAndUpdateDates
 }

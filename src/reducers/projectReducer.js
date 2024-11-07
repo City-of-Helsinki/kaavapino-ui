@@ -178,7 +178,7 @@ export const reducer = (state = initialState, action) => {
       if(field === "hyvaksymispaatos_pvm" && filteredAttributeData["hyvaksyminenvaihe_paattyy_pvm"]){
         filteredAttributeData["hyvaksyminenvaihe_paattyy_pvm"] = timeUtil.formatDate(newDateObj);
       }
-      if (field === "tullut_osittain_voimaan_pvm" || field === "voimaantulo_pvm" || field === "kumottu_pvm" || field === "rauennut") {
+      else if (field === "tullut_osittain_voimaan_pvm" || field === "voimaantulo_pvm" || field === "kumottu_pvm" || field === "rauennut") {
         // Find the highest date among the specified fields
         const highestDate = timeUtil.getHighestDate(filteredAttributeData);
         // Modify the end date of voimaantulovaihe if any of the dates are changed and the new date is higher

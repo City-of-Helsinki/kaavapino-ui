@@ -360,7 +360,7 @@ const getHighestNumberedObject = (obj1, arr) => {
     }
     else{
       for (let i = currentIndex; i < arr.length; i++) {
-        if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
+        if(arr[field] && !arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
           && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
           && !arr[i].key.includes("hyvaksymispaatos_pvm") && !arr[i].key.includes("lautakunassa_")){
           let newDate = new Date(arr[i].value);
