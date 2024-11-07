@@ -246,12 +246,12 @@ const DeadLineInput = ({
           />
         }
       </div>
-      {editable && valueGenerated ? (
+      {editable && valueGenerated && !EDIT_PROJECT_TIMETABLE_FORM ? (
         <span className="deadline-estimated">{t('deadlines.estimated')}</span>
       ) : (
         ''
       )}
-      {editable && hasError && (
+      {editable && hasError && !EDIT_PROJECT_TIMETABLE_FORM && (
         <div className="error-text">
           <IconAlertCircle size="xs" /> {currentError}{' '}
         </div>
