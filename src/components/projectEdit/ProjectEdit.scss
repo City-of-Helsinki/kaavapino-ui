@@ -30,7 +30,7 @@
   padding: 0;
   margin-top: -12px;
   position: initial !important;
-  padding-left: $size16;
+  padding-left: $size20;
 
   #field-segment {
     position: initial;
@@ -814,8 +814,10 @@
         position: sticky;
         top: 56px;
         z-index: 100;
-        width: 473px;
+        width: 510px;
         background-color: #fff;
+        margin-left: -33px;
+        padding-left: 33px;
         padding-bottom: 24px;
         margin-bottom: 0!important;
       }
