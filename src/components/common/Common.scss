@@ -1163,12 +1163,9 @@ header{
 // Style for the custom toastr with default error animation
 .redux-toastr{
   .large-scrollable-toastr {
-    &.rrt-error {
-      // This applies to error toastr with animation
-    }
 
     .toast {
-      width:  400px; // Make the toastr wider
+      width:  500px; // Make the toastr wider
       height: auto;
       padding: 20px;
     }
@@ -1184,6 +1181,17 @@ header{
     }
   }
 
+  .top-center {
+    .rrt-error, .rrt-warning, .rrt-info, .rrt-success {
+      width: 500px !important;
+    }
+  }
+
+  .rrt-middle-container {
+      width: 75% !important; // Make the middle container wider
+      top: 14px;
+    }
+
   // Style for default container classes (left, middle, right)
   .rrt-left-container, .rrt-middle-container, .rrt-right-container {
     padding: 10px !important; // Add padding for spacing
@@ -1193,8 +1201,9 @@ header{
       max-height: 200px !important;
     }
     .toast {
-      width: 400px; // Ensure consistent width across all containers
+      width: 500px; // Ensure consistent width across all containers
     }
   }
+
 }
 
