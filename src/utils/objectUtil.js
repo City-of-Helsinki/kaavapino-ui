@@ -525,7 +525,7 @@ const getHighestNumberedObject = (obj1, arr) => {
   const filterHiddenKeys = (updatedAttributeData) => {
     //Remove all keys that are still hidden in vistimeline so they are not moved in data and later saved
     const phaseNames = [
-      "periaatteet","oas","luonnos","ehdotus","ehdotuksesta","ehdotuksen","tarkistettu_ehdotus"
+      "periaatteet","oas","luonnos","kaavaehdotus","ehdotus","ehdotuksesta","ehdotuksen","tarkistettu_ehdotus"
     ];
     const lautakunnat = ["periaatteet_lautakuntaan_2","periaatteet_lautakuntaan_3","periaatteet_lautakuntaan_4",
       "kaavaluonnos_lautakuntaan_2","kaavaluonnos_lautakuntaan_3","kaavaluonnos_lautakuntaan_4",
@@ -536,6 +536,10 @@ const getHighestNumberedObject = (obj1, arr) => {
       "jarjestetaan_oas_esillaolo_2","jarjestetaan_oas_esillaolo_3","jarjestetaan_luonnos_esillaolo_2","jarjestetaan_luonnos_esillaolo_3",
       "kaavaehdotus_uudelleen_nahtaville_2","kaavaehdotus_uudelleen_nahtaville_3","kaavaehdotus_uudelleen_nahtaville_4"
     ];
+    // Phase mapping for "kaavaehdotus" and its variations
+    const phaseGroup = {
+      "kaavaehdotus": ["kaavaehdotus", "ehdotus", "ehdotuksesta", "ehdotuksen"]
+    };
     //find index keys that exist in data
     const presentLautakunnat = lautakunnat.filter(key => key in updatedAttributeData);
     const presentEsillaolot = esillaolot.filter(key => key in updatedAttributeData);
@@ -544,12 +548,18 @@ const getHighestNumberedObject = (obj1, arr) => {
     const lautakunnatPhases = presentLautakunnat.map(key => {
       const phase = phaseNames.find(phaseName => key.includes(phaseName));
       const number = key.match(/\d+/)[0];
-      return { phase, number };
+      return { phase: phaseGroup[phase] || [phase], number }; // Ensure phase is always an array
     });
 
     const esillaolotPhases = presentEsillaolot.map(key => {
-      const phase = phaseNames.find(phaseName => key.includes(phaseName));
+      let phase = phaseNames.find(phaseName => key.includes(phaseName));
       const number = key.match(/\d+/)[0];
+      // If phase is "kaavaehdotus", replace it with all related phases
+      if (phase === "kaavaehdotus") {
+        phase = phaseGroup["kaavaehdotus"];
+      } else {
+        phase = [phase]; // Keep it as an array for consistency
+      }
       return { phase, number };
     });
 
@@ -557,10 +567,18 @@ const getHighestNumberedObject = (obj1, arr) => {
     return Object.entries(updatedAttributeData).reduce((acc, [key, value]) => {
       const indexMatch = key.match(/\d+/);
       const index = indexMatch ? parseInt(indexMatch[0], 10) : null;
-      const isLautakunnatPhase = lautakunnatPhases.some(phase => key.includes(phase.phase) && key.includes(phase.number));
-      const isEsillaolotPhase = esillaolotPhases.some(phase => key.includes(phase.phase) && key.includes(phase.number));
-      if (index === null || index === 1 || (index <= 2 && (isLautakunnatPhase || isEsillaolotPhase))) {
-    acc[key] = value;
+      //const isLautakunnatPhase = lautakunnatPhases.some(phase => key.includes(phase.phase) && key.includes(phase.number));
+      //const isEsillaolotPhase = esillaolotPhases.some(phase => key.includes(phase.phase) && key.includes(phase.number));
+      const isLautakunnatPhase = lautakunnatPhases.some(
+        phaseObj => phaseObj.phase.some(p => key.includes(p)) && key.endsWith(`_${phaseObj.number}`)
+      );
+  
+      const isEsillaolotPhase = esillaolotPhases.some(
+        phaseObj => phaseObj.phase.some(p => key.includes(p)) && key.endsWith(`_${phaseObj.number}`)
+      );
+
+      if (index === null || index === 1 || (isLautakunnatPhase || isEsillaolotPhase) ) {
+        acc[key] = value;
       }
       return acc;
     }, {});

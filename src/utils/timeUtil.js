@@ -138,12 +138,14 @@
   };
 
   const findAllowedLautakuntaDate = (newDate, miniumGap, allowedDays, moveToPast, maaraaikaAllowedDates) => {
+    //+1 for date it refers
+    const gap = miniumGap + 1;
     // Check for direct match in maaraaikaAllowedDates
     let maaraaikaMatch = maaraaikaAllowedDates.find(date => date === newDate);
     let maaraaikaDate;
     if (maaraaikaMatch) {
       const closestIndex = maaraaikaAllowedDates.indexOf(maaraaikaMatch);
-      maaraaikaDate = moveToPast ? maaraaikaAllowedDates[closestIndex - miniumGap] : maaraaikaAllowedDates[closestIndex + miniumGap];
+      maaraaikaDate = moveToPast ? maaraaikaAllowedDates[closestIndex - gap] : maaraaikaAllowedDates[closestIndex + gap];
     }
     else{
       // Find the closest date from maaraaikaAllowedDates considering the miniumGap
@@ -164,7 +166,7 @@
       }
 
       const closestIndex = maaraaikaAllowedDates.indexOf(closestDate);
-      maaraaikaDate = moveToPast ? maaraaikaAllowedDates[closestIndex - miniumGap] : maaraaikaAllowedDates[closestIndex + miniumGap];
+      maaraaikaDate = moveToPast ? maaraaikaAllowedDates[closestIndex - gap] : maaraaikaAllowedDates[closestIndex + gap];
     }
     // Find the matching or closest date from allowedDays using the maaraaikaDate
     let match = allowedDays.find(date => date === maaraaikaDate);
@@ -190,11 +192,14 @@
 
   const findAllowedDate = (newDate, miniumGap, allowedDays, moveToPast) => {
     //Find newDate from allowedDays, add miniumGap to it and return the date, moveToPast is reverse iteration of array
+
+    //+1 for date it refers
+    const gap = miniumGap + 1;
     // Check for direct match
     let match = allowedDays.find(date => date === newDate);
     if (match) {
       const matchIndex = allowedDays.indexOf(match);
-      return moveToPast ? allowedDays[matchIndex - miniumGap] : allowedDays[matchIndex + miniumGap];
+      return moveToPast ? allowedDays[matchIndex - gap] : allowedDays[matchIndex + gap];
     }
 
     // Find the closest date if no exact match is found
@@ -212,7 +217,7 @@
 
     if (closestDate) {
       const closestIndex = allowedDays.indexOf(closestDate);
-      return moveToPast ? allowedDays[closestIndex - miniumGap] : allowedDays[closestIndex + miniumGap];
+      return moveToPast ? allowedDays[closestIndex - gap] : allowedDays[closestIndex + gap];
     }
   
     return null; // Return the date that meets the gap condition, or null if none
