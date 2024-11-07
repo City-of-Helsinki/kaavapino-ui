@@ -160,7 +160,8 @@
     "total":"Yhteensä",
     "fields":"kenttää.",
     "general-save-error":"Tallennus epäonnistui",
-    "fixed-timeline-dates":"Päivämäärät validoitu:",
+    "error-with-dates":"Päivämäärät tarkistettu:",
+    "fixed-timeline-dates":"Päivämäärät muutettu:",
     "checking-dates":"Tarkistetaan päivämääriä",
     "dates-confirmed":"Päivämäärät validoitu"
   },
