@@ -110,6 +110,7 @@
     "delete-first-esillaolo":"Ensimmäistä esilläoloa ei voi poistaa.",
     "delete-first-lautakunta":"Ensimmäistä lautakuntaa ei voi poistaa.",
     "delete-first-nahtavillaolo":"Ensimmäistä nähtävilläoloa ei voi poistaa.",
+    "timeline-group-header": "Vaiheiden etapit",
     "modify-timeline":"Muokkaa aikataulua"
   },
   "common": {
