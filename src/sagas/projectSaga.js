@@ -718,7 +718,7 @@ function* validateProjectTimetable() {
         removeOnHover: false,
         showCloseButton: true,
         preventDuplicates: true,
-        className: 'large-scrollable-toastr rrt-error'
+        className: 'large-scrollable-toastr rrt-info'
       });
 
       //Show a message of a dates changed
