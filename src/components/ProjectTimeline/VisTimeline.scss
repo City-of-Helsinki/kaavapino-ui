@@ -367,6 +367,7 @@
                 padding-left: $size15;
                 position: relative;
                 .timeline-button-label{
+                    font-weight: 400;
                     padding-top: 5px;
                 }
                 .timeline-edit-button{
@@ -617,7 +618,6 @@
 
     .vis-text.vis-major {
         text-align: center;
-        margin-left: -0.5px;
         border-color: #999999;
     }
 
@@ -626,7 +626,6 @@
         &.vis-current-month, &.vis-even, &.vis-odd {
             padding-top: $size17;
             text-align: center;
-            margin-left: -0.5px;
             border-color: $color-black-20;
             border-bottom: none;
         }
@@ -750,6 +749,9 @@
 }
 
 .years{
+    .vis-minor, .vis-major > div {
+        font-weight: 700;
+    }
     .normal-weekend{
         background-color: white !important;
     }
