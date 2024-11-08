@@ -107,11 +107,9 @@ class EditProjectTimeTableModal extends Component {
             //Form items and groups
             let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,formValues,deadlines,ongoingPhase)
             // Update the existing data
-            let existingGroups = deadLineGroups;
-            existingGroups = nestedDeadlines? existingGroups.concat(nestedDeadlines) : existingGroups
-            console.log("Now setting groups to",existingGroups)
+            const combinedGroups = nestedDeadlines? deadLineGroups.concat(nestedDeadlines) : deadLineGroups
             this.state.groups.clear();
-            this.state.groups.add(existingGroups)
+            this.state.groups.add(combinedGroups)
             this.state.items.update(phaseData)
             const newObjectArray = objectUtil.findDifferencesInObjects(prevProps.formValues,formValues)
 
@@ -1008,7 +1006,8 @@ class EditProjectTimeTableModal extends Component {
   }
 
   addGroup = (changedValues) => {
-    // Get the keys from changedValues
+    // Note: this function may include old/redundant code. TODO: review and remove unnecessary
+    // Groups should be added by dispatching change and regenerating them in getTimelineData
     const keys = Object.keys(changedValues);
     let phase = '';
     let content = '';
@@ -1016,7 +1015,6 @@ class EditProjectTimeTableModal extends Component {
     let idt = "";
     let deadlinegroup = "";
     const groups = this.state.groups.get();
-    let className = "";
     let matchingValues = Object.entries(this.props.formValues);
 
     // Iterate over the keys
@@ -1083,7 +1081,6 @@ class EditProjectTimeTableModal extends Component {
       if (content === "nahtavillaolo") {
         filterContent = "nahtavilla";
       }
-      className = "inner-end";
       let indexKey = '';
       if (index > 2) {
         indexKey = "_" + Number(index - 1);

@@ -513,7 +513,11 @@
         border-bottom: 1px solid #CCCCCC;
     }
 
-    .vis-group-level-0{
+    .vis-label.vis-nested-group{
+        padding-left: 15px;
+    }
+
+    .vis-group-level-0:not(.vis-nested-group){
         display: flex;
         justify-content: flex-start;
         align-items: center;
@@ -525,7 +529,7 @@
         }
     }
 
-    .vis-group-level-0.expanded{
+    .vis-group-level-0.expanded:not(.vis-nested-group){
         padding-left: $size13;
         .vis-inner{
             padding-left: $size8;
@@ -564,7 +568,7 @@
         }
     }
 
-    .vis-group-level-0.collapsed{
+    .vis-group-level-0.collapsed:not(.vis-nested-group){
         padding-left: $size13;
         .vis-inner{
             padding-left: $size8;
@@ -585,7 +589,7 @@
         align-items: center;
         margin-right: -1px;
         height: 35px !important;
-        .vis-group-level-0{
+        .vis-group-level-0:not(.vis-nested-group){
             display: block;
             padding-left: $size16;
         }
