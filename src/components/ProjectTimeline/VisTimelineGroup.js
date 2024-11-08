@@ -14,7 +14,6 @@ import VisTimelineMenu from './VisTimelineMenu'
 import AddGroupModal from './AddGroupModal';
 import ConfirmModal from '../common/ConfirmModal'
 import PropTypes from 'prop-types';
-import { removeDeadlines } from '../../actions/projectActions';
 import { getVisibilityBoolName } from '../../utils/projectVisibilityUtils';
 import './VisTimeline.css'
 Moment().locale('fi');
