@@ -713,7 +713,7 @@ function* validateProjectTimetable() {
       // Remove loading icon and show error toastr
       toastr.removeByType('info');
       // Display message in a toastr
-      toastr.error(i18.t('messages.error-with-dates'), errorMessage, {
+      toastr.info(i18.t('messages.error-with-dates'), errorMessage, {
         timeOut: 10000,
         removeOnHover: false,
         showCloseButton: true,
