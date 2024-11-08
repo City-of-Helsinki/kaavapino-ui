@@ -512,7 +512,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               second:     's',
               minute:     'HH:mm',
               hour:       'HH:mm',
-              weekday:    'ddd D',
+              weekday:    'D<br>ddd',
               day:        'D',
               week:       'w',
               month:      'MMM',
