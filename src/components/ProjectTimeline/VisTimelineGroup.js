@@ -449,12 +449,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const goToToday = () => {
-      if(currentFormat === "showMonths"){
-        showMonths();
-      }
-      else{
-        showYears();
-      }
+      const currentDate = new Date();
+      timeline.moveTo(currentDate, {animation: true});
     }
 
     const toggleRollingMode = () =>  {
