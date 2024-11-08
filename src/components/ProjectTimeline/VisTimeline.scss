@@ -55,10 +55,6 @@
         }
     }
     .vis-time-axis.vis-background{
-        .vis-grid.vis-major {
-            border-left: 1px solid #999999;
-            border-color: #999999 !important;
-        }
         .vis-grid.vis-minor {
             border-left: 1px solid $color-black-20;
             border-color: $color-black-20 !important;
@@ -624,7 +620,7 @@
     .vis-text.vis-minor {
         color: #000000;
         &.vis-current-month, &.vis-even, &.vis-odd {
-            padding-top: $size17;
+            align-content: center;
             text-align: center;
             border-color: $color-black-20;
             border-bottom: none;
@@ -632,7 +628,9 @@
     }
 
     .vis-major {
-        border-left: $size1 solid #999999;
+        border-left: $size1 solid #999999 !important;
+        z-index: 100;
+        background: transparent !important;
         &::first-letter{
             text-transform: capitalize;
         }
@@ -651,9 +649,9 @@
         border-top: $size1 solid $color-black-20;
         border-bottom: $size1 solid $color-black-20;
         font-size: $size14;
-        font-weight: 700;
-        &::first-letter{
-            text-transform: capitalize;
+        font-weight: 500;
+        &::first-line {
+            font-weight: bold;
         }
     }
 
@@ -751,6 +749,11 @@
 .years{
     .vis-minor, .vis-major > div {
         font-weight: 700;
+    }
+    .vis-minor {
+        &::first-letter {
+            text-transform: capitalize;
+        }
     }
     .normal-weekend{
         background-color: white !important;
