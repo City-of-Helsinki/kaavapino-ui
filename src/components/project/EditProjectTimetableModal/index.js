@@ -888,8 +888,12 @@ class EditProjectTimeTableModal extends Component {
     phaseNormalized = phaseNormalized.trim();
     // Capitalize the first character and concatenate with the rest of the string
     phaseNormalized = phaseNormalized.charAt(0).toUpperCase() + phaseNormalized.slice(1);
+    //Exception for luonnos and ehdotus
     if(phaseNormalized.toLowerCase() === "kaavaluonnos"){
       phaseNormalized = "Luonnos"
+    }
+    else if(phaseNormalized.toLowerCase() === "kaavaehdotus"){
+      phaseNormalized = "Ehdotus"
     }
     //Add distance values,matching name and from what data was value calculated from to check later from deadlinesection data
     let distanceArray = []

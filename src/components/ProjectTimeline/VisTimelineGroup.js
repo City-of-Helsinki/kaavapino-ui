@@ -123,7 +123,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
       // Check if more Lautakunta groups can be added
       const deadlineLautakuntakertaKeys = data.maxLautakunta
-      const lautakuntaanRegex = phase === "luonnos" ? new RegExp(`kaava${phase}_lautakuntaan_\\d+$`): new RegExp(`${phase}_lautakuntaan_\\d+$`);
+      const lautakuntaanRegex = phase === "luonnos" || phase === "ehdotus" ? new RegExp(`kaava${phase}_lautakuntaan_\\d+$`): new RegExp(`${phase}_lautakuntaan_\\d+$`);
       const lautakuntaanRegex2 = new RegExp(`${phase}_lautakunnassa_\\d+$`);
       const attributeLautakuntaanKeys = Object.keys(visValRef).filter(key => lautakuntaanRegex.test(key) || lautakuntaanRegex2.test(key));
       let largestIndexLautakunta = 0;
@@ -149,7 +149,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
       if (lautakuntaConfirmed) {
         canAddLautakunta = lautakuntaCount <= deadlineLautakuntakertaKeys;
-        const lautakuntaText = phase === "luonnos" ? `kaava${phase}_lautakuntaan_${lautakuntaCount}$` : `${phase}_lautakuntaan_${lautakuntaCount}$`
+        const lautakuntaText = phase === "luonnos" || phase === "ehdotus" ? `kaava${phase}_lautakuntaan_${lautakuntaCount}$` : `${phase}_lautakuntaan_${lautakuntaCount}$`
         const nextLautakuntaStr = canAddLautakunta ? lautakuntaText : false;
         nextLautakuntaClean = nextLautakuntaStr ? nextLautakuntaStr.replace(/[/$]/g, '') : nextLautakuntaStr;
       }
