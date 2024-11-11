@@ -529,7 +529,7 @@ const getHighestNumberedObject = (obj1, arr) => {
     ];
     const lautakunnat = ["periaatteet_lautakuntaan_2","periaatteet_lautakuntaan_3","periaatteet_lautakuntaan_4",
       "kaavaluonnos_lautakuntaan_2","kaavaluonnos_lautakuntaan_3","kaavaluonnos_lautakuntaan_4",
-      "ehdotus_lautakuntaan_2","ehdotus_lautakuntaan_3","ehdotus_lautakuntaan_4",
+      "kaavaehdotus_lautakuntaan_2","kaavaehdotus_lautakuntaan_3","kaavaehdotus_lautakuntaan_4",
       "tarkistettu_ehdotus_lautakuntaan_2","tarkistettu_ehdotus_lautakuntaan_3","tarkistettu_ehdotus_lautakuntaan_4"
     ];
     const esillaolot = ["jarjestetaan_periaatteet_esillaolo_2","jarjestetaan_periaatteet_esillaolo_3",
