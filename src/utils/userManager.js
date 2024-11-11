@@ -16,12 +16,12 @@ const userManagerConfig = {
   authority: process.env.REACT_APP_OPENID_ENDPOINT,
   post_logout_redirect_uri: `${baseUrl}/logout/callback`,
   automaticSilentRenew: true,
-  silent_redirect_uri: `${baseUrl}/silent-renew`,
+  silent_redirect_uri: `${baseUrl}/silent-renew.html`,
   stateStore: new WebStorageStateStore({ store: localStorage }),
   userStore: new WebStorageStateStore({ store: localStorage }),
   includeIdTokenInSilentRenew:true,
   //For debugging silent renew. Value represents how much to reduce timer by, not how long timer is.
-  //accessTokenExpiringNotificationTimeInSeconds: 4.5 * 60
+  accessTokenExpiringNotificationTimeInSeconds: 4.5 * 60
 }
 
 if (process.env.NODE_ENV === 'test') {
