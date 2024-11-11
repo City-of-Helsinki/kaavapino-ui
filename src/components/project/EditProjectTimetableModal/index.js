@@ -888,6 +888,9 @@ class EditProjectTimeTableModal extends Component {
     phaseNormalized = phaseNormalized.trim();
     // Capitalize the first character and concatenate with the rest of the string
     phaseNormalized = phaseNormalized.charAt(0).toUpperCase() + phaseNormalized.slice(1);
+    if(phaseNormalized.toLowerCase() === "kaavaluonnos"){
+      phaseNormalized = "Luonnos"
+    }
     //Add distance values,matching name and from what data was value calculated from to check later from deadlinesection data
     let distanceArray = []
     for (let i = 0; i < this.props.deadlineSections.length; i++) {
@@ -916,7 +919,6 @@ class EditProjectTimeTableModal extends Component {
     let newItem
 
     for (const { key } of matchingValues) {
-      console.log(key)
         let valueToCheck
         let daysToAdd
 

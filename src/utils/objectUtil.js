@@ -547,13 +547,13 @@ const getHighestNumberedObject = (obj1, arr) => {
     //find index and phase from presentLautakunnat and presentEsillaolot
     const lautakunnatPhases = presentLautakunnat.map(key => {
       const phase = phaseNames.find(phaseName => key.includes(phaseName));
-      const number = key.match(/\d+/)[0];
+      const number = key.match(/_(\d+)/) ? key.match(/_(\d+)/)[1] : null;
       return { phase: phaseGroup[phase] || [phase], number }; // Ensure phase is always an array
     });
 
     const esillaolotPhases = presentEsillaolot.map(key => {
       let phase = phaseNames.find(phaseName => key.includes(phaseName));
-      const number = key.match(/\d+/)[0];
+      const number = key.match(/_(\d+)/) ? key.match(/_(\d+)/)[1] : null;
       // If phase is "kaavaehdotus", replace it with all related phases
       if (phase === "kaavaehdotus") {
         phase = phaseGroup["kaavaehdotus"];
@@ -566,7 +566,7 @@ const getHighestNumberedObject = (obj1, arr) => {
     //filter all but index keys from data
     return Object.entries(updatedAttributeData).reduce((acc, [key, value]) => {
       const indexMatch = key.match(/_(\d+)/);
-      const index = indexMatch ? parseInt(indexMatch[0], 10) : null;
+      const index = indexMatch ? parseInt(indexMatch[1], 10) : null;
       //const isLautakunnatPhase = lautakunnatPhases.some(phase => key.includes(phase.phase) && key.includes(phase.number));
       //const isEsillaolotPhase = esillaolotPhases.some(phase => key.includes(phase.phase) && key.includes(phase.number));
       const isLautakunnatPhase = lautakunnatPhases.some(
@@ -576,7 +576,6 @@ const getHighestNumberedObject = (obj1, arr) => {
       const isEsillaolotPhase = esillaolotPhases.some(
         phaseObj => phaseObj.phase.some(p => key.includes(p)) && key.endsWith(`_${phaseObj.number}`)
       );
-
       if (index === null || index === 1 || (isLautakunnatPhase || isEsillaolotPhase) ) {
         acc[key] = value;
       }
