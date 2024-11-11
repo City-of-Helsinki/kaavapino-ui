@@ -653,40 +653,18 @@ export const reducer = (state = initialState, action) => {
       // Clone the payload to avoid direct mutation
       const updatedPayload = { ...action.payload };
 
-      // Check conditions and update attribute_data if necessary
-      // Add the key with a value of true because first one should be always visible at start 
-      // on periaate and luonnos phase if they have been created and value is not set to false later
+      //When project is fetched it has all phase data, hide phases from data that are not in use when project is create
+      //(like oas esillaolo 2,3 etc)
+      updatedPayload.attribute_data = objectUtil.filterHiddenKeys(updatedPayload.attribute_data);
+
+            // Check conditions and update attribute_data if necessary
+      //Ehdotus Add the key with a value of true because first one should be always visible at start 
       // if not true data is not visible for modification on edit timetable side panel
-      if (updatedPayload?.attribute_data?.periaatteet_luotu === true){
-        if(updatedPayload?.attribute_data["jarjestetaan_periaatteet_esillaolo_1"] === undefined) {
-          updatedPayload.attribute_data["jarjestetaan_periaatteet_esillaolo_1"] = true;
-        }
-        if(updatedPayload.attribute_data["periaatteet_lautakuntaan_1"] === undefined) {
-          updatedPayload.attribute_data["periaatteet_lautakuntaan_1"] = true;
-        }
-      }
-
-      if (updatedPayload?.attribute_data?.luonnos_luotu === true){
-        if(updatedPayload?.attribute_data["jarjestetaan_luonnos_esillaolo_1"] === undefined) {
-          updatedPayload.attribute_data["jarjestetaan_luonnos_esillaolo_1"] = true;
-        }
-        if(updatedPayload?.attribute_data["kaavaluonnos_lautakuntaan_1"] === undefined) {
-          updatedPayload.attribute_data["kaavaluonnos_lautakuntaan_1"] = true;
-        }
-      } 
-
       if (updatedPayload?.attribute_data?.kaavaprosessin_kokoluokka === "XL" || updatedPayload?.attribute_data?.kaavaprosessin_kokoluokka === "L"){
         if(updatedPayload?.attribute_data["kaavaehdotus_lautakuntaan_1"] === undefined) {
           updatedPayload.attribute_data["kaavaehdotus_lautakuntaan_1"] = true;
         }
-        if(updatedPayload?.attribute_data["ehdotus_lautakuntaan_1"] === undefined) {
-          updatedPayload.attribute_data["ehdotus_lautakuntaan_1"] = true;
-        }
       }
-
-      //When project is fetched it has all phase data, hide phases from data that are not in use when project is create
-      //(like oas esillaolo 2,3 etc)
-      updatedPayload.attribute_data = objectUtil.filterHiddenKeys(updatedPayload.attribute_data);
 
       return {
         ...state,
