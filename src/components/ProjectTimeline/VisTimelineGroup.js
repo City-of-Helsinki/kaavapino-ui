@@ -725,14 +725,15 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
       // Tooltip show and hide functions
       const showTooltip = (event, item) => {
+        const offsetX = 150;
         tooltipDiv.style.display = 'block';
-        tooltipDiv.style.left = `${event.pageX + 10}px`;
-        tooltipDiv.style.top = `${event.pageY + 10}px`;
+        tooltipDiv.style.left = `${event.pageX - offsetX}px`;
+        tooltipDiv.style.top = `${event.pageY + 20}px`;
         tooltipDiv.innerHTML = `
           Vaihe: ${item?.phaseName} <br>
           ${item?.groupInfo ? "Nimi: " +item?.groupInfo+ " <br>": ""}
-          Alkaa: ${new Date(item?.start).toLocaleDateString()} <br>
-          Päättyy: ${new Date(item?.end).toLocaleDateString()}
+          ${item?.start ? "Alkaa:" + new Date(item?.start).toLocaleDateString() + "<br>" : ""}
+          ${item?.end ? "Päättyy:" + new Date(item?.end).toLocaleDateString() : ""}
         `;
       };
 
@@ -746,12 +747,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     
         let hoveredItem = null;
     
-        // Access items in the timeline and check if mouse is over any item with class "inner" or "inner-end"
+        // Access items in the timeline and check if mouse is over any item with certain class 
         if (timelineInstanceRef.current && timelineInstanceRef.current.itemSet) {
           const items = Object.values(timelineInstanceRef.current.itemSet.items);
-          
           items.forEach((item) => {
-            const itemDom = item?.dom?.box;
+            const itemDom = item?.dom?.box || item?.dom?.point || item?.dom?.dot;
             if (itemDom && (itemDom.classList.contains('vis-editable'))) {
               const itemBounds = itemDom.getBoundingClientRect();
               
