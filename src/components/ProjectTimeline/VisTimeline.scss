@@ -770,10 +770,9 @@
     visibility: visible !important;
     background-color: #ffffff !important;
     width: 300px !important; 
-    padding: 5px !important;
-    pointer-events: none !important;
+    padding: 8px !important;
+    pointer-events: auto !important;
     white-space: normal !important;
     word-wrap: break-word !important;
-    max-height: 400px;
     z-index: 2000 !important;
 }
