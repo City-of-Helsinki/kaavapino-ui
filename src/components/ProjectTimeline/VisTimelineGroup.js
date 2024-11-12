@@ -717,6 +717,67 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         },
       }
 
+            // Create the tooltip element
+      const tooltipDiv = document.createElement('div');
+      tooltipDiv.className = 'vis-tooltip';
+      tooltipDiv.style.display = 'none';
+      document.body.appendChild(tooltipDiv);
+
+      // Tooltip show and hide functions
+      const showTooltip = (event, item) => {
+        tooltipDiv.style.display = 'block';
+        tooltipDiv.style.left = `${event.pageX + 10}px`;
+        tooltipDiv.style.top = `${event.pageY + 10}px`;
+        tooltipDiv.innerHTML = `
+          Vaihe: ${item?.phaseName} <br>
+          ${item?.groupInfo ? "Nimi: " +item?.groupInfo+ " <br>": ""}
+          Alkaa: ${new Date(item?.start).toLocaleDateString()} <br>
+          Päättyy: ${new Date(item?.end).toLocaleDateString()}
+        `;
+      };
+
+      const hideTooltip = () => {
+        tooltipDiv.style.display = 'none';
+      };
+
+      const handleMouseMove = (event) => {
+        const mouseX = event.clientX;
+        const mouseY = event.clientY;
+    
+        let hoveredItem = null;
+    
+        // Access items in the timeline and check if mouse is over any item with class "inner" or "inner-end"
+        if (timelineInstanceRef.current && timelineInstanceRef.current.itemSet) {
+          const items = Object.values(timelineInstanceRef.current.itemSet.items);
+          
+          items.forEach((item) => {
+            const itemDom = item?.dom?.box;
+            if (itemDom && (itemDom.classList.contains('vis-editable'))) {
+              const itemBounds = itemDom.getBoundingClientRect();
+              
+              // Check if mouse is within the item's bounding box
+              if (
+                mouseX >= itemBounds.left &&
+                mouseX <= itemBounds.right &&
+                mouseY >= itemBounds.top &&
+                mouseY <= itemBounds.bottom
+              ) {
+                hoveredItem = item;
+              }
+            }
+          });
+        }
+    
+        if (hoveredItem) {
+          showTooltip(event, hoveredItem.data);
+        } else {
+          hideTooltip();
+        }
+      };    
+
+      // Attach the mousemove event to the container, not the items themselves
+      timelineRef.current.addEventListener('mousemove', handleMouseMove);
+
       if(items && options && groups){
         const timeline = timelineRef.current &&
         new vis.Timeline(timelineRef.current, items, options, groups);
@@ -747,8 +808,16 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         timeline.focus(0);
         //timeline.on('rangechanged', onRangeChanged);
         return () => {
+          // Check if tooltipDiv exists before trying to remove it
+          if (tooltipDiv) {
+            tooltipDiv.remove(); // Remove from DOM
+          }
+
           if (timelineInstanceRef.current) {
             timelineInstanceRef.current.destroy();
+            timelineInstanceRef.current.off('itemover', showTooltip);
+            timelineInstanceRef.current.off('itemout', hideTooltip);
+            document.body.removeEventListener('mousemove', handleMouseMove);
           }
           timeline.off('groupDragged', groupDragged)
           //timeline.off('rangechanged', onRangeChanged);
