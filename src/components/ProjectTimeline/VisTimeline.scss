@@ -765,3 +765,15 @@
         top: -18.5px !important;
     }
 }
+
+.vis-tooltip{
+    visibility: visible !important;
+    background-color: #ffffff !important;
+    width: 300px !important; 
+    padding: 5px !important;
+    pointer-events: none !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    max-height: 400px;
+    z-index: 2000 !important;
+}

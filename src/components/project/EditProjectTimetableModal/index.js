@@ -348,6 +348,7 @@ class EditProjectTimeTableModal extends Component {
       phaseID: deadlines[i].deadline.phase_id,
       phase: true,
       group: deadlines[i].deadline.phase_name,
+      phaseName: deadlines[i].deadline.phase_name
     });
   
     if (deadlines[i].deadline.phase_name === "Käynnistys" || deadlines[i].deadline.phase_name === "Hyväksyminen" || deadlines[i].deadline.phase_name === "Voimaantulo") {
@@ -361,7 +362,8 @@ class EditProjectTimeTableModal extends Component {
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
         group: numberOfPhases,
-        locked: false
+        locked: false,
+        phaseName: deadlines[i].deadline.phase_name
       });
       
       let dlIndex = deadLineGroups.findIndex(group => group.content === deadlines[i].deadline.phase_name);
@@ -410,6 +412,8 @@ class EditProjectTimeTableModal extends Component {
         group: numberOfPhases,
         locked: false,
         type: 'point',
+        phaseName: deadlines[i].deadline.phase_name,
+        groupInfo: "Lautakunta"
       });
     }
     else if(dashEnd === null){
@@ -423,7 +427,9 @@ class EditProjectTimeTableModal extends Component {
         phase: false,
         group: numberOfPhases,
         locked: false,
-        type: 'point'
+        type: 'point',
+        phaseName: deadlines[i].deadline.phase_name,
+        groupInfo: "Lautakunta"
       });
     }
     else if(dashStart && dashEnd && milestone){
@@ -437,7 +443,9 @@ class EditProjectTimeTableModal extends Component {
         phase: false,
         group: numberOfPhases,
         locked: false,
-        type: 'point'
+        type: 'point',
+        phaseName: deadlines[i].deadline.phase_name,
+        groupInfo: "Määräaika"
       });
       phaseData.push({
         start: milestone,
@@ -450,6 +458,8 @@ class EditProjectTimeTableModal extends Component {
         phase: false,
         group: numberOfPhases,
         locked: false,
+        phaseName: deadlines[i].deadline.phase_name,
+        groupInfo: "Määräaika - Alkaa"
       });
       phaseData.push({
         start: dashStart,
@@ -461,7 +471,9 @@ class EditProjectTimeTableModal extends Component {
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
         group: numberOfPhases,
-        locked: false
+        locked: false,
+        phaseName: deadlines[i].deadline.phase_name,
+        groupInfo: "Alkaa - Päättyy"
       });
     }
     else{
@@ -475,7 +487,9 @@ class EditProjectTimeTableModal extends Component {
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
         group: numberOfPhases,
-        locked: false
+        locked: false,
+        phaseName: deadlines[i].deadline.phase_name,
+        groupInfo: "Määräaika - Lautakunta"
       });
     }
 
