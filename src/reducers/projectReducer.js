@@ -298,13 +298,11 @@ export const reducer = (state = initialState, action) => {
 
     case RESET_ATTRIBUTE_DATA: {
       const { initialData } = action.payload
-      let updatedAttributeData
-      updatedAttributeData = { ...state.currentProject.attribute_data,...initialData }
       return {
         ...state,
         currentProject: {
           ...state.currentProject,
-          attribute_data: { ...updatedAttributeData }
+          attribute_data: { ...initialData }
         }
       }
     }
