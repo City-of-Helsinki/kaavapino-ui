@@ -176,6 +176,17 @@ const DeadLineInput = ({
     }
   };
 
+  const formatDateToDMYYYY = (dateString) => {
+    // Required by hds-DateInput
+    if(typeof dateString !== 'object' && dateString?.includes('-')){
+      const removeZero = (datePart) => datePart.startsWith('0') ? datePart.slice(1) : datePart;
+      const dateParts = dateString.split("-");
+      return `${removeZero(dateParts[2])}.${removeZero(dateParts[1])}.${dateParts[0]}`;
+    } else {
+      return dateString;
+    }
+  }
+
   const handleDateChange = (formattedDate) => {
     try {
       let field = input.name;
@@ -195,9 +206,9 @@ const DeadLineInput = ({
           language='fi'
           initialMonth={getInitialMonth(currentValue ? currentValue : input.value)}
           isDateDisabledBy={isDisabledDate}
-          value={formatDateToYYYYMMDD(currentValue ? currentValue : input.value)}
+          value={formatDateToDMYYYY(currentValue ? currentValue : input.value)}
           name={input.name}
-          type={type}
+          type='text' // type='date' works poorly with hds-DateInput
           disabled={disabledState}
           placeholder={placeholder}
           error={error}
