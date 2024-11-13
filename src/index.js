@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react'
 import ReactDOM from "react-dom/client";
 import { Provider } from 'react-redux'
-import { UserManager } from 'oidc-client-ts'
 import { init as sentryInit } from '@sentry/browser'
 import ReduxToastr from 'react-redux-toastr'
 import App from './components/App'
@@ -16,38 +15,32 @@ import './i18n'
 // hds-rect. However since hds-react implementation was only started then, it did not have all the required
 // components. Most of the components have been changed from sematic-ui-react to hds-react, but some components
 // still missing. When all required components are available, semantic-ui-react could be removed and use hds-react
-// as a common style. 
-if (window.location.pathname === '/silent-renew') {
-  const mgr = new UserManager();
-  mgr.signinSilentCallback().catch(error => {
-    console.error('silent renew error', error);
-  });
-} else {
-  // Initialize axios
-  apiUtils.initAxios()
+// as a common style.
 
-  // Initialize sentry
-  if (process.env.NODE_ENV === 'production') {
-    sentryInit({ dsn: process.env.REACT_APP_SENTRY_URL })
-  }
+// Initialize axios
+apiUtils.initAxios()
 
-  const root = ReactDOM.createRoot(document.getElementById("root"));
-  
-  root.render(
-    <Provider store={store}>
-        <React.Fragment>
-          <ReduxToastr
-            closeOnToastrClick={true}
-            newestOnTop={false}
-            position="top-center"
-            transitionIn="fadeIn"
-            transitionOut="fadeOut"
-            timeOut={7500}
-          />
-          <Suspense fallback='Loading'>
-            <App />
-          </Suspense>
-        </React.Fragment>
-    </Provider>
-  )
+// Initialize sentry
+if (process.env.NODE_ENV === 'production') {
+  sentryInit({ dsn: process.env.REACT_APP_SENTRY_URL })
 }
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+  
+root.render(
+  <Provider store={store}>
+      <React.Fragment>
+        <ReduxToastr
+          closeOnToastrClick={true}
+          newestOnTop={false}
+          position="top-center"
+          transitionIn="fadeIn"
+          transitionOut="fadeOut"
+          timeOut={7500}
+        />
+        <Suspense fallback='Loading'>
+          <App />
+        </Suspense>
+      </React.Fragment>
+  </Provider>
+)
