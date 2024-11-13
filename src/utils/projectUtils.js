@@ -173,7 +173,7 @@ const getDefaultValue = (parentName, attributeData, name) => {
 }
 
 const generateArrayOfYears = parameter => {
-  const max = new Date().getFullYear()
+  const max = new Date().getFullYear() + 2
   const min = max - 20
   const years = []
 
