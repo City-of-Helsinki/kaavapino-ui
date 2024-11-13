@@ -126,8 +126,12 @@ class EditProjectTimeTableModal extends Component {
               }
             }
             this.setState({visValues:formValues})
-            // Call validateProjectTimetable after all fields are updated
-            this.props.dispatch(validateProjectTimetable());
+
+            // Don't validate on every richTextEditor change
+            if (!Object.values(changedValues).every(value => typeof value === 'object')) {
+              // Call validateProjectTimetable after all fields are updated
+             this.props.dispatch(validateProjectTimetable());
+            }
           }
         }
         let sectionAttributes = [];
