@@ -277,6 +277,7 @@ const Header = props => {
         else if(lastSaved?.status === "success" && connection.connection){
           //set polling time to default
           setCount(1)
+          setExistingErrors([])
           latestUpdate = {status:t('header.edit-menu-saved'),time:lastSaved.time}
           elements = <div>
           <div>
