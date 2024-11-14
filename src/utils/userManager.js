@@ -21,7 +21,7 @@ const userManagerConfig = {
   userStore: new WebStorageStateStore({ store: localStorage }),
   includeIdTokenInSilentRenew:true,
   //For debugging silent renew. Value represents how much to reduce timer by, not how long timer is.
-  accessTokenExpiringNotificationTimeInSeconds: 4.5 * 60
+  //accessTokenExpiringNotificationTimeInSeconds: 4.5 * 60
 }
 
 if (process.env.NODE_ENV === 'test') {
