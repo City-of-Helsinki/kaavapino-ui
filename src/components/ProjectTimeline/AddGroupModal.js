@@ -43,9 +43,16 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
         {!addDialogData.hidePresence && 
           <>
             <Button size="small" disabled={!(addDialogData.showPresence && allowedToEdit)} className={addDialogData.showPresence && allowedToEdit ? '' : 'disabled'} variant="supplementary" onClick={() => addNew(addDialogData.nextEsillaolo)} iconLeft={<IconPlus />}>
-                {t('project.add-new-presence')}
+              {addDialogData.group.id === "Ehdotus" ? t('project.add-new-review') : t('project.add-new-presence')}
             </Button>
-            {addDialogData.esillaoloReason && <span className='add-button-info'>{addDialogData.esillaoloReason === "noconfirmation" ? "Kaavoitussihteerin tulee vahvistaa aikaisempi esilläolo, jonka jälkeen voidaan lisätä uusi." : "Esilläolojen maksimimäärä on saavutettu."}</span>}
+            {addDialogData.esillaoloReason && (
+          <span className='add-button-info'>
+            {addDialogData.group.id === "Ehdotus" ?
+              (addDialogData.esillaoloReason === "noconfirmation" ? "Kaavoitussihteerin tulee vahvistaa aikaisempi nähtävilläolo, jonka jälkeen voidaan lisätä uusi." : "Nähtävilläolojen maksimimäärä on saavutettu.") :
+              (addDialogData.esillaoloReason === "noconfirmation" ? "Kaavoitussihteerin tulee vahvistaa aikaisempi esilläolo, jonka jälkeen voidaan lisätä uusi." : "Esilläolojen maksimimäärä on saavutettu.")
+            }
+          </span>
+        )}
           </>
         }
         {!addDialogData.hideBoard &&
