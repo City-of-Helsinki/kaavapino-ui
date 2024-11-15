@@ -16,7 +16,7 @@ const userManagerConfig = {
   authority: process.env.REACT_APP_OPENID_ENDPOINT,
   post_logout_redirect_uri: `${baseUrl}/logout/callback`,
   automaticSilentRenew: true,
-  silent_redirect_uri: `${baseUrl}/silent-renew`,
+  silent_redirect_uri: `${baseUrl}/silent-renew.html`,
   stateStore: new WebStorageStateStore({ store: localStorage }),
   userStore: new WebStorageStateStore({ store: localStorage }),
   includeIdTokenInSilentRenew:true,

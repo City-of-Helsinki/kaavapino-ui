@@ -21,7 +21,8 @@ import {
   onholdProjectsSelector,
   archivedProjectsSelector,
   savingSelector,
-  formErrorListSelector
+  formErrorListSelector,
+  lastSavedSelector
 } from '../selectors/projectSelector'
 import { userIdSelector } from '../selectors/authSelector'
 import { phasesSelector } from '../selectors/phaseSelector'
@@ -784,8 +785,14 @@ function* saveProject(data) {
         )
         yield put(updateProject(updatedProject))
         yield put(setAllEditFields())
-        yield put(setPoll(false))
-        //success will show if error toastr is last visible toastr
+
+        // Set connection poll status to true after recovering from error
+        const lastSaved = yield select(lastSavedSelector)
+        if (lastSaved?.status === "error" || lastSaved?.status === "field_error"){
+          yield put(setPoll(true))
+        } else {
+          yield put(setPoll(false))
+        }
         yield put(setLastSaved("success",time,[],[],false))
       } catch (e) {
         if (e.response && e.response.status === 400) {
