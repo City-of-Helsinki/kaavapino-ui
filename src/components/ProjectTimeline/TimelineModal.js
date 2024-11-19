@@ -154,16 +154,17 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       //grouped_sections specific to timeline with groups and subgroups
       const sections = section?.grouped_sections
       const splitTitle = title.split('-').map(part => part.toLowerCase())
-      splitTitle[1] = splitTitle[1] === "1" ? "" : "_"+splitTitle[1]
+      splitTitle[1] = splitTitle[1]?.trim() === "1" ? "" : "_"+splitTitle[1]?.trim()
       let confirmedValue = "vahvista_"+group.toLowerCase()+"_"+splitTitle[0]+"_alkaa"+splitTitle[1]
       confirmedValue = textUtil.replaceScandics(confirmedValue)
-      if(group === "Ehdotus" && splitTitle[0] === "nahtavillaolo"){
+      if(group === "Ehdotus" && splitTitle[0].trim() === "nähtävilläolo"){
         splitTitle[0] = "esillaolo"
         confirmedValue = "vahvista_"+group.toLowerCase()+"_"+splitTitle[0]+splitTitle[1]
       }
-      else if(group === "Tarkistettu ehdotus" && splitTitle[0] === "lautakunta"){
+      else if(group === "Tarkistettu ehdotus" && splitTitle[0].trim() === "lautakunta"){
         confirmedValue = "vahvista_"+"tarkistettu_ehdotus_"+"lautakunnassa"+splitTitle[1]
       }
+      confirmedValue = confirmedValue.replace(/\s+/g, '');
       const isConfirmed = visValues[confirmedValue]
       const disabled = archived || isConfirmed ? true : sectionIndex < projectPhaseIndex
       const renderedSections = []
