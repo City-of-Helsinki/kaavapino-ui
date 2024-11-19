@@ -155,14 +155,27 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       const sections = section?.grouped_sections
       const splitTitle = title.split('-').map(part => part.toLowerCase())
       splitTitle[1] = splitTitle[1]?.trim() === "1" ? "" : "_"+splitTitle[1]?.trim()
-      let confirmedValue = "vahvista_"+group.toLowerCase()+"_"+splitTitle[0]+"_alkaa"+splitTitle[1]
-      confirmedValue = textUtil.replaceScandics(confirmedValue)
+      let confirmedValue 
       if(group === "Ehdotus" && splitTitle[0].trim() === "nähtävilläolo"){
         splitTitle[0] = "esillaolo"
         confirmedValue = "vahvista_"+group.toLowerCase()+"_"+splitTitle[0]+splitTitle[1]
       }
       else if(group === "Tarkistettu ehdotus" && splitTitle[0].trim() === "lautakunta"){
         confirmedValue = "vahvista_"+"tarkistettu_ehdotus_"+"lautakunnassa"+splitTitle[1]
+      }
+      else if(group !== "Tarkistettu ehdotus" && splitTitle[0].trim() === "lautakunta"){
+        if(group === "Luonnos" || group === "Ehdotus"){
+          confirmedValue = "vahvista_"+"kaava"+group.toLowerCase()+"_"+splitTitle[0]+splitTitle[1]
+        }
+        else{
+          confirmedValue = "vahvista_"+group.toLowerCase()+"_"+splitTitle[0]+splitTitle[1]
+        }
+        // Replace 'lautakunta' with 'lautakunnassa'
+        confirmedValue = confirmedValue.replace('lautakunta', 'lautakunnassa');
+      }
+      else{
+        confirmedValue = "vahvista_"+group.toLowerCase()+"_"+splitTitle[0]+"_alkaa"+splitTitle[1]
+        confirmedValue = textUtil.replaceScandics(confirmedValue)
       }
       confirmedValue = confirmedValue.replace(/\s+/g, '');
       const isConfirmed = visValues[confirmedValue]
