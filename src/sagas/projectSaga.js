@@ -764,8 +764,7 @@ function* saveProjectTimetable() {
   const currentProjectId = yield select(currentProjectIdSelector)
 
   if (values) {
-    let attribute_data = values
-    //getChangedAttributeData(values, initial)
+    let attribute_data = getChangedAttributeData(values, initial)
 
     if(attribute_data.oikaisukehoituksen_alainen_readonly){
       delete attribute_data.oikaisukehoituksen_alainen_readonly
