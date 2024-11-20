@@ -116,9 +116,16 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         esillaoloReason = "max"
       }
 
+      let nextEsillaoloStr
       if (esillaoloConfirmed) {
         canAddEsillaolo = esillaoloCount <= deadlineEsillaolokertaKeys;
-        const nextEsillaoloStr = canAddEsillaolo ? `jarjestetaan_${phase}_esillaolo_${esillaoloCount}$` : false;
+        nextEsillaoloStr = canAddEsillaolo ? `jarjestetaan_${phase}_esillaolo_${esillaoloCount}$` : false;
+        nextEsillaoloClean = nextEsillaoloStr ? nextEsillaoloStr.replace(/[/$]/g, '') : nextEsillaoloStr;
+      }
+      else if((phase === "luonnos" && visValRef[`jarjestetaan_${phase}_esillaolo_1`] === false) ||
+      (phase === "periaatteet" && visValRef[`jarjestetaan_${phase}_esillaolo_1`] === false) ){
+        canAddEsillaolo = true
+        nextEsillaoloStr = `jarjestetaan_${phase}_esillaolo_1`;
         nextEsillaoloClean = nextEsillaoloStr ? nextEsillaoloStr.replace(/[/$]/g, '') : nextEsillaoloStr;
       }
       // Check if more Lautakunta groups can be added
@@ -147,10 +154,17 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         lautakuntaReason = "max"
       }
 
+      let nextLautakuntaStr
       if (lautakuntaConfirmed) {
         canAddLautakunta = lautakuntaCount <= deadlineLautakuntakertaKeys;
         const lautakuntaText = phase === "luonnos" || phase === "ehdotus" ? `kaava${phase}_lautakuntaan_${lautakuntaCount}$` : `${phase}_lautakuntaan_${lautakuntaCount}$`
-        const nextLautakuntaStr = canAddLautakunta ? lautakuntaText : false;
+        nextLautakuntaStr = canAddLautakunta ? lautakuntaText : false;
+        nextLautakuntaClean = nextLautakuntaStr ? nextLautakuntaStr.replace(/[/$]/g, '') : nextLautakuntaStr;
+      }
+      else if((phase === "luonnos" && visValRef[`kaava${phase}_lautakuntaan_1`] === false) ||
+      (phase === "periaatteet" && visValRef[`${phase}_lautakuntaan_1`] === false) ){
+        canAddLautakunta = true
+        nextLautakuntaStr = phase === "luonnos" ? `kaava${phase}_lautakuntaan_1` : `${phase}_lautakuntaan_1`;
         nextLautakuntaClean = nextLautakuntaStr ? nextLautakuntaStr.replace(/[/$]/g, '') : nextLautakuntaStr;
       }
 
@@ -216,13 +230,19 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       let phaseWithoutSpace = phase.toLowerCase().replace(/\s+/g, '-');
 
       if(typeof visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "undefined" || visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "hyvaksytty" || visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "palautettu_uudelleen_valmisteltavaksi"){
-        canAddLautakunta = false
+        if( (phase === "luonnos" && visValRef[`kaava${phase}_lautakuntaan_1`] === false) ||
+            (phase === "periaatteet" && visValRef[`${phase}_lautakuntaan_1`] === false) ) {
+          canAddLautakunta = true
+        }
+        else{
+          canAddLautakunta = false
+        }
       }
       /* TODO if(visValRef["kaavaluonnos_lautakuntaan_1"] === false){
         //adds second one althou when false needs to just show first one if deleted once
         canAddLautakunta = true
       } */
-
+      
       return [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, esillaoloReason, lautakuntaReason];
     };
 
