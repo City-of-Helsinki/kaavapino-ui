@@ -751,7 +751,8 @@ function* saveProjectTimetable() {
   const currentProjectId = yield select(currentProjectIdSelector)
 
   if (values) {
-    let attribute_data = getChangedAttributeData(values, initial)
+    let attribute_data = values
+    //getChangedAttributeData(values, initial)
 
     if(attribute_data.oikaisukehoituksen_alainen_readonly){
       delete attribute_data.oikaisukehoituksen_alainen_readonly
@@ -760,7 +761,7 @@ function* saveProjectTimetable() {
     try {
       const updatedProject = yield call(
         projectApi.patch,
-        { values },
+        { attribute_data },
         { path: { id: currentProjectId } },
         ':id/'
       )
