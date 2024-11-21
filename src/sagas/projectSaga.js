@@ -756,7 +756,7 @@ function* saveProjectTimetable() {
     if(attribute_data.oikaisukehoituksen_alainen_readonly){
       delete attribute_data.oikaisukehoituksen_alainen_readonly
     }
-    console.log(values)
+
     try {
       const updatedProject = yield call(
         projectApi.patch,
