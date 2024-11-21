@@ -127,6 +127,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         canAddEsillaolo = true
         nextEsillaoloStr = `jarjestetaan_${phase}_esillaolo_1`;
         nextEsillaoloClean = nextEsillaoloStr ? nextEsillaoloStr.replace(/[/$]/g, '') : nextEsillaoloStr;
+        esillaoloReason = ""
       }
       // Check if more Lautakunta groups can be added
       const deadlineLautakuntakertaKeys = data.maxLautakunta
@@ -166,6 +167,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         canAddLautakunta = true
         nextLautakuntaStr = phase === "luonnos" ? `kaava${phase}_lautakuntaan_1` : `${phase}_lautakuntaan_1`;
         nextLautakuntaClean = nextLautakuntaStr ? nextLautakuntaStr.replace(/[/$]/g, '') : nextLautakuntaStr;
+        lautakuntaReason = ""
       }
 
       return [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, esillaoloReason, lautakuntaReason];
