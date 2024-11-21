@@ -564,6 +564,28 @@ function* createProject() {
   }
 }
 
+const adjustDeadlineData = (attributeData, allAttributeData) => {
+  Object.keys(allAttributeData).forEach(key => {
+    if (key.includes("periaatteet_esillaolo") ||
+        key.includes("mielipiteet_periaatteista") ||
+        key.includes("periaatteet_lautakunnassa") ||
+        key.includes("oas_esillaolo") ||
+        key.includes("mielipiteet_oas") ||
+        key.includes("luonnosaineiston_maaraaika") ||
+        key.includes("luonnos_esillaolo") ||
+        key.includes("mielipiteet_luonnos") ||
+        key.includes("milloin_kaavaluonnos_lautakunnassa") ||
+        key.includes("milloin_kaavaehdotus_lautakunnassa") ||
+        key.includes("ehdotus_nahtaville_aineiston_maaraaika") ||
+        key.includes("milloin_ehdotuksen_nahtavilla_paattyy") ||
+        key.includes("viimeistaan_lausunnot_ehdotuksesta") ||
+        key.includes("milloin_tarkistettu_ehdotus_lautakunnassa")) {
+      attributeData[key] = attributeData[key] || allAttributeData[key]
+    }
+  })
+  return attributeData
+}
+
 const getChangedAttributeData = (values, initial) => {
   let attribute_data = {}
   let errorValues = false
@@ -682,10 +704,11 @@ function* validateProjectTimetable() {
   const currentProjectId = yield select(currentProjectIdSelector)
 
   if (values) {
-    let attribute_data = getChangedAttributeData(values, initial)
-    if(attribute_data.oikaisukehoituksen_alainen_readonly){
-      delete attribute_data.oikaisukehoituksen_alainen_readonly
+    let changedAttributeData = getChangedAttributeData(values, initial)
+    if(changedAttributeData.oikaisukehoituksen_alainen_readonly){
+      delete changedAttributeData.oikaisukehoituksen_alainen_readonly
     }
+    let attribute_data = adjustDeadlineData(changedAttributeData, values)
 
     try {
       yield call(
@@ -751,11 +774,11 @@ function* saveProjectTimetable() {
   const currentProjectId = yield select(currentProjectIdSelector)
 
   if (values) {
-    let attribute_data = getChangedAttributeData(values, initial)
-
-    if(attribute_data.oikaisukehoituksen_alainen_readonly){
-      delete attribute_data.oikaisukehoituksen_alainen_readonly
+    let changedAttributeData = getChangedAttributeData(values, initial)
+    if(changedAttributeData.oikaisukehoituksen_alainen_readonly){
+      delete changedAttributeData.oikaisukehoituksen_alainen_readonly
     }
+    let attribute_data = adjustDeadlineData(changedAttributeData, values)
 
     try {
       const updatedProject = yield call(
