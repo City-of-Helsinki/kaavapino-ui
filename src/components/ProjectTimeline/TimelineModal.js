@@ -49,7 +49,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
 
     let currentSubmitErrors = Object.keys(formSubmitErrors).length > 0
 
-    const getFormField = (fieldProps, key, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title, confirmedValue) => {
+    const getFormField = (fieldProps, key, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title, confirmedValue, type) => {
       if (!showField(fieldProps.field, visValues)) {
         return null
       }
@@ -92,9 +92,9 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
             formValues={visValues}
             className={className}
             isProjectTimetableEdit={true}
-            disabled={disabled?.disabled || !allowedToEdit}
+            disabled={disabled?.disabled && type === 'date' || !allowedToEdit && type === 'date'}
             attributeData={visValues}
-            disabledDates={disabledDates}
+            disabledDates={disabledDates && type === 'date'}
             lomapaivat={lomapaivat}
             dateTypes={dateTypes}
             deadlineSection={deadlineSection}
@@ -123,7 +123,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
 
       const formFields = []
       filteredSections.forEach((field, fieldIndex) => {
-          formFields.push(getFormField({ field }, `${sectionIndex} - ${fieldIndex}`, {disabled}, {deadlineSection}, maxMoveGroup, maxDateToMove, title, confirmedValue))
+          formFields.push(getFormField({ field }, `${sectionIndex} - ${fieldIndex}`, {disabled}, {deadlineSection}, maxMoveGroup, maxDateToMove, title, confirmedValue, field?.type))
       })
       return formFields
     }
