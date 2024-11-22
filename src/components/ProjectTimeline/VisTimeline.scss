@@ -54,12 +54,6 @@
             font-size: $size14;
         }
     }
-    .vis-time-axis.vis-background{
-        .vis-grid.vis-minor {
-            border-left: 1px solid $color-black-20;
-            border-color: $color-black-20 !important;
-        }
-    }
 
     .timeline-menu-container {
         padding-top: 20px;
@@ -158,7 +152,7 @@
     .vis-item.vis-dot {
         border: 2px solid #000000;
         &.past {
-            background: #B3B3B3;
+            background: $color-gray;
         }
     }
 
@@ -179,7 +173,7 @@
             }
         }
         &.past .vis-item-overflow {
-            background: #B3B3B3;
+            background: $color-gray;
         }
     }
 
@@ -229,10 +223,10 @@
     }
     .board.past {
         .vis-drag-left {
-            background-color: #B3B3B3;
+            background-color: $color-gray;
         }
         .vis-drag-right {
-            outline: 1px solid #B3B3B3;
+            outline: 1px solid $color-gray;
             outline-offset: -1px;
         }
     }
@@ -253,7 +247,7 @@
             }
         }
         &.past .vis-item-overflow {
-            background: #B3B3B3;
+            background: $color-gray;
         }
     }
 
@@ -324,18 +318,6 @@
 
     .vis-ltr .vis-label.vis-nested-group .vis-inner {
         padding-left: $size10;
-    }
-
-    .negative{
-        top: 0;
-        background-color: #F2F2F2 !important;
-        border-right: 0.5px solid #ccc !important;
-        border-left: 0.5px solid #ccc !important;
-    }
-    .holiday{
-        top: 0;
-        background-color: rgba(255, 200, 50, 0.2) !important;
-        z-index: 100;
     }
 
     .hiddenTimes{
@@ -629,7 +611,6 @@
 
     .vis-major {
         border-left: $size1 solid #999999 !important;
-        z-index: 100;
         background: transparent !important;
         &::first-letter{
             text-transform: capitalize;
@@ -644,8 +625,8 @@
 
     .vis-minor{
         height: 57px;
-        background-color: white;
-        border-left: $size1 solid $color-black-20;
+        background-color: #ffffff;
+        border-left: $size1 solid #CCCCCC;
         border-top: $size1 solid $color-black-20;
         border-bottom: $size1 solid $color-black-20;
         font-size: $size14;
@@ -746,23 +727,54 @@
     background-color: rgba(255, 255, 255, 0) !important;
 }
 
-.years{
-    .vis-minor, .vis-major > div {
+.vis.years{
+    .vis-minor,
+    .vis-major > div {
         font-weight: 700;
     }
     .vis-minor {
-        &::first-letter {
-            text-transform: capitalize;
-        }
+        border-color: $color-black-20 !important;
     }
-    .normal-weekend{
-        background-color: white !important;
+    .vis-minor::first-letter {
+        text-transform: capitalize;
     }
-    .negative{
-        border: none !important
+    .vis-minor.vis-january {
+        border-left: 0.063rem solid #999999 !important;
+    }
+    .normal-weekend {
+        background-color: $color-white !important;
+    }
+    .negative {
+        border: none !important;
+        background-color: transparent !important;
+    }
+    .holiday {
+    background-color: transparent !important;
     }
     .vis-item.vis-dot.board {
         top: -18.5px !important;
+    }
+}
+
+.vis.months {
+    .vis-time-axis .vis-grid.vis-saturday,
+    .vis-time-axis .vis-grid.vis-sunday,
+    .vis-saturday,
+    .vis-sunday,
+    .negative {
+        background: $color-black-5 !important;
+        border-right: 0.5px solid #ccc !important;
+        border-left: 0.5px solid #ccc !important;
+    }
+    .negative {
+        top: 0;
+        border-right: 0.5px solid #ccc !important;
+        border-left: 0.5px solid #ccc !important;
+    }
+    .holiday {
+        top: 0;
+        background-color: $color-summer-light !important;
+        z-index: 100;
     }
 }
 
