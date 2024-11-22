@@ -869,8 +869,11 @@
         .deadline-input{
           border:2px solid $border-gray2;
           input{
-            text-indent: 8px;
-            padding: 1rem;
+            text-indent: 16px;
+            &:focus {
+              outline: 2px solid #1A1A1A !important;
+              outline-offset: -2px;
+            }
           }
         }
         .error-text {
