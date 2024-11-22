@@ -387,6 +387,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       let startOfMonth = new Date(currentYear, now.getMonth(), 1);
       let endOfMonth = new Date(currentYear, now.getMonth() + 1, 0);
       timelineRef.current.classList.remove("years")
+      timelineRef.current.classList.add("months")
       timeline.setOptions({timeAxis: {scale: 'weekday'}});
       timeline.setWindow(startOfMonth, endOfMonth);
       setCurrentFormat("showMonths");
@@ -397,6 +398,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       let currentYear = now.getFullYear();
       let startOfYear = new Date(currentYear, 0, 1);
       let endOfYear = new Date(currentYear, 11, 31);
+      timelineRef.current.classList.remove("months")
       timelineRef.current.classList.add("years")
       timeline.setOptions({timeAxis: {scale: 'month'}});
       timeline.setWindow(startOfYear, endOfYear);
@@ -766,6 +768,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const handleMouseMove = (event) => {
         const mouseX = event.clientX;
         const mouseY = event.clientY;
+
+        // Check if mouseX is less than 310 to avoid showing tooltip over the vis-left
+        if (mouseX < 310 || mouseY < 250) {
+          hideTooltip();
+          return;
+        }
     
         let hoveredItem = null;
     
