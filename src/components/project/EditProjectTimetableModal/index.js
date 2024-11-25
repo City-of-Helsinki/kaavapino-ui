@@ -673,7 +673,7 @@ class EditProjectTimeTableModal extends Component {
 
 
         if (endDate instanceof Date && !isNaN(endDate.getTime())) {
-          endDate.setHours(12, 0, 0, 0);
+          endDate.setHours(0, 0, 0, 0);
         }
       }
 
