@@ -778,6 +778,11 @@
         border-right: 0.5px solid #ccc !important;
         border-left: 0.5px solid #ccc !important;
     }
+    // Temporary rule until we figure out how we can get .negative and .holiday classes to work in .vis-time-axis
+    .vis-time-axis .vis-saturday,
+    .vis-time-axis .vis-sunday {
+        background-color: #ffffff !important;
+    }
 }
 
 .vis-tooltip{
