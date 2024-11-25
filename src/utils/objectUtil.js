@@ -392,7 +392,7 @@ const getHighestNumberedObject = (obj1, arr) => {
               }
               else if(arr[currentIndex]?.key?.includes("maaraaika")){
                 //Maaraiaka moving
-                const alkaaResult = timeUtil.findAllowedDate(movedDate, arr[i + 1].initial_distance, disabledDates?.date_types[arr[i +1]?.date_type]?.dates, false);
+                const alkaaResult = timeUtil.findAllowedDate(movedDate, arr[i + 1].initial_distance, disabledDates?.date_types[arr[i]?.date_type]?.dates, false);
                 arr[i + 1].value = new Date(alkaaResult).toISOString().split('T')[0];
                 indexToContinue = i + 1
                 if(!arr[currentIndex]?.key?.includes("kylk_maaraaika") && !arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("lautakunnassa") && arr[currentIndex]?.key?.includes("maaraaika")){
