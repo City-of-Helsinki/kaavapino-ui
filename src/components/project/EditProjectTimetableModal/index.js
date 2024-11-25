@@ -220,81 +220,36 @@ class EditProjectTimeTableModal extends Component {
       return [];
     }
   
-    let start = new Date(dates[0]);
-    start.setHours(0, 0, 0, 0);
-    let end = new Date(dates[0]);
-    end.setHours(23, 59, 59, 999);
-
     const isWeekend = (date) => {
       const day = date.getDay();
       return day === 0 || day === 6; // Sunday or Saturday
     };
   
-    for (let i = 1; i < dates.length; i++) {
+    for (let i = 0; i < dates.length; i++) {
       const currentDate = new Date(dates[i]);
-      const previousDate = new Date(dates[i - 1]);
       currentDate.setHours(0, 0, 0, 0);
-      previousDate.setHours(0, 0, 0, 0);
-      const differenceInTime = currentDate - previousDate;
-      const differenceInDays = differenceInTime / (1000 * 3600 * 24);
+      const endOfDay = new Date(dates[i]);
+      endOfDay.setHours(23, 59, 59, 999);
 
       if (holidays) {
-        if (differenceInDays === 1) {
-          end = new Date(dates[i]);
-          end.setHours(23, 59, 59, 999);
-        } else {
-          end = this.addOneDay(end);
-          items.add([{
-            id: `holiday_${i}`,
-            start: start,
-            end: end,
-            type: "background",
-            className: "holiday",
-          }]);
-          start = new Date(dates[i]);
-          start.setHours(0, 0, 0, 0);
-          end = new Date(dates[i]);
-          end.setHours(23, 59, 59, 999);
-        }
+        items.add([{
+          id: `holiday_${i}`,
+          start: currentDate,
+          end: endOfDay,
+          type: "background",
+          className: "holiday",
+        }]);
       } else {
-        if (differenceInDays === 1) {
-          end = new Date(dates[i]);
-          end.setHours(23, 59, 59, 999);
-        } else {
-          items.add([{
-            id: `disabled_date_${i}`,
-            start: start,
-            end: end,
-            type: "background",
-            className: isWeekend(start) && isWeekend(end) ? "negative normal-weekend" : "negative",
-          }]);
-          start = new Date(dates[i]);
-          start.setHours(0, 0, 0, 0);
-          end = new Date(dates[i]);
-          end.setHours(23, 59, 59, 999);
-        }
+        items.add([{
+          id: `disabled_date_${i}`,
+          start: currentDate,
+          end: endOfDay,
+          type: "background",
+          className: isWeekend(currentDate) ? "negative normal-weekend" : "negative",
+        }]);
       }
     }
 
-    // Ensure the last period is added
-    if (holidays) {
-      items.add([{
-        id: `holiday_${dates.length}`,
-        start: start,
-        end: end,
-        type: "background",
-        className: "holiday",
-      }]);
-    } else {
-      items.add([{
-        id: `disabled_date_${dates.length}`,
-        start: start,
-        end: end,
-        type: "background",
-        className: isWeekend(start) && isWeekend(end) ? "negative normal-weekend" : "negative",
-      }]);
-    }
-  
     return items;
   }
 

@@ -775,6 +775,8 @@
         top: 0;
         background-color: $color-summer-light !important;
         z-index: 100;
+        border-right: 0.5px solid #ccc !important;
+        border-left: 0.5px solid #ccc !important;
     }
 }
 
