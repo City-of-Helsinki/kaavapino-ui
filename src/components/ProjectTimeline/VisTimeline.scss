@@ -16,7 +16,7 @@
     .vis-timeline {
         border-top: none;
         border-bottom: none;
-        border-color: $color-black-20;
+        border-color: #ccc;
         overflow-y: visible !important;
         overflow-x: clip !important;
         .vis-vertical .vis-current-time {
@@ -268,6 +268,7 @@
         border-color: #1a1a1a;
         height: 4px;
         top: 15.5px !important;
+        z-index: 100;
     }
 
     .vis-dot{
@@ -775,6 +776,13 @@
         top: 0;
         background-color: $color-summer-light !important;
         z-index: 100;
+        border-right: 0.5px solid #ccc !important;
+        border-left: 0.5px solid #ccc !important;
+    }
+    // Temporary rule until we figure out how we can get .negative and .holiday classes to work in .vis-time-axis
+    .vis-time-axis .vis-saturday,
+    .vis-time-axis .vis-sunday {
+        background-color: #ffffff !important;
     }
 }
 
