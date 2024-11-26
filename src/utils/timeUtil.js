@@ -490,6 +490,22 @@ const sortObjectByDate = (obj) => {
 
   return sortedArray; // Returning an array guarantees the order
 }
+//Finds next possible date from from array if the value does not exist in it
+const findNextPossibleValue = (array, value) => {
+  if (!Array.isArray(array) || typeof value !== 'string') {
+    throw new Error('Invalid input. Provide an array of strings and a value as a string.');
+  }
+
+  // Directly find the given value or the next possible value
+  for (const date of array) {
+      if (date >= value) {
+          return date;
+      }
+  }
+
+  // If no value is found, return null or a message
+  return null;
+}
 
 const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sectionAttributes,currentDeadline) => {
   const matchingItem = objectUtil.findMatchingName(sectionAttributes, name, "name");
@@ -530,20 +546,26 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       //Määräaika pienenee aiemman esilläolon loppuu minimiin.
       const miniumDaysPast = matchingItem?.distance_from_previous ? matchingItem?.distance_from_previous : 5 //bug somewhere in backend should be 5 but is null
       const dateToComparePast = formValues[matchingItem?.previous_deadline]
+      //Finds next possible working date to compare
+      const filteredDateToCompare= findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast)
       let newDisabledDates = dateTypes?.työpäivät?.dates
-      const firstPossibleDateToSelect = addDays("työpäivät",dateToComparePast,miniumDaysPast,dateTypes?.työpäivät?.dates,true)
-      newDisabledDates = newDisabledDates.filter(date => date > firstPossibleDateToSelect)
+      const firstPossibleDateToSelect = addDays("työpäivät",filteredDateToCompare,miniumDaysPast,dateTypes?.työpäivät?.dates,true)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
       return newDisabledDates
     }
     else if(name.includes("_lautakunnassa")){
       //Lautakunta siirtyy eteenpäin loputtomasti. Vetää mukana määräaikaa.
       //Lautakunta siirtyy taaksepäin minimiin. Vetää mukana määräaikaa ja pysähtyy minimiin.
-
-      //Needs to take inconcideration that the gap is 22 between lautakunta and määräaika so 44 if moving to past
-      const miniumDaysPast = matchingItem.initial_distance.distance + matchingItem.initial_distance.distance
+      //Needs to take inconcideration that the gap is 22 between lautakunta and määräaika and gap to phase start date previousItem?.distance_from_previous
+      const miniumDaysPast = matchingItem?.initial_distance.distance + previousItem?.distance_from_previous
+      //Phase start date
       const dateToComparePast = formValues[matchingItem?.previous_deadline] ? formValues[matchingItem?.previous_deadline] : formValues[matchingItem?.initial_distance?.base_deadline]
+      //Finds next possible working date to compare
+      const filteredDateToCompare= findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast)
+      //Array of the dates that are shown in calendar
       let newDisabledDates = dateTypes?.lautakunnan_kokouspäivät?.dates
-      const firstPossibleDateToSelect = addDays("lautakunta",dateToComparePast,miniumDaysPast,dateTypes?.lautakunnan_kokouspäivät?.dates,true)
+      const firstPossibleDateToSelect = addDays("lautakunta",filteredDateToCompare,miniumDaysPast,dateTypes?.lautakunnan_kokouspäivät?.dates,true)
+      //Array of the dates that are shown in calendar after filter
       newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
       return newDisabledDates
     }
