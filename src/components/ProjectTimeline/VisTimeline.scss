@@ -380,12 +380,15 @@
                     }
                 }
                 .timeline-lock-button{
-                    display: none;
+                    visibility: hidden;
                     padding: 0;
                     margin-right: 12px;
-                    margin-left: 12px;
+                    /*   margin-left: 12px;
                     width: 24px;
-                    height: 24px;
+                    height: 24px; Hidden for now, unhide when lock feature in dev*/
+                    margin-left: 0;
+                    width: 0;
+                    height: 0;
                     background:url('../../assets/icons/lock-open-blue.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;
