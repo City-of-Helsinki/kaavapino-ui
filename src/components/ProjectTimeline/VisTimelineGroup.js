@@ -717,14 +717,16 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               lock.style.fontSize = "small";
               lock.addEventListener("click", function () {
                 lock.classList.toggle("lock");
-                const locked = lock.classList.contains("lock") ? "inner locked" : "inner";
-                let visibleItems = timeline.getVisibleItems()
-                for (const visibleItem of visibleItems) {
-                  const item = items.get(visibleItem);
-                  if (!item.phase && item.id >= group.id) {
-                    items.update({ id: item.id, className: locked, locked: !item.locked });
+                /*const locked = lock.classList.contains("lock") ? "inner locked" : "inner";
+                let visibleItems = timelineInstanceRef?.current?.getVisibleItems()
+                 if(visibleItems){
+                  for (const visibleItem of visibleItems) {
+                    const item = items.get(visibleItem);
+                    if (!item.phase && item.id >= group.id) {
+                      items.update({ id: item.id, className: locked, locked: !item.locked });
+                    }
                   }
-                }
+                } */
                 lockLine(group);
               });
               container.insertAdjacentElement("beforeEnd", lock);
