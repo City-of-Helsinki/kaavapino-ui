@@ -683,7 +683,7 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       const miniumDaysFuture = matchingItem?.distance_to_next
       const dateToComparePast = formValues[matchingItem?.previous_deadline]
       const dateToCompareFuture = formValues[matchingItem?.next_deadline]
-      let newDisabledDates = dateTypes?.arkipäivät?.dates
+      let newDisabledDates = dateTypes?.työpäivät?.dates
       const firstPossibleDateToSelect = addDays("arkipäivät",dateToComparePast,miniumDaysPast,dateTypes?.arkipäivät?.dates,true)
       const lastPossibleDateToSelect = subtractDays("arkipäivät",dateToCompareFuture,miniumDaysFuture,dateTypes?.arkipäivät?.dates,true)
       newDisabledDates = newDisabledDates.filter(date => date > firstPossibleDateToSelect && date < lastPossibleDateToSelect)
@@ -694,9 +694,9 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       //Loppu pienenee alku minimiin asti. Alku ei muutu.
       const miniumDaysPast = matchingItem?.distance_from_previous
       const dateToComparePast = formValues[matchingItem?.previous_deadline]
-      let newDisabledDates = dateTypes?.arkipäivät?.dates
+      let newDisabledDates = dateTypes?.työpäivät?.dates
       const firstPossibleDateToSelect = addDays("arkipäivät",dateToComparePast,miniumDaysPast,dateTypes?.arkipäivät?.dates,true)
-      newDisabledDates = newDisabledDates.filter(date => date > firstPossibleDateToSelect)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
       return newDisabledDates
     } 
   }
