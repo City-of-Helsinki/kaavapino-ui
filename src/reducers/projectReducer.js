@@ -195,6 +195,8 @@ export const reducer = (state = initialState, action) => {
       const decreasingValues = objectUtil.checkForDecreasingValues(changes,isAdd,field,state.disabledDates,oldDate,newDate,moveToPast,projectSize);
       //Add new values from array to updatedAttributeData object
       objectUtil.updateOriginalObject(filteredAttributeData,decreasingValues)
+      //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
+      timeUtil.compareAndUpdateDates(filteredAttributeData)
       // Return the updated state with the modified currentProject and attribute_data
       return {
         ...state,
