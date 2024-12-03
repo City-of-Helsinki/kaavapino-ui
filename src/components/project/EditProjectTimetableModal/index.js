@@ -944,7 +944,7 @@ class EditProjectTimeTableModal extends Component {
         }
 
         if(matchingSection.name.includes("_alkaa")){
-          daysToAdd = matchingSection.previous
+          daysToAdd = matchingSection.distance
         }
         else if(matchingSection.name.includes("_paattyy")){
           daysToAdd = matchingSection.distance
