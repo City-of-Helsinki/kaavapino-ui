@@ -859,6 +859,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
      useEffect(() => {
       visValuesRef.current = visValues;
+      setToggleOpenAddDialog(false)
       if (timelineRef.current) {
         if (timelineInstanceRef.current) {
           //Update timeline when values change from side modal
