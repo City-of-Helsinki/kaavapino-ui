@@ -138,8 +138,7 @@
   };
 
   const findAllowedLautakuntaDate = (newDate, miniumGap, allowedDays, moveToPast, maaraaikaAllowedDates) => {
-    //+1 for date it refers
-    const gap = miniumGap + 1;
+    const gap = miniumGap;
     // Check for direct match in maaraaikaAllowedDates
     let maaraaikaMatch = maaraaikaAllowedDates.find(date => date === newDate);
     let maaraaikaDate;
@@ -193,8 +192,7 @@
   const findAllowedDate = (newDate, miniumGap, allowedDays, moveToPast) => {
     //Find newDate from allowedDays, add miniumGap to it and return the date, moveToPast is reverse iteration of array
 
-    //+1 for date it refers
-    const gap = miniumGap + 1;
+    const gap = miniumGap;
     // Check for direct match
     let match = allowedDays.find(date => date === newDate);
     if (match) {
