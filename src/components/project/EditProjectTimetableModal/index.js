@@ -418,7 +418,7 @@ class EditProjectTimeTableModal extends Component {
         group: numberOfPhases,
         locked: false,
         phaseName: deadlines[i].deadline.phase_name,
-        groupInfo: "Määräaika - Alkaa"
+        groupInfo: "Kaavoitussihteerin työaika"
       });
       phaseData.push({
         start: dashStart,
@@ -432,24 +432,69 @@ class EditProjectTimeTableModal extends Component {
         group: numberOfPhases,
         locked: false,
         phaseName: deadlines[i].deadline.phase_name,
-        groupInfo: "Alkaa - Päättyy"
+        groupInfo: "Esilläolo"
       });
     }
     else{
-      phaseData.push({
-        start: dashStart,
-        end: dashEnd,
-        id: numberOfPhases,
-        content: "",
-        className: dashedStyle,
-        title: deadlines[i].deadline.attribute,
-        phaseID: deadlines[i].deadline.phase_id,
-        phase: false,
-        group: numberOfPhases,
-        locked: false,
-        phaseName: deadlines[i].deadline.phase_name,
-        groupInfo: "Määräaika - Lautakunta"
-      });
+      if (dashedStyle.includes("board")) {
+        phaseData.push({
+          start: dashStart,
+          id: numberOfPhases + " maaraaika",
+          content: "",
+          className: dashedStyle + " deadline",
+          title: deadlines[i].deadline.attribute,
+          phaseID: deadlines[i].deadline.phase_id,
+          phase: false,
+          group: numberOfPhases,
+          locked: false,
+          type: 'point',
+          phaseName: deadlines[i].deadline.phase_name,
+          groupInfo: "Määräaika"
+        });
+        phaseData.push({
+          start: dashStart,
+          end: dashEnd,
+          id: numberOfPhases + " divider",
+          content: "",
+          className: "divider",
+          title: "divider",
+          phaseID: deadlines[i].deadline.phase_id,
+          phase: false,
+          group: numberOfPhases,
+          locked: false,
+          phaseName: deadlines[i].deadline.phase_name,
+          groupInfo: "Kaavoitussihteerin työaika"
+        });
+        phaseData.push({
+          start: dashEnd,
+          id: numberOfPhases + " lautakunta",
+          content: "",
+          className: dashedStyle + " board-date",
+          title: deadlines[i].deadline.attribute,
+          phaseID: deadlines[i].deadline.phase_id,
+          phase: false,
+          group: numberOfPhases,
+          locked: false,
+          type: 'point',
+          phaseName: deadlines[i].deadline.phase_name,
+          groupInfo: "Lautakunta"
+        });
+      } else {
+        phaseData.push({
+          start: dashStart,
+          end: dashEnd,
+          id: numberOfPhases,
+          content: "",
+          className: dashedStyle,
+          title: deadlines[i].deadline.attribute,
+          phaseID: deadlines[i].deadline.phase_id,
+          phase: false,
+          group: numberOfPhases,
+          locked: false,
+          phaseName: deadlines[i].deadline.phase_name,
+          groupInfo: "Nähtävilläolo"
+        });
+      }
     }
 
     let dlIndex = deadLineGroups.findIndex(group => group.content.toLowerCase() === deadlines[i].deadline.phase_name.toLowerCase());
