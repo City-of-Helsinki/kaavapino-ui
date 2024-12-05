@@ -743,7 +743,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         },
       }
 
-            // Create the tooltip element
+      // Create the tooltip element
       const tooltipDiv = document.createElement('div');
       tooltipDiv.className = 'vis-tooltip';
       tooltipDiv.style.display = 'none';
@@ -757,9 +757,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         tooltipDiv.style.top = `${event.pageY + 20}px`;
         tooltipDiv.innerHTML = `
           Vaihe: ${item?.phaseName} <br>
-          ${item?.groupInfo ? "Nimi: " +item?.groupInfo+ " <br>": ""}
-          ${item?.start ? "Alkaa:" + new Date(item?.start).toLocaleDateString() + "<br>" : ""}
-          ${item?.end ? "Päättyy:" + new Date(item?.end).toLocaleDateString() : ""}
+          ${item?.groupInfo ? "Nimi: " + item?.groupInfo + " <br>" : ""}
+          ${item?.start ? "Päivämäärä: " + new Date(item?.start).toLocaleDateString() : ""}
+          ${item?.start && item?.end && !item?.className.includes('board') ? " - " + new Date(item?.end).toLocaleDateString() : ""}
         `;
       };
 
@@ -782,6 +782,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         // Access items in the timeline and check if mouse is over any item with certain class 
         if (timelineInstanceRef.current && timelineInstanceRef.current.itemSet) {
           const items = Object.values(timelineInstanceRef.current.itemSet.items);
+          let highestZIndex = -1;
+          let topmostItem = null;
           items.forEach((item) => {
             const itemDom = item?.dom?.box || item?.dom?.point || item?.dom?.dot;
             if (itemDom && (itemDom.classList.contains('vis-editable'))) {
@@ -794,10 +796,17 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                 mouseY >= itemBounds.top &&
                 mouseY <= itemBounds.bottom
               ) {
-                hoveredItem = item;
+                const zIndex = parseInt(window.getComputedStyle(itemDom).zIndex, 10);
+                if (zIndex > highestZIndex) {
+                  highestZIndex = zIndex;
+                  topmostItem = item;
+                }
               }
             }
           });
+          if (topmostItem) {
+            hoveredItem = topmostItem;
+          }
         }
     
         if (hoveredItem) {
