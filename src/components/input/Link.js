@@ -75,9 +75,8 @@ const Link = props => {
           value={currentValue}
           error={props.error}
           onChange={onChange}
-          className={!isLinkValid && currentValue && !multipleLinks ? 'error' : ''}
+          className={!isLinkValid && currentValue && !multipleLinks ? 'error link' : 'link'}
           aria-label="link"
-          class="link"
         />
         {!multipleLinks && (
         <Button
