@@ -382,7 +382,7 @@ const getHighestNumberedObject = (obj1, arr) => {
           else{
             //Paattyy and nahtavillaolo l-xl are independent of other values
             if(((projectSize === "XS" || projectSize === "S" || projectSize === "M") && i === currentIndex && !arr[i]?.key.includes("lautakunassa_")) ||
-             ((projectSize === "XL" || projectSize === "L") && i === currentIndex  && !arr[currentIndex]?.key.includes("nahtavilla_alkaa") && !arr[currentIndex]?.key.includes("nahtavilla_paattyy") && !arr[i]?.key.includes("lautakunassa_")) ){
+             ((projectSize === "XL" || projectSize === "L") && i === currentIndex && !arr[i]?.key.includes("lautakunassa_")) ){
               //Make next or previous or previous and 1 after previous dates follow the moved date if needed
               if(arr[currentIndex]?.key?.includes("kylk_maaraaika") || arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") || arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika")){
                 //maaraika in lautakunta moving
@@ -390,7 +390,7 @@ const getHighestNumberedObject = (obj1, arr) => {
                 arr[i + 1].value = new Date(lautakuntaResult).toISOString().split('T')[0];
                 indexToContinue = i + 1
               }
-              else if(arr[currentIndex]?.key?.includes("paattyy")){
+              else if(arr[currentIndex]?.key?.includes("paattyy") || ( (projectSize === "XL" || projectSize === "L") && (arr[currentIndex]?.key.includes("nahtavilla_alkaa") || arr[currentIndex]?.key.includes("nahtavilla_paattyy")) ) ){
                 newDate = new Date(arr[i].value);
                 indexToContinue = i
               }
