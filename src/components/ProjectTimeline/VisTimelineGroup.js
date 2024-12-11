@@ -38,7 +38,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [openConfirmModal, setOpenConfirmModal] = useState(false);
     const [dataToRemove, setDataToRemove] = useState({});
     const [timelineAddButton, setTimelineAddButton] = useState();
-    //const [lock, setLock] = useState({group:false,id:false,locked:false,abbreviation:false});
+    const [lock, setLock] = useState(false);
 
     useImperativeHandle(ref, () => ({
       getTimelineInstance: () => timelineInstanceRef.current,
@@ -290,8 +290,24 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     };
   
   
-    const lockLine = (data) => {
-      console.log(data)
+    const lockElements = (data) => {
+      //Send call to action to disable confirm and date inputs
+      setLock(data.deadlinegroup)
+      document.querySelectorAll('.lock').forEach(lockElement => {
+        let parent = lockElement.closest('.vis-label'); // Find the closest 'vis-label' parent
+        if (!parent) return; // Skip if no parent is found (safety check)
+    
+        let nextElement = parent.nextElementSibling; // Start with the next sibling element
+    
+        // Traverse all siblings
+        while (nextElement) {
+            // Check if the sibling has the 'vis-nesting-group' class
+            if (nextElement.classList.contains('vis-nesting-group') || nextElement.classList.contains('vis-nested-group')) {
+                nextElement.classList.add('buttons-locked'); // Add the 'test' class
+            }
+            nextElement = nextElement.nextElementSibling; // Move to the next sibling
+        }
+      });
       //setLock({group:data.nestedInGroup,id:data.id,abbreviation:data.abbreviation,locked:!data.locked})
     }
   
@@ -717,17 +733,17 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               lock.style.fontSize = "small";
               lock.addEventListener("click", function () {
                 lock.classList.toggle("lock");
-                /*const locked = lock.classList.contains("lock") ? "inner locked" : "inner";
+                const locked = lock.classList.contains("lock") ? "inner locked" : "inner";
                 let visibleItems = timelineInstanceRef?.current?.getVisibleItems()
                  if(visibleItems){
-                  for (const visibleItem of visibleItems) {
-                    const item = items.get(visibleItem);
-                    if (!item.phase && item.id >= group.id) {
-                      items.update({ id: item.id, className: locked, locked: !item.locked });
+                    for (const visibleItem of visibleItems) {
+                      const item = items.get(visibleItem);
+                      if (item.id >= group.id) {
+                        items.update({ id: item.id, className: "test", locked: !item.locked });
+                      }
                     }
-                  }
-                } */
-                lockLine(group);
+                  } 
+                lockElements(group);
               });
               container.insertAdjacentElement("beforeEnd", lock);
             }
@@ -937,6 +953,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           groups={groups?.get()}
           items={items?.get()}
           sectionAttributes={sectionAttributes}
+          lockedGroup={lock}
         />
         <AddGroupModal
           toggleOpenAddDialog={toggleOpenAddDialog}

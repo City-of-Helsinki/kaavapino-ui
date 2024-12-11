@@ -381,15 +381,12 @@
                     }
                 }
                 .timeline-lock-button{
-                    visibility: hidden;
+                    display: none;
                     padding: 0;
                     margin-right: 12px;
-                    /*   margin-left: 12px;
+                    margin-left: 12px;
                     width: 24px;
-                    height: 24px; Hidden for now, unhide when lock feature in dev*/
-                    margin-left: 0;
-                    width: 0;
-                    height: 0;
+                    height: 24px;
                     background:url('../../assets/icons/lock-open-blue.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;
@@ -398,9 +395,10 @@
                     cursor: pointer;
                 }
                 .lock{
+                    display: block;
+                    padding: 0;
                     margin-right: 12px;
                     margin-left: 12px;
-                    padding: 0;
                     width: 24px;
                     height: 24px;
                     background:url('../../assets/icons/lock-blue.svg') no-repeat;
@@ -563,6 +561,41 @@
                 .timeline-add-button{
                     display: none;
                 }
+            }
+        }
+    }
+
+    .buttons-locked{
+        .timeline-add-button{
+            pointer-events: none;
+            cursor: default;
+            opacity: 0.5;
+            color: gray;
+        }
+        .show-buttons{
+            .timeline-remove-button{
+                pointer-events: none;
+                cursor: default;
+                opacity: 0.5;
+                color: gray;
+            }
+            .timeline-lock-button{
+                pointer-events: none;
+                cursor: default;
+                opacity: 0.5;
+                color: gray;
+            }
+            .button-disabled{
+                pointer-events: none;
+                cursor: default;
+                opacity: 0.5;
+                color: gray;
+            }
+            .button-enabled{
+                pointer-events: none;
+                cursor: default;
+                opacity: 0.5;
+                color: gray;
             }
         }
     }

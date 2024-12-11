@@ -10,7 +10,7 @@ import objectUtil from '../../utils/objectUtil';
 import PropTypes from 'prop-types'
 import './VisTimeline.css'
 
-const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit,disabledDates,lomapaivat,dateTypes,groups, items, sectionAttributes }) => {
+const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit,disabledDates,lomapaivat,dateTypes,groups, items, sectionAttributes, lockedGroup }) => {
 
   const getAttributeValues = (attributes) => {
     return Object.values(attributes).flatMap((v) => Object.values(v));
@@ -179,6 +179,8 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       }
       confirmedValue = confirmedValue.replace(/\s+/g, '');
       const isConfirmed = visValues[confirmedValue]
+      //isLocked? here
+      console.log(lockedGroup,groups)
       const disabled = archived || isConfirmed ? true : sectionIndex < projectPhaseIndex
       const renderedSections = []
       sections.forEach(subsection => {
