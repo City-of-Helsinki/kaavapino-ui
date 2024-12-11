@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { RadioButton } from 'hds-react'
+import { RadioButton, Button, IconPlus } from 'hds-react'
 import RollingInfo from '../input/RollingInfo'
+import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types';
 
 const RadioBooleanButton = ({
@@ -16,8 +17,10 @@ const RadioBooleanButton = ({
   rollingInfo, 
   modifyText, 
   rollingInfoText,
-  phaseIsClosed
+  phaseIsClosed,
+  isProjectTimetableEdit
 }) => {
+  const { t } = useTranslation()
   const [radioValue, setRadioValue] = useState(null)
   const [editField,setEditField] = useState(false)
 
@@ -40,20 +43,43 @@ const RadioBooleanButton = ({
     setEditField(true)
   }
 
-  const normalOrRollingElement = () => {
-    const showNoInformation = autofillReadonly ? value === '' : true
-    //Render rolling info field or normal edit field
-    //If clicking rolling field button makes positive lock check then show normal editable field
-    //Rolling field can be nonEditable
-    let readableValue = ""
+  const getReadableValue = (value) => {
     if(value === false){
-      readableValue = "Ei"
+      return "Ei";
     }
     else if(value === true){
-      readableValue = "Kyllä"
+      return "Kyllä";
     }
-
-    const elements = nonEditable || rollingInfo && !editField ?
+    return "";
+  }
+  
+  const getProjectTimetableEditElements = (value, handleOnChange, t) => {
+    return !value ? 
+      <Button variant="supplementary" className='add-content' iconLeft={<IconPlus />} onClick={() => handleOnChange(true)}>{t('deadlines.new-esillaolo')}</Button> 
+      : 
+      <Button size='small' variant="danger" className='remove-content' onClick={() => handleOnChange(false)}>{t('deadlines.delete-esillaolo')}</Button>
+  }
+  
+  const getRadioButton = (testId, label, id, key, disabled, className, value, error, name, onChange, checked) => {
+    return (
+      <RadioButton
+        data-testid={testId}
+        key={key}
+        id={id}
+        label={label}
+        disabled={disabled}
+        className={className}
+        value={value}
+        error={error}
+        name={name}
+        onChange={onChange}
+        checked={checked}
+      />
+    );
+  }
+  
+  const getNormalElements = (nonEditable, rollingInfo, editField, name, readableValue, modifyText, rollingInfoText, editRollingField, phaseIsClosed, className, disabled, timeTableDisabled, error, handleOnChange, radioValue, double, showNoInformation) => {
+    return nonEditable || rollingInfo && !editField ?
       <RollingInfo 
         name={name} 
         value={readableValue} 
@@ -66,48 +92,23 @@ const RadioBooleanButton = ({
       />
       : 
       <div className={className}>
-        <RadioButton
-          data-testid="radio1"
-          key={`${name}-true`}
-          id={`${name}-true`}
-          label="Kyllä"
-          disabled={disabled || timeTableDisabled}
-          className={`radio-button radio-button-true ${disabled || timeTableDisabled ? 'radio-button-disabled' : ''}`}
-          value="Kyllä"
-          error={error}
-          name={name}
-          onChange={() => handleOnChange(true)}
-          checked={radioValue === true}
-        />
-        <RadioButton
-          data-testid="radio2"
-          label="Ei"
-          id={`${name}-false`}
-          key={`${name}-false`}
-          disabled={disabled || timeTableDisabled}
-          className={`radio-button radio-button-false ${disabled || timeTableDisabled ? 'radio-button-disabled' : ''}`}
-          error={error}
-          value="Ei"
-          name={name}
-          onChange={() => handleOnChange(false)}
-          checked={radioValue === false}
-        />
-        {!double && showNoInformation && (
-          <RadioButton
-            data-testid="radio3"
-            key={`${name}-null`}
-            id={`${name}-null`}
-            label="Tieto puuttuu"
-            disabled={disabled || timeTableDisabled}
-            className={`radio-button radio-button-null ${disabled || timeTableDisabled ? 'radio-button-disabled' : ''}`}
-            value=""
-            error={error}
-            name={name}
-            onChange={() => handleOnChange(null)}
-            checked={radioValue !== false && radioValue !== true}
-          />
-        )}
+        {getRadioButton("radio1", "Kyllä", `${name}-true`, `${name}-true`, disabled || timeTableDisabled, `radio-button radio-button-true ${disabled || timeTableDisabled ? 'radio-button-disabled' : ''}`, "Kyllä", error, name, () => handleOnChange(true), radioValue === true)}
+        {getRadioButton("radio2", "Ei", `${name}-false`, `${name}-false`, disabled || timeTableDisabled, `radio-button radio-button-false ${disabled || timeTableDisabled ? 'radio-button-disabled' : ''}`, "Ei", error, name, () => handleOnChange(false), radioValue === false)}
+        {!double && showNoInformation && getRadioButton("radio3", "Tieto puuttuu", `${name}-null`, `${name}-null`, disabled || timeTableDisabled, `radio-button radio-button-null ${disabled || timeTableDisabled ? 'radio-button-disabled' : ''}`, "", error, name, () => handleOnChange(null), radioValue !== false && radioValue !== true)}
       </div>
+  }
+  
+  const normalOrRollingElement = () => {
+    const showNoInformation = autofillReadonly ? value === '' : true
+    let elements
+    let readableValue = getReadableValue(value);
+    
+    if(isProjectTimetableEdit){
+      elements = getProjectTimetableEditElements(value, handleOnChange, t);
+    }
+    else{
+      elements = getNormalElements(nonEditable, rollingInfo, editField, name, readableValue, modifyText, rollingInfoText, editRollingField, phaseIsClosed, className, disabled, timeTableDisabled, error, handleOnChange, radioValue, double, showNoInformation);
+    }
     
     return elements
   }

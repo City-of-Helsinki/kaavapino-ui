@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
+import { Notification } from 'hds-react'
 import './ProjectTimeline.scss'
 import { createMonths } from './helpers/createMonths'
 import { createDeadlines } from './helpers/createDeadlines'
 import { connect } from 'react-redux'
 import { getProject, getProjectSuccessful } from '../../actions/projectActions'
 import { findWeek } from './helpers/helpers'
-import { IconError } from 'hds-react'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
 
@@ -347,16 +347,14 @@ function ProjectTimeline(props) {
   return (
     <div className={containerClass}>
       {onhold ? (
-        <div className="timeline-onhold-message">
-          <IconError />
-          <span>{t('deadlines.project-stopped')}</span>
-        </div>
+        <Notification className='timeline-onhold-message' type='alert' label={t('deadlines.project-stopped')}>
+          <p>{t('deadlines.project-stopped-text')}</p>
+        </Notification>
       ) : null}
       {showError && !onhold ? (
-        <div className="timeline-error-message">
-          <IconError />
-          <span>{t('deadlines.timeline-error')}</span>
-        </div>
+        <Notification className='timeline-error-message' type='error' label={t('deadlines.timeline-error')}>
+          <p>{t('deadlines.timeline-error-text')}</p>
+        </Notification>
       ) : null}
       <div
         className={`timeline-item-container ${showError ? 'timeline-error' : ''}`}
