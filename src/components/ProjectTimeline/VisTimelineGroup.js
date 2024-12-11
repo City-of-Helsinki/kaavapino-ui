@@ -640,7 +640,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             container.classList.remove("show-buttons");
           });
 
-          if(group?.nestedGroups?.length > 0 && allowedToEdit && !contentIncludesString){
+          if(group?.nestedGroups!== undefined && allowedToEdit && !contentIncludesString){
             let label = document.createElement("span");
             label.innerHTML = group.content + " ";
             container.insertAdjacentElement("afterBegin", label);
