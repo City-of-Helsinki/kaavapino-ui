@@ -150,7 +150,6 @@
     }
 
     .vis-item.vis-dot {
-        border: 2px solid #000000;
         &.past {
             background: $color-gray;
         }
@@ -177,57 +176,58 @@
         }
     }
 
-    .board:not(.vis-point):not(.vis-dot) {
-        top: 15.5px !important;
-    }
-
-    .board{
-        z-index: 1000;
-        //Makes range item apper to be two single items
-        .vis-item-overflow{
-            height: $size4;
-            border-top: 4px solid rgba(0, 0, 0, .95);
-            color: #fff;
-            background-color: #fff;
-            width: 100%;
-            .vis-item-content{
-                pointer-events: auto;
-                padding:0;
-            }
+    .board.deadline {
+        height: $size24 !important;
+        width: $size24 !important;
+        top: -4px !important;
+        left: -12px !important;
+        max-width: 100%;
+        display: inline-block;
+        border: 2px solid #1a1a1a;
+        border-radius: 14px;
+        padding: 5px;
+        background-color: #fff;
+        z-index: 1500;
+        .vis-dot {
+            display: none;
         }
-        .vis-drag-left{
-            height: $size24 !important;
-            width: $size24 !important;
-            max-width: 100%;
-            top: -10px !important;
-            left: -12px;
-            display: inline-block;
-            border: 2px solid #1a1a1a;
-            border-radius: 14px;
-            padding: 5px;
-            background-color: #fff;
-        }
-        .vis-drag-right{
-            height: 1.3rem !important;
-            width: 1.3rem !important;
-            max-width: 100%;
-            top: -9px !important;
-            right: -12px;
-            display: inline-block;
-            border: $size1 solid #fff;
-            border-radius: 14px;
-            padding: 5px;
-            background-color: #1a1a1a;
-            box-shadow: 0 0 0 2px #1a1a1a;
-        }
-    }
-    .board.past {
-        .vis-drag-left {
+        &.past {
             background-color: $color-gray;
         }
-        .vis-drag-right {
+    }
+    .board.board-date {
+        height: 1.3rem !important;
+        width: 1.3rem !important;
+        top: -5px !important;
+        left: -12px !important;
+        max-width: 100%;
+        right: 0;
+        display: inline-block;
+        border: $size1 solid #fff;
+        border-radius: 14px;
+        padding: 5px;
+        background-color: #1a1a1a;
+        box-shadow: 0 0 0 2px #1a1a1a;
+        z-index: 1500;
+        .vis-dot {
+            display: none;
+        }
+        &.past {
             outline: 1px solid $color-gray;
             outline-offset: -1px;
+            background-color: #1a1a1a !important;
+        }
+        &.confirmed::after {
+            content: "";
+            position: absolute;
+            top: -9px;
+            right: -10px;
+            width: 21px;
+            height: 21px;
+            background: #fff url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
+            background-position: center;
+            background-size: contain;
+            border-radius: 50%;
         }
     }
 
@@ -271,16 +271,17 @@
         z-index: 100;
     }
 
-    .vis-dot{
-        position: absolute;
-        top: -9.5px !important;
-        padding: 0px;
-        border-style: solid;
-        border-radius: $size12;
+    .vis-point {
+        top: -4.5px !important;
+        left: -10px;
+        border: 2px solid #000000;
         background-color: #fff;
-        border-color: #1a1a1a;
         height: $size24;
         width: $size24;
+        z-index: 200;
+        &.past {
+            background: $color-gray;
+        }
     }
 
     .vis-dot.board-only{
@@ -615,7 +616,6 @@
 
     .vis-major {
         border-left: $size1 solid #999999 !important;
-        background: transparent !important;
         &::first-letter{
             text-transform: capitalize;
         }
@@ -753,10 +753,9 @@
         background-color: transparent !important;
     }
     .holiday {
-    background-color: transparent !important;
-    }
-    .vis-item.vis-dot.board {
-        top: -18.5px !important;
+        top: 0;
+        background-color: $color-summer-light !important;
+        z-index: 100;
     }
 }
 
@@ -766,12 +765,8 @@
     .vis-saturday,
     .vis-sunday,
     .negative {
-        background: $color-black-5 !important;
-        border-right: 0.5px solid #ccc !important;
-        border-left: 0.5px solid #ccc !important;
-    }
-    .negative {
         top: 0;
+        background: $color-black-5 !important;
         border-right: 0.5px solid #ccc !important;
         border-left: 0.5px solid #ccc !important;
     }
@@ -792,10 +787,12 @@
 .vis-tooltip{
     visibility: visible !important;
     background-color: #ffffff !important;
+    box-shadow: 0px 2px 8px 0px #00000099 !important;
     width: 300px !important; 
     padding: 8px !important;
     pointer-events: auto !important;
     white-space: normal !important;
     word-wrap: break-word !important;
     z-index: 2000 !important;
+    border: none !important;
 }

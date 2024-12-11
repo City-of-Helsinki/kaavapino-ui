@@ -320,12 +320,11 @@ const getHighestNumberedObject = (obj1, arr) => {
   const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize) => {
     // Find the index of the next item where dates should start being pushed
     const currentIndex = arr.findIndex(item => item.key === field);
-    const nextIndex = arr.findIndex(item => item?.key === field) + 1;
     let indexToContinue
     // If adding items
     if (isAdd) {
       // Move the nextItem and all following items forward if item minium is exceeded
-      for (let i = nextIndex; i < arr.length; i++) {
+      for (let i = currentIndex; i < arr.length; i++) {
         if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
           && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
           && !arr[i].key.includes("hyvaksymispaatos_pvm")){
@@ -353,6 +352,17 @@ const getHighestNumberedObject = (obj1, arr) => {
             const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
             if(differenceInDays >= 5){
               arr[i].value = res
+              if(arr[i]?.key?.includes("tarkistettuehdotusvaihe_paattyy_pvm")){
+                //Move hyvaksyminenvaihe_paattyy_pvm and voimaantulovaihe_paattyy_pvm as many days as tarkistettuehdotusvaihe_paattyy_pvm
+                const items = arr.filter(el => el.key?.includes("hyvaksyminenvaihe_paattyy_pvm") || el.key?.includes("voimaantulovaihe_paattyy_pvm"));
+                if (items) {
+                  items.forEach(item => {
+                    const currentDate = new Date(item.value);
+                    currentDate.setDate(currentDate.getDate() + differenceInDays);
+                    item.value = currentDate.toISOString().split('T')[0];
+                  });
+                }
+              }
             }
           }
         }
@@ -372,7 +382,7 @@ const getHighestNumberedObject = (obj1, arr) => {
           else{
             //Paattyy and nahtavillaolo l-xl are independent of other values
             if(((projectSize === "XS" || projectSize === "S" || projectSize === "M") && i === currentIndex && !arr[i]?.key.includes("lautakunassa_")) ||
-             ((projectSize === "XL" || projectSize === "L") && i === currentIndex  && !arr[currentIndex]?.key.includes("nahtavilla_alkaa") && !arr[currentIndex]?.key.includes("nahtavilla_paattyy") && !arr[i]?.key.includes("lautakunassa_")) ){
+             ((projectSize === "XL" || projectSize === "L") && i === currentIndex && !arr[i]?.key.includes("lautakunassa_")) ){
               //Make next or previous or previous and 1 after previous dates follow the moved date if needed
               if(arr[currentIndex]?.key?.includes("kylk_maaraaika") || arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") || arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika")){
                 //maaraika in lautakunta moving
@@ -380,7 +390,7 @@ const getHighestNumberedObject = (obj1, arr) => {
                 arr[i + 1].value = new Date(lautakuntaResult).toISOString().split('T')[0];
                 indexToContinue = i + 1
               }
-              else if(arr[currentIndex]?.key?.includes("paattyy")){
+              else if(arr[currentIndex]?.key?.includes("paattyy") || ( (projectSize === "XL" || projectSize === "L") && (arr[currentIndex]?.key.includes("nahtavilla_alkaa") || arr[currentIndex]?.key.includes("nahtavilla_paattyy")) ) ){
                 newDate = new Date(arr[i].value);
                 indexToContinue = i
               }
@@ -425,6 +435,17 @@ const getHighestNumberedObject = (obj1, arr) => {
             const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
             if(differenceInDays >= 5){
               arr[i].value = res
+              if(arr[i]?.key?.includes("tarkistettuehdotusvaihe_paattyy_pvm")){
+                //Move hyvaksyminenvaihe_paattyy_pvm and voimaantulovaihe_paattyy_pvm as many days as tarkistettuehdotusvaihe_paattyy_pvm
+                const items = arr.filter(el => el.key?.includes("hyvaksyminenvaihe_paattyy_pvm") || el.key?.includes("voimaantulovaihe_paattyy_pvm"));
+                if (items) {
+                  items.forEach(item => {
+                    const currentDate = new Date(item.value);
+                    currentDate.setDate(currentDate.getDate() + differenceInDays);
+                    item.value = currentDate.toISOString().split('T')[0];
+                  });
+                }
+              }
             }
           }
         }
