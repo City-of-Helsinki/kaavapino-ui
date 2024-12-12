@@ -124,6 +124,11 @@ export const showField = (field, formValues, currentName) => {
 
 // Gets the name of the attribute used to control deadline group visiblity
 export const getVisibilityBoolName = (deadlineGroup) => {
+
+  if (['kaynnistys_1', 'hyvaksyminen_1', 'voimaantulo_1'].includes(deadlineGroup)){
+    return null;
+  }
+
   const splitGroup = deadlineGroup.split('_');
   const iteration = splitGroup.pop();
   const is_esillaolo = ['esillaolokerta', 'nahtavillaolokerta'].includes(splitGroup.pop());

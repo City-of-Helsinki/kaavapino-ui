@@ -8,10 +8,11 @@ import { getProject, getProjectSuccessful } from '../../actions/projectActions'
 import { findWeek } from './helpers/helpers'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
+import { getVisibilityBoolName } from '../../utils/projectVisibilityUtils';
+import { attributeDataSelector } from '../../selectors/projectSelector';
 
 function ProjectTimeline(props) {
-  const { deadlines, projectView, onhold } = props
-
+  const { deadlines, projectView, onhold, attribute_data } = props
   const { t } = useTranslation()
   const [showError, setShowError] = useState(false)
   const [drawMonths, setDrawMonths] = useState([])
@@ -31,18 +32,42 @@ function ProjectTimeline(props) {
     11: t('deadlines.months.dec')
   }
   useEffect(() => {
+    const filteredDeadlines = filterVisibleDeadlines(deadlines, attribute_data)
     if (!projectView) {
-      const months = createMonths(deadlines)
+      const months = createMonths(filteredDeadlines)
       createDrawMonths(months.months)
     } else {
-      createTimelineItems(deadlines)
+      createTimelineItems(filteredDeadlines)
     }
-  }, [])
+  }, []);
+
   useEffect(() => {
-    if (deadlines) {
-      createTimelineItems(deadlines)
+    const filteredDeadlines = filterVisibleDeadlines(deadlines, attribute_data)
+    if (filteredDeadlines) {
+      createTimelineItems(filterVisibleDeadlines(filteredDeadlines, attribute_data))
     }
-  }, [deadlines])
+  }, [deadlines]);
+
+  function filterVisibleDeadlines(deadlines, attribute_data) {
+    return deadlines.filter((deadline) => {
+      const group = deadline?.deadline?.deadlinegroup;
+      if (!group) {
+        // Phase start/end dates have no group; this is ok.
+        return true;
+      }
+      const visBool = getVisibilityBoolName(group);
+      if (!visBool) {
+        // deadlines with no visibility bool should be shown by default
+        return true;
+      }
+      // Special cases where bool is missing from attribute_data
+      if (['oas_esillaolokerta_1','ehdotus_nahtavillaolokerta_1','tarkistettu_ehdotus_lautakuntakerta_1'].includes(group)){
+        return true;
+      }
+      return attribute_data ? attribute_data[visBool] : false;
+    });
+  }
+
   function createNowMarker(week) {
     let nowMarker = []
     for (let i = 1; i <= 5; i++) {
@@ -343,8 +368,8 @@ function ProjectTimeline(props) {
   const containerClass =
     onhold || showError
       ? 'timeline-graph-container hide-background'
-      : 'timeline-graph-container'
-  return (
+      : 'timeline-graph-container';
+    return (
     <div className={containerClass}>
       {onhold ? (
         <Notification className='timeline-onhold-message' type='alert' label={t('deadlines.project-stopped')}>
@@ -374,4 +399,10 @@ const mapDispatchToProps = {
   getProjectSuccessful
 }
 
-export default connect(null, mapDispatchToProps)(ProjectTimeline)
+const mapStateToProps = state => {
+  return {
+    attribute_data: attributeDataSelector(state)
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ProjectTimeline)
