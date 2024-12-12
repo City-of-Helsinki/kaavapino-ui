@@ -80,7 +80,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       } else {
         modifiedError = error
       }
-      
+
       return (
         <>
           <FormField
@@ -92,7 +92,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
             formValues={visValues}
             className={className}
             isProjectTimetableEdit={true}
-            disabled={disabled?.disabled && type === 'date' || !allowedToEdit && type === 'date'}
+            disabled={disabled?.disabled && (type === 'date' || type === 'boolean') || !allowedToEdit && type === 'date'}
             attributeData={visValues}
             disabledDates={disabledDates && type === 'date'}
             lomapaivat={lomapaivat}
@@ -179,9 +179,8 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       }
       confirmedValue = confirmedValue.replace(/\s+/g, '');
       const isConfirmed = visValues[confirmedValue]
-      //isLocked? here
-      console.log(lockedGroup,groups)
-      const disabled = archived || isConfirmed ? true : sectionIndex < projectPhaseIndex
+      const isGroupLocked = lockedGroup?.lockedPhases?.includes(group) && lockedGroup?.locked
+      const disabled = archived || isConfirmed || isGroupLocked ? true : sectionIndex < projectPhaseIndex
       const renderedSections = []
       sections.forEach(subsection => {
         const attr = subsection?.attributes

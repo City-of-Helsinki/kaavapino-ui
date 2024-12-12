@@ -44,7 +44,6 @@ class EditProjectTimeTableModal extends Component {
     initialize(attributeData)
    // Check if the key exists and its value is true
     if(attributeData && deadlines && deadlineSections && disabledDates && lomapaivat){
-      console.log(attributeData)
       let items = new visdata.DataSet()
       let groups = new visdata.DataSet();
       let ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe)

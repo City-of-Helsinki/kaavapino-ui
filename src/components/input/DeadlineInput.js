@@ -117,7 +117,9 @@ const DeadLineInput = ({
   }, [input.value,formValues])
 
   useEffect(() => {
-    setDisabledState(formValues[confirmedValue])
+    const disabledValue = typeof timeTableDisabled !== "undefined" ? timeTableDisabled : disabled
+    let confirmValue = typeof formValues[confirmedValue] !== "undefined" ? formValues[confirmedValue] : disabledValue
+    setDisabledState(confirmValue)
   },[formValues[confirmedValue]])
 
   const getInitialMonth = (dateString) => {

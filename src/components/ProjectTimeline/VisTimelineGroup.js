@@ -38,7 +38,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [openConfirmModal, setOpenConfirmModal] = useState(false);
     const [dataToRemove, setDataToRemove] = useState({});
     const [timelineAddButton, setTimelineAddButton] = useState();
-    const [lock, setLock] = useState(false);
+    const [lock, setLock] = useState({lockedGroup:false,lockedPhases:[],locked:false});
 
     useImperativeHandle(ref, () => ({
       getTimelineInstance: () => timelineInstanceRef.current,
@@ -290,24 +290,33 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     };
   
   
-    const lockElements = (data) => {
+    const lockElements = (data,lockedPhases,locked) => {
       //Send call to action to disable confirm and date inputs
-      setLock(data.deadlinegroup)
-      document.querySelectorAll('.lock').forEach(lockElement => {
-        let parent = lockElement.closest('.vis-label'); // Find the closest 'vis-label' parent
-        if (!parent) return; // Skip if no parent is found (safety check)
-    
-        let nextElement = parent.nextElementSibling; // Start with the next sibling element
-    
-        // Traverse all siblings
-        while (nextElement) {
-            // Check if the sibling has the 'vis-nesting-group' class
-            if (nextElement.classList.contains('vis-nesting-group') || nextElement.classList.contains('vis-nested-group')) {
-                nextElement.classList.add('buttons-locked'); // Add the 'test' class
-            }
-            nextElement = nextElement.nextElementSibling; // Move to the next sibling
-        }
-      });
+      if(locked){
+        setLock({lockedGroup:data.deadlinegroup,lockedPhases:lockedPhases,locked:locked})
+        document.querySelectorAll('.lock').forEach(lockElement => {
+          let parent = lockElement.closest('.vis-label'); // Find the closest 'vis-label' parent
+          if (!parent) return; // Skip if no parent is found (safety check)
+          let nextElement = parent.nextElementSibling; // Start with the next sibling element
+          // Traverse all siblings
+          while (nextElement) {
+              // Check if the sibling has the 'vis-nesting-group' class
+              if(locked){
+                nextElement.classList.add('buttons-locked'); // Add the 'buttons-locked' class
+              } 
+              else{
+                nextElement.classList.remove('buttons-locked'); // Remove the 'buttons-locked' class
+              }
+              nextElement = nextElement.nextElementSibling; // Move to the next sibling
+          }
+        });
+      }
+      else{
+        setLock({lockedGroup:data.deadlinegroup,lockedPhases:[],locked:locked})
+        document.querySelectorAll('.buttons-locked').forEach(element => {
+          element.classList.remove('buttons-locked');
+        });
+      }
       //setLock({group:data.nestedInGroup,id:data.id,abbreviation:data.abbreviation,locked:!data.locked})
     }
   
@@ -649,11 +658,16 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             // Hover effect
           container.addEventListener("mouseenter", function() {
             // Action to perform on hover enter, e.g., change background color
-            container.classList.add("show-buttons");
+            //If element is locked then do not show buttons
+            if (!container.querySelector(".lock")) {
+              container.classList.add("show-buttons");
+            }
           });
           container.addEventListener("mouseleave", function() {
             // Action to perform on hover leave
-            container.classList.remove("show-buttons");
+            if (container.classList.contains("show-buttons")) {
+              container.classList.remove("show-buttons");
+            }
           });
 
           if(group?.nestedGroups!== undefined && allowedToEdit && !contentIncludesString){
@@ -729,21 +743,25 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               }
 
               let lock = document.createElement("button");
-              lock.classList.add("timeline-lock-button");
+              lock.classList.toggle("timeline-lock-button");
               lock.style.fontSize = "small";
               lock.addEventListener("click", function () {
                 lock.classList.toggle("lock");
-                const locked = lock.classList.contains("lock") ? "inner locked" : "inner";
+                const locked = lock.classList.contains("lock") ? true : false;
+                let lockedPhases = []
                 let visibleItems = timelineInstanceRef?.current?.getVisibleItems()
                  if(visibleItems){
                     for (const visibleItem of visibleItems) {
                       const item = items.get(visibleItem);
                       if (item.id >= group.id) {
-                        items.update({ id: item.id, className: "test", locked: !item.locked });
+                        lockedPhases.push(item.phaseName)
+                        // Append a new class while preserving existing ones
+                        const newClassName = locked ? item.className ? item.className + ' locked-color' : 'locked-color' : item.className ? item.className.replace(/\blocked-color\b/g, '').trim() : '';
+                        items.update({ id: item.id, className: newClassName, locked: !item.locked });
                       }
                     }
                   } 
-                lockElements(group);
+                lockElements(group,lockedPhases,locked);
               });
               container.insertAdjacentElement("beforeEnd", lock);
             }
