@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import PropTypes from 'prop-types';
 import { Notification } from 'hds-react'
 import './ProjectTimeline.scss'
 import { createMonths } from './helpers/createMonths'
@@ -44,12 +45,12 @@ function ProjectTimeline(props) {
   useEffect(() => {
     const filteredDeadlines = filterVisibleDeadlines(deadlines, attribute_data)
     if (filteredDeadlines) {
-      createTimelineItems(filterVisibleDeadlines(filteredDeadlines, attribute_data))
+      createTimelineItems(filteredDeadlines)
     }
   }, [deadlines]);
 
-  function filterVisibleDeadlines(deadlines, attribute_data) {
-    return deadlines.filter((deadline) => {
+  function filterVisibleDeadlines(deadlineArray, attributeData) {
+    return deadlineArray.filter((deadline) => {
       const group = deadline?.deadline?.deadlinegroup;
       if (!group) {
         // Phase start/end dates have no group; this is ok.
@@ -60,11 +61,11 @@ function ProjectTimeline(props) {
         // deadlines with no visibility bool should be shown by default
         return true;
       }
-      // Special cases where bool is missing from attribute_data
+      // Special cases where bool is missing from attributeData
       if (['oas_esillaolokerta_1','ehdotus_nahtavillaolokerta_1','tarkistettu_ehdotus_lautakuntakerta_1'].includes(group)){
         return true;
       }
-      return attribute_data ? attribute_data[visBool] : false;
+      return attributeData ? attributeData[visBool] : false;
     });
   }
 
@@ -403,6 +404,14 @@ const mapStateToProps = state => {
   return {
     attribute_data: attributeDataSelector(state)
   }
+}
+
+ProjectTimeline.propTypes= {
+  deadlines: PropTypes.array,
+  projectView: PropTypes.bool,
+  onhold: PropTypes.bool,
+  attribute_data: PropTypes.object,
+
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ProjectTimeline)

@@ -82,15 +82,12 @@ export function cleanDeadlines(deadlines) {
  */
 export function checkDeadlines(deadlines) {
   if (!deadlines) {
-    console.log("No deadlines")
     return true
   }
   if (!deadlines[0]) {
-    console.log("No deadlines")
     return true
   }
   if (!deadlines[0].date) {
-    console.log("No dates in deadlines")
     return true
   }
   const has = Object.prototype.hasOwnProperty
@@ -106,7 +103,6 @@ export function checkDeadlines(deadlines) {
             }
             if (deadlineAbbreviation) {
               if (deadlineAbbreviation !== deadline.deadline.abbreviation.charAt(0)) {
-                console.log("Something wrong with abbreviations?")
                 deadlineError = true
               }
             }
@@ -116,15 +112,12 @@ export function checkDeadlines(deadlines) {
     }
     if (deadline) {
       if (deadline.is_under_min_distance_next) {
-        console.log("Min distance next busted for", deadline)
         deadlineError = true
       }
       if (deadline.is_under_min_distance_previous) {
-        console.log("Min distance prev busted for", deadline)
         deadlineError = true
       }
       if (deadline.out_of_sync) {
-        console.log(deadline, "is out of sync")
         deadlineError = true
       }
     } else {
