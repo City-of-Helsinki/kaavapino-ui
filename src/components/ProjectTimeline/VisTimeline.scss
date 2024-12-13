@@ -397,14 +397,15 @@
                 .lock{
                     display: block;
                     padding: 0;
-                    margin-right: 12px;
-                    margin-left: 12px;
-                    width: 24px;
-                    height: 24px;
-                    background:url('../../assets/icons/lock-blue.svg') no-repeat;
+                    margin-right: 0px;
+                    margin-left: auto;
+                    width: 48px;
+                    height: 36px;
+                    background:url('../../assets/icons/lock-white.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;
                     background-size: $size24;
+                    background-color: $color-bus;
                     border: none;
                     cursor: pointer;
                 }
@@ -454,6 +455,15 @@
                     opacity: 1;
                 }
             }
+            .has-lock{
+                .timeline-lock-button{
+                    pointer-events: none;
+                    cursor: default;
+                    opacity: 0.5;
+                    color: gray;
+                }
+            }
+
             .highlight-selected{
                 .timeline-remove-button{
                     display: block;

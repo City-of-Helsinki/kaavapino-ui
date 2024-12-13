@@ -39,6 +39,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [dataToRemove, setDataToRemove] = useState({});
     const [timelineAddButton, setTimelineAddButton] = useState();
     const [lock, setLock] = useState({lockedGroup:false,lockedPhases:[],locked:false});
+    const lockRef = useRef(lock);
 
     useImperativeHandle(ref, () => ({
       getTimelineInstance: () => timelineInstanceRef.current,
@@ -85,6 +86,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const trackExpanded = (event) => {
+      console.log("locked group", lockRef.current);
+      //TODO: prevent toggling to remove lock style
       trackExpandedGroups(event)
     }
 
@@ -516,6 +519,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     useEffect(() => {
+      lockRef.current = lock;
+    }, [lock]);
+
+    useEffect(() => {
 
       const options = {
         locales: {
@@ -660,13 +667,20 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             // Action to perform on hover enter, e.g., change background color
             //If element is locked then do not show buttons
             if (!container.querySelector(".lock")) {
+              if(document.querySelector('.lock')){
+                container.classList.add("has-lock")
+              }
               container.classList.add("show-buttons");
             }
           });
+
           container.addEventListener("mouseleave", function() {
             // Action to perform on hover leave
             if (container.classList.contains("show-buttons")) {
               container.classList.remove("show-buttons");
+            }
+            if (container.classList.contains("has-lock")) {
+              container.classList.remove("has-lock");
             }
           });
 
