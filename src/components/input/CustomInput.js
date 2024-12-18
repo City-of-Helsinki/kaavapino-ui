@@ -11,7 +11,7 @@ import RollingInfo from '../input/RollingInfo'
 import {useFocus} from '../../hooks/useRefFocus'
 import { useIsMount } from '../../hooks/IsMounted'
 
-const CustomInput = ({ input, meta: { error }, ...custom }) => {
+const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   const [readonly, setReadOnly] = useState({name:"",read:false})
   const [hasError,setHasError] = useState(false)
   const [editField,setEditField] = useState(false)
@@ -194,7 +194,9 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       originalData = false
     }
 
-    if (event.target.value !== originalData) {
+    const isRequired = fieldData.required
+
+    if (event.target.value !== originalData && (!isRequired || (isRequired && event.target.value !== ""))) {
       //prevent saving if locked
       if (!readonly) {
         //Sent call to save changes
