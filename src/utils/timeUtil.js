@@ -125,6 +125,18 @@
         }
       }
     }
+
+    // Convert currentDate to the same format as the dates in the allowedDays array
+    const formattedNewDate = currentDate.toISOString().split('T')[0];
+    // Check that date is inside the allowedDays array
+    if (!allowedDays.includes(formattedNewDate)) {
+      // Find the next possible date from allowedDays because the date was not allowed
+      const nextPossibleDate = allowedDays.find(date => new Date(date) > currentDate);
+      if (nextPossibleDate) {
+        currentDate = new Date(nextPossibleDate);
+      }
+    }
+
     return normalizeDate(currentDate);
   };
 
