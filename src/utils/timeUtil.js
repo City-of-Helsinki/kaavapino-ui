@@ -694,7 +694,7 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       const dateToComparePast = formValues[matchingItem?.previous_deadline]
       let newDisabledDates = dateTypes?.työpäivät?.dates
       const firstPossibleDateToSelect = addDays("arkipäivät",dateToComparePast,miniumDaysPast,dateTypes?.arkipäivät?.dates,true)
-      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
+      newDisabledDates = newDisabledDates.filter(date => date > firstPossibleDateToSelect)
       return newDisabledDates
     } 
   }
