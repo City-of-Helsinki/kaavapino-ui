@@ -331,7 +331,7 @@
       "name": "Projektin nimi",
       "responsible": "Vastuuhenkilö",
       "is-visible": "Luodaanko projekti näkyväksi",
-      "process-size": "Valitsen projektin koko",
+      "process-size": "Valitse projektin koko",
       "principles": "Periaatteet",
       "draft": "Kaavaluonnos",
       "project-type": "Projektin tyyppi"
@@ -427,7 +427,7 @@
     "office":"Toimitila",
     "public":"Julkiset",
     "other":"Muut",
-    "already-confirmed":"Päivämäärät ovat jo vahvistettu. Jos haluat muuttaa päivämääriä, ota yhteys kaavoitussihteeriin.",
+    "already-confirmed":"Päivämäärät on jo vahvistettu. Jos haluat muuttaa päivämääriä, ota yhteys kaavoitussihteeriin.",
     "confirmed":"Vahvistettu",
     "principles-board-text":"Milloin periaatteet on lautakunnassa",
     "draft-board-text":"Milloin luonnos on lautakunnassa",
