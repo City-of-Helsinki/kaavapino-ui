@@ -38,7 +38,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [openConfirmModal, setOpenConfirmModal] = useState(false);
     const [dataToRemove, setDataToRemove] = useState({});
     const [timelineAddButton, setTimelineAddButton] = useState();
-    const [lock, setLock] = useState({lockedGroup:false,lockedPhases:[],locked:false});
+    const [lock, setLock] = useState({lockedGroup:false,lockedPhases:[],locked:false,lockedStartTime:false});
     const lockRef = useRef(lock);
 
     useImperativeHandle(ref, () => ({
@@ -293,10 +293,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     };
   
   
-    const lockElements = (data,lockedPhases,locked) => {
+    const lockElements = (data,lockedPhases,locked,lockedStartTime) => {
       //Send call to action to disable confirm and date inputs
       if(locked){
-        setLock({lockedGroup:data.deadlinegroup,lockedPhases:lockedPhases,locked:locked})
+        setLock({lockedGroup:data.deadlinegroup,lockedPhases:lockedPhases,locked:locked,lockedStartTime:lockedStartTime})
         document.querySelectorAll('.lock').forEach(lockElement => {
           let parent = lockElement.closest('.vis-label'); // Find the closest 'vis-label' parent
           if (!parent) return; // Skip if no parent is found (safety check)
@@ -315,7 +315,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         });
       }
       else{
-        setLock({lockedGroup:data.deadlinegroup,lockedPhases:[],locked:locked})
+        setLock({lockedGroup:data.deadlinegroup,lockedPhases:[],locked:locked,lockedStartTime:false})
         document.querySelectorAll('.buttons-locked').forEach(element => {
           element.classList.remove('buttons-locked');
         });
@@ -763,19 +763,34 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                 lock.classList.toggle("lock");
                 const locked = lock.classList.contains("lock") ? true : false;
                 let lockedPhases = []
+                let lockedStartTime
                 let visibleItems = timelineInstanceRef?.current?.getVisibleItems()
                  if(visibleItems){
                     for (const visibleItem of visibleItems) {
                       const item = items.get(visibleItem);
-                      if (item.id >= group.id) {
-                        lockedPhases.push(item.phaseName)
+                      if (item.group >= group.id || item.id >= group.id) {
+                        if (item.start && item.phase === false) {
+                          //Find the date where lock starts
+                          const itemStartDate = new Date(item.start);
+                          if (!lockedStartTime || itemStartDate < lockedStartTime) {
+                            lockedStartTime = itemStartDate;
+                          }
+                        }
+                        
+                        if(!lockedPhases?.includes(item?.phaseName)){
+                          //Add all phases that are in lock
+                          lockedPhases.push(item.phaseName)
+                        }
                         // Append a new class while preserving existing ones
                         const newClassName = locked ? item.className ? item.className + ' locked-color' : 'locked-color' : item.className ? item.className.replace(/\blocked-color\b/g, '').trim() : '';
                         items.update({ id: item.id, className: newClassName, locked: !item.locked });
                       }
                     }
-                  } 
-                lockElements(group,lockedPhases,locked);
+                    lockedPhases = lockedPhases.length > 0 ? lockedPhases.map(phase => 
+                      phase.toLowerCase().replace(/ /g, '_')
+                    ) : lockedPhases;
+                  }
+                lockElements(group,lockedPhases,locked,lockedStartTime);
               });
               container.insertAdjacentElement("beforeEnd", lock);
             }

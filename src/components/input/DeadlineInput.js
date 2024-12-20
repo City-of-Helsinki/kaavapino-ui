@@ -26,7 +26,8 @@ const DeadLineInput = ({
   dateTypes,
   deadlineSections,
   confirmedValue,
-  sectionAttributes
+  sectionAttributes,
+  lockedGroup
 }) => {
 
   const dispatch = useDispatch();
@@ -157,7 +158,7 @@ const DeadLineInput = ({
     const twentyYearsLater = new Date();
     twentyYearsLater.setFullYear(twentyYearsLater.getFullYear() + 20);
     const ehdotusNahtavillaolo = currentDeadline?.deadline?.phase_name === "Ehdotus" && currentDeadline?.deadline?.deadlinegroup?.includes('nahtavillaolo')
-    const datesToDisable = timeUtil.calculateDisabledDates(ehdotusNahtavillaolo,attributeData?.kaavaprosessin_kokoluokka,dateTypes,input.name,formValues,sectionAttributes,currentDeadline)
+    const datesToDisable = timeUtil.calculateDisabledDates(ehdotusNahtavillaolo,attributeData?.kaavaprosessin_kokoluokka,dateTypes,input.name,formValues,sectionAttributes,currentDeadline,lockedGroup)
     if (date < twentyYearsAgo || date > twentyYearsLater) {
       return false;
     }
@@ -193,7 +194,7 @@ const DeadLineInput = ({
     try {
       let field = input.name;
       setCurrentValue(formattedDate)
-      dispatch(updateDateTimeline(field,formattedDate,formValues,false,deadlineSections));
+      dispatch(updateDateTimeline(field,formattedDate,formValues,false,deadlineSections,lockedGroup));
     } catch (error) {
       console.error('Validation error:', error);
     }

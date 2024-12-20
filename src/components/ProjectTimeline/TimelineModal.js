@@ -106,6 +106,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
             deadlineSections={deadlineSections}
             confirmedValue={confirmedValue}
             sectionAttributes={sectionAttributes}
+            lockedGroup={lockedGroup}
           />
           {modifiedError && <div className="field-error">{modifiedError}</div>}
         </>
@@ -179,7 +180,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       }
       confirmedValue = confirmedValue.replace(/\s+/g, '');
       const isConfirmed = visValues[confirmedValue]
-      const isGroupLocked = lockedGroup?.lockedPhases?.includes(group) && lockedGroup?.locked
+      const isGroupLocked = lockedGroup?.lockedPhases?.includes(group?.toLowerCase().replace(/ /g, '_')) && lockedGroup?.locked
       const disabled = archived || isConfirmed || isGroupLocked ? true : sectionIndex < projectPhaseIndex
       const renderedSections = []
       sections.forEach(subsection => {

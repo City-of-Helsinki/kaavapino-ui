@@ -317,7 +317,9 @@ const getHighestNumberedObject = (obj1, arr) => {
     return result
   }
 
-  const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize) => {
+  const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize,lockedGroup) => {
+    //TODO: IF lockedGroup.lockedStartTime and i date + minium is same or later date compared to lockedGroup.lockedStartTime then prevent moving
+     console.log(arr,lockedGroup.lockedStartTime)
     // Find the index of the next item where dates should start being pushed
     const currentIndex = arr.findIndex(item => item.key === field);
     let indexToContinue

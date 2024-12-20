@@ -53,6 +53,7 @@ const FormField = ({
   deadlineSections,
   confirmedValue,
   sectionAttributes,
+  lockedGroup,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -144,6 +145,7 @@ const FormField = ({
             deadlineSections={deadlineSections}
             confirmedValue={confirmedValue}
             sectionAttributes={sectionAttributes}
+            lockedGroup={lockedGroup}
           />
         )
     }
