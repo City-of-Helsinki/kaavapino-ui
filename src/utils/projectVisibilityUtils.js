@@ -132,6 +132,7 @@ export const getVisibilityBoolName = (deadlineGroup) => {
     'periaatteet_lautakuntakerta_1': 'periaatteet_lautakuntaan_1',
     'periaatteet_lautakuntakerta_2': 'periaatteet_lautakuntaan_2',
     'periaatteet_lautakuntakerta_3': 'periaatteet_lautakuntaan_3',
+    'periaatteet_lautakuntakerta_4': 'periaatteet_lautakuntaan_4',
     'oas_esillaolokerta_1': 'jarjestetaan_oas_esillaolo_1',
     'oas_esillaolokerta_2': 'jarjestetaan_oas_esillaolo_2',
     'oas_esillaolokerta_3': 'jarjestetaan_oas_esillaolo_3',
