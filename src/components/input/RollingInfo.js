@@ -27,6 +27,9 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
   }
   
   const formatInputText = (input) => {
+    if (!input){
+      return noValue
+    }
     if (input.constructor !== Array) {
       return value === "" ? noValue : input
     }

@@ -393,8 +393,9 @@ class ProjectPage extends Component {
   getEditNavActions = isUserExpert => {
    const { t } = this.props
     const options = [{value:1,label:<><i className="icons document-icon"></i>{t('project.create-documents')}</> },{value:2,label:<><i className="icons calendar-icon"></i>{t('deadlines.title')}</>},{value:3,label:<><i className="icons company-icon"></i>{t('floor-areas.title')}</>},
-    {value:4,label:<><i className="icons download-icon"></i>{t('project.download-old-data')}</>},{value:5,label:<><i className="icons pen-icon"></i>{t('project.modify-project-base')}</>},{value:6,label:<><i className="icons trash-icon"></i>{t('deadlines.reset-project-deadlines')}</>},
+    {value:4,label:<><i className="icons download-icon"></i>{t('project.download-old-data')}</>},{value:5,label:<><i className="icons pen-icon"></i>{t('project.modify-project-base')}</>},
     ]
+    //{value:6,label:<><i className="icons trash-icon"></i>{t('deadlines.reset-project-deadlines')}</>} removed for now, need will be reavaluated after 1.1.
     return (
       <span className="header-buttons">
         {isUserExpert && (
