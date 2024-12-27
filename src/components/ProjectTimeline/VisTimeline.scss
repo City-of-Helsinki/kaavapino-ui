@@ -21,7 +21,6 @@
         overflow-x: clip !important;
         .vis-vertical .vis-current-time {
             top: 84px !important;
-            z-index: 0;
         }
         .vis-center, .vis-left {
             border-bottom: none
@@ -36,6 +35,7 @@
         top: 81px !important;
         left: 301px !important;
         margin-right: -3.5px;
+        z-index: 1;
     }
 
     .vis-panel.vis-center .vis-content {
@@ -50,7 +50,7 @@
         left: -0.5px !important;
         height: 85px !important;
         & > div {
-            color: #000000;
+            color: $black1;
             font-size: $size14;
         }
     }
@@ -376,8 +376,7 @@
                     border: none;
                     cursor: pointer;
                     &.button-disabled{
-                        background:url('../../assets/icons/trash.svg') no-repeat;
-                        opacity: 0.2;
+                        background:url('../../assets/icons/trash-grey.svg') no-repeat;
                     }
                 }
                 .timeline-lock-button{
@@ -444,7 +443,7 @@
                 .timeline-lock-button{
                     display: block;
                 }
-                .button-disabled{
+                .button-disabled:not(.timeline-remove-button){
                     pointer-events: auto;
                     cursor: default;
                     opacity: 0.5;
@@ -605,7 +604,7 @@
     }
 
     .vis-text.vis-minor {
-        color: #000000;
+        color: $black1;
         &.vis-current-month, &.vis-even, &.vis-odd {
             align-content: center;
             text-align: center;
