@@ -122,19 +122,28 @@
                 border: 1px #1A1A1A solid;
                 border-radius: $size16;
                 margin-bottom: $size16;
-                margin-right: $size10;
+                margin-right: $size16;
+                &:hover {
+                    background-color: $color-black-20;
+                }
+                &:focus-visible {
+                    outline: 3px solid $color-coat-of-arms;
+                    outline-offset: 2px;
+                }
+                &::after {
+                    border: none;
+                }
             }
-            .selected {
+            button:active, .selected {
                 --min-size: $size32; //hds syntax
                 height: $size32;
                 background: $color-black-20;
                 color: $black1;
                 border: 1px #1A1A1A solid;
                 border-radius: $size16;
-                outline: 3px solid $color-coat-of-arms;
                 outline-offset: 2px;
                 margin-bottom: $size16;
-                margin-right: $size12;
+                margin-right: $size16;
             }
             span {
                 font-family: 'Helsinki Grotesk Medium', sans-serif;
