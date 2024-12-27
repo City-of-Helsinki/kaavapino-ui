@@ -603,7 +603,6 @@
       z-index: 100;
       height: 85px;
       width: 302px;
-      //border: 1px #bfbfbf;
       border-right: 1px solid #CCCCCC;
       border-bottom: 1px solid #CCCCCC;
       span {
@@ -749,8 +748,22 @@
       overflow-y: auto;
       overflow-x: hidden;
       scrollbar-gutter: stable;
+      margin-right: 8px;
+      margin-bottom: 24px;
+
+      &::-webkit-scrollbar {
+        width: 7px;
+        background: transparent;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        color: #808080;
+        background-clip: padding-box;
+        position: relative;
+      }
 
       &::-webkit-scrollbar-track {
+        background-color: #D8D8D8;
         margin-block-start: 130px;
       }
     }
@@ -795,19 +808,24 @@
         }
       }
       li+li:before {
+        content: "";
+        display: inline-block;
+        position: relative;
         padding: 8px;
-        color: #1A1A1A;
-        content: "\203A";
+        margin-right: 9px;
+        top: 5px;
+        left: 9px;
+        background: url('/src/assets/icons/angle-right.svg') no-repeat;
+        width: 6px;
+        height: 9px;
       }
       button{
         position: absolute;
-        top: 20px;
-        right: 4px;
+        top: 15px;
+        right: 0px;
         color: #1A1A1A;
-        width: 24px;
-        height: 24px;
         span {
-          padding: 8px !important;
+          padding: 0 !important;
           svg {
             position: absolute;
             top: 50%;
@@ -830,13 +848,13 @@
       flex-direction: row;
       flex-wrap: wrap;
       gap: 20px;
-      padding: 0 30px 16px 33px;
+      padding: 0 17px 31px 34px;
       & > div{
         width: 100%;
       }
       .tab-header {
         position: sticky;
-        top: 56px;
+        top: 66px;
         z-index: 99;
         width: 510px;
         background-color: #fff;
@@ -902,24 +920,24 @@
       }
 
       .event-info-notification {
-        width: 450px;
+        width: 445px;
         margin-bottom: $size16;
       }
 
       .deadline-info-notification{
-        width: 450px;
+        width: 445px;
         margin-bottom: $size16;
       }
 
       .deadlines-preliminary-notification, .deadlines-confirmed-notification{
-        width: 450px;
+        width: 445px;
         margin-bottom: $size16;
         font-family: "Helsinki Grotesk Regular", sans-serif;
         font-weight:500;
       }
 
       .deadlines-alert-notification {
-        width: 450px;
+        width: 445px;
         margin-top: 32px;
         p {
           margin-bottom: 0;
