@@ -700,6 +700,9 @@
         height: 56px;
         &:last-child {
           margin-left: $size16;
+          &:hover {
+            border-color: $color-bus;
+          }
         }
       }
       span {
