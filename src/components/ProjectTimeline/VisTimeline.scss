@@ -83,6 +83,13 @@
                 svg {
                     margin-top: 3px;
                 }
+                &:hover {
+                    border-color: $color-bus;
+                }
+                &:focus-visible, &:active {
+                    outline: 2px solid $color-coat-of-arms;
+                    outline-offset: 2px;
+                }
             }
         }
         .today-menu{
@@ -109,7 +116,14 @@
                     right: -33.5px;
                     top: 50%;
                     transform: translateY(-50%);
-                  }
+                }
+                &:hover {
+                    border-color: $color-bus;
+                }
+                &:focus-visible, &:active {
+                    outline: 3px solid $color-coat-of-arms;
+                    outline-offset: 2px;
+                }
             }
         }
         .zoom-menu{
@@ -126,8 +140,8 @@
                 &:hover {
                     background-color: $color-black-20;
                 }
-                &:focus-visible {
-                    outline: 3px solid $color-coat-of-arms;
+                &:focus-visible, &:active {
+                    outline: 2px solid $color-coat-of-arms;
                     outline-offset: 2px;
                 }
                 &::after {
