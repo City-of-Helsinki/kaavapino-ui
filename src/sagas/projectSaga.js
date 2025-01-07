@@ -703,6 +703,7 @@ function* saveProjectFloorArea() {
 function* validateProjectTimetable() {
   // Remove success toastr before showing info
   toastr.removeByType('success');
+  toastr.clean(); // Clear existing toastr notifications
   // Show a loading icon at the start of the saga
   toastr.info(i18.t('messages.checking-dates'), {
     timeOut: 0, // Keep it showing until manually removed
@@ -744,30 +745,34 @@ function* validateProjectTimetable() {
       }
       //Catch reached so dates were not correct, get days and update them to form 
       //from projectReducer UPDATE_PROJECT_FAILURE
-      // Get the error message string dynamically
-      const errorMessage = errorUtil.getErrorMessage(e?.response?.data);
+
+      //For debugging
+      //Get the error message string dynamically
+      //const errorMessage = errorUtil.getErrorMessage(e?.response?.data);
       // Remove loading icon and show error toastr
-      toastr.removeByType('info');
+      //toastr.removeByType('info');
       // Display message in a toastr
+      /*       
       toastr.info(i18.t('messages.error-with-dates'), errorMessage, {
         timeOut: 10000,
         removeOnHover: false,
         showCloseButton: true,
         preventDuplicates: true,
         className: 'large-scrollable-toastr rrt-info'
-      });
+      }); */
 
       //Show a message of a dates changed
       // Get the message string dynamically
-      const message = errorUtil.getErrorMessage(e?.response?.data, 'date');
+      //const message = errorUtil.getErrorMessage(e?.response?.data, 'date');
       // Display message in a toastr
+      /*       
       toastr.warning(i18.t('messages.fixed-timeline-dates'), message, {
         timeOut: 10000,
         removeOnHover: false,
         showCloseButton: true,
         preventDuplicates: true,
         className: 'large-scrollable-toastr rrt-warning'
-      });
+      }); */
 
      // Dispatch failure action with error data for the reducer to handle date correction to timeline form
       yield put({
