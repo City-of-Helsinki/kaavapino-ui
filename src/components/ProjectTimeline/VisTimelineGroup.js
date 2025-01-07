@@ -257,8 +257,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
       
       setAddDialogStyle({
-        left: `${rect.left - 12}px`,
-        top: `${rect.bottom - 10}px`
+        left: `${rect.left - 23}px`,
+        top: `${rect.bottom - 4}px`
       })
 
       const [hidePresence,hideBoard] = hideSelection(data.content,visValRef)

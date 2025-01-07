@@ -129,6 +129,10 @@
         .zoom-menu{
             margin-left: 62px;
             button{
+                font-family: "Helsinki Grotesk Medium", sans-serif;
+                font-size: $size14;
+                line-height: $size24;
+                font-weight: 500;
                 --min-size: $size32; //hds syntax
                 height: $size32;
                 background: $dropdown-divider-color;
@@ -158,6 +162,7 @@
                 outline-offset: 2px;
                 margin-bottom: $size16;
                 margin-right: $size16;
+                outline: 3px solid $color-coat-of-arms;
             }
             span {
                 font-family: 'Helsinki Grotesk Medium', sans-serif;
@@ -354,7 +359,7 @@
         border-left: none;
         border-right: none;
         background: #ffffff !important;
-        height: 35px !important;
+        height: 36px !important;
         .vis-inner{
             padding: 0;
             display: flex;
@@ -529,9 +534,11 @@
         align-items: center;
         padding-left: $size32;
         .vis-inner{
-            font-family: 'Helsinki Grotesk Medium', sans-serif !important;
-            font-weight: 500;
+            font-family: 'Helsinki Grotesk Bold', sans-serif !important;
+            font-weight: 700;
             font-size: $size16;
+            line-height: $size24;
+            color:$black
         }
     }
 
@@ -594,7 +601,7 @@
         justify-content: flex-start;
         align-items: center;
         margin-right: -1px;
-        height: 35px !important;
+        height: 36px !important;
         .vis-group-level-0:not(.vis-nested-group){
             display: block;
             padding-left: $size16;
@@ -725,7 +732,7 @@
         position: relative;
         box-sizing: border-box;
         border-bottom: none;
-        height: 35px !important;
+        height: 36px !important;
     }
 
     /*TODO: v1.2 Disabled for now because we don't want to allow dragging the timeline at this point set to auto*/
@@ -756,7 +763,10 @@
 .vis.years{
     .vis-minor,
     .vis-major > div {
-        font-weight: 700;
+        font-family: 'Helsinki Grotesk Medium', sans-serif;
+        font-weight: 500;
+        font-size: $size14;
+        color: $black;
     }
     .vis-minor {
         border-color: $color-black-20 !important;
@@ -803,6 +813,17 @@
     .vis-time-axis .vis-saturday,
     .vis-time-axis .vis-sunday {
         background-color: #ffffff !important;
+    }
+    .vis-major > div {
+        font-family: 'Helsinki Grotesk Medium', sans-serif;
+        font-weight: 500;
+        font-size: $size14;
+        color: $black;
+    }
+    .vis-minor {
+        font-family: 'Helsinki Grotesk Bold', sans-serif;
+        border-color: $color-black-20 !important;
+        color:$black
     }
 }
 
