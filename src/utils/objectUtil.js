@@ -374,8 +374,7 @@ const getHighestNumberedObject = (obj1, arr) => {
           && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
           && !arr[i].key.includes("hyvaksymispaatos_pvm")){
           let newDate = new Date(arr[i].value);
-
-          if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet")){
+          if(arr[i - 1]?.key?.includes("paattyy") && arr[i]?.key?.includes("mielipiteet")){
             //mielipiteet and paattyy is always the same value
             newDate = new Date(arr[i - 1].value);
           }
