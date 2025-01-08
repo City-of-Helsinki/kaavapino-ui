@@ -136,6 +136,8 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
             else{
               setReadOnly({name:input.name,read:false})
               //Add changed value from db if there has been changes
+              console.log("Calling setValue from useEffect (else)")
+
               setValue(lockedStatus.lockData.attribute_lock.field_data)
               //Change styles from FormField
               custom.lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
@@ -214,7 +216,8 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
               setReadOnly({name:input.name,read:true})
             }
             oldValueRef.current = event.target.value;
-            if(custom.regex){
+
+            if(!(event.target.value === '' && !custom?.fieldData?.isRequired) && custom.regex){
               const regex = new RegExp(custom.regex);
               setHasError(!regex.test(event.target.value))
             }
@@ -244,7 +247,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       fieldsetName = name.split('[')[0]
       index = name.split('[').pop().split(']')[0];
       fieldName = name.split('.')[1]
-      if(custom?.attributeData[fieldsetName] && custom?.attributeData[fieldsetName][index] && custom?.attributeData[fieldsetName][index][fieldName]){
+      if(custom?.attributeData[fieldsetName] && custom?.attributeData[fieldsetName][index]){
         originalData = custom?.attributeData[fieldsetName][index][fieldName]
       }
     }
@@ -257,7 +260,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   const handleInputChange = useCallback((event,readonly) => {
     const isConnected = connection.connection || typeof connection.connection === "undefined" ? true : false
     if(!readonly || custom.type === "date" || isConnected){
-      if(!event.target.value?.trim()){
+      if(!event.target.value?.trim() && custom?.fieldData?.isRequired){
         setHasError(true)
       }
       else{
