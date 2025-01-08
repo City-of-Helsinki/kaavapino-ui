@@ -204,6 +204,9 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
           if(custom.type === "date"){
             //Validate date
             let dateOk = moment(event.target.value, 'YYYY-MM-DD',false).isValid()
+            if (event.target.value === "" && !custom?.fieldData?.required) {
+              dateOk = true
+            }
             if(dateOk){
               custom.onBlur();
               oldValueRef.current = event.target.value;
