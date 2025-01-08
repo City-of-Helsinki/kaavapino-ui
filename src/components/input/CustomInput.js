@@ -136,8 +136,6 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
             else{
               setReadOnly({name:input.name,read:false})
               //Add changed value from db if there has been changes
-              console.log("Calling setValue from useEffect (else)")
-
               setValue(lockedStatus.lockData.attribute_lock.field_data)
               //Change styles from FormField
               custom.lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
