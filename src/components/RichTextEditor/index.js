@@ -486,6 +486,9 @@ function RichTextEditor(props) {
         if(!valueIsSet){
           if (typeof onBlur === 'function') {
             localStorage.setItem("changedValues", inputProps.name);
+            if (editorEmpty) {
+              editor = null
+            }
             onBlur();
             oldValueRef.current = editor?.ops;
           }
@@ -749,7 +752,7 @@ function RichTextEditor(props) {
       ) : null}
     </div>
       {counter.current > maxSize && charLimitOver || maxSizeOver ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.charsover')}</div> : ""}
-      {valueIsEmpty && required ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.noempty')}</div> : ""}
+      {valueIsEmpty && required ? <div className='error-text'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.noempty')}</div> : ""}
     </div>
     
     return elements

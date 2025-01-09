@@ -13,6 +13,7 @@ const Link = props => {
 
   const [currentValue, setCurrentValue] = useState(props.input.value)
   const [editField,setEditField] = useState(false)
+  const [isEmptyReqField, setIsEmptyReqField] = useState(false)
   const isValid = value => isUrl(value) || ipRegex({ exact: true }).test(value)
 
   const multipleLinks = props.type === 'select-multiple'
@@ -26,9 +27,12 @@ const Link = props => {
   }, [])
 
   const onBlur = (event) => {
+    if (event.target.value === "" && props.fieldData.required) {
+      setIsEmptyReqField(true);
+    }
     if (isLinkValid) {
       if(event.target.value !== oldValueRef.current){
-      props.onBlur()
+        props.onBlur()
       }
     }
     if(props.rollingInfo){
@@ -38,6 +42,9 @@ const Link = props => {
 
   const onChange = event => {
     const value = event.target.value
+    if (value !== "") {
+      setIsEmptyReqField(false);
+    }
     if (multipleLinks) {
       value && props.input.onChange(value.split(','))
     } else {
@@ -75,7 +82,7 @@ const Link = props => {
           value={currentValue}
           error={props.error}
           onChange={onChange}
-          className={!isLinkValid && currentValue && !multipleLinks ? 'error' : ''}
+          className={isEmptyReqField || (!isLinkValid && currentValue && !multipleLinks) ? 'error' : ''}
           aria-label="link"
           class="link"
         />
@@ -98,8 +105,13 @@ const Link = props => {
         {!isLinkValid && currentValue && !multipleLinks && (
         <div className="error-text">{t('project.link-is-broken')}</div>
         )}
+        {isEmptyReqField && (<>
+          <IconCross className="link-status" size="l" color="red"/>
+          <div className='error-text'>{t('project.noempty')}</div>
+          </>)
+        }
       </div>
-    
+
     return elements
   }
 
