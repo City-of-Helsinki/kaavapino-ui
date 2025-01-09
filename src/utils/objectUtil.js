@@ -587,7 +587,7 @@ const getHighestNumberedObject = (obj1, arr) => {
 
     //filter all but index keys from data
     return Object.entries(updatedAttributeData).reduce((acc, [key, value]) => {
-      const indexMatch = key.match(/_(\d+)/);
+      const indexMatch = key.match(/_(\d$)/);
       const index = indexMatch ? parseInt(indexMatch[1], 10) : null;
       //const isLautakunnatPhase = lautakunnatPhases.some(phase => key.includes(phase.phase) && key.includes(phase.number));
       //const isEsillaolotPhase = esillaolotPhases.some(phase => key.includes(phase.phase) && key.includes(phase.number));
