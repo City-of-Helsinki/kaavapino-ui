@@ -255,9 +255,10 @@ const FieldSet = ({
                     required = true
                   }
 
-                  const title = field.character_limit
+                  let title = field.character_limit
                     ? t('project.fieldset-title', { label: field.label, max: field.character_limit })
                     : field.label
+                  title += field?.required ? '*' : ''
                   const error = syncronousErrors && syncronousErrors[field.name]
 
                   /* Two ways to bring errors to FormField component:
