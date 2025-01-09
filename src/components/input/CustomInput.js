@@ -29,6 +29,9 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
   const { t } = useTranslation()
   const dispatch = useDispatch()
 
+  // Needed for using lockedStatus as useEffect dependency
+  const lockedStatusJsonString = JSON.stringify(lockedStatus);
+
   useEffect(() => {
     oldValueRef.current = input.value;
     if(custom.type === "date" && !custom.insideFieldset){
@@ -149,7 +152,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
         }
       }
     }
-  }, [lockedStatus,connection]);
+  }, [lockedStatusJsonString, connection.connection]);
 
   const handleFocus = () => {
     if (typeof custom.onFocus === 'function' && !lockedStatus?.saving && !custom.insideFieldset) {
