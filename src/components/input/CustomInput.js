@@ -251,7 +251,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       fieldsetName = name.split('[')[0]
       index = name.split('[').pop().split(']')[0];
       fieldName = name.split('.')[1]
-      if(custom?.attributeData[fieldsetName] && custom?.attributeData[fieldsetName][index]){
+      if(custom?.attributeData[fieldsetName]?.[index]){
         originalData = custom?.attributeData[fieldsetName][index][fieldName]
       }
     }

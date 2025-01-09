@@ -13,7 +13,7 @@ const Link = props => {
 
   const [currentValue, setCurrentValue] = useState(props.input.value)
   const [editField,setEditField] = useState(false)
-  const [isEmptyReqField, setEmptyReqField] = useState(false)
+  const [isEmptyReqField, setIsEmptyReqField] = useState(false)
   const isValid = value => isUrl(value) || ipRegex({ exact: true }).test(value)
 
   const multipleLinks = props.type === 'select-multiple'
@@ -28,7 +28,7 @@ const Link = props => {
 
   const onBlur = (event) => {
     if (event.target.value === "" && props.fieldData.required) {
-      setEmptyReqField(true);
+      setIsEmptyReqField(true);
     }
     if (isLinkValid) {
       if(event.target.value !== oldValueRef.current){
@@ -43,7 +43,7 @@ const Link = props => {
   const onChange = event => {
     const value = event.target.value
     if (value !== "") {
-      setEmptyReqField(false);
+      setIsEmptyReqField(false);
     }
     if (multipleLinks) {
       value && props.input.onChange(value.split(','))
