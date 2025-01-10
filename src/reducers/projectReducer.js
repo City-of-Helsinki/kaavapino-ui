@@ -89,7 +89,8 @@ import {
   VALIDATE_DATE,
   UPDATE_DATE_TIMELINE,
   RESET_ATTRIBUTE_DATA,
-  UPDATE_PROJECT_FAILURE
+  UPDATE_PROJECT_FAILURE,
+  UPDATE_ATTRIBUTE
 } from '../actions/projectActions'
 
 import timeUtil from '../utils/timeUtil'
@@ -150,6 +151,21 @@ export const initialState = {
 export const reducer = (state = initialState, action) => {
 
   switch (action.type) {
+
+    case UPDATE_ATTRIBUTE: {
+      const { field, value } = action.payload
+      console.log(field,value)
+      return {
+        ...state,
+        currentProject: {
+          ...state.currentProject,
+          attribute_data: {
+            ...state.currentProject.attribute_data,
+            [field]: value
+          }
+        }
+      }
+    }
 
     case UPDATE_DATE_TIMELINE: {
       const { field, newDate, formValues, isAdd, deadlineSections } = action.payload;

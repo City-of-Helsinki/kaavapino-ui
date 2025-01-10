@@ -1,5 +1,6 @@
 import React, { useEffect }  from 'react';
 import { change } from 'redux-form'
+import { updateAttribute } from '../../actions/projectActions';
 import { useDispatch } from 'react-redux';
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { IconPlus,Button } from 'hds-react'
@@ -13,10 +14,15 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
   const addNew = (addedKey) => {
     if(addedKey){
       dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, addedKey, true));
+      console.log(addedKey)
       if (addedKey.includes("jarjestetaan_ehdotus_esillaolo")) {
         const parts = addedKey.split("_");
         const index = "_"+ (parseInt(parts[parts.length - 1], 10));
-        dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, "kaavaehdotus_uudelleen_nahtaville"+index.toString(), true));
+        dispatch(updateAttribute("kaavaehdotus_uudelleen_nahtaville" + index.toString(), true));
+        //dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, "kaavaehdotus_uudelleen_nahtaville"+index.toString(), true));
+      }
+      else if(addedKey.includes("tarkistettu_ehdotus_lautakuntaan")){
+        dispatch(updateAttribute(addedKey, true));
       }
       closeAddDialog()
     }

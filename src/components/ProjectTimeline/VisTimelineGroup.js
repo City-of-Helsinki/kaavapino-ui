@@ -23,7 +23,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const moment = extendMoment(Moment);
 
     const { t } = useTranslation()
-
+    console.log(visValues)
     const timelineRef = useRef(null);
     const timelineInstanceRef = useRef(null);
     const visValuesRef = useRef(visValues);
@@ -94,7 +94,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       let lautakuntaReason = !lautakuntaConfirmed ? "noconfirmation" : "";
       const deadlineEsillaolokertaKeys = data.maxEsillaolo
       const esillaoloRegex = new RegExp(`(jarjestetaan_${phase}_esillaolo_\\d+$|kaava${phase}_uudelleen_nahtaville_\\d+$)`);
-      const attributeEsillaoloKeys = Object.keys(visValRef).filter(key => esillaoloRegex.test(key));
+      const attributeEsillaoloKeys = Object.keys(visValRef).filter(key => esillaoloRegex.test(key) && visValRef[key] === true);
       let largestIndex = 0;
       //find largest index
       attributeEsillaoloKeys.forEach(key => {
@@ -102,6 +102,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         if (match) {
             const number = parseInt(match[1], 10);
             if (number > largestIndex && visValRef[key]) {
+              console.log(key)
               largestIndex = number;
             }
         }
@@ -118,6 +119,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
       let nextEsillaoloStr
       if (esillaoloConfirmed) {
+        console.log(esillaoloCount)
         canAddEsillaolo = esillaoloCount <= deadlineEsillaolokertaKeys;
         nextEsillaoloStr = canAddEsillaolo ? `jarjestetaan_${phase}_esillaolo_${esillaoloCount}$` : false;
         nextEsillaoloClean = nextEsillaoloStr ? nextEsillaoloStr.replace(/[/$]/g, '') : nextEsillaoloStr;
@@ -133,7 +135,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const deadlineLautakuntakertaKeys = data.maxLautakunta
       const lautakuntaanRegex = phase === "luonnos" || phase === "ehdotus" ? new RegExp(`kaava${phase}_lautakuntaan_\\d+$`): new RegExp(`${phase}_lautakuntaan_\\d+$`);
       const lautakuntaanRegex2 = new RegExp(`${phase}_lautakunnassa_\\d+$`);
-      const attributeLautakuntaanKeys = Object.keys(visValRef).filter(key => lautakuntaanRegex.test(key) || lautakuntaanRegex2.test(key));
+      const attributeLautakuntaanKeys = Object.keys(visValRef).filter(key => 
+        (lautakuntaanRegex.test(key) || lautakuntaanRegex2.test(key) && visValRef[key] === true) 
+      );
+      console.log(attributeLautakuntaanKeys)
       let largestIndexLautakunta = 0;
       //find largest index
       attributeLautakuntaanKeys.forEach(key => {
@@ -141,6 +146,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         if (match) {
             const number = parseInt(match[1], 10);
             if (number > largestIndexLautakunta && visValRef[key]) {
+              console.log(key,number)
               largestIndexLautakunta = number;
             }
         }
@@ -157,6 +163,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
       let nextLautakuntaStr
       if (lautakuntaConfirmed) {
+        console.log(lautakuntaCount)
         canAddLautakunta = lautakuntaCount <= deadlineLautakuntakertaKeys;
         const lautakuntaText = phase === "luonnos" || phase === "ehdotus" ? `kaava${phase}_lautakuntaan_${lautakuntaCount}$` : `${phase}_lautakuntaan_${lautakuntaCount}$`
         nextLautakuntaStr = canAddLautakunta ? lautakuntaText : false;
