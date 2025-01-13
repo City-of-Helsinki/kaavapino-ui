@@ -436,7 +436,7 @@ class EditProjectTimeTableModal extends Component {
       });
     }
     else{
-      if (dashedStyle.includes("board")) {
+      if (dashedStyle.includes("board") && dashStart && dashEnd) {
         phaseData.push({
           start: dashStart,
           id: numberOfPhases + " maaraaika",
@@ -617,6 +617,7 @@ class EditProjectTimeTableModal extends Component {
         }
         else if(deadline.deadline_types.includes('inner_start')){
           if(formValues.kaavaprosessin_kokoluokka === "XL" && deadline.attribute.includes("iso") || formValues.kaavaprosessin_kokoluokka === "L" && deadline.attribute.includes("iso")){
+            innerEnd = false
             innerStart = formValues && formValues[deadline.attribute]
               ? new Date(formValues[deadline.attribute])
               : deadlines[i].date;
@@ -626,6 +627,7 @@ class EditProjectTimeTableModal extends Component {
             }
           }
           if(formValues.kaavaprosessin_kokoluokka === "XS" && deadline.attribute.includes("pieni") || formValues.kaavaprosessin_kokoluokka === "S" && deadline.attribute.includes("pieni") || formValues.kaavaprosessin_kokoluokka === "M" && deadline.attribute.includes("pieni")){
+            innerEnd = false
             innerStart = formValues && formValues[deadline.attribute]
               ? new Date(formValues[deadline.attribute])
               : deadlines[i].date;
@@ -659,6 +661,7 @@ class EditProjectTimeTableModal extends Component {
       deadlines[i]?.deadline?.attribute?.includes("ehdotus_kylk_aineiston_maaraaika") ||
       deadlines[i]?.deadline?.attribute?.includes("kaavaluonnos_kylk_aineiston_maaraaika")){
         if(deadline.deadline_types.includes('milestone') && deadline.deadline_types.includes('dashed_start')){
+          innerEnd = false
           innerStart = formValues && formValues[deadline.attribute]
             ? new Date(formValues[deadline.attribute])
             : deadlines[i].date;
