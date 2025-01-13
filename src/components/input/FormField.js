@@ -208,8 +208,8 @@ const FormField = ({
       ? `${field.label}  (${t('project.char-limit', { amount: field.character_limit })})`
       : field.label)
 
-    if(field.required) {
-      title += field.required ? ' *' : ''
+    if (field.required || (field?.type === 'fieldset' && projectUtils.isFieldSetRequired(field?.fieldset_attributes))) {
+      title += '*'
     }
 
     const assistiveText = field.assistive_text

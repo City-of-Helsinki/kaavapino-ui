@@ -532,7 +532,7 @@ const getChangedAttributeData = (values, initial) => {
     if(key.includes("_readonly")){
       return
     }
-    if (initial[key] !== undefined && isEqual(values[key], initial[key])) {
+    if (initial && initial[key] !== undefined && isEqual(values[key], initial[key])) {
       return
     }
      if(values[key] === '' || values[key]?.ops && values[key]?.ops[0] && values[key]?.ops[0]?.insert.replace(wSpaceRegex, '').length === 0){
@@ -544,6 +544,19 @@ const getChangedAttributeData = (values, initial) => {
     }
     else if(values[key]?.length === 0) {
       attribute_data[key] = []
+    }
+    else if(Array.isArray(values[key]) && Object.getPrototypeOf(values[key][0]) === Object.prototype &&
+    Object.keys(values[key].length > 0)) {
+      // Fieldset
+      attribute_data[key] = values[key].map((fieldsetEntry) => {
+        Object.keys(fieldsetEntry).forEach((entryKey) => {
+          const entryValue = fieldsetEntry[entryKey]
+          if (entryValue === '' || entryValue?.ops && entryValue.ops[0]?.insert.replace(wSpaceRegex, '').length === 0){
+            fieldsetEntry[entryKey] = null
+          }
+        })
+        return fieldsetEntry
+      })
     }
     else {
       attribute_data[key] = values[key]

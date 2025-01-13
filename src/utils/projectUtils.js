@@ -55,7 +55,7 @@ const isFieldMissing = (fieldName, isFieldRequired, attributeData, autofill_read
   return (
     isFieldRequired &&
     !autofill_readonly &&
-    (value === undefined || value === null || value === '')
+    (value === undefined || value === null || value === '' || (Array.isArray(value) && value.length === 0))
   )
 }
 
