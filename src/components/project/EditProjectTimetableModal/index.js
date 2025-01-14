@@ -19,7 +19,7 @@ import withValidateDate from '../../../hocs/withValidateDate';
 import objectUtil from '../../../utils/objectUtil'
 import textUtil from '../../../utils/textUtil'
 import { updateDateTimeline,validateProjectTimetable } from '../../../actions/projectActions';
-import { getVisibilityBoolName } from '../../../utils/projectVisibilityUtils';
+import { getVisibilityBoolName, vis_bool_group_map } from '../../../utils/projectVisibilityUtils';
 import timeUtil from '../../../utils/timeUtil'
 
 class EditProjectTimeTableModal extends Component {
@@ -89,8 +89,10 @@ class EditProjectTimeTableModal extends Component {
       Object.keys(attributeData).forEach(fieldName => 
         this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, fieldName, attributeData[fieldName])));
     }
-
-    if(prevProps.formValues && prevProps.formValues !== formValues){
+    console.log("ComponentDidUpdate")
+    console.log(prevProps.formValues, formValues)
+    if(prevProps.formValues ){//&& prevProps.formValues !== formValues){
+      console.log("formValues updated")
       //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
       timeUtil.compareAndUpdateDates(formValues)
       if(deadlineSections && deadlines && formValues){
@@ -103,6 +105,7 @@ class EditProjectTimeTableModal extends Component {
         }
         else{
           if(!this.props.validated){
+            console.log("props not validated")
             let ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe)
             //Form items and groups
             let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,formValues,deadlines,ongoingPhase)
@@ -1040,14 +1043,19 @@ class EditProjectTimeTableModal extends Component {
     let deadlinegroup = "";
     const groups = this.state.groups.get();
     let matchingValues = Object.entries(this.props.formValues);
-
     // Iterate over the keys
     for (let key of keys) {
       const exceptionKey = "tarkistettu_ehdotus";
       const parts = this.splitKey(key, exceptionKey);
-      if (parts.length > 3 && key.includes("esillaolo") || parts.length > 2 && key.includes("lautakuntaan")) {
+      if (parts.length > 3 && (key.includes("esillaolo")||key.includes("nahtaville") ) || parts.length > 2 && key.includes("lautakuntaan")) {
         phase = parts[key.includes("lautakuntaan") ? 0 : 1];
+        if (key.includes('uudelleen')){
+          phase = 'ehdotus'
+        }
         content = parts[key.includes("lautakuntaan") ? 1 : 2];
+        if (key.includes('nahtaville')){
+          content = "nahtavillaolo"
+        }
         index = index !== null ? index : parts[key.includes("lautakuntaan") ? 2 : 3]; //get index if null
   
         if (phase === "tarkistettu_ehdotus") {
@@ -1084,7 +1092,7 @@ class EditProjectTimeTableModal extends Component {
             return '_' + (parseInt(number, 10) + 1);
           });
           //Add idt to nestgroups so it will be created to vis timeline as new group
-          const updatedGroups = groups.map(group => {
+          groups.forEach(group => {
             let content = group?.content;
             if (content === "lautakuntaan") {
               content = "lautakunta";
@@ -1094,12 +1102,10 @@ class EditProjectTimeTableModal extends Component {
             if (String(content).toLowerCase() === phase.toLowerCase()) {
               group.nestedGroups.push(idt);
             }
-            return group;
           });
         }
       }
     }
-  
     if (content === "esillaolo" || content === "nahtavillaolo" || content === "lautakuntaan" || content === "lautakunta") {
       let filterContent;
       if (content === "nahtavillaolo") {
@@ -1204,8 +1210,7 @@ class EditProjectTimeTableModal extends Component {
     });
     
     const isAddRemove = Object.entries(changedValues).some(([key, value]) => 
-      (key.includes('jarjestetaan') || key.includes('lautakuntaan')) && 
-      typeof value === 'boolean' && value === true
+      Object.values(vis_bool_group_map).includes(key) && typeof value === 'boolean' && value === true
     );
     //If isAddRemove is false then it is a delete and add is true
     return [isAddRemove,changedValues];
