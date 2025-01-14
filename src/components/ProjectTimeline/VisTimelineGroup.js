@@ -87,6 +87,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       trackExpandedGroups(event)
     }
 
+    // TODO: Check if all these params are really necessary and remove if not
     const checkConfirmedGroups = (esillaoloConfirmed, lautakuntaConfirmed, attributeKeys, visValRef, phase, canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, data) => {
       // Check if more Esillaolo groups can be added
       let esillaoloReason = !esillaoloConfirmed ? "noconfirmation" : "";
@@ -164,7 +165,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         lautakuntaReason = ""
       }
 
-      return [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, esillaoloReason, lautakuntaReason];
+      return [canAddEsillaolo, nextEsillaoloStr, canAddLautakunta, nextLautakuntaStr, esillaoloReason, lautakuntaReason];
     }
 
     const hideSelection = (phase,data) => {
