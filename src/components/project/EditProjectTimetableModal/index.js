@@ -91,7 +91,7 @@ class EditProjectTimeTableModal extends Component {
     }
     console.log("ComponentDidUpdate")
     console.log(prevProps.formValues, formValues)
-    if(prevProps.formValues ){//&& prevProps.formValues !== formValues){
+    if(prevProps.formValues){ //&& prevProps.formValues !== formValues){ // TODO: Temp fix, this also removes styling from selected group
       console.log("formValues updated")
       //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
       timeUtil.compareAndUpdateDates(formValues)
