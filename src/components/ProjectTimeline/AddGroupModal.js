@@ -11,16 +11,11 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
   const dispatch = useDispatch();
 
   const addNew = (addedKey) => {
-    if(addedKey){
+    if(addedKey) {
       dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, addedKey, true));
-      if (addedKey.includes("jarjestetaan_ehdotus_esillaolo")) {
-        const parts = addedKey.split("_");
-        const index = "_"+ (parseInt(parts[parts.length - 1], 10));
-        dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, "kaavaehdotus_uudelleen_nahtaville"+index.toString(), true));
-      }
       closeAddDialog()
     }
-    else{
+    else {
       closeAddDialog()
     }
   }

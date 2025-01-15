@@ -114,7 +114,12 @@ export const UPDATE_DATE_TIMELINE = "updateDateTimeline"
 export const RESET_ATTRIBUTE_DATA = "resetAttributeData"
 export const VALIDATE_PROJECT_TIMETABLE = "validateProjectTimetable"
 export const UPDATE_PROJECT_FAILURE = 'updateProjectFailure';
+export const UPDATE_ATTRIBUTE = 'updateAttribute';
 
+export const updateAttribute = (field,value) => ({
+  type: UPDATE_ATTRIBUTE,
+  payload: {field,value},
+});
 export const updateProjectFailure = (errorData) => ({
   type: UPDATE_PROJECT_FAILURE,
   payload: errorData,
