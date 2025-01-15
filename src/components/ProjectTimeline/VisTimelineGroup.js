@@ -152,14 +152,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       if(lautakuntaCount - 1 === deadlineLautakuntakertaKeys){
         lautakuntaReason = "max"
       }
-
       let nextLautakuntaStr = false
       if (lautakuntaConfirmed) {
         canAddLautakunta = lautakuntaCount <= deadlineLautakuntakertaKeys;
-        const lautakuntaText = phase === "luonnos" || phase === "ehdotus" ? `kaava${phase}_lautakuntaan_${lautakuntaCount}$` : `${phase}_lautakuntaan_${lautakuntaCount}$`
+        const lautakuntaText = attributeLautakuntaanKeys[lautakuntaCount-1]
         nextLautakuntaStr = canAddLautakunta ? lautakuntaText : false;
       }
-      else if(["luonnos", "periaatteet"].includes(phase) && largestIndex === 0){
+      else if(["luonnos", "periaatteet"].includes(phase) && largestIndexLautakunta === 0){
         canAddLautakunta = true
         nextLautakuntaStr = phase === "luonnos" ? `kaava${phase}_lautakuntaan_1` : `${phase}_lautakuntaan_1`;
         lautakuntaReason = ""
