@@ -87,8 +87,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       trackExpandedGroups(event)
     }
 
-    // TODO: Check if all these params are really necessary and remove if not
-    const checkConfirmedGroups = (esillaoloConfirmed, lautakuntaConfirmed, attributeKeys, visValRef, phase, canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, data) => {
+
+    const checkConfirmedGroups = (esillaoloConfirmed, lautakuntaConfirmed, visValRef, phase, canAddEsillaolo, canAddLautakunta, data) => {
       // Check if more Esillaolo groups can be added
       let esillaoloReason = !esillaoloConfirmed ? "noconfirmation" : "";
       let lautakuntaReason = !lautakuntaConfirmed ? "noconfirmation" : "";
@@ -112,7 +112,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       if(esillaoloCount === 0){
         esillaoloCount += 1
       }
-      esillaoloCount = esillaoloCount + 1;
+
+      esillaoloCount += 1;
+
       if(esillaoloCount - 1 === deadlineEsillaolokertaKeys){
         esillaoloReason = "max"
       }
@@ -130,7 +132,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       // Check if more Lautakunta groups can be added
       const deadlineLautakuntakertaKeys = data.maxLautakunta
       const attributeLautakuntaanKeys = getVisBoolsByPhaseName(phase).filter(bool_name => bool_name.includes('lautakunta'));
-      console.log(attributeLautakuntaanKeys)
       let largestIndexLautakunta = 0;
       //find largest index
       attributeLautakuntaanKeys.forEach(key => {
@@ -138,7 +139,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         if (match) {
             const number = parseInt(match[1], 10);
             if (number > largestIndexLautakunta && visValRef[key]) {
-              console.log(key,number)
               largestIndexLautakunta = number;
             }
         }
@@ -148,7 +148,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       if(lautakuntaCount === 0){
         lautakuntaCount += 1
       }
-      lautakuntaCount = lautakuntaCount + 1;
+
+      lautakuntaCount += 1;
+
       if(lautakuntaCount - 1 === deadlineLautakuntakertaKeys){
         lautakuntaReason = "max"
       }
@@ -182,7 +184,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       return [false,false]
     }
 
-    const canGroupBeAdded = (visValRef, data, deadlineSections) => {
+    const canGroupBeAdded = (visValRef, data) => {
       // Find out how many groups in the clicked phase have been added to the timeline
       const matchingGroups = groups.get().filter(group => data.nestedGroups.includes(group.id));
       const esillaoloCount = matchingGroups.filter(group => group.content.includes('Esilläolo') || group.content.includes('Nahtavillaolo')).length > 1 ? '_' + matchingGroups.filter(group => group.content.includes('Esilläolo') || group.content.includes('Nahtavillaolo')).length : '';
@@ -214,14 +216,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       let esillaoloReason = "";
       let lautakuntaReason = "";
     
-      // Get attribute keys for comparison from deadlineSections
-      const matchingKeys = Object.keys(deadlineSections).filter(key => data.content === deadlineSections[key].title);
-      let attributeKeys = [];
-      if (matchingKeys.length > 0 && deadlineSections[matchingKeys[0]].sections[0].attributes) {
-        attributeKeys = Object.keys(deadlineSections[matchingKeys[0]].sections[0].attributes);
-      }
-      
-      const results = checkConfirmedGroups(esillaoloConfirmed, lautakuntaConfirmed, attributeKeys, visValRef, phase, canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean,data);
+      const results = checkConfirmedGroups(esillaoloConfirmed, lautakuntaConfirmed, visValRef, phase, canAddEsillaolo, canAddLautakunta, data);
       [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, esillaoloReason, lautakuntaReason] = results;
       let phaseWithoutSpace = phase.toLowerCase().replace(/\s+/g, '-');
 
@@ -243,7 +238,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     };
 
     const openAddDialog = (visValRef,data,event) => {
-      const [addEsillaolo,nextEsillaolo,addLautakunta,nextLautakunta,esillaoloReason,lautakuntaReason] = canGroupBeAdded(visValRef,data,deadlineSections)
+      const [addEsillaolo,nextEsillaolo,addLautakunta,nextLautakunta,esillaoloReason,lautakuntaReason] = canGroupBeAdded(visValRef,data)
       const rect = event.target.getBoundingClientRect();
 
       if (event.target.classList.contains('timeline-add-button')) {

@@ -164,6 +164,18 @@ export const getVisibilityBoolName = (deadlineGroup) => {
 export const getVisBoolsByPhaseName = (phase_name) => {
   phase_name = phase_name.toLowerCase().split(' ').join('_');
   return Object.entries(vis_bool_group_map)
-    .filter(([group, bool]) => group.startsWith(phase_name))
-    .map(([group, bool]) => bool)
+    .filter(([group,]) => group.startsWith(phase_name))
+    .map(([, bool]) => bool)
 };
+
+export const getPhaseNameByVisBool = (boolName) => {
+  for (const [key, value] of Object.entries(vis_bool_group_map)) {
+    if (value === boolName) {
+      if (key.includes("tarkistettu_ehdotus")) {
+        return "tarkistettu_ehdotus"
+      }
+      return key.split('_')[0]
+    }
+  }
+  return null
+}
