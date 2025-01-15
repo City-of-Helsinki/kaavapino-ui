@@ -168,7 +168,7 @@ class ProjectPage extends Component {
     this.setState({sectionIndex})
   }
 
-  getProjectEditContent = (isExpert,isResponsible) => {
+  getProjectEditContent = (isExpert,isResponsible,isTheResponsiblePerson) => {
     const { currentProject, users, projectSubtypes, selectedPhase, allEditFields } = this.props
     const user = projectUtils.formatUsersName(users.find(u => u.id === currentProject.user))
     const currentPhases = this.getCurrentPhases()
@@ -203,7 +203,7 @@ class ProjectPage extends Component {
           handleClose={() => this.toggleBaseInformationForm(false)}
           users={users}
           projectSubtypes={projectSubtypes}
-          isEditable={isResponsible}
+          isEditable={isResponsible && isTheResponsiblePerson}
         />
         <DownloadProjectDataModal
           currentProject={currentProject}
@@ -305,10 +305,10 @@ class ProjectPage extends Component {
     )
   }
 
-  getProjectPageContent = (isExpert,isResponsible) => {
+  getProjectPageContent = (isExpert,isResponsible, isTheResponsiblePerson) => {
     const { edit, documents } = this.props
     if (edit) {
-      return this.getProjectEditContent(isExpert,isResponsible)
+      return this.getProjectEditContent(isExpert,isResponsible,isTheResponsiblePerson)
     }
     if (documents) {
       return this.getProjectDocumentsContent(isResponsible)
@@ -548,6 +548,7 @@ class ProjectPage extends Component {
 
     const userIsExpert = authUtils.isExpert(currentUserId, users)
     const isResponsible = authUtils.isResponsible(currentUserId, users)
+    const isTheResponsiblePerson = authUtils.isThePersonResponsiple(currentUserId, users, currentProject?.attribute_data)
     return (
       <>
         <Header
@@ -566,7 +567,7 @@ class ProjectPage extends Component {
         {!loading && !resettingDeadlines && (
           <div className="project-container">
             <div className="project-page-content">
-              {this.getProjectPageContent(userIsExpert,isResponsible)}
+              {this.getProjectPageContent(userIsExpert,isResponsible,isTheResponsiblePerson)}
             </div>
           </div>
         )}

@@ -139,7 +139,7 @@ class ProjectEditPage extends Component {
     }
     if(prevProps.formValues != this.props.formValues){
       if(prevProps.formValues?.projektin_kaynnistys_pvm != this.props.formValues?.projektin_kaynnistys_pvm){
-        this.fetchDisabledDates(this.props.formValues.projektin_kaynnistys_pvm,this.props.formValues?.projektin_kaynnistys_pvm)
+        this.fetchDisabledDates(this.props.formValues?.projektin_kaynnistys_pvm,this.props.formValues?.projektin_kaynnistys_pvm)
       }
     }
   }
@@ -630,6 +630,7 @@ class ProjectEditPage extends Component {
     const ingress = currentSchema.sections[this.state.sectionIndex].ingress || ''
 
     const isResponsible = authUtils.isResponsible(currentUserId, users)
+    const isTheResponsiblePerson = authUtils.isThePersonResponsiple(currentUserId, users, attribute_data)
     const isAdmin = authUtils.isAdmin(currentUserId, users)
     const isExpert = authUtils.isExpert(currentUserId, users)
     return (
@@ -784,7 +785,7 @@ class ProjectEditPage extends Component {
                 open
                 saveProjectFloorArea={saveProjectFloorArea}
                 handleClose={() => this.handleFloorAreaClose()}
-                allowedToEdit={isResponsible}
+                allowedToEdit={isTheResponsiblePerson}
               />
             )}
             {this.props.showTimetableForm && (
@@ -796,7 +797,7 @@ class ProjectEditPage extends Component {
                 projectPhaseIndex={projectPhaseIndex}
                 archived={currentProject.archived}
                 isAdmin={isAdmin}
-                allowedToEdit={isResponsible}
+                allowedToEdit={isTheResponsiblePerson}
                 disabledDates={disabledDates?.date_types?.disabled_dates?.dates}
                 lomapaivat={disabledDates?.date_types?.lomapäivät?.dates}
                 dateTypes={disabledDates?.date_types}
