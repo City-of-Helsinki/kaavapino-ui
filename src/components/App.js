@@ -35,7 +35,7 @@ class App extends Component {
   componentDidMount(){
     //Matomo analytic
     const currentEnv = process.env.REACT_APP_ENVIRONMENT
-    console.log('currentEnv', currentEnv)
+
     if(currentEnv === 'production'){
       let _paq = window._paq = window._paq || [];
       _paq.push(['trackPageView']);
