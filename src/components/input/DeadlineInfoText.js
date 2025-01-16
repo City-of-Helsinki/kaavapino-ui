@@ -79,6 +79,11 @@ const DeadlineInfoText = props => {
     }
   }
 
+  if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
+    value = '';
+    console.warn("Plain object found in DeadlineInfoText value");
+  }
+
   return (
     <div name={props.input.name} className="deadline-info-text">
       {props.label} {value}
