@@ -155,6 +155,7 @@ const DeadLineInput = ({
     const twentyYearsLater = new Date();
     twentyYearsLater.setFullYear(twentyYearsLater.getFullYear() + 20);
     const ehdotusNahtavillaolo = currentDeadline?.deadline?.phase_name === "Ehdotus" && currentDeadline?.deadline?.deadlinegroup?.includes('nahtavillaolo')
+    console.log("ALL deadline sections",deadlineSections)
     const datesToDisable = timeUtil.calculateDisabledDates(ehdotusNahtavillaolo,attributeData?.kaavaprosessin_kokoluokka,dateTypes,input.name,formValues,sectionAttributes,currentDeadline)
     if (date < twentyYearsAgo || date > twentyYearsLater) {
       return false;
