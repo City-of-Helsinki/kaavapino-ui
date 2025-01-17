@@ -315,10 +315,17 @@ export const getFieldAutofillValue = (
           }
         }
         if (comparisonValueType === 'number' || comparisonValueType === 'string') {
-          const thenFormValue =
-            formValues[thenBranch] === undefined
-              ? projectUtils.findValueFromObject(formValues, thenBranch)
-              : formValues[thenBranch]
+          let thenFormValue;
+          if (!isNaN(thenBranch)) {
+            // Case where thenBranch is a constant (integer usually)
+            thenFormValue = thenBranch
+          } else {
+            // thenBranch is an identifier
+            thenFormValue =
+              formValues[thenBranch] === undefined
+                ? projectUtils.findValueFromObject(formValues, thenBranch)
+                : formValues[thenBranch]
+          }
           if (
             !formValue &&
             formValue !== false &&
