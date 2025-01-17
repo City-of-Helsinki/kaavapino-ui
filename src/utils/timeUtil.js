@@ -502,6 +502,7 @@ const sortObjectByDate = (obj) => {
 }
 //Finds next possible date from from array if the value does not exist in it
 const findNextPossibleValue = (array, value) => {
+  console.log(array,value)
   if (!Array.isArray(array) || typeof value !== 'string') {
     throw new Error('Invalid input. Provide an array of strings and a value as a string.');
   }
@@ -571,6 +572,8 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       //Phase start date
       const dateToComparePast = formValues[matchingItem?.previous_deadline] ? formValues[matchingItem?.previous_deadline] : formValues[matchingItem?.initial_distance?.base_deadline]
       //Finds next possible working date to compare
+      console.log("different values",matchingItem?.previous_deadline,matchingItem?.initial_distance?.base_deadline,formValues[matchingItem?.previous_deadline],formValues[matchingItem?.initial_distance?.base_deadline])
+      console.log("array and value",dateTypes?.työpäivät?.dates,dateToComparePast)
       const filteredDateToCompare= findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast)
       //Array of the dates that are shown in calendar
       let newDisabledDates = dateTypes?.lautakunnan_kokouspäivät?.dates
