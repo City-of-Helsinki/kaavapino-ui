@@ -1,5 +1,6 @@
 import axios from 'axios'
-import { takeLatest, put, all, call, select, takeEvery } from 'redux-saga/effects'
+import { eventChannel } from 'redux-saga';
+import { take, takeLatest, put, all, call, select, takeEvery, delay, race } from 'redux-saga/effects'
 import { isEqual, isEmpty, isArray } from 'lodash'
 import { push } from 'connected-react-router'
 import {
@@ -67,6 +68,8 @@ import {
   SAVE_PROJECT_TIMETABLE,
   SAVE_PROJECT_TIMETABLE_SUCCESSFUL,
   saveProjectTimetableSuccessful,
+  SAVE_PROJECT_TIMETABLE_FAILED,
+  saveProjectTimetableFailed,
   SAVE_PROJECT,
   saveProjectSuccessful,
   CHANGE_PROJECT_PHASE,
@@ -173,6 +176,7 @@ export default function* projectSaga() {
     takeLatest(SAVE_PROJECT_TIMETABLE, saveProjectTimetable),
     takeLatest(VALIDATE_PROJECT_TIMETABLE,validateProjectTimetable),
     takeLatest(SAVE_PROJECT_TIMETABLE_SUCCESSFUL, saveProjectTimetableSuccessful),
+    takeLatest(SAVE_PROJECT_TIMETABLE_FAILED, saveProjectTimetableFailed),
     takeLatest(SAVE_PROJECT, saveProject),
     takeLatest(SET_LAST_SAVED, setLastSaved),
     takeLatest(SET_LOCK_STATUS, setLockStatus),
@@ -209,6 +213,20 @@ export default function* projectSaga() {
     takeLatest(VALIDATE_DATE, validateDate)
   ])
 }
+//Check if user has access to internet
+function createOnlineChannel() {
+  return eventChannel(emitter => {
+    const onlineHandler = () => {
+      emitter(true);
+    };
+    window.addEventListener('online', onlineHandler);
+    return () => {
+      window.removeEventListener('online', onlineHandler);
+    };
+  });
+}
+
+const onlineChannel = createOnlineChannel();
 
 function* validateDate({payload}) {
   try {
@@ -783,7 +801,7 @@ function* validateProjectTimetable() {
   }
 }
 
-function* saveProjectTimetable() {
+function* saveProjectTimetable(action,retryCount = 0) {
   yield put(startSubmit(EDIT_PROJECT_TIMETABLE_FORM))
 
   const { initial, values } = yield select(
@@ -797,7 +815,7 @@ function* saveProjectTimetable() {
       delete changedAttributeData.oikaisukehoituksen_alainen_readonly
     }
     let attribute_data = adjustDeadlineData(changedAttributeData, values)
-
+    const maxRetries = 5;
     try {
       const updatedProject = yield call(
         projectApi.patch,
@@ -818,21 +836,30 @@ function* saveProjectTimetable() {
             i18.t('messages.check-timetable')
           )
       }
-    } catch (e) {
-      if (e?.code === "ERR_NETWORK") {
-        toastr.error(i18.t('messages.general-save-error'))
+    } 
+    catch (e) {
+      if (e?.code === "ERR_NETWORK" && retryCount <= maxRetries) {
+        toastr.error(i18.t('messages.error-connection'))
+        yield race({
+          online: take(onlineChannel), // Wait for the online event
+          timeout: delay(2500) // Wait for 2.5 seconds before retrying
+        });
+        yield delay(2500); // Wait for 2.5 seconds before retrying
+        yield call(saveProjectTimetable,action, retryCount + 1);
       }
-      yield put(stopSubmit(EDIT_PROJECT_TIMETABLE_FORM, e?.response?.data))
-      // Get the error message string dynamically
-      const errorMessage = errorUtil.getErrorMessage(e?.response?.data);
-
-      // Display the error message in a toastr
-      toastr.error(i18.t('messages.general-save-error'), errorMessage, {
-        timeOut: 0,
-        removeOnHover: false,
-        showCloseButton: true,
-        className: 'large-scrollable-toastr rrt-error'
-      });
+      else {
+        yield put(stopSubmit(EDIT_PROJECT_TIMETABLE_FORM, e?.response?.data))
+        // Get the error message string dynamically
+        const errorMessage = e?.response?.data ? errorUtil.getErrorMessage(e.response.data) : i18.t('messages.error-connection-fail');
+        // Display the error message in a toastr
+        toastr.error(i18.t('messages.general-save-error'), errorMessage, {
+          timeOut: 0,
+          removeOnHover: false,
+          showCloseButton: true,
+          className: 'large-scrollable-toastr rrt-error'
+        });
+        yield put(saveProjectTimetableFailed(false))
+      }
     }
   }
 }

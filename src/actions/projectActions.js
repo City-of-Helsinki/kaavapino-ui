@@ -115,6 +115,7 @@ export const RESET_ATTRIBUTE_DATA = "resetAttributeData"
 export const VALIDATE_PROJECT_TIMETABLE = "validateProjectTimetable"
 export const UPDATE_PROJECT_FAILURE = 'updateProjectFailure';
 export const UPDATE_ATTRIBUTE = 'updateAttribute';
+export const SAVE_PROJECT_TIMETABLE_FAILED = "saveProjectTimetableFailed";
 
 export const updateAttribute = (field,value) => ({
   type: UPDATE_ATTRIBUTE,
@@ -357,6 +358,10 @@ export const resetFloorAreaSave = () => ({type: RESET_FLOOR_AREA_SAVE})
 export const saveProjectTimetable = () => ({ type: SAVE_PROJECT_TIMETABLE })
 export const saveProjectTimetableSuccessful = success => ({
   type: SAVE_PROJECT_TIMETABLE_SUCCESSFUL,
+  payload: success
+})
+export const saveProjectTimetableFailed = success => ({
+  type: SAVE_PROJECT_TIMETABLE_FAILED,
   payload: success
 })
 

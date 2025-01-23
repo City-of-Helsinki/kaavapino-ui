@@ -47,6 +47,7 @@ import {
   GET_PROJECTS_OVERVIEW_FLOOR_AREA_SUCCESSFUL,
   GET_PROJECTS_OVERVIEW_BY_SUBTYPE_SUCCESSFUL,
   SAVE_PROJECT_FLOOR_AREA_SUCCESSFUL,
+  SAVE_PROJECT_TIMETABLE,
   SAVE_PROJECT_TIMETABLE_SUCCESSFUL,
   RESET_FLOOR_AREA_SAVE,
   RESET_TIMETABLE_SAVE,
@@ -90,7 +91,8 @@ import {
   UPDATE_DATE_TIMELINE,
   RESET_ATTRIBUTE_DATA,
   UPDATE_PROJECT_FAILURE,
-  UPDATE_ATTRIBUTE
+  UPDATE_ATTRIBUTE,
+  SAVE_PROJECT_TIMETABLE_FAILED
 } from '../actions/projectActions'
 
 import timeUtil from '../utils/timeUtil'
@@ -145,7 +147,8 @@ export const initialState = {
   disabledDates: {},
   error: null,
   dateValidationResult: {valid: false, result: {}},
-  validated:false
+  validated:false,
+  cancelTimetableSave:false
 }
 
 export const reducer = (state = initialState, action) => {
@@ -154,7 +157,6 @@ export const reducer = (state = initialState, action) => {
 
     case UPDATE_ATTRIBUTE: {
       const { field, value } = action.payload
-      console.log(field,value)
       return {
         ...state,
         currentProject: {
@@ -965,11 +967,30 @@ export const reducer = (state = initialState, action) => {
       }
     }
 
+    case SAVE_PROJECT_TIMETABLE: {
+      return{
+        ...state,
+        cancelTimetableSave:false
+      }
+    }
+
     case SAVE_PROJECT_TIMETABLE_SUCCESSFUL: {
       return{
         ...state,
         timetableSaved:action.payload,
-        showEditProjectTimetableForm: false
+        showEditProjectTimetableForm: false,
+        cancelTimetableSave:false
+      }
+    }
+
+    case SAVE_PROJECT_TIMETABLE_FAILED: {
+      return{
+        ...state,
+        timetableSaved:false,
+        showEditProjectTimetableForm: true,
+        loading:false,
+        saving:false,
+        cancelTimetableSave:true
       }
     }
 

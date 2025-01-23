@@ -9,7 +9,7 @@ import { EDIT_PROJECT_TIMETABLE_FORM } from '../../../constants'
 import './styles.scss'
 import { deadlineSectionsSelector } from '../../../selectors/schemaSelector'
 import { withTranslation } from 'react-i18next'
-import { deadlinesSelector,validatedSelector,dateValidationResultSelector } from '../../../selectors/projectSelector'
+import { deadlinesSelector,validatedSelector,dateValidationResultSelector,cancelTimetableSaveSelector } from '../../../selectors/projectSelector'
 import { Button,IconInfoCircle } from 'hds-react'
 import { isEqual } from 'lodash'
 import VisTimelineGroup from '../../ProjectTimeline/VisTimelineGroup'
@@ -139,6 +139,9 @@ class EditProjectTimeTableModal extends Component {
       }
     }
 
+    if(prevProps.cancelTimetableSave === false && this.props.cancelTimetableSave === true){
+      this.setLoadingFalse();
+    }
     if (prevProps.submitting && submitFailed) {
       this.setLoadingFalse()
     }
@@ -1284,7 +1287,8 @@ const mapStateToProps = state => ({
   formValues: getFormValues(EDIT_PROJECT_TIMETABLE_FORM)(state),
   deadlines: deadlinesSelector(state),
   validated: validatedSelector(state),
-  dateValidationResult : dateValidationResultSelector(state)
+  dateValidationResult : dateValidationResultSelector(state),
+  cancelTimetableSave: cancelTimetableSaveSelector(state),
 })
 
 const decoratedForm = reduxForm({
