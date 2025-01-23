@@ -164,7 +164,9 @@
     "error-with-dates":"Päivämäärät tarkistettu:",
     "fixed-timeline-dates":"Päivämäärät muutettu:",
     "checking-dates":"Tarkistetaan päivämääriä",
-    "dates-confirmed":"Päivämäärät validoitu"
+    "dates-confirmed":"Päivämäärät validoitu",
+    "error-connection":"Tallennus epäonnistui yhteysongelmia takia. Yritetään uudelleen 10 sekunnin kuluttua.",
+    "error-connection-fail":"Tallennus keskeytyi yhteysongelmia takia."
   },
   "floor-areas": {
     "title": "Päivitä kerrosalatiedot",

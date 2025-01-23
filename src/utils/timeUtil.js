@@ -502,7 +502,6 @@ const sortObjectByDate = (obj) => {
 }
 //Finds next possible date from from array if the value does not exist in it
 const findNextPossibleValue = (array, value) => {
-  console.log(array,value)
   if (!Array.isArray(array) || typeof value !== 'string') {
     throw new Error('Invalid input. Provide an array of strings and a value as a string.');
   }
