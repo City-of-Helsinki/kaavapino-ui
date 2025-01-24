@@ -114,18 +114,28 @@ const DeadlineInfoText = props => {
     luonnos: "Luonnos"
   };
 
-  const phaseKey = Object.keys(phaseMap).find(key => props.input.name.includes(key));
+  const phaseKey = Object.keys(phaseMap).find(key => props?.input?.name?.includes(key));
   const phase = phaseMap[phaseKey];
+  //Check if event is set to be organized in formValues
+  const eventKey = `jarjestetaan_${phase?.toLowerCase()}_tilaisuus`;
+  const shouldShowNotification = phase && formValues && formValues[eventKey];
+
+  // Extract the event date if it exists and shouldShowNotification is true
+  let eventDate = "";
+  if (shouldShowNotification) {
+    const eventDateKey = `${phase?.toLowerCase()}_tilaisuus_fieldset`;
+    eventDate = formValues[eventDateKey]?.[0]?.[`${phase?.toLowerCase()}_tilaisuus_pvm`] || "";
+  }
 
   return (
     <>
-      {phase && (
+      {shouldShowNotification && (
         <Notification
           className="event-info-notification"
           size="small"
-          label={`${phase}${phase === "Luonnos" ? "" : "-"}vaiheen tilaisuus: ${value}.`}
+          label={`${phase}${phase === "Luonnos" ? "" : "-"}vaiheen tilaisuus: ${eventDate}.`}
         >
-          {`${phase}${phase === "Luonnos" ? "" : "-"}vaiheen tilaisuus: ${value}.`}
+          {`${phase}${phase === "Luonnos" ? "" : "-"}vaiheen tilaisuus: ${eventDate}.`}
         </Notification>
       )}
       {props.input.name.includes("nahtavillaolopaivien_lukumaara") ?
