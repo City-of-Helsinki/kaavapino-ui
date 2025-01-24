@@ -121,7 +121,8 @@
     "person":"Henkilö",
     "unit":"Yksikkö tai tiimi",
     "keyword":"Hakusana",
-    "close":"Sulje"
+    "close":"Sulje",
+    "date-missing":" Päivämäärä puuttuu"
   },
   "messages": {
     "deadlines-successfully-saved": "Aikataulut tallennettu",

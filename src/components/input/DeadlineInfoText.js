@@ -7,6 +7,7 @@ import dayjs from 'dayjs'
 import { isNumber, isBoolean, isArray } from 'lodash'
 import PropTypes from 'prop-types'
 import { Notification } from 'hds-react'
+import { useTranslation } from 'react-i18next'
 
 const DeadlineInfoText = props => {
   const formValues = useSelector(getFormValues(EDIT_PROJECT_TIMETABLE_FORM))
@@ -16,6 +17,7 @@ const DeadlineInfoText = props => {
   const [current, setCurrent] = useState()
 
   const dispatch = useDispatch()
+  const { t } = useTranslation()
 
   useEffect(() => {
     if(isArray(inputValue) && props?.fieldData?.autofill_readonly && props?.fieldData?.type === "readonly" && props?.fieldData?.unit === "päivää"){
@@ -124,7 +126,7 @@ const DeadlineInfoText = props => {
   let eventDate = "";
   if (shouldShowNotification) {
     const eventDateKey = `${phase?.toLowerCase()}_tilaisuus_fieldset`;
-    eventDate = formValues[eventDateKey]?.[0]?.[`${phase?.toLowerCase()}_tilaisuus_pvm`] || "";
+    eventDate = formValues[eventDateKey]?.[0]?.[`${phase?.toLowerCase()}_tilaisuus_pvm`] || t('common.date-missing');
   }
 
   return (
