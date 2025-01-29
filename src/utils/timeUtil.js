@@ -501,16 +501,27 @@ const sortObjectByDate = (obj) => {
   return sortedArray; // Returning an array guarantees the order
 }
 //Finds next possible date from from array if the value does not exist in it
-const findNextPossibleValue = (array, value) => {
+const findNextPossibleValue = (array, value, addedDays) => {
   if (!Array.isArray(array) || typeof value !== 'string') {
     throw new Error('Invalid input. Provide an array of strings and a value as a string.');
   }
-
+  let index = 0;
   // Directly find the given value or the next possible value
   for (const date of array) {
-      if (date >= value) {
-          return date;
+    if (date >= value) {
+      if(addedDays){
+        const targetIndex = index + addedDays;
+        if (targetIndex < array.length) {
+          return array[targetIndex];
+        } else {
+          return null; // or handle the case where the target index is out of bounds
+        }
       }
+      else{
+        return date;
+      }
+    }
+    index++;
   }
 
   // If no value is found, return null or a message
@@ -521,22 +532,6 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
   const matchingItem = objectUtil.findMatchingName(sectionAttributes, name, "name");
   const previousItem = objectUtil.findItem(sectionAttributes, name, "name", -1);
   const nextItem = objectUtil.findItem(sectionAttributes, name, "name", 1);
-/*   console.log("--------------------")
-  console.log("Previous item name",previousItem?.name)
-  console.log("Previous item PREV dist",previousItem?.distance_from_previous)
-  console.log("Previous item NEXT dist",previousItem?.distance_to_next)
-  console.log("--------------------")
-  console.log("This item name",matchingItem?.name)
-  console.log("This item PREV dist",matchingItem?.distance_from_previous)
-  console.log("This item NEXT dist",matchingItem?.distance_to_next)
-  console.log("--------------------")
-  console.log("Next item name",nextItem?.name)
-  console.log("Next item PREV DIST",nextItem?.distance_from_previous)
-  console.log("Next item NEXT DIST",nextItem?.distance_to_next)
-  console.log("--------------------")
-  console.log("Attribute PREVIOUS",formValues[previousItem?.name])
-  console.log("Attribute NEXT",formValues[nextItem?.name])
-  console.log("--------------------") */
 
   if(name.includes("projektin_kaynnistys_pvm") || name.includes("kaynnistys_paattyy_pvm")){
     const miniumDaysBetween = nextItem?.distance_from_previous
@@ -550,16 +545,32 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
     return dateTypes?.arkipäivät?.dates
   }
   else if(currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')){
+    const phaseName = currentDeadline?.deadline?.phase_name?.toLowerCase()
+    const firstPhaseExists = "jarjestetaan_"+phaseName+"_esillaolo_1"
     //Lautakunnat
     if(name.includes("_maaraaika")){
+      let dateToComparePast
+      let miniumDaysPast
+      let filteredDateToCompare
+      let firstPossibleDateToSelect
       //Määräaika kasvaa loputtomasta. Puskee lautakuntaa eteenpäin
       //Määräaika pienenee aiemman esilläolon loppuu minimiin.
-      const miniumDaysPast = matchingItem?.distance_from_previous ? matchingItem?.distance_from_previous : 5 //bug somewhere in backend should be 5 but is null
-      const dateToComparePast = formValues[matchingItem?.previous_deadline]
-      //Finds next possible working date to compare
-      const filteredDateToCompare= findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast)
+      if (formValues[firstPhaseExists] === false) {
+        //when phase is deleted from compare phase left to vaihe_alkaa_pvm
+        //Periaatteet and luonnos phases
+        const phaseStartDate = phaseName +"vaihe_alkaa_pvm"
+        dateToComparePast = formValues[phaseStartDate]
+        miniumDaysPast = 5
+        firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast,miniumDaysPast)
+      }
+      else{
+        dateToComparePast = formValues[matchingItem?.previous_deadline] 
+        miniumDaysPast = matchingItem?.distance_from_previous ? matchingItem?.distance_from_previous : 5 //bug somewhere in backend should be 5 but is null
+        filteredDateToCompare= findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast)
+        //Finds next possible working date to compare
+        firstPossibleDateToSelect = addDays("työpäivät",filteredDateToCompare,miniumDaysPast,dateTypes?.työpäivät?.dates,true)
+      }
       let newDisabledDates = dateTypes?.työpäivät?.dates
-      const firstPossibleDateToSelect = addDays("työpäivät",filteredDateToCompare,miniumDaysPast,dateTypes?.työpäivät?.dates,true)
       newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
       return newDisabledDates
     }
@@ -571,8 +582,6 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       //Phase start date
       const dateToComparePast = formValues[matchingItem?.previous_deadline] ? formValues[matchingItem?.previous_deadline] : formValues[matchingItem?.initial_distance?.base_deadline]
       //Finds next possible working date to compare
-      console.log("different values",matchingItem,matchingItem?.previous_deadline,matchingItem?.initial_distance?.base_deadline,formValues[matchingItem?.previous_deadline],formValues[matchingItem?.initial_distance?.base_deadline])
-      console.log("array and value",dateTypes?.työpäivät?.dates,dateToComparePast)
       const filteredDateToCompare= findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast)
       //Array of the dates that are shown in calendar
       let newDisabledDates = dateTypes?.lautakunnan_kokouspäivät?.dates
