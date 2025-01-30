@@ -61,7 +61,7 @@ const checkPerson = (currentUserId, users, reponsiblePersonMail) => {
   let isPerson = false
   if (users) {
     users.forEach(user => {
-      if (user.id === currentUserId && reponsiblePersonMail === user.email) {
+      if (user?.id === currentUserId && reponsiblePersonMail?.toLowerCase() === user?.email?.toLowerCase()) {
         isPerson = true
         return
       }
