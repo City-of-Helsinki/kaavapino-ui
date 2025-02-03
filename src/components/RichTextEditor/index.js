@@ -51,9 +51,10 @@ const formats = [
   'strike',
   'color',
   'background',
-  'list',
-  'ordered',
-  'bullet',
+  // KAPI-98: Temporarily disabled lists in rte
+  //'list', 
+  //'ordered',
+  //'bullet',
   'script',
   'sub',
   'super'
