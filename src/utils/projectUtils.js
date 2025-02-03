@@ -353,7 +353,8 @@ function isSceduleAccepted(attributeData, currentSchema) {
             || field.name === 'vahvista_ehdotus_esillaolo_alkaa_pieni_3' || field.name === 'vahvista_ehdotus_esillaolo_alkaa_iso_3'
             || field.name === 'vahvista_ehdotus_esillaolo_paattyy_3'
             || field.name === 'vahvista_ehdotus_esillaolo_alkaa_pieni_4' || field.name === 'vahvista_ehdotus_esillaolo_alkaa_iso_4'
-            || field.name === 'vahvista_ehdotus_esillaolo_paattyy_4'
+            || field.name === 'vahvista_ehdotus_esillaolo_paattyy_4' || field.name === 'vahvista_ehdotus_esillaolo'
+            || field.name === 'vahvista_ehdotus_esillaolo_2' || field.name === 'vahvista_ehdotus_esillaolo_3'|| field.name === 'vahvista_ehdotus_esillaolo_4'
             || field.name === 'vahvista_kaavaehdotus_lautakunnassa'
             || field.name === 'vahvista_tarkistettu_ehdotus_lautakunnassa') {
               const value = findValueFromObject(attributeData, field.name)
