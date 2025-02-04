@@ -1,6 +1,33 @@
 import { isArray } from 'lodash'
 import { showField } from './projectVisibilityUtils'
 
+let confirmationAttributeNames = [
+  'vahvista_oas_esillaolo_alkaa','vahvista_oas_esillaolo_paattyy',
+  'vahvista_oas_esillaolo_alkaa_2','vahvista_oas_esillaolo_paattyy_2',
+  'vahvista_oas_esillaolo_alkaa_3','vahvista_oas_esillaolo_paattyy_3',
+  'vahvista_periaatteet_esillaolo_alkaa','vahvista_periaatteet_esillaolo_paattyy',
+  'vahvista_periaatteet_esillaolo_alkaa_2','vahvista_periaatteet_esillaolo_paattyy_2',
+  'vahvista_periaatteet_esillaolo_alkaa_3','vahvista_periaatteet_esillaolo_paattyy_3',
+  'vahvista_periaatteet_lautakunnassa',
+  'vahvista_luonnos_esillaolo_alkaa', 'vahvista_luonnos_esillaolo_paattyy',
+  'vahvista_luonnos_esillaolo_alkaa_2', 'vahvista_luonnos_esillaolo_paattyy_2',
+  'vahvista_luonnos_esillaolo_alkaa_3', 'vahvista_luonnos_esillaolo_paattyy_3',
+  'vahvista_ehdotus_esillaolo_alkaa_pieni', 'vahvista_ehdotus_esillaolo_paattyy',
+  'vahvista_kaavaluonnos_lautakunnassa',
+  'vahvista_ehdotus_esillaolo_alkaa_pieni', 'vahvista_ehdotus_esillaolo_alkaa_iso',
+  'vahvista_ehdotus_esillaolo_paattyy',
+  'vahvista_ehdotus_esillaolo_alkaa_pieni_2', 'vahvista_ehdotus_esillaolo_alkaa_iso_2',
+  'vahvista_ehdotus_esillaolo_paattyy_2',
+  'vahvista_ehdotus_esillaolo_alkaa_pieni_3', 'vahvista_ehdotus_esillaolo_alkaa_iso_3',
+  'vahvista_ehdotus_esillaolo_paattyy_3',
+  'vahvista_ehdotus_esillaolo_alkaa_pieni_4', 'vahvista_ehdotus_esillaolo_alkaa_iso_4',
+  'vahvista_ehdotus_esillaolo_paattyy_4',
+  'vahvista_kaavaehdotus_lautakunnassa',
+  'vahvista_tarkistettu_ehdotus_lautakunnassa',
+];
+const confirmationAttributes = confirmationAttributeNames.concat(confirmationAttributeNames.map(attr => attr + '_readonly'));
+Object.freeze(confirmationAttributes);
+
 const addZeroPrefixIfNecessary = value => (value < 10 ? `0${value}` : value)
 
 const formatDate = value => {
@@ -334,30 +361,9 @@ function isSceduleAccepted(attributeData, currentSchema) {
       if(name === "2. OAS" || name === "3. Ehdotus" || name === "4. Tarkistettu ehdotus" || name === "XL. Periaatteet" || name === "XL. Luonnos"){
         attributes.forEach(field => {
           if (showField(field, attributeData)) {
-            if (field.name === 'vahvista_oas_esillaolo_alkaa' || field.name === 'vahvista_oas_esillaolo_paattyy' 
-            || field.name === 'vahvista_oas_esillaolo_alkaa_2' || field.name === 'vahvista_oas_esillaolo_paattyy_2' 
-            || field.name === 'vahvista_oas_esillaolo_alkaa_3' || field.name === 'vahvista_oas_esillaolo_paattyy_3'
-            || field.name === 'vahvista_periaatteet_esillaolo_alkaa' || field.name === 'vahvista_periaatteet_esillaolo_paattyy'
-            || field.name === 'vahvista_periaatteet_esillaolo_alkaa_2' || field.name === 'vahvista_periaatteet_esillaolo_paattyy_2'
-            || field.name === 'vahvista_periaatteet_esillaolo_alkaa_3' || field.name === 'vahvista_periaatteet_esillaolo_paattyy_3'
-            || field.name === 'vahvista_periaatteet_lautakunnassa'
-            || field.name === 'vahvista_luonnos_esillaolo_alkaa' || field.name === 'vahvista_luonnos_esillaolo_paattyy'
-            || field.name === 'vahvista_luonnos_esillaolo_alkaa_2' || field.name === 'vahvista_luonnos_esillaolo_paattyy_2'
-            || field.name === 'vahvista_luonnos_esillaolo_alkaa_3' || field.name === 'vahvista_luonnos_esillaolo_paattyy_3'
-            || field.name === 'vahvista_ehdotus_esillaolo_alkaa_pieni' || field.name === 'vahvista_ehdotus_esillaolo_paattyy'
-            || field.name === 'vahvista_kaavaluonnos_lautakunnassa'
-            || field.name === 'vahvista_ehdotus_esillaolo_alkaa_pieni' || field.name === 'vahvista_ehdotus_esillaolo_alkaa_iso'
-            || field.name === 'vahvista_ehdotus_esillaolo_paattyy'
-            || field.name === 'vahvista_ehdotus_esillaolo_alkaa_pieni_2' || field.name === 'vahvista_ehdotus_esillaolo_alkaa_iso_2'
-            || field.name === 'vahvista_ehdotus_esillaolo_paattyy_2'
-            || field.name === 'vahvista_ehdotus_esillaolo_alkaa_pieni_3' || field.name === 'vahvista_ehdotus_esillaolo_alkaa_iso_3'
-            || field.name === 'vahvista_ehdotus_esillaolo_paattyy_3'
-            || field.name === 'vahvista_ehdotus_esillaolo_alkaa_pieni_4' || field.name === 'vahvista_ehdotus_esillaolo_alkaa_iso_4'
-            || field.name === 'vahvista_ehdotus_esillaolo_paattyy_4' || field.name === 'vahvista_ehdotus_esillaolo'
-            || field.name === 'vahvista_ehdotus_esillaolo_2' || field.name === 'vahvista_ehdotus_esillaolo_3'|| field.name === 'vahvista_ehdotus_esillaolo_4'
-            || field.name === 'vahvista_kaavaehdotus_lautakunnassa'
-            || field.name === 'vahvista_tarkistettu_ehdotus_lautakunnassa') {
-              const value = findValueFromObject(attributeData, field.name)
+            if (confirmationAttributes.includes(field.name)) {
+              const confirmName = field.name.replace("_readonly", "")
+              const value = findValueFromObject(attributeData, confirmName)
               if (!value) {
                 //increase array size with false value and prevent acceptance
                 scheduleIsAccepted.push(field.name)
@@ -548,6 +554,7 @@ const getMissingGeoData = (attData, geoData) => {
 
 
 export default {
+  confirmationAttributes,
   formatDate,
   formatTime,
   formatDateTime,
