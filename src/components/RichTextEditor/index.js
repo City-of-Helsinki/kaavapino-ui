@@ -51,9 +51,10 @@ const formats = [
   'strike',
   'color',
   'background',
-  'list',
-  'ordered',
-  'bullet',
+  // KAPI-98: Temporarily disabled lists in rte
+  //'list', 
+  //'ordered',
+  //'bullet',
   'script',
   'sub',
   'super'
@@ -294,7 +295,7 @@ function RichTextEditor(props) {
       const isOwner = lockData.owner;
       if (isLocked) {
         const field = inputProps.name.split('.')[1]
-        const fieldData = field ? lockData.field_data[field] : undefined;
+        const fieldData = field ? lockData?.field_data?.[field] : undefined;
         setValue(fieldData)
       }
       lockField(lockedStatus, isOwner, identifier);
