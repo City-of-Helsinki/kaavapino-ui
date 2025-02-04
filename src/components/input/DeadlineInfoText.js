@@ -119,7 +119,7 @@ const DeadlineInfoText = props => {
   const phaseKey = Object.keys(phaseMap).find(key => props?.input?.name?.includes(key));
   const phase = phaseMap[phaseKey];
   //Check if event is set to be organized in formValues
-  const eventKey = `jarjestetaan_${phase?.toLowerCase()}_tilaisuus`;
+  const eventKey = phase === "Luonnos" ? `jarjestetaan_${phase?.toLowerCase()}vaiheessa_tilaisuus` : `jarjestetaan_${phase?.toLowerCase()}_tilaisuus`
   const shouldShowNotification = phase && formValues && formValues[eventKey];
 
   // Extract the event date if it exists and shouldShowNotification is true
@@ -127,6 +127,11 @@ const DeadlineInfoText = props => {
   if (shouldShowNotification) {
     const eventDateKey = `${phase?.toLowerCase()}_tilaisuus_fieldset`;
     eventDate = formValues[eventDateKey]?.[0]?.[`${phase?.toLowerCase()}_tilaisuus_pvm`] || t('common.date-missing');
+    if (eventDate?.includes('-')) {
+      eventDate = eventDate.replace(/-/g, '.');
+      const [year, month, day] = eventDate.split('.');
+      eventDate = `${day}.${month}.${year}`;
+    }
   }
 
   return (
@@ -135,9 +140,9 @@ const DeadlineInfoText = props => {
         <Notification
           className="event-info-notification"
           size="small"
-          label={`${phase}${phase === "Luonnos" ? "" : "-"}vaiheen tilaisuus: ${eventDate}.`}
+          label={`${phase}${phase === "Luonnos" ? "" : "-"}vaiheen tilaisuus: ${eventDate}`}
         >
-          {`${phase}${phase === "Luonnos" ? "" : "-"}vaiheen tilaisuus: ${eventDate}.`}
+          {`${phase}${phase === "Luonnos" ? "" : "-"}vaiheen tilaisuus: ${eventDate}`}
         </Notification>
       )}
       {props.input.name.includes("nahtavillaolopaivien_lukumaara") ?
