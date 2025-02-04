@@ -580,16 +580,14 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       //Needs to take inconcideration that the gap is 22 between lautakunta and määräaika and gap to phase start date previousItem?.distance_from_previous
       let dateToComparePast
       let filteredDateToCompare
-      const pastFirst = "jarjestetaan_"+phaseName+"_esillaolo_2"
-      const isPastFirst = formValues[pastFirst]
+      const isPastFirst = formValues["jarjestetaan_"+phaseName+"_esillaolo_2"] || formValues[phaseName+"_lautakuntaan_2"] || formValues["kaava"+phaseName+"_lautakuntaan_2"]
       const miniumDaysPast = name.includes("_lautakunnassa_") ? matchingItem?.initial_distance.distance : matchingItem?.initial_distance.distance + previousItem?.distance_from_previous
       if((phaseName === "periaatteet" || phaseName === "luonnos") && !isPastFirst){
-        const phaseStartDate = phaseName +"vaihe_alkaa_pvm"
-        dateToComparePast = formValues[phaseStartDate]
-        filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast,miniumDaysPast+9)
+        //First lautakunta can be selected to move before määräaika and move määräaika to minium but still needs to keep the 22 day gap and order is määräaika first and lautakunta second
+        dateToComparePast = formValues[previousItem?.previous_deadline] ? formValues[previousItem?.previous_deadline] : formValues[previousItem?.initial_distance?.base_deadline]
+        filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast)
       }
       else{
-        //Phase start date
         dateToComparePast = formValues[matchingItem?.previous_deadline] ? formValues[matchingItem?.previous_deadline] : formValues[matchingItem?.initial_distance?.base_deadline]
         //Finds next possible working date to compare
         filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast)
