@@ -653,6 +653,7 @@ function* saveProjectBase({ payload }) {
   const currentProjectId = yield select(currentProjectIdSelector)
   if (payload && payload.archived) {
     values.archived = payload.archived
+    window.scrollTo(0, 0); // Scroll to top of the page so user can see it is archiving
   }
 
   if (values) {
@@ -994,6 +995,7 @@ function* changeProjectPhase({ payload: phase }) {
         { path: { id: currentProjectId } },
         ':id/'
       )
+      window.scrollTo(0, 0);
       yield put(changeProjectPhaseSuccessful(updatedProject))
     }
   } catch (e) {
