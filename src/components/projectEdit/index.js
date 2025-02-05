@@ -114,7 +114,7 @@ class ProjectEditPage extends Component {
     }
     if(prevProps.changingPhase === true && this.props.changingPhase === false){
       //get updated project data when moving to next phase
-      window.location.reload();
+      window.location.reload(true);
     }
     if(prevProps.schema != this.props.schema){
       if(this.props.schema?.phases){
