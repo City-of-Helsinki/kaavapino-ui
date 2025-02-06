@@ -98,17 +98,12 @@ const DeadlineInfoText = props => {
     return dateValue
   }
 
-  if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
-    value = '';
-    console.warn("Plain object found in DeadlineInfoText value");
-  }
+  let value = determineFieldValue(current, props)
 
   if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
     value = '';
     console.warn("Plain object found in DeadlineInfoText value");
   }
-
-  const value = determineFieldValue(current, props)
 
   const phaseMap = {
     periaatteista: "Periaatteet",
