@@ -156,7 +156,6 @@ import {
   EDIT_PROJECT_TIMETABLE_FORM
 } from '../constants'
 import i18 from 'i18next'
-import { checkDeadlines } from '../components/ProjectTimeline/helpers/helpers'
 import dayjs from 'dayjs'
 import { toastr } from 'react-redux-toastr'
 
@@ -828,15 +827,7 @@ function* saveProjectTimetable(action,retryCount = 0) {
       yield put(setSubmitSucceeded(EDIT_PROJECT_TIMETABLE_FORM))
       yield put(saveProjectTimetableSuccessful(true))
       yield put(setAllEditFields())
-
-      if (!checkDeadlines(updatedProject.deadlines)) {
-        toastr.success(i18.t('messages.deadlines-successfully-saved'))
-      } else {
-          toastr.warning(
-            i18.t('messages.deadlines-successfully-saved'),
-            i18.t('messages.check-timetable')
-          )
-      }
+      toastr.success(i18.t('messages.deadlines-successfully-saved'))
     } 
     catch (e) {
       if (e?.code === "ERR_NETWORK" && retryCount <= maxRetries) {
