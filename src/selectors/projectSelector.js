@@ -259,3 +259,23 @@ export const updateFieldSelector = createSelector(
   selectProject, 
   project => project?.updateField
 )
+
+export const selectDisabledDates = createSelector(
+  selectProject,
+  project => project?.disabledDates
+)
+
+export const validatedSelector = createSelector(
+  selectProject,
+  project => project?.validated
+)
+
+export const dateValidationResultSelector = createSelector(
+  selectProject,
+  project => project?.dateValidationResult
+)
+
+export const cancelTimetableSaveSelector = createSelector(
+  selectProject,
+  project => project?.cancelTimetableSave
+)

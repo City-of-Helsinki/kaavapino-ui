@@ -82,9 +82,8 @@ const Link = props => {
           value={currentValue}
           error={props.error}
           onChange={onChange}
-          className={isEmptyReqField || (!isLinkValid && currentValue && !multipleLinks) ? 'error' : ''}
+          className={isEmptyReqField || (!isLinkValid && currentValue && !multipleLinks) ? 'error link' : 'link'}
           aria-label="link"
-          class="link"
         />
         {!multipleLinks && (
         <Button

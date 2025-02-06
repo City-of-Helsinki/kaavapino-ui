@@ -300,8 +300,10 @@ footer{
       top: $size24;
       transform: translateX(-50%);
       max-width: calc(100vw - 48px);
+      height: 80vh;
       width: 740px;
       margin-top: 0;
+      scrollbar-gutter: stable;
 
       > .header {
         border-bottom: 0;
@@ -314,6 +316,9 @@ footer{
       @media screen and (min-width: 600px) {
         top: 32px;
       }
+    }
+    &.tiny {
+      height: 350px;
     }
     .close.icon {
       position: relative;
@@ -1044,3 +1049,161 @@ header{
   box-shadow: 0px 2px 8px rgba(0, 0, 0, .5);
   z-index: 80;
 }
+
+.timetable-confirm-modal.timetable-confirm-modal  {
+  height: auto;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  margin: auto;
+  max-width: 558px;
+  max-height: 245px;
+  border-top:4px solid $color-bus;
+
+  .header{
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    font-family: 'Helsinki Grotesk Medium', sans-serif;
+    font-size: $size18 !important;
+    font-weight: 700 !important;
+    line-height: $size18 !important;
+    letter-spacing: 0.004em;
+    text-align: left;
+    color: $black1;
+    padding-top: 0;
+    .header-icon{
+      width: $size24;
+      height: $size24;
+    }
+  }
+
+  .header, .content, .actions {
+    padding-left: $size32 !important;
+    margin-left: $size16 !important;
+    margin-bottom: $size24 !important;
+    margin-top: $size24 !important;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: flex-start;
+
+    .button-primary,.button-danger,.button-secondary {
+      margin-right: $size16;
+    }
+  }
+}
+
+.timetable-danger-modal.timetable-danger-modal  {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  margin: auto;
+  max-width: 558px;
+  min-height: 200px;
+  height: fit-content;
+  max-height: 250px;
+  border-top:8px solid $color-error;
+
+  .header{
+    padding-top: $size34 !important;
+    padding-left: $size34 !important;
+    padding-bottom: $size16 !important;
+    border-bottom: none;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    font-family: 'Helsinki Grotesk Medium', sans-serif;
+    font-size: $size18 !important;
+    font-weight: 700 !important;
+    line-height: $size18 !important;
+    letter-spacing: 0.004em;
+    text-align: left;
+    color: $black1;
+    .header-text {
+      margin-left: 8px;
+    }
+    .header-icon{
+      width: $size24;
+      height: $size24;
+    }
+  }
+
+  .content {
+    font-weight: 400;
+    font-size: $size16;
+    line-height: $size24;
+    padding-left: $size34 !important;
+    margin-left: 0 !important;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: flex-start;
+    margin: 0 !important;
+    padding-left: $size34 !important;
+    padding-top: $size16 !important;
+    padding-bottom: $size24 !important;
+
+    .button-primary,.button-danger,.button-secondary {
+      margin-right: $size16;
+    }
+    .button-secondary{
+      border: 2px solid $color-error;
+      color: $color-error
+    }
+  }
+}
+
+// Style for the custom toastr with default error animation
+.redux-toastr{
+  .large-scrollable-toastr {
+
+    .toast {
+      width:  500px; // Make the toastr wider
+      height: auto;
+      padding: 20px;
+    }
+
+    .toast-message {
+      max-height: 300px; // Limit the height to make it scrollable
+      overflow-y: auto; // Enable vertical scrolling
+      font-size: 16px; // Make the font size larger for readability
+    }
+
+    .toast-title {
+      font-size: 18px !important; // Increase the size of the title
+    }
+  }
+
+  .top-center {
+    .rrt-error, .rrt-warning, .rrt-info, .rrt-success {
+      width: 500px !important;
+    }
+  }
+
+  .rrt-middle-container {
+      width: 75% !important; // Make the middle container wider
+      top: 14px;
+    }
+
+  // Style for default container classes (left, middle, right)
+  .rrt-left-container, .rrt-middle-container, .rrt-right-container {
+    padding: 10px !important; // Add padding for spacing
+    .rrt-text{
+      word-wrap: break-word !important;
+      overflow: auto !important;
+      max-height: 200px !important;
+    }
+    .toast {
+      width: 500px; // Ensure consistent width across all containers
+    }
+  }
+
+}
+

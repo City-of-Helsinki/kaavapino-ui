@@ -34,16 +34,42 @@ class App extends Component {
 
   componentDidMount(){
     //Matomo analytic
-    let _paq = window._paq = window._paq || [];
-    _paq.push(['trackPageView']);
-    _paq.push(['enableLinkTracking']);
-    (function() {
-      let u="//matomo.hel.fi/";
-      _paq.push(['setTrackerUrl', u+'matomo.php']);
-      _paq.push(['setSiteId', '74']);
-      let d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-      g.type='text/javascript'; g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-    })();
+    const currentEnv = process.env.REACT_APP_ENVIRONMENT
+
+    if(currentEnv === 'production'){
+      let _paq = window._paq = window._paq || [];
+      _paq.push(['trackPageView']);
+      _paq.push(['enableLinkTracking']);
+      (function() {
+        let u="//matomo.hel.fi/";
+        _paq.push(['setTrackerUrl', u+'matomo.php']);
+        _paq.push(['setSiteId', '74']);
+        let d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+        g.type='text/javascript'; g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+      })();
+    }
+
+    // Start the refresh timeout when loading
+    this.startLoadingTimeout();
+  }
+
+  componentWillUnmount() {
+    this.clearLoadingTimeout();
+  }
+
+  startLoadingTimeout() {
+    this.clearLoadingTimeout(); // Ensure no duplicate timeouts
+    this.loadingTimeout = setTimeout(() => {
+      //Try to reload the page if loading is stuck
+      window.location.reload();
+    }, 30000); // 30 seconds
+  }
+
+  clearLoadingTimeout() {
+    if (this.loadingTimeout) {
+      clearTimeout(this.loadingTimeout);
+      this.loadingTimeout = null;
+    }
   }
 
   componentDidUpdate(prevProps) {
@@ -55,6 +81,13 @@ class App extends Component {
       // of a bug in a backend library that causes a race condition
       // when it tries to cache multiple token values at the same time.
       this.props.initApiRequest()
+    }
+
+    // Reset timeout when loading state changes
+    if (this.props.loadingToken || (!this.props.apiToken && !this.props.apiInitialized)) {
+      this.startLoadingTimeout();
+    } else {
+      this.clearLoadingTimeout();
     }
   }
 
