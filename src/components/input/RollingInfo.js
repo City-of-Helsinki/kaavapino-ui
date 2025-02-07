@@ -34,7 +34,7 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
       return value === "" ? noValue : input
     }
     return <>{
-      input.map((str) => 
+      input.filter(str => str).map((str) => 
       <p key={str}>{str.charAt(0).toUpperCase() + str.slice(1)}</p>)
     }</>
   }
