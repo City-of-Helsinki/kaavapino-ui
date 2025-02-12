@@ -92,7 +92,8 @@ import {
   RESET_ATTRIBUTE_DATA,
   UPDATE_PROJECT_FAILURE,
   UPDATE_ATTRIBUTE,
-  SAVE_PROJECT_TIMETABLE_FAILED
+  SAVE_PROJECT_TIMETABLE_FAILED,
+  VALIDATING_TIMETABLE
 } from '../actions/projectActions'
 
 import timeUtil from '../utils/timeUtil'
@@ -148,7 +149,8 @@ export const initialState = {
   error: null,
   dateValidationResult: {valid: false, result: {}},
   validated:false,
-  cancelTimetableSave:false
+  cancelTimetableSave:false,
+  validatingTimetable: {started: false, ended: false}
 }
 
 export const reducer = (state = initialState, action) => {
@@ -998,6 +1000,13 @@ export const reducer = (state = initialState, action) => {
       return{
         ...state,
         timetableSaved:false
+      }
+    }
+
+    case VALIDATING_TIMETABLE: {
+      return {
+        ...state,
+        validatingTimetable: action.payload
       }
     }
 

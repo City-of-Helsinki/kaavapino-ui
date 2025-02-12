@@ -123,7 +123,8 @@ import {
   VALIDATE_DATE,
   setDateValidationResult,
   VALIDATE_PROJECT_TIMETABLE,
-  UPDATE_PROJECT_FAILURE
+  UPDATE_PROJECT_FAILURE,
+  setValidatingTimetable
 } from '../actions/projectActions'
 import { startSubmit, stopSubmit, setSubmitSucceeded } from 'redux-form'
 import { error } from '../actions/apiActions'
@@ -729,6 +730,7 @@ function* validateProjectTimetable() {
     showCloseButton: false,
   });
   yield put(startSubmit(EDIT_PROJECT_TIMETABLE_FORM))
+  yield put(setValidatingTimetable(true, false));
 
   const { initial, values } = yield select(
     editProjectTimetableFormSelector
@@ -743,7 +745,7 @@ function* validateProjectTimetable() {
     let attribute_data = adjustDeadlineData(changedAttributeData, values)
 
     try {
-      yield call(
+      const response = yield call(
         projectApi.patch,
         { attribute_data },
         { path: { id: currentProjectId } },
@@ -756,7 +758,11 @@ function* validateProjectTimetable() {
       removeOnHover: false,
       showCloseButton: true,
     });
-    // All dates good no need to do anything
+
+    // Success. Prevent further validation calls by setting state
+    yield put(setValidatingTimetable(true, true));
+    //Backend may have edited phase start/end dates, so update project
+    yield put(updateProject(response));
     } catch (e) {
       if (e?.code === "ERR_NETWORK") {
         toastr.error(i18.t('messages.general-save-error'))
