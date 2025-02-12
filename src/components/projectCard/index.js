@@ -68,7 +68,7 @@ function ProjectCardPage({
   const { t } = useTranslation()
 
   useEffect(() => {
-    getProjectCardFields()
+    getProjectCardFields(projectId)
     getExternalDocuments(projectId)
   }, [])
 
