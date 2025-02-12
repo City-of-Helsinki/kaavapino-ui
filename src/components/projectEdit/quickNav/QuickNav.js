@@ -35,7 +35,8 @@ export default function QuickNav({
   documents,
   currentSchema,
   documentIndex,
-  locationSearch
+  locationSearch,
+  isTheResponsiblePerson
 }) {
   const [verifying, setVerifying] = useState(false)
   const [checkButtonPressed, setCheckButtonPressed] = useState(false)
@@ -160,7 +161,7 @@ export default function QuickNav({
 
 
   const renderButtons = () => {
-    const canEndPhase = (phase && [1, 7, 13, 19, 25].includes(phase) && isResponsible) || isAdmin
+    const canEndPhase = (phase && [1, 7, 13, 19, 25].includes(phase) && isTheResponsiblePerson) || isAdmin
     return (
       <>
         <Button
