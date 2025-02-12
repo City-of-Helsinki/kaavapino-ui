@@ -1284,6 +1284,10 @@ EditProjectTimeTableModal.propTypes = {
   dispatch: PropTypes.func.isRequired,
   t: PropTypes.func.isRequired,
   validated: PropTypes.bool.isRequired,
+  validatingTimetable: PropTypes.shape({
+    started: PropTypes.bool,
+    ended: PropTypes.bool
+  })
 }
 
 const mapStateToProps = state => ({
