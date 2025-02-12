@@ -53,6 +53,9 @@ const FormField = ({
   deadlineSections,
   confirmedValue,
   sectionAttributes,
+  allowedToEdit,
+  timetable_editable,
+  isAdmin,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -144,6 +147,9 @@ const FormField = ({
             deadlineSections={deadlineSections}
             confirmedValue={confirmedValue}
             sectionAttributes={sectionAttributes}
+            allowedToEdit={allowedToEdit}
+            isAdmin={isAdmin}
+            timetable_editable={timetable_editable}
           />
         )
     }

@@ -926,6 +926,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           groups={groups?.get()}
           items={items?.get()}
           sectionAttributes={sectionAttributes}
+          isAdmin={isAdmin}
         />
         <AddGroupModal
           toggleOpenAddDialog={toggleOpenAddDialog}

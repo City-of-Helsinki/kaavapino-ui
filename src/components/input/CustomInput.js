@@ -317,6 +317,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           fluid="true"
           {...input}
           {...custom}
+          disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled}
           onChange={(event) =>{handleInputChange(event,readonly.read)}}
           onBlur={(event) => {handleBlur(event,readonly.read)}}
           onFocus={() => {handleFocus()}}

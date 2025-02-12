@@ -26,7 +26,9 @@ const DeadLineInput = ({
   dateTypes,
   deadlineSections,
   confirmedValue,
-  sectionAttributes
+  sectionAttributes,
+  allowedToEdit,
+  timetable_editable
 }) => {
 
   const dispatch = useDispatch();
@@ -196,6 +198,7 @@ const DeadLineInput = ({
       console.error('Validation error:', error);
     }
   };
+  
   return (
     <>
       <div className='deadline-input'>
@@ -209,7 +212,7 @@ const DeadLineInput = ({
           value={formatDateToDMYYYY(currentValue ? currentValue : input.value)}
           name={input.name}
           type='text' // type='date' works poorly with hds-DateInput
-          disabled={disabledState}
+          disabled={!timetable_editable || disabledState}
           placeholder={placeholder}
           error={error}
           aria-label={input.name}

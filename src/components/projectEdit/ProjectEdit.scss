@@ -898,6 +898,10 @@
           border:2px solid $border-gray2;
           input{
             text-indent: 16px;
+            width: 85%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
             &:focus {
               outline: 2px solid #1A1A1A !important;
               outline-offset: -2px;
