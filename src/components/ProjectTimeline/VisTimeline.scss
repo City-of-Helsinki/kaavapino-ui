@@ -149,7 +149,7 @@
                     background-color: $color-black-20;
                 }
                 &:focus-visible, &:active {
-                    outline: 2px solid $color-coat-of-arms;
+                    outline: 3px solid $color-coat-of-arms;
                     outline-offset: 2px;
                 }
                 &::after {
