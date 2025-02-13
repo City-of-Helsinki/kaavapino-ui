@@ -7,7 +7,19 @@ import { useTranslation } from 'react-i18next';
 import RollingInfo from '../input/RollingInfo'
 
 const Link = props => {
-  const openLink = () => window.open(currentValue)
+  const openLink = () => {
+    try {
+      window.open(currentValue);
+    }
+    catch (e) {
+      if (currentValue.includes("pw://")){
+        const encoded_URN = "pw://" + currentValue.split("pw://")[1].replace(":", "%3A");
+        window.open(encoded_URN);
+      } else {
+        throw e;
+      }
+    }
+  }
 
   const {t} = useTranslation()
 
