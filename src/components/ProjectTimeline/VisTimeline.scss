@@ -6,6 +6,7 @@
     border-color: RGBA(0,0,0,0);
     .vis-left{
         width: 300px;
+        box-shadow: inset -1px 0px #bfbfbf; // Serves as a fake border
         .vis-content {
             top: 0 !important;
         }
@@ -24,6 +25,9 @@
         }
         .vis-center, .vis-left {
             border-bottom: none
+        }
+        .vis-panel.vis-center {
+            border-left-color: RGBA(0,0,0,0);
         }
     }
 
@@ -501,6 +505,10 @@
     .vis-nested-group.vis-group-level-unknown-but-gte1.highlight-selected{
         border: 2px solid $color-bus;
         background-color: $color-bus-light !important;
+        margin-top: -1px;
+        padding-top: 1px;
+        margin-bottom:1px;
+        margin-right:-1px;
         .vis-inner .timeline-buttons-container .timeline-button-label {
             padding-top: 0;
             margin-left: -2px;
@@ -510,6 +518,7 @@
     .vis-labelset{
         padding-bottom: 50px;
         .vis-label{
+            border-right: 1px solid #bfbfbf;
             .vis-inner{
                 height: $size32;
                 display: flex;
