@@ -152,11 +152,13 @@ function fillGaps(inputMonths, deadlines) {
   let deadlinePropAbbreviation = null
   let monthDateIndex = null
   const has = Object.prototype.hasOwnProperty
+  let has_endpoint_in_range = false;
   for (let i = 0; i < monthDates.length; i++) {
     for (const prop in monthDates[i]) {
       if (has.call(monthDates[i], prop)) {
         if (Object.keys(monthDates[i]).length < 4) {
           if (Array.isArray(monthDates[i][prop].deadline_type)) {
+            has_endpoint_in_range = true;
             if (monthDates[i][prop].deadline_type[0] === 'phase_start' || monthDates[i][prop].deadline_type[0] === 'past_start_point') {
               deadlineAbbreviation = monthDates[i][prop].abbreviation
               color_code = monthDates[i][prop].color_code
@@ -212,6 +214,34 @@ function fillGaps(inputMonths, deadlines) {
       }
     }
   }
+
+  // Special case: no phase start/endpoints are in visible range
+  if (!has_endpoint_in_range) {
+    let [min_year, min_month] = monthDates[0].date.split('-');
+    min_month = min_month.length == 1 ? "0" + min_month : min_month;
+    let min_day = (((monthDates[0].week-1) * 7) +1).toString();
+    min_day = min_day.length == 1 ? "0" + min_day : min_day;
+    const min_date = Date.parse([min_year, min_month, min_day].join('-'));
+
+    let phase_color, abbr;
+    for (const dl of deadlines) {
+      if (dl.deadline?.deadline_types?.includes('phase_start')) {
+        phase_color = dl.deadline?.phase_color_code;
+        abbr = dl.deadline?.abbreviation
+      }
+      if (dl.date && Date.parse(dl.date) > min_date){
+        break;
+      }
+    }
+    for (let i = 0; i < monthDates.length; i++) {
+      monthDates[i].midpoint = {
+        abbreviation: abbr,
+        deadline_type: ['mid_point'],
+        color_code: phase_color
+      }
+    }
+  }
+
   return createMilestones(monthDates, deadlines)
 }
 /**
