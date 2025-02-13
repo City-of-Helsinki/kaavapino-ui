@@ -562,11 +562,13 @@
     svg{
       width: 24px;
       height: 24px;
+      color: $black1;
     }
     .header-title {
       font-size: 1.125rem;
       letter-spacing: 0.004em;
       padding-left: 8px;
+      color: $black1;
     }
   }
 
@@ -896,6 +898,18 @@
         }
         .deadline-input{
           border:2px solid $border-gray2;
+          &:has(:disabled) {
+            background-color: #e6e6e6;
+            border-color: RGBA(0,0,0,0);
+            border-style: none;
+            input {
+              color: #808080;
+              -webkit-text-fill-color: #999;
+            }
+            button {
+              color: 999;
+            }
+          }
           input{
             text-indent: 16px;
             width: 85%;

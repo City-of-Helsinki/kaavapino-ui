@@ -195,7 +195,7 @@
         border-radius: 15px;
         top: 5.5px !important;
         .vis-item-overflow{
-            border: 2px solid #000000;
+            border: 2px solid $black1;
             background: #fff;
             border-radius: 15px;
             .vis-item-content{
@@ -270,7 +270,7 @@
         border-width: 0;
         height: $size24;
         .vis-item-overflow{
-            border: 2px solid #000000;
+            border: 2px solid $black1;
             background: #fff;
             border-radius: 6px;
             .vis-item-content{
@@ -306,7 +306,7 @@
     .vis-point {
         top: -4.5px !important;
         left: -10px;
-        border: 2px solid #000000;
+        border: 2px solid $black1;
         background-color: #fff;
         height: $size24;
         width: $size24;
@@ -547,7 +547,7 @@
             font-weight: 700;
             font-size: $size16;
             line-height: $size24;
-            color:$black
+            color: $black1;
         }
     }
 
@@ -775,7 +775,7 @@
         font-family: 'Helsinki Grotesk Medium', sans-serif;
         font-weight: 500;
         font-size: $size14;
-        color: $black;
+        color: $black1;
     }
     .vis-minor {
         border-color: $color-black-20 !important;
@@ -827,7 +827,7 @@
         font-family: 'Helsinki Grotesk Medium', sans-serif;
         font-weight: 500;
         font-size: $size14;
-        color: $black;
+        color: $black1;
     }
     .vis-minor {
         font-family: 'Helsinki Grotesk Bold', sans-serif;
