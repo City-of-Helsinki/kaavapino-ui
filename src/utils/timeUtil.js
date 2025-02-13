@@ -630,7 +630,7 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       const miniumDaysPast = matchingItem?.distance_from_previous
       const dateToComparePast = formValues[matchingItem?.previous_deadline]
       let newDisabledDates = dateTypes?.esilläolopäivät?.dates
-      const firstPossibleDateToSelect = addDays("esilläolopäivät",dateToComparePast,miniumDaysPast,dateTypes?.esilläolopäivät?.dates,true)
+      const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.esilläolopäivät?.dates,dateToComparePast,miniumDaysPast)
       newDisabledDates = newDisabledDates.filter(date => date > firstPossibleDateToSelect)
       return newDisabledDates
     } 
@@ -665,8 +665,8 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       const miniumDaysPast = matchingItem?.distance_from_previous
       const dateToComparePast = formValues[matchingItem?.previous_deadline]
       let newDisabledDates = dateTypes?.esilläolopäivät?.dates
-      const firstPossibleDateToSelect = addDays("esilläolopäivät",dateToComparePast,miniumDaysPast,dateTypes?.esilläolopäivät?.dates,true)
-      newDisabledDates = newDisabledDates.filter(date => date > firstPossibleDateToSelect)
+      const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.esilläolopäivät?.dates,dateToComparePast,miniumDaysPast)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
       return newDisabledDates
     } 
   }
@@ -691,7 +691,7 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       const dateToComparePast = formValues[matchingItem?.previous_deadline]
       let newDisabledDates = dateTypes?.arkipäivät?.dates
       const firstPossibleDateToSelect = addDays("arkipäivät",dateToComparePast,miniumDaysPast,dateTypes?.arkipäivät?.dates,true)
-      newDisabledDates = newDisabledDates.filter(date => date > firstPossibleDateToSelect)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
       return newDisabledDates
     } 
   }
