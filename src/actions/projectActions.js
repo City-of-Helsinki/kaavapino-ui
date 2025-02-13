@@ -116,6 +116,7 @@ export const VALIDATE_PROJECT_TIMETABLE = "validateProjectTimetable"
 export const UPDATE_PROJECT_FAILURE = 'updateProjectFailure';
 export const UPDATE_ATTRIBUTE = 'updateAttribute';
 export const SAVE_PROJECT_TIMETABLE_FAILED = "saveProjectTimetableFailed";
+export const VALIDATING_TIMETABLE = "validatingTimetable"
 
 export const updateAttribute = (field,value) => ({
   type: UPDATE_ATTRIBUTE,
@@ -529,3 +530,13 @@ export const getMapLegendsSuccessful = legends => ({
   type: GET_PROJECT_MAP_LEGENDS_SUCCESSFUL,
   payload: legends
 })
+
+export const setValidatingTimetable = (validationStarted, validationEnded) => {
+  return {
+    type: VALIDATING_TIMETABLE,
+    payload: {
+      started: validationStarted,
+      ended: validationEnded
+    }
+  }
+}

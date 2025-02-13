@@ -9,7 +9,7 @@ import { EDIT_PROJECT_TIMETABLE_FORM } from '../../../constants'
 import './styles.scss'
 import { deadlineSectionsSelector } from '../../../selectors/schemaSelector'
 import { withTranslation } from 'react-i18next'
-import { deadlinesSelector,validatedSelector,dateValidationResultSelector,cancelTimetableSaveSelector } from '../../../selectors/projectSelector'
+import { deadlinesSelector,validatedSelector,dateValidationResultSelector,cancelTimetableSaveSelector, validatingTimetableSelector } from '../../../selectors/projectSelector'
 import { Button,IconInfoCircle } from 'hds-react'
 import { isEqual } from 'lodash'
 import VisTimelineGroup from '../../ProjectTimeline/VisTimelineGroup'
@@ -18,7 +18,7 @@ import ConfirmModal from '../../common/ConfirmModal';
 import withValidateDate from '../../../hocs/withValidateDate';
 import objectUtil from '../../../utils/objectUtil'
 import textUtil from '../../../utils/textUtil'
-import { updateDateTimeline,validateProjectTimetable } from '../../../actions/projectActions';
+import { updateDateTimeline,validateProjectTimetable,setValidatingTimetable } from '../../../actions/projectActions';
 import { getVisibilityBoolName, vis_bool_group_map, getPhaseNameByVisBool } from '../../../utils/projectVisibilityUtils';
 import timeUtil from '../../../utils/timeUtil'
 
@@ -127,8 +127,13 @@ class EditProjectTimeTableModal extends Component {
 
           // Don't validate on every richTextEditor change
           if (!Object.values(changedValues).every(value => typeof value === 'object')) {
-            // Call validateProjectTimetable after all fields are updated
-            this.props.dispatch(validateProjectTimetable());
+            if (!this.props.validatingTimetable?.started || !this.props.validatingTimetable?.ended)
+              // Call validateProjectTimetable after all fields are updated
+              this.props.dispatch(validateProjectTimetable());
+            else {
+              // Validation over, reset state
+              this.props.dispatch(setValidatingTimetable(false,false))
+            }
           }
         }
         let sectionAttributes = [];
@@ -1279,6 +1284,10 @@ EditProjectTimeTableModal.propTypes = {
   dispatch: PropTypes.func.isRequired,
   t: PropTypes.func.isRequired,
   validated: PropTypes.bool.isRequired,
+  validatingTimetable: PropTypes.shape({
+    started: PropTypes.bool,
+    ended: PropTypes.bool
+  })
 }
 
 const mapStateToProps = state => ({
@@ -1289,6 +1298,7 @@ const mapStateToProps = state => ({
   validated: validatedSelector(state),
   dateValidationResult : dateValidationResultSelector(state),
   cancelTimetableSave: cancelTimetableSaveSelector(state),
+  validatingTimetable: validatingTimetableSelector(state),
 })
 
 const decoratedForm = reduxForm({
