@@ -57,9 +57,10 @@ class EditProjectTimeTableModal extends Component {
       this.setState({items,groups,visValues:attributeData})
 
       let sectionAttributes = []
-      this.extractAttributes(deadlineSections, attributeData, sectionAttributes, (attribute, attributeData) =>
-        attribute.label !== "Lausunnot viimeistään" && attributeData[attribute.name]
-      );
+      this.extractAttributes(deadlineSections, attributeData, sectionAttributes, (attribute, attributeData) => {
+        return (attribute.label !== "Lausunnot viimeistään" && attributeData[attribute.name]) || 
+        ["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauenut"].includes(attribute.name);
+      });
       this.setState({sectionAttributes})
       
       const unfilteredSectionAttributes = []
@@ -562,6 +563,12 @@ class EditProjectTimeTableModal extends Component {
             : new Date(deadlines[i].date);
           startDate.setHours(0, 0, 0, 0);
         }
+        else if(deadline.attribute === "voimaantulovaihe_alkaa_pvm"){
+          const phaseStart = formValues && formValues["voimaantulovaihe_alkaa_pvm"] ? new Date(formValues["voimaantulovaihe_alkaa_pvm"]) : deadlines[i].date;
+          startDate = formValues && formValues["hyvaksymispaatos_pvm"] 
+          ? new Date(formValues["hyvaksymispaatos_pvm"]) 
+          : phaseStart
+        }
         else{
           //If formValues has deadline.attribute use that values, it if not then use deadline[i].date in startDate.
           startDate = formValues && formValues[deadline.attribute]
@@ -717,6 +724,12 @@ class EditProjectTimeTableModal extends Component {
           endDate = formValues && formValues["voimaantulovaihe_paattyy_pvm"] 
           ? new Date(formValues["voimaantulovaihe_paattyy_pvm"]) 
           : deadlines[i].date;
+        }
+        else if(deadline.attribute === "hyvaksyminenvaihe_paattyy_pvm"){
+          const phaseEnd = formValues && formValues["hyvaksyminenvaihe_paattyy_pvm"] ? new Date(formValues["hyvaksyminenvaihe_paattyy_pvm"]) : deadlines[i].date;
+          endDate = formValues && formValues["hyvaksymispaatos_pvm"] 
+          ? new Date(formValues["hyvaksymispaatos_pvm"]) 
+          : phaseEnd
         }
         else{
           endDate = formValues && formValues[deadline.attribute]

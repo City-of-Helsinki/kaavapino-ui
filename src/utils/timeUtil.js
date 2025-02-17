@@ -541,6 +541,15 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
     newDisabledDates = name.includes("kaynnistys_paattyy_pvm") ? newDisabledDates.filter(date => date > lastPossibleDateToSelect) : newDisabledDates.filter(date => date < lastPossibleDateToSelect)
     return newDisabledDates
   }
+  else if(["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauenut"].includes(name)){
+    const miniumDaysBetween = matchingItem?.distance_from_previous
+    const dateToCompare = name.includes("hyvaksymispaatos_pvm") ? formValues["hyvaksyminenvaihe_alkaa_pvm"] : formValues["voimaantulovaihe_alkaa_pvm"]
+    const filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToCompare)
+    let newDisabledDates = dateTypes?.työpäivät?.dates
+    const lastPossibleDateToSelect = addDays("työpäivät",filteredDateToCompare,miniumDaysBetween,dateTypes?.työpäivät?.dates,true)
+    newDisabledDates = newDisabledDates.filter(date => date > lastPossibleDateToSelect)
+    return newDisabledDates
+  }
   else if(name === "hyvaksymispaatos_valitusaika_paattyy" || name === "valitusaika_paattyy_hallinto_oikeus"){
     return dateTypes?.arkipäivät?.dates
   }
@@ -679,9 +688,9 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       const dateToComparePast = formValues[matchingItem?.previous_deadline]
       const dateToCompareFuture = formValues[matchingItem?.next_deadline]
       let newDisabledDates = dateTypes?.arkipäivät?.dates
-      const firstPossibleDateToSelect = addDays("arkipäivät",dateToComparePast,miniumDaysPast,dateTypes?.arkipäivät?.dates,true)
+      const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates,dateToComparePast,miniumDaysPast)
       const lastPossibleDateToSelect = subtractDays("arkipäivät",dateToCompareFuture,miniumDaysFuture,dateTypes?.arkipäivät?.dates,true)
-      newDisabledDates = newDisabledDates.filter(date => date > firstPossibleDateToSelect && date < lastPossibleDateToSelect)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && date < lastPossibleDateToSelect)
       return newDisabledDates
     }
     else if(name.includes("_paattyy")){
