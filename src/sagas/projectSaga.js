@@ -801,7 +801,7 @@ function* validateProjectTimetable() {
      // Dispatch failure action with error data for the reducer to handle date correction to timeline form
       yield put({
         type: UPDATE_PROJECT_FAILURE,
-        payload: { errorData: e?.response?.data },
+        payload: { errorData: e?.response?.data , formValues: attribute_data },
       });
     }
   }
