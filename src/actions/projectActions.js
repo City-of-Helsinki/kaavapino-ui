@@ -122,9 +122,9 @@ export const updateAttribute = (field,value) => ({
   type: UPDATE_ATTRIBUTE,
   payload: {field,value},
 });
-export const updateProjectFailure = (errorData) => ({
+export const updateProjectFailure = (errorData, formValues) => ({
   type: UPDATE_PROJECT_FAILURE,
-  payload: errorData,
+  payload: {errorData, formValues}
 });
 export const validateProjectTimetable = () => ({
    type: VALIDATE_PROJECT_TIMETABLE 

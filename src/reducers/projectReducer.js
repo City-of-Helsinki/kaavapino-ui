@@ -229,11 +229,11 @@ export const reducer = (state = initialState, action) => {
 
     case UPDATE_PROJECT_FAILURE: {
       //Update dates that were returned unvalid from backend
-      const { errorData } = action.payload;
+      const { errorData, formValues } = action.payload;
       const dateRegex = /\d{1,2}\.\d{1,2}\.\d{4}/;
 
-      // Create a copy of attribute_data to modify
-      const updatedAttributeData = { ...state.currentProject.attribute_data };
+      // Duplicate attribute_data and update it with changed formValues
+      const updatedAttributeData = { ...state.currentProject.attribute_data, ...formValues};
 
       // Apply date format corrections based on errorData
       for (const key in updatedAttributeData) {

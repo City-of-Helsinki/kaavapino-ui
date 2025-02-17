@@ -126,11 +126,14 @@ class EditProjectTimeTableModal extends Component {
           }
           this.setState({visValues:formValues})
 
-          // Don't validate on every richTextEditor change
-          if (!Object.values(changedValues).every(value => typeof value === 'object')) {
-            if (!this.props.validatingTimetable?.started || !this.props.validatingTimetable?.ended)
+
+          // Only validate if at least one date has changed
+          if (this.state.unfilteredSectionAttributes?.some(attr => 
+            attr.type === 'date' && Object.keys(changedValues).includes(attr.name))) {
+            if (!this.props.validatingTimetable?.started || !this.props.validatingTimetable?.ended) {
               // Call validateProjectTimetable after all fields are updated
               this.props.dispatch(validateProjectTimetable());
+            }
             else {
               // Validation over, reset state
               this.props.dispatch(setValidatingTimetable(false,false))
