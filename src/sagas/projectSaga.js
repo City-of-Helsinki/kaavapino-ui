@@ -597,7 +597,8 @@ const adjustDeadlineData = (attributeData, allAttributeData) => {
         key.includes("ehdotus_nahtaville_aineiston_maaraaika") ||
         key.includes("milloin_ehdotuksen_nahtavilla_paattyy") ||
         key.includes("viimeistaan_lausunnot_ehdotuksesta") ||
-        key.includes("milloin_tarkistettu_ehdotus_lautakunnassa")) {
+        key.includes("milloin_tarkistettu_ehdotus_lautakunnassa") ||
+        key.includes("vahvista")) {
       attributeData[key] = attributeData[key] || allAttributeData[key]
     }
   })
@@ -736,14 +737,18 @@ function* validateProjectTimetable() {
     editProjectTimetableFormSelector
   )
   const currentProject = yield select(currentProjectSelector)
-
+  console.log("Formvalues",values)
+  console.log("a_data",currentProject.attribute_data)
   if (values) {
     let changedAttributeData = getChangedAttributeData(values, currentProject.attribute_data)
     if(changedAttributeData.oikaisukehoituksen_alainen_readonly){
       delete changedAttributeData.oikaisukehoituksen_alainen_readonly
     }
+
+    console.log("Changed attribute data", changedAttributeData)
     let attribute_data = adjustDeadlineData(changedAttributeData, values)
 
+    console.log("Final attribute data",attribute_data)
     try {
       const response = yield call(
         projectApi.patch,
