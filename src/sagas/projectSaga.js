@@ -733,14 +733,13 @@ function* validateProjectTimetable() {
   yield put(startSubmit(EDIT_PROJECT_TIMETABLE_FORM))
   yield put(setValidatingTimetable(true, false));
 
-  const { _, values } = yield select(
+  const { initial, values } = yield select(
     editProjectTimetableFormSelector
   )
-  const currentProject = yield select(currentProjectSelector)
-  console.log("Formvalues",values)
-  console.log("a_data",currentProject.attribute_data)
+  const currentProjectId = yield select(currentProjectIdSelector)
+
   if (values) {
-    let changedAttributeData = getChangedAttributeData(values, currentProject.attribute_data)
+    let changedAttributeData = getChangedAttributeData(values, initial)
     if(changedAttributeData.oikaisukehoituksen_alainen_readonly){
       delete changedAttributeData.oikaisukehoituksen_alainen_readonly
     }
@@ -753,7 +752,7 @@ function* validateProjectTimetable() {
       const response = yield call(
         projectApi.patch,
         { attribute_data },
-        { path: { id: currentProject.id } },
+        { path: { id: currentProjectId } },
         ':id/?fake=true'
       )
     // Remove the loading icon
