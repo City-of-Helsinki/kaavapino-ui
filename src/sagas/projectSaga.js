@@ -23,10 +23,11 @@ import {
   archivedProjectsSelector,
   savingSelector,
   formErrorListSelector,
-  lastSavedSelector
+  lastSavedSelector,
 } from '../selectors/projectSelector'
 import { userIdSelector } from '../selectors/authSelector'
 import { phasesSelector } from '../selectors/phaseSelector'
+import { deadlineSectionsSelector } from '../selectors/schemaSelector'
 import {
   LAST_MODIFIED,
   lastModified,
@@ -156,6 +157,7 @@ import {
   EDIT_PROJECT_FORM,
   EDIT_PROJECT_TIMETABLE_FORM
 } from '../constants'
+import { getVisibilityBoolName } from '../utils/projectVisibilityUtils'
 import i18 from 'i18next'
 import dayjs from 'dayjs'
 import { toastr } from 'react-redux-toastr'
@@ -605,6 +607,20 @@ const adjustDeadlineData = (attributeData, allAttributeData) => {
   return attributeData
 }
 
+const getRelevantDeadlineAttributes = (deadlineSections, attribute_data) => {
+  let visibleDlAttributes = [];
+  for (const section of deadlineSections) {
+    let section_attributes = section.sections?.[0]?.attributes
+    section_attributes.forEach(attr => {
+      const visBool = getVisibilityBoolName(attr.attributegroup);
+      if (!visBool || attr.type ==='boolean' || (attr.type === "date" && attr.attributegroup && attribute_data[visBool])) {
+        visibleDlAttributes.push(attr.name)
+      }
+    });
+  }
+  return visibleDlAttributes;
+}
+
 const getChangedAttributeData = (values, initial) => {
   let attribute_data = {}
   let errorValues = false
@@ -733,26 +749,26 @@ function* validateProjectTimetable() {
   yield put(startSubmit(EDIT_PROJECT_TIMETABLE_FORM))
   yield put(setValidatingTimetable(true, false));
 
-  const { _, values } = yield select(
-    editProjectTimetableFormSelector
-  )
+
   const currentProject = yield select(currentProjectSelector)
-  console.log("Formvalues",values)
-  console.log("a_data",currentProject.attribute_data)
-  if (values) {
-    let changedAttributeData = getChangedAttributeData(values, currentProject.attribute_data)
-    if(changedAttributeData.oikaisukehoituksen_alainen_readonly){
-      delete changedAttributeData.oikaisukehoituksen_alainen_readonly
+  const dlSections = yield select(deadlineSectionsSelector);
+  const visibleDlAttributes = getRelevantDeadlineAttributes(dlSections, currentProject.attribute_data)
+
+  if (currentProject) {
+    let submissionData = JSON.parse(JSON.stringify(currentProject.attribute_data));
+    // Only submit deadline-related attributes
+    submissionData = Object.fromEntries(
+      Object.entries(submissionData).filter(([key]) => visibleDlAttributes.includes(key))
+    );
+
+    if(submissionData.oikaisukehoituksen_alainen_readonly){
+      delete submissionData.oikaisukehoituksen_alainen_readonly
     }
 
-    console.log("Changed attribute data", changedAttributeData)
-    let attribute_data = adjustDeadlineData(changedAttributeData, values)
-
-    console.log("Final attribute data",attribute_data)
     try {
       const response = yield call(
         projectApi.patch,
-        { attribute_data },
+        { attribute_data: submissionData },
         { path: { id: currentProject.id } },
         ':id/?fake=true'
       )
@@ -806,7 +822,7 @@ function* validateProjectTimetable() {
      // Dispatch failure action with error data for the reducer to handle date correction to timeline form
       yield put({
         type: UPDATE_PROJECT_FAILURE,
-        payload: { errorData: e?.response?.data , formValues: attribute_data },
+        payload: { errorData: e?.response?.data , formValues: submissionData },
       });
     }
   }
