@@ -127,11 +127,13 @@ class EditProjectTimeTableModal extends Component {
           this.setState({visValues:formValues})
 
 
-          // Only validate if at least one date has changed
-          if (this.state.unfilteredSectionAttributes?.some(attr => 
+            // Validate timetable if at least one date has changed, or a group has been added/deleted
+          const visBoolChanged = Object.keys(changedValues).some(key =>
+            Object.values(vis_bool_group_map).includes(key) && key !== null)
+
+          if (visBoolChanged || this.state.unfilteredSectionAttributes?.some( attr =>
             attr.type === 'date' && Object.keys(changedValues).includes(attr.name))) {
             if (!this.props.validatingTimetable?.started || !this.props.validatingTimetable?.ended) {
-              // Call validateProjectTimetable after all fields are updated
               this.props.dispatch(validateProjectTimetable());
             }
             else {
