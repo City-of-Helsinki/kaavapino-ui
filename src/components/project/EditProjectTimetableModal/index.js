@@ -136,10 +136,6 @@ class EditProjectTimeTableModal extends Component {
             if (!this.props.validatingTimetable?.started || !this.props.validatingTimetable?.ended) {
               this.props.dispatch(validateProjectTimetable());
             }
-            else {
-              // Validation over, reset state
-              this.props.dispatch(setValidatingTimetable(false,false))
-            }
           }
         }
         let sectionAttributes = [];
@@ -149,7 +145,10 @@ class EditProjectTimeTableModal extends Component {
         this.setState({sectionAttributes})
       }
     }
-
+    if (this.props.validatingTimetable?.started && this.props.validatingTimetable?.ended) {
+      // Validation has been started and completed, and the result handled above. Reset state.
+      this.props.dispatch(setValidatingTimetable(false,false));
+    }
     if(prevProps.cancelTimetableSave === false && this.props.cancelTimetableSave === true){
       this.setLoadingFalse();
     }
