@@ -564,7 +564,7 @@ class EditProjectTimeTableModal extends Component {
           startDate = formValues && formValues["projektin_kaynnistys_pvm"]
             ? new Date(formValues["projektin_kaynnistys_pvm"])
             : new Date(deadlines[i].date);
-          startDate.setHours(0, 0, 0, 0);
+          startDate.setHours(12, 0, 0, 0);
         }
         else if(deadline.attribute === "voimaantulovaihe_alkaa_pvm"){
           const phaseStart = formValues && formValues["voimaantulovaihe_alkaa_pvm"] ? new Date(formValues["voimaantulovaihe_alkaa_pvm"]) : deadlines[i].date;
@@ -577,7 +577,7 @@ class EditProjectTimeTableModal extends Component {
           startDate = formValues && formValues[deadline.attribute]
             ? new Date(formValues[deadline.attribute])
             : new Date(deadlines[i].date);
-          startDate.setHours(0, 0, 0, 0);
+          startDate.setHours(12, 0, 0, 0);
         }
 
         style = deadline.phase_color
@@ -742,7 +742,7 @@ class EditProjectTimeTableModal extends Component {
 
 
         if (endDate instanceof Date && !isNaN(endDate.getTime())) {
-          endDate.setHours(0, 0, 0, 0);
+          endDate.setHours(12, 0, 0, 0);
         }
       }
 
