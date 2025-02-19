@@ -7,6 +7,7 @@ import dayjs from 'dayjs'
 import { isNumber, isBoolean, isArray } from 'lodash'
 import PropTypes from 'prop-types'
 import { Notification } from 'hds-react'
+import { useTranslation } from 'react-i18next'
 
 const DeadlineInfoText = props => {
   const formValues = useSelector(getFormValues(EDIT_PROJECT_TIMETABLE_FORM))
@@ -16,6 +17,7 @@ const DeadlineInfoText = props => {
   const [current, setCurrent] = useState()
 
   const dispatch = useDispatch()
+  const { t } = useTranslation()
 
   useEffect(() => {
     if(isArray(inputValue) && props?.fieldData?.autofill_readonly && props?.fieldData?.type === "readonly" && props?.fieldData?.unit === "päivää"){
@@ -96,7 +98,12 @@ const DeadlineInfoText = props => {
     return dateValue
   }
 
-  const value = determineFieldValue(current, props)
+  let value = determineFieldValue(current, props)
+
+  if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
+    value = '';
+    console.warn("Plain object found in DeadlineInfoText value");
+  }
 
   const phaseMap = {
     periaatteista: "Periaatteet",
@@ -104,18 +111,33 @@ const DeadlineInfoText = props => {
     luonnos: "Luonnos"
   };
 
-  const phaseKey = Object.keys(phaseMap).find(key => props.input.name.includes(key));
+  const phaseKey = Object.keys(phaseMap).find(key => props?.input?.name?.includes(key));
   const phase = phaseMap[phaseKey];
+  //Check if event is set to be organized in formValues
+  const eventKey = phase === "Luonnos" ? `jarjestetaan_${phase?.toLowerCase()}vaiheessa_tilaisuus` : `jarjestetaan_${phase?.toLowerCase()}_tilaisuus`
+  const shouldShowNotification = phase && formValues && formValues[eventKey];
+
+  // Extract the event date if it exists and shouldShowNotification is true
+  let eventDate = "";
+  if (shouldShowNotification) {
+    const eventDateKey = `${phase?.toLowerCase()}_tilaisuus_fieldset`;
+    eventDate = formValues[eventDateKey]?.[0]?.[`${phase?.toLowerCase()}_tilaisuus_pvm`] || t('common.date-missing');
+    if (eventDate?.includes('-')) {
+      eventDate = eventDate.replace(/-/g, '.');
+      const [year, month, day] = eventDate.split('.');
+      eventDate = `${day}.${month}.${year}`;
+    }
+  }
 
   return (
     <>
-      {phase && (
+      {shouldShowNotification && (
         <Notification
           className="event-info-notification"
           size="small"
-          label={`${phase}${phase === "Luonnos" ? "" : "-"}vaiheen tilaisuus: ${value}.`}
+          label={`${phase}${phase === "Luonnos" ? "" : "-"}vaiheen tilaisuus: ${eventDate}`}
         >
-          {`${phase}${phase === "Luonnos" ? "" : "-"}vaiheen tilaisuus: ${value}.`}
+          {`${phase}${phase === "Luonnos" ? "" : "-"}vaiheen tilaisuus: ${eventDate}`}
         </Notification>
       )}
       {props.input.name.includes("nahtavillaolopaivien_lukumaara") ?

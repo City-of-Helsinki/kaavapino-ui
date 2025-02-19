@@ -125,6 +125,18 @@
         }
       }
     }
+
+    // Convert currentDate to the same format as the dates in the allowedDays array
+    const formattedNewDate = currentDate.toISOString().split('T')[0];
+    // Check that date is inside the allowedDays array
+    if (!allowedDays.includes(formattedNewDate)) {
+      // Find the next possible date from allowedDays because the date was not allowed
+      const nextPossibleDate = allowedDays.find(date => new Date(date) > currentDate);
+      if (nextPossibleDate) {
+        currentDate = new Date(nextPossibleDate);
+      }
+    }
+
     return normalizeDate(currentDate);
   };
 
@@ -489,16 +501,31 @@ const sortObjectByDate = (obj) => {
   return sortedArray; // Returning an array guarantees the order
 }
 //Finds next possible date from from array if the value does not exist in it
-const findNextPossibleValue = (array, value) => {
+const findNextPossibleValue = (array, value, addedDays) => {
   if (!Array.isArray(array) || typeof value !== 'string') {
     throw new Error('Invalid input. Provide an array of strings and a value as a string.');
   }
-
+  let index = 0;
   // Directly find the given value or the next possible value
   for (const date of array) {
-      if (date >= value) {
-          return date;
+    if (date >= value) {
+      if(addedDays){
+        const targetIndex = index + addedDays;
+        if (targetIndex >= 0 && targetIndex < array.length) {
+          return array[targetIndex];
+        } 
+        else if (targetIndex < 0) {
+          return array[0]; // or handle the case where the target index is out of bounds
+        }
+        else {
+          return null; // or handle the case where the target index is out of bounds
+        }
       }
+      else{
+        return date;
+      }
+    }
+    index++;
   }
 
   // If no value is found, return null or a message
@@ -506,25 +533,10 @@ const findNextPossibleValue = (array, value) => {
 }
 
 const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sectionAttributes,currentDeadline,lockedGroup) => {
+  //TODO: refactor this to cleaner version when have time
   const matchingItem = objectUtil.findMatchingName(sectionAttributes, name, "name");
   const previousItem = objectUtil.findItem(sectionAttributes, name, "name", -1);
   const nextItem = objectUtil.findItem(sectionAttributes, name, "name", 1);
-/*   console.log("--------------------")
-  console.log("Previous item name",previousItem?.name)
-  console.log("Previous item PREV dist",previousItem?.distance_from_previous)
-  console.log("Previous item NEXT dist",previousItem?.distance_to_next)
-  console.log("--------------------")
-  console.log("This item name",matchingItem?.name)
-  console.log("This item PREV dist",matchingItem?.distance_from_previous)
-  console.log("This item NEXT dist",matchingItem?.distance_to_next)
-  console.log("--------------------")
-  console.log("Next item name",nextItem?.name)
-  console.log("Next item PREV DIST",nextItem?.distance_from_previous)
-  console.log("Next item NEXT DIST",nextItem?.distance_to_next)
-  console.log("--------------------")
-  console.log("Attribute PREVIOUS",formValues[previousItem?.name])
-  console.log("Attribute NEXT",formValues[nextItem?.name])
-  console.log("--------------------") */
 
   //Date for last possible date to select if locking is on
   const lockDateLimit = lockedGroup?.lockedStartTime ? (() => {
@@ -541,20 +553,45 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
     newDisabledDates = name.includes("kaynnistys_paattyy_pvm") ? newDisabledDates.filter(date => date > lastPossibleDateToSelect) : newDisabledDates.filter(date => date < lastPossibleDateToSelect)
     return newDisabledDates
   }
+  else if(["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauenut"].includes(name)){
+    const miniumDaysBetween = matchingItem?.distance_from_previous
+    const dateToCompare = name.includes("hyvaksymispaatos_pvm") ? formValues["hyvaksyminenvaihe_alkaa_pvm"] : formValues["voimaantulovaihe_alkaa_pvm"]
+    const filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToCompare)
+    let newDisabledDates = dateTypes?.työpäivät?.dates
+    const lastPossibleDateToSelect = addDays("työpäivät",filteredDateToCompare,miniumDaysBetween,dateTypes?.työpäivät?.dates,true)
+    newDisabledDates = newDisabledDates.filter(date => date > lastPossibleDateToSelect)
+    return newDisabledDates
+  }
   else if(name === "hyvaksymispaatos_valitusaika_paattyy" || name === "valitusaika_paattyy_hallinto_oikeus"){
     return dateTypes?.arkipäivät?.dates
   }
   else if(currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')){
+    const phaseName = currentDeadline?.deadline?.phase_name?.toLowerCase()
+    const firstPhaseExists = "jarjestetaan_"+phaseName+"_esillaolo_1"
     //Lautakunnat
     if(name.includes("_maaraaika")){
+      let dateToComparePast
+      let miniumDaysPast
+      let filteredDateToCompare
+      let firstPossibleDateToSelect
       //Määräaika kasvaa loputtomasta. Puskee lautakuntaa eteenpäin
       //Määräaika pienenee aiemman esilläolon loppuu minimiin.
-      const miniumDaysPast = matchingItem?.distance_from_previous ? matchingItem?.distance_from_previous : 5 //bug somewhere in backend should be 5 but is null
-      const dateToComparePast = formValues[matchingItem?.previous_deadline]
-      //Finds next possible working date to compare
-      const filteredDateToCompare= findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast)
+      if (formValues[firstPhaseExists] === false) {
+        //when phase is deleted from compare phase left to vaihe_alkaa_pvm
+        //Periaatteet and luonnos phases
+        const phaseStartDate = phaseName +"vaihe_alkaa_pvm"
+        dateToComparePast = formValues[phaseStartDate]
+        miniumDaysPast = 5
+        firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast,miniumDaysPast)
+      }
+      else{
+        dateToComparePast = formValues[matchingItem?.previous_deadline] 
+        miniumDaysPast = matchingItem?.distance_from_previous ? matchingItem?.distance_from_previous : 5 //bug somewhere in backend should be 5 but is null
+        filteredDateToCompare= findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast)
+        //Finds next possible working date to compare
+        firstPossibleDateToSelect = addDays("työpäivät",filteredDateToCompare,miniumDaysPast,dateTypes?.työpäivät?.dates,true)
+      }
       let newDisabledDates = dateTypes?.työpäivät?.dates
-      const firstPossibleDateToSelect = addDays("työpäivät",filteredDateToCompare,miniumDaysPast,dateTypes?.työpäivät?.dates,true)
       newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && (lockDateLimit ? date < lockDateLimit : true))
       return newDisabledDates
     }
@@ -562,14 +599,23 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       //Lautakunta siirtyy eteenpäin loputtomasti. Vetää mukana määräaikaa.
       //Lautakunta siirtyy taaksepäin minimiin. Vetää mukana määräaikaa ja pysähtyy minimiin.
       //Needs to take inconcideration that the gap is 22 between lautakunta and määräaika and gap to phase start date previousItem?.distance_from_previous
-      const miniumDaysPast = matchingItem?.initial_distance.distance + previousItem?.distance_from_previous
-      //Phase start date
-      const dateToComparePast = formValues[matchingItem?.previous_deadline] ? formValues[matchingItem?.previous_deadline] : formValues[matchingItem?.initial_distance?.base_deadline]
-      //Finds next possible working date to compare
-      const filteredDateToCompare= findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast)
+      let dateToComparePast
+      let filteredDateToCompare
+      const isPastFirst = formValues["jarjestetaan_"+phaseName+"_esillaolo_2"] || formValues[phaseName+"_lautakuntaan_2"] || formValues["kaava"+phaseName+"_lautakuntaan_2"]
+      const miniumDaysPast = name.includes("_lautakunnassa_") ? matchingItem?.initial_distance.distance : matchingItem?.initial_distance.distance + previousItem?.distance_from_previous
+      if((phaseName === "periaatteet" || phaseName === "luonnos") && !isPastFirst){
+        //First lautakunta can be selected to move before määräaika and move määräaika to minium but still needs to keep the 22 day gap and order is määräaika first and lautakunta second
+        dateToComparePast = formValues[previousItem?.previous_deadline] ? formValues[previousItem?.previous_deadline] : formValues[previousItem?.initial_distance?.base_deadline]
+        filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast)
+      }
+      else{
+        dateToComparePast = formValues[matchingItem?.previous_deadline] ? formValues[matchingItem?.previous_deadline] : formValues[matchingItem?.initial_distance?.base_deadline]
+        //Finds next possible working date to compare
+        filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast)
+      }
+      const firstPossibleDateToSelect = addDays("lautakunta",filteredDateToCompare,miniumDaysPast,dateTypes?.lautakunnan_kokouspäivät?.dates,true)
       //Array of the dates that are shown in calendar
       let newDisabledDates = dateTypes?.lautakunnan_kokouspäivät?.dates
-      const firstPossibleDateToSelect = addDays("lautakunta",filteredDateToCompare,miniumDaysPast,dateTypes?.lautakunnan_kokouspäivät?.dates,true)
       //Array of the dates that are shown in calendar after filter
       newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && (lockDateLimit ? date < lockDateLimit : true))
       return newDisabledDates
@@ -582,8 +628,8 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       const miniumDaysBetween = matchingItem?.distance_from_previous
       const dateToCompare = formValues[matchingItem?.previous_deadline]
       let newDisabledDates = dateTypes?.työpäivät?.dates
-      const firstPossibleDateToSelect = addDays("työpäivät",dateToCompare,miniumDaysBetween,dateTypes?.työpäivät?.dates,true)
-      newDisabledDates = newDisabledDates.filter(date => date > firstPossibleDateToSelect && (lockDateLimit ? date < lockDateLimit : true))
+      const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToCompare,miniumDaysBetween)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && (lockDateLimit ? date < lockDateLimit : true))
       return newDisabledDates
     }
     else if(name.includes("_alkaa")){
@@ -594,9 +640,9 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       const dateToComparePast = formValues[matchingItem?.previous_deadline]
       const dateToCompareFuture = formValues[matchingItem?.next_deadline]
       let newDisabledDates = dateTypes?.esilläolopäivät?.dates
-      const firstPossibleDateToSelect = addDays("esilläolopäivät",dateToComparePast,miniumDaysPast,dateTypes?.esilläolopäivät?.dates,true)
-      const lastPossibleDateToSelect = subtractDays("esilläolopäivät",dateToCompareFuture,miniumDaysFuture,dateTypes?.esilläolopäivät?.dates,true)
-      newDisabledDates = newDisabledDates.filter(date => date > firstPossibleDateToSelect && date < lastPossibleDateToSelect)
+      const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.esilläolopäivät?.dates,dateToComparePast,miniumDaysPast)
+      const lastPossibleDateToSelect = findNextPossibleValue(dateTypes?.esilläolopäivät?.dates,dateToCompareFuture,-miniumDaysFuture)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && date <= lastPossibleDateToSelect)
       return newDisabledDates
     }
     else if(name.includes("_paattyy")){
@@ -605,8 +651,8 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       const miniumDaysPast = matchingItem?.distance_from_previous
       const dateToComparePast = formValues[matchingItem?.previous_deadline]
       let newDisabledDates = dateTypes?.esilläolopäivät?.dates
-      const firstPossibleDateToSelect = addDays("esilläolopäivät",dateToComparePast,miniumDaysPast,dateTypes?.esilläolopäivät?.dates,true)
-      newDisabledDates = newDisabledDates.filter(date => date > firstPossibleDateToSelect && (lockDateLimit ? date < lockDateLimit : true))
+      const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.esilläolopäivät?.dates,dateToComparePast,miniumDaysPast)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && (lockDateLimit ? date < lockDateLimit : true))
       return newDisabledDates
     } 
   }
@@ -617,8 +663,8 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       const miniumDaysBetween = matchingItem?.distance_from_previous
       const dateToCompare = formValues[matchingItem?.previous_deadline]
       let newDisabledDates = dateTypes?.työpäivät?.dates
-      const firstPossibleDateToSelect = addDays("työpäivät",dateToCompare,miniumDaysBetween,dateTypes?.työpäivät?.dates,true)
-      newDisabledDates = newDisabledDates.filter(date => date > firstPossibleDateToSelect && (lockDateLimit ? date < lockDateLimit : true))
+      const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToCompare,miniumDaysBetween)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && (lockDateLimit ? date < lockDateLimit : true))
       return newDisabledDates
     }
     else if(name.includes("_alkaa")){
@@ -629,9 +675,9 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       const dateToComparePast = formValues[matchingItem?.previous_deadline]
       const dateToCompareFuture = formValues[matchingItem?.next_deadline]
       let newDisabledDates = dateTypes?.esilläolopäivät?.dates
-      const firstPossibleDateToSelect = addDays("esilläolopäivät",dateToComparePast,miniumDaysPast,dateTypes?.esilläolopäivät?.dates,true)
-      const lastPossibleDateToSelect = subtractDays("esilläolopäivät",dateToCompareFuture,miniumDaysFuture,dateTypes?.esilläolopäivät?.dates,true)
-      newDisabledDates = newDisabledDates.filter(date => date > firstPossibleDateToSelect && date < lastPossibleDateToSelect)
+      const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.esilläolopäivät?.dates,dateToComparePast,miniumDaysPast)
+      const lastPossibleDateToSelect = findNextPossibleValue(dateTypes?.esilläolopäivät?.dates,dateToCompareFuture,-miniumDaysFuture)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && date <= lastPossibleDateToSelect)
       return newDisabledDates
     }
     else if(name.includes("_paattyy")){
@@ -640,8 +686,8 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       const miniumDaysPast = matchingItem?.distance_from_previous
       const dateToComparePast = formValues[matchingItem?.previous_deadline]
       let newDisabledDates = dateTypes?.esilläolopäivät?.dates
-      const firstPossibleDateToSelect = addDays("esilläolopäivät",dateToComparePast,miniumDaysPast,dateTypes?.esilläolopäivät?.dates,true)
-      newDisabledDates = newDisabledDates.filter(date => date > firstPossibleDateToSelect && (lockDateLimit ? date < lockDateLimit : true))
+      const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.esilläolopäivät?.dates,dateToComparePast,miniumDaysPast)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && (lockDateLimit ? date < lockDateLimit : true))
       return newDisabledDates
     } 
   }
@@ -654,9 +700,9 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       const dateToComparePast = formValues[matchingItem?.previous_deadline]
       const dateToCompareFuture = formValues[matchingItem?.next_deadline]
       let newDisabledDates = dateTypes?.arkipäivät?.dates
-      const firstPossibleDateToSelect = addDays("arkipäivät",dateToComparePast,miniumDaysPast,dateTypes?.arkipäivät?.dates,true)
-      const lastPossibleDateToSelect = subtractDays("arkipäivät",dateToCompareFuture,miniumDaysFuture,dateTypes?.arkipäivät?.dates,true)
-      newDisabledDates = newDisabledDates.filter(date => date > firstPossibleDateToSelect && date < lastPossibleDateToSelect)
+      const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates,dateToComparePast,miniumDaysPast)
+      const lastPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates,dateToCompareFuture,-miniumDaysFuture)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && date <= lastPossibleDateToSelect)
       return newDisabledDates
     }
     else if(name.includes("_paattyy")){
@@ -665,10 +711,16 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       const miniumDaysPast = matchingItem?.distance_from_previous
       const dateToComparePast = formValues[matchingItem?.previous_deadline]
       let newDisabledDates = dateTypes?.arkipäivät?.dates
-      const firstPossibleDateToSelect = addDays("arkipäivät",dateToComparePast,miniumDaysPast,dateTypes?.arkipäivät?.dates,true)
-      newDisabledDates = newDisabledDates.filter(date => date > firstPossibleDateToSelect && (lockDateLimit ? date < lockDateLimit : true))
+      const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates,dateToComparePast,miniumDaysPast)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
       return newDisabledDates
-    } 
+    }
+    else if(name.includes("viimeistaan_lausunnot")){
+      const firstPossibleDateToSelect = formValues[name]
+      let newDisabledDates = dateTypes?.työpäivät?.dates
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && (lockDateLimit ? date < lockDateLimit : true))
+      return newDisabledDates
+    }
   }
   else if(nahtavillaolo && size === 'XS' || size === 'S' || size === 'M'){
     if(name.includes("_maaraaika")){
@@ -677,8 +729,8 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       const miniumDaysBetween = matchingItem?.distance_from_previous
       const dateToCompare = formValues[matchingItem?.previous_deadline]
       let newDisabledDates = dateTypes?.työpäivät?.dates
-      const firstPossibleDateToSelect = addDays("työpäivät",dateToCompare,miniumDaysBetween,dateTypes?.työpäivät?.dates,true)
-      newDisabledDates = newDisabledDates.filter(date => date > firstPossibleDateToSelect && (lockDateLimit ? date < lockDateLimit : true))
+      const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToCompare,miniumDaysBetween)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && (lockDateLimit ? date < lockDateLimit : true))
       return newDisabledDates
     }
     if(name.includes("_alkaa")){
@@ -689,9 +741,9 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       const dateToComparePast = formValues[matchingItem?.previous_deadline]
       const dateToCompareFuture = formValues[matchingItem?.next_deadline]
       let newDisabledDates = dateTypes?.työpäivät?.dates
-      const firstPossibleDateToSelect = addDays("arkipäivät",dateToComparePast,miniumDaysPast,dateTypes?.arkipäivät?.dates,true)
-      const lastPossibleDateToSelect = subtractDays("arkipäivät",dateToCompareFuture,miniumDaysFuture,dateTypes?.arkipäivät?.dates,true)
-      newDisabledDates = newDisabledDates.filter(date => date > firstPossibleDateToSelect && date < lastPossibleDateToSelect)
+      const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates,dateToComparePast,miniumDaysPast)
+      const lastPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates,dateToCompareFuture,-miniumDaysFuture)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && date <= lastPossibleDateToSelect)
       return newDisabledDates
     }
     else if(name.includes("_paattyy")){
@@ -700,10 +752,16 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       const miniumDaysPast = matchingItem?.distance_from_previous
       const dateToComparePast = formValues[matchingItem?.previous_deadline]
       let newDisabledDates = dateTypes?.työpäivät?.dates
-      const firstPossibleDateToSelect = addDays("arkipäivät",dateToComparePast,miniumDaysPast,dateTypes?.arkipäivät?.dates,true)
+      const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates,dateToComparePast,miniumDaysPast)
+      newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
+      return newDisabledDates
+    }
+    else if(name.includes("viimeistaan_lausunnot")){
+      const firstPossibleDateToSelect = formValues[name]
+      let newDisabledDates = dateTypes?.työpäivät?.dates
       newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect && (lockDateLimit ? date < lockDateLimit : true))
       return newDisabledDates
-    } 
+    }
   }
   //If not any of the above return arkipäivät
   return dateTypes?.arkipäivät?.dates

@@ -68,7 +68,7 @@ function ProjectCardPage({
   const { t } = useTranslation()
 
   useEffect(() => {
-    getProjectCardFields()
+    getProjectCardFields(projectId)
     getExternalDocuments(projectId)
   }, [])
 
@@ -129,17 +129,12 @@ function ProjectCardPage({
     )
     projectCardFields &&
       projectCardFields.forEach(field => {
-         let value = projectUtils.findValueFromObject(projectData, field.name)
+        let value;
+        const returnValues = [];
+        projectUtils.findValuesFromObject(projectData, field.name, returnValues);
 
-        const returnValues = []
-        projectUtils.findValuesFromObject(projectData, field.name, returnValues)
-
-        if (returnValues.length > 1) {
-          let currentValues = []
-          returnValues.forEach(current => {
-            currentValues.push(current)
-          })
-          value = currentValues
+        if (returnValues.length > 0) {
+          value = returnValues.length === 1 ? returnValues[0] : returnValues;
         }
 
         let newField = {

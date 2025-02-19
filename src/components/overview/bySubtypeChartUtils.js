@@ -3,7 +3,7 @@ export const OAS = 'OAS'
 export const DRAFT = 'Luonnos'
 export const PRINCIPLES = 'Periaatteet'
 export const PROPOSITION = 'Ehdotus'
-export const CHECKED_PROPOSITION = 'Tarkastetty ehdotus'
+export const CHECKED_PROPOSITION = 'Tarkistettu ehdotus'
 export const ACCEPTANCE = 'Hyväksyminen'
 export const INCEPTION = 'Voimaantulo'
 

@@ -322,7 +322,7 @@ const getHighestNumberedObject = (obj1, arr) => {
      console.log(arr,lockedGroup.lockedStartTime)
     // Find the index of the next item where dates should start being pushed
     const currentIndex = arr.findIndex(item => item.key === field);
-    let indexToContinue
+    let indexToContinue = 0
     // If adding items
     if (isAdd) {
       // Move the nextItem and all following items forward if item minium is exceeded
@@ -374,17 +374,18 @@ const getHighestNumberedObject = (obj1, arr) => {
       for (let i = currentIndex; i < arr.length; i++) {
         if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
           && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
-          && !arr[i].key.includes("hyvaksymispaatos_pvm") && !arr[i].key.includes("lautakunassa_")){
+          && !arr[i].key.includes("hyvaksymispaatos_pvm")){
           let newDate = new Date(arr[i].value);
-
-          if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet")){
+          if(arr[i - 1]?.key?.includes("paattyy") && arr[i]?.key?.includes("mielipiteet")){
             //mielipiteet and paattyy is always the same value
             newDate = new Date(arr[i - 1].value);
           }
           else{
             //Paattyy and nahtavillaolo l-xl are independent of other values
-            if(((projectSize === "XS" || projectSize === "S" || projectSize === "M") && i === currentIndex && !arr[i]?.key.includes("lautakunassa_")) ||
-             ((projectSize === "XL" || projectSize === "L") && i === currentIndex && !arr[i]?.key.includes("lautakunassa_")) ){
+            if(
+              ((projectSize === "XS" || projectSize === "S" || projectSize === "M") && i === currentIndex) ||
+              ((projectSize === "XL" || projectSize === "L") && i === currentIndex) 
+            ){
               //Make next or previous or previous and 1 after previous dates follow the moved date if needed
               if(arr[currentIndex]?.key?.includes("kylk_maaraaika") || arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") || arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika")){
                 //maaraika in lautakunta moving
@@ -588,7 +589,7 @@ const getHighestNumberedObject = (obj1, arr) => {
 
     //filter all but index keys from data
     return Object.entries(updatedAttributeData).reduce((acc, [key, value]) => {
-      const indexMatch = key.match(/_(\d+)/);
+      const indexMatch = key.match(/_(\d$)/);
       const index = indexMatch ? parseInt(indexMatch[1], 10) : null;
       //const isLautakunnatPhase = lautakunnatPhases.some(phase => key.includes(phase.phase) && key.includes(phase.number));
       //const isEsillaolotPhase = esillaolotPhases.some(phase => key.includes(phase.phase) && key.includes(phase.number));

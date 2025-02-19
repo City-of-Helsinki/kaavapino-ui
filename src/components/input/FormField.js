@@ -53,6 +53,9 @@ const FormField = ({
   deadlineSections,
   confirmedValue,
   sectionAttributes,
+  allowedToEdit,
+  timetable_editable,
+  isAdmin,
   lockedGroup,
   ...rest
 }) => {
@@ -145,6 +148,9 @@ const FormField = ({
             deadlineSections={deadlineSections}
             confirmedValue={confirmedValue}
             sectionAttributes={sectionAttributes}
+            allowedToEdit={allowedToEdit}
+            isAdmin={isAdmin}
+            timetable_editable={timetable_editable}
             lockedGroup={lockedGroup}
           />
         )
@@ -235,8 +241,8 @@ const FormField = ({
       ? `${field.label}  (${t('project.char-limit', { amount: field.character_limit })})`
       : field.label)
 
-    if(field.required) {
-      title += field.required ? ' *' : ''
+    if (field.required || (field?.type === 'fieldset' && projectUtils.isFieldSetRequired(field?.fieldset_attributes))) {
+      title += '*'
     }
 
     const assistiveText = field.assistive_text

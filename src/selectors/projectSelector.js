@@ -274,3 +274,13 @@ export const dateValidationResultSelector = createSelector(
   selectProject,
   project => project?.dateValidationResult
 )
+
+export const cancelTimetableSaveSelector = createSelector(
+  selectProject,
+  project => project?.cancelTimetableSave
+)
+
+export const validatingTimetableSelector = createSelector(
+  selectProject,
+  project => project?.validatingTimetable
+)

@@ -9,7 +9,7 @@ import { EDIT_PROJECT_TIMETABLE_FORM } from '../../../constants'
 import './styles.scss'
 import { deadlineSectionsSelector } from '../../../selectors/schemaSelector'
 import { withTranslation } from 'react-i18next'
-import { deadlinesSelector,validatedSelector,dateValidationResultSelector } from '../../../selectors/projectSelector'
+import { deadlinesSelector,validatedSelector,dateValidationResultSelector,cancelTimetableSaveSelector, validatingTimetableSelector } from '../../../selectors/projectSelector'
 import { Button,IconInfoCircle } from 'hds-react'
 import { isEqual } from 'lodash'
 import VisTimelineGroup from '../../ProjectTimeline/VisTimelineGroup'
@@ -18,8 +18,8 @@ import ConfirmModal from '../../common/ConfirmModal';
 import withValidateDate from '../../../hocs/withValidateDate';
 import objectUtil from '../../../utils/objectUtil'
 import textUtil from '../../../utils/textUtil'
-import { updateDateTimeline,validateProjectTimetable } from '../../../actions/projectActions';
-import { getVisibilityBoolName } from '../../../utils/projectVisibilityUtils';
+import { updateDateTimeline,validateProjectTimetable,setValidatingTimetable } from '../../../actions/projectActions';
+import { getVisibilityBoolName, vis_bool_group_map, getPhaseNameByVisBool } from '../../../utils/projectVisibilityUtils';
 import timeUtil from '../../../utils/timeUtil'
 
 class EditProjectTimeTableModal extends Component {
@@ -57,9 +57,10 @@ class EditProjectTimeTableModal extends Component {
       this.setState({items,groups,visValues:attributeData})
 
       let sectionAttributes = []
-      this.extractAttributes(deadlineSections, attributeData, sectionAttributes, (attribute, attributeData) =>
-        attribute.label !== "Lausunnot viimeistään" && attributeData[attribute.name]
-      );
+      this.extractAttributes(deadlineSections, attributeData, sectionAttributes, (attribute, attributeData) => {
+        return (attribute.label !== "Lausunnot viimeistään" && attributeData[attribute.name]) || 
+        ["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauenut"].includes(attribute.name);
+      });
       this.setState({sectionAttributes})
       
       const unfilteredSectionAttributes = []
@@ -78,7 +79,6 @@ class EditProjectTimeTableModal extends Component {
       deadlines,
       deadlineSections
     } = this.props
-
     if (prevProps.attributeData && prevProps.attributeData !== attributeData) {
       let sectionAttributes = [];
       this.extractAttributes(deadlineSections, attributeData, sectionAttributes, (attribute, attributeData) =>
@@ -101,36 +101,39 @@ class EditProjectTimeTableModal extends Component {
           this.addGroup(changedValues)
           this.setState({visValues:formValues})
         }
-        else{
-          if(!this.props.validated){
-            let ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe)
-            //Form items and groups
-            let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,formValues,deadlines,ongoingPhase)
-            // Update the existing data
-            const combinedGroups = nestedDeadlines? deadLineGroups.concat(nestedDeadlines) : deadLineGroups
-            this.state.groups.clear();
-            this.state.groups.add(combinedGroups)
-            this.state.items.update(phaseData)
-            const newObjectArray = objectUtil.findDifferencesInObjects(prevProps.formValues,formValues)
+        if(!this.props.validated){
+          let ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe)
+          //Form items and groups
+          let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,formValues,deadlines,ongoingPhase)
+          // Update the existing data
+          const combinedGroups = nestedDeadlines? deadLineGroups.concat(nestedDeadlines) : deadLineGroups
+          this.state.groups.clear();
+          this.state.groups.add(combinedGroups)
+          this.state.items.update(phaseData)
+          const newObjectArray = objectUtil.findDifferencesInObjects(prevProps.formValues,formValues)
 
-            //No dispatch when confirmed is added to formValues as new data
-            if(newObjectArray.length === 0 || (typeof newObjectArray[0]?.obj1 === "undefined"  && typeof newObjectArray[0]?.obj2 === "undefined") || newObjectArray[0]?.key.includes("vahvista")){
-              console.log("no disptach")
+          //No dispatch when confirmed is added to formValues as new data
+          if(newObjectArray.length === 0 || (typeof newObjectArray[0]?.obj1 === "undefined"  && typeof newObjectArray[0]?.obj2 === "undefined") || newObjectArray[0]?.key.includes("vahvista")){
+            console.log("no disptach")
+          }
+          else if(typeof newObjectArray[0]?.obj1 === "undefined" && typeof newObjectArray[0]?.obj2 === "string" || newObjectArray[1] && typeof newObjectArray[1]?.obj1 === "undefined" && typeof newObjectArray[1]?.obj2 === "string"){
+            //Get added groups last date field and update all timelines ahead
+            const { field, formattedDate } = this.getLastDateField(newObjectArray);
+            //Dispatch added values to move other values in projectReducer if miniums are reached
+            if(field && formattedDate){
+              this.props.dispatch(updateDateTimeline(field,formattedDate,formValues,true,deadlineSections,false));
             }
-            else if(typeof newObjectArray[0]?.obj1 === "undefined" && typeof newObjectArray[0]?.obj2 === "string" || newObjectArray[1] && typeof newObjectArray[1]?.obj1 === "undefined" && typeof newObjectArray[1]?.obj2 === "string"){
-              //Get added groups last date field and update all timelines ahead
-              const { field, formattedDate } = this.getLastDateField(newObjectArray);
-              //Dispatch added values to move other values in projectReducer if miniums are reached
-              if(field && formattedDate){
-                this.props.dispatch(updateDateTimeline(field,formattedDate,formValues,true,deadlineSections,false));
-              }
-            }
-            this.setState({visValues:formValues})
+          }
+          this.setState({visValues:formValues})
 
-            // Don't validate on every richTextEditor change
-            if (!Object.values(changedValues).every(value => typeof value === 'object')) {
-              // Call validateProjectTimetable after all fields are updated
-             this.props.dispatch(validateProjectTimetable());
+          // Validate timetable if at least one date has changed, or a group has been added/deleted
+          const visBoolChanged = Object.keys(changedValues).some(key =>
+            Object.values(vis_bool_group_map).includes(key) && key !== null);
+
+          if (visBoolChanged || this.state.unfilteredSectionAttributes?.some( attr =>
+            attr.type === 'date' && Object.keys(changedValues).includes(attr.name))) {
+            if (!this.props.validatingTimetable?.started || !this.props.validatingTimetable?.ended) {
+              this.props.dispatch(validateProjectTimetable());
             }
           }
         }
@@ -141,7 +144,13 @@ class EditProjectTimeTableModal extends Component {
         this.setState({sectionAttributes})
       }
     }
-
+    if (this.props.validatingTimetable?.started && this.props.validatingTimetable?.ended) {
+      // Validation has been started and completed, and the result handled above. Reset state.
+      this.props.dispatch(setValidatingTimetable(false,false));
+    }
+    if(prevProps.cancelTimetableSave === false && this.props.cancelTimetableSave === true){
+      this.setLoadingFalse();
+    }
     if (prevProps.submitting && submitFailed) {
       this.setLoadingFalse()
     }
@@ -436,7 +445,7 @@ class EditProjectTimeTableModal extends Component {
       });
     }
     else{
-      if (dashedStyle.includes("board")) {
+      if (dashedStyle.includes("board") && dashStart && dashEnd) {
         phaseData.push({
           start: dashStart,
           id: numberOfPhases + " maaraaika",
@@ -555,14 +564,20 @@ class EditProjectTimeTableModal extends Component {
           startDate = formValues && formValues["projektin_kaynnistys_pvm"]
             ? new Date(formValues["projektin_kaynnistys_pvm"])
             : new Date(deadlines[i].date);
-          startDate.setHours(0, 0, 0, 0);
+          startDate.setHours(12, 0, 0, 0);
+        }
+        else if(deadline.attribute === "voimaantulovaihe_alkaa_pvm"){
+          const phaseStart = formValues && formValues["voimaantulovaihe_alkaa_pvm"] ? new Date(formValues["voimaantulovaihe_alkaa_pvm"]) : deadlines[i].date;
+          startDate = formValues && formValues["hyvaksymispaatos_pvm"] 
+          ? new Date(formValues["hyvaksymispaatos_pvm"]) 
+          : phaseStart
         }
         else{
           //If formValues has deadline.attribute use that values, it if not then use deadline[i].date in startDate.
           startDate = formValues && formValues[deadline.attribute]
             ? new Date(formValues[deadline.attribute])
             : new Date(deadlines[i].date);
-          startDate.setHours(0, 0, 0, 0);
+          startDate.setHours(12, 0, 0, 0);
         }
 
         style = deadline.phase_color
@@ -617,6 +632,7 @@ class EditProjectTimeTableModal extends Component {
         }
         else if(deadline.deadline_types.includes('inner_start')){
           if(formValues.kaavaprosessin_kokoluokka === "XL" && deadline.attribute.includes("iso") || formValues.kaavaprosessin_kokoluokka === "L" && deadline.attribute.includes("iso")){
+            innerEnd = false
             innerStart = formValues && formValues[deadline.attribute]
               ? new Date(formValues[deadline.attribute])
               : deadlines[i].date;
@@ -626,6 +642,7 @@ class EditProjectTimeTableModal extends Component {
             }
           }
           if(formValues.kaavaprosessin_kokoluokka === "XS" && deadline.attribute.includes("pieni") || formValues.kaavaprosessin_kokoluokka === "S" && deadline.attribute.includes("pieni") || formValues.kaavaprosessin_kokoluokka === "M" && deadline.attribute.includes("pieni")){
+            innerEnd = false
             innerStart = formValues && formValues[deadline.attribute]
               ? new Date(formValues[deadline.attribute])
               : deadlines[i].date;
@@ -659,6 +676,7 @@ class EditProjectTimeTableModal extends Component {
       deadlines[i]?.deadline?.attribute?.includes("ehdotus_kylk_aineiston_maaraaika") ||
       deadlines[i]?.deadline?.attribute?.includes("kaavaluonnos_kylk_aineiston_maaraaika")){
         if(deadline.deadline_types.includes('milestone') && deadline.deadline_types.includes('dashed_start')){
+          innerEnd = false
           innerStart = formValues && formValues[deadline.attribute]
             ? new Date(formValues[deadline.attribute])
             : deadlines[i].date;
@@ -710,6 +728,12 @@ class EditProjectTimeTableModal extends Component {
           ? new Date(formValues["voimaantulovaihe_paattyy_pvm"]) 
           : deadlines[i].date;
         }
+        else if(deadline.attribute === "hyvaksyminenvaihe_paattyy_pvm"){
+          const phaseEnd = formValues && formValues["hyvaksyminenvaihe_paattyy_pvm"] ? new Date(formValues["hyvaksyminenvaihe_paattyy_pvm"]) : deadlines[i].date;
+          endDate = formValues && formValues["hyvaksymispaatos_pvm"] 
+          ? new Date(formValues["hyvaksymispaatos_pvm"]) 
+          : phaseEnd
+        }
         else{
           endDate = formValues && formValues[deadline.attribute]
           ? new Date(formValues[deadline.attribute])
@@ -718,7 +742,7 @@ class EditProjectTimeTableModal extends Component {
 
 
         if (endDate instanceof Date && !isNaN(endDate.getTime())) {
-          endDate.setHours(0, 0, 0, 0);
+          endDate.setHours(12, 0, 0, 0);
         }
       }
 
@@ -1030,96 +1054,26 @@ class EditProjectTimeTableModal extends Component {
   }
 
   addGroup = (changedValues) => {
-    // Note: this function may include old/redundant code. TODO: review and remove unnecessary
-    // Groups should be added by dispatching change and regenerating them in getTimelineData
     const keys = Object.keys(changedValues);
-    let phase = '';
+    const changedVisBool = Object.values(vis_bool_group_map).find(boolName => keys.includes(boolName));
+    let phase = getPhaseNameByVisBool(changedVisBool);
     let content = '';
-    let index = textUtil.getNumberAfterSuffix(Object.keys(changedValues)[0]); //get index from added value, null if not found aka first
-    let idt = "";
-    let deadlinegroup = "";
-    const groups = this.state.groups.get();
+    if (changedVisBool.includes("nahtaville")){
+      content = "nahtavillaolo";
+    } else if (changedVisBool.includes("lautakunta")) {
+      content = "lautakunta";
+    } else if (changedVisBool.includes("esillaolo")) {
+      content = "esillaolo";
+    }
+    let index = textUtil.getNumberAfterSuffix(changedVisBool);
     let matchingValues = Object.entries(this.props.formValues);
 
-    // Iterate over the keys
-    for (let key of keys) {
-      const exceptionKey = "tarkistettu_ehdotus";
-      const parts = this.splitKey(key, exceptionKey);
-      if (parts.length > 3 && key.includes("esillaolo") || parts.length > 2 && key.includes("lautakuntaan")) {
-        phase = parts[key.includes("lautakuntaan") ? 0 : 1];
-        content = parts[key.includes("lautakuntaan") ? 1 : 2];
-        index = index !== null ? index : parts[key.includes("lautakuntaan") ? 2 : 3]; //get index if null
-  
-        if (phase === "tarkistettu_ehdotus") {
-          phase = phase.charAt(0).toUpperCase() + phase.slice(1);
-          phase = phase.replace(/_/g, ' ');
-        }
-        
-        //Find correct group by phase and content of vis items
-        let filteredGroups = groups.filter(group => {
-          if (phase === "Tarkistettu ehdotus" && content === "lautakuntaan" && phase === group?.content) {
-            content = "lautakunta";
-          } else if (phase === group?.content.toLowerCase() && content === "lautakuntaan") {
-            content = "lautakunta";
-          } else if (phase === "ehdotus" && content === "esillaolo") {
-            content = "nahtavillaolo";
-          }
-  
-          return typeof group?.deadlinegroup === 'string' && group?.deadlinegroup.includes(phase === "Tarkistettu ehdotus" ? phase.toLowerCase().replace(/\s+/g, '_') : phase.toLowerCase()) && group?.deadlinegroup.includes(content);
-        });
-        //idt for new group
-        if (filteredGroups.length > 0) {
-          deadlinegroup = filteredGroups[0].deadlinegroup;
-          // Step 2: Extract group IDs and ensure they are numbers
-          const groupIds = groups.map(group => parseInt(group.id)).filter(id => !isNaN(id));
-
-          // Step 3: Find the largest ID, handle case where there are no groups
-          const largestId = groupIds.length > 0 ? Math.max(...groupIds) : 0;
-
-          // Step 4: Get the next available ID
-          const nextGroupId = largestId + 1;
-          idt = nextGroupId
-  
-          deadlinegroup = deadlinegroup.replace(/_(\d+)/, (match, number) => {
-            return '_' + (parseInt(number, 10) + 1);
-          });
-          //Add idt to nestgroups so it will be created to vis timeline as new group
-          const updatedGroups = groups.map(group => {
-            let content = group?.content;
-            if (content === "lautakuntaan") {
-              content = "lautakunta";
-            } else if (phase === "ehdotus" && content === "esillaolo") {
-              content = "nahtavillaolo";
-            }
-            if (String(content).toLowerCase() === phase.toLowerCase()) {
-              group.nestedGroups.push(idt);
-            }
-            return group;
-          });
-        }
-      }
-    }
-  
-    if (content === "esillaolo" || content === "nahtavillaolo" || content === "lautakuntaan" || content === "lautakunta") {
-      let filterContent;
-      if (content === "nahtavillaolo") {
-        filterContent = "nahtavilla";
-      }
-      let indexKey = '';
-      if (index > 2) {
-        indexKey = "_" + Number(index - 1);
-      }    
-
-      phase = phase.toLowerCase().replace(/\s+/g, '_');
-      let syntaxToCheck = "";
-      let syntaxToCheck2 = "";
-      if (phase === "ehdotus") {
-        //Special check for ehdotus phase
-        syntaxToCheck = "ehdotuksen";
-        syntaxToCheck2 = "ehdotuksesta";
-      }
+    if (content) {
+      let indexKey = index > 2 ? "_" + Number(index - 1) : '';
+      let syntaxToCheck = phase === "ehdotus" ? "ehdotuksen" : "";
+      let syntaxToCheck2 = phase === "ehdotus" ? "ehdotuksesta" : "";
       //Get existing keys and values
-      if (content === "lautakuntaan" || content === "lautakunta") {
+      if (content === "lautakunta") {
         matchingValues = Object.entries(this.props.formValues)
           .filter(([key]) =>
             key === phase + '_kylk_aineiston_maaraaika' + indexKey ||
@@ -1131,6 +1085,7 @@ class EditProjectTimeTableModal extends Component {
           )
           .map(([key, value]) => ({ key, value }));
       } else {
+        const filterContent = content == "nahtavillaolo" ? "nahtavilla" : ""
         matchingValues = Object.entries(this.props.formValues)
           .filter(([key]) =>
             key === 'milloin_' + phase + '_' + content + '_alkaa' + indexKey ||
@@ -1158,27 +1113,6 @@ class EditProjectTimeTableModal extends Component {
       } else {
         indexString = "_2";
       }
-      const updateGroups = this.state.groups.get();
-      let phaseCapitalized = phase.charAt(0).toUpperCase() + phase.slice(1);
-      if (phaseCapitalized === "Tarkistettu_ehdotus") {
-        phaseCapitalized = phaseCapitalized.replace(/_/g, ' ');
-      }
-      let phaseGroup = updateGroups.find(group => group.content.toLowerCase() === phaseCapitalized.toLowerCase());
-      if (phaseGroup?.nestedGroups) {
-        const nestedGroupIds = phaseGroup.nestedGroups;
-        const nestedGroups = updateGroups.filter(group => nestedGroupIds.includes(group.id));
-        nestedGroups.sort((a, b) => a.content.localeCompare(b.content));
-  
-        const groupsWithNestedInGroup = updateGroups.filter(group => group.nestedInGroup);
-        const groupsWithoutNestedInGroup = updateGroups.filter(group => !group.nestedInGroup);
-  
-        groupsWithNestedInGroup.sort((a, b) => a.content.localeCompare(b.content));
-        const sortedGroups = groupsWithoutNestedInGroup.concat(groupsWithNestedInGroup);
-  
-        this.state.groups.clear();
-        this.state.groups.add(sortedGroups);
-      }
-  
       validValues.forEach(({ key, value }) => {
         let modifiedKey;
         const numericRegex = /_\d+$/; // Matches keys that end with an underscore followed by one or more digits
@@ -1192,7 +1126,7 @@ class EditProjectTimeTableModal extends Component {
     } else {
       console.error("Not enough matching values to create new items.");
     }
-  };  
+  };
 
   getChangedValues = (prevValues, currentValues) => {
     const changedValues = {};
@@ -1204,8 +1138,7 @@ class EditProjectTimeTableModal extends Component {
     });
     
     const isAddRemove = Object.entries(changedValues).some(([key, value]) => 
-      (key.includes('jarjestetaan') || key.includes('lautakuntaan')) && 
-      typeof value === 'boolean' && value === true
+      Object.values(vis_bool_group_map).includes(key) && typeof value === 'boolean' && value === true
     );
     //If isAddRemove is false then it is a delete and add is true
     return [isAddRemove,changedValues];
@@ -1317,11 +1250,11 @@ class EditProjectTimeTableModal extends Component {
             />
         </Modal.Content>
         <Modal.Actions>
-        {this.props.allowedToEdit ? (
+        {allowedToEdit ? (
           <span className="form-buttons">
             <Button
               variant="primary"
-              disabled={loading || !this.props.allowedToEdit}
+              disabled={loading || !allowedToEdit}
               loadingText={t('common.save-timeline')}
               isLoading={loading}
               type="submit"
@@ -1367,6 +1300,10 @@ EditProjectTimeTableModal.propTypes = {
   dispatch: PropTypes.func.isRequired,
   t: PropTypes.func.isRequired,
   validated: PropTypes.bool.isRequired,
+  validatingTimetable: PropTypes.shape({
+    started: PropTypes.bool,
+    ended: PropTypes.bool
+  })
 }
 
 const mapStateToProps = state => ({
@@ -1375,7 +1312,9 @@ const mapStateToProps = state => ({
   formValues: getFormValues(EDIT_PROJECT_TIMETABLE_FORM)(state),
   deadlines: deadlinesSelector(state),
   validated: validatedSelector(state),
-  dateValidationResult : dateValidationResultSelector(state)
+  dateValidationResult : dateValidationResultSelector(state),
+  cancelTimetableSave: cancelTimetableSaveSelector(state),
+  validatingTimetable: validatingTimetableSelector(state),
 })
 
 const decoratedForm = reduxForm({

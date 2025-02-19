@@ -176,14 +176,14 @@ const FieldSet = ({
           }
           return richText.toString()
         }
+        else if (value?.description){
+          return value.description
+        }
         else if(value?.name){
-          if(value?.description){
-            return value.description
-          }
           return value.name.toString()
         }
         else {
-          return value
+          return (Object.prototype.toString.call(value) === "[object Object]") ? null : value
         }
       }
     }
@@ -255,9 +255,10 @@ const FieldSet = ({
                     required = true
                   }
 
-                  const title = field.character_limit
+                  let title = field.character_limit
                     ? t('project.fieldset-title', { label: field.label, max: field.character_limit })
                     : field.label
+                  title += field?.required ? '*' : ''
                   const error = syncronousErrors && syncronousErrors[field.name]
 
                   /* Two ways to bring errors to FormField component:

@@ -562,11 +562,13 @@
     svg{
       width: 24px;
       height: 24px;
+      color: $black1;
     }
     .header-title {
       font-size: 1.125rem;
       letter-spacing: 0.004em;
       padding-left: 8px;
+      color: $black1;
     }
   }
 
@@ -603,10 +605,10 @@
       z-index: 100;
       height: 85px;
       width: 302px;
-      //border: 1px #bfbfbf;
       border-right: 1px solid #CCCCCC;
       border-bottom: 1px solid #CCCCCC;
       span {
+        font-family: 'Helsinki Grotesk Bold', sans-serif;
         position: relative;
         top: 31px;
         left: 40px;
@@ -640,24 +642,30 @@
       position: absolute;
       border: 1px solid #ccc;
       background-color: white;
-      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0px 2px 8px 0px #00000080;
       padding: 0;
       z-index: 1000;
       button{
-        color: $black;
+        color: $black1;
         font-family: 'Helsinki Grotesk Regular', sans-serif;
         font-size: $size16;
         font-weight: 400;
+        height: $size40;
         line-height: $size24;
         width: 100%;
         text-align: left;
         justify-content: flex-start;
+        margin:0;
+        div{
+          margin:$size10;
+        }
         span{
-          color: $black;
+          color: $black1;
           font-family: 'Helsinki Grotesk Regular', sans-serif;
           font-size: $size16;
           font-weight: 400;
           line-height: $size24;
+          padding-left: 2px !important;
         }
       }
       .disabled{
@@ -676,7 +684,7 @@
 
     .add-button-info{
       color: $color-info;
-      padding-left: $size40;
+      padding-left: $size48;
       padding-right: $size24;
       padding-bottom: $size12;
       font-size: $size14;
@@ -701,6 +709,9 @@
         height: 56px;
         &:last-child {
           margin-left: $size16;
+          &:hover {
+            border-color: $color-bus;
+          }
         }
       }
       span {
@@ -749,9 +760,23 @@
       overflow-y: auto;
       overflow-x: hidden;
       scrollbar-gutter: stable;
+      margin-right: 8px;
+      margin-bottom: 24px;
+
+      &::-webkit-scrollbar {
+        width: 7px;
+        background: transparent;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        color: #808080;
+        background-clip: padding-box;
+        position: relative;
+      }
 
       &::-webkit-scrollbar-track {
-        margin-block-start: 130px;
+        background-color: #D8D8D8;
+        margin-block-start: 141px;
       }
     }
   }
@@ -795,19 +820,24 @@
         }
       }
       li+li:before {
+        content: "";
+        display: inline-block;
+        position: relative;
         padding: 8px;
-        color: #1A1A1A;
-        content: "\203A";
+        margin-right: 9px;
+        top: 5px;
+        left: 9px;
+        background: url('/src/assets/icons/angle-right.svg') no-repeat;
+        width: 6px;
+        height: 9px;
       }
       button{
         position: absolute;
-        top: 20px;
-        right: 4px;
+        top: 15px;
+        right: 0px;
         color: #1A1A1A;
-        width: 24px;
-        height: 24px;
         span {
-          padding: 8px !important;
+          padding: 0 !important;
           svg {
             position: absolute;
             top: 50%;
@@ -830,13 +860,13 @@
       flex-direction: row;
       flex-wrap: wrap;
       gap: 20px;
-      padding: 0 30px 16px 33px;
+      padding: 0 17px 31px 34px;
       & > div{
         width: 100%;
       }
       .tab-header {
         position: sticky;
-        top: 56px;
+        top: 66px;
         z-index: 99;
         width: 510px;
         background-color: #fff;
@@ -868,8 +898,24 @@
         }
         .deadline-input{
           border:2px solid $border-gray2;
+          &:has(:disabled) {
+            background-color: #e6e6e6;
+            border-color: RGBA(0,0,0,0);
+            border-style: none;
+            input {
+              color: #808080;
+              -webkit-text-fill-color: #999;
+            }
+            button {
+              color: 999;
+            }
+          }
           input{
             text-indent: 16px;
+            width: 85%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
             &:focus {
               outline: 2px solid #1A1A1A !important;
               outline-offset: -2px;
@@ -902,24 +948,24 @@
       }
 
       .event-info-notification {
-        width: 450px;
+        width: 445px;
         margin-bottom: $size16;
       }
 
       .deadline-info-notification{
-        width: 450px;
+        width: 445px;
         margin-bottom: $size16;
       }
 
       .deadlines-preliminary-notification, .deadlines-confirmed-notification{
-        width: 450px;
+        width: 445px;
         margin-bottom: $size16;
         font-family: "Helsinki Grotesk Regular", sans-serif;
         font-weight:500;
       }
 
       .deadlines-alert-notification {
-        width: 450px;
+        width: 445px;
         margin-top: 32px;
         p {
           margin-bottom: 0;

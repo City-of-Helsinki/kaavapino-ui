@@ -7,12 +7,25 @@ import { useTranslation } from 'react-i18next';
 import RollingInfo from '../input/RollingInfo'
 
 const Link = props => {
-  const openLink = () => window.open(currentValue)
+  const openLink = () => {
+    try {
+      window.open(currentValue);
+    }
+    catch (e) {
+      if (currentValue.includes("pw://")){
+        const encoded_URN = "pw://" + currentValue.split("pw://")[1].replace(":", "%3A");
+        window.open(encoded_URN);
+      } else {
+        throw e;
+      }
+    }
+  }
 
   const {t} = useTranslation()
 
   const [currentValue, setCurrentValue] = useState(props.input.value)
   const [editField,setEditField] = useState(false)
+  const [isEmptyReqField, setIsEmptyReqField] = useState(false)
   const isValid = value => isUrl(value) || ipRegex({ exact: true }).test(value)
 
   const multipleLinks = props.type === 'select-multiple'
@@ -26,9 +39,12 @@ const Link = props => {
   }, [])
 
   const onBlur = (event) => {
+    if (event.target.value === "" && props.fieldData.required) {
+      setIsEmptyReqField(true);
+    }
     if (isLinkValid) {
       if(event.target.value !== oldValueRef.current){
-      props.onBlur()
+        props.onBlur()
       }
     }
     if(props.rollingInfo){
@@ -38,6 +54,9 @@ const Link = props => {
 
   const onChange = event => {
     const value = event.target.value
+    if (value !== "") {
+      setIsEmptyReqField(false);
+    }
     if (multipleLinks) {
       value && props.input.onChange(value.split(','))
     } else {
@@ -75,7 +94,7 @@ const Link = props => {
           value={currentValue}
           error={props.error}
           onChange={onChange}
-          className={!isLinkValid && currentValue && !multipleLinks ? 'error link' : 'link'}
+          className={isEmptyReqField || (!isLinkValid && currentValue && !multipleLinks) ? 'error link' : 'link'}
           aria-label="link"
         />
         {!multipleLinks && (
@@ -97,8 +116,13 @@ const Link = props => {
         {!isLinkValid && currentValue && !multipleLinks && (
         <div className="error-text">{t('project.link-is-broken')}</div>
         )}
+        {isEmptyReqField && (<>
+          <IconCross className="link-status" size="l" color="red"/>
+          <div className='error-text'>{t('project.noempty')}</div>
+          </>)
+        }
       </div>
-    
+
     return elements
   }
 

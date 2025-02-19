@@ -197,11 +197,11 @@ function ProjectsChart({
               onMouseLeave={() => setSelectedPhase({})}
             />
             <Bar
-              dataKey={DRAFT}
-              name="luonnos"
+              dataKey={PRINCIPLES}
+              name="periaatteet"
               stackId="a"
-              fill={currentChartData[DRAFT_COLOR]}
-              onMouseOver={() => setSelectedPhase({ phase: DRAFT })}
+              fill={currentChartData[PRINCIPLES_COLOR]}
+              onMouseOver={() => setSelectedPhase({ phase: PRINCIPLES })}
               onMouseLeave={() => setSelectedPhase({})}
             />
             <Bar
@@ -213,11 +213,11 @@ function ProjectsChart({
               onMouseLeave={() => setSelectedPhase({})}
             />
             <Bar
-              dataKey={PRINCIPLES}
-              name="periaatteet"
+              dataKey={DRAFT}
+              name="luonnos"
               stackId="a"
-              fill={currentChartData[PRINCIPLES_COLOR]}
-              onMouseOver={() => setSelectedPhase({ phase: PRINCIPLES })}
+              fill={currentChartData[DRAFT_COLOR]}
+              onMouseOver={() => setSelectedPhase({ phase: DRAFT })}
               onMouseLeave={() => setSelectedPhase({})}
             />
             <Bar

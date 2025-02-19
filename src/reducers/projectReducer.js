@@ -47,6 +47,7 @@ import {
   GET_PROJECTS_OVERVIEW_FLOOR_AREA_SUCCESSFUL,
   GET_PROJECTS_OVERVIEW_BY_SUBTYPE_SUCCESSFUL,
   SAVE_PROJECT_FLOOR_AREA_SUCCESSFUL,
+  SAVE_PROJECT_TIMETABLE,
   SAVE_PROJECT_TIMETABLE_SUCCESSFUL,
   RESET_FLOOR_AREA_SAVE,
   RESET_TIMETABLE_SAVE,
@@ -89,7 +90,10 @@ import {
   VALIDATE_DATE,
   UPDATE_DATE_TIMELINE,
   RESET_ATTRIBUTE_DATA,
-  UPDATE_PROJECT_FAILURE
+  UPDATE_PROJECT_FAILURE,
+  UPDATE_ATTRIBUTE,
+  SAVE_PROJECT_TIMETABLE_FAILED,
+  VALIDATING_TIMETABLE
 } from '../actions/projectActions'
 
 import timeUtil from '../utils/timeUtil'
@@ -144,12 +148,28 @@ export const initialState = {
   disabledDates: {},
   error: null,
   dateValidationResult: {valid: false, result: {}},
-  validated:false
+  validated:false,
+  cancelTimetableSave:false,
+  validatingTimetable: {started: false, ended: false}
 }
 
 export const reducer = (state = initialState, action) => {
 
   switch (action.type) {
+
+    case UPDATE_ATTRIBUTE: {
+      const { field, value } = action.payload
+      return {
+        ...state,
+        currentProject: {
+          ...state.currentProject,
+          attribute_data: {
+            ...state.currentProject.attribute_data,
+            [field]: value
+          }
+        }
+      }
+    }
 
     case UPDATE_DATE_TIMELINE: {
       const { field, newDate, formValues, isAdd, deadlineSections, lockedGroup } = action.payload;
@@ -209,11 +229,11 @@ export const reducer = (state = initialState, action) => {
 
     case UPDATE_PROJECT_FAILURE: {
       //Update dates that were returned unvalid from backend
-      const { errorData } = action.payload;
+      const { errorData, formValues } = action.payload;
       const dateRegex = /\d{1,2}\.\d{1,2}\.\d{4}/;
 
-      // Create a copy of attribute_data to modify
-      const updatedAttributeData = { ...state.currentProject.attribute_data };
+      // Duplicate attribute_data and update it with changed formValues
+      const updatedAttributeData = { ...state.currentProject.attribute_data, ...formValues};
 
       // Apply date format corrections based on errorData
       for (const key in updatedAttributeData) {
@@ -949,11 +969,30 @@ export const reducer = (state = initialState, action) => {
       }
     }
 
+    case SAVE_PROJECT_TIMETABLE: {
+      return{
+        ...state,
+        cancelTimetableSave:false
+      }
+    }
+
     case SAVE_PROJECT_TIMETABLE_SUCCESSFUL: {
       return{
         ...state,
         timetableSaved:action.payload,
-        showEditProjectTimetableForm: false
+        showEditProjectTimetableForm: false,
+        cancelTimetableSave:false
+      }
+    }
+
+    case SAVE_PROJECT_TIMETABLE_FAILED: {
+      return{
+        ...state,
+        timetableSaved:false,
+        showEditProjectTimetableForm: true,
+        loading:false,
+        saving:false,
+        cancelTimetableSave:true
       }
     }
 
@@ -961,6 +1000,13 @@ export const reducer = (state = initialState, action) => {
       return{
         ...state,
         timetableSaved:false
+      }
+    }
+
+    case VALIDATING_TIMETABLE: {
+      return {
+        ...state,
+        validatingTimetable: action.payload
       }
     }
 

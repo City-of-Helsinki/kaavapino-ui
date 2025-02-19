@@ -121,7 +121,8 @@
     "person":"Henkilö",
     "unit":"Yksikkö tai tiimi",
     "keyword":"Hakusana",
-    "close":"Sulje"
+    "close":"Sulje",
+    "date-missing":" Päivämäärä puuttuu"
   },
   "messages": {
     "deadlines-successfully-saved": "Aikataulut tallennettu",
@@ -164,7 +165,9 @@
     "error-with-dates":"Päivämäärät tarkistettu:",
     "fixed-timeline-dates":"Päivämäärät muutettu:",
     "checking-dates":"Tarkistetaan päivämääriä",
-    "dates-confirmed":"Päivämäärät validoitu"
+    "dates-confirmed":"Päivämäärät validoitu",
+    "error-connection":"Tallennus epäonnistui yhteysongelmia takia. Yritetään uudelleen 10 sekunnin kuluttua.",
+    "error-connection-fail":"Tallennus keskeytyi yhteysongelmia takia."
   },
   "floor-areas": {
     "title": "Päivitä kerrosalatiedot",
@@ -343,7 +346,7 @@
     "ehdotus": "Ehdotus-vaihe",
     "hyvaksyminen": "Hyväksyminen-vaihe",
     "luonnos": "Luonnos-vaihe",
-    "tarkastettuEhdotus": "Tarkastettu ehdotus -vaihe",
+    "tarkastettuEhdotus": "Tarkistettu ehdotus -vaihe",
     "voimaantulo": "Voimaantulo-vaihe",
     "periaatteet": "Periaatteet-vaihe"
   },
@@ -355,7 +358,7 @@
       "name": "Projektin nimi",
       "responsible": "Vastuuhenkilö",
       "is-visible": "Luodaanko projekti näkyväksi",
-      "process-size": "Valitsen projektin koko",
+      "process-size": "Valitse projektin koko",
       "principles": "Periaatteet",
       "draft": "Kaavaluonnos",
       "project-type": "Projektin tyyppi"
@@ -451,7 +454,7 @@
     "office":"Toimitila",
     "public":"Julkiset",
     "other":"Muut",
-    "already-confirmed":"Päivämäärät ovat jo vahvistettu. Jos haluat muuttaa päivämääriä, ota yhteys kaavoitussihteeriin.",
+    "already-confirmed":"Päivämäärät on jo vahvistettu. Jos haluat muuttaa päivämääriä, ota yhteys kaavoitussihteeriin.",
     "confirmed":"Vahvistettu",
     "principles-board-text":"Milloin periaatteet on lautakunnassa",
     "draft-board-text":"Milloin luonnos on lautakunnassa",

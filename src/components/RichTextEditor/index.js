@@ -51,9 +51,10 @@ const formats = [
   'strike',
   'color',
   'background',
-  'list',
-  'ordered',
-  'bullet',
+  // KAPI-98: Temporarily disabled lists in rte
+  //'list', 
+  //'ordered',
+  //'bullet',
   'script',
   'sub',
   'super'
@@ -295,7 +296,7 @@ function RichTextEditor(props) {
       const isOwner = lockData.owner;
       if (isLocked) {
         const field = inputProps.name.split('.')[1]
-        const fieldData = field ? lockData.field_data[field] : undefined;
+        const fieldData = field ? lockData?.field_data?.[field] : undefined;
         setValue(fieldData)
       }
       lockField(lockedStatus, isOwner, identifier);
@@ -487,6 +488,9 @@ function RichTextEditor(props) {
         if(!valueIsSet){
           if (typeof onBlur === 'function') {
             localStorage.setItem("changedValues", inputProps.name);
+            if (editorEmpty) {
+              editor = null
+            }
             onBlur();
             oldValueRef.current = editor?.ops;
           }
@@ -750,7 +754,7 @@ function RichTextEditor(props) {
       ) : null}
     </div>
       {counter.current > maxSize && charLimitOver || maxSizeOver ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.charsover')}</div> : ""}
-      {valueIsEmpty && required ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.noempty')}</div> : ""}
+      {valueIsEmpty && required ? <div className='error-text'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.noempty')}</div> : ""}
     </div>
     
     return elements

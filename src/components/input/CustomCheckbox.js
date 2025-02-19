@@ -17,7 +17,8 @@ const CustomCheckbox = ({
   updated,
   formName,
   display,
-  isProjectTimetableEdit
+  isProjectTimetableEdit,
+  isAdmin
 }) => {
   const { t } = useTranslation()
   const formValues = useSelector(getFormValues(formName ? formName : EDIT_PROJECT_TIMETABLE_FORM))
@@ -67,66 +68,39 @@ const CustomCheckbox = ({
   }
 
   if(isProjectTimetableEdit){
-    return (
-      <>
-        {checked 
-        ? 
+    //Only users with admin role can confirm the dates
+    if(isAdmin && !checkboxDisabled){
+      return (
         <>
-          <div className='deadlines-col'>
-            <Notification 
-              className='deadlines-confirmed-notification' 
-              size="small" 
-              label="Päivämäärä vahvistettu" 
-              type="success" 
-            >
-              {t('deadlines.dates-confirmed')}
+          {checked 
+          ? 
+          <>
+            <div className='deadlines-col'>
+              <Notification className='deadlines-confirmed-notification' size="small" label="Päivämäärä vahvistettu" type="success" >{t('deadlines.dates-confirmed')}</Notification>
+            </div>
+            {display !== 'readonly_checkbox' &&
+            <div className='deadlines-col'>
+              <Button className='deadlines-cancel-button' size='small' variant="danger" onClick={onChangeSave}>
+                {t('deadlines.cancel-confirmation')}
+              </Button>
+            </div>
+            }
+          </> 
+          :
+          <>
+            <Notification className='deadlines-preliminary-notification' size="small" label="Aikataulutiedot ovat alustavia" type="info">
+              {t('deadlines.dates-are-preliminary')}
             </Notification>
-          </div>
-          {display !== 'readonly_checkbox' &&
-          <div className='deadlines-col'>
-            <Button 
-              className='deadlines-cancel-button' 
-              size='small' variant="danger"             
-              onClick={() => {
-                if (!checkboxDisabled) {
-                  onChangeSave();
-                }
-              }}  
-              disabled={checkboxDisabled}
-            >
-              {t('deadlines.cancel-confirmation')}
+            {display !== 'readonly_checkbox' &&
+            <Button className='deadlines-confirm-button' size='small' onClick={onChangeSave}>
+              {t('deadlines.confirm-dates')}
             </Button>
-          </div>
-          }
-        </> 
-        :
-        <>
-          <Notification 
-            className='deadlines-preliminary-notification' 
-            size="small" 
-            label="Aikataulutiedot ovat alustavia" 
-            type="info"
-          >
-            {t('deadlines.dates-are-preliminary')}
-          </Notification>
-          {display !== 'readonly_checkbox' &&
-          <Button 
-            className='deadlines-confirm-button' 
-            size='small'   
-            onClick={() => {
-              if (!checkboxDisabled) {
-                onChangeSave();
-              }
-            }}  
-            disabled={checkboxDisabled}
-          >
-            {t('deadlines.confirm-dates')}
-          </Button>
+            }
+          </>
           }
         </>
-        }
-      </>
-    )
+      )
+    }
   }
   else{
     return (

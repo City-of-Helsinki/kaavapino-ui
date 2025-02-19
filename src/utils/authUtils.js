@@ -24,6 +24,13 @@ const isAdmin = (currentUserId, users) => {
   return userRole === ADMIN 
 }
 
+const isThePersonResponsiple = (currentUserId, users, attributeData) => {
+  //Checks that is vastuuhenkilö and matches the attribute datas id of vastuuhenkilö.
+  const userRole = getUserRole(currentUserId, users)
+  const isThePerson = checkPerson(currentUserId, users, attributeData?.vastuuhenkilo_sahkoposti)
+  return userRole === ADMIN || userRole === RESPONSIBLE && isThePerson 
+}
+
 const getAdId = (currentUserId, users) => {
   let ad
   if (users) {
@@ -50,9 +57,23 @@ const getUserRole = (currentUserId, users) => {
   return privilege
 }
 
+const checkPerson = (currentUserId, users, reponsiblePersonMail) => {
+  let isPerson = false
+  if (users) {
+    users.forEach(user => {
+      if (user?.id === currentUserId && reponsiblePersonMail?.toLowerCase?.() === user?.email?.toLowerCase?.()) {
+        isPerson = true
+        return
+      }
+    })
+  }
+  return isPerson
+}
+
 export default {
   isAdmin,
   isExpert,
   isResponsible,
-  getAdId
+  getAdId,
+  isThePersonResponsiple
 }

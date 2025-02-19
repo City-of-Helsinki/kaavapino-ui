@@ -31,6 +31,8 @@ const SelectInput = ({
   autofillRule,
   formValues,
   formName,
+  isProjectTimetableEdit,
+  timetable_editable
 }) => {
   const currentValue = []
   const oldValueRef = useRef('');
@@ -294,7 +296,7 @@ const SelectInput = ({
           onBlur={handleBlur}
           onFocus={handleFocus}
           clearable={false}
-          disabled={disabled || editDisabled}
+          disabled={disabled || editDisabled || (isProjectTimetableEdit && !timetable_editable)}
           options={currentOptions}
           value={currentSingleValue}
           onChange={data => {
@@ -320,7 +322,7 @@ const SelectInput = ({
           onBlur={handleBlur}
           onFocus={handleFocus}
           clearable={true}
-          disabled={disabled || editDisabled}
+          disabled={disabled || editDisabled || (isProjectTimetableEdit && !timetable_editable)}
           options={currentOptions}
           defaultValue={currentValue}
           onChange={data => {

@@ -88,11 +88,13 @@ class CustomField extends Component {
   renderYearSelect = props => {
     const { multiple_choice, placeholder_text } = this.props.field
     const { handleBlurSave, handleLockField, handleUnlockField, formName, lockField, fieldSetDisabled, 
-      insideFieldset, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, phaseIsClosed} = this.props
+      insideFieldset, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, 
+      phaseIsClosed, isProjectTimetableEdit, timetable_editable} = this.props
 
     if (this.yearOptions.length === 0) {
       this.yearOptions = projectUtils.generateArrayOfYears()
     }
+
     return (
       <SelectInput
         lockField={lockField}
@@ -115,13 +117,17 @@ class CustomField extends Component {
         selectedPhase={selectedPhase}
         label={this.props?.field?.label}
         phaseIsClosed={phaseIsClosed}
+        isProjectTimetableEdit={isProjectTimetableEdit}
+        timetable_editable={timetable_editable}
       />
     )
   }
 
   renderString = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, lockField, fieldSetDisabled, insideFieldset, 
-      nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, attributeData, phaseIsClosed } = this.props
+      nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, attributeData, phaseIsClosed,
+      isProjectTimetableEdit, timetable_editable } = this.props
+
     return( 
       <CustomInput 
         lockField={lockField} 
@@ -145,6 +151,8 @@ class CustomField extends Component {
         phaseIsClosed={phaseIsClosed}
         customError={this.props?.field?.error_text}
         isTabActive={this.props.isTabActive}
+        isProjectTimetableEdit={isProjectTimetableEdit}
+        timetable_editable={timetable_editable}
       />
     )
   }
@@ -222,7 +230,7 @@ class CustomField extends Component {
     const { handleBlurSave, handleLockField, handleUnlockField, deadlines, field, lockField, fieldSetDisabled, 
       insideFieldset, disabled, isProjectTimetableEdit, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, 
       attributeData, phaseIsClosed, disabledDates, lomapaivat, dateTypes, maxMoveGroup, maxDateToMove, groupName, visGroups, visItems, 
-      deadlineSections, formValues, confirmedValue, sectionAttributes, lockedGroup } = this.props
+      deadlineSections, formValues, confirmedValue, sectionAttributes, allowedToEdit, timetable_editable, lockedGroup } = this.props
 
     let current
     if (deadlines && deadlines.length > 0) {
@@ -262,6 +270,8 @@ class CustomField extends Component {
           formValues={formValues}
           confirmedValue={confirmedValue}
           sectionAttributes={sectionAttributes}
+          allowedToEdit={allowedToEdit}
+          timetable_editable={timetable_editable}
           lockedGroup={lockedGroup}
           {...props}
         />
@@ -302,7 +312,7 @@ class CustomField extends Component {
     const { choices, multiple_choice, placeholder_text, autofill_rule } = this.props.field
     const { handleBlurSave, handleLockField, handleUnlockField, lockField, fieldSetDisabled, 
       insideFieldset, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, phaseIsClosed,
-    formValues, formName } = this.props
+    formValues, formName, isProjectTimetableEdit, timetable_editable} = this.props
     return (
       <SelectInput
         {...props}
@@ -327,6 +337,8 @@ class CustomField extends Component {
         editDisabled={this.props.disabled}
         autofillRule={autofill_rule}
         formValues={formValues}
+        isProjectTimetableEdit={isProjectTimetableEdit}
+        timetable_editable={timetable_editable}
       />
     )
   }
@@ -506,7 +518,7 @@ class CustomField extends Component {
   }
 
   renderCustomCheckbox = props => {
-    const { field, formName, disabled,isProjectTimetableEdit } = this.props
+    const { field,formName,disabled,isProjectTimetableEdit,isAdmin } = this.props
     return (
       <CustomCheckbox
         {...props}
@@ -516,6 +528,7 @@ class CustomField extends Component {
         display={field.display}
         disabled={disabled}
         isProjectTimetableEdit={isProjectTimetableEdit}
+        isAdmin={isAdmin}
       />
     )
   }

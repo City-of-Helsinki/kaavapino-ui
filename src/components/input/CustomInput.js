@@ -29,6 +29,9 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   const { t } = useTranslation()
   const dispatch = useDispatch()
 
+  // Needed for using lockedStatus as useEffect dependency
+  const lockedStatusJsonString = JSON.stringify(lockedStatus);
+
   useEffect(() => {
     oldValueRef.current = input.value;
     if(custom.type === "date" && !custom.insideFieldset){
@@ -149,7 +152,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
         }
       }
     }
-  }, [lockedStatus,connection]);
+  }, [lockedStatusJsonString, connection.connection]);
 
   const handleFocus = () => {
     if (typeof custom.onFocus === 'function' && !lockedStatus?.saving && !custom.insideFieldset) {
@@ -204,6 +207,9 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           if(custom.type === "date"){
             //Validate date
             let dateOk = moment(event.target.value, 'YYYY-MM-DD',false).isValid()
+            if (event.target.value === "" && !custom?.fieldData?.required) {
+              dateOk = true
+            }
             if(dateOk){
               custom.onBlur();
               oldValueRef.current = event.target.value;
@@ -216,7 +222,8 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
               setReadOnly({name:input.name,read:true})
             }
             oldValueRef.current = event.target.value;
-            if(custom.regex){
+
+            if(!(event.target.value === '' && !custom?.fieldData?.isRequired) && custom.regex){
               const regex = new RegExp(custom.regex);
               setHasError(!regex.test(event.target.value))
             }
@@ -246,7 +253,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
       fieldsetName = name.split('[')[0]
       index = name.split('[').pop().split(']')[0];
       fieldName = name.split('.')[1]
-      if(custom?.attributeData[fieldsetName] && custom?.attributeData[fieldsetName][index] && custom?.attributeData[fieldsetName][index][fieldName]){
+      if(custom?.attributeData[fieldsetName]?.[index]){
         originalData = custom?.attributeData[fieldsetName][index][fieldName]
       }
     }
@@ -259,7 +266,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   const handleInputChange = useCallback((event,readonly) => {
     const isConnected = connection.connection || typeof connection.connection === "undefined" ? true : false
     if(!readonly || custom.type === "date" || isConnected){
-      if(!event.target.value?.trim()){
+      if(!event.target.value?.trim() && custom?.fieldData?.isRequired){
         setHasError(true)
       }
       else{
@@ -310,6 +317,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           fluid="true"
           {...input}
           {...custom}
+          disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled}
           onChange={(event) =>{handleInputChange(event,readonly.read)}}
           onBlur={(event) => {handleBlur(event,readonly.read)}}
           onFocus={() => {handleFocus()}}
