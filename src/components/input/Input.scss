@@ -718,7 +718,7 @@
       background-color: $color-fog-light;
       padding-bottom: 27.5px;
       .field{
-        .text-input,.selection,.ad-combobox{
+        .text-input:not(.rolling-info-container .text-input),.selection,.ad-combobox{
           max-width: 256px;
         }
       }
