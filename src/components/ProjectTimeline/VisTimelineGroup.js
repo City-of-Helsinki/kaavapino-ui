@@ -15,6 +15,7 @@ import AddGroupModal from './AddGroupModal';
 import ConfirmModal from '../common/ConfirmModal'
 import PropTypes from 'prop-types';
 import { getVisibilityBoolName, getVisBoolsByPhaseName } from '../../utils/projectVisibilityUtils';
+import { lockTimetable } from '../../actions/projectActions';
 import './VisTimeline.css'
 Moment().locale('fi');
 
@@ -85,8 +86,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const trackExpanded = (event) => {
-      console.log("locked group", lockRef.current);
-      //TODO: prevent toggling to remove lock style
       trackExpandedGroups(event)
     }
 
@@ -302,12 +301,16 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               nextElement = nextElement.nextElementSibling; // Move to the next sibling
           }
         });
+        // Dispatch action with true value
+        dispatch(lockTimetable(data.deadlinegroup,lockedPhases,locked,lockedStartTime));
       }
       else{
         setLock({lockedGroup:data.deadlinegroup,lockedPhases:[],locked:locked,lockedStartTime:false})
         document.querySelectorAll('.buttons-locked').forEach(element => {
           element.classList.remove('buttons-locked');
         });
+        // Dispatch action with false value
+        dispatch(lockTimetable(data.deadlinegroup,[],locked,false));
       }
       //setLock({group:data.nestedInGroup,id:data.id,abbreviation:data.abbreviation,locked:!data.locked})
     }
@@ -513,6 +516,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
     useEffect(() => {
 
+      if (localStorage.getItem("lockedState")) {
+         //Remove the locked button state from localStorage when page/component is reloaded
+        localStorage.removeItem("lockedState");
+      }
+
       const options = {
         locales: {
           fi: {
@@ -631,6 +639,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           }
           let container = document.createElement("div");
           container.classList.add("timeline-buttons-container");
+          container.id = "timeline-button-"+group.id;
           container.setAttribute("tabindex", "0");
           let words = group.deadlinegroup?.split("_") || [];
           let words2 = group.content?.split("-") || [];
@@ -751,12 +760,25 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               lock.addEventListener("click", function () {
                 lock.classList.toggle("lock");
                 const locked = lock.classList.contains("lock") ? true : false;
+                if (locked) {
+                  //Save the locked button state to localStorage
+                  localStorage.setItem("lockedState", "timeline-button-" + group.id);
+                } 
+                else {
+                  //Remove the locked button state from localStorage
+                  localStorage.removeItem("lockedState");
+                }
+
                 let lockedPhases = []
                 let lockedStartTime
-                let visibleItems = timelineInstanceRef?.current?.getVisibleItems()
+                let visibleItems = timelineInstanceRef.current?.itemsData?.get().filter(item => item.type !== 'background' || item.type === undefined) || [];
+                let allGroups = timelineInstanceRef?.current?.groupsData?.get();
+                let mainGroups = allGroups?.filter(group => group.nestedGroups !== undefined).map(group => group.id);
+
                  if(visibleItems){
+                    //TODO clean this to function
                     for (const visibleItem of visibleItems) {
-                      const item = items.get(visibleItem);
+                      const item = visibleItem;
                       if (item.group >= group.id || item.id >= group.id) {
                         if (item.start && item.phase === false) {
                           //Find the date where lock starts
@@ -768,19 +790,39 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                         
                         if(!lockedPhases?.includes(item?.phaseName)){
                           //Add all phases that are in lock
-                          lockedPhases.push(item.phaseName)
+                          lockedPhases.push(item.groupName)
                         }
                         // Append a new class while preserving existing ones
                         const newClassName = locked ? item.className ? item.className + ' locked-color' : 'locked-color' : item.className ? item.className.replace(/\blocked-color\b/g, '').trim() : '';
                         items.update({ id: item.id, className: newClassName, locked: !item.locked });
                       }
                     }
-                    lockedPhases = lockedPhases.length > 0 ? lockedPhases.map(phase => 
+                    // Get the first item from lockedPhases
+                    const firstLockedPhase = lockedPhases[0];
+                    // Find the index of the firstLockedPhase in mainGroups
+                    const firstLockedPhaseIndex = mainGroups.indexOf(firstLockedPhase);
+                    // Add all mainGroups after the firstLockedPhase to lockedPhases
+                    if (firstLockedPhaseIndex !== -1) {
+                      const additionalLockedPhases = mainGroups.slice(firstLockedPhaseIndex + 1);
+                      lockedPhases = [...lockedPhases, ...additionalLockedPhases];
+                    }
+                    
+        /*             lockedPhases = lockedPhases.length > 0 ? lockedPhases.map(phase => 
                       phase.toLowerCase().replace(/ /g, '_')
-                    ) : lockedPhases;
+                    ) : lockedPhases;*/
+                    // Remove duplicates from lockedPhases
+                    lockedPhases = [...new Set(lockedPhases)].filter(phase => phase !== undefined && phase !== null);
                   }
                 lockElements(group,lockedPhases,locked,lockedStartTime);
               });
+
+              const lockedState = localStorage.getItem("lockedState");
+              //vis timeline renders all the time so get lock state from localstorage if it exists
+              if (lockedState) {
+                if (container.id === lockedState) {
+                    lock.classList.add("lock");
+                }
+              }
               container.insertAdjacentElement("beforeEnd", lock);
             }
             return container;
@@ -914,6 +956,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           }
           timeline.off('groupDragged', groupDragged)
           //timeline.off('rangechanged', onRangeChanged);
+          //Remove the locked button state from localStorage
+          if (localStorage.getItem("lockedState")) {
+            localStorage.removeItem("lockedState");
+          }
         }
       }
     }, [])

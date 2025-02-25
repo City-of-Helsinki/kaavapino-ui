@@ -744,10 +744,8 @@ function* validateProjectTimetable() {
       delete changedAttributeData.oikaisukehoituksen_alainen_readonly
     }
 
-    console.log("Changed attribute data", changedAttributeData)
     let attribute_data = adjustDeadlineData(changedAttributeData, values)
 
-    console.log("Final attribute data",attribute_data)
     try {
       const response = yield call(
         projectApi.patch,

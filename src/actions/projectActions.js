@@ -117,6 +117,7 @@ export const UPDATE_PROJECT_FAILURE = 'updateProjectFailure';
 export const UPDATE_ATTRIBUTE = 'updateAttribute';
 export const SAVE_PROJECT_TIMETABLE_FAILED = "saveProjectTimetableFailed";
 export const VALIDATING_TIMETABLE = "validatingTimetable"
+export const LOCK_TIMETABLE = "lockTimetable"
 
 export const updateAttribute = (field,value) => ({
   type: UPDATE_ATTRIBUTE,
@@ -537,6 +538,18 @@ export const setValidatingTimetable = (validationStarted, validationEnded) => {
     payload: {
       started: validationStarted,
       ended: validationEnded
+    }
+  }
+}
+
+export const lockTimetable = (group,phases,locked,time) => {
+  return {
+    type: LOCK_TIMETABLE,
+    payload: {
+      lockedGroup: group,
+      lockedPhases: phases,
+      locked: locked,
+      lockedStartTime: time
     }
   }
 }

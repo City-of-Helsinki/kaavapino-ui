@@ -3,7 +3,7 @@ import { Modal } from 'semantic-ui-react'
 import { Button,Tabs,IconCross } from 'hds-react'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import FormField from '../input/FormField'
-import { isArray } from 'lodash'
+import { isArray, split } from 'lodash'
 import { showField } from '../../utils/projectVisibilityUtils'
 import textUtil from '../../utils/textUtil'
 import objectUtil from '../../utils/objectUtil';
@@ -182,7 +182,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       }
       confirmedValue = confirmedValue.replace(/\s+/g, '');
       const isConfirmed = visValues[confirmedValue]
-      const isGroupLocked = lockedGroup?.lockedPhases?.includes(group?.toLowerCase().replace(/ /g, '_')) && lockedGroup?.locked
+      const isGroupLocked = lockedGroup?.lockedPhases?.includes(deadlinegroup) && lockedGroup?.locked
       const disabled = archived || isConfirmed || isGroupLocked ? true : sectionIndex < projectPhaseIndex
       const renderedSections = []
       sections.forEach(subsection => {

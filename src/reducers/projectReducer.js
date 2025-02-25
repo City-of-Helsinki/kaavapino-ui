@@ -93,7 +93,8 @@ import {
   UPDATE_PROJECT_FAILURE,
   UPDATE_ATTRIBUTE,
   SAVE_PROJECT_TIMETABLE_FAILED,
-  VALIDATING_TIMETABLE
+  VALIDATING_TIMETABLE,
+  LOCK_TIMETABLE
 } from '../actions/projectActions'
 
 import timeUtil from '../utils/timeUtil'
@@ -150,7 +151,8 @@ export const initialState = {
   dateValidationResult: {valid: false, result: {}},
   validated:false,
   cancelTimetableSave:false,
-  validatingTimetable: {started: false, ended: false}
+  validatingTimetable: {started: false, ended: false},
+  timetableLocked: {lockedGroup:false,lockedPhases:[],locked:false,lockedStartTime:false}
 }
 
 export const reducer = (state = initialState, action) => {
@@ -1008,6 +1010,13 @@ export const reducer = (state = initialState, action) => {
         ...state,
         validatingTimetable: action.payload
       }
+    }
+
+    case LOCK_TIMETABLE: {
+      return { 
+        ...state,
+        timetableLocked: action.payload
+      };
     }
 
     default: {
