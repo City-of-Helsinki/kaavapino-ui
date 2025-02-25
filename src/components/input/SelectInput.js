@@ -6,6 +6,7 @@ import { isArray, isEqual, uniq, uniqBy } from 'lodash'
 import { useSelector } from 'react-redux'
 import {lockedSelector } from '../../selectors/projectSelector'
 import RollingInfo from '../input/RollingInfo'
+import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
 
 // Label when there are more than one same option. To avoid key errors.
 const MORE_LABEL = ' (2)'
@@ -26,7 +27,12 @@ const SelectInput = ({
   modifyText, 
   rollingInfoText,
   phaseIsClosed,
-  editDisabled
+  editDisabled,
+  autofillRule,
+  formValues,
+  formName,
+  isProjectTimetableEdit,
+  timetable_editable
 }) => {
   const currentValue = []
   const oldValueRef = useRef('');
@@ -157,6 +163,10 @@ const SelectInput = ({
     }
   }
 
+  if (autofillRule){
+    input.value = getFieldAutofillValue(autofillRule, formValues, fieldName, formName)
+  }
+
   const modifyOptionIfExist = currentOption => {
     if (!currentOption) {
       return
@@ -264,7 +274,7 @@ const SelectInput = ({
     //If clicking rolling field button makes positive lock check then show normal editable field
     //Rolling field can be nonEditable
     const elements = nonEditable || rollingInfo && !editField ?
-      <RollingInfo 
+      <RollingInfo
         name={input.name} 
         value={rollingInfoValue}
         nonEditable={nonEditable}
@@ -286,7 +296,7 @@ const SelectInput = ({
           onBlur={handleBlur}
           onFocus={handleFocus}
           clearable={false}
-          disabled={disabled || editDisabled}
+          disabled={disabled || editDisabled || (isProjectTimetableEdit && !timetable_editable)}
           options={currentOptions}
           value={currentSingleValue}
           onChange={data => {
@@ -312,7 +322,7 @@ const SelectInput = ({
           onBlur={handleBlur}
           onFocus={handleFocus}
           clearable={true}
-          disabled={disabled || editDisabled}
+          disabled={disabled || editDisabled || (isProjectTimetableEdit && !timetable_editable)}
           options={currentOptions}
           defaultValue={currentValue}
           onChange={data => {
