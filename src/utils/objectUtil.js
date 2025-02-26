@@ -563,8 +563,8 @@ const getHighestNumberedObject = (obj1, arr) => {
       "kaavaehdotus": ["kaavaehdotus", "ehdotus", "ehdotuksesta", "ehdotuksen"]
     };
     //find index keys that exist in data
-    const presentLautakunnat = lautakunnat.filter(key => key in updatedAttributeData);
-    const presentEsillaolot = esillaolot.filter(key => key in updatedAttributeData);
+    const presentLautakunnat = lautakunnat.filter(key => key in updatedAttributeData && updatedAttributeData[key] !== false);
+    const presentEsillaolot = esillaolot.filter(key => key in updatedAttributeData && updatedAttributeData[key] !== false);
 
     //find index and phase from presentLautakunnat and presentEsillaolot
     const lautakunnatPhases = presentLautakunnat.map(key => {
