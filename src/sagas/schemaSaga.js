@@ -40,9 +40,11 @@ function* allEditedFieldsSaga() {
   yield put(setAllEditFieldsSuccessful(updates))
 }
 
-function* getProjectCardFields() {
+function* getProjectCardFields({payload: project}) {
   try {
-    const projectFields = yield call(cardSchemaApi.get)
+    const projectFields = yield call(cardSchemaApi.get,
+      { query: project? { project: project } : {} }
+    )
     yield put(getProjectCardFieldsSuccessful(projectFields))
   } catch (e) {
     yield put(error(e))

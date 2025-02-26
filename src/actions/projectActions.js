@@ -104,7 +104,63 @@ export const FORM_ERROR_LIST = "formErrorList"
 export const RESET_FORM_ERRORS = "resetFormErrors"
 export const GET_ATTRIBUTE_DATA = "getAttributeData"
 export const SET_ATTRIBUTE_DATA = "setAttributeData"
+export const FETCH_DISABLED_DATES_START = 'fetchDisabledDatesStart';
+export const FETCH_DISABLED_DATES_SUCCESS = 'fetchDisabledDatesSuccess';
+export const FETCH_DISABLED_DATES_FAILURE = 'fetchDisabledDatesFailure';
+export const VALIDATE_DATE = 'validateDate';
+export const SET_DATE_VALIDATION_RESULT = 'setDateValidationResult';
+export const REMOVE_DEADLINES = 'removeDeadlines';
+export const UPDATE_DATE_TIMELINE = "updateDateTimeline"
+export const RESET_ATTRIBUTE_DATA = "resetAttributeData"
+export const VALIDATE_PROJECT_TIMETABLE = "validateProjectTimetable"
+export const UPDATE_PROJECT_FAILURE = 'updateProjectFailure';
+export const UPDATE_ATTRIBUTE = 'updateAttribute';
+export const SAVE_PROJECT_TIMETABLE_FAILED = "saveProjectTimetableFailed";
+export const VALIDATING_TIMETABLE = "validatingTimetable"
 
+export const updateAttribute = (field,value) => ({
+  type: UPDATE_ATTRIBUTE,
+  payload: {field,value},
+});
+export const updateProjectFailure = (errorData, formValues) => ({
+  type: UPDATE_PROJECT_FAILURE,
+  payload: {errorData, formValues}
+});
+export const validateProjectTimetable = () => ({
+   type: VALIDATE_PROJECT_TIMETABLE 
+});
+export const resetAttributeData = (initialData) => ({
+  type: RESET_ATTRIBUTE_DATA,
+  payload: {initialData},
+});
+export const updateDateTimeline = (field, newDate, formValues, isAdd, deadlineSections) => ({
+  type: UPDATE_DATE_TIMELINE,
+  payload: { field, newDate, formValues, isAdd, deadlineSections},
+});
+export const removeDeadlines = (deadlines) => ({
+  type: REMOVE_DEADLINES,
+  payload: deadlines,
+});
+export const setDateValidationResult = (valid,result) => ({
+    type: SET_DATE_VALIDATION_RESULT,
+    payload: {valid,result}
+});
+export const validateDateAction = (field,projectName,date) => ({
+    type: VALIDATE_DATE,
+    payload: {field,projectName,date}
+});
+export const fetchDisabledDatesStart = (startDate, endDate) => ({
+  type: FETCH_DISABLED_DATES_START,
+  payload: { startDate, endDate },
+});
+export const fetchDisabledDatesSuccess = (disabledDates) => ({
+  type: FETCH_DISABLED_DATES_SUCCESS,
+  payload: disabledDates,
+});
+export const fetchDisabledDatesFailure = (error) => ({
+  type: FETCH_DISABLED_DATES_FAILURE,
+  payload: error,
+});
 export const setAttributeData = (fieldName,data,formName, set, nulledFields,i) =>({
   type: SET_ATTRIBUTE_DATA,
   payload:{fieldName,data,formName, set, nulledFields,i}
@@ -305,6 +361,10 @@ export const saveProjectTimetableSuccessful = success => ({
   type: SAVE_PROJECT_TIMETABLE_SUCCESSFUL,
   payload: success
 })
+export const saveProjectTimetableFailed = success => ({
+  type: SAVE_PROJECT_TIMETABLE_FAILED,
+  payload: success
+})
 
 export const resetTimetableSave = () => ({type: RESET_TIMETABLE_SAVE})
 
@@ -470,3 +530,13 @@ export const getMapLegendsSuccessful = legends => ({
   type: GET_PROJECT_MAP_LEGENDS_SUCCESSFUL,
   payload: legends
 })
+
+export const setValidatingTimetable = (validationStarted, validationEnded) => {
+  return {
+    type: VALIDATING_TIMETABLE,
+    payload: {
+      started: validationStarted,
+      ended: validationEnded
+    }
+  }
+}
