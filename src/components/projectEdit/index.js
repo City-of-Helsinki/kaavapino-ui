@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { getFormSyncErrors, getFormSubmitErrors, getFormValues } from 'redux-form'
+import { getFormSyncErrors, getFormSubmitErrors, getFormValues, reset } from 'redux-form'
 import { LoadingSpinner, Notification, IconCross } from 'hds-react'
 import { isDirty } from 'redux-form/immutable'
 import {
@@ -23,7 +23,9 @@ import {
   showTimetable,
   showFloorArea,
   setLastSaved,
-  resetFormErrors
+  resetFormErrors,
+  fetchDisabledDatesStart,
+  resetAttributeData
 } from '../../actions/projectActions'
 import { fetchSchemas, setAllEditFields, clearSchemas } from '../../actions/schemaActions'
 import { fetchDocuments } from '../../actions/documentActions'
@@ -37,7 +39,8 @@ import {
   floorAreaSavedSelector,
   timetableSavedSelector,
   showFloorAreaSelector,
-  showTimetableSelector
+  showTimetableSelector,
+  selectDisabledDates
 } from '../../selectors/projectSelector'
 import {
   documentsSelector
@@ -54,6 +57,7 @@ import EditProjectTimetableModal from '../project/EditProjectTimetableModal'
 import ProjectTimeline from '../ProjectTimeline/ProjectTimeline'
 import { usersSelector } from '../../selectors/userSelector'
 import { userIdSelector } from '../../selectors/authSelector'
+import { editProjectTimetableFormSelector } from '../../selectors/formSelector'
 import { withRouter } from 'react-router-dom'
 import projectUtils from '../../utils/projectUtils'
 import InfoComponent from '../common/InfoComponent'
@@ -114,7 +118,7 @@ class ProjectEditPage extends Component {
     }
     if(prevProps.changingPhase === true && this.props.changingPhase === false){
       //get updated project data when moving to next phase
-      window.location.reload();
+      window.location.reload(true);
     }
     if(prevProps.schema != this.props.schema){
       if(this.props.schema?.phases){
@@ -131,6 +135,11 @@ class ProjectEditPage extends Component {
             this.setState({urlField:field})
           }
         }
+      }
+    }
+    if(prevProps.formValues != this.props.formValues){
+      if(prevProps.formValues?.projektin_kaynnistys_pvm != this.props.formValues?.projektin_kaynnistys_pvm){
+        this.fetchDisabledDates(this.props.formValues?.projektin_kaynnistys_pvm,this.props.formValues?.projektin_kaynnistys_pvm)
       }
     }
   }
@@ -154,7 +163,7 @@ class ProjectEditPage extends Component {
     const viewParameter = params.get('view')
 
     if (viewParameter === 'deadlines') {
-      this.props.showTimetable(true)
+      this.props.showTimetable(true,"","",{})
       this.setState({ ...this.state })
       this.props.history.replace({ ...this.props.location, search: '' })
     }
@@ -201,6 +210,14 @@ class ProjectEditPage extends Component {
         this.setState({urlField:null})
       }
     }
+  }
+
+  fetchDisabledDates = (startDate,endDate) => {
+    const endDateObj = new Date(endDate);
+    endDateObj.setFullYear(endDateObj.getFullYear() + 20);
+    const newEndDate = endDateObj.toISOString().split('T')[0];
+
+    this.props.fetchDisabledDatesStart(startDate, newEndDate);
   }
 
   changePhase = () => {
@@ -253,8 +270,12 @@ class ProjectEditPage extends Component {
   }
 
   handleTimetableClose = () => {
-    this.props.showTimetable(false)
+    //Close timetable and reset data to initial
+    this.props.showTimetable(false,"","",{})
     this.props.resetTimetableSave()
+    const originalValues = this.props.formSelector
+    this.props.reset("editProjectTimetableForm");
+    this.props.resetAttributeData(originalValues.initial);
   }
 
   handleTimetableSave = () => {
@@ -356,7 +377,7 @@ class ProjectEditPage extends Component {
     const isExpert = authUtils.isExpert(this.props.currentUserId, this.props.users)
 
     if (isExpert) {
-      this.props.showTimetable(show)
+      this.props.showTimetable(show,"","",{})
     }
   }
 
@@ -541,7 +562,7 @@ class ProjectEditPage extends Component {
         });
     });
   }
-
+  
   render() {
     const {
       schema,
@@ -562,7 +583,8 @@ class ProjectEditPage extends Component {
       currentPhases,
       users,
       currentUserId,
-      documents
+      documents,
+      disabledDates
     } = this.props
     const { highlightGroup } = this.state
 
@@ -608,6 +630,7 @@ class ProjectEditPage extends Component {
     const ingress = currentSchema.sections[this.state.sectionIndex].ingress || ''
 
     const isResponsible = authUtils.isResponsible(currentUserId, users)
+    const isTheResponsiblePerson = authUtils.isThePersonResponsiple(currentUserId, users, attribute_data)
     const isAdmin = authUtils.isAdmin(currentUserId, users)
     const isExpert = authUtils.isExpert(currentUserId, users)
     return (
@@ -698,6 +721,7 @@ class ProjectEditPage extends Component {
               currentSchema={currentSchema}
               documentIndex={this.state.documentIndex}
               locationSearch={this.props.location.search}
+              isTheResponsiblePerson={isTheResponsiblePerson}
             />
             <NavigationPrompt
               when={
@@ -762,10 +786,10 @@ class ProjectEditPage extends Component {
                 open
                 saveProjectFloorArea={saveProjectFloorArea}
                 handleClose={() => this.handleFloorAreaClose()}
-                allowedToEdit={isResponsible}
+                allowedToEdit={isTheResponsiblePerson}
               />
             )}
-            {this.props.showTimetableForm && (
+            {this.props.showTimetableForm?.showTimetable && (
               <EditProjectTimetableModal
                 attributeData={attribute_data}
                 open
@@ -773,7 +797,12 @@ class ProjectEditPage extends Component {
                 handleClose={() => this.handleTimetableClose()}
                 projectPhaseIndex={projectPhaseIndex}
                 archived={currentProject.archived}
-                allowedToEdit={isResponsible}
+                isAdmin={isAdmin}
+                allowedToEdit={isTheResponsiblePerson}
+                disabledDates={disabledDates?.date_types?.disabled_dates?.dates}
+                lomapaivat={disabledDates?.date_types?.lomapäivät?.dates}
+                dateTypes={disabledDates?.date_types}
+                showTimetableForm={this.props.showTimetableForm}
               />
             )}
           </div>
@@ -784,13 +813,29 @@ class ProjectEditPage extends Component {
 }
 
 ProjectEditPage.propTypes = {
-  currentProject:PropTypes.object,
+  currentProject: PropTypes.object,
   project: PropTypes.object,
   schema: PropTypes.object,
   resetFormErrors: PropTypes.func,
   unlockAllFields: PropTypes.func,
   location: PropTypes.object,
-  switchDisplayedPhase: PropTypes.func
+  switchDisplayedPhase: PropTypes.func,
+  formValues: PropTypes.object,
+  fetchDisabledDatesStart: PropTypes.func,
+  formSelector: PropTypes.object,
+  reset: PropTypes.func,
+  resetAttributeData: PropTypes.func,
+  documents: PropTypes.array,
+  disabledDates: PropTypes.object,
+  showFloorAreaForm: PropTypes.bool,
+  showTimetableForm: PropTypes.shape({
+    showTimetable: PropTypes.bool,
+    timetableTarget: PropTypes.string,
+    selectedPhase: PropTypes.string,
+    matchedDeadline: PropTypes.object
+  }),
+  attribute_data: PropTypes.object,
+  saveProjectFloorArea: PropTypes.func,
 }
 
 const mapStateToProps = state => {
@@ -813,7 +858,9 @@ const mapStateToProps = state => {
     timetableSavedSelector: timetableSavedSelector(state),
     documents: documentsSelector(state),
     showTimetableForm:showTimetableSelector(state),
-    showFloorAreaForm:showFloorAreaSelector(state) 
+    showFloorAreaForm:showFloorAreaSelector(state),
+    disabledDates: selectDisabledDates(state),
+    formSelector: editProjectTimetableFormSelector(state)
   }
 }
 
@@ -841,7 +888,10 @@ const mapDispatchToProps = {
   showTimetable,
   showFloorArea,
   setLastSaved,
-  resetFormErrors
+  resetFormErrors,
+  fetchDisabledDatesStart,
+  reset,
+  resetAttributeData
 }
 
 export default withRouter(
