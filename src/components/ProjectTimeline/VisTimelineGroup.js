@@ -18,7 +18,7 @@ import { getVisibilityBoolName, getVisBoolsByPhaseName } from '../../utils/proje
 import './VisTimeline.css'
 Moment().locale('fi');
 
-const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes}, ref) => {
+const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes, showTimetableForm}, ref) => {
     const dispatch = useDispatch();
     const moment = extendMoment(Moment);
 
@@ -867,6 +867,31 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
     }, [visValues]);
 
+    useEffect(() => {
+      if (showTimetableForm.selectedPhase !== null) {
+        setToggleTimelineModal({open:!toggleTimelineModal.open, highlight:true, deadlinegroup:showTimetableForm?.matchedDeadline?.deadlinegroup})
+        setTimelineData({group:showTimetableForm.selectedPhase, content:formatDeadlineGroupTitle(showTimetableForm)})
+      }
+    }, [showTimetableForm.selectedPhase])
+
+    const generateTitle = (deadlinegroup) => {
+      if (!deadlinegroup) return '';
+      const parts = deadlinegroup.split('_');
+      if (parts.length < 3) return deadlinegroup;
+      const formattedString = `${parts[1].replace('kerta', '')}-${parts[2]}`;
+      return formattedString.charAt(0).toUpperCase() + formattedString.slice(1);
+    };
+
+    const formatDeadlineGroupTitle = (data) => {
+      if(data.selectedPhase === "Voimaantulo" || data.selectedPhase === "Hyväksyminen"){
+        return "Vaiheen lisätiedot";
+      }
+      else{
+        const newTitle = generateTitle(data?.matchedDeadline?.deadlinegroup);
+        return formatContent(newTitle,true);
+      }
+    }
+
     const formatContent = (content, keepNumberOne = false) => {
       if (content) {
         if (content.includes("-1") && !keepNumberOne) {
@@ -927,6 +952,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           items={items?.get()}
           sectionAttributes={sectionAttributes}
           isAdmin={isAdmin}
+          initialTab={showTimetableForm?.selectedPhase === "Voimaantulo" && showTimetableForm?.name === "voimaantulo_pvm" ? 1 : 0 }
         />
         <AddGroupModal
           toggleOpenAddDialog={toggleOpenAddDialog}

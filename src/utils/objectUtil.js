@@ -605,6 +605,49 @@ const getHighestNumberedObject = (obj1, arr) => {
     }, {});
   }
 
+const convertKey = {
+  tarkasta_esillaolo_periaatteet_fieldset: 'milloin_periaatteet_esillaolo_alkaa',
+  tarkasta_lautakunta_periaatteet_fieldset: 'milloin_periaatteet_lautakunnassa',
+  tarkasta_esillaolo_oas_fieldset: 'milloin_oas_esillaolo_alkaa',
+  tarkasta_esillaolo_luonnos_fieldset: 'milloin_luonnos_esillaolo_alkaa',
+  tarkasta_lautakunta_luonnos_fieldset: 'milloin_kaavaluonnos_lautakunnassa',
+  tarkasta_nahtavilla_ehdotus_fieldset: 'milloin_ehdotuksen_nahtavilla_alkaa_pieni',
+  tarkasta_lautakunta_ehdotus_fieldset: 'milloin_kaavaehdotus_lautakunnassa',
+  tarkasta_lautakunta_tarkistettu_ehdotus_fieldset: 'milloin_tarkistettu_ehdotus_lautakunnassa',
+  merkitse_hyvaksymis_fieldset: 'hyvaksymispaatos_pvm',
+  merkitse_muutoksenhaku_paivamaarat_fieldset: 'hyvaksymispaatos_valitusaika_paattyy',
+  merkitse_voimaantulo_paivamaarat_fieldset: 'voimaantulo_pvm'
+};
+
+const convertKeyToMatching = (payload) => {
+  const { name, ...rest } = payload;
+  const value = convertKey[name] || name;
+  return { ...rest, name: value };
+};
+
+const phaseID = [
+  { id: [1, 7, 13, 19, 25], name: "Käynnistys" },
+  { id: [26], name: "Periaatteet" },
+  { id: [2, 8, 14, 20, 27], name: "OAS" },
+  { id: [28], name: "Luonnos" },
+  { id: [3, 9, 15, 21, 29], name: "Ehdotus" },
+  { id: [4, 10, 16, 22, 30], name: "Tarkistettu ehdotus" },
+  { id: [5, 11, 17, 23, 31], name: "Hyväksyminen" },
+  { id: [6, 12, 18, 24, 32], name: "Voimaantulo" }
+];
+
+const convertPhaseIdToPhaseName = (id) => {
+  const phase = phaseID.find(phase => phase.id.includes(id));
+  return phase ? phase.name : null;
+};
+
+const convertPayloadValues = (payload) => {
+  const convertedKeyPayload = convertKeyToMatching(payload);
+  const phaseName = convertPhaseIdToPhaseName(payload.selectedPhase);
+  return { ...convertedKeyPayload,selectedPhase: phaseName };
+};
+
+
 export default {
     getHighestNumberedObject,
     getMinObject,
@@ -621,5 +664,8 @@ export default {
     compareObjectValues,
     findMatchingName,
     findItem,
-    filterHiddenKeys
+    filterHiddenKeys,
+    convertKeyToMatching,
+    convertPhaseIdToPhaseName,
+    convertPayloadValues
 }

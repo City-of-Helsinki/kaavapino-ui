@@ -323,7 +323,7 @@ class ProjectPage extends Component {
         this.createDocuments()
         break;
       case 2:
-        this.props.showTimetable(true)
+        this.props.showTimetable(true,"","",{})
         break;
       case 3:
         this.props.showFloorArea(true)

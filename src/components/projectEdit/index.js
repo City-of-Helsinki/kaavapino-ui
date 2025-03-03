@@ -163,7 +163,7 @@ class ProjectEditPage extends Component {
     const viewParameter = params.get('view')
 
     if (viewParameter === 'deadlines') {
-      this.props.showTimetable(true)
+      this.props.showTimetable(true,"","",{})
       this.setState({ ...this.state })
       this.props.history.replace({ ...this.props.location, search: '' })
     }
@@ -271,7 +271,7 @@ class ProjectEditPage extends Component {
 
   handleTimetableClose = () => {
     //Close timetable and reset data to initial
-    this.props.showTimetable(false)
+    this.props.showTimetable(false,"","",{})
     this.props.resetTimetableSave()
     const originalValues = this.props.formSelector
     this.props.reset("editProjectTimetableForm");
@@ -377,7 +377,7 @@ class ProjectEditPage extends Component {
     const isExpert = authUtils.isExpert(this.props.currentUserId, this.props.users)
 
     if (isExpert) {
-      this.props.showTimetable(show)
+      this.props.showTimetable(show,"","",{})
     }
   }
 
@@ -789,7 +789,7 @@ class ProjectEditPage extends Component {
                 allowedToEdit={isTheResponsiblePerson}
               />
             )}
-            {this.props.showTimetableForm && (
+            {this.props.showTimetableForm?.showTimetable && (
               <EditProjectTimetableModal
                 attributeData={attribute_data}
                 open
@@ -802,6 +802,7 @@ class ProjectEditPage extends Component {
                 disabledDates={disabledDates?.date_types?.disabled_dates?.dates}
                 lomapaivat={disabledDates?.date_types?.lomapäivät?.dates}
                 dateTypes={disabledDates?.date_types}
+                showTimetableForm={this.props.showTimetableForm}
               />
             )}
           </div>
@@ -827,7 +828,12 @@ ProjectEditPage.propTypes = {
   documents: PropTypes.array,
   disabledDates: PropTypes.object,
   showFloorAreaForm: PropTypes.bool,
-  showTimetableForm: PropTypes.bool,
+  showTimetableForm: PropTypes.shape({
+    showTimetable: PropTypes.bool,
+    timetableTarget: PropTypes.string,
+    selectedPhase: PropTypes.string,
+    matchedDeadline: PropTypes.object
+  }),
   attribute_data: PropTypes.object,
   saveProjectFloorArea: PropTypes.func,
 }

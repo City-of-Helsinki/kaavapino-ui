@@ -139,7 +139,7 @@ export const initialState = {
   lastSaved:{},
   connection:{"connection":false},
   showEditFloorAreaForm:false,
-  showEditProjectTimetableForm:false,
+  showEditProjectTimetableForm:{showTimetable:false,timetableTarget:"",selectedPhase:"",matchedDeadline:{}},
   lastModified:false,
   updatedFloorValue:{},
   formErrorList:[],
@@ -365,9 +365,10 @@ export const reducer = (state = initialState, action) => {
     }
 
     case SHOW_TIMETABLE: {
+      const convertedPayload = objectUtil.convertPayloadValues(action.payload);
       return{
         ...state,
-        showEditProjectTimetableForm: action.payload
+        showEditProjectTimetableForm: convertedPayload
       }
     }
     
@@ -980,7 +981,10 @@ export const reducer = (state = initialState, action) => {
       return{
         ...state,
         timetableSaved:action.payload,
-        showEditProjectTimetableForm: false,
+        showEditProjectTimetableForm: {
+          ...state.showEditProjectTimetableForm,
+          showTimetable: false
+        },
         cancelTimetableSave:false
       }
     }
@@ -989,7 +993,10 @@ export const reducer = (state = initialState, action) => {
       return{
         ...state,
         timetableSaved:false,
-        showEditProjectTimetableForm: true,
+        showEditProjectTimetableForm: {
+          ...state.showEditProjectTimetableForm,
+          showTimetable: true
+        },
         loading:false,
         saving:false,
         cancelTimetableSave:true
