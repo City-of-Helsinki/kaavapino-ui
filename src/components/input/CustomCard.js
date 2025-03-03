@@ -56,18 +56,18 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
 
     if(ehdotusPhase){
       if(phase === 29 || phase === 21){
-        highestKey = keys.length > 0 ? keys.reduce((a, b) => parseInt(a.split('_').pop()) > parseInt(b.split('_').pop()) ? a : b) : 'kaavaehdotus_lautakuntaan';
+        highestKey = keys.length > 0 ? keys.reduce((a, b) => parseInt(a.split('_').pop()) > parseInt(b.split('_').pop()) ? a : b, 'kaavaehdotus_lautakuntaan') : 'kaavaehdotus_lautakuntaan';
         highestKeyValue = highestKey === 'kaavaehdotus_lautakuntaan' ? '' : highestKey.split('_').pop();
         deadlineAttribute = `milloin_kaavaehdotus_lautakunnassa${highestKeyValue > 1 ? `_${highestKeyValue}` : ''}`;
       }
       else{
-        highestKey = keys.length > 0 ? keys.reduce((a, b) => parseInt(a.split('_').pop()) > parseInt(b.split('_').pop()) ? a : b) : 'kaavaehdotus_uudelleen_nahtaville';
+        highestKey = keys.length > 0 ? keys.reduce((a, b) => parseInt(a.split('_').pop()) > parseInt(b.split('_').pop()) ? a : b, 'kaavaehdotus_uudelleen_nahtaville') : 'kaavaehdotus_uudelleen_nahtaville';
         highestKeyValue = highestKey === 'kaavaehdotus_uudelleen_nahtaville' ? '' : highestKey.split('_').pop();
         deadlineAttribute = `milloin_ehdotuksen_nahtavilla_alkaa_pieni${highestKeyValue > 1 ? `_${highestKeyValue}` : ''}`;
       }
     }
     else{
-      highestKey = keys.length > 0 ? keys.reduce((a, b) => parseInt(a.split('_').pop()) > parseInt(b.split('_').pop()) ? a : b) : 'vahvista_kaavaehdotus_lautakunnassa';
+      highestKey = keys.length > 0 ? keys.reduce((a, b) => parseInt(a.split('_').pop()) > parseInt(b.split('_').pop()) ? a : b, 'vahvista_kaavaehdotus_lautakunnassa') : 'vahvista_kaavaehdotus_lautakunnassa';
       highestKeyValue = highestKey === 'vahvista_kaavaehdotus_lautakunnassa' ? '' : highestKey.split('_').pop();
       deadlineAttribute = `milloin_tarkistettu_ehdotus_lautakunnassa${highestKeyValue > 1 ? `_${highestKeyValue}` : ''}`;
     }
