@@ -622,32 +622,7 @@ const getDisabledDatesForLautakunta = (name, formValues, phaseName, matchingItem
   }
 };
 
-const getDisabledDatesForSizeLXL = (name, formValues, matchingItem, dateTypes) => {
-  if (name.includes("_maaraaika")) {
-    const miniumDaysBetween = matchingItem?.distance_from_previous;
-    const dateToCompare = formValues[matchingItem?.previous_deadline];
-    let newDisabledDates = dateTypes?.työpäivät?.dates;
-    const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.työpäivät?.dates, dateToCompare, miniumDaysBetween);
-    return newDisabledDates.filter(date => date >= firstPossibleDateToSelect);
-  } else if (name.includes("_alkaa")) {
-    const miniumDaysPast = matchingItem?.distance_from_previous;
-    const miniumDaysFuture = matchingItem?.distance_to_next;
-    const dateToComparePast = formValues[matchingItem?.previous_deadline];
-    const dateToCompareFuture = formValues[matchingItem?.next_deadline];
-    let newDisabledDates = dateTypes?.esilläolopäivät?.dates;
-    const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.esilläolopäivät?.dates, dateToComparePast, miniumDaysPast);
-    const lastPossibleDateToSelect = findNextPossibleValue(dateTypes?.esilläolopäivät?.dates, dateToCompareFuture, -miniumDaysFuture);
-    return newDisabledDates.filter(date => date >= firstPossibleDateToSelect && date <= lastPossibleDateToSelect);
-  } else if (name.includes("_paattyy")) {
-    const miniumDaysPast = matchingItem?.distance_from_previous;
-    const dateToComparePast = formValues[matchingItem?.previous_deadline];
-    let newDisabledDates = dateTypes?.esilläolopäivät?.dates;
-    const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.esilläolopäivät?.dates, dateToComparePast, miniumDaysPast);
-    return newDisabledDates.filter(date => date >= firstPossibleDateToSelect);
-  }
-};
-
-const getDisabledDatesForSizeXSMS = (name, formValues, matchingItem, dateTypes) => {
+const getDisabledDatesForSizeXSXL = (name, formValues, matchingItem, dateTypes) => {
   if (name.includes("_maaraaika")) {
     const miniumDaysBetween = matchingItem?.distance_from_previous;
     const dateToCompare = formValues[matchingItem?.previous_deadline];
@@ -709,13 +684,9 @@ const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues
   } else if (currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')) {
     const phaseName = currentDeadline?.deadline?.phase_name?.toLowerCase();
     return getDisabledDatesForLautakunta(name, formValues, phaseName, matchingItem, previousItem, dateTypes);
-  } else if (!nahtavillaolo && (size === 'L' || size === 'XL')) {
-    return getDisabledDatesForSizeLXL(name, formValues, matchingItem, dateTypes);
-  } else if (!nahtavillaolo && (size === 'XS' || size === 'S' || size === 'M')) {
-    return getDisabledDatesForSizeXSMS(name, formValues, matchingItem, dateTypes);
-  } else if (nahtavillaolo && (size === 'L' || size === 'XL')) {
-    return getDisabledDatesForNahtavillaolo(name, formValues, matchingItem, dateTypes);
-  } else if (nahtavillaolo && (size === 'XS' || size === 'S' || size === 'M')) {
+  } else if (!nahtavillaolo && (size === 'L' || size === 'XL' || size === 'XS' || size === 'S' || size === 'M')) {
+    return getDisabledDatesForSizeXSXL(name, formValues, matchingItem, dateTypes);
+  } else if (nahtavillaolo && (size === 'L' || size === 'XL' || size === 'XS' || size === 'S' || size === 'M')) {
     return getDisabledDatesForNahtavillaolo(name, formValues, matchingItem, dateTypes);
   }
 
