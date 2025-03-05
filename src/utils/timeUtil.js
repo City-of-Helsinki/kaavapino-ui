@@ -532,6 +532,31 @@ const findNextPossibleValue = (array, value, addedDays) => {
   return null;
 }
 
+const findNextPossibleBoardDate = (array, value) => {
+  if (!Array.isArray(array) || typeof value !== 'string') {
+    throw new Error('Invalid input. Provide an array of strings and a value as a string.');
+  }
+
+  let closestIndex = -1;
+
+  // Find the next possible date in the array
+  for (let i = 0; i < array.length; i++) {
+    if (array[i] <= value) {
+      closestIndex = i;
+    } else {
+      break;
+    }
+  }
+
+  // If no closest date is found, return null
+  if (closestIndex === -1) {
+    return null;
+  }
+
+ // Return the next possible date (one index higher) if it exists, otherwise return the closest date
+ return closestIndex < array.length - 1 ? array[closestIndex + 1] : array[closestIndex];
+}
+
 const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sectionAttributes,currentDeadline) => {
   //TODO: refactor this to cleaner version when have time
   const matchingItem = objectUtil.findMatchingName(sectionAttributes, name, "name");
@@ -578,11 +603,11 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
         firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast,miniumDaysPast)
       }
       else{
-        dateToComparePast = formValues[matchingItem?.previous_deadline] 
+        dateToComparePast = formValues[previousItem?.name] 
         miniumDaysPast = matchingItem?.distance_from_previous ? matchingItem?.distance_from_previous : 5 //bug somewhere in backend should be 5 but is null
-        filteredDateToCompare= findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast)
+        firstPossibleDateToSelect= findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast,miniumDaysPast)
         //Finds next possible working date to compare
-        firstPossibleDateToSelect = addDays("työpäivät",filteredDateToCompare,miniumDaysPast,dateTypes?.työpäivät?.dates,true)
+        //firstPossibleDateToSelect = addDays("työpäivät",filteredDateToCompare,miniumDaysPast,dateTypes?.työpäivät?.dates,true)
       }
       let newDisabledDates = dateTypes?.työpäivät?.dates
       newDisabledDates = newDisabledDates.filter(date => date >= firstPossibleDateToSelect)
@@ -595,18 +620,35 @@ const calculateDisabledDates = (nahtavillaolo,size,dateTypes,name,formValues,sec
       let dateToComparePast
       let filteredDateToCompare
       const isPastFirst = formValues["jarjestetaan_"+phaseName+"_esillaolo_2"] || formValues[phaseName+"_lautakuntaan_2"] || formValues["kaava"+phaseName+"_lautakuntaan_2"]
-      const miniumDaysPast = name.includes("_lautakunnassa_") ? matchingItem?.initial_distance.distance : matchingItem?.initial_distance.distance + previousItem?.distance_from_previous
+      const miniumDaysPast = matchingItem?.initial_distance.distance + previousItem?.distance_from_previous
+
       if((phaseName === "periaatteet" || phaseName === "luonnos") && !isPastFirst){
         //First lautakunta can be selected to move before määräaika and move määräaika to minium but still needs to keep the 22 day gap and order is määräaika first and lautakunta second
         dateToComparePast = formValues[previousItem?.previous_deadline] ? formValues[previousItem?.previous_deadline] : formValues[previousItem?.initial_distance?.base_deadline]
-        filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast)
+        filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast,miniumDaysPast)
       }
       else{
-        dateToComparePast = formValues[matchingItem?.previous_deadline] ? formValues[matchingItem?.previous_deadline] : formValues[matchingItem?.initial_distance?.base_deadline]
-        //Finds next possible working date to compare
-        filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast)
+        if(matchingItem?.name === "milloin_kaavaluonnos_lautakunnassa" || matchingItem?.name === "milloin_periaatteet_lautakunnassa"){
+          const esillaoloKeys = Object.keys(formValues).filter(key => key.includes("jarjestetaan_" + phaseName + "_esillaolo") && formValues[key] === true);
+          const highestEsillaoloKey = esillaoloKeys.reduce((highestNumber, currentKey) => {
+            const currentNumber = parseInt(currentKey.match(/_(\d+)$/)?.[1] || 0, 10);
+            return currentNumber > highestNumber ? currentNumber : highestNumber;
+          }, 0);
+          if (highestEsillaoloKey !== 1) {
+            dateToComparePast = formValues[`milloin_${phaseName}_esillaolo_paattyy_${highestEsillaoloKey}`];
+          }
+          //Finds next possible working date to compare
+          filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast,miniumDaysPast)
+        }
+        else{
+          dateToComparePast = formValues[matchingItem?.previous_deadline] ? formValues[matchingItem?.previous_deadline] : formValues[matchingItem?.initial_distance?.base_deadline]
+          //Finds next possible working date to compare
+          filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates,dateToComparePast,miniumDaysPast)
+        }
+
       }
-      const firstPossibleDateToSelect = addDays("lautakunta",filteredDateToCompare,miniumDaysPast,dateTypes?.lautakunnan_kokouspäivät?.dates,true)
+      //Finally find possible board date that is closest
+      const firstPossibleDateToSelect = findNextPossibleBoardDate(dateTypes?.lautakunnan_kokouspäivät?.dates,filteredDateToCompare)
       //Array of the dates that are shown in calendar
       let newDisabledDates = dateTypes?.lautakunnan_kokouspäivät?.dates
       //Array of the dates that are shown in calendar after filter
