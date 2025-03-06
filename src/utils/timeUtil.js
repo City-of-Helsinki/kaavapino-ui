@@ -559,9 +559,12 @@ const findNextPossibleBoardDate = (array, value) => {
 
 const getDisabledDatesForProjectStart = (name, formValues, previousItem, nextItem, dateTypes) => {
   const miniumDaysBetween = nextItem?.distance_from_previous;
+  console.log(name,miniumDaysBetween,formValues[previousItem?.name],formValues[nextItem?.name])
   const dateToCompare = name.includes("kaynnistys_paattyy_pvm") ? formValues[previousItem?.name] : formValues[nextItem?.name];
   let newDisabledDates = dateTypes?.arkipäivät?.dates;
-  const lastPossibleDateToSelect = name.includes("kaynnistys_paattyy_pvm") ? addDays("arkipäivät", dateToCompare, miniumDaysBetween, dateTypes?.arkipäivät?.dates, true) : subtractDays("arkipäivät", dateToCompare, miniumDaysBetween, dateTypes?.arkipäivät?.dates, true);
+  const lastPossibleDateToSelect = name.includes("kaynnistys_paattyy_pvm") ? findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompare,miniumDaysBetween) : findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompare,-miniumDaysBetween);
+  //const lastPossibleDateToSelect = name.includes("kaynnistys_paattyy_pvm") ? addDays("arkipäivät", dateToCompare, miniumDaysBetween, dateTypes?.arkipäivät?.dates, true) : subtractDays("arkipäivät", dateToCompare, miniumDaysBetween, dateTypes?.arkipäivät?.dates, true);
+  console.log(lastPossibleDateToSelect)
   return name.includes("kaynnistys_paattyy_pvm") ? newDisabledDates.filter(date => date >= lastPossibleDateToSelect) : newDisabledDates.filter(date => date <= lastPossibleDateToSelect);
 };
 
@@ -647,11 +650,40 @@ const getDisabledDatesForSizeXSXL = (name, formValues, matchingItem, dateTypes) 
   }
 };
 
-const getDisabledDatesForNahtavillaolo = (name, formValues, matchingItem, dateTypes) => {
-  if (name.includes("_alkaa")) {
+const getHighestLautakuntaDate = (formValues) => {
+  const lautakuntaKeys = Object.keys(formValues).filter(key => key.includes(`milloin_kaavaehdotus_lautakunnassa`));
+  const highestLautakuntaKey = lautakuntaKeys.reduce((highestNumber, currentKey) => {
+    const match = /_(\d+)$/.exec(currentKey);
+    const currentNumber = parseInt(match ? match[1] : 0, 10);
+    return currentNumber > highestNumber ? currentNumber : highestNumber;
+  }, 0);
+  console.log(highestLautakuntaKey)
+  if (highestLautakuntaKey > 1) {
+    return formValues[`milloin_kaavaehdotus_lautakunnassa_${highestLautakuntaKey}`];
+  }
+  else{
+    return formValues[`milloin_kaavaehdotus_lautakunnassa`];
+  }
+};
+
+const getDisabledDatesForNahtavillaolo = (name, formValues, matchingItem, dateTypes, projectSize) => {
+  if (name.includes("_maaraaika")) {
+    const miniumDaysBetween = matchingItem?.distance_from_previous;
+    const dateToCompare = formValues[matchingItem?.previous_deadline];
+    let newDisabledDates = dateTypes?.työpäivät?.dates;
+    const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.työpäivät?.dates, dateToCompare, miniumDaysBetween);
+    return newDisabledDates.filter(date => date >= firstPossibleDateToSelect);
+  } 
+  else if (name.includes("_alkaa")) {
+    let dateToComparePast
+    if(projectSize === 'L' || projectSize === 'XL'){
+      dateToComparePast = getHighestLautakuntaDate(formValues);
+    }
+    else{
+      dateToComparePast = formValues[matchingItem?.previous_deadline];
+    }
     const miniumDaysPast = matchingItem?.distance_from_previous;
     const miniumDaysFuture = matchingItem?.distance_to_next;
-    const dateToComparePast = formValues[matchingItem?.previous_deadline];
     const dateToCompareFuture = formValues[matchingItem?.next_deadline];
     let newDisabledDates = dateTypes?.arkipäivät?.dates;
     const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToComparePast, miniumDaysPast);
@@ -687,7 +719,7 @@ const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues
   } else if (!nahtavillaolo && (size === 'L' || size === 'XL' || size === 'XS' || size === 'S' || size === 'M')) {
     return getDisabledDatesForSizeXSXL(name, formValues, matchingItem, dateTypes);
   } else if (nahtavillaolo && (size === 'L' || size === 'XL' || size === 'XS' || size === 'S' || size === 'M')) {
-    return getDisabledDatesForNahtavillaolo(name, formValues, matchingItem, dateTypes);
+    return getDisabledDatesForNahtavillaolo(name, formValues, matchingItem, dateTypes, size);
   }
 
   // If not any of the above return arkipäivät
