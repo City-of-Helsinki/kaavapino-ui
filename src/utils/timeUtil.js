@@ -559,12 +559,9 @@ const findNextPossibleBoardDate = (array, value) => {
 
 const getDisabledDatesForProjectStart = (name, formValues, previousItem, nextItem, dateTypes) => {
   const miniumDaysBetween = nextItem?.distance_from_previous;
-  console.log(name,miniumDaysBetween,formValues[previousItem?.name],formValues[nextItem?.name])
   const dateToCompare = name.includes("kaynnistys_paattyy_pvm") ? formValues[previousItem?.name] : formValues[nextItem?.name];
   let newDisabledDates = dateTypes?.arkipäivät?.dates;
   const lastPossibleDateToSelect = name.includes("kaynnistys_paattyy_pvm") ? findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompare,miniumDaysBetween) : findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompare,-miniumDaysBetween);
-  //const lastPossibleDateToSelect = name.includes("kaynnistys_paattyy_pvm") ? addDays("arkipäivät", dateToCompare, miniumDaysBetween, dateTypes?.arkipäivät?.dates, true) : subtractDays("arkipäivät", dateToCompare, miniumDaysBetween, dateTypes?.arkipäivät?.dates, true);
-  console.log(lastPossibleDateToSelect)
   return name.includes("kaynnistys_paattyy_pvm") ? newDisabledDates.filter(date => date >= lastPossibleDateToSelect) : newDisabledDates.filter(date => date <= lastPossibleDateToSelect);
 };
 
