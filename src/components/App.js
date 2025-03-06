@@ -38,7 +38,6 @@ class App extends Component {
     const matomoURL = process.env.REACT_APP_MATOMO_URL
     const siteID = process.env.REACT_APP_MATOMO_SITE_ID
 
-    console.log(currentEnv,matomoURL,siteID)
     if(currentEnv === 'production' && matomoURL && siteID){
       let _paq = window._paq = window._paq || [];
       _paq.push(['trackPageView']);
