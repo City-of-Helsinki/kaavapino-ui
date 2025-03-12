@@ -54,6 +54,7 @@ class EditProjectTimeTableModal extends Component {
       items.add(phaseData)
       items = this.findConsecutivePeriods(disabledDates,items,false);
       items = this.findConsecutivePeriods(lomapaivat,items,true)
+      console.log(items.get(),groups.get())
       this.setState({items,groups,visValues:attributeData})
 
       let sectionAttributes = []
@@ -756,7 +757,7 @@ class EditProjectTimeTableModal extends Component {
       }
       else if(milestone && deadline.phase_name === "Ehdotus" && deadline.deadlinegroup !== "ehdotus_lautakuntakerta_1"
         && ["XL","L"].includes(formValues.kaavaprosessin_kokoluokka)) {
-          if(formValues[deadline.attribute] && this.shouldAddSubgroup(deadline,formValues)){
+          if(formValues[deadline.attribute] && this.shouldAddSubgroup(deadline,formValues) && innerStart){
           let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, null, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone);
           [phaseData, deadLineGroups, nestedDeadlines] = subgroup;
         }
