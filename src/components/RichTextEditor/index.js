@@ -501,6 +501,7 @@ function RichTextEditor(props) {
           if(isEqual(placeholderOps?.ops, editor?.ops)){
             //Empty placeholder text if it was not edited
             editorRef.current.getEditor().deleteText(0, editorRef.current.getEditor().getLength());
+            showCounter.current = false;
           }
         }
       }
