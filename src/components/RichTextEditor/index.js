@@ -495,6 +495,14 @@ function RichTextEditor(props) {
             oldValueRef.current = editor?.ops;
           }
         }
+        else if (placeholder) {
+          //If not modified in anyway and has the example text
+          const placeholderOps = { ops: [{ insert: placeholder + '\n' }] }; // Proper Quill Delta format
+          if(isEqual(placeholderOps?.ops, editor?.ops)){
+            //Empty placeholder text if it was not edited
+            editorRef.current.getEditor().deleteText(0, editorRef.current.getEditor().getLength());
+          }
+        }
       }
     }
     if(rollingInfo){
@@ -579,6 +587,10 @@ function RichTextEditor(props) {
             1
           ))
         }
+      }
+      else if (!dbValue && placeholder) {
+        const placeholderOps = { ops: [{ insert: placeholder + '\n' }] }; // Proper Quill Delta format
+        editorRef.current.getEditor().setContents(placeholderOps);
       }
     }
   }
