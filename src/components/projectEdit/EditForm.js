@@ -16,7 +16,6 @@ class EditForm extends Component {
 
   componentDidMount() {
     this.props.fetchFieldComments(this.props.projectId)
-    this.poll = setInterval(() => this.props.pollComments(this.props.projectId), 60000)
     this.pollFieldComments = setInterval(
       () => this.props.pollFieldComments(this.props.projectId),
       60000
