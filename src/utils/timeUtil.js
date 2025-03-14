@@ -654,7 +654,7 @@ const getHighestLautakuntaDate = (formValues) => {
     const currentNumber = parseInt(match ? match[1] : 0, 10);
     return currentNumber > highestNumber ? currentNumber : highestNumber;
   }, 0);
-  console.log(highestLautakuntaKey)
+
   if (highestLautakuntaKey > 1) {
     return formValues[`milloin_kaavaehdotus_lautakunnassa_${highestLautakuntaKey}`];
   }

@@ -54,7 +54,7 @@ class EditProjectTimeTableModal extends Component {
       items.add(phaseData)
       items = this.findConsecutivePeriods(disabledDates,items,false);
       items = this.findConsecutivePeriods(lomapaivat,items,true)
-      console.log(items.get(),groups.get())
+
       this.setState({items,groups,visValues:attributeData})
 
       let sectionAttributes = []
