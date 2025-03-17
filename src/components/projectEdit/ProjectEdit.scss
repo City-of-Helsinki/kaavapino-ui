@@ -551,7 +551,7 @@
   position: relative !important;
   font-family: 'Helsinki Grotesk Regular', sans-serif !important;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
-
+  overflow: hidden;
   .header{
     display: flex !important;
     font-family: 'Helsinki Grotesk Bold', sans-serif !important;
@@ -573,7 +573,7 @@
   }
 
   .content{
-    height: 75vh;
+    height: 80vh;
     padding-bottom: 0px !important;
     margin-left: 0px !important;
     margin-right: 28px !important;
