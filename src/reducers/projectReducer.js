@@ -673,9 +673,7 @@ export const reducer = (state = initialState, action) => {
       const updatedPayload = { ...action.payload };
       //When project is fetched it has all phase data, hide phases from data that are not in use when project is create
       //(like oas esillaolo 2,3 etc)
-      console.log("UpdatedPayload", JSON.parse(JSON.stringify(updatedPayload.attribute_data)))
       updatedPayload.attribute_data = objectUtil.filterHiddenKeys(updatedPayload.attribute_data, updatedPayload.deadlines);
-      console.log("Filtered:", JSON.parse(JSON.stringify(updatedPayload.attribute_data)))
             // Check conditions and update attribute_data if necessary
       //Ehdotus Add the key with a value of true because first one should be always visible at start 
       // if not true data is not visible for modification on edit timetable side panel
