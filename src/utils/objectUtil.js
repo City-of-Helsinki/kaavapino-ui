@@ -1,3 +1,4 @@
+import { shouldDeadlineBeVisible } from "./projectVisibilityUtils";
 import timeUtil from "./timeUtil";
 //Phase main start and end value order should always be the same
 const order = [
@@ -544,65 +545,42 @@ const getHighestNumberedObject = (obj1, arr) => {
     return null; // Return null if no next or previous item is found
   };
 
-  const filterHiddenKeys = (updatedAttributeData) => {
-    //Remove all keys that are still hidden in vistimeline so they are not moved in data and later saved
-    const phaseNames = [
-      "periaatteet","oas","luonnos","kaavaehdotus","ehdotus","ehdotuksesta","ehdotuksen","tarkistettu_ehdotus"
-    ];
-    const lautakunnat = ["periaatteet_lautakuntaan_2","periaatteet_lautakuntaan_3","periaatteet_lautakuntaan_4",
-      "kaavaluonnos_lautakuntaan_2","kaavaluonnos_lautakuntaan_3","kaavaluonnos_lautakuntaan_4",
-      "kaavaehdotus_lautakuntaan_2","kaavaehdotus_lautakuntaan_3","kaavaehdotus_lautakuntaan_4",
-      "tarkistettu_ehdotus_lautakuntaan_2","tarkistettu_ehdotus_lautakuntaan_3","tarkistettu_ehdotus_lautakuntaan_4"
-    ];
-    const esillaolot = ["jarjestetaan_periaatteet_esillaolo_2","jarjestetaan_periaatteet_esillaolo_3",
-      "jarjestetaan_oas_esillaolo_2","jarjestetaan_oas_esillaolo_3","jarjestetaan_luonnos_esillaolo_2","jarjestetaan_luonnos_esillaolo_3",
-      "kaavaehdotus_uudelleen_nahtaville_2","kaavaehdotus_uudelleen_nahtaville_3","kaavaehdotus_uudelleen_nahtaville_4"
-    ];
-    // Phase mapping for "kaavaehdotus" and its variations
-    const phaseGroup = {
-      "kaavaehdotus": ["kaavaehdotus", "ehdotus", "ehdotuksesta", "ehdotuksen"]
-    };
-    //find index keys that exist in data
-    const presentLautakunnat = lautakunnat.filter(key => key in updatedAttributeData && updatedAttributeData[key] !== false);
-    const presentEsillaolot = esillaolot.filter(key => key in updatedAttributeData && updatedAttributeData[key] !== false);
-
-    //find index and phase from presentLautakunnat and presentEsillaolot
-    const lautakunnatPhases = presentLautakunnat.map(key => {
-      const phase = phaseNames.find(phaseName => key.includes(phaseName));
-      const number = key.match(/_(\d+)/) ? key.match(/_(\d+)/)[1] : null;
-      return { phase: phaseGroup[phase] || [phase], number }; // Ensure phase is always an array
-    });
-
-    const esillaolotPhases = presentEsillaolot.map(key => {
-      let phase = phaseNames.find(phaseName => key.includes(phaseName));
-      const number = key.match(/_(\d+)/) ? key.match(/_(\d+)/)[1] : null;
-      // If phase is "kaavaehdotus", replace it with all related phases
-      if (phase === "kaavaehdotus") {
-        phase = phaseGroup["kaavaehdotus"];
-      } else {
-        phase = [phase]; // Keep it as an array for consistency
-      }
-      return { phase, number };
-    });
-
-    //filter all but index keys from data
-    return Object.entries(updatedAttributeData).reduce((acc, [key, value]) => {
-      const indexMatch = key.match(/_(\d$)/);
-      const index = indexMatch ? parseInt(indexMatch[1], 10) : null;
-      //const isLautakunnatPhase = lautakunnatPhases.some(phase => key.includes(phase.phase) && key.includes(phase.number));
-      //const isEsillaolotPhase = esillaolotPhases.some(phase => key.includes(phase.phase) && key.includes(phase.number));
-      const isLautakunnatPhase = lautakunnatPhases.some(
-        phaseObj => phaseObj.phase.some(p => key.includes(p)) && key.endsWith(`_${phaseObj.number}`)
-      );
-  
-      const isEsillaolotPhase = esillaolotPhases.some(
-        phaseObj => phaseObj.phase.some(p => key.includes(p)) && key.endsWith(`_${phaseObj.number}`)
-      );
-      if (index === null || index === 1 || (isLautakunnatPhase || isEsillaolotPhase) ) {
+  const filterHiddenKeys = (attributeData, deadlines) => {
+    return Object.entries(attributeData).reduce((acc, [key, value]) => {
+      const dl = findDeadlineInDeadlines(key, deadlines);
+      if (!dl || shouldDeadlineBeVisible(dl.deadline.attribute, dl.deadline.deadlinegroup, attributeData)) {
         acc[key] = value;
       }
-      return acc;
-    }, {});
+      return acc
+    }, {})
+  }
+
+  const filterHiddenKeysUsingSections = (attributeData, deadlineSections) => {
+    return Object.entries(attributeData).reduce((acc, [key, value]) => {
+      const dl = findDeadlineInDeadlineSections(key, deadlineSections);
+      if (!dl || shouldDeadlineBeVisible(dl.name, dl.attributegroup, attributeData)) {
+        acc[key] = value;
+      }
+      return acc
+    }, {})
+  }
+
+  const findDeadlineInDeadlines = (deadlineName, deadlineObjects) => {
+    for (const deadline of deadlineObjects) {
+      if (deadlineName && deadline?.deadline?.attribute === deadlineName) {
+        return deadline;
+      }
+    }
+  }
+
+  const findDeadlineInDeadlineSections = (deadlineName,deadlineSections) => {
+    for (const phaseSection of deadlineSections) {
+      for (const dlObject of phaseSection?.sections[0]?.attributes){
+        if (dlObject.name === deadlineName) {
+          return dlObject;
+        }
+      }
+    }
   }
 
 export default {
@@ -621,5 +599,6 @@ export default {
     compareObjectValues,
     findMatchingName,
     findItem,
-    filterHiddenKeys
+    filterHiddenKeys,
+    filterHiddenKeysUsingSections
 }

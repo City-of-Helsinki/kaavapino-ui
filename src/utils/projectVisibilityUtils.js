@@ -179,3 +179,37 @@ export const getPhaseNameByVisBool = (boolName) => {
   }
   return null
 }
+
+export const shouldDeadlineBeVisible = (deadlineName, deadlineGroup, attributeData) => {
+  // Project size specific special cases
+  const projectSize = attributeData["kaavaprosessin_kokoluokka"];
+  if (projectSize) {
+    if (projectSize !== "XL" && (deadlineGroup?.includes("periaatteet") || deadlineGroup?.includes("luonnos"))) {
+        return false;
+    }
+    if ( ["XS","S","M"].includes(projectSize) && (
+      deadlineGroup?.includes("ehdotus_lautakuntakerta") || deadlineName?.includes("nahtavilla_alkaa_iso"))) {
+        return false;
+    }
+    if (["L", "XL"].includes(projectSize) && (
+      deadlineName?.includes("ehdotus_nahtaville_aineiston_maaraaika") || deadlineName?.includes("nahtavilla_alkaa_pieni"))) {
+        return false;
+    }
+  }
+  if( (deadlineGroup?.includes("periaatteet") && attributeData?.periaatteet_luotu === false) ||
+       deadlineGroup?.includes("luonnos") && attributeData?.luonnos_luotu === false) {
+    return false;
+  }
+  // Check visibility bools
+  const visBool = getVisibilityBoolName(deadlineGroup);
+  if (!visBool) {
+    return true;
+  }
+  const visBoolVal = attributeData[visBool];
+  if (visBoolVal === undefined) {
+    // Sometimes visibility bool is missing from data for deadlines that are always assumed to exist.
+    // (First deadline in the element group). In this case the dl should be shown.
+    return deadlineGroup.endsWith("_1")
+  }
+  return visBoolVal;
+}

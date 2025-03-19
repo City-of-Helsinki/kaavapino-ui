@@ -173,7 +173,6 @@ export const reducer = (state = initialState, action) => {
 
     case UPDATE_DATE_TIMELINE: {
       const { field, newDate, formValues, isAdd, deadlineSections } = action.payload;
-
       // Create a copy of the state and attribute_data
       let updatedAttributeData
       if(formValues){
@@ -186,7 +185,7 @@ export const reducer = (state = initialState, action) => {
       }
       const projectSize = updatedAttributeData?.kaavaprosessin_kokoluokka
       //Remove all keys that are still hidden in vistimeline so they are not moved in data and later saved
-      const filteredAttributeData = objectUtil.filterHiddenKeys(updatedAttributeData);
+      const filteredAttributeData = objectUtil.filterHiddenKeysUsingSections(updatedAttributeData, deadlineSections);
       const moveToPast = filteredAttributeData[field] > newDate;
       //Save oldDate for comparison in checkforDecreasingValues
       const oldDate = filteredAttributeData[field];
@@ -672,11 +671,11 @@ export const reducer = (state = initialState, action) => {
     case FETCH_PROJECT_SUCCESSFUL: {
       // Clone the payload to avoid direct mutation
       const updatedPayload = { ...action.payload };
-
       //When project is fetched it has all phase data, hide phases from data that are not in use when project is create
       //(like oas esillaolo 2,3 etc)
-      updatedPayload.attribute_data = objectUtil.filterHiddenKeys(updatedPayload.attribute_data);
-
+      console.log("UpdatedPayload", JSON.parse(JSON.stringify(updatedPayload.attribute_data)))
+      updatedPayload.attribute_data = objectUtil.filterHiddenKeys(updatedPayload.attribute_data, updatedPayload.deadlines);
+      console.log("Filtered:", JSON.parse(JSON.stringify(updatedPayload.attribute_data)))
             // Check conditions and update attribute_data if necessary
       //Ehdotus Add the key with a value of true because first one should be always visible at start 
       // if not true data is not visible for modification on edit timetable side panel
