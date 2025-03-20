@@ -185,15 +185,15 @@ export const shouldDeadlineBeVisible = (deadlineName, deadlineGroup, attributeDa
   const projectSize = attributeData["kaavaprosessin_kokoluokka"];
   if (projectSize) {
     if (projectSize !== "XL" && (deadlineGroup?.includes("periaatteet") || deadlineGroup?.includes("luonnos"))) {
-        return false;
+      return false;
     }
     if ( ["XS","S","M"].includes(projectSize) && (
-      deadlineGroup?.includes("ehdotus_lautakuntakerta") || deadlineName?.includes("nahtavilla_alkaa_iso"))) {
+      deadlineGroup?.startsWith("ehdotus_lautakuntakerta") || deadlineName?.includes("nahtavilla_alkaa_iso"))) {
         return false;
     }
     if (["L", "XL"].includes(projectSize) && (
-      deadlineName?.includes("ehdotus_nahtaville_aineiston_maaraaika") || deadlineName?.includes("nahtavilla_alkaa_pieni"))) {
-        return false;
+      deadlineName?.startsWith("ehdotus_nahtaville_aineiston_maaraaika") || deadlineName?.includes("nahtavilla_alkaa_pieni"))) {
+      return false;
     }
   }
   if( (deadlineGroup?.includes("periaatteet") && attributeData?.periaatteet_luotu === false) ||
