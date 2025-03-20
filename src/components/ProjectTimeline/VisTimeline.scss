@@ -28,12 +28,14 @@
             border-bottom: none
         }
         .vis-panel.vis-center {
-            border-left-color: RGBA(0,0,0,0);
+            border: 0;
+            border-left: 1px;
+            border-left-color:RGBA(0,0,0,0);
         }
     }
 
     .vis-panel.vis-top {
-        border: 1px solid $color-black-20;
+        border: 0;
         border-top: none;
         height: 85px;
         position: sticky;
@@ -52,11 +54,12 @@
 
     .vis-time-axis.vis-foreground{
         background-color: $dropdown-divider-color;
-        left: -0.5px !important;
+        left: -1px !important;
         height: 85px !important;
         & > div {
             color: $black1;
             font-size: $size14;
+            left: 2px;
         }
     }
 
@@ -318,7 +321,7 @@
     }
 
     .vis-dot.board-only{
-        border: 0.063rem solid #fff;
+        border: $size1 solid #fff;
         border-radius: 14px;
         padding: 5px;
         background-color: #1a1a1a;
@@ -640,7 +643,7 @@
 
     .vis-text.vis-major {
         text-align: center;
-        border-color: #999999;
+        border-color: $border-gray4;
     }
 
     .vis-text.vis-minor {
@@ -650,11 +653,12 @@
             text-align: center;
             border-color: $color-black-20;
             border-bottom: none;
+            left: 2px;
         }
     }
 
     .vis-major {
-        border-left: $size1 solid #999999 !important;
+        border-left: $size1 solid $border-gray4 !important;
         &::first-letter{
             text-transform: capitalize;
         }
@@ -779,13 +783,13 @@
         color: $black1;
     }
     .vis-minor {
-        border-color: $color-black-20 !important;
+        border-color: $color-black-20;
     }
     .vis-minor::first-letter {
         text-transform: capitalize;
     }
     .vis-minor.vis-january {
-        border-left: 0.063rem solid #999999 !important;
+        border-left: $size1 solid $border-gray4;
     }
     .normal-weekend {
         background-color: $color-white !important;
@@ -832,7 +836,7 @@
     }
     .vis-minor {
         font-family: 'Helsinki Grotesk Bold', sans-serif;
-        border-color: $color-black-20 !important;
+        border-color: $color-black-20;
         color:$black
     }
 }
@@ -848,4 +852,9 @@
     word-wrap: break-word !important;
     z-index: 2000 !important;
     border: none !important;
+}
+
+.january-first {
+    border-left:$size1 solid $border-gray4 !important;
+    opacity: 0.8;
 }
