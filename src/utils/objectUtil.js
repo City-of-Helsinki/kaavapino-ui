@@ -575,7 +575,10 @@ const getHighestNumberedObject = (obj1, arr) => {
 
   const findDeadlineInDeadlineSections = (deadlineName,deadlineSections) => {
     for (const phaseSection of deadlineSections) {
-      for (const dlObject of phaseSection?.sections[0]?.attributes){
+      if (!phaseSection?.sections[0]?.attributes){
+        return undefined;
+      }
+      for (const dlObject of phaseSection.sections[0].attributes){
         if (dlObject.name === deadlineName) {
           return dlObject;
         }
