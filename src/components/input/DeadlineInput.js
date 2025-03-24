@@ -212,7 +212,7 @@ const DeadLineInput = ({
           value={formatDateToDMYYYY(currentValue ? currentValue : input.value)}
           name={input.name}
           type='text' // type='date' works poorly with hds-DateInput
-          disabled={!timetable_editable || disabledState}
+          disabled={!timetable_editable || disabledState || !attributeData?.kaavan_vaihe.includes("Käynnistys") && (input?.name?.includes("projektin_kaynnistys_pvm") || input?.name?.includes("kaynnistys_paattyy_pvm"))}
           placeholder={placeholder}
           error={error}
           aria-label={input.name}
