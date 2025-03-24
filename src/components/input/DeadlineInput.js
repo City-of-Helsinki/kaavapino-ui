@@ -213,7 +213,6 @@ const DeadLineInput = ({
           name={input.name}
           type='text' // type='date' works poorly with hds-DateInput
           disabled={!timetable_editable || disabledState}
-          placeholder={placeholder}
           error={error}
           aria-label={input.name}
           onChange={(event) => {
