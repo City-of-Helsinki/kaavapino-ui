@@ -148,7 +148,23 @@ const DeadLineInput = ({
     return `${year}-${month}-${day}`;
   }
 
-  
+  const getFixedSectionAttributes = () => {
+    // Absurd hack because "Lausunnot viimeistään" is not included in sectionAttributes for some reason
+    // Remove this and just use sectionAttributes if this gets refactored in the future
+    if (!currentDeadline?.deadline?.attribute.includes("viimeistaan_lausunnot_ehdotuksesta")) {
+      return sectionAttributes;
+    }
+    const ehdotus_section = deadlineSections.find(section => section.title === "Ehdotus");
+    const grouped_section = ehdotus_section?.grouped_sections?.[0]?.attributes?.[currentDeadline?.deadline?.deadlinegroup]?.["Nähtäville"];
+    const lausunnot_attr_section = grouped_section?.find((attr) => attr.label === "Lausunnot viimeistään");
+    
+    if (!lausunnot_attr_section) {
+      return sectionAttributes;
+    }
+    const result = JSON.parse(JSON.stringify(sectionAttributes));
+    result.push(lausunnot_attr_section);
+    return result;
+  }
 
   const isDisabledDate = (date) => {
     //20 years is the calendars range to check work days, holidays etc from current date
@@ -157,7 +173,10 @@ const DeadLineInput = ({
     const twentyYearsLater = new Date();
     twentyYearsLater.setFullYear(twentyYearsLater.getFullYear() + 20);
     const ehdotusNahtavillaolo = currentDeadline?.deadline?.phase_name === "Ehdotus" && currentDeadline?.deadline?.deadlinegroup?.includes('nahtavillaolo')
-    const datesToDisable = timeUtil.calculateDisabledDates(ehdotusNahtavillaolo,attributeData?.kaavaprosessin_kokoluokka,dateTypes,input.name,formValues,sectionAttributes,currentDeadline)
+    const datesToDisable = timeUtil.calculateDisabledDates(
+      ehdotusNahtavillaolo, attributeData?.kaavaprosessin_kokoluokka, dateTypes, input.name, formValues,
+      getFixedSectionAttributes(), currentDeadline
+    );
     if (date < twentyYearsAgo || date > twentyYearsLater) {
       return false;
     }
