@@ -686,15 +686,11 @@ const getDisabledDatesForNahtavillaolo = (name, formValues, matchingItem, dateTy
     const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToComparePast, miniumDaysPast);
     const lastPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompareFuture, -miniumDaysFuture);
     return newDisabledDates.filter(date => date >= firstPossibleDateToSelect && date <= lastPossibleDateToSelect);
-  } else if (name.includes("_paattyy")) {
+  } else if (name.includes("_paattyy") || name.includes("viimeistaan_lausunnot")) {
     const miniumDaysPast = matchingItem?.distance_from_previous;
     const dateToComparePast = formValues[matchingItem?.previous_deadline];
     let newDisabledDates = dateTypes?.arkipäivät?.dates;
     const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToComparePast, miniumDaysPast);
-    return newDisabledDates.filter(date => date >= firstPossibleDateToSelect);
-  } else if (name.includes("viimeistaan_lausunnot")) {
-    const firstPossibleDateToSelect = formValues[name];
-    let newDisabledDates = dateTypes?.työpäivät?.dates;
     return newDisabledDates.filter(date => date >= firstPossibleDateToSelect);
   }
 };
@@ -713,14 +709,11 @@ const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues
   } else if (currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')) {
     const phaseName = currentDeadline?.deadline?.phase_name?.toLowerCase();
     return getDisabledDatesForLautakunta(name, formValues, phaseName, matchingItem, previousItem, dateTypes);
-  } else if (!nahtavillaolo && (size === 'L' || size === 'XL' || size === 'XS' || size === 'S' || size === 'M')) {
+  } else if (!nahtavillaolo) {
     return getDisabledDatesForSizeXSXL(name, formValues, matchingItem, dateTypes);
-  } else if (nahtavillaolo && (size === 'L' || size === 'XL' || size === 'XS' || size === 'S' || size === 'M')) {
+  } else {
     return getDisabledDatesForNahtavillaolo(name, formValues, matchingItem, dateTypes, size);
   }
-
-  // If not any of the above return arkipäivät
-  return dateTypes?.arkipäivät?.dates;
 };
 
 const compareAndUpdateDates = (data) => {
