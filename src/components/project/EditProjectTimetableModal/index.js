@@ -320,13 +320,15 @@ class EditProjectTimeTableModal extends Component {
     });
   
     if (deadlines[i].deadline.phase_name === "Käynnistys" || deadlines[i].deadline.phase_name === "Hyväksyminen" || deadlines[i].deadline.phase_name === "Voimaantulo") {
+      //Add both titles of the element start date and end date to item title so when dragging we can extract the correct date to update
+      const dlTitle = deadlines[i].deadline.phase_name === "Käynnistys" ? "projektin_kaynnistys_pvm" +"-"+ deadlines[i].deadline.attribute  : deadlines[i - 1].deadline.attribute +"-"+ deadlines[i].deadline.attribute
       phaseData.push({
         id: numberOfPhases + deadlines[i].deadline.phase_name,
         content: "",
         start: startDate,
         end: endDate,
         className: currentDate > endDate ? "phase-length past" : "phase-length",
-        title: deadlines[i].deadline.attribute,
+        title: dlTitle,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
         group: numberOfPhases,
@@ -406,7 +408,7 @@ class EditProjectTimeTableModal extends Component {
         id: numberOfPhases + " maaraaika",
         content: "",
         className: dashedStyle,
-        title: deadlines[i].deadline.attribute,
+        title: deadlines[i - 2].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
         group: numberOfPhases,
@@ -435,7 +437,7 @@ class EditProjectTimeTableModal extends Component {
         id: numberOfPhases,
         content: "",
         className: dashedStyle,
-        title: deadlines[i].deadline.attribute,
+        title: deadlines[i - 1].deadline.attribute + "-" +  deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
         group: numberOfPhases,
@@ -451,7 +453,7 @@ class EditProjectTimeTableModal extends Component {
           id: numberOfPhases + " maaraaika",
           content: "",
           className: dashedStyle + " deadline",
-          title: deadlines[i].deadline.attribute,
+          title: deadlines[i - 1].deadline.attribute,
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
           group: numberOfPhases,
@@ -495,7 +497,7 @@ class EditProjectTimeTableModal extends Component {
           id: numberOfPhases,
           content: "",
           className: dashedStyle,
-          title: deadlines[i].deadline.attribute,
+          title: deadlines[i - 1].deadline.attribute +"-"+ deadlines[i].deadline.attribute,
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
           group: numberOfPhases,

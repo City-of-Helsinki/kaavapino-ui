@@ -29,6 +29,11 @@
         .vis-panel.vis-center {
             border-left-color: RGBA(0,0,0,0);
         }
+        //Extra tooltip that shows for some reason, the actual tooltip we want to show is outside of timeline.
+        .vis-tooltip{
+            visibility: hidden !important;
+            display: none !important;
+        }
     }
 
     .vis-panel.vis-top {
@@ -748,20 +753,20 @@
 
     /*TODO: v1.2 Disabled for now because we don't want to allow dragging the timeline at this point set to auto*/
     .vis-drag-left{
-        pointer-events:none;
+        pointer-events:auto;
     }
     .vis-drag-right{
-        pointer-events:none;
+        pointer-events:auto;
     }
     .vis-item{
-        pointer-events: none;
+        pointer-events: auto;
     }
 
     .inner{
-        pointer-events: none;
+        pointer-events: auto;
     }
     .inner-end{
-        pointer-events: none;
+        pointer-events: auto;
     }
     /*1.2v end*/
 }

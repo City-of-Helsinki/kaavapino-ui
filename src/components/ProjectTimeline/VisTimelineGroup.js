@@ -17,6 +17,7 @@ import PropTypes from 'prop-types';
 import { getVisibilityBoolName, getVisBoolsByPhaseName } from '../../utils/projectVisibilityUtils';
 import './VisTimeline.css'
 Moment().locale('fi');
+import { updateDateTimeline } from '../../actions/projectActions';
 
 const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes}, ref) => {
     const dispatch = useDispatch();
@@ -26,6 +27,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const timelineRef = useRef(null);
     const timelineInstanceRef = useRef(null);
     const visValuesRef = useRef(visValues);
+    const dragHandleRef = useRef("");
 
     const [toggleTimelineModal, setToggleTimelineModal] = useState({open: false, highlight: false, deadlinegroup: false});
     const [timelineData, setTimelineData] = useState({group: false, content: false});
@@ -43,10 +45,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       getTimelineInstance: () => timelineInstanceRef.current,
     }));
 
-
-    const groupDragged = (id) => {
-      console.log('onChange:', id)
-    }
 
     const preventDefaultAndStopPropagation = (event) => {
       event.preventDefault();
@@ -550,15 +548,17 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         },
         onMove(item, callback) {
           let preventMove = false;
-
+          // Determine which part of the item is being dragged
+          const dragElement = dragHandleRef.current;
           const adjustIfWeekend = (date) => {
+            if (!date) return false; // Add check if date is undefined or null
             if (!(date.getDay() % 6)) {
               adjustWeekend(date);
               return true;
             }
             return false;
           }
-        
+
           if (!adjustIfWeekend(item.start) && !adjustIfWeekend(item.end)) {
             const movingTimetableItem = moment.range(item.start, item.end);
             if (item.phase) {
@@ -576,21 +576,59 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                 if (i.id !== item.id) {
                   if (item.phaseID === i.phaseID && !preventMove && !i.locked) {
                     preventMove = false;
-                  } else {
+                  } /* else {
                     const statickTimetables = moment.range(i.start, i.end);
                     if (movingTimetableItem.overlaps(statickTimetables)) {
                       preventMove = true;
                     }
-                  }
+                  } */
                 }
               });
             }
           }
         
-          if (item.content != null && !preventMove) {
-            callback(item); // send back adjusted item
+          if (item?.content != null && !preventMove) {
+            // Call the callback to update the item position in the timeline
+            callback(item);
+            
+            // After successfully moving the item, update the data in the store
+            if (item?.title) {
+              // Initialize variables for date and title
+              let attributeDate;
+              let attributeToUpdate;
+              const hasTitleSeparator = item.title.includes("-");
+              // Determine which part was dragged and set appropriate values
+              if (dragElement === "left") {
+                // If dragging the start handle
+                attributeDate = item.start;
+                attributeToUpdate = hasTitleSeparator ? item.title.split("-")[0].trim() : item.title;
+              } 
+              else if (dragElement === "right") {
+                // If dragging the end handle
+                attributeDate = item.end;
+                attributeToUpdate = hasTitleSeparator ? item.title.split("-")[1].trim() : item.title;
+              } 
+              else {
+                // If dragging element with single handle
+                attributeDate = item.end ? item.end : item.start;
+                attributeToUpdate = hasTitleSeparator ? item.title.split("-")[0].trim() : item.title;
+              }
+              
+              // Only dispatch if we have valid data
+              if (attributeToUpdate && attributeDate) {
+                const formattedDate = moment(attributeDate).format('YYYY-MM-DD');
+                dispatch(updateDateTimeline(
+                  attributeToUpdate,
+                  formattedDate, 
+                  visValuesRef.current,
+                  false,
+                  deadlineSections
+                ));
+              }
+            }
           } else {
-            callback(null); // cancel updating the item
+            // Cancel the update if content is null or move is prevented
+            callback(null);
           }
         },
         groupTemplate: function (group) {
@@ -813,8 +851,21 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         new vis.Timeline(timelineRef.current, items, options, groups);
         timelineInstanceRef.current = timeline
         setTimeline(timeline)
-        // add event listener
-        timeline.on('groupDragged', groupDragged)
+        // Assume `timeline` is your vis.Timeline instance
+        timeline.on('mouseDown', (props) => {
+          if (props.item) {
+            const element = props.event.target;
+            if (element.classList.contains('vis-drag-left')) {
+              dragHandleRef.current = "left";
+            } else if (element.classList.contains('vis-drag-right')) {
+              dragHandleRef.current = "right";
+            } else {
+              dragHandleRef.current = "";
+            }
+          } else {
+            dragHandleRef.current = "";
+          }
+        });
 
         if (timeline?.itemSet) {
           // remove the default internal hammer tap event listener
@@ -849,7 +900,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             timelineInstanceRef.current.off('itemout', hideTooltip);
             document.body.removeEventListener('mousemove', handleMouseMove);
           }
-          timeline.off('groupDragged', groupDragged)
+          timeline.off('mouseDown');
           //timeline.off('rangechanged', onRangeChanged);
         }
       }
