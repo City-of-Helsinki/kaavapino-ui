@@ -478,7 +478,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     useEffect(() => {
-
+      console.log(visValues)
       const options = {
         locales: {
           fi: {
@@ -546,10 +546,90 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           let hour = 60 * 60 * 1000;
           return Math.round(date / hour) * hour;
         },
+        onMoving: function (item, callback) {
+          // Create or update tooltip for moving item
+          let tooltipEl = document.getElementById('moving-item-tooltip');
+          if (!tooltipEl) {
+            tooltipEl = document.createElement('div');
+            tooltipEl.id = 'moving-item-tooltip';
+            tooltipEl.className = 'vis-moving-tooltip';
+            document.body.appendChild(tooltipEl);
+          }
+          
+          // Format dates for display
+          const startDate = item.start ? new Date(item.start).toLocaleDateString('fi-FI') : '';
+          const endDate = item.end ? new Date(item.end).toLocaleDateString('fi-FI') : '';
+          const dragElement = dragHandleRef.current;
+          // Position tooltip near mouse cursor
+          const event = window.event;
+          if (event) {
+            tooltipEl.style.display = 'block';
+            tooltipEl.style.position = 'absolute';
+            tooltipEl.style.left = `${event.pageX - 20}px`;
+            tooltipEl.style.top = `${event.pageY - 60}px`;
+            
+            // Set tooltip content based on which part is being dragged
+            if (dragElement === "left") {
+              tooltipEl.innerHTML = startDate;
+            } else if (dragElement === "right" && endDate) {
+              tooltipEl.innerHTML = endDate;
+            } else {
+              tooltipEl.innerHTML = startDate;
+            }
+          }
+          
+          // Call the original callback
+          callback(item);
+        },
         onMove(item, callback) {
+          // Remove the moving tooltip
+          const moveTooltip = document.getElementById('moving-item-tooltip');
+          if (moveTooltip) {
+            moveTooltip.style.display = 'none';
+          }
           let preventMove = false;
           // Determine which part of the item is being dragged
           const dragElement = dragHandleRef.current;
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          // Check if the item is confirmed or moving items to past dates and prevent moving
+          const isConfirmed = dragElement?.includes("confirmed");
+          const isMovingToPast = (item.start && item.start < today) || (item.end && item.end < today);
+
+          if (isConfirmed || isMovingToPast) {
+            // Cancel the move for confirmed items or items moved to past dates
+            callback(null);
+            return;
+          }
+          // Check if trying to move an item from a phase that has already passed
+          if (item.phaseName && visValuesRef.current.kaavan_vaihe) {
+            // Define the phase order
+            const phaseOrder = [
+              "Käynnistys", 
+              "Periaatteet", 
+              "OAS", 
+              "Luonnos", 
+              "Ehdotus", 
+              "Tarkistettu ehdotus", 
+              "Hyväksyminen", 
+              "Voimaantulo"
+            ];
+            
+            // Extract the phase name without numbering from kaavan_vaihe
+            const currentPhaseFullName = visValuesRef.current.kaavan_vaihe;
+            const currentPhaseName = currentPhaseFullName.replace(/^\d+\.\s+/, '');
+              // Get the index of current phase and item's phase
+            const currentPhaseIndex = phaseOrder.indexOf(currentPhaseName);
+            const itemPhaseIndex = phaseOrder.indexOf(item.phaseName);
+            
+            // If item's phase is before the current project phase, prevent the move
+            if (itemPhaseIndex < currentPhaseIndex) {
+              preventMove = true;
+              callback(null);
+              return;
+            }
+          }
+
           const adjustIfWeekend = (date) => {
             if (!date) return false; // Add check if date is undefined or null
             if (!(date.getDay() % 6)) {
@@ -855,15 +935,18 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         timeline.on('mouseDown', (props) => {
           if (props.item) {
             const element = props.event.target;
+            // Check if parent element has 'confirmed' class
+            const isConfirmed = props?.event?.target?.parentElement?.classList?.contains('confirmed') || element?.classList?.contains('confirmed') ? " confirmed" : "";
             if (element.classList.contains('vis-drag-left')) {
-              dragHandleRef.current = "left";
+              dragHandleRef.current = "left" + isConfirmed;
             } else if (element.classList.contains('vis-drag-right')) {
-              dragHandleRef.current = "right";
+              dragHandleRef.current = "right" + isConfirmed;
             } else {
-              dragHandleRef.current = "";
+              dragHandleRef.current = "" + isConfirmed;
             }
           } else {
-            dragHandleRef.current = "";
+            const isConfirmed = props?.event?.target?.parentElement?.classList?.contains('confirmed') ? " confirmed" : "";
+            dragHandleRef.current = "" + isConfirmed;
           }
         });
 

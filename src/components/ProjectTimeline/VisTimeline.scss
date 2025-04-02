@@ -753,11 +753,67 @@
 
     /*TODO: v1.2 Disabled for now because we don't want to allow dragging the timeline at this point set to auto*/
     .vis-drag-left{
+        min-width: none !important;
+        max-width: none !important;
         pointer-events:auto;
+        cursor: url('../../assets/icons/vector.svg') 8 8, move;
     }
+    .vis-drag-left:hover {
+        cursor: url('../../assets/icons/vector.svg') 8 8, move;
+    }
+    .vis-drag-left:active {
+        cursor: url('../../assets/icons/vector.svg') 8 8, move;
+    }
+    .vis-drag-left:hover::before {
+        content: '';
+        position: absolute;
+        left: 14px;
+        top: 6px;
+        bottom: 6px;
+        width: 2px;
+        background-color: #B3B3B3;
+    }
+    .vis-drag-left:active::before {
+        content: '';
+        position: absolute;
+        left: 14px;
+        top: 6px;
+        bottom: 6px;
+        width: 2px;
+        background-color: #808080;
+    }
+
     .vis-drag-right{
+        min-width: none !important;
+        max-width: none !important;
         pointer-events:auto;
+        cursor: url('../../assets/icons/vector.svg') 8 8, move;
     }
+    .vis-drag-right:hover{
+        cursor: url('../../assets/icons/vector.svg') 8 8, move;
+    }
+    .vis-drag-right:active{
+        cursor: url('../../assets/icons/vector.svg') 8 8, move;
+    }
+    .vis-drag-right:hover::before {
+        content: '';
+        position: absolute;
+        left: 7px;
+        top: 6px;
+        bottom: 6px;
+        width: 2px;
+        background-color: #B3B3B3;
+    }
+    .vis-drag-right:active::before {
+        content: '';
+        position: absolute;
+        left: 7px;
+        top: 6px;
+        bottom: 6px;
+        width: 2px;
+        background-color: #808080;
+    }
+
     .vis-item{
         pointer-events: auto;
     }
@@ -767,6 +823,53 @@
     }
     .inner-end{
         pointer-events: auto;
+    }
+
+    .vis-point:hover{
+        pointer-events: auto;
+        cursor: url('../../assets/icons/vector.svg') 8 8, move;
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background-color: #B3B3B3;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+          }
+        
+          &:hover::after {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+          }
+    }
+    .vis-point:active{
+        pointer-events: auto;
+        cursor: url('../../assets/icons/vector.svg') 8 8, move;
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background-color: #808080;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+          }
+        
+          &:hover::after {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+          }
     }
     /*1.2v end*/
 }
@@ -854,4 +957,20 @@
     word-wrap: break-word !important;
     z-index: 2000 !important;
     border: none !important;
+}
+
+.vis-moving-tooltip {
+    pointer-events: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    background-color: rgba(204, 204, 204, 0.9) !important;
+    color: #1A1A1A !important;
+    padding: 5px 8px !important;
+    border-radius: 4px !important;
+    font-family: 'Helsinki Grotesk', sans-serif !important;
+    font-weight: 900 !important;
+    font-size: 14px !important;
+    line-height: 14px !important;
+    letter-spacing: 0% !important;
+    text-align: center !important;
+    z-index: 2000 !important;
 }
