@@ -30,6 +30,14 @@ const InfoContent = props => {
     <React.Fragment>
       <span className="content">{props.content}</span>
       {props.link && createInfoLinks()}
+      {props.help_img_link && (
+        <div className='img-link-container' key={props.help_img_link}>
+        <Link className="link-underlined" to={{pathname:props.help_img_link}} target="_blank">
+          {t('project.location-in-doc')}
+          <IconLinkExternal size="xs" aria-hidden="true" />
+        </Link>
+      </div>
+      )}
       {props.linked && (
         <div className='linked-fields'>
           <span className='linked-header'>{t('project.header-text')}</span>
@@ -47,7 +55,7 @@ const InfoContent = props => {
 
 const Info = props => (
   <Tooltip tooltipClassName={"tooltip"} placement="auto">
-    <InfoContent content={props.content} link={props.link} linked={props.linked} />
+    <InfoContent content={props.content} link={props.link} linked={props.linked} help_img_link={props.help_img_link}/>
   </Tooltip>
 )
 

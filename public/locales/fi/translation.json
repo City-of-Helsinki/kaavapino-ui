@@ -232,6 +232,7 @@
     "default-email": "etunimi.sukunimi@hel.fi",
     "save-warning": "Hankkeessa on tallentamattomia muutoksia. Haluatteko silti jatkaa?",
     "more-info": "Lisäohjeita",
+    "location-in-doc": "Kentän sijainti dokumentissa",
     "link-is-broken": "Linkki on rikki",
     "no-projects": "Ei projekteja",
     "fieldset-title": "{{label}} (Max {{max}} merkkiä)s",
