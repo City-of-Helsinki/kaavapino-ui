@@ -860,6 +860,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         if (timelineInstanceRef.current) {
           //Update timeline when values change from side modal
           timelineInstanceRef.current.setItems(items);
+          timelineInstanceRef.current.setGroups(groups);
           timelineInstanceRef.current.redraw();
         }
       }
