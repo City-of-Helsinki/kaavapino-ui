@@ -764,6 +764,21 @@ function* validateProjectTimetable() {
     // Success. Prevent further validation calls by setting state
     yield put(setValidatingTimetable(true, true));
     //Backend may have edited phase start/end dates, so update project
+    const unresolved = response?.unresolved || [];
+
+    if (unresolved.length > 0) {
+      toastr.warning(
+        i18.t('messages.preview-unresolved-dates'),
+        unresolved.join(', '),
+        {
+          timeOut: 10000,
+          removeOnHover: false,
+          showCloseButton: true,
+        }
+      );
+      return; // Don't update project or loop
+    }
+    
     yield put(updateProject(response));
     } catch (e) {
       if (e?.code === "ERR_NETWORK") {
