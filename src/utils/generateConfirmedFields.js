@@ -17,23 +17,14 @@ export function generateConfirmedFields(attributeData, confirmationAttributeName
     const rawKey = confirmationKey.replace(/^vahvista_/, '');
 
     const matchedPhases = phaseNames.filter((phase) =>
-      rawKey.includes(phase)
+      rawKey.startsWith(phase + '_') || rawKey === phase
     );
 
-    const extendedPatterns = [...matchedPhases];
-
-    if (rawKey.includes('lautakunnassa')) {
-      extendedPatterns.push('lautakunta');
-    }
-
-    // Only include attribute keys that:
-    //   - match the phase
-    //   - AND are likely a deadline field (string date)
-    const matchingKeys = Object.entries(attributeData)
-      .filter(([key, value]) =>
-        typeof value === 'string' && extendedPatterns.some(p => key.includes(p))
+    const matchingKeys = Object.keys(attributeData).filter((key) =>
+      matchedPhases.some((phase) =>
+        key.startsWith(phase + '_') || key === phase
       )
-      .map(([key]) => key);
+    );
 
     confirmedFields.push(...matchingKeys);
   });
