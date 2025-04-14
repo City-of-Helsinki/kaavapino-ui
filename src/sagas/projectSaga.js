@@ -757,12 +757,14 @@ function* validateProjectTimetable() {
       'tarkistettu_ehdotus'
     ];
     //Find confirmed fields from attribute_data so backend knows not to edit them
+    console.log(attribute_data)
+    
     const confirmed_fields = generateConfirmedFields(
       attribute_data,
       confirmationAttributeNames,
       phaseNames
     );
-
+    console.log(confirmed_fields)
     try {
       const response = yield call(
         projectApi.patch,
