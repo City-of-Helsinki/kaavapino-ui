@@ -82,7 +82,15 @@ const DeadlineInfoText = props => {
       const regex = /_x(\d+)/;
       const match = props.input.name.match(regex);
       const index = match ? "_"+match[1] : "";
-      let start = formValues["milloin_ehdotuksen_nahtavilla_alkaa_iso"+index] ?? formValues["milloin_ehdotuksen_nahtavilla_alkaa_pieni"+index]
+      let start;
+      const kokoluokka = formValues?.["kaavaprosessin_kokoluokka"];
+      if (!kokoluokka) {
+        start = formValues["milloin_ehdotuksen_nahtavilla_alkaa_iso"+index] ?? formValues["milloin_ehdotuksen_nahtavilla_alkaa_pieni"+index]
+      } else {
+        start = ["XS", "S", "M"].includes(kokoluokka) ? 
+          formValues["milloin_ehdotuksen_nahtavilla_alkaa_pieni"+index] : 
+          formValues["milloin_ehdotuksen_nahtavilla_alkaa_iso"+index];
+      }
       let end = formValues["milloin_ehdotuksen_nahtavilla_paattyy"+index]
       return calculateDaysBetweenDates(start, end)
     }
