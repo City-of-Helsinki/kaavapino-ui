@@ -786,7 +786,7 @@ function* validateProjectTimetable() {
 
       // Success. Prevent further validation calls by setting state
       yield put(setValidatingTimetable(true, true));
-
+      console.log(response)
       // Backend may have edited phase start/end dates, so update project
       yield put(updateProject(response));
     } catch (e) {

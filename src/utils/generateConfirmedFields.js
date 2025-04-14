@@ -25,8 +25,8 @@ export function generateConfirmedFields(attributeData, confirmationAttributeName
       const field1 = `milloin_${phase}_${base}${finalSuffix}`;
       const field2 = `${phase}_lautakunta_aineiston_maaraaika${finalSuffix}`;
 
-      if (field1 in attributeData) confirmedFields.push(field1);
-      if (field2 in attributeData) confirmedFields.push(field2);
+      confirmedFields.push(field1);
+      confirmedFields.push(field2);
 
       return;
     }
