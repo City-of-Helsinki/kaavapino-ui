@@ -842,11 +842,29 @@ function* saveProjectTimetable(action,retryCount = 0) {
       delete changedAttributeData.oikaisukehoituksen_alainen_readonly
     }
     let attribute_data = adjustDeadlineData(changedAttributeData, values)
+    
+    // Add confirmed field locking from vahvista_* flags
+    // leave 'kaynnistys','hyvaksyminen','voimaantulo' out because no vahvista flags there
+    const phaseNames = [
+      'periaatteet',
+      'oas',
+      'luonnos',
+      'ehdotus',
+      'tarkistettu_ehdotus'
+    ];
+    
+    //Find confirmed fields from attribute_data so backend knows not to edit them
+    const confirmed_fields = generateConfirmedFields(
+      attribute_data,
+      confirmationAttributeNames,
+      phaseNames
+    );
+    
     const maxRetries = 5;
     try {
       const updatedProject = yield call(
         projectApi.patch,
-        { attribute_data },
+        { attribute_data, confirmed_fields },
         { path: { id: currentProjectId } },
         ':id/'
       )
