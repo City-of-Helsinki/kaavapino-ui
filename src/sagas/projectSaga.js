@@ -757,14 +757,12 @@ function* validateProjectTimetable() {
       'tarkistettu_ehdotus'
     ];
     //Find confirmed fields from attribute_data so backend knows not to edit them
-    console.log(attribute_data)
-    
     const confirmed_fields = generateConfirmedFields(
       attribute_data,
       confirmationAttributeNames,
       phaseNames
     );
-    console.log(confirmed_fields)
+
     try {
       const response = yield call(
         projectApi.patch,
@@ -786,7 +784,7 @@ function* validateProjectTimetable() {
 
       // Success. Prevent further validation calls by setting state
       yield put(setValidatingTimetable(true, true));
-      console.log(response)
+
       // Backend may have edited phase start/end dates, so update project
       yield put(updateProject(response));
     } catch (e) {
@@ -859,7 +857,7 @@ function* saveProjectTimetable(action,retryCount = 0) {
       confirmationAttributeNames,
       phaseNames
     );
-    
+
     const maxRetries = 5;
     try {
       const updatedProject = yield call(
@@ -868,6 +866,7 @@ function* saveProjectTimetable(action,retryCount = 0) {
         { path: { id: currentProjectId } },
         ':id/'
       )
+
       yield put(updateProject(updatedProject))
       yield put(setSubmitSucceeded(EDIT_PROJECT_TIMETABLE_FORM))
       yield put(saveProjectTimetableSuccessful(true))
