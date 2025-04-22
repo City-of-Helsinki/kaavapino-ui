@@ -134,6 +134,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           //else someone else is editing and prevent editing
           if(lock && lockedStatus.lockData.attribute_lock.owner){
             if(lastModified === input.name && lockedStatus?.saving){
+              console.log(input.name)
               setReadOnly({name:input.name,read:true})
             }
             else{
@@ -145,6 +146,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
             }
           }
           else{
+            console.log(input.name)
             setReadOnly({name:input.name,read:true})
             //Change styles from FormField
             custom.lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
@@ -219,7 +221,8 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
             localStorage.setItem("changedValues", input.name);
             custom.onBlur();
             if(!custom.insideFieldset){
-              setReadOnly({name:input.name,read:true})
+              const readOnlyValue = !custom?.isProjectTimetableEdit ? true : false
+              setReadOnly({name:input.name,read:readOnlyValue})
             }
             oldValueRef.current = event.target.value;
 
@@ -295,6 +298,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     //Render rolling info field or normal edit field
     //If clicking rolling field button makes positive lock check then show normal editable field
     //Rolling field can be nonEditable
+    console.log(input.name,custom?.timetable_editable,custom.disabled,readonly.read,custom?.isProjectTimetableEdit)
     const elements = custom.nonEditable || custom.rollingInfo && !editField ?
       <RollingInfo 
         name={input.name} 

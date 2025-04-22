@@ -180,7 +180,11 @@ const DeadLineInput = ({
     if (date < twentyYearsAgo || date > twentyYearsLater) {
       return false;
     }
-    return !datesToDisable.includes(formatDate(date));
+    else if (!datesToDisable || datesToDisable.length === 0) {
+      // If datesToDisable is undefined/null or empty, all dates are enabled
+      return false;
+    }
+    return !datesToDisable?.includes(formatDate(date));
   }
 
   const formatDateToYYYYMMDD = (date) => {
