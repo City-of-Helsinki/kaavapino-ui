@@ -580,7 +580,7 @@ const getDisabledDatesForLautakunta = (name, formValues, phaseName, matchingItem
   let filteredDateToCompare;
   let firstPossibleDateToSelect;
   //Change to correct comparable phase name from tarkistettu ehdotus to tarkistettu_ehdotus
-  phaseName?.includes("tarkistettu") ? phaseName = "tarkistettu_" + phaseName.replace("tarkistettu ", "") : phaseName;
+  phaseName = phaseName?.includes("tarkistettu") && "tarkistettu_" + phaseName.replace("tarkistettu ", "") || phaseName;
 
   if (name.includes("_maaraaika")) {
     if (formValues[`jarjestetaan_${phaseName}_esillaolo_1`] === false) {
