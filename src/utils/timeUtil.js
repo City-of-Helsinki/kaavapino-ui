@@ -579,6 +579,8 @@ const getDisabledDatesForLautakunta = (name, formValues, phaseName, matchingItem
   let miniumDaysPast;
   let filteredDateToCompare;
   let firstPossibleDateToSelect;
+  //Change to correct comparable phase name from tarkistettu ehdotus to tarkistettu_ehdotus
+  phaseName = phaseName?.includes("tarkistettu") && "tarkistettu_" + phaseName.replace("tarkistettu ", "") || phaseName;
 
   if (name.includes("_maaraaika")) {
     if (formValues[`jarjestetaan_${phaseName}_esillaolo_1`] === false) {
@@ -595,8 +597,9 @@ const getDisabledDatesForLautakunta = (name, formValues, phaseName, matchingItem
     return newDisabledDates.filter(date => date >= firstPossibleDateToSelect);
   } else if (name.includes("_lautakunnassa")) {
     const isPastFirst = formValues[`jarjestetaan_${phaseName}_esillaolo_2`] || formValues[`${phaseName}_lautakuntaan_2`] || formValues[`kaava${phaseName}_lautakuntaan_2`];
-    miniumDaysPast = matchingItem?.initial_distance.distance + previousItem?.distance_from_previous;
-
+    //Tarkistettu ehdotus 2-4 phases have only lautakunta so only 5 days minimum
+    const fromPrevious = phaseName === "tarkistettu_ehdotus" && isPastFirst ? matchingItem?.distance_from_previous : false;
+    miniumDaysPast = fromPrevious || (matchingItem?.initial_distance.distance + previousItem?.distance_from_previous);
     if ((phaseName === "periaatteet" || phaseName === "luonnos") && !isPastFirst) {
       dateToComparePast = formValues[previousItem?.previous_deadline] || formValues[previousItem?.initial_distance?.base_deadline];
       filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates, dateToComparePast, miniumDaysPast);

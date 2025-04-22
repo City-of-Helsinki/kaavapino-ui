@@ -219,7 +219,8 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
             localStorage.setItem("changedValues", input.name);
             custom.onBlur();
             if(!custom.insideFieldset){
-              setReadOnly({name:input.name,read:true})
+              const readOnlyValue = !custom?.isProjectTimetableEdit
+              setReadOnly({name:input.name,read:readOnlyValue})
             }
             oldValueRef.current = event.target.value;
 

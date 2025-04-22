@@ -177,10 +177,10 @@ const DeadLineInput = ({
       ehdotusNahtavillaolo, attributeData?.kaavaprosessin_kokoluokka, dateTypes, input.name, formValues,
       getFixedSectionAttributes(), currentDeadline
     );
-    if (date < twentyYearsAgo || date > twentyYearsLater) {
+    if (date < twentyYearsAgo || date > twentyYearsLater || !datesToDisable || datesToDisable.length === 0) {
       return false;
     }
-    return !datesToDisable.includes(formatDate(date));
+    return !datesToDisable?.includes(formatDate(date));
   }
 
   const formatDateToYYYYMMDD = (date) => {
