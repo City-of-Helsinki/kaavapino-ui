@@ -598,7 +598,7 @@ const getDisabledDatesForLautakunta = (name, formValues, phaseName, matchingItem
   } else if (name.includes("_lautakunnassa")) {
     const isPastFirst = formValues[`jarjestetaan_${phaseName}_esillaolo_2`] || formValues[`${phaseName}_lautakuntaan_2`] || formValues[`kaava${phaseName}_lautakuntaan_2`];
     //Tarkistettu ehdotus 2-4 phases have only lautakunta so only 5 days minimum
-    const fromPrevious = phaseName === "tarkistettu_ehdotus" && isPastFirst ? matchingItem?.distance_from_previous : false;
+    const fromPrevious = isPastFirst ? matchingItem?.distance_from_previous : false;
     miniumDaysPast = fromPrevious || (matchingItem?.initial_distance.distance + previousItem?.distance_from_previous);
     if ((phaseName === "periaatteet" || phaseName === "luonnos") && !isPastFirst) {
       dateToComparePast = formValues[previousItem?.previous_deadline] || formValues[previousItem?.initial_distance?.base_deadline];

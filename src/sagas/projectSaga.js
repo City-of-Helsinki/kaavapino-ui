@@ -789,7 +789,7 @@ function* validateProjectTimetable() {
       yield put(updateProject(response));
     } catch (e) {
       if (e?.code === 'ERR_NETWORK') {
-        toastr.error(i18.t('messages.general-save-error'));
+        toastr.error(i18.t('messages.validation-error'));
       }
 
       // Catch reached so dates were not correct,
