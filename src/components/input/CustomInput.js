@@ -224,6 +224,9 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
             if(!(event.target.value === '' && !custom?.fieldData?.isRequired) && custom.regex){
               const regex = new RegExp(custom.regex);
               setHasError(!regex.test(event.target.value))
+            } else if(custom.type === 'number') {
+              const regex = new RegExp("^[+-]?\\d+$");
+              setHasError(!regex.test(event.target.value))
             }
           }
         }
@@ -289,7 +292,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
 
 
   const normalOrRollingElement = () => {
-    const errorString = custom.customError || t('project.error')
+    const errorString = custom.customError || (custom.type === 'number'? t('project.error-input-int') : t('project.error'))
     //Render rolling info field or normal edit field
     //If clicking rolling field button makes positive lock check then show normal editable field
     //Rolling field can be nonEditable
