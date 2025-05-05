@@ -79,7 +79,7 @@ class EditProjectTimeTableModal extends Component {
       deadlines,
       deadlineSections
     } = this.props
-    if (prevProps.attributeData && prevProps.attributeData !== attributeData) {
+    if (prevProps.attributeData && !isEqual(prevProps.attributeData, attributeData)) {
       let sectionAttributes = [];
       this.extractAttributes(deadlineSections, attributeData, sectionAttributes, (attribute, attributeData) =>
         attribute.label !== "Lausunnot viimeistään" && attributeData[attribute.name]
@@ -89,8 +89,7 @@ class EditProjectTimeTableModal extends Component {
       Object.keys(attributeData).forEach(fieldName => 
         this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, fieldName, attributeData[fieldName])));
     }
-
-    if(prevProps.formValues && prevProps.formValues !== formValues){
+    if(prevProps.formValues && !isEqual(prevProps.formValues, formValues)){
       //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
       timeUtil.compareAndUpdateDates(formValues)
       if(deadlineSections && deadlines && formValues){

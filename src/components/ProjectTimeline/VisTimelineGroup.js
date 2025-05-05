@@ -293,9 +293,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       });
       //highlight the latest group
       if (container) {
-        container.classList.toggle("highlight-selected");
+        container.classList.add("highlight-selected");
         if (container.parentElement.parentElement) {
-          container.parentElement.parentElement.classList.toggle("highlight-selected");
+          container.parentElement.parentElement.classList.add("highlight-selected");
         }
       }
       const modifiedDeadlineGroup = data?.deadlinegroup?.includes(';') ? data.deadlinegroup.split(';')[0] : data.deadlinegroup;

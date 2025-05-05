@@ -683,6 +683,11 @@ export const reducer = (state = initialState, action) => {
         }
       }
 
+      if(updatedPayload?.attribute_data["aloituskokous_suunniteltu_pvm_readonly"] === undefined) {
+        //Check if value is not existing at all then add it as undefined, previous prop will not match othetwise and triggers unnecessary renders.
+        updatedPayload.attribute_data["aloituskokous_suunniteltu_pvm_readonly"] = undefined;
+      }
+      
       return {
         ...state,
         currentProject: updatedPayload,
