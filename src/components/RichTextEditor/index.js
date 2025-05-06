@@ -19,7 +19,7 @@ import {
 import { currentProjectIdSelector,savingSelector,lockedSelector, lastModifiedSelector, pollSelector,lastSavedSelector } from '../../selectors/projectSelector'
 import { ReactComponent as CommentIcon } from '../../assets/icons/comment-icon.svg'
 import { useTranslation } from 'react-i18next'
-import {IconAlertCircleFill} from 'hds-react'
+import {IconAlertCircleFill,LoadingSpinner} from 'hds-react'
 import RollingInfo from '../input/RollingInfo'
 import { useIsMount } from '../../hooks/IsMounted'
 import { isEqual } from 'lodash'
@@ -85,7 +85,8 @@ function RichTextEditor(props) {
     isFloorAreaForm,
     floorValue,
     attributeData,
-    phaseIsClosed
+    phaseIsClosed,
+    fieldDisabled
   } = props
 
   const dispatch = useDispatch()
@@ -657,7 +658,7 @@ function RichTextEditor(props) {
     <input className='visually-hidden' ref={myRefname}/>
     <div
       role="textbox"
-      className={`rich-text-editor-wrapper ${fieldSetDisabled || disabled || lastModified === inputProps.name && saving ? 'rich-text-disabled' : ''}`}
+      className={`rich-text-editor-wrapper ${fieldSetDisabled || disabled || fieldDisabled || lastModified === inputProps.name && saving ? 'rich-text-disabled' : ''}`}
       aria-label="tooltip"
       onFocus={checkLocked}
     >
@@ -701,7 +702,11 @@ function RichTextEditor(props) {
             </button>
           </span>
         </div>
-        
+        {saving && lastModified === inputProps.name && (
+          <div className="quill-spinner-overlay">
+            <LoadingSpinner className="loading-spinner" />
+          </div>
+        )}
         <ReactQuill
           tabIndex="0"
           id={toolbarName + "input"}

@@ -47,6 +47,7 @@ import {
   GET_PROJECTS_OVERVIEW_FLOOR_AREA_SUCCESSFUL,
   GET_PROJECTS_OVERVIEW_BY_SUBTYPE_SUCCESSFUL,
   SAVE_PROJECT_FLOOR_AREA_SUCCESSFUL,
+  SAVE_PROJECT_TIMETABLE,
   SAVE_PROJECT_TIMETABLE_SUCCESSFUL,
   RESET_FLOOR_AREA_SAVE,
   RESET_TIMETABLE_SAVE,
@@ -80,8 +81,23 @@ import {
   UPDATE_FLOOR_VALUES,
   FORM_ERROR_LIST,
   RESET_FORM_ERRORS,
-  SET_ATTRIBUTE_DATA
+  SET_ATTRIBUTE_DATA,
+  FETCH_DISABLED_DATES_START,
+  FETCH_DISABLED_DATES_SUCCESS,
+  FETCH_DISABLED_DATES_FAILURE,
+  SET_DATE_VALIDATION_RESULT,
+  REMOVE_DEADLINES,
+  VALIDATE_DATE,
+  UPDATE_DATE_TIMELINE,
+  RESET_ATTRIBUTE_DATA,
+  UPDATE_PROJECT_FAILURE,
+  UPDATE_ATTRIBUTE,
+  SAVE_PROJECT_TIMETABLE_FAILED,
+  VALIDATING_TIMETABLE
 } from '../actions/projectActions'
+
+import timeUtil from '../utils/timeUtil'
+import objectUtil from '../utils/objectUtil'
 
 export const initialState = {
   projects: [],
@@ -127,12 +143,158 @@ export const initialState = {
   lastModified:false,
   updatedFloorValue:{},
   formErrorList:[],
-  updateField:false
+  updateField:false,
+  loading: false,
+  disabledDates: {},
+  error: null,
+  dateValidationResult: {valid: false, result: {}},
+  validated:false,
+  cancelTimetableSave:false,
+  validatingTimetable: {started: false, ended: false}
 }
 
 export const reducer = (state = initialState, action) => {
 
   switch (action.type) {
+
+    case UPDATE_ATTRIBUTE: {
+      const { field, value } = action.payload
+      return {
+        ...state,
+        currentProject: {
+          ...state.currentProject,
+          attribute_data: {
+            ...state.currentProject.attribute_data,
+            [field]: value
+          }
+        }
+      }
+    }
+
+    case UPDATE_DATE_TIMELINE: {
+      const { field, newDate, formValues, isAdd, deadlineSections } = action.payload;
+      // Create a copy of the state and attribute_data
+      let updatedAttributeData
+      if(formValues){
+        updatedAttributeData = formValues
+      }
+      else{
+        updatedAttributeData = { 
+          ...state.currentProject.attribute_data, // Shallow copy of attribute_data
+        };
+      }
+      const projectSize = updatedAttributeData?.kaavaprosessin_kokoluokka
+      //Remove all keys that are still hidden in vistimeline so they are not moved in data and later saved
+      const filteredAttributeData = objectUtil.filterHiddenKeysUsingSections(updatedAttributeData, deadlineSections);
+      const moveToPast = filteredAttributeData[field] > newDate;
+      //Save oldDate for comparison in checkforDecreasingValues
+      const oldDate = filteredAttributeData[field];
+      //Sort array by date
+      const origSortedData = timeUtil.sortObjectByDate(filteredAttributeData);
+      const newDateObj = new Date(newDate);
+      // Update the specific date at the given field
+      filteredAttributeData[field] = timeUtil.formatDate(newDateObj);
+      if(field === "hyvaksymispaatos_pvm" && filteredAttributeData["hyvaksyminenvaihe_paattyy_pvm"]){
+        filteredAttributeData["hyvaksyminenvaihe_paattyy_pvm"] = timeUtil.formatDate(newDateObj);
+      }
+      else if (field === "tullut_osittain_voimaan_pvm" || field === "voimaantulo_pvm" || field === "kumottu_pvm" || field === "rauennut") {
+        // Find the highest date among the specified fields
+        const highestDate = timeUtil.getHighestDate(filteredAttributeData);
+        // Modify the end date of voimaantulovaihe if any of the dates are changed and the new date is higher
+        if ((highestDate) || (!highestDate && newDate)) {
+          const higherDate = highestDate ? highestDate : newDate;
+          filteredAttributeData["voimaantulovaihe_paattyy_pvm"] = higherDate;
+        }
+      }
+      // Generate array from updatedAttributeData for comparison
+      const updateAttributeArray = objectUtil.generateDateStringArray(filteredAttributeData)
+      //Compare for changes with dates in order sorted array
+      const changes = objectUtil.compareAndUpdateArrays(origSortedData,updateAttributeArray,deadlineSections)
+      //Find out is next date below minium and add difference of those days to all values after and move them forward 
+      const decreasingValues = objectUtil.checkForDecreasingValues(changes,isAdd,field,state.disabledDates,oldDate,newDate,moveToPast,projectSize);
+      //Add new values from array to updatedAttributeData object
+      objectUtil.updateOriginalObject(filteredAttributeData,decreasingValues)
+      //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
+      timeUtil.compareAndUpdateDates(filteredAttributeData)
+      // Return the updated state with the modified currentProject and attribute_data
+      return {
+        ...state,
+        currentProject: {
+          ...state.currentProject,
+          attribute_data: filteredAttributeData,
+        },
+      };
+    }
+
+    case UPDATE_PROJECT_FAILURE: {
+      //Update dates that were returned unvalid from backend
+      const { errorData, formValues } = action.payload;
+      const dateRegex = /\d{1,2}\.\d{1,2}\.\d{4}/;
+
+      // Duplicate attribute_data and update it with changed formValues
+      const updatedAttributeData = { ...state.currentProject.attribute_data, ...formValues};
+
+      // Apply date format corrections based on errorData
+      for (const key in updatedAttributeData) {
+        if (errorData?.[key]) {
+          const dateMatch = errorData[key].find(msg => dateRegex.test(msg));
+          if (dateMatch) {
+            const date = dateMatch.match(dateRegex)[0];
+            const [day, month, year] = date.split('.');
+            updatedAttributeData[key] = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+          }
+        }
+      }
+
+      return {
+        ...state,
+        currentProject: {
+          ...state.currentProject,
+          attribute_data: updatedAttributeData,
+        }
+      };
+    }
+
+    case REMOVE_DEADLINES:{
+      return {
+        ...state,
+        currentProject: {
+          ...state.currentProject,
+          deadlines: state.currentProject.deadlines.filter(deadline => !action.payload.includes(deadline.deadline.attribute)),
+        },
+      };
+    }
+
+    case VALIDATE_DATE: {
+      return { 
+        ...state,
+        validated: true
+      };
+    }
+      
+    case SET_DATE_VALIDATION_RESULT: {
+      return { 
+        ...state, 
+        dateValidationResult: {
+          ...state.dateValidationResult,
+          valid: action.payload.valid, 
+          result: action.payload.result 
+        },
+        validated: false
+      };
+    }
+
+    case FETCH_DISABLED_DATES_START: {
+      return { ...state, loading: true, error: null };
+    }
+
+    case FETCH_DISABLED_DATES_SUCCESS: {
+      return { ...state, loading: false, disabledDates: action.payload};
+    }
+
+    case FETCH_DISABLED_DATES_FAILURE:{
+      return { ...state, loading: false, error: action.payload };
+    }
 
     case SET_ATTRIBUTE_DATA: {
       const { fieldName, data } = action.payload
@@ -152,6 +314,17 @@ export const reducer = (state = initialState, action) => {
           attribute_data: { ...updatedAttributeData }
         },
         updateField:action.payload
+      }
+    }
+
+    case RESET_ATTRIBUTE_DATA: {
+      const { initialData } = action.payload
+      return {
+        ...state,
+        currentProject: {
+          ...state.currentProject,
+          attribute_data: { ...initialData }
+        }
       }
     }
 
@@ -496,9 +669,23 @@ export const reducer = (state = initialState, action) => {
 
     case UPDATE_PROJECT:
     case FETCH_PROJECT_SUCCESSFUL: {
+      // Clone the payload to avoid direct mutation
+      const updatedPayload = { ...action.payload };
+      //When project is fetched it has all phase data, hide phases from data that are not in use when project is create
+      //(like oas esillaolo 2,3 etc)
+      updatedPayload.attribute_data = objectUtil.filterHiddenKeys(updatedPayload.attribute_data, updatedPayload.deadlines);
+            // Check conditions and update attribute_data if necessary
+      //Ehdotus Add the key with a value of true because first one should be always visible at start 
+      // if not true data is not visible for modification on edit timetable side panel
+      if (updatedPayload?.attribute_data?.kaavaprosessin_kokoluokka === "XL" || updatedPayload?.attribute_data?.kaavaprosessin_kokoluokka === "L"){
+        if(updatedPayload?.attribute_data["kaavaehdotus_lautakuntaan_1"] === undefined) {
+          updatedPayload.attribute_data["kaavaehdotus_lautakuntaan_1"] = true;
+        }
+      }
+
       return {
         ...state,
-        currentProject: action.payload,
+        currentProject: updatedPayload,
         saving: false
       }
     }
@@ -779,11 +966,30 @@ export const reducer = (state = initialState, action) => {
       }
     }
 
+    case SAVE_PROJECT_TIMETABLE: {
+      return{
+        ...state,
+        cancelTimetableSave:false
+      }
+    }
+
     case SAVE_PROJECT_TIMETABLE_SUCCESSFUL: {
       return{
         ...state,
         timetableSaved:action.payload,
-        showEditProjectTimetableForm: false
+        showEditProjectTimetableForm: false,
+        cancelTimetableSave:false
+      }
+    }
+
+    case SAVE_PROJECT_TIMETABLE_FAILED: {
+      return{
+        ...state,
+        timetableSaved:false,
+        showEditProjectTimetableForm: true,
+        loading:false,
+        saving:false,
+        cancelTimetableSave:true
       }
     }
 
@@ -791,6 +997,13 @@ export const reducer = (state = initialState, action) => {
       return{
         ...state,
         timetableSaved:false
+      }
+    }
+
+    case VALIDATING_TIMETABLE: {
+      return {
+        ...state,
+        validatingTimetable: action.payload
       }
     }
 

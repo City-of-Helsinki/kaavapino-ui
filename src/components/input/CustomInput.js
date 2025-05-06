@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
-import { TextInput } from 'hds-react'
+import { TextInput, LoadingSpinner } from 'hds-react'
 import { useDispatch, useSelector } from 'react-redux'
 import {updateFloorValues,formErrorList} from '../../actions/projectActions'
 import {lockedSelector,lastModifiedSelector,pollSelector,lastSavedSelector,savingSelector } from '../../selectors/projectSelector'
@@ -11,7 +11,7 @@ import RollingInfo from '../input/RollingInfo'
 import {useFocus} from '../../hooks/useRefFocus'
 import { useIsMount } from '../../hooks/IsMounted'
 
-const CustomInput = ({ input, meta: { error }, ...custom }) => {
+const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   const [readonly, setReadOnly] = useState({name:"",read:false})
   const [hasError,setHasError] = useState(false)
   const [editField,setEditField] = useState(false)
@@ -197,7 +197,9 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       originalData = false
     }
 
-    if (event.target.value !== originalData) {
+    const isRequired = fieldData.required
+
+    if (event.target.value !== originalData && (!isRequired || (isRequired && event.target.value !== ""))) {
       //prevent saving if locked
       if (!readonly) {
         //Sent call to save changes
@@ -318,11 +320,17 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
           fluid="true"
           {...input}
           {...custom}
+          disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled}
           onChange={(event) =>{handleInputChange(event,readonly.read)}}
           onBlur={(event) => {handleBlur(event,readonly.read)}}
           onFocus={() => {handleFocus()}}
           readOnly={readonly.read || lastSaved?.status === "error"}
         />
+        {saving && lastModified === input.name && (
+          <div className="input-spinner">
+            <LoadingSpinner className="loading-spinner" />
+          </div>
+        )}
       </div>
     
     return elements

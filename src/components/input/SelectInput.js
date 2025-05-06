@@ -1,11 +1,12 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
-import { Select } from 'hds-react'
+import { Select, LoadingSpinner } from 'hds-react'
 import { isArray, isEqual, uniq, uniqBy } from 'lodash'
 import { useSelector } from 'react-redux'
-import {lockedSelector } from '../../selectors/projectSelector'
+import {lockedSelector,savingSelector } from '../../selectors/projectSelector'
 import RollingInfo from '../input/RollingInfo'
+import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
 
 // Label when there are more than one same option. To avoid key errors.
 const MORE_LABEL = ' (2)'
@@ -26,7 +27,12 @@ const SelectInput = ({
   modifyText, 
   rollingInfoText,
   phaseIsClosed,
-  editDisabled
+  editDisabled,
+  autofillRule,
+  formValues,
+  formName,
+  isProjectTimetableEdit,
+  timetable_editable
 }) => {
   const currentValue = []
   const oldValueRef = useRef('');
@@ -37,6 +43,8 @@ const SelectInput = ({
   const [fieldName, setFieldName] = useState("")
   const [editField,setEditField] = useState(false)
   const currentOptions = []
+  const saving =  useSelector(state => savingSelector(state))
+
   useEffect(() => {
     //Chekcs that locked status has more data then inital empty object
     if(lockedStatus && Object.keys(lockedStatus).length > 0){
@@ -157,6 +165,10 @@ const SelectInput = ({
     }
   }
 
+  if (autofillRule){
+    input.value = getFieldAutofillValue(autofillRule, formValues, fieldName, formName)
+  }
+
   const modifyOptionIfExist = currentOption => {
     if (!currentOption) {
       return
@@ -259,12 +271,15 @@ const SelectInput = ({
         option.key === input.value ? option.label : info_value
       , input.value)
     }
-
+    const identifier =
+    lockedStatus?.lockData?.attribute_lock?.field_identifier ??
+    lockedStatus?.lockData?.attribute_lock?.attribute_identifier ??
+    "";
     //Render rolling info field or normal edit field
     //If clicking rolling field button makes positive lock check then show normal editable field
     //Rolling field can be nonEditable
     const elements = nonEditable || rollingInfo && !editField ?
-      <RollingInfo 
+      <RollingInfo
         name={input.name} 
         value={rollingInfoValue}
         nonEditable={nonEditable}
@@ -274,8 +289,9 @@ const SelectInput = ({
         type={"select"}
         phaseIsClosed={phaseIsClosed}
       />
-      :    
-      !multiple ?
+      :
+      <div className="select-input-wrapper">
+      {!multiple ? (
         <Select
           data-testid="select-single"
           placeholder={placeholder}
@@ -286,7 +302,7 @@ const SelectInput = ({
           onBlur={handleBlur}
           onFocus={handleFocus}
           clearable={false}
-          disabled={disabled || editDisabled}
+          disabled={disabled || editDisabled || (isProjectTimetableEdit && !timetable_editable)}
           options={currentOptions}
           value={currentSingleValue}
           onChange={data => {
@@ -300,7 +316,7 @@ const SelectInput = ({
             }
           }}
         />
-        :
+        ) : (
         <Select
           data-testid="select-multi"
           placeholder={placeholder}
@@ -312,7 +328,7 @@ const SelectInput = ({
           onBlur={handleBlur}
           onFocus={handleFocus}
           clearable={true}
-          disabled={disabled || editDisabled}
+          disabled={disabled || editDisabled || (isProjectTimetableEdit && !timetable_editable)}
           options={currentOptions}
           defaultValue={currentValue}
           onChange={data => {
@@ -324,7 +340,14 @@ const SelectInput = ({
             }
           }}
         />
-    
+        )}
+
+        {saving && identifier === input.name && (
+          <div className={`select-spinner-overlay ${multiple ? 'multi' : 'single'}`}>
+            <LoadingSpinner className="loading-spinner" />
+          </div>
+        )}
+      </div>
     return elements
   }
 
