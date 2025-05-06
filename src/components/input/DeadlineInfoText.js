@@ -84,7 +84,7 @@ const DeadlineInfoText = props => {
     }
 
     if(props.input.name.includes("nahtavillaolopaivien_lukumaara")){
-      const regex = /_x(\d+)/;
+      const regex = /_x?(\d+)/;
       const match = props.input.name.match(regex);
       const index = match ? "_"+match[1] : "";
       let start;
