@@ -333,7 +333,7 @@ const FieldSet = ({
                               />
                             )}
                             {field.help_text && (
-                              <Info content={field.help_text} link={field.help_link} linked={field.linked_fields}/>
+                              <Info content={field.help_text} link={field.help_link} linked={field.linked_fields} help_img_link={field.help_img_link}/>
                             )}
                           </div>
                         </div>
@@ -427,9 +427,9 @@ const mapStateToProps = state => ({
 FieldSet.propTypes = {
   unlockAllFields:PropTypes.func,
   saving: PropTypes.bool,
-  fields: PropTypes.object,
+  fields: PropTypes.array,
   lastSaved: PropTypes.object,
-  updateField: PropTypes.object,
+  updateField: PropTypes.bool,
   attributeData: PropTypes.object,
   updated: PropTypes.object,
   phaseIsClosed: PropTypes.bool,
