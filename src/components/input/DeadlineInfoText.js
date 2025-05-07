@@ -67,9 +67,14 @@ const DeadlineInfoText = props => {
   const calculateDaysBetweenDates = (startDate, endDate) => {
     const start = new Date(startDate);
     const end = new Date(endDate);
+    // Reset time part to get full days
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
     const differenceInMilliseconds = end - start;
     const differenceInDays = differenceInMilliseconds / (1000 * 60 * 60 * 24);
-    return differenceInDays;
+    // Add 1 to include both the start and end dates (inclusive counting)
+    const totalDays = differenceInDays + 1;
+    return totalDays;
   }
 
   const determineFieldValue = (current, props) => {
@@ -79,7 +84,7 @@ const DeadlineInfoText = props => {
     }
 
     if(props.input.name.includes("nahtavillaolopaivien_lukumaara")){
-      const regex = /_x(\d+)/;
+      const regex = /_x?(\d+)/;
       const match = props.input.name.match(regex);
       const index = match ? "_"+match[1] : "";
       let start;
