@@ -565,13 +565,20 @@ const getDisabledDatesForProjectStart = (name, formValues, previousItem, nextIte
   return name.includes("kaynnistys_paattyy_pvm") ? newDisabledDates.filter(date => date >= lastPossibleDateToSelect) : newDisabledDates.filter(date => date <= lastPossibleDateToSelect);
 };
 
-const getDisabledDatesForApproval = (name, formValues, matchingItem, dateTypes) => {
+const getDisabledDatesForApproval = (name, formValues, matchingItem, dateTypes, projectSize) => {
   const miniumDaysBetween = matchingItem?.distance_from_previous;
   const dateToCompare = name.includes("hyvaksymispaatos_pvm") ? formValues["hyvaksyminenvaihe_alkaa_pvm"] : formValues["voimaantulovaihe_alkaa_pvm"];
   const filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates, dateToCompare);
   let newDisabledDates = dateTypes?.työpäivät?.dates;
   const lastPossibleDateToSelect = addDays("työpäivät", filteredDateToCompare, miniumDaysBetween, dateTypes?.työpäivät?.dates, true);
-  return newDisabledDates.filter(date => date > lastPossibleDateToSelect);
+  //Approval dates can be same as last phases ending date when XS or S size
+  if(name.includes("hyvaksymispaatos_pvm") && (projectSize === 'XS' || projectSize === 'S')){
+    return newDisabledDates.filter(date => date >= lastPossibleDateToSelect);
+  }
+  else{
+    return newDisabledDates.filter(date => date > lastPossibleDateToSelect);
+  }
+
 };
 
 const getDisabledDatesForLautakunta = (name, formValues, phaseName, matchingItem, previousItem, dateTypes) => {
@@ -706,7 +713,7 @@ const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues
   if (name.includes("projektin_kaynnistys_pvm") || name.includes("kaynnistys_paattyy_pvm")) {
     return getDisabledDatesForProjectStart(name, formValues, previousItem, nextItem, dateTypes);
   } else if (["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauenut"].includes(name)) {
-    return getDisabledDatesForApproval(name, formValues, matchingItem, dateTypes);
+    return getDisabledDatesForApproval(name, formValues, matchingItem, dateTypes, size);
   } else if (name === "hyvaksymispaatos_valitusaika_paattyy" || name === "valitusaika_paattyy_hallinto_oikeus") {
     return dateTypes?.arkipäivät?.dates;
   } else if (currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')) {
