@@ -505,11 +505,13 @@
     }
 
     .vis-nested-group.vis-group-level-unknown-but-gte1.highlight-selected{
+        box-sizing: content-box;
+        height: 32px !important;
+        width: 281px;
         border: 2px solid $color-bus;
         background-color: $color-bus-light !important;
         margin-top: -1px;
         padding-top: 1px;
-        margin-bottom:1px;
         margin-right:-1px;
         .vis-inner .timeline-buttons-container .timeline-button-label {
             padding-top: 0;
