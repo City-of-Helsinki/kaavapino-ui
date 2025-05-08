@@ -123,20 +123,7 @@ const DeadLineInput = ({
   },[formValues[confirmedValue]])
 
   const getInitialMonth = (dateString) => {
-    let date;
-    if(attributeData['voimaantulovaihe_paattyy_pvm'] && (input.name === "tullut_osittain_voimaan_pvm" || input.name === "voimaantulo_pvm" || input.name === "kumottu_pvm" || input.name === "rauennut")){
-      date = new Date(attributeData['voimaantulovaihe_paattyy_pvm']);
-    }
-    else if(input.name === "hyvaksymispaatos_pvm" && attributeData["hyvaksyminenvaihe_paattyy_pvm"]){
-      date = new Date(attributeData['hyvaksyminenvaihe_paattyy_pvm']);
-    }
-    else if (dateString) {
-      date = new Date(dateString);
-    }
-    else {
-        date = new Date(); // Use current date if no date string is provided
-    }
-    return date;
+    return dateString ? new Date(dateString) : new Date();
   }
 
   const formatDate = (date) => {
