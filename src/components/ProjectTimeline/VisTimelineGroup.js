@@ -932,7 +932,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           addDialogStyle={addDialogStyle}
           addDialogData={addDialogData}
           closeAddDialog={closeAddDialog}
-          isAdmin={isAdmin}
           allowedToEdit={allowedToEdit}
           timelineAddButton={timelineAddButton}
         />
