@@ -960,6 +960,22 @@ function* lockProjectField(data) {
   }
 }
 
+function addListingInfo(deltaOps) {
+  //Add isOrderList and isBulleted attributes to the previous op if the current op is a list item
+  //This way it is easier for backend to interpret the list styles to document
+  const enriched = [...deltaOps]
+  for (let i = 0; i < enriched.length; i++) {
+    const op = enriched[i]
+    if (op?.attributes?.list === 'ordered' && i > 0 && !enriched[i - 1].attributes?.isOrderList) {
+      enriched[i - 1].attributes = { ...(enriched[i - 1].attributes || {}), isOrderList: true }
+    }
+    if (op?.attributes?.list === 'bullet' && i > 0 && !enriched[i - 1].attributes?.isBulleted) {
+      enriched[i - 1].attributes = { ...(enriched[i - 1].attributes || {}), isBulleted: true }
+    }
+  }
+  return enriched
+}
+
 function* saveProject(data) {
   const {fileOrimgSave,insideFieldset,fieldsetData,fieldsetPath} = data.payload
 
@@ -991,6 +1007,25 @@ function* saveProject(data) {
         //Data added for front when image inside fieldset is saved without other data
         if(isEmpty(changedValues[fieldsetPath[0].parent][fieldsetPath[0].index])){
           changedValues[fieldsetPath[0].parent][fieldsetPath[0].index] = fieldsetData
+        }
+      }
+      for (const key in changedValues) {
+        const value = changedValues[key]
+        if (Array.isArray(value)) {
+          changedValues[key] = value.map(item => {
+            if (item && Array.isArray(item.ops)) {
+              return {
+                ...item,
+                ops: addListingInfo(item.ops)
+              }
+            }
+            return item
+          })
+        } else if (value && Array.isArray(value.ops)) {
+          changedValues[key] = {
+            ...value,
+            ops: addListingInfo(value.ops)
+          }
         }
       }
       const attribute_data = changedValues
