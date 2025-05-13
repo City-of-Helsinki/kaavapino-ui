@@ -6,15 +6,18 @@ import { useSelector, useDispatch } from 'react-redux'
 import dayjs from 'dayjs'
 import { isNumber, isBoolean, isArray } from 'lodash'
 import PropTypes from 'prop-types'
+import { Notification } from 'hds-react'
+import { useTranslation } from 'react-i18next'
 
 const DeadlineInfoText = props => {
   const formValues = useSelector(getFormValues(EDIT_PROJECT_TIMETABLE_FORM))
-  let inputValue = props.input && props.input.value
+  let inputValue = props.input?.value
   let readonlyValue
 
   const [current, setCurrent] = useState()
 
   const dispatch = useDispatch()
+  const { t } = useTranslation()
 
   useEffect(() => {
     if(isArray(inputValue) && props?.fieldData?.autofill_readonly && props?.fieldData?.type === "readonly" && props?.fieldData?.unit === "päivää"){
@@ -61,39 +64,116 @@ const DeadlineInfoText = props => {
     }
   }, [])
 
-  let value
+  const calculateDaysBetweenDates = (startDate, endDate) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    // Reset time part to get full days
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+    const differenceInMilliseconds = end - start;
+    const differenceInDays = differenceInMilliseconds / (1000 * 60 * 60 * 24);
+    // Add 1 to include both the start and end dates (inclusive counting)
+    const totalDays = differenceInDays + 1;
+    return totalDays;
+  }
 
-  if (isNumber(current) || isBoolean(current)) {
-    value = current
-  } else {
+  const determineFieldValue = (current, props) => {
+
+    if (isNumber(current) || isBoolean(current)) {
+      return current
+    }
+
+    if(props.input.name.includes("nahtavillaolopaivien_lukumaara")){
+      const regex = /_x?(\d+)/;
+      const match = props.input.name.match(regex);
+      const index = match ? "_"+match[1] : "";
+      let start;
+      const kokoluokka = formValues?.["kaavaprosessin_kokoluokka"];
+      if (!kokoluokka) {
+        start = formValues["milloin_ehdotuksen_nahtavilla_alkaa_iso"+index] ?? formValues["milloin_ehdotuksen_nahtavilla_alkaa_pieni"+index]
+      } else {
+        start = ["XS", "S", "M"].includes(kokoluokka) ? 
+          formValues["milloin_ehdotuksen_nahtavilla_alkaa_pieni"+index] : 
+          formValues["milloin_ehdotuksen_nahtavilla_alkaa_iso"+index];
+      }
+      let end = formValues["milloin_ehdotuksen_nahtavilla_paattyy"+index]
+      return calculateDaysBetweenDates(start, end)
+    }
     // Expect date in value
-    value = current && dayjs(current).format('DD.MM.YYYY')
-    if (value === 'Invalid Date') {
+    const dateValue = current && dayjs(current).format('DD.MM.YYYY')
+    if (dateValue === 'Invalid Date') {
       if(isArray(current) && props?.fieldData?.autofill_readonly && props?.fieldData?.type === "readonly" && props?.fieldData?.unit === "päivää"){
         //Fixes situation if int has at somepoint on old project been converted to date/array of some sort because of bug and converts it back to int
-        value = props?.meta?.initial
+        return props?.meta?.initial
       }
-      else{
-        value = current
-      }
+      return current
     }
+    return dateValue
   }
+
+  let value = determineFieldValue(current, props)
 
   if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
     value = '';
     console.warn("Plain object found in DeadlineInfoText value");
   }
 
+  const phaseMap = {
+    periaatteista: "Periaatteet",
+    oas: "OAS",
+    luonnos: "Luonnos"
+  };
+
+  const phaseKey = Object.keys(phaseMap).find(key => props?.input?.name?.includes(key));
+  const phase = phaseMap[phaseKey];
+  //Check if event is set to be organized in formValues
+  const eventKey = phase === "Luonnos" ? `jarjestetaan_${phase?.toLowerCase()}vaiheessa_tilaisuus` : `jarjestetaan_${phase?.toLowerCase()}_tilaisuus`
+  const shouldShowNotification = phase && formValues && formValues[eventKey];
+
+  // Extract the event date if it exists and shouldShowNotification is true
+  let eventDate = "";
+  if (shouldShowNotification) {
+    const eventDateKey = `${phase?.toLowerCase()}_tilaisuus_fieldset`;
+    eventDate = formValues[eventDateKey]?.[0]?.[`${phase?.toLowerCase()}_tilaisuus_pvm`] || t('common.date-missing');
+    if (eventDate?.includes('-')) {
+      eventDate = eventDate.replace(/-/g, '.');
+      const [year, month, day] = eventDate.split('.');
+      eventDate = `${day}.${month}.${year}`;
+    }
+  }
+
   return (
-    <div name={props.input.name} className="deadline-info-text">
-      {props.label} {value}
-    </div>
-  )
+    <>
+      {shouldShowNotification && (
+        <Notification
+          className="event-info-notification"
+          size="small"
+          label={`${phase}${phase === "Luonnos" ? "" : "-"}vaiheen tilaisuus: ${eventDate}`}
+        >
+          {`${phase}${phase === "Luonnos" ? "" : "-"}vaiheen tilaisuus: ${eventDate}`}
+        </Notification>
+      )}
+      {props.input.name.includes("nahtavillaolopaivien_lukumaara") ?
+        <p className="deadline-info-readonlytext">{props.label}: {value} pv </p>
+        : <Notification className='deadline-info-notification' size="small" label={props.input.name}>{props.label + ': '}{value}</Notification>
+      }
+    </>
+  );
+
 }
 
 DeadlineInfoText.propTypes = {
   fieldData:PropTypes.object,
   meta: PropTypes.object,
+  input: PropTypes.shape({
+    value: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number,
+      PropTypes.bool,
+    ]),
+    name: PropTypes.string,
+  }),
+  label: PropTypes.string,
 }
 
 export default DeadlineInfoText

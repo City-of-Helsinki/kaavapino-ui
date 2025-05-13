@@ -11,7 +11,7 @@ import RollingInfo from '../input/RollingInfo'
 import {useFocus} from '../../hooks/useRefFocus'
 import { useIsMount } from '../../hooks/IsMounted'
 
-const CustomInput = ({ input, meta: { error }, ...custom }) => {
+const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   const [readonly, setReadOnly] = useState({name:"",read:false})
   const [hasError,setHasError] = useState(false)
   const [editField,setEditField] = useState(false)
@@ -197,7 +197,9 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       originalData = false
     }
 
-    if (event.target.value !== originalData) {
+    const isRequired = fieldData.required
+
+    if (event.target.value !== originalData && (!isRequired || (isRequired && event.target.value !== ""))) {
       //prevent saving if locked
       if (!readonly) {
         //Sent call to save changes
@@ -217,7 +219,8 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
             localStorage.setItem("changedValues", input.name);
             custom.onBlur();
             if(!custom.insideFieldset){
-              setReadOnly({name:input.name,read:true})
+              const readOnlyValue = !custom?.isProjectTimetableEdit
+              setReadOnly({name:input.name,read:readOnlyValue})
             }
             oldValueRef.current = event.target.value;
 
@@ -318,6 +321,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
           fluid="true"
           {...input}
           {...custom}
+          disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled}
           onChange={(event) =>{handleInputChange(event,readonly.read)}}
           onBlur={(event) => {handleBlur(event,readonly.read)}}
           onFocus={() => {handleFocus()}}

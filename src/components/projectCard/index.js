@@ -68,7 +68,7 @@ function ProjectCardPage({
   const { t } = useTranslation()
 
   useEffect(() => {
-    getProjectCardFields()
+    getProjectCardFields(projectId)
     getExternalDocuments(projectId)
   }, [])
 
@@ -210,6 +210,7 @@ function ProjectCardPage({
               deadlines={currentProject && currentProject.deadlines}
               projectView={true}
               onhold={currentProject && currentProject.onhold}
+              attribute_data={currentProject && currentProject.attribute_data}
             />
           </Segment>
         </Grid.Column>

@@ -74,8 +74,12 @@
     "error": "Virhe: {{error}}",
     "warning": "Päivitettyjen aikataulutietojen tallentaminen saattaa kestää hieman pidempään kun Kaavapino tekee laskutoimituksia.",
     "estimated": "Kaavapinon arvio",
-    "project-stopped": "Projekti on toistaiseksi keskeytetty.",
-    "timeline-error": "Projekti ei ole ajan tasalla.",
+    "project-stopped": "Projekti on keskeytetty",
+    "project-stopped-text": "Projekti vastuuhenkilö on keskeyttänyt projektin toistaiseksi. Hän voi aktivoida projektin uudelleen muokkausnäkymästä.",
+    "timeline-error": "Projekti ei ole ajan tasalla",
+    "timeline-error-text": "Projektin vastuuhenkilön tulee päivittää aikataulu.",
+    "timelime-modal-error-text-1": "Seuraavien päivämäärien siirtäminen ei ole mahdollista, koska minimietäisyys viereisiin etappeihin on täyttynyt.",
+    "timelime-modal-error-text-2": "Siirrä ensiksi muita etappeja.",
     "months": {
       "jan": "Tammi",
       "feb": "Helmi",
@@ -96,15 +100,29 @@
     "shown": "nähtävillä",
     "reset-project-deadlines": "Tyhjennä aikataulut",
     "reset-confirm-dialog-title": "Aikataulujen uudelleen luominen",
-    "reset-confirm-dialog-question": "Oletko varma, että haluat luoda aikataulut uudestaan? Tapahtumaa ei voi perua."
+    "reset-confirm-dialog-question": "Oletko varma, että haluat luoda aikataulut uudestaan? Tapahtumaa ei voi perua.",
+    "dates-are-preliminary": "Aikataulutiedot ovat alustavia, kunnes ne on vahvistettu.",
+    "cancel-confirmation":"Peruuta päivämäärien vahvistus",
+    "confirm-dates":"Vahvista päivämäärät",
+    "dates-confirmed":"Aikataulutiedot on vahvistettu.",
+    "new-esillaolo":"Lisää uusi esilläolo",
+    "delete-esillaolo":"Poista esilläolo",
+    "delete-first-esillaolo":"Ensimmäistä esilläoloa ei voi poistaa.",
+    "delete-first-lautakunta":"Ensimmäistä lautakuntaa ei voi poistaa.",
+    "delete-first-nahtavillaolo":"Ensimmäistä nähtävilläoloa ei voi poistaa.",
+    "timeline-group-header": "Vaiheiden etapit",
+    "modify-timeline":"Muokkaa aikataulua"
   },
   "common": {
     "cancel": "Peruuta",
     "save": "Tallenna",
+    "save-timeline":"Tallenna aikataulu",
     "continue": "Jatka",
     "person":"Henkilö",
     "unit":"Yksikkö tai tiimi",
-    "keyword":"Hakusana"
+    "keyword":"Hakusana",
+    "close":"Sulje",
+    "date-missing":" Päivämäärä puuttuu"
   },
   "messages": {
     "deadlines-successfully-saved": "Aikataulut tallennettu",
@@ -143,7 +161,14 @@
     "addfield":"Kentän lisäys.",
     "total":"Yhteensä",
     "fields":"kenttää.",
-    "general-save-error":"Tallennus epäonnistui"
+    "general-save-error":"Tallennus epäonnistui",
+    "error-with-dates":"Päivämäärät tarkistettu:",
+    "fixed-timeline-dates":"Päivämäärät muutettu:",
+    "checking-dates":"Tarkistetaan päivämääriä",
+    "dates-confirmed":"Päivämäärät validoitu",
+    "error-connection":"Tallennus epäonnistui yhteysongelmia takia. Yritetään uudelleen 10 sekunnin kuluttua.",
+    "error-connection-fail":"Tallennus keskeytyi yhteysongelmia takia.",
+    "validation-error":"Päivämäärien tarkistus epäonnistui"
   },
   "floor-areas": {
     "title": "Päivitä kerrosalatiedot",
@@ -239,7 +264,10 @@
     "error-prevent-add":"Virhe lomakkeella estää lisäyksen",
     "fieldset-info":"Yhteensä {{fieldAmount}} tietuetta.",
     "no-fields":"Suodatinvalinnalla ei löytynyt tämän otsikon alta suodatettavia kenttiä.",
-    "link-to-map":"Linkki projektin karttapalveluun."
+    "link-to-map":"Linkki projektin karttapalveluun.",
+    "add-new-board":"Lisää uusi lautakunta",
+    "add-new-presence":"Lisää uusi esilläolo",
+    "add-new-review": "Lisää uusi nähtävilläolo"
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}",
