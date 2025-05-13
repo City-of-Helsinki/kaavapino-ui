@@ -1154,7 +1154,13 @@ class EditProjectTimeTableModal extends Component {
   }
 
   openConfirmCancel = () => {
-    this.setState({ showModal: true });
+    // Only show confirmation dialog if changes have been made
+    if (!isEqual(this.props.attributeData, this.props.formValues)) {
+      this.setState({ showModal: true });
+    } else {
+      // No changes, so we can just close without confirmation
+      this.handleClose();
+    }
   }
 
   handleContinueCancel = () => {
