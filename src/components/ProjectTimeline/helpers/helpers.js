@@ -14,14 +14,17 @@ export function findInMonths(date, week, monthDates) {
   }
   return monthIndex
 }
-export function findWeek(date) {
-
-  if (Math.round(date / 5) < 1) {
+export function findWeek(day) {
+  if (day >= 1 && day <= 5) {
     return 1
-  } else if (Math.round(date / 5) > 5) {
-    return 5
+  } else if (day >= 6 && day <= 10) {
+    return 2
+  } else if (day >= 11 && day <= 15) {
+    return 3
+  } else if (day >= 16 && day <= 20) {
+    return 4
   } else {
-    return Math.round(date / 5)
+    return 5
   }
 }
 /**
