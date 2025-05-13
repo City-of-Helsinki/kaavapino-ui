@@ -664,7 +664,6 @@ const getHighestLautakuntaDate = (formValues) => {
     const currentNumber = parseInt(match ? match[1] : 0, 10);
     return currentNumber > highestNumber ? currentNumber : highestNumber;
   }, 0);
-  console.log(highestLautakuntaKey)
   if (highestLautakuntaKey > 1) {
     return formValues[`milloin_kaavaehdotus_lautakunnassa_${highestLautakuntaKey}`];
   }
@@ -673,7 +672,7 @@ const getHighestLautakuntaDate = (formValues) => {
   }
 };
 
-const getDisabledDatesForNahtavillaolo = (name, formValues, matchingItem, dateTypes, projectSize) => {
+const getDisabledDatesForNahtavillaolo = (name, formValues, phaseName, matchingItem, dateTypes, projectSize) => {
   if (name.includes("_maaraaika")) {
     const miniumDaysBetween = matchingItem?.distance_from_previous;
     const dateToCompare = formValues[matchingItem?.previous_deadline];
@@ -684,7 +683,13 @@ const getDisabledDatesForNahtavillaolo = (name, formValues, matchingItem, dateTy
   else if (name.includes("_alkaa")) {
     let dateToComparePast
     if(projectSize === 'L' || projectSize === 'XL'){
-      dateToComparePast = getHighestLautakuntaDate(formValues);
+      const isPastFirst = formValues[`kaava${phaseName}_uudelleen_nahtaville_2`]
+      if(isPastFirst){
+        dateToComparePast = formValues[matchingItem?.previous_deadline];
+      }
+      else{
+        dateToComparePast = getHighestLautakuntaDate(formValues);
+      }
     }
     else{
       dateToComparePast = formValues[matchingItem?.previous_deadline];
@@ -709,7 +714,7 @@ const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues
   const matchingItem = objectUtil.findMatchingName(sectionAttributes, name, "name");
   const previousItem = objectUtil.findItem(sectionAttributes, name, "name", -1);
   const nextItem = objectUtil.findItem(sectionAttributes, name, "name", 1);
-
+  const phaseName = currentDeadline?.deadline?.phase_name?.toLowerCase();
   if (name.includes("projektin_kaynnistys_pvm") || name.includes("kaynnistys_paattyy_pvm")) {
     return getDisabledDatesForProjectStart(name, formValues, previousItem, nextItem, dateTypes);
   } else if (["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauenut"].includes(name)) {
@@ -717,12 +722,11 @@ const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues
   } else if (name === "hyvaksymispaatos_valitusaika_paattyy" || name === "valitusaika_paattyy_hallinto_oikeus") {
     return dateTypes?.arkipäivät?.dates;
   } else if (currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')) {
-    const phaseName = currentDeadline?.deadline?.phase_name?.toLowerCase();
     return getDisabledDatesForLautakunta(name, formValues, phaseName, matchingItem, previousItem, dateTypes);
   } else if (!nahtavillaolo) {
     return getDisabledDatesForSizeXSXL(name, formValues, matchingItem, dateTypes);
   } else {
-    return getDisabledDatesForNahtavillaolo(name, formValues, matchingItem, dateTypes, size);
+    return getDisabledDatesForNahtavillaolo(name, formValues, phaseName, matchingItem, dateTypes, size);
   }
 };
 
