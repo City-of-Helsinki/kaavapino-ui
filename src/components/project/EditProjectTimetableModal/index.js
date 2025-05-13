@@ -367,7 +367,7 @@ class EditProjectTimeTableModal extends Component {
     return false;
   }
 
-  addSubgroup = (deadlines, i, numberOfPhases, dashStart, dashEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone) => {
+  addSubgroup = (deadlines, i, numberOfPhases, dashStart, dashEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone, formValues) => {
     if(dashStart === null && milestone === null && dashEnd){
       phaseData.push({
         start: dashEnd,
@@ -516,7 +516,11 @@ class EditProjectTimeTableModal extends Component {
     }
 
     let undeletable = false;
-    if(indexString === "-1" && (deadlines[i].deadline.phase_name === "Ehdotus" || deadlines[i].deadline.phase_name === "OAS" || deadlines[i].deadline.phase_name === "Tarkistettu ehdotus")){
+    if(indexString === "-1" && 
+      (deadlines[i].deadline.phase_name === "OAS" || deadlines[i].deadline.phase_name === "Tarkistettu ehdotus" || 
+      (deadlines[i].deadline.phase_name === "Ehdotus" && !(formValues?.kaavaprosessin_kokoluokka === "XL" && deadlines[i].deadline.deadlinegroup?.includes("lautakunta")))
+      )
+    ){
       undeletable = true
     }
     nestedDeadlines.push({
@@ -757,7 +761,7 @@ class EditProjectTimeTableModal extends Component {
       else if(milestone && deadline.phase_name === "Ehdotus" && deadline.deadlinegroup !== "ehdotus_lautakuntakerta_1"
         && ["XL","L"].includes(formValues.kaavaprosessin_kokoluokka)) {
           if(formValues[deadline.attribute] && this.shouldAddSubgroup(deadline,formValues) && innerStart){
-          let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, null, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone);
+          let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, null, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone, formValues);
           [phaseData, deadLineGroups, nestedDeadlines] = subgroup;
         }
         milestone = false
@@ -768,14 +772,14 @@ class EditProjectTimeTableModal extends Component {
         || innerEnd && deadline.phase_name === "Tarkistettu ehdotus" && (deadline.deadlinegroup === "tarkistettu_ehdotus_lautakuntakerta_2" || deadline.deadlinegroup === "tarkistettu_ehdotus_lautakuntakerta_3" || deadline.deadlinegroup === "tarkistettu_ehdotus_lautakuntakerta_4") 
       ){
         if(formValues[deadline.attribute] && this.shouldAddSubgroup(deadline,formValues)){
-          let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, null, innerEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, null);
+          let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, null, innerEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, null, formValues);
           [phaseData, deadLineGroups, nestedDeadlines] = subgroup;
         }
         innerEnd = false
       } 
       else if(innerStart && innerEnd){
         if(formValues[deadline.attribute] && this.shouldAddSubgroup(deadline, formValues)){
-          let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, milestone?milestone:null);
+          let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, milestone?milestone:null, formValues);
           [phaseData, deadLineGroups, nestedDeadlines] = subgroup2;
         }
         innerStart = false;
