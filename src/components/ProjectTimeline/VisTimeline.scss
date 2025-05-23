@@ -17,7 +17,7 @@
     .vis-timeline {
         border-top: none;
         border-bottom: none;
-        border-color: #ccc;
+        border-color: #ccc !important;
         overflow-y: visible !important;
         overflow-x: clip !important;
         .vis-vertical .vis-current-time {
@@ -89,6 +89,7 @@
                 }
                 &:hover {
                     border-color: $color-bus;
+                    color: $color-bus;
                 }
                 &:focus-visible, &:active {
                     outline: 2px solid $color-coat-of-arms;
@@ -127,6 +128,7 @@
                 &:focus-visible, &:active {
                     outline: 3px solid $color-coat-of-arms;
                     outline-offset: 2px;
+                    color: $color-bus;
                 }
             }
         }
