@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@sentry/browser": "^7.119.1",
-    "axios": "^1.7.4",
+    "axios": "^1.8.2",
     "axios-retry": "^4.0.0",
     "connected-react-router": "^6.9.1",
     "core-js": "^3.33.1",
@@ -20,6 +20,7 @@
     "is-url": "^1.2.4",
     "leaflet": "^1.7.1",
     "moment": "^2.29.1",
+    "moment-range": "^4.0.2",
     "oidc-client-ts": "^3.0.1",
     "proj4": "^2.7.2",
     "proj4leaflet": "^1.0.2",
@@ -52,7 +53,10 @@
     "reselect": "^4.1.7",
     "sass": "1.69.4",
     "semantic-ui-css": "^2.4.1",
-    "semantic-ui-react": "2.1.4"
+    "semantic-ui-react": "2.1.5",
+    "vis-data": "^7.1.9",
+    "vis-timeline": "^7.7.3",
+    "vis-util": "^5.0.7"
   },
   "resolutions": {
     "crypto-js": "4.2.0",

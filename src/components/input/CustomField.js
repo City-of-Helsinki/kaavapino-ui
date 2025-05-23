@@ -88,11 +88,13 @@ class CustomField extends Component {
   renderYearSelect = props => {
     const { multiple_choice, placeholder_text } = this.props.field
     const { handleBlurSave, handleLockField, handleUnlockField, formName, lockField, fieldSetDisabled, 
-      insideFieldset, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, phaseIsClosed} = this.props
+      insideFieldset, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, 
+      phaseIsClosed, isProjectTimetableEdit, timetable_editable} = this.props
 
     if (this.yearOptions.length === 0) {
       this.yearOptions = projectUtils.generateArrayOfYears()
     }
+
     return (
       <SelectInput
         lockField={lockField}
@@ -115,13 +117,17 @@ class CustomField extends Component {
         selectedPhase={selectedPhase}
         label={this.props?.field?.label}
         phaseIsClosed={phaseIsClosed}
+        isProjectTimetableEdit={isProjectTimetableEdit}
+        timetable_editable={timetable_editable}
       />
     )
   }
 
   renderString = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, lockField, fieldSetDisabled, insideFieldset, 
-      nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, attributeData, phaseIsClosed } = this.props
+      nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, attributeData, phaseIsClosed,
+      isProjectTimetableEdit, timetable_editable } = this.props
+
     return( 
       <CustomInput 
         lockField={lockField} 
@@ -145,6 +151,8 @@ class CustomField extends Component {
         phaseIsClosed={phaseIsClosed}
         customError={this.props?.field?.error_text}
         isTabActive={this.props.isTabActive}
+        isProjectTimetableEdit={isProjectTimetableEdit}
+        timetable_editable={timetable_editable}
       />
     )
   }
@@ -182,6 +190,7 @@ class CustomField extends Component {
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
         isTabActive={this.props.isTabActive}
+        fieldDisabled={this.props.disabled}
       />
     )
   }
@@ -212,6 +221,7 @@ class CustomField extends Component {
         label={this.props?.field?.label}
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
+        fieldDisabled={this.props.disabled}
       />
     )
   }
@@ -219,7 +229,8 @@ class CustomField extends Component {
   renderDate = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, deadlines, field, lockField, fieldSetDisabled, 
       insideFieldset, disabled, isProjectTimetableEdit, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, 
-      attributeData, phaseIsClosed } = this.props
+      attributeData, phaseIsClosed, disabledDates, lomapaivat, dateTypes, maxMoveGroup, maxDateToMove, groupName, visGroups, visItems, 
+      deadlineSections, formValues, confirmedValue, sectionAttributes, allowedToEdit, timetable_editable } = this.props
 
     let current
     if (deadlines && deadlines.length > 0) {
@@ -228,14 +239,39 @@ class CustomField extends Component {
       )
     }
 
+    //temp fix because data is not added in backend to deadlines
+    if(typeof current === "undefined"){
+      if(props.input.name === "viimeistaan_lausunnot_ehdotuksesta"){
+        current = deadlines.find(
+          deadline => deadline.deadline.abbreviation === "E9"
+        )
+        current.deadline.attribute = "viimeistaan_lausunnot_ehdotuksesta"
+      }
+    }
+
     if (current && deadlines && deadlines.length > 0 || isProjectTimetableEdit) {
       return (
         <DeadLineInput
           type="date"
           editable={field.editable}
           currentDeadline={current}
+          attributeData={attributeData}
           autofillRule={field.autofill_rule}
           timeTableDisabled={disabled}
+          disabledDates={disabledDates}
+          lomapaivat={lomapaivat}
+          dateTypes={dateTypes}
+          maxMoveGroup={maxMoveGroup}
+          maxDateToMove={maxDateToMove}
+          groupName={groupName}
+          visGroups={visGroups}
+          visItems={visItems}
+          deadlineSections={deadlineSections}
+          formValues={formValues}
+          confirmedValue={confirmedValue}
+          sectionAttributes={sectionAttributes}
+          allowedToEdit={allowedToEdit}
+          timetable_editable={timetable_editable}
           {...props}
         />
       )
@@ -272,10 +308,10 @@ class CustomField extends Component {
   }
 
   renderSelect = props => {
-    const { choices, multiple_choice, placeholder_text, formName } = this.props.field
+    const { choices, multiple_choice, placeholder_text, autofill_rule } = this.props.field
     const { handleBlurSave, handleLockField, handleUnlockField, lockField, fieldSetDisabled, 
-      insideFieldset, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, phaseIsClosed } = this.props
-
+      insideFieldset, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, phaseIsClosed,
+    formValues, formName, isProjectTimetableEdit, timetable_editable} = this.props
     return (
       <SelectInput
         {...props}
@@ -298,6 +334,10 @@ class CustomField extends Component {
         selectedPhase={selectedPhase}
         phaseIsClosed={phaseIsClosed}
         editDisabled={this.props.disabled}
+        autofillRule={autofill_rule}
+        formValues={formValues}
+        isProjectTimetableEdit={isProjectTimetableEdit}
+        timetable_editable={timetable_editable}
       />
     )
   }
@@ -332,8 +372,7 @@ class CustomField extends Component {
   }
 
   renderBooleanRadio = props => {
-    const { input, onRadioChange, defaultValue, disabled, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, phaseIsClosed } = this.props
-    
+    const { input, onRadioChange, defaultValue, disabled, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, phaseIsClosed, isProjectTimetableEdit } = this.props
     return (
       <RadioBooleanButton
         onBlur={props.handleBlurSave}
@@ -349,6 +388,7 @@ class CustomField extends Component {
         isCurrentPhase={isCurrentPhase}
         selectedPhase={selectedPhase}
         phaseIsClosed={phaseIsClosed}
+        isProjectTimetableEdit={isProjectTimetableEdit}
         {...props}
       />
     )
@@ -477,8 +517,7 @@ class CustomField extends Component {
   }
 
   renderCustomCheckbox = props => {
-    const { field, formName, disabled } = this.props
-
+    const { field,formName,disabled,isProjectTimetableEdit,isAdmin } = this.props
     return (
       <CustomCheckbox
         {...props}
@@ -487,6 +526,8 @@ class CustomField extends Component {
         formName={formName}
         display={field.display}
         disabled={disabled}
+        isProjectTimetableEdit={isProjectTimetableEdit}
+        isAdmin={isAdmin}
       />
     )
   }
@@ -785,14 +826,14 @@ class CustomField extends Component {
 
 CustomField.propTypes = {
   disabled: PropTypes.bool,
-  field:PropTypes.object,
-  input:PropTypes.func,
-  onRadioChange:PropTypes.func,
-  defaultValue:PropTypes.bool,
-  formName:PropTypes.string,
-  attributeData:PropTypes.object,
-  deadlines:PropTypes.object,
-  isProjectTimetableEdit:PropTypes.bool,
+  field: PropTypes.object,
+  input: PropTypes.func,
+  onRadioChange: PropTypes.func,
+  defaultValue: PropTypes.bool,
+  formName: PropTypes.string,
+  attributeData: PropTypes.object,
+  deadlines: PropTypes.array,
+  isProjectTimetableEdit: PropTypes.bool,
   nonEditable: PropTypes.bool,
   rollingInfo: PropTypes.bool,
   modifyText: PropTypes.string,
@@ -812,11 +853,31 @@ CustomField.propTypes = {
     PropTypes.bool,
     PropTypes.object
   ]),
-  isCurrentPhase:PropTypes.bool,
+  isCurrentPhase: PropTypes.bool,
   selectedPhase: PropTypes.number,
   phaseIsClosed: PropTypes.bool,
   checkLocked: PropTypes.func,
-  isTabActive: PropTypes.bool
-}
+  isTabActive: PropTypes.bool,
+  disabledDates: PropTypes.array,
+  lomapaivat: PropTypes.array,
+  dateTypes: PropTypes.object,
+  deadlineSection: PropTypes.object,
+  maxMoveGroup: PropTypes.oneOfType([
+    PropTypes.object,
+    PropTypes.string
+  ]),
+  maxDateToMove: PropTypes.string,
+  groupName: PropTypes.string,
+  visItems: PropTypes.array,
+  visGroups: PropTypes.array,
+  deadlineSections: PropTypes.array,
+  formValues: PropTypes.object,
+  confirmedValue: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.bool,
+  ]),
+  sectionAttributes: PropTypes.array
+};
 
 export default CustomField

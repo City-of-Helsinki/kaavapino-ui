@@ -11,7 +11,7 @@ import RollingInfo from '../input/RollingInfo'
 import {useFocus} from '../../hooks/useRefFocus'
 import { useIsMount } from '../../hooks/IsMounted'
 
-const CustomInput = ({ input, meta: { error }, ...custom }) => {
+const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   const [readonly, setReadOnly] = useState({name:"",read:false})
   const [hasError,setHasError] = useState(false)
   const [editField,setEditField] = useState(false)
@@ -197,7 +197,9 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
       originalData = false
     }
 
-    if (event.target.value !== originalData) {
+    const isRequired = fieldData.required
+
+    if (event.target.value !== originalData && (!isRequired || (isRequired && event.target.value !== ""))) {
       //prevent saving if locked
       if (!readonly) {
         //Sent call to save changes
@@ -217,12 +219,16 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
             localStorage.setItem("changedValues", input.name);
             custom.onBlur();
             if(!custom.insideFieldset){
-              setReadOnly({name:input.name,read:true})
+              const readOnlyValue = !custom?.isProjectTimetableEdit
+              setReadOnly({name:input.name,read:readOnlyValue})
             }
             oldValueRef.current = event.target.value;
 
             if(!(event.target.value === '' && !custom?.fieldData?.isRequired) && custom.regex){
               const regex = new RegExp(custom.regex);
+              setHasError(!regex.test(event.target.value))
+            } else if(custom.type === 'number') {
+              const regex = new RegExp("^[+-]?\\d+$");
               setHasError(!regex.test(event.target.value))
             }
           }
@@ -289,7 +295,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
 
 
   const normalOrRollingElement = () => {
-    const errorString = custom.customError || t('project.error')
+    const errorString = custom.customError || (custom.type === 'number'? t('project.error-input-int') : t('project.error'))
     //Render rolling info field or normal edit field
     //If clicking rolling field button makes positive lock check then show normal editable field
     //Rolling field can be nonEditable
@@ -315,6 +321,7 @@ const CustomInput = ({ input, meta: { error }, ...custom }) => {
           fluid="true"
           {...input}
           {...custom}
+          disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled}
           onChange={(event) =>{handleInputChange(event,readonly.read)}}
           onBlur={(event) => {handleBlur(event,readonly.read)}}
           onFocus={() => {handleFocus()}}

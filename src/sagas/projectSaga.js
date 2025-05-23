@@ -1,5 +1,6 @@
 import axios from 'axios'
-import { takeLatest, put, all, call, select } from 'redux-saga/effects'
+import { eventChannel } from 'redux-saga';
+import { take, takeLatest, put, all, call, select, takeEvery, delay, race } from 'redux-saga/effects'
 import { isEqual, isEmpty, isArray } from 'lodash'
 import { push } from 'connected-react-router'
 import {
@@ -67,6 +68,8 @@ import {
   SAVE_PROJECT_TIMETABLE,
   SAVE_PROJECT_TIMETABLE_SUCCESSFUL,
   saveProjectTimetableSuccessful,
+  SAVE_PROJECT_TIMETABLE_FAILED,
+  saveProjectTimetableFailed,
   SAVE_PROJECT,
   saveProjectSuccessful,
   CHANGE_PROJECT_PHASE,
@@ -113,12 +116,21 @@ import {
   projectFileUploadSuccessful,
   GET_ATTRIBUTE_DATA,
   SET_ATTRIBUTE_DATA,
-  setAttributeData
+  setAttributeData,
+  FETCH_DISABLED_DATES_START,
+  fetchDisabledDatesSuccess,
+  fetchDisabledDatesFailure,
+  VALIDATE_DATE,
+  setDateValidationResult,
+  VALIDATE_PROJECT_TIMETABLE,
+  UPDATE_PROJECT_FAILURE,
+  setValidatingTimetable
 } from '../actions/projectActions'
 import { startSubmit, stopSubmit, setSubmitSucceeded } from 'redux-form'
 import { error } from '../actions/apiActions'
 import { setAllEditFields } from '../actions/schemaActions'
 import projectUtils from '../utils/projectUtils'
+import errorUtil from '../utils/errorUtil'
 import {
   projectApi,
   projectDeadlinesApi,
@@ -133,7 +145,9 @@ import {
   attributesApiUnlock,
   attributesApiUnlockAll,
   pingApi,
-  getAttributeDataApi
+  getAttributeDataApi,
+  projectDateTypesApi,
+  projectDateValidateApi
 } from '../utils/api'
 import { usersSelector } from '../selectors/userSelector'
 import {
@@ -143,9 +157,10 @@ import {
   EDIT_PROJECT_TIMETABLE_FORM
 } from '../constants'
 import i18 from 'i18next'
-import { checkDeadlines } from '../components/ProjectTimeline/helpers/helpers'
 import dayjs from 'dayjs'
 import { toastr } from 'react-redux-toastr'
+import { confirmationAttributeNames } from '../utils/constants';
+import { generateConfirmedFields } from '../utils/generateConfirmedFields';
 
 export default function* projectSaga() {
   yield all([
@@ -161,7 +176,9 @@ export default function* projectSaga() {
     takeLatest(SAVE_PROJECT_FLOOR_AREA, saveProjectFloorArea),
     takeLatest(SAVE_PROJECT_FLOOR_AREA_SUCCESSFUL, saveProjectFloorAreaSuccessful),
     takeLatest(SAVE_PROJECT_TIMETABLE, saveProjectTimetable),
+    takeLatest(VALIDATE_PROJECT_TIMETABLE,validateProjectTimetable),
     takeLatest(SAVE_PROJECT_TIMETABLE_SUCCESSFUL, saveProjectTimetableSuccessful),
+    takeLatest(SAVE_PROJECT_TIMETABLE_FAILED, saveProjectTimetableFailed),
     takeLatest(SAVE_PROJECT, saveProject),
     takeLatest(SET_LAST_SAVED, setLastSaved),
     takeLatest(SET_LOCK_STATUS, setLockStatus),
@@ -193,10 +210,53 @@ export default function* projectSaga() {
     takeLatest(FETCH_ONHOLD_PROJECTS, fetchOnholdProjects),
     takeLatest(FETCH_ARCHIVED_PROJECTS, fetchArchivedProjects),
     takeLatest(GET_ATTRIBUTE_DATA, getAttributeData),
-    takeLatest(SET_ATTRIBUTE_DATA, setAttributeData)
+    takeLatest(SET_ATTRIBUTE_DATA, setAttributeData),
+    takeLatest(FETCH_DISABLED_DATES_START, getProjectDisabledDeadlineDates),
+    takeLatest(VALIDATE_DATE, validateDate)
   ])
 }
+//Check if user has access to internet
+function createOnlineChannel() {
+  return eventChannel(emitter => {
+    const onlineHandler = () => {
+      emitter(true);
+    };
+    window.addEventListener('online', onlineHandler);
+    return () => {
+      window.removeEventListener('online', onlineHandler);
+    };
+  });
+}
 
+const onlineChannel = createOnlineChannel();
+
+function* validateDate({payload}) {
+  try {
+    const query = {
+      identifier: payload.field,
+      project: payload.projectName,
+      date: payload.date,
+    };
+    const result = yield call(projectDateValidateApi.get, { query });
+    const valid = result.conflicting_deadline === null && result.error_reason === null && result.suggested_date === null ? true : false;
+    yield put(setDateValidationResult(valid,result))
+  } catch (e) {
+    yield put(error(e))
+  }
+}
+
+export function* watchValidateDate() {
+  yield takeEvery(VALIDATE_DATE, validateDate);
+}
+
+function* getProjectDisabledDeadlineDates() {
+  try {
+    const dates = yield call(projectDateTypesApi.get);
+    yield put(fetchDisabledDatesSuccess(dates));
+  } catch (e) {
+    yield put(fetchDisabledDatesFailure(e));
+  }
+}
 
 function* getAttributeData(data) {
   const project_name = data.payload.projectName;
@@ -524,6 +584,29 @@ function* createProject() {
   }
 }
 
+const adjustDeadlineData = (attributeData, allAttributeData) => {
+  Object.keys(allAttributeData).forEach(key => {
+    if (key.includes("periaatteet_esillaolo") ||
+        key.includes("mielipiteet_periaatteista") ||
+        key.includes("periaatteet_lautakunnassa") ||
+        key.includes("oas_esillaolo") ||
+        key.includes("mielipiteet_oas") ||
+        key.includes("luonnosaineiston_maaraaika") ||
+        key.includes("luonnos_esillaolo") ||
+        key.includes("mielipiteet_luonnos") ||
+        key.includes("milloin_kaavaluonnos_lautakunnassa") ||
+        key.includes("milloin_kaavaehdotus_lautakunnassa") ||
+        key.includes("ehdotus_nahtaville_aineiston_maaraaika") ||
+        key.includes("milloin_ehdotuksen_nahtavilla_paattyy") ||
+        key.includes("viimeistaan_lausunnot_ehdotuksesta") ||
+        key.includes("milloin_tarkistettu_ehdotus_lautakunnassa") ||
+        key.includes("vahvista")) {
+      attributeData[key] = attributeData[key] || allAttributeData[key]
+    }
+  })
+  return attributeData
+}
+
 const getChangedAttributeData = (values, initial) => {
   let attribute_data = {}
   let errorValues = false
@@ -586,6 +669,7 @@ function* saveProjectBase({ payload }) {
   const currentProjectId = yield select(currentProjectIdSelector)
   if (payload && payload.archived) {
     values.archived = payload.archived
+    window.scrollTo(0, 0); // Scroll to top of the page so user can see it is archiving
   }
 
   if (values) {
@@ -628,69 +712,190 @@ function* saveProjectFloorArea() {
       yield put(saveProjectFloorAreaSuccessful(true))
       yield put(setAllEditFields())
 
-      yield put(toastr.success(i18.t('messages.timelines-successfully-saved')))
+      toastr.success(i18.t('messages.timelines-successfully-saved'))
     } catch (e) {
       if (e?.code === "ERR_NETWORK") {
-        yield put(toastr.error(i18.t('messages.general-save-error')))
+        toastr.error(i18.t('messages.general-save-error'))
       }
       yield put(stopSubmit(EDIT_FLOOR_AREA_FORM, e.response && e.response.data))
     }
   }
 }
-function* saveProjectTimetable() {
+
+function* validateProjectTimetable() {
+  // Remove success toastr before showing info
+  toastr.removeByType('success');
+  toastr.clean(); // Clear existing toastr notifications
+  // Show a loading icon at the start of the saga
+  toastr.info(i18.t('messages.checking-dates'), {
+    timeOut: 0, // Keep it showing until manually removed
+    removeOnHover: false,
+    showCloseButton: false,
+  });
+  yield put(startSubmit(EDIT_PROJECT_TIMETABLE_FORM));
+  yield put(setValidatingTimetable(true, false));
+
+  const { initial, values } = yield select(editProjectTimetableFormSelector);
+  const currentProjectId = yield select(currentProjectIdSelector);
+
+  if (values) {
+    let changedAttributeData = getChangedAttributeData(values, initial);
+
+    if (changedAttributeData.oikaisukehoituksen_alainen_readonly) {
+      delete changedAttributeData.oikaisukehoituksen_alainen_readonly;
+    }
+
+    let attribute_data = adjustDeadlineData(changedAttributeData, values);
+
+    // Add confirmed field locking from vahvista_* flags
+    // leave 'kaynnistys','hyvaksyminen','voimaantulo' out because no vahvista flags there
+    const phaseNames = [
+      'periaatteet',
+      'oas',
+      'luonnos',
+      'ehdotus',
+      'tarkistettu_ehdotus'
+    ];
+    //Find confirmed fields from attribute_data so backend knows not to edit them
+    const confirmed_fields = generateConfirmedFields(
+      attribute_data,
+      confirmationAttributeNames,
+      phaseNames
+    );
+
+    try {
+      const response = yield call(
+        projectApi.patch,
+        {
+          attribute_data,
+          confirmed_fields,
+        },
+        { path: { id: currentProjectId } },
+        ':id/?fake=true'
+      );
+
+      // Remove the loading icon
+      toastr.removeByType('info');
+      toastr.success(i18.t('messages.dates-confirmed'), {
+        timeOut: 10000,
+        removeOnHover: false,
+        showCloseButton: true,
+      });
+
+      // Success. Prevent further validation calls by setting state
+      yield put(setValidatingTimetable(true, true));
+
+      // Backend may have edited phase start/end dates, so update project
+      yield put(updateProject(response));
+    } catch (e) {
+      if (e?.code === 'ERR_NETWORK') {
+        toastr.error(i18.t('messages.validation-error'));
+      }
+
+      // Catch reached so dates were not correct,
+      // get days and update them to form from projectReducer UPDATE_PROJECT_FAILURE
+
+      // For debugging
+      // Get the error message string dynamically
+      // const errorMessage = errorUtil.getErrorMessage(e?.response?.data);
+      // toastr.removeByType('info');
+      // toastr.info(i18.t('messages.error-with-dates'), errorMessage, {
+      //   timeOut: 10000,
+      //   removeOnHover: false,
+      //   showCloseButton: true,
+      //   preventDuplicates: true,
+      //   className: 'large-scrollable-toastr rrt-info',
+      // });
+
+      // Show a message of a dates changed
+      // const message = errorUtil.getErrorMessage(e?.response?.data, 'date');
+      // toastr.warning(i18.t('messages.fixed-timeline-dates'), message, {
+      //   timeOut: 10000,
+      //   removeOnHover: false,
+      //   showCloseButton: true,
+      //   preventDuplicates: true,
+      //   className: 'large-scrollable-toastr rrt-warning',
+      // });
+
+      // Dispatch failure action with error data for the reducer to handle date correction to timeline form
+      yield put({
+        type: UPDATE_PROJECT_FAILURE,
+        payload: { errorData: e?.response?.data, formValues: attribute_data },
+      });
+    }
+  }
+}
+
+function* saveProjectTimetable(action,retryCount = 0) {
   yield put(startSubmit(EDIT_PROJECT_TIMETABLE_FORM))
 
-  const { initial, values, registeredFields } = yield select(
+  const { initial, values } = yield select(
     editProjectTimetableFormSelector
   )
-  const currentProject = yield select(currentProjectSelector)
   const currentProjectId = yield select(currentProjectIdSelector)
 
   if (values) {
-    let attribute_data = getChangedAttributeData(values, initial)
-
-    if(attribute_data.oikaisukehoituksen_alainen_readonly){
-      delete attribute_data.oikaisukehoituksen_alainen_readonly
+    let changedAttributeData = getChangedAttributeData(values, initial)
+    if(changedAttributeData.oikaisukehoituksen_alainen_readonly){
+      delete changedAttributeData.oikaisukehoituksen_alainen_readonly
     }
+    let attribute_data = adjustDeadlineData(changedAttributeData, values)
     
-    const deadlineAttributes = currentProject.deadline_attributes
+    // Add confirmed field locking from vahvista_* flags
+    // leave 'kaynnistys','hyvaksyminen','voimaantulo' out because no vahvista flags there
+    const phaseNames = [
+      'periaatteet',
+      'oas',
+      'luonnos',
+      'ehdotus',
+      'tarkistettu_ehdotus'
+    ];
     
-    // Add missing fields as a null to payload since there are
-    // fields which can be hidden according the user selection. 
-    // If old values are left, it will break the timelines.
-    deadlineAttributes.forEach(attribute => {
-      if (!registeredFields[attribute]) {
-        attribute_data = { ...attribute_data, [attribute]: null }
-      }
-    })
+    //Find confirmed fields from attribute_data so backend knows not to edit them
+    const confirmed_fields = generateConfirmedFields(
+      attribute_data,
+      confirmationAttributeNames,
+      phaseNames
+    );
 
+    const maxRetries = 5;
     try {
       const updatedProject = yield call(
         projectApi.patch,
-        { attribute_data },
+        { attribute_data, confirmed_fields },
         { path: { id: currentProjectId } },
         ':id/'
       )
+
       yield put(updateProject(updatedProject))
       yield put(setSubmitSucceeded(EDIT_PROJECT_TIMETABLE_FORM))
       yield put(saveProjectTimetableSuccessful(true))
       yield put(setAllEditFields())
-
-      if (!checkDeadlines(updatedProject.deadlines)) {
-        yield put(toastr.success(i18.t('messages.deadlines-successfully-saved')))
-      } else {
-        yield put(
-          toastr.warning(
-            i18.t('messages.deadlines-successfully-saved'),
-            i18.t('messages.check-timetable')
-          )
-        )
+      toastr.success(i18.t('messages.deadlines-successfully-saved'))
+    } 
+    catch (e) {
+      if (e?.code === "ERR_NETWORK" && retryCount <= maxRetries) {
+        toastr.error(i18.t('messages.error-connection'))
+        yield race({
+          online: take(onlineChannel), // Wait for the online event
+          timeout: delay(2500) // Wait for 2.5 seconds before retrying
+        });
+        yield delay(2500); // Wait for 2.5 seconds before retrying
+        yield call(saveProjectTimetable,action, retryCount + 1);
       }
-    } catch (e) {
-      if (e?.code === "ERR_NETWORK") {
-        yield put(toastr.error(i18.t('messages.general-save-error')))
+      else {
+        yield put(stopSubmit(EDIT_PROJECT_TIMETABLE_FORM, e?.response?.data))
+        // Get the error message string dynamically
+        const errorMessage = e?.response?.data ? errorUtil.getErrorMessage(e.response.data) : i18.t('messages.error-connection-fail');
+        // Display the error message in a toastr
+        toastr.error(i18.t('messages.general-save-error'), errorMessage, {
+          timeOut: 0,
+          removeOnHover: false,
+          showCloseButton: true,
+          className: 'large-scrollable-toastr rrt-error'
+        });
+        yield put(saveProjectTimetableFailed(false))
       }
-      yield put(stopSubmit(EDIT_PROJECT_TIMETABLE_FORM, e.response && e.response.data))
     }
   }
 }
@@ -838,6 +1043,7 @@ function* changeProjectPhase({ payload: phase }) {
         { path: { id: currentProjectId } },
         ':id/'
       )
+      window.scrollTo(0, 0);
       yield put(changeProjectPhaseSuccessful(updatedProject))
     }
   } catch (e) {

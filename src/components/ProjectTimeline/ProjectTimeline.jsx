@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react'
+import PropTypes from 'prop-types';
+import { Notification } from 'hds-react'
 import './ProjectTimeline.scss'
 import { createMonths } from './helpers/createMonths'
 import { createDeadlines } from './helpers/createDeadlines'
 import { connect } from 'react-redux'
 import { getProject, getProjectSuccessful } from '../../actions/projectActions'
 import { findWeek } from './helpers/helpers'
-import { IconError } from 'hds-react'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
+import { getVisibilityBoolName } from '../../utils/projectVisibilityUtils';
+import { attributeDataSelector } from '../../selectors/projectSelector';
 
 function ProjectTimeline(props) {
-  const { deadlines, projectView, onhold } = props
-
+  const { deadlines, projectView, onhold, attribute_data } = props
   const { t } = useTranslation()
   const [showError, setShowError] = useState(false)
   const [drawMonths, setDrawMonths] = useState([])
@@ -31,18 +33,42 @@ function ProjectTimeline(props) {
     11: t('deadlines.months.dec')
   }
   useEffect(() => {
+    const filteredDeadlines = filterVisibleDeadlines(deadlines, attribute_data)
     if (!projectView) {
-      const months = createMonths(deadlines)
+      const months = createMonths(filteredDeadlines)
       createDrawMonths(months.months)
     } else {
-      createTimelineItems(deadlines)
+      createTimelineItems(filteredDeadlines)
     }
-  }, [])
+  }, []);
+
   useEffect(() => {
-    if (deadlines) {
-      createTimelineItems(deadlines)
+    const filteredDeadlines = filterVisibleDeadlines(deadlines, attribute_data)
+    if (filteredDeadlines) {
+      createTimelineItems(filteredDeadlines)
     }
-  }, [deadlines])
+  }, [deadlines, attribute_data]);
+
+  function filterVisibleDeadlines(deadlineArray, attributeData) {
+    return deadlineArray.filter((deadline) => {
+      const group = deadline?.deadline?.deadlinegroup;
+      if (!group) {
+        // Phase start/end dates have no group; this is ok.
+        return true;
+      }
+      const visBool = getVisibilityBoolName(group);
+      if (!visBool) {
+        // deadlines with no visibility bool should be shown by default
+        return true;
+      }
+      // Special cases where bool is missing from attributeData
+      if (['oas_esillaolokerta_1','ehdotus_nahtavillaolokerta_1','tarkistettu_ehdotus_lautakuntakerta_1'].includes(group)){
+        return true;
+      }
+      return attributeData ? attributeData[visBool] : false;
+    });
+  }
+
   function createNowMarker(week) {
     let nowMarker = []
     for (let i = 1; i <= 5; i++) {
@@ -343,20 +369,18 @@ function ProjectTimeline(props) {
   const containerClass =
     onhold || showError
       ? 'timeline-graph-container hide-background'
-      : 'timeline-graph-container'
-  return (
+      : 'timeline-graph-container';
+    return (
     <div className={containerClass}>
       {onhold ? (
-        <div className="timeline-onhold-message">
-          <IconError />
-          <span>{t('deadlines.project-stopped')}</span>
-        </div>
+        <Notification className='timeline-onhold-message' type='alert' label={t('deadlines.project-stopped')}>
+          <p>{t('deadlines.project-stopped-text')}</p>
+        </Notification>
       ) : null}
       {showError && !onhold ? (
-        <div className="timeline-error-message">
-          <IconError />
-          <span>{t('deadlines.timeline-error')}</span>
-        </div>
+        <Notification className='timeline-error-message' type='error' label={t('deadlines.timeline-error')}>
+          <p>{t('deadlines.timeline-error-text')}</p>
+        </Notification>
       ) : null}
       <div
         className={`timeline-item-container ${showError ? 'timeline-error' : ''}`}
@@ -374,6 +398,14 @@ function ProjectTimeline(props) {
 const mapDispatchToProps = {
   getProject,
   getProjectSuccessful
+}
+
+
+ProjectTimeline.propTypes= {
+  deadlines: PropTypes.array,
+  projectView: PropTypes.bool,
+  onhold: PropTypes.bool,
+  attribute_data: PropTypes.object,
 }
 
 export default connect(null, mapDispatchToProps)(ProjectTimeline)

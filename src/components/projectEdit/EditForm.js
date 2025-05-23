@@ -141,7 +141,7 @@ class EditForm extends Component {
 }
 
 EditForm.propTypes = {
-  deadlines:PropTypes.object,
+  deadlines:PropTypes.array,
   isCurrentPhase:PropTypes.bool,
   selectedPhase: PropTypes.number,
   phaseIsClosed: PropTypes.bool,

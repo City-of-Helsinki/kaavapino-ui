@@ -85,7 +85,8 @@ function RichTextEditor(props) {
     isFloorAreaForm,
     floorValue,
     attributeData,
-    phaseIsClosed
+    phaseIsClosed,
+    fieldDisabled
   } = props
 
   const dispatch = useDispatch()
@@ -328,7 +329,7 @@ function RichTextEditor(props) {
     //Prevent usage outside of main project form
     if(target?.length > 0 && form?.id === "accordion-title"){
       //Lose focus and unclock if select button is clicked
-      if(target.length > 0 && target.value.includes("Select-module")){
+      if(target.length > 0 && target.value.includes("Select-module") && previousElementId === editorRef?.current?.props?.id){
         localStorage.setItem("previousElement","Select-module");
         handleBlur(readonly)
         setToolbarVisible(false)
@@ -350,10 +351,6 @@ function RichTextEditor(props) {
         handleFocus("api",true)
 
       }
-    }
-    else{
-      localStorage.setItem("previousElement",false);
-      localStorage.setItem("previousElementId","");
     }
   } 
 
@@ -657,7 +654,7 @@ function RichTextEditor(props) {
     <input className='visually-hidden' ref={myRefname}/>
     <div
       role="textbox"
-      className={`rich-text-editor-wrapper ${fieldSetDisabled || disabled || lastModified === inputProps.name && saving ? 'rich-text-disabled' : ''}`}
+      className={`rich-text-editor-wrapper ${fieldSetDisabled || disabled || fieldDisabled || lastModified === inputProps.name && saving ? 'rich-text-disabled' : ''}`}
       aria-label="tooltip"
       onFocus={checkLocked}
     >

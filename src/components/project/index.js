@@ -168,7 +168,7 @@ class ProjectPage extends Component {
     this.setState({sectionIndex})
   }
 
-  getProjectEditContent = (isExpert,isResponsible) => {
+  getProjectEditContent = (isExpert,isResponsible,isTheResponsiblePerson) => {
     const { currentProject, users, projectSubtypes, selectedPhase, allEditFields } = this.props
     const user = projectUtils.formatUsersName(users.find(u => u.id === currentProject.user))
     const currentPhases = this.getCurrentPhases()
@@ -203,7 +203,7 @@ class ProjectPage extends Component {
           handleClose={() => this.toggleBaseInformationForm(false)}
           users={users}
           projectSubtypes={projectSubtypes}
-          isEditable={isResponsible}
+          isEditable={isResponsible && isTheResponsiblePerson}
         />
         <DownloadProjectDataModal
           currentProject={currentProject}
@@ -305,10 +305,10 @@ class ProjectPage extends Component {
     )
   }
 
-  getProjectPageContent = (isExpert,isResponsible) => {
+  getProjectPageContent = (isExpert,isResponsible, isTheResponsiblePerson) => {
     const { edit, documents } = this.props
     if (edit) {
-      return this.getProjectEditContent(isExpert,isResponsible)
+      return this.getProjectEditContent(isExpert,isResponsible,isTheResponsiblePerson)
     }
     if (documents) {
       return this.getProjectDocumentsContent(isResponsible)
@@ -393,8 +393,9 @@ class ProjectPage extends Component {
   getEditNavActions = isUserExpert => {
    const { t } = this.props
     const options = [{value:1,label:<><i className="icons document-icon"></i>{t('project.create-documents')}</> },{value:2,label:<><i className="icons calendar-icon"></i>{t('deadlines.title')}</>},{value:3,label:<><i className="icons company-icon"></i>{t('floor-areas.title')}</>},
-    {value:4,label:<><i className="icons download-icon"></i>{t('project.download-old-data')}</>},{value:5,label:<><i className="icons pen-icon"></i>{t('project.modify-project-base')}</>},{value:6,label:<><i className="icons trash-icon"></i>{t('deadlines.reset-project-deadlines')}</>},
+    {value:4,label:<><i className="icons download-icon"></i>{t('project.download-old-data')}</>},{value:5,label:<><i className="icons pen-icon"></i>{t('project.modify-project-base')}</>},
     ]
+    //{value:6,label:<><i className="icons trash-icon"></i>{t('deadlines.reset-project-deadlines')}</>} removed for now, need will be reavaluated after 1.1.
     return (
       <span className="header-buttons">
         {isUserExpert && (
@@ -547,6 +548,7 @@ class ProjectPage extends Component {
 
     const userIsExpert = authUtils.isExpert(currentUserId, users)
     const isResponsible = authUtils.isResponsible(currentUserId, users)
+    const isTheResponsiblePerson = authUtils.isThePersonResponsiple(currentUserId, users, currentProject?.attribute_data)
     return (
       <>
         <Header
@@ -565,7 +567,7 @@ class ProjectPage extends Component {
         {!loading && !resettingDeadlines && (
           <div className="project-container">
             <div className="project-page-content">
-              {this.getProjectPageContent(userIsExpert,isResponsible)}
+              {this.getProjectPageContent(userIsExpert,isResponsible,isTheResponsiblePerson)}
             </div>
           </div>
         )}

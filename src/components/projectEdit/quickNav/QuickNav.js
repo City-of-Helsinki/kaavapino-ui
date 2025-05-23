@@ -35,7 +35,8 @@ export default function QuickNav({
   documents,
   currentSchema,
   documentIndex,
-  locationSearch
+  locationSearch,
+  isTheResponsiblePerson
 }) {
   const [verifying, setVerifying] = useState(false)
   const [checkButtonPressed, setCheckButtonPressed] = useState(false)
@@ -160,6 +161,7 @@ export default function QuickNav({
 
 
   const renderButtons = () => {
+    const canEndPhase = (phase && [1, 7, 13, 19, 25].includes(phase) && isTheResponsiblePerson) || isAdmin
     return (
       <>
         <Button
@@ -174,7 +176,7 @@ export default function QuickNav({
           {t('quick-nav.check-required')}
         </Button>
 
-        {isResponsible && (
+        {canEndPhase && (
           <Button
             size="small"
             onClick={changeCurrentPhase}
@@ -185,7 +187,7 @@ export default function QuickNav({
             help={`${
               notLastPhase ? t('quick-nav.end-phase-help') : t('quick-nav.archive-help')
             }`}
-            disabled={!isCurrentPhase || currentProject.archived}
+            disabled={!isCurrentPhase || currentProject?.archived}
             variant="secondary"
           >
             {`${notLastPhase ? t('quick-nav.end-phase') : t('quick-nav.archive')}`}
@@ -476,8 +478,8 @@ export default function QuickNav({
 }
 
 QuickNav.propTypes = {
-  phase: PropTypes.object,
+  phase: PropTypes.number,
   documentIndex: PropTypes.number,
-  locationSearch: PropTypes.object,
+  locationSearch: PropTypes.string,
   currentSchema: PropTypes.object
 }
