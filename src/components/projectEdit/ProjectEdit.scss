@@ -640,9 +640,11 @@
       flex-flow: wrap;
       width: 289px;
       position: absolute;
+      left: 263px !important;
       border: 1px solid #ccc;
       background-color: white;
-      box-shadow: 0px 2px 8px 0px #00000080;
+      box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.5);
+
       padding: 0;
       z-index: 1000;
       button{
@@ -657,7 +659,7 @@
         justify-content: flex-start;
         margin:0;
         div{
-          margin:$size10;
+          margin: $size12;
         }
         span{
           color: $black1;
@@ -665,13 +667,14 @@
           font-size: $size16;
           font-weight: 400;
           line-height: $size24;
-          padding-left: 2px !important;
+          padding-left: 0 !important;
         }
       }
       .disabled{
         color: $color-black-40 !important;
         cursor: not-allowed;
         pointer-events: none;
+        border: none;
         span {
           color: $color-black-40 !important;
         }
