@@ -123,20 +123,7 @@ const DeadLineInput = ({
   },[formValues[confirmedValue]])
 
   const getInitialMonth = (dateString) => {
-    let date;
-    if(attributeData['voimaantulovaihe_paattyy_pvm'] && (input.name === "tullut_osittain_voimaan_pvm" || input.name === "voimaantulo_pvm" || input.name === "kumottu_pvm" || input.name === "rauennut")){
-      date = new Date(attributeData['voimaantulovaihe_paattyy_pvm']);
-    }
-    else if(input.name === "hyvaksymispaatos_pvm" && attributeData["hyvaksyminenvaihe_paattyy_pvm"]){
-      date = new Date(attributeData['hyvaksyminenvaihe_paattyy_pvm']);
-    }
-    else if (dateString) {
-      date = new Date(dateString);
-    }
-    else {
-        date = new Date(); // Use current date if no date string is provided
-    }
-    return date;
+    return dateString ? new Date(dateString) : new Date();
   }
 
   const formatDate = (date) => {
@@ -231,7 +218,7 @@ const DeadLineInput = ({
           value={formatDateToDMYYYY(currentValue ? currentValue : input.value)}
           name={input.name}
           type='text' // type='date' works poorly with hds-DateInput
-          disabled={!timetable_editable || disabledState}
+          disabled={!timetable_editable || disabledState || !attributeData?.kaavan_vaihe.includes("Käynnistys") && (input?.name?.includes("projektin_kaynnistys_pvm") || input?.name?.includes("kaynnistys_paattyy_pvm"))}
           placeholder={placeholder}
           error={error}
           aria-label={input.name}

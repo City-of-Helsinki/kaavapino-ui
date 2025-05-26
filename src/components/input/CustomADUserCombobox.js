@@ -18,12 +18,6 @@ class CustomADUserCombobox extends Component {
     this.getPerson().then(() => {}).catch(err => console.error(err));
   }
 
-  componentDidUpdate (prevState) {
-    if(prevState.currentValue !== this.state.currentValue) {
-      this.handleFilter();
-    }
-  }
-
   getModifiedOption({ name, id, email, title }) {
 
     const option = name ? name : email
@@ -66,33 +60,25 @@ class CustomADUserCombobox extends Component {
   }
 
   getOptions = async query => {
-    if (!query || query === this.state.currentQuery || query.length < 3) {
-      return []
+    if (!query || query === this.state.currentQuery || (query.length < 3 && query !== "*")) {
+      return [];
     }
-    await axios.get(`/v1/personnel/?search=${query}`).then(response => {
-      const result = response.data
-
-      this.setState({
-        ...this.state,
-        options: this.modifyOptions(result),
+  
+    try {
+      const url = query === "*" ? "/v1/personnel/" : `/v1/personnel/?search=${query}`;
+      const response = await axios.get(url);
+      const result = response.data;
+      const modifiedResults = this.modifyOptions(result); // Process data first
+  
+      this.setState(prevState => ({
+        ...prevState,
+        options: modifiedResults,
         currentQuery: query
-      })
-    })
-    .catch(error => {
-      console.log(error)
-    })
-  }
-
-  handleFilter = (items, search) => { 
-    // Clears running timer and starts a new one each time the user types.
-    // Prevents spamming backend.
-    clearTimeout(this.timer);  
-    this.timer = setTimeout(() => {
-      this.getOptions(search).then(() => {}).catch(err => console.error(err));
-    }, 400)
-
-    return items
-  }
+      }));
+    } catch (error) {
+      console.error("Error fetching personnel:", error);
+    }
+  };
 
   render() {
 
@@ -101,11 +87,16 @@ class CustomADUserCombobox extends Component {
         <Combobox
           options={this.state.options}
           multiselect={this.props.multiselect}
-          filter={this.handleFilter}
           placeholder={this.props.placeholder}
           disabled={this.props.disabled}
           clearable={true}
-          onChange={value => {    
+          onFocus={() => {
+            if (this.state.options.length === 0) {
+              //Fetch all personnel at start when clicking select and filter when typing text
+              this.getOptions("*").catch(err => console.error(err));
+            }
+          }}
+          onChange={value => {
             this.setState({ ...this.state, currentValue: value, options: [] })
             if ( !isArray ( value )) {
              value && this.props.input.onChange(value.id)

@@ -304,7 +304,7 @@ class EditProjectTimeTableModal extends Component {
     return formValues && formValues[deadline.attribute] ? formValues[deadline.attribute] : deadline.date;
   }
 
-  addMainGroup = (deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines) => {
+  addMainGroup = (deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines, disabled) => {
     const currentDateString = new Date().toJSON().slice(0, 10);
     const currentDate = new Date(currentDateString);
     phaseData.push({
@@ -325,7 +325,7 @@ class EditProjectTimeTableModal extends Component {
         content: "",
         start: startDate,
         end: endDate,
-        className: currentDate > endDate ? "phase-length past" : "phase-length",
+        className: disabled || (currentDate > endDate) ? "phase-length past" : "phase-length",
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -373,7 +373,7 @@ class EditProjectTimeTableModal extends Component {
         start: dashEnd,
         id: numberOfPhases,
         content: "",
-        className: "board-only",
+        className: "board-only " + dashedStyle,
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -553,6 +553,7 @@ class EditProjectTimeTableModal extends Component {
     let innerStyle = "inner-end"
 
     let milestone = false
+    let disabled = false
 
     const currentDateString = new Date().toJSON().slice(0, 10);
     const currentDate = new Date(currentDateString);
@@ -569,6 +570,7 @@ class EditProjectTimeTableModal extends Component {
             ? new Date(formValues["projektin_kaynnistys_pvm"])
             : new Date(deadlines[i].date);
           startDate.setHours(12, 0, 0, 0);
+          disabled = !formValues?.kaavan_vaihe.includes("Käynnistys") ? true : false;
         }
         else if(deadline.attribute === "voimaantulovaihe_alkaa_pvm"){
           const phaseStart = formValues && formValues["voimaantulovaihe_alkaa_pvm"] ? new Date(formValues["voimaantulovaihe_alkaa_pvm"]) : deadlines[i].date;
@@ -739,6 +741,9 @@ class EditProjectTimeTableModal extends Component {
           : phaseEnd
         }
         else{
+          if(deadline.attribute === "kaynnistys_paattyy_pvm"){
+            disabled = !formValues?.kaavan_vaihe.includes("Käynnistys") ? true : false;
+          }
           endDate = formValues && formValues[deadline.attribute]
           ? new Date(formValues[deadline.attribute])
           : deadlines[i].date;
@@ -752,10 +757,11 @@ class EditProjectTimeTableModal extends Component {
 
       if(startDate && endDate){
         //Main group items not movable(Käynnistys, Periaatteet, OAS etc)
-        let mainGroup = this.addMainGroup(deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines);
+        let mainGroup = this.addMainGroup(deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines, disabled);
         [phaseData, deadLineGroups, nestedDeadlines] = mainGroup;
         startDate = false
         endDate = false
+        disabled = false
  
       }
       else if(milestone && deadline.phase_name === "Ehdotus" && deadline.deadlinegroup !== "ehdotus_lautakuntakerta_1"
@@ -831,8 +837,7 @@ class EditProjectTimeTableModal extends Component {
         break;
       }
     }
-
-    return formValues[confirmationKey] === true;
+    return formValues[confirmationKey];
   };
 
   getTimelineData = (deadlineSections,formValues,deadlines,ongoingPhase) => {

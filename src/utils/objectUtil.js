@@ -269,7 +269,7 @@ const getHighestNumberedObject = (obj1, arr) => {
     //Sort phase start end data by order const
     arr1 = sortPhaseData(arr1,order)
     //Return in order array ready for comparing next and previous value distances
-    arr1 = arr1.filter(item => !item.key.includes("viimeistaan_lausunnot_")); //filter out has no next and prev values
+    arr1 = arr1.filter(item => !item.key.includes("viimeistaan_lausunnot_") && !item.key.includes("aloituskokous_suunniteltu_pvm_readonly")); //filter out has no next and prev values
     return arr1
   }
   //Sort by certain predetermined order

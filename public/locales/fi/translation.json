@@ -260,6 +260,7 @@
     "charsover":"Merkkimäärä on ylittynyt",
     "noempty":"Kenttä ei saa olla tyhjä",
     "error":"Virhe",
+    "error-input-int": "Virhe: Syötä kokonaisluku.",
     "error-prevent-add":"Virhe lomakkeella estää lisäyksen",
     "fieldset-info":"Yhteensä {{fieldAmount}} tietuetta.",
     "no-fields":"Suodatinvalinnalla ei löytynyt tämän otsikon alta suodatettavia kenttiä.",

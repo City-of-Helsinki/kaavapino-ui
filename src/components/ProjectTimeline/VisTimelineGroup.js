@@ -369,26 +369,34 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const showMonths = () => {
-      let now = new Date();
-      let currentYear = now.getFullYear();
-      let startOfMonth = new Date(currentYear, now.getMonth(), 1);
-      let endOfMonth = new Date(currentYear, now.getMonth() + 1, 0);
+      const range = timeline.getWindow();
+      const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
+      const rangeDuration = 1000 * 60 * 60 * 24 * 30; // about 1 month
+
       timelineRef.current.classList.remove("years")
       timelineRef.current.classList.add("months")
       timeline.setOptions({timeAxis: {scale: 'weekday'}});
-      timeline.setWindow(startOfMonth, endOfMonth);
+      //Keep view centered on where user is
+      const newStart = new Date(center.getTime() - rangeDuration / 2);
+      const newEnd = new Date(center.getTime() + rangeDuration / 2);
+      timeline.setWindow(newStart, newEnd);
+
       setCurrentFormat("showMonths");
     }
 
     const showYears = () => {
-      let now = new Date();
-      let currentYear = now.getFullYear();
-      let startOfYear = new Date(currentYear, 0, 1);
-      let endOfYear = new Date(currentYear, 11, 31);
+      const range = timeline.getWindow();
+      const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
+      const rangeDuration = 1000 * 60 * 60 * 24 * 365; // about 1 year
+
       timelineRef.current.classList.remove("months")
       timelineRef.current.classList.add("years")
       timeline.setOptions({timeAxis: {scale: 'month'}});
-      timeline.setWindow(startOfYear, endOfYear);
+      //Keep view centered on where user is
+      const newStart = new Date(center.getTime() - rangeDuration / 2);
+      const newEnd = new Date(center.getTime() + rangeDuration / 2);
+      timeline.setWindow(newStart, newEnd);
+
       setCurrentFormat("showYears");
     }
 
@@ -932,7 +940,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           addDialogStyle={addDialogStyle}
           addDialogData={addDialogData}
           closeAddDialog={closeAddDialog}
-          isAdmin={isAdmin}
           allowedToEdit={allowedToEdit}
           timelineAddButton={timelineAddButton}
         />
