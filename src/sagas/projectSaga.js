@@ -159,6 +159,8 @@ import {
 import i18 from 'i18next'
 import dayjs from 'dayjs'
 import { toastr } from 'react-redux-toastr'
+import { confirmationAttributeNames } from '../utils/constants';
+import { generateConfirmedFields } from '../utils/generateConfirmedFields';
 
 export default function* projectSaga() {
   yield all([
@@ -730,80 +732,95 @@ function* validateProjectTimetable() {
     removeOnHover: false,
     showCloseButton: false,
   });
-  yield put(startSubmit(EDIT_PROJECT_TIMETABLE_FORM))
+  yield put(startSubmit(EDIT_PROJECT_TIMETABLE_FORM));
   yield put(setValidatingTimetable(true, false));
 
-  const { initial, values } = yield select(
-    editProjectTimetableFormSelector
-  )
-  const currentProjectId = yield select(currentProjectIdSelector)
+  const { initial, values } = yield select(editProjectTimetableFormSelector);
+  const currentProjectId = yield select(currentProjectIdSelector);
 
   if (values) {
-    let changedAttributeData = getChangedAttributeData(values, initial)
-    if(changedAttributeData.oikaisukehoituksen_alainen_readonly){
-      delete changedAttributeData.oikaisukehoituksen_alainen_readonly
+    let changedAttributeData = getChangedAttributeData(values, initial);
+
+    if (changedAttributeData.oikaisukehoituksen_alainen_readonly) {
+      delete changedAttributeData.oikaisukehoituksen_alainen_readonly;
     }
 
-    let attribute_data = adjustDeadlineData(changedAttributeData, values)
+    let attribute_data = adjustDeadlineData(changedAttributeData, values);
+
+    // Add confirmed field locking from vahvista_* flags
+    // leave 'kaynnistys','hyvaksyminen','voimaantulo' out because no vahvista flags there
+    const phaseNames = [
+      'periaatteet',
+      'oas',
+      'luonnos',
+      'ehdotus',
+      'tarkistettu_ehdotus'
+    ];
+    //Find confirmed fields from attribute_data so backend knows not to edit them
+    const confirmed_fields = generateConfirmedFields(
+      attribute_data,
+      confirmationAttributeNames,
+      phaseNames
+    );
 
     try {
       const response = yield call(
         projectApi.patch,
-        { attribute_data },
+        {
+          attribute_data,
+          confirmed_fields,
+        },
         { path: { id: currentProjectId } },
         ':id/?fake=true'
-      )
-    // Remove the loading icon
-    toastr.removeByType('info');
-    toastr.success(i18.t('messages.dates-confirmed'), {
-      timeOut: 10000,
-      removeOnHover: false,
-      showCloseButton: true,
-    });
+      );
 
-    // Success. Prevent further validation calls by setting state
-    yield put(setValidatingTimetable(true, true));
-    //Backend may have edited phase start/end dates, so update project
-    yield put(updateProject(response));
+      // Remove the loading icon
+      toastr.removeByType('info');
+      toastr.success(i18.t('messages.dates-confirmed'), {
+        timeOut: 10000,
+        removeOnHover: false,
+        showCloseButton: true,
+      });
+
+      // Success. Prevent further validation calls by setting state
+      yield put(setValidatingTimetable(true, true));
+
+      // Backend may have edited phase start/end dates, so update project
+      yield put(updateProject(response));
     } catch (e) {
-      if (e?.code === "ERR_NETWORK") {
-        toastr.error(i18.t('messages.general-save-error'))
+      if (e?.code === 'ERR_NETWORK') {
+        toastr.error(i18.t('messages.validation-error'));
       }
-      //Catch reached so dates were not correct, get days and update them to form 
-      //from projectReducer UPDATE_PROJECT_FAILURE
 
-      //For debugging
-      //Get the error message string dynamically
-      //const errorMessage = errorUtil.getErrorMessage(e?.response?.data);
-      // Remove loading icon and show error toastr
-      //toastr.removeByType('info');
-      // Display message in a toastr
-      /*       
-      toastr.info(i18.t('messages.error-with-dates'), errorMessage, {
-        timeOut: 10000,
-        removeOnHover: false,
-        showCloseButton: true,
-        preventDuplicates: true,
-        className: 'large-scrollable-toastr rrt-info'
-      }); */
+      // Catch reached so dates were not correct,
+      // get days and update them to form from projectReducer UPDATE_PROJECT_FAILURE
 
-      //Show a message of a dates changed
-      // Get the message string dynamically
-      //const message = errorUtil.getErrorMessage(e?.response?.data, 'date');
-      // Display message in a toastr
-      /*       
-      toastr.warning(i18.t('messages.fixed-timeline-dates'), message, {
-        timeOut: 10000,
-        removeOnHover: false,
-        showCloseButton: true,
-        preventDuplicates: true,
-        className: 'large-scrollable-toastr rrt-warning'
-      }); */
+      // For debugging
+      // Get the error message string dynamically
+      // const errorMessage = errorUtil.getErrorMessage(e?.response?.data);
+      // toastr.removeByType('info');
+      // toastr.info(i18.t('messages.error-with-dates'), errorMessage, {
+      //   timeOut: 10000,
+      //   removeOnHover: false,
+      //   showCloseButton: true,
+      //   preventDuplicates: true,
+      //   className: 'large-scrollable-toastr rrt-info',
+      // });
 
-     // Dispatch failure action with error data for the reducer to handle date correction to timeline form
+      // Show a message of a dates changed
+      // const message = errorUtil.getErrorMessage(e?.response?.data, 'date');
+      // toastr.warning(i18.t('messages.fixed-timeline-dates'), message, {
+      //   timeOut: 10000,
+      //   removeOnHover: false,
+      //   showCloseButton: true,
+      //   preventDuplicates: true,
+      //   className: 'large-scrollable-toastr rrt-warning',
+      // });
+
+      // Dispatch failure action with error data for the reducer to handle date correction to timeline form
       yield put({
         type: UPDATE_PROJECT_FAILURE,
-        payload: { errorData: e?.response?.data , formValues: attribute_data },
+        payload: { errorData: e?.response?.data, formValues: attribute_data },
       });
     }
   }
@@ -823,14 +840,33 @@ function* saveProjectTimetable(action,retryCount = 0) {
       delete changedAttributeData.oikaisukehoituksen_alainen_readonly
     }
     let attribute_data = adjustDeadlineData(changedAttributeData, values)
+    
+    // Add confirmed field locking from vahvista_* flags
+    // leave 'kaynnistys','hyvaksyminen','voimaantulo' out because no vahvista flags there
+    const phaseNames = [
+      'periaatteet',
+      'oas',
+      'luonnos',
+      'ehdotus',
+      'tarkistettu_ehdotus'
+    ];
+    
+    //Find confirmed fields from attribute_data so backend knows not to edit them
+    const confirmed_fields = generateConfirmedFields(
+      attribute_data,
+      confirmationAttributeNames,
+      phaseNames
+    );
+
     const maxRetries = 5;
     try {
       const updatedProject = yield call(
         projectApi.patch,
-        { attribute_data },
+        { attribute_data, confirmed_fields },
         { path: { id: currentProjectId } },
         ':id/'
       )
+
       yield put(updateProject(updatedProject))
       yield put(setSubmitSucceeded(EDIT_PROJECT_TIMETABLE_FORM))
       yield put(saveProjectTimetableSuccessful(true))

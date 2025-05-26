@@ -96,7 +96,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const attributeEsillaoloKeys = getVisBoolsByPhaseName(phase).filter((bool_name) => {
         return (bool_name.includes('esillaolo') || bool_name.includes('nahtaville'))
       });
-      let largestIndex = 0;
+      let largestIndex = 1;
       //find largest index
       attributeEsillaoloKeys.forEach(key => {
         const match = /_(\d+)$/.exec(key);
@@ -105,15 +105,15 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             if (number > largestIndex && visValRef[key]) {
               largestIndex = number;
             }
+            else if (number === 1 && visValRef[key] === false) {
+              // If first element group explicitly set to false, it has been deleted
+              // By default it may just be undefined (even if present)
+              largestIndex = 0;
+            }
         }
       });
-      let esillaoloCount = largestIndex
-      //If no index found add one
-      if(esillaoloCount === 0){
-        esillaoloCount += 1
-      }
 
-      esillaoloCount += 1;
+      const esillaoloCount = largestIndex +1;
 
       if(esillaoloCount - 1 === deadlineEsillaolokertaKeys){
         esillaoloReason = "max"
@@ -132,7 +132,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       // Check if more Lautakunta groups can be added
       const deadlineLautakuntakertaKeys = data.maxLautakunta
       const attributeLautakuntaanKeys = getVisBoolsByPhaseName(phase).filter(bool_name => bool_name.includes('lautakunta'));
-      let largestIndexLautakunta = 0;
+      let largestIndexLautakunta = 1;
       //find largest index
       attributeLautakuntaanKeys.forEach(key => {
         const match = /_(\d+)$/.exec(key);
@@ -141,15 +141,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             if (number > largestIndexLautakunta && visValRef[key]) {
               largestIndexLautakunta = number;
             }
+            else if (number === 1 && visValRef[key] === false) {
+              largestIndexLautakunta = 0;
+            }
         }
       });
 
-      let lautakuntaCount = largestIndexLautakunta
-      if(lautakuntaCount === 0){
-        lautakuntaCount += 1
-      }
-
-      lautakuntaCount += 1;
+      const lautakuntaCount = largestIndexLautakunta +1;
 
       if(lautakuntaCount - 1 === deadlineLautakuntakertaKeys){
         lautakuntaReason = "max"
@@ -862,6 +860,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         if (timelineInstanceRef.current) {
           //Update timeline when values change from side modal
           timelineInstanceRef.current.setItems(items);
+          timelineInstanceRef.current.setGroups(groups);
           timelineInstanceRef.current.redraw();
         }
       }
@@ -933,7 +932,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           addDialogStyle={addDialogStyle}
           addDialogData={addDialogData}
           closeAddDialog={closeAddDialog}
-          isAdmin={isAdmin}
           allowedToEdit={allowedToEdit}
           timelineAddButton={timelineAddButton}
         />
