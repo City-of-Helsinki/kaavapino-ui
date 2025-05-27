@@ -74,7 +74,7 @@ const DeadlineInfoText = props => {
     const differenceInDays = differenceInMilliseconds / (1000 * 60 * 60 * 24);
     // Add 1 to include both the start and end dates (inclusive counting)
     const totalDays = differenceInDays + 1;
-    return totalDays;
+    return Math.round(totalDays);
   }
 
   const determineFieldValue = (current, props) => {
