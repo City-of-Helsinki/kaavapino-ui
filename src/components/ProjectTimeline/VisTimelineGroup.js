@@ -158,9 +158,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         const lautakuntaText = attributeLautakuntaanKeys[lautakuntaCount-1]
         nextLautakuntaStr = canAddLautakunta ? lautakuntaText : false;
       }
-      else if(["luonnos", "periaatteet"].includes(phase) && largestIndexLautakunta === 0){
+      else if(["luonnos", "periaatteet", "ehdotus"].includes(phase) && largestIndexLautakunta === 0){
         canAddLautakunta = true
-        nextLautakuntaStr = phase === "luonnos" ? `kaava${phase}_lautakuntaan_1` : `${phase}_lautakuntaan_1`;
+        nextLautakuntaStr = phase === "luonnos" || phase === "ehdotus" ? `kaava${phase}_lautakuntaan_1` : `${phase}_lautakuntaan_1`;
         lautakuntaReason = ""
       }
 
@@ -220,7 +220,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
       if(typeof visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "undefined" || visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "hyvaksytty" || visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "palautettu_uudelleen_valmisteltavaksi"){
         if( (phase === "luonnos" && visValRef[`kaava${phase}_lautakuntaan_1`] === false) ||
-            (phase === "periaatteet" && visValRef[`${phase}_lautakuntaan_1`] === false) ) {
+            (phase === "periaatteet" && visValRef[`${phase}_lautakuntaan_1`] === false) ||
+            (phase === "ehdotus" && visValRef["kaavaehdotus_lautakuntaan_1"] === false) ) {
           canAddLautakunta = true
         }
         else{
