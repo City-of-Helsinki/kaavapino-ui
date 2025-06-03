@@ -381,7 +381,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const newStart = new Date(center.getTime() - rangeDuration / 2);
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
       timeline.setWindow(newStart, newEnd);
-
       setCurrentFormat("showMonths");
     }
 
@@ -397,7 +396,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const newStart = new Date(center.getTime() - rangeDuration / 2);
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
       timeline.setWindow(newStart, newEnd);
-
       setCurrentFormat("showYears");
     }
 

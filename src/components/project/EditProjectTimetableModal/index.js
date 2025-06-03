@@ -553,6 +553,7 @@ class EditProjectTimeTableModal extends Component {
     let innerStyle = "inner-end"
 
     let milestone = false
+
     let disabled = false
 
     const currentDateString = new Date().toJSON().slice(0, 10);
