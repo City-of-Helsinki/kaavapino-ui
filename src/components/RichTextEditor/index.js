@@ -52,9 +52,9 @@ const formats = [
   'color',
   'background',
   // KAPI-98: Temporarily disabled lists in rte
-  //'list', 
-  //'ordered',
-  //'bullet',
+  'list', 
+  'ordered',
+  'bullet',
   'script',
   'sub',
   'super'
@@ -674,6 +674,10 @@ function RichTextEditor(props) {
           <span className={readonly ? "ql-formats rich-text-disabled" : "ql-formats"}>
             <select aria-label="color" className="ql-color" />
             <select aria-label="background" className="ql-background" />
+          </span>
+          <span className={readonly ? "ql-formats rich-text-disabled" : "ql-formats"}>
+            <button aria-label="list" className="ql-list" value="ordered" />
+            <button aria-label="bullet" className="ql-list" value="bullet" />
           </span>
           <span className={readonly ? "ql-formats rich-text-disabled" : "ql-formats"}>
             <button aria-label="script" className="ql-script" value="super" />

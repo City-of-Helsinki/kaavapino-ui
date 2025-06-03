@@ -158,9 +158,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         const lautakuntaText = attributeLautakuntaanKeys[lautakuntaCount-1]
         nextLautakuntaStr = canAddLautakunta ? lautakuntaText : false;
       }
-      else if(["luonnos", "periaatteet"].includes(phase) && largestIndexLautakunta === 0){
+      else if(["luonnos", "periaatteet", "ehdotus"].includes(phase) && largestIndexLautakunta === 0){
         canAddLautakunta = true
-        nextLautakuntaStr = phase === "luonnos" ? `kaava${phase}_lautakuntaan_1` : `${phase}_lautakuntaan_1`;
+        nextLautakuntaStr = phase === "luonnos" || phase === "ehdotus" ? `kaava${phase}_lautakuntaan_1` : `${phase}_lautakuntaan_1`;
         lautakuntaReason = ""
       }
 
@@ -220,7 +220,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
       if(typeof visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "undefined" || visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "hyvaksytty" || visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "palautettu_uudelleen_valmisteltavaksi"){
         if( (phase === "luonnos" && visValRef[`kaava${phase}_lautakuntaan_1`] === false) ||
-            (phase === "periaatteet" && visValRef[`${phase}_lautakuntaan_1`] === false) ) {
+            (phase === "periaatteet" && visValRef[`${phase}_lautakuntaan_1`] === false) ||
+            (phase === "ehdotus" && visValRef["kaavaehdotus_lautakuntaan_1"] === false) ) {
           canAddLautakunta = true
         }
         else{
@@ -369,26 +370,32 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const showMonths = () => {
-      let now = new Date();
-      let currentYear = now.getFullYear();
-      let startOfMonth = new Date(currentYear, now.getMonth(), 1);
-      let endOfMonth = new Date(currentYear, now.getMonth() + 1, 0);
+      const range = timeline.getWindow();
+      const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
+      const rangeDuration = 1000 * 60 * 60 * 24 * 30; // about 1 month
+
       timelineRef.current.classList.remove("years")
       timelineRef.current.classList.add("months")
       timeline.setOptions({timeAxis: {scale: 'weekday'}});
-      timeline.setWindow(startOfMonth, endOfMonth);
+      //Keep view centered on where user is
+      const newStart = new Date(center.getTime() - rangeDuration / 2);
+      const newEnd = new Date(center.getTime() + rangeDuration / 2);
+      timeline.setWindow(newStart, newEnd);
       setCurrentFormat("showMonths");
     }
 
     const showYears = () => {
-      let now = new Date();
-      let currentYear = now.getFullYear();
-      let startOfYear = new Date(currentYear, 0, 1);
-      let endOfYear = new Date(currentYear, 11, 31);
+      const range = timeline.getWindow();
+      const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
+      const rangeDuration = 1000 * 60 * 60 * 24 * 365; // about 1 year
+
       timelineRef.current.classList.remove("months")
       timelineRef.current.classList.add("years")
       timeline.setOptions({timeAxis: {scale: 'month'}});
-      timeline.setWindow(startOfYear, endOfYear);
+      //Keep view centered on where user is
+      const newStart = new Date(center.getTime() - rangeDuration / 2);
+      const newEnd = new Date(center.getTime() + rangeDuration / 2);
+      timeline.setWindow(newStart, newEnd);
       setCurrentFormat("showYears");
     }
 
