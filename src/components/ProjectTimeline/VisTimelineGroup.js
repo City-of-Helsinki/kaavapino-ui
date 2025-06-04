@@ -24,6 +24,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
     const { t } = useTranslation()
     const timelineRef = useRef(null);
+    const observerRef = useRef(null); // Store the MutationObserver
     const timelineInstanceRef = useRef(null);
     const visValuesRef = useRef(visValues);
 
@@ -382,6 +383,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
       timeline.setWindow(newStart, newEnd);
       setCurrentFormat("showMonths");
+      highlightJanuaryFirst()
     }
 
     const showYears = () => {
@@ -397,6 +399,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
       timeline.setWindow(newStart, newEnd);
       setCurrentFormat("showYears");
+      highlightJanuaryFirst()
     }
 
     const show2Yers = () => {
@@ -483,6 +486,43 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         date.setTime(date.getTime() - 86400000); // Move from Saturday to Friday
       }
     }
+
+    const highlightJanuaryFirst = () => {
+      console.log("Highlighting January first",timelineInstanceRef?.current);
+      if (!timelineInstanceRef.current) return;
+    
+      requestAnimationFrame(() => {
+        document.querySelectorAll(".vis-text.vis-minor").forEach((label) => {
+          const text = label.textContent.trim().toLowerCase();
+    
+          // Extract the first number before a possible <br> tag
+          const firstLineMatch = text.match(/^\d+/); 
+          const firstLine = firstLineMatch ? firstLineMatch[0] : "";
+
+          // Month View: Must be "1" AND contain "tammikuu"
+          const isMonthView = firstLine === "1";
+    
+          // Year View: If the text is "tammi" (January in Finnish)
+          const isYearView = text === "tammi";
+          console.log(isYearView,isMonthView,firstLine,text)
+          if (isYearView || isMonthView) {
+            label.classList.add("january-first");
+          }
+        });
+      });
+    };
+
+    // MutationObserver to track new elements being added dynamically
+    const observeTimelineChanges = () => {
+      observerRef.current = new MutationObserver(() => {
+        highlightJanuaryFirst(); // Apply styles when new elements are added
+      });
+  
+      const targetNode = document.querySelector(".vis-panel.vis-center");
+      if (targetNode) {
+        observerRef.current.observe(targetNode, { childList: true, subtree: true });
+      }
+    };
 
     useEffect(() => {
 
@@ -855,8 +895,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           });
           
         }
-
         timeline.focus(0);
+        if(timeline){
+          setTimeout(() => {
+            highlightJanuaryFirst();
+            observeTimelineChanges();
+          }, 100); // Ensures elements are rendered before applying styles
+        }
         //timeline.on('rangechanged', onRangeChanged);
         return () => {
           // Check if tooltipDiv exists before trying to remove it
@@ -871,6 +916,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             document.body.removeEventListener('mousemove', handleMouseMove);
           }
           timeline.off('groupDragged', groupDragged)
+          observerRef?.current?.disconnect();
           //timeline.off('rangechanged', onRangeChanged);
         }
       }
