@@ -18,12 +18,13 @@ import { getVisibilityBoolName, getVisBoolsByPhaseName } from '../../utils/proje
 import './VisTimeline.css'
 Moment().locale('fi');
 
-const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes}, ref) => {
+const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes, showTimetableForm}, ref) => {
     const dispatch = useDispatch();
     const moment = extendMoment(Moment);
 
     const { t } = useTranslation()
     const timelineRef = useRef(null);
+    const observerRef = useRef(null); // Store the MutationObserver
     const timelineInstanceRef = useRef(null);
     const visValuesRef = useRef(visValues);
 
@@ -382,6 +383,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
       timeline.setWindow(newStart, newEnd);
       setCurrentFormat("showMonths");
+      highlightJanuaryFirst()
     }
 
     const showYears = () => {
@@ -397,6 +399,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
       timeline.setWindow(newStart, newEnd);
       setCurrentFormat("showYears");
+      highlightJanuaryFirst()
     }
 
     const show2Yers = () => {
@@ -483,6 +486,43 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         date.setTime(date.getTime() - 86400000); // Move from Saturday to Friday
       }
     }
+
+    const highlightJanuaryFirst = () => {
+      console.log("Highlighting January first",timelineInstanceRef?.current);
+      if (!timelineInstanceRef.current) return;
+    
+      requestAnimationFrame(() => {
+        document.querySelectorAll(".vis-text.vis-minor").forEach((label) => {
+          const text = label.textContent.trim().toLowerCase();
+    
+          // Extract the first number before a possible <br> tag
+          const firstLineMatch = text.match(/^\d+/); 
+          const firstLine = firstLineMatch ? firstLineMatch[0] : "";
+
+          // Month View: Must be "1" AND contain "tammikuu"
+          const isMonthView = firstLine === "1";
+    
+          // Year View: If the text is "tammi" (January in Finnish)
+          const isYearView = text === "tammi";
+          console.log(isYearView,isMonthView,firstLine,text)
+          if (isYearView || isMonthView) {
+            label.classList.add("january-first");
+          }
+        });
+      });
+    };
+
+    // MutationObserver to track new elements being added dynamically
+    const observeTimelineChanges = () => {
+      observerRef.current = new MutationObserver(() => {
+        highlightJanuaryFirst(); // Apply styles when new elements are added
+      });
+  
+      const targetNode = document.querySelector(".vis-panel.vis-center");
+      if (targetNode) {
+        observerRef.current.observe(targetNode, { childList: true, subtree: true });
+      }
+    };
 
     useEffect(() => {
 
@@ -699,6 +739,22 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                 }
               });
 
+              // Hover effect
+              container.addEventListener("mouseenter", function() {
+                // Action to perform on hover enter, e.g., change background color
+                //only not confirmed groups can be deleted
+                if(!group.undeletable && visValuesRef?.current[`vahvista_${words[0]}_${normalizedString}_alkaa_${words[2]}`]){
+                  // add button-disabled class to the remove button if the group is not deletable
+                  remove.classList.add("button-disabled")
+                }
+                // Action to perform on hover leave
+                else if(!group.undeletable && !visValuesRef?.current[`vahvista_${words[0]}_${normalizedString}_alkaa_${words[2]}`]){
+                  // add button-disabled class to the remove button if the group is not deletable
+                  remove.classList.remove("button-disabled")
+                }
+
+              });
+
               container.insertAdjacentElement("beforeEnd", remove);
 
               // Add tooltip for disabled remove buttons
@@ -839,8 +895,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           });
           
         }
-
         timeline.focus(0);
+        if(timeline){
+          setTimeout(() => {
+            highlightJanuaryFirst();
+            observeTimelineChanges();
+          }, 100); // Ensures elements are rendered before applying styles
+        }
         //timeline.on('rangechanged', onRangeChanged);
         return () => {
           // Check if tooltipDiv exists before trying to remove it
@@ -855,6 +916,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             document.body.removeEventListener('mousemove', handleMouseMove);
           }
           timeline.off('groupDragged', groupDragged)
+          observerRef?.current?.disconnect();
           //timeline.off('rangechanged', onRangeChanged);
         }
       }
@@ -872,6 +934,31 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         }
       }
     }, [visValues]);
+
+    useEffect(() => {
+      if (showTimetableForm.selectedPhase !== null) {
+        setToggleTimelineModal({open:!toggleTimelineModal.open, highlight:true, deadlinegroup:showTimetableForm?.matchedDeadline?.deadlinegroup})
+        setTimelineData({group:showTimetableForm.selectedPhase, content:formatDeadlineGroupTitle(showTimetableForm)})
+      }
+    }, [showTimetableForm.selectedPhase])
+
+    const generateTitle = (deadlinegroup) => {
+      if (!deadlinegroup) return '';
+      const parts = deadlinegroup.split('_');
+      if (parts.length < 3) return deadlinegroup;
+      const formattedString = `${parts[1].replace('kerta', '')}-${parts[2]}`;
+      return formattedString.charAt(0).toUpperCase() + formattedString.slice(1);
+    };
+
+    const formatDeadlineGroupTitle = (data) => {
+      if(data.selectedPhase === "Voimaantulo" || data.selectedPhase === "Hyväksyminen"){
+        return "Vaiheen lisätiedot";
+      }
+      else{
+        const newTitle = generateTitle(data?.matchedDeadline?.deadlinegroup);
+        return formatContent(newTitle,true);
+      }
+    }
 
     const formatContent = (content, keepNumberOne = false) => {
       if (content) {
@@ -933,6 +1020,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           items={items?.get()}
           sectionAttributes={sectionAttributes}
           isAdmin={isAdmin}
+          initialTab={showTimetableForm?.selectedPhase === "Voimaantulo" && showTimetableForm?.name === "voimaantulo_pvm" ? 1 : 0 }
         />
         <AddGroupModal
           toggleOpenAddDialog={toggleOpenAddDialog}

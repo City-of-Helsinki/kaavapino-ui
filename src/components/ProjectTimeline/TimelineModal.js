@@ -10,7 +10,7 @@ import objectUtil from '../../utils/objectUtil';
 import PropTypes from 'prop-types'
 import './VisTimeline.css'
 
-const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit,disabledDates,lomapaivat,dateTypes,groups, items, sectionAttributes,isAdmin }) => {
+const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit,disabledDates,lomapaivat,dateTypes,groups, items, sectionAttributes,isAdmin,initialTab }) => {
 
   const getAttributeValues = (attributes) => {
     return Object.values(attributes).flatMap((v) => Object.values(v));
@@ -188,7 +188,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
         const [maxDateToMove,maxMoveGroup] = getMaxiumDateToMove(attr)
         if(attr[deadlinegroup]){
           renderedSections.push(
-            <Tabs key={"tab" + sectionIndex}>
+            <Tabs key={"tab" + sectionIndex} initiallyActiveTab={initialTab}>
               <Tabs.TabList className='tab-header' style={{ marginBottom: 'var(--spacing-m)' }}>
                 {Object.keys(attr[deadlinegroup]).map((key) => {
                   let tabContent = key === "default" ? content : key
