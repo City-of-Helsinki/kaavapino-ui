@@ -210,6 +210,7 @@ function ProjectCardPage({
               deadlines={currentProject && currentProject.deadlines}
               projectView={true}
               onhold={currentProject && currentProject.onhold}
+              attribute_data={currentProject && currentProject.attribute_data}
             />
           </Segment>
         </Grid.Column>

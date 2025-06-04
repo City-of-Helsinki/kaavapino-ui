@@ -96,7 +96,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const attributeEsillaoloKeys = getVisBoolsByPhaseName(phase).filter((bool_name) => {
         return (bool_name.includes('esillaolo') || bool_name.includes('nahtaville'))
       });
-      let largestIndex = 0;
+      let largestIndex = 1;
       //find largest index
       attributeEsillaoloKeys.forEach(key => {
         const match = /_(\d+)$/.exec(key);
@@ -105,15 +105,15 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             if (number > largestIndex && visValRef[key]) {
               largestIndex = number;
             }
+            else if (number === 1 && visValRef[key] === false) {
+              // If first element group explicitly set to false, it has been deleted
+              // By default it may just be undefined (even if present)
+              largestIndex = 0;
+            }
         }
       });
-      let esillaoloCount = largestIndex
-      //If no index found add one
-      if(esillaoloCount === 0){
-        esillaoloCount += 1
-      }
 
-      esillaoloCount += 1;
+      const esillaoloCount = largestIndex +1;
 
       if(esillaoloCount - 1 === deadlineEsillaolokertaKeys){
         esillaoloReason = "max"
@@ -132,7 +132,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       // Check if more Lautakunta groups can be added
       const deadlineLautakuntakertaKeys = data.maxLautakunta
       const attributeLautakuntaanKeys = getVisBoolsByPhaseName(phase).filter(bool_name => bool_name.includes('lautakunta'));
-      let largestIndexLautakunta = 0;
+      let largestIndexLautakunta = 1;
       //find largest index
       attributeLautakuntaanKeys.forEach(key => {
         const match = /_(\d+)$/.exec(key);
@@ -141,15 +141,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             if (number > largestIndexLautakunta && visValRef[key]) {
               largestIndexLautakunta = number;
             }
+            else if (number === 1 && visValRef[key] === false) {
+              largestIndexLautakunta = 0;
+            }
         }
       });
 
-      let lautakuntaCount = largestIndexLautakunta
-      if(lautakuntaCount === 0){
-        lautakuntaCount += 1
-      }
-
-      lautakuntaCount += 1;
+      const lautakuntaCount = largestIndexLautakunta +1;
 
       if(lautakuntaCount - 1 === deadlineLautakuntakertaKeys){
         lautakuntaReason = "max"
@@ -160,9 +158,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         const lautakuntaText = attributeLautakuntaanKeys[lautakuntaCount-1]
         nextLautakuntaStr = canAddLautakunta ? lautakuntaText : false;
       }
-      else if(["luonnos", "periaatteet"].includes(phase) && largestIndexLautakunta === 0){
+      else if(["luonnos", "periaatteet", "ehdotus"].includes(phase) && largestIndexLautakunta === 0){
         canAddLautakunta = true
-        nextLautakuntaStr = phase === "luonnos" ? `kaava${phase}_lautakuntaan_1` : `${phase}_lautakuntaan_1`;
+        nextLautakuntaStr = phase === "luonnos" || phase === "ehdotus" ? `kaava${phase}_lautakuntaan_1` : `${phase}_lautakuntaan_1`;
         lautakuntaReason = ""
       }
 
@@ -222,7 +220,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
       if(typeof visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "undefined" || visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "hyvaksytty" || visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "palautettu_uudelleen_valmisteltavaksi"){
         if( (phase === "luonnos" && visValRef[`kaava${phase}_lautakuntaan_1`] === false) ||
-            (phase === "periaatteet" && visValRef[`${phase}_lautakuntaan_1`] === false) ) {
+            (phase === "periaatteet" && visValRef[`${phase}_lautakuntaan_1`] === false) ||
+            (phase === "ehdotus" && visValRef["kaavaehdotus_lautakuntaan_1"] === false) ) {
           canAddLautakunta = true
         }
         else{
@@ -371,26 +370,32 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const showMonths = () => {
-      let now = new Date();
-      let currentYear = now.getFullYear();
-      let startOfMonth = new Date(currentYear, now.getMonth(), 1);
-      let endOfMonth = new Date(currentYear, now.getMonth() + 1, 0);
+      const range = timeline.getWindow();
+      const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
+      const rangeDuration = 1000 * 60 * 60 * 24 * 30; // about 1 month
+
       timelineRef.current.classList.remove("years")
       timelineRef.current.classList.add("months")
       timeline.setOptions({timeAxis: {scale: 'weekday'}});
-      timeline.setWindow(startOfMonth, endOfMonth);
+      //Keep view centered on where user is
+      const newStart = new Date(center.getTime() - rangeDuration / 2);
+      const newEnd = new Date(center.getTime() + rangeDuration / 2);
+      timeline.setWindow(newStart, newEnd);
       setCurrentFormat("showMonths");
     }
 
     const showYears = () => {
-      let now = new Date();
-      let currentYear = now.getFullYear();
-      let startOfYear = new Date(currentYear, 0, 1);
-      let endOfYear = new Date(currentYear, 11, 31);
+      const range = timeline.getWindow();
+      const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
+      const rangeDuration = 1000 * 60 * 60 * 24 * 365; // about 1 year
+
       timelineRef.current.classList.remove("months")
       timelineRef.current.classList.add("years")
       timeline.setOptions({timeAxis: {scale: 'month'}});
-      timeline.setWindow(startOfYear, endOfYear);
+      //Keep view centered on where user is
+      const newStart = new Date(center.getTime() - rangeDuration / 2);
+      const newEnd = new Date(center.getTime() + rangeDuration / 2);
+      timeline.setWindow(newStart, newEnd);
       setCurrentFormat("showYears");
     }
 
@@ -878,6 +883,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         if (timelineInstanceRef.current) {
           //Update timeline when values change from side modal
           timelineInstanceRef.current.setItems(items);
+          timelineInstanceRef.current.setGroups(groups);
           timelineInstanceRef.current.redraw();
         }
       }
@@ -949,7 +955,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           addDialogStyle={addDialogStyle}
           addDialogData={addDialogData}
           closeAddDialog={closeAddDialog}
-          isAdmin={isAdmin}
           allowedToEdit={allowedToEdit}
           timelineAddButton={timelineAddButton}
         />
