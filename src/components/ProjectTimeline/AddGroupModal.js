@@ -6,7 +6,7 @@ import { IconPlus,Button } from 'hds-react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 
-const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAddDialog, allowedToEdit, isAdmin, timelineAddButton}) => {
+const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAddDialog, allowedToEdit, timelineAddButton}) => {
   const {t} = useTranslation()
   const dispatch = useDispatch();
 
@@ -52,7 +52,7 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
         }
         {!addDialogData.hideBoard &&
           <>
-            <Button size="small" disabled={!(addDialogData.showBoard && isAdmin)} className={addDialogData.showBoard && isAdmin ? '' : 'disabled'} variant="supplementary" onClick={() => addNew(addDialogData.nextLautakunta)} iconLeft={<IconPlus />}>
+            <Button size="small" disabled={!(addDialogData.showBoard && allowedToEdit)} className={addDialogData.showBoard && allowedToEdit ? '' : 'disabled'} variant="supplementary" onClick={() => addNew(addDialogData.nextLautakunta)} iconLeft={<IconPlus />}>
                 {t('project.add-new-board')}
             </Button>
             {addDialogData.lautakuntaReason && <span className='add-button-info'>{addDialogData.lautakuntaReason === "noconfirmation" ? "Kaavoitussihteerin tulee vahvistaa aikaisempi lautakunta, jonka jälkeen voidaan lisätä uusi." : "Lautakuntien maksimimäärä on saavutettu."}</span>}
