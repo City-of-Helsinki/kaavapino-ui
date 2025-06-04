@@ -699,6 +699,22 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                 }
               });
 
+              // Hover effect
+              container.addEventListener("mouseenter", function() {
+                // Action to perform on hover enter, e.g., change background color
+                //only not confirmed groups can be deleted
+                if(!group.undeletable && visValuesRef?.current[`vahvista_${words[0]}_${normalizedString}_alkaa_${words[2]}`]){
+                  // add button-disabled class to the remove button if the group is not deletable
+                  remove.classList.add("button-disabled")
+                }
+                // Action to perform on hover leave
+                else if(!group.undeletable && !visValuesRef?.current[`vahvista_${words[0]}_${normalizedString}_alkaa_${words[2]}`]){
+                  // add button-disabled class to the remove button if the group is not deletable
+                  remove.classList.remove("button-disabled")
+                }
+
+              });
+
               container.insertAdjacentElement("beforeEnd", remove);
 
               // Add tooltip for disabled remove buttons
