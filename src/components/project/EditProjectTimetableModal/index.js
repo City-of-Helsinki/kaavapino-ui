@@ -283,7 +283,7 @@ class EditProjectTimeTableModal extends Component {
             expanded = this.state.collapseData[deadlineSections[i].title]
           }
           else{
-            expanded = deadlineSections[i].title === ongoingPhase ? true : false
+            expanded = deadlineSections[i].title === ongoingPhase || deadlineSections[i].title === this.props.showTimetableForm?.selectedPhase ? true : false
           }
 
           deadLineGroups.push({
@@ -1251,6 +1251,7 @@ class EditProjectTimeTableModal extends Component {
               dateTypes={dateTypes}
               trackExpandedGroups={this.trackExpandedGroups}
               sectionAttributes={this.state.sectionAttributes}
+              showTimetableForm={this.props.showTimetableForm}
             /> 
             <ConfirmModal 
               openConfirmModal={this.state.showModal}
