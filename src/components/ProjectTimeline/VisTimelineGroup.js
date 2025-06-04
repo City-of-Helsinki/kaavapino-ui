@@ -286,6 +286,28 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   
   
     const openDialog = (data,container) => {
+      const phaseId = `${data?.phaseID}_${data?.id}`;
+      const timelineElement = timelineRef?.current;
+      if (phaseId && timelineElement){
+        // Remove previous highlights
+        timelineElement.querySelectorAll(".vis-group.foreground-highlight").forEach(el => {
+          el.classList.remove("foreground-highlight");
+        });
+
+        // Find matching item by className
+        const matchedItem = timelineElement.querySelector(`.vis-item[class*="${phaseId}"]`);
+        if (matchedItem) {
+          const groupEl = matchedItem.closest(".vis-group");
+          if (groupEl) {
+            groupEl.classList.add("foreground-highlight");
+          }
+        }
+      }
+      else{
+        timelineElement.querySelectorAll(".vis-group.foreground-highlight").forEach(el => {
+          el.classList.remove("foreground-highlight");
+        });
+      }
       //remove already highlighted 
       timelineRef?.current?.querySelectorAll('.highlight-selected').forEach(el => {
         el.classList.remove('highlight-selected');

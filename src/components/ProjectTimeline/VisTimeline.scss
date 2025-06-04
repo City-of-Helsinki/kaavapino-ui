@@ -941,6 +941,9 @@
     border: none !important;
 }
 
+.foreground-highlight{
+    background-color: #F0F0FF80;
+}
 .january-first {
     border-left:$size1 solid $border-gray4 !important;
     opacity: 0.8;

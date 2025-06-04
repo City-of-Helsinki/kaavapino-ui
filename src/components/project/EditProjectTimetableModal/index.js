@@ -328,12 +328,13 @@ class EditProjectTimeTableModal extends Component {
     });
   
     if (deadlines[i].deadline.phase_name === "Käynnistys" || deadlines[i].deadline.phase_name === "Hyväksyminen" || deadlines[i].deadline.phase_name === "Voimaantulo") {
+      const highlightID = `${deadlines[i].deadline.phase_id}_${numberOfPhases}`;
       phaseData.push({
         id: numberOfPhases + deadlines[i].deadline.phase_name,
         content: "",
         start: startDate,
         end: endDate,
-        className: disabled || (currentDate > endDate) ? "phase-length past" : "phase-length",
+        className: disabled || (currentDate > endDate) ? "phase-length past" : "phase-length" + " " +highlightID,
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -352,7 +353,8 @@ class EditProjectTimeTableModal extends Component {
         deadlinegroup: deadlines[i].deadline.deadlinegroup,
         deadlinesubgroup: deadlines[i].deadline.deadlinesubgroup,
         locked: false,
-        undeletable: true
+        undeletable: true,
+        phaseID: deadlines[i].deadline.phase_id
       });
     }
   
@@ -376,12 +378,13 @@ class EditProjectTimeTableModal extends Component {
   }
 
   addSubgroup = (deadlines, i, numberOfPhases, dashStart, dashEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone, formValues) => {
+    const highlightID = `${deadlines[i].deadline.phase_id}_${numberOfPhases}`;
     if(dashStart === null && milestone === null && dashEnd){
       phaseData.push({
         start: dashEnd,
         id: numberOfPhases,
         content: "",
-        className: "board-only " + dashedStyle,
+        className: "board-only " + dashedStyle + " " + highlightID,
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -397,7 +400,7 @@ class EditProjectTimeTableModal extends Component {
         start: dashStart,
         id: numberOfPhases,
         content: "",
-        className: dashedStyle,
+        className: dashedStyle + " " + highlightID,
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -413,7 +416,7 @@ class EditProjectTimeTableModal extends Component {
         start: milestone,
         id: numberOfPhases + " maaraaika",
         content: "",
-        className: dashedStyle,
+        className: dashedStyle + " " + highlightID,
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -428,7 +431,7 @@ class EditProjectTimeTableModal extends Component {
         end: dashStart,
         id: numberOfPhases + " divider",
         content: "",
-        className: "divider",
+        className: "divider" + " " + highlightID,
         title: "divider",
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -442,7 +445,7 @@ class EditProjectTimeTableModal extends Component {
         end: dashEnd,
         id: numberOfPhases,
         content: "",
-        className: dashedStyle,
+        className: dashedStyle + " " + highlightID,
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -458,7 +461,7 @@ class EditProjectTimeTableModal extends Component {
           start: dashStart,
           id: numberOfPhases + " maaraaika",
           content: "",
-          className: dashedStyle + " deadline",
+          className: dashedStyle + " deadline" + " " + highlightID,
           title: deadlines[i].deadline.attribute,
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
@@ -473,7 +476,7 @@ class EditProjectTimeTableModal extends Component {
           end: dashEnd,
           id: numberOfPhases + " divider",
           content: "",
-          className: "divider",
+          className: "divider" + " " + highlightID,
           title: "divider",
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
@@ -486,7 +489,7 @@ class EditProjectTimeTableModal extends Component {
           start: dashEnd,
           id: numberOfPhases + " lautakunta",
           content: "",
-          className: dashedStyle + " board-date",
+          className: dashedStyle + " board-date" + " " + highlightID,
           title: deadlines[i].deadline.attribute,
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
@@ -502,7 +505,7 @@ class EditProjectTimeTableModal extends Component {
           end: dashEnd,
           id: numberOfPhases,
           content: "",
-          className: dashedStyle,
+          className: dashedStyle + " " + highlightID,
           title: deadlines[i].deadline.attribute,
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
@@ -539,7 +542,8 @@ class EditProjectTimeTableModal extends Component {
       deadlinesubgroup: deadlines[i].deadline.deadlinesubgroup,
       locked: false,
       generated:deadlines[i].generated,
-      undeletable:undeletable
+      undeletable:undeletable,
+      phaseID: deadlines[i].deadline.phase_id
     });
 
     return [phaseData, deadLineGroups, nestedDeadlines];
