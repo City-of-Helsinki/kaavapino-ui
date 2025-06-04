@@ -333,7 +333,7 @@ const FieldSet = ({
                               />
                             )}
                             {field.help_text && (
-                              <Info content={field.help_text} link={field.help_link} linked={field.linked_fields}/>
+                              <Info content={field.help_text} link={field.help_link} linked={field.linked_fields} help_img_link={field.help_img_link}/>
                             )}
                           </div>
                         </div>
