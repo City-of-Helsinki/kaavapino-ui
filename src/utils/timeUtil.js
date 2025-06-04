@@ -664,6 +664,7 @@ const getHighestLautakuntaDate = (formValues) => {
     const currentNumber = parseInt(match ? match[1] : 0, 10);
     return currentNumber > highestNumber ? currentNumber : highestNumber;
   }, 0);
+
   if (highestLautakuntaKey > 1) {
     return formValues[`milloin_kaavaehdotus_lautakunnassa_${highestLautakuntaKey}`];
   }
@@ -672,7 +673,9 @@ const getHighestLautakuntaDate = (formValues) => {
   }
 };
 
+
 const getDisabledDatesForNahtavillaolo = (name, formValues, phaseName, matchingItem, dateTypes, projectSize) => {
+
   if (name.includes("_maaraaika")) {
     const miniumDaysBetween = matchingItem?.distance_from_previous;
     const dateToCompare = formValues[matchingItem?.previous_deadline];

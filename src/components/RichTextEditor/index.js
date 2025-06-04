@@ -19,7 +19,7 @@ import {
 import { currentProjectIdSelector,savingSelector,lockedSelector, lastModifiedSelector, pollSelector,lastSavedSelector } from '../../selectors/projectSelector'
 import { ReactComponent as CommentIcon } from '../../assets/icons/comment-icon.svg'
 import { useTranslation } from 'react-i18next'
-import {IconAlertCircleFill} from 'hds-react'
+import {IconAlertCircleFill,LoadingSpinner} from 'hds-react'
 import RollingInfo from '../input/RollingInfo'
 import { useIsMount } from '../../hooks/IsMounted'
 import { isEqual } from 'lodash'
@@ -52,9 +52,9 @@ const formats = [
   'color',
   'background',
   // KAPI-98: Temporarily disabled lists in rte
-  //'list', 
-  //'ordered',
-  //'bullet',
+  'list', 
+  'ordered',
+  'bullet',
   'script',
   'sub',
   'super'
@@ -676,6 +676,10 @@ function RichTextEditor(props) {
             <select aria-label="background" className="ql-background" />
           </span>
           <span className={readonly ? "ql-formats rich-text-disabled" : "ql-formats"}>
+            <button aria-label="list" className="ql-list" value="ordered" />
+            <button aria-label="bullet" className="ql-list" value="bullet" />
+          </span>
+          <span className={readonly ? "ql-formats rich-text-disabled" : "ql-formats"}>
             <button aria-label="script" className="ql-script" value="super" />
             <button aria-label="sub" className="ql-script" value="sub" />
           </span>
@@ -698,7 +702,11 @@ function RichTextEditor(props) {
             </button>
           </span>
         </div>
-        
+        {saving && lastModified === inputProps.name && (
+          <div className="quill-spinner-overlay">
+            <LoadingSpinner className="loading-spinner" />
+          </div>
+        )}
         <ReactQuill
           tabIndex="0"
           id={toolbarName + "input"}

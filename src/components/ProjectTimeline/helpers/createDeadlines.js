@@ -16,16 +16,23 @@ export function createDeadlines(deadlines) {
   let monthDatesArray = []
   let week = 1
 
+  date = date.subtract(1, 'month')
   for (let i = 0; i < 65; i++) {
+    if (i > 0 && Number.isInteger(i / 5)) {
+      date = date.date(1)
+      date = date.add(1, 'month')
+
+    }
+
+    const tempMonth = date.add(1, 'month')
     monthDatesArray.push({
-      date: `${date.year()}-${date.month()}`,
+      date: `${tempMonth.year()}-${tempMonth.month()}`,
       week: week
     })
 
     week++
 
     if (week > 5) {
-      date = date.date(1).add(1, 'month')
       week = 1
     }
   }
@@ -54,9 +61,9 @@ function createStartAndEndPoints(inputMonths, deadlines) {
         let date = dayjs(deadline.date)
         const week = findWeek(date.date())
         const tempDate = date.add(1, 'month')
-        date = `${tempDate.year()}-${tempDate.month()}` 
+        date = `${tempDate.year()}-${tempDate.month()}`
         const monthIndex = findInMonths(date, week, monthDates)
-        if (monthIndex != null) {
+        if (monthIndex) {
           if (monthDates[monthIndex][deadline.deadline.abbreviation]) {
             if (
               monthDates[monthIndex][deadline.deadline.abbreviation].deadline_type[0] ===
