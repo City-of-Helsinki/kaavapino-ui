@@ -3,15 +3,28 @@ import { Form } from 'semantic-ui-react'
 import { reduxForm } from 'redux-form'
 import FormSection from './FormSection'
 import { EDIT_PROJECT_FORM } from '../../constants'
-import Shoutbox from '../shoutbox'
 import { Button, IconArrowUp } from 'hds-react'
 import { withTranslation } from 'react-i18next'
 import { isEqual } from 'lodash'
 import PropTypes from 'prop-types'
 import projectUtils from '../../utils/projectUtils'
+import { connect } from 'react-redux'
+import { fetchFieldComments, pollFieldComments } from '../../actions/commentActions'
+
 
 class EditForm extends Component {
+
+  componentDidMount() {
+    this.props.fetchFieldComments(this.props.projectId)
+    this.pollFieldComments = setInterval(
+      () => this.props.pollFieldComments(this.props.projectId),
+      60000
+    )
+  }
+
   componentWillUnmount() {
+    clearInterval(this.poll)
+    clearInterval(this.pollFieldComments)
     clearTimeout(this.timeout)
     clearInterval(this.autoSave)
   }
@@ -67,7 +80,6 @@ class EditForm extends Component {
     const {
       disabled,
       sections,
-      projectId,
       attributeData,
       syncronousErrors,
       submitErrors,
@@ -86,8 +98,8 @@ class EditForm extends Component {
       <>
         {showSection ?
         <Form className="form-container" autoComplete="off" aria-live="polite" aria-atomic="true" id="accordion-title" tabIndex="0">
-          <div className="edit-form-buttons">
-            <Shoutbox project={projectId} />
+          <div className="edit-form-buttons" aria-hidden="true">
+            {/*<Shoutbox project={projectId} />*/}
           </div>
             <FormSection
               syncronousErrors={syncronousErrors}
@@ -132,7 +144,14 @@ EditForm.propTypes = {
   deadlines:PropTypes.array,
   isCurrentPhase:PropTypes.bool,
   selectedPhase: PropTypes.number,
-  phaseIsClosed: PropTypes.bool
+  phaseIsClosed: PropTypes.bool,
+  fetchFieldComments: PropTypes.func,
+  pollFieldComments: PropTypes.func
+}
+
+const mapDispatchToProps = {
+  fetchFieldComments,
+  pollFieldComments,
 }
 
 const decoratedForm = reduxForm({
@@ -141,4 +160,4 @@ const decoratedForm = reduxForm({
   keepDirtyOnReinitialize: false
 })(EditForm)
 
-export default withTranslation()(decoratedForm)
+export default connect(null,mapDispatchToProps)(withTranslation()(decoratedForm))
