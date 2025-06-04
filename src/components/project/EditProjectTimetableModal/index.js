@@ -47,7 +47,7 @@ class EditProjectTimeTableModal extends Component {
       let items = new visdata.DataSet()
       let groups = new visdata.DataSet();
       let ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe)
-      let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,attributeData,deadlines,ongoingPhase)
+      let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,attributeData,deadlines,ongoingPhase,true)
 
       groups.add(deadLineGroups);
       groups.add(nestedDeadlines);
@@ -104,7 +104,7 @@ class EditProjectTimeTableModal extends Component {
         if(!this.props.validated){
           let ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe)
           //Form items and groups
-          let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,formValues,deadlines,ongoingPhase)
+          let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,formValues,deadlines,ongoingPhase,false)
           // Update the existing data
           const combinedGroups = nestedDeadlines? deadLineGroups.concat(nestedDeadlines) : deadLineGroups
           this.state.groups.clear();
@@ -262,7 +262,7 @@ class EditProjectTimeTableModal extends Component {
     return items;
   }
 
-  addDeadLineGroups = (deadlineSections,deadLineGroups,ongoingPhase) => {
+  addDeadLineGroups = (deadlineSections,deadLineGroups,ongoingPhase,isMounting) => {
     for (let i = 0; i < deadlineSections.length; i++) {
       for (let x = 0; x < deadlineSections[i].grouped_sections.length; x++) {
         if (!deadLineGroups.some(item => item.content === deadlineSections[i].title)) {
@@ -283,7 +283,16 @@ class EditProjectTimeTableModal extends Component {
             expanded = this.state.collapseData[deadlineSections[i].title]
           }
           else{
-            expanded = deadlineSections[i].title === ongoingPhase || deadlineSections[i].title === this.props.showTimetableForm?.selectedPhase ? true : false
+            expanded = deadlineSections[i].title === ongoingPhase && isMounting || deadlineSections[i].title === this.props.showTimetableForm?.selectedPhase ? true : false
+            if(expanded){
+                // Add ongoingPhase true to collapseData: {}
+                this.setState(prevState => ({
+                collapseData: {
+                  ...prevState.collapseData,
+                  [ongoingPhase]: true
+                }
+                }));
+            }
           }
 
           deadLineGroups.push({
@@ -841,12 +850,12 @@ class EditProjectTimeTableModal extends Component {
     return formValues[confirmationKey];
   };
 
-  getTimelineData = (deadlineSections,formValues,deadlines,ongoingPhase) => {
+  getTimelineData = (deadlineSections,formValues,deadlines,ongoingPhase,isMounting) => {
       let phaseData = []
       let deadLineGroups = []
       let nestedDeadlines = []
 
-      deadLineGroups = this.addDeadLineGroups(deadlineSections,deadLineGroups,ongoingPhase)
+      deadLineGroups = this.addDeadLineGroups(deadlineSections,deadLineGroups,ongoingPhase,isMounting)
       const results = this.generateVisItems(deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData);
       [deadLineGroups, nestedDeadlines, phaseData] = results;
 
@@ -1189,8 +1198,21 @@ class EditProjectTimeTableModal extends Component {
   trackExpandedGroups = (e) => {
     const { collapseData } = this.state;
     const key = e.target.innerText;
-    const value = e.target.classList.value.includes("expanded") ? false : true;
-    const updatedCollapseData = { ...collapseData, [key]: value };
+    // Get current state directly from DOM or use state if available
+    let isCurrentlyExpanded;
+    if (key in collapseData) {
+      // If we have a stored value, use it
+      isCurrentlyExpanded = collapseData[key];
+    } else {
+      // If not in state yet, check if the element has an "expanded" class or attribute
+      // This could be determined by checking e.target's classes or another attribute
+      // that indicates expansion status
+      isCurrentlyExpanded = e.target.classList.contains("expanded") || 
+                           e.target.getAttribute("aria-expanded") === "true" ||
+                           false; // Default to false if we can't determine
+    }
+
+    const updatedCollapseData = { ...collapseData, [key]: !isCurrentlyExpanded };
     this.setState({ collapseData: updatedCollapseData });
   }
 
