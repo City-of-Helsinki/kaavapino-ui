@@ -729,10 +729,6 @@
         border-top: $size1 solid $color-black-20;
         border-bottom: $size1 solid $color-black-20;
         font-size: $size14;
-        font-weight: 500;
-        &::first-line {
-            font-weight: bold;
-        }
     }
 
     .vis-time-axis .vis-grid.vis-saturday,
@@ -835,7 +831,9 @@
         color: $black1;
     }
     .vis-minor {
-        border-color: $color-black-20;
+        border-color: $color-black-20 !important;
+        font-family: 'Helsinki Grotesk', sans-serif;
+        font-weight: 700;
     }
     .vis-minor::first-letter {
         text-transform: capitalize;
@@ -922,9 +920,17 @@
         color: $black1;
     }
     .vis-minor {
-        font-family: 'Helsinki Grotesk Bold', sans-serif;
+        font-family: 'Helsinki Grotesk', sans-serif;
+        font-weight: 400;
         border-color: $color-black-20 !important;
         color:$black;
+        text-transform: capitalize;
+        line-height: 24px;
+        &::first-line {
+            font-family: 'Helsinki Grotesk', sans-serif;
+            font-weight: 700;
+            text-transform: none;
+        }
     }
 }
 
