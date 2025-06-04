@@ -328,6 +328,18 @@
         box-shadow: 0 0 0 2px #1a1a1a;
         height: $size20;
         width: $size20;
+        &.confirmed::after {
+            content: "";
+            position: absolute;
+            top: -9px;
+            right: -10px;
+            width: 21px;
+            height: 21px;
+            background: #fff url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
+            background-position: center;
+            background-size: contain;
+            border-radius: 50%;
+        }
     }
 
     .vis-range{
@@ -398,6 +410,7 @@
                     background-size: 1.125rem;
                     border: none;
                     cursor: pointer;
+                    color: $color-black-90;
                 }
                 .timeline-remove-button{
                     display: none;
@@ -454,6 +467,7 @@
                     }
                 }
                 .timeline-remove-text {
+                    color: $color-black-90;
                     display: none;
                     position: absolute;
                     top: 35px;
@@ -507,11 +521,13 @@
     }
 
     .vis-nested-group.vis-group-level-unknown-but-gte1.highlight-selected{
+        box-sizing: content-box;
+        height: 32px !important;
+        width: 281px;
         border: 2px solid $color-bus;
         background-color: $color-bus-light !important;
         margin-top: -1px;
         padding-top: 1px;
-        margin-bottom:1px;
         margin-right:-1px;
         .vis-inner .timeline-buttons-container .timeline-button-label {
             padding-top: 0;
