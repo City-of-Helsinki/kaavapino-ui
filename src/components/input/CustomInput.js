@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
-import { TextInput } from 'hds-react'
+import { TextInput, LoadingSpinner } from 'hds-react'
 import { useDispatch, useSelector } from 'react-redux'
 import {updateFloorValues,formErrorList} from '../../actions/projectActions'
 import {lockedSelector,lastModifiedSelector,pollSelector,lastSavedSelector,savingSelector } from '../../selectors/projectSelector'
@@ -227,6 +227,9 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
             if(!(event.target.value === '' && !custom?.fieldData?.isRequired) && custom.regex){
               const regex = new RegExp(custom.regex);
               setHasError(!regex.test(event.target.value))
+            } else if(custom.type === 'number') {
+              const regex = new RegExp("^[+-]?\\d+$");
+              setHasError(!regex.test(event.target.value))
             }
           }
         }
@@ -292,7 +295,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
 
 
   const normalOrRollingElement = () => {
-    const errorString = custom.customError || t('project.error')
+    const errorString = custom.customError || (custom.type === 'number'? t('project.error-input-int') : t('project.error'))
     //Render rolling info field or normal edit field
     //If clicking rolling field button makes positive lock check then show normal editable field
     //Rolling field can be nonEditable
@@ -324,6 +327,11 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           onFocus={() => {handleFocus()}}
           readOnly={readonly.read || lastSaved?.status === "error"}
         />
+        {saving && lastModified === input.name && (
+          <div className="input-spinner">
+            <LoadingSpinner className="loading-spinner" />
+          </div>
+        )}
       </div>
     
     return elements
