@@ -167,7 +167,8 @@
     "checking-dates":"Tarkistetaan päivämääriä",
     "dates-confirmed":"Päivämäärät validoitu",
     "error-connection":"Tallennus epäonnistui yhteysongelmia takia. Yritetään uudelleen 10 sekunnin kuluttua.",
-    "error-connection-fail":"Tallennus keskeytyi yhteysongelmia takia."
+    "error-connection-fail":"Tallennus keskeytyi yhteysongelmia takia.",
+    "validation-error":"Päivämäärien tarkistus epäonnistui"
   },
   "floor-areas": {
     "title": "Päivitä kerrosalatiedot",
@@ -259,6 +260,7 @@
     "charsover":"Merkkimäärä on ylittynyt",
     "noempty":"Kenttä ei saa olla tyhjä",
     "error":"Virhe",
+    "error-input-int": "Virhe: Syötä kokonaisluku.",
     "error-prevent-add":"Virhe lomakkeella estää lisäyksen",
     "fieldset-info":"Yhteensä {{fieldAmount}} tietuetta.",
     "no-fields":"Suodatinvalinnalla ei löytynyt tämän otsikon alta suodatettavia kenttiä.",
