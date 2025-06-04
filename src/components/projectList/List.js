@@ -148,6 +148,7 @@ class List extends Component {
             isExpert={isExpert}
             deadlines={deadlines}
             onhold={onhold}
+            attribute_data={attribute_data}
           />
         )
         
@@ -172,7 +173,11 @@ class List extends Component {
         rows.push(rowObject)
         let rowObject2 = {}
         
-        rowObject2[nameField] = this.props.showGraph && ( <span className="project-list-item-graph"> <ProjectTimeline deadlines={deadlines} projectView={true} onhold={onhold} /></span>)
+        rowObject2[nameField] = this.props.showGraph && (
+          <span className="project-list-item-graph"> 
+            <ProjectTimeline deadlines={deadlines} projectView={true} onhold={onhold} attribute_data={attribute_data}/>
+          </span>
+        )
         rows.push(rowObject2)
       }
     )

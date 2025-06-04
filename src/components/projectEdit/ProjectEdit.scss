@@ -921,6 +921,9 @@
               outline-offset: -2px;
             }
           }
+          td[class*='DatePicker-module_hds-datepicker__day-cell'] > span[aria-hidden='true'] {
+            display: none;
+          }
         }
         .error-text {
           margin-top: 4px;

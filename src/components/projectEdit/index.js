@@ -641,6 +641,7 @@ class ProjectEditPage extends Component {
               deadlines={currentProject.deadlines}
               projectView={true}
               onhold={currentProject.onhold}
+              attribute_data={attribute_data}
             />
           </div>
         )}
