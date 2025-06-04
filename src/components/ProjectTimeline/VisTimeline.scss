@@ -17,15 +17,17 @@
     .vis-timeline {
         border-top: none;
         border-bottom: none;
+        border-left: none;
         border-color: #ccc !important;
         overflow-y: visible !important;
         overflow-x: clip !important;
         right: 1.5px;
         .vis-vertical .vis-current-time {
             top: 84px !important;
+            z-index: 0;
         }
         .vis-center, .vis-left {
-            border-bottom: none
+            border-bottom: none;
         }
         .vis-panel.vis-center {
             border: 0;
@@ -35,20 +37,21 @@
     }
 
     .vis-panel.vis-top {
-        border: 0;
+        border: 1px solid $color-black-20;
+        border-left-color: $color-white;
         border-top: none;
+        border-right: none;
         height: 85px;
         position: sticky;
         top: 69px !important;
-        left: 290px !important;
-        margin-right: -3.5px;
+        left: 301px !important;
         z-index: 1;
     }
 
     .vis-panel.vis-center .vis-content {
         .vis-itemset {
             height: auto !important;
-            min-height: 63.83vh !important;
+            min-height: 58.5vh !important;
         }
     }
 
@@ -64,7 +67,7 @@
     }
 
     .timeline-menu-container {
-        padding-top: 12px;
+        padding-top: $size12;
         position: sticky;
         top: 0;
         background-color: #ffffff;
@@ -248,7 +251,7 @@
         max-width: 100%;
         right: 0;
         display: inline-block;
-        border: $size1 solid #fff;
+        border: 2px solid #fff;
         border-radius: 14px;
         padding: 5px;
         background-color: #1a1a1a;
@@ -258,15 +261,15 @@
             display: none;
         }
         &.past {
-            outline: 1px solid $color-gray;
-            outline-offset: -1px;
+            outline: 2px solid $color-gray;
+            outline-offset: -2px;
             background-color: #1a1a1a !important;
         }
         &.confirmed::after {
             content: "";
             position: absolute;
-            top: -9px;
-            right: -10px;
+            top: -13px;
+            right: -15px;
             width: 21px;
             height: 21px;
             background: #fff url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
@@ -282,10 +285,11 @@
         pointer-events: auto;
         border-width: 0;
         height: $size24;
+        border-radius: 6px;
         .vis-item-overflow{
             border: 2px solid $black1;
             background: #fff;
-            border-radius: 6px;
+            border-radius: inherit;
             .vis-item-content{
                 pointer-events: auto;
                 padding:0;
@@ -313,6 +317,7 @@
         border-color: #1a1a1a;
         height: 4px;
         top: 15.5px !important;
+        left: 4px;
         z-index: 100;
     }
 
@@ -357,7 +362,7 @@
             content: "";
             position: absolute;
             top: -9px;
-            right: -10px;
+            right: -11.5px;
             width: 21px;
             height: 21px;
             background: #fff url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
@@ -650,25 +655,47 @@
         content: "";
         width: $size18;
         height: 100%;
-        background: url('../../assets/icons/angle-up.svg') no-repeat;
+        background: url('../../assets/icons/angle-up2.svg') no-repeat;
         background-position-x: center;
         background-position-y: center;
-        background-size: $size18;
+        background-size: $size13;
     }
 
     .vis-label.vis-nesting-group.collapsed:before{
         content: "";
         width: $size18;
         height: 100%;
-        background: url('../../assets/icons/angle-down.svg') no-repeat;
+        background: url('../../assets/icons/angle-down2.svg') no-repeat;
         background-position-x: center;
         background-position-y: center;
-        background-size: $size18;
+        background-size: $size13;
     }
 
     .vis-text.vis-major {
         text-align: center;
-        border-color: $border-gray4;
+        border-color: transparent !important;
+        &::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 2.5px;
+            width: 1px;
+            height: 100%;
+            background-color: #999999;
+            transform: translateX(-50%);
+        }
+        &:nth-last-of-type(1) {
+            &::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: -2px;
+                width: 1px;
+                height: 100%;
+                background-color: #999999;
+                transform: translateX(-50%);
+            }
+        }
     }
 
     .vis-text.vis-minor {
@@ -677,12 +704,12 @@
             align-content: center;
             text-align: center;
             border-color: $color-black-20;
-            border-bottom: none;
             left: 2px;
         }
     }
 
     .vis-major {
+        padding-left: 7px;
         border-left: $size1 solid $border-gray4 !important;
         &::first-letter{
             text-transform: capitalize;
@@ -690,13 +717,13 @@
         & > div {
             background-color: #e6e6e6;
             font-weight: 500;
-            padding: 6px 3px 3px 9px;
-            margin: -4.5px -3px -4px -3.5px;
+            padding: 6px 3px 3px 15px;
+            margin: -4.5px -3px -4px -7.5px;
         }
     }
 
     .vis-minor{
-        height: 57px;
+        height: 59px;
         background-color: #ffffff;
         border-left: $size1 solid #CCCCCC;
         border-top: $size1 solid $color-black-20;
@@ -814,7 +841,31 @@
         text-transform: capitalize;
     }
     .vis-minor.vis-january {
-        border-left: $size1 solid $border-gray4;
+        border-left: 0.063rem solid #999999 !important;
+    }
+    .vis-text.vis-major:nth-last-of-type(2) {
+        &::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -2px;
+            width: 1px;
+            height: 100%;
+            background-color: #999999;
+            transform: translateX(-50%);
+        }
+    }
+    .vis-text.vis-major:nth-last-of-type(2) {
+        &::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -2px;
+            width: 1px;
+            height: 100%;
+            background-color: #999999;
+            transform: translateX(-50%);
+        }
     }
     .normal-weekend {
         background-color: $color-white !important;
@@ -823,10 +874,16 @@
         border: none !important;
         background-color: transparent !important;
     }
-    .holiday {
+    .vis-item.vis-background.holiday {
         top: 0;
-        background-color: $color-summer-light !important;
+        background: $color-summer-light;
         z-index: 100;
+        .vis-item-overflow {
+            background-color: $color-summer-light !important;
+        }
+    }
+    .vis-time-axis .vis-grid.vis-major {
+        border-left: 0.063rem solid #999999 !important;
     }
 }
 
@@ -835,20 +892,25 @@
     .vis-time-axis .vis-grid.vis-sunday,
     .vis-saturday,
     .vis-sunday,
+    .normal-weekend,
     .negative {
         top: 0;
-        background: $color-black-5 !important;
-        border-right: 0.5px solid #ccc !important;
-        border-left: 0.5px solid #ccc !important;
+        .vis-item-overflow {
+            background: $color-black-5;
+            border-right: 0.5px solid #ccc;
+            border-left: 0.5px solid #ccc;
+        }
     }
     .holiday {
         top: 0;
-        background-color: $color-summer-light !important;
-        z-index: 100;
-        border-right: 0.5px solid #ccc !important;
-        border-left: 0.5px solid #ccc !important;
+        z-index: 0;
+        .vis-item-overflow {
+            background: $color-summer-light;
+            border-right: 0.5px solid #ccc;
+            border-left: 0.5px solid #ccc;
+        }
     }
-    // Temporary rule until we figure out how we can get .negative and .holiday classes to work in .vis-time-axis
+    
     .vis-time-axis .vis-saturday,
     .vis-time-axis .vis-sunday {
         background-color: #ffffff !important;
@@ -861,8 +923,8 @@
     }
     .vis-minor {
         font-family: 'Helsinki Grotesk Bold', sans-serif;
-        border-color: $color-black-20;
-        color:$black
+        border-color: $color-black-20 !important;
+        color:$black;
     }
 }
 
