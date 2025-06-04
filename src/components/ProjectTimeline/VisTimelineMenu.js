@@ -3,7 +3,7 @@ import {Button,IconAngleLeft,IconAngleRight} from 'hds-react'
 import PropTypes from 'prop-types';
 
 function VisTimelineMenu({goToToday, moveLeft, moveRight,showYears,showMonths}) {
-  const [selectedButton, setSelectedButton] = useState(null);
+  const [selectedButton, setSelectedButton] = useState('showYears');
 
   const handleClick = (buttonName) => {
     setSelectedButton(buttonName);
