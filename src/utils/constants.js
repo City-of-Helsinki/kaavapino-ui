@@ -1,0 +1,22 @@
+export const confirmationAttributeNames = [
+    'vahvista_oas_esillaolo_alkaa', 'vahvista_oas_esillaolo_paattyy',
+    'vahvista_oas_esillaolo_alkaa_2', 'vahvista_oas_esillaolo_paattyy_2',
+    'vahvista_oas_esillaolo_alkaa_3', 'vahvista_oas_esillaolo_paattyy_3',
+    'vahvista_periaatteet_esillaolo_alkaa', 'vahvista_periaatteet_esillaolo_paattyy',
+    'vahvista_periaatteet_esillaolo_alkaa_2', 'vahvista_periaatteet_esillaolo_paattyy_2',
+    'vahvista_periaatteet_esillaolo_alkaa_3', 'vahvista_periaatteet_esillaolo_paattyy_3',
+    'vahvista_periaatteet_lautakunnassa',
+    'vahvista_luonnos_esillaolo_alkaa', 'vahvista_luonnos_esillaolo_paattyy',
+    'vahvista_luonnos_esillaolo_alkaa_2', 'vahvista_luonnos_esillaolo_paattyy_2',
+    'vahvista_luonnos_esillaolo_alkaa_3', 'vahvista_luonnos_esillaolo_paattyy_3',
+    'vahvista_ehdotus_esillaolo_alkaa_pieni', 'vahvista_ehdotus_esillaolo_paattyy',
+    'vahvista_kaavaluonnos_lautakunnassa',
+    'vahvista_ehdotus_esillaolo_alkaa_iso', 'vahvista_ehdotus_esillaolo_alkaa_pieni_2',
+    'vahvista_ehdotus_esillaolo_alkaa_iso_2', 'vahvista_ehdotus_esillaolo_paattyy_2',
+    'vahvista_ehdotus_esillaolo_alkaa_pieni_3', 'vahvista_ehdotus_esillaolo_alkaa_iso_3',
+    'vahvista_ehdotus_esillaolo_paattyy_3', 'vahvista_ehdotus_esillaolo_alkaa_pieni_4',
+    'vahvista_ehdotus_esillaolo_alkaa_iso_4', 'vahvista_ehdotus_esillaolo_paattyy_4',
+    'vahvista_kaavaehdotus_lautakunnassa',
+    'vahvista_tarkistettu_ehdotus_lautakunnassa',
+  ];
+  

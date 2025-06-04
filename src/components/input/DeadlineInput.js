@@ -123,20 +123,7 @@ const DeadLineInput = ({
   },[formValues[confirmedValue]])
 
   const getInitialMonth = (dateString) => {
-    let date;
-    if(attributeData['voimaantulovaihe_paattyy_pvm'] && (input.name === "tullut_osittain_voimaan_pvm" || input.name === "voimaantulo_pvm" || input.name === "kumottu_pvm" || input.name === "rauennut")){
-      date = new Date(attributeData['voimaantulovaihe_paattyy_pvm']);
-    }
-    else if(input.name === "hyvaksymispaatos_pvm" && attributeData["hyvaksyminenvaihe_paattyy_pvm"]){
-      date = new Date(attributeData['hyvaksyminenvaihe_paattyy_pvm']);
-    }
-    else if (dateString) {
-      date = new Date(dateString);
-    }
-    else {
-        date = new Date(); // Use current date if no date string is provided
-    }
-    return date;
+    return dateString ? new Date(dateString) : new Date();
   }
 
   const formatDate = (date) => {
@@ -148,7 +135,23 @@ const DeadLineInput = ({
     return `${year}-${month}-${day}`;
   }
 
-  
+  const getFixedSectionAttributes = () => {
+    // Absurd hack because "Lausunnot viimeistään" is not included in sectionAttributes for some reason
+    // Remove this and just use sectionAttributes if this gets refactored in the future
+    if (!currentDeadline?.deadline?.attribute.includes("viimeistaan_lausunnot_ehdotuksesta")) {
+      return sectionAttributes;
+    }
+    const ehdotus_section = deadlineSections.find(section => section.title === "Ehdotus");
+    const grouped_section = ehdotus_section?.grouped_sections?.[0]?.attributes?.[currentDeadline?.deadline?.deadlinegroup]?.["Nähtäville"];
+    const lausunnot_attr_section = grouped_section?.find((attr) => attr.label === "Lausunnot viimeistään");
+    
+    if (!lausunnot_attr_section) {
+      return sectionAttributes;
+    }
+    const result = JSON.parse(JSON.stringify(sectionAttributes));
+    result.push(lausunnot_attr_section);
+    return result;
+  }
 
   const isDisabledDate = (date) => {
     //20 years is the calendars range to check work days, holidays etc from current date
@@ -157,11 +160,14 @@ const DeadLineInput = ({
     const twentyYearsLater = new Date();
     twentyYearsLater.setFullYear(twentyYearsLater.getFullYear() + 20);
     const ehdotusNahtavillaolo = currentDeadline?.deadline?.phase_name === "Ehdotus" && currentDeadline?.deadline?.deadlinegroup?.includes('nahtavillaolo')
-    const datesToDisable = timeUtil.calculateDisabledDates(ehdotusNahtavillaolo,attributeData?.kaavaprosessin_kokoluokka,dateTypes,input.name,formValues,sectionAttributes,currentDeadline)
-    if (date < twentyYearsAgo || date > twentyYearsLater) {
+    const datesToDisable = timeUtil.calculateDisabledDates(
+      ehdotusNahtavillaolo, attributeData?.kaavaprosessin_kokoluokka, dateTypes, input.name, formValues,
+      getFixedSectionAttributes(), currentDeadline
+    );
+    if (date < twentyYearsAgo || date > twentyYearsLater || !datesToDisable || datesToDisable.length === 0) {
       return false;
     }
-    return !datesToDisable.includes(formatDate(date));
+    return !datesToDisable?.includes(formatDate(date));
   }
 
   const formatDateToYYYYMMDD = (date) => {
@@ -212,8 +218,7 @@ const DeadLineInput = ({
           value={formatDateToDMYYYY(currentValue ? currentValue : input.value)}
           name={input.name}
           type='text' // type='date' works poorly with hds-DateInput
-          disabled={!timetable_editable || disabledState}
-          placeholder={placeholder}
+          disabled={!timetable_editable || disabledState || !attributeData?.kaavan_vaihe.includes("Käynnistys") && (input?.name?.includes("projektin_kaynnistys_pvm") || input?.name?.includes("kaynnistys_paattyy_pvm"))}
           error={error}
           aria-label={input.name}
           onChange={(event) => {
