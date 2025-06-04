@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
-import { TextInput } from 'hds-react'
+import { TextInput, LoadingSpinner } from 'hds-react'
 import { useDispatch, useSelector } from 'react-redux'
 import {updateFloorValues,formErrorList} from '../../actions/projectActions'
 import {lockedSelector,lastModifiedSelector,pollSelector,lastSavedSelector,savingSelector } from '../../selectors/projectSelector'
@@ -327,6 +327,11 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           onFocus={() => {handleFocus()}}
           readOnly={readonly.read || lastSaved?.status === "error"}
         />
+        {saving && lastModified === input.name && (
+          <div className="input-spinner">
+            <LoadingSpinner className="loading-spinner" />
+          </div>
+        )}
       </div>
     
     return elements

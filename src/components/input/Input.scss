@@ -1137,3 +1137,109 @@
     margin-bottom: $size20;
   }
 }
+
+.text-input{
+  .input-spinner {
+    position: absolute;
+    top: 60%;
+    right: 0.75rem; // Adjust depending on padding of your input
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 2;
+  
+    .loading-spinner {
+      --spinner-size: 1.5em; // override default size
+      width: var(--spinner-size);
+      height: var(--spinner-size);
+    }
+  }
+}
+
+.select-input-wrapper {
+  position: relative;
+  width: 100%;
+  .select-spinner-overlay {
+    position: absolute;
+    top: 50%;
+    right: 2.5rem; // Adjust based on spacing inside Select
+    transform: translateY(-50%);
+    z-index: 2;
+    pointer-events: none;
+
+    &.single {
+      right: 2rem;
+    }
+  
+    &.multi {
+      right: 5.5rem; // Adjust to align before dropdown icon
+    }
+  
+    .loading-spinner {
+      --spinner-size: 1.25rem;
+      width: var(--spinner-size);
+      height: var(--spinner-size);
+    }
+  }
+}
+.radio-button-wrapper {
+  position: relative;
+  display: inline-block;
+
+  .radio-spinner-overlay {
+    position: absolute;
+    top: 50%;
+    right: -2rem;
+    transform: translateY(-50%);
+    z-index: 2;
+    pointer-events: none;
+
+    .loading-spinner {
+      --spinner-size: 1.25rem;
+      width: var(--spinner-size);
+      height: var(--spinner-size);
+    }
+  }
+}
+
+.link-input-wrapper {
+  position: relative;
+  .link-spinner-overlay {
+    position: absolute;
+    top: 50%;
+    right: 1rem; // adjust based on TextInput's padding
+    transform: translateY(-50%);
+    z-index: 2;
+    pointer-events: none;
+  
+    .loading-spinner {
+      --spinner-size: 1.25rem;
+      width: var(--spinner-size);
+      height: var(--spinner-size);
+    }
+  }
+}
+
+.fieldset-spinner {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.5rem;
+  margin-top: 0.7rem;
+
+  .loading-spinner {
+    --spinner-size: 1.25rem;
+    width: var(--spinner-size);
+    height: var(--spinner-size);
+  }
+}
+
+.fieldset-spinner-remove{
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.5rem;
+  margin-top: 2rem;
+  .loading-spinner {
+    --spinner-size: 1.25rem;
+    width: var(--spinner-size);
+    height: var(--spinner-size);
+  }
+}

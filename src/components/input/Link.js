@@ -2,7 +2,9 @@ import React, { useState, useRef, useEffect } from 'react'
 import { TextInput } from 'hds-react'
 import isUrl from 'is-url'
 import ipRegex from 'ip-regex'
-import { IconCross, IconCheck, Button, IconLink } from 'hds-react'
+import { IconCross, IconCheck, Button, IconLink, LoadingSpinner } from 'hds-react'
+import { useSelector } from 'react-redux'
+import { savingSelector } from '../../selectors/projectSelector'
 import { useTranslation } from 'react-i18next';
 import RollingInfo from '../input/RollingInfo'
 
@@ -26,6 +28,8 @@ const Link = props => {
   const [currentValue, setCurrentValue] = useState(props.input.value)
   const [editField,setEditField] = useState(false)
   const [isEmptyReqField, setIsEmptyReqField] = useState(false)
+  const [currentName, setCurrentName] = useState(null)
+  const saving =  useSelector(state => savingSelector(state))
   const isValid = value => isUrl(value) || ipRegex({ exact: true }).test(value)
 
   const multipleLinks = props.type === 'select-multiple'
@@ -62,7 +66,7 @@ const Link = props => {
     } else {
       props.input.onChange(value)
     }
-
+    setCurrentName(props.input.name)
     setCurrentValue(value)
   }
 
@@ -87,6 +91,7 @@ const Link = props => {
       />
       :    
       <div className="link-container">
+        <div className="link-input-wrapper">
         <TextInput
           {...props}
           onBlur={onBlur}
@@ -97,6 +102,12 @@ const Link = props => {
           className={isEmptyReqField || (!isLinkValid && currentValue && !multipleLinks) ? 'error link' : 'link'}
           aria-label="link"
         />
+        {saving && currentName === props.input.name && (
+          <div className="link-spinner-overlay">
+            <LoadingSpinner className="loading-spinner" />
+          </div>
+        )}
+        </div>
         {!multipleLinks && (
         <Button
           className="link-button"

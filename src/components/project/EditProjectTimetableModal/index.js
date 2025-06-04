@@ -47,7 +47,7 @@ class EditProjectTimeTableModal extends Component {
       let items = new visdata.DataSet()
       let groups = new visdata.DataSet();
       let ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe)
-      let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,attributeData,deadlines,ongoingPhase)
+      let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,attributeData,deadlines,ongoingPhase,true)
 
       groups.add(deadLineGroups);
       groups.add(nestedDeadlines);
@@ -79,7 +79,7 @@ class EditProjectTimeTableModal extends Component {
       deadlines,
       deadlineSections
     } = this.props
-    if (prevProps.attributeData && prevProps.attributeData !== attributeData) {
+    if (prevProps.attributeData && !isEqual(prevProps.attributeData, attributeData)) {
       let sectionAttributes = [];
       this.extractAttributes(deadlineSections, attributeData, sectionAttributes, (attribute, attributeData) =>
         attribute.label !== "Lausunnot viimeistään" && attributeData[attribute.name]
@@ -89,8 +89,7 @@ class EditProjectTimeTableModal extends Component {
       Object.keys(attributeData).forEach(fieldName => 
         this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, fieldName, attributeData[fieldName])));
     }
-
-    if(prevProps.formValues && prevProps.formValues !== formValues){
+    if(prevProps.formValues && !isEqual(prevProps.formValues, formValues)){
       //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
       timeUtil.compareAndUpdateDates(formValues)
       if(deadlineSections && deadlines && formValues){
@@ -104,7 +103,7 @@ class EditProjectTimeTableModal extends Component {
         if(!this.props.validated){
           let ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe)
           //Form items and groups
-          let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,formValues,deadlines,ongoingPhase)
+          let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,formValues,deadlines,ongoingPhase,false)
           // Update the existing data
           const combinedGroups = nestedDeadlines? deadLineGroups.concat(nestedDeadlines) : deadLineGroups
           this.state.groups.clear();
@@ -262,7 +261,7 @@ class EditProjectTimeTableModal extends Component {
     return items;
   }
 
-  addDeadLineGroups = (deadlineSections,deadLineGroups,ongoingPhase) => {
+  addDeadLineGroups = (deadlineSections,deadLineGroups,ongoingPhase,isMounting) => {
     for (let i = 0; i < deadlineSections.length; i++) {
       for (let x = 0; x < deadlineSections[i].grouped_sections.length; x++) {
         if (!deadLineGroups.some(item => item.content === deadlineSections[i].title)) {
@@ -283,7 +282,16 @@ class EditProjectTimeTableModal extends Component {
             expanded = this.state.collapseData[deadlineSections[i].title]
           }
           else{
-            expanded = deadlineSections[i].title === ongoingPhase ? true : false
+            expanded = deadlineSections[i].title === ongoingPhase && isMounting || deadlineSections[i].title === this.props.showTimetableForm?.selectedPhase ? true : false
+            if(expanded){
+                // Add ongoingPhase true to collapseData: {}
+                this.setState(prevState => ({
+                collapseData: {
+                  ...prevState.collapseData,
+                  [ongoingPhase]: true
+                }
+                }));
+            }
           }
 
           deadLineGroups.push({
@@ -320,12 +328,13 @@ class EditProjectTimeTableModal extends Component {
     });
   
     if (deadlines[i].deadline.phase_name === "Käynnistys" || deadlines[i].deadline.phase_name === "Hyväksyminen" || deadlines[i].deadline.phase_name === "Voimaantulo") {
+      const highlightID = `${deadlines[i].deadline.phase_id}_${numberOfPhases}`;
       phaseData.push({
         id: numberOfPhases + deadlines[i].deadline.phase_name,
         content: "",
         start: startDate,
         end: endDate,
-        className: disabled || (currentDate > endDate) ? "phase-length past" : "phase-length",
+        className: disabled || (currentDate > endDate) ? "phase-length past" : "phase-length" + " " +highlightID,
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -344,7 +353,8 @@ class EditProjectTimeTableModal extends Component {
         deadlinegroup: deadlines[i].deadline.deadlinegroup,
         deadlinesubgroup: deadlines[i].deadline.deadlinesubgroup,
         locked: false,
-        undeletable: true
+        undeletable: true,
+        phaseID: deadlines[i].deadline.phase_id
       });
     }
   
@@ -368,12 +378,13 @@ class EditProjectTimeTableModal extends Component {
   }
 
   addSubgroup = (deadlines, i, numberOfPhases, dashStart, dashEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone, formValues) => {
+    const highlightID = `${deadlines[i].deadline.phase_id}_${numberOfPhases}`;
     if(dashStart === null && milestone === null && dashEnd){
       phaseData.push({
         start: dashEnd,
         id: numberOfPhases,
         content: "",
-        className: "board-only " + dashedStyle,
+        className: "board-only " + dashedStyle + " " + highlightID,
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -389,7 +400,7 @@ class EditProjectTimeTableModal extends Component {
         start: dashStart,
         id: numberOfPhases,
         content: "",
-        className: dashedStyle,
+        className: dashedStyle + " " + highlightID,
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -405,7 +416,7 @@ class EditProjectTimeTableModal extends Component {
         start: milestone,
         id: numberOfPhases + " maaraaika",
         content: "",
-        className: dashedStyle,
+        className: dashedStyle + " " + highlightID,
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -420,7 +431,7 @@ class EditProjectTimeTableModal extends Component {
         end: dashStart,
         id: numberOfPhases + " divider",
         content: "",
-        className: "divider",
+        className: "divider" + " " + highlightID,
         title: "divider",
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -434,7 +445,7 @@ class EditProjectTimeTableModal extends Component {
         end: dashEnd,
         id: numberOfPhases,
         content: "",
-        className: dashedStyle,
+        className: dashedStyle + " " + highlightID,
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -450,7 +461,7 @@ class EditProjectTimeTableModal extends Component {
           start: dashStart,
           id: numberOfPhases + " maaraaika",
           content: "",
-          className: dashedStyle + " deadline",
+          className: dashedStyle + " deadline" + " " + highlightID,
           title: deadlines[i].deadline.attribute,
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
@@ -465,7 +476,7 @@ class EditProjectTimeTableModal extends Component {
           end: dashEnd,
           id: numberOfPhases + " divider",
           content: "",
-          className: "divider",
+          className: "divider" + " " + highlightID,
           title: "divider",
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
@@ -478,7 +489,7 @@ class EditProjectTimeTableModal extends Component {
           start: dashEnd,
           id: numberOfPhases + " lautakunta",
           content: "",
-          className: dashedStyle + " board-date",
+          className: dashedStyle + " board-date" + " " + highlightID,
           title: deadlines[i].deadline.attribute,
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
@@ -494,7 +505,7 @@ class EditProjectTimeTableModal extends Component {
           end: dashEnd,
           id: numberOfPhases,
           content: "",
-          className: dashedStyle,
+          className: dashedStyle + " " + highlightID,
           title: deadlines[i].deadline.attribute,
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
@@ -531,7 +542,8 @@ class EditProjectTimeTableModal extends Component {
       deadlinesubgroup: deadlines[i].deadline.deadlinesubgroup,
       locked: false,
       generated:deadlines[i].generated,
-      undeletable:undeletable
+      undeletable:undeletable,
+      phaseID: deadlines[i].deadline.phase_id
     });
 
     return [phaseData, deadLineGroups, nestedDeadlines];
@@ -841,12 +853,12 @@ class EditProjectTimeTableModal extends Component {
     return formValues[confirmationKey];
   };
 
-  getTimelineData = (deadlineSections,formValues,deadlines,ongoingPhase) => {
+  getTimelineData = (deadlineSections,formValues,deadlines,ongoingPhase,isMounting) => {
       let phaseData = []
       let deadLineGroups = []
       let nestedDeadlines = []
 
-      deadLineGroups = this.addDeadLineGroups(deadlineSections,deadLineGroups,ongoingPhase)
+      deadLineGroups = this.addDeadLineGroups(deadlineSections,deadLineGroups,ongoingPhase,isMounting)
       const results = this.generateVisItems(deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData);
       [deadLineGroups, nestedDeadlines, phaseData] = results;
 
@@ -1189,8 +1201,21 @@ class EditProjectTimeTableModal extends Component {
   trackExpandedGroups = (e) => {
     const { collapseData } = this.state;
     const key = e.target.innerText;
-    const value = e.target.classList.value.includes("expanded") ? false : true;
-    const updatedCollapseData = { ...collapseData, [key]: value };
+    // Get current state directly from DOM or use state if available
+    let isCurrentlyExpanded;
+    if (key in collapseData) {
+      // If we have a stored value, use it
+      isCurrentlyExpanded = collapseData[key];
+    } else {
+      // If not in state yet, check if the element has an "expanded" class or attribute
+      // This could be determined by checking e.target's classes or another attribute
+      // that indicates expansion status
+      isCurrentlyExpanded = e.target.classList.contains("expanded") || 
+                           e.target.getAttribute("aria-expanded") === "true" ||
+                           false; // Default to false if we can't determine
+    }
+
+    const updatedCollapseData = { ...collapseData, [key]: !isCurrentlyExpanded };
     this.setState({ collapseData: updatedCollapseData });
   }
 
@@ -1251,6 +1276,7 @@ class EditProjectTimeTableModal extends Component {
               dateTypes={dateTypes}
               trackExpandedGroups={this.trackExpandedGroups}
               sectionAttributes={this.state.sectionAttributes}
+              showTimetableForm={this.props.showTimetableForm}
             /> 
             <ConfirmModal 
               openConfirmModal={this.state.showModal}
