@@ -7,7 +7,7 @@ import projectUtils from '../../utils/projectUtils'
 import Info from './Info'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { has, get, startCase } from 'lodash'
-import { Button, IconLock, IconClock, IconPlus, IconTrash, IconAngleDown, IconAngleUp } from 'hds-react'
+import { Button, IconLock, IconClock, IconPlus, IconTrash, IconAngleDown, IconAngleUp, LoadingSpinner } from 'hds-react'
 import { change } from 'redux-form'
 import { useTranslation } from 'react-i18next';
 import { OutsideClick } from '../../hooks/OutsideClick'
@@ -333,7 +333,7 @@ const FieldSet = ({
                               />
                             )}
                             {field.help_text && (
-                              <Info content={field.help_text} link={field.help_link} linked={field.linked_fields}/>
+                              <Info content={field.help_text} link={field.help_link} linked={field.linked_fields} help_img_link={field.help_img_link}/>
                             )}
                           </div>
                         </div>
@@ -384,6 +384,11 @@ const FieldSet = ({
                     }}
                   > {t('project.remove')}</Button>
                 )}
+                {saving && (
+                <div className="fieldset-spinner-remove">
+                  <LoadingSpinner className="loading-spinner" />
+                </div>
+                )}
                   <div className='close-accordion-button'>
                     <button className={expanded.includes(i) ? "accordion-button-open" : "accordion-button"}  onClick={(e) => {checkLocked(e,set,i)}}><span>Sulje</span><IconAngleUp onClick={(e) => {checkLocked(e,set,i)}} size='s'/></button>
                   </div>
@@ -408,6 +413,11 @@ const FieldSet = ({
         >
           {t('project.add')}
         </Button>
+        {saving && updateField?.fieldName === name && (
+        <div className="fieldset-spinner">
+          <LoadingSpinner className="loading-spinner" />
+        </div>
+        )}
         {visibleErrors?.length > 0 ? <div className="error-text add-error">{t('project.error-prevent-add')}</div> : ""}
       </>
       )}
