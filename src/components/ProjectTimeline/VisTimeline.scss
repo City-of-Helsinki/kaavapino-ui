@@ -121,7 +121,7 @@
                     border: none;
                     border-left: 1px solid #cccccc;
                     position: absolute;
-                    right: -33.5px;
+                    right: -36px;
                     top: 50%;
                     transform: translateY(-50%);
                 }
@@ -135,7 +135,7 @@
             }
         }
         .zoom-menu{
-            margin-left: 62px;
+            margin-left: 65px;
             button{
                 font-family: "Helsinki Grotesk Medium", sans-serif;
                 font-size: $size14;
@@ -158,6 +158,13 @@
                 }
                 &::after {
                     border: none;
+                }
+                span{
+                    padding-top: 5px !important;
+                    padding-bottom: 3px !important;
+                    padding-left: 12px !important;
+                    padding-right: 12px !important;
+                    margin: 0 !important;
                 }
             }
             button:active, .selected {
