@@ -292,60 +292,22 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const phaseId = `${data?.phaseID}_${data?.id}`;
       const timelineElement = timelineRef?.current;
 
-      // If the same group is clicked again and the panel is open, close it
-      // Use the ref for the latest value
       setToggleTimelineModal(prev => {
         if (selectedGroupIdRef.current === groupId && prev.open) {
           setSelectedGroupId(null);
           setTimelineData({group: null, content: null});
+          // Remove highlights when closing via same group click
+          if (timelineElement) {
+            removeHighlights(timelineElement);
+          }
           return {open: false, highlight: null, deadlinegroup: null};
         }
 
         setSelectedGroupId(groupId);
 
-        // ... your highlight logic ...
-        if (phaseId && timelineElement){
-          // Remove previous highlights
-          timelineElement.querySelectorAll(".vis-group.foreground-highlight").forEach(el => {
-            el.classList.remove("foreground-highlight");
-          });
-          // Find matching item by className
-          const matchedItem = timelineElement.querySelector(`.vis-item[class*="${phaseId}"]`);
-          if (matchedItem) {
-            const groupEl = matchedItem.closest(".vis-group");
-            if (groupEl) {
-              groupEl.classList.add("foreground-highlight");
-            }
-          }
-        } else {
-          timelineElement.querySelectorAll(".vis-group.foreground-highlight").forEach(el => {
-            el.classList.remove("foreground-highlight");
-          });
-        }
-
-        //remove already highlighted 
-        timelineRef?.current?.querySelectorAll('.highlight-selected').forEach(el => {
-          el.classList.remove('highlight-selected');
-          if (el.parentElement.parentElement) {
-            el.parentElement.parentElement.classList.remove('highlight-selected');
-          }
-        });
-
-        //highlight the latest group
-        if (container) {
-          container.classList.add("highlight-selected");
-          if (container.parentElement.parentElement) {
-            container.parentElement.parentElement.classList.add("highlight-selected");
-          }
-        }
-
-        // Always find the group container by id
-        const groupContainer = timelineElement.querySelector(`#timeline-group-${data.id}`);
-        if (groupContainer) {
-          groupContainer.classList.add("highlight-selected");
-          if (groupContainer.parentElement.parentElement) {
-            groupContainer.parentElement.parentElement.classList.add("highlight-selected");
-          }
+        if (timelineElement) {
+          removeHighlights(timelineElement);
+          addHighlights(timelineElement, phaseId, data, container);
         }
 
         setTimelineData({group: data.nestedInGroup, content: data.content});
@@ -357,10 +319,53 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       });
     };
 
+    const removeHighlights = (timelineElement) => {
+      timelineElement.querySelectorAll(".vis-group.foreground-highlight").forEach(el => {
+        el.classList.remove("foreground-highlight");
+      });
+      timelineElement.querySelectorAll('.highlight-selected').forEach(el => {
+        el.classList.remove('highlight-selected');
+        if (el.parentElement.parentElement) {
+          el.parentElement.parentElement.classList.remove('highlight-selected');
+        }
+      });
+    };
+
+    const addHighlights = (timelineElement, phaseId, data, container) => {
+      if (phaseId && timelineElement) {
+        const matchedItem = timelineElement.querySelector(`.vis-item[class*="${phaseId}"]`);
+        if (matchedItem) {
+          const groupEl = matchedItem.closest(".vis-group");
+          if (groupEl) {
+            groupEl.classList.add("foreground-highlight");
+          }
+        }
+      }
+      if (container) {
+        container.classList.add("highlight-selected");
+        if (container.parentElement.parentElement) {
+          container.parentElement.parentElement.classList.add("highlight-selected");
+        }
+      }
+      const groupContainer = timelineElement.querySelector(`#timeline-group-${data.id}`);
+      if (groupContainer) {
+        groupContainer.classList.add("highlight-selected");
+        if (groupContainer.parentElement.parentElement) {
+          groupContainer.parentElement.parentElement.classList.add("highlight-selected");
+        }
+      }
+    };
+
     const handleClosePanel = () => {
       setToggleTimelineModal({open: false, highlight: null, deadlinegroup: null});
       setSelectedGroupId(null);
       setTimelineData({group: null, content: null});
+
+      // Remove group highlights when panel closes
+      const timelineElement = timelineRef?.current;
+      if (timelineElement) {
+        removeHighlights(timelineElement);
+      }
     };
 
     const changeItemRange = (subtract, item, i) => {
@@ -582,7 +587,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     };
 
     const getTopmostTimelineItem = (mouseX, mouseY, timelineInstanceRef) => {
-      if (!timelineInstanceRef.current || !timelineInstanceRef.current.itemSet) {
+      if (!timelineInstanceRef.current?.itemSet) {
         return null;
       }
       const items = Object.values(timelineInstanceRef.current.itemSet.items);
@@ -591,8 +596,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       let topmostItemDom = null;
 
       items.forEach((item) => {
-        const itemDom = item?.dom?.box || item?.dom?.point || item?.dom?.dot;
-        if (itemDom && itemDom.classList.contains('vis-editable')) {
+        const itemDom = item?.dom?.box ?? item?.dom?.point ?? item?.dom?.dot;
+        if (itemDom?.classList?.contains('vis-editable')) {
           const itemBounds = itemDom.getBoundingClientRect();
           if (
             mouseX >= itemBounds.left &&
@@ -611,7 +616,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       });
 
       return topmostItem ? { item: topmostItem, dom: topmostItemDom } : null;
-    }
+    };
 
     useEffect(() => {
 
