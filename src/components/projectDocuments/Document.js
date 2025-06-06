@@ -89,44 +89,42 @@ function Document({
 
   //const openConfirmationDialog = () => setShowConfirmation(true)
   return (
-    <>
-      <Grid columns="equal" className="document-row ">
-        <Grid.Column>
-          <span className="document-title document-header">{name}</span>
-          <span className="document-last-loaded">
-            <span>{t('project.document-last-loaded')} </span>
-            <span>{lastDownloaded ? dayjs(lastDownloaded).format('DD.MM.YYYY HH:mm') : ''}</span>
-          </span>
-        </Grid.Column>
+    <Grid columns="equal" className="document-row ">
+      <Grid.Column>
+        <span className="document-title document-header">{name}</span>
+        <span className="document-last-loaded">
+          <span>{t('project.document-last-loaded')} </span>
+          <span>{lastDownloaded ? dayjs(lastDownloaded).format('DD.MM.YYYY HH:mm') : ''}</span>
+        </span>
+      </Grid.Column>
 
-        <Grid.Column textAlign="right">
-            <>
+      <Grid.Column textAlign="right">
+          <>
+            <Button
+              size='small'
+              variant="secondary"
+              onClick={() => {preview()}}
+              href={file}
+              className="document-button"
+              disabled={disablePreview(phaseEnded,schema) || !downloadingDocumentReady}
+            >
+              {t('project.load-preview')}
+            </Button>
+            {isUserResponsible && (
               <Button
                 size='small'
-                variant="secondary"
-                onClick={() => {preview()}}
+                variant="primary"
+                onClick={() => download()}
                 href={file}
                 className="document-button"
-                disabled={disablePreview(phaseEnded,schema) || !downloadingDocumentReady}
+                disabled={disableDownload(phaseEnded,hideButtons,scheduleAccepted,schema) || !downloadingDocumentReady}
               >
-                {t('project.load-preview')}
+                {t('project.load')}
               </Button>
-              {isUserResponsible && (
-                <Button
-                  size='small'
-                  variant="primary"
-                  onClick={() => download()}
-                  href={file}
-                  className="document-button"
-                  disabled={disableDownload(phaseEnded,hideButtons,scheduleAccepted,schema) || !downloadingDocumentReady}
-                >
-                  {t('project.load')}
-                </Button>
-              )}
-            </>
-        </Grid.Column>
-      </Grid>
-    </>
+            )}
+          </>
+      </Grid.Column>
+    </Grid>
   )
 }
 
