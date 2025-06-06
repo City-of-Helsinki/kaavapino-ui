@@ -445,10 +445,9 @@
                     visibility: hidden;
                     padding: 0;
                     margin-right: 12px;
-                    /*   margin-left: 12px;
-                    width: 24px;
+                    margin-left: 12px;
+                    /*width: 24px;
                     height: 24px; Hidden for now, unhide when lock feature in dev*/
-                    margin-left: 0;
                     width: 0;
                     height: 0;
                     background:url('../../assets/icons/lock-open-blue.svg') no-repeat;
@@ -536,7 +535,7 @@
     .vis-nested-group.vis-group-level-unknown-but-gte1.highlight-selected{
         box-sizing: content-box;
         height: 32px !important;
-        width: 281px;
+        width: 271px;
         border: 2px solid $color-bus;
         background-color: $color-bus-light !important;
         margin-top: -1px;
@@ -789,15 +788,23 @@
         z-index: 100;
     }
 
+    .vis-background .vis-group {
+        height: 36px !important;
+    }
+
     .vis-foreground .vis-group {
         position: relative;
         box-sizing: border-box;
         border-bottom: none;
         height: 36px !important;
+        .vis-item:not(.color-tram):not(.color-summer):not(.color-metro):not(.color-bus):not(.color-gold):not(.color-fog):not(.color-green):not(.color-suomenlinna) {
+            pointer-events: auto;
+            cursor: pointer;
+        }
     }
 
     /*TODO: v1.2 Disabled for now because we don't want to allow dragging the timeline at this point set to auto*/
-    .vis-drag-left{
+    /* .vis-drag-left{
         pointer-events:none;
     }
     .vis-drag-right{
@@ -812,7 +819,7 @@
     }
     .inner-end{
         pointer-events: none;
-    }
+    } */
     /*1.2v end*/
 }
 
