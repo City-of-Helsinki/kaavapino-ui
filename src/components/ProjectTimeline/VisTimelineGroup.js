@@ -28,6 +28,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const timelineInstanceRef = useRef(null);
     const visValuesRef = useRef(visValues);
 
+    const [selectedGroupId, setSelectedGroupId] = useState(null);
+    const selectedGroupIdRef = useRef(selectedGroupId);
+
     const [toggleTimelineModal, setToggleTimelineModal] = useState({open: false, highlight: false, deadlinegroup: false});
     const [timelineData, setTimelineData] = useState({group: false, content: false});
     const [timeline, setTimeline] = useState(false);
@@ -283,50 +286,82 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       console.log(data)
       //setLock({group:data.nestedInGroup,id:data.id,abbreviation:data.abbreviation,locked:!data.locked})
     }
-  
-  
-    const openDialog = (data,container) => {
+
+    const openDialog = (data, container) => {
+      const groupId = data.id;
       const phaseId = `${data?.phaseID}_${data?.id}`;
       const timelineElement = timelineRef?.current;
-      if (phaseId && timelineElement){
-        // Remove previous highlights
-        timelineElement.querySelectorAll(".vis-group.foreground-highlight").forEach(el => {
-          el.classList.remove("foreground-highlight");
+
+      // If the same group is clicked again and the panel is open, close it
+      // Use the ref for the latest value
+      setToggleTimelineModal(prev => {
+        if (selectedGroupIdRef.current === groupId && prev.open) {
+          setSelectedGroupId(null);
+          setTimelineData({group: null, content: null});
+          return {open: false, highlight: null, deadlinegroup: null};
+        }
+
+        setSelectedGroupId(groupId);
+
+        // ... your highlight logic ...
+        if (phaseId && timelineElement){
+          // Remove previous highlights
+          timelineElement.querySelectorAll(".vis-group.foreground-highlight").forEach(el => {
+            el.classList.remove("foreground-highlight");
+          });
+          // Find matching item by className
+          const matchedItem = timelineElement.querySelector(`.vis-item[class*="${phaseId}"]`);
+          if (matchedItem) {
+            const groupEl = matchedItem.closest(".vis-group");
+            if (groupEl) {
+              groupEl.classList.add("foreground-highlight");
+            }
+          }
+        } else {
+          timelineElement.querySelectorAll(".vis-group.foreground-highlight").forEach(el => {
+            el.classList.remove("foreground-highlight");
+          });
+        }
+
+        //remove already highlighted 
+        timelineRef?.current?.querySelectorAll('.highlight-selected').forEach(el => {
+          el.classList.remove('highlight-selected');
+          if (el.parentElement.parentElement) {
+            el.parentElement.parentElement.classList.remove('highlight-selected');
+          }
         });
 
-        // Find matching item by className
-        const matchedItem = timelineElement.querySelector(`.vis-item[class*="${phaseId}"]`);
-        if (matchedItem) {
-          const groupEl = matchedItem.closest(".vis-group");
-          if (groupEl) {
-            groupEl.classList.add("foreground-highlight");
+        //highlight the latest group
+        if (container) {
+          container.classList.add("highlight-selected");
+          if (container.parentElement.parentElement) {
+            container.parentElement.parentElement.classList.add("highlight-selected");
           }
         }
-      }
-      else{
-        timelineElement.querySelectorAll(".vis-group.foreground-highlight").forEach(el => {
-          el.classList.remove("foreground-highlight");
-        });
-      }
-      //remove already highlighted 
-      timelineRef?.current?.querySelectorAll('.highlight-selected').forEach(el => {
-        el.classList.remove('highlight-selected');
-        if (el.parentElement.parentElement) {
-          el.parentElement.parentElement.classList.remove('highlight-selected');
+
+        // Always find the group container by id
+        const groupContainer = timelineElement.querySelector(`#timeline-group-${data.id}`);
+        if (groupContainer) {
+          groupContainer.classList.add("highlight-selected");
+          if (groupContainer.parentElement.parentElement) {
+            groupContainer.parentElement.parentElement.classList.add("highlight-selected");
+          }
         }
+
+        setTimelineData({group: data.nestedInGroup, content: data.content});
+        return {
+          open: true,
+          highlight: container,
+          deadlinegroup: data?.deadlinegroup?.includes(';') ? data.deadlinegroup.split(';')[0] : data.deadlinegroup
+        };
       });
-      //highlight the latest group
-      if (container) {
-        container.classList.add("highlight-selected");
-        if (container.parentElement.parentElement) {
-          container.parentElement.parentElement.classList.add("highlight-selected");
-        }
-      }
-      const modifiedDeadlineGroup = data?.deadlinegroup?.includes(';') ? data.deadlinegroup.split(';')[0] : data.deadlinegroup;
-      setToggleTimelineModal({open:!toggleTimelineModal.open, highlight:container, deadlinegroup:modifiedDeadlineGroup})
-        //Set data from items
-      setTimelineData({group:data.nestedInGroup, content:data.content})
-    }
+    };
+
+    const handleClosePanel = () => {
+      setToggleTimelineModal({open: false, highlight: null, deadlinegroup: null});
+      setSelectedGroupId(null);
+      setTimelineData({group: null, content: null});
+    };
 
     const changeItemRange = (subtract, item, i) => {
       const timeline = timelineRef?.current?.getTimelineInstance();
@@ -546,6 +581,38 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
     };
 
+    const getTopmostTimelineItem = (mouseX, mouseY, timelineInstanceRef) => {
+      if (!timelineInstanceRef.current || !timelineInstanceRef.current.itemSet) {
+        return null;
+      }
+      const items = Object.values(timelineInstanceRef.current.itemSet.items);
+      let highestZIndex = -1;
+      let topmostItem = null;
+      let topmostItemDom = null;
+
+      items.forEach((item) => {
+        const itemDom = item?.dom?.box || item?.dom?.point || item?.dom?.dot;
+        if (itemDom && itemDom.classList.contains('vis-editable')) {
+          const itemBounds = itemDom.getBoundingClientRect();
+          if (
+            mouseX >= itemBounds.left &&
+            mouseX <= itemBounds.right &&
+            mouseY >= itemBounds.top &&
+            mouseY <= itemBounds.bottom
+          ) {
+            const zIndex = parseInt(window.getComputedStyle(itemDom).zIndex, 10);
+            if (zIndex > highestZIndex) {
+              highestZIndex = zIndex;
+              topmostItem = item;
+              topmostItemDom = itemDom;
+            }
+          }
+        }
+      });
+
+      return topmostItem ? { item: topmostItem, dom: topmostItemDom } : null;
+    }
+
     useEffect(() => {
 
       const options = {
@@ -579,9 +646,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           remove: false,       // delete an item by tapping the delete button top right
           overrideItems: false  // allow these options to override item.editable
         },
-        itemsAlwaysDraggable: { // Dragging is disabled from VisTimeline.scss allow in v1.2
-            item:true,
-            range:true
+        itemsAlwaysDraggable: { // Dragging is disabled, allow in v1.2
+            item:false, // change to true to allow dragging of items
+            range:false // change to true to allow dragging of ranges
         },
         orientation:{
           axis: "top",
@@ -664,9 +731,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           if (group === null) {
             return;
           }
+
           let container = document.createElement("div");
           container.classList.add("timeline-buttons-container");
           container.setAttribute("tabindex", "0");
+          container.id = `timeline-group-${group.id}`;
+
           let words = group.deadlinegroup?.split("_") || [];
           let words2 = group.content?.split("-") || [];
           let normalizedString = words2[0]
@@ -848,41 +918,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           hideTooltip();
           return;
         }
-    
-        let hoveredItem = null;
-    
-        // Access items in the timeline and check if mouse is over any item with certain class 
-        if (timelineInstanceRef.current && timelineInstanceRef.current.itemSet) {
-          const items = Object.values(timelineInstanceRef.current.itemSet.items);
-          let highestZIndex = -1;
-          let topmostItem = null;
-          items.forEach((item) => {
-            const itemDom = item?.dom?.box || item?.dom?.point || item?.dom?.dot;
-            if (itemDom && (itemDom.classList.contains('vis-editable'))) {
-              const itemBounds = itemDom.getBoundingClientRect();
-              
-              // Check if mouse is within the item's bounding box
-              if (
-                mouseX >= itemBounds.left &&
-                mouseX <= itemBounds.right &&
-                mouseY >= itemBounds.top &&
-                mouseY <= itemBounds.bottom
-              ) {
-                const zIndex = parseInt(window.getComputedStyle(itemDom).zIndex, 10);
-                if (zIndex > highestZIndex) {
-                  highestZIndex = zIndex;
-                  topmostItem = item;
-                }
-              }
-            }
-          });
-          if (topmostItem) {
-            hoveredItem = topmostItem;
-          }
-        }
-    
-        if (hoveredItem) {
-          showTooltip(event, hoveredItem.data);
+
+        const result = getTopmostTimelineItem(mouseX, mouseY, timelineInstanceRef);
+
+        if (result) {
+          showTooltip(event, result.item.data);
         } else {
           hideTooltip();
         }
@@ -898,6 +938,27 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         setTimeline(timeline)
         // add event listener
         timeline.on('groupDragged', groupDragged)
+
+        // Add click event listener to timeline container so clicking on the timeline items works
+        timelineRef.current.addEventListener('click', function(event) {
+          const mouseX = event.clientX;
+          const mouseY = event.clientY;
+
+          // Skip clicks in the vis-left and header areas
+          if (mouseX < 310 || mouseY < 250) {
+            return;
+          }
+
+          const result = getTopmostTimelineItem(mouseX, mouseY, timelineInstanceRef);
+
+          if (result) {
+            if (result.item.data.phase === true) {
+              return;
+            }
+            let groupObj = groups.get(result.item.data.group) || result.item.data;
+            openDialog(groupObj, result.dom);
+          }
+        });
 
         if (timeline?.itemSet) {
           // remove the default internal hammer tap event listener
@@ -944,7 +1005,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
     }, [])
 
-     useEffect(() => {
+    useEffect(() => {
       visValuesRef.current = visValues;
       setToggleOpenAddDialog(false)
       if (timelineRef.current) {
@@ -956,6 +1017,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         }
       }
     }, [visValues]);
+
+    useEffect(() => {
+      selectedGroupIdRef.current = selectedGroupId;
+    }, [selectedGroupId]);
 
     useEffect(() => {
       if (showTimetableForm.selectedPhase !== null) {
@@ -1028,7 +1093,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           content={formatContent(timelineData.content, true)}
           deadlinegroup={toggleTimelineModal.deadlinegroup}
           deadlines={deadlines}
-          openDialog={openDialog}
+          onClose={handleClosePanel}
           visValues={visValues}
           deadlineSections={deadlineSections}
           formSubmitErrors={formSubmitErrors}
