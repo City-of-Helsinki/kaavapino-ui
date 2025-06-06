@@ -1,8 +1,72 @@
 import React, { Component } from 'react';
 import Select from 'react-select';
 import CustomMenuList from './CustomMenuList';
+import CustomDropdownIndicator from './CustomDropdownIndicator';
 import axios from 'axios';
-import { isArray } from 'lodash';
+
+const hdsLikeStyles = {
+  control: (provided, state) => ({
+    ...provided,
+    border: '2px solid #808080',
+    borderRadius: '0',
+    minHeight: '56px',
+    paddingLeft: '8px',
+    paddingRight: '8px',
+    backgroundColor: state.isDisabled ? '#f2f2f2' : '#fff',
+    boxShadow: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    '&:hover': {
+      borderColor: '#000',
+    },
+  }),
+  placeholder: (provided) => ({
+    ...provided,
+    color: '#d1d1d1',
+    fontSize: '16px',
+    lineHeight: '24px',
+    whiteSpace: 'nowrap',
+  }),
+  singleValue: (provided) => ({
+    ...provided,
+    color: '#1a1a1a',
+    fontSize: '16px',
+    lineHeight: '24px',
+  }),
+  input: (provided) => ({
+    ...provided,
+    fontSize: '16px',
+    color: '#1a1a1a',
+  }),
+  dropdownIndicator: (provided) => ({
+    ...provided,
+    padding: '8px',
+    color: '#1a1a1a',
+    display: 'flex',
+    alignItems: 'center',
+  }),
+  indicatorSeparator: () => ({
+    display: 'none',
+  }),
+  menu: (provided) => ({
+    ...provided,
+    zIndex: 9999,
+    border: '1px solid #ccc',
+    borderRadius: '2px',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+    width: '100%',
+    maxWidth: '100%',
+    overflowX: 'hidden',
+    boxSizing: 'border-box'
+  }),
+  menuList: (provided) => ({
+    ...provided,
+    overflowX: 'hidden',
+    paddingRight: 0,
+    boxSizing: 'border-box',
+    wordBreak: 'break-word',
+  }),
+};
 
 class CustomADUserCombobox extends Component {
   constructor() {
@@ -41,6 +105,33 @@ class CustomADUserCombobox extends Component {
     return modifiedOptions;
   }
 
+  modifyOptions = (options) => {
+    const modifiedOptions = [];
+
+    if (options.length === 0) return [];
+
+    options.forEach(({ name, id, email, title }) => {
+      if (!id) return;
+
+      const optionValue = name || email;
+      const label = name && title ? `${name} (${title})` : optionValue;
+
+      const option = {
+        label,
+        value: id,  // required for react-select to work
+        id,
+        email
+      };
+
+      // avoid duplicates
+      if (!modifiedOptions.find(o => o.label === label)) {
+        modifiedOptions.push(option);
+      }
+    });
+
+    return modifiedOptions;
+  };
+
   getPerson = async () => {
     if (!this.props.input.value) return;
 
@@ -57,6 +148,23 @@ class CustomADUserCombobox extends Component {
       console.error(err);
     }
   }
+
+  getPersonById = async (id) => {
+    try {
+      const response = await axios.get(`/v1/personnel/${id}`);
+      const person = response.data;
+
+      this.setState({
+        currentValue: {
+          label: person.name,
+          value: person.id
+        },
+        options: [{ label: person.name, value: person.id, email: person.email }]
+      });
+    } catch (err) {
+      console.error("getPersonById failed:", err);
+    }
+  };
 
   getOptions = async (query = "*", page = 1) => {
     const limit = 100;
@@ -86,39 +194,31 @@ class CustomADUserCombobox extends Component {
 
   handleInputChange = (newValue) => {
     const inputValue = newValue.replace(/\W/g, '');
-    this.setState({ currentQuery: inputValue, page: 1, options: [], hasMore: true }, () => {
-      this.getOptions(inputValue, 1);
-    });
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(inputValue);
+
+    // If UUID, fetch directly
+    if (isUUID) {
+      this.setState({ currentQuery: inputValue }, () => {
+        this.getPersonById(inputValue); // new helper
+      });
+      return newValue;
+    }
+    else if (inputValue.length >= 3 || inputValue === '*') { // Otherwise: search if long enough
+      this.setState(
+        { currentQuery: inputValue, page: 1, hasMore: true },
+        () => {
+          this.getOptions(inputValue, 1);
+        }
+      );
+    }
+
     return newValue;
-  }
-
-/*   handleMenuScrollToBottom = () => {
-    const { hasMore, page, currentQuery, options } = this.state;
-    const currentOptionCount = options.length;
-
-    // Define your page size (should match backend `limit`)
-    const pageSize = 100;
-
-    // If we already have enough options for the next page, don't fetch again
-    const expectedLoadedCount = page * pageSize;
-    if (currentOptionCount < expectedLoadedCount) {
-      console.log("Already prefetched page", page + 1);
-      return;
-    }
-
-    if (hasMore) {
-      const nextPage = page + 1;
-      console.log(`Prefetching page ${nextPage}...`);
-      this.getOptions(currentQuery || "*", nextPage).catch(console.error);
-    }
-  } */
+  };
 
   loadMoreOptions = async (nextPage) => {
     if (this.state.loadingMore) return;
 
     this.setState({ loadingMore: true });
-
-    console.log("Loading more options for page:", nextPage);
 
     const { currentQuery } = this.state;
     const limit = 100;
@@ -139,38 +239,57 @@ class CustomADUserCombobox extends Component {
         options: [...prev.options, ...modifiedResults],
         page: nextPage,
         hasMore,
-        loadingMore: false  // ✅ release after loading
+        loadingMore: false
       }));
     } catch (err) {
       console.error("loadMoreOptions failed:", err);
-      this.setState({ loadingMore: false }); // ✅ also release on error
+      this.setState({ loadingMore: false });
     }
   };
 
   handleChange = (value) => {
-    this.setState({ currentValue: value });
-
-    if (!isArray(value)) {
-      value && this.props.input.onChange(value.value);
-    } else {
-      const returnValue = value.map(item => item.value);
+    this.setState({ ...this.state, currentValue: value, options: [] });
+    // Multiselect case
+    if (Array.isArray(value)) {
+      console.log("array")
+      const returnValue = value.map(item => ({
+        id: item.value,
+        label: item.label,
+        email: item.email
+      }));
       this.props.input.onChange(returnValue);
     }
-  }
+    else if (value && typeof value === 'object') {// Single-select mode
+      const stringValue = value.id || value.label || '';
+      this.props.input.onChange(stringValue);
+      return;
+    }
+    else{
+      // Cleared or invalid selection
+      this.props.input.onChange('');
+    }
+  };
+
+  
+  handleMenuOpen = () => {
+    if (this.state.options.length === 0) {
+      this.getOptions("*", 1);
+    }
+  };
 
   render() {
     return (
       <div id="test" className="ad-combobox">
         <Select
-          components={{ MenuList: CustomMenuList }}
-          value={this.state.currentValue}
+          components={{ MenuList: CustomMenuList, DropdownIndicator: CustomDropdownIndicator }}
+          value={this.state.currentValue || ""}
           options={this.state.options}
           page={this.state.page}
           hasMore={this.state.hasMore}
           loadMoreOptions={this.loadMoreOptions}
           loadingMore={this.state.loadingMore}
+          onMenuOpen={this.handleMenuOpen}
           onInputChange={this.handleInputChange}
-          //onMenuScrollToBottom={this.handleMenuScrollToBottom}
           onChange={this.handleChange}
           isDisabled={this.props.disabled}
           isMulti={this.props.multiselect}
@@ -178,9 +297,7 @@ class CustomADUserCombobox extends Component {
           isClearable={true}
           onBlur={this.props.onBlur}
           inputId={this.props.name}
-          styles={{
-            menu: (provided) => ({ ...provided, zIndex: 9999 }) // Ensure it stays above modals
-          }}
+          styles={hdsLikeStyles}
         />
       </div>
     );

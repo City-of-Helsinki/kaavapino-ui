@@ -153,7 +153,7 @@ const formatFilterProject = (project, sort = false, phases, users) => {
 }
 
 const formatPhase = (id, phases) => {
-  const { index, name, color_code } = phases.find(phase => phase.id === id)
+  const { index, name, color_code } = phases?.find(phase => phase.id === id)
   return { index, phaseName: name, phaseColor: color_code }
 }
 
