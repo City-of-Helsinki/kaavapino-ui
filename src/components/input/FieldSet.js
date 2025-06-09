@@ -384,7 +384,7 @@ const FieldSet = ({
                     }}
                   > {t('project.remove')}</Button>
                 )}
-                {saving && (
+                {saving && hiding && (
                 <div className="fieldset-spinner-remove">
                   <LoadingSpinner className="loading-spinner" />
                 </div>
@@ -413,7 +413,7 @@ const FieldSet = ({
         >
           {t('project.add')}
         </Button>
-        {saving && updateField?.fieldName === name && (
+        {saving && adding && (
         <div className="fieldset-spinner">
           <LoadingSpinner className="loading-spinner" />
         </div>

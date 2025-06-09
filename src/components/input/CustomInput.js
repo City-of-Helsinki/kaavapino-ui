@@ -16,6 +16,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   const [hasError,setHasError] = useState(false)
   const [editField,setEditField] = useState(false)
   const [hadFocusBeforeTabOut, setHadFocusBeforeTabOut] = useState(false)
+  const [isInstanceSaving, setIsInstanceSaving] = useState(false);
 
   const lastModified = useSelector(state => lastModifiedSelector(state))
   const lockedStatus = useSelector(state => lockedSelector(state))
@@ -211,13 +212,16 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
               dateOk = true
             }
             if(dateOk){
-              custom.onBlur();
+              setIsInstanceSaving(true);
+              localStorage.setItem("changedValues", input.name);
+              custom.onBlur(input.name);
               oldValueRef.current = event.target.value;
             }
           }
           else{
+            setIsInstanceSaving(true);
             localStorage.setItem("changedValues", input.name);
-            custom.onBlur();
+            custom.onBlur(input.name);
             if(!custom.insideFieldset){
               const readOnlyValue = !custom?.isProjectTimetableEdit
               setReadOnly({name:input.name,read:readOnlyValue})
@@ -286,6 +290,12 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     }
   }, [input.name, input.value]);
 
+  useEffect(() => {
+    if (!saving && isInstanceSaving) {
+      setIsInstanceSaving(false);
+    }
+  }, [saving]);
+
   const editRollingField = () => {
     setEditField(true)
     setTimeout(function(){
@@ -327,10 +337,18 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           onFocus={() => {handleFocus()}}
           readOnly={readonly.read || lastSaved?.status === "error"}
         />
-        {saving && lastModified === input.name && (
-          <div className="input-spinner">
-            <LoadingSpinner className="loading-spinner" />
-          </div>
+        {saving && isInstanceSaving && (
+          <>
+            {custom.type === "date" ? (
+              <div className="input-spinner-datetime">
+                <LoadingSpinner className="loading-spinner" />
+              </div>
+            ) : (
+              <div className="input-spinner">
+                <LoadingSpinner className="loading-spinner" />
+              </div>
+            )}
+          </>
         )}
       </div>
     
