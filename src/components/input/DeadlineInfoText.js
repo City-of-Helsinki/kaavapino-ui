@@ -79,10 +79,6 @@ const DeadlineInfoText = props => {
 
   const determineFieldValue = (current, props) => {
 
-    if (isNumber(current) || isBoolean(current)) {
-      return current
-    }
-
     if(props.input.name.includes("nahtavillaolopaivien_lukumaara")){
       const regex = /_x?(\d+)/;
       const match = props.input.name.match(regex);
@@ -99,6 +95,11 @@ const DeadlineInfoText = props => {
       let end = formValues["milloin_ehdotuksen_nahtavilla_paattyy"+index]
       return calculateDaysBetweenDates(start, end)
     }
+
+    if (isNumber(current) || isBoolean(current)) {
+      return current
+    }
+
     // Expect date in value
     const dateValue = current && dayjs(current).format('DD.MM.YYYY')
     if (dateValue === 'Invalid Date') {
@@ -117,6 +118,20 @@ const DeadlineInfoText = props => {
     value = '';
     console.warn("Plain object found in DeadlineInfoText value");
   }
+
+  useEffect(() => {
+    if (props.input.name.includes("nahtavillaolopaivien_lukumaara")
+      && (value !== formValues["nahtavillaolopaivien_lukumaara"])) {
+      console.log(value);
+      dispatch(
+        autofill(
+          EDIT_PROJECT_TIMETABLE_FORM,
+          props.input.name,
+          value
+        )
+      );
+    }
+  }, [value, props.input.name]);
 
   const phaseMap = {
     periaatteista: "Periaatteet",
