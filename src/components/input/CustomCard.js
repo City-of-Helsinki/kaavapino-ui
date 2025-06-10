@@ -48,7 +48,7 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
   const findMatchedDeadline = (data, deadlinesData,phase) => {
     const ehdotusPhase = [29, 21, 15, 9, 3].includes(phase) ? true : false;
     //find matched deadline for ehdotus and tarkistettu ehdotus
-    const keys = Object.keys(data).filter(key => ehdotusPhase ? key.includes('kaavaehdotus_uudelleen_nahtaville') || key.includes('kaavaehdotus_lautakuntaan') && data[key] === true : key.includes('vahvista_kaavaehdotus_lautakunnassa') && data[key] === true);
+    const keys = Object.keys(data).filter(key => ehdotusPhase ? key.includes('kaavaehdotus_uudelleen_nahtaville') && data[key] === true || key.includes('kaavaehdotus_lautakuntaan') && data[key] === true : key.includes('vahvista_kaavaehdotus_lautakunnassa') && data[key] === true);
 
     let highestKeyValue
     let deadlineAttribute
@@ -56,9 +56,9 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
 
     if(ehdotusPhase){
       if(phase === 29 || phase === 21){
-        highestKey = keys.length > 0 ? keys.reduce((a, b) => parseInt(a.split('_').pop()) > parseInt(b.split('_').pop()) ? a : b, 'kaavaehdotus_lautakuntaan') : 'kaavaehdotus_lautakuntaan';
-        highestKeyValue = highestKey === 'kaavaehdotus_lautakuntaan' ? '' : highestKey.split('_').pop();
-        deadlineAttribute = `milloin_kaavaehdotus_lautakunnassa${highestKeyValue > 1 ? `_${highestKeyValue}` : ''}`;
+        highestKey = keys.length > 0 ? keys.reduce((a, b) => parseInt(a.split('_').pop()) > parseInt(b.split('_').pop()) ? a : b, 'kaavaehdotus_uudelleen_nahtaville') : 'kaavaehdotus_uudelleen_nahtaville';
+        highestKeyValue = highestKey === 'kaavaehdotus_uudelleen_nahtaville' ? '' : highestKey.split('_').pop();
+        deadlineAttribute = `milloin_ehdotuksen_nahtavilla_alkaa_iso${highestKeyValue > 1 ? `_${highestKeyValue}` : ''}`;
       }
       else{
         highestKey = keys.length > 0 ? keys.reduce((a, b) => parseInt(a.split('_').pop()) > parseInt(b.split('_').pop()) ? a : b, 'kaavaehdotus_uudelleen_nahtaville') : 'kaavaehdotus_uudelleen_nahtaville';
@@ -72,7 +72,6 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
       deadlineAttribute = `milloin_tarkistettu_ehdotus_lautakunnassa${highestKeyValue > 1 ? `_${highestKeyValue}` : ''}`;
     }
     const matchedDeadline = deadlinesData.find(deadline => deadline.deadline.attribute === deadlineAttribute);
-
     return matchedDeadline?.deadline;
   };
 
