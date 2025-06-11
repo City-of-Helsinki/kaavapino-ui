@@ -19,7 +19,7 @@ import withValidateDate from '../../../hocs/withValidateDate';
 import objectUtil from '../../../utils/objectUtil'
 import textUtil from '../../../utils/textUtil'
 import { updateDateTimeline,validateProjectTimetable,setValidatingTimetable } from '../../../actions/projectActions';
-import { getVisibilityBoolName, vis_bool_group_map, getPhaseNameByVisBool } from '../../../utils/projectVisibilityUtils';
+import { getVisibilityBoolName, vis_bool_group_map, getPhaseNameByVisBool, isDeadlineConfirmed } from '../../../utils/projectVisibilityUtils';
 import timeUtil from '../../../utils/timeUtil'
 
 class EditProjectTimeTableModal extends Component {
@@ -633,7 +633,7 @@ class EditProjectTimeTableModal extends Component {
           if (innerEnd < currentDate) {
             innerStyle += " past";
           }
-          if (this.isDeadlineConfirmed(formValues, deadlineGroup)) {
+          if (isDeadlineConfirmed(formValues, deadlineGroup, false)) {
             innerStyle += " confirmed";
           }
         }
@@ -685,7 +685,7 @@ class EditProjectTimeTableModal extends Component {
             innerStyle += " past";
           }
 
-          if (this.isDeadlineConfirmed(formValues, deadlineGroup)) {
+          if (isDeadlineConfirmed(formValues, deadlineGroup, false)) {
             innerStyle += " confirmed";
           }
         }
@@ -718,7 +718,7 @@ class EditProjectTimeTableModal extends Component {
             innerStyle += " past";
           }
 
-          if (this.isDeadlineConfirmed(formValues, deadlineGroup)) {
+          if (isDeadlineConfirmed(formValues, deadlineGroup, false)) {
             innerStyle += " confirmed";
           }
         }
@@ -809,49 +809,6 @@ class EditProjectTimeTableModal extends Component {
 
     return [deadLineGroups,nestedDeadlines,phaseData]
   }
-
-  // Helper function to check if dates are confirmed
-  isDeadlineConfirmed = (formValues, deadlineGroup) => {
-    // Extract the number from deadlineGroup if it exists
-    const extractDigitsFromEnd = (str) => {
-      if (!str) return null;
-      const digits = str.split('').reverse().filter(char => !isNaN(char) && char !== ' ').reverse().join('');
-      return digits || null;
-    };
-
-    const matchNumber = extractDigitsFromEnd(deadlineGroup);
-    let confirmationKey;
-
-    const baseKeys = {
-      "tarkistettu_ehdotus": "vahvista_tarkistettu_ehdotus_lautakunnassa",
-      "ehdotus_pieni": "vahvista_ehdotus_esillaolo_pieni",
-      "ehdotus_nahtavillaolokerta": "vahvista_ehdotus_esillaolo",
-      "ehdotus_esillaolo": "vahvista_ehdotus_esillaolo",
-      "ehdotus_lautakunta": "vahvista_kaavaehdotus_lautakunnassa",
-      "oas": "vahvista_oas_esillaolo_alkaa",
-      "periaatteet_esillaolokerta": "vahvista_periaatteet_esillaolo_alkaa",
-      "periaatteet_lautakuntakerta": "vahvista_periaatteet_lautakunnassa",
-      "luonnos_esillaolokerta": "vahvista_luonnos_esillaolo_alkaa",
-      "luonnos_lautakuntakerta": "vahvista_kaavaluonnos_lautakunnassa"
-    };
-
-    for (const key in baseKeys) {
-      if (deadlineGroup.includes(key)) {
-        if (matchNumber && matchNumber === "1") {
-          // If number is 1, use the base key
-          confirmationKey = baseKeys[key];
-        } else if (matchNumber) {
-          // If number is bigger, construct the confirmationKey using the number
-          confirmationKey = `${baseKeys[key]}_${matchNumber}`;
-        } else {
-          // If no number, use the base key
-          confirmationKey = baseKeys[key];
-        }
-        break;
-      }
-    }
-    return formValues[confirmationKey];
-  };
 
   getTimelineData = (deadlineSections,formValues,deadlines,ongoingPhase,isMounting) => {
       let phaseData = []

@@ -14,7 +14,7 @@ import VisTimelineMenu from './VisTimelineMenu'
 import AddGroupModal from './AddGroupModal';
 import ConfirmModal from '../common/ConfirmModal'
 import PropTypes from 'prop-types';
-import { getVisibilityBoolName, getVisBoolsByPhaseName } from '../../utils/projectVisibilityUtils';
+import { getVisibilityBoolName, getVisBoolsByPhaseName, isDeadlineConfirmed } from '../../utils/projectVisibilityUtils';
 import './VisTimeline.css'
 Moment().locale('fi');
 
@@ -270,6 +270,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const visiblityBool = getVisibilityBoolName(dataToRemove.deadlinegroup)
       if (visiblityBool) {
         dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, visiblityBool, false));
+        const confirmationObject = isDeadlineConfirmed(visValuesRef.current, dataToRemove.deadlinegroup, true);
+        if(confirmationObject?.key && confirmationObject?.value){
+          dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, confirmationObject.key, false));
+        }
       }
       setOpenConfirmModal(!openConfirmModal)
     }
