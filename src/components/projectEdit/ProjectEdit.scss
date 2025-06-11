@@ -698,16 +698,17 @@
   }
 
   .actions{
-    height: 104px;
+    height: 100px;
     display: flex;
+    align-items: center; 
     position: relative;
     bottom: 0;
     left: 0;
     margin: 0px 0 0 0 !important;
     border-top: 1px solid #808080 !important;
     .form-buttons{
-      margin-top: $size24;
-      margin-bottom: $size24;
+      margin-top: 0;
+      margin-bottom: 0;
       margin-left: 22px;
       button {
         height: 56px;
