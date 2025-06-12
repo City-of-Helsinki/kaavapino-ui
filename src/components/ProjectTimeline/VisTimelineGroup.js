@@ -14,16 +14,17 @@ import VisTimelineMenu from './VisTimelineMenu'
 import AddGroupModal from './AddGroupModal';
 import ConfirmModal from '../common/ConfirmModal'
 import PropTypes from 'prop-types';
-import { getVisibilityBoolName, getVisBoolsByPhaseName } from '../../utils/projectVisibilityUtils';
+import { getVisibilityBoolName, getVisBoolsByPhaseName, isDeadlineConfirmed } from '../../utils/projectVisibilityUtils';
 import './VisTimeline.css'
 Moment().locale('fi');
 
-const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes}, ref) => {
+const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes, showTimetableForm}, ref) => {
     const dispatch = useDispatch();
     const moment = extendMoment(Moment);
 
     const { t } = useTranslation()
     const timelineRef = useRef(null);
+    const observerRef = useRef(null); // Store the MutationObserver
     const timelineInstanceRef = useRef(null);
     const visValuesRef = useRef(visValues);
 
@@ -269,6 +270,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const visiblityBool = getVisibilityBoolName(dataToRemove.deadlinegroup)
       if (visiblityBool) {
         dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, visiblityBool, false));
+        const confirmationObject = isDeadlineConfirmed(visValuesRef.current, dataToRemove.deadlinegroup, true);
+        if(confirmationObject?.key && confirmationObject?.value){
+          dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, confirmationObject.key, false));
+        }
       }
       setOpenConfirmModal(!openConfirmModal)
     }
@@ -285,6 +290,29 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   
   
     const openDialog = (data,container) => {
+      const phaseId = `${data?.phaseID}_${data?.id}`;
+      const timelineElement = timelineRef?.current;
+      if (phaseId && timelineElement){
+        // Remove previous highlights
+        timelineElement.querySelectorAll(".vis-group.foreground-highlight").forEach(el => {
+          el.classList.remove("foreground-highlight");
+        });
+
+        // Find matching item by className
+        const matchedItem = timelineElement.querySelector(`.vis-item[class*="${phaseId}"]`);
+        if (matchedItem) {
+          const groupEl = matchedItem.closest(".vis-group");
+          if (groupEl) {
+            localStorage.setItem('timelineHighlightedElement', phaseId);
+            groupEl.classList.add("foreground-highlight");
+          }
+        }
+      }
+      else{
+        timelineElement.querySelectorAll(".vis-group.foreground-highlight").forEach(el => {
+          el.classList.remove("foreground-highlight");
+        });
+      }
       //remove already highlighted 
       timelineRef?.current?.querySelectorAll('.highlight-selected').forEach(el => {
         el.classList.remove('highlight-selected');
@@ -294,10 +322,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       });
       //highlight the latest group
       if (container) {
-        container.classList.toggle("highlight-selected");
+        container?.classList?.add("highlight-selected");
         if (container.parentElement.parentElement) {
-          container.parentElement.parentElement.classList.toggle("highlight-selected");
+          container.parentElement.parentElement.classList.add("highlight-selected");
         }
+        localStorage.setItem('menuHighlight', data.className ? data.className : false);
       }
       const modifiedDeadlineGroup = data?.deadlinegroup?.includes(';') ? data.deadlinegroup.split(';')[0] : data.deadlinegroup;
       setToggleTimelineModal({open:!toggleTimelineModal.open, highlight:container, deadlinegroup:modifiedDeadlineGroup})
@@ -382,6 +411,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
       timeline.setWindow(newStart, newEnd);
       setCurrentFormat("showMonths");
+      highlightJanuaryFirst()
     }
 
     const showYears = () => {
@@ -397,6 +427,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
       timeline.setWindow(newStart, newEnd);
       setCurrentFormat("showYears");
+      highlightJanuaryFirst()
     }
 
     const show2Yers = () => {
@@ -483,6 +514,41 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         date.setTime(date.getTime() - 86400000); // Move from Saturday to Friday
       }
     }
+
+    const highlightJanuaryFirst = () => {
+      if (!timelineInstanceRef.current) return;
+    
+      requestAnimationFrame(() => {
+        document.querySelectorAll(".vis-text.vis-minor").forEach((label) => {
+          const text = label.textContent.trim().toLowerCase();
+    
+          // Extract the first number before a possible <br> tag
+          const firstLineMatch = text.match(/^\d+/); 
+          const firstLine = firstLineMatch ? firstLineMatch[0] : "";
+
+          // Month View: Must be "1" AND contain "tammikuu"
+          const isMonthView = firstLine === "1";
+    
+          // Year View: If the text is "tammi" (January in Finnish)
+          const isYearView = text === "tammi";
+          if (isYearView || isMonthView) {
+            label.classList.add("january-first");
+          }
+        });
+      });
+    };
+
+    // MutationObserver to track new elements being added dynamically
+    const observeTimelineChanges = () => {
+      observerRef.current = new MutationObserver(() => {
+        highlightJanuaryFirst(); // Apply styles when new elements are added
+      });
+  
+      const targetNode = document.querySelector(".vis-panel.vis-center");
+      if (targetNode) {
+        observerRef.current.observe(targetNode, { childList: true, subtree: true });
+      }
+    };
 
     useEffect(() => {
 
@@ -699,6 +765,22 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                 }
               });
 
+              // Hover effect
+              container.addEventListener("mouseenter", function() {
+                // Action to perform on hover enter, e.g., change background color
+                //only not confirmed groups can be deleted
+                if(!group.undeletable && visValuesRef?.current[`vahvista_${words[0]}_${normalizedString}_alkaa_${words[2]}`]){
+                  // add button-disabled class to the remove button if the group is not deletable
+                  remove.classList.add("button-disabled")
+                }
+                // Action to perform on hover leave
+                else if(!group.undeletable && !visValuesRef?.current[`vahvista_${words[0]}_${normalizedString}_alkaa_${words[2]}`]){
+                  // add button-disabled class to the remove button if the group is not deletable
+                  remove.classList.remove("button-disabled")
+                }
+
+              });
+
               container.insertAdjacentElement("beforeEnd", remove);
 
               // Add tooltip for disabled remove buttons
@@ -839,8 +921,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           });
           
         }
-
         timeline.focus(0);
+        if(timeline){
+          setTimeout(() => {
+            highlightJanuaryFirst();
+            observeTimelineChanges();
+          }, 100); // Ensures elements are rendered before applying styles
+        }
         //timeline.on('rangechanged', onRangeChanged);
         return () => {
           // Check if tooltipDiv exists before trying to remove it
@@ -855,6 +942,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             document.body.removeEventListener('mousemove', handleMouseMove);
           }
           timeline.off('groupDragged', groupDragged)
+          observerRef?.current?.disconnect();
           //timeline.off('rangechanged', onRangeChanged);
         }
       }
@@ -871,7 +959,95 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           timelineInstanceRef.current.redraw();
         }
       }
+
+       // Restore highlight from localStorage
+      const savedHighlightId = localStorage.getItem('timelineHighlightedElement');
+      const menuHighlightClass = localStorage.getItem('menuHighlight');
+      if (savedHighlightId && timelineRef?.current) {
+        setTimeout(() => {
+          const timelineElement = timelineRef.current;
+          // First check if any element already has the highlight class
+          const alreadyHighlightedElements = timelineElement.querySelectorAll(".vis-group.foreground-highlight");
+          if (alreadyHighlightedElements.length === 0) {
+            // Find and highlight the saved element
+            const matchedItem = timelineElement.querySelector(`.vis-item[class*="${savedHighlightId}"]`);
+            if (matchedItem) {
+              const groupEl = matchedItem.closest(".vis-group");
+              if (groupEl) {
+                groupEl.classList.add("foreground-highlight");
+              }
+            }
+          }
+        }, 200); // Small delay to ensure timeline has rendered
+      }
+
+      if (menuHighlightClass && typeof menuHighlightClass === 'string' && !menuHighlightClass.startsWith('[object ') && timelineRef?.current) {
+        setTimeout(() => {
+          const selector = `.vis-label.vis-nested-group.${CSS.escape(menuHighlightClass)}`;
+          const alreadyHighlightedMenuElements = document.querySelectorAll('.highlight-selected');
+          if (alreadyHighlightedMenuElements.length === 0) {
+            const menuElementToHighlight = document.querySelector(selector);
+            if (menuElementToHighlight) {
+              menuElementToHighlight.classList.add('highlight-selected');
+            }
+          }
+        }, 200);
+      }
+
     }, [visValues]);
+
+    function getHighlightedElement(offset) {
+      const container = document.querySelector('.vis-labelset');
+      const all = Array.from(container.querySelectorAll('.vis-nested-group'));
+      return all[offset] || null;
+    }
+
+    // Function to highlight elements based on phase name and suffix when redirected from the form to the timeline
+    const highlightTimelineElements = (deadlineGroup) => {
+      if (!deadlineGroup || !timelineRef.current) return;
+      // Extract the phase name and suffix from the deadlinegroup
+      const parts = deadlineGroup.split('_');
+      let suffix = "1"; // Default to 1 if no suffix
+      
+      // Get the numeric suffix (like "_1", "_2") if it exists
+      if (parts.length > 2) {
+        const lastPart = parts[parts.length - 1];
+        if (/^\d+$/.test(lastPart)) {
+          suffix = lastPart;
+        }
+      }
+      const highlightedElement = getHighlightedElement(suffix)
+      if(highlightedElement){
+        highlightedElement.classList.add('highlight-selected');
+      }
+    };
+
+    useEffect(() => {
+      if (showTimetableForm.selectedPhase !== null) {
+        setToggleTimelineModal({open:!toggleTimelineModal.open, highlight:true, deadlinegroup:showTimetableForm?.matchedDeadline?.deadlinegroup})
+        setTimelineData({group:showTimetableForm.selectedPhase, content:formatDeadlineGroupTitle(showTimetableForm)})
+        // Call the highlighting function
+        highlightTimelineElements(showTimetableForm?.matchedDeadline?.deadlinegroup);
+      }
+    }, [showTimetableForm.selectedPhase])
+
+    const generateTitle = (deadlinegroup) => {
+      if (!deadlinegroup) return '';
+      const parts = deadlinegroup.split('_');
+      if (parts.length < 3) return deadlinegroup;
+      const formattedString = `${parts[1].replace('kerta', '')}-${parts[2]}`;
+      return formattedString.charAt(0).toUpperCase() + formattedString.slice(1);
+    };
+
+    const formatDeadlineGroupTitle = (data) => {
+      if(data.selectedPhase === "Voimaantulo" || data.selectedPhase === "Hyväksyminen"){
+        return "Vaiheen lisätiedot";
+      }
+      else{
+        const newTitle = generateTitle(data?.matchedDeadline?.deadlinegroup);
+        return formatContent(newTitle,true);
+      }
+    }
 
     const formatContent = (content, keepNumberOne = false) => {
       if (content) {
@@ -933,6 +1109,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           items={items?.get()}
           sectionAttributes={sectionAttributes}
           isAdmin={isAdmin}
+          initialTab={showTimetableForm?.selectedPhase === "Voimaantulo" && showTimetableForm?.name === "voimaantulo_pvm" ? 1 : 0 }
         />
         <AddGroupModal
           toggleOpenAddDialog={toggleOpenAddDialog}
