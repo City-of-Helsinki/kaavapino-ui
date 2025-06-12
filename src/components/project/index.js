@@ -168,7 +168,7 @@ class ProjectPage extends Component {
     this.setState({sectionIndex})
   }
 
-  getProjectEditContent = (isExpert,isResponsible,isTheResponsiblePerson) => {
+  getProjectEditContent = (isExpert,isResponsible,isTheResponsiblePerson, editViewLoading) => {
     const { currentProject, users, projectSubtypes, selectedPhase, allEditFields } = this.props
     const user = projectUtils.formatUsersName(users.find(u => u.id === currentProject.user))
     const currentPhases = this.getCurrentPhases()
@@ -185,7 +185,7 @@ class ProjectPage extends Component {
           pwnumber={currentProject?.attribute_data?.hankenumero}
           pwlink={allEditFields?.pw_urn}
           location={this.props.location}
-          actions={this.getEditNavActions(isExpert)}
+          actions={this.getEditNavActions(isExpert, editViewLoading)}
           infoOptions={this.getAllChanges()}
         />
         <NewProjectFormModal
@@ -305,10 +305,10 @@ class ProjectPage extends Component {
     )
   }
 
-  getProjectPageContent = (isExpert,isResponsible, isTheResponsiblePerson) => {
+  getProjectPageContent = (isExpert,isResponsible, isTheResponsiblePerson, editViewLoading) => {
     const { edit, documents } = this.props
     if (edit) {
-      return this.getProjectEditContent(isExpert,isResponsible,isTheResponsiblePerson)
+      return this.getProjectEditContent(isExpert,isResponsible,isTheResponsiblePerson, editViewLoading)
     }
     if (documents) {
       return this.getProjectDocumentsContent(isResponsible)
@@ -390,8 +390,8 @@ class ProjectPage extends Component {
     this.togglePrintProjectDataModal(true)
   }
 
-  getEditNavActions = isUserExpert => {
-   const { t } = this.props
+  getEditNavActions = (isUserExpert, editViewLoading) => {
+    const { t } = this.props
     const options = [{value:1,label:<><i className="icons document-icon"></i>{t('project.create-documents')}</> },{value:2,label:<><i className="icons calendar-icon"></i>{t('deadlines.title')}</>},{value:3,label:<><i className="icons company-icon"></i>{t('floor-areas.title')}</>},
     {value:4,label:<><i className="icons download-icon"></i>{t('project.download-old-data')}</>},{value:5,label:<><i className="icons pen-icon"></i>{t('project.modify-project-base')}</>},
     ]
@@ -407,6 +407,7 @@ class ProjectPage extends Component {
           value='Projektin työkalut'
           options={options}
           onChange={this.changeOptions}
+          disabled={editViewLoading}
         />
         )}
       </span>
@@ -544,6 +545,14 @@ class ProjectPage extends Component {
       currentProject
     } = this.props
 
+    const editViewLoading =
+    !currentProjectLoaded ||
+    !phases ||
+    !users ||
+    users.length === 0 ||
+    !this.props.allEditFields ||
+    !this.props.selectedPhase
+
     const loading = !currentProjectLoaded || !phases
 
     const userIsExpert = authUtils.isExpert(currentUserId, users)
@@ -567,7 +576,7 @@ class ProjectPage extends Component {
         {!loading && !resettingDeadlines && (
           <div className="project-container">
             <div className="project-page-content">
-              {this.getProjectPageContent(userIsExpert,isResponsible,isTheResponsiblePerson)}
+              {this.getProjectPageContent(userIsExpert,isResponsible,isTheResponsiblePerson, editViewLoading)}
             </div>
           </div>
         )}
