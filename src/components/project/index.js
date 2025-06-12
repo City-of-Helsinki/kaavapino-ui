@@ -625,7 +625,10 @@ const mapStateToProps = state => {
 
 ProjectPage.propTypes = {
   currentProject: PropTypes.object,
-  downloadDocument: PropTypes.func
+  downloadDocument: PropTypes.func,
+  users: PropTypes.array,
+  allEditFields: PropTypes.object,
+  selectedPhase: PropTypes.number
 }
 
 export default withRouter(
