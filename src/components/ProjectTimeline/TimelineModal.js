@@ -10,7 +10,7 @@ import objectUtil from '../../utils/objectUtil';
 import PropTypes from 'prop-types'
 import './VisTimeline.css'
 
-const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit,disabledDates,lomapaivat,dateTypes,groups, items, sectionAttributes,isAdmin,initialTab }) => {
+const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit,disabledDates,lomapaivat,dateTypes,groups, items, sectionAttributes,isAdmin,initialTab }) => {
 
   const getAttributeValues = (attributes) => {
     return Object.values(attributes).flatMap((v) => Object.values(v));
@@ -217,7 +217,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
               <ul className="breadcrumb">
                 <li><a href="#" role="button">{group}</a></li>
                 <li><a href="#" role="button">{content}</a></li>
-                <Button variant="supplementary" onClick={openDialog}><IconCross /></Button>
+                <Button variant="supplementary" onClick={onClose}><IconCross /></Button>
               </ul>
             </Modal.Header>
             <Modal.Content>
@@ -241,7 +241,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
     content: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
     deadlinegroup: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
     deadlines: PropTypes.array,
-    openDialog: PropTypes.func,
+    onClose: PropTypes.func,
     visValues: PropTypes.object,
     deadlineSections: PropTypes.array,
     formSubmitErrors: PropTypes.object,
