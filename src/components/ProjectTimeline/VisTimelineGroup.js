@@ -303,6 +303,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         if (matchedItem) {
           const groupEl = matchedItem.closest(".vis-group");
           if (groupEl) {
+            localStorage.setItem('timelineHighlightedElement', phaseId);
             groupEl.classList.add("foreground-highlight");
           }
         }
@@ -325,6 +326,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         if (container.parentElement.parentElement) {
           container.parentElement.parentElement.classList.add("highlight-selected");
         }
+        localStorage.setItem('menuHighlight', data.className ? data.className : false);
       }
       const modifiedDeadlineGroup = data?.deadlinegroup?.includes(';') ? data.deadlinegroup.split(';')[0] : data.deadlinegroup;
       setToggleTimelineModal({open:!toggleTimelineModal.open, highlight:container, deadlinegroup:modifiedDeadlineGroup})
@@ -957,6 +959,41 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           timelineInstanceRef.current.redraw();
         }
       }
+
+       // Restore highlight from localStorage
+      const savedHighlightId = localStorage.getItem('timelineHighlightedElement');
+      const menuHighlightClass = localStorage.getItem('menuHighlight');
+      if (savedHighlightId && timelineRef?.current) {
+        setTimeout(() => {
+          const timelineElement = timelineRef.current;
+          // First check if any element already has the highlight class
+          const alreadyHighlightedElements = timelineElement.querySelectorAll(".vis-group.foreground-highlight");
+          if (alreadyHighlightedElements.length === 0) {
+            // Find and highlight the saved element
+            const matchedItem = timelineElement.querySelector(`.vis-item[class*="${savedHighlightId}"]`);
+            if (matchedItem) {
+              const groupEl = matchedItem.closest(".vis-group");
+              if (groupEl) {
+                groupEl.classList.add("foreground-highlight");
+              }
+            }
+          }
+        }, 200); // Small delay to ensure timeline has rendered
+      }
+
+      if (menuHighlightClass && typeof menuHighlightClass === 'string' && !menuHighlightClass.startsWith('[object ') && timelineRef?.current) {
+        setTimeout(() => {
+          const selector = `.vis-label.vis-nested-group.${CSS.escape(menuHighlightClass)}`;
+          const alreadyHighlightedMenuElements = document.querySelectorAll('.highlight-selected');
+          if (alreadyHighlightedMenuElements.length === 0) {
+            const menuElementToHighlight = document.querySelector(selector);
+            if (menuElementToHighlight) {
+              menuElementToHighlight.classList.add('highlight-selected');
+            }
+          }
+        }, 200);
+      }
+
     }, [visValues]);
 
     function getHighlightedElement(offset) {

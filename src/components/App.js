@@ -33,6 +33,9 @@ import { withTranslation } from 'react-i18next'
 class App extends Component {
 
   componentDidMount(){
+    // Clear any existing highlights from previous sessions
+    localStorage.removeItem('timelineHighlightedElement');
+    localStorage.removeItem('menuHighlight');
     //Matomo analytic
     const currentEnv = process.env.REACT_APP_ENVIRONMENT
     const matomoURL = process.env.REACT_APP_MATOMO_URL

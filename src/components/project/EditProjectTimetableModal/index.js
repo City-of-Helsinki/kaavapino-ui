@@ -300,7 +300,8 @@ class EditProjectTimeTableModal extends Component {
             showNested: expanded,
             nestedGroups: [],
             maxEsillaolo: esillaolokerta,
-            maxLautakunta: lautakuntakerta
+            maxLautakunta: lautakuntakerta,
+            className: `${deadlineSections[i].id}`
           })
         }
       }
@@ -354,7 +355,8 @@ class EditProjectTimeTableModal extends Component {
         deadlinesubgroup: deadlines[i].deadline.deadlinesubgroup,
         locked: false,
         undeletable: true,
-        phaseID: deadlines[i].deadline.phase_id
+        phaseID: deadlines[i].deadline.phase_id,
+        className: `${deadlines[i].deadline.deadlinegroup}`
       });
     }
   
@@ -543,7 +545,8 @@ class EditProjectTimeTableModal extends Component {
       locked: false,
       generated:deadlines[i].generated,
       undeletable:undeletable,
-      phaseID: deadlines[i].deadline.phase_id
+      phaseID: deadlines[i].deadline.phase_id,
+      className: `${deadlines[i].deadline.deadlinegroup}`
     });
 
     return [phaseData, deadLineGroups, nestedDeadlines];
@@ -1125,8 +1128,9 @@ class EditProjectTimeTableModal extends Component {
 
   handleSubmit = () => {
     this.setState({ loading: true })
+    localStorage.removeItem('timelineHighlightedElement');
+    localStorage.removeItem('menuHighlight');
     const errors = this.props.handleSubmit()
-
     if (errors) {
       this.setState({ loading: false })
     }
@@ -1152,6 +1156,8 @@ class EditProjectTimeTableModal extends Component {
   }
 
   handleClose = () => {
+    localStorage.removeItem('timelineHighlightedElement');
+    localStorage.removeItem('menuHighlight');
     this.props.handleClose()
   }
 
