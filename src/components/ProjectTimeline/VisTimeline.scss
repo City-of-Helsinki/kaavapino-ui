@@ -21,7 +21,6 @@
         border-color: #ccc !important;
         overflow-y: visible !important;
         overflow-x: clip !important;
-        right: 1.5px;
         .vis-vertical .vis-current-time {
             top: 84px !important;
             z-index: 0;
@@ -51,18 +50,18 @@
     .vis-panel.vis-center .vis-content {
         .vis-itemset {
             height: auto !important;
-            min-height: 58.5vh !important;
+            min-height: 63.83vh !important;
         }
     }
 
     .vis-time-axis.vis-foreground{
         background-color: $dropdown-divider-color;
-        left: -1px !important;
+        left: -0.5px !important;
         height: 85px !important;
         & > div {
             color: $black1;
             font-size: $size14;
-            left: 2px;
+            left: -1px;
         }
     }
 
@@ -446,10 +445,9 @@
                     visibility: hidden;
                     padding: 0;
                     margin-right: 12px;
-                    /*   margin-left: 12px;
-                    width: 24px;
+                    margin-left: 12px;
+                    /*width: 24px;
                     height: 24px; Hidden for now, unhide when lock feature in dev*/
-                    margin-left: 0;
                     width: 0;
                     height: 0;
                     background:url('../../assets/icons/lock-open-blue.svg') no-repeat;
@@ -537,7 +535,7 @@
     .vis-nested-group.vis-group-level-unknown-but-gte1.highlight-selected{
         box-sizing: content-box;
         height: 32px !important;
-        width: 281px;
+        width: 271px;
         border: 2px solid $color-bus;
         background-color: $color-bus-light !important;
         margin-top: -1px;
@@ -717,8 +715,8 @@
         & > div {
             background-color: #e6e6e6;
             font-weight: 500;
-            padding: 6px 3px 3px 15px;
-            margin: -4.5px -3px -4px -7.5px;
+            padding: 6px 3px 3px 17px;
+            margin: -4.5px -3px -4px -8.5px;
         }
     }
 
@@ -790,15 +788,23 @@
         z-index: 100;
     }
 
+    .vis-background .vis-group {
+        height: 36px !important;
+    }
+
     .vis-foreground .vis-group {
         position: relative;
         box-sizing: border-box;
         border-bottom: none;
         height: 36px !important;
+        .vis-item:not(.color-tram):not(.color-summer):not(.color-metro):not(.color-bus):not(.color-gold):not(.color-fog):not(.color-green):not(.color-suomenlinna) {
+            pointer-events: auto;
+            cursor: pointer;
+        }
     }
 
     /*TODO: v1.2 Disabled for now because we don't want to allow dragging the timeline at this point set to auto*/
-    .vis-drag-left{
+    /* .vis-drag-left{
         pointer-events:none;
     }
     .vis-drag-right{
@@ -813,7 +819,7 @@
     }
     .inner-end{
         pointer-events: none;
-    }
+    } */
     /*1.2v end*/
 }
 

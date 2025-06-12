@@ -639,7 +639,7 @@
       flex-flow: wrap;
       width: 289px;
       position: absolute;
-      left: 263px !important;
+      left: 254px !important;
       margin-top: 4px;
       border: 1px solid #ccc;
       background-color: white;
@@ -695,6 +695,10 @@
       line-height: $size17;
       letter-spacing: 0.03em;
     }
+
+    .vis-tooltip {
+      visibility: hidden !important;
+    }
   }
 
   .actions{
@@ -734,7 +738,7 @@
   position: relative !important;
   margin-top: 70px !important;
   overflow-y: auto; */
-  max-height: 75vh;
+  max-height: 80vh;
   max-width: 529px !important;
   position: absolute !important;
   top: 83px;
