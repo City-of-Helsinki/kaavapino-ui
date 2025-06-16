@@ -266,7 +266,7 @@ function ProjectTimeline(props) {
                     <span className="milestone-message">
                       {t('deadlines.deadline-label', {
                         date: tempDate.date(),
-                        month:tempDate.month()
+                        month: tempDate.month() || 12 // December = 0
                       })}
                     </span>
                   )
