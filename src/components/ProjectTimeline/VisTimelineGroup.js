@@ -14,7 +14,7 @@ import VisTimelineMenu from './VisTimelineMenu'
 import AddGroupModal from './AddGroupModal';
 import ConfirmModal from '../common/ConfirmModal'
 import PropTypes from 'prop-types';
-import { getVisibilityBoolName, getVisBoolsByPhaseName } from '../../utils/projectVisibilityUtils';
+import { getVisibilityBoolName, getVisBoolsByPhaseName, isDeadlineConfirmed } from '../../utils/projectVisibilityUtils';
 import './VisTimeline.css'
 Moment().locale('fi');
 
@@ -273,6 +273,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const visiblityBool = getVisibilityBoolName(dataToRemove.deadlinegroup)
       if (visiblityBool) {
         dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, visiblityBool, false));
+        const confirmationObject = isDeadlineConfirmed(visValuesRef.current, dataToRemove.deadlinegroup, true);
+        if(confirmationObject?.key && confirmationObject?.value){
+          dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, confirmationObject.key, false));
+        }
       }
       setOpenConfirmModal(!openConfirmModal)
     }
@@ -337,15 +341,17 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         if (matchedItem) {
           const groupEl = matchedItem.closest(".vis-group");
           if (groupEl) {
+            localStorage.setItem('timelineHighlightedElement', phaseId);
             groupEl.classList.add("foreground-highlight");
           }
         }
       }
       if (container) {
-        container.classList.add("highlight-selected");
+        container?.classList?.add("highlight-selected");
         if (container.parentElement.parentElement) {
           container.parentElement.parentElement.classList.add("highlight-selected");
         }
+        localStorage.setItem('menuHighlight', data.className ? data.className : false);
       }
       const groupContainer = timelineElement.querySelector(`#timeline-group-${data.id}`);
       if (groupContainer) {
@@ -550,7 +556,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const highlightJanuaryFirst = () => {
-      console.log("Highlighting January first",timelineInstanceRef?.current);
       if (!timelineInstanceRef.current) return;
     
       requestAnimationFrame(() => {
@@ -566,7 +571,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     
           // Year View: If the text is "tammi" (January in Finnish)
           const isYearView = text === "tammi";
-          console.log(isYearView,isMonthView,firstLine,text)
           if (isYearView || isMonthView) {
             label.classList.add("january-first");
           }
@@ -1021,7 +1025,64 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           timelineInstanceRef.current.redraw();
         }
       }
+
+       // Restore highlight from localStorage
+      const savedHighlightId = localStorage.getItem('timelineHighlightedElement');
+      const menuHighlightClass = localStorage.getItem('menuHighlight');
+      if (savedHighlightId && timelineRef?.current) {
+          const timelineElement = timelineRef.current;
+          // First check if any element already has the highlight class
+          const alreadyHighlightedElements = timelineElement.querySelectorAll(".vis-group.foreground-highlight");
+          if (alreadyHighlightedElements.length === 0) {
+            // Find and highlight the saved element
+            const matchedItem = timelineElement.querySelector(`.vis-item[class*="${savedHighlightId}"]`);
+            if (matchedItem) {
+              const groupEl = matchedItem.closest(".vis-group");
+              if (groupEl) {
+                groupEl.classList.add("foreground-highlight");
+              }
+            }
+          }
+      }
+
+      if (menuHighlightClass && typeof menuHighlightClass === 'string' && !menuHighlightClass.startsWith('[object ') && timelineRef?.current) {
+          const selector = `.vis-label.vis-nested-group.${CSS.escape(menuHighlightClass)}`;
+          const alreadyHighlightedMenuElements = document.querySelectorAll('.highlight-selected');
+          if (alreadyHighlightedMenuElements.length === 0) {
+            const menuElementToHighlight = document.querySelector(selector);
+            if (menuElementToHighlight) {
+              menuElementToHighlight.classList.add('highlight-selected');
+            }
+          }
+      }
+
     }, [visValues]);
+
+    function getHighlightedElement(offset) {
+      const container = document.querySelector('.vis-labelset');
+      const all = Array.from(container.querySelectorAll('.vis-nested-group'));
+      return all[offset] || null;
+    }
+
+    // Function to highlight elements based on phase name and suffix when redirected from the form to the timeline
+    const highlightTimelineElements = (deadlineGroup) => {
+      if (!deadlineGroup || !timelineRef.current) return;
+      // Extract the phase name and suffix from the deadlinegroup
+      const parts = deadlineGroup.split('_');
+      let suffix = "1"; // Default to 1 if no suffix
+      
+      // Get the numeric suffix (like "_1", "_2") if it exists
+      if (parts.length > 2) {
+        const lastPart = parts[parts.length - 1];
+        if (/^\d+$/.test(lastPart)) {
+          suffix = lastPart;
+        }
+      }
+      const highlightedElement = getHighlightedElement(suffix)
+      if(highlightedElement){
+        highlightedElement.classList.add('highlight-selected');
+      }
+    };
 
     useEffect(() => {
       selectedGroupIdRef.current = selectedGroupId;
@@ -1031,6 +1092,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       if (showTimetableForm.selectedPhase !== null) {
         setToggleTimelineModal({open:!toggleTimelineModal.open, highlight:true, deadlinegroup:showTimetableForm?.matchedDeadline?.deadlinegroup})
         setTimelineData({group:showTimetableForm.selectedPhase, content:formatDeadlineGroupTitle(showTimetableForm)})
+        // Call the highlighting function
+        highlightTimelineElements(showTimetableForm?.matchedDeadline?.deadlinegroup);
       }
     }, [showTimetableForm.selectedPhase])
 
