@@ -964,7 +964,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const savedHighlightId = localStorage.getItem('timelineHighlightedElement');
       const menuHighlightClass = localStorage.getItem('menuHighlight');
       if (savedHighlightId && timelineRef?.current) {
-        setTimeout(() => {
           const timelineElement = timelineRef.current;
           // First check if any element already has the highlight class
           const alreadyHighlightedElements = timelineElement.querySelectorAll(".vis-group.foreground-highlight");
@@ -978,11 +977,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               }
             }
           }
-        }, 200); // Small delay to ensure timeline has rendered
       }
 
       if (menuHighlightClass && typeof menuHighlightClass === 'string' && !menuHighlightClass.startsWith('[object ') && timelineRef?.current) {
-        setTimeout(() => {
           const selector = `.vis-label.vis-nested-group.${CSS.escape(menuHighlightClass)}`;
           const alreadyHighlightedMenuElements = document.querySelectorAll('.highlight-selected');
           if (alreadyHighlightedMenuElements.length === 0) {
@@ -991,7 +988,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               menuElementToHighlight.classList.add('highlight-selected');
             }
           }
-        }, 200);
       }
 
     }, [visValues]);
