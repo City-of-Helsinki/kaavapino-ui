@@ -47,7 +47,7 @@ function ProjectTimeline(props) {
     if (filteredDeadlines) {
       createTimelineItems(filteredDeadlines)
     }
-  }, [deadlines]);
+  }, [deadlines, attribute_data]);
 
   function filterVisibleDeadlines(deadlineArray, attributeData) {
     return deadlineArray.filter((deadline) => {
@@ -266,7 +266,7 @@ function ProjectTimeline(props) {
                     <span className="milestone-message">
                       {t('deadlines.deadline-label', {
                         date: tempDate.date(),
-                        month:tempDate.month()
+                        month: tempDate.month() || 12 // December = 0
                       })}
                     </span>
                   )
@@ -400,18 +400,12 @@ const mapDispatchToProps = {
   getProjectSuccessful
 }
 
-const mapStateToProps = state => {
-  return {
-    attribute_data: attributeDataSelector(state)
-  }
-}
 
 ProjectTimeline.propTypes= {
   deadlines: PropTypes.array,
   projectView: PropTypes.bool,
   onhold: PropTypes.bool,
   attribute_data: PropTypes.object,
-
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ProjectTimeline)
+export default connect(null, mapDispatchToProps)(ProjectTimeline)

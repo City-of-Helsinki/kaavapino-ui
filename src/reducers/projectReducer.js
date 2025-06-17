@@ -139,7 +139,7 @@ export const initialState = {
   lastSaved:{},
   connection:{"connection":false},
   showEditFloorAreaForm:false,
-  showEditProjectTimetableForm:false,
+  showEditProjectTimetableForm:{showTimetable:false,timetableTarget:"",selectedPhase:"",matchedDeadline:{}},
   lastModified:false,
   updatedFloorValue:{},
   formErrorList:[],
@@ -173,7 +173,6 @@ export const reducer = (state = initialState, action) => {
 
     case UPDATE_DATE_TIMELINE: {
       const { field, newDate, formValues, isAdd, deadlineSections } = action.payload;
-
       // Create a copy of the state and attribute_data
       let updatedAttributeData
       if(formValues){
@@ -186,7 +185,7 @@ export const reducer = (state = initialState, action) => {
       }
       const projectSize = updatedAttributeData?.kaavaprosessin_kokoluokka
       //Remove all keys that are still hidden in vistimeline so they are not moved in data and later saved
-      const filteredAttributeData = objectUtil.filterHiddenKeys(updatedAttributeData);
+      const filteredAttributeData = objectUtil.filterHiddenKeysUsingSections(updatedAttributeData, deadlineSections);
       const moveToPast = filteredAttributeData[field] > newDate;
       //Save oldDate for comparison in checkforDecreasingValues
       const oldDate = filteredAttributeData[field];
@@ -365,9 +364,10 @@ export const reducer = (state = initialState, action) => {
     }
 
     case SHOW_TIMETABLE: {
+      const convertedPayload = objectUtil.convertPayloadValues(action.payload);
       return{
         ...state,
-        showEditProjectTimetableForm: action.payload
+        showEditProjectTimetableForm: convertedPayload
       }
     }
     
@@ -672,11 +672,9 @@ export const reducer = (state = initialState, action) => {
     case FETCH_PROJECT_SUCCESSFUL: {
       // Clone the payload to avoid direct mutation
       const updatedPayload = { ...action.payload };
-
       //When project is fetched it has all phase data, hide phases from data that are not in use when project is create
       //(like oas esillaolo 2,3 etc)
-      updatedPayload.attribute_data = objectUtil.filterHiddenKeys(updatedPayload.attribute_data);
-
+      updatedPayload.attribute_data = objectUtil.filterHiddenKeys(updatedPayload.attribute_data, updatedPayload.deadlines);
             // Check conditions and update attribute_data if necessary
       //Ehdotus Add the key with a value of true because first one should be always visible at start 
       // if not true data is not visible for modification on edit timetable side panel
@@ -686,6 +684,11 @@ export const reducer = (state = initialState, action) => {
         }
       }
 
+      if(updatedPayload?.attribute_data["aloituskokous_suunniteltu_pvm_readonly"] === undefined) {
+        //Check if value is not existing at all then add it as undefined, previous prop will not match othetwise and triggers unnecessary renders.
+        updatedPayload.attribute_data["aloituskokous_suunniteltu_pvm_readonly"] = undefined;
+      }
+      
       return {
         ...state,
         currentProject: updatedPayload,
@@ -980,7 +983,10 @@ export const reducer = (state = initialState, action) => {
       return{
         ...state,
         timetableSaved:action.payload,
-        showEditProjectTimetableForm: false,
+        showEditProjectTimetableForm: {
+          ...state.showEditProjectTimetableForm,
+          showTimetable: false
+        },
         cancelTimetableSave:false
       }
     }
@@ -989,7 +995,10 @@ export const reducer = (state = initialState, action) => {
       return{
         ...state,
         timetableSaved:false,
-        showEditProjectTimetableForm: true,
+        showEditProjectTimetableForm: {
+          ...state.showEditProjectTimetableForm,
+          showTimetable: true
+        },
         loading:false,
         saving:false,
         cancelTimetableSave:true

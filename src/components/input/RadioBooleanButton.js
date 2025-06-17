@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { RadioButton, Button, IconPlus } from 'hds-react'
+import { RadioButton, Button, IconPlus, LoadingSpinner } from 'hds-react'
 import RollingInfo from '../input/RollingInfo'
+import { useSelector } from 'react-redux'
+import { savingSelector } from '../../selectors/projectSelector'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types';
 
@@ -23,8 +25,11 @@ const RadioBooleanButton = ({
   const { t } = useTranslation()
   const [radioValue, setRadioValue] = useState(null)
   const [editField,setEditField] = useState(false)
+  const saving =  useSelector(state => savingSelector(state))
+  const [isInstanceSaving, setIsInstanceSaving] = useState(false);
 
-  const handleOnChange = value => {
+  const handleOnChange = (value) => {
+    setIsInstanceSaving(true);
     setRadioValue(value)
     rest.onChange(value)
     if (onRadioChange) {
@@ -38,6 +43,12 @@ const RadioBooleanButton = ({
   useEffect(() => {
     setRadioValue(value)
   }, [value])
+
+  useEffect(() => {
+    if (!saving && isInstanceSaving) {
+      setIsInstanceSaving(false);
+    }
+  }, [saving]);
 
   const editRollingField = () => {
     setEditField(true)
@@ -91,10 +102,15 @@ const RadioBooleanButton = ({
         phaseIsClosed={phaseIsClosed}
       />
       : 
-      <div className={className}>
+      <div className={`radio-button-wrapper ${className}`}>
         {getRadioButton("radio1", "Kyllä", `${name}-true`, `${name}-true`, disabled || timeTableDisabled, `radio-button radio-button-true ${disabled || timeTableDisabled ? 'radio-button-disabled' : ''}`, "Kyllä", error, name, () => handleOnChange(true), radioValue === true)}
         {getRadioButton("radio2", "Ei", `${name}-false`, `${name}-false`, disabled || timeTableDisabled, `radio-button radio-button-false ${disabled || timeTableDisabled ? 'radio-button-disabled' : ''}`, "Ei", error, name, () => handleOnChange(false), radioValue === false)}
         {!double && showNoInformation && getRadioButton("radio3", "Tieto puuttuu", `${name}-null`, `${name}-null`, disabled || timeTableDisabled, `radio-button radio-button-null ${disabled || timeTableDisabled ? 'radio-button-disabled' : ''}`, "", error, name, () => handleOnChange(null), radioValue !== false && radioValue !== true)}
+        {saving && isInstanceSaving && (
+          <div className="radio-spinner-overlay">
+            <LoadingSpinner className="loading-spinner" />
+          </div>
+        )}
       </div>
   }
   

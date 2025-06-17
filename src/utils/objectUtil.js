@@ -1,3 +1,4 @@
+import { shouldDeadlineBeVisible } from "./projectVisibilityUtils";
 import timeUtil from "./timeUtil";
 //Phase main start and end value order should always be the same
 const order = [
@@ -268,7 +269,7 @@ const getHighestNumberedObject = (obj1, arr) => {
     //Sort phase start end data by order const
     arr1 = sortPhaseData(arr1,order)
     //Return in order array ready for comparing next and previous value distances
-    arr1 = arr1.filter(item => !item.key.includes("viimeistaan_lausunnot_")); //filter out has no next and prev values
+    arr1 = arr1.filter(item => !item.key.includes("viimeistaan_lausunnot_") && !item.key.includes("aloituskokous_suunniteltu_pvm_readonly")); //filter out has no next and prev values
     return arr1
   }
   //Sort by certain predetermined order
@@ -544,66 +545,89 @@ const getHighestNumberedObject = (obj1, arr) => {
     return null; // Return null if no next or previous item is found
   };
 
-  const filterHiddenKeys = (updatedAttributeData) => {
-    //Remove all keys that are still hidden in vistimeline so they are not moved in data and later saved
-    const phaseNames = [
-      "periaatteet","oas","luonnos","kaavaehdotus","ehdotus","ehdotuksesta","ehdotuksen","tarkistettu_ehdotus"
-    ];
-    const lautakunnat = ["periaatteet_lautakuntaan_2","periaatteet_lautakuntaan_3","periaatteet_lautakuntaan_4",
-      "kaavaluonnos_lautakuntaan_2","kaavaluonnos_lautakuntaan_3","kaavaluonnos_lautakuntaan_4",
-      "kaavaehdotus_lautakuntaan_2","kaavaehdotus_lautakuntaan_3","kaavaehdotus_lautakuntaan_4",
-      "tarkistettu_ehdotus_lautakuntaan_2","tarkistettu_ehdotus_lautakuntaan_3","tarkistettu_ehdotus_lautakuntaan_4"
-    ];
-    const esillaolot = ["jarjestetaan_periaatteet_esillaolo_2","jarjestetaan_periaatteet_esillaolo_3",
-      "jarjestetaan_oas_esillaolo_2","jarjestetaan_oas_esillaolo_3","jarjestetaan_luonnos_esillaolo_2","jarjestetaan_luonnos_esillaolo_3",
-      "kaavaehdotus_uudelleen_nahtaville_2","kaavaehdotus_uudelleen_nahtaville_3","kaavaehdotus_uudelleen_nahtaville_4"
-    ];
-    // Phase mapping for "kaavaehdotus" and its variations
-    const phaseGroup = {
-      "kaavaehdotus": ["kaavaehdotus", "ehdotus", "ehdotuksesta", "ehdotuksen"]
-    };
-    //find index keys that exist in data
-    const presentLautakunnat = lautakunnat.filter(key => key in updatedAttributeData && updatedAttributeData[key] !== false);
-    const presentEsillaolot = esillaolot.filter(key => key in updatedAttributeData && updatedAttributeData[key] !== false);
-
-    //find index and phase from presentLautakunnat and presentEsillaolot
-    const lautakunnatPhases = presentLautakunnat.map(key => {
-      const phase = phaseNames.find(phaseName => key.includes(phaseName));
-      const number = key.match(/_(\d+)/) ? key.match(/_(\d+)/)[1] : null;
-      return { phase: phaseGroup[phase] || [phase], number }; // Ensure phase is always an array
-    });
-
-    const esillaolotPhases = presentEsillaolot.map(key => {
-      let phase = phaseNames.find(phaseName => key.includes(phaseName));
-      const number = key.match(/_(\d+)/) ? key.match(/_(\d+)/)[1] : null;
-      // If phase is "kaavaehdotus", replace it with all related phases
-      if (phase === "kaavaehdotus") {
-        phase = phaseGroup["kaavaehdotus"];
-      } else {
-        phase = [phase]; // Keep it as an array for consistency
-      }
-      return { phase, number };
-    });
-
-    //filter all but index keys from data
-    return Object.entries(updatedAttributeData).reduce((acc, [key, value]) => {
-      const indexMatch = key.match(/_(\d$)/);
-      const index = indexMatch ? parseInt(indexMatch[1], 10) : null;
-      //const isLautakunnatPhase = lautakunnatPhases.some(phase => key.includes(phase.phase) && key.includes(phase.number));
-      //const isEsillaolotPhase = esillaolotPhases.some(phase => key.includes(phase.phase) && key.includes(phase.number));
-      const isLautakunnatPhase = lautakunnatPhases.some(
-        phaseObj => phaseObj.phase.some(p => key.includes(p)) && key.endsWith(`_${phaseObj.number}`)
-      );
-  
-      const isEsillaolotPhase = esillaolotPhases.some(
-        phaseObj => phaseObj.phase.some(p => key.includes(p)) && key.endsWith(`_${phaseObj.number}`)
-      );
-      if (index === null || index === 1 || (isLautakunnatPhase || isEsillaolotPhase) ) {
+  const filterHiddenKeys = (attributeData, deadlines) => {
+    return Object.entries(attributeData).reduce((acc, [key, value]) => {
+      const dl = findDeadlineInDeadlines(key, deadlines);
+      if (!dl || shouldDeadlineBeVisible(dl.deadline.attribute, dl.deadline.deadlinegroup, attributeData)) {
         acc[key] = value;
       }
-      return acc;
-    }, {});
+      return acc
+    }, {})
   }
+
+  const filterHiddenKeysUsingSections = (attributeData, deadlineSections) => {
+    return Object.entries(attributeData).reduce((acc, [key, value]) => {
+      const dl = findDeadlineInDeadlineSections(key, deadlineSections);
+      if (!dl || shouldDeadlineBeVisible(dl.name, dl.attributegroup, attributeData)) {
+        acc[key] = value;
+      }
+      return acc
+    }, {})
+  }
+
+  const findDeadlineInDeadlines = (deadlineName, deadlineObjects) => {
+    for (const deadline of deadlineObjects) {
+      if (deadlineName && deadline?.deadline?.attribute === deadlineName) {
+        return deadline;
+      }
+    }
+  }
+
+  const findDeadlineInDeadlineSections = (deadlineName,deadlineSections) => {
+    for (const phaseSection of deadlineSections) {
+      if (!phaseSection?.sections[0]?.attributes){
+        return undefined;
+      }
+      for (const dlObject of phaseSection.sections[0].attributes){
+        if (dlObject.name === deadlineName) {
+          return dlObject;
+        }
+      }
+    }
+  }
+
+const convertKey = {
+  tarkasta_esillaolo_periaatteet_fieldset: 'milloin_periaatteet_esillaolo_alkaa',
+  tarkasta_lautakunta_periaatteet_fieldset: 'milloin_periaatteet_lautakunnassa',
+  tarkasta_esillaolo_oas_fieldset: 'milloin_oas_esillaolo_alkaa',
+  tarkasta_esillaolo_luonnos_fieldset: 'milloin_luonnos_esillaolo_alkaa',
+  tarkasta_lautakunta_luonnos_fieldset: 'milloin_kaavaluonnos_lautakunnassa',
+  tarkasta_nahtavilla_ehdotus_fieldset: 'milloin_ehdotuksen_nahtavilla_alkaa_pieni',
+  tarkasta_lautakunta_ehdotus_fieldset: 'milloin_kaavaehdotus_lautakunnassa',
+  tarkasta_lautakunta_tarkistettu_ehdotus_fieldset: 'milloin_tarkistettu_ehdotus_lautakunnassa',
+  merkitse_hyvaksymis_fieldset: 'hyvaksymispaatos_pvm',
+  merkitse_muutoksenhaku_paivamaarat_fieldset: 'hyvaksymispaatos_valitusaika_paattyy',
+  merkitse_voimaantulo_paivamaarat_fieldset: 'voimaantulo_pvm'
+};
+
+const convertKeyToMatching = (payload) => {
+  const { name, ...rest } = payload;
+  const value = convertKey[name] || name;
+  return { ...rest, name: value };
+};
+
+const phaseID = [
+  { id: [1, 7, 13, 19, 25], name: "Käynnistys" },
+  { id: [26], name: "Periaatteet" },
+  { id: [2, 8, 14, 20, 27], name: "OAS" },
+  { id: [28], name: "Luonnos" },
+  { id: [3, 9, 15, 21, 29], name: "Ehdotus" },
+  { id: [4, 10, 16, 22, 30], name: "Tarkistettu ehdotus" },
+  { id: [5, 11, 17, 23, 31], name: "Hyväksyminen" },
+  { id: [6, 12, 18, 24, 32], name: "Voimaantulo" }
+];
+
+const convertPhaseIdToPhaseName = (id) => {
+  const phase = phaseID.find(phase => phase.id.includes(id));
+  return phase ? phase.name : null;
+};
+
+const convertPayloadValues = (payload) => {
+  const convertedKeyPayload = convertKeyToMatching(payload);
+  const phaseName = convertPhaseIdToPhaseName(payload.selectedPhase);
+  return { ...convertedKeyPayload,selectedPhase: phaseName };
+};
+
 
 export default {
     getHighestNumberedObject,
@@ -621,5 +645,9 @@ export default {
     compareObjectValues,
     findMatchingName,
     findItem,
-    filterHiddenKeys
+    filterHiddenKeys,
+    convertKeyToMatching,
+    convertPhaseIdToPhaseName,
+    convertPayloadValues,
+    filterHiddenKeysUsingSections
 }

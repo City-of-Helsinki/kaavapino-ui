@@ -5,7 +5,7 @@
     margin-bottom: 0;
     border-color: RGBA(0,0,0,0);
     .vis-left{
-        width: 300px;
+        width: 291px;
         box-shadow: inset -1px 0px #bfbfbf; // Serves as a fake border
         .vis-content {
             top: 0 !important;
@@ -17,35 +17,40 @@
     .vis-timeline {
         border-top: none;
         border-bottom: none;
-        border-color: #ccc;
+        border-left: none;
+        border-color: #ccc !important;
         overflow-y: visible !important;
         overflow-x: clip !important;
         .vis-vertical .vis-current-time {
             top: 84px !important;
+            z-index: 0;
         }
         .vis-center, .vis-left {
-            border-bottom: none
+            border-bottom: none;
         }
         .vis-panel.vis-center {
-            border-left-color: RGBA(0,0,0,0);
+            border: 0;
+            border-left: 1px;
+            border-left-color:RGBA(0,0,0,0);
         }
     }
 
     .vis-panel.vis-top {
         border: 1px solid $color-black-20;
+        border-left-color: $color-white;
         border-top: none;
+        border-right: none;
         height: 85px;
         position: sticky;
-        top: 81px !important;
+        top: 69px !important;
         left: 301px !important;
-        margin-right: -3.5px;
         z-index: 1;
     }
 
     .vis-panel.vis-center .vis-content {
         .vis-itemset {
-            height: auto !important;
-            min-height: 57.5vh !important;
+            // height of the modal - (74px + 69px + 85px for top panel + 104px for bottom panel)
+            height: calc(98vh - 331px) !important;
         }
     }
 
@@ -56,11 +61,12 @@
         & > div {
             color: $black1;
             font-size: $size14;
+            left: -1px;
         }
     }
 
     .timeline-menu-container {
-        padding-top: 20px;
+        padding-top: $size12;
         position: sticky;
         top: 0;
         background-color: #ffffff;
@@ -72,14 +78,14 @@
         justify-content: flex-start;
         align-items: center;
         .time-menu{
-            padding-left: 300px;
+            padding-left: 291px;
             button {
                 --min-size: $size32; //hds syntax
                 width: $size44;
                 height: $size44;
                 padding: 0; // Add this line
                 box-sizing: border-box; // Add this line
-                margin-bottom: $size16;
+                margin-bottom: $size12;
                 position: relative;
                 &:nth-child(2) {
                     margin-left: -2px;
@@ -89,6 +95,7 @@
                 }
                 &:hover {
                     border-color: $color-bus;
+                    color: $color-bus;
                 }
                 &:focus-visible, &:active {
                     outline: 2px solid $color-coat-of-arms;
@@ -104,7 +111,7 @@
                 color: $color-bus;
                 padding: 0;
                 box-sizing: border-box;
-                margin-bottom: $size16;
+                margin-bottom: $size12;
                 margin-left: $size16;
                 font-weight: 500;
                 line-height: $size24;
@@ -117,7 +124,7 @@
                     border: none;
                     border-left: 1px solid #cccccc;
                     position: absolute;
-                    right: -33.5px;
+                    right: -36px;
                     top: 50%;
                     transform: translateY(-50%);
                 }
@@ -127,11 +134,12 @@
                 &:focus-visible, &:active {
                     outline: 3px solid $color-coat-of-arms;
                     outline-offset: 2px;
+                    color: $color-bus;
                 }
             }
         }
         .zoom-menu{
-            margin-left: 62px;
+            margin-left: 65px;
             button{
                 font-family: "Helsinki Grotesk Medium", sans-serif;
                 font-size: $size14;
@@ -143,7 +151,7 @@
                 color: $black1;
                 border: 1px #1A1A1A solid;
                 border-radius: $size16;
-                margin-bottom: $size16;
+                margin-bottom: $size12;
                 margin-right: $size16;
                 &:hover {
                     background-color: $color-black-20;
@@ -154,6 +162,13 @@
                 }
                 &::after {
                     border: none;
+                }
+                span{
+                    padding-top: 5px !important;
+                    padding-bottom: 3px !important;
+                    padding-left: 12px !important;
+                    padding-right: 12px !important;
+                    margin: 0 !important;
                 }
             }
             button:active, .selected {
@@ -235,7 +250,7 @@
         max-width: 100%;
         right: 0;
         display: inline-block;
-        border: $size1 solid #fff;
+        border: 2px solid #fff;
         border-radius: 14px;
         padding: 5px;
         background-color: #1a1a1a;
@@ -245,15 +260,15 @@
             display: none;
         }
         &.past {
-            outline: 1px solid $color-gray;
-            outline-offset: -1px;
+            outline: 2px solid $color-gray;
+            outline-offset: -2px;
             background-color: #1a1a1a !important;
         }
         &.confirmed::after {
             content: "";
             position: absolute;
-            top: -9px;
-            right: -10px;
+            top: -13px;
+            right: -15px;
             width: 21px;
             height: 21px;
             background: #fff url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
@@ -269,10 +284,11 @@
         pointer-events: auto;
         border-width: 0;
         height: $size24;
+        border-radius: 6px;
         .vis-item-overflow{
             border: 2px solid $black1;
             background: #fff;
-            border-radius: 6px;
+            border-radius: inherit;
             .vis-item-content{
                 pointer-events: auto;
                 padding:0;
@@ -300,6 +316,7 @@
         border-color: #1a1a1a;
         height: 4px;
         top: 15.5px !important;
+        left: 4px;
         z-index: 100;
     }
 
@@ -317,13 +334,25 @@
     }
 
     .vis-dot.board-only{
-        border: 0.063rem solid #fff;
+        border: $size1 solid #fff;
         border-radius: 14px;
         padding: 5px;
         background-color: #1a1a1a;
         box-shadow: 0 0 0 2px #1a1a1a;
         height: $size20;
         width: $size20;
+        &.confirmed::after {
+            content: "";
+            position: absolute;
+            top: -9px;
+            right: -10px;
+            width: 21px;
+            height: 21px;
+            background: #fff url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
+            background-position: center;
+            background-size: contain;
+            border-radius: 50%;
+        }
     }
 
     .vis-range{
@@ -332,7 +361,7 @@
             content: "";
             position: absolute;
             top: -9px;
-            right: -10px;
+            right: -11.5px;
             width: 21px;
             height: 21px;
             background: #fff url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
@@ -394,6 +423,7 @@
                     background-size: 1.125rem;
                     border: none;
                     cursor: pointer;
+                    color: $color-black-90;
                 }
                 .timeline-remove-button{
                     display: none;
@@ -415,10 +445,9 @@
                     visibility: hidden;
                     padding: 0;
                     margin-right: 12px;
-                    /*   margin-left: 12px;
-                    width: 24px;
+                    margin-left: 12px;
+                    /*width: 24px;
                     height: 24px; Hidden for now, unhide when lock feature in dev*/
-                    margin-left: 0;
                     width: 0;
                     height: 0;
                     background:url('../../assets/icons/lock-open-blue.svg') no-repeat;
@@ -450,6 +479,7 @@
                     }
                 }
                 .timeline-remove-text {
+                    color: $color-black-90;
                     display: none;
                     position: absolute;
                     top: 35px;
@@ -503,11 +533,13 @@
     }
 
     .vis-nested-group.vis-group-level-unknown-but-gte1.highlight-selected{
+        box-sizing: content-box;
+        height: 32px !important;
+        width: 272px;
         border: 2px solid $color-bus;
         background-color: $color-bus-light !important;
         margin-top: -1px;
         padding-top: 1px;
-        margin-bottom:1px;
         margin-right:-1px;
         .vis-inner .timeline-buttons-container .timeline-button-label {
             padding-top: 0;
@@ -562,8 +594,8 @@
                 .timeline-add-button{
                     z-index: 1000;
                     position: absolute;
-                    right: 11px;
-                    top: 5px;
+                    right: 8px;
+                    top: 6px;
                     padding: 0;
                     width: 24px;
                     height: 24px;
@@ -621,25 +653,47 @@
         content: "";
         width: $size18;
         height: 100%;
-        background: url('../../assets/icons/angle-up.svg') no-repeat;
+        background: url('../../assets/icons/angle-up2.svg') no-repeat;
         background-position-x: center;
         background-position-y: center;
-        background-size: $size18;
+        background-size: $size13;
     }
 
     .vis-label.vis-nesting-group.collapsed:before{
         content: "";
         width: $size18;
         height: 100%;
-        background: url('../../assets/icons/angle-down.svg') no-repeat;
+        background: url('../../assets/icons/angle-down2.svg') no-repeat;
         background-position-x: center;
         background-position-y: center;
-        background-size: $size18;
+        background-size: $size13;
     }
 
     .vis-text.vis-major {
         text-align: center;
-        border-color: #999999;
+        border-color: transparent !important;
+        &::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 2.5px;
+            width: 1px;
+            height: 100%;
+            background-color: #999999;
+            transform: translateX(-50%);
+        }
+        &:nth-last-of-type(1) {
+            &::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: -2px;
+                width: 1px;
+                height: 100%;
+                background-color: #999999;
+                transform: translateX(-50%);
+            }
+        }
     }
 
     .vis-text.vis-minor {
@@ -648,34 +702,31 @@
             align-content: center;
             text-align: center;
             border-color: $color-black-20;
-            border-bottom: none;
+            left: 2px;
         }
     }
 
     .vis-major {
-        border-left: $size1 solid #999999 !important;
+        padding-left: 7px;
+        border-left: $size1 solid $border-gray4 !important;
         &::first-letter{
             text-transform: capitalize;
         }
         & > div {
             background-color: #e6e6e6;
             font-weight: 500;
-            padding: 6px 3px 3px 9px;
-            margin: -4.5px -3px -4px -3.5px;
+            padding: 6px 3px 3px 17px;
+            margin: -4.5px -3px -4px -8.5px;
         }
     }
 
     .vis-minor{
-        height: 57px;
+        height: 59px;
         background-color: #ffffff;
         border-left: $size1 solid #CCCCCC;
         border-top: $size1 solid $color-black-20;
         border-bottom: $size1 solid $color-black-20;
         font-size: $size14;
-        font-weight: 500;
-        &::first-line {
-            font-weight: bold;
-        }
     }
 
     .vis-time-axis .vis-grid.vis-saturday,
@@ -737,15 +788,23 @@
         z-index: 100;
     }
 
+    .vis-background .vis-group {
+        height: 36px !important;
+    }
+
     .vis-foreground .vis-group {
         position: relative;
         box-sizing: border-box;
         border-bottom: none;
         height: 36px !important;
+        .vis-item:not(.color-tram):not(.color-summer):not(.color-metro):not(.color-bus):not(.color-gold):not(.color-fog):not(.color-green):not(.color-suomenlinna) {
+            pointer-events: auto;
+            cursor: pointer;
+        }
     }
 
     /*TODO: v1.2 Disabled for now because we don't want to allow dragging the timeline at this point set to auto*/
-    .vis-drag-left{
+    /* .vis-drag-left{
         pointer-events:none;
     }
     .vis-drag-right{
@@ -760,7 +819,7 @@
     }
     .inner-end{
         pointer-events: none;
-    }
+    } */
     /*1.2v end*/
 }
 
@@ -779,12 +838,38 @@
     }
     .vis-minor {
         border-color: $color-black-20 !important;
+        font-family: 'Helsinki Grotesk', sans-serif;
+        font-weight: 700;
     }
     .vis-minor::first-letter {
         text-transform: capitalize;
     }
     .vis-minor.vis-january {
         border-left: 0.063rem solid #999999 !important;
+    }
+    .vis-text.vis-major:nth-last-of-type(2) {
+        &::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -2px;
+            width: 1px;
+            height: 100%;
+            background-color: #999999;
+            transform: translateX(-50%);
+        }
+    }
+    .vis-text.vis-major:nth-last-of-type(2) {
+        &::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -2px;
+            width: 1px;
+            height: 100%;
+            background-color: #999999;
+            transform: translateX(-50%);
+        }
     }
     .normal-weekend {
         background-color: $color-white !important;
@@ -793,10 +878,16 @@
         border: none !important;
         background-color: transparent !important;
     }
-    .holiday {
+    .vis-item.vis-background.holiday {
         top: 0;
-        background-color: $color-summer-light !important;
+        background: $color-summer-light;
         z-index: 100;
+        .vis-item-overflow {
+            background-color: $color-summer-light !important;
+        }
+    }
+    .vis-time-axis .vis-grid.vis-major {
+        border-left: 0.063rem solid #999999 !important;
     }
 }
 
@@ -805,20 +896,25 @@
     .vis-time-axis .vis-grid.vis-sunday,
     .vis-saturday,
     .vis-sunday,
+    .normal-weekend,
     .negative {
         top: 0;
-        background: $color-black-5 !important;
-        border-right: 0.5px solid #ccc !important;
-        border-left: 0.5px solid #ccc !important;
+        .vis-item-overflow {
+            background: $color-black-5;
+            border-right: 0.5px solid #ccc;
+            border-left: 0.5px solid #ccc;
+        }
     }
     .holiday {
         top: 0;
-        background-color: $color-summer-light !important;
-        z-index: 100;
-        border-right: 0.5px solid #ccc !important;
-        border-left: 0.5px solid #ccc !important;
+        z-index: 0;
+        .vis-item-overflow {
+            background: $color-summer-light;
+            border-right: 0.5px solid #ccc;
+            border-left: 0.5px solid #ccc;
+        }
     }
-    // Temporary rule until we figure out how we can get .negative and .holiday classes to work in .vis-time-axis
+    
     .vis-time-axis .vis-saturday,
     .vis-time-axis .vis-sunday {
         background-color: #ffffff !important;
@@ -830,9 +926,17 @@
         color: $black1;
     }
     .vis-minor {
-        font-family: 'Helsinki Grotesk Bold', sans-serif;
+        font-family: 'Helsinki Grotesk', sans-serif;
+        font-weight: 400;
         border-color: $color-black-20 !important;
-        color:$black
+        color:$black;
+        text-transform: capitalize;
+        line-height: 24px;
+        &::first-line {
+            font-family: 'Helsinki Grotesk', sans-serif;
+            font-weight: 700;
+            text-transform: none;
+        }
     }
 }
 
@@ -847,4 +951,12 @@
     word-wrap: break-word !important;
     z-index: 2000 !important;
     border: none !important;
+}
+
+.foreground-highlight{
+    background-color: #F0F0FF80;
+}
+.january-first {
+    border-left:$size1 solid $border-gray4 !important;
+    opacity: 0.8;
 }
