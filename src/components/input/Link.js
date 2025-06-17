@@ -29,6 +29,7 @@ const Link = props => {
   const [editField,setEditField] = useState(false)
   const [isEmptyReqField, setIsEmptyReqField] = useState(false)
   const [currentName, setCurrentName] = useState(null)
+  const [isInstanceSaving, setIsInstanceSaving] = useState(false);
   const saving =  useSelector(state => savingSelector(state))
   const isValid = value => isUrl(value) || ipRegex({ exact: true }).test(value)
 
@@ -42,12 +43,19 @@ const Link = props => {
     oldValueRef.current = props.input.value;
   }, [])
 
+  useEffect(() => {
+  if (!saving && isInstanceSaving) {
+    setIsInstanceSaving(false);
+  }
+  }, [saving]);
+
   const onBlur = (event) => {
     if (event.target.value === "" && props.fieldData.required) {
       setIsEmptyReqField(true);
     }
     if (isLinkValid) {
       if(event.target.value !== oldValueRef.current){
+        setIsInstanceSaving(true);
         props.onBlur()
       }
     }
@@ -102,7 +110,7 @@ const Link = props => {
           className={isEmptyReqField || (!isLinkValid && currentValue && !multipleLinks) ? 'error link' : 'link'}
           aria-label="link"
         />
-        {saving && currentName === props.input.name && (
+        {saving && isInstanceSaving && (
           <div className="link-spinner-overlay">
             <LoadingSpinner className="loading-spinner" />
           </div>

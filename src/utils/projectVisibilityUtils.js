@@ -213,3 +213,48 @@ export const shouldDeadlineBeVisible = (deadlineName, deadlineGroup, attributeDa
   }
   return visBoolVal;
 }
+
+// Helper function to check if dates are confirmed
+export const isDeadlineConfirmed = (formValues, deadlineGroup, returnField) => {
+    // ReturnField true is used when deleting phase and making sure confirmation is deleted too.
+    // Extract the number from deadlineGroup if it exists
+    const extractDigitsFromEnd = (str) => {
+      if (!str) return null;
+      const digits = str.split('').reverse().filter(char => !isNaN(char) && char !== ' ').reverse().join('');
+      return digits || null;
+    };
+
+    const matchNumber = extractDigitsFromEnd(deadlineGroup);
+    let confirmationKey;
+
+    const baseKeys = {
+      "tarkistettu_ehdotus": "vahvista_tarkistettu_ehdotus_lautakunnassa",
+      "ehdotus_pieni": "vahvista_ehdotus_esillaolo_pieni",
+      "ehdotus_nahtavillaolokerta": "vahvista_ehdotus_esillaolo",
+      "ehdotus_esillaolo": "vahvista_ehdotus_esillaolo",
+      "ehdotus_lautakunta": "vahvista_kaavaehdotus_lautakunnassa",
+      "oas": "vahvista_oas_esillaolo_alkaa",
+      "periaatteet_esillaolokerta": "vahvista_periaatteet_esillaolo_alkaa",
+      "periaatteet_lautakuntakerta": "vahvista_periaatteet_lautakunnassa",
+      "luonnos_esillaolokerta": "vahvista_luonnos_esillaolo_alkaa",
+      "luonnos_lautakuntakerta": "vahvista_kaavaluonnos_lautakunnassa"
+    };
+
+    for (const key in baseKeys) {
+      if (deadlineGroup.includes(key)) {
+        if (matchNumber && matchNumber === "1") {
+          // If number is 1, use the base key
+          confirmationKey = baseKeys[key];
+        } else if (matchNumber) {
+          // If number is bigger, construct the confirmationKey using the number
+          confirmationKey = `${baseKeys[key]}_${matchNumber}`;
+        } else {
+          // If no number, use the base key
+          confirmationKey = baseKeys[key];
+        }
+        break;
+      }
+    }
+    const returnValue = returnField ? { key: confirmationKey, value: formValues[confirmationKey] } : formValues[confirmationKey];
+    return returnValue;
+  };

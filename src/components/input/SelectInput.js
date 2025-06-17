@@ -42,6 +42,7 @@ const SelectInput = ({
   const [readonly, setReadOnly] = useState(false)
   const [fieldName, setFieldName] = useState("")
   const [editField,setEditField] = useState(false)
+  const [isInstanceSaving, setIsInstanceSaving] = useState(false);
   const currentOptions = []
   const saving =  useSelector(state => savingSelector(state))
 
@@ -118,6 +119,12 @@ const SelectInput = ({
       }
     }
   }, [lockedStatusJsonString]);
+
+  useEffect(() => {
+    if (!saving && isInstanceSaving) {
+      setIsInstanceSaving(false);
+    }
+  }, [saving]);
 
   useEffect(() => {
     oldValueRef.current = input.value;
@@ -218,6 +225,7 @@ const SelectInput = ({
       //prevent saving if locked
       if (!readonly) {
         if (typeof onBlur === 'function') {
+          setIsInstanceSaving(true);
           //Sent call to save changes
           onBlur();
           oldValueRef.current = selectValues;
@@ -342,7 +350,7 @@ const SelectInput = ({
         />
         )}
 
-        {saving && identifier === input.name && (
+        {saving && isInstanceSaving && (
           <div className={`select-spinner-overlay ${multiple ? 'multi' : 'single'}`}>
             <LoadingSpinner className="loading-spinner" />
           </div>

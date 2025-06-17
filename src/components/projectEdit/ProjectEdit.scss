@@ -545,7 +545,7 @@
 
 .modal-center-big{
   max-height: 98vh;
-  width: fill-available !important;
+  width: stretch !important;
   margin: 0 16px !important;
   position: relative !important;
   font-family: 'Helsinki Grotesk Regular', sans-serif !important;
@@ -713,8 +713,8 @@
     border-top: 1px solid #808080 !important;
     background-color: #fff !important;
     .form-buttons{
-      margin-top: $size24;
-      margin-bottom: $size24;
+      margin-top: 0;
+      margin-bottom: 0;
       margin-left: 22px;
       button {
         height: 56px;
