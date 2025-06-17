@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { connect } from 'react-redux'
 import { downloadDocument, downloadDocumentPreview } from '../../actions/documentActions'
 import { Button } from 'hds-react'
@@ -6,7 +6,7 @@ import { Grid } from 'semantic-ui-react'
 import { withRouter } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
-import DocumentConfirmationModal from './DocumentConfirmationModal'
+//import DocumentConfirmationModal from './DocumentConfirmationModal'
 import PropTypes from 'prop-types'
 
 function Document({
@@ -28,9 +28,11 @@ function Document({
 }) {
   const { t } = useTranslation()
 
-  const [showConfirmation, setShowConfirmation] = useState(false)
+  /* Usage of confirmation dialog is commented out due KAAV-2776 */
 
-  const confirmationCallback = confirmed => {
+  //const [showConfirmation, setShowConfirmation] = useState(false)
+
+  /* const confirmationCallback = confirmed => {
     setShowConfirmation(false)
 
     if (confirmed) {
@@ -39,16 +41,23 @@ function Document({
         disableDownloads()
       }
     }
+  } */
+
+  const download = () => {
+    downloadDocument({ file, name })
+    if(typeof disableDownloads === 'function'){
+        disableDownloads()
+    }
   }
 
-  const renderConfirmationDialog = () => {
+  /* const renderConfirmationDialog = () => {
     return (
       <DocumentConfirmationModal
         open={showConfirmation}
         callback={confirmationCallback}
       />
     )
-  }
+  } */
 
   const disablePreview = (ended,schema) => {
     if(!ended && schema){
@@ -78,47 +87,44 @@ function Document({
     }
   }
 
-  const openConfirmationDialog = () => setShowConfirmation(true)
+  //const openConfirmationDialog = () => setShowConfirmation(true)
   return (
-    <>
-      {renderConfirmationDialog()}
-      <Grid columns="equal" className="document-row ">
-        <Grid.Column>
-          <span className="document-title document-header">{name}</span>
-          <span className="document-last-loaded">
-            <span>{t('project.document-last-loaded')} </span>
-            <span>{lastDownloaded ? dayjs(lastDownloaded).format('DD.MM.YYYY HH:mm') : ''}</span>
-          </span>
-        </Grid.Column>
+    <Grid columns="equal" className="document-row ">
+      <Grid.Column>
+        <span className="document-title document-header">{name}</span>
+        <span className="document-last-loaded">
+          <span>{t('project.document-last-loaded')} </span>
+          <span>{lastDownloaded ? dayjs(lastDownloaded).format('DD.MM.YYYY HH:mm') : ''}</span>
+        </span>
+      </Grid.Column>
 
-        <Grid.Column textAlign="right">
-            <>
+      <Grid.Column textAlign="right">
+          <>
+            <Button
+              size='small'
+              variant="secondary"
+              onClick={() => {preview()}}
+              href={file}
+              className="document-button"
+              disabled={disablePreview(phaseEnded,schema) || !downloadingDocumentReady}
+            >
+              {t('project.load-preview')}
+            </Button>
+            {isUserResponsible && (
               <Button
                 size='small'
-                variant="secondary"
-                onClick={() => {preview()}}
+                variant="primary"
+                onClick={() => download()}
                 href={file}
                 className="document-button"
-                disabled={disablePreview(phaseEnded,schema) || !downloadingDocumentReady}
+                disabled={disableDownload(phaseEnded,hideButtons,scheduleAccepted,schema) || !downloadingDocumentReady}
               >
-                {t('project.load-preview')}
+                {t('project.load')}
               </Button>
-              {isUserResponsible && (
-                <Button
-                  size='small'
-                  variant="primary"
-                  onClick={openConfirmationDialog}
-                  href={file}
-                  className="document-button"
-                  disabled={disableDownload(phaseEnded,hideButtons,scheduleAccepted,schema) || !downloadingDocumentReady}
-                >
-                  {t('project.load')}
-                </Button>
-              )}
-            </>
-        </Grid.Column>
-      </Grid>
-    </>
+            )}
+          </>
+      </Grid.Column>
+    </Grid>
   )
 }
 

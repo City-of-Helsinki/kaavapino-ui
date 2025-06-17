@@ -49,8 +49,8 @@
 
     .vis-panel.vis-center .vis-content {
         .vis-itemset {
-            height: auto !important;
-            min-height: 63.83vh !important;
+            // height of the modal - (74px + 69px + 85px for top panel + 104px for bottom panel)
+            height: calc(98vh - 331px) !important;
         }
     }
 
@@ -535,7 +535,7 @@
     .vis-nested-group.vis-group-level-unknown-but-gte1.highlight-selected{
         box-sizing: content-box;
         height: 32px !important;
-        width: 271px;
+        width: 272px;
         border: 2px solid $color-bus;
         background-color: $color-bus-light !important;
         margin-top: -1px;
