@@ -277,18 +277,10 @@ class EditProjectTimeTableModal extends Component {
   }
 
   // Helper to determine expanded state
-  getExpandedState = (title, ongoingPhase, isMounting, collapseData, showTimetableForm) => {
-    if (collapseData[title]) {
-      return collapseData[title];
-    }
-    if (
-      (title === ongoingPhase && isMounting) ||
-      title === showTimetableForm?.selectedPhase
-    ) {
-      return true;
-    }
-    return false;
-  }
+  getExpandedState = (title, ongoingPhase, isMounting, collapseData, showTimetableForm) => (
+    collapseData[title] ||
+    ((title === ongoingPhase && isMounting) || title === showTimetableForm?.selectedPhase) || false
+  )
 
   addDeadLineGroups = (deadlineSections, deadLineGroups, ongoingPhase, isMounting) => {
     // Collect collapseData updates to avoid calling setState in a loop
@@ -1328,6 +1320,10 @@ EditProjectTimeTableModal.propTypes = {
   attributeData: PropTypes.object,
   isAdmin: PropTypes.bool,
   formSubmitErrors: PropTypes.object,
+  showTimetableForm: PropTypes.shape({
+    open: PropTypes.string,
+    selectedPhase: PropTypes.string,
+  }),
   deadlineSections: PropTypes.array,
   disabledDates: PropTypes.array,
   lomapaivat: PropTypes.array,
