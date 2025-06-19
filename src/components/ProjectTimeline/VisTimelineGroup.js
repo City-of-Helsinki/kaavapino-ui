@@ -91,8 +91,124 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       trackExpandedGroups(event)
     }
 
+    const getLargestIndex = (keys, visValRef) => {
+      let largestIndex = 1;
+      keys.forEach(key => {
+        const match = /_(\d+)$/.exec(key);
+        if (match) {
+          const number = parseInt(match[1], 10);
+          if (number > largestIndex && visValRef[key]) {
+            largestIndex = number;
+          } else if (number === 1 && visValRef[key] === false) {
+            // If first element group explicitly set to false, it has been deleted
+            // By default it may just be undefined (even if present)
+            largestIndex = 0;
+          }
+        }
+      });
+      return largestIndex;
+    }
 
-    const checkConfirmedGroups = (esillaoloConfirmed, lautakuntaConfirmed, visValRef, phase, canAddEsillaolo, canAddLautakunta, data) => {
+    const getNextGroupString = (confirmed, count, maxCount, keys) => {
+      if (confirmed) {
+        const canAdd = count <= maxCount;
+        return canAdd ? keys[count - 1] : false;
+      }
+      return false;
+    }
+
+    const checkConfirmedGroups = (
+      esillaoloConfirmed,
+      lautakuntaConfirmed,
+      visValRef,
+      phase,
+      canAddEsillaolo,
+      canAddLautakunta,
+      data
+    ) => {
+      // Esilläolo
+      let esillaoloReason = !esillaoloConfirmed ? "noconfirmation" : "";
+      const deadlineEsillaolokertaKeys = data.maxEsillaolo;
+      const attributeEsillaoloKeys = getVisBoolsByPhaseName(phase).filter(
+        (bool_name) => bool_name.includes('esillaolo') || bool_name.includes('nahtaville')
+      );
+      const largestIndex = getLargestIndex(attributeEsillaoloKeys, visValRef);
+      const esillaoloCount = largestIndex + 1;
+
+      if (esillaoloCount - 1 === deadlineEsillaolokertaKeys) {
+        esillaoloReason = "max";
+      }
+
+      let nextEsillaoloStr = getNextGroupString(
+        esillaoloConfirmed,
+        esillaoloCount,
+        deadlineEsillaolokertaKeys,
+        attributeEsillaoloKeys
+      );
+
+      if (
+        !esillaoloConfirmed &&
+        ["luonnos", "periaatteet"].includes(phase) &&
+        largestIndex === 0
+      ) {
+        canAddEsillaolo = true;
+        nextEsillaoloStr = attributeEsillaoloKeys[0] || false;
+        esillaoloReason = "";
+      } else {
+        canAddEsillaolo = esillaoloConfirmed
+          ? esillaoloCount <= deadlineEsillaolokertaKeys
+          : canAddEsillaolo;
+      }
+
+      // Lautakunta
+      let lautakuntaReason = !lautakuntaConfirmed ? "noconfirmation" : "";
+      const deadlineLautakuntakertaKeys = data.maxLautakunta;
+      const attributeLautakuntaanKeys = getVisBoolsByPhaseName(phase).filter((bool_name) =>
+        bool_name.includes("lautakunta")
+      );
+      const largestIndexLautakunta = getLargestIndex(attributeLautakuntaanKeys, visValRef);
+      const lautakuntaCount = largestIndexLautakunta + 1;
+
+      if (lautakuntaCount - 1 === deadlineLautakuntakertaKeys) {
+        lautakuntaReason = "max";
+      }
+
+      let nextLautakuntaStr = getNextGroupString(
+        lautakuntaConfirmed,
+        lautakuntaCount,
+        deadlineLautakuntakertaKeys,
+        attributeLautakuntaanKeys
+      );
+
+      if (
+        !lautakuntaConfirmed &&
+        ["luonnos", "periaatteet", "ehdotus"].includes(phase) &&
+        largestIndexLautakunta === 0
+      ) {
+        canAddLautakunta = true;
+        nextLautakuntaStr =
+          phase === "luonnos" || phase === "ehdotus"
+            ? `kaava${phase}_lautakuntaan_1`
+            : `${phase}_lautakuntaan_1`;
+        lautakuntaReason = "";
+      } else {
+        canAddLautakunta = lautakuntaConfirmed
+          ? lautakuntaCount <= deadlineLautakuntakertaKeys
+          : canAddLautakunta;
+      }
+
+      return [
+        canAddEsillaolo,
+        nextEsillaoloStr,
+        canAddLautakunta,
+        nextLautakuntaStr,
+        esillaoloReason,
+        lautakuntaReason,
+      ];
+    }
+
+
+    /* const checkConfirmedGroups = (esillaoloConfirmed, lautakuntaConfirmed, visValRef, phase, canAddEsillaolo, canAddLautakunta, data) => {
       // Check if more Esillaolo groups can be added
       let esillaoloReason = !esillaoloConfirmed ? "noconfirmation" : "";
       let lautakuntaReason = !lautakuntaConfirmed ? "noconfirmation" : "";
@@ -169,7 +285,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
 
       return [canAddEsillaolo, nextEsillaoloStr, canAddLautakunta, nextLautakuntaStr, esillaoloReason, lautakuntaReason];
-    }
+    } */
 
     const hideSelection = (phase,data) => {
       //hide add options for certain phases
