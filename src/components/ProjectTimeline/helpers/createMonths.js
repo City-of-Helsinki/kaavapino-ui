@@ -18,15 +18,17 @@ export function createMonths(deadlines) {
     error = true
   }
 
-  date = date.subtract(1, 'month')
+  // Use the current month as our starting point
+  date = dayjs()
+  console.log('createMonths start with date:', date.format('YYYY-MM-DD'))
+  
   for (let i = 0; i < 13; i++) {
     if (i > 0) {
-      date = date.date(1)
-      date = date.add(1, 'month')
+      date = date.date(1).add(1, 'month')
     }
-    const tempMonth = date.add(1, 'month')
-    monthArray.push({ date: `${tempMonth.year()}-${tempMonth.month()}` })
-   }
+    console.log(`Month ${i}: ${date.format('YYYY-MM')} (month=${date.month() + 1}, year=${date.year()})`)
+    monthArray.push({ date: date.format('YYYY-MM') })
+  }
   // if date is not set will return Jan 01 1970 and will show error
   if (error) {
     return { months: monthArray, error: true }

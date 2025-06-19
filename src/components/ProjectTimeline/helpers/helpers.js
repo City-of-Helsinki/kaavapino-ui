@@ -1,31 +1,34 @@
 import dayjs from 'dayjs'
 
 export function findInMonths(date, week, monthDates) {
-  date = dayjs(date)
+  const inputDate = dayjs(date)
+  console.log(`findInMonths looking for: ${date} -> parsed as ${inputDate.format('YYYY-MM-DD')} (month=${inputDate.month() + 1}, year=${inputDate.year()}) week=${week}`)
 
-  const tempDate = date.add(1, 'month')
-  date = `${tempDate.year()}-${tempDate.month()}`
-  let monthIndex = null
   for (let i = 0; i < monthDates.length; i++) {
-    if (date === monthDates[i].date && week === monthDates[i].week) {
-      monthIndex = i
-      break
+    const slot = monthDates[i]
+    const slotDate = dayjs(`${slot.date}-01`) // safe parse
+    const slotMonth = slotDate.month()
+    const slotYear = slotDate.year()
+
+    const inputMonth = inputDate.month()
+    const inputYear = inputDate.year()
+
+    if (slotMonth === inputMonth && slotYear === inputYear && slot.week === week) {
+      console.log(`  Found exact match at index ${i} for date ${inputDate.format('YYYY-MM-DD')}`)
+      return i
     }
   }
-  return monthIndex
+
+  console.log(`  No exact match found for ${inputDate.format('YYYY-MM-DD')}, week ${week}`)
+  return null
 }
+
+
 export function findWeek(day) {
-  if (day >= 1 && day <= 5) {
-    return 1
-  } else if (day >= 6 && day <= 10) {
-    return 2
-  } else if (day >= 11 && day <= 15) {
-    return 3
-  } else if (day >= 16 && day <= 20) {
-    return 4
-  } else {
-    return 5
-  }
+  if (day >= 1 && day <= 7) return 2
+  else if (day >= 8 && day <= 14) return 3
+  else if (day >= 15 && day <= 21) return 4
+  else if (day >= 22 && day <= 31) return 5
 }
 /**
  * @desc cleans deadline object

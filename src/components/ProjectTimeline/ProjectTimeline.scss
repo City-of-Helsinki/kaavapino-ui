@@ -190,3 +190,17 @@
 .hide-background {
   opacity: 0.8;
 }
+.debug-slot-marker {
+  position: absolute;
+  bottom: 0;
+  font-size: 9px;
+  color: red;
+}
+.timeline-item.mid-point {
+  opacity: 0.3;
+  min-height: 8px;
+}
+
+.timeline-item.end-marker {
+  height: 100%;
+}
