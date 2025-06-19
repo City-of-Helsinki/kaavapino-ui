@@ -116,6 +116,37 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
       return false;
     }
+
+    function getGroupStatus({
+      confirmed,
+      phase,
+      largestIndex,
+      count,
+      deadlineCount,
+      attributeKeys,
+      canAdd,
+      specialPhases,
+      specialKeyFn,
+      reasonLabel
+    }) {
+      let reason = !confirmed ? "noconfirmation" : "";
+      let nextStr = getNextGroupString(confirmed, count, deadlineCount, attributeKeys);
+
+      if (count - 1 === deadlineCount) {
+        reason = "max";
+      }
+
+      if (!confirmed && specialPhases.includes(phase) && largestIndex === 0) {
+        canAdd = true;
+        nextStr = specialKeyFn ? specialKeyFn(phase, attributeKeys) : (attributeKeys[0] || false);
+        reason = "";
+      } else {
+        canAdd = confirmed ? count <= deadlineCount : canAdd;
+      }
+
+      return [canAdd, nextStr, reason];
+    }
+
     const checkConfirmedGroups = (
       esillaoloConfirmed,
       lautakuntaConfirmed,
@@ -126,7 +157,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       data
     ) => {
       // Esilläolo
-      let esillaoloReason = !esillaoloConfirmed ? "noconfirmation" : "";
       const deadlineEsillaolokertaKeys = data.maxEsillaolo;
       const attributeEsillaoloKeys = getVisBoolsByPhaseName(phase).filter(
         (bool_name) => bool_name.includes('esillaolo') || bool_name.includes('nahtaville')
@@ -134,33 +164,20 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const largestIndex = getLargestIndex(attributeEsillaoloKeys, visValRef);
       const esillaoloCount = largestIndex + 1;
 
-      if (esillaoloCount - 1 === deadlineEsillaolokertaKeys) {
-        esillaoloReason = "max";
-      }
-
-      let nextEsillaoloStr = getNextGroupString(
-        esillaoloConfirmed,
-        esillaoloCount,
-        deadlineEsillaolokertaKeys,
-        attributeEsillaoloKeys
-      );
-
-      if (
-        !esillaoloConfirmed &&
-        ["luonnos", "periaatteet"].includes(phase) &&
-        largestIndex === 0
-      ) {
-        canAddEsillaolo = true;
-        nextEsillaoloStr = attributeEsillaoloKeys[0] || false;
-        esillaoloReason = "";
-      } else {
-        canAddEsillaolo = esillaoloConfirmed
-          ? esillaoloCount <= deadlineEsillaolokertaKeys
-          : canAddEsillaolo;
-      }
+      const [canAddEsillaoloRes, nextEsillaoloStr, esillaoloReason] = getGroupStatus({
+        confirmed: esillaoloConfirmed,
+        phase,
+        largestIndex,
+        count: esillaoloCount,
+        deadlineCount: deadlineEsillaolokertaKeys,
+        attributeKeys: attributeEsillaoloKeys,
+        canAdd: canAddEsillaolo,
+        specialPhases: ["luonnos", "periaatteet"],
+        specialKeyFn: null,
+        reasonLabel: "esillaolo"
+      });
 
       // Lautakunta
-      let lautakuntaReason = !lautakuntaConfirmed ? "noconfirmation" : "";
       const deadlineLautakuntakertaKeys = data.maxLautakunta;
       const attributeLautakuntaanKeys = getVisBoolsByPhaseName(phase).filter((bool_name) =>
         bool_name.includes("lautakunta")
@@ -168,43 +185,31 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const largestIndexLautakunta = getLargestIndex(attributeLautakuntaanKeys, visValRef);
       const lautakuntaCount = largestIndexLautakunta + 1;
 
-      if (lautakuntaCount - 1 === deadlineLautakuntakertaKeys) {
-        lautakuntaReason = "max";
-      }
-
-      let nextLautakuntaStr = getNextGroupString(
-        lautakuntaConfirmed,
-        lautakuntaCount,
-        deadlineLautakuntakertaKeys,
-        attributeLautakuntaanKeys
-      );
-
-      if (
-        !lautakuntaConfirmed &&
-        ["luonnos", "periaatteet", "ehdotus"].includes(phase) &&
-        largestIndexLautakunta === 0
-      ) {
-        canAddLautakunta = true;
-        nextLautakuntaStr =
+      const [canAddLautakuntaRes, nextLautakuntaStr, lautakuntaReason] = getGroupStatus({
+        confirmed: lautakuntaConfirmed,
+        phase,
+        largestIndex: largestIndexLautakunta,
+        count: lautakuntaCount,
+        deadlineCount: deadlineLautakuntakertaKeys,
+        attributeKeys: attributeLautakuntaanKeys,
+        canAdd: canAddLautakunta,
+        specialPhases: ["luonnos", "periaatteet", "ehdotus"],
+        specialKeyFn: (phase, attributeKeys) =>
           phase === "luonnos" || phase === "ehdotus"
             ? `kaava${phase}_lautakuntaan_1`
-            : `${phase}_lautakuntaan_1`;
-        lautakuntaReason = "";
-      } else {
-        canAddLautakunta = lautakuntaConfirmed
-          ? lautakuntaCount <= deadlineLautakuntakertaKeys
-          : canAddLautakunta;
-      }
+            : `${phase}_lautakuntaan_1`,
+        reasonLabel: "lautakunta"
+      });
 
       return [
-        canAddEsillaolo,
+        canAddEsillaoloRes,
         nextEsillaoloStr,
-        canAddLautakunta,
+        canAddLautakuntaRes,
         nextLautakuntaStr,
         esillaoloReason,
         lautakuntaReason,
       ];
-    }
+    };
 
     const hideSelection = (phase,data) => {
       //hide add options for certain phases
