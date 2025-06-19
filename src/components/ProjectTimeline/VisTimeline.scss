@@ -29,6 +29,7 @@
             border-bottom: none;
         }
         .vis-panel.vis-center {
+            left: 292px !important;
             border: 0;
             border-left: 1px;
             border-left-color:RGBA(0,0,0,0);
@@ -936,6 +937,9 @@
             font-family: 'Helsinki Grotesk', sans-serif;
             font-weight: 700;
             text-transform: none;
+        }
+        &.january-first {
+            border-left: 0.063rem solid #999999 !important;
         }
     }
 }
