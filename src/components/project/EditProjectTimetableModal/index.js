@@ -261,52 +261,77 @@ class EditProjectTimeTableModal extends Component {
     return items;
   }
 
-  addDeadLineGroups = (deadlineSections,deadLineGroups,ongoingPhase,isMounting) => {
-    for (let i = 0; i < deadlineSections.length; i++) {
-      for (let x = 0; x < deadlineSections[i].grouped_sections.length; x++) {
-        if (!deadLineGroups.some(item => item.content === deadlineSections[i].title)) {
-          let esillaolokerta = 0
-          let lautakuntakerta = 0
-          Object.keys(deadlineSections[i].grouped_sections[x].attributes).forEach(key => {
-            // add max count for esilläolo and lautakunta groups
-            if (key.includes('esillaolokerta') || key.includes('nahtavillaolokerta')) {
-              esillaolokerta++
-            }
-            if(key.includes('lautakuntakerta')){
-              lautakuntakerta++
-            }
-          });
+  // Helper to count esillaolokerta and lautakuntakerta
+  countGroupAttributes = (attributes) => {
+    let esillaolokerta = 0;
+    let lautakuntakerta = 0;
+    Object.keys(attributes).forEach(key => {
+      if (key.includes('esillaolokerta') || key.includes('nahtavillaolokerta')) {
+        esillaolokerta++;
+      }
+      if (key.includes('lautakuntakerta')) {
+        lautakuntakerta++;
+      }
+    });
+    return { esillaolokerta, lautakuntakerta };
+  }
 
-          let expanded
-          if(this.state.collapseData[deadlineSections[i].title]){
-            expanded = this.state.collapseData[deadlineSections[i].title]
-          }
-          else{
-            expanded = deadlineSections[i].title === ongoingPhase && isMounting || deadlineSections[i].title === this.props.showTimetableForm?.selectedPhase ? true : false
-            if(expanded){
-                // Add ongoingPhase true to collapseData: {}
-                this.setState(prevState => ({
-                collapseData: {
-                  ...prevState.collapseData,
-                  [ongoingPhase]: true
-                }
-                }));
-            }
+  // Helper to determine expanded state
+  getExpandedState = (title, ongoingPhase, isMounting, collapseData, showTimetableForm) => (
+    collapseData[title] ||
+    ((title === ongoingPhase && isMounting) || title === showTimetableForm?.selectedPhase) || false
+  )
+
+  addDeadLineGroups = (deadlineSections, deadLineGroups, ongoingPhase, isMounting) => {
+    // Collect collapseData updates to avoid calling setState in a loop
+    let collapseDataUpdates = {};
+
+    deadlineSections.forEach(section => {
+      section.grouped_sections.forEach(groupedSection => {
+        if (!deadLineGroups.some(item => item.content === section.title)) {
+          const { esillaolokerta, lautakuntakerta } = this.countGroupAttributes(groupedSection.attributes);
+
+          const expanded = this.getExpandedState(
+            section.title,
+            ongoingPhase,
+            isMounting,
+            this.state.collapseData,
+            this.props.showTimetableForm
+          );
+
+          // Collect collapseData updates if expanded is true and not already set
+          if (
+            expanded &&
+            !this.state.collapseData[section.title] &&
+            (section.title === ongoingPhase || section.title === this.props.showTimetableForm?.selectedPhase)
+          ) {
+            collapseDataUpdates[section.title] = true;
           }
 
           deadLineGroups.push({
-            id: deadlineSections[i].title,
-            content: deadlineSections[i].title,
+            id: section.title,
+            content: section.title,
             showNested: expanded,
             nestedGroups: [],
             maxEsillaolo: esillaolokerta,
             maxLautakunta: lautakuntakerta,
-            className: `${deadlineSections[i].id}`
-          })
+            className: `${section.id}`
+          });
         }
-      }
+      });
+    });
+
+    // Only call setState once if there are updates
+    if (Object.keys(collapseDataUpdates).length > 0) {
+      this.setState(prevState => ({
+        collapseData: {
+          ...prevState.collapseData,
+          ...collapseDataUpdates
+        }
+      }));
     }
-    return deadLineGroups
+
+    return deadLineGroups;
   }
 
   getValueOrDefault = (deadline, formValues) => {
@@ -1295,6 +1320,10 @@ EditProjectTimeTableModal.propTypes = {
   attributeData: PropTypes.object,
   isAdmin: PropTypes.bool,
   formSubmitErrors: PropTypes.object,
+  showTimetableForm: PropTypes.shape({
+    open: PropTypes.string,
+    selectedPhase: PropTypes.string,
+  }),
   deadlineSections: PropTypes.array,
   disabledDates: PropTypes.array,
   lomapaivat: PropTypes.array,

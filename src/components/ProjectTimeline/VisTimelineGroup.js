@@ -91,85 +91,125 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       trackExpandedGroups(event)
     }
 
-
-    const checkConfirmedGroups = (esillaoloConfirmed, lautakuntaConfirmed, visValRef, phase, canAddEsillaolo, canAddLautakunta, data) => {
-      // Check if more Esillaolo groups can be added
-      let esillaoloReason = !esillaoloConfirmed ? "noconfirmation" : "";
-      let lautakuntaReason = !lautakuntaConfirmed ? "noconfirmation" : "";
-      const deadlineEsillaolokertaKeys = data.maxEsillaolo
-      const attributeEsillaoloKeys = getVisBoolsByPhaseName(phase).filter((bool_name) => {
-        return (bool_name.includes('esillaolo') || bool_name.includes('nahtaville'))
-      });
+    const getLargestIndex = (keys, visValRef) => {
       let largestIndex = 1;
-      //find largest index
-      attributeEsillaoloKeys.forEach(key => {
+      keys.forEach(key => {
         const match = /_(\d+)$/.exec(key);
         if (match) {
-            const number = parseInt(match[1], 10);
-            if (number > largestIndex && visValRef[key]) {
-              largestIndex = number;
-            }
-            else if (number === 1 && visValRef[key] === false) {
-              // If first element group explicitly set to false, it has been deleted
-              // By default it may just be undefined (even if present)
-              largestIndex = 0;
-            }
+          const number = parseInt(match[1], 10);
+          if (number > largestIndex && visValRef[key]) {
+            largestIndex = number;
+          } else if (number === 1 && visValRef[key] === false) {
+            // If first element group explicitly set to false, it has been deleted
+            // By default it may just be undefined (even if present)
+            largestIndex = 0;
+          }
         }
       });
-
-      const esillaoloCount = largestIndex +1;
-
-      if(esillaoloCount - 1 === deadlineEsillaolokertaKeys){
-        esillaoloReason = "max"
-      }
-
-      let nextEsillaoloStr = false
-      if (esillaoloConfirmed) {
-        canAddEsillaolo = esillaoloCount <= deadlineEsillaolokertaKeys;
-        nextEsillaoloStr = canAddEsillaolo? attributeEsillaoloKeys[esillaoloCount-1] : false;
-      }
-      else if(["luonnos", "periaatteet"].includes(phase) && largestIndex === 0) {
-        canAddEsillaolo = true
-        nextEsillaoloStr = canAddEsillaolo ? attributeEsillaoloKeys[0] : false;
-        esillaoloReason = ""
-      }
-      // Check if more Lautakunta groups can be added
-      const deadlineLautakuntakertaKeys = data.maxLautakunta
-      const attributeLautakuntaanKeys = getVisBoolsByPhaseName(phase).filter(bool_name => bool_name.includes('lautakunta'));
-      let largestIndexLautakunta = 1;
-      //find largest index
-      attributeLautakuntaanKeys.forEach(key => {
-        const match = /_(\d+)$/.exec(key);
-        if (match) {
-            const number = parseInt(match[1], 10);
-            if (number > largestIndexLautakunta && visValRef[key]) {
-              largestIndexLautakunta = number;
-            }
-            else if (number === 1 && visValRef[key] === false) {
-              largestIndexLautakunta = 0;
-            }
-        }
-      });
-
-      const lautakuntaCount = largestIndexLautakunta +1;
-
-      if(lautakuntaCount - 1 === deadlineLautakuntakertaKeys){
-        lautakuntaReason = "max"
-      }
-      let nextLautakuntaStr = false
-      if (lautakuntaConfirmed) {
-        canAddLautakunta = lautakuntaCount <= deadlineLautakuntakertaKeys;
-        const lautakuntaText = attributeLautakuntaanKeys[lautakuntaCount-1]
-        nextLautakuntaStr = canAddLautakunta ? lautakuntaText : false;
-      }
-      else if(["luonnos", "periaatteet", "ehdotus"].includes(phase) && largestIndexLautakunta === 0){
-        canAddLautakunta = true
-        nextLautakuntaStr = phase === "luonnos" || phase === "ehdotus" ? `kaava${phase}_lautakuntaan_1` : `${phase}_lautakuntaan_1`;
-        lautakuntaReason = ""
-      }
-
-      return [canAddEsillaolo, nextEsillaoloStr, canAddLautakunta, nextLautakuntaStr, esillaoloReason, lautakuntaReason];
+      return largestIndex;
     }
+
+    const getNextGroupString = (confirmed, count, maxCount, keys) => {
+      if (confirmed) {
+        const canAdd = count <= maxCount;
+        return canAdd ? keys[count - 1] : false;
+      }
+      return false;
+    }
+
+    function getGroupStatus({
+      confirmed,
+      phase,
+      largestIndex,
+      count,
+      deadlineCount,
+      attributeKeys,
+      canAdd,
+      specialPhases,
+      specialKeyFn,
+      reasonLabel
+    }) {
+      let reason = !confirmed ? "noconfirmation" : "";
+      let nextStr = getNextGroupString(confirmed, count, deadlineCount, attributeKeys);
+
+      if (count - 1 === deadlineCount) {
+        reason = "max";
+      }
+
+      if (!confirmed && specialPhases.includes(phase) && largestIndex === 0) {
+        canAdd = true;
+        nextStr = specialKeyFn ? specialKeyFn(phase, attributeKeys) : (attributeKeys[0] || false);
+        reason = "";
+      } else {
+        canAdd = confirmed ? count <= deadlineCount : canAdd;
+      }
+
+      return [canAdd, nextStr, reason];
+    }
+
+    const checkConfirmedGroups = (
+      esillaoloConfirmed,
+      lautakuntaConfirmed,
+      visValRef,
+      phase,
+      canAddEsillaolo,
+      canAddLautakunta,
+      data
+    ) => {
+      // Esilläolo
+      const deadlineEsillaolokertaKeys = data.maxEsillaolo;
+      const attributeEsillaoloKeys = getVisBoolsByPhaseName(phase).filter(
+        (bool_name) => bool_name.includes('esillaolo') || bool_name.includes('nahtaville')
+      );
+      const largestIndex = getLargestIndex(attributeEsillaoloKeys, visValRef);
+      const esillaoloCount = largestIndex + 1;
+
+      const [canAddEsillaoloRes, nextEsillaoloStr, esillaoloReason] = getGroupStatus({
+        confirmed: esillaoloConfirmed,
+        phase,
+        largestIndex,
+        count: esillaoloCount,
+        deadlineCount: deadlineEsillaolokertaKeys,
+        attributeKeys: attributeEsillaoloKeys,
+        canAdd: canAddEsillaolo,
+        specialPhases: ["luonnos", "periaatteet"],
+        specialKeyFn: null,
+        reasonLabel: "esillaolo"
+      });
+
+      // Lautakunta
+      const deadlineLautakuntakertaKeys = data.maxLautakunta;
+      const attributeLautakuntaanKeys = getVisBoolsByPhaseName(phase).filter((bool_name) =>
+        bool_name.includes("lautakunta")
+      );
+      const largestIndexLautakunta = getLargestIndex(attributeLautakuntaanKeys, visValRef);
+      const lautakuntaCount = largestIndexLautakunta + 1;
+
+      const [canAddLautakuntaRes, nextLautakuntaStr, lautakuntaReason] = getGroupStatus({
+        confirmed: lautakuntaConfirmed,
+        phase,
+        largestIndex: largestIndexLautakunta,
+        count: lautakuntaCount,
+        deadlineCount: deadlineLautakuntakertaKeys,
+        attributeKeys: attributeLautakuntaanKeys,
+        canAdd: canAddLautakunta,
+        specialPhases: ["luonnos", "periaatteet", "ehdotus"],
+        specialKeyFn: (phase, attributeKeys) =>
+          phase === "luonnos" || phase === "ehdotus"
+            ? `kaava${phase}_lautakuntaan_1`
+            : `${phase}_lautakuntaan_1`,
+        reasonLabel: "lautakunta"
+      });
+
+      return [
+        canAddEsillaoloRes,
+        nextEsillaoloStr,
+        canAddLautakuntaRes,
+        nextLautakuntaStr,
+        esillaoloReason,
+        lautakuntaReason,
+      ];
+    };
 
     const hideSelection = (phase,data) => {
       //hide add options for certain phases
@@ -1014,47 +1054,60 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
     }, [])
 
+    // Helper: Highlight timeline item if needed
+    function highlightTimelineItem(timelineElement, savedHighlightId) {
+      if (!timelineElement || !savedHighlightId) return;
+      const alreadyHighlightedElements = timelineElement.querySelectorAll(".vis-group.foreground-highlight");
+      if (alreadyHighlightedElements.length > 0) return;
+
+      const matchedItem = timelineElement.querySelector(`.vis-item[class*="${savedHighlightId}"]`);
+      if (!matchedItem) return;
+
+      const groupEl = matchedItem.closest(".vis-group");
+      if (groupEl) {
+        groupEl.classList.add("foreground-highlight");
+      }
+    }
+
+    // Helper: Highlight menu item if needed
+    function highlightMenuItem(menuHighlightClass, timelineRef) {
+      if (
+        !menuHighlightClass ||
+        typeof menuHighlightClass !== "string" ||
+        menuHighlightClass.startsWith("[object ") ||
+        !timelineRef?.current
+      ) {
+        return;
+      }
+      const selector = `.vis-label.vis-nested-group.${CSS.escape(menuHighlightClass)}`;
+      const alreadyHighlightedMenuElements = document.querySelectorAll(".highlight-selected");
+      if (alreadyHighlightedMenuElements.length > 0) return;
+
+      const menuElementToHighlight = document.querySelector(selector);
+      if (menuElementToHighlight) {
+        menuElementToHighlight.classList.add("highlight-selected");
+      }
+    }
+
     useEffect(() => {
       visValuesRef.current = visValues;
-      setToggleOpenAddDialog(false)
+      setToggleOpenAddDialog(false);
+
+      if (timelineRef.current && timelineInstanceRef.current) {
+        // Update timeline when values change from side modal
+        timelineInstanceRef.current.setItems(items);
+        timelineInstanceRef.current.setGroups(groups);
+        timelineInstanceRef.current.redraw();
+      }
+
+      // Restore highlight from localStorage
+      const savedHighlightId = localStorage.getItem("timelineHighlightedElement");
+      const menuHighlightClass = localStorage.getItem("menuHighlight");
+
       if (timelineRef.current) {
-        if (timelineInstanceRef.current) {
-          //Update timeline when values change from side modal
-          timelineInstanceRef.current.setItems(items);
-          timelineInstanceRef.current.setGroups(groups);
-          timelineInstanceRef.current.redraw();
-        }
+        highlightTimelineItem(timelineRef.current, savedHighlightId);
       }
-
-       // Restore highlight from localStorage
-      const savedHighlightId = localStorage.getItem('timelineHighlightedElement');
-      const menuHighlightClass = localStorage.getItem('menuHighlight');
-      if (savedHighlightId && timelineRef?.current) {
-          const timelineElement = timelineRef.current;
-          // First check if any element already has the highlight class
-          const alreadyHighlightedElements = timelineElement.querySelectorAll(".vis-group.foreground-highlight");
-          if (alreadyHighlightedElements.length === 0) {
-            // Find and highlight the saved element
-            const matchedItem = timelineElement.querySelector(`.vis-item[class*="${savedHighlightId}"]`);
-            if (matchedItem) {
-              const groupEl = matchedItem.closest(".vis-group");
-              if (groupEl) {
-                groupEl.classList.add("foreground-highlight");
-              }
-            }
-          }
-      }
-
-      if (menuHighlightClass && typeof menuHighlightClass === 'string' && !menuHighlightClass.startsWith('[object ') && timelineRef?.current) {
-          const selector = `.vis-label.vis-nested-group.${CSS.escape(menuHighlightClass)}`;
-          const alreadyHighlightedMenuElements = document.querySelectorAll('.highlight-selected');
-          if (alreadyHighlightedMenuElements.length === 0) {
-            const menuElementToHighlight = document.querySelector(selector);
-            if (menuElementToHighlight) {
-              menuElementToHighlight.classList.add('highlight-selected');
-            }
-          }
-      }
+      highlightMenuItem(menuHighlightClass, timelineRef);
 
     }, [visValues]);
 
