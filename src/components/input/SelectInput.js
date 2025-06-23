@@ -43,7 +43,6 @@ const SelectInput = ({
   const [fieldName, setFieldName] = useState("")
   const [editField,setEditField] = useState(false)
   const [isInstanceSaving, setIsInstanceSaving] = useState(false);
-  const currentOptions = []
   const saving =  useSelector(state => savingSelector(state))
 
   useEffect(() => {
@@ -176,20 +175,6 @@ const SelectInput = ({
     input.value = getFieldAutofillValue(autofillRule, formValues, fieldName, formName)
   }
 
-  const modifyOptionIfExist = currentOption => {
-    if (!currentOption) {
-      return
-    }
-
-    // Check if the list already has same value
-    if (
-      currentOptions.some(current => current && current.label === currentOption.label)
-    ) {
-      currentOption.label = currentOption.label + MORE_LABEL
-    }
-    return currentOption
-  }
-
   const handleFocus = () => {
     if (typeof onFocus === 'function' && !insideFieldset) {
       //Sent a call to lock field to backend
@@ -254,19 +239,45 @@ const SelectInput = ({
     setEditField(true)
   }
 
-  const normalOrRollingElement = () => {
-    if(!readonly){
-      options = options
+  const getPreparedOptions = (options) => {
+    const filtered = options
       ? options.filter(option => option.label && option.label.trim() !== '')
-      : []
-  
-      options.forEach(option => option && currentOptions.push(modifyOptionIfExist(option)))
+      : [];
+    const seenLabels = new Set();
+    return filtered.map(option => {
+      if (!option) return option;
+      let label = option.label;
+      if (seenLabels.has(label)) {
+        label = label + MORE_LABEL;
+      }
+      seenLabels.add(label);
+      return { ...option, label };
+    });
+  }
+
+  const getRollingInfoValue = (multiple, currentValue, input, preparedOptions) => {
+    if (multiple && currentValue.length) {
+    // Show option texts instead of value ids on multi select for RollingInfo
+    return currentValue?.map(c => c.label);
+    } else if (input.name === "vastuuhenkilo_nimi_readonly") {
+      // Formatted separately in RollingInfo
+      return input.value;
+    } else {
+      return preparedOptions.reduce(
+        (info_value, option) =>
+          option.key === input.value ? option.label : info_value,
+        input.value
+      );
     }
-  
+  }
+
+  const normalOrRollingElement = () => {
+    let preparedOptions = !readonly ? getPreparedOptions(options) : options;
     let notSelectable = readonly === true && fieldName === input.name
     let readOnlyStyle = notSelectable ? 'selection readonly' : 'selection'
-    let rollingInfoValue
-    if (multiple && currentValue.length) {
+    let rollingInfoValue = getRollingInfoValue(multiple, currentValue, input, preparedOptions);
+
+    /* if (multiple && currentValue.length) {
       //Show option texts instead of value ids on multi select for RollingInfo
       rollingInfoValue = currentValue?.map(c => c.label)
     }
@@ -275,10 +286,11 @@ const SelectInput = ({
       rollingInfoValue = input.value
     }
     else {
-      rollingInfoValue = options.reduce((info_value, option) => 
+      rollingInfoValue = preparedOptions.reduce((info_value, option) => 
         option.key === input.value ? option.label : info_value
       , input.value)
-    }
+    } */
+
     const identifier =
     lockedStatus?.lockData?.attribute_lock?.field_identifier ??
     lockedStatus?.lockData?.attribute_lock?.attribute_identifier ??
@@ -311,7 +323,7 @@ const SelectInput = ({
           onFocus={handleFocus}
           clearable={false}
           disabled={disabled || editDisabled || (isProjectTimetableEdit && !timetable_editable)}
-          options={currentOptions}
+          options={preparedOptions}
           value={currentSingleValue}
           onChange={data => {
             if(!notSelectable){
@@ -337,7 +349,7 @@ const SelectInput = ({
           onFocus={handleFocus}
           clearable={true}
           disabled={disabled || editDisabled || (isProjectTimetableEdit && !timetable_editable)}
-          options={currentOptions}
+          options={preparedOptions}
           defaultValue={currentValue}
           onChange={data => {
             if(!notSelectable){
