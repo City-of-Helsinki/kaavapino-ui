@@ -70,13 +70,14 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
   }
 
   const buildDeadlineAttribute = (type, value) => {
+    const suffix = value > 1 ? `_${value}` : '';
     if (type === 'iso') {
-      return `milloin_ehdotuksen_nahtavilla_alkaa_iso${value > 1 ? `_${value}` : ''}`;
+      return 'milloin_ehdotuksen_nahtavilla_alkaa_iso' + suffix;
     }
     if (type === 'pieni') {
-      return `milloin_ehdotuksen_nahtavilla_alkaa_pieni${value > 1 ? `_${value}` : ''}`;
+      return 'milloin_ehdotuksen_nahtavilla_alkaa_pieni' + suffix;
     }
-    return `milloin_tarkistettu_ehdotus_lautakunnassa${value > 1 ? `_${value}` : ''}`;
+    return 'milloin_tarkistettu_ehdotus_lautakunnassa' + suffix;
   }
 
   const findMatchedDeadline = (data, deadlinesData, phase) => {
