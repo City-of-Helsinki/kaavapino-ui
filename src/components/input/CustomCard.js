@@ -45,35 +45,62 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
     }
   }, [type, props, deadlinesData]);
 
-  const findMatchedDeadline = (data, deadlinesData,phase) => {
-    const ehdotusPhase = [29, 21, 15, 9, 3].includes(phase) ? true : false;
-    //find matched deadline for ehdotus and tarkistettu ehdotus
-    const keys = Object.keys(data).filter(key => ehdotusPhase ? key.includes('kaavaehdotus_uudelleen_nahtaville') && data[key] === true || key.includes('kaavaehdotus_lautakuntaan') && data[key] === true : key.includes('vahvista_kaavaehdotus_lautakunnassa') && data[key] === true);
+  const getEhdotusKeys = (data) => {
+    return Object.keys(data).filter(
+      key =>
+        (key.includes('kaavaehdotus_uudelleen_nahtaville') && data[key] === true) ||
+        (key.includes('kaavaehdotus_lautakuntaan') && data[key] === true)
+    );
+  }
 
-    let highestKeyValue
-    let deadlineAttribute
-    let highestKey
+  const getTarkistettuKeys = (data) => {
+    return Object.keys(data).filter(
+      key =>
+        (key.includes('vahvista_kaavaehdotus_lautakunnassa') && data[key] === true)
+    );
+  }
 
-    if(ehdotusPhase){
-      if(phase === 29 || phase === 21){
-        highestKey = keys.length > 0 ? keys.reduce((a, b) => parseInt(a.split('_').pop()) > parseInt(b.split('_').pop()) ? a : b, 'kaavaehdotus_uudelleen_nahtaville') : 'kaavaehdotus_uudelleen_nahtaville';
-        highestKeyValue = highestKey === 'kaavaehdotus_uudelleen_nahtaville' ? '' : highestKey.split('_').pop();
-        deadlineAttribute = `milloin_ehdotuksen_nahtavilla_alkaa_iso${highestKeyValue > 1 ? `_${highestKeyValue}` : ''}`;
-      }
-      else{
-        highestKey = keys.length > 0 ? keys.reduce((a, b) => parseInt(a.split('_').pop()) > parseInt(b.split('_').pop()) ? a : b, 'kaavaehdotus_uudelleen_nahtaville') : 'kaavaehdotus_uudelleen_nahtaville';
-        highestKeyValue = highestKey === 'kaavaehdotus_uudelleen_nahtaville' ? '' : highestKey.split('_').pop();
-        deadlineAttribute = `milloin_ehdotuksen_nahtavilla_alkaa_pieni${highestKeyValue > 1 ? `_${highestKeyValue}` : ''}`;
-      }
+  const getHighestKey = (keys, defaultKey) => {
+    if (keys.length === 0) return defaultKey;
+    return keys.reduce((a, b) => {
+      const aValue = parseInt(a.split('_').pop());
+      const bValue = parseInt(b.split('_').pop());
+      return aValue > bValue ? a : b;
+    }, defaultKey);
+  }
+
+  const buildDeadlineAttribute = (type, value) => {
+    if (type === 'iso') {
+      return `milloin_ehdotuksen_nahtavilla_alkaa_iso${value > 1 ? `_${value}` : ''}`;
     }
-    else{
-      highestKey = keys.length > 0 ? keys.reduce((a, b) => parseInt(a.split('_').pop()) > parseInt(b.split('_').pop()) ? a : b, 'vahvista_kaavaehdotus_lautakunnassa') : 'vahvista_kaavaehdotus_lautakunnassa';
-      highestKeyValue = highestKey === 'vahvista_kaavaehdotus_lautakunnassa' ? '' : highestKey.split('_').pop();
-      deadlineAttribute = `milloin_tarkistettu_ehdotus_lautakunnassa${highestKeyValue > 1 ? `_${highestKeyValue}` : ''}`;
+    if (type === 'pieni') {
+      return `milloin_ehdotuksen_nahtavilla_alkaa_pieni${value > 1 ? `_${value}` : ''}`;
     }
-    const matchedDeadline = deadlinesData.find(deadline => deadline.deadline.attribute === deadlineAttribute);
+    return `milloin_tarkistettu_ehdotus_lautakunnassa${value > 1 ? `_${value}` : ''}`;
+  }
+
+  const findMatchedDeadline = (data, deadlinesData, phase) => {
+    const ehdotusPhase = [29, 21, 15, 9, 3].includes(phase);
+    const keys = ehdotusPhase ? getEhdotusKeys(data) : getTarkistettuKeys(data);
+    const defaultKey = ehdotusPhase ? 'kaavaehdotus_uudelleen_nahtaville' : 'vahvista_kaavaehdotus_lautakunnassa';
+    const highestKey = getHighestKey(keys, defaultKey);
+    const highestKeyValue = highestKey === defaultKey ? '' : highestKey.split('_').pop();
+
+    let deadlineAttribute;
+    if (ehdotusPhase) {
+      deadlineAttribute = buildDeadlineAttribute(
+        (phase === 29 || phase === 21) ? 'iso' : 'pieni',
+        highestKeyValue
+      );
+    } else {
+      deadlineAttribute = buildDeadlineAttribute('tarkistettu', highestKeyValue);
+    }
+
+    const matchedDeadline = deadlinesData.find(
+      deadline => deadline.deadline.attribute === deadlineAttribute
+    );
     return matchedDeadline?.deadline;
-  };
+  }
 
   const getFieldsInOrder = (suggestionPhase,heading,container,container2,editDataLink) => {
     if(suggestionPhase){
