@@ -277,20 +277,6 @@ const SelectInput = ({
     let readOnlyStyle = notSelectable ? 'selection readonly' : 'selection'
     let rollingInfoValue = getRollingInfoValue(multiple, currentValue, input, preparedOptions);
 
-    /* if (multiple && currentValue.length) {
-      //Show option texts instead of value ids on multi select for RollingInfo
-      rollingInfoValue = currentValue?.map(c => c.label)
-    }
-    else if (input.name === "vastuuhenkilo_nimi_readonly"){
-      // Formatted separately in RollingInfo
-      rollingInfoValue = input.value
-    }
-    else {
-      rollingInfoValue = preparedOptions.reduce((info_value, option) => 
-        option.key === input.value ? option.label : info_value
-      , input.value)
-    } */
-
     const identifier =
     lockedStatus?.lockData?.attribute_lock?.field_identifier ??
     lockedStatus?.lockData?.attribute_lock?.attribute_identifier ??
