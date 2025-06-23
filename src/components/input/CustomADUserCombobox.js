@@ -187,7 +187,6 @@ class CustomADUserCombobox extends Component {
       this.setState({ currentQuery: inputValue }, () => {
         this.getPersonById(inputValue); // new helper
       });
-      return newValue;
     }
     else if (inputValue.length >= 3 || inputValue === '*') { // Otherwise: search if long enough
       this.setState(
