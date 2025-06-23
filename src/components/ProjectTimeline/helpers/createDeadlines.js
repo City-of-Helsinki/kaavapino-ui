@@ -17,10 +17,8 @@ export function createDeadlines(deadlines) {
   let monthDatesArray = []
   let week = 1
 
-  console.log('createDeadlines start with date:', date.format('YYYY-MM-DD'))
 
   for (let i = 0; i < 65; i++) {
-    console.log(`Adding month date: ${date.format('YYYY-MM')} (month=${date.month() + 1}, year=${date.year()}), week: ${week}`)
     monthDatesArray.push({
       date: date.format('YYYY-MM'),
       week: week
@@ -53,27 +51,69 @@ function createStartAndEndPoints(inputMonths, deadlines) {
   const monthDates = inputMonths
   let firstDeadline = false
   let hasRealStart = false
+  let voimaantuloData = null
+  let voimaantuloInserted = false
 
-  // Step 1: Pre-scan milestone weeks for dashed_start or inner_start
-  const milestoneStarts = new Map()
-  for (let i = 0; i < monthDates.length; i++) {
-    const week = monthDates[i]
-    if (week.milestone_types?.includes('dashed_start') || week.milestone_types?.includes('inner_start')) {
-      for (const key in week) {
-        const item = week[key]
-        if (
-          typeof item === 'object' &&
-          item.abbreviation?.match(/[A-Z]1$/) &&
-          !milestoneStarts.has(item.abbreviation)
-        ) {
-          milestoneStarts.set(item.abbreviation, i)
-          console.log(`[MILESTONE] Will shift ${item.abbreviation} to start at milestone index ${i}`)
+  // ✅ Hyväksyminen phase H1 + H2/H3
+  const hyväksyminenStart = deadlines.find(dl => dl.deadline?.abbreviation === 'H1')
+  const hyväksyminenEnd = deadlines.find(dl =>
+    dl.deadline?.abbreviation === 'H2' && !!dl.date
+  ) || deadlines.find(dl =>
+    dl.deadline?.abbreviation === 'H3' && !!dl.date
+  )
+
+  let endIndex = null
+
+  if (hyväksyminenStart && hyväksyminenEnd) {
+    const startDate = dayjs(hyväksyminenStart.date)
+    const endDate = dayjs(hyväksyminenEnd.date)
+
+    const startWeek = findWeek(startDate.date())
+    const startIndex = findInMonths(hyväksyminenStart.date, startWeek, monthDates)
+
+    const endWeek = findWeek(endDate.date())
+    endIndex = findInMonths(hyväksyminenEnd.date, endWeek, monthDates)
+
+    if (startIndex != null) {
+      monthDates[startIndex]['H1'] = {
+        abbreviation: 'H1',
+        deadline_type: ['phase_start'],
+        phase_id: hyväksyminenStart.deadline.phase_id,
+        color_code: hyväksyminenStart.deadline.phase_color_code,
+        phase_name: hyväksyminenStart.deadline.phase_name,
+        deadline_length: endIndex != null ? endIndex - startIndex + 1 : 2
+      }
+    }
+
+    if (endIndex != null) {
+      monthDates[endIndex]['H1'] = {
+        abbreviation: 'H1',
+        deadline_type: ['phase_end'],
+        phase_id: hyväksyminenStart.deadline.phase_id,
+        color_code: hyväksyminenStart.deadline.phase_color_code,
+        phase_name: hyväksyminenStart.deadline.phase_name,
+        deadline_length: 2
+      }
+    }
+
+    // ✅ Collect V1 data for insertion
+    const v1 = deadlines.find(dl => dl.deadline?.abbreviation === 'V1')
+    if (v1 && endIndex != null) {
+      voimaantuloData = {
+        index: endIndex,
+        payload: {
+          abbreviation: 'V1',
+          deadline_type: ['phase_start'],
+          phase_id: v1.deadline.phase_id,
+          color_code: v1.deadline.phase_color_code,
+          phase_name: v1.deadline.phase_name,
+          deadline_length: 2
         }
       }
     }
   }
 
-  // Step 2: Go through all deadlines
+  // 🔁 Default loop for other deadlines (except those we're overriding)
   deadlines.forEach(deadline => {
     if (!deadline.deadline || !deadline.date) return
 
@@ -90,27 +130,30 @@ function createStartAndEndPoints(inputMonths, deadlines) {
     const monthIndex = findInMonths(deadline.date, week, monthDates)
     if (monthIndex == null) return
 
-    const existing = monthDates[monthIndex][abbreviation]
-
-    // If both start and end fall on the same slot
-    if (existing) {
-      if (
-        (existing.deadline_type.includes('phase_start') && types.includes('phase_end')) ||
-        (existing.deadline_type.includes('phase_end') && types.includes('phase_start'))
-      ) {
-        monthDates[monthIndex][abbreviation] = {
-          abbreviation,
-          deadline_type: ['start_end_point'],
-          phase_id: phaseId,
-          color_code: color,
-          phase_name: phaseName,
-          deadline_length: 1
-        }
-        return
-      }
+    // ✅ skip all V1 + H1/H2/H3 since we manage them manually
+    if (
+      (abbreviation === 'H1' || abbreviation === 'H2' || abbreviation === 'H3' || abbreviation === 'V1')
+    ) {
+      return
     }
 
-    // Fallback first phase_end
+    const existing = monthDates[monthIndex][abbreviation]
+
+    if (existing && (
+      (existing.deadline_type.includes('phase_start') && types.includes('phase_end')) ||
+      (existing.deadline_type.includes('phase_end') && types.includes('phase_start'))
+    )) {
+      monthDates[monthIndex][abbreviation] = {
+        abbreviation: existing.abbreviation || abbreviation,
+        deadline_type: ['start_end_point'],
+        phase_id: phaseId,
+        color_code: color,
+        phase_name: phaseName,
+        deadline_length: 1
+      }
+      return
+    }
+
     if (!firstDeadline && types[0] === 'phase_end' && !hasRealStart) {
       monthDates[0][abbreviation] = {
         abbreviation,
@@ -123,10 +166,8 @@ function createStartAndEndPoints(inputMonths, deadlines) {
       firstDeadline = true
     }
 
-    // If both types in same object
     if (types.length > 1 && types.includes('phase_start') && types.includes('phase_end')) {
-      const targetIndex = milestoneStarts.get(abbreviation) ?? monthIndex
-      monthDates[targetIndex][abbreviation] = {
+      monthDates[monthIndex][abbreviation] = {
         abbreviation,
         deadline_type: ['start_end_point'],
         phase_id: phaseId,
@@ -134,17 +175,10 @@ function createStartAndEndPoints(inputMonths, deadlines) {
         phase_name: phaseName,
         deadline_length: 1
       }
-      if (targetIndex !== monthIndex) {
-        console.log(`[MOVE] Moved ${abbreviation} start_end_point from ${monthIndex} to ${targetIndex}`)
-      }
       hasRealStart = true
-    }
-
-    // Standard case: place phase_start or phase_end
-    else {
+    } else {
       const isStart = types[0] === 'phase_start'
-      const targetIndex = isStart ? (milestoneStarts.get(abbreviation) ?? monthIndex) : monthIndex
-      monthDates[targetIndex][abbreviation] = {
+      monthDates[monthIndex][abbreviation] = {
         abbreviation,
         deadline_type: [types[0]],
         phase_id: phaseId,
@@ -153,12 +187,15 @@ function createStartAndEndPoints(inputMonths, deadlines) {
         not_last_end_point: deadline.not_last_end_point,
         deadline_length: 2
       }
-      if (isStart && targetIndex !== monthIndex) {
-        console.log(`[MOVE] Moved ${abbreviation} phase_start from ${monthIndex} to ${targetIndex}`)
-      }
       if (isStart) hasRealStart = true
     }
   })
+
+  // ✅ Final V1 manual insert (after all processing)
+  if (voimaantuloData && !voimaantuloInserted) {
+    monthDates[voimaantuloData.index]['V1'] = voimaantuloData.payload
+    voimaantuloInserted = true
+  }
 
   return fillGaps(monthDates, deadlines)
 }
@@ -232,6 +269,7 @@ function fillGaps(inputMonths, deadlines) {
   let currentStartProp = null
   let deadlineLength = 2
   let has_endpoint_in_range = false
+  let phaseName = null
 
   for (let i = 0; i < monthDates.length; i++) {
     const month = monthDates[i]
@@ -243,7 +281,7 @@ function fillGaps(inputMonths, deadlines) {
       if (!item || !Array.isArray(item.deadline_type)) continue
 
       const type = item.deadline_type[0]
-
+      console.log(item)
       // --- START ---
       if (type === 'phase_start' || type === 'past_start_point') {
         currentAbbr = item.abbreviation
@@ -251,7 +289,8 @@ function fillGaps(inputMonths, deadlines) {
         currentStartIndex = i
         currentStartProp = prop
         deadlineLength = 2
-        has_endpoint_in_range = true
+        has_endpoint_in_range = true,
+        phaseName = item.phase_name || null
       }
 
       // --- END ---
@@ -281,10 +320,12 @@ function fillGaps(inputMonths, deadlines) {
       currentAbbr &&
       Object.keys(month).length <= 2 // only 'date' and 'week'
     ) {
+      console.log(deadlineLength,currentAbbr)
       month.midpoint = {
         abbreviation: currentAbbr,
-        deadline_type: ['mid_point'],
-        color_code: currentColor
+        deadline_type: deadlineLength === 2 && currentAbbr !== "K1" ? ['phase_start'] : ['mid_point'],
+        color_code: currentColor,
+        phase_name: deadlineLength === 2 && currentAbbr !== "K1" ? phaseName : null
       }
 
       deadlineLength++
@@ -351,9 +392,7 @@ function fillGaps(inputMonths, deadlines) {
  * @return function
  */
 function createMilestones(inputMonths, deadlines) {
-  console.log('createMilestones called')
   if (!inputMonths || !deadlines) {
-    console.log('  No input months or deadlines')
     return { deadlines: null, error: true }
   }
 
@@ -371,24 +410,14 @@ function createMilestones(inputMonths, deadlines) {
         type === 'inner_end'
       ) {
         const date = dayjs(deadline.date)
-        console.log(`  Processing milestone: ${type}, date=${deadline.date}, formatted=${date.format('YYYY-MM-DD')}`)
         const week = findWeek(date.date())
-        if (type === 'dashed_end') {
-        console.log(`[DEBUG] dashed_end for ${deadline.deadline.abbreviation} → ${deadline.date} → week ${week} → index ${monthIndex}`)
-          if (monthIndex != null) {
-            console.log(`[DEBUG] => slot =`, monthDates[monthIndex])
-          }
-        }
         const monthIndex = findInMonths(deadline.date, week, monthDates)
 
         if (monthIndex != null) {
-          console.log(`  Adding milestone at month index ${monthIndex}`)
           monthDates[monthIndex].milestone = true
           monthDates[monthIndex].milestoneDate = date.format('YYYY-MM-DD')
           monthDates[monthIndex].milestone_types = deadline.deadline.deadline_types
-        } else {
-          console.log(`  Could not find month index for milestone ${type} at ${date.format('YYYY-MM-DD')}`)
-        }
+        } 
       }
     }
   })
@@ -494,7 +523,6 @@ function fillMilestoneGaps(inputMonths) {
         (item.deadline_type[0] === 'phase_start' || item.deadline_type[0] === 'past_start_point')
       ) {
         const { deadline_length, abbreviation, color_code } = item
-        console.log(`[GROWTH] ${abbreviation} start at week ${openBar.index} extended to week ${i}`)
         for (let j = 1; j < deadline_length; j++) {
           const target = monthDates[i + j]
           if (target && !target[abbreviation]) {
@@ -503,7 +531,6 @@ function fillMilestoneGaps(inputMonths) {
               deadline_type: ['mid_point'],
               color_code
             }
-            console.log(`[DEBUG] Injected mid_point for ${abbreviation} at week index ${i + j}`)
           }
         }
       }

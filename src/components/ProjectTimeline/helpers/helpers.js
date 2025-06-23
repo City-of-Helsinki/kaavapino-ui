@@ -2,7 +2,6 @@ import dayjs from 'dayjs'
 
 export function findInMonths(date, week, monthDates) {
   const inputDate = dayjs(date)
-  console.log(`findInMonths looking for: ${date} -> parsed as ${inputDate.format('YYYY-MM-DD')} (month=${inputDate.month() + 1}, year=${inputDate.year()}) week=${week}`)
 
   for (let i = 0; i < monthDates.length; i++) {
     const slot = monthDates[i]
@@ -14,12 +13,10 @@ export function findInMonths(date, week, monthDates) {
     const inputYear = inputDate.year()
 
     if (slotMonth === inputMonth && slotYear === inputYear && slot.week === week) {
-      console.log(`  Found exact match at index ${i} for date ${inputDate.format('YYYY-MM-DD')}`)
       return i
     }
   }
 
-  console.log(`  No exact match found for ${inputDate.format('YYYY-MM-DD')}, week ${week}`)
   return null
 }
 

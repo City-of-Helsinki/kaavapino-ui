@@ -41,7 +41,6 @@ class EditProjectTimeTableModal extends Component {
 
   componentDidMount() {
     const { initialize, attributeData, deadlines, deadlineSections, disabledDates,lomapaivat } = this.props
-    console.log(attributeData,deadlines)
     initialize(attributeData)
    // Check if the key exists and its value is true
     if(attributeData && deadlines && deadlineSections && disabledDates && lomapaivat){

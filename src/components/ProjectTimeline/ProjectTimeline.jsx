@@ -123,7 +123,7 @@ function ProjectTimeline(props) {
     if (!slot || !Array.isArray(slot.deadline_type)) return null
 
     const type = slot.deadline_type[0]
-
+    console.log(type, slot)
     switch (type) {
       case 'phase_start':
         return (
@@ -139,16 +139,42 @@ function ProjectTimeline(props) {
           </div>
         )
 
-      case 'mid_point':
+      case 'mid_point': {
+        // Check if next week has a phase_start
+        let isNextPhaseStart = false;
+        console.log(slot.abbreviation)
+        // Only add the 'last' class if the current phase is "Tarkistettu ehdotus"
+        if (slot.abbreviation === "T1" && loopIndex < monthDates.length - 1) {
+          const nextWeek = monthDates[loopIndex + 1];
+          for (const key in nextWeek) {
+            const item = nextWeek[key];
+            if (
+              Object.prototype.hasOwnProperty.call(nextWeek, key) &&
+              typeof item === 'object' &&
+              Array.isArray(item.deadline_type) &&
+              item.deadline_type.includes('phase_start')
+            ) {
+              isNextPhaseStart = true;
+              break;
+            }
+          }
+        }
+
         return (
           <div
             key={`${slot.abbreviation}-${loopIndex}`}
             style={{ background: slot.color_code }}
-            className="timeline-item"
+            className={`timeline-item${isNextPhaseStart ? ' last' : ''}`}
           >
+            {slot.phase_name && (
+              <span className={`deadline-name-${slot.deadline_length > 4 ? 'over' : 'over'}`}>
+                {slot.phase_name}
+              </span>
+            )}
             {monthDates[loopIndex].milestone ? createMilestoneItem(loopIndex, propI, monthDates) : null}
           </div>
         )
+      }
 
       case 'phase_end':
         return (
@@ -236,15 +262,30 @@ function ProjectTimeline(props) {
           }
         }
 
+        // Check if next week has a phase_start
+        let isNextPhaseStart = false;
+        if (i < monthDates.length - 1) {
+          const nextWeek = monthDates[i + 1];
+          for (const key in nextWeek) {
+            const item = nextWeek[key];
+            if (
+              has.call(nextWeek, key) &&
+              typeof item === 'object' &&
+              Array.isArray(item.deadline_type) &&
+              item.deadline_type.includes('phase_start')
+            ) {
+              isNextPhaseStart = true;
+              break;
+            }
+          }
+        }
+
         renderedItem = (
           <div
-            className="timeline-item milestone-only"
+            className={`timeline-item milestone-only${isNextPhaseStart ? ' last' : ''}`}
             key={`milestone-only-${i}`}
             style={milestoneColor ? { background: milestoneColor } : {}}
           >
-            <span className="deadline-milestone">
-              <div className="milestone-icon sphere white" />
-            </span>
             {createMilestoneItem(i, 0, monthDates)}
           </div>
         )
@@ -259,7 +300,6 @@ function ProjectTimeline(props) {
     }
 
     setDrawItems([...drawableItems])
-    console.log('[DEBUG] Final drawItems length:', drawableItems.length)
   }
 
   function createMilestoneItem(index, propertyIndex, monthDates) {
@@ -325,45 +365,9 @@ function ProjectTimeline(props) {
           )
           break
         case 'inner_end': {
-          // Get the abbreviation from the phase in this slot
-          let abbr = null
-          const weekSlot = monthDates[index]
-          let count = 0
-
-          for (const key in weekSlot) {
-            const item = weekSlot[key]
-            if (
-              typeof item === 'object' &&
-              Array.isArray(item.deadline_type)
-            ) {
-              if (count === propertyIndex && item.abbreviation) {
-                abbr = item.abbreviation
-                break
-              }
-              count++
-            }
-          }
-
-          // Only render inner_end if this week has a phase_end for the same abbreviation
-          let hasMatchingPhaseEnd = false
-          for (const key in weekSlot) {
-            const item = weekSlot[key]
-            if (
-              typeof item === 'object' &&
-              item.abbreviation === abbr &&
-              item.deadline_type.includes('phase_end')
-            ) {
-              hasMatchingPhaseEnd = true
-              break
-            }
-          }
-
-          if (hasMatchingPhaseEnd) {
-            milestoneType.push(
-              <div key={listKey++} className="milestone-icon inner end white" />
-            )
-          }
-
+          milestoneType.push(
+            <div key={listKey++} className="milestone-icon inner end white" />
+          )
           break
         }
 
@@ -394,6 +398,7 @@ function ProjectTimeline(props) {
     }
 
     createDrawMonths(months) //draws grid of 13 months
+    console.log(deadlineArray.deadlines)
     createDrawItems(deadlineArray.deadlines) //draws the actual phases and dates
   }
   const containerClass =
