@@ -252,7 +252,10 @@ CustomCard.propTypes = {
   props: PropTypes.object,
   name: PropTypes.string,
   data: PropTypes.object,
-  deadlines: PropTypes.object,
+  deadlines: PropTypes.oneOfType([
+    PropTypes.object,
+    PropTypes.array
+  ]),
   placeholder: PropTypes.string,
   input: PropTypes.object,
   fieldData: PropTypes.object
