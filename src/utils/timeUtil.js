@@ -1,3 +1,4 @@
+import { max } from "moment";
 import objectUtil from "./objectUtil";
 
   const isWeekend = (date) => {
@@ -631,7 +632,7 @@ const getDisabledDatesForLautakunta = (name, formValues, phaseName, matchingItem
     let newDisabledDates = dateTypes?.työpäivät?.dates;
     return newDisabledDates.filter(date =>
       date >= firstPossibleDateToSelect &&
-      (!lockedItem || date <= lastPossibleDateToSelect)
+      (!lockedItem || date < lastPossibleDateToSelect)
     );
   }
 
@@ -667,7 +668,7 @@ const getDisabledDatesForLautakunta = (name, formValues, phaseName, matchingItem
     let newDisabledDates = dateTypes?.lautakunnan_kokouspäivät?.dates;
     return newDisabledDates.filter(date =>
       date >= firstPossibleDateToSelect &&
-      (!lockedItem || date <= lastPossibleDateToSelect)
+      (!lockedItem || date < lastPossibleDateToSelect)
     );
   }
 };
@@ -683,7 +684,7 @@ const getDisabledDatesForSizeXSXL = (name, formValues, matchingItem, dateTypes, 
       : null;
     return newDisabledDates.filter(date =>
       date >= firstPossibleDateToSelect &&
-      (!lockedItem || date <= lastPossibleDateToSelect)
+      (!lockedItem || date < lastPossibleDateToSelect)
     );
   } else if (name.includes("_alkaa")) {
     const miniumDaysPast = matchingItem?.distance_from_previous;
@@ -707,7 +708,7 @@ const getDisabledDatesForSizeXSXL = (name, formValues, matchingItem, dateTypes, 
       : null;
     return newDisabledDates.filter(date =>
       date >= firstPossibleDateToSelect &&
-      (!lockedItem || date <= lastPossibleDateToSelect)
+      (!lockedItem || date < lastPossibleDateToSelect)
     );
   }
 };
