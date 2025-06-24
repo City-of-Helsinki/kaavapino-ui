@@ -84,7 +84,7 @@ const FormSection = ({
           />)
         }
         else{
-          return <></>
+          return <React.Fragment key={`empty-${i}`}></React.Fragment>
         }
     })}
     {count === 0 ? <Notification label={t('project.no-fields')}></Notification> : ""}
