@@ -608,7 +608,9 @@ function RichTextEditor(props) {
   }
 
   const normalOrRollingElement = () => {
-    const val = value?.ops
+    const val = Array.isArray(value?.ops)
+      ? value.ops.map(op => op.insert).join('')
+      : (value?.ops || "")
     
     let filteredComments = []
     
