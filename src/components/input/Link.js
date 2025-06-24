@@ -23,6 +23,28 @@ const Link = props => {
     }
   }
 
+  // destructure props to avoid spreading custom props onto the DOM element
+  const {
+    lockField,
+    fieldData,
+    handleUnlockField,
+    fieldSetDisabled,
+    insideFieldset,
+    nonEditable,
+    rollingInfo,
+    modifyText,
+    rollingInfoText,
+    isCurrentPhase,
+    selectedPhase,
+    attributeData,
+    phaseIsClosed,
+    customError,
+    isTabActive,
+    isProjectTimetableEdit,
+    timetable_editable,
+    ...restProps
+  } = props;
+
   const {t} = useTranslation()
 
   const [currentValue, setCurrentValue] = useState(props.input.value)
@@ -101,7 +123,7 @@ const Link = props => {
       <div className="link-container">
         <div className="link-input-wrapper">
         <TextInput
-          {...props}
+          {...restProps}
           onBlur={onBlur}
           type="text"
           value={currentValue}
