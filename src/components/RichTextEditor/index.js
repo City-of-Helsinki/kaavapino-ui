@@ -19,7 +19,7 @@ import {
 import { currentProjectIdSelector,savingSelector,lockedSelector, lastModifiedSelector, pollSelector,lastSavedSelector } from '../../selectors/projectSelector'
 import { ReactComponent as CommentIcon } from '../../assets/icons/comment-icon.svg'
 import { useTranslation } from 'react-i18next'
-import {IconAlertCircleFill} from 'hds-react'
+import {IconAlertCircleFill,LoadingSpinner} from 'hds-react'
 import RollingInfo from '../input/RollingInfo'
 import { useIsMount } from '../../hooks/IsMounted'
 import { isEqual } from 'lodash'
@@ -52,9 +52,9 @@ const formats = [
   'color',
   'background',
   // KAPI-98: Temporarily disabled lists in rte
-  //'list', 
-  //'ordered',
-  //'bullet',
+  'list', 
+  'ordered',
+  'bullet',
   'script',
   'sub',
   'super'
@@ -101,6 +101,7 @@ function RichTextEditor(props) {
   const projectId = useSelector(currentProjectIdSelector)
   const connection = useSelector(state => pollSelector(state))
   const lastSaved = useSelector(state => lastSavedSelector(state))
+  const [isInstanceSaving, setIsInstanceSaving] = useState(false);
 
   const [showComments, setShowComments] = useState(false)
   const [toolbarVisible, setToolbarVisible] = useState(false)
@@ -321,6 +322,12 @@ function RichTextEditor(props) {
 
   }, [lockedStatusJsonString, connection.connection, inputProps.name])
 
+  useEffect(() => {
+    if (!saving && isInstanceSaving) {
+      setIsInstanceSaving(false);
+    }
+  }, [saving]);
+
   const checkClickedElement = (e) => {
     let previousElement = localStorage.getItem("previousElement")
     let previousElementId = localStorage.getItem("previousElementId")
@@ -329,7 +336,7 @@ function RichTextEditor(props) {
     //Prevent usage outside of main project form
     if(target?.length > 0 && form?.id === "accordion-title"){
       //Lose focus and unclock if select button is clicked
-      if(target.length > 0 && target.value.includes("Select-module")){
+      if(target.length > 0 && target.value.includes("Select-module") && previousElementId === editorRef?.current?.props?.id){
         localStorage.setItem("previousElement","Select-module");
         handleBlur(readonly)
         setToolbarVisible(false)
@@ -351,10 +358,6 @@ function RichTextEditor(props) {
         handleFocus("api",true)
 
       }
-    }
-    else{
-      localStorage.setItem("previousElement",false);
-      localStorage.setItem("previousElementId","");
     }
   } 
 
@@ -491,8 +494,18 @@ function RichTextEditor(props) {
             if (editorEmpty) {
               editor = null
             }
+            setIsInstanceSaving(true);
             onBlur();
             oldValueRef.current = editor?.ops;
+          }
+        }
+        else if (placeholder) {
+          //If not modified in anyway and has the example text
+          const placeholderOps = { ops: [{ insert: placeholder + '\n' }] }; // Proper Quill Delta format
+          if(isEqual(placeholderOps?.ops, editor?.ops)){
+            //Empty placeholder text if it was not edited
+            editorRef.current.getEditor().deleteText(0, editorRef.current.getEditor().getLength());
+            showCounter.current = false;
           }
         }
       }
@@ -579,6 +592,10 @@ function RichTextEditor(props) {
             1
           ))
         }
+      }
+      else if (!dbValue && placeholder) {
+        const placeholderOps = { ops: [{ insert: placeholder + '\n' }] }; // Proper Quill Delta format
+        editorRef.current.getEditor().setContents(placeholderOps);
       }
     }
   }
@@ -667,6 +684,10 @@ function RichTextEditor(props) {
             <select aria-label="background" className="ql-background" />
           </span>
           <span className={readonly ? "ql-formats rich-text-disabled" : "ql-formats"}>
+            <button aria-label="list" className="ql-list" value="ordered" />
+            <button aria-label="bullet" className="ql-list" value="bullet" />
+          </span>
+          <span className={readonly ? "ql-formats rich-text-disabled" : "ql-formats"}>
             <button aria-label="script" className="ql-script" value="super" />
             <button aria-label="sub" className="ql-script" value="sub" />
           </span>
@@ -689,7 +710,11 @@ function RichTextEditor(props) {
             </button>
           </span>
         </div>
-        
+        {saving && isInstanceSaving && (
+          <div className="quill-spinner-overlay">
+            <LoadingSpinner className="loading-spinner" />
+          </div>
+        )}
         <ReactQuill
           tabIndex="0"
           id={toolbarName + "input"}

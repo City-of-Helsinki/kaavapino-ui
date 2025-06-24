@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
-import { TextInput } from 'hds-react'
+import { TextInput, LoadingSpinner } from 'hds-react'
 import { useDispatch, useSelector } from 'react-redux'
 import {updateFloorValues,formErrorList} from '../../actions/projectActions'
 import {lockedSelector,lastModifiedSelector,pollSelector,lastSavedSelector,savingSelector } from '../../selectors/projectSelector'
@@ -16,6 +16,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   const [hasError,setHasError] = useState(false)
   const [editField,setEditField] = useState(false)
   const [hadFocusBeforeTabOut, setHadFocusBeforeTabOut] = useState(false)
+  const [isInstanceSaving, setIsInstanceSaving] = useState(false);
 
   const lastModified = useSelector(state => lastModifiedSelector(state))
   const lockedStatus = useSelector(state => lockedSelector(state))
@@ -211,20 +212,27 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
               dateOk = true
             }
             if(dateOk){
-              custom.onBlur();
+              setIsInstanceSaving(true);
+              localStorage.setItem("changedValues", input.name);
+              custom.onBlur(input.name);
               oldValueRef.current = event.target.value;
             }
           }
           else{
+            setIsInstanceSaving(true);
             localStorage.setItem("changedValues", input.name);
-            custom.onBlur();
+            custom.onBlur(input.name);
             if(!custom.insideFieldset){
-              setReadOnly({name:input.name,read:true})
+              const readOnlyValue = !custom?.isProjectTimetableEdit
+              setReadOnly({name:input.name,read:readOnlyValue})
             }
             oldValueRef.current = event.target.value;
 
             if(!(event.target.value === '' && !custom?.fieldData?.isRequired) && custom.regex){
               const regex = new RegExp(custom.regex);
+              setHasError(!regex.test(event.target.value))
+            } else if(custom.type === 'number') {
+              const regex = new RegExp("^[+-]?\\d+$");
               setHasError(!regex.test(event.target.value))
             }
           }
@@ -282,6 +290,12 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     }
   }, [input.name, input.value]);
 
+  useEffect(() => {
+    if (!saving && isInstanceSaving) {
+      setIsInstanceSaving(false);
+    }
+  }, [saving]);
+
   const editRollingField = () => {
     setEditField(true)
     setTimeout(function(){
@@ -291,7 +305,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
 
 
   const normalOrRollingElement = () => {
-    const errorString = custom.customError || t('project.error')
+    const errorString = custom.customError || (custom.type === 'number'? t('project.error-input-int') : t('project.error'))
     //Render rolling info field or normal edit field
     //If clicking rolling field button makes positive lock check then show normal editable field
     //Rolling field can be nonEditable
@@ -323,6 +337,19 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           onFocus={() => {handleFocus()}}
           readOnly={readonly.read || lastSaved?.status === "error"}
         />
+        {saving && isInstanceSaving && (
+          <>
+            {custom.type === "date" ? (
+              <div className="input-spinner-datetime">
+                <LoadingSpinner className="loading-spinner" />
+              </div>
+            ) : (
+              <div className="input-spinner">
+                <LoadingSpinner className="loading-spinner" />
+              </div>
+            )}
+          </>
+        )}
       </div>
     
     return elements

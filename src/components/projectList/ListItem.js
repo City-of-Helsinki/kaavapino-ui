@@ -22,7 +22,8 @@ const ListItem = ({
     projectId,
     pino_number,
     prio
-  }
+  },
+  attribute_data
 }) => {
   return (
     <div className="project-list-item-container">
@@ -58,7 +59,7 @@ const ListItem = ({
       </div>
       {showGraph && (
         <div className="project-list-item-graph">
-          <ProjectTimeline deadlines={deadlines} projectView={true} onhold={onhold} />
+          <ProjectTimeline deadlines={deadlines} projectView={true} onhold={onhold} attribute_data={attribute_data} />
         </div>
       )}
     </div>

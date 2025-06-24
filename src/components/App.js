@@ -33,17 +33,22 @@ import { withTranslation } from 'react-i18next'
 class App extends Component {
 
   componentDidMount(){
+    // Clear any existing highlights from previous sessions
+    localStorage.removeItem('timelineHighlightedElement');
+    localStorage.removeItem('menuHighlight');
     //Matomo analytic
     const currentEnv = process.env.REACT_APP_ENVIRONMENT
+    const matomoURL = process.env.REACT_APP_MATOMO_URL
+    const siteID = process.env.REACT_APP_MATOMO_SITE_ID
 
-    if(currentEnv === 'production'){
+    if(currentEnv === 'production' && matomoURL && siteID){
       let _paq = window._paq = window._paq || [];
       _paq.push(['trackPageView']);
       _paq.push(['enableLinkTracking']);
       (function() {
-        let u="//matomo.hel.fi/";
+        let u=`${matomoURL}`;
         _paq.push(['setTrackerUrl', u+'matomo.php']);
-        _paq.push(['setSiteId', '74']);
+        _paq.push(['setSiteId', `${siteID}`]);
         let d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
         g.type='text/javascript'; g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
       })();
