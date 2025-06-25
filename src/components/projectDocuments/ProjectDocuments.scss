@@ -99,5 +99,10 @@
 
   .document-row .column {
     padding: $size24 $size32 !important;
+    &.right {
+      display: flex !important;
+      align-items: center;
+      justify-content: flex-end;
+    }
   }
 }

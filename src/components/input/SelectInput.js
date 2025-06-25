@@ -1,10 +1,10 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
-import { Select } from 'hds-react'
+import { Select, LoadingSpinner } from 'hds-react'
 import { isArray, isEqual, uniq, uniqBy } from 'lodash'
 import { useSelector } from 'react-redux'
-import {lockedSelector } from '../../selectors/projectSelector'
+import {lockedSelector,savingSelector } from '../../selectors/projectSelector'
 import RollingInfo from '../input/RollingInfo'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
 
@@ -42,7 +42,9 @@ const SelectInput = ({
   const [readonly, setReadOnly] = useState(false)
   const [fieldName, setFieldName] = useState("")
   const [editField,setEditField] = useState(false)
-  const currentOptions = []
+  const [isInstanceSaving, setIsInstanceSaving] = useState(false);
+  const saving =  useSelector(state => savingSelector(state))
+
   useEffect(() => {
     //Chekcs that locked status has more data then inital empty object
     if(lockedStatus && Object.keys(lockedStatus).length > 0){
@@ -118,6 +120,12 @@ const SelectInput = ({
   }, [lockedStatusJsonString]);
 
   useEffect(() => {
+    if (!saving && isInstanceSaving) {
+      setIsInstanceSaving(false);
+    }
+  }, [saving]);
+
+  useEffect(() => {
     oldValueRef.current = input.value;
     setSelectValues(input.value);
     return () => {
@@ -167,20 +175,6 @@ const SelectInput = ({
     input.value = getFieldAutofillValue(autofillRule, formValues, fieldName, formName)
   }
 
-  const modifyOptionIfExist = currentOption => {
-    if (!currentOption) {
-      return
-    }
-
-    // Check if the list already has same value
-    if (
-      currentOptions.some(current => current && current.label === currentOption.label)
-    ) {
-      currentOption.label = currentOption.label + MORE_LABEL
-    }
-    return currentOption
-  }
-
   const handleFocus = () => {
     if (typeof onFocus === 'function' && !insideFieldset) {
       //Sent a call to lock field to backend
@@ -216,6 +210,7 @@ const SelectInput = ({
       //prevent saving if locked
       if (!readonly) {
         if (typeof onBlur === 'function') {
+          setIsInstanceSaving(true);
           //Sent call to save changes
           onBlur();
           oldValueRef.current = selectValues;
@@ -244,32 +239,48 @@ const SelectInput = ({
     setEditField(true)
   }
 
-  const normalOrRollingElement = () => {
-    if(!readonly){
-      options = options
+  const getPreparedOptions = (options) => {
+    const filtered = options
       ? options.filter(option => option.label && option.label.trim() !== '')
-      : []
-  
-      options.forEach(option => option && currentOptions.push(modifyOptionIfExist(option)))
+      : [];
+    const seenLabels = new Set();
+    return filtered.map(option => {
+      if (!option) return option;
+      let label = option.label;
+      if (seenLabels.has(label)) {
+        label = label + MORE_LABEL;
+      }
+      seenLabels.add(label);
+      return { ...option, label };
+    });
+  }
+
+  const getRollingInfoValue = (multiple, currentValue, input, preparedOptions) => {
+    if (multiple && currentValue.length) {
+    // Show option texts instead of value ids on multi select for RollingInfo
+    return currentValue?.map(c => c.label);
+    } else if (input.name === "vastuuhenkilo_nimi_readonly") {
+      // Formatted separately in RollingInfo
+      return input.value;
+    } else {
+      return preparedOptions.reduce(
+        (info_value, option) =>
+          option.key === input.value ? option.label : info_value,
+        input.value
+      );
     }
-  
+  }
+
+  const normalOrRollingElement = () => {
+    let preparedOptions = !readonly ? getPreparedOptions(options) : options;
     let notSelectable = readonly === true && fieldName === input.name
     let readOnlyStyle = notSelectable ? 'selection readonly' : 'selection'
-    let rollingInfoValue
-    if (multiple && currentValue.length) {
-      //Show option texts instead of value ids on multi select for RollingInfo
-      rollingInfoValue = currentValue?.map(c => c.label)
-    }
-    else if (input.name === "vastuuhenkilo_nimi_readonly"){
-      // Formatted separately in RollingInfo
-      rollingInfoValue = input.value
-    }
-    else {
-      rollingInfoValue = options.reduce((info_value, option) => 
-        option.key === input.value ? option.label : info_value
-      , input.value)
-    }
+    let rollingInfoValue = getRollingInfoValue(multiple, currentValue, input, preparedOptions);
 
+    const identifier =
+    lockedStatus?.lockData?.attribute_lock?.field_identifier ??
+    lockedStatus?.lockData?.attribute_lock?.attribute_identifier ??
+    "";
     //Render rolling info field or normal edit field
     //If clicking rolling field button makes positive lock check then show normal editable field
     //Rolling field can be nonEditable
@@ -284,8 +295,9 @@ const SelectInput = ({
         type={"select"}
         phaseIsClosed={phaseIsClosed}
       />
-      :    
-      !multiple ?
+      :
+      <div className="select-input-wrapper">
+      {!multiple ? (
         <Select
           data-testid="select-single"
           placeholder={placeholder}
@@ -297,7 +309,7 @@ const SelectInput = ({
           onFocus={handleFocus}
           clearable={false}
           disabled={disabled || editDisabled || (isProjectTimetableEdit && !timetable_editable)}
-          options={currentOptions}
+          options={preparedOptions}
           value={currentSingleValue}
           onChange={data => {
             if(!notSelectable){
@@ -310,7 +322,7 @@ const SelectInput = ({
             }
           }}
         />
-        :
+        ) : (
         <Select
           data-testid="select-multi"
           placeholder={placeholder}
@@ -323,7 +335,7 @@ const SelectInput = ({
           onFocus={handleFocus}
           clearable={true}
           disabled={disabled || editDisabled || (isProjectTimetableEdit && !timetable_editable)}
-          options={currentOptions}
+          options={preparedOptions}
           defaultValue={currentValue}
           onChange={data => {
             if(!notSelectable){
@@ -334,7 +346,14 @@ const SelectInput = ({
             }
           }}
         />
-    
+        )}
+
+        {saving && isInstanceSaving && (
+          <div className={`select-spinner-overlay ${multiple ? 'multi' : 'single'}`}>
+            <LoadingSpinner className="loading-spinner" />
+          </div>
+        )}
+      </div>
     return elements
   }
 

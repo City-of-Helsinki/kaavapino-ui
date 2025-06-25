@@ -10,7 +10,7 @@ import moment from 'moment'
 
 function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth}) {
   const [cardValues, setCardValues] = useState(["","","","",true,0,0,0,0,"",false,"",false,"","",false]);
-  
+  const [matchedDeadline, setMatchedDeadline] = useState({});
   const attributeData = useSelector(state => attributeDataSelector(state))
   const deadlinesData = useSelector(state => deadlinesSelector(state))
 
@@ -21,6 +21,87 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
   useEffect(() => {
     setCardValues(infoFieldUtil.getInfoFieldData(props.placeholder,props.input?.name,attributeData,deadlinesData,selectedPhase))
   }, [attributeData,deadlinesData])
+
+  useEffect(() => {
+    if (type !== "Tarkasta kerrosalatiedot" && props?.fieldData?.fieldset_attributes[0]?.related_fields) {
+      const phasesToCheck = [29, 21, 15, 9, 3, 30, 22, 16, 10, 4] //Ehdotus and Tarkistettu ehdotus phases
+      if(phasesToCheck.includes(selectedPhase)){
+        //Props for ehdotus and tarkistettu ehdotus does not contain the needed information so it needs to be fetch differently
+        const matchedDeadline = findMatchedDeadline(data, deadlinesData,selectedPhase);
+        setMatchedDeadline(matchedDeadline);
+      }
+      else{
+        for (let x = 0; x < deadlinesData.length; x++) {
+          if (props.fieldData.fieldset_attributes[0].related_fields.some(field => deadlinesData[x]?.deadline?.attribute === field)) {
+            setMatchedDeadline(deadlinesData[x]?.deadline);
+            break;
+          }
+          else if((props?.fieldData?.name === "merkitse_voimaantulo_paivamaarat_fieldset" || props?.fieldData?.name === "merkitse_muutoksenhaku_paivamaarat_fieldset") && deadlinesData[x]?.deadline?.attribute === "voimaantulo_pvm"){
+            setMatchedDeadline(deadlinesData[x]?.deadline);
+            break;
+          }
+        }
+      }
+    }
+  }, [type, props, deadlinesData]);
+
+  const getEhdotusKeys = (data) => {
+    return Object.keys(data).filter(
+      key =>
+        (key.includes('kaavaehdotus_uudelleen_nahtaville') && data[key] === true) ||
+        (key.includes('kaavaehdotus_lautakuntaan') && data[key] === true)
+    );
+  }
+
+  const getTarkistettuKeys = (data) => {
+    return Object.keys(data).filter(
+      key =>
+        (key.includes('vahvista_kaavaehdotus_lautakunnassa') && data[key] === true)
+    );
+  }
+
+  const getHighestKey = (keys, defaultKey) => {
+    if (keys.length === 0) return defaultKey;
+    return keys.reduce((a, b) => {
+      const aValue = parseInt(a.split('_').pop());
+      const bValue = parseInt(b.split('_').pop());
+      return aValue > bValue ? a : b;
+    }, defaultKey);
+  }
+
+  const buildDeadlineAttribute = (type, value) => {
+    const suffix = value > 1 ? `_${value}` : '';
+    if (type === 'iso') {
+      return 'milloin_ehdotuksen_nahtavilla_alkaa_iso' + suffix;
+    }
+    if (type === 'pieni') {
+      return 'milloin_ehdotuksen_nahtavilla_alkaa_pieni' + suffix;
+    }
+    return 'milloin_tarkistettu_ehdotus_lautakunnassa' + suffix;
+  }
+
+  const findMatchedDeadline = (data, deadlinesData, phase) => {
+    const ehdotusPhase = [29, 21, 15, 9, 3].includes(phase);
+    const keys = ehdotusPhase ? getEhdotusKeys(data) : getTarkistettuKeys(data);
+    const defaultKey = ehdotusPhase ? 'kaavaehdotus_uudelleen_nahtaville' : 'vahvista_kaavaehdotus_lautakunnassa';
+    const highestKey = getHighestKey(keys, defaultKey);
+    const highestKeyValue = highestKey === defaultKey ? '' : highestKey.split('_').pop();
+
+    let deadlineAttribute;
+    if (ehdotusPhase) {
+      deadlineAttribute = buildDeadlineAttribute(
+        (phase === 29 || phase === 21) ? 'iso' : 'pieni',
+        highestKeyValue
+      );
+    } else {
+      deadlineAttribute = buildDeadlineAttribute('tarkistettu', highestKeyValue);
+    }
+
+    const matchedDeadline = deadlinesData.find(
+      deadline => deadline.deadline.attribute === deadlineAttribute
+    );
+    return matchedDeadline?.deadline;
+  }
 
   const getFieldsInOrder = (suggestionPhase,heading,container,container2,editDataLink) => {
     if(suggestionPhase){
@@ -99,7 +180,7 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
       <span>{t('custom-card.already-confirmed')}</span>
     </div>
     :     
-    <Button size='small' iconLeft={<IconPenLine />} onClick={() => dispatch(showTimetable(true))} variant="supplementary" theme="black" role="link">{buttonText}</Button> 
+    <Button size='small' iconLeft={<IconPenLine />} onClick={() => dispatch(showTimetable(true,name,selectedPhase,matchedDeadline))} variant="supplementary" theme="black" role="link">{buttonText}</Button> 
 
     boardFields = 
     <div className='custom-card-info-container'>
@@ -171,7 +252,10 @@ CustomCard.propTypes = {
   props: PropTypes.object,
   name: PropTypes.string,
   data: PropTypes.object,
-  deadlines: PropTypes.object,
+  deadlines: PropTypes.oneOfType([
+    PropTypes.object,
+    PropTypes.array
+  ]),
   placeholder: PropTypes.string,
   input: PropTypes.object,
   fieldData: PropTypes.object

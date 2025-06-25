@@ -89,26 +89,28 @@ export const NavHeader = ({ routeItems, actions, title, infoOptions, attributes,
         {pathToCheck?.endsWith('/edit') &&
         <div className="project-info">
           <table>
-            <tr>
-              <th>{t('project-edit-info.size')}</th>
-              <td>{projectSize}</td>
-            </tr>
-            <tr>
-              <th>{t('project-edit-info.person')}</th>
-              <td>{responsibleUser}</td>
-            </tr>
-            <tr>
-              <th>{t('project-edit-info.pino')}</th>
-              <td>{pino}</td>
-            </tr>
-            <tr>
-              <th>{t('project-edit-info.diaari')}</th>
-              <td>{diaari}</td>
-            </tr>
-            <tr>
-              <th>{t('project-edit-info.pwnum')}</th>
-              {getPW()}
-            </tr>
+            <tbody>
+              <tr>
+                <th>{t('project-edit-info.size')}</th>
+                <td>{projectSize}</td>
+              </tr>
+              <tr>
+                <th>{t('project-edit-info.person')}</th>
+                <td>{responsibleUser}</td>
+              </tr>
+              <tr>
+                <th>{t('project-edit-info.pino')}</th>
+                <td>{pino}</td>
+              </tr>
+              <tr>
+                <th>{t('project-edit-info.diaari')}</th>
+                <td>{diaari}</td>
+              </tr>
+              <tr>
+                <th>{t('project-edit-info.pwnum')}</th>
+                {getPW()}
+              </tr>
+            </tbody>
           </table>
         </div>
         }
