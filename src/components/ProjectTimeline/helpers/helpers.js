@@ -15,7 +15,6 @@ export function findInMonths(date, week, monthDates) {
   return monthIndex
 }
 export function findWeek(date) {
-
   if (Math.round(date / 5) < 1) {
     return 1
   } else if (Math.round(date / 5) > 5) {
