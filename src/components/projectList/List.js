@@ -140,7 +140,7 @@ class List extends Component {
         //Mobile
         projects.push(
           <ListItem
-            key={pino_number}
+            key={`${id}-${pino_number}`}
             modifyProject={modifyProject}
             item={listItem}
             showGraph={this.props.showGraph}
@@ -169,6 +169,8 @@ class List extends Component {
         rowObject[responsibleField] = <Popup trigger={<span>{listItem.user}</span>} on="hover" content={listItem.user}/>
         rowObject[phaseField] = <span className='project-status-container'><Status color={listItem.phaseColor} /> <span className='project-status-text'>{listItem.phaseName}</span></span>
         rowObject[modifiedField] = listItem.modified_at
+
+        rowObject.pino_number = listItem.pino_number
         
         rows.push(rowObject)
         let rowObject2 = {}
@@ -178,6 +180,7 @@ class List extends Component {
             <ProjectTimeline deadlines={deadlines} projectView={true} onhold={onhold} attribute_data={attribute_data}/>
           </span>
         )
+        rowObject2.pino_number = `${listItem.pino_number}-graph`
         rows.push(rowObject2)
       }
     )
@@ -190,7 +193,7 @@ class List extends Component {
             ariaLabelSortButtonUnset="Not sorted"
             ariaLabelSortButtonAscending="Sorted in ascending order"
             ariaLabelSortButtonDescending="Sorted in descending order"
-            indexKey={this.props.t('projects.table.pino-number')}
+            indexKey="pino_number"
             renderIndexCol={true}
             cols={this.headerItems}
             rows={rows}

@@ -12,6 +12,28 @@ import {useFocus} from '../../hooks/useRefFocus'
 import { useIsMount } from '../../hooks/IsMounted'
 
 const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
+
+  // destructure props to avoid spreading custom props onto the DOM element
+  const {
+    lockField,
+    handleUnlockField,
+    fieldSetDisabled,
+    insideFieldset,
+    nonEditable,
+    rollingInfo,
+    modifyText,
+    rollingInfoText,
+    isCurrentPhase,
+    selectedPhase,
+    attributeData,
+    phaseIsClosed,
+    customError,
+    isTabActive,
+    isProjectTimetableEdit,
+    timetable_editable,
+    ...restCustom
+  } = custom;
+
   const [readonly, setReadOnly] = useState({name:"",read:false})
   const [hasError,setHasError] = useState(false)
   const [editField,setEditField] = useState(false)
@@ -330,7 +352,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           errorText={custom.disabled || !inputUtils.hasError(error).toString() || !hasError ? "" : errorString}
           fluid="true"
           {...input}
-          {...custom}
+          {...restCustom}
           disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled}
           onChange={(event) =>{handleInputChange(event,readonly.read)}}
           onBlur={(event) => {handleBlur(event,readonly.read)}}
