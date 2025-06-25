@@ -654,8 +654,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           overrideItems: false  // allow these options to override item.editable
         },
         itemsAlwaysDraggable: { // Dragging is disabled, allow in v1.2
-            item:false, // change to true to allow dragging of items
-            range:false // change to true to allow dragging of ranges
+            item:true, // change to true to allow dragging of items
+            range:true // change to true to allow dragging of ranges
         },
         orientation:{
           axis: "top",
@@ -1141,7 +1141,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             timelineInstanceRef.current.off('itemout', hideTooltip);
             document.body.removeEventListener('mousemove', handleMouseMove);
           }
-          timeline.off('groupDragged', groupDragged)
           timeline.off('mouseDown');
           observerRef?.current?.disconnect();
           //timeline.off('rangechanged', onRangeChanged);
