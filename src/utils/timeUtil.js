@@ -561,7 +561,9 @@ const calculateTotalDistances = (startIndex, endIndex, sectionAttributes, formVa
     }
   }
   // Subtract holidays from total distance
-  totalDistance -= holidayCount;
+  if(sectionAttributes[startIndex].date_type !== "esilläolopäivät"){
+    totalDistance -= holidayCount;
+  }
   return totalDistance;
 };
 
@@ -729,7 +731,7 @@ const getDisabledDatesForSizeXSXL = (name, formValues, matchingItem, dateTypes, 
       : null;
     return newDisabledDates.filter(date =>
       date >= firstPossibleDateToSelect &&
-      (!lockedItem || date < lastPossibleDateToSelect)
+      (!lockedItem || date <= lastPossibleDateToSelect)
     );
   }
 };
