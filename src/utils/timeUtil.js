@@ -533,14 +533,35 @@ const findNextPossibleValue = (array, value, addedDays) => {
   return null;
 }
 
-const calculateTotalDistances = (startIndex, endIndex, sectionAttributes) => {
+const calculateTotalDistances = (startIndex, endIndex, sectionAttributes, formValues, dateTypes) => {
+  const formStartDate = formValues[sectionAttributes[startIndex].name];
+  const formEndDate = formValues[sectionAttributes[endIndex].name];
   let totalDistance = 0;
-
-  // Iterate from startIndex to endIndex to calculate distances
+  let holidayCount = 0;
+  // Calculate original total distance from section attributes
   for (let i = startIndex; i <= endIndex; i++) {
-    totalDistance += (sectionAttributes[i]?.distance_from_previous || 0) + (sectionAttributes[i]?.distance_to_next || 0);
+    if (i !== startIndex) {
+      totalDistance += (sectionAttributes[i]?.distance_from_previous || 0);
+    }
   }
-
+  // Use arkipäivät to find holidays (weekdays not in arkipäivät = holidays)
+  if (formStartDate && formEndDate && dateTypes["arkipäivät"]?.dates) {
+    const weekdayDates = dateTypes["arkipäivät"].dates;
+    let currentDate = new Date(formStartDate);
+    const endDate = new Date(formEndDate);
+    
+    while (currentDate <= endDate) {
+      const dateStr = formatDate(currentDate);
+      const dayOfWeek = currentDate.getDay();
+      // If it's a weekday (Mon-Fri) but NOT in arkipäivät, it's a holiday
+      if (dayOfWeek !== 0 && dayOfWeek !== 6 && !weekdayDates.includes(dateStr)) {
+        holidayCount++;
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+  }
+  // Subtract holidays from total distance
+  totalDistance -= holidayCount;
   return totalDistance;
 };
 
@@ -632,7 +653,7 @@ const getDisabledDatesForLautakunta = (name, formValues, phaseName, matchingItem
     let newDisabledDates = dateTypes?.työpäivät?.dates;
     return newDisabledDates.filter(date =>
       date >= firstPossibleDateToSelect &&
-      (!lockedItem || date < lastPossibleDateToSelect)
+      (!lockedItem || date <= lastPossibleDateToSelect)
     );
   }
 
@@ -684,7 +705,7 @@ const getDisabledDatesForSizeXSXL = (name, formValues, matchingItem, dateTypes, 
       : null;
     return newDisabledDates.filter(date =>
       date >= firstPossibleDateToSelect &&
-      (!lockedItem || date < lastPossibleDateToSelect)
+      (!lockedItem || date <= lastPossibleDateToSelect)
     );
   } else if (name.includes("_alkaa")) {
     const miniumDaysPast = matchingItem?.distance_from_previous;
@@ -696,7 +717,7 @@ const getDisabledDatesForSizeXSXL = (name, formValues, matchingItem, dateTypes, 
     const lastPossibleDateToSelect = findNextPossibleValue(dateTypes?.esilläolopäivät?.dates, dateToCompareFuture, -miniumDaysFuture);
     return newDisabledDates.filter(date =>
       date >= firstPossibleDateToSelect &&
-      date <= lastPossibleDateToSelect
+      date < lastPossibleDateToSelect
     );
   } else if (name.includes("_paattyy")) {
     const miniumDaysPast = matchingItem?.distance_from_previous;
@@ -759,10 +780,10 @@ const getDisabledDatesForNahtavillaolo = (name, formValues, phaseName, matchingI
     const dateToCompareFuture = formValues[matchingItem?.next_deadline];
     let newDisabledDates = dateTypes?.arkipäivät?.dates;
     const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToComparePast, miniumDaysPast);
-    const lastPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompareFuture, lockedItem ? -maxLockedDistance : -miniumDaysFuture);
+    const lastPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompareFuture, -miniumDaysFuture);
     return newDisabledDates.filter(date =>
       date >= firstPossibleDateToSelect &&
-      date <= lastPossibleDateToSelect
+      date < lastPossibleDateToSelect
     );
   } else if (name.includes("_paattyy") || name.includes("viimeistaan_lausunnot")) {
     const miniumDaysPast = matchingItem?.distance_from_previous;
@@ -774,7 +795,7 @@ const getDisabledDatesForNahtavillaolo = (name, formValues, phaseName, matchingI
       : null;
     return newDisabledDates.filter(date =>
       date >= firstPossibleDateToSelect &&
-      (!lockedItem || date <= lastPossibleDateToSelect)
+      (!lockedItem || date < lastPossibleDateToSelect)
     );
   }
 };
@@ -785,7 +806,7 @@ const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues
   const nextItem = objectUtil.findItem(sectionAttributes, name, "name", 1);
   const phaseName = currentDeadline?.deadline?.phase_name?.toLowerCase();
   const lockedItem = objectUtil.findMatchingName(sectionAttributes, lockedGroup?.lockedGroup, "attributegroup", 1);
-  let maxLockedDistance = 0
+  let maxLockedDistance = 0;
   const startIndex = sectionAttributes.findIndex(attr => attr.attributegroup === matchingItem?.attributegroup && attr.name === name);
   const endIndex = sectionAttributes.findIndex(attr => attr.attributegroup === lockedItem?.attributegroup);
   //Date for last possible date to select if locking is on
@@ -796,7 +817,7 @@ const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues
   })() : false;
 
   if(lockedItem && startIndex !== -1 && endIndex !== -1){
-    maxLockedDistance = calculateTotalDistances(startIndex,endIndex, sectionAttributes);
+    maxLockedDistance = calculateTotalDistances(startIndex,endIndex, sectionAttributes, formValues, dateTypes);
   }
   if (name.includes("projektin_kaynnistys_pvm") || name.includes("kaynnistys_paattyy_pvm")) {
     return getDisabledDatesForProjectStart(name, formValues, previousItem, nextItem, dateTypes, lockedItem, maxLockedDistance, lockDateLimit);
