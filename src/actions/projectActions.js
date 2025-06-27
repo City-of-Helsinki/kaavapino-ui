@@ -117,6 +117,7 @@ export const UPDATE_PROJECT_FAILURE = 'updateProjectFailure';
 export const UPDATE_ATTRIBUTE = 'updateAttribute';
 export const SAVE_PROJECT_TIMETABLE_FAILED = "saveProjectTimetableFailed";
 export const VALIDATING_TIMETABLE = "validatingTimetable"
+export const LOCK_TIMETABLE = "lockTimetable"
 
 export const updateAttribute = (field,value) => ({
   type: UPDATE_ATTRIBUTE,
@@ -133,9 +134,9 @@ export const resetAttributeData = (initialData) => ({
   type: RESET_ATTRIBUTE_DATA,
   payload: {initialData},
 });
-export const updateDateTimeline = (field, newDate, formValues, isAdd, deadlineSections) => ({
+export const updateDateTimeline = (field, newDate, formValues, isAdd, deadlineSections, lockedGroup) => ({
   type: UPDATE_DATE_TIMELINE,
-  payload: { field, newDate, formValues, isAdd, deadlineSections},
+  payload: { field, newDate, formValues, isAdd, deadlineSections, lockedGroup},
 });
 export const removeDeadlines = (deadlines) => ({
   type: REMOVE_DEADLINES,
@@ -188,9 +189,9 @@ export const showFloorArea = (showEditFloorAreaForm) => ({
   type: SHOW_FLOOR_AREA,
   payload:showEditFloorAreaForm
 })
-export const showTimetable = (showEditProjectTimetableForm) => ({
+export const showTimetable = (showTimetable,name,selectedPhase,matchedDeadline) => ({
   type: SHOW_TIMETABLE,
-  payload:showEditProjectTimetableForm
+  payload:{showTimetable,name,selectedPhase,matchedDeadline}
 })
 export const pollConnection = (connection) => ({
   type: POLL_CONNECTION,
@@ -537,6 +538,18 @@ export const setValidatingTimetable = (validationStarted, validationEnded) => {
     payload: {
       started: validationStarted,
       ended: validationEnded
+    }
+  }
+}
+
+export const lockTimetable = (group,phases,locked,time) => {
+  return {
+    type: LOCK_TIMETABLE,
+    payload: {
+      lockedGroup: group,
+      lockedPhases: phases,
+      locked: locked,
+      lockedStartTime: time
     }
   }
 }

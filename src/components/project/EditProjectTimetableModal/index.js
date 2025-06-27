@@ -9,7 +9,7 @@ import { EDIT_PROJECT_TIMETABLE_FORM } from '../../../constants'
 import './styles.scss'
 import { deadlineSectionsSelector } from '../../../selectors/schemaSelector'
 import { withTranslation } from 'react-i18next'
-import { deadlinesSelector,validatedSelector,dateValidationResultSelector,cancelTimetableSaveSelector, validatingTimetableSelector } from '../../../selectors/projectSelector'
+import { deadlinesSelector,validatedSelector,dateValidationResultSelector,cancelTimetableSaveSelector, validatingTimetableSelector, lockingTimetableSelector } from '../../../selectors/projectSelector'
 import { Button,IconInfoCircle } from 'hds-react'
 import { isEqual } from 'lodash'
 import VisTimelineGroup from '../../ProjectTimeline/VisTimelineGroup'
@@ -19,7 +19,7 @@ import withValidateDate from '../../../hocs/withValidateDate';
 import objectUtil from '../../../utils/objectUtil'
 import textUtil from '../../../utils/textUtil'
 import { updateDateTimeline,validateProjectTimetable,setValidatingTimetable } from '../../../actions/projectActions';
-import { getVisibilityBoolName, vis_bool_group_map, getPhaseNameByVisBool } from '../../../utils/projectVisibilityUtils';
+import { getVisibilityBoolName, vis_bool_group_map, getPhaseNameByVisBool, isDeadlineConfirmed } from '../../../utils/projectVisibilityUtils';
 import timeUtil from '../../../utils/timeUtil'
 
 class EditProjectTimeTableModal extends Component {
@@ -47,7 +47,7 @@ class EditProjectTimeTableModal extends Component {
       let items = new visdata.DataSet()
       let groups = new visdata.DataSet();
       let ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe)
-      let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,attributeData,deadlines,ongoingPhase)
+      let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,attributeData,deadlines,ongoingPhase,true)
 
       groups.add(deadLineGroups);
       groups.add(nestedDeadlines);
@@ -79,7 +79,7 @@ class EditProjectTimeTableModal extends Component {
       deadlines,
       deadlineSections
     } = this.props
-    if (prevProps.attributeData && prevProps.attributeData !== attributeData) {
+    if (prevProps.attributeData && !isEqual(prevProps.attributeData, attributeData)) {
       let sectionAttributes = [];
       this.extractAttributes(deadlineSections, attributeData, sectionAttributes, (attribute, attributeData) =>
         attribute.label !== "Lausunnot viimeistään" && attributeData[attribute.name]
@@ -89,8 +89,7 @@ class EditProjectTimeTableModal extends Component {
       Object.keys(attributeData).forEach(fieldName => 
         this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, fieldName, attributeData[fieldName])));
     }
-
-    if(prevProps.formValues && prevProps.formValues !== formValues){
+    if(prevProps.formValues && !isEqual(prevProps.formValues, formValues)){
       //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
       timeUtil.compareAndUpdateDates(formValues)
       if(deadlineSections && deadlines && formValues){
@@ -104,7 +103,7 @@ class EditProjectTimeTableModal extends Component {
         if(!this.props.validated){
           let ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe)
           //Form items and groups
-          let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,formValues,deadlines,ongoingPhase)
+          let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,formValues,deadlines,ongoingPhase,false)
           // Update the existing data
           const combinedGroups = nestedDeadlines? deadLineGroups.concat(nestedDeadlines) : deadLineGroups
           this.state.groups.clear();
@@ -121,7 +120,7 @@ class EditProjectTimeTableModal extends Component {
             const { field, formattedDate } = this.getLastDateField(newObjectArray);
             //Dispatch added values to move other values in projectReducer if miniums are reached
             if(field && formattedDate){
-              this.props.dispatch(updateDateTimeline(field,formattedDate,formValues,true,deadlineSections));
+              this.props.dispatch(updateDateTimeline(field,formattedDate,formValues,true,deadlineSections,false));
             }
           }
           this.setState({visValues:formValues})
@@ -262,7 +261,7 @@ class EditProjectTimeTableModal extends Component {
     return items;
   }
 
-  addDeadLineGroups = (deadlineSections,deadLineGroups,ongoingPhase) => {
+  addDeadLineGroups = (deadlineSections,deadLineGroups,ongoingPhase,isMounting) => {
     for (let i = 0; i < deadlineSections.length; i++) {
       for (let x = 0; x < deadlineSections[i].grouped_sections.length; x++) {
         if (!deadLineGroups.some(item => item.content === deadlineSections[i].title)) {
@@ -283,7 +282,16 @@ class EditProjectTimeTableModal extends Component {
             expanded = this.state.collapseData[deadlineSections[i].title]
           }
           else{
-            expanded = deadlineSections[i].title === ongoingPhase ? true : false
+            expanded = deadlineSections[i].title === ongoingPhase && isMounting || deadlineSections[i].title === this.props.showTimetableForm?.selectedPhase ? true : false
+            if(expanded){
+                // Add ongoingPhase true to collapseData: {}
+                this.setState(prevState => ({
+                collapseData: {
+                  ...prevState.collapseData,
+                  [ongoingPhase]: true
+                }
+                }));
+            }
           }
 
           deadLineGroups.push({
@@ -292,7 +300,8 @@ class EditProjectTimeTableModal extends Component {
             showNested: expanded,
             nestedGroups: [],
             maxEsillaolo: esillaolokerta,
-            maxLautakunta: lautakuntakerta
+            maxLautakunta: lautakuntakerta,
+            className: `${deadlineSections[i].id}`
           })
         }
       }
@@ -304,7 +313,7 @@ class EditProjectTimeTableModal extends Component {
     return formValues && formValues[deadline.attribute] ? formValues[deadline.attribute] : deadline.date;
   }
 
-  addMainGroup = (deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines, disabled) => {
+  addMainGroup = (deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines, disabled, lockedStyle) => {
     const currentDateString = new Date().toJSON().slice(0, 10);
     const currentDate = new Date(currentDateString);
     phaseData.push({
@@ -312,26 +321,29 @@ class EditProjectTimeTableModal extends Component {
       content: '',
       start: startDate,
       end: endDate,
-      className: style,
+      className: style + lockedStyle,
       phaseID: deadlines[i].deadline.phase_id,
       phase: true,
       group: deadlines[i].deadline.phase_name,
-      phaseName: deadlines[i].deadline.phase_name
+      phaseName: deadlines[i].deadline.phase_name,
+      groupName: deadlines[i].deadline.deadlinegroup
     });
   
     if (deadlines[i].deadline.phase_name === "Käynnistys" || deadlines[i].deadline.phase_name === "Hyväksyminen" || deadlines[i].deadline.phase_name === "Voimaantulo") {
+      const highlightID = `${deadlines[i].deadline.phase_id}_${numberOfPhases}`;
       phaseData.push({
         id: numberOfPhases + deadlines[i].deadline.phase_name,
         content: "",
         start: startDate,
         end: endDate,
-        className: disabled || (currentDate > endDate) ? "phase-length past" : "phase-length",
+        className: disabled || (currentDate > endDate) ? "phase-length past" : "phase-length" + " " +highlightID + lockedStyle,
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
         group: numberOfPhases,
         locked: false,
-        phaseName: deadlines[i].deadline.phase_name
+        phaseName: deadlines[i].deadline.phase_name,
+        groupName: deadlines[i].deadline.deadlinegroup
       });
       
       let dlIndex = deadLineGroups.findIndex(group => group.content === deadlines[i].deadline.phase_name);
@@ -344,7 +356,9 @@ class EditProjectTimeTableModal extends Component {
         deadlinegroup: deadlines[i].deadline.deadlinegroup,
         deadlinesubgroup: deadlines[i].deadline.deadlinesubgroup,
         locked: false,
-        undeletable: true
+        undeletable: true,
+        phaseID: deadlines[i].deadline.phase_id,
+        className: `${deadlines[i].deadline.deadlinegroup}`
       });
     }
   
@@ -367,13 +381,14 @@ class EditProjectTimeTableModal extends Component {
     return false;
   }
 
-  addSubgroup = (deadlines, i, numberOfPhases, dashStart, dashEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone, formValues) => {
+  addSubgroup = (deadlines, i, numberOfPhases, dashStart, dashEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone, formValues, lockedStyle) => {
+    const highlightID = `${deadlines[i].deadline.phase_id}_${numberOfPhases}`;
     if(dashStart === null && milestone === null && dashEnd){
       phaseData.push({
         start: dashEnd,
         id: numberOfPhases,
         content: "",
-        className: "board-only " + dashedStyle,
+        className: "board-only " + dashedStyle + " " + highlightID + lockedStyle,
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -381,7 +396,8 @@ class EditProjectTimeTableModal extends Component {
         locked: false,
         type: 'point',
         phaseName: deadlines[i].deadline.phase_name,
-        groupInfo: "Lautakunta"
+        groupInfo: "Lautakunta",
+        groupName: deadlines[i].deadline.deadlinegroup
       });
     }
     else if(dashEnd === null){
@@ -389,7 +405,7 @@ class EditProjectTimeTableModal extends Component {
         start: dashStart,
         id: numberOfPhases,
         content: "",
-        className: dashedStyle,
+        className: dashedStyle + " " + highlightID + lockedStyle,
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -397,7 +413,8 @@ class EditProjectTimeTableModal extends Component {
         locked: false,
         type: 'point',
         phaseName: deadlines[i].deadline.phase_name,
-        groupInfo: "Lautakunta"
+        groupInfo: "Lautakunta",
+        groupName: deadlines[i].deadline.deadlinegroup
       });
     }
     else if(dashStart && dashEnd && milestone){
@@ -405,7 +422,7 @@ class EditProjectTimeTableModal extends Component {
         start: milestone,
         id: numberOfPhases + " maaraaika",
         content: "",
-        className: dashedStyle,
+        className: dashedStyle + " " + highlightID + lockedStyle,
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -413,35 +430,38 @@ class EditProjectTimeTableModal extends Component {
         locked: false,
         type: 'point',
         phaseName: deadlines[i].deadline.phase_name,
-        groupInfo: "Määräaika"
+        groupInfo: "Määräaika",
+        groupName: deadlines[i].deadline.deadlinegroup
       });
       phaseData.push({
         start: milestone,
         end: dashStart,
         id: numberOfPhases + " divider",
         content: "",
-        className: "divider",
+        className: "divider" + " " + highlightID + lockedStyle,
         title: "divider",
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
         group: numberOfPhases,
         locked: false,
         phaseName: deadlines[i].deadline.phase_name,
-        groupInfo: "Kaavoitussihteerin työaika"
+        groupInfo: "Kaavoitussihteerin työaika",
+        groupName: deadlines[i].deadline.deadlinegroup
       });
       phaseData.push({
         start: dashStart,
         end: dashEnd,
         id: numberOfPhases,
         content: "",
-        className: dashedStyle,
+        className: dashedStyle + " " + highlightID + lockedStyle,
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
         group: numberOfPhases,
         locked: false,
         phaseName: deadlines[i].deadline.phase_name,
-        groupInfo: "Esilläolo"
+        groupInfo: "Esilläolo",
+        groupName: deadlines[i].deadline.deadlinegroup
       });
     }
     else{
@@ -450,7 +470,7 @@ class EditProjectTimeTableModal extends Component {
           start: dashStart,
           id: numberOfPhases + " maaraaika",
           content: "",
-          className: dashedStyle + " deadline",
+          className: dashedStyle + " deadline" + " " + highlightID + lockedStyle,
           title: deadlines[i].deadline.attribute,
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
@@ -458,27 +478,29 @@ class EditProjectTimeTableModal extends Component {
           locked: false,
           type: 'point',
           phaseName: deadlines[i].deadline.phase_name,
-          groupInfo: "Määräaika"
+          groupInfo: "Määräaika",
+          groupName: deadlines[i].deadline.deadlinegroup
         });
         phaseData.push({
           start: dashStart,
           end: dashEnd,
           id: numberOfPhases + " divider",
           content: "",
-          className: "divider",
+          className: "divider" + " " + highlightID + lockedStyle,
           title: "divider",
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
           group: numberOfPhases,
           locked: false,
           phaseName: deadlines[i].deadline.phase_name,
-          groupInfo: "Kaavoitussihteerin työaika"
+          groupInfo: "Kaavoitussihteerin työaika",
+          groupName: deadlines[i].deadline.deadlinegroup
         });
         phaseData.push({
           start: dashEnd,
           id: numberOfPhases + " lautakunta",
           content: "",
-          className: dashedStyle + " board-date",
+          className: dashedStyle + " board-date" + " " + highlightID + lockedStyle,
           title: deadlines[i].deadline.attribute,
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
@@ -486,7 +508,8 @@ class EditProjectTimeTableModal extends Component {
           locked: false,
           type: 'point',
           phaseName: deadlines[i].deadline.phase_name,
-          groupInfo: "Lautakunta"
+          groupInfo: "Lautakunta",
+          groupName: deadlines[i].deadline.deadlinegroup
         });
       } else {
         phaseData.push({
@@ -494,14 +517,15 @@ class EditProjectTimeTableModal extends Component {
           end: dashEnd,
           id: numberOfPhases,
           content: "",
-          className: dashedStyle,
+          className: dashedStyle + " " + highlightID + lockedStyle,
           title: deadlines[i].deadline.attribute,
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
           group: numberOfPhases,
           locked: false,
           phaseName: deadlines[i].deadline.phase_name,
-          groupInfo: "Nähtävilläolo"
+          groupInfo: "Nähtävilläolo",
+          groupName: deadlines[i].deadline.deadlinegroup
         });
       }
     }
@@ -531,7 +555,9 @@ class EditProjectTimeTableModal extends Component {
       deadlinesubgroup: deadlines[i].deadline.deadlinesubgroup,
       locked: false,
       generated:deadlines[i].generated,
-      undeletable:undeletable
+      undeletable:undeletable,
+      phaseID: deadlines[i].deadline.phase_id,
+      className: `${deadlines[i].deadline.deadlinegroup}`
     });
 
     return [phaseData, deadLineGroups, nestedDeadlines];
@@ -555,6 +581,7 @@ class EditProjectTimeTableModal extends Component {
     let milestone = false
 
     let disabled = false
+    let lockedStyle = ""
 
     const currentDateString = new Date().toJSON().slice(0, 10);
     const currentDate = new Date(currentDateString);
@@ -563,6 +590,10 @@ class EditProjectTimeTableModal extends Component {
       deadline = deadlines[i].deadline
       numberOfPhases = deadline.index
       deadlineGroup = deadline.deadlinegroup;
+      if(this.props.timetableLocked.lockedGroup === deadlineGroup){
+        //Add locked style to all dates after deadline and to the current deadline
+        lockedStyle += " locked-color";
+      }
 
       if(deadline.deadline_types.includes('phase_start')){
         //Special case for project start date
@@ -621,8 +652,8 @@ class EditProjectTimeTableModal extends Component {
           if (innerEnd < currentDate) {
             innerStyle += " past";
           }
-          if (this.isDeadlineConfirmed(formValues, deadlineGroup)) {
-            innerStyle += " confirmed";
+          if (isDeadlineConfirmed(formValues, deadlineGroup, false)) {
+            innerStyle += " confirmed" + lockedStyle;
           }
         }
       }
@@ -673,8 +704,8 @@ class EditProjectTimeTableModal extends Component {
             innerStyle += " past";
           }
 
-          if (this.isDeadlineConfirmed(formValues, deadlineGroup)) {
-            innerStyle += " confirmed";
+          if (isDeadlineConfirmed(formValues, deadlineGroup, false)) {
+            innerStyle += " confirmed" + lockedStyle;
           }
         }
       }
@@ -706,8 +737,8 @@ class EditProjectTimeTableModal extends Component {
             innerStyle += " past";
           }
 
-          if (this.isDeadlineConfirmed(formValues, deadlineGroup)) {
-            innerStyle += " confirmed";
+          if (isDeadlineConfirmed(formValues, deadlineGroup, false)) {
+            innerStyle += " confirmed" + lockedStyle;
           }
         }
         else if(deadline.deadline_types.includes('inner_start')){
@@ -758,7 +789,7 @@ class EditProjectTimeTableModal extends Component {
 
       if(startDate && endDate){
         //Main group items not movable(Käynnistys, Periaatteet, OAS etc)
-        let mainGroup = this.addMainGroup(deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines, disabled);
+        let mainGroup = this.addMainGroup(deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines, disabled, lockedStyle);
         [phaseData, deadLineGroups, nestedDeadlines] = mainGroup;
         startDate = false
         endDate = false
@@ -768,7 +799,7 @@ class EditProjectTimeTableModal extends Component {
       else if(milestone && deadline.phase_name === "Ehdotus" && deadline.deadlinegroup !== "ehdotus_lautakuntakerta_1"
         && ["XL","L"].includes(formValues.kaavaprosessin_kokoluokka)) {
           if(formValues[deadline.attribute] && this.shouldAddSubgroup(deadline,formValues) && innerStart){
-          let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, null, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone, formValues);
+          let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, null, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone, formValues, lockedStyle);
           [phaseData, deadLineGroups, nestedDeadlines] = subgroup;
         }
         milestone = false
@@ -779,14 +810,14 @@ class EditProjectTimeTableModal extends Component {
         || innerEnd && deadline.phase_name === "Tarkistettu ehdotus" && (deadline.deadlinegroup === "tarkistettu_ehdotus_lautakuntakerta_2" || deadline.deadlinegroup === "tarkistettu_ehdotus_lautakuntakerta_3" || deadline.deadlinegroup === "tarkistettu_ehdotus_lautakuntakerta_4") 
       ){
         if(formValues[deadline.attribute] && this.shouldAddSubgroup(deadline,formValues)){
-          let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, null, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, null, formValues);
+          let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, null, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, null, formValues, lockedStyle);
           [phaseData, deadLineGroups, nestedDeadlines] = subgroup;
         }
         innerEnd = false
       } 
       else if(innerStart && innerEnd){
         if(formValues[deadline.attribute] && this.shouldAddSubgroup(deadline, formValues)){
-          let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, milestone?milestone:null, formValues);
+          let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, milestone?milestone:null, formValues, lockedStyle);
           [phaseData, deadLineGroups, nestedDeadlines] = subgroup2;
         }
         innerStart = false;
@@ -798,55 +829,12 @@ class EditProjectTimeTableModal extends Component {
     return [deadLineGroups,nestedDeadlines,phaseData]
   }
 
-  // Helper function to check if dates are confirmed
-  isDeadlineConfirmed = (formValues, deadlineGroup) => {
-    // Extract the number from deadlineGroup if it exists
-    const extractDigitsFromEnd = (str) => {
-      if (!str) return null;
-      const digits = str.split('').reverse().filter(char => !isNaN(char) && char !== ' ').reverse().join('');
-      return digits || null;
-    };
-
-    const matchNumber = extractDigitsFromEnd(deadlineGroup);
-    let confirmationKey;
-
-    const baseKeys = {
-      "tarkistettu_ehdotus": "vahvista_tarkistettu_ehdotus_lautakunnassa",
-      "ehdotus_pieni": "vahvista_ehdotus_esillaolo_pieni",
-      "ehdotus_nahtavillaolokerta": "vahvista_ehdotus_esillaolo",
-      "ehdotus_esillaolo": "vahvista_ehdotus_esillaolo",
-      "ehdotus_lautakunta": "vahvista_kaavaehdotus_lautakunnassa",
-      "oas": "vahvista_oas_esillaolo_alkaa",
-      "periaatteet_esillaolokerta": "vahvista_periaatteet_esillaolo_alkaa",
-      "periaatteet_lautakuntakerta": "vahvista_periaatteet_lautakunnassa",
-      "luonnos_esillaolokerta": "vahvista_luonnos_esillaolo_alkaa",
-      "luonnos_lautakuntakerta": "vahvista_kaavaluonnos_lautakunnassa"
-    };
-
-    for (const key in baseKeys) {
-      if (deadlineGroup.includes(key)) {
-        if (matchNumber && matchNumber === "1") {
-          // If number is 1, use the base key
-          confirmationKey = baseKeys[key];
-        } else if (matchNumber) {
-          // If number is bigger, construct the confirmationKey using the number
-          confirmationKey = `${baseKeys[key]}_${matchNumber}`;
-        } else {
-          // If no number, use the base key
-          confirmationKey = baseKeys[key];
-        }
-        break;
-      }
-    }
-    return formValues[confirmationKey];
-  };
-
-  getTimelineData = (deadlineSections,formValues,deadlines,ongoingPhase) => {
+  getTimelineData = (deadlineSections,formValues,deadlines,ongoingPhase,isMounting) => {
       let phaseData = []
       let deadLineGroups = []
       let nestedDeadlines = []
 
-      deadLineGroups = this.addDeadLineGroups(deadlineSections,deadLineGroups,ongoingPhase)
+      deadLineGroups = this.addDeadLineGroups(deadlineSections,deadLineGroups,ongoingPhase,isMounting)
       const results = this.generateVisItems(deadlines,formValues,deadLineGroups,nestedDeadlines,phaseData);
       [deadLineGroups, nestedDeadlines, phaseData] = results;
 
@@ -1156,8 +1144,9 @@ class EditProjectTimeTableModal extends Component {
 
   handleSubmit = () => {
     this.setState({ loading: true })
+    localStorage.removeItem('timelineHighlightedElement');
+    localStorage.removeItem('menuHighlight');
     const errors = this.props.handleSubmit()
-
     if (errors) {
       this.setState({ loading: false })
     }
@@ -1183,14 +1172,29 @@ class EditProjectTimeTableModal extends Component {
   }
 
   handleClose = () => {
+    localStorage.removeItem('timelineHighlightedElement');
+    localStorage.removeItem('menuHighlight');
     this.props.handleClose()
   }
 
   trackExpandedGroups = (e) => {
     const { collapseData } = this.state;
     const key = e.target.innerText;
-    const value = e.target.classList.value.includes("expanded") ? false : true;
-    const updatedCollapseData = { ...collapseData, [key]: value };
+    // Get current state directly from DOM or use state if available
+    let isCurrentlyExpanded;
+    if (key in collapseData) {
+      // If we have a stored value, use it
+      isCurrentlyExpanded = collapseData[key];
+    } else {
+      // If not in state yet, check if the element has an "expanded" class or attribute
+      // This could be determined by checking e.target's classes or another attribute
+      // that indicates expansion status
+      isCurrentlyExpanded = e.target.classList.contains("expanded") || 
+                           e.target.getAttribute("aria-expanded") === "true" ||
+                           false; // Default to false if we can't determine
+    }
+
+    const updatedCollapseData = { ...collapseData, [key]: !isCurrentlyExpanded };
     this.setState({ collapseData: updatedCollapseData });
   }
 
@@ -1251,6 +1255,7 @@ class EditProjectTimeTableModal extends Component {
               dateTypes={dateTypes}
               trackExpandedGroups={this.trackExpandedGroups}
               sectionAttributes={this.state.sectionAttributes}
+              showTimetableForm={this.props.showTimetableForm}
             /> 
             <ConfirmModal 
               openConfirmModal={this.state.showModal}
@@ -1319,6 +1324,12 @@ EditProjectTimeTableModal.propTypes = {
   validatingTimetable: PropTypes.shape({
     started: PropTypes.bool,
     ended: PropTypes.bool
+  }),
+  timetableLocked: PropTypes.shape({
+    lockedGroup:PropTypes.bool,
+    lockedPhases:PropTypes.array,
+    locked:PropTypes.bool,
+    lockedStartTime:PropTypes.bool
   })
 }
 
@@ -1331,6 +1342,7 @@ const mapStateToProps = state => ({
   dateValidationResult : dateValidationResultSelector(state),
   cancelTimetableSave: cancelTimetableSaveSelector(state),
   validatingTimetable: validatingTimetableSelector(state),
+  timetableLocked: lockingTimetableSelector(state)
 })
 
 const decoratedForm = reduxForm({
