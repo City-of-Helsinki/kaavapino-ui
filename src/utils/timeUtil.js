@@ -549,7 +549,10 @@ const calculateTotalDistances = (startIndex, endIndex, sectionAttributes, formVa
     const weekdayDates = dateTypes["arkipäivät"].dates;
     const endDate = new Date(formEndDate);
     
-    for (let currentDate = new Date(formStartDate); currentDate <= endDate; currentDate.setDate(currentDate.getDate() + 1)) {
+    for (let currentDate = new Date(formStartDate); ; currentDate.setDate(currentDate.getDate() + 1)) {
+      if (currentDate > endDate) {
+        break;
+      }
       const dateStr = formatDate(currentDate);
       const dayOfWeek = currentDate.getDay();
       // If it's a weekday (Mon-Fri) but NOT in arkipäivät, it's a holiday
