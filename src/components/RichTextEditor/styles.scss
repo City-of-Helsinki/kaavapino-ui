@@ -48,6 +48,23 @@
           }
         }
       }
+      .quill-spinner-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 10; // Make sure this is higher than the editor
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: rgba(255, 255, 255, 0.6); // Optional: light overlay
+        pointer-events: none; // Allows typing to be blocked when overlay exists (optional)
+        .loading-spinner {
+          width: $size64;
+          height: $size64;
+        }
+      }
       .ql-editor.ql-blank::before {
         color: $gray;
         font-style: normal;

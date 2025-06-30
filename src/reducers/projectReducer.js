@@ -93,7 +93,8 @@ import {
   UPDATE_PROJECT_FAILURE,
   UPDATE_ATTRIBUTE,
   SAVE_PROJECT_TIMETABLE_FAILED,
-  VALIDATING_TIMETABLE
+  VALIDATING_TIMETABLE,
+  LOCK_TIMETABLE
 } from '../actions/projectActions'
 
 import timeUtil from '../utils/timeUtil'
@@ -139,7 +140,7 @@ export const initialState = {
   lastSaved:{},
   connection:{"connection":false},
   showEditFloorAreaForm:false,
-  showEditProjectTimetableForm:false,
+  showEditProjectTimetableForm:{showTimetable:false,timetableTarget:"",selectedPhase:"",matchedDeadline:{}},
   lastModified:false,
   updatedFloorValue:{},
   formErrorList:[],
@@ -150,7 +151,8 @@ export const initialState = {
   dateValidationResult: {valid: false, result: {}},
   validated:false,
   cancelTimetableSave:false,
-  validatingTimetable: {started: false, ended: false}
+  validatingTimetable: {started: false, ended: false},
+  timetableLocked: {lockedGroup:false,lockedPhases:[],locked:false,lockedStartTime:false}
 }
 
 export const reducer = (state = initialState, action) => {
@@ -172,7 +174,7 @@ export const reducer = (state = initialState, action) => {
     }
 
     case UPDATE_DATE_TIMELINE: {
-      const { field, newDate, formValues, isAdd, deadlineSections } = action.payload;
+      const { field, newDate, formValues, isAdd, deadlineSections, lockedGroup } = action.payload;
       // Create a copy of the state and attribute_data
       let updatedAttributeData
       if(formValues){
@@ -211,7 +213,7 @@ export const reducer = (state = initialState, action) => {
       //Compare for changes with dates in order sorted array
       const changes = objectUtil.compareAndUpdateArrays(origSortedData,updateAttributeArray,deadlineSections)
       //Find out is next date below minium and add difference of those days to all values after and move them forward 
-      const decreasingValues = objectUtil.checkForDecreasingValues(changes,isAdd,field,state.disabledDates,oldDate,newDate,moveToPast,projectSize);
+      const decreasingValues = objectUtil.checkForDecreasingValues(changes,isAdd,field,state.disabledDates,oldDate,newDate,moveToPast,projectSize,lockedGroup);
       //Add new values from array to updatedAttributeData object
       objectUtil.updateOriginalObject(filteredAttributeData,decreasingValues)
       //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
@@ -364,9 +366,10 @@ export const reducer = (state = initialState, action) => {
     }
 
     case SHOW_TIMETABLE: {
+      const convertedPayload = objectUtil.convertPayloadValues(action.payload);
       return{
         ...state,
-        showEditProjectTimetableForm: action.payload
+        showEditProjectTimetableForm: convertedPayload
       }
     }
     
@@ -683,6 +686,11 @@ export const reducer = (state = initialState, action) => {
         }
       }
 
+      if(updatedPayload?.attribute_data["aloituskokous_suunniteltu_pvm_readonly"] === undefined) {
+        //Check if value is not existing at all then add it as undefined, previous prop will not match othetwise and triggers unnecessary renders.
+        updatedPayload.attribute_data["aloituskokous_suunniteltu_pvm_readonly"] = undefined;
+      }
+      
       return {
         ...state,
         currentProject: updatedPayload,
@@ -977,7 +985,10 @@ export const reducer = (state = initialState, action) => {
       return{
         ...state,
         timetableSaved:action.payload,
-        showEditProjectTimetableForm: false,
+        showEditProjectTimetableForm: {
+          ...state.showEditProjectTimetableForm,
+          showTimetable: false
+        },
         cancelTimetableSave:false
       }
     }
@@ -986,7 +997,10 @@ export const reducer = (state = initialState, action) => {
       return{
         ...state,
         timetableSaved:false,
-        showEditProjectTimetableForm: true,
+        showEditProjectTimetableForm: {
+          ...state.showEditProjectTimetableForm,
+          showTimetable: true
+        },
         loading:false,
         saving:false,
         cancelTimetableSave:true
@@ -1005,6 +1019,13 @@ export const reducer = (state = initialState, action) => {
         ...state,
         validatingTimetable: action.payload
       }
+    }
+
+    case LOCK_TIMETABLE: {
+      return { 
+        ...state,
+        timetableLocked: action.payload
+      };
     }
 
     default: {

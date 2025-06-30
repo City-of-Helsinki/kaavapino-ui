@@ -43,7 +43,7 @@ const Matrix = ({
   })
 
   const renderInfo = field => {
-    return <Info content={field.help_text} link={field.help_link} linked={field.linked_fields}/>
+    return <Info content={field.help_text} link={field.help_link} linked={field.linked_fields} help_img_link={field.help_img_link}/>
   }
   return (
     <div className="matrix-container" data-testid="matrix-testid" >

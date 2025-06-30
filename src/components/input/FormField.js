@@ -56,6 +56,7 @@ const FormField = ({
   allowedToEdit,
   timetable_editable,
   isAdmin,
+  lockedGroup,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -150,6 +151,7 @@ const FormField = ({
             allowedToEdit={allowedToEdit}
             isAdmin={isAdmin}
             timetable_editable={timetable_editable}
+            lockedGroup={lockedGroup}
           />
         )
     }
@@ -298,7 +300,7 @@ const FormField = ({
               />
             )}
             {field.help_text && (
-              <Info content={field.help_text} link={field.help_link} linked={field.linked_fields} />
+              <Info content={field.help_text} link={field.help_link} linked={field.linked_fields} help_img_link={field.help_img_link} />
             )}
           </div>
         </div>

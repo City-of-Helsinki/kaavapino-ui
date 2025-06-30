@@ -3,14 +3,14 @@ import { Modal } from 'semantic-ui-react'
 import { Button,Tabs,IconCross } from 'hds-react'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import FormField from '../input/FormField'
-import { isArray } from 'lodash'
+import { isArray, split } from 'lodash'
 import { showField } from '../../utils/projectVisibilityUtils'
 import textUtil from '../../utils/textUtil'
 import objectUtil from '../../utils/objectUtil';
 import PropTypes from 'prop-types'
 import './VisTimeline.css'
 
-const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit,disabledDates,lomapaivat,dateTypes,groups, items, sectionAttributes,isAdmin }) => {
+const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit,disabledDates,lomapaivat,dateTypes,groups, items, sectionAttributes,isAdmin,initialTab, lockedGroup }) => {
 
   const getAttributeValues = (attributes) => {
     return Object.values(attributes).flatMap((v) => Object.values(v));
@@ -92,7 +92,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
             formValues={visValues}
             className={className}
             isProjectTimetableEdit={true}
-            disabled={disabled?.disabled && type === 'date' || !allowedToEdit && type === 'date'}
+            disabled={disabled?.disabled && (type === 'date' || type === 'boolean') || !allowedToEdit && type === 'date'}
             attributeData={visValues}
             disabledDates={disabledDates && type === 'date'}
             lomapaivat={lomapaivat}
@@ -108,6 +108,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
             sectionAttributes={sectionAttributes}
             isAdmin={isAdmin}
             timetable_editable={fieldProps?.field?.timetable_editable}
+            lockedGroup={lockedGroup}
           />
           {modifiedError && <div className="field-error">{modifiedError}</div>}
         </>
@@ -181,14 +182,15 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
       }
       confirmedValue = confirmedValue.replace(/\s+/g, '');
       const isConfirmed = visValues[confirmedValue]
-      const disabled = archived || isConfirmed ? true : sectionIndex < projectPhaseIndex
+      const isGroupLocked = lockedGroup?.lockedPhases?.includes(deadlinegroup) && lockedGroup?.locked
+      const disabled = archived || isConfirmed || isGroupLocked ? true : sectionIndex < projectPhaseIndex
       const renderedSections = []
       sections.forEach(subsection => {
         const attr = subsection?.attributes
         const [maxDateToMove,maxMoveGroup] = getMaxiumDateToMove(attr)
         if(attr[deadlinegroup]){
           renderedSections.push(
-            <Tabs key={"tab" + sectionIndex}>
+            <Tabs key={"tab" + sectionIndex} initiallyActiveTab={initialTab}>
               <Tabs.TabList className='tab-header' style={{ marginBottom: 'var(--spacing-m)' }}>
                 {Object.keys(attr[deadlinegroup]).map((key) => {
                   let tabContent = key === "default" ? content : key
@@ -217,7 +219,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
               <ul className="breadcrumb">
                 <li><a href="#" role="button">{group}</a></li>
                 <li><a href="#" role="button">{content}</a></li>
-                <Button variant="supplementary" onClick={openDialog}><IconCross /></Button>
+                <Button variant="supplementary" onClick={onClose}><IconCross /></Button>
               </ul>
             </Modal.Header>
             <Modal.Content>
@@ -241,7 +243,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines,openDialog,v
     content: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
     deadlinegroup: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
     deadlines: PropTypes.array,
-    openDialog: PropTypes.func,
+    onClose: PropTypes.func,
     visValues: PropTypes.object,
     deadlineSections: PropTypes.array,
     formSubmitErrors: PropTypes.object,
