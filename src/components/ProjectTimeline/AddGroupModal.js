@@ -20,6 +20,32 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
     }
   }
 
+  const getReasonMessage = (reason, groupId, t) => {
+    if (reason === "Lukitus päällä") {
+      return t('project.locking-enabled');
+    }
+    
+    if (reason === "noconfirmation") {
+      return groupId === "Ehdotus" 
+        ? t('project.confirm-previous-presence-first')
+        : t('project.confirm-previous-display-first');
+    }
+    
+    return groupId === "Ehdotus"
+      ? t('project.max-presences-reached')
+      : t('project.max-displays-reached');
+  };
+
+  const getBoardReasonMessage = (reason, t) => {
+    if (reason === "Lukitus päällä") {
+      return t('project.locking-enabled');
+    }
+    
+    return reason === "noconfirmation"
+      ? t('project.confirm-previous-board-first')
+      : t('project.max-boards-reached');
+  };
+
   useEffect(() => {
     if (timelineAddButton) {
       if (toggleOpenAddDialog) {
@@ -41,21 +67,22 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
               {addDialogData.group.id === "Ehdotus" ? t('project.add-new-review') : t('project.add-new-presence')}
             </Button>
             {addDialogData.esillaoloReason && (
-          <span className='add-button-info'>
-            {addDialogData.group.id === "Ehdotus" ?
-              (addDialogData.esillaoloReason === "noconfirmation" ? "Kaavoitussihteerin tulee vahvistaa aikaisempi nähtävilläolo, jonka jälkeen voidaan lisätä uusi." : "Nähtävilläolojen maksimimäärä on saavutettu.") :
-              (addDialogData.esillaoloReason === "noconfirmation" ? "Kaavoitussihteerin tulee vahvistaa aikaisempi esilläolo, jonka jälkeen voidaan lisätä uusi." : "Esilläolojen maksimimäärä on saavutettu.")
-            }
-          </span>
-        )}
+              <span className='add-button-info'>
+                {getReasonMessage(addDialogData.esillaoloReason, addDialogData.group.id, t)}
+              </span>
+            )}
           </>
         }
         {!addDialogData.hideBoard &&
           <>
             <Button size="small" disabled={!(addDialogData.showBoard && allowedToEdit)} className={addDialogData.showBoard && allowedToEdit ? '' : 'disabled'} variant="supplementary" onClick={() => addNew(addDialogData.nextLautakunta)} iconLeft={<IconPlus />}>
-                {t('project.add-new-board')}
+              {t('project.add-new-board')}
             </Button>
-            {addDialogData.lautakuntaReason && <span className='add-button-info'>{addDialogData.lautakuntaReason === "noconfirmation" ? "Kaavoitussihteerin tulee vahvistaa aikaisempi lautakunta, jonka jälkeen voidaan lisätä uusi." : "Lautakuntien maksimimäärä on saavutettu."}</span>}
+            {addDialogData.lautakuntaReason && (
+              <span className='add-button-info'>
+                {getBoardReasonMessage(addDialogData.lautakuntaReason, t)}
+              </span>
+            )}
           </>
         }
     </div>

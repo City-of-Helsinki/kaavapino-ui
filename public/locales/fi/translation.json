@@ -268,7 +268,14 @@
     "link-to-map":"Linkki projektin karttapalveluun.",
     "add-new-board":"Lisää uusi lautakunta",
     "add-new-presence":"Lisää uusi esilläolo",
-    "add-new-review": "Lisää uusi nähtävilläolo"
+    "add-new-review": "Lisää uusi nähtävilläolo",
+    "confirm-previous-board-first": "Kaavoitussihteerin tulee vahvistaa aikaisempi lautakunta, jonka jälkeen voidaan lisätä uusi.",
+    "max-boards-reached": "Lautakuntien maksimimäärä on saavutettu.",
+    "confirm-previous-presence-first": "Kaavoitussihteerin tulee vahvistaa aikaisempi nähtävilläolo, jonka jälkeen voidaan lisätä uusi.",
+    "confirm-previous-display-first": "Kaavoitussihteerin tulee vahvistaa aikaisempi esilläolo, jonka jälkeen voidaan lisätä uusi.",
+    "max-presences-reached": "Nähtävilläolojen maksimimäärä on saavutettu.",
+    "max-displays-reached": "Esilläolojen maksimimäärä on saavutettu.",
+    "locking-enabled": "Lukitus on päällä, poista lukitus lisätäksesi uuden vaiheen."
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}",

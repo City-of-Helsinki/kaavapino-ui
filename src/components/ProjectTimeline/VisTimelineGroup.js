@@ -189,6 +189,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const canGroupBeAdded = (visValRef, data) => {
+      if(lockRef.current.locked){
+        // If locked, return false for all options
+        return [false, false, false, false, "Lukitus päällä", "Lukitus päällä"];
+      }
       // Find out how many groups in the clicked phase have been added to the timeline
       const matchingGroups = groups.get().filter(group => data.nestedGroups.includes(group.id));
       const esillaoloCount = matchingGroups.filter(group => group.content.includes('Esilläolo') || group.content.includes('Nahtavillaolo')).length > 1 ? '_' + matchingGroups.filter(group => group.content.includes('Esilläolo') || group.content.includes('Nahtavillaolo')).length : '';
@@ -924,7 +928,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                 const locked = lock.classList.contains("lock") ? true : false;
                 if (locked) {
                   //Save the locked button state to localStorage
-                  localStorage.setItem("lockedState", "timeline-button-" + group.id);
+                  localStorage.setItem("lockedState", "timeline-group-" + group.id);
                 } 
                 else {
                   //Remove the locked button state from localStorage
