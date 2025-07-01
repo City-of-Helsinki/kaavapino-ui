@@ -720,11 +720,17 @@
         height: 56px;
         &:last-child {
           margin-left: $size16;
-          &:hover {
+          &:not(:disabled):hover {
             border-color: $color-bus;
             color: $color-bus;
           }
         }
+        &:disabled {
+          cursor: progress;
+        }
+      }
+      button:disabled{
+        cursor: progress;
       }
       span {
         line-height: $size24;
