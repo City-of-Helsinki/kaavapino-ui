@@ -1,4 +1,4 @@
-@import '../common/colors.scss';
+@use '../common/colors.scss';
 
 .richtext-container{
   .quill .ql-container.ql-snow {
@@ -11,21 +11,21 @@
 
   .rich-text-editor-wrapper {
     .rich-text-editor.toolbar-visible .ql-container .ql-editor {
-      padding-bottom: $size40;
+      padding-bottom: colors.$size40;
     }
 
     .rich-text-editor {
       background-color: white;
-      border: 2px solid $color-black-50;
+      border: 2px solid colors.$color-black-50;
 
       &:hover {
-        border: 2px solid $color-black-90;
+        border: 2px solid colors.$color-black-90;
       }
 
       .ql-toolbar {
         display: none;
         position: relative;
-        background-color: $white;
+        background-color: colors.$white;
         z-index: 1;
 
         .quill-toolbar-comment-button {
@@ -34,7 +34,7 @@
             height: 16px;
 
             path {
-              fill: $color-black-90 !important;
+              fill: colors.$color-black-90 !important;
             }
           }
           &:focus {
@@ -61,19 +61,19 @@
         background-color: rgba(255, 255, 255, 0.6); // Optional: light overlay
         pointer-events: none; // Allows typing to be blocked when overlay exists (optional)
         .loading-spinner {
-          width: $size64;
-          height: $size64;
+          width: colors.$size64;
+          height: colors.$size64;
         }
       }
       .ql-editor.ql-blank::before {
-        color: $gray;
+        color: colors.$gray;
         font-style: normal;
-        font-size: $size16;
+        font-size: colors.$size16;
       }
 
       .ql-container {
         .ql-editor {
-          font-size: $size16;
+          font-size: colors.$size16;
           padding: 16px;
           min-height: 56px;
           p{
@@ -83,9 +83,9 @@
       }
 
       &.toolbar-visible {
-        border: 2px solid $color-black-90 !important;
+        border: 2px solid colors.$color-black-90 !important;
         border-color: unset !important;
-        box-shadow: 0 0 0 3px $color-coat-of-arms !important;
+        box-shadow: 0 0 0 3px colors.$color-coat-of-arms !important;
         transform: translateZ(0) !important;
         transition: 85ms ease-out !important;
         transition-property: box-shadow,transform !important;
@@ -101,8 +101,8 @@
       }
 
       &.toolbar-visible-error{
-        border: 2px solid $color-error !important;
-        border-color: $color-error !important;
+        border: 2px solid colors.$color-error !important;
+        border-color: colors.$color-error !important;
         box-shadow: unset!important;
         transform: translateZ(0) !important;
         transition: 85ms ease-out !important;
@@ -134,7 +134,7 @@
 
     .comment-list {
       padding: 16px;
-      background: $light-gray3;
+      background: colors.$light-gray3;
       border-radius: 0 0 2px 2px;
 
       .comment-container:first-child {
@@ -148,8 +148,8 @@
   }
   .quill-counter {
     font-family: "Helsinki Grotesk Bold", sans-serif;
-    font-size: $size14;
-    color: $color-black-90;
+    font-size: colors.$size14;
+    color: colors.$color-black-90;
     position: relative;
     top: -30px;
     right: 14px;
@@ -161,19 +161,19 @@
   }
   .max-chars{
     font-family: "Helsinki Grotesk Regular", sans-serif;
-    font-size: $size16;
-    color: $max-markings-color;
-    line-height: $size24;
+    font-size: colors.$size16;
+    color: colors.$max-markings-color;
+    line-height: colors.$size24;
     margin-top: 8px;
   }
   .max-chars-error{
     display: flex;
     font-family: "Helsinki Grotesk Regular", sans-serif;
-    font-size: $size16;
-    color: $color-error;
-    line-height: $size24;
+    font-size: colors.$size16;
+    color: colors.$color-error;
+    line-height: colors.$size24;
   }
   .quill-warning {
-    color: $color-error;
+    color: colors.$color-error;
   }
 }

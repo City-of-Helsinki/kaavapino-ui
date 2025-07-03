@@ -1,5 +1,5 @@
-@import '../common/colors.scss';
-@import '../common/Fonts.scss';
+@use '../common/colors.scss';
+@use '../common/Fonts.scss';
 
 .project-list-page {
   margin: 0 auto;
@@ -13,7 +13,7 @@
     height: 44px;
     button {
       font-family: 'Helsinki Grotesk Medium', sans-serif;
-      font-size: $size16;
+      font-size: colors.$size16;
       margin-left: 10px;
 
       svg {
@@ -38,9 +38,9 @@
         }
       }
       a.action-item {
-        color: $color-white !important;
-        border: 2px solid $color-primary !important;
-        background: $color-primary !important;
+        color: colors.$color-white !important;
+        border: 2px solid colors.$color-primary !important;
+        background: colors.$color-primary !important;
         margin-right: 0;
       }
       @media screen and (max-width: 800px) {
@@ -64,13 +64,13 @@
 
     li[role=tab] {
       span{
-        font-size: $size16;
+        font-size: colors.$size16;
       }
     }
 
     .project-list{
       display: block;
-      background-color: $color-white;
+      background-color: colors.$color-white;
       padding: 0px 0px;
       border-top: none;
 
@@ -93,7 +93,7 @@
         thead{
           width: 100%;
           span{
-            font-size: $size16;
+            font-size: colors.$size16;
           }
           button[data-testid='hds-table-sorting-header-Muokattu']{
        
@@ -116,9 +116,9 @@
 
           tr{
             td{
-              font-size: $size16;
+              font-size: colors.$size16;
               a{
-                color: $color-bus;
+                color: colors.$color-bus;
                 text-decoration: underline;
               }
             }
@@ -169,7 +169,7 @@
 
       .project-list-mobile {
         display: block;
-        background-color: $color-white;
+        background-color: colors.$color-white;
         padding: 0px 0px;
         border-top: none;
   
@@ -194,7 +194,7 @@
           width: 100%;
           margin: 0;
           border: none !important;
-          border-bottom: 1px solid $color-black !important;
+          border-bottom: 1px solid colors.$color-black !important;
   
           > * {
             overflow: hidden;
@@ -226,7 +226,7 @@
           }
         }
         .project-list-item-container {
-          color: $color-black;
+          color: colors.$color-black;
           background-color: transparent;
           
           .project-list-item-graph {
@@ -237,11 +237,11 @@
           }
           .project-card-mb {
             display: none;
-            font-size: $size16;
-            color: $color-primary;
+            font-size: colors.$size16;
+            color: colors.$color-primary;
             text-align: center;
             justify-content: center;
-            border: 2px solid $color-primary;
+            border: 2px solid colors.$color-primary;
             margin-top: 18px;
             margin-bottom: 32px;
             padding-top: 18px;
@@ -254,15 +254,15 @@
         }
         .project-list-item {
           height: 64px;
-          border: 2px solid $color-black-10;
-          font-size: $size16;
+          border: 2px solid colors.$color-black-10;
+          font-size: colors.$size16;
           position: relative;
           flex-grow: 1;
   
           &:hover,
           &:focus,
           &:active {
-            border-color: $color-primary;
+            border-color: colors.$color-primary;
           }
   
           .project-status {
@@ -274,7 +274,7 @@
           }
   
           .project-name {
-            color: $color-bus;
+            color: colors.$color-bus;
             text-decoration: underline;
             &:hover {
               text-decoration: underline;
@@ -297,14 +297,14 @@
   
           @media screen and (max-width: 599px) {
             display: block;
-            font-size: $size16;
-            color: $color-black;
+            font-size: colors.$size16;
+            color: colors.$color-black;
           }
         }
   
         .project-list-header {
           font-family: "Helsinki Grotesk Medium", sans-serif;
-          background-color: $color-bus;
+          background-color: colors.$color-bus;
           align-items: center;
           min-height: 56px;
           position: relative;
@@ -312,13 +312,13 @@
           .project-timeline-toggle {
             cursor: pointer;
             width: 68px;
-            color: $color-bus-light;
+            color: colors.$color-bus-light;
 
             .ui.toggle.checkbox input:checked ~ label:after {
               left: 1.977rem;
             }
             .ui.toggle.checkbox input:checked ~ label:before {
-              background-color: $color-black !important;
+              background-color: colors.$color-black !important;
             }
 
             .toggle {
@@ -344,15 +344,15 @@
   
           .header-item {
             text-align: left;
-            font-size: $size16;
+            font-size: colors.$size16;
             user-select: none;
             cursor: pointer;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             text-decoration-thickness: 2px;
-            text-decoration-color: $color-black-30;
-            color: $color-bus-light;
+            text-decoration-color: colors.$color-black-30;
+            color: colors.$color-bus-light;
             overflow: hidden;
             flex-grow: 1;
             margin: 0;
@@ -362,8 +362,8 @@
             .angle-icon {
               position: absolute;
               margin-left: 6px;
-              font-size: $size12;
-              color: $color-black-30;
+              font-size: colors.$size12;
+              color: colors.$color-black-30;
   
               @media screen and (max-width: 1049px) {
                 position: initial;
@@ -374,7 +374,7 @@
               top: 16px;
   
               &.dir-up {
-                color: $color-black;
+                color: colors.$color-black;
               }
             }
   
@@ -382,7 +382,7 @@
               bottom: 18px;
   
               &.dir-down {
-                color: $color-black;
+                color: colors.$color-black;
               }
             }
   
@@ -407,15 +407,15 @@
             flex-wrap: wrap;
             justify-content: space-between;
             background: none;
-            color: $color-primary;
+            color: colors.$color-primary;
   
             .header-item {
               flex-grow: 1;
               margin-bottom: 8px;
-              font-size: $size14;
+              font-size: colors.$size14;
               padding: 4px 14px;
-              border: 2px solid $color-primary;
-              color: $color-bus;
+              border: 2px solid colors.$color-primary;
+              color: colors.$color-bus;
   
               .angle-icon {
                 display: none;
@@ -424,11 +424,11 @@
   
             .timeline-header-item {
               border: none;
-              color: $color-black;
+              color: colors.$color-black;
               flex-grow: 1;
               margin-right: 12px;
               margin-bottom: 8px;
-              font-size: $size14;
+              font-size: colors.$size14;
               padding: 0;
               text-align: left;
             }
@@ -461,7 +461,7 @@
           padding-bottom: 10px;
           .project-sublist-title {
             cursor: pointer;
-            font-size: $size16;
+            font-size: colors.$size16;
             padding-bottom: 20px;
           }
         }
@@ -479,7 +479,7 @@
             margin-left: 2px;
   
             .ui.toggle.checkbox input:checked ~ label:before {
-              background-color: $color-black !important;
+              background-color: colors.$color-black !important;
             }
   
             .toggle {
@@ -487,7 +487,7 @@
               margin-right: 8px;
   
               label {
-                font-size: $size16;
+                font-size: colors.$size16;
               }
             }
           }
@@ -503,7 +503,7 @@
       display: flex;
       justify-content: center;
       margin-top: 100px;
-      font-size: $size24;
+      font-size: colors.$size24;
     }
   }
 
@@ -511,7 +511,7 @@
     margin-bottom: 64px;
     label{
       font-family: "Helsinki Grotesk Medium", sans-serif;
-      font-size: $size16;
+      font-size: colors.$size16;
     }
     .ad-combobox{
       ul{
@@ -529,15 +529,15 @@
       margin-top: 4px;
     }
     .ui.grid > .column:not(.row) {
-      padding: $size12;
+      padding: colors.$size12;
     }
     .ui.grid {
-      margin: -$size12;
+      margin: -(colors.$size12);
     }
   }
 
   .project-list-pagination{
-    font-size: $size16;
+    font-size: colors.$size16;
     font-family: "Helsinki Grotesk Regular", sans-serif;
     [aria-current]:not([aria-current="false"]) {
       min-width: 40px;
@@ -546,7 +546,7 @@
       min-width: 40px;
     }
     nav{
-      font-size: $size16;
+      font-size: colors.$size16;
       font-family: "Helsinki Grotesk Medium", sans-serif;
     }
     nav > ul > li > a {
@@ -558,16 +558,16 @@
     border: none;
     height: 50px;
     margin-bottom: 30px;
-    font-size: $size16;
+    font-size: colors.$size16;
     .item {
       border-radius: 0;
-      border-bottom: 2px solid $border-gray;
+      border-bottom: 2px solid colors.$border-gray;
       margin-right: 2px;
     }
     .active {
       border: none;
-      color: $color-primary !important;
-      border-bottom: 2px solid $color-primary !important;
+      color: colors.$color-primary !important;
+      border-bottom: 2px solid colors.$color-primary !important;
       margin-bottom: 0 !important;
       font-weight: normal !important;
     }
@@ -575,14 +575,14 @@
       margin-top: -46px;
     }
     @media screen and (max-width: 599px) {
-      font-size: $size16;
+      font-size: colors.$size16;
     }
   }
   .project-list-result{
     display: flex;
     justify-content: space-between;
     margin-bottom: 16px;
-    font-size: $size16;
+    font-size: colors.$size16;
     .project-list-result-number{
       font-family: "Helsinki Grotesk Medium", sans-serif;
       display: flex;
@@ -591,10 +591,10 @@
     .timeline-header-item{
       display: flex;
       align-items: center;
-      font-size: $size16;
+      font-size: colors.$size16;
       font-family: "Helsinki Grotesk Medium", sans-serif;
       label{
-        font-size: $size16;
+        font-size: colors.$size16;
         margin-right: 24px;
       }
       .toggle-text{
@@ -602,7 +602,7 @@
       }
       .toggle{
         label:before{
-          border: 2px solid $color-black;
+          border: 2px solid colors.$color-black;
           background: transparent;
           height: 2rem;
           top: -3.5px;
@@ -612,9 +612,9 @@
         }
         label:after{
           content: '\00d7' !important;
-          color: $white;
-          background:$color-black;
-          font-size: $size20;
+          color: colors.$white;
+          background:colors.$color-black;
+          font-size: colors.$size20;
           left: 0.3rem;
           padding: 0;
           line-height: 0.75;

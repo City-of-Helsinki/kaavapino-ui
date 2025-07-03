@@ -1,4 +1,4 @@
-@import '../common/colors';
+@use '../common/colors';
 .documents-page-container {
   padding-bottom: 20px;
   .document-group {
@@ -11,38 +11,38 @@
     }
 
     .ui.grid {
-      margin: 0 0 $size16 0;
+      margin: 0 0 colors.$size16 0;
     }
 
     .ui.grid:last-of-type {
-      margin-bottom: $size20;
+      margin-bottom: colors.$size20;
     }
 
     .document-row {
       .document-title {
         margin: 0;
-        line-height: $size24;
+        line-height: colors.$size24;
         display: block;
-        font-size: $size16;
+        font-size: colors.$size16;
       }
 
       .document-last-loaded {
-        font-size: $size14;
-        line-height: $size24;
+        font-size: colors.$size14;
+        line-height: colors.$size24;
       }
 
       .document-header{
         font-family: "Helsinki Grotesk Medium", sans-serif;
-        font-size: $size20;
+        font-size: colors.$size20;
         letter-spacing: 0.2px;
-        margin-bottom: $size16;
+        margin-bottom: colors.$size16;
       }
 
       button:last-of-type{
         margin-left: 15px;
       }
 
-      background-color: $light-gray3;
+      background-color: colors.$light-gray3;
     }
   }
 
@@ -54,19 +54,19 @@
       flex-flow: column;
       align-items: flex-start;
       justify-content: flex-start;
-      margin-bottom: $size28;
+      margin-bottom: colors.$size28;
     }
   }
 
   .phase-end-tag {
-    font-size: $size16;
+    font-size: colors.$size16;
   }
   .image-template-icon {
-    color: $color-bus-dark
+    color: colors.$color-bus-dark
   }
 
   .required-error-text {
-    color: $color-error;
+    color: colors.$color-error;
 
     p {
       font-family: "Helsinki Grotesk Medium", sans-serif;
@@ -75,7 +75,7 @@
 
     svg {
       vertical-align: bottom;
-      margin-right: $size8;
+      margin-right: colors.$size8;
     }
   }
 
@@ -87,10 +87,10 @@
   .document-status-info {
     font-family: "Helsinki Grotesk Medium Italic", sans-serif;
     font-weight: 500;
-    font-size: $size14;
-    margin-left: $size32;
-    margin-top: $size4;
-    line-height: $size18;
+    font-size: colors.$size14;
+    margin-left: colors.$size32;
+    margin-top: colors.$size4;
+    line-height: colors.$size18;
 
     > span {
       letter-spacing: 0.2px;
@@ -98,7 +98,7 @@
   }
 
   .document-row .column {
-    padding: $size24 $size32 !important;
+    padding: colors.$size24 colors.$size32 !important;
     &.right {
       display: flex !important;
       align-items: center;

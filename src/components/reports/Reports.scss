@@ -1,4 +1,4 @@
-@import '../common/colors.scss';
+@use '../common/colors.scss';
 .reports-page {
   margin: 10px auto;
   max-width: 1148px;
@@ -8,7 +8,7 @@
     margin-bottom: 20px;
     padding-left: 1rem;
     padding-right: 1rem;
-    background-color: $light-gray3;
+    background-color: colors.$light-gray3;
     padding-top: 10px;
     padding-bottom: 10px;
   }
@@ -17,7 +17,7 @@
     margin-bottom: 20px;
     padding-left: 1rem;
     padding-right: 1rem;
-    background-color: $light-gray3;
+    background-color: colors.$light-gray3;
     padding-top: 10px;
     padding-bottom: 10px;
 
@@ -93,7 +93,7 @@
   border-bottom: 1px solid black;
 }
 .report-table {
-  font-size: $size12;
+  font-size: colors.$size12;
   table {
     border-spacing: 0;
     border: 1px solid black;

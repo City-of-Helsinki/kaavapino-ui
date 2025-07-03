@@ -1,4 +1,4 @@
-@import '../../common/colors';
+@use '../../common/colors';
 
 .form-modal {
   .subtype-input-container .radio-input-container {
@@ -35,15 +35,15 @@
         }
 
         &:hover {
-          border-color: $color-button-emphasis;
-          color: $color-button-emphasis;
+          border-color: colors.$color-button-emphasis;
+          color: colors.$color-button-emphasis;
         }
       }
     }
 
     .ui.checkbox input:checked ~ label {
-      background: $color-primary;
-      border-color: $color-primary;
+      background: colors.$color-primary;
+      border-color: colors.$color-primary;
       color: white;
       padding-left: 24px;
 
@@ -62,10 +62,10 @@
   }
 
   .subtype-input-container .input-container.error .ui.checkbox label {
-    border-color: $color-error-border;
+    border-color: colors.$color-error-border;
 
     &:hover {
-      box-shadow: inset 0px 0px 0px 1px $color-error-border;
+      box-shadow: inset 0px 0px 0px 1px colors.$color-error-border;
     }
   }
 }
