@@ -636,7 +636,18 @@ class ProjectEditPage extends Component {
     return (
       <div className='project-page-container'>
         {!this.state.isMobile && (
-          <div className="timeline" onClick={() => this.showTimelineModal(true)}>
+          <div
+            className="timeline"
+            role="button"
+            tabIndex="0"
+            onClick={() => this.showTimelineModal(true)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                this.showTimelineModal(true);
+                e.preventDefault();
+              }
+            }}
+          >
             <ProjectTimeline
               deadlines={currentProject.deadlines}
               projectView={true}
