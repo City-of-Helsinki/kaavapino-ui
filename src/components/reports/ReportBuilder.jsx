@@ -121,7 +121,9 @@ function ReportBuilder(props) {
     return columns
   }
   function getRandomInt(max) {
-    return Math.floor(Math.random() * max)
+    const array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    return array[0] % max;
   }
 
   const getNonDuplicateName = (column, list) => {
