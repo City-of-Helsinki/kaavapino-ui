@@ -1,7 +1,7 @@
-@import '../../../../components/common/colors.scss';
+@use '../../../../components/common/colors.scss';
 
 .role-highlight-picker {
-  border: 2px solid $light-gray3;
+  border: 2px solid colors.$light-gray3;
   justify-content: stretch;
   padding: 0px 32px 10px 32px;
   margin-top: 16px;
@@ -18,7 +18,7 @@
 
   .role-button {
     cursor: pointer;
-    font-size: $size16;
+    font-size: colors.$size16;
     font-weight: bold;
 
     &.active {

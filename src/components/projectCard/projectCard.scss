@@ -1,4 +1,4 @@
-@import '../common/colors';
+@use '../common/colors';
 .project-card-container {
   width: 100%;
   display: flex;
@@ -38,7 +38,7 @@
 }
 
 .project-card {
-  margin: -$size16;
+  margin: -(colors.$size16);
 
   .basic-information {
     min-height: 250px;
@@ -108,7 +108,7 @@
     }
   }
   .ui.segment {
-    background-color: $light-gray3 !important;
+    background-color: colors.$light-gray3 !important;
     border: 0;
     border-radius: 0;
     padding: 8px 16px 16px 16px;

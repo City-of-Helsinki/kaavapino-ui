@@ -1,16 +1,16 @@
-@import '../../common/colors.scss';
+@use '../../common/colors.scss';
 
 .edit-floor-area-form-modal {
   .floor-area-totals {
-    border: 1px solid $light-gray;
+    border: 1px solid colors.$light-gray;
     padding: 24px;
 
     .floor-area-totals-header {
-      color: $black1;
-      font-size: $size20;
+      color: colors.$black1;
+      font-size: colors.$size20;
       font-weight: bold;
       letter-spacing: 0;
-      line-height: $size24;
+      line-height: colors.$size24;
     }
 
     .totals {
@@ -24,14 +24,14 @@
         }
 
         .single-total-title {
-          color: $black;
-          font-size: $size14;
+          color: colors.$black;
+          font-size: colors.$size14;
           font-weight: bold;
           letter-spacing: 0;
         }
         .single-total-value {
-          color: $black;
-          font-size: $size18;
+          color: colors.$black;
+          font-size: colors.$size18;
           letter-spacing: 0;
           margin-top: 4px;
         }

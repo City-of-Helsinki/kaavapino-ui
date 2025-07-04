@@ -1,25 +1,27 @@
-@import 'components/shoutbox/comments/Comments.scss';
-@import 'components/common/Common.scss';
-@import 'components/error/Error.scss';
-@import 'components/input/Input.scss';
-@import 'components/project/Project.scss';
-@import 'components/projectList/ProjectList.scss';
-@import 'components/projectEdit/ProjectEdit.scss';
-@import 'components/projectCard/projectCard.scss';
-@import 'components/projectDocuments/ProjectDocuments.scss';
-@import 'components/reports/Reports.scss';
-@import 'react-redux-toastr/src/styles/index';
+@use 'components/shoutbox/comments/Comments.scss';
+@use 'components/common/Common.scss';
+@use 'components/error/Error.scss';
+@use 'components/input/Input.scss';
+@use 'components/project/Project.scss';
+@use 'components/projectList/ProjectList.scss';
+@use 'components/projectEdit/ProjectEdit.scss';
+@use 'components/projectCard/projectCard.scss';
+@use 'components/projectDocuments/ProjectDocuments.scss';
+@use 'components/reports/Reports.scss';
+@use "components/common/colors";
+
+@import 'react-redux-toastr/dist/react-redux-toastr.min.css';
 @import '../node_modules/react-datetime/css/react-datetime.css';
 html{
-  font-size: $size16;
+  font-size: colors.$size16;
 }
 body {
   margin: 0;
   padding: 0;
   height: 100%;
   font-family: 'Helsinki Grotesk Regular', sans-serif;
-  font-size: $size16;
-  color: $color-black-90;
+  font-size: colors.$size16;
+  color: colors.$color-black-90;
   p{
     font-family: "Helsinki Grotesk Regular", sans-serif;
   }
