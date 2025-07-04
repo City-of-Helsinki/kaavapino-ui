@@ -1,11 +1,11 @@
-@import '../../common/colors.scss';
+@use '../../common/colors.scss';
 
 .filters-list {
   height: auto;
   
   .filter-button {
     height: 49px !important;  
-    font-size: $size14 !important;
+    font-size: colors.$size14 !important;
  }
  ul {
   overflow-x: hidden;
@@ -14,7 +14,7 @@
  
 }
 .filter-modal {
-  font-size: $size12;
+  font-size: colors.$size12;
  
 }
 
@@ -36,7 +36,7 @@
     margin-left: 10px;
 }
 .filter-accordion {
-  font-size: $size14;
+  font-size: colors.$size14;
 }
 
 

@@ -45,16 +45,18 @@ const getAdId = (currentUserId, users) => {
 }
 
 const getUserRole = (currentUserId, users) => {
-  let privilege
-  if (users) {
-    users.forEach(user => {
-      if (user.id === currentUserId) {
-        privilege = user.privilege
-        return
-      }
-    })
+  if (!Array.isArray(users) || !currentUserId) {
+    console.warn('⚠ getUserRole: invalid input', { currentUserId, users });
+    return null
   }
-  return privilege
+
+  for (const user of users) {
+    if (user.id === currentUserId) {
+      return user.privilege
+    }
+  }
+
+  return null
 }
 
 const checkPerson = (currentUserId, users, reponsiblePersonMail) => {

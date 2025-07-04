@@ -1,4 +1,4 @@
-@import '../../common/colors.scss';
+@use '../../common/colors.scss';
 
 .quicknav-container {
   display: flex;
@@ -20,11 +20,11 @@
             margin: 0;
           }
           svg{
-            color: $black1;
+            color: colors.$black1;
           }
           span{
-            font-size: $size24;
-            color: $black;
+            font-size: colors.$size24;
+            color: colors.$black;
             padding-bottom: 0;
             padding-top: 0;
           }
@@ -40,9 +40,9 @@
       }
       .quicknav-header-info{
         display: flex;
-        font-size: $size16;
+        font-size: colors.$size16;
         font-style: italic;
-        color: $color-black-90;
+        color: colors.$color-black-90;
         padding-left: 34px;
 
         .project-status-container{
@@ -53,13 +53,13 @@
           .project-status-color{
             border-radius: 100%;
             display: inline-flex;
-            min-height: $size8;
-            min-width: $size8;
-            height: $size8;
+            min-height: colors.$size8;
+            min-width: colors.$size8;
+            height: colors.$size8;
             margin-top: 3px;
           }
           .project-status-text{
-            padding-right: $size8;
+            padding-right: colors.$size8;
           }
         }
       }
@@ -70,7 +70,7 @@
   }
 
   .quicknav-title {
-    border-bottom: 2px solid $black1;
+    border-bottom: 2px solid colors.$black1;
     margin: 0;
     padding: 0 0 4px;
     text-transform: uppercase;
@@ -82,18 +82,18 @@
     min-height: 520px;
     max-height: 520px;
     overflow-y: scroll;
-    padding-top: $size12;
+    padding-top: colors.$size12;
 
     &::-webkit-scrollbar-track {
-      margin-top: $size12;
+      margin-top: colors.$size12;
     }
 
     .quicknav-item-tags {
-      margin-right: $size4;
+      margin-right: colors.$size4;
     }
 
     .phase-accordion > div{
-      font-size: $size16;
+      font-size: colors.$size16;
       cursor: pointer;
       padding: 0;
      }
@@ -116,13 +116,13 @@
       cursor: pointer;
       display: block;
       width: 100%;
-      font-size: $size16;
+      font-size: colors.$size16;
       margin-top: 0;
-      color: $color-black-90;
+      color: colors.$color-black-90;
       text-align: left;
       padding-left: 20px;
       border: 0;
-      border-left: $size4 solid transparent;
+      border-left: colors.$size4 solid transparent;
       min-height: 52px;
 
       span{
@@ -134,13 +134,13 @@
 
         .project-status-container{
           float: right;
-          font-size: $size14;
+          font-size: colors.$size14;
           .project-status-color{
             border-radius: 100%;
             display: inline-flex;
-            min-height: $size8;
-            min-width: $size8;
-            height: $size8;
+            min-height: colors.$size8;
+            min-width: colors.$size8;
+            height: colors.$size8;
             margin-top: 3px;
           }
 
@@ -148,20 +148,20 @@
             font-family: "Helsinki Grotesk Regular", sans-serif;
             font-style: italic;
             font-weight: 400;
-            padding-right: $size8;
+            padding-right: colors.$size8;
           }
         }
         div{
           .filter-tag{
-            background-color: $color-black-20;
+            background-color: colors.$color-black-20;
             font-family: "Helsinki Grotesk Medium", sans-serif;
-            font-size: $size12;
+            font-size: colors.$size12;
             float: right;
             padding: 0;
             --tag-height: 17px;
             width: 23px;
             border-radius: 2px;
-            margin-left: $size4;
+            margin-left: colors.$size4;
             justify-content: center;
 
             span {
@@ -209,104 +209,104 @@
     .quicknav-item.active {
       font-family: "Helsinki Grotesk Bold", sans-serif;
       font-weight: 700;
-      border-left: $size4 solid;
-      background-color: $color-black-5;
+      border-left: colors.$size4 solid;
+      background-color: colors.$color-black-5;
     }
 
     .quicknav-item.active:hover {
-      background-color: $color-black-5;
+      background-color: colors.$color-black-5;
     }
 
     .phase1,.phase7,.phase13,.phase19,.phase25{
       &:hover,&:focus{
         border-left: 4px solid;
-        border-left-color: $color_phase_start;
+        border-left-color: colors.$color_phase_start;
         text-decoration: underline;
       }
       &.active{
-        border-left-color: $color_phase_start;
+        border-left-color: colors.$color_phase_start;
       }
     }
 
     .phase26{
       &:hover,&:focus{
         border-left: 4px solid;
-        border-left-color: $color_phase_principles;
+        border-left-color: colors.$color_phase_principles;
         text-decoration: underline;
       }
       &.active{
-        border-left-color: $color_phase_principles;
+        border-left-color: colors.$color_phase_principles;
       }
     }
 
     .phase2,.phase8,.phase14,.phase20,.phase27{
       &:hover,&:focus{
         border-left: 4px solid;
-        border-left-color: $color_phase_oas;
+        border-left-color: colors.$color_phase_oas;
         text-decoration: underline;
       }
       &.active{
-        border-left-color: $color_phase_oas;
+        border-left-color: colors.$color_phase_oas;
       }
     }
 
     .phase28{
       &:hover,&:focus{
         border-left: 4px solid;
-        border-left-color: $color_phase_draft;
+        border-left-color: colors.$color_phase_draft;
         text-decoration: underline;
       }
       &.active{
-        border-left-color: $color_phase_draft;
+        border-left-color: colors.$color_phase_draft;
       }
     }
 
     .phase3,.phase9,.phase15,.phase21,.phase29{
       &:hover,&:focus{
         border-left: 4px solid;
-        border-left-color: $color_phase_suggestion;
+        border-left-color: colors.$color_phase_suggestion;
         text-decoration: underline;
       }
       &.active{
-        border-left-color: $color_phase_suggestion;
+        border-left-color: colors.$color_phase_suggestion;
       }
     }
 
     .phase4,.phase10,.phase16,.phase22,.phase30{
       &:hover,&:focus{
         border-left: 4px solid;
-        border-left-color: $color_phase_check_suggestion;
+        border-left-color: colors.$color_phase_check_suggestion;
         text-decoration: underline;
       }
       &.active{
-        border-left-color: $color_phase_check_suggestion;
+        border-left-color: colors.$color_phase_check_suggestion;
       }
     }
 
     .phase5,.phase11,.phase17,.phase23,.phase31{
       &:hover,&:focus{
         border-left: 4px solid;
-        border-left-color: $color_phase_approval;
+        border-left-color: colors.$color_phase_approval;
         text-decoration: underline;
       }
       &.active{
-        border-left-color: $color_phase_approval;
+        border-left-color: colors.$color_phase_approval;
       }
     }
 
     .phase6,.phase12,.phase18,.phase24,.phase32{
       &:hover,&:focus{
         border-left: 4px solid;
-        border-left-color: $color_phase_inception;
+        border-left-color: colors.$color_phase_inception;
         text-decoration: underline;
       }
       &.active{
-        border-left-color: $color_phase_inception;
+        border-left-color: colors.$color_phase_inception;
       }
     }
 
     .yellow{
-      background-color: $tagyellow !important;
+      background-color: colors.$tagyellow !important;
     }
 
     button:last-of-type::after{
@@ -333,11 +333,11 @@
     }
   }
   .check-pressed {
-    outline: 1px solid $color-bus-dark !important; 
+    outline: 1px solid colors.$color-bus-dark !important; 
   }
 
 .secondary .ui.active.inline.loader:before {
-  border-color: $color-bus-dark;
+  border-color: colors.$color-bus-dark;
 }
 
   @media screen and (max-width: 545px) {

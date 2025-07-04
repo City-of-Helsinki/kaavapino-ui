@@ -1,4 +1,4 @@
-@import '../common/colors.scss';
+@use '../common/colors.scss';
 .project-container {
   flex: 1;
   margin: 0 auto;
@@ -17,14 +17,14 @@
       div{
         min-height: 44px;
         height: 44px;
-        color: $color-bus;
-        border: 2px solid $color-bus;
+        color: colors.$color-bus;
+        border: 2px solid colors.$color-bus;
       }
       span{
-        color: $color-bus;
+        color: colors.$color-bus;
       }
       svg{
-        color: $color-bus;
+        color: colors.$color-bus;
         margin-top: -6px;
         padding: 0;
       }
@@ -77,17 +77,17 @@
       }
     }
     .edit-view-select:hover{
-      border-color: $color-bus-dark;
+      border-color: colors.$color-bus-dark;
       div{
-        color: $color-bus-dark;
-        border: 2px solid $color-bus-dark;
+        color: colors.$color-bus-dark;
+        border: 2px solid colors.$color-bus-dark;
       }
     }
     button {
       margin-left: 0;
       margin-right: 20px;
       font-family: 'Helsinki Grotesk Medium', sans-serif;
-      font-size: $size16;
+      font-size: colors.$size16;
       min-height: 40px; //borders add couple of px so 44px
       padding-top: 0;
       padding-bottom: 0;
@@ -101,15 +101,15 @@
       }
     }
     button:hover{
-      border-color: $color-bus-dark;
-      background-color:$color-bus-light;
-      color: $color-bus-dark;
+      border-color: colors.$color-bus-dark;
+      background-color:colors.$color-bus-light;
+      color: colors.$color-bus-dark;
       span,svg{
-        color: $color-bus-dark;
+        color: colors.$color-bus-dark;
       }
     }
     button:focus-within{
-      box-shadow: 0 0 0 3px $color-coat-of-arms;
+      box-shadow: 0 0 0 3px colors.$color-coat-of-arms;
     }
    }
   @media screen and (max-width: 600px) {
@@ -187,7 +187,7 @@
       }
 
       .timeline-item-title {
-        font-size: $size12;
+        font-size: colors.$size12;
         font-weight: bold;
         color: #aab2be;
 
@@ -249,7 +249,7 @@
   .deadline-splitter {
     margin: 0 10px;
     align-self: center;
-    font-size: $size22;
+    font-size: colors.$size22;
   }
 }
 

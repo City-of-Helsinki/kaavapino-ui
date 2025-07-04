@@ -5,7 +5,8 @@
  * Since these calculations affect each other, all of them are in this file and use variables.
 */
 
-@import '../../components/common/colors.scss';
+@use "sass:color";
+@use '../../components/common/colors.scss';
 
 $shoutbox-height: calc(90vh - 80px);
 $shoutbox-height-mobile: 90vh;
@@ -54,7 +55,7 @@ $comment-list-height-mobile: calc(
   }
 
   .shoutbox-close-icon {
-    font-size: $size24;
+    font-size: colors.$size24;
     height: 24px;
     position: absolute;
     width: 24px;
@@ -81,12 +82,12 @@ $comment-list-height-mobile: calc(
   background: #007293;
   color: white;
   display: flex;
-  font-size: $size24;
+  font-size: colors.$size24;
   font-weight: 700;
   height: 36px;
   justify-content: center;
   left: 0;
-  line-height: $size24;
+  line-height: colors.$size24;
   width: 100%;
 
   .comment-icon-container {
@@ -102,11 +103,11 @@ $comment-list-height-mobile: calc(
 
     .unread-comments-count {
       align-items: center;
-      background-color: $color-notification;
+      background-color: colors.$color-notification;
       border-radius: 50%;
       color: white;
       display: flex;
-      font-size: $size14;
+      font-size: colors.$size14;
       font-weight: normal;
       height: 20px;
       justify-content: center;
@@ -119,7 +120,7 @@ $comment-list-height-mobile: calc(
 
   &:hover,
   &:focus {
-    background: darken(#0c5f81, 5%);
+    background: color.adjust(#0c5f81, $lightness: -5%);
     color: white;
   }
 }
@@ -172,7 +173,7 @@ $comment-list-height-mobile: calc(
 
     &:hover,
     &:focus {
-      background: darken(#0c5f81, 5%);
+      background: color.adjust(#0c5f81, $lightness: -5%);
       color: white;
     }
   }
