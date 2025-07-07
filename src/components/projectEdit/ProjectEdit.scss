@@ -1,23 +1,21 @@
-@use '../common/colors.scss';
-
 .hightlight-pääkäyttäjä {
   .Pääkäyttäjät {
-    outline: 20px colors.$yellow solid;
+    outline: 20px $yellow solid;
   }
   .checkbox.Pääkäyttäjät {
     outline: none;
-    background-color: colors.$yellow !important;
+    background-color: $yellow !important;
   }
 }
 
 .hightlight-asiantuntija {
   .Asiantuntijat {
-    outline: 20px colors.$yellow solid;
+    outline: 20px $yellow solid;
     z-index: 0;
   }
   .checkbox.Asiantuntijat {
     outline: none;
-    background-color: colors.$yellow !important;
+    background-color: $yellow !important;
   }
 }
 .checkbox.Pääkäyttäjät {
@@ -30,11 +28,11 @@
   padding: 0;
   margin-top: -12px;
   position: initial !important;
-  padding-left: colors.$size20;
+  padding-left: $size20;
 
   #field-segment {
     position: initial;
-    padding: colors.$size20 0 0 colors.$size20;
+    padding: $size20 0 0 $size20;
   }
 
   .edit-form-buttons {
@@ -106,7 +104,7 @@
   height: 40px;
   position: sticky;
   top: 134px;
-  background-color: colors.$white-background;
+  background-color: $white-background;
   z-index: 90;
 }
 
@@ -127,7 +125,7 @@
 
   @media screen and (min-width: 960px) {
     display: flex;
-    padding-right: colors.$size16;
+    padding-right: $size16;
   }
 }
 
@@ -146,16 +144,16 @@
   .sticky-title {
     position: sticky;
     top: 166px;
-    background-color: colors.$white-background;
+    background-color: $white-background;
     z-index: 90;
     padding-bottom: 12px;
 
     .section-title {
       font-family: 'Helsinki Grotesk Bold', sans-serif;
       font-weight: 700;
-      font-size: colors.$size24;
-      color: colors.$black1;
-      background-color: colors.$white-background;
+      font-size: $size24;
+      color: $black1;
+      background-color: $white-background;
       margin: 0;
       padding: 0;
       padding-bottom: 4px;
@@ -163,10 +161,10 @@
     
     .section-ingress{
       font-family: 'Helsinki Grotesk Regular', sans-serif;
-      font-size: colors.$size14;
-      color: colors.$black1;
+      font-size: $size14;
+      color: $black1;
       padding-bottom: 14px;
-      border-bottom: 2px solid colors.$black1;
+      border-bottom: 2px solid $black1;
       min-height: 35px;
     }
   }
@@ -198,9 +196,9 @@
   position: sticky;
   top: 58px;
   z-index: 100;
-  padding: colors.$size16 colors.$size28;
-  background-color: colors.$color-black-5;
-  border-bottom: 1px solid colors.$light-gray;
+  padding: $size16 $size28;
+  background-color: $color-black-5;
+  border-bottom: 1px solid $light-gray;
   border: none;
 
   .filter-title {
@@ -224,7 +222,7 @@
     }
 
     .message {
-      margin-top: colors.$size8;
+      margin-top: $size8;
     }
 
     b {
@@ -232,15 +230,15 @@
     }
 
     .filter-tag-container {
-      padding: colors.$size4 0;
-      margin: 0 (-(colors.$size8));
+      padding: $size4 0;
+      margin: 0 (-($size8));
     }
   
     .filter-tag{
-      background-color: colors.$color-black-20;
+      background-color: $color-black-20;
       border-radius: 25px;
       line-height: 1.5;
-      margin: colors.$size4 colors.$size8;
+      margin: $size4 $size8;
     }
 
     .filter-tag:focus{
@@ -248,7 +246,7 @@
     }
   
     .yellow{
-      background-color: colors.$tagyellow;
+      background-color: $tagyellow;
       --tag-focus-outline-color: transparent;
     }
 
@@ -259,11 +257,11 @@
     .filter-tag-info {
       display: flex;
       width: 100%;
-      margin-top: colors.$size8;
-      margin-bottom: colors.$size16;
+      margin-top: $size8;
+      margin-bottom: $size16;
 
       span {
-        padding: 0 colors.$size12;
+        padding: 0 $size12;
       }
     }
 
@@ -282,12 +280,12 @@
 
 .required-fields-container{
   ul{
-    font-size: colors.$size16;
+    font-size: $size16;
     li{
       padding-top: 10px;
       .required-fields-notification-link{
         text-decoration: underline;
-        color: colors.$color-bus;
+        color: $color-bus;
       }
     }
   }
@@ -297,7 +295,7 @@
   width: 336px;
 }
 .Toastify__toast {
-  padding: colors.$size16;
+  padding: $size16;
   border-top: 8px solid;
   border-radius: 0;
   box-shadow: 0 2px 20px 0 rgba(0,0,0,.2);
@@ -307,7 +305,7 @@
 #saveOk,
 #errorsToastr,
 .saveFailToastr {
-  font-size: colors.$size14;
+  font-size: $size14;
 
   h3{
     margin-left: 30px;
@@ -319,14 +317,14 @@
   }
 
   p{
-    color: colors.$color-black-90;
+    color: $color-black-90;
     padding-top: 10px;
-    line-height: colors.$size18;
+    line-height: $size18;
   }
 
   .Toastify__toast-body {
     align-items: flex-start;
-    color: colors.$color-black-90;
+    color: $color-black-90;
     padding: 0;
     h3 {
       line-height: 22px;
@@ -339,22 +337,22 @@
 }
 
 #noErrorsToastr{
-  border-color: colors.$color-success-dark;
-  background-color: colors.$color-success-light;
+  border-color: $color-success-dark;
+  background-color: $color-success-light;
   .Toastify__toast-icon{
     svg{
-      fill: colors.$color-success-dark;
+      fill: $color-success-dark;
     }
   }
 }
 
 #saveOk{
   pointer-events: none;
-  border-color: colors.$color-info-dark;
-  background-color: colors.$color-info-light;
+  border-color: $color-info-dark;
+  background-color: $color-info-light;
   .Toastify__toast-icon{
     svg{
-      fill: colors.$color-info-dark;
+      fill: $color-info-dark;
     }
   }
   h3{
@@ -365,22 +363,22 @@
 }
 
 #errorsToastr{
-  border-color: colors.$color-error;
-  background-color: colors.$color-error-light;
+  border-color: $color-error;
+  background-color: $color-error-light;
   .Toastify__toast-icon{
     svg{
-      fill: colors.$color-error;
+      fill: $color-error;
     }
   }
 }
 
 .saveFailToastr{
   pointer-events: none;
-  border-color: colors.$color-error;
-  background-color: colors.$color-error-light;
+  border-color: $color-error;
+  background-color: $color-error-light;
   .Toastify__toast-icon{
     svg{
-      fill: colors.$color-error;
+      fill: $color-error;
     }
   }
   h3{
@@ -390,12 +388,12 @@
     }
   }
   .error-button-container button{
-    background-color: colors.$color-error;
-    border-color: colors.$color-error;
+    background-color: $color-error;
+    border-color: $color-error;
   }
   .error-button-container button:hover{
-    background-color: colors.$color-error-dark;
-    border-color: colors.$color-error-dark;
+    background-color: $color-error-dark;
+    border-color: $color-error-dark;
   }
   .close-button{
     width: 36px;
@@ -409,7 +407,7 @@
     top: 0;
   }
   .close-button svg polygon{
-    fill: colors.$color-black-90;
+    fill: $color-black-90;
   }
   .close-button:hover{
     background-color: inherit;
@@ -423,15 +421,15 @@
     .font-bold{
       font-family: "Helsinki Grotesk Bold", sans-serif;
     }
-    font-size: colors.$size14;
+    font-size: $size14;
     pointer-events: all;
     [role=heading]{
       font-size: 18px;
     }
     .error-fields-container{
-      padding-top:colors.$size16;
+      padding-top:$size16;
       .error-field{
-        font-size: colors.$size14;
+        font-size: $size14;
         p{
           padding-top: 2px;
         }
@@ -440,8 +438,8 @@
         }
       }
       .error-value{
-        padding-bottom: colors.$size24;
-        font-size: colors.$size14;
+        padding-bottom: $size24;
+        font-size: $size14;
         p{
           padding-top: 2px;
           text-overflow: ellipsis;
@@ -466,7 +464,7 @@
 
 .sticky{
   min-height: 0;
-  z-index: colors.$z-index-sticky;
+  z-index: $z-index-sticky;
 }
 
 .modal {
@@ -483,27 +481,27 @@
 
   h3 {
     font-family: "Helsinki Grotesk Medium", sans-serif;
-    font-size: colors.$size16;
+    font-size: $size16;
   }
 
   /* Modal Content/Box */
   .modal-content {
-    background-color: colors.$color-white;
+    background-color: $color-white;
     margin: 96px auto;
-    border: 1px solid colors.$color-black;
-    font-size: colors.$size16;
+    border: 1px solid $color-black;
+    font-size: $size16;
     max-width: 1148px;
     width: fit-content;
 
     .modal-header,
     .modal-body,
     .modal-footer {
-      padding: colors.$size16 colors.$size24;
+      padding: $size16 $size24;
     }
 
     .modal-header {
-      background-color: colors.$color-white;
-      border-bottom: 1px solid colors.$light-gray;
+      background-color: $color-white;
+      border-bottom: 1px solid $light-gray;
     }
     
     .modal-body {
@@ -511,10 +509,10 @@
 
       .remove-filters{
         font-family: "Helsinki Grotesk Medium", sans-serif;
-        color: colors.$color-error;
-        margin-top: colors.$size32;
-        margin-left: -(colors.$size8);
-        margin-bottom: -(colors.$size12);
+        color: $color-error;
+        margin-top: $size32;
+        margin-left: -($size8);
+        margin-bottom: -($size12);
         padding-left: 0;
 
         div{
@@ -526,8 +524,8 @@
     
     .modal-footer {
       font-family: "Helsinki Grotesk Regular", sans-serif;
-      background-color: colors.$color-white;
-      border-top: 1px solid colors.$light-gray;
+      background-color: $color-white;
+      border-top: 1px solid $light-gray;
     }
   }
 
@@ -561,13 +559,13 @@
     svg{
       width: 24px;
       height: 24px;
-      color: colors.$black1;
+      color: $black1;
     }
     .header-title {
       font-size: 1.125rem;
       letter-spacing: 0.004em;
       padding-left: 8px;
-      color: colors.$black1;
+      color: $black1;
     }
   }
 
@@ -612,9 +610,9 @@
         position: relative;
         top: 31px;
         left: 40px;
-        font-size: colors.$size16;
+        font-size: $size16;
         font-weight: 700;
-        line-height: colors.$size24;
+        line-height: $size24;
       }
     }
 
@@ -649,35 +647,35 @@
       padding: 0;
       z-index: 1000;
       button{
-        color: colors.$black1;
+        color: $black1;
         font-family: 'Helsinki Grotesk Regular', sans-serif;
-        font-size: colors.$size16;
+        font-size: $size16;
         font-weight: 400;
-        height: colors.$size40;
-        line-height: colors.$size24;
+        height: $size40;
+        line-height: $size24;
         width: 100%;
         text-align: left;
         justify-content: flex-start;
         margin:0;
         div{
-          margin: colors.$size12;
+          margin: $size12;
         }
         span{
-          color: colors.$black1;
+          color: $black1;
           font-family: 'Helsinki Grotesk Regular', sans-serif;
-          font-size: colors.$size16;
+          font-size: $size16;
           font-weight: 400;
-          line-height: colors.$size24;
+          line-height: $size24;
           padding-left: 0 !important;
         }
       }
       .disabled{
-        color: colors.$color-black-40 !important;
+        color: $color-black-40 !important;
         cursor: not-allowed;
         pointer-events: none;
         border: none;
         span {
-          color: colors.$color-black-40 !important;
+          color: $color-black-40 !important;
         }
       }
     }
@@ -687,13 +685,13 @@
     }
 
     .add-button-info{
-      color: colors.$color-info;
-      padding-left: colors.$size48;
-      padding-right: colors.$size24;
-      padding-bottom: colors.$size12;
-      font-size: colors.$size14;
+      color: $color-info;
+      padding-left: $size48;
+      padding-right: $size24;
+      padding-bottom: $size12;
+      font-size: $size14;
       font-weight: 400;
-      line-height: colors.$size17;
+      line-height: $size17;
       letter-spacing: 0.03em;
     }
 
@@ -719,10 +717,10 @@
       button {
         height: 56px;
         &:last-child {
-          margin-left: colors.$size16;
+          margin-left: $size16;
           &:not(:disabled):hover {
-            border-color: colors.$color-bus;
-            color: colors.$color-bus;
+            border-color: $color-bus;
+            color: $color-bus;
           }
         }
         &:disabled {
@@ -733,7 +731,7 @@
         cursor: progress;
       }
       span {
-        line-height: colors.$size24;
+        line-height: $size24;
       }
     }
   }
@@ -818,18 +816,18 @@
       padding-bottom: 0;
       li:first-of-type {
         display: inline;
-        font-size: colors.$size16;
+        font-size: $size16;
         font-family: 'Helsinki Grotesk Regular', sans-serif;
         font-weight: 400;
-        line-height: colors.$size24;
+        line-height: $size24;
         text-align: left;
       }
       li{
         display: inline;
-        font-size: colors.$size16;
+        font-size: $size16;
         font-family: 'Helsinki Grotesk Bold', sans-serif;
         font-weight: 700;
-        line-height: colors.$size24;
+        line-height: $size24;
         text-align: left;
         a {
           color: #1A1A1A;
@@ -915,7 +913,7 @@
           }
         }
         .deadline-input{
-          border:2px solid colors.$border-gray2;
+          border:2px solid $border-gray2;
           &:has(:disabled) {
             background-color: #e6e6e6;
             border-color: RGBA(0,0,0,0);
@@ -960,8 +958,8 @@
         display: flex;
         flex-flow: column;
         justify-content: flex-start;
-        margin-top: colors.$size32;
-        margin-bottom: colors.$size48;
+        margin-top: $size32;
+        margin-bottom: $size48;
         .checkbox{
           display: flex;
           flex-flow: column;
@@ -970,17 +968,17 @@
 
       .event-info-notification {
         width: 445px;
-        margin-bottom: colors.$size16;
+        margin-bottom: $size16;
       }
 
       .deadline-info-notification{
         width: 445px;
-        margin-bottom: colors.$size16;
+        margin-bottom: $size16;
       }
 
       .deadlines-preliminary-notification, .deadlines-confirmed-notification{
         width: 445px;
-        margin-bottom: colors.$size16;
+        margin-bottom: $size16;
         font-family: "Helsinki Grotesk Regular", sans-serif;
         font-weight:500;
       }
@@ -1002,8 +1000,8 @@
       .deadline-info-readonlytext {
         //margin-top: $size8;
         margin-top: -16px;
-        margin-bottom: colors.$size24;
-        font-size: colors.$size14;
+        margin-bottom: $size24;
+        font-size: $size14;
         font-family: "Helsinki Grotesk Medium", sans-serif;
         font-weight:500;
       }

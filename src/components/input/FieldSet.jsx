@@ -14,6 +14,7 @@ import { OutsideClick } from '../../hooks/OutsideClick'
 import {getAttributeData} from '../../actions/projectActions'
 import { useIsMount } from '../../hooks/IsMounted'
 import PropTypes from 'prop-types'
+import './input.scss'
 
 const FieldSet = ({
   sets,
@@ -221,7 +222,7 @@ const FieldSet = ({
           <React.Fragment key={`${name}-${i}`}>
             {!deleted && hiddenIndex !== i && (
               <div key={i} className="fieldset-container">
-                <button type="button" tabIndex={0} className={!saving ? expanded.includes(i) ? "accordion-button-open" : "accordion-button" : "accordion-button-disabled"} onClick={(e) => {if(!saving){checkLocked(e,set,i)}}}>
+                <button type="button" tabIndex={0} className={saving || hiding || adding ? "accordion-button-disabled" : expanded.includes(i) ? "accordion-button-open" : "accordion-button"} onClick={(e) => {if(!(saving || hiding || adding)){checkLocked(e,set,i)}}}>
                   <div className='accordion-button-content'>
                     {lockName}
                   </div>
@@ -374,7 +375,7 @@ const FieldSet = ({
                 })}
                 {(!disable_fieldset_delete_add && !automatically_added && !disabled) && (
                   <Button
-                    className={fieldsetDisabled ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'}
+                    className={hiding ? "hidden" : fieldsetDisabled ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'}
                     disabled={sets.length < 1 || disabled || fieldsetDisabled}
                     variant="secondary"
                     size='small'
@@ -384,9 +385,10 @@ const FieldSet = ({
                     }}
                   > {t('project.remove')}</Button>
                 )}
-                {saving && hiding && (
+                {hiding && (
                 <div className="fieldset-spinner-remove">
                   <LoadingSpinner className="loading-spinner" />
+                  {t('project.deleting')}
                 </div>
                 )}
                   <div className='close-accordion-button'>
@@ -406,12 +408,27 @@ const FieldSet = ({
           onClick={() => {
             refreshFieldset()
           }}
-          disabled={disabled || saving || visibleErrors.length > 0}
+          disabled={disabled || visibleErrors.length > 0}
           variant="supplementary"
           size='small'
-          iconLeft={<IconPlus/>}
+          fullWidth={true}
+          iconLeft={
+          saving || adding || hiding ? (
+            <div className="fieldset-spinner-button">
+              <LoadingSpinner className="loading-spinner" />
+            </div>
+          ) : (
+            <IconPlus />
+          )
+        }
         >
-          {t('project.add')}
+        {saving
+          ? t('project.saving')
+          : adding
+          ? t('project.adding')
+          : hiding
+          ? t('project.deleting')
+          : t('project.add')}
         </Button>
         {saving && adding && (
         <div className="fieldset-spinner">

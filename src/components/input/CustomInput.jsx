@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next'
 import RollingInfo from '../input/RollingInfo.jsx'
 import {useFocus} from '../../hooks/useRefFocus'
 import { useIsMount } from '../../hooks/IsMounted'
+import './input.scss'
 
 const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
 

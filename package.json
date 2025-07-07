@@ -105,6 +105,7 @@
     "prettier": "2.8.4",
     "react-test-renderer": "^18.2.0",
     "redux-mock-store": "^1.5.4",
+    "sass": "^1.89.2",
     "sass-embedded": "^1.89.2",
     "vite": "^7.0.0",
     "vite-plugin-svgr": "^4.3.0",

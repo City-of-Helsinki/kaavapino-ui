@@ -9,7 +9,7 @@ import apiUtils from './utils/apiUtils'
 import 'semantic-ui-css/semantic.min.css'
 import 'react-redux-toastr/lib/css/react-redux-toastr.min.css'
 import 'hds-core'
-import './index.css'
+import './main.scss'
 import './i18n'
 import {IconCheck} from 'hds-react'
 

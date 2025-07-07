@@ -53,6 +53,7 @@ import { downloadDocument } from '../../actions/documentActions'
 import authUtils from '../../utils/authUtils'
 import ConfirmationModal from '../common/ConfirmationModal.jsx'
 import PropTypes from 'prop-types'
+import './Project.scss'
 
 class ProjectPage extends Component {
   constructor(props) {

@@ -10,6 +10,7 @@ import { IconClock,IconLock } from 'hds-react'
 import { withTranslation } from 'react-i18next'
 import { isArray } from 'lodash'
 import PropTypes from 'prop-types'
+import './input.scss'
 
 const OneLineFields = ['toggle']
 

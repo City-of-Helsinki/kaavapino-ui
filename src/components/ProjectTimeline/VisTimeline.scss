@@ -1,5 +1,3 @@
-@use '../common/colors';
-
 .vis{
     margin-top: 0;
     margin-bottom: 0;
@@ -37,8 +35,8 @@
     }
 
     .vis-panel.vis-top {
-        border: 1px solid colors.$color-black-20;
-        border-left-color: colors.$color-white;
+        border: 1px solid $color-black-20;
+        border-left-color: $color-white;
         border-top: none;
         border-right: none;
         height: 85px;
@@ -56,23 +54,23 @@
     }
 
     .vis-time-axis.vis-foreground{
-        background-color: colors.$dropdown-divider-color;
+        background-color: $dropdown-divider-color;
         left: -0.5px !important;
         height: 85px !important;
         & > div {
-            color: colors.$black1;
-            font-size: colors.$size14;
+            color: $black1;
+            font-size: $size14;
             left: -1px;
         }
     }
 
     .timeline-menu-container {
-        padding-top: colors.$size12;
+        padding-top: $size12;
         position: sticky;
         top: 0;
         background-color: #ffffff;
         z-index: 1000;
-        border-bottom: 1px solid colors.$color-black-20;
+        border-bottom: 1px solid $color-black-20;
     }
     .timeline-menu {
         display: flex;
@@ -82,11 +80,11 @@
             padding-left: 291px;
             button {
                 --min-size: $size32; //hds syntax
-                width: colors.$size44;
-                height: colors.$size44;
+                width: $size44;
+                height: $size44;
                 padding: 0; // Add this line
                 box-sizing: border-box; // Add this line
-                margin-bottom: colors.$size12;
+                margin-bottom: $size12;
                 position: relative;
                 &:nth-child(2) {
                     margin-left: -2px;
@@ -95,11 +93,11 @@
                     margin-top: 3px;
                 }
                 &:hover {
-                    border-color: colors.$color-bus;
-                    color: colors.$color-bus;
+                    border-color: $color-bus;
+                    color: $color-bus;
                 }
                 &:focus-visible, &:active {
-                    outline: 2px solid colors.$color-coat-of-arms;
+                    outline: 2px solid $color-coat-of-arms;
                     outline-offset: 2px;
                 }
             }
@@ -107,15 +105,15 @@
         .today-menu{
             button {
                 --min-size: $size32; //hds syntax
-                height: colors.$size44;
+                height: $size44;
                 font-family: 'Helsinki Grotesk Medium', sans-serif;
-                color: colors.$color-bus;
+                color: $color-bus;
                 padding: 0;
                 box-sizing: border-box;
-                margin-bottom: colors.$size12;
-                margin-left: colors.$size16;
+                margin-bottom: $size12;
+                margin-left: $size16;
                 font-weight: 500;
-                line-height: colors.$size24;
+                line-height: $size24;
                 text-align: left;
                 position: relative;
                 &::after {
@@ -130,12 +128,12 @@
                     transform: translateY(-50%);
                 }
                 &:hover {
-                    border-color: colors.$color-bus;
+                    border-color: $color-bus;
                 }
                 &:focus-visible, &:active {
-                    outline: 3px solid colors.$color-coat-of-arms;
+                    outline: 3px solid $color-coat-of-arms;
                     outline-offset: 2px;
-                    color: colors.$color-bus;
+                    color: $color-bus;
                 }
             }
         }
@@ -143,22 +141,22 @@
             margin-left: 65px;
             button{
                 font-family: "Helsinki Grotesk Medium", sans-serif;
-                font-size: colors.$size14;
-                line-height: colors.$size24;
+                font-size: $size14;
+                line-height: $size24;
                 font-weight: 500;
                 --min-size: $size32; //hds syntax
-                height: colors.$size32;
-                background: colors.$dropdown-divider-color;
-                color: colors.$black1;
+                height: $size32;
+                background: $dropdown-divider-color;
+                color: $black1;
                 border: 1px #1A1A1A solid;
-                border-radius: colors.$size16;
-                margin-bottom: colors.$size12;
-                margin-right: colors.$size16;
+                border-radius: $size16;
+                margin-bottom: $size12;
+                margin-right: $size16;
                 &:hover {
-                    background-color: colors.$color-black-20;
+                    background-color: $color-black-20;
                 }
                 &:focus-visible, &:active {
-                    outline: 3px solid colors.$color-coat-of-arms;
+                    outline: 3px solid $color-coat-of-arms;
                     outline-offset: 2px;
                 }
                 &::after {
@@ -174,21 +172,21 @@
             }
             button:active, .selected {
                 --min-size: $size32; //hds syntax
-                height: colors.$size32;
-                background: colors.$color-black-20;
-                color: colors.$black1;
+                height: $size32;
+                background: $color-black-20;
+                color: $black1;
                 border: 1px #1A1A1A solid;
-                border-radius: colors.$size16;
+                border-radius: $size16;
                 outline-offset: 2px;
-                margin-bottom: colors.$size16;
-                margin-right: colors.$size16;
-                outline: 3px solid colors.$color-coat-of-arms;
+                margin-bottom: $size16;
+                margin-right: $size16;
+                outline: 3px solid $color-coat-of-arms;
             }
             span {
                 font-family: 'Helsinki Grotesk Medium', sans-serif;
                 font-weight: 500;
-                font-size: colors.$size14;
-                line-height: colors.$size24;
+                font-size: $size14;
+                line-height: $size24;
             }
         }
     }
@@ -199,7 +197,7 @@
 
     .vis-item.vis-dot {
         &.past {
-            background: colors.$color-gray;
+            background: $color-gray;
         }
     }
 
@@ -207,11 +205,11 @@
         z-index: 1000;
         pointer-events: auto;
         border-width: 0;
-        height: colors.$size24;
+        height: $size24;
         border-radius: 15px;
         top: 5.5px !important;
         .vis-item-overflow{
-            border: 2px solid colors.$black1;
+            border: 2px solid $black1;
             background: #fff;
             border-radius: 15px;
             .vis-item-content{
@@ -220,13 +218,13 @@
             }
         }
         &.past .vis-item-overflow {
-            background: colors.$color-gray;
+            background: $color-gray;
         }
     }
 
     .board.deadline {
-        height: colors.$size24 !important;
-        width: colors.$size24 !important;
+        height: $size24 !important;
+        width: $size24 !important;
         top: -4px !important;
         left: -12px !important;
         max-width: 100%;
@@ -240,7 +238,7 @@
             display: none;
         }
         &.past {
-            background-color: colors.$color-gray;
+            background-color: $color-gray;
         }
     }
     .board.board-date {
@@ -261,7 +259,7 @@
             display: none;
         }
         &.past {
-            outline: 2px solid colors.$color-gray;
+            outline: 2px solid $color-gray;
             outline-offset: -2px;
             background-color: #1a1a1a !important;
         }
@@ -284,10 +282,10 @@
         top: 5.5px !important;
         pointer-events: auto;
         border-width: 0;
-        height: colors.$size24;
+        height: $size24;
         border-radius: 6px;
         .vis-item-overflow{
-            border: 2px solid colors.$black1;
+            border: 2px solid $black1;
             background: #fff;
             border-radius: inherit;
             .vis-item-content{
@@ -296,7 +294,7 @@
             }
         }
         &.past .vis-item-overflow {
-            background: colors.$color-gray;
+            background: $color-gray;
         }
     }
 
@@ -324,24 +322,24 @@
     .vis-point {
         top: -4.5px !important;
         left: -10px;
-        border: 2px solid colors.$black1;
+        border: 2px solid $black1;
         background-color: #fff;
-        height: colors.$size24;
-        width: colors.$size24;
+        height: $size24;
+        width: $size24;
         z-index: 200;
         &.past {
-            background: colors.$color-gray;
+            background: $color-gray;
         }
     }
 
     .vis-dot.board-only{
-        border: colors.$size1 solid #fff;
+        border: $size1 solid #fff;
         border-radius: 14px;
         padding: 5px;
         background-color: #1a1a1a;
         box-shadow: 0 0 0 2px #1a1a1a;
-        height: colors.$size20;
-        width: colors.$size20;
+        height: $size20;
+        width: $size20;
         &.confirmed::after {
             content: "";
             position: absolute;
@@ -381,7 +379,7 @@
     }
 
     .vis-ltr .vis-label.vis-nested-group .vis-inner {
-        padding-left: colors.$size10;
+        padding-left: $size10;
     }
 
     .hiddenTimes{
@@ -406,7 +404,7 @@
                 align-items: center;
                 width: 100%;
                 height: 100%;
-                padding-left: colors.$size15;
+                padding-left: $size15;
                 position: relative;
                 .timeline-button-label{
                     font-weight: 400;
@@ -424,7 +422,7 @@
                     background-size: 1.125rem;
                     border: none;
                     cursor: pointer;
-                    color: colors.$color-black-90;
+                    color: $color-black-90;
                 }
                 .timeline-remove-button{
                     display: none;
@@ -435,7 +433,7 @@
                     background:url('../../assets/icons/trash-red.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;
-                    background-size: colors.$size24;
+                    background-size: $size24;
                     border: none;
                     cursor: pointer;
                     &.button-disabled{
@@ -454,7 +452,7 @@
                     background:url('../../assets/icons/lock-open-blue.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;
-                    background-size: colors.$size24;
+                    background-size: $size24;
                     border: none;
                     cursor: pointer;
                 }
@@ -467,7 +465,7 @@
                     background:url('../../assets/icons/lock-blue.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;
-                    background-size: colors.$size24;
+                    background-size: $size24;
                     border: none;
                     cursor: pointer;
                 }
@@ -480,7 +478,7 @@
                     }
                 }
                 .timeline-remove-text {
-                    color: colors.$color-black-90;
+                    color: $color-black-90;
                     display: none;
                     position: absolute;
                     top: 35px;
@@ -491,7 +489,7 @@
                     padding: 8px;
                     box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.6);
                     z-index: 1005;
-                    font-size: colors.$size14;
+                    font-size: $size14;
                     font-weight: 400;
                 }
                 .timeline-remove-button.button-disabled:hover + .timeline-remove-text {
@@ -537,8 +535,8 @@
         box-sizing: content-box;
         height: 32px !important;
         width: 272px;
-        border: 2px solid colors.$color-bus;
-        background-color: colors.$color-bus-light !important;
+        border: 2px solid $color-bus;
+        background-color: $color-bus-light !important;
         margin-top: -1px;
         padding-top: 1px;
         margin-right:-1px;
@@ -553,7 +551,7 @@
         .vis-label{
             border-right: 1px solid #bfbfbf;
             .vis-inner{
-                height: colors.$size32;
+                height: $size32;
                 display: flex;
                 justify-content: flex-start;
                 align-items: center;
@@ -574,20 +572,20 @@
         display: flex;
         justify-content: flex-start;
         align-items: center;
-        padding-left: colors.$size32;
+        padding-left: $size32;
         .vis-inner{
             font-family: 'Helsinki Grotesk Bold', sans-serif !important;
             font-weight: 700;
-            font-size: colors.$size16;
-            line-height: colors.$size24;
-            color: colors.$black1;
+            font-size: $size16;
+            line-height: $size24;
+            color: $black1;
         }
     }
 
     .vis-group-level-0.expanded:not(.vis-nested-group){
-        padding-left: colors.$size13;
+        padding-left: $size13;
         .vis-inner{
-            padding-left: colors.$size8;
+            padding-left: $size8;
             .timeline-buttons-container{
                 display: flex;
                 justify-content: center;
@@ -603,7 +601,7 @@
                     background:url('../../assets/icons/plus-blue.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;
-                    background-size: colors.$size24;
+                    background-size: $size24;
                     border: none;
                     cursor: pointer;
                     &:hover {
@@ -624,9 +622,9 @@
     }
 
     .vis-group-level-0.collapsed:not(.vis-nested-group){
-        padding-left: colors.$size13;
+        padding-left: $size13;
         .vis-inner{
-            padding-left: colors.$size8;
+            padding-left: $size8;
             .timeline-buttons-container{
                 display: flex;
                 justify-content: center;
@@ -646,28 +644,28 @@
         height: 36px !important;
         .vis-group-level-0:not(.vis-nested-group){
             display: block;
-            padding-left: colors.$size16;
+            padding-left: $size16;
         }
     }
 
     .vis-label.vis-nesting-group.expanded:before {
         content: "";
-        width: colors.$size18;
+        width: $size18;
         height: 100%;
         background: url('../../assets/icons/angle-up2.svg') no-repeat;
         background-position-x: center;
         background-position-y: center;
-        background-size: colors.$size13;
+        background-size: $size13;
     }
 
     .vis-label.vis-nesting-group.collapsed:before{
         content: "";
-        width: colors.$size18;
+        width: $size18;
         height: 100%;
         background: url('../../assets/icons/angle-down2.svg') no-repeat;
         background-position-x: center;
         background-position-y: center;
-        background-size: colors.$size13;
+        background-size: $size13;
     }
 
     .vis-text.vis-major {
@@ -698,18 +696,18 @@
     }
 
     .vis-text.vis-minor {
-        color: colors.$black1;
+        color: $black1;
         &.vis-current-month, &.vis-even, &.vis-odd {
             align-content: center;
             text-align: center;
-            border-color: colors.$color-black-20;
+            border-color: $color-black-20;
             left: 2px;
         }
     }
 
     .vis-major {
         padding-left: 7px;
-        border-left: colors.$size1 solid colors.$border-gray4 !important;
+        border-left: $size1 solid $border-gray4 !important;
         &::first-letter{
             text-transform: capitalize;
         }
@@ -724,10 +722,10 @@
     .vis-minor{
         height: 59px;
         background-color: #ffffff;
-        border-left: colors.$size1 solid #CCCCCC;
-        border-top: colors.$size1 solid colors.$color-black-20;
-        border-bottom: colors.$size1 solid colors.$color-black-20;
-        font-size: colors.$size14;
+        border-left: $size1 solid #CCCCCC;
+        border-top: $size1 solid $color-black-20;
+        border-bottom: $size1 solid $color-black-20;
+        font-size: $size14;
     }
 
     .vis-time-axis .vis-grid.vis-saturday,
@@ -740,51 +738,51 @@
     }
 
     .color-tram{
-        background-color: colors.$color-copper !important;
-        height: colors.$size8;
+        background-color: $color-copper !important;
+        height: $size8;
         border-radius: 20px;
         z-index: 100;
     }
     .color-summer{
-        background-color: colors.$color-summer !important;
-        height: colors.$size8;
+        background-color: $color-summer !important;
+        height: $size8;
         border-radius: 20px;
         z-index: 100;
     }
     .color-metro{
-        background-color: colors.$color_metro !important;
-        height: colors.$size8;
+        background-color: $color_metro !important;
+        height: $size8;
         border-radius: 20px;
         z-index: 100;
     }
     .color-bus{
-        background-color: colors.$color_bus !important;
+        background-color: $color_bus !important;
         color:white;
-        height: colors.$size8;
+        height: $size8;
         border-radius: 20px;
         z-index: 100;
     }
     .color-gold{
-        background-color: colors.$color_gold !important;
-        height: colors.$size8;
+        background-color: $color_gold !important;
+        height: $size8;
         border-radius: 20px;
         z-index: 100;
     }
     .color-fog{
-        background-color: colors.$color_fog !important;
-        height: colors.$size8;
+        background-color: $color_fog !important;
+        height: $size8;
         border-radius: 20px;
         z-index: 100;
     }
     .color-green{
-        background-color: colors.$color_phase_principles !important;
-        height: colors.$size8;
+        background-color: $color_phase_principles !important;
+        height: $size8;
         border-radius: 20px;
         z-index: 100;
     }
     .color-suomenlinna{
-        background-color: colors.$color_phase_draft !important;
-        height: colors.$size8;
+        background-color: $color_phase_draft !important;
+        height: $size8;
         border-radius: 20px;
         z-index: 100;
     }
@@ -825,7 +823,7 @@
 }
 
 .dimmer{
-    padding: colors.$size10 0 0 0 !important;
+    padding: $size10 0 0 0 !important;
     background-color: rgba(255, 255, 255, 0) !important;
 }
 
@@ -834,11 +832,11 @@
     .vis-major > div {
         font-family: 'Helsinki Grotesk Medium', sans-serif;
         font-weight: 500;
-        font-size: colors.$size14;
-        color: colors.$black1;
+        font-size: $size14;
+        color: $black1;
     }
     .vis-minor {
-        border-color: colors.$color-black-20 !important;
+        border-color: $color-black-20 !important;
         font-family: 'Helsinki Grotesk', sans-serif;
         font-weight: 700;
     }
@@ -873,7 +871,7 @@
         }
     }
     .normal-weekend {
-        background-color: colors.$color-white !important;
+        background-color: $color-white !important;
     }
     .negative {
         border: none !important;
@@ -881,10 +879,10 @@
     }
     .vis-item.vis-background.holiday {
         top: 0;
-        background: colors.$color-summer-light;
+        background: $color-summer-light;
         z-index: 100;
         .vis-item-overflow {
-            background-color: colors.$color-summer-light !important;
+            background-color: $color-summer-light !important;
         }
     }
     .vis-time-axis .vis-grid.vis-major {
@@ -901,7 +899,7 @@
     .negative {
         top: 0;
         .vis-item-overflow {
-            background: colors.$color-black-5;
+            background: $color-black-5;
             border-right: 0.5px solid #ccc;
             border-left: 0.5px solid #ccc;
         }
@@ -910,7 +908,7 @@
         top: 0;
         z-index: 0;
         .vis-item-overflow {
-            background: colors.$color-summer-light;
+            background: $color-summer-light;
             border-right: 0.5px solid #ccc;
             border-left: 0.5px solid #ccc;
         }
@@ -923,14 +921,14 @@
     .vis-major > div {
         font-family: 'Helsinki Grotesk Medium', sans-serif;
         font-weight: 500;
-        font-size: colors.$size14;
-        color: colors.$black1;
+        font-size: $size14;
+        color: $black1;
     }
     .vis-minor {
         font-family: 'Helsinki Grotesk', sans-serif;
         font-weight: 400;
-        border-color: colors.$color-black-20 !important;
-        color:colors.$black;
+        border-color: $color-black-20 !important;
+        color:$black;
         text-transform: capitalize;
         line-height: 24px;
         &::first-line {
@@ -961,6 +959,6 @@
     background-color: #F0F0FF80;
 }
 .january-first {
-    border-left:colors.$size1 solid colors.$border-gray4 !important;
+    border-left:$size1 solid $border-gray4 !important;
     opacity: 0.8;
 }

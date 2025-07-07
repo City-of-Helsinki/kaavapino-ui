@@ -1,4 +1,4 @@
-@use '../../common/colors.scss';
+@use '../../common/Common';
 
 .matrix-container {
   margin: -16px 0 24px;
@@ -13,10 +13,10 @@
     row-gap: 10px;
 
     .row-header {
-      font-size: colors.$size18;
+      font-size: $size18;
       font-weight: bold;
       letter-spacing: 0;
-      line-height: colors.$size22;
+      line-height: $size22;
       margin-top: 16px;
     }
 
@@ -56,11 +56,11 @@
     margin-top: 4px;
 
     .autofill-readonly-input-value {
-      border: 1px solid colors.$gray2;
+      border: 1px solid $gray2;
       border-radius: 2px;
       color: black;
-      font-size: colors.$size16;
-      line-height: colors.$size56;
+      font-size: $size16;
+      line-height: $size56;
       padding: 0 16px;
       height: 56px;
       width: 100%;
