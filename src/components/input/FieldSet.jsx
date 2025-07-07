@@ -63,7 +63,7 @@ const FieldSet = ({
   const [adding,setAdding] = useState(false)
 
   const [hiding,setHiding] = useState(false)
-  console.log(saving,adding,hiding)
+
   const refreshFieldset = () => {
     //Fetch fieldset data from backend and see if there is new sub fieldset or data changes before adding new sub fieldset
     //After completed fetch useEffect adds new sub fieldset to updated last fieldset index and saves
