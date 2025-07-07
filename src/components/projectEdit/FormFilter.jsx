@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect }  from 'react'
 import { Button, Tag, IconTrash, Checkbox } from 'hds-react';
 import { getOffset } from '../../hooks/getOffset';
+import './ProjectEdit.scss'
 
 function FormFilter({schema,filterFields,isHighlightedTag,selectedPhase,allfields,currentlyHighlighted}) {
 

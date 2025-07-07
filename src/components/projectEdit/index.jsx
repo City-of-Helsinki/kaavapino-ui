@@ -69,7 +69,7 @@ import FormFilter from './FormFilter.jsx'
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
 import PropTypes from 'prop-types'
-
+import './ProjectEdit.scss'
 
 class ProjectEditPage extends Component {
   state = {

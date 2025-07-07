@@ -1,4 +1,3 @@
-@use '../common/colors.scss';
 .overview {
   margin: 0 auto;
   max-width: 1200px;
@@ -14,7 +13,7 @@
   }
   .committee-diagram {
     height: 200px;
-    background-color: colors.$accessible-grey;
+    background-color: $accessible-grey;
   }
   .geometry-input-container {
     .geometry-input {
@@ -63,28 +62,28 @@
     }
   }
   .bar:hover {
-    fill: colors.$accessible-grey;
+    fill: $accessible-grey;
   }
 
   .mobile-accordion {
     max-width: 370px;
 
     div {
-      font-size: colors.$size14;
+      font-size: $size14;
     }
   }
 
   .ui.segment {
     box-shadow: none;
-    padding: 0 colors.$size16;
+    padding: 0 $size16;
   }
 
   .ui.grid > .column:not(.row) {
-    padding: colors.$size16;
+    padding: $size16;
   }
 
   .ui.grid {
-    margin: -(colors.$size16);
+    margin: -($size16);
   }
 }
 .floor-area {
@@ -132,7 +131,7 @@
     margin-bottom: 20px;
   }
   .leaflet-popup-content-wrapper {
-    font-size: colors.$size14;
+    font-size: $size14;
     border-radius: 5px;
   }
 }
@@ -158,7 +157,7 @@
 .dot {
   height: 12px;
   width: 12px;
-  background-color: colors.$accessible-grey;
+  background-color: $accessible-grey;
   border-radius: 50%;
   display: inline-block;
   margin-right: 8px;
@@ -193,14 +192,14 @@
 .filters-list {
   .ui.segment {
     box-shadow: none;
-    padding: 0 colors.$size12;
+    padding: 0 $size12;
   }
 
   .ui.grid > .column:not(.row) {
-    padding: colors.$size12;
+    padding: $size12;
   }
 
   .ui.grid {
-    margin: -(colors.$size12);
+    margin: -($size12);
   }
 }

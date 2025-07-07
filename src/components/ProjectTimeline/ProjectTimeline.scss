@@ -1,12 +1,10 @@
-@use '../common/colors';
-
 .timeline-graph-container {
-  font-family: 'Helsinki Grotesk Medium';
+  font-family: 'Helsinki Grotesk Medium', sans-serif;
   padding: 40px 20px 20px 20px;
   margin-top: 20px;
   overflow: hidden;
   position: relative;
-  background-color: colors.$light-gray3;
+  background-color: $light-gray3;
   
   .timeline-error-message {
     position: absolute;
@@ -28,7 +26,7 @@
     border-left: 8px solid #D18200;
     background-color: #FFF4B4;
     text-align: center;
-    font-size: colors.$size18;
+    font-size: $size18;
     font-weight: 700;
 
     span {
@@ -38,7 +36,7 @@
       opacity: 1;
     }
     p {
-      font-size: colors.$size14;
+      font-size: $size14;
       font-weight: 400;
       position: absolute;
       top: 55px;
@@ -57,7 +55,7 @@
       background: url('../../assets/icons/alert-icon-yellow.svg') no-repeat;
       background-position-x: center;
       background-position-y: center;
-      background-size: colors.$size24;
+      background-size: $size24;
     }
   }
 
@@ -85,16 +83,18 @@
         border-bottom-right-radius: 20px;
       }
       .deadline-name-over {
+        font-family: 'Helsinki Grotesk Medium', sans-serif;
         position: absolute;
         bottom: 20px;
-        font-size: colors.$size12;
+        font-size: $size12;
         width: 118px;
+        font-weight: 700;
       }
       .deadline-name-inside {
         position: absolute;
         left: 2px;
         z-index: 3;
-        font-size: colors.$size12;
+        font-size: $size12;
         width: 120px;
       }
       .deadline-milestone {
@@ -102,7 +102,7 @@
           position: absolute;
           top: 20px;
           line-height: normal;
-          font-size: colors.$size12;
+          font-size: $size12;
         }
         .milestone-icon {
           position: absolute;
@@ -138,11 +138,11 @@
             right: 2px;
           }
           &.white {
-            background-color: colors.$white;
+            background-color: $white;
           }
           &.black {
-            background-color: colors.$black;
-            border: 2px solid colors.$white;
+            background-color: $black;
+            border: 2px solid $white;
           }
         }
       }
@@ -153,14 +153,14 @@
     grid-template-columns: repeat(13, 1fr);
 
     .timeline-month {
-      border-bottom: 2px solid colors.$color-disabled;
-      border-left: 2px solid colors.$color-disabled;
-      color: colors.$color-disabled;
+      border-bottom: 2px solid $color-disabled;
+      border-left: 2px solid $color-disabled;
+      color: $color-disabled;
       text-align: center;
       position: relative;
       height: 10px;
       margin-bottom: 30px;
-      font-size: colors.$size12;
+      font-size: $size12;
       span {
         position: absolute;
         left: 8px;
@@ -170,7 +170,7 @@
         display: grid;
         grid-template-columns: repeat(5, 1fr);
         .now-marker {
-          color: colors.$black;
+          color: $black;
           width: 1px;
           height: 60px;
           border: 1px solid blue;
@@ -184,7 +184,7 @@
   }
 }
 .timeline-error {
-  color: colors.$color-disabled;
+  color: $color-disabled;
   padding-top: 33px;
 }
 .hide-background {

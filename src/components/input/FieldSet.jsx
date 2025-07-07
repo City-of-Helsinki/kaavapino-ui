@@ -14,6 +14,7 @@ import { OutsideClick } from '../../hooks/OutsideClick'
 import {getAttributeData} from '../../actions/projectActions'
 import { useIsMount } from '../../hooks/IsMounted'
 import PropTypes from 'prop-types'
+import './input.scss'
 
 const FieldSet = ({
   sets,
@@ -62,7 +63,7 @@ const FieldSet = ({
   const [adding,setAdding] = useState(false)
 
   const [hiding,setHiding] = useState(false)
-
+  console.log(saving,adding,hiding)
   const refreshFieldset = () => {
     //Fetch fieldset data from backend and see if there is new sub fieldset or data changes before adding new sub fieldset
     //After completed fetch useEffect adds new sub fieldset to updated last fieldset index and saves
@@ -221,7 +222,7 @@ const FieldSet = ({
           <React.Fragment key={`${name}-${i}`}>
             {!deleted && hiddenIndex !== i && (
               <div key={i} className="fieldset-container">
-                <button type="button" tabIndex={0} className={!saving ? expanded.includes(i) ? "accordion-button-open" : "accordion-button" : "accordion-button-disabled"} onClick={(e) => {if(!saving){checkLocked(e,set,i)}}}>
+                <button type="button" tabIndex={0} className={saving || hiding || adding ? "accordion-button-disabled" : expanded.includes(i) ? "accordion-button-open" : "accordion-button"} onClick={(e) => {if(!(saving || hiding || adding)){checkLocked(e,set,i)}}}>
                   <div className='accordion-button-content'>
                     {lockName}
                   </div>
@@ -406,12 +407,27 @@ const FieldSet = ({
           onClick={() => {
             refreshFieldset()
           }}
-          disabled={disabled || saving || visibleErrors.length > 0}
+          disabled={disabled || visibleErrors.length > 0}
           variant="supplementary"
           size='small'
-          iconLeft={<IconPlus/>}
+          fullWidth={true}
+          iconLeft={
+          saving || adding || hiding ? (
+            <div className="fieldset-spinner-button">
+              <LoadingSpinner className="loading-spinner" />
+            </div>
+          ) : (
+            <IconPlus />
+          )
+        }
         >
-          {t('project.add')}
+        {saving
+          ? t('project.saving')
+          : adding
+          ? t('project.adding')
+          : hiding
+          ? t('project.deleting')
+          : t('project.add')}
         </Button>
         {saving && adding && (
         <div className="fieldset-spinner">

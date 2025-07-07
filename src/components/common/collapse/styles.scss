@@ -1,13 +1,13 @@
-@use '../colors.scss';
+@use '../Common';
 
 .collapse {
   width: 100%;
   background-color: white;
-  border-bottom: 1px solid colors.$light-gray;
+  border-bottom: 1px solid $light-gray;
   transition: all 0.2s ease-out;
 
   &.open {
-    background-color: colors.$light-gray2;
+    background-color: $light-gray2;
     border-bottom: none;
     margin-top: 24px;
   }

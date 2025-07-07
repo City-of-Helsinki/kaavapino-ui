@@ -35,6 +35,7 @@ import authUtils from '../../utils/authUtils'
 import OwnProjectFilters from './OwnProjectFilters.jsx'
 import { ToggleButton } from 'hds-react';
 import { isEqual } from 'lodash'
+import './ProjectList.scss'
 
 class ProjectListPage extends Component {
   constructor(props) {

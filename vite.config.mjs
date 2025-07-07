@@ -32,7 +32,14 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, 'src'),
       },
     },
-    define: {
+    css: {
+      preprocessorOptions: {
+        scss: {
+          additionalData: `@use '@/globals' as *;` //import global styles to all scss files
+        },
+      },
+    },
+    define: { //Mofies default Vite environment variables to use react app environment variables
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
       'process.env.REACT_APP_API_TOKEN': JSON.stringify(env.REACT_APP_API_TOKEN || ''),
       'process.env.REACT_APP_BASE_URL': JSON.stringify(env.REACT_APP_BASE_URL || ''),

@@ -1,6 +1,4 @@
-@use '../common/colors.scss';
-@use '../common/Fonts.scss';
-@import url('hds-core');
+@import 'hds-core';
 
 .input-container {
   .input-header-container{
@@ -27,12 +25,12 @@
     }
     .input-locked{
       font-family: 'Helsinki Grotesk Medium', sans-serif;
-      font-size: colors.$size14;
+      font-size: $size14;
       height: 18px;
       display:inline-flex;
       flex-direction: row-reverse;
       justify-content: flex-start;
-      color:colors.$color-info-dark;
+      color:$color-info-dark;
       margin-top: 4px;
       margin-bottom: 8px;
       svg{
@@ -45,8 +43,8 @@
       display:inline-flex;
       margin-left:5px;
       padding:5px;
-      color:colors.$color-bus;
-      border:2px solid colors.$color-bus;
+      color:$color-bus;
+      border:2px solid $color-bus;
     }
   }
 
@@ -61,8 +59,8 @@
 
     .input-info {
       background: url('./assets/icons/field-info-icon.svg') no-repeat center;
-      width: colors.$size16;
-      height: colors.$size16;
+      width: $size16;
+      height: $size16;
     }
 
     .input-history {
@@ -94,23 +92,23 @@
     justify-content: space-between;
     align-items: center;
     font-family: "Helsinki Grotesk Medium", sans-serif;
-    font-size: colors.$size16;
-    line-height: colors.$size24;
-    color: colors.$color-black-90;
-    padding-top: colors.$size4;
-    padding-bottom: colors.$size12;
+    font-size: $size16;
+    line-height: $size24;
+    color: $color-black-90;
+    padding-top: $size4;
+    padding-bottom: $size12;
     height: 100%;
 
     .text-input{
       width: 80%;
-      padding-left: colors.$size16;
+      padding-left: $size16;
 
       .content{
         font-family: "Helsinki Grotesk Regular", sans-serif;
-        font-size: colors.$size16;
+        font-size: $size16;
         opacity: 1 !important;
         border: none !important;
-        color: colors.$color-black-90;
+        color: $color-black-90;
         background: transparent;
         height: 100%;
         padding: 0;
@@ -124,12 +122,12 @@
         .ql-container{
           border:none;
           font-family: "Helsinki Grotesk Regular", sans-serif;
-          font-size: colors.$size16;
+          font-size: $size16;
           .ql-editor{
             padding: 0;
             p{
               font-family: "Helsinki Grotesk Regular", sans-serif;
-              font-size: colors.$size16;
+              font-size: $size16;
               opacity: 1 !important;
               border: none !important;
               background: transparent;
@@ -144,22 +142,22 @@
 
     button {
       position: absolute;
-      top: colors.$size4;
+      top: $size4;
       right: 0;
-      font-size: colors.$size16;
+      font-size: $size16;
       align-self: flex-start;
       justify-self: flex-end;
     }
 
     .text-input-italic {
       width: 80%;
-      padding-left: colors.$size14;
+      padding-left: $size14;
       .content{
         font-family: "Helsinki Grotesk Regular", sans-serif;
-        font-size: colors.$size14;
+        font-size: $size14;
         opacity: 1 !important;
         border: none !important;
-        color: colors.$max-markings-color;
+        color: $max-markings-color;
         background: transparent;
         font-style: italic;
         height: 100%;
@@ -173,12 +171,12 @@
         .ql-container{
           border:none;
           font-family: "Helsinki Grotesk Regular", sans-serif;
-          font-size: colors.$size14;
+          font-size: $size14;
           .ql-editor{
             padding: 0;
             p{
               font-family: "Helsinki Grotesk Regular", sans-serif;
-              font-size: colors.$size14;
+              font-size: $size14;
               opacity: 1 !important;
               border: none !important;
               background: transparent;
@@ -198,13 +196,13 @@
     justify-content: flex-start;
     align-items: center;
     font-family: "Helsinki Grotesk Medium", sans-serif;
-    font-size: colors.$size14;
-    color: colors.$color_rolling_info;
-    padding-left: colors.$size12;
+    font-size: $size14;
+    color: $color_rolling_info;
+    padding-left: $size12;
     padding-top: 0;
 
     svg {
-      height: colors.$size18;
+      height: $size18;
     }
     span {
       padding-left: 0.125rem;
@@ -218,19 +216,19 @@
   .max-chars-error{
     display: flex;
     font-family: "Helsinki Grotesk Regular", sans-serif;
-    font-size: colors.$size16;
-    color: colors.$color-error;
-    line-height: colors.$size24;
+    font-size: $size16;
+    color: $color-error;
+    line-height: $size24;
     padding-top: 8px;
   
     svg {
-      height: colors.$size24;
+      height: $size24;
     }
   }
 }
 
 .highligh-error{
-  border: 4px solid colors.$color-coat-of-arms;
+  border: 4px solid $color-coat-of-arms;
   .input-header{
     animation: shake 1s ease 1;
   }
@@ -250,7 +248,7 @@
   .ui.checkbox label {
     align-items: center;
     display: flex;
-    font-size: colors.$size16;
+    font-size: $size16;
     height: 24px;
     margin-top: 14px;
     padding-left: 34px;
@@ -261,12 +259,12 @@
     }
 
     &:before {
-      border: 2px solid colors.$border-gray;
+      border: 2px solid $border-gray;
     }
   }
 
   .ui.checkbox:not(.disabled) label:hover::before {
-    border-color: colors.$color-input-emphasis;
+    border-color: $color-input-emphasis;
   }
 
   .ui.checkbox:first-of-type label {
@@ -289,19 +287,19 @@
   }
 
   .ui.radio.checkbox input:checked ~ label:after {
-    color: colors.$color-bus-dark;
-    background-color: colors.$color-bus-dark;
+    color: $color-bus-dark;
+    background-color: $color-bus-dark;
     width: 24px;
     height: 24px;
   }
   .ui.radio.checkbox input:focus:checked ~ label:after {
-    color: colors.$color-bus-dark;
-    background-color: colors.$color-bus-dark;
+    color: $color-bus-dark;
+    background-color: $color-bus-dark;
     width: 24px;
     height: 24px;
   }
   .ui.checkbox input:checked ~ label:before {
-    border-color: colors.$color-bus-dark;
+    border-color: $color-bus-dark;
   }
   .ui.radio.checkbox label:before {
     width: 24px;
@@ -329,7 +327,7 @@
 .ui.search.selection.dropdown {
   border-radius: 2px;
   min-height: 56px;
-  line-height: colors.$size32;
+  line-height: $size32;
   padding: 12px 32px 12px 8px;
   margin-top: 4px;
 
@@ -340,7 +338,7 @@
   > .delete.icon,
   > .dropdown.icon,
   > .search.icon {
-    line-height: colors.$size56;
+    line-height: $size56;
     padding: 0;
     right: 20px;
   }
@@ -348,42 +346,42 @@
   > input.search {
     position: absolute;
     height: 56px;
-    line-height: colors.$size56;
+    line-height: $size56;
     padding: 0 32px 0 8px;
     margin: 0;
   }
 
   .placeholder {
-    color: colors.$gray;
+    color: $gray;
   }
 }
 
 .ui.selection.active.dropdown .menu,
 .ui.selection.active.dropdown:hover .menu {
-  border: 2px solid colors.$black1;
+  border: 2px solid $black1;
 }
 
 .ui.label {
-  font-family: "Helsinki Grotesk Medium", sans-serif;
-  background-color: transparent;
-  color: colors.$black1;
-  font-size: colors.$size16;
-  letter-spacing: 0;
-  line-height: colors.$size24;
-  margin: 0;
-  padding: 0;
-  transition: none;
+  font-family: "Helsinki Grotesk Medium", sans-serif !important;
+  background-color: transparent !important; 
+  color: $black1 !important;
+  font-size: $size16 !important;
+  letter-spacing: 0 !important;
+  line-height: $size24 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transition: none !important;
 }
 
 .ui.form input[type=text]:hover {
-  border-color: colors.$color-black !important;
+  border-color: $color-black !important;
 }
 
 .highlighted {
   background-color: yellow;
 }
 .error .selection {
-  border: 3px solid colors.$color-error;
+  border: 3px solid $color-error;
   
 }
 .error .selection div {
@@ -403,7 +401,7 @@
 }
 
 .error .rich-text-editor-wrapper {
-  border: 3px solid colors.$color-error;
+  border: 3px solid $color-error;
 
   .rich-text-editor .ql-container {
     border: 0;
@@ -411,16 +409,16 @@
 
 }
 .error .file-input-container button {
-  border: 3px solid colors.$color-error;
-  color: colors.$color-error;
+  border: 3px solid $color-error;
+  color: $color-error;
 }
 
 .error .link-container  div:first-of-type {
-  border: 3px solid colors.$color-error;
+  border: 3px solid $color-error;
  
 }
 .error .ad-combobox {
-  border: 3px solid colors.$color-error;
+  border: 3px solid $color-error;
 }
 
 .error .ad-combobox  div {
@@ -429,20 +427,20 @@
 }
 .ui.form .field.error input[type=text] {
   background: white !important;
-  color: colors.$color-error !important;
-  border: 3px solid colors.$color-error !important;
+  color: $color-error !important;
+  border: 3px solid $color-error !important;
   border-radius: 0;
 }
 .ui.form .field.error input[type=number] {
   background: white !important;
-  color: colors.$color-error !important;
-  border: 3px solid colors.$color-error !important;
+  color: $color-error !important;
+  border: 3px solid $color-error !important;
   border-radius: 0;
 }
 .ui.form .field.error input[type=date] {
   background: white !important;
-  color: colors.$color-error !important;
-  border: 3px solid colors.$color-error !important;
+  color: $color-error !important;
+  border: 3px solid $color-error !important;
   border-radius: 0;
 }
 
@@ -454,7 +452,7 @@
 }
 
 .ui.form .field.error input::placeholder { 
-    color: colors.$color-black-60 !important;
+    color: $color-black-60 !important;
 }
 
 .image-preview {
@@ -478,19 +476,19 @@
   .remove-button {
 
     &.remove {
-      color: colors.$red;
-      border-color: colors.$red;
+      color: $red;
+      border-color: $red;
     }
 
     &.remove:hover {
-      color: colors.$color-error;
-      border-color: colors.$color-error;
-      background-color: colors.$color-error-light;
+      color: $color-error;
+      border-color: $color-error;
+      background-color: $color-error-light;
     }
   }
 
   .file-action-buttons button {
-    margin-left: colors.$size12;
+    margin-left: $size12;
   }
 }
 
@@ -503,15 +501,15 @@
 }
 
 .fieldset-internal-error {
-  color: colors.$color-error-text !important;
-  border: 3px solid colors.$color-error-border !important;
+  color: $color-error-text !important;
+  border: 3px solid $color-error-border !important;
 }
 .fieldset-info{
   font-family: "Helsinki Grotesk Regular", sans-serif;
   font-style: italic;
-  font-size: colors.$size14;
-  color: colors.$dropdown-text-color;
-  border-bottom: 1px solid colors.$border-gray1;
+  font-size: $size14;
+  color: $dropdown-text-color;
+  border-bottom: 1px solid $border-gray1;
   padding-top: 16px;
   padding-bottom: 15px;
   margin-bottom: 17px;
@@ -533,10 +531,10 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    background-color: colors.$color-white;
+    background-color: $color-white;
     font-family: "Helsinki Grotesk Medium", sans-serif;
-    font-size: colors.$size14;
-    color: colors.$black1;
+    font-size: $size14;
+    color: $black1;
     font-weight: 500;
     pointer-events: all;
     cursor: pointer;
@@ -548,7 +546,7 @@
     padding-top: 11.2px;
     padding-bottom: 10.8px;
     padding-left: 0;
-    border-bottom: 0.7px solid colors.$color-black-60;
+    border-bottom: 0.7px solid $color-black-60;
     .accordion-button-content{
       display: flex;
       justify-content: flex-start;
@@ -562,14 +560,14 @@
         .italic{
           font-family: "Helsinki Grotesk Regular", sans-serif;
           font-style: italic;
-          color:colors.$max-markings-color;
+          color:$max-markings-color;
         }
       }
     }
     svg{
       pointer-events: none;
-      width: colors.$size17;
-      height: colors.$size17;
+      width: $size17;
+      height: $size17;
     }
   }
 
@@ -577,10 +575,10 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    background-color: colors.$color-fog-light;
+    background-color: $color-fog-light;
     font-family: "Helsinki Grotesk Medium", sans-serif;
-    font-size: colors.$size14;
-    color: colors.$black1;
+    font-size: $size14;
+    color: $black1;
     font-weight: 500;
     pointer-events: all;
     cursor: pointer;
@@ -605,14 +603,14 @@
         .italic{
           font-family: "Helsinki Grotesk Regular", sans-serif;
           font-style: italic;
-          color: colors.$max-markings-color;
+          color: $max-markings-color;
         }
       }
     }
     svg{
       pointer-events: none;
-      width: colors.$size17;
-      height: colors.$size17;
+      width: $size17;
+      height: $size17;
     }
   }
 
@@ -620,10 +618,10 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    background-color: colors.$color-white;
+    background-color: $color-white;
     font-family: "Helsinki Grotesk Medium", sans-serif;
-    font-size: colors.$size14;
-    color: colors.$color-black-40;
+    font-size: $size14;
+    color: $color-black-40;
     font-weight: 500;
     cursor: pointer;
     width: 100%;
@@ -634,7 +632,7 @@
     padding-top: 11.2px;
     padding-bottom: 10.8px;
     padding-left: 0;
-    border-bottom: 0.7px solid colors.$color-black-40;
+    border-bottom: 0.7px solid $color-black-40;
     pointer-events: none;
     .accordion-button-content{
       display: flex;
@@ -649,19 +647,19 @@
         .italic{
           font-family: "Helsinki Grotesk Regular", sans-serif;
           font-style: italic;
-          color: colors.$max-markings-color;
+          color: $max-markings-color;
         }
       }
     }
     svg{
       pointer-events: none;
-      width: colors.$size17;
-      height: colors.$size17;
+      width: $size17;
+      height: $size17;
     }
   }
 
   .accordion-button:focus-within,.accordion-button-open:focus-within{
-    box-shadow: 0 0 0 3px colors.$color-coat-of-arms;
+    box-shadow: 0 0 0 3px $color-coat-of-arms;
     position: relative;
   }
 
@@ -672,11 +670,11 @@
   /* Style the accordion panel. Note: hidden by default */
   .fieldset-accordian {
     padding: 0 18px;
-    background-color: colors.$color-white;
+    background-color: $color-white;
     display: none;
     overflow: hidden;
     .input-container {
-      background-color: colors.$color-fog-light;
+      background-color: $color-fog-light;
       padding-bottom: 27.5px;
       .field{
         .text-input,.selection,.ad-combobox{
@@ -684,7 +682,7 @@
         }
       }
       .max-chars{
-        font-size: colors.$size13;
+        font-size: $size13;
       }
     }
     div[role=button]{
@@ -700,7 +698,7 @@
       }
     }
     .input-title{
-      font-size: colors.$size13;
+      font-size: $size13;
       padding-left: 0;
       pointer-events: none;
     }
@@ -710,12 +708,12 @@
     padding-left: 16px;
     padding-right: 16px;
     padding-top: 16px;
-    background-color: colors.$color-fog-light;
+    background-color: $color-fog-light;
     display: block;
     overflow: hidden;
-    border-bottom: 0.7px solid colors.$color-black-60;
+    border-bottom: 0.7px solid $color-black-60;
     .input-container {
-      background-color: colors.$color-fog-light;
+      background-color: $color-fog-light;
       padding-bottom: 27.5px;
       .field{
         .text-input:not(.rolling-info-container .text-input),.selection,.ad-combobox{
@@ -723,7 +721,7 @@
         }
       }
       .max-chars{
-        font-size: colors.$size13;
+        font-size: $size13;
       }
     }
     div[role=button]{
@@ -739,7 +737,7 @@
       }
     }
     .input-title{
-      font-size: colors.$size13;
+      font-size: $size13;
       padding-left: 0;
       pointer-events: none;
     }
@@ -749,8 +747,8 @@
       align-items: center;
       button{
         font-family: "Helsinki Grotesk Medium", sans-serif;
-        font-size: colors.$size12;
-        color: colors.$black1;
+        font-size: $size12;
+        color: $black1;
         display: flex;
         justify-content: flex-end;
         align-items: center;
@@ -768,8 +766,8 @@
 
   .input-locked{
     font-family: "Helsinki Grotesk Medium", sans-serif;
-    font-size: colors.$size12;
-    color: colors.$color-info-dark;
+    font-size: $size12;
+    color: $color-info-dark;
     display: flex;
     justify-content: flex-start;
     align-items: flex-end;
@@ -782,34 +780,38 @@
   .fieldset-container:last-of-type{
     margin-bottom: 16px;
   }
+  .fieldset-button-add{
+    justify-content: flex-start;
+    background-color: $color-info-light;
+  }
 }
 
 .fieldset-button-remove {
- color: colors.$color-error !important;
- border-color: colors.$color-error !important;
+ color: $color-error !important;
+ border-color: $color-error !important;
  margin-top: 20px;
  margin-bottom: 3.4px;
 }
 
 .fieldset-button-remove:hover{
-  color: colors.$color-error-dark !important;
-  border-color: colors.$color-error-dark !important;
-  background-color: colors.$color-error-light !important;
+  color: $color-error-dark !important;
+  border-color: $color-error-dark !important;
+  background-color: $color-error-light !important;
 }
 
 .fieldset-button-remove-disabled{
-  border-color: colors.$color-black-40 !important;
+  border-color: $color-black-40 !important;
   margin-top: 20px;
 }
 
 .fieldset-button-remove-disabled:hover{
-  border-color: colors.$color-black-40 !important;
+  border-color: $color-black-40 !important;
 }
 
 .fieldset-accordian-close{
   font-family: "Helsinki Grotesk Medium", sans-serif;
-  font-size: colors.$size12;
-  background-color: colors.$color-fog-light;
+  font-size: $size12;
+  background-color: $color-fog-light;
   display: flex;
   width: 100%;
   justify-content: flex-end;
@@ -830,8 +832,8 @@
   .fieldset-header-number {
     position: absolute;
     margin-top: -31px;
-    font-size: colors.$size16;
-    background: colors.$light-gray3;
+    font-size: $size16;
+    background: $light-gray3;
     padding: 4px 16px;
   }
 
@@ -856,44 +858,44 @@
 
 .link-container {
   .link-button {
-    margin-left: colors.$size20;
+    margin-left: $size20;
   }
 
   input {
-    min-height: colors.$size56;
+    min-height: $size56;
     min-width: 300px;
   }
 
   svg {
-    color: colors.$color-white;
+    color: $color-white;
   }
 
   .link-status {
-    margin-left: colors.$size20;
+    margin-left: $size20;
     height: 49px;
-    color: colors.$color-success;
+    color: $color-success;
   }
 
   .error ~ svg {
-    color: colors.$color-error;
+    color: $color-error;
   }
 
   .error-text {
-    margin-left: colors.$size4;
+    margin-left: $size4;
   }
 }
 
 .linked-fields{
   font-family: 'Helsinki Grotesk Regular', sans-serif;
-  font-size: colors.$size14;
-  line-height: colors.$size24;
-  color: colors.$black1;
+  font-size: $size14;
+  line-height: $size24;
+  color: $black1;
   padding-top: 20px;
   .linked-header{
     font-family: 'Helsinki Grotesk Bold', sans-serif;
-    font-size: colors.$size14;
-    line-height: colors.$size24;
-    color: colors.$black1;
+    font-size: $size14;
+    line-height: $size24;
+    color: $black1;
     font-weight: 700;
   }
   .linked-fields-list{
@@ -939,14 +941,14 @@
 .deadline-info-text {
   margin-top: 10px;
   padding: 8px 8px 8px 16px;
-  background-color: colors.$yellow;
+  background-color: $yellow;
   width: 80%;
 }
 .deadline-estimated {
-  color: colors.$color-info !important;
+  color: $color-info !important;
 
   input {
-    color: colors.$color-info !important;
+    color: $color-info !important;
   }
 }
 .invisible{
@@ -970,11 +972,11 @@
   margin-top: 4px;
 }
 .error-text {
-  color: colors.$color-error-border;
+  color: $color-error-border;
   position: relative;
 }
 .add-error{
-  padding-left: colors.$size16;
+  padding-left: $size16;
 }
 .checkbox {
   display: flex;
@@ -1033,31 +1035,31 @@
 }
 
 .custom-card{
-  padding: colors.$size16 colors.$size20 colors.$size8 colors.$size16;
+  padding: $size16 $size20 $size8 $size16;
   margin: 0;
   gap: 0;
-  padding-left: colors.$size20;
-  border:1px solid colors.$border-gray3;
-  background-color: colors.$color-bus-light;
+  padding-left: $size20;
+  border:1px solid $border-gray3;
+  background-color: $color-bus-light;
 
   .heading {
     font-family: 'Helsinki Grotesk Bold', sans-serif;
     font-weight: 700;
-    font-size: colors.$size16;
-    padding-bottom: colors.$size28;
+    font-size: $size16;
+    padding-bottom: $size28;
   }
 
   .custom-card-item-container {
     display: flex;
-    column-gap: colors.$size64;
+    column-gap: $size64;
   }
 
   .custom-card-container {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    line-height: colors.$size18;
-    margin-bottom: colors.$size20;
+    line-height: $size18;
+    margin-bottom: $size20;
 
     .custom-card-info-container {
       display: flex;
@@ -1066,12 +1068,12 @@
       .custom-card-info {
         font-family: 'Helsinki Grotesk Medium', sans-serif;
         font-weight: 500;
-        font-size: colors.$size14;
-        padding-bottom: colors.$size8;
+        font-size: $size14;
+        padding-bottom: $size8;
       }
 
       .custom-card-date {
-        font-size: colors.$size14;
+        font-size: $size14;
 
         .date {
           display: inline-flex;
@@ -1086,28 +1088,28 @@
 
         .divider {
           display: inline-flex;
-          padding: 0 colors.$size8;
+          padding: 0 $size8;
         }
 
         .status {
           display: inline-flex;
           font-style: italic;
-          font-size: colors.$size14;
+          font-size: $size14;
         }
       }
       .custom-card-floor-info {
-        font-size: colors.$size14;
+        font-size: $size14;
       }
     }
   }
 
   button {
     font-family: 'Helsinki Grotesk Medium', sans-serif;
-    font-size: colors.$size16;
-    line-height: colors.$size24;
-    color: colors.$color-bus;
+    font-size: $size16;
+    line-height: $size24;
+    color: $color-bus;
     margin-top: 0;
-    margin-left: -(colors.$size4);
+    margin-left: -($size4);
 
     div {
       margin-left:0 !important;
@@ -1117,14 +1119,14 @@
   button:hover {
     --background-color-hover: $color-bus-light;
     text-decoration: underline;
-    color: colors.$color-bus;
+    color: $color-bus;
   }
 
   .rolling-text{
     font-family: 'Helsinki Grotesk Medium', sans-serif;
-    font-size: colors.$size14;
+    font-size: $size14;
     margin-top: 0;
-    margin-left: -(colors.$size4);
+    margin-left: -($size4);
     padding-left: 0;
     span{
       padding-left: 0.5rem;
@@ -1134,7 +1136,7 @@
 
 .multi-custom-card{
   .custom-card{
-    margin-bottom: colors.$size20;
+    margin-bottom: $size20;
   }
 }
 
@@ -1288,5 +1290,12 @@
     --spinner-size: 1.25rem;
     width: var(--spinner-size);
     height: var(--spinner-size);
+  }
+}
+
+.fieldset-spinner-button{
+  .loading-spinner {
+    --spinner-size: 1.5rem;
+    --spinner-thickness: 0.25rem;
   }
 }

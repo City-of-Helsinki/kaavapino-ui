@@ -1,6 +1,3 @@
-@use 'colors.scss';
-@use 'Fonts.scss';
-
 * {
   box-sizing: border-box;
 }
@@ -14,55 +11,55 @@ body {
   }
 
   ::-webkit-scrollbar-thumb {
-    border-radius: colors.$size4;
-    background: colors.$color-black-50;
+    border-radius: $size4;
+    background: $color-black-50;
   }
 
   ::-webkit-scrollbar-track {
-    background-color: colors.$border-gray1;
-    border-radius: colors.$size4;
+    background-color: $border-gray1;
+    border-radius: $size4;
   }
 }
 
 h1 {
-  font-family: 'Helsinki Grotesk Bold', sans-serif;
-  font-size: colors.$size40 !important;
-  line-height: colors.$size44;
+  font-family: 'Helsinki Grotesk Bold', sans-serif !important;
+  font-size: $size40 !important;
+  line-height: $size44 !important;
   margin: 0 !important;
-  font-weight: 700;
+  font-weight: 700 !important;
 }
 
 h2 {
-  font-family: "Helsinki Grotesk Bold", sans-serif;
-  font-size: colors.$size24 !important;
-  font-weight: 700;
-  line-height: colors.$size24;
+  font-family: "Helsinki Grotesk Bold", sans-serif !important;
+  font-size: $size24 !important;
+  font-weight: 700 !important;
+  line-height: $size24 !important;
 }
 
 h3 {
-  font-family: "Helsinki Grotesk Bold", sans-serif;
-  font-size: colors.$size18 !important;
-  font-weight: 700;
+  font-family: "Helsinki Grotesk Bold", sans-serif !important;
+  font-size: $size18 !important;
+  font-weight: 700 !important;
 }
 
 h4 {
-  font-family: "Helsinki Grotesk Bold", sans-serif;
-  font-size: colors.$size14 !important;
-  line-height: colors.$size16;
-  font-weight: 700;
+  font-family: "Helsinki Grotesk Bold", sans-serif !important;
+  font-size: $size14 !important;
+  line-height: $size16 !important;
+  font-weight: 700 !important;
   margin: 44px 0 8px;
 }
 
 .ui.button {
   font-family: "Helsinki Grotesk Medium", sans-serif;
   border-radius: 0;
-  font-size: colors.$size16;
+  font-size: $size16;
   font-weight: 500;
   height: 36px;
   letter-spacing: 0;
-  line-height: colors.$size16;
+  line-height: $size16;
   margin: 0;
-  padding: 0 colors.$size16;
+  padding: 0 $size16;
   text-align: center;
   transition: opacity 0.2s ease, border 0.2s ease, background-color 0.2s ease,
     color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease,
@@ -76,27 +73,27 @@ h4 {
 
   &.secondary {
     background: none;
-    border: 2px solid colors.$color-primary;
-    color: colors.$color-primary;
+    border: 2px solid $color-primary;
+    color: $color-primary;
 
     &:hover,
     &:focus,
     &:active {
       background-color: white;
-      border-color: colors.$color-button-emphasis;
-      color: colors.$color-button-emphasis;
+      border-color: $color-button-emphasis;
+      color: $color-button-emphasis;
     }
   }
 
   &.primary {
     color: white;
-    background-color: colors.$color-primary;
+    background-color: $color-primary;
 
     &:hover,
     &:focus,
     &:active {
       color: white;
-      background-color: colors.$color-button-emphasis;
+      background-color: $color-button-emphasis;
     }
   }
 }
@@ -108,10 +105,10 @@ h4 {
   margin: 0;
 }
 .ui.form .field {
-  margin: 0 colors.$size4 colors.$size32 0;
+  margin: 0 $size4 $size32 0;
 }
 .ui.dimmer {
-  z-index: colors.$z-index-bg-dimmer;
+  z-index: $z-index-bg-dimmer;
 }
 .ui.form input:not([type]),
 .ui.form input[type=date],
@@ -128,7 +125,7 @@ h4 {
   font-family: inherit;
   border-radius: 0;
   border-width: 2px;
-  border-color: colors.$color-black-50;
+  border-color: $color-black-50;
 }
 .ui.form input:not([type]):focus,
 .ui.form input[type=date]:focus,
@@ -157,7 +154,7 @@ h4 {
 .ui.form input[type=text]:hover,
 .ui.form input[type=time]:hover,
 .ui.form input[type=url]:hover {
-  border-color: colors.$color-black-90;
+  border-color: $color-black-90;
 }
 input[class^="Combobox-module"] {
   border: 0 !important;
@@ -176,16 +173,16 @@ input[class^="TextInput-module_input"]:focus {
 
 ul {
   &::-webkit-scrollbar-track {
-    margin: colors.$size4 0 colors.$size4 0;
+    margin: $size4 0 $size4 0;
   }
 }
 
 .project-card-container .ui.segment,
 .overview .ui.segment {
-  background-color: colors.$color-black-5;
+  background-color: $color-black-5;
   border: 0;
   border-radius: 0;
-  padding: colors.$size16 colors.$size24 colors.$size24 colors.$size24;
+  padding: $size16 $size24 $size24 $size24;
   margin-top: 0;
 }
 
@@ -200,7 +197,7 @@ ul {
 
 .project-input-container .ui.segment {
   .field.yellow {
-    border-left: 6px solid colors.$tagyellow;
+    border-left: 6px solid $tagyellow;
     margin-top: 63px;
 
     .highlight-flag {
@@ -209,13 +206,13 @@ ul {
       left: -6px;
       padding: 3px 8px 3px 10px;
       border-radius: 2px 2px 2px 0;
-      font-size: colors.$size14;
-      background-color: colors.$tagyellow;
+      font-size: $size14;
+      background-color: $tagyellow;
     }
   }
 
   span.yellow {
-    background-color: colors.$tagyellow;
+    background-color: $tagyellow;
   }
 }
 
@@ -229,7 +226,7 @@ footer{
 }
 
 .ui.segment.footer-container {
-  background: colors.$light-gray2;
+  background: $light-gray2;
   font-family: 'Helsinki Grotesk Regular', sans-serif;
 
   .footer-image {
@@ -243,41 +240,41 @@ footer{
   .footer-link-group {
     h4 {
       font-family: 'Helsinki Grotesk Bold', sans-serif;
-      font-size: colors.$size20;
+      font-size: $size20;
       color: #000000;
       text-align: left;
     }
     a {
       font-family: 'Helsinki Grotesk Regular', sans-serif;
-      font-size: colors.$size16;
+      font-size: $size16;
       color: #000000 !important;
       text-align: left;
-      line-height: colors.$size26;
+      line-height: $size26;
     }
   }
   .footer-copyright {
     font-family: 'Helsinki Grotesk Regular', sans-serif;
-    font-size: colors.$size14;
+    font-size: $size14;
     color: #666666;
     text-align: left;
-    line-height: colors.$size18;
+    line-height: $size18;
     a {
       font-family: 'Helsinki Grotesk Regular', sans-serif;
-      font-size: colors.$size14;
-      color: colors.$color-black;
+      font-size: $size14;
+      color: $color-black;
       letter-spacing: 0;
-      text-decoration: underline colors.$color-black;
-      line-height: colors.$size24;
+      text-decoration: underline $color-black;
+      line-height: $size24;
     }
   }
   .footer-feedback {
     a {
       font-family: 'Helsinki Grotesk Regular', sans-serif;
-      font-size: colors.$size14;
-      color: colors.$color-black;
+      font-size: $size14;
+      color: $color-black;
       letter-spacing: 0;
-      text-decoration: underline colors.$color-black;
-      line-height: colors.$size24;
+      text-decoration: underline $color-black;
+      line-height: $size24;
       text-align: right;
     }
   }
@@ -297,7 +294,7 @@ footer{
     &.small,
     &.tiny {
       left: 50%;
-      top: colors.$size24;
+      top: $size24;
       transform: translateX(-50%);
       max-width: calc(100vw - 48px);
       height: 80vh;
@@ -307,8 +304,8 @@ footer{
 
       > .header {
         border-bottom: 0;
-        font-size: colors.$size24;
-        line-height: colors.$size24;
+        font-size: $size24;
+        line-height: $size24;
         margin: 16px 0;
         padding: 0;
       }
@@ -324,8 +321,8 @@ footer{
       position: relative;
       float: right;
       margin-right: 0;
-      margin-top: colors.$size16;
-      color: colors.$color-black;
+      margin-top: $size16;
+      color: $color-black;
     }
     .content {
       margin-left: 0;
@@ -340,18 +337,18 @@ footer{
       padding: 0;
 
       .button:not(:first-child) {
-        margin-left: colors.$size16;
+        margin-left: $size16;
       }
     }
   }
 
   .warning-box {
-    background-color: colors.$color-warning;
+    background-color: $color-warning;
     border-radius: 2px;
-    border: 1px solid colors.$color-warning2;
-    color: colors.$color-black;
-    font-size: colors.$size16;
-    margin-top: colors.$size16;
+    border: 1px solid $color-warning2;
+    color: $color-black;
+    font-size: $size16;
+    margin-top: $size16;
     padding: 16px 32px;
   }
 
@@ -379,7 +376,7 @@ footer{
         margin: 66px 56px 80px;
 
         .button:not(:first-child) {
-          margin-left: colors.$size20;
+          margin-left: $size20;
         }
       }
 
@@ -399,10 +396,10 @@ footer{
 }
 .popup-logger {
   .show-value {
-    padding-bottom: colors.$size20;
+    padding-bottom: $size20;
   }
   .field-value {
-    border: 1px solid colors.$color-black-20;
+    border: 1px solid $color-black-20;
     padding: 2px;
   }
   width: 500px;
@@ -411,23 +408,23 @@ footer{
 .header {
   margin-bottom: 0;
   --header-background-color: transparent;
-  border-bottom: 1px solid colors.$light-gray;
-  font-size: colors.$size16;
+  border-bottom: 1px solid $light-gray;
+  font-size: $size16;
   font-family: "Helsinki Grotesk Regular", sans-serif;
   a{
-    font-size: colors.$size16;
+    font-size: $size16;
   }
   [aria-label='Kaavapino']{
-    color: colors.$color-black;
+    color: $color-black;
   }
   #hds-mobile-menu{
     z-index: 4;
   }
   .header-nav-item:hover{
-    color: colors.$color-black;
+    color: $color-black;
   }
   .header-nav-item.active:after{
-    background-color:colors.$color-bus;
+    background-color:$color-bus;
     --item-active-color:$color-bus;
     bottom: 0;
     content: "";
@@ -438,7 +435,7 @@ footer{
     width: 100%;
   }
   .header-nav-item:hover:after{
-    background-color:colors.$color-black;
+    background-color:$color-black;
     --item-active-color:$color-bus;
     bottom: 0;
     content: "";
@@ -460,8 +457,8 @@ header{
 .edit-page-header{
   header{
     --header-height: 56px;
-    border-bottom: 2px solid colors.$color-suomenlinna;
-    z-index: colors.$z-index-sticky;
+    border-bottom: 2px solid $color-suomenlinna;
+    z-index: $z-index-sticky;
     div:nth-child(3){
       div:nth-child(1){
         div:first-of-type{
@@ -479,9 +476,9 @@ header{
   }
   div:not(.spinner-container,.spinner-container *){
     cursor: default;
-    background-color: colors.$color-bus-light;
-    color: colors.$black;
-    font-size: colors.$size16;
+    background-color: $color-bus-light;
+    color: $black;
+    font-size: $size16;
     border: none !important;
     .edit-page-title{
       display: flex;
@@ -490,15 +487,15 @@ header{
       margin-left: 0 !important;
       p{
         font-family: "Helsinki Grotesk Medium", sans-serif;
-        color: colors.$black1;
-        font-size: colors.$size16;
-        line-height: colors.$size24;
+        color: $black1;
+        font-size: $size16;
+        line-height: $size24;
         letter-spacing: 0.5px;
       }
       span{
         font-family: "Helsinki Grotesk Regular", sans-serif;
-        font-size: colors.$size12;
-        color: colors.$black1;
+        font-size: $size12;
+        color: $black1;
         letter-spacing: 0.375px;
       }
     }
@@ -506,24 +503,24 @@ header{
       font-family: "Helsinki Grotesk Medium", sans-serif;
       padding-right: 0;
       .spinner-container{
-        font-size: colors.$size16;
+        font-size: $size16;
         display: flex;
         justify-content: flex-start;
         visibility: hidden;
         padding-right: 15px;
-        color: colors.$color-error;
+        color: $color-error;
         span{
           font-family: "Helsinki Grotesk Medium", sans-serif;
-          font-size: colors.$size16;
+          font-size: $size16;
           padding-left: 10px;
         }
       
       }
       p{
         font-family: "Helsinki Grotesk Medium", sans-serif;
-        font-size: colors.$size16;
+        font-size: $size16;
         padding-left: 8px;
-        color: colors.$dropdown-text-color;
+        color: $dropdown-text-color;
       }
       .check-icon{
         display: flex;
@@ -532,7 +529,7 @@ header{
   }
   &.edit-header-dev {
     div:not(.spinner-container,.spinner-container *){
-    background-color: colors.$color-brick-light;
+    background-color: $color-brick-light;
     }
   }
   svg{
@@ -540,21 +537,21 @@ header{
   }
   button{
     font-family: "Helsinki Grotesk Medium", sans-serif;
-    color: colors.$color-bus;
+    color: $color-bus;
     pointer-events: auto;
     div{
       margin-left: -10px !important;
     }
     svg{
       display: inline-block;
-      color: colors.$color-bus;
+      color: $color-bus;
     }
   }
   button:hover{
-    color: colors.$color-bus;
+    color: $color-bus;
     text-decoration: underline;
     span{
-      color: colors.$color-bus;
+      color: $color-bus;
     }
   }
   button:after{
@@ -564,14 +561,14 @@ header{
     background-color: unset !important;
   }
   .error{
-    color: colors.$color-error !important;
+    color: $color-error !important;
   }
 }
 
 .document-page-header {
   header{
     --header-height: 56px;
-    z-index: colors.$z-index-sticky;
+    z-index: $z-index-sticky;
   }
 
   nav {
@@ -580,7 +577,7 @@ header{
 
   div:not(.spinner-container,.spinner-container *) {
     cursor: default;
-    font-size: colors.$size16;
+    font-size: $size16;
     border: none !important;
   }
 
@@ -590,7 +587,7 @@ header{
 
   button {
     font-family: "Helsinki Grotesk Medium", sans-serif;
-    color: colors.$color-bus;
+    color: $color-bus;
     pointer-events: auto;
 
     div {
@@ -599,18 +596,18 @@ header{
 
     svg {
       display: inline-block;
-      color: colors.$color-bus;
+      color: $color-bus;
     }
   }
 
   button:hover,
   button:active:hover {
-    color: colors.$color-bus;
+    color: $color-bus;
     text-decoration: underline;
     background-color: transparent;
 
     span {
-      color: colors.$color-bus;
+      color: $color-bus;
     }
   }
 
@@ -629,7 +626,7 @@ header{
   justify-content: flex-start;
   padding-top: 4px;
   svg{
-    color: colors.$color-bus;
+    color: $color-bus;
     margin-left: 4px;
   }
 }
@@ -638,7 +635,7 @@ header{
   display: flex;
   align-items: center;
   font-family: "Helsinki Grotesk Medium", sans-serif;
-  color: colors.$color-bus;
+  color: $color-bus;
   text-decoration: underline;
   cursor: pointer;
   font-weight: 500;
@@ -648,7 +645,7 @@ header{
   display: flex;
   align-items: center;
   font-family: "Helsinki Grotesk Medium", sans-serif;
-  color: colors.$color-bus;
+  color: $color-bus;
   text-decoration: underline;
   font-weight: 500;
 }
@@ -747,8 +744,8 @@ header{
       }
 
       .nav-header-info {
-        font-size: colors.$size14;
-        line-height: colors.$size24;
+        font-size: $size14;
+        line-height: $size24;
         margin-top: 0;
         padding-right: 20px;
 
@@ -770,11 +767,11 @@ header{
         }
 
         button{
-          font-size: colors.$size16;
+          font-size: $size16;
           font-family: 'Helsinki Grotesk Medium', sans-serif;
         }
         button:focus-within{
-          box-shadow: 0 0 0 3px colors.$color-coat-of-arms;
+          box-shadow: 0 0 0 3px $color-coat-of-arms;
         }
       }
 
@@ -788,38 +785,38 @@ header{
           width: 320px;
           left: -117px;
           bottom: -6px;
-          border: 1px solid colors.$border-black;
-          -webkit-box-shadow:0px 2px 8px colors.$dropdown-blur-color;
-          -moz-box-shadow:0px 2px 8px colors.$dropdown-blur-color;
-          box-shadow:0px 2px 8px colors.$dropdown-blur-color;
+          border: 1px solid $border-black;
+          -webkit-box-shadow:0px 2px 8px $dropdown-blur-color;
+          -moz-box-shadow:0px 2px 8px $dropdown-blur-color;
+          box-shadow:0px 2px 8px $dropdown-blur-color;
           li{
-            color: colors.$dropdown-text-color;
+            color: $dropdown-text-color;
             background-color:white;
             padding-left: 14px;
             justify-content: flex-start;
             min-height: 42px;
             padding-top: 0;
             padding-bottom: 0;
-            font-size: colors.$size16;
+            font-size: $size16;
             i{
-              color: colors.$dropdown-icon-color;
+              color: $dropdown-icon-color;
               margin-right: 14px;
-              font-size: colors.$size16;
+              font-size: $size16;
             }
           }
           li:nth-child(4){
-            border-top: 1px solid colors.$dropdown-divider-color;
+            border-top: 1px solid $dropdown-divider-color;
           }
           #editNavSelect-item-5{
-            color:colors.$color-error;
-            border-top: 1px solid colors.$dropdown-divider-color;
+            color:$color-error;
+            border-top: 1px solid $dropdown-divider-color;
             i{
-              color: colors.$color-error;
+              color: $color-error;
             }
           }
           li:hover{
-            color: colors.$color-white !important;
-            background-color:colors.$color-bus !important;
+            color: $color-white !important;
+            background-color:$color-bus !important;
           }
 
         }
@@ -831,15 +828,15 @@ header{
       table{
         border-spacing: 4px;
         tr{
-          font-size: colors.$size16;
+          font-size: $size16;
           font-family: 'Helsinki Grotesk Bold', sans-serif;
-          color: colors.$dropdown-text-color;
+          color: $dropdown-text-color;
           text-align: left;
         }
         td{
-          font-size: colors.$size16;
+          font-size: $size16;
           font-family: 'Helsinki Grotesk Regular', sans-serif;
-          color: colors.$dropdown-text-color;
+          color: $dropdown-text-color;
           padding-left: 32px;
           a{
             svg{
@@ -853,8 +850,8 @@ header{
     .nav-header-actions {
       display: flex;
       flex-wrap: wrap;
-      margin-top: colors.$size12;
-      margin-bottom: colors.$size12;
+      margin-top: $size12;
+      margin-bottom: $size12;
       justify-content: flex-end;
       width: 100%;
 
@@ -863,13 +860,13 @@ header{
         white-space: nowrap;
 
         > svg {
-          margin-right: colors.$size16;
-          width: colors.$size24;
-          height: colors.$size24;
+          margin-right: $size16;
+          width: $size24;
+          height: $size24;
         }
 
         @media screen and (max-width: 599px) {
-          font-size: colors.$size12;
+          font-size: $size12;
           height: 32px;
           margin-left: 8px;
         }
@@ -887,15 +884,15 @@ header{
     margin-left: 0 !important;
   }
   a {
-    font-size: colors.$size16;
+    font-size: $size16;
     font-family: "Helsinki Grotesk Regular", sans-serif;
     justify-content: left;
-    padding-left: colors.$size20;
+    padding-left: $size20;
     padding-bottom: 30px;
   }
   a:hover{
-    font-size: colors.$size16;
-    color: colors.$color-black;
+    font-size: $size16;
+    color: $color-black;
     text-decoration: underline;
   }
   span{
@@ -910,15 +907,15 @@ header{
 .align-right{
   a{
     font-family: "Helsinki Grotesk Regular", sans-serif;
-    font-size: colors.$size16;
+    font-size: $size16;
   }
   a:hover{
-    font-size: colors.$size16;
-    color: colors.$color-black;
+    font-size: $size16;
+    color: $color-black;
     text-decoration: underline;
   }
   button{
-    font-size: colors.$size16;
+    font-size: $size16;
     font-family: "Helsinki Grotesk Regular", sans-serif;
   }
 }
@@ -945,7 +942,7 @@ header{
   }
 }
 .log-card {
-  font-size: colors.$size16;
+  font-size: $size16;
   max-width: 320px;
   max-height: 200px;
   width: 100%;
@@ -975,7 +972,7 @@ header{
 
 
   .icon-area {
-    background-color: colors.$yellow2;
+    background-color: $yellow2;
     display: inline-flex;
     padding-left: 10px;
     padding-right: 10px;
@@ -986,7 +983,7 @@ header{
     
   }
   .content {
-    background-color: colors.$yellow;
+    background-color: $yellow;
     display: inline-flex;
 
     .text {
@@ -1009,7 +1006,7 @@ header{
 }
 
 .required-error-text{
-  color: colors.$color-error;
+  color: $color-error;
   svg{
     vertical-align: bottom;
     margin-right: 5px;
@@ -1017,7 +1014,7 @@ header{
 }
 
 .required-success-text{
-  color: colors.$color-success;
+  color: $color-success;
   svg{
     vertical-align: bottom;
     margin-right: 5px;
@@ -1026,13 +1023,13 @@ header{
 
 .italic-text{
   font-style: italic;
-  font-size: colors.$size14;
+  font-size: $size14;
 }
 
 .assistive{
-  color: colors.$color-black-60;
+  color: $color-black-60;
   padding-top: 8px;
-  padding-bottom: colors.$size16;
+  padding-bottom: $size16;
 }
 
 .Toastify__toast-container--top-right {
@@ -1041,8 +1038,8 @@ header{
 }
 
 .assistive-text{
-  color: colors.$color-black-60;
-  margin-top: colors.$size8;
+  color: $color-black-60;
+  margin-top: $size8;
 }
 
 .tooltip {
@@ -1060,31 +1057,31 @@ header{
   margin: auto;
   max-width: 558px;
   max-height: 245px;
-  border-top:4px solid colors.$color-bus;
+  border-top:4px solid $color-bus;
 
   .header{
     display: flex;
     align-items: center;
     justify-content: flex-start;
     font-family: 'Helsinki Grotesk Medium', sans-serif;
-    font-size: colors.$size18 !important;
+    font-size: $size18 !important;
     font-weight: 700 !important;
-    line-height: colors.$size18 !important;
+    line-height: $size18 !important;
     letter-spacing: 0.004em;
     text-align: left;
-    color: colors.$black1;
+    color: $black1;
     padding-top: 0;
     .header-icon{
-      width: colors.$size24;
-      height: colors.$size24;
+      width: $size24;
+      height: $size24;
     }
   }
 
   .header, .content, .actions {
-    padding-left: colors.$size32 !important;
-    margin-left: colors.$size16 !important;
-    margin-bottom: colors.$size24 !important;
-    margin-top: colors.$size24 !important;
+    padding-left: $size32 !important;
+    margin-left: $size16 !important;
+    margin-bottom: $size24 !important;
+    margin-top: $size24 !important;
   }
 
   .actions {
@@ -1092,7 +1089,7 @@ header{
     justify-content: flex-start;
 
     .button-primary,.button-danger,.button-secondary {
-      margin-right: colors.$size16;
+      margin-right: $size16;
     }
   }
 }
@@ -1108,37 +1105,37 @@ header{
   min-height: 200px;
   height: fit-content;
   max-height: 250px;
-  border-top:8px solid colors.$color-error;
+  border-top:8px solid $color-error;
 
   .header{
-    padding-top: colors.$size34 !important;
-    padding-left: colors.$size34 !important;
-    padding-bottom: colors.$size16 !important;
+    padding-top: $size34 !important;
+    padding-left: $size34 !important;
+    padding-bottom: $size16 !important;
     border-bottom: none;
     display: flex;
     align-items: center;
     justify-content: flex-start;
     font-family: 'Helsinki Grotesk Medium', sans-serif;
-    font-size: colors.$size18 !important;
+    font-size: $size18 !important;
     font-weight: 700 !important;
-    line-height: colors.$size18 !important;
+    line-height: $size18 !important;
     letter-spacing: 0.004em;
     text-align: left;
-    color: colors.$black1;
+    color: $black1;
     .header-text {
       margin-left: 8px;
     }
     .header-icon{
-      width: colors.$size24;
-      height: colors.$size24;
+      width: $size24;
+      height: $size24;
     }
   }
 
   .content {
     font-weight: 400;
-    font-size: colors.$size16;
-    line-height: colors.$size24;
-    padding-left: colors.$size34 !important;
+    font-size: $size16;
+    line-height: $size24;
+    padding-left: $size34 !important;
     margin-left: 0 !important;
   }
 
@@ -1146,16 +1143,16 @@ header{
     display: flex;
     justify-content: flex-start;
     margin: 0 !important;
-    padding-left: colors.$size34 !important;
-    padding-top: colors.$size16 !important;
-    padding-bottom: colors.$size24 !important;
+    padding-left: $size34 !important;
+    padding-top: $size16 !important;
+    padding-bottom: $size24 !important;
 
     .button-primary,.button-danger,.button-secondary {
-      margin-right: colors.$size16;
+      margin-right: $size16;
     }
     .button-secondary{
-      border: 2px solid colors.$color-error;
-      color: colors.$color-error
+      border: 2px solid $color-error;
+      color: $color-error
     }
   }
 }
