@@ -375,7 +375,7 @@ const FieldSet = ({
                 })}
                 {(!disable_fieldset_delete_add && !automatically_added && !disabled) && (
                   <Button
-                    className={fieldsetDisabled ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'}
+                    className={hiding ? "hidden" : fieldsetDisabled ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'}
                     disabled={sets.length < 1 || disabled || fieldsetDisabled}
                     variant="secondary"
                     size='small'
@@ -385,9 +385,10 @@ const FieldSet = ({
                     }}
                   > {t('project.remove')}</Button>
                 )}
-                {saving && hiding && (
+                {hiding && (
                 <div className="fieldset-spinner-remove">
                   <LoadingSpinner className="loading-spinner" />
+                  {t('project.deleting')}
                 </div>
                 )}
                   <div className='close-accordion-button'>

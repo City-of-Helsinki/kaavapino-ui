@@ -1287,9 +1287,11 @@
   margin-left: 0.5rem;
   margin-top: 2rem;
   .loading-spinner {
-    --spinner-size: 1.25rem;
+    --spinner-size: 1.5rem;
+    --spinner-thickness: 0.25rem;
     width: var(--spinner-size);
     height: var(--spinner-size);
+    margin-right: 0.5rem;
   }
 }
 
