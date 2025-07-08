@@ -1,5 +1,3 @@
-@import '../common/colors.scss';
-
 .hightlight-pääkäyttäjä {
   .Pääkäyttäjät {
     outline: 20px $yellow solid;
@@ -233,7 +231,7 @@
 
     .filter-tag-container {
       padding: $size4 0;
-      margin: 0 (-$size8);
+      margin: 0 (-($size8));
     }
   
     .filter-tag{
@@ -513,8 +511,8 @@
         font-family: "Helsinki Grotesk Medium", sans-serif;
         color: $color-error;
         margin-top: $size32;
-        margin-left: -$size8;
-        margin-bottom: -$size12;
+        margin-left: -($size8);
+        margin-bottom: -($size12);
         padding-left: 0;
 
         div{
@@ -545,13 +543,12 @@
 
 .modal-center-big{
   max-height: 98vh;
-  height: 100%;
-  width: 99% !important;
-  margin: 0 auto !important;
+  width: stretch !important;
+  margin: 0 16px !important;
   position: relative !important;
   font-family: 'Helsinki Grotesk Regular', sans-serif !important;
-  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
-
+  box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.25) !important;
+  overflow: hidden;
   .header{
     display: flex !important;
     font-family: 'Helsinki Grotesk Bold', sans-serif !important;
@@ -573,7 +570,8 @@
   }
 
   .content{
-    height: 75vh;
+    // height of the modal - header height - footer height
+    height: calc(98vh - 176px);
     padding-bottom: 0px !important;
     margin-left: 0px !important;
     margin-right: 28px !important;
@@ -600,11 +598,11 @@
     .timeline-group-header {
       left: 0;
       position: absolute;
-      top: 154px;
+      top: 142px;
       background-color: white;
       z-index: 100;
       height: 85px;
-      width: 302px;
+      width: 291px;
       border-right: 1px solid #CCCCCC;
       border-bottom: 1px solid #CCCCCC;
       span {
@@ -640,9 +638,12 @@
       flex-flow: wrap;
       width: 289px;
       position: absolute;
+      left: 254px !important;
+      margin-top: 4px;
       border: 1px solid #ccc;
       background-color: white;
-      box-shadow: 0px 2px 8px 0px #00000080;
+      box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.5);
+
       padding: 0;
       z-index: 1000;
       button{
@@ -657,7 +658,7 @@
         justify-content: flex-start;
         margin:0;
         div{
-          margin:$size10;
+          margin: $size12;
         }
         span{
           color: $black1;
@@ -665,13 +666,14 @@
           font-size: $size16;
           font-weight: 400;
           line-height: $size24;
-          padding-left: 2px !important;
+          padding-left: 0 !important;
         }
       }
       .disabled{
         color: $color-black-40 !important;
         cursor: not-allowed;
         pointer-events: none;
+        border: none;
         span {
           color: $color-black-40 !important;
         }
@@ -692,27 +694,41 @@
       line-height: $size17;
       letter-spacing: 0.03em;
     }
+
+    .vis-tooltip {
+      visibility: hidden !important;
+    }
   }
 
   .actions{
+    position: absolute;
+    width: stretch;
+    height: 104px;
     display: flex;
-    position: relative;
     bottom: 0;
     left: 0;
     margin: 0px 0 0 0 !important;
     border-top: 1px solid #808080 !important;
+    background-color: #fff !important;
     .form-buttons{
-      margin-top: $size24;
-      margin-bottom: $size24;
+      margin-top: 24px;
+      margin-bottom: 24px;
       margin-left: 22px;
       button {
         height: 56px;
         &:last-child {
           margin-left: $size16;
-          &:hover {
+          &:not(:disabled):hover {
             border-color: $color-bus;
+            color: $color-bus;
           }
         }
+        &:disabled {
+          cursor: progress;
+        }
+      }
+      button:disabled{
+        cursor: progress;
       }
       span {
         line-height: $size24;
@@ -728,11 +744,11 @@
   position: relative !important;
   margin-top: 70px !important;
   overflow-y: auto; */
-  max-height: 75vh;
+  height: calc(98% - 177px);
   max-width: 529px !important;
   position: absolute !important;
   top: 83px;
-  right: 9px;
+  right: 16px;
   left: auto;
   overflow-y: auto;
   overflow-x: hidden;

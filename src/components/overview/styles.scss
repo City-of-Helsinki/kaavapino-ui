@@ -1,4 +1,3 @@
-@import '../common/colors.scss';
 .overview {
   margin: 0 auto;
   max-width: 1200px;
@@ -84,7 +83,7 @@
   }
 
   .ui.grid {
-    margin: -$size16;
+    margin: -($size16);
   }
 }
 .floor-area {
@@ -201,6 +200,6 @@
   }
 
   .ui.grid {
-    margin: -$size12;
+    margin: -($size12);
   }
 }
