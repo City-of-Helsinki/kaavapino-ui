@@ -1205,96 +1205,140 @@ header{
 }
 
 .redux-toastr {
-  .toastr.rrt-success {
-    background-color: #e3f5f3 !important;
-    border-top: 8px solid #1e6957 !important;
-    border-radius: 0 !important;
-    padding: 6px 16px;
-    max-width: 360px;
-    width: 100%;
-    display: flex;
-    align-items: flex-start;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    min-height: 84px;
-
-    > div {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+  .toastr {
+    &.rrt-success,
+    &.rrt-info,
+    &.rrt-error,
+    &.rrt-warning {
+      border-radius: 0 !important;
+      padding: 6px 16px;
+      max-width: 360px;
       width: 100%;
-    }
-
-    .rrt-left-container {
-      position: relative;
-      width: auto;
-      top: unset;
-      left: unset;
-      bottom: unset;
-      display: flex;
-      padding: 0 !important;
-      .rrt-holder{
-        width: auto;
-        height: auto;
-        position: relative;
-        top: unset;
-        margin-top: unset;
-        left: unset;
-        line-height: unset;
-      }
-
-      .toastr-icon {
-        width: 20px !important;
-        height: 20px !important;
-        padding: 3px;
-        margin: 0;
-        background-color: #1e6957;
-        border-radius: 50%;
-        fill: #ebebeb;
-        display: inline-block;
-      }
-    }
-
-    .rrt-middle-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      margin-left: auto;
-      font-family: 'Helsinki Grotesk Bold', sans-serif;
-      padding: 10px 10px !important;
-      top: 0;
-      .rrt-title {
-        font-size: 15px;
-        font-weight: 600;
-        line-height: 1.3;
-        margin: 0;
-        color: #1a1a1a;
-      }
-
-      .rrt-message {
-        font-size: 14px;
-        color: #1a1a1a;
-        margin-top: 4px;
-      }
-    }
-
-    .rrt-right-container {
-      margin-left: 8px;
       display: flex;
       align-items: flex-start;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      min-height: 84px;
 
-      .close-toastr {
-        color: #000 !important;
-        font-size: 18px;
-        cursor: pointer;
-        opacity: 1;
-        padding: 0;
-        line-height: 1;
-        span{
-          top: 26px;
+      > div {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .rrt-left-container {
+        position: relative;
+        width: auto;
+        top: unset;
+        left: unset;
+        bottom: unset;
+        display: flex;
+        padding: 0 !important;
+
+        .rrt-holder {
+          width: auto;
+          height: 24px !important;
+          position: relative;
+          top: unset;
+          margin-top: unset;
+          left: unset;
+          line-height: unset;
+        }
+
+        .toastr-icon {
+          width: 24px !important;
+          height: 24px !important;
+          padding: 3px;
+          margin: 0;
+          border-radius: 50%;
+          display: inline-block;
+        }
+      }
+
+      .rrt-middle-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        margin-left: auto;
+        font-family: 'Helsinki Grotesk Bold', sans-serif;
+        padding: 10px 10px !important;
+        top: 0;
+
+        .rrt-title {
+          font-size: 15px;
+          font-weight: 600;
+          line-height: 1.3;
+          margin: 0;
+          color: #1a1a1a;
+        }
+
+        .rrt-message {
+          font-size: 14px;
+          color: #1a1a1a;
+          margin-top: 4px;
+        }
+      }
+
+      .rrt-right-container {
+        margin-left: 8px;
+        display: flex;
+        align-items: flex-start;
+
+        .close-toastr {
+          color: #000 !important;
           font-size: 18px;
-          font-weight: 900;
-          margin-right: 20px;
+          cursor: pointer;
+          opacity: 1;
+          padding: 0;
+          line-height: 1;
+
+          span {
+            top: 26px;
+            font-size: 18px;
+            font-weight: 900;
+            margin-right: 20px;
+          }
+        }
+      }
+    }
+
+    &.rrt-success {
+      background-color: #e2f5f3 !important;
+      border-top: 8px solid #277a64 !important;
+      .rrt-holder{
+        svg{
+         color: #277a64;
+        }
+      }
+    }
+
+    &.rrt-info {
+      background-color: #e5eff8 !important;
+      border-top: 8px solid #2b62b9 !important;
+      .rrt-holder{
+        svg{
+         color: #2b62b9;
+        }
+      }
+    }
+
+    &.rrt-error {
+      background-color: #f6e2e6 !important;
+      border-top: 8px solid #b01039 !important;
+      .rrt-holder{
+        svg{
+         color: #b01039;
+        }
+      }
+    }
+
+    &.rrt-warning {
+      background-color: #fcf4b4 !important;
+      border-top: 8px solid #d18202 !important;
+      .rrt-holder{
+        svg{
+         color: #d18202;
         }
       }
     }

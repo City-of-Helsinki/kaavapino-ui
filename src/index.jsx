@@ -11,7 +11,6 @@ import 'react-redux-toastr/lib/css/react-redux-toastr.min.css'
 import 'hds-core'
 import './main.scss'
 import './i18n'
-import {IconCheck} from 'hds-react'
 
 // Software uses semanctic-ui-react as a global style. In the end of 2021 the idea was to change components use
 // hds-rect. However since hds-react implementation was only started then, it did not have all the required
@@ -39,7 +38,6 @@ root.render(
           transitionIn="fadeIn"
           transitionOut="fadeOut"
           timeOut={7500}
-          icon={<IconCheck />}
         />
         <Suspense fallback='Loading'>
           <App />
