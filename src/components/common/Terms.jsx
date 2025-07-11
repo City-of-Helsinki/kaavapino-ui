@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Container, Segment } from 'semantic-ui-react'
 
 class Terms extends Component {
   constructor(props) {
@@ -14,8 +13,8 @@ class Terms extends Component {
   }
   render() {
     return (
-      <Container centered>
-        <Segment>
+      <div style={{ maxWidth: '1127px', margin: '0 auto', padding: '2rem' }}>
+        <div>
           <p>
             <strong>Alustava versio käyttöehdoiksi, 15.6.2020 Arja Kasanen</strong>
           </p>
@@ -107,8 +106,8 @@ class Terms extends Component {
           </p>
           <p>Kieltäydy hyväksymästä ehtoja</p>
           <p>Hyväksyn nämä ehdot</p>
-        </Segment>
-      </Container>
+        </div>
+      </div>
     )
   }
 }

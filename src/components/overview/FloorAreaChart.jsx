@@ -14,7 +14,6 @@ import {
 } from 'recharts'
 import { useTranslation } from 'react-i18next'
 import FilterList from './Filters/FilterList'
-import { Grid, Popup } from 'semantic-ui-react'
 import { isNaN, isEqual, isArray } from 'lodash'
 import {
   getFloorAreaChartData,
@@ -37,10 +36,11 @@ import {
   getProjectsOverviewFloorAreaTargets
 } from '../../actions/projectActions'
 import { connect } from 'react-redux'
-import { LoadingSpinner, Button } from 'hds-react'
+import { LoadingSpinner } from 'hds-react'
 import { withRouter } from 'react-router-dom'
 import dayjs from 'dayjs'
 import Legends from './Legends'
+import ClickPopover from '../common/ClickPopover'
 function FloorAreaChart({
   filters,
   chartData,
@@ -167,34 +167,32 @@ function FloorAreaChart({
     const renderList = () => {
       const rects = []
       for (let index = 1; index <= value; index++) {
-        let currentY = y + index * currentHeight - currentHeight
         rects.push(
-          <Popup
-            on="click"
+          <ClickPopover
             key={index + props.payload.date}
+            offsetY={+175}// gap between rect & card
             trigger={
-              <g key={index}>
+              <>
                 <rect
                   x={x}
-                  y={currentY}
+                  y={y}
                   width={width}
                   height={currentHeight - 3}
-                  stroke="none"
+                  stroke="black"
+                  strokeWidth={1}
                   fill={getProjectColour(index)}
                   className="bar"
-                  style={{ stroke: 'black', strokeWidth: 1 }}
-                  data-for="test"
-                ></rect>
-              </g>
+                />
+              </>
             }
-          >
-            {renderPopupValue(index)}
-          </Popup>
+            content={renderPopupValue(index)}
+          />
         )
       }
 
       return rects
     }
+    
     const getProjectInformation = index => {
       const dailyStats = chartData && chartData.daily_stats
 
@@ -225,68 +223,51 @@ function FloorAreaChart({
       return project && project.phase.color_code
     }
 
-    const renderPopupValue = index => {
-      const project = getProjectInformation(index)
-
-      if (!project) {
-        return null
-      }
+    const renderPopupValue = (index) => {
+      const project = getProjectInformation(index);
+      if (!project) return null;
 
       return (
-        <Grid columns="equal" className="tooltip">
-          <Grid.Row>
-            <Grid.Column>{project.pino_number}</Grid.Column>
-          </Grid.Row>
-          <Grid.Row>
-            <Grid.Column className="header">{project.name}</Grid.Column>
-          </Grid.Row>
-          <Grid.Row>
-            <Grid.Column>{t('floor-area.tooltip.phase')}</Grid.Column>
-            <Grid.Column textAlign="right">
-              <span
-                style={{ backgroundColor: project.phase.color_code }}
-                className="dot"
-              ></span>
-              <span className="value">{project.phase.name}</span>
-            </Grid.Column>
-          </Grid.Row>
-          <Grid.Row>
-            <Grid.Column>{t('floor-area.tooltip.process-size')}</Grid.Column>
-            <Grid.Column className="value" textAlign="right">
-              {project.subtype.name}
-            </Grid.Column>
-          </Grid.Row>
-          <Grid.Row>
-            <Grid.Column>{t('floor-area.tooltip.responsible-person')}</Grid.Column>
-            <Grid.Column className="value" textAlign="right">
-              {project.user_name}
-            </Grid.Column>
-          </Grid.Row>
-          <Grid.Row>
-            <Grid.Column className="button-area">
-              <Button
-                onClick={() => goToProjectCard(project.id)}
-                className="tooltip-button"
-                variant="supplementary"
+        <div className="popup-grid">
+          <div className='row-full'>
+            <div className="bold">{project.pino_number}</div>
+            <div className="name">{project.name}</div>
+          </div>
+
+          <div className="label"> {t('floor-area.tooltip.phase')} </div>
+          <div className="value">
+            <span
+              className="dot"
+              style={{ backgroundColor: project.phase.color_code }}
+            />
+            <span>{project.phase.name}</span>
+          </div>
+
+          <div className="label">{t('floor-area.tooltip.process-size')}</div>
+          <div className="value">{project.subtype.name}</div>
+
+          <div className="label">{t('floor-area.tooltip.responsible-person')}</div>
+          <div className="value">{project.user_name}</div>
+
+          <div className="row-full actions">
+            <button
+              className="popup-button"
+              onClick={() => goToProjectCard(project.id)}
+            >
+              {t('floor-area.tooltip.show-project-card')}
+            </button>
+            {isPrivileged && (
+              <button
+                className="popup-button"
+                onClick={() => goToProjectEdit(project.id)}
               >
-                {t('floor-area.tooltip.show-project-card')}
-              </Button>
-            </Grid.Column>
-            <Grid.Column className="button-area" textAlign="right">
-              {isPrivileged && (
-                <Button
-                  onClick={() => goToProjectEdit(project.id)}
-                  className="tooltip-button"
-                  variant="supplementary"
-                >
-                  {t('floor-area.tooltip.modify')}
-                </Button>
-              )}
-            </Grid.Column>
-          </Grid.Row>
-        </Grid>
-      )
-    }
+                {t('floor-area.tooltip.modify')}
+              </button>
+            )}
+          </div>
+        </div>
+      );
+    };
 
     const rects = renderList()
 

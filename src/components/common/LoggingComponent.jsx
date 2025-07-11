@@ -260,7 +260,7 @@ function LoggingComponent(props) {
                   <div className="log-column-info">
                     <Tooltip
                       key={index}
-                      placement="auto"
+                      placement="right"
                       className="popup-logger"
                       buttonLabel="Show logging details"
                     >
