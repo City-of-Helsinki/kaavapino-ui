@@ -5,13 +5,13 @@ import './styles.scss'
 
 function DropdownFilter({
   name,
-  defaultValue,
-  options,
-  placeholder,
-  onChange,
-  disabled,
+  defaultValue = null,
+  options = [],
+  placeholder = '',
+  onChange = () => {},
+  disabled = false,
   multiSelect = true,
-  yearSelect
+  yearSelect = false
 }) {
   const [currentValue, setCurrentValue] = useState()
   const [currentParameter, setCurrentParameter] = useState()

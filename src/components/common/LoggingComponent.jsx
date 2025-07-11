@@ -1,6 +1,5 @@
 import React from 'react'
 import { isArray, isObject } from 'lodash'
-import { Popup, Grid } from 'semantic-ui-react'
 import { useTranslation } from 'react-i18next'
 import { QuillDeltaToHtmlConverter } from 'quill-delta-to-html'
 import parse from 'html-react-parser'
@@ -11,7 +10,8 @@ import {
   IconAngleUp,
   IconAngleDown,
   IconInfoCircle,
-  IconTrash
+  IconTrash,
+  Tooltip
 } from 'hds-react'
 
 import dayjs from 'dayjs'
@@ -244,7 +244,7 @@ function LoggingComponent(props) {
         </Button>
       )}
       <Card border aria-label="Loki" className="log-card" {...contentProps}>
-        <Grid stackable columns="equal">
+        <div className="log-grid">
           {infoOptions &&
             infoOptions.map((option, index) => {
               if (option.type === "fieldset") {
@@ -253,57 +253,51 @@ function LoggingComponent(props) {
                 filterFieldsetValues(option.newValue, option.oldValue);
               }
               return (
-                <Grid.Row key={option + index}>
-                  <Grid.Column width={14}>
+                <div key={option + index} className="log-row">
+                  <div className="log-column-main">
                     <div className="show-value">{option.text}</div>
-                  </Grid.Column>
-                  <Grid.Column>
-                    <Popup
-                      hideOnScroll={false}
-                      offset={[50, 50]}
+                  </div>
+                  <div className="log-column-info">
+                    <Tooltip
                       key={index}
-                      on="click"
+                      placement="right"
                       className="popup-logger"
-                      position="right center"
-                      wide="very"
-                      trigger={
-                        <Grid.Column>
-                          <IconInfoCircle className="info-icon" />
-                        </Grid.Column>
-                      }
+                      buttonLabel="Show logging details"
                     >
-                      <div className="show-value">
-                        <div>
-                          <b>{t('projects.logging.modified')}</b>
-                        </div>
-                        <div className="field-value">
-                          {getFormattedValue(
-                            option.newValue,
-                            option.name,
-                            option.schema,
-                            option.type
-                          )}
-                        </div>
-                      </div>
                       <div>
-                        <div>
-                          <b>{t('projects.logging.old')}</b>
+                        <div className="show-value">
+                          <div>
+                            <b>{t('projects.logging.modified')}</b>
+                          </div>
+                          <div className="field-value">
+                            {getFormattedValue(
+                              option.newValue,
+                              option.name,
+                              option.schema,
+                              option.type
+                            )}
+                          </div>
                         </div>
-                        <div className="field-value">
-                          {getFormattedValue(
-                            option.oldValue,
-                            option.name,
-                            option.schema,
-                            option.type
-                          )}
+                        <div>
+                          <div>
+                            <b>{t('projects.logging.old')}</b>
+                          </div>
+                          <div className="field-value">
+                            {getFormattedValue(
+                              option.oldValue,
+                              option.name,
+                              option.schema,
+                              option.type
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </Popup>
-                  </Grid.Column>
-                </Grid.Row>
+                    </Tooltip>
+                  </div>
+                </div>
               )
             })}
-        </Grid>
+        </div>
       </Card>
     </div>
   )

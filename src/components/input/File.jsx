@@ -2,7 +2,6 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { projectFileUpload, projectFileRemove } from '../../actions/projectActions'
 import { downloadFile } from '../../actions/apiActions'
-import { Progress } from 'semantic-ui-react'
 import 'core-js/features/array/at';
 //import { Document, Page, pdfjs } from 'react-pdf'
 import { showField } from '../../utils/projectVisibilityUtils'
@@ -237,7 +236,7 @@ class File extends Component {
           onChange={this.onChangeFile}
           disabled={disabled}
         />
-        {uploading && <Progress percent={percentCompleted} progress indicating />}
+        {uploading && <progress value={percentCompleted} max="100" className="upload-progress">{percentCompleted}%</progress>}
         {filePreview}
         {current && (
           <>

@@ -1,6 +1,5 @@
 import React from 'react'
-import { Popup } from 'semantic-ui-react'
-import { Button, LoadingSpinner } from 'hds-react'
+import { Button, LoadingSpinner, Tooltip } from 'hds-react'
 import PropTypes from 'prop-types'
 
 const FormButton = ({
@@ -28,7 +27,7 @@ const FormButton = ({
     </Button>
   )
   return help ? (
-    <Popup trigger={btn} content={help} hideOnScroll position="bottom center" />
+    <Tooltip tooltipLabel={help}>{btn}</Tooltip>
   ) : (
     btn
   )

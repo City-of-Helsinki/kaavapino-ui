@@ -18,7 +18,6 @@ import { Table, LoadingSpinner } from 'hds-react'
 import { withTranslation } from 'react-i18next';
 import { truncate } from 'lodash'
 import { Link } from 'react-router-dom'
-import { Popup } from 'semantic-ui-react'
 import ProjectTimeline from '../ProjectTimeline/ProjectTimeline'
 import Status from '../common/Status'
 
@@ -166,7 +165,7 @@ class List extends Component {
         rowObject[projecField] = listItem.projectId
         rowObject[pinoField] = listItem.pino_number
         rowObject[sizeField] = listItem.subtype
-        rowObject[responsibleField] = <Popup trigger={<span>{listItem.user}</span>} on="hover" content={listItem.user}/>
+        rowObject[responsibleField] = <span title={listItem.user}>{listItem.user}</span>
         rowObject[phaseField] = <span className='project-status-container'><Status color={listItem.phaseColor} /> <span className='project-status-text'>{listItem.phaseName}</span></span>
         rowObject[modifiedField] = listItem.modified_at
 
