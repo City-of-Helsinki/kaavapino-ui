@@ -179,7 +179,7 @@ class CustomADUserCombobox extends Component {
   }
 
   handleInputChange = (newValue) => {
-    const inputValue = newValue.replace(/\W/g, '');
+    const inputValue = newValue.replace(/[^a-zA-ZåäöÅÄÖÅ'\s-]/g, '');
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(inputValue);
 
     // If UUID, fetch directly
