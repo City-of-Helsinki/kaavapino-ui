@@ -2,11 +2,26 @@ import React from 'react'
 import {render} from '@testing-library/react'
 import '@testing-library/jest-dom'
 import RadioBooleanButton from '../../../components/input/RadioBooleanButton'
+import { Provider } from 'react-redux';
+import configureStore from 'redux-mock-store';
+
+const mockStore = configureStore();
+
+const store = mockStore({
+  project: {
+    saving: false,
+  }
+});
 
 describe('<RadioBooleanButton />', () => {
 
   test('is initialized correctly', () => {
-    const {getByTestId} = render(<RadioBooleanButton input={{value:"Kyllä", name:'test'}} meta={{ error:"false" }} label="Kyllä" />);
+
+    const {getByTestId} = render(
+      <Provider store={store}>
+        <RadioBooleanButton input={{value:"Kyllä", name:'test'}} meta={{ error:"false" }} label="Kyllä" />
+      </Provider>
+    );
 
     const radioValue = getByTestId("radio1").value
     expect(radioValue).toEqual("Kyllä")
@@ -23,7 +38,11 @@ describe('<RadioBooleanButton />', () => {
   })
 
   test('is initialized correctly second test', () => {
-    const {getByTestId} = render(<RadioBooleanButton input={{ value: "", name: 'test' }} meta={{}} />);
+    const {getByTestId} = render(
+      <Provider store={store}>
+        <RadioBooleanButton input={{ value: "", name: 'test' }} meta={{}} />
+      </Provider>
+    );
 
     const radioButton = getByTestId("radio1")
     expect(radioButton).not.toBeChecked

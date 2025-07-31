@@ -38,7 +38,7 @@ describe('project reducer', () => {
       ...initialState,
       projects: [1, 2],
       loadingProjects: false
-    })
+    });
   })
 
   it('should handle FETCH_OWN_PROJECTS_SUCCESSFUL', () => {
@@ -70,9 +70,9 @@ describe('project reducer', () => {
       ...initialState,
       saving: true
     }
-    expect(project(state, { type: FETCH_PROJECT_SUCCESSFUL, payload: 1 })).toEqual({
+    expect(project(state, { type: FETCH_PROJECT_SUCCESSFUL, payload: {'attribute_data': {}} })).toEqual({
       ...initialState,
-      currentProject: 1
+      currentProject: {'attribute_data': {}}
     })
   })
 
@@ -81,9 +81,9 @@ describe('project reducer', () => {
       ...initialState,
       saving: true
     }
-    expect(project(state, { type: UPDATE_PROJECT, payload: 1 })).toEqual({
+    expect(project(state, { type: UPDATE_PROJECT, payload: {'attribute_data': {}} })).toEqual({
       ...initialState,
-      currentProject: 1
+      currentProject: {'attribute_data': {}}
     })
   })
 

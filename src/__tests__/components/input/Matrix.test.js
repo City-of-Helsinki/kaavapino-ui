@@ -9,7 +9,7 @@ import Matrix from '../../../components/input/Matrix'
 describe('<Matrix />', () => {
   beforeEach(() => {
     const mockStore = configureStore()
-    const initialState = { project: { checking: true } }
+    const initialState = { project: { checking: true, connection: true } }
     const store = mockStore(initialState)
     const props = {
       field: {

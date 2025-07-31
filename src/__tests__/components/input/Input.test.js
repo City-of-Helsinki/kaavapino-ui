@@ -10,7 +10,7 @@ describe('<Input />', () => {
   let store;
 
   beforeEach(() => {
-    const initialState = { output: false};
+    const initialState = { output: false, project: { connection: true } };
     store = mockStore(initialState);
     render(
       <Provider store={store}>
