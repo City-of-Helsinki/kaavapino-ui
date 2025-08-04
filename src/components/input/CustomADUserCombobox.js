@@ -234,7 +234,11 @@ class CustomADUserCombobox extends Component {
   };
 
   handleChange = (value) => {
-    this.setState({ ...this.state, currentValue: value, options: [] });
+    this.setState(prevState => ({
+      ...prevState,
+      currentValue: value,
+      options: []
+    }));
     // Multiselect case
     if (Array.isArray(value)) {
       console.log("array")
@@ -255,7 +259,6 @@ class CustomADUserCombobox extends Component {
       this.props.input.onChange('');
     }
   };
-
   
   handleMenuOpen = () => {
     if (this.state.options.length === 0) {
