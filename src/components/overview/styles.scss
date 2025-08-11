@@ -96,6 +96,16 @@
     font-size: large;
     font-weight: bold;
   }
+  .color-legends{
+    .dot {
+      height: 12px;
+      width: 12px;
+      background-color: $accessible-grey;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+    }
+  }
 }
 .tooltip {
   &.ui.grid > .row {
@@ -133,6 +143,16 @@
   .leaflet-popup-content-wrapper {
     font-size: $size14;
     border-radius: 5px;
+  }
+  .color-legends{
+    .dot {
+      height: 12px;
+      width: 12px;
+      background-color: $accessible-grey;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+    }
   }
 }
 .xAxis {

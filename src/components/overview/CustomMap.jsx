@@ -8,7 +8,6 @@ import {
   projectOverviewMapFiltersSelector
 } from '../../selectors/projectSelector'
 import { connect } from 'react-redux'
-import { Grid } from 'semantic-ui-react'
 
 import {
   getProjectsOverviewMapData,
@@ -177,11 +176,11 @@ function CustomMap({
   const renderNormalView = () => (
     <div className="map-area">
       <div className="geometry-input-container">
-        <Grid columns="equal" className="full-width">
-          <Grid.Column width={4}>
+        <div className="map-header-row">
+          <div className="map-header-title">
             <h3>{t('map-area.title')}</h3>
-          </Grid.Column>
-          <Grid.Column width={6}>
+          </div>
+          <div className="map-header-status">
             {isEmpty(mapData) && (
               <span className="loading-info">
                 <LoadingSpinner
@@ -191,8 +190,8 @@ function CustomMap({
                 {t('map-area.loading-data')}
               </span>
             )}
-          </Grid.Column>
-        </Grid>
+          </div>
+        </div>
         <Legends />
 
         <FilterList

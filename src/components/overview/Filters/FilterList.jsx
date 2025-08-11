@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import DropdownFilter from './DropdownFilter'
 import projectUtils from '../../../utils/projectUtils'
-import { Grid } from 'semantic-ui-react'
 import CustomADUserCombobox from '../../input/CustomADUserCombobox'
 function FilterList({ filterList, currentFilter, onChange, defaultYear, onUserChange }) {
   const [filters, setFilters] = useState(currentFilter)
@@ -41,7 +40,7 @@ function FilterList({ filterList, currentFilter, onChange, defaultYear, onUserCh
     return filterList.map((field, index) => {
       if (field.value_type === 'user') {
         return (
-          <Grid.Column key={index}>
+          <div className="filter-column" key={`user-${index}`}>
             <CustomADUserCombobox
               label={field.name}
               input={{
@@ -52,11 +51,11 @@ function FilterList({ filterList, currentFilter, onChange, defaultYear, onUserCh
               multiselect={true}
               placeholder={field.name}
             />
-          </Grid.Column>
+           </div>
         )
       }
       return (
-        <Grid.Column key={index}>
+        <div className="filter-column" key={`dropdown-${index}`}>
           <DropdownFilter
             key={field + index}
             name={field.name}
@@ -68,25 +67,16 @@ function FilterList({ filterList, currentFilter, onChange, defaultYear, onUserCh
             multiSelect={!field.accepts_year}
             yearSelect={field.accepts_year}
           />
-        </Grid.Column>
+        </div>
       )
     })
   }
 
   return (
     <div className="filters-list">
-      <Grid stackable columns="equal">
+      <div className="filters-grid">
         {getFiltersList()}
-        {/*
-          TODO: Problems with HDS component. Needs to follow when there are updates.
-        showClearButton && !isEmpty(filterList) && (
-          <Grid.Column>
-            <Button variant="secondary" onClick={onClear} className="filter-button">
-              {t('overview.clear-selections')}
-            </Button>
-          </Grid.Column>
-        )*/}
-      </Grid>
+      </div>
 
       <span></span>
     </div>

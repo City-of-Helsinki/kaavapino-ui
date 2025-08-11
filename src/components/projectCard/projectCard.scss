@@ -141,6 +141,33 @@
     font-weight: bold;
     font-size: larger;
   }
+  .floor-area-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 24px;
+    margin-top: 8px;
+  }
+
+  .floor-area-column {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .floor-area-column.with-divider {
+    border-left: 1px solid #222;
+    padding-left: 16px;
+    margin-left: -8px; /* align with spacing visually */
+  }
+
+  .floor-area-field {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .floor-area-value {
+    font-weight: 600;
+    margin-top: 4px;
+  }
   .floor-area-information .column:first-of-type {
     border-right: 1px solid black;
   }

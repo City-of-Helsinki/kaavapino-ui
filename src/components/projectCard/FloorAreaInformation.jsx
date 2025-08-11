@@ -1,54 +1,61 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Grid } from 'semantic-ui-react'
 import { useTranslation } from 'react-i18next'
 
 function FloorAreaInformation({ fields, hideTitle }) {
   const { t } = useTranslation()
 
-  const renderField = (field, index) => {
-    if (field.unit === 'k-m2') {
-      return (
-        <Grid.Column key={field.label + index}>
-          <div>
-            {field.label}
-            <div className="floor-area-value">{field.value} k-m&sup2;</div>
-          </div>
-        </Grid.Column>
-      )
-    } else {
-      return (
-        <Grid.Column key={field.label + index}>
-          <div className="floor-area-field">
-            <div>{field.label}</div>
-            <div className="floor-area-value">
-              {field.value} {field.unit}
-            </div>
-          </div>
-        </Grid.Column>
-      )
-    }
-  }
-  const renderFields = () => {
-    return (
-      <div>
-        {!hideTitle && <h3>{t('project.floor-area-title')}</h3>}
-        <Grid stackable columns="equal">
-          {fields &&
-            fields.map((field, index) => {
-              return renderField(field, index)
-            })}
-        </Grid>
-      </div>
-    )
-  }
-  const fieldsComponent = renderFields()
+const renderField = (field, index) => {
+  const label = field.label
+  const splitPoint = label.lastIndexOf(' yhteensä')
+  const labelTop = splitPoint !== -1 ? label.slice(0, splitPoint) : label
+  const labelBottom = splitPoint !== -1 ? 'yhteensä' : ''
 
-  return <div className="floor-area-information">{fieldsComponent}</div>
+  return (
+    <div
+      key={field.label + index}
+      className={`floor-area-column ${index === 1 ? 'with-divider' : ''}`}
+    >
+      <div className="floor-area-field">
+        <div className="floor-area-label">
+          {labelTop}
+          <br />
+          {labelBottom && (
+            <span className="floor-area-description">{labelBottom}</span>
+          )}
+        </div>
+        <div className="floor-area-value">
+          {field.value}{' '}
+          {field.unit === 'k-m2' ? (
+            <>
+              k-m<sup>2</sup>
+            </>
+          ) : (
+            field.unit
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const renderFields = () => {
+  return (
+    <>
+      {!hideTitle && <h3>{t('project.floor-area-title')}</h3>}
+      <div className="floor-area-grid">
+        {fields.map((field, index) => renderField(field, index))}
+      </div>
+    </>
+  )
+}
+
+  return <div className="floor-area-information">{renderFields()}</div>
 }
 
 FloorAreaInformation.propTypes = {
-  fields: PropTypes.array
+  fields: PropTypes.array,
+  hideTitle: PropTypes.bool
 }
 
 export default FloorAreaInformation

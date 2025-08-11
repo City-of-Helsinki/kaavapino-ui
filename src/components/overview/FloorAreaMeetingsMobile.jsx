@@ -6,7 +6,6 @@ import { connect } from 'react-redux'
 import { Accordion, LoadingSpinner, Card } from 'hds-react'
 import { withRouter } from 'react-router-dom'
 import dayjs from 'dayjs'
-import { Grid } from 'semantic-ui-react'
 import { useTranslation } from 'react-i18next'
 
 function FloorAreaMeetings({ chartData }) {
@@ -61,21 +60,21 @@ function FloorAreaMeetings({ chartData }) {
   const renderProject = project => {
     return (
       <div key={project.id}>
-        <Card className="mobile-project-meetings">
-          <Grid columns="equal" textAlign="left">
-            <Grid.Column width={10}>
+        <Card className="mobile-project-meetings custom-card">
+          <div className="project-row">
+            <div className="project-details">
               <div>{project.pino_number}</div>
               <div>{project.name}</div>
-              <div>{project.subtype.name}</div>
-            </Grid.Column>
-            <Grid.Column textAlign="left">
+              <div>{project.subtype?.name}</div>
+            </div>
+            <div className="project-phase">
               <span
-                style={{ backgroundColor: project.phase.color_code }}
                 className="dot"
+                style={{ backgroundColor: project.phase?.color_code }}
               ></span>
-              <span className="value">{project.phase.name}</span>
-            </Grid.Column>
-          </Grid>
+              <span className="value">{project.phase?.name}</span>
+            </div>
+          </div>
         </Card>
         <br />
       </div>

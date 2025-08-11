@@ -395,6 +395,7 @@ class CustomField extends Component {
   }
 
   renderToggle = props => {
+    console.log("render toggle")
     const { handleBlurSave } = this.props
     return <ToggleButton onBlur={handleBlurSave} {...props} />
   }
