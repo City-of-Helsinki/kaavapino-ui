@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { Modal, Form } from 'semantic-ui-react'
+import { Dialog } from 'hds-react'
 import { reduxForm, getFormSubmitErrors, getFormValues } from 'redux-form'
 import projectUtils from '../../../utils/projectUtils'
 import './NewProjectFormModal.scss'
@@ -108,6 +108,7 @@ class NewProjectFormModal extends Component {
   }
 
   render() {
+    if (!this.props.modalOpen) return <></>;
     const { loading } = this.state
     const { currentProject, selectedSubType, initialValues, formValues, t, isEditable } = this.props
     const showXLProjectOptions = selectedSubType === 5
@@ -132,28 +133,22 @@ class NewProjectFormModal extends Component {
     const hideSave = hideSaveButton()
 
     return (
-      <Modal
-        className="form-modal project-edit"
-        size={'small'}
-        onClose={this.props.handleClose}
-        open={this.props.modalOpen}
-        closeIcon
+      <Dialog
+        isOpen
+        close={this.props.handleClose}
+        heading={isEdit ? t('project-base.modify') : t('project-base.add')}
+        id="new-project-form-modal"
       >
-        <Modal.Header>
-          {isEdit ? t('project-base.modify') : t('project-base.add')}
-        </Modal.Header>
-        <Modal.Content>
-          <Form>
-            <Form.Group widths="equal">
+        <div className="form-modal project-edit">
+          <form onSubmit={(e) => e.preventDefault()}>
+            <div className="form-group equal-widths">
               {this.getFormField({
                 className: 'ui fluid input',
-
                 field: {
                   name: TYPE,
                   label: t('project-base.labels.project-type'),
                   disabled: false,
                   type: 'set',
-                  // Add only option.
                   choices: [
                     {
                       label: t('project-base.project-type-default'),
@@ -164,8 +159,8 @@ class NewProjectFormModal extends Component {
                   multiple: false
                 }
               })}
-            </Form.Group>
-            <Form.Group widths="equal">
+            </div>
+            <div className="form-group equal-widths">
               {this.getFormField({
                 field: {
                   name: PROJECT_NAME,
@@ -184,7 +179,7 @@ class NewProjectFormModal extends Component {
                   editable: isEditable
                 }
               })}
-            </Form.Group>
+            </div>
             {this.getFormField({
               field: {
                 name: PUBLIC,
@@ -242,26 +237,25 @@ class NewProjectFormModal extends Component {
                 })}
               </>
             )}
-          </Form>
-        </Modal.Content>
-        <Modal.Actions>
-          <div className="form-buttons">
-            <Button variant="secondary" disabled={loading} onClick={this.handleClose}>
-              {t('project.cancel')}
-            </Button>
-            <Button
-              variant="primary"
-              disabled={loading || hideSave || !isEditable}
-              loadingText={isEdit ? t('project.save') : t('project.create-project')}
-              isLoading={loading}
-              type="submit"
-              onClick={this.handleSubmit}
-            >
-              {isEdit ? t('project.save') : t('project.create-project')}
-            </Button>
-          </div>
-        </Modal.Actions>
-      </Modal>
+          </form>
+        </div>
+
+        <Dialog.ActionButtons>
+          <Button variant="secondary" disabled={loading} onClick={this.handleClose}>
+            {t('project.cancel')}
+          </Button>
+          <Button
+            variant="primary"
+            disabled={loading || hideSave || !isEditable}
+            loadingText={isEdit ? t('project.save') : t('project.create-project')}
+            isLoading={loading}
+            type="submit"
+            onClick={this.handleSubmit}
+          >
+            {isEdit ? t('project.save') : t('project.create-project')}
+          </Button>
+        </Dialog.ActionButtons>
+      </Dialog>
     )
   }
 }

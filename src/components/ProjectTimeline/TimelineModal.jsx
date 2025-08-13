@@ -1,6 +1,5 @@
 import React from 'react';
-import { Modal } from 'semantic-ui-react'
-import { Button,Tabs,IconCross } from 'hds-react'
+import { Button,Tabs,IconCross,Dialog } from 'hds-react'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import FormField from '../input/FormField'
 import { isArray } from 'lodash'
@@ -207,32 +206,53 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
       })
       return renderedSections
     }
-
+    if (!open) return <></>;
     return (
-      <Modal open={open} size={'large'} className='timeline-edit-right'>
+      <Dialog
+        id="timeline-side-dialog"
+        isOpen
+        close={() => onClose()}
+        closeButtonLabelText="Sulje"
+        className="timeline-edit-right"
+        scrollable
+      >
         <div className="timeline-edit-container">
           {open && <div className="timeline-edit-shadow"></div>}
           <div className="timeline-edit-content">
-            <Modal.Header>
+            <div className="header">
               <ul className="breadcrumb">
-                <li><a href="#" role="button">{group}</a></li>
-                <li><a href="#" role="button">{content}</a></li>
-                <Button variant="supplementary" onClick={onClose}><IconCross /></Button>
+                <li>
+                  <a href="#" role="button">
+                    {group}
+                  </a>
+                </li>
+                <li>
+                  <a href="#" role="button">
+                    {content}
+                  </a>
+                </li>
+                <Button variant="supplementary" onClick={onClose}>
+                  <IconCross />
+                </Button>
               </ul>
-            </Modal.Header>
-            <Modal.Content>
-              <div className='date-content'>
+            </div>
+
+            <div className="content">
+              <div className="date-content">
                 {deadlineSections.map((section, i) => {
                   if (section.title === group) {
                     return renderSection(section, i, content);
                   }
+                  return null;
                 })}
               </div>
-            </Modal.Content>
+
+              {currentSubmitErrors && <div className="submit-errors">{renderSubmitErrors()}</div>}
+            </div>
           </div>
         </div>
-      </Modal>
-    );
+      </Dialog>
+    )
   }
 
   TimelineModal.propTypes = {

@@ -2,7 +2,6 @@
 
 import React, { Component, createRef } from 'react'
 import PropTypes from 'prop-types'
-import { Modal } from 'semantic-ui-react'
 import { reduxForm, getFormSubmitErrors, getFormValues, change } from 'redux-form'
 import { connect } from 'react-redux'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../../constants'
@@ -10,7 +9,7 @@ import './styles.scss'
 import { deadlineSectionsSelector } from '../../../selectors/schemaSelector'
 import { withTranslation } from 'react-i18next'
 import { deadlinesSelector,validatedSelector,dateValidationResultSelector,cancelTimetableSaveSelector, validatingTimetableSelector } from '../../../selectors/projectSelector'
-import { Button,IconInfoCircle } from 'hds-react'
+import { Button,IconInfoCircle,Dialog } from 'hds-react'
 import { isEqual } from 'lodash'
 import VisTimelineGroup from '../../ProjectTimeline/VisTimelineGroup.jsx'
 import * as visdata from 'vis-data'
@@ -1229,82 +1228,100 @@ class EditProjectTimeTableModal extends Component {
     }
 
     return (
-      <Modal
-        size="large"
-        open={open}
-        closeIcon={false}
-        closeOnDocumentClick={false}
-        closeOnDimmerClick={false}
-        className='modal-center-big'
+      <Dialog
+        id="timeline-dialog"
+        aria-labelledby="timeline-dialog-title"
+        isOpen
+        close={this.props.handleClose}
+        closeButtonLabelText={t('common.close')}
+        scrollable
+        className="modal-center-big"
       >
-        <Modal.Header><IconInfoCircle size="m" aria-hidden="true"/>
-        <span className='header-title'>{t('deadlines.modify-timeline')}</span>
-        </Modal.Header>
-        <Modal.Content>
-            <div className='timeline-group-header'>
-              <span className='timeline-group-title'>{t('deadlines.timeline-group-header')}</span>
-            </div>
-            <VisTimelineGroup
-              timelineRef={this.timelineRef}
-              options={this.state.options}
-              groups={this.state.groups}
-              changedItem={this.state.item}
-              items={this.state.items}
-              deadlines={deadlines} 
-              visValues={this.state.visValues} 
-              deadlineSections={deadlineSections}
-              formSubmitErrors={formSubmitErrors}
-              projectPhaseIndex={projectPhaseIndex}
-              archived={currentProject?.archived}
-              allowedToEdit={allowedToEdit}
-              isAdmin={isAdmin}
-              toggleTimelineModal={this.state.toggleTimelineModal}
-              disabledDates={disabledDates}
-              lomapaivat={lomapaivat}
-              dateTypes={dateTypes}
-              trackExpandedGroups={this.trackExpandedGroups}
-              sectionAttributes={this.state.sectionAttributes}
-              showTimetableForm={this.props.showTimetableForm}
-            /> 
-            <ConfirmModal 
-              openConfirmModal={this.state.showModal}
-              headerText={"Haluatko hylätä muutokset?"} 
-              contentText={"Olet muuttanut aikataulun tietoja. Jos hylkäät muutokset, et voi palauttaa niitä myöhemmin."} 
-              button1Text={"Peruuta"} 
-              button2Text={"Hylkää muutokset"} 
-              onButtonPress1={this.handleCancelCancel} 
-              onButtonPress2={this.handleContinueCancel}
-              style={"timetable-danger-modal"}
-              buttonStyle1={"secondary"}
-              buttonStyle2={"danger"}
-            />
-        </Modal.Content>
-        <Modal.Actions>
-        {allowedToEdit ? (
-          <span className="form-buttons">
-            <Button
-              variant="primary"
-              disabled={loading || !allowedToEdit}
-              loadingText={t('common.save-timeline')}
-              isLoading={loading}
-              type="submit"
-              onClick={this.handleSubmit}
-            >
-              {t('common.save-timeline')}
-            </Button>
-            <Button variant="secondary" disabled={loading} onClick={this.openConfirmCancel}>
-              {t('common.cancel')}
-            </Button>
-          </span>
-        ) : (
-          <span className="form-buttons">
-            <Button variant="secondary" disabled={loading} onClick={this.handleClose}>
-            {t('common.close')}
-            </Button>
-          </span>
-        )}
-        </Modal.Actions>
-      </Modal>
+        <div className="header">
+            <IconInfoCircle size="m" aria-hidden="true" />
+            <span className="header-title">{t('deadlines.modify-timeline')}</span>
+        </div>
+
+        <div className="content">
+          <div className="timeline-group-header">
+            <span className="timeline-group-title">
+              {t('deadlines.timeline-group-header')}
+            </span>
+          </div>
+
+          <VisTimelineGroup
+            timelineRef={this.timelineRef}
+            options={this.state.options}
+            groups={this.state.groups}
+            changedItem={this.state.item}
+            items={this.state.items}
+            deadlines={deadlines}
+            visValues={this.state.visValues}
+            deadlineSections={deadlineSections}
+            formSubmitErrors={formSubmitErrors}
+            projectPhaseIndex={projectPhaseIndex}
+            archived={currentProject?.archived}
+            allowedToEdit={allowedToEdit}
+            isAdmin={isAdmin}
+            toggleTimelineModal={this.state.toggleTimelineModal}
+            disabledDates={disabledDates}
+            lomapaivat={lomapaivat}
+            dateTypes={dateTypes}
+            trackExpandedGroups={this.trackExpandedGroups}
+            sectionAttributes={this.state.sectionAttributes}
+            showTimetableForm={this.props.showTimetableForm}
+          />
+
+          <ConfirmModal
+            openConfirmModal={this.state.showModal}
+            headerText={'Haluatko hylätä muutokset?'}
+            contentText={
+              'Olet muuttanut aikataulun tietoja. Jos hylkäät muutokset, et voi palauttaa niitä myöhemmin.'
+            }
+            button1Text={'Peruuta'}
+            button2Text={'Hylkää muutokset'}
+            onButtonPress1={this.handleCancelCancel}
+            onButtonPress2={this.handleContinueCancel}
+            style={'timetable-danger-modal'}
+            buttonStyle1={'secondary'}
+            buttonStyle2={'danger'}
+          />
+        </div>
+
+        <div className="actions">
+          {allowedToEdit ? (
+            <span className="form-buttons">
+              <Button
+                variant="primary"
+                disabled={loading || !allowedToEdit}
+                isLoading={loading}
+                loadingText={t('common.save-timeline')}
+                type="submit"
+                onClick={this.handleSubmit}
+              >
+                {t('common.save-timeline')}
+              </Button>
+              <Button
+                variant="secondary"
+                disabled={loading}
+                onClick={this.openConfirmCancel}
+              >
+                {t('common.cancel')}
+              </Button>
+            </span>
+          ) : (
+            <span className="form-buttons">
+              <Button
+                variant="secondary"
+                disabled={loading}
+                onClick={this.props.handleClose}
+              >
+                {t('common.close')}
+              </Button>
+            </span>
+          )}
+        </div>
+      </Dialog>
     )
   }
 }

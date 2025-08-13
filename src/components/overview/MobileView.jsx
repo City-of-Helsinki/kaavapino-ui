@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import FloorAreaMobile from './FloorAreaMobile'
-import { Segment } from 'semantic-ui-react'
 import { useTranslation } from 'react-i18next'
 import FloorAreaMeetings from './FloorAreaMeetingsMobile'
 import { Button } from 'hds-react'
@@ -95,15 +94,15 @@ function MobileView({
         >
           {t('overview.clear')}
         </Button>
-        <Segment key="map">
+        <div className="section">
           <CustomMapMobile isPrivileged={isExpert} />
-        </Segment>
-        <Segment key="floor-area">
+        </div>
+        <div className="section">
           <FloorAreaMobile isPrivileged={isExpert} />
-        </Segment>
-        <Segment key="floor-area-meetings">
+        </div>
+        <div className="section">
           <FloorAreaMeetings isPrivileged={isExpert} />
-        </Segment>
+        </div>
       </div>
     </div>
   )

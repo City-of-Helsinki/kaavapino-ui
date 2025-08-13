@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Modal, Grid } from 'semantic-ui-react'
-import { Button, Accordion, Tag } from 'hds-react'
+import { Dialog, Button, Accordion, Tag } from 'hds-react'
 import { useTranslation } from 'react-i18next'
 import MobileFilterList from './MobileFilterList'
 
@@ -67,31 +66,37 @@ function FilterModal({ filterList, handleClose, open, setFilter, currentFilter }
 
   const getHeader = (name, amountSelected) => {
     return (
-      <Grid columns="equal">
-        <Grid.Column width={10}>{name}</Grid.Column>
-        <Grid.Column textAlign="right">
-          {amountSelected > 0 && <Tag size="s">{t('overview.selected', {amount: amountSelected})}</Tag>}
-        </Grid.Column>
-      </Grid>
+      <div className="filter-header-row">
+        <div className="filter-header-name">{name}</div>
+        <div className="filter-header-tag">
+          {amountSelected > 0 && (
+            <Tag size="s">{t('overview.selected', { amount: amountSelected })}</Tag>
+          )}
+        </div>
+      </div>
     )
   }
-
+  if (!open) return <></>; 
   return (
-    <Modal
+    <Dialog
+      id="filter-dialog"
+      isOpen
+      close={() => onClose(false)}
+      aria-labelledby="filter-dialog-title"
       className="filter-modal"
-      size="tiny"
-      onClose={handleClose}
-      open={open}
-      closeIcon
     >
-      <Modal.Header className="filter-modal-header"> {t('overview.filter-modal-title')}</Modal.Header>
-      <Modal.Content className="filter-modal-content">{renderFilters()}</Modal.Content>
-      <Modal.Actions className="filter-modal-actions">
-        <Button type="button" variant="primary" onClick={onClose}>
+      <Dialog.Header id="filter-dialog-title" title={t('overview.filter-modal-title')} />
+
+      <Dialog.Content className="filter-modal-content">
+        {renderFilters()}
+      </Dialog.Content>
+
+      <Dialog.ActionButtons>
+        <Button type="button" variant="primary" onClick={() => {onClose(false)}}>
           {t('common.save')}
         </Button>
-      </Modal.Actions>
-    </Modal>
+      </Dialog.ActionButtons>
+    </Dialog>
   )
 }
 

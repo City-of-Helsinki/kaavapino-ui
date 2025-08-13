@@ -1368,7 +1368,38 @@ header{
 }
 
 [class*="Dialog-module_dialogContainer"] {
-  z-index: 9999 !important;
+  z-index: 2000 !important;
+}
+
+[class^="Dialog-module_dialogContainer"]:has(#timeline-dialog) {
+  align-items: normal;
+  justify-content: normal;
+  top: $size10;
+  bottom: $size10;
+}
+
+/* The portal container that holds the dialog – scope only to the side panel */
+[class*="Dialog-module_dialogContainer"]:has(#timeline-side-dialog),
+.hds-dialog__container:has(#timeline-side-dialog) {
+  /* behave like a right-side drawer */
+  justify-content: flex-end;   /* push content to the right */
+  align-items: stretch;        /* full height instead of centered box */
+  top: 16px;                   /* same spacing you used for the big dialog */
+  bottom: 16px;                /* same spacing */
+  left: 0;
+  right: 0;
+  z-index: 3000 !important;
+}
+
+/* Make the dialog paper a fixed-width drawer panel */
+[class*="Dialog-module_dialogPaper"]:has(#timeline-side-dialog),
+.hds-dialog__paper:has(#timeline-side-dialog) {
+  margin: 0;               /* no centering margins */
+  max-width: none;         /* remove HDS max width cap */
+  width: 520px;            /* choose the drawer width you want (e.g., 520–600px) */
+  height: 100%;
+  border-radius: 0;        /* drawer look – optional */
+  box-shadow: 0 2px 12px rgba(0,0,0,.2);
 }
 
 //OnHoverTooltip.jsx styles
@@ -1390,7 +1421,7 @@ header{
   font-size: 14px;
   border-radius: 6px;
   white-space: nowrap;
-  z-index: 9999;
+  z-index: 2000;
   box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.3);
   line-height: 1.4;
   pointer-events: none;
@@ -1407,7 +1438,7 @@ header{
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
   border-top: 6px solid #1e1e1e;
-  z-index: 10000;
+  z-index: 3000;
 }
 
 .input-history {
@@ -1442,7 +1473,7 @@ header{
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
   border-top: 6px solid #fff;
-  z-index: 10001;
+  z-index: 3001;
   filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
 }
 

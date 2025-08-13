@@ -1,4 +1,18 @@
 .form-modal {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  .form-group {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: nowrap;
+
+    > * {
+      flex: 1 1 0;
+    }
+  }
+  
   .subtype-input-container .radio-input-container {
     display: flex;
     flex-direction: row;
