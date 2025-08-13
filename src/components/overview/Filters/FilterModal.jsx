@@ -81,7 +81,7 @@ function FilterModal({ filterList, handleClose, open, setFilter, currentFilter }
     <Dialog
       id="filter-dialog"
       isOpen
-      close={() => onClose(false)}
+      close={() => onClose()}
       aria-labelledby="filter-dialog-title"
       className="filter-modal"
     >
@@ -92,7 +92,7 @@ function FilterModal({ filterList, handleClose, open, setFilter, currentFilter }
       </Dialog.Content>
 
       <Dialog.ActionButtons>
-        <Button type="button" variant="primary" onClick={() => {onClose(false)}}>
+        <Button type="button" variant="primary" onClick={() => {onClose()}}>
           {t('common.save')}
         </Button>
       </Dialog.ActionButtons>
