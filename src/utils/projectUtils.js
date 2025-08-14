@@ -153,7 +153,7 @@ const formatFilterProject = (project, sort = false, phases, users) => {
 }
 
 const formatPhase = (id, phases) => {
-  const { index, name, color_code } = phases.find(phase => phase.id === id)
+  const { index, name, color_code } = phases?.find(phase => phase.id === id) || { index: null, name: '', color_code: '' }
   return { index, phaseName: name, phaseColor: color_code }
 }
 
@@ -225,7 +225,7 @@ const generateArrayOfYearsForChart = () => {
 const findValueFromObject = (object, key) => {
   let value
   Object.keys(object).some(currentKey => {
-    if (currentKey === key) {
+    if (currentKey === key && !object['_deleted']) {
       value = object[currentKey]
       return true
     }
