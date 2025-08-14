@@ -1,118 +1,296 @@
-import React, { Component } from 'react'
-import { Combobox } from 'hds-react'
-import axios from 'axios'
-import { isArray } from 'lodash';
+import React, { Component } from 'react';
+import Select from 'react-select';
+import CustomMenuList from './CustomMenuList';
+import CustomDropdownIndicator from './CustomDropdownIndicator';
+import axios from 'axios';
+
+const hdsLikeStyles = {
+  control: (provided, state) => ({
+    ...provided,
+    border: '2px solid #808080',
+    borderRadius: '0',
+    minHeight: '56px',
+    paddingLeft: '8px',
+    paddingRight: '8px',
+    backgroundColor: state.isDisabled ? '#f2f2f2' : '#fff',
+    boxShadow: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    '&:hover': {
+      borderColor: '#000',
+    },
+  }),
+  placeholder: (provided) => ({
+    ...provided,
+    color: '#d1d1d1',
+    fontSize: '16px',
+    lineHeight: '24px',
+    whiteSpace: 'nowrap',
+  }),
+  singleValue: (provided) => ({
+    ...provided,
+    color: '#1a1a1a',
+    fontSize: '16px',
+    lineHeight: '24px',
+  }),
+  input: (provided) => ({
+    ...provided,
+    fontSize: '16px',
+    color: '#1a1a1a',
+  }),
+  dropdownIndicator: (provided) => ({
+    ...provided,
+    padding: '8px',
+    color: '#1a1a1a',
+    display: 'flex',
+    alignItems: 'center',
+  }),
+  indicatorSeparator: () => ({
+    display: 'none',
+  }),
+  menu: (provided) => ({
+    ...provided,
+    zIndex: 9999,
+    border: '1px solid #ccc',
+    borderRadius: '2px',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+    width: '100%',
+    maxWidth: '100%',
+    overflowX: 'hidden',
+    boxSizing: 'border-box'
+  }),
+  menuList: (provided) => ({
+    ...provided,
+    overflowX: 'hidden',
+    paddingRight: 0,
+    boxSizing: 'border-box',
+    wordBreak: 'break-word',
+  }),
+};
 
 class CustomADUserCombobox extends Component {
   constructor() {
     super();
     this.state = {
       options: [],
-      currentQuery: null,
-      currentValue: null
-    }
-    this.timer = null;
+      currentQuery: "",
+      currentValue: null,
+      page: 1,
+      hasMore: true,
+      loadingMore: false
+    };
   }
 
   componentDidMount() {
-    this.getPerson().then(() => {}).catch(err => console.error(err));
+    this.getPerson().catch(err => console.error(err));
   }
 
-  getModifiedOption({ name, id, email, title }) {
-
-    const option = name ? name : email
-    const label = name && title ? `${name} (${title})` : option
-    return { label, id }
+  getModifiedOption = ({ name, id, email, title }) => {
+    const option = name || email;
+    const label = name && title ? `${name} (${title})` : option;
+    return { label, value: id, email };
   }
 
-  modifyOptions = options => {
-    const modifiedOptions = []
+  modifyOptions = (options) => {
+    const modifiedOptions = [];
 
-    if (options.length === 0) {
-      return []
-    }
+    if (options.length === 0) return [];
+
     options.forEach(({ name, id, email, title }) => {
-      const optionValue = name ? name : email
-      const label = name && title ? `${name} (${title})` : optionValue
+      if (!id) return;
 
-      if (modifiedOptions.find(option => option.label === label)) {
-        modifiedOptions.push({ label: email, id, email })
-      } else {
-        modifiedOptions.push({ label: label, id, email })
+      const optionValue = name || email;
+      const label = name && title ? `${name} (${title})` : optionValue;
+
+      const option = {
+        label,
+        value: id,  // required for react-select to work
+        id,
+        email
+      };
+
+      // avoid duplicates
+      if (!modifiedOptions.find(o => o.label === label)) {
+        modifiedOptions.push(option);
       }
-    })
-    return modifiedOptions
-  }
+    });
+
+    return modifiedOptions;
+  };
+
   getPerson = async () => {
-    
-    if ( !this.props.input.value ) {
-      return null
-    }
-    await axios.get(`/v1/personnel/${this.props.input.value}`).then(response => {
+    if (!this.props.input.value) return;
+
+    try {
+      const response = await axios.get(`/v1/personnel/${this.props.input.value}`);
+      const person = response.data;
       this.setState({
-        ...this.state,
-        currentValue: { label: response.data.name, id: response.data.id }
-      })
-    })
-    .catch(error => {
-      console.log(error)
-    })
+        currentValue: {
+          label: person.name,
+          value: person.id
+        }
+      });
+    } catch (err) {
+      console.error(err);
+    }
   }
 
-  getOptions = async query => {
-    if (!query || query === this.state.currentQuery || (query.length < 3 && query !== "*")) {
-      return [];
-    }
-  
+  getPersonById = async (id) => {
     try {
-      const url = query === "*" ? "/v1/personnel/" : `/v1/personnel/?search=${query}`;
+      const response = await axios.get(`/v1/personnel/${id}`);
+      const person = response.data;
+
+      this.setState({
+        currentValue: {
+          label: person.name,
+          value: person.id
+        },
+        options: [{ label: person.name, value: person.id, email: person.email }]
+      });
+    } catch (err) {
+      console.error("getPersonById failed:", err);
+    }
+  };
+
+  getOptions = async (query = "*", page = 1) => {
+    const limit = 100;
+    const offset = (page - 1) * limit;
+
+    try {
+      const url =
+        query === "*"
+          ? `/v1/personnel/?limit=${limit}&offset=${offset}`
+          : `/v1/personnel/?search=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}`;
       const response = await axios.get(url);
       const result = response.data;
-      const modifiedResults = this.modifyOptions(result); // Process data first
-  
-      this.setState(prevState => ({
-        ...prevState,
-        options: modifiedResults,
-        currentQuery: query
+
+      const modifiedResults = this.modifyOptions(result);
+      const hasMore = result.length === limit;
+
+      this.setState(prev => ({
+        options: page === 1 ? modifiedResults : [...prev.options, ...modifiedResults],
+        currentQuery: query,
+        page,
+        hasMore
       }));
-    } catch (error) {
-      console.error("Error fetching personnel:", error);
+    } catch (err) {
+      console.error("Error fetching personnel:", err);
+    }
+  }
+
+  handleInputChange = (newValue) => {
+    const inputValue = newValue.replace(/[^a-zA-ZåäöÅÄÖÅ'\s-]/g, '');
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(inputValue);
+
+    // If UUID, fetch directly
+    if (isUUID) {
+      this.setState({ currentQuery: inputValue }, () => {
+        this.getPersonById(inputValue); // new helper
+      });
+      return newValue;
+    }
+    else if (inputValue.length >= 3 || inputValue === '*') { // Otherwise: search if long enough
+      this.setState(
+        { currentQuery: inputValue, page: 1, hasMore: true },
+        () => {
+          this.getOptions(inputValue, 1);
+        }
+      );
+    }
+
+    return newValue;
+  };
+
+  loadMoreOptions = async (nextPage) => {
+    if (this.state.loadingMore) return;
+
+    this.setState({ loadingMore: true });
+
+    const { currentQuery } = this.state;
+    const limit = 100;
+    const offset = (nextPage - 1) * limit;
+
+    try {
+      const url =
+        currentQuery && currentQuery !== "*"
+          ? `/v1/personnel/?search=${encodeURIComponent(currentQuery)}&limit=${limit}&offset=${offset}`
+          : `/v1/personnel/?limit=${limit}&offset=${offset}`;
+
+      const response = await axios.get(url);
+      const result = response.data;
+      const modifiedResults = this.modifyOptions(result);
+      const hasMore = result.length === limit;
+
+      this.setState(prev => ({
+        options: [...prev.options, ...modifiedResults],
+        page: nextPage,
+        hasMore,
+        loadingMore: false
+      }));
+    } catch (err) {
+      console.error("loadMoreOptions failed:", err);
+      this.setState({ loadingMore: false });
+    }
+  };
+
+  handleChange = (value) => {
+    this.setState(prevState => ({
+      ...prevState,
+      currentValue: value,
+      options: []
+    }));
+    // Multiselect case
+    if (Array.isArray(value)) {
+      console.log("array")
+      const returnValue = value.map(item => ({
+        id: item.value,
+        label: item.label,
+        email: item.email
+      }));
+      this.props.input.onChange(returnValue);
+    }
+    else if (value && typeof value === 'object') {// Single-select mode
+      const stringValue = value.id || value.label || '';
+      this.props.input.onChange(stringValue);
+      return;
+    }
+    else{
+      // Cleared or invalid selection
+      this.props.input.onChange('');
+    }
+  };
+  
+  handleMenuOpen = () => {
+    if (this.state.options.length === 0) {
+      this.getOptions("*", 1);
     }
   };
 
   render() {
-
     return (
       <div id="test" className="ad-combobox">
-        <Combobox
+        <Select
+          components={{ MenuList: CustomMenuList, DropdownIndicator: CustomDropdownIndicator }}
+          value={this.state.currentValue || ""}
           options={this.state.options}
-          multiselect={this.props.multiselect}
+          page={this.state.page}
+          hasMore={this.state.hasMore}
+          loadMoreOptions={this.loadMoreOptions}
+          loadingMore={this.state.loadingMore}
+          onMenuOpen={this.handleMenuOpen}
+          onInputChange={this.handleInputChange}
+          onChange={this.handleChange}
+          isDisabled={this.props.disabled}
+          isMulti={this.props.multiselect}
           placeholder={this.props.placeholder}
-          disabled={this.props.disabled}
-          clearable={true}
-          onFocus={() => {
-            if (this.state.options.length === 0) {
-              //Fetch all personnel at start when clicking select and filter when typing text
-              this.getOptions("*").catch(err => console.error(err));
-            }
-          }}
-          onChange={value => {
-            this.setState({ ...this.state, currentValue: value, options: [] })
-            if ( !isArray ( value )) {
-             value && this.props.input.onChange(value.id)
-            } else {
-              let returnValue = []
-              value.forEach( current => returnValue.push( current ))
-              this.props.input.onChange( returnValue )
-            }
-          }}
-          value={this.state.currentValue}
+          isClearable={true}
           onBlur={this.props.onBlur}
-          aria-label={this.props.name}
+          inputId={this.props.name}
+          styles={hdsLikeStyles}
         />
       </div>
-    )
+    );
   }
 }
 
-export default CustomADUserCombobox
+export default CustomADUserCombobox;
