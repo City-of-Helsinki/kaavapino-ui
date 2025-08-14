@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { Grid, Segment } from 'semantic-ui-react'
 import BasicInformation from './BasicInformation'
 import Contract from './Contract'
 import Description from './Description'
@@ -189,75 +188,85 @@ function ProjectCardPage({
   }
 
   const renderFirstRow = () => (
-    <Grid stackable columns="equal">
-      <Grid.Column width={8}>
-        <Segment>
+    <div className="pc-grid">
+      <div className="pc-col pc-col-6">
+        <div className="pc-segment">
           <Description fields={descriptionFields} />
-        </Segment>
-      </Grid.Column>
-      <Grid.Column>
-        <Segment>
+        </div>
+      </div>
+
+      <div className="pc-col">
+        <div className="pc-segment">
           <Photo field={photoField} />
-        </Segment>
-      </Grid.Column>
-    </Grid>
-  )
-  const renderTimeLineRow = () => {
-    return (
-      <Grid stackable columns="equal">
-        <Grid.Column>
-          <Segment>
-            <ProjectTimeline
-              deadlines={currentProject && currentProject.deadlines}
-              projectView={true}
-              onhold={currentProject && currentProject.onhold}
-              attribute_data={currentProject && currentProject.attribute_data}
-            />
-          </Segment>
-        </Grid.Column>
-      </Grid>
-    )
-  }
-  const renderSecondRow = () => {
-    return (
-      <Grid stackable columns="equal">
-        <Grid.Column width={5}>
-          <Segment>
-            <Contacts fields={contactsFields} personnel={personnel} />
-          </Segment>
-          <Segment key="basic-information">
-            <StrategyConnection fields={strategyConnectionFields} />
-          </Segment>
-          <Segment>
-            <TimeTable fields={timeTableFields} />
-          </Segment>
-        </Grid.Column>
-        <Grid.Column>
-          <Segment>
-            <FloorAreaInformation fields={floorAreaFields} />
-          </Segment>
-          <Grid columns="equal">
-            <Grid.Column className="inner-left-column">
-              <Segment key="basic-information">
-                <BasicInformation fields={basicInformationFields} />
-              </Segment>
-            </Grid.Column>
-            <Grid.Column className="inner-right-column">
-              <Segment>
-                <Contract fields={contractFields} />
-              </Segment>
-            </Grid.Column>
-          </Grid>
-          <Segment>
-            <GeometryInformation field={planningRestriction} />
-          </Segment>
-          <Segment>
-            <Documents documentFields={externalDocuments} mapLink={currentProject?.attribute_data?.linkki_karttapalvelu}/>
-          </Segment>
-        </Grid.Column>
-      </Grid>
-    )
-  }
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderTimeLineRow = () => (
+    <div className="pc-grid">
+      <div className="pc-col">
+        <div className="pc-segment">
+          <ProjectTimeline
+            deadlines={currentProject && currentProject.deadlines}
+            projectView={true}
+            onhold={currentProject && currentProject.onhold}
+            attribute_data={currentProject && currentProject.attribute_data}
+          />
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderSecondRow = () => (
+    <div className="pc-grid last-grid">
+      <div className="pc-col pc-col-5 inner-left-column">
+        <div className="pc-segment">
+          <Contacts fields={contactsFields} personnel={personnel} />
+        </div>
+
+        <div className="pc-segment" key="basic-information">
+          <StrategyConnection fields={strategyConnectionFields} />
+        </div>
+
+        <div className="pc-segment">
+          <TimeTable fields={timeTableFields} />
+        </div>
+      </div>
+
+      <div className="pc-col inner-right-column">
+        <div className="pc-segment">
+          <FloorAreaInformation fields={floorAreaFields} />
+        </div>
+
+        <div className="pc-grid pc-grid-inner">
+          <div className="pc-col inner-left-column">
+            <div className="pc-segment" key="basic-information">
+              <BasicInformation fields={basicInformationFields} />
+            </div>
+          </div>
+
+          <div className="pc-col inner-right-column">
+            <div className="pc-segment">
+              <Contract fields={contractFields} />
+            </div>
+          </div>
+        </div>
+
+        <div className="pc-segment">
+          <GeometryInformation field={planningRestriction} />
+        </div>
+
+        <div className="pc-segment">
+          <Documents
+            documentFields={externalDocuments}
+            mapLink={currentProject?.attribute_data?.linkki_karttapalvelu}
+          />
+        </div>
+      </div>
+    </div>
+  );
+
   const renderMobileView = () => {
     return (
       <div>

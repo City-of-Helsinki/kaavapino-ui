@@ -7,15 +7,15 @@
     flex: 0.5;
     display: flex;
     flex-direction: column;
-    margin-right: 40px;
-    padding-right: 10px;
+    margin-right: $size40;
+    padding-right: $size10;
     overflow: hidden;
     overflow-y: auto;
     overflow-x: auto;
     max-height: 600px;
 
     .summary-item-container {
-      margin-bottom: 20px;
+      margin-bottom: $size20;
     }
 
     .fieldset-summary-container {
@@ -26,19 +26,17 @@
       }
 
       .fieldset-summary-item:not(:last-child) {
-        margin-bottom: 10px;
+        margin-bottom: $size10;
       }
     }
   }
 }
 
 .project-card-extend {
-  margin-top: 10px;
+  margin-top: $size10;
 }
 
 .project-card {
-  margin: -($size16);
-
   .basic-information {
     min-height: 250px;
     overflow: auto;
@@ -67,7 +65,7 @@
     overflow: auto;
 
     .section {
-      margin-bottom: 10px;
+      margin-bottom: $size10;
     }
   }
   .timetable {
@@ -110,17 +108,17 @@
     background-color: $light-gray3 !important;
     border: 0;
     border-radius: 0;
-    padding: 8px 16px 16px 16px;
+    padding: $size8 $size16 $size16 $size16;
     box-shadow: none;
 
     @media screen and (min-width: 600px) {
-      padding: 16px 24px 24px 24px;
+      padding: $size16 $size24 $size24 $size24;
     }
   }
   .five.wide.column .segment,
   .five.wide.column + .column .ui {
     &:not(:first-of-type) {
-      margin-top: 16px;
+      margin-top: $size16;
     }
   }
 
@@ -130,12 +128,12 @@
   .inner-left-column {
     margin: 0;
     padding: 0 !important;
-    padding-right: 8px !important;
+    padding-right: $size8 !important;
   }
   .inner-right-column {
     margin: 0;
     padding: 0 !important;
-    padding-left: 8px !important;
+    padding-left: $size8 !important;
   }
   .floor-area-information .floor-area-value {
     font-weight: bold;
@@ -144,8 +142,8 @@
   .floor-area-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 24px;
-    margin-top: 8px;
+    gap: $size24;
+    margin-top: $size8;
   }
 
   .floor-area-column {
@@ -154,22 +152,22 @@
   }
 
   .floor-area-column.with-divider {
-    border-left: 1px solid #222;
-    padding-left: 16px;
-    margin-left: -8px; /* align with spacing visually */
+    border-left: $size1 solid #222;
+    padding-left: $size16;
+    margin-left: -$size8; /* align with spacing visually */
   }
 
   .floor-area-field {
-    font-size: 14px;
+    font-size: $size16;
     line-height: 1.4;
   }
 
   .floor-area-value {
     font-weight: 600;
-    margin-top: 4px;
+    margin-top: $size4;
   }
   .floor-area-information .column:first-of-type {
-    border-right: 1px solid black;
+    border-right: $size1 solid black;
   }
   .geometry-input-container {
     .geometry-input {
@@ -177,7 +175,46 @@
     }
   }
   .project-container {
-    margin-top: 10px;
+    margin-top: $size10;
+  }
+
+    /* Simple flex grid to replace Semantic UI Grid */
+  .pc-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $size32;
+    margin-bottom: $size16;
+  }
+
+  .last-grid{
+    gap: $size16;
+  }
+
+  .pc-grid.pc-grid-inner {
+    gap: 0;
+    margin-bottom: 0;
+  }
+
+  .pc-col {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .pc-col-8 { flex: 0 1 66.666%; }  /* 8/16 */
+  .pc-col-5 { flex: 0 1 31.25%; }   /* 5/16 */
+
+  .pc-segment {
+    background: $light-gray3;
+    padding: $size16;
+    margin-bottom: $size16;
+  }
+
+  @media (max-width: 720px) {
+    .pc-col,
+    .pc-col-8,
+    .pc-col-5 {
+      flex: 1 1 100%;
+    }
   }
 }
 
@@ -207,10 +244,10 @@
 }
 .mobile-accordion {
   > div {
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding-top: $size10;
+    padding-bottom: $size10;
   }
 }
 .project-card-field {
-  padding-bottom: 5px;
+  padding-bottom: $size5;
 }
