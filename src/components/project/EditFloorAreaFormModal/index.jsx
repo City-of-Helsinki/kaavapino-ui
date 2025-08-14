@@ -2,7 +2,6 @@
 
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { Modal, Form } from 'semantic-ui-react'
 import { reduxForm, getFormSubmitErrors, getFormValues } from 'redux-form'
 import { connect } from 'react-redux'
 import { EDIT_FLOOR_AREA_FORM } from '../../../constants'
@@ -11,7 +10,7 @@ import Collapse from '../../common/collapse'
 import './styles.scss'
 import { floorAreaSectionsSelector } from '../../../selectors/schemaSelector'
 import { withTranslation } from 'react-i18next'
-import { Button } from 'hds-react'
+import { Button, Dialog } from 'hds-react'
 
 
 const FloorAreaTotals = ({ formValues, floorAreaSections, attributeData }) => {
@@ -134,45 +133,55 @@ class EditFloorAreaFormModal extends Component {
   }
 
   render() {
-    const { loading } = this.state
-    const { floorAreaSections, t } = this.props
+    const { loading } = this.state;
+    const { floorAreaSections, t } = this.props;
 
     return (
-      <Modal
+      <Dialog
         className="form-modal edit-floor-area-form-modal"
-        size={'small'}
-        onClose={this.handleClose}
-        open={this.props.open}
-        closeIcon
+        isOpen
+        close={() => this.handleClose()}
+        closeButtonLabelText={t('common.close')}
+        scrollable
       >
-        <Modal.Header>{t('floor-areas.title')}</Modal.Header>
-        <Modal.Content>
+        <div className="dialog-header">
+          {t('floor-areas.title')}
+        </div>
+
+        <div className="content">
           {this.getFloorAreaTotalsComponent()}
-          <Form>
+
+          <form onSubmit={(e) => { e.preventDefault(); this.handleSubmit(); }}>
             {floorAreaSections &&
               floorAreaSections.map((section, sectionIndex) =>
                 this.renderSection(section, sectionIndex)
               )}
-          </Form>
-        </Modal.Content>
-        <Modal.Actions>
+          </form>
+        </div>
+
+        <div className="actions">
           <span className="form-buttons">
-            <Button  variant="secondary" disabled={loading} onClick={this.handleClose}>
+            <Button
+              variant="secondary"
+              disabled={loading}
+              onClick={() => this.handleClose()}
+            >
               {t('common.cancel')}
             </Button>
+
             <Button
               variant="primary"
               disabled={loading || !this.props.allowedToEdit}
               loadingText={t('common.save')}
               isLoading={loading}
               type="submit"
-              onClick={this.handleSubmit}
+              onClick={() => this.handleSubmit()}
             >
               {t('common.save')}
             </Button>
           </span>
-        </Modal.Actions>
-      </Modal>
+        </div>
+      </Dialog>
     )
   }
 }
