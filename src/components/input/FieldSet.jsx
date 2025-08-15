@@ -2,12 +2,11 @@ import React, { useState, useRef, useEffect } from 'react'
 import { connect, useDispatch } from 'react-redux'
 import { checkingSelector, savingSelector, formErrorListSelector, lastSavedSelector, updateFieldSelector} from '../../selectors/projectSelector'
 import CustomField from './CustomField.jsx'
-import { Form, Label, Popup } from 'semantic-ui-react'
 import projectUtils from '../../utils/projectUtils'
 import Info from './Info.jsx'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { has, get, startCase } from 'lodash'
-import { Button, IconLock, IconClock, IconPlus, IconTrash, IconAngleDown, IconAngleUp, LoadingSpinner } from 'hds-react'
+import { Button, IconLock, IconClock, IconPlus, IconTrash, IconAngleDown, IconAngleUp, LoadingSpinner, Tooltip} from 'hds-react'
 import { change } from 'redux-form'
 import { useTranslation } from 'react-i18next';
 import { OutsideClick } from '../../hooks/OutsideClick'
@@ -291,9 +290,9 @@ const FieldSet = ({
                       className={`input-container ${showError ? 'error' : ''} ${fieldsetDisabled ? 'disabled-fieldset' : ''}`}
                       key={j}
                     >
-                      <Form.Field required={required}>
+                      <div className={`form-field ${required ? 'required' : ''}`}>
                         <div className="input-header">
-                          <Label
+                          <label
                             className={`input-title${required ? ' highlight' : ''} ${showError ? 'error' : ''
                               }`}
                           >
@@ -314,23 +313,13 @@ const FieldSet = ({
                                 )
                               )
                             } */}
-                          </Label>
+                          </label>
                           <div className="input-header-icons">
                             {fieldUpdated && !isReadOnly && (
-                              <Popup
-                                trigger={<IconClock />}
-                                inverted
-                                on="hover"
-                                position="top center"
-                                hideOnScroll
-                                content={
-                                  <span className="input-history">
-                                    <span>{`${projectUtils.formatDate(
-                                      updated.timestamp
-                                    )} ${projectUtils.formatTime(updated.timestamp)} ${updated.user_name
-                                      }`}</span>
-                                  </span>
-                                }
+                              <Tooltip
+                                buttonIcon={<IconClock />}
+                                placement="top"
+                                tooltipText={`${projectUtils.formatDate(updated.timestamp)} ${projectUtils.formatTime(updated.timestamp)} ${updated.user_name}`}
                               />
                             )}
                             {field.help_text && (
@@ -369,7 +358,7 @@ const FieldSet = ({
                         />
                         {showError && <div className="error-text">{showError}</div>}
                         {assistiveText && <div className='assistive-text'>{assistiveText}.</div>}
-                      </Form.Field>
+                      </div>
                     </div>
                   )
                 })}

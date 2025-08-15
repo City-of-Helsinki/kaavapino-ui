@@ -1,29 +1,29 @@
 import React, { useState } from 'react'
-import { Radio } from 'semantic-ui-react'
+import { ToggleButton as HDSToggleButton } from 'hds-react'
 
 const ToggleButton = ({
   input: { value, name, ...rest },
   meta: { error },
   ...custom
 }) => {
-  const [checked, setChecked ] = useState(value ? true : false)
+  const [checked, setChecked] = useState(!!value)
 
-  const onChange = () => {
-    setChecked( !checked )
-    rest.onChange( !checked )
+  const onChange = (newValue) => {
+    setChecked(!newValue)
+    rest.onChange(!newValue)
   }
   return (
-    <div className={'radio-input-container'}>
-      <Radio
-        toggle
-        label={custom.label}
-        placeholder={custom.placeholder}
-        onBlur={custom.onBlur}
-        error={error}
-        name={name}
-        onChange={onChange}
+    <div className="radio-input-container">
+      <HDSToggleButton
+        id={name}
         checked={checked}
+        label={custom.label}
+        onChange={onChange}
+        onBlur={custom.onBlur}
+        name={name}
+        aria-invalid={!!error}
       />
+      {error && <div className="error">{error}</div>}
     </div>
   )
 }

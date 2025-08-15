@@ -5,7 +5,6 @@ import FormField from '../../input/FormField.jsx'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { phasesSelector } from '../../../selectors/phaseSelector'
-import { Modal, Form } from 'semantic-ui-react'
 import { getProjectSnapshot, resetProjectSnapshot } from '../../../actions/projectActions'
 import { getFormValues } from 'redux-form'
 import { currentProjectSelector } from '../../../selectors/projectSelector'
@@ -13,7 +12,7 @@ import { CSVLink } from 'react-csv'
 import { withTranslation } from 'react-i18next'
 import { isObject } from 'lodash'
 import toPlaintext from 'quill-delta-to-plaintext'
-import { Button } from 'hds-react'
+import { Button, Dialog } from 'hds-react'
 import dayjs from 'dayjs'
 
 import './styles.scss'
@@ -113,29 +112,40 @@ class DownloadProjectDataModal extends Component {
       : date
       ? `${currentProject.name}_${dayjs(date).format('YYYYMMDD_HHmmSS')}.csv`
       : null
+    if(!this.props.open) return <> </>
 
     return (
-      <Modal
+      <Dialog
         className="form-modal download-project"
-        size={'tiny'}
-        onClose={this.handleClose}
-        open={this.props.open}
-        closeIcon
+        isOpen
+        close={() => this.handleClose()}
+        closeButtonLabelText={t('common.close')}
+        scrollable
       >
-        <Modal.Header>{t('print-project-data.title')}</Modal.Header>
-        <Modal.Content>
-          {t('print-project-data.info')}
-          <Form>
-            <Form.Group widths="equal">
+        <div className="header">
+          {t('print-project-data.title')}
+        </div>
+
+        <div className="content">
+          <p>{t('print-project-data.info')}</p>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              // no-op submit; you only have a "Load" button below
+            }}
+          >
+            <div className="form-group equal widths">
               {this.getFormField({
                 field: {
                   name: 'phase',
                   label: t('print-project-data.phase-label'),
                   type: 'select',
                   choices: this.getPhases(),
-                  editable: true
-                }
+                  editable: true,
+                },
               })}
+
               {this.getFormField({
                 className: 'ui fluid input',
                 field: {
@@ -143,14 +153,16 @@ class DownloadProjectDataModal extends Component {
                   label: t('print-project-data.date-label'),
                   type: 'datetime',
                   placeHolder: t('print-project-data.date-label'),
-                  editable: true
-                }
+                  editable: true,
+                },
               })}
-            </Form.Group>
-          </Form>
+            </div>
+          </form>
+
           <Button variant="secondary" onClick={this.loadClicked}>
             {t('print-project-data.load-project-data')}
           </Button>
+
           <div className="download-csv">
             {currentProject.projectSnapshot && fileName && (
               <div>
@@ -163,13 +175,14 @@ class DownloadProjectDataModal extends Component {
               </div>
             )}
           </div>
-        </Modal.Content>
-        <Modal.Actions>
-          <Button variant="secondary" onClick={this.handleClose}>
+        </div>
+
+        <div className="actions">
+          <Button variant="secondary" onClick={() => this.handleClose()}>
             {t('print-project-data.button-close')}
           </Button>
-        </Modal.Actions>
-      </Modal>
+        </div>
+      </Dialog>
     )
   }
 }

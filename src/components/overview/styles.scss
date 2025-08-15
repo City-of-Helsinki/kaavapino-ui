@@ -85,6 +85,23 @@
   .ui.grid {
     margin: -($size16);
   }
+
+  .section-box {
+    background-color: #f4f4f4;
+    padding: 1rem 1.5rem 1.5rem;
+    border-radius: 0;
+    margin-top: 2rem;
+  }
+
+  .section-box h3 {
+    font-size: 1.125rem;
+    font-weight: 500;
+  }
+  
+  .first{
+    margin-top: 0;
+  }
+
 }
 .floor-area {
   margin-bottom: 20px;
@@ -95,6 +112,16 @@
   .current-number {
     font-size: large;
     font-weight: bold;
+  }
+  .color-legends{
+    .dot {
+      height: 12px;
+      width: 12px;
+      background-color: $accessible-grey;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+    }
   }
 }
 .tooltip {
@@ -133,6 +160,16 @@
   .leaflet-popup-content-wrapper {
     font-size: $size14;
     border-radius: 5px;
+  }
+  .color-legends{
+    .dot {
+      height: 12px;
+      width: 12px;
+      background-color: $accessible-grey;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+    }
   }
 }
 .xAxis {

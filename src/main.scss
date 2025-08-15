@@ -1,4 +1,4 @@
-@use './components/common/Common';
+@use '@/components/common/Common.scss' as *;
 @import 'react-redux-toastr/lib/css/react-redux-toastr.min.css';
 @import '../node_modules/react-datetime/css/react-datetime.css';
 

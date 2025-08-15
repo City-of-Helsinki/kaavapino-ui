@@ -1,4 +1,4 @@
-@use '../../common/Common';
+
 
 .filters-list {
   height: auto;
@@ -37,6 +37,18 @@
 }
 .filter-accordion {
   font-size: $size14;
+}
+
+.filters-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 16px;
+  width: 100%;
+}
+
+.filter-column {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 

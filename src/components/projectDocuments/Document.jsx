@@ -2,12 +2,11 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { downloadDocument, downloadDocumentPreview } from '../../actions/documentActions'
 import { Button } from 'hds-react'
-import { Grid } from 'semantic-ui-react'
 import { withRouter } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
-//import DocumentConfirmationModal from './DocumentConfirmationModal.jsx'
 import PropTypes from 'prop-types'
+import './ProjectDocuments.scss'
 
 function Document({
   name,
@@ -50,15 +49,6 @@ function Document({
     }
   }
 
-  /* const renderConfirmationDialog = () => {
-    return (
-      <DocumentConfirmationModal
-        open={showConfirmation}
-        callback={confirmationCallback}
-      />
-    )
-  } */
-
   const disablePreview = (ended,schema) => {
     if(!ended && schema){
       return false
@@ -89,43 +79,49 @@ function Document({
 
   //const openConfirmationDialog = () => setShowConfirmation(true)
   return (
-    <Grid columns="equal" className="document-row ">
-      <Grid.Column>
+    <div className="document-row grid-equal">
+      <div className="grid-col">
         <span className="document-title document-header">{name}</span>
         <span className="document-last-loaded">
           <span>{t('project.document-last-loaded')} </span>
-          <span>{lastDownloaded ? dayjs(lastDownloaded).format('DD.MM.YYYY HH:mm') : ''}</span>
+          <span>
+            {lastDownloaded ? dayjs(lastDownloaded).format('DD.MM.YYYY HH:mm') : ''}
+          </span>
         </span>
-      </Grid.Column>
+      </div>
 
-      <Grid.Column textAlign="right">
-          <>
+      <div className="grid-col text-right">
+        <>
+          <Button
+            size="small"
+            variant="secondary"
+            onClick={() => { preview(); }}
+            href={file}
+            className="document-button"
+            disabled={disablePreview(phaseEnded, schema) || !downloadingDocumentReady}
+          >
+            {t('project.load-preview')}
+          </Button>
+
+          {isUserResponsible && (
             <Button
-              size='small'
-              variant="secondary"
-              onClick={() => {preview()}}
+              size="small"
+              variant="primary"
+              onClick={() => download()}
               href={file}
               className="document-button"
-              disabled={disablePreview(phaseEnded,schema) || !downloadingDocumentReady}
+              disabled={
+                disableDownload(phaseEnded, hideButtons, scheduleAccepted, schema) ||
+                !downloadingDocumentReady
+              }
             >
-              {t('project.load-preview')}
+              {t('project.load')}
             </Button>
-            {isUserResponsible && (
-              <Button
-                size='small'
-                variant="primary"
-                onClick={() => download()}
-                href={file}
-                className="document-button"
-                disabled={disableDownload(phaseEnded,hideButtons,scheduleAccepted,schema) || !downloadingDocumentReady}
-              >
-                {t('project.load')}
-              </Button>
-            )}
-          </>
-      </Grid.Column>
-    </Grid>
-  )
+          )}
+        </>
+      </div>
+    </div>
+  );
 }
 
 Document.propTypes = {

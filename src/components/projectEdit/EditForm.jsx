@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import { Form } from 'semantic-ui-react'
 import { reduxForm } from 'redux-form'
 import FormSection from './FormSection.jsx'
 import { EDIT_PROJECT_FORM } from '../../constants'
@@ -97,7 +96,7 @@ class EditForm extends Component {
     return (
       <>
         {showSection ?
-        <Form className="form-container" autoComplete="off" aria-live="polite" aria-atomic="true" id="accordion-title" tabIndex="0">
+        <form className="form-container" autoComplete="off" aria-live="polite" aria-atomic="true" id="accordion-title" tabIndex="0">
           <div className="edit-form-buttons" aria-hidden="true">
             {/*<Shoutbox project={projectId} />*/}
           </div>
@@ -130,7 +129,7 @@ class EditForm extends Component {
           >
             <div>{t('footer.to-start')}</div>
           </Button>
-        </Form>
+        </form>
         :
         <>
         </>

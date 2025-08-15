@@ -1,8 +1,8 @@
 import React, {useCallback,useState} from 'react'
 import CustomField from './CustomField.jsx'
 import Matrix from './Matrix'
-import { Form, Label, Popup } from 'semantic-ui-react'
 import Info from './Info.jsx'
+import OnHoverTooltip from '../common/OnHoverTooltip.jsx'
 import projectUtils from '../../utils/projectUtils'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
@@ -199,13 +199,13 @@ const FormField = ({
       type: 'checkbox'
     }
     return (
-      <Form.Field
-        className={`checkbox-container small-margin'} ${showError ? 'error' : ''}`}
+      <div
+        className={`checkbox-container small-margin ${showError ? 'error' : ''}`}
       >
-        <Label>
+        <label>
           <span className="checkbox">{renderField(newProps)}</span>
-        </Label>
-      </Form.Field>
+        </label>
+      </div>
     )
   }
 
@@ -215,13 +215,13 @@ const FormField = ({
       type: 'checkbox-onhold'
     }
     return (
-      <Form.Field
-        className={`checkbox-container small-margin'} ${showError ? 'error' : ''}`}
+      <div
+        className={`checkbox-container small-margin ${showError ? 'error' : ''}`}
       >
-        <Label>
+        <label>
           <span className="checkbox">{renderField(newProps)}</span>
-        </Label>
-      </Form.Field>
+        </label>
+      </div>
     )
   }
 
@@ -247,7 +247,7 @@ const FormField = ({
     const assistiveText = field.assistive_text
     return (
       <>
-      <Form.Field
+      <div
         tabIndex="0"
         className={`input-container ${isOneLineField ? 'small-margin' : ''} ${
           showError ? 'error' : ''
@@ -257,7 +257,7 @@ const FormField = ({
         {!isOneLineField && !timetableBoolean && (
           <div className='input-header-container'>
             <div className="input-header">
-              <Label
+              <label
                 tabIndex="0"
                 id={field.name}
                 className={`input-title${required ? ' highlight' : ''} ${field.type === "info_fieldset" ? ' hide' : ''}`}
@@ -277,26 +277,19 @@ const FormField = ({
                   )
                 } 
                 */}
-              </Label>
+              </label>
             </div>
             <div className="input-header-icons">
             {updated && !isReadOnly && (
-              <Popup
-                trigger={<IconClock />}
-                inverted
-                on="hover"
-                position="top center"
-                hideOnScroll
-                content={
-                  <span className="input-history">
-                    <span>{`${projectUtils.formatDate(
-                      updated.timestamp
-                    )} ${projectUtils.formatTime(updated.timestamp)} ${
-                      updated.user_name
-                    }`}</span>
-                  </span>
-                }
-              />
+              <OnHoverTooltip tooltipContent={
+                <span className="input-history">
+                  {`${projectUtils.formatDate(
+                    updated.timestamp
+                  )} ${projectUtils.formatTime(updated.timestamp)} ${
+                    updated.user_name
+                  }`}
+                </span>} 
+              /> 
             )}
             {field.help_text && (
               <Info content={field.help_text} link={field.help_link} linked={field.linked_fields} help_img_link={field.help_img_link} />
@@ -307,7 +300,7 @@ const FormField = ({
         {renderField(null)}
         {showError && <div className="error-text">{showError}</div>}
         {assistiveText && <div className='assistive-text'>{assistiveText}.</div>}
-      </Form.Field>
+      </div>
       </>
     )
   }

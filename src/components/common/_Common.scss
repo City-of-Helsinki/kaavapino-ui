@@ -1,3 +1,4 @@
+@use '@/globals.scss' as *;
 * {
   box-sizing: border-box;
 }
@@ -402,7 +403,6 @@ footer{
     border: 1px solid $color-black-20;
     padding: 2px;
   }
-  width: 500px;
 }
 
 .header {
@@ -943,17 +943,38 @@ header{
 }
 .log-card {
   font-size: $size16;
+  width: 100%;
   max-width: 320px;
   max-height: 200px;
-  width: 100%;
-  overflow: auto;
+  overflow-x: hidden;
   position: absolute;
   z-index: 4;
-  margin-top: 5px;
-  margin-left: -69px;
-  .ui.grid>.row {
-    padding-top: 5px;
-    padding-bottom: 5px;
+  padding: 0;
+  margin: 0;
+  margin-left: -70px;
+  padding-top: 10px;
+  .log-row{
+    display: flex;
+    justify-content: space-evenly;
+    align-items: flex-start;
+    .log-column-main{
+      padding: $size12;
+    }
+    .field-value{
+      padding: $size12;
+    }
+    .log-column-info{
+      padding: $size12;
+      section{
+        position: fixed !important;
+        z-index: 10000 !important;
+        max-width: 25rem !important;
+        word-wrap: break-word;
+        white-space: normal;
+        width: auto;
+        min-width: 200px;
+      }
+    }
   }
 }
 .inline {
@@ -1107,15 +1128,14 @@ header{
   max-height: 250px;
   border-top:8px solid $color-error;
 
-  .header{
-    padding-top: $size34 !important;
-    padding-left: $size34 !important;
-    padding-bottom: $size16 !important;
+  #dialog-title{
+    margin: 0;
+    padding: 0;
     border-bottom: none;
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    font-family: 'Helsinki Grotesk Medium', sans-serif;
+    font-family: 'Helsinki Grotesk Medium', sans-serif !important;
     font-size: $size18 !important;
     font-weight: 700 !important;
     line-height: $size18 !important;
@@ -1150,10 +1170,12 @@ header{
     .button-primary,.button-danger,.button-secondary {
       margin-right: $size16;
     }
-    .button-secondary{
-      border: 2px solid $color-error;
-      color: $color-error
-    }
+  }
+  .secondary{
+    border: 2px solid $color-error;
+    color: $color-error;
+    border-color: $color-error;
+    --border-color:$color-error;
   }
 }
 
@@ -1343,5 +1365,178 @@ header{
       }
     }
   }
+}
+
+[class*="Dialog-module_dialogContainer"] {
+  z-index: 2000 !important;
+}
+
+[class^="Dialog-module_dialogContainer"]:has(#timeline-dialog) {
+  align-items: normal;
+  justify-content: normal;
+  top: $size10;
+  bottom: $size10;
+}
+
+/* The portal container that holds the dialog – scope only to the side panel */
+[class*="Dialog-module_dialogContainer"]:has(#timeline-side-dialog),
+.hds-dialog__container:has(#timeline-side-dialog) {
+  /* behave like a right-side drawer */
+  justify-content: flex-end;   /* push content to the right */
+  align-items: stretch;        /* full height instead of centered box */
+  top: 16px;                   /* same spacing you used for the big dialog */
+  bottom: 16px;                /* same spacing */
+  left: 0;
+  right: 0;
+  z-index: 3000 !important;
+}
+
+/* Make the dialog paper a fixed-width drawer panel */
+[class*="Dialog-module_dialogPaper"]:has(#timeline-side-dialog),
+.hds-dialog__paper:has(#timeline-side-dialog) {
+  margin: 0;               /* no centering margins */
+  max-width: none;         /* remove HDS max width cap */
+  width: 520px;            /* choose the drawer width you want (e.g., 520–600px) */
+  height: 100%;
+  border-radius: 0;        /* drawer look – optional */
+  box-shadow: 0 2px 12px rgba(0,0,0,.2);
+}
+
+//OnHoverTooltip.jsx styles
+.tooltip-clock-wrapper {
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+}
+
+.tooltip-content {
+  all: unset;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate(-50%, -100%);
+  background-color: #1e1e1e;
+  color: #fff;
+  padding: 6px 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  white-space: nowrap;
+  z-index: 2000;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.3);
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+.tooltip-arrow {
+  all: unset;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid #1e1e1e;
+  z-index: 3000;
+}
+
+.input-history {
+  font-weight: 500;
+}
+
+//ClickPopOver.jsx styles
+.popover-container {
+  pointer-events: none;
+}
+
+.popover-content {
+  pointer-events: auto;
+  min-width: 220px;
+  background: #fff;
+  color: #000;
+  border: 1px solid #d3d3d3;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  font-size: 14px;
+  line-height: 1.4;
+  padding: 8px 12px;
+}
+
+.popover-arrow {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid #fff;
+  z-index: 3001;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
+}
+
+//FloorAreaChart and CustomMapPolygon popup content element styles
+.popup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  font-size: 14px;
+  color: $color-black;
+  align-items: center;
+}
+
+.row-full {
+  grid-column: 1 / -1;
+  border-bottom: 1px solid $light-gray;
+}
+
+.bold {
+  font-weight: bold;
+  text-align: left;
+}
+
+.name {
+  font-weight: 500;
+  color: #333;
+  text-align: left;
+}
+
+.label {
+  text-align: left;
+  color: #333;
+  font-family: 'Helsinki Grotesk Medium', sans-serif;
+}
+
+.value {
+  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 0;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+
+.popup-button {
+  background: none;
+  border: none;
+  color: $color-bus;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0;
 }
 

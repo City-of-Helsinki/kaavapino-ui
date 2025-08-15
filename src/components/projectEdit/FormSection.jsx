@@ -5,7 +5,6 @@ import {
   attributeDataSelector,
   checkingSelector
 } from '../../selectors/projectSelector'
-import { Segment } from 'semantic-ui-react'
 import FormField from '../input/FormField.jsx'
 import { getFormValues } from 'redux-form'
 import { EDIT_PROJECT_FORM } from '../../constants'
@@ -43,7 +42,7 @@ const FormSection = ({
   let count = 0;
   if(section?.title && section?.fields){
   return (
-    <Segment id="field-segment">
+    <div id="field-segment">
       {section.fields.map((field, i) => {
         let rollingInfo
         if(field?.categorization.includes("katsottava tieto") || field?.categorization.includes("päivitettävä tieto")){
@@ -88,7 +87,7 @@ const FormSection = ({
         }
     })}
     {count === 0 ? <Notification label={t('project.no-fields')}></Notification> : ""}
-    </Segment>
+    </div>
   )
   }
 }

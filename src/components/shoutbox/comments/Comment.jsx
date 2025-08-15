@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
-import { Dropdown } from 'semantic-ui-react'
 import projectUtils from '../../../utils/projectUtils'
-import { TextInput, Button } from 'hds-react'
+import { TextInput, Button, IconCogwheel, IconPen, IconTrash } from 'hds-react'
 import { withTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 
@@ -76,22 +75,56 @@ class Comment extends Component {
           </div>
           <div className="comment-edit-container">
             {(showEdit || menuOpen) && (
-              <Dropdown
-                pointing="left"
-                icon="setting"
-                onOpen={() => this.setState({ menuOpen: true })}
-                onClose={() => this.setState({ menuOpen: false })}
-                direction="left"
+              <div
+                className="sb-menu"
+                onKeyDown={(e) => e.key === 'Escape' && this.setState({ menuOpen: false })}
               >
-                <Dropdown.Menu>
-                  <Dropdown.Item
-                    icon="pencil"
-                    text={t('shoutbox.modify')}
-                    onClick={() => this.setState({ editing: true })}
-                  />
-                  <Dropdown.Item icon="trash" text={t('shoutbox.remove')} onClick={this.handleDelete} />
-                </Dropdown.Menu>
-              </Dropdown>
+                <button
+                  type="button"
+                  className="sb-menu__trigger"
+                  aria-haspopup="menu"
+                  aria-expanded={this.state.menuOpen}
+                  onClick={() => this.setState((s) => ({ menuOpen: !s.menuOpen }))}
+                  onBlur={(e) => {
+                    // close when focus leaves the whole component
+                    const root = e.currentTarget.closest('.sb-menu');
+                    if (!root?.contains(e.relatedTarget)) this.setState({ menuOpen: false });
+                  }}
+                  title={t('common.settings')}
+                >
+                  <IconCogwheel aria-hidden="true" />
+                </button>
+
+                {this.state.menuOpen && (
+                  <ul className="sb-menu__card" role="menu" tabIndex={-1}>
+                    <li role="none">
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className="sb-menu__item"
+                        onClick={() => this.setState({ editing: true, menuOpen: false })}
+                      >
+                        <IconPen aria-hidden="true" />
+                        <span>{t('shoutbox.modify')}</span>
+                      </button>
+                    </li>
+                    <li role="none">
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className="sb-menu__item sb-menu__item--danger"
+                        onClick={() => {
+                          this.setState({ menuOpen: false });
+                          this.handleDelete();
+                        }}
+                      >
+                        <IconTrash aria-hidden="true" />
+                        <span>{t('shoutbox.remove')}</span>
+                      </button>
+                    </li>
+                  </ul>
+                )}
+              </div>
             )}
           </div>
         </div>

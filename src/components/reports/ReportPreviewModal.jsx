@@ -1,7 +1,6 @@
 import React from 'react'
-import { Modal } from 'semantic-ui-react'
 import { useTranslation } from 'react-i18next'
-import { Button } from 'hds-react'
+import { Button, Dialog } from 'hds-react'
 import ReportTable from './ReportTable'
 
 function ReportPreviewModal({
@@ -33,43 +32,43 @@ function ReportPreviewModal({
       )
     })
   }
-
+  if (!open) {
+    return <></>;
+  }
   return (
-    <Modal
+    <Dialog
       className="preview-modal"
-      size="large"
-      onClose={handleClose}
-      open={open}
-      closeIcon
-      closeOnDocumentClick={false}
-      closeOnTriggerBlur={false}
-      closeOnTriggerMouseLeave={false}
-      closeOnDimmerClick={false}
-      closeOnPortalMouseLeave={false}
+      isOpen
+      close={handleClose}
+      closeButtonLabelText={t('common.close')}
+      scrollable
     >
-      <Modal.Actions>
-          <Button
-            variant="secondary"
-            isLoading={isReportLoading}
-            className="report-create-button"
-            loadingText={t('reports.create-report')}
-            type="button"
-            onClick={handleSubmit}
-          >
-            {t('reports.create-report')}
-          </Button>
-          <Button
-              type="button"
-              variant="secondary"
-              onClick={() => cancelReportLoading()}
-              loadingText={t('reports.cancel-report')}
-              className="report-cancel-button"
-              disabled={!isReportLoading}
-            >
-              {t('reports.cancel-report')}
-            </Button>
-      </Modal.Actions>
-      <Modal.Content>
+      <Dialog.Header id="preview-title" title={t('reports.presentation-report.title')} />
+      <div className="actions">
+        <Button
+          variant="secondary"
+          isLoading={isReportLoading}
+          className="report-create-button"
+          loadingText={t('reports.create-report')}
+          type="button"
+          onClick={handleSubmit}
+        >
+          {t('reports.create-report')}
+        </Button>
+
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => cancelReportLoading()}
+          loadingText={t('reports.cancel-report')}
+          className="report-cancel-button"
+          disabled={!isReportLoading}
+        >
+          {t('reports.cancel-report')}
+        </Button>
+      </div>
+
+      <div className="content">
         <h3>{t('reports.presentation-report.title')}</h3>
         {!noData && <div>{t('reports.presentation-report.infoText')}</div>}
         {!noData && renderReportContent()}
@@ -78,8 +77,8 @@ function ReportPreviewModal({
             {t('reports.presentation-report.empty-report')}
           </div>
         )}
-      </Modal.Content>
-    </Modal>
+      </div>
+    </Dialog>
   )
 }
 

@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Grid, Segment } from 'semantic-ui-react'
 import CustomMap from './CustomMap'
 import FloorAreaChart from './FloorAreaChart'
 import ProjectsChart from './ProjectsChart'
-import '../common/_Common.scss'
 import './styles.scss'
 import { NavHeader } from '../common/NavHeader'
 import { connect } from 'react-redux'
@@ -99,44 +97,50 @@ const Overview = ({
   }
 
   return (
-    <>
-      <Header/>
+  <>
+    <Header />
 
-      <div className="overview">
-        <NavHeader
-          routeItems={[{ value: t('overview.title'), path: '/' }]}
-          title={t('overview.title')}
-        />
-        <Grid stackable columns="equal">
-          <Grid.Column>
-            <Segment>
-              <CustomMap
-                isPrivileged={isExpert}
-                filters={getFilters('filters_on_map')}
-                isMobile={isMobile}
-              />
-            </Segment>
-          </Grid.Column>
-        </Grid>
-        <Grid stackable columns="equal">
-          <Grid.Column>
-            <Segment>
-              <FloorAreaChart
-                filters={getFilters('filters_floor_area')}
-                isPrivileged={isExpert}
-              />
-            </Segment>
-          </Grid.Column>
-        </Grid>
-        <Grid stackable columns="equal">
-          <Grid.Column width={8}>
-            <Segment>
-              <ProjectsChart filters={getFilters('filters_by_subtype')} />
-            </Segment>
-          </Grid.Column>
-        </Grid>
+    <div className="overview">
+      <NavHeader
+        routeItems={[{ value: t('overview.title'), path: '/' }]}
+        title={t('overview.title')}
+      />
+
+      {/* Map Section */}
+      <div className="hds-grid hds-grid--gap-xl margin-bottom-xl">
+        <div className="hds-grid__col">
+          <div className="section-box first">
+            <CustomMap
+              isPrivileged={isExpert}
+              filters={getFilters('filters_on_map')}
+              isMobile={isMobile}
+            />
+          </div>
+        </div>
       </div>
-    </>
+
+      {/* Floor Area Chart Section */}
+      <div className="hds-grid hds-grid--gap-xl margin-bottom-xl">
+        <div className="hds-grid__col">
+          <div className="section-box">
+            <FloorAreaChart
+              filters={getFilters('filters_floor_area')}
+              isPrivileged={isExpert}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Projects Chart Section */}
+      <div className="hds-grid hds-grid--gap-xl margin-bottom-xl">
+        <div className="hds-grid__col hds-grid__col--8">
+          <div className="section-box">
+            <ProjectsChart filters={getFilters('filters_by_subtype')} />
+          </div>
+        </div>
+      </div>
+    </div>
+  </>
   )
 }
 const mapDispatchToProps = {

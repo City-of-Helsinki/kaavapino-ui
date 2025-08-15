@@ -6,7 +6,6 @@ import { TextInput } from 'hds-react'
 import { REPORT_FORM } from '../../constants'
 import CustomADUserCombobox from '../input/CustomADUserCombobox'
 import { isArray } from 'lodash'
-import { Grid } from 'semantic-ui-react'
 
 function FilterField({ type, id, options, change, disabled, inputType, name }) {
   const [start, setStart] = useState(null)
@@ -68,34 +67,29 @@ function FilterField({ type, id, options, change, disabled, inputType, name }) {
     return (
       <div>
         <div className="range-filters">
-          <Grid>
-            <Grid.Column width={7}>
+          <div className="range-grid">
+            <div className="col col-1">
               <TextInput
-                onChange={event => {
-                  setStart(event.target.value)
-                }}
+                onChange={(event) => setStart(event.target.value)}
                 type={type}
                 className="date-input"
-                style={{ height: '50px' }}
                 disabled={disabled}
                 aria-label="Alkupvm"
               />
-            </Grid.Column>
-            <Grid.Column className="center-horizontal" width={1}>
-              -
-            </Grid.Column>
-            <Grid.Column width={7}>
+            </div>
+
+            <div className="col center-horizontal">-</div>
+
+            <div className="col col-2">
               <TextInput
-                onChange={event => {
-                  setEnd(event.target.value)
-                }}
-               type={type}
+                onChange={(event) => setEnd(event.target.value)}
+                type={type}
                 className="date-input"
                 disabled={disabled}
                 aria-label="Loppu pvm"
               />
-            </Grid.Column>
-          </Grid>
+            </div>
+          </div>
         </div>
       </div>
     )

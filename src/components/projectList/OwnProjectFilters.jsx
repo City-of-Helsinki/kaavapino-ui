@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Grid } from 'semantic-ui-react'
 import DropdownFilter from '../overview/Filters/DropdownFilter.jsx'
 import CustomADUserCombobox from '../input/CustomADUserCombobox.jsx'
 import { SearchInput } from 'hds-react'
@@ -78,52 +77,52 @@ function OwnProjectFilters({ filters, ...props }) {
 
     return (
         <div className="filters-list projects-filters">
-            <Grid stackable columns="equal">
-                <Grid.Column key="own1">
+            <div className="filters-grid">
+                <div className="filters-col" key="own1">
                     <label htmlFor="person_combo">{t('common.person')}</label>
                     <CustomADUserCombobox
-                        id="person_combo"
-                        label={t('common.person')}
-                        input={{
-                            onChange: value => {
-                                onUserFilterChange(value)
-                            }
-                        }}
-                        multiselect={true}
-                        placeholder={t('common.person')}
+                    id="person_combo"
+                    label={t('common.person')}
+                    input={{
+                        onChange: value => {
+                        onUserFilterChange(value);
+                        }
+                    }}
+                    multiselect={true}
+                    placeholder={t('common.person')}
                     />
-                </Grid.Column>
-                <Grid.Column key="own2">
+                </div>
+
+                <div className="filters-col" key="own2">
                     <label htmlFor="unit_combo">{t('common.unit')}</label>
                     <DropdownFilter
-                        id="unit_combo"
-                        key={t('common.unit')}
-                        name={t('common.unit')}
-                        defaultValue={null}
-                        options={filterData}
-                        placeholder={t('common.unit')}
-                        onChange={
-                            value => {
-                                onFilterChange(value)
-                            }
-                        }
-                        type="choice"
-                        multiSelect={false}
-                        yearSelect={false}
+                    id="unit_combo"
+                    key={t('common.unit')}
+                    name={t('common.unit')}
+                    defaultValue={null}
+                    options={filterData}
+                    placeholder={t('common.unit')}
+                    onChange={value => {
+                        onFilterChange(value);
+                    }}
+                    type="choice"
+                    multiSelect={false}
+                    yearSelect={false}
                     />
-                </Grid.Column>
-                <Grid.Column key="own3">
+                </div>
+
+                <div className="filters-col" key="own3">
                     <label htmlFor="search_input">{t('common.keyword')}</label>
                     <SearchInput
-                        id="search_input"
-                        clearButtonAriaLabel="Clear"
-                        onSubmit={value => onSubmit(value)}
-                        aria-label="Tyhjennä"
-                        placeholder={t('common.keyword')}
-                        onChange={value => onSearchChange(value)}
+                    id="search_input"
+                    clearButtonAriaLabel="Clear"
+                    onSubmit={value => onSubmit(value)}
+                    aria-label="Tyhjennä"
+                    placeholder={t('common.keyword')}
+                    onChange={value => onSearchChange(value)}
                     />
-                </Grid.Column>
-            </Grid>
+                </div>
+            </div>
         </div>
     )
 }

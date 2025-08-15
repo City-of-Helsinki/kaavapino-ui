@@ -1,6 +1,17 @@
-@use '../../common/Common';
+
 
 .edit-floor-area-form-modal {
+  width: 73% !important;
+  max-width: 740px;
+  overflow-y: auto;
+  .dialog-header{
+    font-family: "Helsinki Grotesk Bold", sans-serif;
+    border-bottom: 0;
+    font-size: 1.5rem;
+    line-height: 1.5rem;
+    margin: 16px 0;
+    padding: 0;
+  }
   .floor-area-totals {
     border: 1px solid $light-gray;
     padding: 24px;

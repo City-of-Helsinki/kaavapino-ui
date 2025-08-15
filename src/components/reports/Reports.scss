@@ -75,7 +75,7 @@
     margin-left: 0 !important;
     margin-top: 50px !important;
     margin-bottom: 0 !important;
-
+    justify-content: flex-end;
     .report-create-button {
       margin-top: 30px;
       align-self: center;
@@ -124,6 +124,15 @@
 }
 .range-filters {
   display: inline-flex;
+  .range-grid{
+    display: flex;
+    .col-1{
+      margin-right: $size16;
+    }
+    .col-2{
+      margin-left: $size16;
+    }
+  }
 }
 .center-horizontal {
   margin-top: auto;
