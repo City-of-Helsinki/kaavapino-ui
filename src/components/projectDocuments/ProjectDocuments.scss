@@ -15,11 +15,10 @@
 .document-title.document-header {
   display: block;
   font-weight: 700;
-  font-size: $size18;
   line-height: $size24;
   color: $black1;
   margin: 0 0 6px 0;
-  font-family: Helsinki Grotesk Medium, sans-serif;
+  font-family: 'Helsinki Grotesk Medium', sans-serif;
   font-size: $size20;
   letter-spacing: .2px;
   margin-bottom: $size16;
@@ -50,7 +49,7 @@
 }
 
 .document-status-info{
-  font-family: Helsinki Grotesk Medium Italic, sans-serif;
+  font-family: 'Helsinki Grotesk Medium Italic', sans-serif;
   font-size: $size14;
   font-weight: 500;
   line-height: $size18;
@@ -64,7 +63,7 @@
   flex-flow: column;
   justify-content: flex-start;
   margin-bottom: $size28;
-  font-family: Helsinki Grotesk Medium, sans-serif;
+  font-family: 'Helsinki Grotesk Medium', sans-serif;
   font-weight: 500;
 }
 
