@@ -1,6 +1,5 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Popup } from 'semantic-ui-react'
 import ProjectTimeline from '../ProjectTimeline/ProjectTimeline'
 import { truncate } from 'lodash'
 import Status from '../common/Status'
@@ -31,27 +30,21 @@ const ListItem = ({
         <span className="project-list-item-name field-ellipsis left">
             {prio}
         </span>
-        <span className="project-list-item-name left field-ellipsis">
-          <Popup
-            trigger={
-              <Link className="project-name" to={`/projects/${id}`}>
-                {truncate(name, { length: MAX_PROJECT_NAME_LENGTH })}
-              </Link>
-            }
-            on="hover"
-            content={name}
-          />
+        <span className="project-list-item-name left field-ellipsis tooltip-wrapper">
+          <Link className="project-name" to={`/projects/${id}`}>
+            {truncate(name, { length: MAX_PROJECT_NAME_LENGTH })}
+          </Link>
+          <span className="tooltip-text">{name}</span>
         </span>
         <span className="left field-ellipsis">{projectId}</span>
         <span className="project-list-item-pino field-ellipsis left">
           {pino_number}
         </span>
         <span className="left field-ellipsis">{subtype}</span>
-        <Popup
-          trigger={<span className="field-ellipsis left">{user}</span>}
-          on="hover"
-          content={user}
-        />
+        <span className="field-ellipsis left tooltip-wrapper">
+          {user}
+          <span className="tooltip-text">{user}</span>
+        </span>
         <span className="project-list-item-phase left field-ellipsis">
           <Status color={phaseColor} /> {phaseName}
         </span>

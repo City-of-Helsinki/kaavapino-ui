@@ -6,17 +6,10 @@ import ReduxToastr from 'react-redux-toastr'
 import App from './components/App.jsx'
 import store from './store'
 import apiUtils from './utils/apiUtils'
-import 'semantic-ui-css/semantic.min.css'
 import 'react-redux-toastr/lib/css/react-redux-toastr.min.css'
 import 'hds-core'
 import './main.scss'
 import './i18n'
-
-// Software uses semanctic-ui-react as a global style. In the end of 2021 the idea was to change components use
-// hds-rect. However since hds-react implementation was only started then, it did not have all the required
-// components. Most of the components have been changed from sematic-ui-react to hds-react, but some components
-// still missing. When all required components are available, semantic-ui-react could be removed and use hds-react
-// as a common style.
 
 // Initialize axios
 apiUtils.initAxios()

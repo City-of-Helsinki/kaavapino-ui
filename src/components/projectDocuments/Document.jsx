@@ -5,7 +5,6 @@ import { Button } from 'hds-react'
 import { withRouter } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
-//import DocumentConfirmationModal from './DocumentConfirmationModal.jsx'
 import PropTypes from 'prop-types'
 import './ProjectDocuments.scss'
 
@@ -49,15 +48,6 @@ function Document({
         disableDownloads()
     }
   }
-
-  /* const renderConfirmationDialog = () => {
-    return (
-      <DocumentConfirmationModal
-        open={showConfirmation}
-        callback={confirmationCallback}
-      />
-    )
-  } */
 
   const disablePreview = (ended,schema) => {
     if(!ended && schema){

@@ -1,12 +1,11 @@
 import React, { useState, useRef } from 'react'
-import { Button } from 'semantic-ui-react'
 import './shoutbox.scss'
 import Comments from './comments'
 import { useOutsideClick } from '../../hooks/useOutsideClick'
 import { connect } from 'react-redux'
 import { unreadCommentsCountSelector } from '../../selectors/commentSelector'
 import { markCommentsAsRead } from '../../actions/commentActions'
-import { IconCross } from 'hds-react'
+import { IconCross,Button } from 'hds-react'
 import { useTranslation } from 'react-i18next'
 
 const ShoutBoxButton = ({ unreadCommentsCount, ...rest }) => {

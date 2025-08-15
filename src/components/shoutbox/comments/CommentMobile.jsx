@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { Dropdown } from 'semantic-ui-react'
 import projectUtils from '../../../utils/projectUtils'
 import { TextInput, Button } from 'hds-react'
 
@@ -45,16 +44,55 @@ function CommentMobile(props) {
         </div>
         <div className="comment-edit-container">
           {props.editable && (
-            <Dropdown pointing="left" icon="setting" direction="left">
-              <Dropdown.Menu>
-                <Dropdown.Item
-                  icon="pencil"
-                  text="Muokkaa"
-                  onClick={() => setEditing(true)}
-                />
-                <Dropdown.Item icon="trash" text="Poista" onClick={handleDelete} />
-              </Dropdown.Menu>
-            </Dropdown>
+            <div className="sb-menu">
+              <button
+                type="button"
+                className="sb-menu__trigger"
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                onClick={() => setMenuOpen((o) => !o)}
+                onBlur={(e) => {
+                  const root = e.currentTarget.closest('.sb-menu');
+                  if (!root?.contains(e.relatedTarget)) setMenuOpen(false);
+                }}
+                title="Asetukset"
+              >
+                <IconCog aria-hidden="true" />
+              </button>
+
+              {menuOpen && (
+                <ul className="sb-menu__card" role="menu" tabIndex={-1}>
+                  <li role="none">
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="sb-menu__item"
+                      onClick={() => {
+                        setEditing(true);
+                        setMenuOpen(false);
+                      }}
+                    >
+                      <IconPen aria-hidden="true" />
+                      <span>Muokkaa</span>
+                    </button>
+                  </li>
+                  <li role="none">
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="sb-menu__item sb-menu__item--danger"
+                      onClick={() => {
+                        handleDelete();
+                        setMenuOpen(false);
+                      }}
+                    >
+                      <IconTrash aria-hidden="true" />
+                      <span>Poista</span>
+                    </button>
+                  </li>
+                </ul>
+              )}
+            </div>
           )}
         </div>
       </div>

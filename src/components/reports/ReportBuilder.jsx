@@ -14,7 +14,6 @@ import {
   reportPreviewLoadingSelector,
   reportLoadingSelector
 } from '../../selectors/reportSelector'
-import { Form } from 'semantic-ui-react'
 import ReportFilters from './ReportFilters'
 import { Button } from 'hds-react'
 import { useTranslation } from 'react-i18next'
@@ -187,7 +186,7 @@ function ReportBuilder(props) {
       return null
     }
     return (
-      <Form onSubmit={handleSubmit} className="report-builder-container">
+      <form onSubmit={handleSubmit} className="report-builder-container">
         {selectedReport && (
           <div className="report-filter-container">
             <h2>{selectedReport.name}</h2>
@@ -243,7 +242,7 @@ function ReportBuilder(props) {
             </Button>
           </>
         )}
-      </Form>
+      </form>
     )
   }
 

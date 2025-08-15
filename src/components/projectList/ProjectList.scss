@@ -287,6 +287,34 @@
           span {
             flex:1;
           }
+
+          .tooltip-wrapper {
+            position: relative;
+            display: inline-block;
+          }
+
+          .tooltip-text {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+
+            position: absolute;
+            z-index: 10;
+            left: 0;
+            bottom: 125%; /* show above the text */
+            background-color: #1a1a1a;
+            color: #fff;
+            font-size: 14px;
+            line-height: 18px;
+            padding: 6px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+          }
+
+          .tooltip-wrapper:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+          }
         }
   
         .project-list-sort-text {
@@ -514,6 +542,18 @@
       ul{
         overflow-x: hidden;
         overflow-y: scroll;
+      }
+    }
+    .filters-grid{
+      align-items: stretch;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      .filters-col {
+        display: inline-block;
+        flex-grow: 1;
+        padding: .75rem;
+        max-width: 320px;
       }
     }
   }
