@@ -233,7 +233,7 @@ class CustomADUserCombobox extends Component {
   };
 
   handleChange = (value) => {
-    this.setState({ ...this.state, currentValue: value, options: [] });
+    this.setState(prevState => ({ ...prevState, currentValue: value, options: [] }));
     // Multiselect case
     if (Array.isArray(value)) {
       const returnValue = value.map(item => ({

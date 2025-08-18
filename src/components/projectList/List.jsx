@@ -53,13 +53,13 @@ class List extends Component {
         newDir = 0
       }
     }
-    this.setState({
-      ...this.state,
+    this.setState(prevState => ({
+      ...prevState,
       sort: newSort,
       dir: newDir,
       name,
       dirname:type
-    })
+    }))
     this.props.sortField(name,dir)
     this.props.sortProjects({ sort: newSort, dir: newDir })
   }

@@ -149,10 +149,10 @@ class ProjectEditPage extends Component {
     window.addEventListener('resize', this.handleResize)
 
     if (window.innerWidth < 720) {
-      this.setState({
-        ...this.state,
+      this.setState(prevState => ({
+        ...prevState,
         isMobile: true
-      })
+      }))
     }
 
     this.scroll()
@@ -164,12 +164,12 @@ class ProjectEditPage extends Component {
 
     if (viewParameter === 'deadlines') {
       this.props.showTimetable(true,"","",{})
-      this.setState({ ...this.state })
+      this.setState(prevState => ({ ...prevState }))
       this.props.history.replace({ ...this.props.location, search: '' })
     }
     if (viewParameter === 'floorarea') {
       this.props.showFloorArea(true)
-      this.setState({ ...this.state })
+      this.setState(prevState => ({ ...prevState }))
       this.props.history.replace({ ...this.props.location, search: '' })
     }
 
@@ -298,16 +298,16 @@ class ProjectEditPage extends Component {
   }
   setRef = ref => {
     this.setState(prevState => ({
-      ...this.state,
+      ...prevState,
       refs: [...prevState.refs, ref]
     }))
   }
 
   setFormInitialized = value => {
-    this.setState({
-      ...this.state,
+    this.setState(prevState => ({
+      ...prevState,
       formInitialized: value
-    })
+    }))
   }
   createHeadings = () => {
     const { schema } = this.props
@@ -361,15 +361,15 @@ class ProjectEditPage extends Component {
   //choose the screen size
   handleResize = () => {
     if (window.innerWidth < 720) {
-      this.setState({
-        ...this.state,
+      this.setState(prevState => ({
+        ...prevState,
         isMobile: true
-      })
+      }))
     } else {
-      this.setState({
-        ...this.state,
+      this.setState(prevState => ({
+        ...prevState,
         isMobile: false
-      })
+      }))
     }
   }
 

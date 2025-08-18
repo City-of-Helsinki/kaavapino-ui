@@ -415,15 +415,15 @@ class ProjectListPage extends Component {
 
   toggleGraph = () => {
     if (this.state.showGraph) {
-      this.setState({
-        ...this.state,
+      this.setState(prevState => ({
+        ...prevState,
         showGraph: false
-      })
+      }))
     } else {
-      this.setState({
-        ...this.state,
+      this.setState(prevState => ({
+        ...prevState,
         showGraph: true
-      })
+      }))
     }
   }
 

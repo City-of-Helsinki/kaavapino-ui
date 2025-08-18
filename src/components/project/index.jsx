@@ -92,7 +92,7 @@ class ProjectPage extends Component {
   componentDidUpdate(prevProps) {
     const { currentProject, changingPhase } = this.props
     if(prevProps.saving && !this.props.saving){
-      this.setState({ ...this.state, showBaseInformationForm: false })
+      this.setState(prevState => ({ ...prevState, showBaseInformationForm: false }))
     }
     if (
       (!prevProps.currentProject && currentProject) ||
@@ -104,7 +104,7 @@ class ProjectPage extends Component {
       const viewParameter = params.get('property')
 
       if (viewParameter) {
-        this.setState({ ...this.state, showBaseInformationForm: true })
+        this.setState(prevState => ({ ...prevState, showBaseInformationForm: true }))
         this.props.history.replace({ ...this.props.location, search: '' })
       }
 
@@ -437,7 +437,7 @@ class ProjectPage extends Component {
   openProjectDataModal = () => this.togglePrintProjectDataModal(true)
 
   toggleBaseInformationForm = opened =>
-    this.setState({ ...this.state, showBaseInformationForm: opened })
+    this.setState(prevState => ({ ...prevState, showBaseInformationForm: opened }))
 
   getAllChanges = () => {
     const { allEditFields, edit, creator, t } = this.props
