@@ -8,7 +8,7 @@ import { showField } from '../../utils/projectVisibilityUtils'
 import textUtil from '../../utils/textUtil'
 import objectUtil from '../../utils/objectUtil';
 import PropTypes from 'prop-types'
-import './VisTimeline.css'
+import './VisTimeline.scss'
 
 const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit,disabledDates,lomapaivat,dateTypes,groups, items, sectionAttributes,isAdmin,initialTab }) => {
 
