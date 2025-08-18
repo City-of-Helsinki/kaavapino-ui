@@ -277,10 +277,6 @@ const SelectInput = ({
     let readOnlyStyle = notSelectable ? 'selection readonly' : 'selection'
     let rollingInfoValue = getRollingInfoValue(multiple, currentValue, input, preparedOptions);
 
-    const identifier =
-    lockedStatus?.lockData?.attribute_lock?.field_identifier ??
-    lockedStatus?.lockData?.attribute_lock?.attribute_identifier ??
-    "";
     //Render rolling info field or normal edit field
     //If clicking rolling field button makes positive lock check then show normal editable field
     //Rolling field can be nonEditable

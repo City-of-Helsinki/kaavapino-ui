@@ -50,7 +50,6 @@ const Link = props => {
   const [currentValue, setCurrentValue] = useState(props.input.value)
   const [editField,setEditField] = useState(false)
   const [isEmptyReqField, setIsEmptyReqField] = useState(false)
-  const [currentName, setCurrentName] = useState(null)
   const [isInstanceSaving, setIsInstanceSaving] = useState(false);
   const saving =  useSelector(state => savingSelector(state))
   const isValid = value => isUrl(value) || ipRegex({ exact: true }).test(value)
@@ -96,7 +95,6 @@ const Link = props => {
     } else {
       props.input.onChange(value)
     }
-    setCurrentName(props.input.name)
     setCurrentValue(value)
   }
 
