@@ -39,6 +39,10 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    build: {
+      outDir: 'build', // default is "dist"; set to "build" to match Dockerfile
+      emptyOutDir: true, // clean the folder before building
+    },
     define: { //Mofies default Vite environment variables to use react app environment variables
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
       'process.env.REACT_APP_API_TOKEN': JSON.stringify(env.REACT_APP_API_TOKEN || ''),
