@@ -29,7 +29,7 @@ import { Accordion } from 'hds-react'
 import { useTranslation } from 'react-i18next'
 import { unreadCommentsCountSelector } from '../../selectors/commentSelector'
 import CommentsMobile from '../shoutbox/comments/CommentsMobile'
-import './ProjectCard.scss'
+import './projectCard.scss'
 
 export const PROJECT_PICTURE = 'projektikortin_kuva'
 export const PROJECT_BASIC = 'perustiedot'
