@@ -14,7 +14,7 @@ import { OutsideClick } from '../../hooks/OutsideClick'
 import {getAttributeData} from '../../actions/projectActions'
 import { useIsMount } from '../../hooks/IsMounted'
 import PropTypes from 'prop-types'
-import './input.scss'
+import './Input.scss'
 
 const FieldSet = ({
   sets,

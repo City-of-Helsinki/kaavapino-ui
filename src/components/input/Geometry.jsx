@@ -2,7 +2,7 @@ import React from 'react'
 import { MapContainer, TileLayer, Polygon, useMap } from 'react-leaflet'
 import { EPSG3879, formatGeoJSONToPositions, helsinkiCenter } from '../../utils/mapUtils'
 import { useTranslation } from 'react-i18next'
-import './input.scss'
+import './Input.scss'
 
 const MULTIPOLYGON = 'MultiPolygon'
 
