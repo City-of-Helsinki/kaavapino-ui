@@ -66,8 +66,6 @@ export const getFieldAutofillValue = (
 
         let results = []
         if (conditions && conditions.length > 0) {
-          
-
           results = []
           let notFoundValues = 0
 
@@ -161,10 +159,14 @@ export const getFieldAutofillValue = (
           }
            
           if (!results.includes(false) ) {
+            if (thenBranch === TRUE_STRING) {
+              return true;
+            }
+            if (thenBranch === FALSE_STRING) {
+              return false;
+            }
             return formExtraValue + thenBranch
           }
-
-          
 
           if (notFoundValues == conditions.length ) {
             return formExtraValue

@@ -225,7 +225,7 @@ const generateArrayOfYearsForChart = () => {
 const findValueFromObject = (object, key) => {
   let value
   Object.keys(object).some(currentKey => {
-    if (currentKey === key) {
+    if (currentKey === key && !object['_deleted']) {
       value = object[currentKey]
       return true
     }

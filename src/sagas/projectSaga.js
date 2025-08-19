@@ -161,6 +161,7 @@ import dayjs from 'dayjs'
 import { toastr } from 'react-redux-toastr'
 import { confirmationAttributeNames } from '../utils/constants';
 import { generateConfirmedFields } from '../utils/generateConfirmedFields';
+import {IconInfoCircleFill,IconCheckCircleFill,IconErrorFill,IconAlertCircleFill} from 'hds-react'
 
 export default function* projectSaga() {
   yield all([
@@ -712,10 +713,14 @@ function* saveProjectFloorArea() {
       yield put(saveProjectFloorAreaSuccessful(true))
       yield put(setAllEditFields())
 
-      toastr.success(i18.t('messages.timelines-successfully-saved'))
+      toastr.success(i18.t('messages.timelines-successfully-saved'), '', {
+        icon: <IconCheckCircleFill />
+      })
     } catch (e) {
       if (e?.code === "ERR_NETWORK") {
-        toastr.error(i18.t('messages.general-save-error'))
+        toastr.error(i18.t('messages.general-save-error'), '', {
+          icon: <IconErrorFill />
+        })
       }
       yield put(stopSubmit(EDIT_FLOOR_AREA_FORM, e.response && e.response.data))
     }
@@ -730,7 +735,8 @@ function* validateProjectTimetable() {
   toastr.info(i18.t('messages.checking-dates'), {
     timeOut: 0, // Keep it showing until manually removed
     removeOnHover: false,
-    showCloseButton: false,
+    showCloseButton: true,
+    icon: <IconInfoCircleFill />
   });
   yield put(startSubmit(EDIT_PROJECT_TIMETABLE_FORM));
   yield put(setValidatingTimetable(true, false));
@@ -780,6 +786,7 @@ function* validateProjectTimetable() {
         timeOut: 10000,
         removeOnHover: false,
         showCloseButton: true,
+        icon: <IconCheckCircleFill />
       });
 
       // Success. Prevent further validation calls by setting state
@@ -789,7 +796,9 @@ function* validateProjectTimetable() {
       yield put(updateProject(response));
     } catch (e) {
       if (e?.code === 'ERR_NETWORK') {
-        toastr.error(i18.t('messages.validation-error'));
+        toastr.error(i18.t('messages.validation-error'), '', {
+          icon: <IconErrorFill />
+        });
       }
 
       // Catch reached so dates were not correct,
@@ -871,11 +880,15 @@ function* saveProjectTimetable(action,retryCount = 0) {
       yield put(setSubmitSucceeded(EDIT_PROJECT_TIMETABLE_FORM))
       yield put(saveProjectTimetableSuccessful(true))
       yield put(setAllEditFields())
-      toastr.success(i18.t('messages.deadlines-successfully-saved'))
+      toastr.success(i18.t('messages.deadlines-successfully-saved'), '', {
+        icon: <IconCheckCircleFill />
+      })
     } 
     catch (e) {
       if (e?.code === "ERR_NETWORK" && retryCount <= maxRetries) {
-        toastr.error(i18.t('messages.error-connection'))
+        toastr.error(i18.t('messages.error-connection'), '', {
+          icon: <IconErrorFill />
+        })
         yield race({
           online: take(onlineChannel), // Wait for the online event
           timeout: delay(2500) // Wait for 2.5 seconds before retrying
@@ -892,7 +905,8 @@ function* saveProjectTimetable(action,retryCount = 0) {
           timeOut: 0,
           removeOnHover: false,
           showCloseButton: true,
-          className: 'large-scrollable-toastr rrt-error'
+          className: 'large-scrollable-toastr rrt-error',
+          icon: <IconErrorFill />
         });
         yield put(saveProjectTimetableFailed(false))
       }
