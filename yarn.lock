@@ -458,9 +458,9 @@ __metadata:
   linkType: hard
 
 "@bufbuild/protobuf@npm:^2.5.0":
-  version: 2.6.3
-  resolution: "@bufbuild/protobuf@npm:2.6.3"
-  checksum: 186357934e29c78077ead2b4d80c6115112a24d2e41b5880b0d423e99c0d1fd7910660f2a3fd72927dcb54556cf3fa3837b675a27a58b49ca675ca8ee76256c8
+  version: 2.7.0
+  resolution: "@bufbuild/protobuf@npm:2.7.0"
+  checksum: 7456c9d7d3b1bda3153f7c92ea95c637e90d7d04a171e25eb8321762bbc70883b88408c4eb7077c3763ab705c59f63885a2301a9f8c9f419981534fec214d682
   languageName: node
   linkType: hard
 
