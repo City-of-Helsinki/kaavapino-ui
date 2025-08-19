@@ -510,6 +510,16 @@ function RichTextEditor(props) {
         }
       }
     }
+    else if(editorEmpty){
+      //If emptied return original value and before blur set it to input, so does not actually save empty if another field is saved
+      //Set empty false so the error message does not block other editings
+      let name = inputProps.name;
+      let originalData = attributeData[name]?.ops
+      setValue(originalData)
+      editorRef.current.getEditor().setContents(originalData);
+      handleChange(originalData,"","user",false)
+      setValueIsEmpty(false)
+    }
     if(rollingInfo){
       setEditField(false)
     }
