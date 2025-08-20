@@ -1,7 +1,5 @@
-@import '../common/colors';
-
 .timeline-graph-container {
-  font-family: 'Helsinki Grotesk Medium';
+  font-family: 'Helsinki Grotesk Medium', sans-serif;
   padding: 40px 20px 20px 20px;
   margin-top: 20px;
   overflow: hidden;
@@ -44,7 +42,7 @@
       top: 55px;
       left: 16px;
       width: 80%;
-      text-align: start;
+      text-align: flex-start;
     }
     .alert-icon-yellow {
       z-index: 1000;
@@ -85,10 +83,12 @@
         border-bottom-right-radius: 20px;
       }
       .deadline-name-over {
+        font-family: 'Helsinki Grotesk Medium', sans-serif;
         position: absolute;
         bottom: 20px;
         font-size: $size12;
         width: 118px;
+        font-weight: 700;
       }
       .deadline-name-inside {
         position: absolute;
