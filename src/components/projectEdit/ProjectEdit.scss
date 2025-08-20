@@ -1,5 +1,3 @@
-@import '../common/colors.scss';
-
 .hightlight-pääkäyttäjä {
   .Pääkäyttäjät {
     outline: 20px $yellow solid;
@@ -233,7 +231,7 @@
 
     .filter-tag-container {
       padding: $size4 0;
-      margin: 0 (-$size8);
+      margin: 0 (-($size8));
     }
   
     .filter-tag{
@@ -513,8 +511,8 @@
         font-family: "Helsinki Grotesk Medium", sans-serif;
         color: $color-error;
         margin-top: $size32;
-        margin-left: -$size8;
-        margin-bottom: -$size12;
+        margin-left: -($size8);
+        margin-bottom: -($size12);
         padding-left: 0;
 
         div{
@@ -704,7 +702,7 @@
 
   .actions{
     position: absolute;
-    width: fill-available;
+    width: stretch;
     height: 104px;
     display: flex;
     bottom: 0;
@@ -720,11 +718,17 @@
         height: 56px;
         &:last-child {
           margin-left: $size16;
-          &:hover {
+          &:not(:disabled):hover {
             border-color: $color-bus;
             color: $color-bus;
           }
         }
+        &:disabled {
+          cursor: progress;
+        }
+      }
+      button:disabled{
+        cursor: progress;
       }
       span {
         line-height: $size24;

@@ -318,7 +318,7 @@ const getHighestNumberedObject = (obj1, arr) => {
     return result
   }
 
-  const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize) => {
+  const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize,lockedGroup) => {
     // Find the index of the next item where dates should start being pushed
     const currentIndex = arr.findIndex(item => item.key === field);
     let indexToContinue = 0

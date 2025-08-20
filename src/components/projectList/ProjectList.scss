@@ -1,6 +1,3 @@
-@import '../common/colors.scss';
-@import '../common/Fonts.scss';
-
 .project-list-page {
   margin: 0 auto;
   max-width: 1200px;
@@ -357,7 +354,7 @@
             flex-grow: 1;
             margin: 0;
             padding: 0;
-            justify-content: start;
+            justify-content: flex-start;
   
             .angle-icon {
               position: absolute;
@@ -532,7 +529,7 @@
       padding: $size12;
     }
     .ui.grid {
-      margin: -$size12;
+      margin: -($size12);
     }
   }
 

@@ -5,8 +5,7 @@
  * Since these calculations affect each other, all of them are in this file and use variables.
 */
 
-@import '../../components/common/colors.scss';
-
+@use "sass:color";
 $shoutbox-height: calc(90vh - 80px);
 $shoutbox-height-mobile: 90vh;
 $comment-list-header-height: 72px;
@@ -119,7 +118,7 @@ $comment-list-height-mobile: calc(
 
   &:hover,
   &:focus {
-    background: darken(#0c5f81, 5%);
+    background: color.adjust(#0c5f81, $lightness: -5%);
     color: white;
   }
 }
@@ -172,7 +171,7 @@ $comment-list-height-mobile: calc(
 
     &:hover,
     &:focus {
-      background: darken(#0c5f81, 5%);
+      background: color.adjust(#0c5f81, $lightness: -5%);
       color: white;
     }
   }

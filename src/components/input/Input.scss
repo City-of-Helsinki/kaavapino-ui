@@ -1,6 +1,4 @@
-@import '../common/colors.scss';
-@import '../common/Fonts.scss';
-@import url('hds-core');
+@use 'hds-core';
 
 .input-container {
   .input-header-container{
@@ -364,15 +362,15 @@
 }
 
 .ui.label {
-  font-family: "Helsinki Grotesk Medium", sans-serif;
-  background-color: transparent;
-  color: $black1;
-  font-size: $size16;
-  letter-spacing: 0;
-  line-height: $size24;
-  margin: 0;
-  padding: 0;
-  transition: none;
+  font-family: "Helsinki Grotesk Medium", sans-serif !important;
+  background-color: transparent !important; 
+  color: $black1 !important;
+  font-size: $size16 !important;
+  letter-spacing: 0 !important;
+  line-height: $size24 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transition: none !important;
 }
 
 .ui.form input[type=text]:hover {
@@ -782,6 +780,10 @@
   .fieldset-container:last-of-type{
     margin-bottom: 16px;
   }
+  .fieldset-button-add{
+    justify-content: flex-start;
+    background-color: $color-info-light;
+  }
 }
 
 .fieldset-button-remove {
@@ -1107,7 +1109,7 @@
     line-height: $size24;
     color: $color-bus;
     margin-top: 0;
-    margin-left: -$size4;
+    margin-left: -($size4);
 
     div {
       margin-left:0 !important;
@@ -1124,7 +1126,7 @@
     font-family: 'Helsinki Grotesk Medium', sans-serif;
     font-size: $size14;
     margin-top: 0;
-    margin-left: -$size4;
+    margin-left: -($size4);
     padding-left: 0;
     span{
       padding-left: 0.5rem;
@@ -1285,8 +1287,17 @@
   margin-left: 0.5rem;
   margin-top: 2rem;
   .loading-spinner {
-    --spinner-size: 1.25rem;
+    --spinner-size: 1.5rem;
+    --spinner-thickness: 0.25rem;
     width: var(--spinner-size);
     height: var(--spinner-size);
+    margin-right: 0.5rem;
+  }
+}
+
+.fieldset-spinner-button{
+  .loading-spinner {
+    --spinner-size: 1.5rem;
+    --spinner-thickness: 0.25rem;
   }
 }
