@@ -206,8 +206,8 @@ function RichTextEditor(props) {
   useEffect(() => {
     if(!isMount){
       //!ismount skips initial render
-      if(charLimitOver || valueIsEmpty && required){
-        //Adds field to error list that don't trigger toastr right away (too many chars,empty field etc) and shows them when trying to save
+      if(charLimitOver){
+        //Adds field to error list that don't trigger toastr right away (too many chars) and shows them when trying to save
         dispatch(formErrorList(true,inputProps.name))
       }
       else{
@@ -511,14 +511,11 @@ function RichTextEditor(props) {
       }
     }
     else if(editorEmpty){
-      //If emptied return original value and before blur set it to input, so does not actually save empty if another field is saved
-      //Set empty false so the error message does not block other editings
-      let name = inputProps.name;
-      let originalData = attributeData[name]?.ops
-      setValue(originalData)
-      editorRef.current.getEditor().setContents(originalData);
-      handleChange(originalData,"","user",false)
+      localStorage.setItem("changedValues", inputProps.name);
+      editorRef.current.getEditor().deleteText(0, editorRef.current.getEditor().getLength());
+      showCounter.current = false;
       setValueIsEmpty(false)
+      onBlur();
     }
     if(rollingInfo){
       setEditField(false)
@@ -791,7 +788,6 @@ function RichTextEditor(props) {
       ) : null}
     </div>
       {counter.current > maxSize && charLimitOver || maxSizeOver ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.charsover')}</div> : ""}
-      {valueIsEmpty && required ? <div className='error-text'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.noempty')}</div> : ""}
     </div>
     
     return elements
