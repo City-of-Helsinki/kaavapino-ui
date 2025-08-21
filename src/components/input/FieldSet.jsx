@@ -339,7 +339,7 @@ const FieldSet = ({
                           </div>
                         </div>
                         <CustomField
-                          field={{ ...field, name: currentName, disabled, automatically_added }}
+                          field={{ ...field, name: currentName, disabled: disabled || hiding || saving || adding, automatically_added }}
                           attributeData={attributeData}
                           fieldset={field.type === 'fieldset'}
                           parentName={name}
@@ -408,12 +408,12 @@ const FieldSet = ({
           onClick={() => {
             refreshFieldset()
           }}
-          disabled={disabled || visibleErrors.length > 0}
+          disabled={disabled || visibleErrors.length > 0 || saving}
           variant="supplementary"
           size='small'
           fullWidth={true}
           iconLeft={
-          (lockStatus.fieldIdentifier && lockStatus.fieldIdentifier?.replace(/\[\d+\]/g, '') === name) && (saving || adding || hiding) ? (
+          (lockStatus.fieldIdentifier && lockStatus.fieldIdentifier?.replace(/\[\d+\]/g, '') === name) && adding ? (
             <div className="fieldset-spinner-button">
               <LoadingSpinner className="loading-spinner" />
             </div>
@@ -422,12 +422,8 @@ const FieldSet = ({
           )
         }
         >
-        {(lockStatus.fieldIdentifier && lockStatus.fieldIdentifier?.replace(/\[\d+\]/g, '') === name) && saving
-          ? t('project.saving')
-          : adding
+        {(lockStatus.fieldIdentifier && lockStatus.fieldIdentifier?.replace(/\[\d+\]/g, '') === name) && adding
           ? t('project.adding')
-          : hiding
-          ? t('project.deleting')
           : t('project.add')}
         </Button>
         {saving && adding && (
@@ -435,6 +431,16 @@ const FieldSet = ({
           <LoadingSpinner className="loading-spinner" />
         </div>
         )}
+        {(lockStatus.fieldIdentifier && lockStatus.fieldIdentifier?.replace(/\[\d+\]/g, '') === name) && saving
+         ? (
+           <div className='fieldset-saving-notification'>
+             <div className="fieldset-spinner">
+               <LoadingSpinner className="loading-spinner" />
+             </div>
+             {t('project.saving')}
+           </div>
+         )
+         : <></>}
         {visibleErrors?.length > 0 ? <div className="error-text add-error">{t('project.error-prevent-add')}</div> : ""}
       </>
       )}

@@ -782,7 +782,29 @@
   }
   .fieldset-button-add{
     justify-content: flex-start;
+    width: auto;
+  }
+  .fieldset-saving-notification{
     background-color: $color-info-light;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: $size12;
+    height: $size48;
+    font-size: $size16;
+    font-family: "Helsinki Grotesk Bold", sans-serif;
+    font-weight: 700;
+    .fieldset-spinner{
+      margin: 0;
+      padding: 0;
+      margin-right: $size12;
+      .loading-spinner{
+        --spinner-size: 1.5rem;
+        --spinner-thickness: 0.2rem;
+        --spinner-color: #0000bf;
+      }
+
+    }
   }
 }
 
@@ -1153,6 +1175,7 @@
       --spinner-size: 1.5em; // override default size
       width: var(--spinner-size);
       height: var(--spinner-size);
+      --spinner-color: #0000bf;
     }
   }
   .input-spinner-datetime{
@@ -1167,6 +1190,7 @@
       --spinner-size: 1.5em; // override default size
       width: var(--spinner-size);
       height: var(--spinner-size);
+      --spinner-color: #0000bf;
     }
   }
 }
@@ -1185,6 +1209,7 @@
         --spinner-size: 1.5em; // override default size
         width: var(--spinner-size);
         height: var(--spinner-size);
+        --spinner-color: #0000bf;
       }
     }
     .input-spinner-datetime{
@@ -1199,6 +1224,7 @@
         --spinner-size: 1.5em; // override default size
         width: var(--spinner-size);
         height: var(--spinner-size);
+        --spinner-color: #0000bf;
       }
     }
   }
@@ -1227,6 +1253,7 @@
       --spinner-size: 1.25rem;
       width: var(--spinner-size);
       height: var(--spinner-size);
+      --spinner-color: #0000bf;
     }
   }
 }
@@ -1246,6 +1273,7 @@
       --spinner-size: 1.25rem;
       width: var(--spinner-size);
       height: var(--spinner-size);
+      --spinner-color: #0000bf;
     }
   }
 }
@@ -1264,6 +1292,7 @@
       --spinner-size: 1.25rem;
       width: var(--spinner-size);
       height: var(--spinner-size);
+      --spinner-color: #0000bf;
     }
   }
 }
@@ -1278,6 +1307,7 @@
     --spinner-size: 1.25rem;
     width: var(--spinner-size);
     height: var(--spinner-size);
+    --spinner-color: #0000bf;
   }
 }
 
@@ -1292,6 +1322,7 @@
     width: var(--spinner-size);
     height: var(--spinner-size);
     margin-right: 0.5rem;
+    --spinner-color: #0000bf;
   }
 }
 
@@ -1299,5 +1330,6 @@
   .loading-spinner {
     --spinner-size: 1.5rem;
     --spinner-thickness: 0.25rem;
+    --spinner-color: #0000bf;
   }
 }
