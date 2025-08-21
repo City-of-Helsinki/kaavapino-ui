@@ -3,10 +3,12 @@ import { TextInput } from 'hds-react'
 import isUrl from 'is-url'
 import ipRegex from 'ip-regex'
 import { IconCross, IconCheck, Button, IconLink, LoadingSpinner } from 'hds-react'
-import { useSelector } from 'react-redux'
+import { useSelector,useDispatch } from 'react-redux'
 import { savingSelector } from '../../selectors/projectSelector'
 import { useTranslation } from 'react-i18next';
 import RollingInfo from '../input/RollingInfo.jsx'
+import { useIsMount } from '../../hooks/IsMounted'
+import {formErrorList} from '../../actions/projectActions'
 
 const Link = props => {
   const openLink = () => {
@@ -46,10 +48,10 @@ const Link = props => {
   } = props;
 
   const {t} = useTranslation()
+  const dispatch = useDispatch()
 
   const [currentValue, setCurrentValue] = useState(props.input.value)
   const [editField,setEditField] = useState(false)
-  const [isEmptyReqField, setIsEmptyReqField] = useState(false)
   const [isInstanceSaving, setIsInstanceSaving] = useState(false);
   const saving =  useSelector(state => savingSelector(state))
   const isValid = value => isUrl(value) || ipRegex({ exact: true }).test(value)
@@ -57,6 +59,7 @@ const Link = props => {
   const multipleLinks = props.type === 'select-multiple'
 
   const isLinkValid = currentValue && isValid(currentValue)
+  const isMount = useIsMount();
 
   const oldValueRef = useRef('');
 
@@ -70,10 +73,20 @@ const Link = props => {
   }
   }, [saving]);
 
-  const onBlur = (event) => {
-    if (event.target.value === "" && props.fieldData.required) {
-      setIsEmptyReqField(true);
+  useEffect(() => {
+    if(!isMount){
+      //!ismount skips initial render
+      if(!isLinkValid && currentValue){
+        dispatch(formErrorList(true,props.input.name))
+      }
+      else{
+        //removes field from error list
+        dispatch(formErrorList(false,props.input.name))
+      }
     }
+  }, [isLinkValid, currentValue])
+
+  const onBlur = (event) => {
     if (isLinkValid) {
       if(event.target.value !== oldValueRef.current){
         setIsInstanceSaving(true);
@@ -87,9 +100,6 @@ const Link = props => {
 
   const onChange = event => {
     const value = event.target.value
-    if (value !== "") {
-      setIsEmptyReqField(false);
-    }
     if (multipleLinks) {
       value && props.input.onChange(value.split(','))
     } else {
@@ -127,7 +137,7 @@ const Link = props => {
           value={currentValue}
           error={props.error}
           onChange={onChange}
-          className={isEmptyReqField || (!isLinkValid && currentValue && !multipleLinks) ? 'error link' : 'link'}
+          className={(!isLinkValid && currentValue && !multipleLinks) ? 'error link' : 'link'}
           aria-label="link"
         />
         {saving && isInstanceSaving && (
@@ -155,11 +165,6 @@ const Link = props => {
         {!isLinkValid && currentValue && !multipleLinks && (
         <div className="error-text">{t('project.link-is-broken')}</div>
         )}
-        {isEmptyReqField && (<>
-          <IconCross className="link-status" size="l" color="red"/>
-          <div className='error-text'>{t('project.noempty')}</div>
-          </>)
-        }
       </div>
 
     return elements
