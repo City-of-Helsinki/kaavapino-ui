@@ -413,7 +413,7 @@ const FieldSet = ({
           size='small'
           fullWidth={true}
           iconLeft={
-          saving || adding || hiding ? (
+          (lockStatus.fieldIdentifier && lockStatus.fieldIdentifier?.replace(/\[\d+\]/g, '') === name) && (saving || adding || hiding) ? (
             <div className="fieldset-spinner-button">
               <LoadingSpinner className="loading-spinner" />
             </div>
@@ -422,7 +422,7 @@ const FieldSet = ({
           )
         }
         >
-        {saving
+        {(lockStatus.fieldIdentifier && lockStatus.fieldIdentifier?.replace(/\[\d+\]/g, '') === name) && saving
           ? t('project.saving')
           : adding
           ? t('project.adding')
