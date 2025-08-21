@@ -510,6 +510,9 @@ header{
         visibility: hidden;
         padding-right: 15px;
         color: $color-error;
+        .loading-spinner{
+          --spinner-color: #0000bf;
+        }
         span{
           font-family: "Helsinki Grotesk Medium", sans-serif;
           font-size: $size16;
@@ -627,7 +630,7 @@ header{
   justify-content: flex-start;
   padding-top: 4px;
   svg{
-    color: $color-bus;
+    color: $white;
     margin-left: 4px;
   }
 }

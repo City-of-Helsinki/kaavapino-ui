@@ -54,11 +54,10 @@ const Link = props => {
   const [editField,setEditField] = useState(false)
   const [isInstanceSaving, setIsInstanceSaving] = useState(false);
   const saving =  useSelector(state => savingSelector(state))
-  const isValid = value => isUrl(value) || ipRegex({ exact: true }).test(value)
+  const isValid = value => isUrl(value) || ipRegex({ exact: true }).test(value) || value === "" 
 
   const multipleLinks = props.type === 'select-multiple'
-
-  const isLinkValid = currentValue && isValid(currentValue)
+  const isLinkValid = isValid(currentValue)
   const isMount = useIsMount();
 
   const oldValueRef = useRef('');
@@ -89,6 +88,7 @@ const Link = props => {
   const onBlur = (event) => {
     if (isLinkValid) {
       if(event.target.value !== oldValueRef.current){
+        oldValueRef.current = event.target.value;
         setIsInstanceSaving(true);
         props.onBlur()
       }

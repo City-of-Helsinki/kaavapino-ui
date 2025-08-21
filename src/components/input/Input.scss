@@ -879,8 +879,16 @@
 }
 
 .link-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 4px;
   .link-button {
     margin-left: $size20;
+    svg{
+      color: $white;
+      margin-left: 4px;
+    }
   }
 
   input {
