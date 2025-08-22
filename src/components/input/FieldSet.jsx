@@ -426,11 +426,6 @@ const FieldSet = ({
           ? t('project.adding')
           : t('project.add')}
         </Button>
-        {saving && adding && (
-        <div className="fieldset-spinner">
-          <LoadingSpinner className="loading-spinner" />
-        </div>
-        )}
         {(lockStatus.fieldIdentifier && lockStatus.fieldIdentifier?.replace(/\[\d+\]/g, '') === name) && saving
          ? (
            <div className='fieldset-saving-notification'>

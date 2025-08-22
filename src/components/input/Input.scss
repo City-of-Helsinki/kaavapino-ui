@@ -1316,6 +1316,7 @@
     width: var(--spinner-size);
     height: var(--spinner-size);
     --spinner-color: #0000bf;
+    --spinner-thickness: 0.2rem;
   }
 }
 
@@ -1326,7 +1327,7 @@
   margin-top: 2rem;
   .loading-spinner {
     --spinner-size: 1.5rem;
-    --spinner-thickness: 0.25rem;
+    --spinner-thickness: 0.2rem;
     width: var(--spinner-size);
     height: var(--spinner-size);
     margin-right: 0.5rem;
@@ -1337,7 +1338,7 @@
 .fieldset-spinner-button{
   .loading-spinner {
     --spinner-size: 1.5rem;
-    --spinner-thickness: 0.25rem;
+    --spinner-thickness: 0.2rem;
     --spinner-color: #0000bf;
   }
 }
