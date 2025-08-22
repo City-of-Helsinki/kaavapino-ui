@@ -1200,6 +1200,7 @@ header{
       word-wrap: break-word !important;
       overflow: auto !important;
       max-height: 200px !important;
+      color: #1A1A1A;
     }
     .toast {
       width: 500px; // Ensure consistent width across all containers
@@ -1220,8 +1221,10 @@ header{
       width: 100%;
       display: flex;
       align-items: flex-start;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
       min-height: 84px;
+      color: #1a1a1a;
+      opacity: 1 !important;
 
       > div {
         display: flex;
@@ -1277,7 +1280,7 @@ header{
           color: #1a1a1a;
         }
 
-        .rrt-message {
+        .rrt-message, .rrt-text {
           font-size: 14px;
           color: #1a1a1a;
           margin-top: 4px;
@@ -1347,5 +1350,9 @@ header{
       }
     }
   }
+}
+.redux-toastr .toastr:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+  opacity: 1 !important;
 }
 
