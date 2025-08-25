@@ -375,8 +375,7 @@ const FieldSet = ({
                 })}
                 {(!disable_fieldset_delete_add && !automatically_added && !disabled) && (
                   <Button
-                    hidden={hiding}
-                    className={fieldsetDisabled || saving ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'}
+                    className={`${fieldsetDisabled || saving ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'} ${hiding ? ' hidden' : ''}`}
                     disabled={sets.length < 1 || disabled || fieldsetDisabled || saving}
                     variant="secondary"
                     size='small'
