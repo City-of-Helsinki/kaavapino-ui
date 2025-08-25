@@ -375,8 +375,9 @@ const FieldSet = ({
                 })}
                 {(!disable_fieldset_delete_add && !automatically_added && !disabled) && (
                   <Button
-                    className={hiding ? "hidden" : fieldsetDisabled ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'}
-                    disabled={sets.length < 1 || disabled || fieldsetDisabled}
+                    hidden={hiding}
+                    className={fieldsetDisabled || saving ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'}
+                    disabled={sets.length < 1 || disabled || fieldsetDisabled || saving}
                     variant="secondary"
                     size='small'
                     iconLeft={<IconTrash/>}
@@ -388,7 +389,7 @@ const FieldSet = ({
                 {hiding && (
                 <div className="fieldset-spinner-remove">
                   <LoadingSpinner className="loading-spinner" />
-                  {t('project.deleting')}paivittyykö test servu test?
+                  {t('project.deleting')}
                 </div>
                 )}
                   <div className='close-accordion-button'>
