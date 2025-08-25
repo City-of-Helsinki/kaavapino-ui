@@ -388,7 +388,7 @@ const FieldSet = ({
                 {hiding && (
                 <div className="fieldset-spinner-remove">
                   <LoadingSpinner className="loading-spinner" />
-                  {t('project.deleting')}
+                  {t('project.deleting')}paivittyykö test servu test?
                 </div>
                 )}
                   <div className='close-accordion-button'>
