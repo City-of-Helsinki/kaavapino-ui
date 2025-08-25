@@ -820,14 +820,14 @@
 
 .fieldset-button-remove:not(:disabled) {
  color: $color-error;
- border-color: $color-error;
+ border-color: $color-error !important;
  margin-top: 20px;
  margin-bottom: 3.4px;
 }
 
 .fieldset-button-remove:not(:disabled):hover{
   color: $color-error-dark;
-  border-color: $color-error-dark;
+  border-color: $color-error-dark !important;
   background-color: $color-error-light;
 }
 
