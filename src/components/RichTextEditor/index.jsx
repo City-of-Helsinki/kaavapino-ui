@@ -542,7 +542,8 @@ function RichTextEditor(props) {
 
   if (lastIndex !== -1) {
     reducedName = inputProps.name.substring(lastIndex + 1, inputProps.name.length)
-    number = inputProps.name[lastIndex - 2]
+    const match = inputProps.name.match(/\[(\d+)\]/);
+    number = match ? parseInt(match[1], 10) : 0;
   }
   const toolbarName = `toolbar-${reducedName || ''}-${number}`
   const modules = {
