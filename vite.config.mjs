@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => {
       exclude: []
     },
     optimizeDeps: {
+      force: true,
       esbuildOptions: {
         loader: {
           '.js': 'jsx'
@@ -67,4 +68,3 @@ export default defineConfig(({ mode }) => {
     }
   }
 })
-
