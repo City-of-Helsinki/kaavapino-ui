@@ -34,7 +34,8 @@ import {
   getProjectsOverviewFloorArea,
   clearProjectsOverviewFloorArea,
   setProjectsOverviewFloorAreaFilter,
-  getProjectsOverviewFloorAreaTargets
+  getProjectsOverviewFloorAreaTargets,
+  getProjectsOverviewData
 } from '../../actions/projectActions'
 import { connect } from 'react-redux'
 import { LoadingSpinner, Button } from 'hds-react'
@@ -51,6 +52,7 @@ function FloorAreaChart({
   setProjectsOverviewFloorAreaFilter,
   storedFilter,
   getProjectsOverviewFloorAreaTargets,
+  getProjectsOverviewData,
   floorAreaTargets
 }) {
   const { t } = useTranslation()
@@ -65,7 +67,8 @@ function FloorAreaChart({
   useEffect(() => {
     getProjectsOverviewFloorArea(filter)
     setCurrentChartData(getFloorAreaChartData(chartData))
-    getProjectsOverviewFloorAreaTargets()
+    // Use parallel loading for static overview data
+    getProjectsOverviewData()
   }, [])
 
   useEffect(() => {
@@ -476,7 +479,8 @@ const mapDispatchToProps = {
   getProjectsOverviewFloorArea,
   clearProjectsOverviewFloorArea,
   setProjectsOverviewFloorAreaFilter,
-  getProjectsOverviewFloorAreaTargets
+  getProjectsOverviewFloorAreaTargets,
+  getProjectsOverviewData
 }
 
 const mapStateToProps = state => {

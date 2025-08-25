@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { eventChannel } from 'redux-saga';
-import { take, takeLatest, put, all, call, select, takeEvery, delay, race } from 'redux-saga/effects'
+import { take, takeLatest, put, all, call, select, takeEvery, delay, race, debounce } from 'redux-saga/effects'
 import { isEqual, isEmpty, isArray } from 'lodash'
 import { push } from 'connected-react-router'
 import {
@@ -103,6 +103,7 @@ import {
   GET_PROJECTS_OVERVIEW_FLOOR_AREA_TARGETS,
   GET_PROJECT_MAP_LEGENDS,
   getMapLegendsSuccessful,
+  GET_PROJECTS_OVERVIEW_DATA,
   SAVE_PROJECT_BASE_PAYLOAD,
   FETCH_ARCHIVED_PROJECTS,
   FETCH_ONHOLD_PROJECTS,
@@ -168,8 +169,8 @@ export default function* projectSaga() {
     takeLatest(LAST_MODIFIED, lastModified),
     takeLatest(POLL_CONNECTION,pollConnection),
     takeLatest(SET_POLL, setPoll),
-    takeLatest(FETCH_PROJECTS, fetchProjects),
-    takeLatest(FETCH_OWN_PROJECTS, fetchOwnProjects),
+    debounce(300, FETCH_PROJECTS, fetchProjects),
+    debounce(300, FETCH_OWN_PROJECTS, fetchOwnProjects),
     takeLatest(FETCH_PROJECT_DEADLINES, fetchProjectDeadlines),
     takeLatest(INITIALIZE_PROJECT, initializeProject),
     takeLatest(CREATE_PROJECT, createProject),
@@ -207,9 +208,10 @@ export default function* projectSaga() {
       getProjectsOverviewFloorAreaTargets
     ),
     takeLatest(GET_PROJECT_MAP_LEGENDS, getProjectMapLegends),
+    takeLatest(GET_PROJECTS_OVERVIEW_DATA, getProjectsOverviewData),
     takeLatest(SAVE_PROJECT_BASE_PAYLOAD, saveProjectPayload),
-    takeLatest(FETCH_ONHOLD_PROJECTS, fetchOnholdProjects),
-    takeLatest(FETCH_ARCHIVED_PROJECTS, fetchArchivedProjects),
+    debounce(300, FETCH_ONHOLD_PROJECTS, fetchOnholdProjects),
+    debounce(300, FETCH_ARCHIVED_PROJECTS, fetchArchivedProjects),
     takeLatest(GET_ATTRIBUTE_DATA, getAttributeData),
     takeLatest(SET_ATTRIBUTE_DATA, setAttributeData),
     takeLatest(FETCH_DISABLED_DATES_START, getProjectDisabledDeadlineDates),
@@ -1228,6 +1230,28 @@ function* projectSetDeadlinesSaga() {
     }
   }
 }
+
+// Combined overview data loading function for parallel requests
+function* getProjectsOverviewData() {
+  try {
+    // Load overview data that doesn't depend on payload in parallel
+    const [filters, targets, legends] = yield all([
+      call(overviewFiltersApi.get),
+      call(overviewFloorAreaTargetApi.get),
+      call(legendApi.get)
+    ])
+
+    // Dispatch these results immediately
+    yield all([
+      put(getProjectsOverviewFiltersSuccessful(filters)),
+      put(getProjectsOverviewFloorAreaTargetsSuccessful(targets)),
+      put(getMapLegendsSuccessful(legends))
+    ])
+  } catch (e) {
+    yield put(error(e))
+  }
+}
+
 function* getProjectsOverviewFloorArea({ payload }) {
   let query = {}
 

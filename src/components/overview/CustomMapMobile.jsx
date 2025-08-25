@@ -68,31 +68,36 @@ function CustomMapMobile({ mapData, isPrivileged }) {
       })
     )
   }
-  const renderMap = () => (
-    <MapContainer
-      className="geometry-input-mobile"
-      center={current}
-      scrollWheelZoom={true}
-      zoom={9}
-      minZoom={8}
-      maxZoom={16}
-      clusterPopupVisibility={11}
-      unitZoom={12}
-      mobileZoom={8}
-      detailZoom={14}
-      mapBounds={[
-        [60.402200415095926, 25.271114398151653],
-        [60.402200415095926, 24.49246149510767],
-        [60.00855312110063, 24.49246149510767],
-        [60.00855312110063, 25.271114398151653]
-      ]}
-      doubleClickZoom={true}
-      crs={crs}
-    >
-      {getPolygonArea()}
-      <TileLayer attribution={t('map.attribution')} url={t('map.url')} />
-    </MapContainer>
-  )
+  const renderMap = () => {
+    return (
+      <MapContainer
+        className="geometry-input-mobile"
+        center={current}
+        scrollWheelZoom={true}
+        zoom={9}
+        minZoom={8}
+        maxZoom={16}
+        clusterPopupVisibility={11}
+        unitZoom={12}
+        mobileZoom={8}
+        detailZoom={14}
+        mapBounds={[
+          [60.402200415095926, 25.271114398151653],
+          [60.402200415095926, 24.49246149510767],
+          [60.00855312110063, 24.49246149510767],
+          [60.00855312110063, 25.271114398151653]
+        ]}
+        doubleClickZoom={true}
+        crs={crs}
+      >
+        {getPolygonArea()}
+        <TileLayer 
+          attribution={t('map.attribution')} 
+          url={t('map.url')}
+        />
+      </MapContainer>
+    )
+  }
 
   const renderMobileView = () => (
     <div className="map-area">

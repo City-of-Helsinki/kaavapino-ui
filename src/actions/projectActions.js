@@ -73,6 +73,7 @@ export const GET_PROJECTS_OVERVIEW_FLOOR_AREA_TARGETS_SUCCESSFUL =
   'get projects overview floor area targets successful'
 export const GET_PROJECT_MAP_LEGENDS = 'Get project legends'
 export const GET_PROJECT_MAP_LEGENDS_SUCCESSFUL = 'Get project legends successful'
+export const GET_PROJECTS_OVERVIEW_DATA = 'Get projects overview data (parallel)'
 export const CLEAR_PROJECTS_OVERVIEW = 'Clear project overview'
 export const CLEAR_EXTERNAL_DOCUMENTS = 'Clear external documents'
 export const SAVE_PROJECT_BASE_PAYLOAD = 'Save project payload'
@@ -529,6 +530,10 @@ export const getMapLegends = () => ({
 export const getMapLegendsSuccessful = legends => ({
   type: GET_PROJECT_MAP_LEGENDS_SUCCESSFUL,
   payload: legends
+})
+
+export const getProjectsOverviewData = () => ({
+  type: GET_PROJECTS_OVERVIEW_DATA
 })
 
 export const setValidatingTimetable = (validationStarted, validationEnded) => {

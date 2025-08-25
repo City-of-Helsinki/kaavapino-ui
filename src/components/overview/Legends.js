@@ -1,14 +1,15 @@
 import React, { useEffect } from 'react'
 import { connect } from 'react-redux'
-import { getMapLegends } from '../../actions/projectActions'
+import { getMapLegends, getProjectsOverviewData } from '../../actions/projectActions'
 import { projectMapLegendsSelector } from '../../selectors/projectSelector'
 import { useTranslation } from 'react-i18next'
 
-function Legends({ getMapLegends, legends, centered }) {
+function Legends({ getMapLegends, getProjectsOverviewData, legends, centered }) {
   const { t } = useTranslation()
 
   useEffect(() => {
-    getMapLegends()
+    // Use parallel loading for better performance
+    getProjectsOverviewData()
   }, [])
 
   return (
@@ -32,7 +33,8 @@ function Legends({ getMapLegends, legends, centered }) {
 }
 
 const mapDispatchToProps = {
-  getMapLegends
+  getMapLegends,
+  getProjectsOverviewData
 }
 
 const mapStateToProps = state => {

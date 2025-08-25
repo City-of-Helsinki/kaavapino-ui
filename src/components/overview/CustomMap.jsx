@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { MapContainer, TileLayer } from 'react-leaflet'
 import { useTranslation } from 'react-i18next'
 import FilterList from './Filters/FilterList'
@@ -37,25 +37,16 @@ function CustomMap({
   const [currentMapData, setCurrentMapData] = useState(null)
   const [filter, setFilter] = useState({})
 
-  useEffect(() => {
-    getProjectsOverviewMapData(filter)
-    setCurrentMapData(mapData)
-  }, [])
-
-  useEffect(() => {
-    getProjectsOverviewMapData(filter)
-    setCurrentMapData(mapData)
-  }, [filter])
-
+  // Consolidated effect for initial data loading and filter changes
   useEffect(() => {
     if (!storedFilter || !isEqual(storedFilter, filter)) {
       clearProjectsOverviewMapData()
       setCurrentMapData(null)
       getProjectsOverviewMapData(filter)
       setProjectsOverviewMapFilter(filter)
-      setCurrentMapData(mapData)
     }
-  }, [filter])
+  }, [filter, storedFilter])
+
 
   useEffect(() => {
     setCurrentMapData(mapData)
@@ -70,19 +61,27 @@ function CustomMap({
     }
     return geoserver_data.suunnittelualueen_rajaus[0].geometry.coordinates
   }
-  const currentCoordinates = []
 
-  currentMapData &&
-    currentMapData.projects &&
+  // Memoize coordinate processing to avoid recalculation on every render
+  const currentCoordinates = useMemo(() => {
+    if (!currentMapData || !currentMapData.projects) {
+      return []
+    }
+    
+    const coordinates = []
     currentMapData.projects.forEach(value => {
-      const coordinates = getCoordinates(value.geoserver_data)
-      coordinates &&
-        currentCoordinates.push({
+      const projectCoordinates = getCoordinates(value.geoserver_data)
+      if (projectCoordinates) {
+        coordinates.push({
           project: value,
           color: value.phase_color,
-          coordinates: [coordinates]
+          coordinates: [projectCoordinates]
         })
+      }
     })
+    
+    return coordinates
+  }, [currentMapData])
 
   const [current] = useState(helsinkiCenter)
 
@@ -129,50 +128,55 @@ function CustomMap({
 
   const { t } = useTranslation()
 
-  const getPolygonArea = () => {
+  // Memoize polygon rendering to avoid recreating components on every render
+  const getPolygonArea = useMemo(() => {
+    if (!currentCoordinates || currentCoordinates.length === 0) {
+      return null
+    }
+    
+    return currentCoordinates.map((current, index) => (
+      <div key={index}>
+        <CustomMapPolygon
+          project={current.project}
+          color={current.color}
+          key={index}
+          positions={formatGeoJSONToPositions(current.coordinates)}
+          isPrivileged={isPrivileged}
+        />
+      </div>
+    ))
+  }, [currentCoordinates, isPrivileged])
+
+  const renderMap = () => {
     return (
-      currentCoordinates &&
-      currentCoordinates.map((current, index) => {
-        return (
-          <div key={index}>
-            <CustomMapPolygon
-              project={current.project}
-              color={current.color}
-              key={index}
-              positions={formatGeoJSONToPositions(current.coordinates)}
-              isPrivileged={isPrivileged}
-            />
-          </div>
-        )
-      })
+      <MapContainer
+        className={isMobile ? 'geometry-input-mobile' : 'geometry-input'}
+        center={current}
+        scrollWheelZoom={true}
+        zoom={9}
+        minZoom={8}
+        maxZoom={16}
+        clusterPopupVisibility={11}
+        unitZoom={12}
+        mobileZoom={8}
+        detailZoom={14}
+        mapBounds={[
+          [60.402200415095926, 25.271114398151653],
+          [60.402200415095926, 24.49246149510767],
+          [60.00855312110063, 24.49246149510767],
+          [60.00855312110063, 25.271114398151653]
+        ]}
+        doubleClickZoom={true}
+        crs={crs}
+      >
+        {getPolygonArea}
+        <TileLayer 
+          attribution={t('map.attribution')} 
+          url={t('map.url')}
+        />
+      </MapContainer>
     )
   }
-
-  const renderMap = () => (
-    <MapContainer
-      className={isMobile ? 'geometry-input-mobile' : 'geometry-input'}
-      center={current}
-      scrollWheelZoom={true}
-      zoom={9}
-      minZoom={8}
-      maxZoom={16}
-      clusterPopupVisibility={11}
-      unitZoom={12}
-      mobileZoom={8}
-      detailZoom={14}
-      mapBounds={[
-        [60.402200415095926, 25.271114398151653],
-        [60.402200415095926, 24.49246149510767],
-        [60.00855312110063, 24.49246149510767],
-        [60.00855312110063, 25.271114398151653]
-      ]}
-      doubleClickZoom={true}
-      crs={crs}
-    >
-      {getPolygonArea()}
-      <TileLayer attribution={t('map.attribution')} url={t('map.url')} />
-    </MapContainer>
-  )
 
   const renderNormalView = () => (
     <div className="map-area">
