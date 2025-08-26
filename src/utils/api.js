@@ -1,4 +1,5 @@
 import apiUtils from './apiUtils'
+import { fetchSessionJSON } from './sessionEtagCache'
 
 const { get, post, patch, put, del } = apiUtils
 
@@ -75,4 +76,19 @@ export const legendApi = new Api('/v1/legend/')
 export const pingApi = new Api('/v1/ping/')
 export const getAttributeDataApi = new Api('/v1/projects/attribute_data')
 
-
+// --- override endpoint to use session ETag cache ---
+attributesApi.get = function (
+  { path = {}, query = {} } = {},
+  opt = '',
+  config = {},
+  _all = false,
+  _pages = false,
+  _force = true
+) {
+  const url = this.formatUrl(path, query, opt)
+  // Version the key so you can invalidate easily if shape changes
+  const key = 'attributes:v1'
+  // Ensure credentials by default (tweak if your apiUtils already injects them)
+  const cfg = { credentials: 'include', ...config }
+  return fetchSessionJSON(url, key, cfg)
+}
