@@ -439,7 +439,7 @@ const FieldSet = ({
           ? t('project.adding')
           : t('project.add')}
         </Button>
-        {(currentFieldset === name) && saving
+        {(updateField?.fieldName === name) && saving
          ? (
            <div className='fieldset-saving-notification'>
              <div className="fieldset-spinner">
