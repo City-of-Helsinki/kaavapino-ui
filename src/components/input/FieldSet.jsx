@@ -89,6 +89,7 @@ const FieldSet = ({
     if(!isMount){
       if(updateField?.fieldName === name && adding){
         //Add new fieldset to last index after fetching latest fieldset data
+        setCurrentFieldset(name)
         sets.push({})
         handleBlur()
         handleOutsideClick()
@@ -96,13 +97,23 @@ const FieldSet = ({
       }
       else if(updateField?.fieldName === name && hiding){
         //Hide fieldset after fetching latest fieldset data
+        setCurrentFieldset(name)
         dispatch(change(updateField?.formName, updateField?.set, updateField?.nulledFields))
         setHiddenIndex(updateField?.i)
         handleBlur()
         setHiding(false)
       }
+      else if(updateField?.fieldName === name && saving){
+        setCurrentFieldset(name)
+      }
     }
   }, [updateField?.fieldName,updateField?.data]) 
+
+  useEffect(() => {
+    if (!saving) {
+      setCurrentFieldset(false)
+    }
+  }, [saving])
 
   const checkLocked = (e,set,i) => {
     //Fetch fieldset data from backend and see if there is new sub fieldset or data changes
@@ -428,7 +439,7 @@ const FieldSet = ({
           ? t('project.adding')
           : t('project.add')}
         </Button>
-        {(lockStatus.fieldIdentifier && lockStatus.fieldIdentifier?.replace(/\[\d+\]/g, '') === name) && saving
+        {(currentFieldset === name) && saving
          ? (
            <div className='fieldset-saving-notification'>
              <div className="fieldset-spinner">
