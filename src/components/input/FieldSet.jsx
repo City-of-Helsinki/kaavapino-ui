@@ -46,6 +46,7 @@ const FieldSet = ({
   isTabActive
 }) => {
   const handleBlur = () => {
+    setShowSaving(true)
     onBlur()
   }
 
@@ -61,6 +62,7 @@ const FieldSet = ({
   const [hiddenIndex, setHiddenIndex] = useState(-1)
   const [expanded, setExpanded] = useState([])
   const [adding,setAdding] = useState(false)
+  const [showSaving,setShowSaving] = useState(false)
 
   const [hiding,setHiding] = useState(false)
   const [currentFieldset,setCurrentFieldset] = useState(false)
@@ -112,6 +114,7 @@ const FieldSet = ({
   useEffect(() => {
     if (!saving) {
       setCurrentFieldset(false)
+      setShowSaving(false)
     }
   }, [saving])
 
@@ -439,7 +442,7 @@ const FieldSet = ({
           ? t('project.adding')
           : t('project.add')}
         </Button>
-        {(updateField?.fieldName === name) && saving
+        {(updateField?.fieldName === name) && showSaving
          ? (
            <div className='fieldset-saving-notification'>
              <div className="fieldset-spinner">
