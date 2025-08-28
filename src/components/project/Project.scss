@@ -1,4 +1,3 @@
-@import '../common/colors.scss';
 .project-container {
   flex: 1;
   margin: 0 auto;
@@ -14,6 +13,8 @@
     text-align: right;
     height: 44px;
     .edit-view-select{
+      position: relative;
+      z-index: 10;
       div{
         min-height: 44px;
         height: 44px;
@@ -37,42 +38,42 @@
       }
       li{
         .document-icon{
-          background-image: url('./assets/icons/document.svg');
+          background-image: url('../../assets/icons/document.svg');
         }
         .calendar-icon{
-          background-image: url('./assets/icons/calendar-recurring.svg');
+          background-image: url('../../assets/icons/calendar-recurring.svg');
         }
         .company-icon{
-          background-image: url('./assets/icons/company.svg');
+          background-image: url('../../assets/icons/company.svg');
         }
         .download-icon{
-          background-image: url('./assets/icons/download.svg');
+          background-image: url('../../assets/icons/download.svg');
         }
         .pen-icon{
-          background-image: url('./assets/icons/pen.svg');
+          background-image: url('../../assets/icons/pen.svg');
         }
         .trash-icon{
-          background-image: url('./assets/icons/trash-red.svg');
+          background-image: url('../../assets/icons/trash-red.svg');
         }
       }
       li:hover{
         .document-icon{
-          background-image: url('./assets/icons/document-white.svg');
+          background-image: url('../../assets/icons/document-white.svg');
         }
         .calendar-icon{
-          background-image: url('./assets/icons/calendar-recurring-white.svg');
+          background-image: url('../../assets/icons/calendar-recurring-white.svg');
         }
         .company-icon{
-          background-image: url('./assets/icons/company-white.svg');
+          background-image: url('../../assets/icons/company-white.svg');
         }
         .download-icon{
-          background-image: url('./assets/icons/download-white.svg');
+          background-image: url('../../assets/icons/download-white.svg');
         }
         .pen-icon{
-          background-image: url('./assets/icons/pen-white.svg');
+          background-image: url('../../assets/icons/pen-white.svg');
         }
         .trash-icon{
-          background-image: url('./assets/icons/trash-white.svg');
+          background-image: url('../../assets/icons/trash-white.svg');
         }
       }
     }

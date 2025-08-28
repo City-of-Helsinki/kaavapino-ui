@@ -268,7 +268,10 @@
     "link-to-map":"Linkki projektin karttapalveluun.",
     "add-new-board":"Lisää uusi lautakunta",
     "add-new-presence":"Lisää uusi esilläolo",
-    "add-new-review": "Lisää uusi nähtävilläolo"
+    "add-new-review": "Lisää uusi nähtävilläolo",
+    "adding":"Lisätään",
+    "saving":"Tietoja tallennetaan",
+    "deleting":"Poistetaan"
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}",
