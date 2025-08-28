@@ -38904,7 +38904,7 @@ Shadings.Mesh = function MeshClosure() {
 
       ps.push(coords.length);
       coords.push(coord);
-      colors.push(color);
+      push(color);
       verticesLeft--;
       reader.align();
     }
@@ -38926,7 +38926,7 @@ Shadings.Mesh = function MeshClosure() {
       var color = reader.readComponents();
       ps.push(coords.length);
       coords.push(coord);
-      colors.push(color);
+      push(color);
     }
 
     mesh.figures.push({
@@ -39019,12 +39019,12 @@ Shadings.Mesh = function MeshClosure() {
 
         figureCoords[k] = coords.length;
         coords.push([x, y]);
-        figureColors[k] = colors.length;
+        figureColors[k] = length;
         var newColor = new Uint8Array(3);
         newColor[0] = (cl[0] * (splitXBy - col) + cr[0] * col) / splitXBy | 0;
         newColor[1] = (cl[1] * (splitXBy - col) + cr[1] * col) / splitXBy | 0;
         newColor[2] = (cl[2] * (splitXBy - col) + cr[2] * col) / splitXBy | 0;
-        colors.push(newColor);
+        push(newColor);
       }
     }
 
@@ -39064,10 +39064,10 @@ Shadings.Mesh = function MeshClosure() {
         coords.push(reader.readCoordinate());
       }
 
-      var ci = colors.length;
+      var ci = length;
 
       for (i = 0, ii = f !== 0 ? 2 : 4; i < ii; i++) {
-        colors.push(reader.readComponents());
+        push(reader.readComponents());
       }
 
       var tmp1, tmp2, tmp3, tmp4;
@@ -39195,10 +39195,10 @@ Shadings.Mesh = function MeshClosure() {
         coords.push(reader.readCoordinate());
       }
 
-      var ci = colors.length;
+      var ci = length;
 
       for (i = 0, ii = f !== 0 ? 2 : 4; i < ii; i++) {
-        colors.push(reader.readComponents());
+        push(reader.readComponents());
       }
 
       var tmp1, tmp2, tmp3, tmp4;
@@ -39345,9 +39345,9 @@ Shadings.Mesh = function MeshClosure() {
 
     mesh.coords = coordsPacked;
     var colors = mesh.colors;
-    var colorsPacked = new Uint8Array(colors.length * 3);
+    var colorsPacked = new Uint8Array(length * 3);
 
-    for (i = 0, j = 0, ii = colors.length; i < ii; i++) {
+    for (i = 0, j = 0, ii = length; i < ii; i++) {
       var c = colors[i];
       colorsPacked[j++] = c[0];
       colorsPacked[j++] = c[1];

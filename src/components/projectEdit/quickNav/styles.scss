@@ -1,4 +1,4 @@
-@import '../../common/colors.scss';
+@use '../../common/Common';
 
 .quicknav-container {
   display: flex;
@@ -328,6 +328,7 @@
     width: 100%;
 
     button {
+      font-family: "Helsinki Grotesk Regular", sans-serif;
       margin-top: 10px;
       font-weight: bolder;
     }
