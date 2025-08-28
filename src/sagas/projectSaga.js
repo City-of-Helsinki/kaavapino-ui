@@ -891,9 +891,9 @@ function* saveProjectTimetable(action,retryCount = 0) {
         })
         yield race({
           online: take(onlineChannel), // Wait for the online event
-          timeout: delay(2500) // Wait for 2.5 seconds before retrying
+          timeout: delay(5000) // Wait for 5 seconds before retrying
         });
-        yield delay(2500); // Wait for 2.5 seconds before retrying
+        yield delay(5000); // Wait for 5 seconds before retrying
         yield call(saveProjectTimetable,action, retryCount + 1);
       }
       else {
@@ -905,7 +905,7 @@ function* saveProjectTimetable(action,retryCount = 0) {
           timeOut: 0,
           removeOnHover: false,
           showCloseButton: true,
-          className: 'large-scrollable-toastr rrt-error',
+          className: 'rrt-error',
           icon: <IconErrorFill />
         });
         yield put(saveProjectTimetableFailed(false))

@@ -782,30 +782,53 @@
   }
   .fieldset-button-add{
     justify-content: flex-start;
+    width: auto;
+  }
+  .fieldset-saving-notification{
     background-color: $color-info-light;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: $size12;
+    height: $size48;
+    font-size: $size16;
+    font-family: "Helsinki Grotesk Bold", sans-serif;
+    font-weight: 700;
+    .fieldset-spinner{
+      margin: 0;
+      padding: 0;
+      margin-right: $size12;
+      .loading-spinner{
+        --spinner-size: 1.5rem;
+        --spinner-thickness: 0.2rem;
+        --spinner-color: #0000bf;
+      }
+
+    }
   }
 }
 
-.fieldset-button-remove {
- color: $color-error !important;
+
+.fieldset-button-remove-disabled{
+  border-color: $color-black-40;
+  margin-top: 20px;
+}
+
+.fieldset-button-remove-disabled:hover{
+  border-color: $color-black-40;
+}
+
+.fieldset-button-remove:not(:disabled) {
+ color: $color-error;
  border-color: $color-error !important;
  margin-top: 20px;
  margin-bottom: 3.4px;
 }
 
-.fieldset-button-remove:hover{
-  color: $color-error-dark !important;
+.fieldset-button-remove:not(:disabled):hover{
+  color: $color-error-dark;
   border-color: $color-error-dark !important;
-  background-color: $color-error-light !important;
-}
-
-.fieldset-button-remove-disabled{
-  border-color: $color-black-40 !important;
-  margin-top: 20px;
-}
-
-.fieldset-button-remove-disabled:hover{
-  border-color: $color-black-40 !important;
+  background-color: $color-error-light;
 }
 
 .fieldset-accordian-close{
@@ -857,8 +880,16 @@
 }
 
 .link-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 4px;
   .link-button {
     margin-left: $size20;
+    svg{
+      color: $white;
+      margin-left: 4px;
+    }
   }
 
   input {
@@ -955,7 +986,7 @@
   visibility: hidden;
 }
 .hidden {
-  display: none;
+  display: none !important;
 }
 .visually-hidden {
 	position: absolute !important;
@@ -1153,6 +1184,7 @@
       --spinner-size: 1.5em; // override default size
       width: var(--spinner-size);
       height: var(--spinner-size);
+      --spinner-color: #0000bf;
     }
   }
   .input-spinner-datetime{
@@ -1167,6 +1199,7 @@
       --spinner-size: 1.5em; // override default size
       width: var(--spinner-size);
       height: var(--spinner-size);
+      --spinner-color: #0000bf;
     }
   }
 }
@@ -1185,6 +1218,7 @@
         --spinner-size: 1.5em; // override default size
         width: var(--spinner-size);
         height: var(--spinner-size);
+        --spinner-color: #0000bf;
       }
     }
     .input-spinner-datetime{
@@ -1199,6 +1233,7 @@
         --spinner-size: 1.5em; // override default size
         width: var(--spinner-size);
         height: var(--spinner-size);
+        --spinner-color: #0000bf;
       }
     }
   }
@@ -1227,6 +1262,7 @@
       --spinner-size: 1.25rem;
       width: var(--spinner-size);
       height: var(--spinner-size);
+      --spinner-color: #0000bf;
     }
   }
 }
@@ -1246,6 +1282,7 @@
       --spinner-size: 1.25rem;
       width: var(--spinner-size);
       height: var(--spinner-size);
+      --spinner-color: #0000bf;
     }
   }
 }
@@ -1264,6 +1301,7 @@
       --spinner-size: 1.25rem;
       width: var(--spinner-size);
       height: var(--spinner-size);
+      --spinner-color: #0000bf;
     }
   }
 }
@@ -1278,6 +1316,8 @@
     --spinner-size: 1.25rem;
     width: var(--spinner-size);
     height: var(--spinner-size);
+    --spinner-color: #0000bf;
+    --spinner-thickness: 0.2rem;
   }
 }
 
@@ -1288,16 +1328,18 @@
   margin-top: 2rem;
   .loading-spinner {
     --spinner-size: 1.5rem;
-    --spinner-thickness: 0.25rem;
+    --spinner-thickness: 0.2rem;
     width: var(--spinner-size);
     height: var(--spinner-size);
     margin-right: 0.5rem;
+    --spinner-color: #0000bf;
   }
 }
 
 .fieldset-spinner-button{
   .loading-spinner {
     --spinner-size: 1.5rem;
-    --spinner-thickness: 0.25rem;
+    --spinner-thickness: 0.2rem;
+    --spinner-color: #0000bf;
   }
 }

@@ -221,9 +221,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
       originalData = false
     }
 
-    const isRequired = fieldData.required
-
-    if (event.target.value !== originalData && (!isRequired || (isRequired && event.target.value !== ""))) {
+    if (event.target.value !== originalData) {
       //prevent saving if locked
       if (!readonly) {
         //Sent call to save changes
@@ -250,13 +248,12 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
               setReadOnly({name:input.name,read:readOnlyValue})
             }
             oldValueRef.current = event.target.value;
-
-            if(!(event.target.value === '' && !custom?.fieldData?.isRequired) && custom.regex){
+            if(custom.regex){
               const regex = new RegExp(custom.regex);
-              setHasError(!regex.test(event.target.value))
+              setHasError(event.target.value !== "" && !regex.test(event.target.value))
             } else if(custom.type === 'number') {
               const regex = new RegExp("^[+-]?\\d+$");
-              setHasError(!regex.test(event.target.value))
+              setHasError(event.target.value !== "" && !regex.test(event.target.value))
             }
           }
         }

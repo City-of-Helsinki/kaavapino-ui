@@ -75,7 +75,7 @@
     "immutable": "^4.3.1"
   },
   "scripts": {
-    "start": "vite",
+    "start": "vite --force",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest",
