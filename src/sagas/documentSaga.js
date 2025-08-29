@@ -13,6 +13,7 @@ import { documentsApi } from '../utils/api'
 import { toastr } from 'react-redux-toastr'
 import i18next from 'i18next'
 import FileSaver from 'file-saver'
+import {IconInfoCircleFill,IconCheckCircleFill,IconErrorFill} from 'hds-react'
 
 const MAX_COUNT = 100
 const INTERVAL_MILLISECONDS = 2000
@@ -48,7 +49,7 @@ function* downloadDocumentSaga({ payload }) {
     payload.projectCard
       ? i18next.t('document-loading.project-card-content')
       : i18next.t('document-loading.document-content'),
-    { closeOnToastrClick: false, timeOut:0, removeOnHover: false, removeOnHoverTimeOut: 0 }
+  { closeOnToastrClick: false, timeOut:0, removeOnHover: false, removeOnHoverTimeOut: 0, icon: <IconInfoCircleFill /> }
   )
   try {
     res = yield call(axios.get, modifiedUrl, { responseType: 'blob' })
@@ -63,7 +64,8 @@ function* downloadDocumentSaga({ payload }) {
           : i18next.t('document-loading.error-title'),
         payload.projectCard
           ? i18next.t('document-loading.project-card-error')
-          : i18next.t('document-loading.document-error')
+          : i18next.t('document-loading.document-error'),
+        { icon: <IconErrorFill /> }
       )
 
       isError = true
@@ -79,7 +81,8 @@ function* downloadDocumentSaga({ payload }) {
               : i18next.t('document-loading.error-title'),
             payload.projectCard
               ? i18next.t('document-loading.project-card-error')
-              : i18next.t('document-loading.document-error')
+              : i18next.t('document-loading.document-error'),
+            { icon: <IconErrorFill /> }
           )
           yield put(downloadDocumentDone(true))
           break
@@ -101,7 +104,8 @@ function* downloadDocumentSaga({ payload }) {
         : i18next.t('document-loading.error-title'),
       payload.projectCard
         ? i18next.t('document-loading.project-card-error')
-        : i18next.t('document-loading.document-error')
+        : i18next.t('document-loading.document-error'),
+      { icon: <IconErrorFill /> }
     )
     isError = true
     yield put(downloadDocumentDone(true))
@@ -116,7 +120,8 @@ function* downloadDocumentSaga({ payload }) {
         : i18next.t('document-loading.error-title'),
       payload.projectCard
         ? i18next.t('document-loading.project-card-error')
-        : i18next.t('document-loading.document-error')
+        : i18next.t('document-loading.document-error'),
+      { icon: <IconErrorFill /> }
     )
     yield put(downloadDocumentDone(true))
   }
@@ -135,7 +140,8 @@ function* downloadDocumentSaga({ payload }) {
           : i18next.t('document-loading.ready-title'),
         payload.projectCard
           ? i18next.t('document-loading.project-card-loaded')
-          : i18next.t('document-loading.document-loaded')
+          : i18next.t('document-loading.document-loaded'),
+        { icon: <IconCheckCircleFill /> }
       )
       yield put(downloadDocumentDone(true))
     } else {
@@ -145,7 +151,8 @@ function* downloadDocumentSaga({ payload }) {
           : i18next.t('document-loading.error-title'),
         payload.projectCard
           ? i18next.t('document-loading.project-card-error')
-          : i18next.t('document-loading.document-error')
+          : i18next.t('document-loading.document-error'),
+        { icon: <IconErrorFill /> }
       )
       yield put(downloadDocumentDone(true))
     }
@@ -163,7 +170,7 @@ function* downloadDocumentPreviewSaga({ payload }) {
   toastr.info(
     i18next.t('document-loading.wait-title'),
     i18next.t('document-loading.document-preview-content'),
-    { closeOnToastrClick: false, timeOut:0, removeOnHover: false, removeOnHoverTimeOut: 0 }
+    { closeOnToastrClick: false, timeOut:0, removeOnHover: false, removeOnHoverTimeOut: 0, icon: <IconInfoCircleFill /> }
   )
 
   try {
@@ -174,7 +181,8 @@ function* downloadDocumentPreviewSaga({ payload }) {
       toastr.removeByType('info')
       toastr.error(
         i18next.t('document-loading.error-title'),
-        i18next.t('document-loading.document-preview-error')
+        i18next.t('document-loading.document-preview-error'),
+        {icon: <IconErrorFill />}
       )
 
       isError = true
@@ -185,7 +193,8 @@ function* downloadDocumentPreviewSaga({ payload }) {
           toastr.removeByType('info')
           toastr.error(
             i18next.t('document-loading.error-title'),
-            i18next.t('document-loading.document-preview-error')
+            i18next.t('document-loading.document-preview-error'),
+            { icon: <IconErrorFill /> }
           )
           isError = true
           yield put(downloadDocumentDone(true))
@@ -203,7 +212,8 @@ function* downloadDocumentPreviewSaga({ payload }) {
   } catch (e) {
     toastr.error(
       i18next.t('document-loading.error-title'),
-      i18next.t('document-loading.document-preview-error')
+  i18next.t('document-loading.document-preview-error'),
+  { icon: <IconErrorFill /> }
     )
     isError = true
     yield put(downloadDocumentDone(true))
@@ -214,7 +224,8 @@ function* downloadDocumentPreviewSaga({ payload }) {
   if (counter === MAX_COUNT) {
     toastr.error(
       i18next.t('document-loading.error-title'),
-      i18next.t('document-loading.document-preview-error')
+  i18next.t('document-loading.document-preview-error'),
+  { icon: <IconErrorFill /> }
     )
     yield put(downloadDocumentDone(true))
   }
@@ -229,13 +240,15 @@ function* downloadDocumentPreviewSaga({ payload }) {
 
       toastr.success(
         i18next.t('document-loading.ready-title'),
-        i18next.t('document-loading.document-preview-loaded')
+  i18next.t('document-loading.document-preview-loaded'),
+  { icon: <IconCheckCircleFill /> }
       )
       yield put(downloadDocumentDone(true))
     } else {
       toastr.error(
         i18next.t('document-loading.error-title'),
-        i18next.t('document-loading.document-preview-error')
+  i18next.t('document-loading.document-preview-error'),
+  { icon: <IconErrorFill /> }
       )
       yield put(downloadDocumentDone(true))
     }
