@@ -1228,7 +1228,7 @@ header{
 
       > div {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: space-between;
         width: 100%;
       }
@@ -1241,6 +1241,7 @@ header{
         bottom: unset;
         display: flex;
         padding: 0 !important;
+        padding-top: 10px !important;
 
         .rrt-holder {
           width: auto;
@@ -1273,17 +1274,21 @@ header{
         top: 0;
 
         .rrt-title {
-          font-size: 15px;
-          font-weight: 600;
-          line-height: 1.3;
+          font-size: 18px;
+          font-weight: 700;
+          line-height: 24px;
+          letter-spacing: normal;
           margin: 0;
           color: #1a1a1a;
         }
 
         .rrt-message, .rrt-text {
           font-size: 14px;
+          line-height: 24px;
           color: #1a1a1a;
-          margin-top: 4px;
+          padding-top: 16px;
+          margin-left: -30px;
+          font-family: 'Helsinki Grotesk regular', sans-serif;
         }
       }
 
@@ -1318,6 +1323,9 @@ header{
          color: #277a64;
         }
       }
+      .toastr-icon {
+        fill: #277a64 !important;
+      }
     }
 
     &.rrt-info {
@@ -1327,6 +1335,9 @@ header{
         svg{
          color: #2b62b9;
         }
+      }
+      .toastr-icon {
+        fill: #2b62b9 !important;
       }
     }
 
@@ -1338,6 +1349,9 @@ header{
          color: #b01039;
         }
       }
+      .toastr-icon {
+        fill: #b01039 !important;
+      }
     }
 
     &.rrt-warning {
@@ -1347,6 +1361,9 @@ header{
         svg{
          color: #d18202;
         }
+      }
+      .toastr-icon {
+        fill: #d18202 !important;
       }
     }
   }
