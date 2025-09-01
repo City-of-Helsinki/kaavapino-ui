@@ -245,14 +245,44 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
       }
       confirmedValue = confirmedValue.replace(/\s+/g, '');
 
-      const isLautakuntaSection = title.toLowerCase().replace(/\s+/g, '').includes('lautakunta');
-      const isLastLautakunta = isLautakuntaSection && (title.replace(/\s+/g, '') === lastLautakunta?.replace(/\s+/g, ''));
+      const normalize = str =>
+        str
+          ?.toLowerCase()
+          .replace(/[äå]/gi, 'a')
+          .replace(/ö/gi, 'o')
+          .replace(/\s+/g, '');
+
+      const normalizedTitle = normalize(title);
+
+      const isLautakuntaSection = normalizedTitle.includes('lautakunta');
+      const isEsillaoloSection = normalizedTitle.includes('esilläolo') || normalizedTitle.includes('esillaolo');
+      const isNahtavillaoloSection = normalizedTitle.includes('nähtävilläolo') || normalizedTitle.includes('nahtavillaolo');
+
+      // Find last group for each type
+      const esillaoloGroups = groups
+        .filter(g => g.nestedInGroup === group && (g.content.toLowerCase().startsWith('esilläolo-') || g.content.toLowerCase().startsWith('esillaolo-')))
+        .sort((a, b) => parseInt(a.content.split('-')[1] || '0', 10) - parseInt(b.content.split('-')[1] || '0', 10));
+      const lastEsillaolo = esillaoloGroups[esillaoloGroups.length - 1]?.content;
+
+      const nahtavillaoloGroups = groups
+        .filter(g => g.nestedInGroup === group && (g.content.toLowerCase().startsWith('nähtävilläolo-') || g.content.toLowerCase().startsWith('nahtavillaolo-')))
+        .sort((a, b) => parseInt(a.content.split('-')[1] || '0', 10) - parseInt(b.content.split('-')[1] || '0', 10));
+      const lastNahtavillaolo = nahtavillaoloGroups[nahtavillaoloGroups.length - 1]?.content;
+
+      const isLastLautakunta = isLautakuntaSection && (normalize(title) === normalize(lastLautakunta));
+      const isLastEsillaolo = isEsillaoloSection && (normalize(title) === normalize(lastEsillaolo));
+      const isLastNahtavillaolo = isNahtavillaoloSection && (normalize(title) === normalize(lastNahtavillaolo));
+
       const lautakuntaInPast = isLautakuntaSection && isLautakuntaDateInPast(group, title, visValues);
       const phaseClosed = isPhaseClosed(group);
 
       const disableConfirmButton = phaseClosed
         ? true
-        : (isLautakuntaSection ? !isLastLautakunta : false);
+        : (
+            (isLautakuntaSection && !isLastLautakunta) ||
+            (isEsillaoloSection && !isLastEsillaolo) ||
+            (isNahtavillaoloSection && !isLastNahtavillaolo)
+          );
 
       const disabled =
         archived ||
@@ -262,14 +292,20 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
 
       const renderedSections = []
 
+      const nextGroupWord =
+        isLautakuntaSection ? "lautakunta"
+        : isEsillaoloSection ? "esilläolo"
+        : isNahtavillaoloSection ? "nähtävilläolo"
+        : "elementtijoukko";
+
       const tooltip =
-        phaseClosed
-          ? "Vahvistusta ei voi perua, koska vaihe on lopetettu."
-          : lautakuntaInPast
-            ? "Vahvistusta ei voi perua, koska lautakunta sijaitsee menneessä ajanhetkessä."
-            : disableConfirmButton
-              ? "Vahvistusta ei voi perua, koska seuraava lautakunta on jo lisätty."
-              : null;
+      phaseClosed
+        ? "Vahvistusta ei voi perua, koska vaihe on lopetettu."
+        : lautakuntaInPast
+          ? "Vahvistusta ei voi perua, koska lautakunta sijaitsee menneessä ajanhetkessä."
+          : disableConfirmButton
+            ? `Vahvistusta ei voi perua, koska seuraava ${nextGroupWord} on jo lisätty.`
+            : null;
 
       sections.forEach(subsection => {
         const attr = subsection?.attributes
