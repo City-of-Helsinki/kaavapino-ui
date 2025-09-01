@@ -10,7 +10,7 @@ import objectUtil from '../../utils/objectUtil';
 import PropTypes from 'prop-types'
 import './VisTimeline.scss'
 
-const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit,disabledDates,lomapaivat,dateTypes,groups, items, sectionAttributes,isAdmin,initialTab }) => {
+const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,phaseList,archived,allowedToEdit,disabledDates,lomapaivat,dateTypes,groups, items, sectionAttributes,isAdmin,initialTab }) => {
 
   const getAttributeValues = (attributes) => {
     return Object.values(attributes).flatMap((v) => Object.values(v));
@@ -49,7 +49,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
 
     let currentSubmitErrors = Object.keys(formSubmitErrors).length > 0
 
-    const getFormField = (fieldProps, key, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title, confirmedValue, type) => {
+    const getFormField = (fieldProps, key, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title, confirmedValue, type, tooltip, lautakuntaInPast) => {
       if (!showField(fieldProps.field, visValues)) {
         return null
       }
@@ -92,7 +92,11 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
             formValues={visValues}
             className={className}
             isProjectTimetableEdit={true}
-            disabled={disabled?.disabled && type === 'date' || !allowedToEdit && type === 'date'}
+            disabled={type === 'date'
+              ? (disabled?.disabled || !allowedToEdit)
+              : disabled?.disabled}
+            lautakuntaInPast={lautakuntaInPast}
+            tooltip={tooltip}
             attributeData={visValues}
             disabledDates={disabledDates && type === 'date'}
             lomapaivat={lomapaivat}
@@ -113,7 +117,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
         </>
       )
     }
-    const getFormFields = (sections, sectionIndex, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title, confirmedValue) => {
+    const getFormFields = (sections, sectionIndex, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title, confirmedValue, tooltip, lautakuntaInPast) => {
       // Separate the section with the label "Mielipiteet viimeistään"
       const filteredSections = sections.filter(section => section.label !== "Mielipiteet viimeistään");
       const lastSection = sections.find(section => section.label === "Mielipiteet viimeistään");
@@ -125,7 +129,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
 
       const formFields = []
       filteredSections.forEach((field, fieldIndex) => {
-          formFields.push(getFormField({ field }, `${sectionIndex} - ${fieldIndex}`, {disabled}, {deadlineSection}, maxMoveGroup, maxDateToMove, title, confirmedValue, field?.type))
+          formFields.push(getFormField({ field }, `${sectionIndex} - ${fieldIndex}`, {disabled}, {deadlineSection}, maxMoveGroup, maxDateToMove, title, confirmedValue, field?.type, tooltip, lautakuntaInPast))
       })
       return formFields
     }
@@ -151,8 +155,68 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
       }
       return [null,null]
     }
+
+    const isPhaseClosed = (phase) => {
+      const idx = phaseList.indexOf(phase);
+      return idx > -1 && idx < projectPhaseIndex;
+    };
+
+    // Helper to check if lautakunta date is in the past
+    const isLautakuntaDateInPast = (group, title, visValues) => {
+      // Parse phase and lautakunta index from group/title
+      let phaseKey = '';
+      let lautakuntaIndex = '';
+      if (group === "Ehdotus") {
+        phaseKey = 'kaavaehdotus';
+      } else if (group === "Tarkistettu ehdotus") {
+        phaseKey = 'tarkistettu_ehdotus';
+      } else if (group === "Luonnos") {
+        phaseKey = 'kaavaluonnos';
+      } else {
+        // fallback, use group as lowercased and underscored
+        phaseKey = group.toLowerCase().replace(/\s+/g, '_');
+      }
+
+      // Try to extract index from title, e.g. "Lautakunta-2"
+      const match = title.match(/lautakunta-?(\d*)/i);
+      if (match) {
+        lautakuntaIndex = match[1] ? `_${match[1]}` : '';
+      }
+
+      // Build the key for visValues
+      let dateKey = '';
+      if (phaseKey === 'kaavaehdotus') {
+        dateKey = `milloin_kaavaehdotus_lautakunnassa${lautakuntaIndex}`;
+      } else if (phaseKey === 'tarkistettu_ehdotus') {
+        dateKey = `milloin_tarkistettu_ehdotus_lautakunnassa${lautakuntaIndex}`;
+      } else if (phaseKey === 'kaavaluonnos') {
+        dateKey = `milloin_kaavaluonnos_lautakunnassa${lautakuntaIndex}`;
+      } else {
+        dateKey = `milloin_${phaseKey}_lautakunnassa${lautakuntaIndex}`;
+      }
+
+      const lautakuntaDateStr = visValues[dateKey];
+      if (!lautakuntaDateStr) return false;
+
+      const lautakuntaDate = new Date(lautakuntaDateStr);
+      const now = new Date();
+      return lautakuntaDate < now;
+    };
   
     const renderSection = (section,sectionIndex,title) => {
+
+      const lautakuntaGroups = groups
+        .filter(g => g.nestedInGroup === group && g.content.startsWith('Lautakunta-'))
+        .sort((a, b) => {
+          // Extract the number after 'Lautakunta-' for sorting, fallback to 0 if not found
+          const numA = parseInt(a.content.split('-')[1] || '0', 10);
+          const numB = parseInt(b.content.split('-')[1] || '0', 10);
+          return numA - numB;
+        });
+
+      // Find the content/title of the last Lautakunta group
+      const lastLautakunta = lautakuntaGroups[lautakuntaGroups.length - 1]?.content;
+
       //grouped_sections specific to timeline with groups and subgroups
       const sections = section?.grouped_sections
       const splitTitle = title.split('-').map(part => part.toLowerCase())
@@ -180,9 +244,33 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
         confirmedValue = textUtil.replaceScandics(confirmedValue)
       }
       confirmedValue = confirmedValue.replace(/\s+/g, '');
-      const isConfirmed = visValues[confirmedValue]
-      const disabled = archived || isConfirmed ? true : sectionIndex < projectPhaseIndex
+
+      const isLautakuntaSection = title.toLowerCase().replace(/\s+/g, '').includes('lautakunta');
+      const isLastLautakunta = isLautakuntaSection && (title.replace(/\s+/g, '') === lastLautakunta?.replace(/\s+/g, ''));
+      const lautakuntaInPast = isLautakuntaSection && isLautakuntaDateInPast(group, title, visValues);
+      const phaseClosed = isPhaseClosed(group);
+
+      const disableConfirmButton = phaseClosed
+        ? true
+        : (isLautakuntaSection ? !isLastLautakunta : false);
+
+      const disabled =
+        archived ||
+        disableConfirmButton
+          ? true
+          : sectionIndex < projectPhaseIndex;
+
       const renderedSections = []
+
+      const tooltip =
+        phaseClosed
+          ? "Vahvistusta ei voi perua, koska vaihe on lopetettu."
+          : lautakuntaInPast
+            ? "Vahvistusta ei voi perua, koska lautakunta sijaitsee menneessä ajanhetkessä."
+            : disableConfirmButton
+              ? "Vahvistusta ei voi perua, koska seuraava lautakunta on jo lisätty."
+              : null;
+
       sections.forEach(subsection => {
         const attr = subsection?.attributes
         const [maxDateToMove,maxMoveGroup] = getMaxiumDateToMove(attr)
@@ -198,7 +286,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
               </Tabs.TabList>
               {Object.values(attr[deadlinegroup]).map((subsection, index) => {
                 return <Tabs.TabPanel style={{ marginBottom: 'var(--spacing-m)' }} key={`tabPanel-${index}-${subsection}`}>
-                    {getFormFields(subsection, sectionIndex, disabled, attr[deadlinegroup], maxMoveGroup, maxDateToMove, title, confirmedValue)}
+                    {getFormFields(subsection, sectionIndex, disabled, attr[deadlinegroup], maxMoveGroup, maxDateToMove, title, confirmedValue, tooltip, lautakuntaInPast)}
                   </Tabs.TabPanel>
               })}
             </Tabs>
@@ -246,6 +334,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
     deadlineSections: PropTypes.array,
     formSubmitErrors: PropTypes.object,
     projectPhaseIndex: PropTypes.number,
+    phaseList: PropTypes.array,
     archived: PropTypes.bool,
     allowedToEdit: PropTypes.bool,
     disabledDates: PropTypes.array,
