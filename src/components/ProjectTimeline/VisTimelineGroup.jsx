@@ -756,13 +756,20 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               tooltipEl.innerHTML = startDate;
             } else if (dragElement === "right" && endDate) {
               tooltipEl.innerHTML = endDate;
-            } else {
+            } else if(dragElement){
               tooltipEl.innerHTML = startDate;
             }
           }
-          
           // Call the original callback
-          callback(item);
+          if(dragElement && allowedToEdit){
+            callback(item);
+          }
+          else{
+            tooltipEl.style.display = 'none';
+            tooltipEl.innerHTML = '';
+            callback(null);
+          }
+
         },
         onMove(item, callback) {
           // Remove the moving tooltip
@@ -779,7 +786,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           const isConfirmed = dragElement?.includes("confirmed");
           const isMovingToPast = (item.start && item.start < today) || (item.end && item.end < today);
 
-          if (isConfirmed || isMovingToPast) {
+          if (!dragElement || isConfirmed || isMovingToPast) {
             // Cancel the move for confirmed items or items moved to past dates
             callback(null);
             return;
@@ -1107,9 +1114,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         timeline.on('mouseDown', (props) => {
           if (props.item) {
             const element = props.event.target;
+            const parent = props.event.target.parentElement
             // Check if parent element has 'confirmed' class
             const isConfirmed = props?.event?.target?.parentElement?.classList?.contains('confirmed') || element?.classList?.contains('confirmed') ? " confirmed" : "";
-            if (element.classList.contains('vis-drag-left')) {
+            if (element.classList.contains('vis-drag-left') || element.classList.contains('vis-point') || parent.classList.contains('board')) {
               dragHandleRef.current = "left" + isConfirmed;
             } else if (element.classList.contains('vis-drag-right')) {
               dragHandleRef.current = "right" + isConfirmed;
