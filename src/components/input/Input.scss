@@ -1,6 +1,4 @@
-@import '../common/colors.scss';
-@import '../common/Fonts.scss';
-@import url('hds-core');
+@use 'hds-core';
 
 .input-container {
   .input-header-container{
@@ -364,15 +362,15 @@
 }
 
 .ui.label {
-  font-family: "Helsinki Grotesk Medium", sans-serif;
-  background-color: transparent;
-  color: $black1;
-  font-size: $size16;
-  letter-spacing: 0;
-  line-height: $size24;
-  margin: 0;
-  padding: 0;
-  transition: none;
+  font-family: "Helsinki Grotesk Medium", sans-serif !important;
+  background-color: transparent !important; 
+  color: $black1 !important;
+  font-size: $size16 !important;
+  letter-spacing: 0 !important;
+  line-height: $size24 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transition: none !important;
 }
 
 .ui.form input[type=text]:hover {
@@ -782,28 +780,55 @@
   .fieldset-container:last-of-type{
     margin-bottom: 16px;
   }
+  .fieldset-button-add{
+    justify-content: flex-start;
+    width: auto;
+  }
+  .fieldset-saving-notification{
+    background-color: $color-info-light;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: $size12;
+    height: $size48;
+    font-size: $size16;
+    font-family: "Helsinki Grotesk Bold", sans-serif;
+    font-weight: 700;
+    .fieldset-spinner{
+      margin: 0;
+      padding: 0;
+      margin-right: $size12;
+      .loading-spinner{
+        --spinner-size: 1.5rem;
+        --spinner-thickness: 0.2rem;
+        --spinner-color: #0000bf;
+      }
+
+    }
+  }
 }
 
-.fieldset-button-remove {
- color: $color-error !important;
+
+.fieldset-button-remove-disabled{
+  border-color: $color-black-40;
+  margin-top: 20px;
+}
+
+.fieldset-button-remove-disabled:hover{
+  border-color: $color-black-40;
+}
+
+.fieldset-button-remove:not(:disabled) {
+ color: $color-error;
  border-color: $color-error !important;
  margin-top: 20px;
  margin-bottom: 3.4px;
 }
 
-.fieldset-button-remove:hover{
-  color: $color-error-dark !important;
+.fieldset-button-remove:not(:disabled):hover{
+  color: $color-error-dark;
   border-color: $color-error-dark !important;
-  background-color: $color-error-light !important;
-}
-
-.fieldset-button-remove-disabled{
-  border-color: $color-black-40 !important;
-  margin-top: 20px;
-}
-
-.fieldset-button-remove-disabled:hover{
-  border-color: $color-black-40 !important;
+  background-color: $color-error-light;
 }
 
 .fieldset-accordian-close{
@@ -855,8 +880,16 @@
 }
 
 .link-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 4px;
   .link-button {
     margin-left: $size20;
+    svg{
+      color: $white;
+      margin-left: 4px;
+    }
   }
 
   input {
@@ -953,7 +986,7 @@
   visibility: hidden;
 }
 .hidden {
-  display: none;
+  display: none !important;
 }
 .visually-hidden {
 	position: absolute !important;
@@ -1107,7 +1140,7 @@
     line-height: $size24;
     color: $color-bus;
     margin-top: 0;
-    margin-left: -$size4;
+    margin-left: -($size4);
 
     div {
       margin-left:0 !important;
@@ -1124,7 +1157,7 @@
     font-family: 'Helsinki Grotesk Medium', sans-serif;
     font-size: $size14;
     margin-top: 0;
-    margin-left: -$size4;
+    margin-left: -($size4);
     padding-left: 0;
     span{
       padding-left: 0.5rem;
@@ -1135,5 +1168,178 @@
 .multi-custom-card{
   .custom-card{
     margin-bottom: $size20;
+  }
+}
+
+.text-input{
+  .input-spinner {
+    position: absolute;
+    top: 60%;
+    right: 0.75rem; // Adjust depending on padding of your input
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 2;
+  
+    .loading-spinner {
+      --spinner-size: 1.5em; // override default size
+      width: var(--spinner-size);
+      height: var(--spinner-size);
+      --spinner-color: #0000bf;
+    }
+  }
+  .input-spinner-datetime{
+    position: absolute;
+    top: 75%;
+    right: 0.75rem; // Adjust depending on padding of your input
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 2;
+  
+    .loading-spinner {
+      --spinner-size: 1.5em; // override default size
+      width: var(--spinner-size);
+      height: var(--spinner-size);
+      --spinner-color: #0000bf;
+    }
+  }
+}
+
+.fieldset-accordian-open{
+  .text-input{
+    .input-spinner {
+      position: absolute;
+      top: 60%;
+      right: 0.75rem; // Adjust depending on padding of your input
+      transform: translateY(-50%);
+      pointer-events: none;
+      z-index: 2;
+    
+      .loading-spinner {
+        --spinner-size: 1.5em; // override default size
+        width: var(--spinner-size);
+        height: var(--spinner-size);
+        --spinner-color: #0000bf;
+      }
+    }
+    .input-spinner-datetime{
+      position: absolute;
+      top: 61%;
+      left: 10.75rem; // Adjust depending on padding of your input
+      transform: translateY(-50%);
+      pointer-events: none;
+      z-index: 2;
+    
+      .loading-spinner {
+        --spinner-size: 1.5em; // override default size
+        width: var(--spinner-size);
+        height: var(--spinner-size);
+        --spinner-color: #0000bf;
+      }
+    }
+  }
+}
+
+.select-input-wrapper {
+  position: relative;
+  width: 100%;
+  .select-spinner-overlay {
+    position: absolute;
+    top: 50%;
+    right: 2.5rem; // Adjust based on spacing inside Select
+    transform: translateY(-50%);
+    z-index: 2;
+    pointer-events: none;
+
+    &.single {
+      right: 3rem;
+    }
+  
+    &.multi {
+      right: 5.5rem; // Adjust to align before dropdown icon
+    }
+  
+    .loading-spinner {
+      --spinner-size: 1.25rem;
+      width: var(--spinner-size);
+      height: var(--spinner-size);
+      --spinner-color: #0000bf;
+    }
+  }
+}
+.radio-button-wrapper {
+  position: relative;
+  display: inline-block;
+
+  .radio-spinner-overlay {
+    position: absolute;
+    top: 50%;
+    right: -2rem;
+    transform: translateY(-50%);
+    z-index: 2;
+    pointer-events: none;
+
+    .loading-spinner {
+      --spinner-size: 1.25rem;
+      width: var(--spinner-size);
+      height: var(--spinner-size);
+      --spinner-color: #0000bf;
+    }
+  }
+}
+
+.link-input-wrapper {
+  position: relative;
+  .link-spinner-overlay {
+    position: absolute;
+    top: 50%;
+    right: 1rem; // adjust based on TextInput's padding
+    transform: translateY(-50%);
+    z-index: 2;
+    pointer-events: none;
+  
+    .loading-spinner {
+      --spinner-size: 1.25rem;
+      width: var(--spinner-size);
+      height: var(--spinner-size);
+      --spinner-color: #0000bf;
+    }
+  }
+}
+
+.fieldset-spinner {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.5rem;
+  margin-top: 0.7rem;
+
+  .loading-spinner {
+    --spinner-size: 1.25rem;
+    width: var(--spinner-size);
+    height: var(--spinner-size);
+    --spinner-color: #0000bf;
+    --spinner-thickness: 0.2rem;
+  }
+}
+
+.fieldset-spinner-remove{
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.5rem;
+  margin-top: 2rem;
+  .loading-spinner {
+    --spinner-size: 1.5rem;
+    --spinner-thickness: 0.2rem;
+    width: var(--spinner-size);
+    height: var(--spinner-size);
+    margin-right: 0.5rem;
+    --spinner-color: #0000bf;
+  }
+}
+
+.fieldset-spinner-button{
+  .loading-spinner {
+    --spinner-size: 1.5rem;
+    --spinner-thickness: 0.2rem;
+    --spinner-color: #0000bf;
   }
 }
