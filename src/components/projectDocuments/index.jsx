@@ -14,6 +14,7 @@ import { LoadingSpinner } from 'hds-react'
 import DocumentGroup from './DocumentGroup.jsx'
 import { useTranslation } from 'react-i18next'
 import authUtils from '../../utils/authUtils'
+import './ProjectDocuments.scss'
 
 
 function ProjectDocumentsPage(props) {
