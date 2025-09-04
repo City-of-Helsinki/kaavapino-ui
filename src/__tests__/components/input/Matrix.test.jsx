@@ -1,6 +1,6 @@
 import React from 'react'
-import {render,screen} from '@testing-library/react'
-import '@testing-library/jest-dom'
+import { render, screen, cleanup} from '@testing-library/react'
+import { describe,  test, expect, beforeEach, afterEach } from 'vitest';
 import { Provider } from 'react-redux'
 import { reduxForm } from 'redux-form'
 import configureStore from 'redux-mock-store'
@@ -9,7 +9,7 @@ import Matrix from '../../../components/input/Matrix'
 describe('<Matrix />', () => {
   beforeEach(() => {
     const mockStore = configureStore()
-    const initialState = { project: { checking: true } }
+    const initialState = { project: { checking: true, connection: true } }
     const store = mockStore(initialState)
     const props = {
       field: {
@@ -37,6 +37,10 @@ describe('<Matrix />', () => {
       </Provider>
     )
   })
+
+  afterEach(() => {
+    cleanup();
+  });
 
   test('renders', () => {
     const inputContainer = screen.getByTestId("matrix-testid")

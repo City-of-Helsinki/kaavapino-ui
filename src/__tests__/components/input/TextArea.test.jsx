@@ -1,7 +1,8 @@
 import React from 'react'
 import {render,screen} from '@testing-library/react'
-import '@testing-library/jest-dom'
 import CustomTextArea from '../../../components/input/CustomTextArea'
+import { describe, it, expect } from 'vitest'
+
 
 describe('<TextArea />', () => {
   it('has value and name', () => {
