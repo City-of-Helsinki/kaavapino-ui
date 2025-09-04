@@ -1,9 +1,9 @@
 import React from 'react'
-import {render} from '@testing-library/react'
+import { render, cleanup } from '@testing-library/react'
 import RadioBooleanButton from '../../../components/input/RadioBooleanButton'
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, afterEach } from 'vitest';
 
 const mockStore = configureStore();
 
@@ -15,7 +15,11 @@ const store = mockStore({
 
 describe('<RadioBooleanButton />', () => {
 
-  test.skip('is initialized correctly', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  test('is initialized correctly', () => {
 
     const {getByTestId} = render(
       <Provider store={store}>
@@ -37,7 +41,7 @@ describe('<RadioBooleanButton />', () => {
 
   })
 
-  test.skip('is initialized correctly second test', () => {
+  test('is initialized correctly second test', () => {
     const {getByTestId} = render(
       <Provider store={store}>
         <RadioBooleanButton input={{ value: "", name: 'test' }} meta={{}} />

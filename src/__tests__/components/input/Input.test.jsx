@@ -1,9 +1,9 @@
 import React from 'react'
-import {render,screen} from '@testing-library/react'
+import {render, screen, cleanup} from '@testing-library/react'
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import Input from '../../../components/input/CustomInput'
-import { describe, test, expect, beforeEach} from 'vitest';
+import { describe, test, expect, beforeEach, afterEach} from 'vitest';
 
 describe('<Input />', () => {
   const mockStore = configureStore();
@@ -22,15 +22,19 @@ describe('<Input />', () => {
         />
       </Provider>
     )
-  })
+  });
 
-  test.skip('has value and name', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  test('has value and name', () => {
     const inputNode = screen.getByLabelText('test')
     expect(inputNode).toBeInTheDocument()
     expect(inputNode.value).toBe('123')
   })
 
-  test.skip('can have custom props', () => {
+  test('can have custom props', () => {
     const inputNode = screen.getByPlaceholderText('123')
     expect(inputNode).toBeInTheDocument()
   })

@@ -10,7 +10,7 @@ describe('<Info />', () => {
     render(<Info className="test" content="test" />)
   })
 
-  test.skip('renders', () => {
+  test('renders', () => {
     const inputNode = screen.getByLabelText('Tooltip')
     expect(inputNode).toBeInTheDocument()
   })

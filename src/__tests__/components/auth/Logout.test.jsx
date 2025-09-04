@@ -17,7 +17,7 @@ describe('<Logout />', () => {
     render(<LogoutPage handleLogout={logoutMock} />)
   })
 
-  test.skip('renders', () => {
+  test('renders', () => {
     const normalRoute = screen.queryByText('logging-out')
     expect(normalRoute).toBeInTheDocument()
   })

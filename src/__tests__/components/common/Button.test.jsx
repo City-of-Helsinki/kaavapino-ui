@@ -10,7 +10,7 @@ describe('<FormButton />', () => {
     cleanup();
   });
 
-  test.skip('renders', () => {
+  test('renders', () => {
     mockFn = vi.fn(() => null)
     render(<FormButton
       handleClick={mockFn}

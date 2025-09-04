@@ -65,7 +65,7 @@ describe('<Field />', () => {
     )
   }
 
-  test.skip('renders', () => {
+  test('renders', () => {
     createFieldOfType('text')
     /* React-redux version 8 makes a wrapping Field component and another Field component inside it,
      * which is given _reduxForm context.
@@ -100,19 +100,19 @@ describe('<Field />', () => {
     expect(fieldNode.getAttribute('type')).toBe('number');
   })
 
-  test.skip('renders fieldset types', () => {
+  test('renders fieldset types', () => {
     createFieldOfType('fieldset', { fieldset: true })
     const fieldNode = screen.getByText('project.add')
     expect(fieldNode).toBeInTheDocument()
   })
 
-  test.skip('renders file types', () => {
+  test('renders file types', () => {
     createFieldOfType('file', {}, { name: 'file' })
     const fieldNode = screen.getByText('1')
     expect(fieldNode).toBeInTheDocument()
   })
 
-  test.skip('renders image types', () => {
+  test('renders image types', () => {
     createFieldOfType('image', {}, { name: 'file' })
     const fieldNode = screen.getByText('1')
     expect(fieldNode).toBeInTheDocument()

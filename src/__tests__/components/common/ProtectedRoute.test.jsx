@@ -12,7 +12,7 @@ describe('<ProtectedRoute />', () => {
     cleanup();
   });
 
-  test.skip('renders a component when pred is true', () => {
+  test('renders a component when pred is true', () => {
     render(
       <MemoryRouter>
         <ProtectedRoute
@@ -44,7 +44,7 @@ describe('<ProtectedRoute />', () => {
     expect(allRoutes.length).toBe(1)
   })
 
-  test.skip('doesn\'t render a component when pred is false and redirects to another route', async () => {
+  test('doesn\'t render a component when pred is false and redirects to another route', async () => {
     render(
       <MemoryRouter initialEntries={['/login']}>
         <Switch>

@@ -42,7 +42,7 @@ describe('<Matrix />', () => {
     cleanup();
   });
 
-  test.skip('renders', () => {
+  test('renders', () => {
     const inputContainer = screen.getByTestId("matrix-testid")
     expect(inputContainer).toBeInTheDocument()
     const input1 = screen.getByLabelText("1")
@@ -55,7 +55,7 @@ describe('<Matrix />', () => {
     expect(input4).toBeInTheDocument()
   })
 
-  test.skip('can be highlighted', () => {
+  test('can be highlighted', () => {
     const highlighted = screen.getByTestId("1test-highligh")
     const normal = screen.getByTestId("4test-highligh")
     expect(highlighted).toBeInTheDocument()
