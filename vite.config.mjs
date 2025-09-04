@@ -62,6 +62,7 @@ export default defineConfig(({ mode }) => {
       }
     },
     test: {
+      environment: 'happy-dom',
       coverage: {
         reporter: ['text', 'json', 'lcov']
       }

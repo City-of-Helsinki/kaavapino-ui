@@ -20,6 +20,8 @@ import {
   PROJECT_FILE_REMOVE_SUCCESSFUL,
   PROJECT_SET_CHECKING
 } from '../../actions/projectActions'
+import { describe, it, expect } from 'vitest'
+
 
 describe('project reducer', () => {
   it('should return the initial state', () => {

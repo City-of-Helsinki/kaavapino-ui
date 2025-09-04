@@ -1,5 +1,6 @@
 import { reducer as user, initialState } from '../../reducers/userReducer'
 import { FETCH_USERS_SUCCESSFUL } from '../../actions/userActions'
+import { describe, it, expect } from 'vitest'
 
 describe('user reducer', () => {
   it('should return the initial state', () => {
