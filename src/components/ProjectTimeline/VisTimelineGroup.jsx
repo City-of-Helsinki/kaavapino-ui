@@ -19,7 +19,7 @@ import './VisTimeline.scss'
 Moment().locale('fi');
 import { updateDateTimeline } from '../../actions/projectActions';
 
-const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes, showTimetableForm}, ref) => {
+const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes, showTimetableForm, itemsPhaseDatesOnly}, ref) => {
     const dispatch = useDispatch();
     const moment = extendMoment(Moment);
 
@@ -28,6 +28,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const observerRef = useRef(null); // Store the MutationObserver
     const timelineInstanceRef = useRef(null);
     const visValuesRef = useRef(visValues);
+    const itemsPhaseDatesOnlyRef = useRef(itemsPhaseDatesOnly);
 
     const [selectedGroupId, setSelectedGroupId] = useState(null);
     const selectedGroupIdRef = useRef(selectedGroupId);
@@ -48,6 +49,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     useImperativeHandle(ref, () => ({
       getTimelineInstance: () => timelineInstanceRef.current,
     }));
+
+    // Keep latest itemsPhaseDatesOnly available inside event handlers
+    useEffect(() => {
+      itemsPhaseDatesOnlyRef.current = itemsPhaseDatesOnly;
+    }, [itemsPhaseDatesOnly]);
 
 
     const preventDefaultAndStopPropagation = (event) => {
@@ -745,6 +751,25 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           const dragElement = dragHandleRef.current;
           // Position tooltip near mouse cursor
           const event = window.event;
+          // Simple zero / negative duration guard (range items)
+          if (dragElement && allowedToEdit) {
+            // Range: block zero / negative duration
+            if (item.start && item.end && item.end <= item.start) {
+              callback(null);
+              return;
+            }
+            else if(item.start && !item.end || dragElement === "left"){
+              const visibleItems = itemsPhaseDatesOnlyRef.current;
+              const indexOfMovingItem = visibleItems?.findIndex(i => String(i.id) === String(item.id));
+              const prevItem = indexOfMovingItem > 0 ? visibleItems[indexOfMovingItem - 1] : null;
+              const prevItemDate = prevItem?.end ? prevItem?.end : prevItem?.start
+              if(prevItemDate && item.start <= prevItemDate){
+                callback(null);
+                return;
+              }
+            }
+          }
+
           if (event) {
             tooltipEl.style.display = 'block';
             tooltipEl.style.position = 'absolute';

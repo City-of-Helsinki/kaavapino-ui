@@ -32,6 +32,7 @@ class EditProjectTimeTableModal extends Component {
       item: null,
       items: false,
       groups: false,
+      itemsPhaseDatesOnly: [],
       showModal: false,
       collapseData: {},
       sectionAttributes: []
@@ -52,9 +53,11 @@ class EditProjectTimeTableModal extends Component {
       groups.add(deadLineGroups);
       groups.add(nestedDeadlines);
       items.add(phaseData)
+      // Have own state for filtered out phase indicators, dividers, disabled and holiday items for comparison reasons at VisTimelineGroup
+      const itemsPhaseDatesOnly = items.get().filter(it => !!it?.title && it.title !== 'divider')
       items = this.findConsecutivePeriods(disabledDates,items,false);
       items = this.findConsecutivePeriods(lomapaivat,items,true)
-      this.setState({items,groups,visValues:attributeData})
+      this.setState({items,groups,visValues:attributeData, itemsPhaseDatesOnly})
 
       let sectionAttributes = []
       this.extractAttributes(deadlineSections, attributeData, sectionAttributes, (attribute, attributeData) => {
@@ -109,6 +112,9 @@ class EditProjectTimeTableModal extends Component {
           this.state.groups.clear();
           this.state.groups.add(combinedGroups)
           this.state.items.update(phaseData)
+          // Keep itemsPhaseDatesOnly in sync after updates
+          const itemsPhaseDatesOnly = this.state.items.get().filter(it => !!it?.title && it.title !== 'divider')
+          this.setState({ itemsPhaseDatesOnly })
           const newObjectArray = objectUtil.findDifferencesInObjects(prevProps.formValues,formValues)
 
           //No dispatch when confirmed is added to formValues as new data
@@ -1267,6 +1273,7 @@ class EditProjectTimeTableModal extends Component {
               trackExpandedGroups={this.trackExpandedGroups}
               sectionAttributes={this.state.sectionAttributes}
               showTimetableForm={this.props.showTimetableForm}
+              itemsPhaseDatesOnly={this.state.itemsPhaseDatesOnly}
             /> 
             <ConfirmModal 
               openConfirmModal={this.state.showModal}
