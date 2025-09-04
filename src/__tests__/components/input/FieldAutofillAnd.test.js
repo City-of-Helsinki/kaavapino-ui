@@ -1,4 +1,6 @@
 import { getFieldAutofillValue } from '../../../utils/projectAutofillUtils'
+import { describe, test, expect } from 'vitest'
+
 describe('Autofill tests', () => {
   test('Autofill rule succeeds combine rule (boolean) both true', () => {
     const field = {}

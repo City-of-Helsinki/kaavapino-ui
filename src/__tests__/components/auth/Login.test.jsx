@@ -1,14 +1,12 @@
 import React from 'react'
 import {render,screen} from '@testing-library/react'
-import '@testing-library/jest-dom'
+import { describe, vi, test, beforeEach, afterEach, expect } from 'vitest'
 import LoginPage from '../../../components/auth/Login'
 
-jest.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: key => key })
-}))
-
 describe('<Login />', () => {
-
+  vi.mock('react-i18next', () => ({
+    useTranslation: () => ({ t: key => key })
+  }))
   
   beforeEach(() => {
     render(<LoginPage />)
@@ -19,6 +17,6 @@ describe('<Login />', () => {
   })
 
   afterEach(() => {
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 })
