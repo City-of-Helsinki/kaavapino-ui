@@ -112,9 +112,9 @@ class EditProjectTimeTableModal extends Component {
           this.state.groups.clear();
           this.state.groups.add(combinedGroups)
           this.state.items.update(phaseData)
-          // Keep itemsPhaseDatesOnly in sync after updates
-          const itemsPhaseDatesOnly = this.state.items.get().filter(it => !!it?.title && it.title !== 'divider')
-          this.setState({ itemsPhaseDatesOnly })
+          this.setState(prevState => ({
+            itemsPhaseDatesOnly: prevState.items.get().filter(it => !!it?.title && it.title !== 'divider')
+          }))
           const newObjectArray = objectUtil.findDifferencesInObjects(prevProps.formValues,formValues)
 
           //No dispatch when confirmed is added to formValues as new data
