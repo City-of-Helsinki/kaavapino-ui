@@ -54,7 +54,14 @@ class EditProjectTimeTableModal extends Component {
       groups.add(nestedDeadlines);
       items.add(phaseData)
       // Have own state for filtered out phase indicators, dividers, disabled and holiday items for comparison reasons at VisTimelineGroup
-      const itemsPhaseDatesOnly = items.get().filter(it => !!it?.title && it.title !== 'divider')
+      const itemsPhaseDatesOnly = items
+        .get()
+        .filter(it => !!it?.title && it.title !== 'divider')
+        .sort((a, b) => {
+          const aTime = a?.start instanceof Date ? a.start.getTime() : new Date(a?.start).getTime();
+          const bTime = b?.start instanceof Date ? b.start.getTime() : new Date(b?.start).getTime();
+          return (aTime ?? 0) - (bTime ?? 0);
+        })
       items = this.findConsecutivePeriods(disabledDates,items,false);
       items = this.findConsecutivePeriods(lomapaivat,items,true)
       this.setState({items,groups,visValues:attributeData, itemsPhaseDatesOnly})
@@ -113,7 +120,14 @@ class EditProjectTimeTableModal extends Component {
           this.state.groups.add(combinedGroups)
           this.state.items.update(phaseData)
           this.setState(prevState => ({
-            itemsPhaseDatesOnly: prevState.items.get().filter(it => !!it?.title && it.title !== 'divider')
+            itemsPhaseDatesOnly: prevState.items
+              .get()
+              .filter(it => !!it?.title && it.title !== 'divider')
+              .sort((a, b) => {
+                const aTime = a?.start instanceof Date ? a.start.getTime() : new Date(a?.start).getTime();
+                const bTime = b?.start instanceof Date ? b.start.getTime() : new Date(b?.start).getTime();
+                return (aTime ?? 0) - (bTime ?? 0);
+              })
           }))
           const newObjectArray = objectUtil.findDifferencesInObjects(prevProps.formValues,formValues)
 

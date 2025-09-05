@@ -277,6 +277,18 @@
             background-size: contain;
             border-radius: 50%;
         }
+        &.confirmed:hover::after {
+            content: "";
+            position: absolute;
+            top: -13px;
+            right: -15px;
+            width: 21px;
+            height: 21px;
+            background: #fff url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
+            background-position: center;
+            background-size: contain;
+            border-radius: 50%;
+        }
     }
 
     .phase-length{
@@ -878,29 +890,6 @@
         pointer-events: auto;
     }
 
-    .vis-point:hover{
-        pointer-events: auto;
-        cursor: url('../../assets/icons/vector.svg') 8 8, move;
-        &::after {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 8px;
-            height: 8px;
-            background-color: #B3B3B3;
-            border-radius: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            opacity: 0;
-            transition: all 0.3s ease;
-            pointer-events: none;
-          }
-        
-          &:hover::after {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-          }
-    }
     .vis-point:active{
         pointer-events: auto;
         cursor: url('../../assets/icons/vector.svg') 8 8, move;
@@ -917,11 +906,6 @@
             opacity: 0;
             transition: all 0.3s ease;
             pointer-events: none;
-          }
-        
-          &:hover::after {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
           }
     }
     /*1.2v end*/
