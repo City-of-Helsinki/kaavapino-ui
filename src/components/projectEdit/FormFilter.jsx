@@ -3,7 +3,7 @@ import { Button, Tag, IconTrash, Checkbox } from 'hds-react';
 import { getOffset } from '../../hooks/getOffset';
 import './ProjectEdit.scss'
 
-function FormFilter({schema,filterFields,isHighlightedTag,selectedPhase,allfields,currentlyHighlighted}) {
+function FormFilter({schema,filterFields,isHighlightedTag,selectedPhase,allfields,currentlyHighlighted,showSection}) {
 
 const openButtonRef = useRef(null);
 const modal = document.getElementById("myModal");
@@ -34,7 +34,7 @@ useEffect(() => {
     const formHeight = document.getElementsByClassName("form-container")[0]
     const windowHeight = window.innerHeight
 
-    if(windowHeight > formHeight.offsetHeight){
+    if(windowHeight > formHeight?.offsetHeight){
         const startOffForm = document.getElementById("accordion-title")
         if(startOffForm){
             startOffForm.scrollIntoView()
@@ -229,7 +229,7 @@ return (
             {renderedTags}
         </div>
         <div className='right-container'>
-            <Button ref={openButtonRef} onClick={() => openModal()} className="toggle-filters" variant="secondary" size="small">
+            <Button ref={openButtonRef} onClick={() => openModal()} className="toggle-filters" variant="secondary" size="small" disabled={!showSection}>
                 Muokkaa suodattimia
             </Button>
         </div>
