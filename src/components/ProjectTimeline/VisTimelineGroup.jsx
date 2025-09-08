@@ -15,10 +15,11 @@ import AddGroupModal from './AddGroupModal';
 import ConfirmModal from '../common/ConfirmModal'
 import PropTypes from 'prop-types';
 import { getVisibilityBoolName, getVisBoolsByPhaseName, isDeadlineConfirmed } from '../../utils/projectVisibilityUtils';
-import './VisTimeline.scss'
+import { useTimelineTooltip } from '../../hooks/useTimelineTooltip';
+import './VisTimeline.css'
 Moment().locale('fi');
 
-const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes, showTimetableForm}, ref) => {
+const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, phaseList, currentPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes, showTimetableForm}, ref) => {
     const dispatch = useDispatch();
     const moment = extendMoment(Moment);
 
@@ -42,6 +43,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [dataToRemove, setDataToRemove] = useState({});
     const [timelineAddButton, setTimelineAddButton] = useState();
     //const [lock, setLock] = useState({group:false,id:false,locked:false,abbreviation:false});
+
+    const { showTooltip, hideTooltip } = useTimelineTooltip();
 
     useImperativeHandle(ref, () => ({
       getTimelineInstance: () => timelineInstanceRef.current,
@@ -226,58 +229,228 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       return [false,false]
     }
 
-    const canGroupBeAdded = (visValRef, data) => {
-      // Find out how many groups in the clicked phase have been added to the timeline
+    const getPhaseKey = (data) => {
+      return data.content.toLowerCase().replace(/\s+/g, '_');
+    }
+
+    const getLautakuntaCount = (groups, data) => {
       const matchingGroups = groups.get().filter(group => data.nestedGroups.includes(group.id));
-      const esillaoloCount = matchingGroups.filter(group => group.content.includes('Esilläolo') || group.content.includes('Nahtavillaolo')).length > 1 ? '_' + matchingGroups.filter(group => group.content.includes('Esilläolo') || group.content.includes('Nahtavillaolo')).length : '';
-      const lautakuntaCount = matchingGroups.filter(group => group.content.includes('Lautakunta')).length > 1 ? '_' + matchingGroups.filter(group => group.content.includes('Lautakunta')).length : '';
-      const phase = data.content.toLowerCase().replace(/\s+/g, '_');
-      // Check if existing groups have been confirmed
-      let esillaoloConfirmed = Object.hasOwn(visValRef, `vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`) && visValRef[`vahvista_${phase}_esillaolo_alkaa${esillaoloCount}`] === true
-      || Object.hasOwn(visValRef, `vahvista_${phase}_esillaolo${esillaoloCount}`) && visValRef[`vahvista_${phase}_esillaolo${esillaoloCount}`] === true;
-      let lautakuntaConfirmed = Object.hasOwn(visValRef, `vahvista_${phase}_lautakunnassa${lautakuntaCount}`) && visValRef[`vahvista_${phase}_lautakunnassa${lautakuntaCount}`] === true;
-      //this could be needed when confirmation is no longer needed
-      if(phase === "luonnos"){
-        lautakuntaConfirmed = Object.hasOwn(visValRef, `vahvista_kaavaluonnos_lautakunnassa${lautakuntaCount}`) && visValRef[`vahvista_kaavaluonnos_lautakunnassa${lautakuntaCount}`] === true;
-      }
-/*       if(phase === "periaatteet" && !(phase + "_lautakuntaan_1" in visValRef) || phase === "periaatteet" && visValRef["periaatteet_lautakuntaan_1"]  || phase === "luonnos" && !(phase + "_lautakuntaan_1") || phase === "luonnos" && visValRef["kaavaluonnos_lautakuntaan_1"] === false){
-        lautakuntaConfirmed = true
-      } */
-      if(phase === "luonnos" && !("jarjestetaan_" + phase + "_esillaolo_1" in visValRef) || phase === "periaatteet" && !("jarjestetaan_"+phase+"_esillaolo_1" in visValRef)){
-        esillaoloConfirmed = true
-      }
-      if(phase === "ehdotus" && "vahvista_kaavaehdotus_lautakunnassa" in visValRef){
-        lautakuntaConfirmed = true
-      }
+      return matchingGroups.filter(group => group.content.includes('Lautakunta')).length;
+    }
 
-      // Initialize returned values
-      let canAddEsillaolo = false;
-      let nextEsillaoloClean = false;
-      let canAddLautakunta = false;
-      let nextLautakuntaClean = false;
-      let esillaoloReason = "";
-      let lautakuntaReason = "";
-    
-      const results = checkConfirmedGroups(esillaoloConfirmed, lautakuntaConfirmed, visValRef, phase, canAddEsillaolo, canAddLautakunta, data);
-      [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, esillaoloReason, lautakuntaReason] = results;
-      let phaseWithoutSpace = phase.toLowerCase().replace(/\s+/g, '-');
+    function getConfirmationKeyForEsillaoloKey(phase, esillaoloKey) {
+      const match = esillaoloKey.match(/_(\d+)$/);
+      const idx = match ? match[1] : "1";
 
-      if(typeof visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "undefined" || visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "hyvaksytty" || visValRef["lautakunta_paatti_"+phaseWithoutSpace] === "palautettu_uudelleen_valmisteltavaksi"){
-        if( (phase === "luonnos" && visValRef[`kaava${phase}_lautakuntaan_1`] === false) ||
-            (phase === "periaatteet" && visValRef[`${phase}_lautakuntaan_1`] === false) ||
-            (phase === "ehdotus" && visValRef["kaavaehdotus_lautakuntaan_1"] === false) ) {
-          canAddLautakunta = true
-        }
-        else{
-          canAddLautakunta = false
+      // Normalize phase name for key
+      let normalizedPhase = phase;
+      if (normalizedPhase === "kaavaehdotus") normalizedPhase = "ehdotus";
+      if (normalizedPhase === "kaavaluonnos") normalizedPhase = "luonnos";
+      if (normalizedPhase === "tarkistettu_ehdotus") normalizedPhase = "tarkistettu_ehdotus";
+      if (normalizedPhase === "periaatteet") normalizedPhase = "periaatteet";
+      if (normalizedPhase === "oas") normalizedPhase = "oas";
+
+      // Special case for ehdotus-phase: no _alkaa in the key!
+      if (normalizedPhase === "ehdotus") {
+        if (idx === "1") {
+          return `vahvista_ehdotus_esillaolo`;
+        } else {
+          return `vahvista_ehdotus_esillaolo_${idx}`;
         }
       }
-      /* TODO if(visValRef["kaavaluonnos_lautakuntaan_1"] === false){
-        //adds second one althou when false needs to just show first one if deleted once
-        canAddLautakunta = true
-      } */
-      
-      return [canAddEsillaolo, nextEsillaoloClean, canAddLautakunta, nextLautakuntaClean, esillaoloReason, lautakuntaReason];
+
+      // All other phases use _esillaolo_alkaa
+      if (idx === "1") {
+        return `vahvista_${normalizedPhase}_esillaolo_alkaa`;
+      } else {
+        return `vahvista_${normalizedPhase}_esillaolo_alkaa_${idx}`;
+      }
+    }
+
+    const getEsillaoloConfirmed = (visValRef, phase, attributeEsillaoloKeys, nextIndex) => {
+      if (
+        (phase === "luonnos" && !("jarjestetaan_" + phase + "_esillaolo_1" in visValRef)) ||
+        (phase === "periaatteet" && !("jarjestetaan_" + phase + "_esillaolo_1" in visValRef))
+      ) {
+        return true;
+      }
+      if (nextIndex <= 1) {
+        return true;
+      }
+      const prevKey = attributeEsillaoloKeys[nextIndex - 2];
+      if (!prevKey) return false;
+
+      if (phase === "luonnos" || phase === "periaatteet") {
+        const confirmKeys = getConfirmationKeyForEsillaoloKey(phase, prevKey);
+        if (Array.isArray(confirmKeys)) {
+          return visValRef[prevKey] === true && confirmKeys.some(key => visValRef[key] === true);
+        } else {
+          return visValRef[prevKey] === true && visValRef[confirmKeys] === true;
+        }
+      }
+
+      return visValRef[prevKey] === true;
+    };
+
+    const getLautakuntaConfirmed = (visValRef, phase, lautakuntaCount) => {
+      if (phase === "ehdotus" && "vahvista_kaavaehdotus_lautakunnassa" in visValRef) {
+        return true;
+      }
+      if (phase === "luonnos") {
+        return lautakuntaCount === 1
+          ? visValRef["vahvista_kaavaluonnos_lautakunnassa"] === true
+          : visValRef[`vahvista_kaavaluonnos_lautakunnassa_${lautakuntaCount}`] === true;
+      } else if (phase === "ehdotus") {
+        return lautakuntaCount === 1
+          ? visValRef["vahvista_kaavaehdotus_lautakunnassa"] === true
+          : visValRef[`vahvista_kaavaehdotus_lautakunnassa_${lautakuntaCount}`] === true;
+      } else if (phase === "periaatteet") {
+        return lautakuntaCount === 1
+          ? visValRef["vahvista_periaatteet_lautakunnassa"] === true
+          : visValRef[`vahvista_periaatteet_lautakunnassa_${lautakuntaCount}`] === true;
+      } else if (phase === "tarkistettu_ehdotus") {
+        return lautakuntaCount === 1
+          ? visValRef["vahvista_tarkistettu_ehdotus_lautakunnassa"] === true
+          : visValRef[`vahvista_tarkistettu_ehdotus_lautakunnassa_${lautakuntaCount}`] === true;
+      }
+      return false;
+    };
+
+    const getLautakuntaAndPaatosBase = (phase) => {
+      return {
+        lautakuntaBase:
+          phase === "luonnos"
+            ? "kaavaluonnos_lautakuntaan"
+            : phase === "ehdotus"
+            ? "kaavaehdotus_lautakuntaan"
+            : phase === "periaatteet"
+            ? "periaatteet_lautakuntaan"
+            : phase === "tarkistettu_ehdotus"
+            ? "tarkistettu_ehdotus_lautakuntaan"
+            : null,
+        paatosBase:
+          phase === "luonnos"
+            ? "lautakunta_paatti_luonnos"
+            : phase === "ehdotus"
+            ? "lautakunta_paatti_ehdotus"
+            : phase === "periaatteet"
+            ? "lautakunta_paatti_periaatteet"
+            : phase === "tarkistettu_ehdotus"
+            ? "lautakunta_paatti_tarkistettu_ehdotus"
+            : null
+      };
+    }
+
+    const getLatestLautakuntaIndex = (visValRef, lautakuntaBase, lautakuntaCount) => {
+      let latestIndex = 1;
+      for (let i = 1; i <= lautakuntaCount + 2; i++) {
+        if (visValRef[`${lautakuntaBase}_${i}`] === true) {
+          latestIndex = i;
+        }
+      }
+      return latestIndex;
+    }
+
+    const canGroupBeAdded = (visValRef, data) => {
+      const phase = getPhaseKey(data);
+      const lautakuntaCount = getLautakuntaCount(groups, data);
+
+      // Esilläolo confirmation
+      const attributeEsillaoloKeys = getVisBoolsByPhaseName(phase).filter(
+        (bool_name) => bool_name.includes('esillaolo') || bool_name.includes('nahtaville')
+      );
+      const esillaoloCount = attributeEsillaoloKeys.filter(key => visValRef[key] === true).length;
+      const nextEsillaoloIndex = esillaoloCount + 1;
+
+      const esillaoloConfirmed = getEsillaoloConfirmed(visValRef, phase, attributeEsillaoloKeys, nextEsillaoloIndex);
+
+      // Lautakunta confirmation
+      const lautakuntaConfirmed = getLautakuntaConfirmed(visValRef, phase, lautakuntaCount);
+
+      // Use helper to get addability and reasons
+      let canAddEsillaolo = false,
+        nextEsillaoloClean = false,
+        canAddLautakunta = false,
+        nextLautakuntaClean = false,
+        esillaoloReason = "",
+        lautakuntaReason = "";
+
+      [
+        canAddEsillaolo,
+        nextEsillaoloClean,
+        canAddLautakunta,
+        nextLautakuntaClean,
+        esillaoloReason,
+        lautakuntaReason
+      ] = checkConfirmedGroups(
+        esillaoloConfirmed,
+        lautakuntaConfirmed,
+        visValRef,
+        phase,
+        canAddEsillaolo,
+        canAddLautakunta,
+        data
+      );
+
+      // Check max lautakunta limit
+      const maxLautakunta = data.group?.maxLautakunta || data.maxLautakunta;
+      if (lautakuntaCount >= maxLautakunta) {
+        canAddLautakunta = false;
+        lautakuntaReason = "max";
+        return [
+          canAddEsillaolo,
+          nextEsillaoloClean,
+          canAddLautakunta,
+          nextLautakuntaClean,
+          esillaoloReason,
+          lautakuntaReason
+        ];
+      }
+
+      // Lautakunta/paatos keys
+      const { lautakuntaBase, paatosBase } = getLautakuntaAndPaatosBase(phase);
+
+      // Find the latest lautakunta index for this phase
+      const latestIndex = getLatestLautakuntaIndex(visValRef, lautakuntaBase, lautakuntaCount);
+
+      // Build the päätös key for the latest lautakunta
+      const paatosKey = latestIndex === 1
+        ? paatosBase
+        : `${paatosBase}_${latestIndex}`;
+
+      const paatos = visValRef[paatosKey];
+
+      // Check if the next lautakunta slot is false
+      const nextLautakuntaKey = `${lautakuntaBase}_${latestIndex + 1}`;
+      const canAddNextLautakunta = visValRef[nextLautakuntaKey] === false;
+
+      if (!lautakuntaConfirmed) {
+        canAddLautakunta = false;
+        lautakuntaReason = "noconfirmation";
+      } else if (
+        paatos === "palautettu_uudelleen_valmisteltavaksi" ||
+        paatos === "asia_jai_poydalle"
+      ) {
+        if (canAddNextLautakunta) {
+          canAddLautakunta = true;
+          lautakuntaReason = "";
+        } else {
+          canAddLautakunta = false;
+          lautakuntaReason = "max";
+        }
+      } else {
+        canAddLautakunta = false;
+        lautakuntaReason = "palautettu_tai_jai_poydalle";
+      }
+
+      return [
+        canAddEsillaolo,
+        nextEsillaoloClean,
+        canAddLautakunta,
+        nextLautakuntaClean,
+        esillaoloReason,
+        lautakuntaReason
+      ];
     };
 
     const openAddDialog = (visValRef,data,event) => {
@@ -662,6 +835,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       return topmostItem ? { item: topmostItem, dom: topmostItemDom } : null;
     };
 
+    const isPhaseClosed = (phase) => {
+      const idx = phaseList.indexOf(phase);
+      return idx > -1 && idx < currentPhaseIndex;
+    };
+
     useEffect(() => {
 
       const options = {
@@ -789,15 +967,15 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           let words = group.deadlinegroup?.split("_") || [];
           let words2 = group.content?.split("-") || [];
           let normalizedString = words2[0]
-          .replace(/[äå]/gi, 'a') // Replace ä and å with a
-          .replace(/ö/gi, 'o')  // Replace ö with o
-          .toLowerCase(); // Convert to lowercase
+            .replace(/[äå]/gi, 'a')
+            .replace(/ö/gi, 'o')
+            .toLowerCase();
 
-          let wordsToCheck = ["vahvista_",words[0], normalizedString, words[2] === "1" ? "" : words[2]];
+          let wordsToCheck = ["vahvista_", words[0], normalizedString, words[2] === "1" ? "" : words[2]];
           const keys = Object.entries(visValuesRef?.current);
 
-          const deletableGroup = keys.some(([key, value]) =>{
-            const allWordsInKey = wordsToCheck.every(word => key.includes(word))
+          const deletableGroup = keys.some(([key, value]) => {
+            const allWordsInKey = wordsToCheck.every(word => key.includes(word));
             return allWordsInKey && value;
           });
 
@@ -805,17 +983,15 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           const stringsToCheck = ["Käynnistys", "Hyväksyminen", "Voimaantulo", "Vaiheen kesto"];
           const contentIncludesString = stringsToCheck.some(str => group?.content.includes(str));
 
-            // Hover effect
-          container.addEventListener("mouseenter", function() {
-            // Action to perform on hover enter, e.g., change background color
+          // Hover effect
+          container.addEventListener("mouseenter", function () {
             container.classList.add("show-buttons");
           });
-          container.addEventListener("mouseleave", function() {
-            // Action to perform on hover leave
+          container.addEventListener("mouseleave", function () {
             container.classList.remove("show-buttons");
           });
 
-          if(group?.nestedGroups!== undefined && allowedToEdit && !contentIncludesString){
+          if (group?.nestedGroups !== undefined && allowedToEdit && !contentIncludesString) {
             let label = document.createElement("span");
             label.innerHTML = group.content + " ";
             container.insertAdjacentElement("afterBegin", label);
@@ -823,14 +999,35 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             add.classList.add("timeline-add-button");
             add.style.fontSize = "small";
 
-            add.addEventListener("click", function (event) {
-              openAddDialog(visValuesRef.current,group,event);
-            });
-            container.insertAdjacentElement("beforeEnd", add);
+            // Use phaseList and currentPhaseIndex from props
+            const labelPhase = label.innerHTML.trim();
+            const hoveredIndex = phaseList.indexOf(labelPhase);
 
+            // Disable add-button if phase is closed
+            let addTooltipDiv = "";
+            if (hoveredIndex < currentPhaseIndex) {
+              add.classList.add("button-disabled");
+              addTooltipDiv = `<div class='timeline-add-text'>${t('deadlines.phase-closed')}</div>`;
+            } else {
+              add.classList.remove("button-disabled");
+              addTooltipDiv = "";
+            }
+
+            add.addEventListener("click", function (event) {
+              if (add.classList.contains("button-disabled")) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+              }
+              openAddDialog(visValuesRef.current, group, event);
+            });
+
+            container.insertAdjacentElement("beforeEnd", add);
+            if (addTooltipDiv) {
+              add.insertAdjacentHTML("afterEnd", addTooltipDiv);
+            }
             return container;
-          }
-          else if(group?.nestedInGroup){
+          } else if (group?.nestedInGroup) {
             // Get, format and add labels
             let label = document.createElement("span");
             let content = group.content;
@@ -846,11 +1043,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             edit.style.fontSize = "small";
 
             edit.addEventListener("click", function () {
-              openDialog(group,container);
+              openDialog(group, container);
             });
             container.insertAdjacentElement("beforeEnd", edit);
 
-            if(allowedToEdit && !contentIncludesString){
+            if (allowedToEdit && !contentIncludesString) {
+
               let labelRemove = document.createElement("span");
               container.insertAdjacentElement("afterBegin", labelRemove);
               let remove = document.createElement("button");
@@ -858,48 +1056,141 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
               // Tooltip for disabled remove button
               let removeTextDiv = "";
-              if (label.innerHTML.includes("Esilläolo")) {
-                removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-first-esillaolo')}</div>`;
-              } else if (label.innerHTML.includes("Lautakunta")) {
-                removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-first-lautakunta')}</div>`;
-              } else if (label.innerHTML.includes("Nähtävilläolo")) {
-                removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-first-nahtavillaolo')}</div>`;
+
+              let groupPhase = group.phase || group.phaseName;
+              if (!groupPhase && group.deadlinegroup) {
+                groupPhase = group.deadlinegroup.split("_")[0];
+                groupPhase = groupPhase.charAt(0).toUpperCase() + groupPhase.slice(1).toLowerCase();
+              }
+              // Try to find the best match in phaseList
+              let matchedPhase = phaseList.find(phase =>
+                phase.toLowerCase().startsWith(groupPhase?.toLowerCase())
+              );
+              if (!matchedPhase) {
+                matchedPhase = phaseList.find(phase =>
+                  phase.toLowerCase().includes(groupPhase?.toLowerCase())
+                );
               }
 
-              //only not confirmed groups can be deleted
-              if(deletableGroup || group.undeletable || visValuesRef?.current[`vahvista_${words[0]}_${normalizedString}_alkaa_${words[2]}`]){
-                // add button-disabled class to the remove button if the group is not deletable
-                remove.classList.add("button-disabled")
+              // --- Remove button disable logic ---
+              let isPhaseEnded = isPhaseClosed(matchedPhase);
+              let isFirst = false;
+              let isConfirmed = false;
+
+              // Common numeric suffix extraction
+              const getNum = k => {
+                const m = k.match(/_(\d+)$/);
+                return m ? parseInt(m[1], 10) : 1;
+              };
+              const groupNum = getNum(group.deadlinegroup);
+              isFirst = groupNum === 1;
+
+              // Esilläolo or Nähtävilläolo
+              if (label.innerHTML.includes("Esilläolo") || label.innerHTML.includes("Nähtävilläolo")) {
+                // Extract phaseKey robustly from group.deadlinegroup
+                let phaseKey = group.deadlinegroup;
+                const match = phaseKey.match(/^([a-z_]+)_(esillaolokerta|nahtavillaolokerta)/i);
+                if (match) {
+                  phaseKey = match[1];
+                }
+                phaseKey = phaseKey.toLowerCase();
+                if (phaseKey === "kaavaehdotus") phaseKey = "ehdotus";
+                if (phaseKey === "kaavaluonnos") phaseKey = "luonnos";
+                if (phaseKey === "tarkistettu_ehdotus") phaseKey = "tarkistettu_ehdotus";
+                if (phaseKey === "periaatteet") phaseKey = "periaatteet";
+
+                const allKeys = Object.keys(visValuesRef?.current || {}).filter(
+                  key =>
+                    key.startsWith(phaseKey) &&
+                    key.includes("esillaolo") &&
+                    visValuesRef.current[key] !== false &&
+                    typeof visValuesRef.current[key] !== "undefined"
+                );
+                const allNums = allKeys.map(getNum).sort((a, b) => a - b);
+                // If this is group 1, always treat as first
+                isFirst = groupNum === 1 || (allNums.length > 0 && groupNum === allNums[0]);
+
+                // Confirmation
+                const confirmKey = getConfirmationKeyForEsillaoloKey(phaseKey, group.deadlinegroup);
+                isConfirmed = visValuesRef?.current[confirmKey] === true;
               }
+
+              // Lautakunta
+              else if (label.innerHTML.includes("Lautakunta")) {
+                let phaseKey = group.deadlinegroup;
+                if (phaseKey.includes("_lautakunta")) {
+                  phaseKey = phaseKey.substring(0, phaseKey.indexOf("_lautakunta"));
+                }
+                phaseKey = phaseKey.toLowerCase();
+                if (phaseKey === "ehdotus") {
+                  phaseKey = "kaavaehdotus";
+                }
+                if (phaseKey === "luonnos") {
+                  phaseKey = "kaavaluonnos";
+                }
+                if (phaseKey === "tarkistettu_ehdotus") {
+                  phaseKey = "tarkistettu_ehdotus";
+                }
+                if (phaseKey === "periaatteet") {
+                  phaseKey = "periaatteet";
+                }
+
+                const allKeys = Object.keys(visValuesRef?.current || {}).filter(
+                  key =>
+                    key.startsWith(phaseKey) &&
+                    key.includes("lautakuntaan") &&
+                    visValuesRef.current[key] !== false &&
+                    typeof visValuesRef.current[key] !== "undefined"
+                );
+                const allNums = allKeys.map(getNum).sort((a, b) => a - b);
+                isFirst = allNums.length > 0 && groupNum === allNums[0];
+
+                // Confirmation
+                const lautakuntaMatch = group.deadlinegroup.match(/_(\d+)$/);
+                const lautakuntaIndex = lautakuntaMatch ? lautakuntaMatch[1] : "1";
+                const confirmKey = lautakuntaIndex === "1"
+                  ? `vahvista_${phaseKey}_lautakunnassa`
+                  : `vahvista_${phaseKey}_lautakunnassa_${lautakuntaIndex}`;
+                isConfirmed = visValuesRef?.current[confirmKey] === true;
+              }
+
+              // Tooltip and disable logic
+              if (isPhaseEnded) {
+                remove.classList.add("button-disabled");
+                removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-phase-closed')}</div>`;
+              } else if (isConfirmed) {
+                remove.classList.add("button-disabled");
+                if (label.innerHTML.includes("Lautakunta")) {
+                  removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-confirmed-lautakunta')}</div>`;
+                } else if (label.innerHTML.includes("Esilläolo")) {
+                  removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-confirmed-esillaolo')}</div>`;
+                } else if (label.innerHTML.includes("Nähtävilläolo")) {
+                  removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-confirmed-nahtavillaolo')}</div>`;
+                } else {
+                  removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-confirmed')}</div>`;
+                }
+              } else if (isFirst) {
+                remove.classList.add("button-disabled");
+                if (label.innerHTML.includes("Esilläolo")) {
+                  removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-first-esillaolo')}</div>`;
+                } else if (label.innerHTML.includes("Lautakunta")) {
+                  removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-first-lautakunta')}</div>`;
+                } else if (label.innerHTML.includes("Nähtävilläolo")) {
+                  removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-first-nahtavillaolo')}</div>`;
+                }
+              }
+
               remove.style.fontSize = "small";
 
               remove.addEventListener("click", function () {
-                // disabled button can't be clicked
                 if (!remove.classList.contains("button-disabled")) {
                   openRemoveDialog(group);
                 }
               });
 
-              // Hover effect
-              container.addEventListener("mouseenter", function() {
-                // Action to perform on hover enter, e.g., change background color
-                //only not confirmed groups can be deleted
-                if(!group.undeletable && visValuesRef?.current[`vahvista_${words[0]}_${normalizedString}_alkaa_${words[2]}`]){
-                  // add button-disabled class to the remove button if the group is not deletable
-                  remove.classList.add("button-disabled")
-                }
-                // Action to perform on hover leave
-                else if(!group.undeletable && !visValuesRef?.current[`vahvista_${words[0]}_${normalizedString}_alkaa_${words[2]}`]){
-                  // add button-disabled class to the remove button if the group is not deletable
-                  remove.classList.remove("button-disabled")
-                }
-
-              });
-
               container.insertAdjacentElement("beforeEnd", remove);
 
-              // Add tooltip for disabled remove buttons
-              if (deletableGroup || group.undeletable) {
+              if (remove.classList.contains("button-disabled") && removeTextDiv) {
                 container.insertAdjacentHTML("beforeEnd", removeTextDiv);
               }
 
@@ -908,23 +1199,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               lock.style.fontSize = "small";
               lock.addEventListener("click", function () {
                 lock.classList.toggle("lock");
-                /*const locked = lock.classList.contains("lock") ? "inner locked" : "inner";
-                let visibleItems = timelineInstanceRef?.current?.getVisibleItems()
-                 if(visibleItems){
-                  for (const visibleItem of visibleItems) {
-                    const item = items.get(visibleItem);
-                    if (!item.phase && item.id >= group.id) {
-                      items.update({ id: item.id, className: locked, locked: !item.locked });
-                    }
-                  }
-                } */
                 lockLine(group);
               });
               container.insertAdjacentElement("beforeEnd", lock);
+
             }
             return container;
-          }
-          else{
+          } else {
             let label = document.createElement("span");
             label.classList.add("timeline-phase-label");
             label.innerHTML = group?.content + " ";
@@ -933,30 +1214,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           }
         },
       }
-
-      // Create the tooltip element
-      const tooltipDiv = document.createElement('div');
-      tooltipDiv.className = 'vis-tooltip';
-      tooltipDiv.style.display = 'none';
-      document.body.appendChild(tooltipDiv);
-
-      // Tooltip show and hide functions
-      const showTooltip = (event, item) => {
-        const offsetX = 150;
-        tooltipDiv.style.display = 'block';
-        tooltipDiv.style.left = `${event.pageX - offsetX}px`;
-        tooltipDiv.style.top = `${event.pageY + 20}px`;
-        tooltipDiv.innerHTML = `
-          Vaihe: ${item?.phaseName} <br>
-          ${item?.groupInfo ? "Nimi: " + item?.groupInfo + " <br>" : ""}
-          ${item?.start ? "Päivämäärä: " + new Date(item?.start).toLocaleDateString() : ""}
-          ${item?.start && item?.end && !item?.className.includes('board') ? " - " + new Date(item?.end).toLocaleDateString() : ""}
-        `;
-      };
-
-      const hideTooltip = () => {
-        tooltipDiv.style.display = 'none';
-      };
 
       const handleMouseMove = (event) => {
         const mouseX = event.clientX;
@@ -1009,7 +1266,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           }
         });
 
-        if (timeline?.itemSet) {
+        /* if (timeline?.itemSet) {
           // remove the default internal hammer tap event listener
           timeline.itemSet.groupHammer.off('tap');
           // use my own fake internal hammer tap event listener
@@ -1026,6 +1283,23 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             }
           });
           
+        } */
+       if (timeline?.itemSet) {
+          timeline.itemSet.groupHammer.off('tap');
+          timeline.itemSet.groupHammer.on('tap', function (event) {
+            let target = event.target;
+            if (target.classList.contains('timeline-add-button')) {
+              if (target.classList.contains('button-disabled')) {
+                event.preventDefault();
+                event.stopPropagation();
+                return; // Do nothing if disabled
+              }
+              timelineGroupClick(timeline.itemSet.options, groups);
+            } else {
+              trackExpanded(event);
+              timeline.itemSet._onGroupClick(event);
+            }
+          });
         }
         timeline.focus(0);
         if(timeline){
@@ -1036,16 +1310,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         }
         //timeline.on('rangechanged', onRangeChanged);
         return () => {
-          // Check if tooltipDiv exists before trying to remove it
-          if (tooltipDiv) {
-            tooltipDiv.remove(); // Remove from DOM
-          }
-
           if (timelineInstanceRef.current) {
             timelineInstanceRef.current.destroy();
             timelineInstanceRef.current.off('itemover', showTooltip);
             timelineInstanceRef.current.off('itemout', hideTooltip);
-            document.body.removeEventListener('mousemove', handleMouseMove);
+            // Remove mousemove from timelineRef.current
+            if (timelineRef.current) {
+              timelineRef.current.removeEventListener('mousemove', handleMouseMove);
+            }
           }
           timeline.off('groupDragged', groupDragged)
           observerRef?.current?.disconnect();
@@ -1218,6 +1490,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           visValues={visValues}
           deadlineSections={deadlineSections}
           formSubmitErrors={formSubmitErrors}
+          phaseList={phaseList}
           projectPhaseIndex={projectPhaseIndex}
           archived={archived}
           allowedToEdit={allowedToEdit}

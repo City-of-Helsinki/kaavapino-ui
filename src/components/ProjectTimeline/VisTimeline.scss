@@ -241,6 +241,41 @@
             background-color: $color-gray;
         }
     }
+    .board.board-only {
+        height: 1.3rem !important;
+        width: 1.3rem !important;
+        top: -2.5px !important;
+        left: -12px !important;
+        max-width: 100%;
+        right: 0;
+        display: inline-block;
+        border: 2px solid #fff !important;
+        border-radius: 14px;
+        padding: 5px;
+        background-color: #1a1a1a;
+        box-shadow: 0 0 0 2px #1a1a1a;
+        z-index: 1500;
+        .vis-dot {
+            display: none;
+        }
+         &.past {
+            outline: 2px solid $color-gray;
+            outline-offset: -2px;
+            background-color: #1a1a1a !important;
+        }
+        &.confirmed::after {
+            content: "";
+            position: absolute;
+            top: -13px;
+            right: -15px;
+            width: 21px;
+            height: 21px;
+            background: #fff url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
+            background-position: center;
+            background-size: contain;
+            border-radius: 50%;
+        }
+    }
     .board.board-date {
         height: 1.3rem !important;
         width: 1.3rem !important;
@@ -579,6 +614,9 @@
             font-size: $size16;
             line-height: $size24;
             color: $black1;
+            .timeline-add-text {
+                    display: none;
+                }
         }
     }
 
@@ -591,6 +629,7 @@
                 justify-content: center;
                 align-items: center;
                 .timeline-add-button{
+                    pointer-events: auto;
                     z-index: 1000;
                     position: absolute;
                     right: 8px;
@@ -617,6 +656,41 @@
                         outline-offset: 2px;
                     }
                 }
+                .timeline-add-button.button-disabled {
+                    pointer-events: auto;
+                    z-index: 1000;
+                    position: absolute;
+                    right: 8px;
+                    top: 6px;
+                    padding: 0;
+                    width: 24px;
+                    height: 24px;
+                    background:url('../../assets/icons/plus-grey.svg') no-repeat;
+                    background-position-x: center;
+                    background-position-y: center;
+                    background-size: $size24;
+                    border: none;
+                }
+                .timeline-add-text {
+                    color: $color-black-90;
+                    display: none;
+                    position: absolute;
+                    top: 35px;
+                    right: 1px;
+                    background-color: #ffffff;
+                    width: 180px;
+                    height: auto;
+                    padding: 8px 12px;
+                    box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.6);
+                    z-index: 1005;
+                    font-size: $size14;
+                    font-weight: 400;
+                }
+            }
+             .timeline-buttons-container:hover > .timeline-add-text {
+                display: block;
+                position: absolute;
+                font-family: 'Helsinki Grotesk', sans-serif;
             }
         }
     }
