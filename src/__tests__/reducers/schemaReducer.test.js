@@ -4,6 +4,7 @@ import {
   FETCH_SCHEMAS_SUCCESSFUL,
   SET_ALL_EDIT_FIELDS_SUCCESSFUL
 } from '../../actions/schemaActions'
+import { describe, it, expect } from 'vitest'
 
 describe('schema reducer', () => {
   it('should return the initial state', () => {

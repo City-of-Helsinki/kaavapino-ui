@@ -1,13 +1,16 @@
 import React from 'react'
 import {render,screen} from '@testing-library/react'
-import '@testing-library/jest-dom'
 import LogoutPage from '../../../components/auth/Logout'
-jest.mock("react-i18next", () => ({
+import {vi, describe, test, it, expect, beforeEach} from 'vitest';
+
+vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: key => key }),
 }));
+
+
 describe('<Logout />', () => {
 
-  let logoutMock = jest.fn(() => null)
+  let logoutMock = vi.fn(() => null)
 
   beforeEach(() => {
     logoutMock.mockClear()

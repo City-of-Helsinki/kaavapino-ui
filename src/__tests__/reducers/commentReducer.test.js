@@ -7,6 +7,8 @@ import {
   FETCH_COMMENTS
 } from '../../actions/commentActions'
 
+import { describe, it, expect } from 'vitest'
+
 describe('comment reducer', () => {
   it('should return the initial state', () => {
     expect(comment(undefined, {})).toEqual({

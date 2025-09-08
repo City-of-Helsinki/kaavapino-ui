@@ -674,6 +674,7 @@ class ProjectEditPage extends Component {
           selectedPhase={selectedPhase}
           allfields={this.state.fields}
           currentlyHighlighted={this.state.highlightedTag}
+          showSection={this.state.showSection}
         />
         {this.state.errorFields?.length > 0 ?
         <div tabIndex="0" ref={this.errorField} className='required-fields-container'>
@@ -734,6 +735,7 @@ class ProjectEditPage extends Component {
               documentIndex={this.state.documentIndex}
               locationSearch={this.props.location.search}
               isTheResponsiblePerson={isTheResponsiblePerson}
+              showSection={this.state.showSection}
             />
             <NavigationPrompt
               when={
