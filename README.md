@@ -75,3 +75,4 @@ Install kubectl locally. Check version and run:
 ... kaavapino/web/deploy/rancher
 #> ./deploy_staging_web.sh web:<version> run
 ```
+ 
