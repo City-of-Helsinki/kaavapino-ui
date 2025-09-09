@@ -376,30 +376,38 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     };
 
     const addHighlights = (timelineElement, phaseId, data, container) => {
-      if (phaseId && timelineElement) {
-        const matchedItem = timelineElement.querySelector(`.vis-item[class*="${phaseId}"]`);
-        if (matchedItem) {
-          const groupEl = matchedItem.closest(".vis-group");
+      // Remove previous highlights
+      timelineElement.querySelectorAll(".vis-group.foreground-highlight").forEach(el => {
+        el.classList.remove("foreground-highlight");
+      });
+
+      // setTimeout ensures DOM elements are rendered before highlighting: without it, elements may not exist yet, causing highlight logic to fail.
+      setTimeout(() => {
+        if (timelineElement && data?.deadlinegroup) {
+          const groupEls = timelineElement.querySelectorAll(`.vis-group.${data.deadlinegroup}`);
+          const groupEl = Array.from(groupEls).find(el => el.parentElement && el.parentElement.classList.contains('vis-foreground'));
           if (groupEl) {
-            localStorage.setItem('timelineHighlightedElement', phaseId);
             groupEl.classList.add("foreground-highlight");
+            localStorage.setItem('timelineHighlightedElement', data.deadlinegroup);
           }
         }
-      }
-      if (container) {
-        container?.classList?.add("highlight-selected");
-        if (container.parentElement.parentElement) {
-          container.parentElement.parentElement.classList.add("highlight-selected");
+
+        if (container) {
+          container?.classList?.add("highlight-selected");
+          if (container.parentElement?.parentElement) {
+            container.parentElement.parentElement.classList.add("highlight-selected");
+          }
+          localStorage.setItem('menuHighlight', data.className ? data.className : false);
         }
-        localStorage.setItem('menuHighlight', data.className ? data.className : false);
-      }
-      const groupContainer = timelineElement.querySelector(`#timeline-group-${data.id}`);
-      if (groupContainer) {
-        groupContainer.classList.add("highlight-selected");
-        if (groupContainer.parentElement.parentElement) {
-          groupContainer.parentElement.parentElement.classList.add("highlight-selected");
+
+        const groupContainer = timelineElement.querySelector(`#timeline-group-${data.id}`);
+        if (groupContainer) {
+          groupContainer.classList.add("highlight-selected");
+          if (groupContainer.parentElement?.parentElement) {
+            groupContainer.parentElement.parentElement.classList.add("highlight-selected");
+          }
         }
-      }
+      }, 0); // A delay of 0 schedules the code to run after the DOM is ready
     };
 
     const handleClosePanel = () => {
