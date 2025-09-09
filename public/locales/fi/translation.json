@@ -266,9 +266,9 @@
     "fieldset-info":"Yhteensä {{fieldAmount}} tietuetta.",
     "no-fields":"Suodatinvalinnalla ei löytynyt tämän otsikon alta suodatettavia kenttiä.",
     "link-to-map":"Linkki projektin karttapalveluun.",
-    "add-new-board":"Lisää uusi lautakunta",
-    "add-new-presence":"Lisää uusi esilläolo",
-    "add-new-review": "Lisää uusi nähtävilläolo",
+    "add-new-board":"Lisää lautakunta",
+    "add-new-presence":"Lisää esilläolo",
+    "add-new-review": "Lisää nähtävilläolo",
     "adding":"Lisätään",
     "saving":"Tietoja tallennetaan",
     "deleting":"Poistetaan"
