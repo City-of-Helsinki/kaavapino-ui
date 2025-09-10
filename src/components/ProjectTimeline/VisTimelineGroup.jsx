@@ -1153,7 +1153,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                   : `vahvista_${phaseKey}_lautakunnassa_${lautakuntaIndex}`;
                 isConfirmed = visValuesRef?.current[confirmKey] === true;
               }
-
               // Tooltip and disable logic
               if (isPhaseEnded) {
                 remove.classList.add("button-disabled");
@@ -1510,6 +1509,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           closeAddDialog={closeAddDialog}
           allowedToEdit={allowedToEdit}
           timelineAddButton={timelineAddButton}
+          phaseIsClosed={isPhaseClosed(addDialogData?.group?.content)}
         />
         <ConfirmModal
           openConfirmModal={openConfirmModal}

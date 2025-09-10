@@ -250,6 +250,24 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
       return confirmedValue.replace(/\s+/g, '');
     };
 
+    // Simplified past-date check: only use phase start date `${phaseKey}vaihe_alkaa_pvm`.
+    const isEsillaoloOrNahtavillaStartDateInPast = (group, title, visValues) => {
+      let phaseKey;
+      if (group === 'Ehdotus') phaseKey = 'ehdotus';
+      else if (group === 'Tarkistettu ehdotus') phaseKey = 'tarkistettu_ehdotus';
+      else if (group === 'Luonnos') phaseKey = 'luonnos';
+      else if (group === 'OAS') phaseKey = 'oas';
+      else if (group === 'Periaatteet') phaseKey = 'periaatteet';
+      else phaseKey = group?.toLowerCase().replace(/\s+/g,'_');
+
+      const key = `${phaseKey}vaihe_alkaa_pvm`;
+      const dateStr = visValues?.[key];
+      if (!dateStr) return false;
+      const dt = new Date(dateStr);
+      if (isNaN(dt)) return false;
+      return dt < new Date();
+    };
+
     const getSectionRestrictions = ({
       group,
       title,
@@ -274,6 +292,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
       const isLastNahtavillaolo = isNahtavillaolo && (_normalize(title) === _normalize(lastNahtavillaolo));
 
       const lautakuntaInPast = isLautakunta && isLautakuntaDateInPast(group, title, visValues);
+      const esillaoloNahtavillaInPast = (isEsillaolo || isNahtavillaolo) && isEsillaoloOrNahtavillaStartDateInPast(group, title, visValues);
       const phaseClosed = isPhaseClosed(group);
 
       const disableConfirmButton = phaseClosed
@@ -284,9 +303,40 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
             (isNahtavillaolo && !isLastNahtavillaolo)
           );
 
+      const phaseIndexForGroup = phaseList.findIndex(p => _normalize(p) === _normalize(group));
+      const phaseIsActive = phaseIndexForGroup === projectPhaseIndex;
+            // New rule: In active phase, Lautakunta cannot be confirmed before Esilläolo is confirmed
+      let esillaoloNotConfirmedBeforeLautakunta = false;
+      if (phaseIsActive && isLautakunta && lastEsillaolo) {
+        // Build confirm key for the last Esilläolo block
+        const esillaoloConfirmKey = getConfirmedValue(group, lastEsillaolo);
+        const esillaoloConfirmed = !!visValues[esillaoloConfirmKey];
+        if (!esillaoloConfirmed) {
+          esillaoloNotConfirmedBeforeLautakunta = true;
+        }
+      }
+            // Rule 2: Esilläolo confirmation cannot be cancelled while a Lautakunta is confirmed
+      let esillaoloLockedByLautakunta = false;
+      if (phaseIsActive && isEsillaolo && lastLautakunta) {
+        const lautakuntaConfirmKey = getConfirmedValue(group, lastLautakunta);
+        const lautakuntaConfirmed = !!visValues[lautakuntaConfirmKey];
+        if (lautakuntaConfirmed) {
+          const currentEsillaoloConfirmKey = getConfirmedValue(group, title);
+            // Only lock if this Esilläolo is currently confirmed (prevent un-confirm)
+          const currentEsillaoloConfirmed = !!visValues[currentEsillaoloConfirmKey];
+          if (currentEsillaoloConfirmed) {
+            esillaoloLockedByLautakunta = true;
+          }
+        }
+      }
+
       const disabled =
         archived ||
-        disableConfirmButton
+        disableConfirmButton || 
+        !phaseIsActive ||
+        esillaoloNotConfirmedBeforeLautakunta ||
+        esillaoloLockedByLautakunta ||
+        esillaoloNahtavillaInPast
           ? true
           : sectionIndex < projectPhaseIndex;
 
@@ -296,16 +346,18 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
         : isNahtavillaolo ? 'nähtävilläolo'
         : 'elementtijoukko';
 
+      // Unify past-date lock for lautakunta and esilläolo/nähtävilläolo; keep prop name for downstream component
+      const anyPast = lautakuntaInPast || esillaoloNahtavillaInPast;
       const tooltip =
         phaseClosed
           ? 'Vahvistusta ei voi perua, koska vaihe on lopetettu.'
-          : lautakuntaInPast
-            ? 'Vahvistusta ei voi perua, koska lautakunta sijaitsee menneessä ajanhetkessä.'
+          : anyPast
+            ? 'Vahvistusta ei voi perua, koska päivämäärä on menneisyydessä.'
             : disableConfirmButton
               ? `Vahvistusta ei voi perua, koska seuraava ${nextGroupWord} on jo lisätty.`
               : null;
 
-      return { lautakuntaInPast, tooltip, disabled };
+      return { lautakuntaInPast: anyPast, tooltip, disabled };
     };
   
     const renderSection = (section,sectionIndex,title) => {
