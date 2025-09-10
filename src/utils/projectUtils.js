@@ -296,6 +296,61 @@ function hasMissingFields(attributeData, currentProject, schema) {
         }
       })
     })
+    // Additional phase confirmation check: ensure all confirmation (vahvista_*) fields(if they have been added to attributeData) for current phase are true.
+    // Only run if we didn't already find missing required fields; if we already have missingFields true it stays true.
+    if (!missingFields && currentSchema?.title) {
+
+      const phaseTitleNormalized = (currentSchema.title || '').toLowerCase().trim()
+      let allowedSegments = []
+      if (phaseTitleNormalized.includes('oas')) allowedSegments = ['oas']
+      else if (phaseTitleNormalized.includes('periaatteet')) allowedSegments = ['periaatteet']
+      else if (phaseTitleNormalized.includes('luonnos')) allowedSegments = ['luonnos','kaavaluonnos']
+      else if (phaseTitleNormalized.includes('tarkistettu') && phaseTitleNormalized.includes('ehdotus')) allowedSegments = ['tarkistettu_ehdotus']
+      else if (phaseTitleNormalized.includes('ehdotus')) allowedSegments = ['kaavaehdotus','ehdotus']
+
+      const triggerTrueList = []
+      const requiredConfirmations = []
+
+      const esillaoloRegex = /^jarjestetaan_(\w+)_esillaolo_(\d+)$/
+      const lautakuntaRegex = /^(\w+)_lautakuntaan_(\d+)$/
+
+      Object.entries(attributeData).some(([key, value]) => {
+        if (value !== true) return false
+        let match = key.match(esillaoloRegex)
+        if (match) {
+          const seg = match[1]
+          const idx = parseInt(match[2], 10)
+          if (!allowedSegments.includes(seg)) return false
+          triggerTrueList.push(key)
+          const suffix = idx > 1 ? '_' + idx : ''
+          requiredConfirmations.push(`vahvista_${seg}_esillaolo_alkaa${suffix}`)
+          return false
+        }
+        match = key.match(lautakuntaRegex)
+        if (match) {
+          const seg = match[1]
+          const idx = parseInt(match[2], 10)
+          if (!allowedSegments.includes(seg)) return false
+          triggerTrueList.push(key)
+          const suffix = idx > 1 ? '_' + idx : ''
+          requiredConfirmations.push(`vahvista_${seg}_lautakunnassa${suffix}`)
+          return false
+        }
+        return false
+      })
+
+      let unconfirmedKey = null
+      for (let i = 0; i < requiredConfirmations.length; i++) {
+        const cKey = requiredConfirmations[i]
+        const cVal = attributeData[cKey]
+        const ok = cVal === true
+        if (!ok) { unconfirmedKey = cKey; break }
+      }
+      if (unconfirmedKey) {
+        //Block phase closing if true
+        missingFields = true
+      }
+    }
     return missingFields 
 }
 
