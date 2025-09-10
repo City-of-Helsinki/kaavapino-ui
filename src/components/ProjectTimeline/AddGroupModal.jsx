@@ -9,7 +9,7 @@ import PropTypes from 'prop-types'
 const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAddDialog, allowedToEdit, timelineAddButton, phaseIsClosed}) => {
   const {t} = useTranslation()
   const dispatch = useDispatch();
-  console.log(phaseIsClosed)
+  
   const addNew = (addedKey) => {
     if(addedKey) {
       dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, addedKey, true));

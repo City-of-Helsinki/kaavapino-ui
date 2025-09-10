@@ -200,7 +200,6 @@ class EditProjectTimeTableModal extends Component {
   }
 
   trimPhase = (phase) => {
-    console.log(phase)
     let phaseOnly = phase.split('.', 2); // Split the string at the first dot
     if (!isNaN(phaseOnly[0])) {  // Check if the part before the dot is a number
       phaseOnly = phaseOnly[1].trim();  // The part after the dot, with leading/trailing spaces removed
@@ -208,7 +207,6 @@ class EditProjectTimeTableModal extends Component {
     if (Array.isArray(phaseOnly)) {
       phaseOnly = phaseOnly.length > 1 ? phaseOnly[1].trim() : phaseOnly[0].trim();
     }
-    console.log(phaseOnly)
     return phaseOnly
   } 
 
@@ -1259,9 +1257,8 @@ class EditProjectTimeTableModal extends Component {
     // Calculate ongoingPhase, phaseList, and currentPhaseIndex here:
     const ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe);
     const phaseList = this.getPhaseList(attributeData?.kaavaprosessin_kokoluokka);
-    console.log(phaseList)
     const currentPhaseIndex = phaseList.indexOf(ongoingPhase);
-    console.error(ongoingPhase)
+    
     return (
       <Modal
         size="large"

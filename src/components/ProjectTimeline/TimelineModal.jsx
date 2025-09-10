@@ -305,7 +305,6 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
 
       const phaseIndexForGroup = phaseList.findIndex(p => _normalize(p) === _normalize(group));
       const phaseIsActive = phaseIndexForGroup === projectPhaseIndex;
-      console.log(phaseIsActive,sectionIndex,projectPhaseIndex)
             // New rule: In active phase, Lautakunta cannot be confirmed before Esilläolo is confirmed
       let esillaoloNotConfirmedBeforeLautakunta = false;
       if (phaseIsActive && isLautakunta && lastEsillaolo) {
