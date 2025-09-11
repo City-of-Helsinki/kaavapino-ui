@@ -31,7 +31,7 @@ class List extends Component {
       dir: 1,
       projectTab: 'own',
       name:'',
-      dirname:'asc'
+      dirname:'desc'
     }
   }
 
@@ -171,7 +171,10 @@ class List extends Component {
         rowObject[modifiedField] = listItem.modified_at
 
         rowObject.pino_number = listItem.pino_number
-        
+
+        for (const [key, val] of Object.entries(rowObject)) {
+          rowObject[key] = {index: rows.length, value: val}
+        }
         rows.push(rowObject)
         let rowObject2 = {}
         
@@ -181,9 +184,26 @@ class List extends Component {
           </span>
         )
         rowObject2.pino_number = `${listItem.pino_number}-graph`
+        for (const [key, val] of Object.entries(rowObject2)) {
+          rowObject2[key] = {index: rows.length, value: val}
+        }
+        for (const key of Object.keys(rowObject)) {
+          if (!(key in rowObject2)) {
+            rowObject2[key] = {index: rows.length, value: null}
+          }
+        }
         rows.push(rowObject2)
       }
     )
+    const customSort = (a, b) => {
+      if(this.state.dirname === "asc")
+        return a.index - b.index;
+      return b.index - a.index;
+    }
+    this.headerItems.forEach(item => item.customSortCompareFunction = customSort);
+    this.headerItems.forEach(headerItem => headerItem.transform = (item) => {
+      return item[headerItem.key].value
+    });
 
     let showGraphStyle = this.props.showGraph ? "project-list showGraph" : "project-list"
     return (
@@ -193,7 +213,7 @@ class List extends Component {
             ariaLabelSortButtonUnset="Not sorted"
             ariaLabelSortButtonAscending="Sorted in ascending order"
             ariaLabelSortButtonDescending="Sorted in descending order"
-            indexKey="pino_number"
+            indexKey="pino_number.value"
             renderIndexCol={true}
             cols={this.headerItems}
             rows={rows}
