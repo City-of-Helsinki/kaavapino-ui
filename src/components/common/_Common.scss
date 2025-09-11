@@ -1150,13 +1150,17 @@ header{
     padding-left: $size34 !important;
     padding-top: $size16 !important;
     padding-bottom: $size24 !important;
+    font-family: 'Helsinki Grotesk Medium', sans-serif !important;
 
     .button-primary,.button-danger,.button-secondary {
       margin-right: $size16;
     }
     .button-secondary{
       border: 2px solid $color-error;
-      color: $color-error
+      color: $color-error;
+      &:hover {
+        background-color: $color-error-light;
+      }
     }
   }
 }
