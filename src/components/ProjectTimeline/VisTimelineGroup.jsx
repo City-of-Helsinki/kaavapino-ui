@@ -1142,8 +1142,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             const parent = props.event.target.parentElement
             // Check if parent element has 'confirmed' class
             const isConfirmed = props?.event?.target?.parentElement?.classList?.contains('confirmed') || element?.classList?.contains('confirmed') ? " confirmed" : "";
-            if (element.classList.contains('vis-drag-left') || element.classList.contains('vis-point') || parent.classList.contains('board')) {
+            // Determine if this click is on a right-side board item (target or its parent)
+            const isBoardRight = element.classList.contains('board-right') || parent?.classList?.contains('board-right');
+            // Ensure any 'board-right' never routes to the left handle branch
+            if (!isBoardRight && (element.classList.contains('vis-drag-left') || element.classList.contains('vis-point') || parent.classList.contains('board'))) {
               dragHandleRef.current = "left" + isConfirmed;
+            }else if(isBoardRight){
+              dragHandleRef.current = "board-right" + isConfirmed;
             } else if (element.classList.contains('vis-drag-right')) {
               dragHandleRef.current = "right" + isConfirmed;
             } else {

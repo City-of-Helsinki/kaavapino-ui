@@ -40,6 +40,32 @@ class EditProjectTimeTableModal extends Component {
     this.timelineRef = createRef();
   }
 
+  // Return sorted array of timeline items with a title excluding dividers
+  getSortedPhaseDateItems = (itemsDataSet) => {
+    if(!itemsDataSet || typeof itemsDataSet.get !== 'function') return [];
+    const all = itemsDataSet.get().filter(it => !!it?.title && it.title !== 'divider');
+    // Primary: start ascending. If start equal OR missing, compare end (later end should come after earlier end). Finally tie-break by id string.
+    all.sort((a,b) => {
+      // For phase-length items prefer ordering by their end (span) to keep long phases naturally after contained point events.
+      const aIsPhase = typeof a?.className === 'string' && a.className.includes('phase-length');
+      const bIsPhase = typeof b?.className === 'string' && b.className.includes('phase-length');
+      const aPrimary = aIsPhase ? (a?.end instanceof Date ? a.end.getTime() : (a?.end ? new Date(a.end).getTime() : 0)) : (a?.start instanceof Date ? a.start.getTime() : (a?.start ? new Date(a.start).getTime() : 0));
+      const bPrimary = bIsPhase ? (b?.end instanceof Date ? b.end.getTime() : (b?.end ? new Date(b.end).getTime() : 0)) : (b?.start instanceof Date ? b.start.getTime() : (b?.start ? new Date(b.start).getTime() : 0));
+      if(aPrimary !== bPrimary) return aPrimary - bPrimary;
+      // Secondary: if both primary equal, compare raw start then raw end to stabilize.
+      const aStart = a?.start instanceof Date ? a.start.getTime() : (a?.start ? new Date(a.start).getTime() : 0);
+      const bStart = b?.start instanceof Date ? b.start.getTime() : (b?.start ? new Date(b.start).getTime() : 0);
+      if(aStart !== bStart) return aStart - bStart;
+      const aEnd = a?.end instanceof Date ? a.end.getTime() : (a?.end ? new Date(a.end).getTime() : 0);
+      const bEnd = b?.end instanceof Date ? b.end.getTime() : (b?.end ? new Date(b.end).getTime() : 0);
+      if(aEnd !== bEnd) return aEnd - bEnd;
+      const aId = (a?.id || '').toString();
+      const bId = (b?.id || '').toString();
+      return aId.localeCompare(bId);
+    });
+    return all;
+  };
+
   componentDidMount() {
     const { initialize, attributeData, deadlines, deadlineSections, disabledDates,lomapaivat } = this.props
     initialize(attributeData)
@@ -54,14 +80,7 @@ class EditProjectTimeTableModal extends Component {
       groups.add(nestedDeadlines);
       items.add(phaseData)
       // Have own state for filtered out phase indicators, dividers, disabled and holiday items for comparison reasons at VisTimelineGroup
-      const itemsPhaseDatesOnly = items
-        .get()
-        .filter(it => !!it?.title && it.title !== 'divider')
-        .sort((a, b) => {
-          const aTime = a?.start instanceof Date ? a.start.getTime() : new Date(a?.start).getTime();
-          const bTime = b?.start instanceof Date ? b.start.getTime() : new Date(b?.start).getTime();
-          return (aTime ?? 0) - (bTime ?? 0);
-        })
+      const itemsPhaseDatesOnly = this.getSortedPhaseDateItems(items);
       items = this.findConsecutivePeriods(disabledDates,items,false);
       items = this.findConsecutivePeriods(lomapaivat,items,true)
       this.setState({items,groups,visValues:attributeData, itemsPhaseDatesOnly})
@@ -118,16 +137,10 @@ class EditProjectTimeTableModal extends Component {
           const combinedGroups = nestedDeadlines? deadLineGroups.concat(nestedDeadlines) : deadLineGroups
           this.state.groups.clear();
           this.state.groups.add(combinedGroups)
+          // phaseData is an array, not a DataSet; update directly
           this.state.items.update(phaseData)
           this.setState(prevState => ({
-            itemsPhaseDatesOnly: prevState.items
-              .get()
-              .filter(it => !!it?.title && it.title !== 'divider')
-              .sort((a, b) => {
-                const aTime = a?.start instanceof Date ? a.start.getTime() : new Date(a?.start).getTime();
-                const bTime = b?.start instanceof Date ? b.start.getTime() : new Date(b?.start).getTime();
-                return (aTime ?? 0) - (bTime ?? 0);
-              })
+            itemsPhaseDatesOnly: this.getSortedPhaseDateItems(prevState.items)
           }))
           const newObjectArray = objectUtil.findDifferencesInObjects(prevProps.formValues,formValues)
 
@@ -538,7 +551,7 @@ class EditProjectTimeTableModal extends Component {
           start: dashEnd,
           id: numberOfPhases + " lautakunta",
           content: "",
-          className: dashedStyle + " board-date" + " " + highlightID,
+          className: dashedStyle + " board-date" + (deadlines[i].deadline.phase_name === "Tarkistettu ehdotus" ? " board-right" : "") + " " + highlightID,
           title: deadlines[i].deadline.attribute,
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
