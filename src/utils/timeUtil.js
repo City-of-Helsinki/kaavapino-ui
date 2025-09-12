@@ -734,21 +734,45 @@ const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues
 };
 
 const compareAndUpdateDates = (data) => {
-  //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
-  const pairs = [
+  // Static pairs: viimeistaan lausunnot -> ehdotuksen nähtävillä päättyy variants
+  const lausuntoPairs = [
     ["viimeistaan_lausunnot_ehdotuksesta", "milloin_ehdotuksen_nahtavilla_paattyy"],
     ["viimeistaan_lausunnot_ehdotuksesta_2", "milloin_ehdotuksen_nahtavilla_paattyy_2"],
     ["viimeistaan_lausunnot_ehdotuksesta_3", "milloin_ehdotuksen_nahtavilla_paattyy_3"],
     ["viimeistaan_lausunnot_ehdotuksesta_4", "milloin_ehdotuksen_nahtavilla_paattyy_4"]
   ];
 
-  pairs.forEach(([key1, key2]) => {
-    if (data[key1] && data[key2]) {
-      const date1 = new Date(data[key1]).toISOString().slice(0, 10);
-      const date2 = new Date(data[key2]).toISOString().slice(0, 10);
-      if (date1 < date2) {
-        data[key1] = date2;
-      }
+  const validateAndNormalizeDate = (val) => {
+    if (!val) return null;
+    const d = new Date(val);
+    return isNaN(d) ? null : d.toISOString().slice(0, 10);
+  };
+
+  lausuntoPairs.forEach(([dst, src]) => {
+    const srcDate = validateAndNormalizeDate(data[src]);
+    if (srcDate && data[dst] !== srcDate) {
+      data[dst] = srcDate;
+    }
+  });
+  //Check that phase end date line is moved to phases actual last date 
+  const buildPhasePairs = (size) => {
+    console.log("buildPhasePairs size:", size);
+    const isXL = size === "XL";
+    return [
+      ["periaatteetvaihe_paattyy_pvm", "milloin_periaatteet_lautakunnassa"],
+      ["luonnosvaihe_paattyy_pvm", "milloin_kaavaluonnos_lautakunnassa"],
+      ["tarkistettuehdotusvaihe_paattyy_pvm", "milloin_tarkistettu_ehdotus_lautakunnassa"],
+      ["oasvaihe_paattyy_pvm", "milloin_oas_esillaolo_paattyy"],
+      ["ehdotusvaihe_paattyy_pvm", isXL ? "milloin_ehdotuksen_nahtavilla_paattyy" : "milloin_ehdotus_esillaolo_paattyy"],
+      // hyvaksyminen & voimaantulo intentionally excluded (no paired controlling date specified)
+    ];
+  };
+
+  const phasePairs = buildPhasePairs(data["kaavaprosessin_kokoluokka"]);
+  phasePairs.forEach(([dst, src]) => {
+    const srcDate = validateAndNormalizeDate(data[src]);
+    if (srcDate && data[dst] !== srcDate) {
+      data[dst] = srcDate;
     }
   });
 };
