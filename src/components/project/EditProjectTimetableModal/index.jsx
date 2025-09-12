@@ -233,11 +233,17 @@ class EditProjectTimeTableModal extends Component {
   }
 
   trimPhase = (phase) => {
-    let phaseOnly = phase.split('.', 2); // Split the string at the first dot
-    if (!isNaN(phaseOnly[0])) {  // Check if the part before the dot is a number
-      phaseOnly = phaseOnly[1].trim();  // The part after the dot, with leading/trailing spaces removed
+    if(!phase || typeof phase !== 'string') return '';
+    const parts = phase.split('.', 2);
+    if(parts.length === 1) return phase.trim();
+    const prefix = parts[0].trim();
+    const rest = parts[1].trim();
+    // Drop numeric index (e.g. "2. Phase") OR size code (XL, L, M, S, XS, etc) OR short roman numeral
+    if(/^(\d+|XS|S|M|L|XL|XXL|[IVX]{1,4})$/i.test(prefix)) {
+      return rest; 
     }
-    return phaseOnly
+    // Otherwise if previously logic would have returned an array, still just return trimmed original phase
+    return phase.trim();
   } 
 
   addOneDay = (dateString) => {
@@ -310,14 +316,18 @@ class EditProjectTimeTableModal extends Component {
   }
 
   // Helper to determine expanded state
-  getExpandedState = (title, ongoingPhase, isMounting, collapseData, showTimetableForm) => (
-    collapseData[title] ||
-    ((title === ongoingPhase && isMounting) || title === showTimetableForm?.selectedPhase) || false
-  )
+  getExpandedState = (title, ongoingPhase, isMounting, collapseData, showTimetableForm) => {
+    const normaliseText = v => (v || '').toString().trim().toLowerCase();
+    return (
+      collapseData[title] ||
+      ((normaliseText(title) === normaliseText(ongoingPhase) && isMounting) || normaliseText(title) === normaliseText(showTimetableForm?.selectedPhase)) || false
+    );
+  }
 
   addDeadLineGroups = (deadlineSections, deadLineGroups, ongoingPhase, isMounting) => {
     // Collect collapseData updates to avoid calling setState in a loop
     let collapseDataUpdates = {};
+    const normaliseText = v => (v || '').toString().trim().toLowerCase();
 
     deadlineSections.forEach(section => {
       section.grouped_sections.forEach(groupedSection => {
@@ -336,7 +346,7 @@ class EditProjectTimeTableModal extends Component {
           if (
             expanded &&
             !this.state.collapseData[section.title] &&
-            (section.title === ongoingPhase || section.title === this.props.showTimetableForm?.selectedPhase)
+            (normaliseText(section.title) === normaliseText(ongoingPhase) || normaliseText(section.title) === normaliseText(this.props.showTimetableForm?.selectedPhase))
           ) {
             collapseDataUpdates[section.title] = true;
           }
