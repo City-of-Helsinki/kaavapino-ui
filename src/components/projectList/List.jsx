@@ -195,12 +195,14 @@ class List extends Component {
         rows.push(rowObject2)
       }
     )
-    const customSort = (a, b) => {
+
+    // Workaround to prevent default HDS Table sort; rows are already sorted by backend
+    const preventSort = (a, b) => {
       if(this.state.dirname === "asc")
         return a.index - b.index;
       return b.index - a.index;
     }
-    this.headerItems.forEach(item => item.customSortCompareFunction = customSort);
+    this.headerItems.forEach(item => item.customSortCompareFunction = preventSort);
     this.headerItems.forEach(headerItem => headerItem.transform = (item) => {
       return item[headerItem.key].value
     });
