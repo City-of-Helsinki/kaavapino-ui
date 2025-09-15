@@ -6,6 +6,7 @@ import { Grid } from 'semantic-ui-react'
 import { withRouter } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
+import { isCurrentPhaseConfirmed } from '../../utils/projectVisibilityUtils'
 //import DocumentConfirmationModal from './DocumentConfirmationModal.jsx'
 import PropTypes from 'prop-types'
 
@@ -77,7 +78,8 @@ function Document({
       currentSchemaIndex = 4
     } 
     const currentSchema = schema?.phases[currentSchemaIndex]
-    return !ended && !hide && accepted && schema && currentSchema?.id === project?.phase ? false : true
+    const phaseConfirmed = isCurrentPhaseConfirmed(attribute_data)
+    return !ended && !hide && accepted && schema && currentSchema?.id === project?.phase && phaseConfirmed ? false : true
   }
 
   const preview = () => {
