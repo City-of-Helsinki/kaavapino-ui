@@ -393,6 +393,32 @@ class ProjectEditPage extends Component {
     this.setState({ filterFieldsArray: fields })
   }
 
+  renderErrorNotifications = () => {
+    const { errorFields } = this.state
+    if(!errorFields || errorFields.length === 0){
+      return ''
+    }
+    const grouped = errorFields.reduce((acc,err) => { const group = err.title || 'Muut'; if(!acc[group]) acc[group] = []; acc[group].push(err); return acc; }, {})
+    return (
+      <div tabIndex="0" ref={this.errorField} className='required-fields-container'>
+        <Notification id='required-fields-notification' label='Lomakkeelta puuttuu pakollisia tietoja' type="error" style={{marginTop: 'var(--spacing-s)'}}>
+          {Object.entries(grouped).map(([groupTitle, errors]) => (
+            <div key={groupTitle} className='error-group'>
+              <div className='error-group-header' role="heading" aria-level="3">{groupTitle}</div>
+              <ul>
+                {errors.map((error,index) => (
+                  <li key={error.errorSection + error.errorField}>
+                    Virhe {index + 1}: <a href='#0' role="button" onClick={() => this.showErrorField(error.errorSection,error.fieldAnchorKey)} className='required-fields-notification-link'>{error.errorSection} - {error.errorField}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </Notification>
+      </div>
+    )
+  }
+
   isHighlightedTag = (tag) => {
     this.setState({highlightedTag:tag})
   }
@@ -676,23 +702,7 @@ class ProjectEditPage extends Component {
           currentlyHighlighted={this.state.highlightedTag}
           showSection={this.state.showSection}
         />
-        {this.state.errorFields?.length > 0 ?
-        <div tabIndex="0" ref={this.errorField} className='required-fields-container'>
-          <Notification id="required-fields-notification" label="Lomakkeelta puuttuu pakollisia tietoja" type="error" style={{marginTop: 'var(--spacing-s)'}}>
-            <ul>
-            {this.state.errorFields.map((error,index) =>{
-              return (
-                <li key={error.errorSection + error.errorField}>
-                  Virhe {index + 1}: <a href='#0' role="button" onClick={() => this.showErrorField(error.errorSection,error.fieldAnchorKey)} className='required-fields-notification-link'>{error.errorSection} - {error.errorField}</a>
-                </li>
-              )
-            })}
-            </ul>
-          </Notification>
-        </div>
-        :
-        ""
-        }
+        {this.renderErrorNotifications()}
         <div aria-hidden="true" className="block-div"></div>
         <div className={`project-input-container ${highlightGroup}`}>
           <div className="project-input-left">

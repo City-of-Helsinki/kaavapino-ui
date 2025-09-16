@@ -281,12 +281,48 @@
 .required-fields-container{
   ul{
     font-size: $size16;
+    margin: 0;
+    padding-left: $size24;
     li{
-      padding-top: 10px;
+      font-family: 'Helsinki Grotesk Medium','Helsinki Grotesk',sans-serif;
+      font-weight: 500;
+      font-size: $size14;
+      line-height: $size24;
+      letter-spacing: 0;
+      color: $black1;
       .required-fields-notification-link{
         text-decoration: underline;
         color: $color-bus;
+        font-family: 'Helsinki Grotesk Medium','Helsinki Grotesk',sans-serif;
+        font-weight: 500;
+        font-size: $size14;
+        line-height: $size24;
+        letter-spacing: 0;
       }
+    }
+  }
+  // Style the main notification label
+  section {
+    // HDS Notification wraps label text typically in first child div/span element
+    > div:first-child > div:first-child {
+       font-family: 'Helsinki Grotesk Bold', 'Helsinki Grotesk', sans-serif !important;
+      font-weight: 700 !important;
+      font-size: $size18 !important;
+      line-height: 150% !important;
+      letter-spacing: 0 !important;
+      color: $black1 !important;
+    }
+    .error-group-header{
+      font-family: 'Helsinki Grotesk Bold', 'Helsinki Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: $size14;
+      line-height: $size24;
+      letter-spacing: 0;
+      color: $black1;
+      margin: 0;
+    }
+    .error-group:not(:first-child) .error-group-header{
+      margin-top: $size16;
     }
   }
 }

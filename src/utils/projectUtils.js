@@ -366,14 +366,14 @@ function checkErrors(errorFields,currentSchema,attributeData) {
           const { matrix } = field
           matrix.fields.forEach(({ required, name, label }) => {
             if (isFieldMissing(name, required, attributeData)) {
-              errorFields.push({"errorSection":title,"errorField":label,"fieldAnchorKey":name})
+              errorFields.push({"title":"Tämä näkymä","errorSection":title,"errorField":label,"fieldAnchorKey":name})
             }
           })
           // Fieldsets can contain any fields (except matrices)
           // multiple times, so we need to go through them all
         } else if (field.type === 'fieldset') {
           if (hasFieldsetErrors(field.name, field.fieldset_attributes, attributeData)) {
-            errorFields.push({"errorSection":title,"errorField":field.label,"fieldAnchorKey":field.name})
+            errorFields.push({"title":"Tämä näkymä","errorSection":title,"errorField":field.label,"fieldAnchorKey":field.name})
           }
         } else if (
           isFieldMissing(
@@ -383,7 +383,7 @@ function checkErrors(errorFields,currentSchema,attributeData) {
             field.autofill_readonly
           )
         ) {
-          errorFields.push({"errorSection":title,"errorField":field.label,"fieldAnchorKey":field.name})
+          errorFields.push({"title":"Tämä näkymä","errorSection":title,"errorField":field.label,"fieldAnchorKey":field.name})
         }
       }
     })
@@ -392,13 +392,36 @@ function checkErrors(errorFields,currentSchema,attributeData) {
 }
 
 function getErrorFields(checkDocuments, attributeData, currentSchema, phase) {
+  console.log(attributeData,currentSchema,phase)
   let errorFields = []
   const phaseName = attributeData.kaavan_vaihe.split(".").pop().replace(/\s/g,'');
+  console.log(phaseName)
   const title = currentSchema.title.replace(/\s/g,'');
     //Check only using currentPhase sections if check checkDocuments is false and do other check when checking document downloads
   if(checkDocuments && currentSchema?.id === phase && currentSchema?.sections && title === phaseName || !checkDocuments && currentSchema?.sections){
     // Go through every single field
     errorFields = checkErrors(errorFields,currentSchema,attributeData)
+    console.log(errorFields)
+    // Additional acceptance phase specific required textual fields
+    if(phaseName === 'Hyväksyminen'){
+      // List of attribute keys that must exist and be non-empty string
+      const requiredAcceptanceKeys = [
+        'valtuusto_paatti',
+        'valtuusto_hyvaksymispaatos_pykala',
+        'hyvaksymispaatos_pvm',
+        'valtuusto_poytakirja_nahtavilla_pvm',
+        'valtuusto_hyvaksymiskuulutus_pvm',
+        'hyvaksymispaatos_valitusaika_paattyy'
+      ]
+      requiredAcceptanceKeys.forEach(key => {
+        const val = attributeData?.[key]
+        const missing = val === undefined || val === null || val === ''
+        if(missing){
+          // Use a generic section label "Hyväksyminen" and anchor key as attribute name
+          errorFields.push({"title":"Aikataulun muokkausnäkymä","errorSection":key,"errorField":'Hyväksyminen',"fieldAnchorKey":key})
+        }
+      })
+    }
   }
   else if(checkDocuments && currentSchema?.id === phase){
     //Show error for hide download button on document download view if not currently active phase
