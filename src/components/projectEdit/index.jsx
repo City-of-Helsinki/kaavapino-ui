@@ -350,13 +350,13 @@ class ProjectEditPage extends Component {
     return newPhases
   }
 
-  hasMissingFields = () => {
+  hasMissingFields = (action) => {
     const {
       project: { attribute_data },
       currentProject,
       schema
     } = this.props
-    return projectUtils.hasMissingFields(attribute_data, currentProject, schema)
+    return projectUtils.hasMissingFields(attribute_data, currentProject, schema, action)
   }
   //choose the screen size
   handleResize = () => {
@@ -408,7 +408,21 @@ class ProjectEditPage extends Component {
               <ul>
                 {errors.map((error,index) => (
                   <li key={error.errorSection + error.errorField}>
-                    Virhe {index + 1}: <a href='#0' role="button" onClick={() => this.showErrorField(error.errorSection,error.fieldAnchorKey)} className='required-fields-notification-link'>{error.errorSection} - {error.errorField}</a>
+                    Virhe {index + 1}: <a
+                      href='#0'
+                      role="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (groupTitle === 'Aikataulun muokkausnäkymä') {
+                          const currentPhaseId = this.props.currentProject?.phase;
+                          const matchedDeadline = (this.props.currentProject?.deadlines || []).find(d => d?.deadline?.phase_id === currentPhaseId);
+                          this.props.showTimetable(true, error.fieldAnchorKey, currentPhaseId, matchedDeadline?.deadline || {});
+                        } else {
+                          this.showErrorField(error.errorSection, error.fieldAnchorKey);
+                        }
+                      }}
+                      className='required-fields-notification-link'
+                    >{error.errorSection} - {error.errorField}</a>
                   </li>
                 ))}
               </ul>
@@ -471,7 +485,7 @@ class ProjectEditPage extends Component {
 
     const currentSchemaIndex = schema.phases.findIndex(s => s.id === schemaUtils.getSelectedPhase(this.props.location.search,this.props.selectedPhase))
     const currentSchema = schema.phases[currentSchemaIndex]
-    const errorFields = projectUtils.getErrorFields(false,attribute_data,currentSchema,phase)
+    const errorFields = projectUtils.getErrorFields(false,attribute_data,currentSchema,phase,origin)
     this.setState({errorFields:errorFields})
     if(errorFields?.length === 0 && !documentsDownloaded){
       const elements = <div>
@@ -522,6 +536,7 @@ class ProjectEditPage extends Component {
         theme: "light",
         });
     }
+    return errorFields
   }
 
   checkTarget = (target) => {

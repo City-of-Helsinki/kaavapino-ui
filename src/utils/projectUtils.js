@@ -258,7 +258,7 @@ const findValuesFromObject = (object, key, returnArray) => {
   return value
 }
 
-function hasMissingFields(attributeData, currentProject, schema) {
+function hasMissingFields(attributeData, currentProject, schema, action) {
     const currentSchema = schema.phases.find(s => s.id === currentProject.phase)
     const { sections } = currentSchema
     let missingFields = false
@@ -296,6 +296,29 @@ function hasMissingFields(attributeData, currentProject, schema) {
         }
       })
     })
+    // Additional acceptance phase specific required textual fields (same keys validated in getErrorFields)
+    if (action === 'changeCurrentPhase') {
+      // Derive phase name similarly to getErrorFields logic
+      const rawPhase = attributeData?.kaavan_vaihe || ''
+      const phaseName = rawPhase.split('.').pop().replace(/\s/g, '')
+      if (phaseName === 'Hyväksyminen') {
+        const requiredAcceptanceKeys = [
+          'valtuusto_paatti',
+          'valtuusto_hyvaksymispaatos_pykala',
+          'hyvaksymispaatos_pvm',
+          'valtuusto_poytakirja_nahtavilla_pvm',
+          'valtuusto_hyvaksymiskuulutus_pvm',
+          'hyvaksymispaatos_valitusaika_paattyy'
+        ]
+        for (let i = 0; i < requiredAcceptanceKeys.length && !missingFields; i++) {
+          const key = requiredAcceptanceKeys[i]
+          const val = attributeData?.[key]
+          if (val === undefined || val === null || val === '') {
+            missingFields = true
+          }
+        }
+      }
+    }
     // Additional phase confirmation check: ensure all confirmation (vahvista_*) fields(if they have been added to attributeData) for current phase are true.
     // Only run if we didn't already find missing required fields; if we already have missingFields true it stays true.
     if (!missingFields && currentSchema?.title) {
@@ -391,19 +414,16 @@ function checkErrors(errorFields,currentSchema,attributeData) {
   return errorFields
 }
 
-function getErrorFields(checkDocuments, attributeData, currentSchema, phase) {
-  console.log(attributeData,currentSchema,phase)
+function getErrorFields(checkDocuments, attributeData, currentSchema, phase, origin) {
   let errorFields = []
   const phaseName = attributeData.kaavan_vaihe.split(".").pop().replace(/\s/g,'');
-  console.log(phaseName)
   const title = currentSchema.title.replace(/\s/g,'');
     //Check only using currentPhase sections if check checkDocuments is false and do other check when checking document downloads
   if(checkDocuments && currentSchema?.id === phase && currentSchema?.sections && title === phaseName || !checkDocuments && currentSchema?.sections){
     // Go through every single field
     errorFields = checkErrors(errorFields,currentSchema,attributeData)
-    console.log(errorFields)
     // Additional acceptance phase specific required textual fields
-    if(phaseName === 'Hyväksyminen'){
+    if(phaseName === 'Hyväksyminen' && origin === 'closephase'){
       // List of attribute keys that must exist and be non-empty string
       const requiredAcceptanceKeys = [
         'valtuusto_paatti',
