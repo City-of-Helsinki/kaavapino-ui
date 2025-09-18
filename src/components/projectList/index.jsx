@@ -49,7 +49,7 @@ class ProjectListPage extends Component {
       currentFilterData:this.props.filterData,
       pageIndex:0,
       showGraph: false,
-      pageLimit:10,
+      pageLimit:20,
       projectsTotal:[0,0,0,0],
       resultsFound:[null,null,null,null],
       tabName:"modified_at",

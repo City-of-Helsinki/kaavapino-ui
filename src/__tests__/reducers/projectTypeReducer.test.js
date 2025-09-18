@@ -4,6 +4,8 @@ import {
   FETCH_PROJECT_TYPES_SUCCESSFUL
 } from '../../actions/projectTypeActions'
 
+import { describe, it, expect } from 'vitest'
+
 describe('project type reducer', () => {
   it('should return the initial state', () => {
     expect(projectType(undefined, {})).toEqual({
