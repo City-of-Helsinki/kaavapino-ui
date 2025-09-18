@@ -16,7 +16,7 @@ import ConfirmModal from '../common/ConfirmModal'
 import PropTypes from 'prop-types';
 import { getVisibilityBoolName, getVisBoolsByPhaseName, isDeadlineConfirmed } from '../../utils/projectVisibilityUtils';
 import { useTimelineTooltip } from '../../hooks/useTimelineTooltip';
-import './VisTimeline.css'
+import './VisTimeline.scss'
 Moment().locale('fi');
 
 const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, phaseList, currentPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes, showTimetableForm}, ref) => {
