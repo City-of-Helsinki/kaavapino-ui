@@ -1137,6 +1137,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         setTimeline(timeline)
         // Assume `timeline` is your vis.Timeline instance
         timeline.on('mouseDown', (props) => {
+          // Add global cursor when a draggable interaction begins (only if an item is targeted and editing allowed)
+          if (allowedToEdit && props.item) {
+          	document.body.classList.add('cursor-moving');
+          }
           if (props.item) {
             const element = props.event.target;
             const parent = props.event.target.parentElement
@@ -1157,6 +1161,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           } else {
             const isConfirmed = props?.event?.target?.parentElement?.classList?.contains('confirmed') ? " confirmed" : "";
             dragHandleRef.current = "" + isConfirmed;
+          }
+        });
+
+        timeline.on('mouseUp', () => {
+          if(document.body.classList.contains('cursor-moving')){
+            document.body.classList.remove('cursor-moving');
           }
         });
 
