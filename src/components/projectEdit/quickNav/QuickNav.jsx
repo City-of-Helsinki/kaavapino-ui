@@ -57,7 +57,7 @@ export default function QuickNav({
   const onCheckPressed = () => {
     setAllowPhaseClose(false)
     setCheckButtonPressed(true)
-    const value = hasMissingFields()
+    const value = hasMissingFields('onCheckPressed')
     setHasErrors(value)
     setValidationOk(true)
     handleCheck(true,"checkphase")
@@ -269,11 +269,11 @@ export default function QuickNav({
       }
     }
 
-    setAllowPhaseClose(documentsDownloaded)
-    const value = hasMissingFields()
+    const value = hasMissingFields('changeCurrentPhase')
     setHasErrors(value)
     setValidationOk(true)
-    handleCheck(documentsDownloaded,"closephase")
+    const returnedErrorFields = handleCheck(documentsDownloaded,"closephase") || []
+    setAllowPhaseClose(documentsDownloaded && value && returnedErrorFields.length === 0)
   }
 
   const phaseCallback = currentChange => {

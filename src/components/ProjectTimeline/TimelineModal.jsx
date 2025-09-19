@@ -10,7 +10,7 @@ import objectUtil from '../../utils/objectUtil';
 import PropTypes from 'prop-types'
 import './VisTimeline.scss'
 
-const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,archived,allowedToEdit,disabledDates,lomapaivat,dateTypes,groups, items, sectionAttributes,isAdmin,initialTab }) => {
+const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,visValues,deadlineSections,formSubmitErrors,projectPhaseIndex,phaseList,archived,allowedToEdit,disabledDates,lomapaivat,dateTypes,groups, items, sectionAttributes,isAdmin,initialTab }) => {
 
   const getAttributeValues = (attributes) => {
     return Object.values(attributes).flatMap((v) => Object.values(v));
@@ -49,7 +49,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
 
     let currentSubmitErrors = Object.keys(formSubmitErrors).length > 0
 
-    const getFormField = (fieldProps, key, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title, confirmedValue, type) => {
+    const getFormField = (fieldProps, key, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title, confirmedValue, type, tooltip, lautakuntaInPast) => {
       if (!showField(fieldProps.field, visValues)) {
         return null
       }
@@ -92,7 +92,11 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
             formValues={visValues}
             className={className}
             isProjectTimetableEdit={true}
-            disabled={disabled?.disabled && type === 'date' || !allowedToEdit && type === 'date'}
+            disabled={type === 'date'
+              ? (disabled?.disabled || !allowedToEdit)
+              : disabled?.disabled}
+            lautakuntaInPast={lautakuntaInPast}
+            tooltip={tooltip}
             attributeData={visValues}
             disabledDates={disabledDates && type === 'date'}
             lomapaivat={lomapaivat}
@@ -113,7 +117,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
         </>
       )
     }
-    const getFormFields = (sections, sectionIndex, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title, confirmedValue) => {
+    const getFormFields = (sections, sectionIndex, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title, confirmedValue, tooltip, lautakuntaInPast) => {
       // Separate the section with the label "Mielipiteet viimeistään"
       const filteredSections = sections.filter(section => section.label !== "Mielipiteet viimeistään");
       const lastSection = sections.find(section => section.label === "Mielipiteet viimeistään");
@@ -125,7 +129,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
 
       const formFields = []
       filteredSections.forEach((field, fieldIndex) => {
-          formFields.push(getFormField({ field }, `${sectionIndex} - ${fieldIndex}`, {disabled}, {deadlineSection}, maxMoveGroup, maxDateToMove, title, confirmedValue, field?.type))
+          formFields.push(getFormField({ field }, `${sectionIndex} - ${fieldIndex}`, {disabled}, {deadlineSection}, maxMoveGroup, maxDateToMove, title, confirmedValue, field?.type, tooltip, lautakuntaInPast))
       })
       return formFields
     }
@@ -151,38 +155,229 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
       }
       return [null,null]
     }
-  
-    const renderSection = (section,sectionIndex,title) => {
-      //grouped_sections specific to timeline with groups and subgroups
-      const sections = section?.grouped_sections
-      const splitTitle = title.split('-').map(part => part.toLowerCase())
-      splitTitle[1] = splitTitle[1]?.trim() === "1" ? "" : "_"+splitTitle[1]?.trim()
-      let confirmedValue 
-      if(group === "Ehdotus" && splitTitle[0].trim() === "nähtävilläolo"){
-        splitTitle[0] = "esillaolo"
-        confirmedValue = "vahvista_"+group.toLowerCase()+"_"+splitTitle[0]+splitTitle[1]
+
+    const isPhaseClosed = (phase) => {
+      const idx = phaseList.indexOf(phase);
+      return idx > -1 && idx < projectPhaseIndex;
+    };
+
+    // Helper to check if lautakunta date is in the past
+    const isLautakuntaDateInPast = (group, title, visValues) => {
+      // Parse phase and lautakunta index from group/title
+      let phaseKey = '';
+      let lautakuntaIndex = '';
+      if (group === "Ehdotus") {
+        phaseKey = 'kaavaehdotus';
+      } else if (group === "Tarkistettu ehdotus") {
+        phaseKey = 'tarkistettu_ehdotus';
+      } else if (group === "Luonnos") {
+        phaseKey = 'kaavaluonnos';
+      } else {
+        // fallback, use group as lowercased and underscored
+        phaseKey = group.toLowerCase().replace(/\s+/g, '_');
       }
-      else if(group === "Tarkistettu ehdotus" && splitTitle[0].trim() === "lautakunta"){
-        confirmedValue = "vahvista_"+"tarkistettu_ehdotus_"+"lautakunnassa"+splitTitle[1]
+
+      // Try to extract index from title, e.g. "Lautakunta-2"
+      const match = title.match(/lautakunta-?(\d*)/i);
+      if (match) {
+        lautakuntaIndex = match[1] ? `_${match[1]}` : '';
       }
-      else if(group !== "Tarkistettu ehdotus" && splitTitle[0].trim() === "lautakunta"){
-        if(group === "Luonnos" || group === "Ehdotus"){
-          confirmedValue = "vahvista_"+"kaava"+group.toLowerCase()+"_"+splitTitle[0]+splitTitle[1]
-        }
-        else{
-          confirmedValue = "vahvista_"+group.toLowerCase()+"_"+splitTitle[0]+splitTitle[1]
+
+      // Build the key for visValues
+      let dateKey = '';
+      if (phaseKey === 'kaavaehdotus') {
+        dateKey = `milloin_kaavaehdotus_lautakunnassa${lautakuntaIndex}`;
+      } else if (phaseKey === 'tarkistettu_ehdotus') {
+        dateKey = `milloin_tarkistettu_ehdotus_lautakunnassa${lautakuntaIndex}`;
+      } else if (phaseKey === 'kaavaluonnos') {
+        dateKey = `milloin_kaavaluonnos_lautakunnassa${lautakuntaIndex}`;
+      } else {
+        dateKey = `milloin_${phaseKey}_lautakunnassa${lautakuntaIndex}`;
+      }
+
+      const lautakuntaDateStr = visValues[dateKey];
+      if (!lautakuntaDateStr) return false;
+
+      const lautakuntaDate = new Date(lautakuntaDateStr);
+      const now = new Date();
+      return lautakuntaDate < now;
+    };
+
+    const _normalize = s =>
+      s?.toLowerCase()
+      .replace(/[äå]/gi, 'a')
+      .replace(/ö/gi, 'o')
+      .replace(/\s+/g, '');
+
+    const _lastByPrefixes = (groups, group, prefixes) => {
+      const list = groups
+        .filter(g => g.nestedInGroup === group && prefixes.some(p => g.content.toLowerCase().startsWith(p)))
+        .sort((a, b) => {
+          const na = parseInt(a.content.split('-')[1] || '0', 10);
+          const nb = parseInt(b.content.split('-')[1] || '0', 10);
+          return na - nb;
+        });
+      return list[list.length - 1]?.content;
+    };
+
+    const getConfirmedValue = (group, title) => {
+      const splitTitle = title.split('-').map(part => part.toLowerCase());
+      splitTitle[1] = splitTitle[1]?.trim() === "1" ? "" : "_" + splitTitle[1]?.trim();
+
+      let confirmedValue;
+
+      if (group === "Ehdotus" && splitTitle[0].trim() === "nähtävilläolo") {
+        splitTitle[0] = "esillaolo";
+        confirmedValue = "vahvista_" + group.toLowerCase() + "_" + splitTitle[0] + splitTitle[1];
+      }
+      else if (group === "Tarkistettu ehdotus" && splitTitle[0].trim() === "lautakunta") {
+        confirmedValue = "vahvista_" + "tarkistettu_ehdotus_" + "lautakunnassa" + splitTitle[1];
+      }
+      else if (group !== "Tarkistettu ehdotus" && splitTitle[0].trim() === "lautakunta") {
+        if (group === "Luonnos" || group === "Ehdotus") {
+          confirmedValue = "vahvista_" + "kaava" + group.toLowerCase() + "_" + splitTitle[0] + splitTitle[1];
+        } else {
+          confirmedValue = "vahvista_" + group.toLowerCase() + "_" + splitTitle[0] + splitTitle[1];
         }
         // Replace 'lautakunta' with 'lautakunnassa'
         confirmedValue = confirmedValue.replace('lautakunta', 'lautakunnassa');
       }
-      else{
-        confirmedValue = "vahvista_"+group.toLowerCase()+"_"+splitTitle[0]+"_alkaa"+splitTitle[1]
-        confirmedValue = textUtil.replaceScandics(confirmedValue)
+      else {
+        confirmedValue = "vahvista_" + group.toLowerCase() + "_" + splitTitle[0] + "_alkaa" + splitTitle[1];
+        confirmedValue = textUtil.replaceScandics(confirmedValue);
       }
-      confirmedValue = confirmedValue.replace(/\s+/g, '');
-      const isConfirmed = visValues[confirmedValue]
-      const disabled = archived || isConfirmed ? true : sectionIndex < projectPhaseIndex
+
+      return confirmedValue.replace(/\s+/g, '');
+    };
+
+    // Simplified past-date check: only use phase start date `${phaseKey}vaihe_alkaa_pvm`.
+    const isEsillaoloOrNahtavillaStartDateInPast = (group, title, visValues) => {
+      let phaseKey;
+      if (group === 'Ehdotus') phaseKey = 'ehdotus';
+      else if (group === 'Tarkistettu ehdotus') phaseKey = 'tarkistettu_ehdotus';
+      else if (group === 'Luonnos') phaseKey = 'luonnos';
+      else if (group === 'OAS') phaseKey = 'oas';
+      else if (group === 'Periaatteet') phaseKey = 'periaatteet';
+      else phaseKey = group?.toLowerCase().replace(/\s+/g,'_');
+
+      const key = `${phaseKey}vaihe_alkaa_pvm`;
+      const dateStr = visValues?.[key];
+      if (!dateStr) return false;
+      const dt = new Date(dateStr);
+      if (isNaN(dt)) return false;
+      return dt < new Date();
+    };
+
+    const getSectionRestrictions = ({
+      group,
+      title,
+      sectionIndex,
+      groups,
+      visValues,
+      archived,
+      projectPhaseIndex
+    }) => {
+      const nTitle = _normalize(title);
+
+      const isLautakunta = nTitle.includes('lautakunta');
+      const isEsillaolo = nTitle.includes('esilläolo') || nTitle.includes('esillaolo');
+      const isNahtavillaolo = nTitle.includes('nähtävilläolo') || nTitle.includes('nahtavillaolo');
+
+      const lastLautakunta = _lastByPrefixes(groups, group, ['lautakunta-']);
+      const lastEsillaolo = _lastByPrefixes(groups, group, ['esilläolo-', 'esillaolo-']);
+      const lastNahtavillaolo = _lastByPrefixes(groups, group, ['nähtävilläolo-', 'nahtavillaolo-']);
+
+      const isLastLautakunta = isLautakunta && (_normalize(title) === _normalize(lastLautakunta));
+      const isLastEsillaolo = isEsillaolo && (_normalize(title) === _normalize(lastEsillaolo));
+      const isLastNahtavillaolo = isNahtavillaolo && (_normalize(title) === _normalize(lastNahtavillaolo));
+
+      const lautakuntaInPast = isLautakunta && isLautakuntaDateInPast(group, title, visValues);
+      const esillaoloNahtavillaInPast = (isEsillaolo || isNahtavillaolo) && isEsillaoloOrNahtavillaStartDateInPast(group, title, visValues);
+      const phaseClosed = isPhaseClosed(group);
+
+      const disableConfirmButton = phaseClosed
+        ? true
+        : (
+            (isLautakunta && !isLastLautakunta) ||
+            (isEsillaolo && !isLastEsillaolo) ||
+            (isNahtavillaolo && !isLastNahtavillaolo)
+          );
+
+      const phaseIndexForGroup = phaseList.findIndex(p => _normalize(p) === _normalize(group));
+      const phaseIsActive = phaseIndexForGroup === projectPhaseIndex;
+            // New rule: In active phase, Lautakunta cannot be confirmed before Esilläolo is confirmed
+      let esillaoloNotConfirmedBeforeLautakunta = false;
+      if (phaseIsActive && isLautakunta && lastEsillaolo) {
+        // Build confirm key for the last Esilläolo block
+        const esillaoloConfirmKey = getConfirmedValue(group, lastEsillaolo);
+        const esillaoloConfirmed = !!visValues[esillaoloConfirmKey];
+        if (!esillaoloConfirmed) {
+          esillaoloNotConfirmedBeforeLautakunta = true;
+        }
+      }
+            // Rule 2: Esilläolo confirmation cannot be cancelled while a Lautakunta is confirmed
+      let esillaoloLockedByLautakunta = false;
+      if (phaseIsActive && isEsillaolo && lastLautakunta) {
+        const lautakuntaConfirmKey = getConfirmedValue(group, lastLautakunta);
+        const lautakuntaConfirmed = !!visValues[lautakuntaConfirmKey];
+        if (lautakuntaConfirmed) {
+          const currentEsillaoloConfirmKey = getConfirmedValue(group, title);
+            // Only lock if this Esilläolo is currently confirmed (prevent un-confirm)
+          const currentEsillaoloConfirmed = !!visValues[currentEsillaoloConfirmKey];
+          if (currentEsillaoloConfirmed) {
+            esillaoloLockedByLautakunta = true;
+          }
+        }
+      }
+
+      const disabled =
+        archived ||
+        disableConfirmButton || 
+        !phaseIsActive ||
+        esillaoloNotConfirmedBeforeLautakunta ||
+        esillaoloLockedByLautakunta ||
+        esillaoloNahtavillaInPast
+          ? true
+          : sectionIndex < projectPhaseIndex;
+
+      const nextGroupWord =
+        isLautakunta ? 'lautakunta'
+        : isEsillaolo ? 'esilläolo'
+        : isNahtavillaolo ? 'nähtävilläolo'
+        : 'elementtijoukko';
+
+      // Unify past-date lock for lautakunta and esilläolo/nähtävilläolo; keep prop name for downstream component
+      const anyPast = lautakuntaInPast || esillaoloNahtavillaInPast;
+      const tooltip =
+        phaseClosed
+          ? 'Vahvistusta ei voi perua, koska vaihe on lopetettu.'
+          : anyPast
+            ? 'Vahvistusta ei voi perua, koska päivämäärä on menneisyydessä.'
+            : disableConfirmButton
+              ? `Vahvistusta ei voi perua, koska seuraava ${nextGroupWord} on jo lisätty.`
+              : null;
+
+      return { lautakuntaInPast: anyPast, tooltip, disabled };
+    };
+  
+    const renderSection = (section,sectionIndex,title) => {
+
+      //grouped_sections specific to timeline with groups and subgroups
+      const sections = section?.grouped_sections
+      const confirmedValue = getConfirmedValue(group, title);
+
       const renderedSections = []
+
+      const { lautakuntaInPast, tooltip, disabled } = getSectionRestrictions({
+        group,
+        title,
+        sectionIndex,
+        groups,
+        visValues,
+        archived,
+        projectPhaseIndex
+      });
+
       sections.forEach(subsection => {
         const attr = subsection?.attributes
         const [maxDateToMove,maxMoveGroup] = getMaxiumDateToMove(attr)
@@ -198,7 +393,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
               </Tabs.TabList>
               {Object.values(attr[deadlinegroup]).map((subsection, index) => {
                 return <Tabs.TabPanel style={{ marginBottom: 'var(--spacing-m)' }} key={`tabPanel-${index}-${subsection}`}>
-                    {getFormFields(subsection, sectionIndex, disabled, attr[deadlinegroup], maxMoveGroup, maxDateToMove, title, confirmedValue)}
+                    {getFormFields(subsection, sectionIndex, disabled, attr[deadlinegroup], maxMoveGroup, maxDateToMove, title, confirmedValue, tooltip, lautakuntaInPast)}
                   </Tabs.TabPanel>
               })}
             </Tabs>
@@ -246,6 +441,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
     deadlineSections: PropTypes.array,
     formSubmitErrors: PropTypes.object,
     projectPhaseIndex: PropTypes.number,
+    phaseList: PropTypes.array,
     archived: PropTypes.bool,
     allowedToEdit: PropTypes.bool,
     disabledDates: PropTypes.array,

@@ -14,6 +14,8 @@ const CustomCheckbox = ({
   label,
   className,
   disabled,
+  lautakuntaInPast,
+  tooltip,
   updated,
   formName,
   display,
@@ -68,35 +70,56 @@ const CustomCheckbox = ({
   }
 
   if(isProjectTimetableEdit){
-    //Only users with admin role can confirm the dates
-    if(isAdmin && !checkboxDisabled){
+    if (isAdmin) {
       return (
         <>
-          {checked 
-          ? 
-          <>
-            <div className='deadlines-col'>
-              <Notification className='deadlines-confirmed-notification' size="small" label="Päivämäärä vahvistettu" type="success" >{t('deadlines.dates-confirmed')}</Notification>
-            </div>
-            {display !== 'readonly_checkbox' &&
-            <div className='deadlines-col'>
-              <Button className='deadlines-cancel-button' size='small' variant="danger" onClick={onChangeSave}>
-                {t('deadlines.cancel-confirmation')}
-              </Button>
-            </div>
-            }
-          </> 
-          :
-          <>
-            <Notification className='deadlines-preliminary-notification' size="small" label="Aikataulutiedot ovat alustavia" type="info">
-              {t('deadlines.dates-are-preliminary')}
-            </Notification>
-            {display !== 'readonly_checkbox' &&
-            <Button className='deadlines-confirm-button' size='small' onClick={onChangeSave}>
-              {t('deadlines.confirm-dates')}
-            </Button>
-            }
-          </>
+          {checked
+            ?
+            <>
+              <div className='deadlines-col'>
+                <Notification className='deadlines-confirmed-notification' size="small" label="Päivämäärä vahvistettu" type="success">
+                  {t('deadlines.dates-confirmed')}
+                </Notification>
+              </div>
+              {display !== 'readonly_checkbox' &&
+                <div className='deadlines-col' style={{ position: 'relative', display: 'inline-block' }}>
+                  <Button
+                    className='deadlines-cancel-button'
+                    size='small'
+                    variant="danger"
+                    onClick={onChangeSave}
+                    disabled={checkboxDisabled || lautakuntaInPast}
+                    style={checkboxDisabled || lautakuntaInPast ? { opacity: 1, pointerEvents: 'auto', cursor: 'pointer' } : {}}
+                    aria-disabled={checkboxDisabled || lautakuntaInPast}
+                    tabIndex={checkboxDisabled || lautakuntaInPast ? -1 : 0}
+                  >
+                    {t('deadlines.cancel-confirmation')}
+                  </Button>
+                  {(checkboxDisabled || lautakuntaInPast) && tooltip && (
+                    <div className="custom-tooltip">{tooltip}</div>
+                  )}
+                </div>
+              }
+            </>
+            :
+            <>
+              <Notification className='deadlines-preliminary-notification' size="small" label="Aikataulutiedot ovat alustavia" type="info">
+                {t('deadlines.dates-are-preliminary')}
+              </Notification>
+              {display !== 'readonly_checkbox' &&
+                <Button
+                  className='deadlines-confirm-button'
+                  size='small'
+                  onClick={onChangeSave}
+                  disabled={checkboxDisabled}
+                  style={checkboxDisabled ? { opacity: 1, pointerEvents: 'auto', cursor: 'pointer' } : {}}
+                  aria-disabled={checkboxDisabled}
+                  tabIndex={checkboxDisabled ? -1 : 0}
+                >
+                  {t('deadlines.confirm-dates')}
+                </Button>
+              }
+            </>
           }
         </>
       )

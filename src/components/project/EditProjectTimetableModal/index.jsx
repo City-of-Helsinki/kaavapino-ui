@@ -204,6 +204,9 @@ class EditProjectTimeTableModal extends Component {
     if (!isNaN(phaseOnly[0])) {  // Check if the part before the dot is a number
       phaseOnly = phaseOnly[1].trim();  // The part after the dot, with leading/trailing spaces removed
     }
+    if (Array.isArray(phaseOnly)) {
+      phaseOnly = phaseOnly.length > 1 ? phaseOnly[1].trim() : phaseOnly[0].trim();
+    }
     return phaseOnly
   } 
 
@@ -1208,9 +1211,32 @@ class EditProjectTimeTableModal extends Component {
     this.setState({ collapseData: updatedCollapseData });
   }
 
+  getPhaseList = (kokoluokka) => {
+    const PHASES_XL = [
+      "Käynnistys",
+      "Periaatteet",
+      "OAS",
+      "Luonnos",
+      "Ehdotus",
+      "Tarkistettu ehdotus",
+      "Hyväksyminen",
+      "Voimaantulo"
+    ];
+    const PHASES_OTHER = [
+      "Käynnistys",
+      "OAS",
+      "Ehdotus",
+      "Tarkistettu ehdotus",
+      "Hyväksyminen",
+      "Voimaantulo"
+    ];
+    return kokoluokka === "XL" ? PHASES_XL : PHASES_OTHER;
+  }
+
   render() {
     const { loading } = this.state
     const { 
+      attributeData,
       open, 
       formValues, 
       deadlines, 
@@ -1229,6 +1255,11 @@ class EditProjectTimeTableModal extends Component {
       return null
     }
 
+    // Calculate ongoingPhase, phaseList, and currentPhaseIndex here:
+    const ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe);
+    const phaseList = this.getPhaseList(attributeData?.kaavaprosessin_kokoluokka);
+    const currentPhaseIndex = phaseList.indexOf(ongoingPhase);
+    
     return (
       <Modal
         size="large"
@@ -1247,6 +1278,8 @@ class EditProjectTimeTableModal extends Component {
             </div>
             <VisTimelineGroup
               timelineRef={this.timelineRef}
+              phaseList={phaseList}
+              currentPhaseIndex={currentPhaseIndex}
               options={this.state.options}
               groups={this.state.groups}
               changedItem={this.state.item}

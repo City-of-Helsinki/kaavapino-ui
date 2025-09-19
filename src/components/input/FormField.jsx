@@ -34,6 +34,8 @@ const FormField = ({
   highlightStyle,
   insideFieldset,
   disabled,
+  lautakuntaInPast,
+  tooltip,
   deadlines,
   isProjectTimetableEdit,
   rollingInfo,
@@ -112,6 +114,8 @@ const FormField = ({
           <CustomField
             {...rest}
             disabled={typeof newField.disabled === "undefined" ? disabled : newField.disabled}
+            lautakuntaInPast={lautakuntaInPast}
+            tooltip={tooltip}
             field={newField}
             attributeData={attributeData}
             className={className}

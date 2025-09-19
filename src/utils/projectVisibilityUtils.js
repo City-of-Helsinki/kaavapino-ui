@@ -1,5 +1,6 @@
 import { includes, get } from 'lodash'
 import projectUtils from './projectUtils'
+import textUtil from './textUtil'
 // Field returns info whether field given as a parameter should be shown or not.
 
 export const vis_bool_group_map = Object.freeze({
@@ -257,4 +258,47 @@ export const isDeadlineConfirmed = (formValues, deadlineGroup, returnField) => {
     }
     const returnValue = returnField ? { key: confirmationKey, value: formValues[confirmationKey] } : formValues[confirmationKey];
     return returnValue;
+  };
+
+  // Helper: does current phase have at least one confirmed deadline
+  export const isCurrentPhaseConfirmed = (attribute_data) => {
+    if (!attribute_data || !attribute_data.kaavan_vaihe) return false;
+
+    // Remove leading numbering like "3. " then normalize (lowercase, remove spaces)
+    const raw = attribute_data.kaavan_vaihe.replace(/^[\d]+\.\s*/, '');
+    // Use shared utility to normalize Scandinavian characters
+    let phase = textUtil.replaceScandics(raw).toLowerCase().trim();
+    // Exception: keep tarkistettu_ehdotus with underscore (do NOT concatenate)
+    if (phase === 'tarkistettu ehdotus') {
+      phase = 'tarkistettu_ehdotus';
+    } else {
+      // Other phases: remove spaces entirely
+      phase = phase.replace(/\s+/g, '');
+    }
+
+    // These phases should bypass confirmation requirement
+    if (phase === 'kaynnistys' || phase === 'hyvaksyminen' || phase === 'voimaantulo') {
+      return true;
+    }
+
+    // Collect candidate deadline groups for this phase
+    const groupKeys = Object.keys(vis_bool_group_map).filter(group => {
+      if (group.startsWith('tarkistettu_ehdotus')) {
+        return phase === 'tarkistettu_ehdotus';
+      }
+      const firstToken = group.split('_')[0];
+      return firstToken === phase;
+    });
+
+    if (groupKeys.length === 0) {
+      return false; // No groups -> block
+    }
+
+    const visibleGroups = groupKeys.filter(g => shouldDeadlineBeVisible(null, g, attribute_data));
+    for (const g of visibleGroups) {
+      if (isDeadlineConfirmed(attribute_data, g, false)) {
+        return true;
+      }
+    }
+    return false;
   };
