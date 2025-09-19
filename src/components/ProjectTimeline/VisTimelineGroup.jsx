@@ -807,6 +807,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           const dragElement = dragHandleRef.current;
           const today = new Date();
           today.setHours(0, 0, 0, 0);
+          //Prevent dragging for Hyväksyminen / Voimaantulo
+          if (item?.phaseName === "Hyväksyminen" || item?.phaseName === 'Voimaantulo') {
+            callback(null);
+            return;
+          }
           // Check if the item is confirmed or moving items to past dates and prevent moving
           const isConfirmed = dragElement?.includes("confirmed");
           const isMovingToPast = (item.start && item.start < today) || (item.end && item.end < today);
@@ -1138,8 +1143,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         // Assume `timeline` is your vis.Timeline instance
         timeline.on('mouseDown', (props) => {
           // Add global cursor when a draggable interaction begins (only if an item is targeted and editing allowed)
-          if (allowedToEdit && props.item) {
-          	document.body.classList.add('cursor-moving');
+          if (allowedToEdit && props.item && !props.item?.includes('Hyväksyminen') && !props.item?.includes('Voimaantulo') ) {
+            // Prevent cursor-moving styling for Hyväksyminen or Voimaantulo items
+            document.body.classList.add('cursor-moving');
           }
           if (props.item) {
             const element = props.event.target;

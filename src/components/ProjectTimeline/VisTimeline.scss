@@ -945,6 +945,15 @@
             pointer-events: none;
           }
     }
+
+	// Disable drag handles (left/right) for specific groups where dragging should not be allowed
+	.voimaantulo_1, .hyvaksyminen_1 {
+		.vis-drag-left, .vis-drag-right {
+			pointer-events: none;
+			cursor: default;
+			&::before { display: none; }
+		}
+	}
     /*1.2v end*/
 }
 
