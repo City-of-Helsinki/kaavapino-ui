@@ -36,7 +36,8 @@ export default function QuickNav({
   currentSchema,
   documentIndex,
   locationSearch,
-  isTheResponsiblePerson
+  isTheResponsiblePerson,
+  showSection
 }) {
   const [verifying, setVerifying] = useState(false)
   const [checkButtonPressed, setCheckButtonPressed] = useState(false)
@@ -457,8 +458,8 @@ export default function QuickNav({
         </nav>
       </div>
 
-      <div className="quicknav-buttons">{renderButtons()}</div>
-      {isResponsible && <div className="quicknav-onhold">{renderCheckBox()}</div>}
+      {showSection && <div className="quicknav-buttons">{renderButtons()}</div>}
+      {isResponsible && showSection && <div className="quicknav-onhold">{renderCheckBox()}</div>}
       {isResponsible && notLastPhase && allowPhaseClose && (
         <ConfirmModal
           callback={phaseCallback}
