@@ -627,8 +627,9 @@
     }
 
     &::-webkit-scrollbar-track {
-      background-color: transparent;
-      margin-block-start: 165px;
+      background-color: #D8D8D8;
+      margin-block-start: 155px;
+      margin-block-end: 4px;
     }
 
     .timeline-group-header {
@@ -694,7 +695,7 @@
         justify-content: flex-start;
         margin:0;
         div{
-          margin: $size12;
+          margin: $size10;
         }
         span{
           color: $black1;
@@ -709,7 +710,6 @@
         color: $color-black-40 !important;
         cursor: not-allowed;
         pointer-events: none;
-        border: none;
         span {
           color: $color-black-40 !important;
         }
@@ -721,7 +721,7 @@
     }
 
     .add-button-info{
-      color: $color-info;
+      color: #0062b9;
       padding-left: $size48;
       padding-right: $size24;
       padding-bottom: $size12;
@@ -746,6 +746,10 @@
     margin: 0px 0 0 0 !important;
     border-top: 1px solid #808080 !important;
     background-color: #fff !important;
+    font-family: 'Helsinki Grotesk Medium', sans-serif !important;
+    font-size: $size16;
+    font-weight: 500;
+    line-height: $size24;
     .form-buttons{
       margin-top: 24px;
       margin-bottom: 24px;
@@ -774,12 +778,6 @@
 }
 
 .timeline-edit-right{
-/*   max-height: 79vh;
-  max-width: 513px !important;
-  margin: auto 8px auto auto !important;
-  position: relative !important;
-  margin-top: 70px !important;
-  overflow-y: auto; */
   height: calc(98% - 177px);
   max-width: 529px !important;
   position: absolute !important;

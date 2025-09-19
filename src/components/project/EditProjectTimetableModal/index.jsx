@@ -621,6 +621,7 @@ class EditProjectTimeTableModal extends Component {
           startDate = formValues && formValues["hyvaksymispaatos_pvm"] 
           ? new Date(formValues["hyvaksymispaatos_pvm"]) 
           : phaseStart
+          startDate.setHours(12, 0, 0, 0);
         }
         else{
           //If formValues has deadline.attribute use that values, it if not then use deadline[i].date in startDate.

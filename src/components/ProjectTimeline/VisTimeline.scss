@@ -65,7 +65,6 @@
     }
 
     .timeline-menu-container {
-        padding-top: $size12;
         position: sticky;
         top: 0;
         background-color: #ffffff;
@@ -78,6 +77,7 @@
         align-items: center;
         .time-menu{
             padding-left: 291px;
+            padding-top: $size12;
             button {
                 --min-size: $size32; //hds syntax
                 width: $size44;
@@ -103,6 +103,7 @@
             }
         }
         .today-menu{
+            padding-top: $size12;
             button {
                 --min-size: $size32; //hds syntax
                 height: $size44;
@@ -150,7 +151,6 @@
                 color: $black1;
                 border: 1px #1A1A1A solid;
                 border-radius: $size16;
-                margin-bottom: $size12;
                 margin-right: $size16;
                 &:hover {
                     background-color: $color-black-20;
@@ -178,7 +178,6 @@
                 border: 1px #1A1A1A solid;
                 border-radius: $size16;
                 outline-offset: 2px;
-                margin-bottom: $size16;
                 margin-right: $size16;
                 outline: 3px solid $color-coat-of-arms;
             }
@@ -364,6 +363,10 @@
         z-index: 200;
         &.past {
             background: $color-gray;
+        }
+        &.board-only {
+            background-color: transparent;
+            left: 0;
         }
     }
 
@@ -1031,6 +1034,8 @@
 
 .foreground-highlight{
     background-color: #F0F0FF80;
+    z-index: 100;
+    min-height: 36px;
 }
 .january-first {
     border-left:$size1 solid $border-gray4 !important;
