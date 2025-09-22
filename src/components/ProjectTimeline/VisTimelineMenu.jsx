@@ -1,9 +1,13 @@
-import React, { useState } from 'react'
-import {Button,IconAngleLeft,IconAngleRight} from 'hds-react'
+import React, { useState, useRef } from 'react'
+import {Button,IconAngleLeft,IconAngleRight,IconQuestionCircle} from 'hds-react'
 import PropTypes from 'prop-types';
+import TimelineMenuTooltip from './TimelineMenuTooltip';
 
 function VisTimelineMenu({goToToday, moveLeft, moveRight,showYears,showMonths}) {
   const [selectedButton, setSelectedButton] = useState('showYears');
+  const [showElementTooltip, setShowElementTooltip] = useState(false);
+
+  const elementButtonRef = useRef(null);
 
   const handleClick = (buttonName) => {
     setSelectedButton(buttonName);
@@ -33,6 +37,27 @@ function VisTimelineMenu({goToToday, moveLeft, moveRight,showYears,showMonths}) 
             <Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {show3Months()}}>3 kuukautta</Button>
             <Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {showWeeks()}}>Weeks</Button>
             <Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {showDays()}}>Days</Button> */}
+          </div>
+          <div className="element-menu" style={{ position: 'relative' }}>
+            <Button
+              ref={elementButtonRef}
+              size="small"
+              variant="supplementary"
+              className={showElementTooltip ? 'element-tooltip-open' : ''}
+              onClick={() => {
+                setShowElementTooltip(v => {
+                  if (v && elementButtonRef.current) {
+                    setTimeout(() => elementButtonRef.current.blur(), 0);
+                  }
+                  return !v;
+                });
+              }}
+            >
+              <IconQuestionCircle />
+            </Button>
+            {showElementTooltip && (
+              <TimelineMenuTooltip />
+            )}
           </div>
         </div>
     </div>
