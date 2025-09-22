@@ -1,16 +1,16 @@
 import React from 'react'
-import {render,screen} from '@testing-library/react'
-import '@testing-library/jest-dom'
+import {render, screen, cleanup} from '@testing-library/react'
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import Input from '../../../components/input/CustomInput'
+import { describe, test, expect, beforeEach, afterEach} from 'vitest';
 
 describe('<Input />', () => {
   const mockStore = configureStore();
   let store;
 
   beforeEach(() => {
-    const initialState = { output: false};
+    const initialState = { output: false, project: { connection: true } };
     store = mockStore(initialState);
     render(
       <Provider store={store}>
@@ -22,7 +22,11 @@ describe('<Input />', () => {
         />
       </Provider>
     )
-  })
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
 
   test('has value and name', () => {
     const inputNode = screen.getByLabelText('test')

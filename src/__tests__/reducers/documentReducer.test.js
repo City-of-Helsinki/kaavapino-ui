@@ -4,6 +4,8 @@ import {
   FETCH_DOCUMENTS_SUCCESSFUL
 } from '../../actions/documentActions'
 
+import { describe, it, expect } from 'vitest'
+
 describe('document reducer', () => {
   it('should return the initial state', () => {
     expect(documentReducer(undefined, {})).toEqual({

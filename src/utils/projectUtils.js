@@ -258,7 +258,7 @@ const findValuesFromObject = (object, key, returnArray) => {
   return value
 }
 
-function hasMissingFields(attributeData, currentProject, schema) {
+function hasMissingFields(attributeData, currentProject, schema, action) {
     const currentSchema = schema.phases.find(s => s.id === currentProject.phase)
     const { sections } = currentSchema
     let missingFields = false
@@ -296,6 +296,84 @@ function hasMissingFields(attributeData, currentProject, schema) {
         }
       })
     })
+    // Additional acceptance phase specific required textual fields (same keys validated in getErrorFields)
+    if (action === 'changeCurrentPhase') {
+      // Derive phase name similarly to getErrorFields logic
+      const rawPhase = attributeData?.kaavan_vaihe || ''
+      const phaseName = rawPhase.split('.').pop().replace(/\s/g, '')
+      if (phaseName === 'Hyväksyminen') {
+        const requiredAcceptanceKeys = [
+          'valtuusto_paatti',
+          'valtuusto_hyvaksymispaatos_pykala',
+          'hyvaksymispaatos_pvm',
+          'valtuusto_poytakirja_nahtavilla_pvm',
+          'valtuusto_hyvaksymiskuulutus_pvm',
+          'hyvaksymispaatos_valitusaika_paattyy'
+        ]
+        for (let i = 0; i < requiredAcceptanceKeys.length && !missingFields; i++) {
+          const key = requiredAcceptanceKeys[i]
+          const val = attributeData?.[key]
+          if (val === undefined || val === null || val === '') {
+            missingFields = true
+          }
+        }
+      }
+    }
+    // Additional phase confirmation check: ensure all confirmation (vahvista_*) fields(if they have been added to attributeData) for current phase are true.
+    // Only run if we didn't already find missing required fields; if we already have missingFields true it stays true.
+    if (!missingFields && currentSchema?.title) {
+
+      const phaseTitleNormalized = (currentSchema.title || '').toLowerCase().trim()
+      let allowedSegments = []
+      if (phaseTitleNormalized.includes('oas')) allowedSegments = ['oas']
+      else if (phaseTitleNormalized.includes('periaatteet')) allowedSegments = ['periaatteet']
+      else if (phaseTitleNormalized.includes('luonnos')) allowedSegments = ['luonnos','kaavaluonnos']
+      else if (phaseTitleNormalized.includes('tarkistettu') && phaseTitleNormalized.includes('ehdotus')) allowedSegments = ['tarkistettu_ehdotus']
+      else if (phaseTitleNormalized.includes('ehdotus')) allowedSegments = ['kaavaehdotus','ehdotus']
+
+      const triggerTrueList = []
+      const requiredConfirmations = []
+
+      const esillaoloRegex = /^jarjestetaan_(\w+)_esillaolo_(\d+)$/
+      const lautakuntaRegex = /^(\w+)_lautakuntaan_(\d+)$/
+
+      Object.entries(attributeData).some(([key, value]) => {
+        if (value !== true) return false
+        let match = key.match(esillaoloRegex)
+        if (match) {
+          const seg = match[1]
+          const idx = parseInt(match[2], 10)
+          if (!allowedSegments.includes(seg)) return false
+          triggerTrueList.push(key)
+          const suffix = idx > 1 ? '_' + idx : ''
+          requiredConfirmations.push(`vahvista_${seg}_esillaolo_alkaa${suffix}`)
+          return false
+        }
+        match = key.match(lautakuntaRegex)
+        if (match) {
+          const seg = match[1]
+          const idx = parseInt(match[2], 10)
+          if (!allowedSegments.includes(seg)) return false
+          triggerTrueList.push(key)
+          const suffix = idx > 1 ? '_' + idx : ''
+          requiredConfirmations.push(`vahvista_${seg}_lautakunnassa${suffix}`)
+          return false
+        }
+        return false
+      })
+
+      let unconfirmedKey = null
+      for (let i = 0; i < requiredConfirmations.length; i++) {
+        const cKey = requiredConfirmations[i]
+        const cVal = attributeData[cKey]
+        const ok = cVal === true
+        if (!ok) { unconfirmedKey = cKey; break }
+      }
+      if (unconfirmedKey) {
+        //Block phase closing if true
+        missingFields = true
+      }
+    }
     return missingFields 
 }
 
@@ -311,14 +389,14 @@ function checkErrors(errorFields,currentSchema,attributeData) {
           const { matrix } = field
           matrix.fields.forEach(({ required, name, label }) => {
             if (isFieldMissing(name, required, attributeData)) {
-              errorFields.push({"errorSection":title,"errorField":label,"fieldAnchorKey":name})
+              errorFields.push({"title":"Tämä näkymä","errorSection":title,"errorField":label,"fieldAnchorKey":name})
             }
           })
           // Fieldsets can contain any fields (except matrices)
           // multiple times, so we need to go through them all
         } else if (field.type === 'fieldset') {
           if (hasFieldsetErrors(field.name, field.fieldset_attributes, attributeData)) {
-            errorFields.push({"errorSection":title,"errorField":field.label,"fieldAnchorKey":field.name})
+            errorFields.push({"title":"Tämä näkymä","errorSection":title,"errorField":field.label,"fieldAnchorKey":field.name})
           }
         } else if (
           isFieldMissing(
@@ -328,7 +406,7 @@ function checkErrors(errorFields,currentSchema,attributeData) {
             field.autofill_readonly
           )
         ) {
-          errorFields.push({"errorSection":title,"errorField":field.label,"fieldAnchorKey":field.name})
+          errorFields.push({"title":"Tämä näkymä","errorSection":title,"errorField":field.label,"fieldAnchorKey":field.name})
         }
       }
     })
@@ -336,7 +414,7 @@ function checkErrors(errorFields,currentSchema,attributeData) {
   return errorFields
 }
 
-function getErrorFields(checkDocuments, attributeData, currentSchema, phase) {
+function getErrorFields(checkDocuments, attributeData, currentSchema, phase, origin) {
   let errorFields = []
   const phaseName = attributeData.kaavan_vaihe.split(".").pop().replace(/\s/g,'');
   const title = currentSchema.title.replace(/\s/g,'');
@@ -344,6 +422,26 @@ function getErrorFields(checkDocuments, attributeData, currentSchema, phase) {
   if(checkDocuments && currentSchema?.id === phase && currentSchema?.sections && title === phaseName || !checkDocuments && currentSchema?.sections){
     // Go through every single field
     errorFields = checkErrors(errorFields,currentSchema,attributeData)
+    // Additional acceptance phase specific required textual fields
+    if(phaseName === 'Hyväksyminen' && origin === 'closephase'){
+      // List of attribute keys that must exist and be non-empty string
+      const requiredAcceptanceKeys = [
+        'valtuusto_paatti',
+        'valtuusto_hyvaksymispaatos_pykala',
+        'hyvaksymispaatos_pvm',
+        'valtuusto_poytakirja_nahtavilla_pvm',
+        'valtuusto_hyvaksymiskuulutus_pvm',
+        'hyvaksymispaatos_valitusaika_paattyy'
+      ]
+      requiredAcceptanceKeys.forEach(key => {
+        const val = attributeData?.[key]
+        const missing = val === undefined || val === null || val === ''
+        if(missing){
+          // Use a generic section label "Hyväksyminen" and anchor key as attribute name
+          errorFields.push({"title":"Aikataulun muokkausnäkymä","errorSection":key,"errorField":'Hyväksyminen',"fieldAnchorKey":key})
+        }
+      })
+    }
   }
   else if(checkDocuments && currentSchema?.id === phase){
     //Show error for hide download button on document download view if not currently active phase

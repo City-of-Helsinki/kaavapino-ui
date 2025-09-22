@@ -36,7 +36,8 @@ export default function QuickNav({
   currentSchema,
   documentIndex,
   locationSearch,
-  isTheResponsiblePerson
+  isTheResponsiblePerson,
+  showSection
 }) {
   const [verifying, setVerifying] = useState(false)
   const [checkButtonPressed, setCheckButtonPressed] = useState(false)
@@ -56,7 +57,7 @@ export default function QuickNav({
   const onCheckPressed = () => {
     setAllowPhaseClose(false)
     setCheckButtonPressed(true)
-    const value = hasMissingFields()
+    const value = hasMissingFields('onCheckPressed')
     setHasErrors(value)
     setValidationOk(true)
     handleCheck(true,"checkphase")
@@ -268,11 +269,11 @@ export default function QuickNav({
       }
     }
 
-    setAllowPhaseClose(documentsDownloaded)
-    const value = hasMissingFields()
+    const value = hasMissingFields('changeCurrentPhase')
     setHasErrors(value)
     setValidationOk(true)
-    handleCheck(documentsDownloaded,"closephase")
+    const returnedErrorFields = handleCheck(documentsDownloaded,"closephase") || []
+    setAllowPhaseClose(documentsDownloaded && value && returnedErrorFields.length === 0)
   }
 
   const phaseCallback = currentChange => {
@@ -457,8 +458,8 @@ export default function QuickNav({
         </nav>
       </div>
 
-      <div className="quicknav-buttons">{renderButtons()}</div>
-      {isResponsible && <div className="quicknav-onhold">{renderCheckBox()}</div>}
+      {showSection && <div className="quicknav-buttons">{renderButtons()}</div>}
+      {isResponsible && showSection && <div className="quicknav-onhold">{renderCheckBox()}</div>}
       {isResponsible && notLastPhase && allowPhaseClose && (
         <ConfirmModal
           callback={phaseCallback}

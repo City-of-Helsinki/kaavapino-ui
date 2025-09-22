@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => {
       exclude: []
     },
     optimizeDeps: {
+      force: true,
       esbuildOptions: {
         loader: {
           '.js': 'jsx'
@@ -61,10 +62,11 @@ export default defineConfig(({ mode }) => {
       }
     },
     test: {
+      environment: 'jsdom',
+      setupFiles: './src/setupTests.js',
       coverage: {
         reporter: ['text', 'json', 'lcov']
       }
     }
   }
 })
-

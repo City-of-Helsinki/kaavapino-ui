@@ -517,12 +517,14 @@ class CustomField extends Component {
   }
 
   renderCustomCheckbox = props => {
-    const { field,formName,disabled,isProjectTimetableEdit,isAdmin } = this.props
+    const { field,formName,disabled, tooltip, lautakuntaInPast, isProjectTimetableEdit,isAdmin } = this.props
     return (
       <CustomCheckbox
         {...props}
         label={field.label}
         autofillRule={field.autofill_rule}
+        lautakuntaInPast={lautakuntaInPast}
+        tooltip={tooltip}
         formName={formName}
         display={field.display}
         disabled={disabled}
