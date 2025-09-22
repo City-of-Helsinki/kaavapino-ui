@@ -653,11 +653,27 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       });
     }
 
+    const showDays = () => {
+      let ONE_DAY_IN_MS = 1000 * 60 * 60 * 24;
+      let now = new Date();
+      let nowInMs = now.getTime();
+      let oneDayFromNow = nowInMs + ONE_DAY_IN_MS;
+      timeline.setWindow(nowInMs, oneDayFromNow);
+    }
+
+    const showWeeks = () => {
+      let now = new Date();
+      let currentYear = now.getFullYear();
+      let startOfWeek = new Date(currentYear, now.getMonth(), now.getDate() - now.getDay());
+      let endOfWeek = new Date(currentYear, now.getMonth(), now.getDate() - now.getDay() + 6);
+      timeline.setWindow(startOfWeek, endOfWeek);
+    }
+
     const showMonths = () => {
       const range = timeline.getWindow();
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 30; // about 1 month
-
+      restoreNormalMonths(moment);
       timelineRef.current.classList.remove("years")
       timelineRef.current.classList.add("months")
       timeline.setOptions({timeAxis: {scale: 'weekday'}});
@@ -669,11 +685,45 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       highlightJanuaryFirst()
     }
 
+    const show3Months = () => {
+      // Preserve current center like showMonths, expand to ~3 months
+      const range = timeline.getWindow();
+      const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
+      const rangeDuration = 1000 * 60 * 60 * 24 * 30 * 3; // approx 3 months
+      restoreNormalMonths(moment);
+      timelineRef.current.classList.remove("months");
+      timelineRef.current.classList.add("years");
+      timeline.setOptions({timeAxis: {scale: 'week'}});
+
+      const newStart = new Date(center.getTime() - rangeDuration / 2);
+      const newEnd = new Date(center.getTime() + rangeDuration / 2);
+      timeline.setWindow(newStart, newEnd);
+      setCurrentFormat("show3Months");
+      highlightJanuaryFirst();
+    }
+
+    const show6Months = () => {
+      // Preserve current center like showMonths, expand to ~6 months
+      const range = timeline.getWindow();
+      const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
+      const rangeDuration = 1000 * 60 * 60 * 24 * 30 * 6; // approx 6 months
+      restoreNormalMonths(moment);
+      timelineRef.current.classList.remove("months");
+      timelineRef.current.classList.add("years");
+      timeline.setOptions({timeAxis: {scale: 'month'}});
+
+      const newStart = new Date(center.getTime() - rangeDuration / 2);
+      const newEnd = new Date(center.getTime() + rangeDuration / 2);
+      timeline.setWindow(newStart, newEnd);
+      setCurrentFormat("show6Months");
+      highlightJanuaryFirst();
+    }
+
     const showYears = () => {
       const range = timeline.getWindow();
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 365; // about 1 year
-
+      restoreNormalMonths(moment);
       timelineRef.current.classList.remove("months")
       timelineRef.current.classList.add("years")
       timeline.setOptions({timeAxis: {scale: 'month'}});
@@ -685,16 +735,40 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       highlightJanuaryFirst()
     }
 
-    const show2Yers = () => {
-      let now = new Date();
-      let currentYear = now.getFullYear();
-      let startOf2Years = new Date(currentYear, now.getMonth(), 1);
-      let endOf2Years = new Date(currentYear + 2, now.getMonth(), 0);
-      timeline.setOptions({timeAxis: {scale: 'month'}});
-      timeline.setWindow(startOf2Years, endOf2Years);
-    }
+    const show2Years = () => {
+      // center on current window like your original code
+      const range = timeline.getWindow();
+      const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
+      const rangeDuration = 1000 * 60 * 60 * 24 * 365 * 2; // ~2 years
 
-    const show5Yers = () => {
+      // set CSS classes
+      timelineRef.current.classList.remove("months");
+      timelineRef.current.classList.add("years");
+
+      // Use scoped quarter locale ONLY here
+      const qLocale = ensureQuarterLocale(moment);
+
+      timeline.setOptions({
+        moment,               // make sure vis-timeline uses *your* moment
+        locale: qLocale,      // switch to quarter labels for this view only
+        timeAxis: { scale: "month", step: 3 },
+        format: {
+          // Strings, not functions -> avoids format2.replace error
+          minorLabels: { month: "MMM" }, // Q1/Q2/Q3/Q4 (from locale)
+          majorLabels: { year: "YYYY" }  // 2024, 2025, ...
+        },
+        showCurrentTime: false,
+      });
+
+      const newStart = new Date(center.getTime() - rangeDuration / 2);
+      const newEnd = new Date(center.getTime() + rangeDuration / 2);
+      timeline.setWindow(newStart, newEnd);
+
+      setCurrentFormat("show2Years");
+      highlightJanuaryFirst();
+    };
+
+    const show5Years = () => {
       let now = new Date();
       let currentYear = now.getFullYear();
       let startOf5Years = new Date(currentYear, now.getMonth(), 1);
@@ -703,39 +777,42 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       timeline.setWindow(startOf5Years, endOf5Years);
     }
 
-    const show3Months = () => {
-      let now = new Date();
-      let currentYear = now.getFullYear();
-      let startOf3Months = new Date(currentYear, now.getMonth(), 1);
-      let endOf3Months = new Date(currentYear, now.getMonth() + 3, 0);
-      timeline.setOptions({timeAxis: {scale: 'weekday'}});
-      timeline.setWindow(startOf3Months, endOf3Months);
+    const ensureQuarterLocale = (moment) => {
+      const base = moment.locale();
+      const qLocale = `quarter-${base}`;
+      const has = typeof moment.locales === 'function'
+        ? moment.locales().includes(qLocale)
+        : false;
+
+      if (!has) {
+        moment.defineLocale(qLocale, {
+          parentLocale: base,
+          monthsShort: ['Q1','Q1','Q1','Q2','Q2','Q2','Q3','Q3','Q3','Q4','Q4','Q4'],
+          months:      ['Q1','Q1','Q1','Q2','Q2','Q2','Q3','Q3','Q3','Q4','Q4','Q4'],
+        });
+      }
+      return qLocale;
     }
 
-    const show6Months = () => {
-      let now = new Date();
-      let currentYear = now.getFullYear();
-      let startOf6Months = new Date(currentYear, now.getMonth(), 1);
-      let endOf6Months = new Date(currentYear, now.getMonth() + 6, 0);
-      timeline.setOptions({timeAxis: {scale: 'weekday'}});
-      timeline.setWindow(startOf6Months, endOf6Months);
+    const restoreNormalMonths = (moment) => {
+      const loc = moment.locale();
+      const ld = moment.localeData(loc);
+      const current = ld.monthsShort();
+
+      // If months are Q1/Q2/... put real month names back using Intl
+      if (current && current[0] === 'Q1') {
+        // Use the browser/user locale to rebuild month names
+        const lang = navigator.language || 'en';
+        const longFmt  = new Intl.DateTimeFormat(lang,  { month: 'long'  });
+        const shortFmt = new Intl.DateTimeFormat(lang,  { month: 'short' });
+
+        const months = Array.from({length:12}, (_,i) => longFmt .format(new Date(2020, i, 1)));
+        const monthsShort = Array.from({length:12}, (_,i) => shortFmt.format(new Date(2020, i, 1)));
+
+        moment.updateLocale(loc, { months, monthsShort });
+      }
     }
 
-    const showWeeks = () => {
-      let now = new Date();
-      let currentYear = now.getFullYear();
-      let startOfWeek = new Date(currentYear, now.getMonth(), now.getDate() - now.getDay());
-      let endOfWeek = new Date(currentYear, now.getMonth(), now.getDate() - now.getDay() + 6);
-      timeline.setWindow(startOfWeek, endOfWeek);
-    }
-
-    const showDays = () => {
-      let ONE_DAY_IN_MS = 1000 * 60 * 60 * 24;
-      let now = new Date();
-      let nowInMs = now.getTime();
-      let oneDayFromNow = nowInMs + ONE_DAY_IN_MS;
-      timeline.setWindow(nowInMs, oneDayFromNow);
-    }
     // attach events to the navigation buttons
     const zoomIn = () => {
       timeline.zoomIn(1);
@@ -1471,14 +1548,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             moveLeft={moveLeft}
             moveRight={moveRight}
             toggleRollingMode={toggleRollingMode}
-            showYears={showYears}
-            showMonths={showMonths}
-            showWeeks={showWeeks}
             showDays={showDays}
-            show6Months={show6Months}
-            show2Yers={show2Yers}
-            show5Yers={show5Yers}
+            showWeeks={showWeeks}
+            showMonths={showMonths}
             show3Months={show3Months}
+            show6Months={show6Months}
+            showYears={showYears}
+            show2Years={show2Years}
+            show5Years={show5Years}
           />
         </div>
         <TimelineModal 
