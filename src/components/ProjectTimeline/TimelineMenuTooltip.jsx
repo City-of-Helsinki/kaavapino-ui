@@ -48,32 +48,44 @@ const TimelineMenuTooltip = () => (
       <div className="tooltip-header">Symbolien selitykset</div>
       <div className="symbol-columns">
         <div className="symbol-column">
-          {leftSymbols.map((icon, idx) => (
-            <div className="symbol-row" key={idx}>{icon}</div>
+          {leftSymbols.map((icon) => (
+            <div className="symbol-row" key={icon.key}>
+              <div className="symbol-icon-wrapper">{icon}</div>
+            </div>
           ))}
         </div>
         <div className="text-column">
-          {leftLabels.map((text, idx) => (
-            <div className="symbol-row" key={idx}>{text}</div>
+          {leftLabels.map((text) => (
+            <div className="symbol-row" key={text}>{text}</div>
           ))}
         </div>
       </div>
     </div>
     <div className="element-tooltip-divider" />
     <div className="element-tooltip-right">
-        <div className="tooltip-header">Esimerkkejä</div>
-        <div className="symbol-columns">
-            <div className="symbol-column">
-            {rightIcons.map((icon, idx) => (
-                <div className="symbol-row" key={idx}>{icon}</div>
-            ))}
+      <div className="tooltip-header">Esimerkkejä</div>
+      <div className="symbol-columns">
+        <div className="symbol-column">
+          {rightIcons.map((icon) => (
+            <div className="symbol-row" key={icon.key}>
+              <div className="symbol-icon-wrapper">{icon}</div>
             </div>
-            <div className="text-column">
-            {rightLabels.map((text, idx) => (
-                <div className="symbol-row" key={idx}>{text}</div>
-            ))}
-            </div>
+          ))}
         </div>
+        <div className="text-column">
+          {rightLabels.map((text) => {
+            if (typeof text === 'string') {
+              return <div className="symbol-row" key={text}>{text}</div>;
+            }
+            // For the fragment/array, give a unique string key
+            return (
+              <div className="symbol-row" key="right-label-fragment">
+                {text}
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   </div>
 );

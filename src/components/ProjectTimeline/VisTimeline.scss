@@ -278,7 +278,7 @@
                         justify-content: flex-start;
                         min-width: 180px;
                     }
-                    .symbol-row {
+                   .symbol-row {
                         display: flex;
                         align-items: center;
                         height: 24px;
@@ -286,19 +286,22 @@
                         font-weight: 400;
                         font-size: 16px;
                         line-height: 24px;
-
-                        // 22px vertical space between rows, except after the last one
-                        &:not(:last-child) {
-                            margin-bottom: 22px;
-                        }
+                        margin-bottom: 22px;
 
                         span {
                             font-family: 'Helsinki Grotesk Bold', sans-serif;
                             font-weight: 700;
                         }
                     }
+                    .symbol-icon-wrapper {
+                        height: 24px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: flex-start;
+                    }
                     .symbol-icon {
                         display: block;
+                        width: auto;
                     }
                 }
                 .element-tooltip-left {
@@ -310,8 +313,9 @@
                         .symbol-row:first-child .symbol-icon {
                         margin-left: -4px;
                         }
-                        .symbol-row:nth-child(2) {
-                            margin-bottom: 18px;
+                        .symbol-row:nth-child(3) {
+                            position: relative;
+                            top: -4px;
                         }
                     }
                 }
