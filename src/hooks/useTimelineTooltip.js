@@ -13,17 +13,47 @@ function getLineNameFromClassName(className) {
   } else if (className.includes('lautakunta')) {
     label = 'Lautakunta';
   } else {
-    // fallback: capitalize first letter, replace underscores with spaces
-    label = className.charAt(0).toUpperCase() + className.slice(1).replace(/_/g, ' ');
+    label = className.charAt(0).toUpperCase() + className.slice(1).replaceAll('_', ' ');
   }
 
-  // Try to find a number at the end (e.g. _2)
   const numMatch = className.match(/_(\d+)$/);
   if (numMatch && numMatch[1] !== '1') {
     number = ' - ' + numMatch[1];
   }
 
   return label + number;
+}
+
+function formatDateRange(start, end, isBoard) {
+  if (!start) return '';
+  const startDate = new Date(start).toLocaleDateString("fi-FI");
+  if (end && end !== start && !isBoard) {
+    const endDate = new Date(end).toLocaleDateString("fi-FI");
+    return `Päivämääräväli: ${startDate} - ${endDate}`;
+  }
+  return `Päivämäärä: ${startDate}`;
+}
+
+function getPhaseTooltipHTML(item) {
+  const header = `Vaihe: ${item.phaseName || item.group || ''}`;
+  const dateStr = formatDateRange(item.start, item.end, item.className?.includes('board'));
+  return `
+    <div class="tooltip-header">${header}</div>
+    ${dateStr ? dateStr + '<br>' : ''}
+  `;
+}
+
+function getItemTooltipHTML(item, parentClassName) {
+  const header = item.groupInfo || '';
+  const dateStr = formatDateRange(item.start, item.end, item.className?.includes('board'));
+  const lineName = parentClassName ? `Rivin nimi: ${getLineNameFromClassName(parentClassName)}` : '';
+  const phaseName = item.phaseName ? `Vaiheen nimi: ${item.phaseName}` : '';
+  return `
+    <div class="tooltip-header">${header}</div>
+    ${dateStr ? dateStr + '<br>' : ''}
+    ${lineName ? lineName + '<br>' : ''}
+    ${phaseName}
+  `;
 }
 
 export function useTimelineTooltip() {
@@ -41,52 +71,13 @@ export function useTimelineTooltip() {
     };
   }, []);
 
-  // Show tooltip for timeline items
   const showTooltip = (event, item, parentClassName) => {
     if (!tooltipRef.current) return;
 
-    let isPhase = item.phase === true;
-    let header = '';
-    let dateStr = '';
-    let lineName = '';
-    let phaseName = '';
-
-    if (isPhase) {
-      header = `Vaihe: ${item.phaseName || item.group || ''}`;
-      if (item.start) {
-        const startDate = new Date(item.start).toLocaleDateString("fi-FI");
-        if (item.end && item.end !== item.start && !item.className?.includes('board')) {
-          const endDate = new Date(item.end).toLocaleDateString("fi-FI");
-          dateStr = `Päivämääräväli: ${startDate} - ${endDate}`;
-        } else {
-          dateStr = `Päivämäärä: ${startDate}`;
-        }
-      }
-      tooltipRef.current.innerHTML = `
-        <div class="tooltip-header">${header}</div>
-        ${dateStr ? dateStr + '<br>' : ''}
-      `;
-    } else {
-      header = item.groupInfo || '';
-      if (item.start) {
-        const startDate = new Date(item.start).toLocaleDateString("fi-FI");
-        if (item.end && item.end !== item.start && !item.className?.includes('board')) {
-          const endDate = new Date(item.end).toLocaleDateString("fi-FI");
-          dateStr = `Päivämääräväli: ${startDate} - ${endDate}`;
-        } else {
-          dateStr = `Päivämäärä: ${startDate}`;
-        }
-      }
-      lineName = parentClassName ? `Rivin nimi: ${getLineNameFromClassName(parentClassName)}` : '';
-      phaseName = item.phaseName ? `Vaiheen nimi: ${item.phaseName}` : '';
-
-      tooltipRef.current.innerHTML = `
-        <div class="tooltip-header">${header}</div>
-        ${dateStr ? dateStr + '<br>' : ''}
-        ${lineName ? lineName + '<br>' : ''}
-        ${phaseName}
-      `;
-    }
+    const isPhase = item.phase === true;
+    tooltipRef.current.innerHTML = isPhase
+      ? getPhaseTooltipHTML(item)
+      : getItemTooltipHTML(item, parentClassName);
 
     tooltipRef.current.style.display = 'block';
     const tooltipWidth = tooltipRef.current.offsetWidth;
@@ -98,7 +89,7 @@ export function useTimelineTooltip() {
   const hideTooltip = () => {
     if (tooltipRef.current) {
       tooltipRef.current.style.display = 'none';
-      tooltipRef.current.className = 'vis-tooltip'; // Reset to default
+      tooltipRef.current.className = 'vis-tooltip';
     }
   };
 
