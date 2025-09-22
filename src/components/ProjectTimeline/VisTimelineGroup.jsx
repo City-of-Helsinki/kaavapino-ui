@@ -895,11 +895,16 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         const itemDom = item?.dom?.box ?? item?.dom?.point ?? item?.dom?.dot;
         if (itemDom?.classList?.contains('vis-editable')) {
           const itemBounds = itemDom.getBoundingClientRect();
+
+          // Only apply buffer for phase-elements (e.g. rangeItem2)
+          const isPhase = itemDom.classList.contains('vis-range');
+          const verticalBuffer = isPhase ? 15 : 0;
+
           if (
             mouseX >= itemBounds.left &&
             mouseX <= itemBounds.right &&
-            mouseY >= itemBounds.top &&
-            mouseY <= itemBounds.bottom
+            mouseY >= (itemBounds.top - verticalBuffer) &&
+            mouseY <= (itemBounds.bottom + verticalBuffer)
           ) {
             const zIndex = parseInt(window.getComputedStyle(itemDom).zIndex, 10);
             if (zIndex > highestZIndex) {
@@ -1293,24 +1298,46 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         },
       }
 
+      // Throttle mousemove for performance
+      let lastCall = 0;
+      let animationFrameId = null;
+      const throttleMs = 16;
+
       const handleMouseMove = (event) => {
-        const mouseX = event.clientX;
-        const mouseY = event.clientY;
+        const now = Date.now();
+        if (now - lastCall < throttleMs) return;
+        lastCall = now;
 
-        // Check if mouseX is less than 310 to avoid showing tooltip over the vis-left
-        if (mouseX < 310 || mouseY < 250) {
-          hideTooltip();
-          return;
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
         }
+        animationFrameId = requestAnimationFrame(() => {
 
-        const result = getTopmostTimelineItem(mouseX, mouseY, timelineInstanceRef);
+          // Check if the legend/info tooltip is open
+          const menuTooltip = document.querySelector('.element-tooltip');
+          if (menuTooltip && menuTooltip.offsetParent !== null) {
+            hideTooltip();
+            return;
+          }
 
-        if (result) {
-          showTooltip(event, result.item.data);
-        } else {
-          hideTooltip();
-        }
-      };    
+          const mouseX = event.clientX;
+          const mouseY = event.clientY;
+
+          // Check if mouseX is less than 310 to avoid showing tooltip over the vis-left
+          if (mouseX < 310 || mouseY < 250) {
+            hideTooltip();
+            return;
+          }
+
+          const result = getTopmostTimelineItem(mouseX, mouseY, timelineInstanceRef);
+
+          if (result) {
+            showTooltip(event, result.item.data, result.item.parent.className);
+          } else {
+            hideTooltip();
+          }
+        });
+      };
 
       // Attach the mousemove event to the container, not the items themselves
       timelineRef.current.addEventListener('mousemove', handleMouseMove);
