@@ -63,16 +63,15 @@ function OwnProjectFilters({ filters, ...props }) {
         //State need to be up to date if changing other filters, 
         //pressing clear buton only removes value from hds input but does not change it otherwise
         //control is not reachable for buttons clear property
-        let val = filter
-
-        if(val[0] !== "" && value === ""){
-            val[0] = value
-            setFilter(val)
-            onSubmit(value)
+        const previousValue = filter[0];
+        if (previousValue === value) {
+            return;
         }
-        else{
-            val[0] = value
-            setFilter(val)
+        const newFilter = [...filter];
+        newFilter[0] = value
+        setFilter(newFilter);
+        if (value === "") {
+            onSubmit(value)
         }
     }
 
