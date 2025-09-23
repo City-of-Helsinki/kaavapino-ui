@@ -69,7 +69,7 @@
     .timeline-menu-container {
         position: sticky;
         top: 0;
-        background-color: #ffffff;
+        background-color: $white;
         z-index: 1000;
         border-bottom: 1px solid $color-black-20;
     }
@@ -151,7 +151,7 @@
                 height: $size32;
                 background: $dropdown-divider-color;
                 color: $black1;
-                border: 1px #1A1A1A solid;
+                border: 1px $black1 solid;
                 border-radius: $size16;
                 margin-right: $size16;
                 &:hover {
@@ -177,7 +177,7 @@
                 height: $size32;
                 background: $color-black-20;
                 color: $black1;
-                border: 1px #1A1A1A solid;
+                border: 1px $black1 solid;
                 border-radius: $size16;
                 outline-offset: 2px;
                 margin-right: $size16;
@@ -211,7 +211,7 @@
         top: 5.5px !important;
         .vis-item-overflow{
             border: 2px solid $black1;
-            background: #fff;
+            background: $white;
             border-radius: 15px;
             .vis-item-content{
                 pointer-events: auto;
@@ -230,10 +230,10 @@
         left: -12px !important;
         max-width: 100%;
         display: inline-block;
-        border: 2px solid #1a1a1a;
+        border: 2px solid $black1;
         border-radius: 14px;
         padding: 5px;
-        background-color: #fff;
+        background-color: $white;
         z-index: 1500;
         .vis-dot {
             display: none;
@@ -243,18 +243,18 @@
         }
     }
     .board.board-date {
-        height: 1.3rem !important;
-        width: 1.3rem !important;
+        height: $size24 !important;
+        width: $size24 !important;
         top: -5px !important;
         left: -12px !important;
         max-width: 100%;
         right: 0;
         display: inline-block;
-        border: 2px solid #fff;
-        border-radius: 14px;
-        padding: 5px;
-        background-color: #1a1a1a;
-        box-shadow: 0 0 0 2px #1a1a1a;
+        border: 2px solid $black1;
+        border-radius: 50%;
+        padding: 0;
+        background-color: $black1;
+        box-shadow: inset 0 0 0 2px $white;
         z-index: 1500;
         .vis-dot {
             display: none;
@@ -262,7 +262,7 @@
         &.past {
             outline: 2px solid $color-gray;
             outline-offset: -2px;
-            background-color: #1a1a1a !important;
+            background-color: $black1 !important;
         }
         &.confirmed::after {
             content: "";
@@ -271,7 +271,7 @@
             right: -15px;
             width: 21px;
             height: 21px;
-            background: #fff url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
+            background: $white url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
             background-position: center;
             background-size: contain;
             border-radius: 50%;
@@ -283,7 +283,7 @@
             right: -15px;
             width: 21px;
             height: 21px;
-            background: #fff url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
+            background: $white url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
             background-position: center;
             background-size: contain;
             border-radius: 50%;
@@ -299,7 +299,7 @@
         border-radius: 6px;
         .vis-item-overflow{
             border: 2px solid $black1;
-            background: #fff;
+            background: $white;
             border-radius: inherit;
             .vis-item-content{
                 pointer-events: auto;
@@ -317,15 +317,15 @@
         border-width: 1px !important;
         border-style: solid;
         border-radius: 8px;
-        background-color: #1a1a1a;
-        border-color: #fff;
-        box-shadow: 0 0 0 2px #1a1a1a;
+        background-color: $black1;
+        border-color: $white;
+        box-shadow: 0 0 0 2px $black1;
     }
 
     .divider{
         position: absolute;
-        background-color: #1a1a1a;
-        border-color: #1a1a1a;
+        background-color: $black1;
+        border-color: $black1;
         height: 4px;
         top: 15.5px !important;
         left: 4px;
@@ -336,10 +336,11 @@
         top: -4.5px !important;
         left: -10px;
         border: 2px solid $black1;
-        background-color: #fff;
+        background-color: $white;
         height: $size24;
         width: $size24;
         z-index: 200;
+        cursor: url('../../assets/icons/vector.svg') 8 8, move !important;
          // base (hidden) grey dot
         &::after {
             content: "";
@@ -377,11 +378,11 @@
     }
 
     .vis-dot.board-only{
-        border: $size1 solid #fff;
+        border: $size1 solid $white;
         border-radius: 14px;
         padding: 5px;
-        background-color: #1a1a1a;
-        box-shadow: 0 0 0 2px #1a1a1a;
+        background-color: $black1;
+        box-shadow: 0 0 0 2px $black1;
         height: $size20;
         width: $size20;
         &.confirmed::after {
@@ -391,7 +392,7 @@
             right: -10px;
             width: 21px;
             height: 21px;
-            background: #fff url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
+            background: $white url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
             background-position: center;
             background-size: contain;
             border-radius: 50%;
@@ -412,19 +413,19 @@
             height: 8px;
             background-color: #B3B3B3;
             border-radius: 50%;
-            transform: translate(-45%, -45%) scale(0); // use -50% if perfect centering needed
+            transform: translate(-50%, -50%) scale(0); // use -50% if perfect centering needed
             opacity: 0;
             transition: opacity .15s ease, transform .15s ease;
             pointer-events: none;
         }
         &:hover::after,&:active::after {
-            transform: translate(-45%, -45%) scale(1);
+            transform: translate(-50%, -50%) scale(1);
             opacity: 1;
         }
     }
 
     .vis-range{
-        border-color: #1a1a1a;
+        border-color: $black1;
         &.confirmed::after {
             content: "";
             position: absolute;
@@ -432,7 +433,7 @@
             right: -11.5px;
             width: 21px;
             height: 21px;
-            background: #fff url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
+            background: $white url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
             background-position: center;
             background-size: contain;
             border-radius: 50%;
@@ -459,7 +460,7 @@
         border-top: none;
         border-left: none;
         border-right: none;
-        background: #ffffff !important;
+        background: $white !important;
         height: 36px !important;
         .vis-inner{
             padding: 0;
@@ -552,7 +553,7 @@
                     position: absolute;
                     top: 35px;
                     right: 1px;
-                    background-color: #ffffff;
+                    background-color: $white;
                     width: 177px;
                     height: auto;
                     padding: 8px;
@@ -790,7 +791,7 @@
 
     .vis-minor{
         height: 59px;
-        background-color: #ffffff;
+        background-color: $white;
         border-left: $size1 solid #CCCCCC;
         border-top: $size1 solid $color-black-20;
         border-bottom: $size1 solid $color-black-20;
@@ -876,6 +877,7 @@
         min-width: none !important;
         max-width: none !important;
         pointer-events:auto;
+        cursor: url('../../assets/icons/vector.svg') 8 8, move !important;
     }
     .vis-drag-left:hover::before {
         content: '';
@@ -900,6 +902,7 @@
         min-width: none !important;
         max-width: none !important;
         pointer-events:auto;
+        cursor: url('../../assets/icons/vector.svg') 8 8, move !important;
     }
     .vis-drag-right:hover::before {
         content: '';
@@ -962,7 +965,7 @@
 
 // Global cursor style applied while dragging/moving timeline items (added via body class in onMove handler)
 body.cursor-moving, body.cursor-moving * {
-    cursor: url('../../assets/icons/vector.svg') 8 8, move !important;
+    cursor: url('../../assets/icons/arrow4dir.svg') 8 8, move !important;
     .vis-dot,.vis-range{
         box-shadow: 0px 4px 4px 0px #00000040;
     }
@@ -970,7 +973,7 @@ body.cursor-moving, body.cursor-moving * {
         top: -4.5px !important;
         left: -10px;
         border: 2px solid $black1;
-        background-color: #fff;
+        background-color: $white;
         height: $size24;
         width: $size24;
         z-index: 200;
@@ -1010,11 +1013,11 @@ body.cursor-moving, body.cursor-moving * {
         top: -4.5px !important;
         left: -10px;
         border: 2px solid $black1;
-        background-color: #fff;
+        background-color: $black1;
         height: $size24;
         width: $size24;
         z-index: 200;
-        box-shadow: 0px 4px 4px 0px #00000040;
+        box-shadow: inset 0 0 0 2px $white, 0px 4px 4px 0px $black1;
         &::after {
             content: "";
             position: absolute;
@@ -1024,17 +1027,17 @@ body.cursor-moving, body.cursor-moving * {
             height: 8px;
             background-color: #808080;
             border-radius: 50%;
-            transform: translate(-45%, -45%) scale(0);
+            transform: translate(-50%, -50%) scale(0);
             opacity: 0;
             transition: opacity .15s ease, transform .15s ease;
             pointer-events: none;
         }
         &:hover::after {
-            transform: translate(-45%, -45%) scale(1);
+            transform: translate(-50%, -50%) scale(1);
             opacity: 1;
         }
         &:active::after {
-            transform: translate(-45%, -45%) scale(1);
+            transform: translate(-50%, -50%) scale(1);
             opacity: 1;
         }
     }
@@ -1134,7 +1137,7 @@ body.cursor-moving, body.cursor-moving * {
     
     .vis-time-axis .vis-saturday,
     .vis-time-axis .vis-sunday {
-        background-color: #ffffff !important;
+        background-color: $white !important;
     }
     .vis-major > div {
         font-family: 'Helsinki Grotesk Medium', sans-serif;
@@ -1162,7 +1165,7 @@ body.cursor-moving, body.cursor-moving * {
 
 .vis-tooltip{
     visibility: visible !important;
-    background-color: #ffffff !important;
+    background-color: $white !important;
     box-shadow: 0px 2px 8px 0px #00000099 !important;
     width: 300px !important; 
     padding: 8px !important;
@@ -1177,7 +1180,7 @@ body.cursor-moving, body.cursor-moving * {
     pointer-events: none;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     background-color: rgba(204, 204, 204, 0.9) !important;
-    color: #1A1A1A !important;
+    color: $black1 !important;
     padding: 5px 8px !important;
     border-radius: 4px !important;
     font-family: 'Helsinki Grotesk', sans-serif !important;

@@ -1142,13 +1142,17 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         new vis.Timeline(timelineRef.current, items, options, groups);
         timelineInstanceRef.current = timeline
         setTimeline(timeline)
-        // Assume `timeline` is your vis.Timeline instance
         timeline.on('mouseDown', (props) => {
-          // Add global cursor when a draggable interaction begins (only if an item is targeted and editing allowed)
-          if (allowedToEdit && props.item && !props.item?.includes('Hyväksyminen') && !props.item?.includes('Voimaantulo') ) {
-            // Prevent cursor-moving styling for Hyväksyminen or Voimaantulo items
+          //props.item can be number or a string, only perform .includes on strings
+          const blockedByLabel = typeof props?.item === 'string' && (
+            props.item.includes('Hyväksyminen') || props.item.includes('Voimaantulo')
+          );
+          // Prevent cursor-moving styling for Hyväksyminen or Voimaantulo items
+          if (allowedToEdit && props?.item && !blockedByLabel) {
+            // Add global cursor when a draggable interaction begins (only if an item is targeted and editing allowed)
             document.body.classList.add('cursor-moving');
           }
+
           if (props.item) {
             const element = props.event.target;
             const parent = props.event.target.parentElement
