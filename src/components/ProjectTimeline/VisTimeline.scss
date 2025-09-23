@@ -942,6 +942,10 @@
         background: #F2F2F2;
     }
 
+    .vis-time-axis.vis-background {
+        left: 0.5px;
+    }
+
     .vis-saturday,.vis-sunday{
         background: #F2F2F2;
     }
@@ -1148,6 +1152,10 @@
         &.january-first {
             border-left: 0.063rem solid #999999 !important;
         }
+    }
+    .vis-today::first-line {
+        text-decoration: underline;
+        text-underline-offset: 4px;
     }
 }
 
