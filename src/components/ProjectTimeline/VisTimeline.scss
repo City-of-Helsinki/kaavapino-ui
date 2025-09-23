@@ -229,8 +229,7 @@
                 display: flex;
                 position: absolute;
                 top: 66px;
-                //left: -470px; this should work when we have all the zoom-buttons visible
-                transform: translateX(-50%);
+                right: -5px;
                 background: #fff;
                 color: #222;
                 border: 1px solid #ccc;
