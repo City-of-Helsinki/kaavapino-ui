@@ -1142,6 +1142,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         new vis.Timeline(timelineRef.current, items, options, groups);
         timelineInstanceRef.current = timeline
         setTimeline(timeline)
+        // Track currently styled dragged group so we can remove styling on mouseUp
+        const draggingGroupRef = { current: null };
         timeline.on('mouseDown', (props) => {
           //props.item can be number or a string, only perform .includes on strings
           const blockedByLabel = typeof props?.item === 'string' && (
@@ -1151,6 +1153,16 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           if (allowedToEdit && props?.item && !blockedByLabel) {
             // Add global cursor when a draggable interaction begins (only if an item is targeted and editing allowed)
             document.body.classList.add('cursor-moving');
+            // Also add cursor-moving-target to the parent .vis-group for scoped shadow styling
+            const targetEl = props?.event?.target;
+            const groupEl = targetEl && targetEl.closest && targetEl.closest('.vis-group');
+            if(groupEl && groupEl !== draggingGroupRef.current){
+              if(draggingGroupRef.current){
+                draggingGroupRef.current.classList.remove('cursor-moving-target');
+              }
+              groupEl.classList.add('cursor-moving-target');
+              draggingGroupRef.current = groupEl;
+            }
           }
 
           if (props.item) {
@@ -1179,6 +1191,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         timeline.on('mouseUp', () => {
           if(document.body.classList.contains('cursor-moving')){
             document.body.classList.remove('cursor-moving');
+          }
+          if(draggingGroupRef.current){
+            draggingGroupRef.current.classList.remove('cursor-moving-target');
+            draggingGroupRef.current = null;
           }
         });
 
