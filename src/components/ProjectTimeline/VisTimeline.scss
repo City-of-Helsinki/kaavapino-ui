@@ -960,7 +960,13 @@
 			&::before { display: none; }
 		}
 	}
-    /*1.2v end*/
+    // If the timeline item is in the past, show regular pointer cursor on drag handles
+    .vis-item.past {
+        .vis-drag-left,
+        .vis-drag-right {
+            cursor: pointer !important;
+        }
+    }
 }
 
 // Global cursor style applied while dragging/moving timeline items (now only sets the cursor)
