@@ -360,7 +360,7 @@ function hasMissingFields(attributeData, currentProject, schema, action) {
   });
 
   // 2. Check acceptance phase
-  if (action === 'changeCurrentPhase' && hasAcceptancePhaseMissingFields(attributeData, missingFields)) {
+  if (action === 'changeCurrentPhase' && hasAcceptancePhaseMissingFields(attributeData)) {
     missingFields = true;
   }
 
