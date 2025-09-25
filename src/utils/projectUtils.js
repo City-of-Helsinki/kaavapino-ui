@@ -269,7 +269,7 @@ function isFieldOrMatrixOrFieldsetMissing(field, attributeData) {
   }
 }
 
-function hasAcceptancePhaseMissingFields(attributeData, missingFields) {
+function hasAcceptancePhaseMissingFields(attributeData) {
   const rawPhase = attributeData?.kaavan_vaihe || '';
   const phaseName = rawPhase.split('.').pop().replace(/\s/g, '');
   if (phaseName !== 'Hyväksyminen') return false;
@@ -282,7 +282,7 @@ function hasAcceptancePhaseMissingFields(attributeData, missingFields) {
     'valtuusto_hyvaksymiskuulutus_pvm',
     'hyvaksymispaatos_valitusaika_paattyy'
   ];
-  for (let i = 0; i < requiredAcceptanceKeys.length && !missingFields; i++) {
+  for (let i = 0; i < requiredAcceptanceKeys.length; i++) {
     const key = requiredAcceptanceKeys[i];
     const val = attributeData?.[key];
     if (val === undefined || val === null || val === '') {
