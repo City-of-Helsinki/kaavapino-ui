@@ -17,8 +17,9 @@ import PropTypes from 'prop-types';
 import { getVisibilityBoolName, getVisBoolsByPhaseName, isDeadlineConfirmed } from '../../utils/projectVisibilityUtils';
 import './VisTimeline.scss'
 Moment().locale('fi');
+import { updateDateTimeline } from '../../actions/projectActions';
 
-const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes, showTimetableForm}, ref) => {
+const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes, showTimetableForm, itemsPhaseDatesOnly}, ref) => {
     const dispatch = useDispatch();
     const moment = extendMoment(Moment);
 
@@ -27,9 +28,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const observerRef = useRef(null); // Store the MutationObserver
     const timelineInstanceRef = useRef(null);
     const visValuesRef = useRef(visValues);
+    const itemsPhaseDatesOnlyRef = useRef(itemsPhaseDatesOnly);
 
     const [selectedGroupId, setSelectedGroupId] = useState(null);
     const selectedGroupIdRef = useRef(selectedGroupId);
+    const dragHandleRef = useRef("");
 
     const [toggleTimelineModal, setToggleTimelineModal] = useState({open: false, highlight: false, deadlinegroup: false});
     const [timelineData, setTimelineData] = useState({group: false, content: false});
@@ -47,10 +50,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       getTimelineInstance: () => timelineInstanceRef.current,
     }));
 
+    // Keep latest itemsPhaseDatesOnly available inside event handlers
+    useEffect(() => {
+      itemsPhaseDatesOnlyRef.current = itemsPhaseDatesOnly;
+    }, [itemsPhaseDatesOnly]);
 
-    const groupDragged = (id) => {
-      console.log('onChange:', id)
-    }
 
     const preventDefaultAndStopPropagation = (event) => {
       event.preventDefault();
@@ -698,8 +702,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           overrideItems: false  // allow these options to override item.editable
         },
         itemsAlwaysDraggable: { // Dragging is disabled, allow in v1.2
-            item:false, // change to true to allow dragging of items
-            range:false // change to true to allow dragging of ranges
+            item:true, // change to true to allow dragging of items
+            range:true // change to true to allow dragging of ranges
         },
         orientation:{
           axis: "top",
@@ -733,17 +737,128 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           let hour = 60 * 60 * 1000;
           return Math.round(date / hour) * hour;
         },
+        onMoving: function (item, callback) {
+          // Create or update tooltip for moving item
+          let tooltipEl = document.getElementById('moving-item-tooltip');
+          if (!tooltipEl) {
+            tooltipEl = document.createElement('div');
+            tooltipEl.id = 'moving-item-tooltip';
+            tooltipEl.className = 'vis-moving-tooltip';
+            document.body.appendChild(tooltipEl);
+          }
+          
+          // Format dates for display
+          const startDate = item.start ? new Date(item.start).toLocaleDateString('fi-FI') : '';
+          const endDate = item.end ? new Date(item.end).toLocaleDateString('fi-FI') : '';
+          const dragElement = dragHandleRef.current;
+          // Position tooltip near mouse cursor
+          const event = window.event;
+          // Simple zero / negative duration guard (range items)
+          if (dragElement && allowedToEdit) {
+            // Range: block zero / negative duration
+            if (item.start && item.end && item.end <= item.start) {
+              callback(null);
+              return;
+            }
+            else if(item.start && !item.end || dragElement === "left"){
+              const visibleItems = itemsPhaseDatesOnlyRef.current;
+              const indexOfMovingItem = visibleItems?.findIndex(i => String(i.id) === String(item.id));
+              const prevItem = indexOfMovingItem > 0 ? visibleItems[indexOfMovingItem - 1] : null;
+              const prevItemDate = prevItem?.end ? prevItem?.end : prevItem?.start
+              if(prevItemDate && item.start <= prevItemDate){
+                callback(null);
+                return;
+              }
+            }
+          }
+
+          if (event) {
+            tooltipEl.style.display = 'block';
+            tooltipEl.style.position = 'absolute';
+            tooltipEl.style.left = `${event.pageX - 20}px`;
+            tooltipEl.style.top = `${event.pageY - 60}px`;
+            
+            // Set tooltip content based on which part is being dragged
+            if (dragElement === "left") {
+              tooltipEl.innerHTML = startDate;
+            } else if (dragElement === "right" && endDate) {
+              tooltipEl.innerHTML = endDate;
+            } else if(dragElement){
+              tooltipEl.innerHTML = startDate;
+            }
+          }
+          // Call the original callback
+          if(dragElement && allowedToEdit){
+            callback(item);
+          }
+          else{
+            tooltipEl.style.display = 'none';
+            tooltipEl.innerHTML = '';
+            callback(null);
+          }
+
+        },
         onMove(item, callback) {
+          // Remove the moving tooltip
+          const moveTooltip = document.getElementById('moving-item-tooltip');
+          if (moveTooltip) {
+            moveTooltip.style.display = 'none';
+          }
           let preventMove = false;
+          // Determine which part of the item is being dragged
+          const dragElement = dragHandleRef.current;
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          // Check if the item is confirmed or moving items to past dates and prevent moving
+          const isConfirmed = dragElement?.includes("confirmed");
+          const isMovingToPast = (item.start && item.start < today) || (item.end && item.end < today);
+          //Prevent move
+          if (
+          !allowedToEdit ||
+          !dragElement || isConfirmed || isMovingToPast || 
+          item?.phaseName === "Hyväksyminen" || item?.phaseName === "Voimaantulo"
+          ) {
+            callback(null);
+            return;
+          }
+          // Check if trying to move an item from a phase that has already passed
+          if (item.phaseName && visValuesRef.current.kaavan_vaihe) {
+            // Define the phase order
+            const phaseOrder = [
+              "Käynnistys", 
+              "Periaatteet", 
+              "OAS", 
+              "Luonnos", 
+              "Ehdotus", 
+              "Tarkistettu ehdotus", 
+              "Hyväksyminen", 
+              "Voimaantulo"
+            ];
+            
+            // Extract the phase name without numbering from kaavan_vaihe
+            const currentPhaseFullName = visValuesRef.current.kaavan_vaihe;
+            const currentPhaseName = currentPhaseFullName.replace(/^\d+\.\s+/, '');
+              // Get the index of current phase and item's phase
+            const currentPhaseIndex = phaseOrder.indexOf(currentPhaseName);
+            const itemPhaseIndex = phaseOrder.indexOf(item.phaseName);
+            
+            // If item's phase is before the current project phase, prevent the move
+            if (itemPhaseIndex < currentPhaseIndex) {
+              preventMove = true;
+              callback(null);
+              return;
+            }
+          }
 
           const adjustIfWeekend = (date) => {
+            if (!date) return false; // Add check if date is undefined or null
             if (!(date.getDay() % 6)) {
               adjustWeekend(date);
               return true;
             }
             return false;
           }
-        
+
           if (!adjustIfWeekend(item.start) && !adjustIfWeekend(item.end)) {
             const movingTimetableItem = moment.range(item.start, item.end);
             if (item.phase) {
@@ -761,21 +876,64 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                 if (i.id !== item.id) {
                   if (item.phaseID === i.phaseID && !preventMove && !i.locked) {
                     preventMove = false;
-                  } else {
+                  } /* else {
                     const statickTimetables = moment.range(i.start, i.end);
                     if (movingTimetableItem.overlaps(statickTimetables)) {
                       preventMove = true;
                     }
-                  }
+                  } */
                 }
               });
             }
           }
         
-          if (item.content != null && !preventMove) {
-            callback(item); // send back adjusted item
+          if (item?.content != null && !preventMove) {
+            // Call the callback to update the item position in the timeline
+            callback(item);
+            
+            // After successfully moving the item, update the data in the store
+            if (item?.title) {
+              // Initialize variables for date and title
+              let attributeDate;
+              let attributeToUpdate;
+              const hasTitleSeparator = item.title.includes("-");
+              // Determine which part was dragged and set appropriate values
+              if(dragElement === "elements"){
+                // If dragging the start handle of a confirmed item
+                attributeDate = item.start;
+                attributeToUpdate = hasTitleSeparator ? item.title.split("-")[0].trim() : item.title;
+              }
+              else if (dragElement === "left") {
+                // If dragging the start handle
+                attributeDate = item.start;
+                attributeToUpdate = hasTitleSeparator ? item.title.split("-")[0].trim() : item.title;
+              } 
+              else if (dragElement === "right") {
+                // If dragging the end handle
+                attributeDate = item.end;
+                attributeToUpdate = hasTitleSeparator ? item.title.split("-")[1].trim() : item.title;
+              } 
+              else {
+                // If dragging element with single handle
+                attributeDate = item.end ? item.end : item.start;
+                attributeToUpdate = hasTitleSeparator ? item.title.split("-")[0].trim() : item.title;
+              }
+              
+              // Only dispatch if we have valid data
+              if (attributeToUpdate && attributeDate) {
+                const formattedDate = moment(attributeDate).format('YYYY-MM-DD');
+                dispatch(updateDateTimeline(
+                  attributeToUpdate,
+                  formattedDate, 
+                  visValuesRef.current,
+                  false,
+                  deadlineSections
+                ));
+              }
+            }
           } else {
-            callback(null); // cancel updating the item
+            // Cancel the update if content is null or move is prevented
+            callback(null);
           }
         },
         groupTemplate: function (group) {
@@ -987,8 +1145,64 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         new vis.Timeline(timelineRef.current, items, options, groups);
         timelineInstanceRef.current = timeline
         setTimeline(timeline)
-        // add event listener
-        timeline.on('groupDragged', groupDragged)
+        // Track currently styled dragged group so we can remove styling on mouseUp
+        const draggingGroupRef = { current: null };
+        timeline.on('mouseDown', (props) => {
+          //props.item can be number or a string, only perform .includes on strings
+          const blockedByLabel = typeof props?.item === 'string' && (
+            props.item.includes('Hyväksyminen') || props.item.includes('Voimaantulo')
+          );
+          // Prevent cursor-moving styling for Hyväksyminen or Voimaantulo items
+          if (allowedToEdit && props?.item && !blockedByLabel) {
+            // Add global cursor when a draggable interaction begins (only if an item is targeted and editing allowed)
+            document.body.classList.add('cursor-moving');
+            // Also add cursor-moving-target to the parent .vis-group for scoped shadow styling
+            const targetEl = props?.event?.target;
+            const groupEl = targetEl && targetEl.closest && targetEl.closest('.vis-group');
+            if(groupEl && groupEl !== draggingGroupRef.current){
+              if(draggingGroupRef.current){
+                draggingGroupRef.current.classList.remove('cursor-moving-target');
+              }
+              groupEl.classList.add('cursor-moving-target');
+              draggingGroupRef.current = groupEl;
+            }
+          }
+
+          if (props.item) {
+            const element = props.event.target;
+            const parent = props.event.target.parentElement
+            // Check if parent element has 'confirmed' class
+            const isConfirmed = props?.event?.target?.parentElement?.classList?.contains('confirmed') || element?.classList?.contains('confirmed') ? " confirmed" : "";
+            // Determine if this click is on a right-side board item (target or its parent)
+            const isBoardRight = element.classList.contains('board-right') || parent?.classList?.contains('board-right');
+            // Ensure any 'board-right' never routes to the left handle branch
+          if (element.classList.contains('vis-item-overflow') && parent?.classList?.contains('inner-end')) {
+            dragHandleRef.current = "elements" + isConfirmed;
+          }
+          else if (!isBoardRight && (element.classList.contains('vis-drag-left') || element.classList.contains('vis-point') || parent.classList.contains('board'))) {
+              dragHandleRef.current = "left" + isConfirmed;
+            }else if(isBoardRight){
+              dragHandleRef.current = "board-right" + isConfirmed;
+            } else if (element.classList.contains('vis-drag-right')) {
+              dragHandleRef.current = "right" + isConfirmed;
+            } else {
+              dragHandleRef.current = "" + isConfirmed;
+            }
+          } else {
+            const isConfirmed = props?.event?.target?.parentElement?.classList?.contains('confirmed') ? " confirmed" : "";
+            dragHandleRef.current = "" + isConfirmed;
+          }
+        });
+
+        timeline.on('mouseUp', () => {
+          if(document.body.classList.contains('cursor-moving')){
+            document.body.classList.remove('cursor-moving');
+          }
+          if(draggingGroupRef.current){
+            draggingGroupRef.current.classList.remove('cursor-moving-target');
+            draggingGroupRef.current = null;
+          }
+        });
 
         // Add click event listener to timeline container so clicking on the timeline items works
         timelineRef.current.addEventListener('click', function(event) {
@@ -1049,7 +1263,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             timelineInstanceRef.current.off('itemout', hideTooltip);
             document.body.removeEventListener('mousemove', handleMouseMove);
           }
-          timeline.off('groupDragged', groupDragged)
+          timeline.off('mouseDown');
           observerRef?.current?.disconnect();
           //timeline.off('rangechanged', onRangeChanged);
         }
