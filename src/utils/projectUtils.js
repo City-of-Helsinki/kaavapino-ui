@@ -258,122 +258,118 @@ const findValuesFromObject = (object, key, returnArray) => {
   return value
 }
 
+function isFieldOrMatrixOrFieldsetMissing(field, attributeData) {
+  if (field.type === 'matrix') {
+    const { matrix } = field;
+    return matrix.fields.some(({ required, name }) => isFieldMissing(name, required, attributeData));
+  } else if (field.type === 'fieldset') {
+    return hasFieldsetErrors(field.name, field.fieldset_attributes, attributeData);
+  } else {
+    return isFieldMissing(field.name, field.required, attributeData, field.autofill_readonly);
+  }
+}
+
+function hasAcceptancePhaseMissingFields(attributeData, missingFields) {
+  const rawPhase = attributeData?.kaavan_vaihe || '';
+  const phaseName = rawPhase.split('.').pop().replace(/\s/g, '');
+  if (phaseName !== 'Hyväksyminen') return false;
+
+  const requiredAcceptanceKeys = [
+    'valtuusto_paatti',
+    'valtuusto_hyvaksymispaatos_pykala',
+    'hyvaksymispaatos_pvm',
+    'valtuusto_poytakirja_nahtavilla_pvm',
+    'valtuusto_hyvaksymiskuulutus_pvm',
+    'hyvaksymispaatos_valitusaika_paattyy'
+  ];
+  for (let i = 0; i < requiredAcceptanceKeys.length && !missingFields; i++) {
+    const key = requiredAcceptanceKeys[i];
+    const val = attributeData?.[key];
+    if (val === undefined || val === null || val === '') {
+      return true;
+    }
+  }
+  return false;
+}
+
+function hasUnconfirmedRequiredConfirmations(attributeData, currentSchema) {
+  if (!currentSchema?.title) return false;
+
+  const phaseTitleNormalized = (currentSchema.title || '').toLowerCase().trim();
+  let allowedSegments = [];
+  if (phaseTitleNormalized.includes('oas')) allowedSegments = ['oas'];
+  else if (phaseTitleNormalized.includes('periaatteet')) allowedSegments = ['periaatteet'];
+  else if (phaseTitleNormalized.includes('luonnos')) allowedSegments = ['luonnos','kaavaluonnos'];
+  else if (phaseTitleNormalized.includes('tarkistettu') && phaseTitleNormalized.includes('ehdotus')) allowedSegments = ['tarkistettu_ehdotus'];
+  else if (phaseTitleNormalized.includes('ehdotus')) allowedSegments = ['kaavaehdotus','ehdotus'];
+
+  const triggerTrueList = [];
+  const requiredConfirmations = [];
+
+  const esillaoloRegex = /^jarjestetaan_(\w+)_esillaolo_(\d+)$/;
+  const lautakuntaRegex = /^(\w+)_lautakuntaan_(\d+)$/;
+
+  Object.entries(attributeData).forEach(([key, value]) => {
+    if (value !== true) return;
+    let match = key.match(esillaoloRegex);
+    if (match) {
+      const seg = match[1];
+      const idx = parseInt(match[2], 10);
+      if (!allowedSegments.includes(seg)) return;
+      triggerTrueList.push(key);
+      const suffix = idx > 1 ? '_' + idx : '';
+      requiredConfirmations.push(`vahvista_${seg}_esillaolo_alkaa${suffix}`);
+      return;
+    }
+    match = key.match(lautakuntaRegex);
+    if (match) {
+      const seg = match[1];
+      const idx = parseInt(match[2], 10);
+      if (!allowedSegments.includes(seg)) return;
+      triggerTrueList.push(key);
+      const suffix = idx > 1 ? '_' + idx : '';
+      requiredConfirmations.push(`vahvista_${seg}_lautakunnassa${suffix}`);
+      return;
+    }
+  });
+
+  for (let i = 0; i < requiredConfirmations.length; i++) {
+    const cKey = requiredConfirmations[i];
+    const cVal = attributeData[cKey];
+    if (cVal !== true) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function hasMissingFields(attributeData, currentProject, schema, action) {
-    const currentSchema = schema.phases.find(s => s.id === currentProject.phase)
-    const { sections } = currentSchema
-    let missingFields = false
-    // Go through every single field
-    sections.forEach(({ fields }) => {
-      fields.forEach(field => {
-        // Only validate visible fields
-        if (showField(field, attributeData)) {
-          // Matrices can contain any kinds of fields, so
-          // we must go through them separately
-          if (field.type === 'matrix') {
-            const { matrix } = field
-            matrix.fields.forEach(({ required, name }) => {
-              if (isFieldMissing(name, required, attributeData)) {
-                missingFields = true
-              }
-            })
+  const currentSchema = schema.phases.find(s => s.id === currentProject.phase);
+  const { sections } = currentSchema;
+  let missingFields = false;
 
-            // Fieldsets can contain any fields (except matrices)
-            // multiple times, so we need to go through them all
-          } else if (field.type === 'fieldset') {
-            if (hasFieldsetErrors(field.name, field.fieldset_attributes, attributeData)) {
-              missingFields = true
-            }
-          } else if (
-            isFieldMissing(
-              field.name,
-              field.required,
-              attributeData,
-              field.autofill_readonly
-            )
-          ) {
-            missingFields = true
-          }
-        }
-      })
-    })
-    // Additional acceptance phase specific required textual fields (same keys validated in getErrorFields)
-    if (action === 'changeCurrentPhase') {
-      // Derive phase name similarly to getErrorFields logic
-      const rawPhase = attributeData?.kaavan_vaihe || ''
-      const phaseName = rawPhase.split('.').pop().replace(/\s/g, '')
-      if (phaseName === 'Hyväksyminen') {
-        const requiredAcceptanceKeys = [
-          'valtuusto_paatti',
-          'valtuusto_hyvaksymispaatos_pykala',
-          'hyvaksymispaatos_pvm',
-          'valtuusto_poytakirja_nahtavilla_pvm',
-          'valtuusto_hyvaksymiskuulutus_pvm',
-          'hyvaksymispaatos_valitusaika_paattyy'
-        ]
-        for (let i = 0; i < requiredAcceptanceKeys.length && !missingFields; i++) {
-          const key = requiredAcceptanceKeys[i]
-          const val = attributeData?.[key]
-          if (val === undefined || val === null || val === '') {
-            missingFields = true
-          }
+  // 1. Check all fields
+  sections.forEach(({ fields }) => {
+    fields.forEach(field => {
+      if (showField(field, attributeData)) {
+        if (isFieldOrMatrixOrFieldsetMissing(field, attributeData)) {
+          missingFields = true;
         }
       }
-    }
-    // Additional phase confirmation check: ensure all confirmation (vahvista_*) fields(if they have been added to attributeData) for current phase are true.
-    // Only run if we didn't already find missing required fields; if we already have missingFields true it stays true.
-    if (!missingFields && currentSchema?.title) {
+    });
+  });
 
-      const phaseTitleNormalized = (currentSchema.title || '').toLowerCase().trim()
-      let allowedSegments = []
-      if (phaseTitleNormalized.includes('oas')) allowedSegments = ['oas']
-      else if (phaseTitleNormalized.includes('periaatteet')) allowedSegments = ['periaatteet']
-      else if (phaseTitleNormalized.includes('luonnos')) allowedSegments = ['luonnos','kaavaluonnos']
-      else if (phaseTitleNormalized.includes('tarkistettu') && phaseTitleNormalized.includes('ehdotus')) allowedSegments = ['tarkistettu_ehdotus']
-      else if (phaseTitleNormalized.includes('ehdotus')) allowedSegments = ['kaavaehdotus','ehdotus']
+  // 2. Check acceptance phase
+  if (action === 'changeCurrentPhase' && hasAcceptancePhaseMissingFields(attributeData, missingFields)) {
+    missingFields = true;
+  }
 
-      const triggerTrueList = []
-      const requiredConfirmations = []
+  // 3. Check phase confirmations
+  if (!missingFields && hasUnconfirmedRequiredConfirmations(attributeData, currentSchema)) {
+    missingFields = true;
+  }
 
-      const esillaoloRegex = /^jarjestetaan_(\w+)_esillaolo_(\d+)$/
-      const lautakuntaRegex = /^(\w+)_lautakuntaan_(\d+)$/
-
-      Object.entries(attributeData).forEach(([key, value]) => {
-        if (value !== true) return;
-        let match = key.match(esillaoloRegex);
-        if (match) {
-          const seg = match[1];
-          const idx = parseInt(match[2], 10);
-          if (!allowedSegments.includes(seg)) return;
-          triggerTrueList.push(key);
-          const suffix = idx > 1 ? '_' + idx : '';
-          requiredConfirmations.push(`vahvista_${seg}_esillaolo_alkaa${suffix}`);
-          return;
-        }
-        match = key.match(lautakuntaRegex);
-        if (match) {
-          const seg = match[1];
-          const idx = parseInt(match[2], 10);
-          if (!allowedSegments.includes(seg)) return;
-          triggerTrueList.push(key);
-          const suffix = idx > 1 ? '_' + idx : '';
-          requiredConfirmations.push(`vahvista_${seg}_lautakunnassa${suffix}`);
-          return;
-        }
-      });
-
-      let unconfirmedKey = null
-      for (let i = 0; i < requiredConfirmations.length; i++) {
-        const cKey = requiredConfirmations[i]
-        const cVal = attributeData[cKey]
-        const ok = cVal === true
-        if (!ok) { unconfirmedKey = cKey; break }
-      }
-      if (unconfirmedKey) {
-        //Block phase closing if true
-        missingFields = true
-      }
-    }
-    return missingFields 
+  return missingFields;
 }
 
 function checkErrors(errorFields,currentSchema,attributeData) {
