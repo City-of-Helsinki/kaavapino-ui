@@ -337,30 +337,29 @@ function hasMissingFields(attributeData, currentProject, schema, action) {
       const esillaoloRegex = /^jarjestetaan_(\w+)_esillaolo_(\d+)$/
       const lautakuntaRegex = /^(\w+)_lautakuntaan_(\d+)$/
 
-      Object.entries(attributeData).some(([key, value]) => {
-        if (value !== true) return false
-        let match = key.match(esillaoloRegex)
+      Object.entries(attributeData).forEach(([key, value]) => {
+        if (value !== true) return;
+        let match = key.match(esillaoloRegex);
         if (match) {
-          const seg = match[1]
-          const idx = parseInt(match[2], 10)
-          if (!allowedSegments.includes(seg)) return false
-          triggerTrueList.push(key)
-          const suffix = idx > 1 ? '_' + idx : ''
-          requiredConfirmations.push(`vahvista_${seg}_esillaolo_alkaa${suffix}`)
-          return false
+          const seg = match[1];
+          const idx = parseInt(match[2], 10);
+          if (!allowedSegments.includes(seg)) return;
+          triggerTrueList.push(key);
+          const suffix = idx > 1 ? '_' + idx : '';
+          requiredConfirmations.push(`vahvista_${seg}_esillaolo_alkaa${suffix}`);
+          return;
         }
-        match = key.match(lautakuntaRegex)
+        match = key.match(lautakuntaRegex);
         if (match) {
-          const seg = match[1]
-          const idx = parseInt(match[2], 10)
-          if (!allowedSegments.includes(seg)) return false
-          triggerTrueList.push(key)
-          const suffix = idx > 1 ? '_' + idx : ''
-          requiredConfirmations.push(`vahvista_${seg}_lautakunnassa${suffix}`)
-          return false
+          const seg = match[1];
+          const idx = parseInt(match[2], 10);
+          if (!allowedSegments.includes(seg)) return;
+          triggerTrueList.push(key);
+          const suffix = idx > 1 ? '_' + idx : '';
+          requiredConfirmations.push(`vahvista_${seg}_lautakunnassa${suffix}`);
+          return;
         }
-        return false
-      })
+      });
 
       let unconfirmedKey = null
       for (let i = 0; i < requiredConfirmations.length; i++) {
