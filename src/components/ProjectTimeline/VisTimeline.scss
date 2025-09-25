@@ -967,6 +967,50 @@
             cursor: pointer !important;
         }
     }
+    .phase-holder, .disable-edit{
+        cursor: default;
+        .vis-drag-left,
+        .vis-drag-right,
+        .vis-item-overflow,
+        .vis-item {
+            cursor: default !important;
+        }
+        // Ensure hover / active states also stay neutral (no special cursors or drag indicators)
+        &:hover { cursor: default !important; }
+        .vis-drag-left:hover,
+        .vis-drag-left:active,
+        .vis-drag-right:hover,
+        .vis-drag-right:active,
+        .vis-item-overflow:hover,
+        .vis-item-overflow:active,
+        .vis-item:hover,
+        .vis-item:active {
+            cursor: default !important;
+        }
+        // Suppress drag handle visual bars inside disabled contexts
+        .vis-drag-left:hover::before,
+        .vis-drag-left:active::before,
+        .vis-drag-right:hover::before,
+        .vis-drag-right:active::before { display: none !important; }
+        // Disable board-date hover/active inner dot reveal
+        // Need to cover cases where .phase-holder/.disable-edit is either an ancestor OR on the same element
+        // Keep confirmed checkmark visible -> restrict to :not(.confirmed)
+        .board-date:not(.confirmed):hover::after,
+        .board-date:not(.confirmed):active::after,
+        &.board-date:not(.confirmed):hover::after,
+        &.board-date:not(.confirmed):active::after {
+            transform: translate(-50%, -50%) scale(0) !important;
+            opacity: 0 !important;
+        }
+        // Disable vis-point hover/active inner dot reveal
+        .vis-point:hover::after,
+        .vis-point:active::after,
+        &.vis-point:hover::after,
+        &.vis-point:active::after {
+            transform: translate(-50%, -50%) scale(0) !important;
+            opacity: 0 !important;
+        }
+    }
 }
 
 // Global cursor style applied while dragging/moving timeline items (now only sets the cursor)

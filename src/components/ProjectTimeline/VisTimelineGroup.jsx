@@ -809,17 +809,15 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           const dragElement = dragHandleRef.current;
           const today = new Date();
           today.setHours(0, 0, 0, 0);
-          //Prevent dragging for Hyväksyminen / Voimaantulo
-          if (item?.phaseName === "Hyväksyminen" || item?.phaseName === 'Voimaantulo') {
-            callback(null);
-            return;
-          }
           // Check if the item is confirmed or moving items to past dates and prevent moving
           const isConfirmed = dragElement?.includes("confirmed");
           const isMovingToPast = (item.start && item.start < today) || (item.end && item.end < today);
-
-          if (!dragElement || isConfirmed || isMovingToPast) {
-            // Cancel the move for confirmed items or items moved to past dates
+          //Prevent move
+          if (
+          !allowedToEdit ||
+          !dragElement || isConfirmed || isMovingToPast || 
+          item?.phaseName === "Hyväksyminen" || item?.phaseName === "Voimaantulo"
+          ) {
             callback(null);
             return;
           }
@@ -900,7 +898,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               let attributeToUpdate;
               const hasTitleSeparator = item.title.includes("-");
               // Determine which part was dragged and set appropriate values
-              if (dragElement === "left") {
+              if(dragElement === "elements"){
+                // If dragging the start handle of a confirmed item
+                attributeDate = item.start;
+                attributeToUpdate = hasTitleSeparator ? item.title.split("-")[0].trim() : item.title;
+              }
+              else if (dragElement === "left") {
                 // If dragging the start handle
                 attributeDate = item.start;
                 attributeToUpdate = hasTitleSeparator ? item.title.split("-")[0].trim() : item.title;
@@ -1173,7 +1176,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             // Determine if this click is on a right-side board item (target or its parent)
             const isBoardRight = element.classList.contains('board-right') || parent?.classList?.contains('board-right');
             // Ensure any 'board-right' never routes to the left handle branch
-            if (!isBoardRight && (element.classList.contains('vis-drag-left') || element.classList.contains('vis-point') || parent.classList.contains('board'))) {
+          if (element.classList.contains('vis-item-overflow') && parent?.classList?.contains('inner-end')) {
+            dragHandleRef.current = "elements" + isConfirmed;
+          }
+          else if (!isBoardRight && (element.classList.contains('vis-drag-left') || element.classList.contains('vis-point') || parent.classList.contains('board'))) {
               dragHandleRef.current = "left" + isConfirmed;
             }else if(isBoardRight){
               dragHandleRef.current = "board-right" + isConfirmed;
