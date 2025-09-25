@@ -400,12 +400,13 @@ class EditProjectTimeTableModal extends Component {
       const highlightID = `${deadlines[i].deadline.phase_id}_${numberOfPhases}`;
       //Add both titles of the element start date and end date to item title so when dragging we can extract the correct date to update
       const dlTitle = deadlines[i].deadline.phase_name === "Käynnistys" ? "projektin_kaynnistys_pvm" +"-"+ deadlines[i].deadline.attribute  : deadlines[i - 1].deadline.attribute +"-"+ deadlines[i].deadline.attribute
+      const allowEditStyle = this.props?.allowedToEdit ? "" : " disable-edit"
       phaseData.push({
         id: numberOfPhases + deadlines[i].deadline.phase_name,
         content: "",
         start: startDate,
         end: endDate,
-        className: disabled || (currentDate > endDate) ? "phase-length past" : "phase-length" + " " +highlightID,
+        className: disabled || (currentDate > endDate) ? "phase-length past" : "phase-length" + " " +highlightID + allowEditStyle,
         title: dlTitle,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
