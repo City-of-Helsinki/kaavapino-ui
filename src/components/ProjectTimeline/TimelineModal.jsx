@@ -273,22 +273,30 @@ const TimelineModal = ({
   };
 
   // Improved past-date check: use actual Esilläolo/Nähtävilläolo start date if possible
+
   const isEsillaoloOrNahtavillaStartDateInPast = (group, title, visValues) => {
-    // Normalize for easier matching
     const lowerTitle = title.toLowerCase();
     let dateKey = null;
+    let index = '';
 
-    // Check for Esilläolo
+    // Try to extract index from title, e.g. "Esilläolo - 2"
+    const match = lowerTitle.match(/esilläolo\s*-\s*(\d+)/) || lowerTitle.match(/esillaolo\s*-\s*(\d+)/);
+    if (match) {
+      index = `_${match[1]}`;
+    }
+
+    // Esilläolo keys
     if (lowerTitle.includes('esilläolo') || lowerTitle.includes('esillaolo')) {
-      if (group === 'Luonnos') dateKey = 'milloin_luonnos_esillaolo_alkaa';
-      else if (group === 'Ehdotus') dateKey = 'milloin_ehdotus_esillaolo_alkaa';
-      else if (group === 'Tarkistettu ehdotus') dateKey = 'milloin_tarkistettu_ehdotus_esillaolo_alkaa';
+      if (group === 'Luonnos') dateKey = `milloin_luonnos_esillaolo_alkaa${index}`;
+      else if (group === 'Ehdotus') dateKey = `milloin_ehdotus_esillaolo_alkaa${index}`;
+      else if (group === 'Tarkistettu ehdotus') dateKey = `milloin_tarkistettu_ehdotus_esillaolo_alkaa${index}`;
+      else if (group === 'OAS') dateKey = `milloin_oas_esillaolo_alkaa${index}`;
       // Add more as needed for other phases
     }
-    // Check for Nähtävilläolo
+    // Nähtävilläolo keys
     else if (lowerTitle.includes('nähtävilläolo') || lowerTitle.includes('nahtavillaolo')) {
-      if (group === 'Ehdotus') dateKey = 'milloin_ehdotuksen_nahtavilla_alkaa_iso';
-      // Add more as needed for other phases
+      if (group === 'Ehdotus') dateKey = `milloin_ehdotuksen_nahtavilla_alkaa_iso${index}`;
+      // Add more as needed
     }
 
     // Fallback: use phase start date if no specific key found
@@ -317,7 +325,8 @@ const TimelineModal = ({
     groups,
     visValues,
     archived,
-    projectPhaseIndex
+    projectPhaseIndex,
+    confirmed
   }) => {
     const nTitle = _normalize(title);
 
@@ -392,12 +401,26 @@ const TimelineModal = ({
     const anyPast = lautakuntaInPast || esillaoloNahtavillaInPast;
     const tooltip =
       phaseClosed
-        ? 'Vahvistusta ei voi perua, koska vaihe on lopetettu.'
+        ? confirmed
+          ? 'Vahvistusta ei voi perua, koska vaihe on lopetettu.'
+          : 'Vahvistusta ei voi tehdä, koska vaihe on lopetettu.'
+        : !phaseIsActive
+          ? confirmed
+            ? 'Vahvistuksen voi perua vain aktiivisessa vaiheessa.'
+            : 'Vahvistus on mahdollista vain aktiivisessa vaiheessa.'
+        : esillaoloNotConfirmedBeforeLautakunta
+          ? 'Lautakuntaa ei voi vahvistaa ennen kuin esilläolo on vahvistettu.'
+        : esillaoloLockedByLautakunta
+          ? 'Esilläolon vahvistusta ei voi perua, koska lautakunta on jo vahvistettu.'
+        : lautakuntaInPast
+          ? 'Vahvistusta ei voi perua, koska lautakunta sijaitsee menneessä ajanhetkessä.'
         : anyPast
-          ? 'Vahvistusta ei voi perua, koska päivämäärä on menneisyydessä.'
-          : disableConfirmButton
-            ? `Vahvistusta ei voi perua, koska seuraava ${nextGroupWord} on jo lisätty.`
-            : null;
+          ? confirmed
+            ? 'Vahvistusta ei voi perua, koska päivämäärä on menneisyydessä.'
+            : 'Päivämäärää ei voi vahvistaa, koska se sijaitsee menneisyydessä.'
+        : disableConfirmButton
+          ? `Vahvistusta ei voi perua, koska seuraava ${nextGroupWord} on jo lisätty.`
+        : null;
 
     return { lautakuntaInPast: anyPast, tooltip, disabled };
   };
@@ -422,6 +445,7 @@ const TimelineModal = ({
     //grouped_sections specific to timeline with groups and subgroups
     const sections = section?.grouped_sections
     const confirmedValue = getConfirmedValue(group, normalizedTitle);
+    const isConfirmed = !!visValues[confirmedValue];
 
     const renderedSections = []
 
@@ -432,7 +456,8 @@ const TimelineModal = ({
       groups,
       visValues,
       archived,
-      projectPhaseIndex
+      projectPhaseIndex,
+      confirmed: isConfirmed
     });
 
     sections.forEach(subsection => {
