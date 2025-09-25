@@ -269,7 +269,7 @@ export default function QuickNav({
       }
     }
 
-    const value = hasMissingFields('changeCurrentPhase')
+    const value = !hasMissingFields('changeCurrentPhase')
     setHasErrors(value)
     setValidationOk(true)
     const returnedErrorFields = handleCheck(documentsDownloaded,"closephase") || []
