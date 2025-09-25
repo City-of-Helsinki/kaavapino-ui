@@ -69,19 +69,23 @@ const CustomCheckbox = ({
     onChange(!checked)
   }
 
-  if(isProjectTimetableEdit){
+ if (isProjectTimetableEdit) {
     if (isAdmin) {
       return (
         <>
-          {checked
-            ?
+          {checked ? (
             <>
               <div className='deadlines-col'>
-                <Notification className='deadlines-confirmed-notification' size="small" label="Päivämäärä vahvistettu" type="success">
+                <Notification
+                  className='deadlines-confirmed-notification'
+                  size="small"
+                  label="Päivämäärä vahvistettu"
+                  type="success"
+                >
                   {t('deadlines.dates-confirmed')}
                 </Notification>
               </div>
-              {display !== 'readonly_checkbox' &&
+              {display !== 'readonly_checkbox' && (
                 <div className='deadlines-col' style={{ position: 'relative', display: 'inline-block' }}>
                   <Button
                     className='deadlines-cancel-button'
@@ -99,33 +103,42 @@ const CustomCheckbox = ({
                     <div className="custom-tooltip">{tooltip}</div>
                   )}
                 </div>
-              }
+              )}
             </>
-            :
+          ) : (
             <>
-              <Notification className='deadlines-preliminary-notification' size="small" label="Aikataulutiedot ovat alustavia" type="info">
+              <Notification
+                className='deadlines-preliminary-notification'
+                size="small"
+                label="Aikataulutiedot ovat alustavia"
+                type="info"
+              >
                 {t('deadlines.dates-are-preliminary')}
               </Notification>
-              {display !== 'readonly_checkbox' &&
-                <Button
-                  className='deadlines-confirm-button'
-                  size='small'
-                  onClick={onChangeSave}
-                  disabled={checkboxDisabled}
-                  style={checkboxDisabled ? { opacity: 1, pointerEvents: 'auto', cursor: 'pointer' } : {}}
-                  aria-disabled={checkboxDisabled}
-                  tabIndex={checkboxDisabled ? -1 : 0}
-                >
-                  {t('deadlines.confirm-dates')}
-                </Button>
-              }
+              {display !== 'readonly_checkbox' && (
+                <div className='deadlines-col' style={{ position: 'relative', display: 'inline-block' }}>
+                  <Button
+                    className='deadlines-confirm-button'
+                    size='small'
+                    onClick={onChangeSave}
+                    disabled={checkboxDisabled}
+                    style={checkboxDisabled ? { opacity: 1, pointerEvents: 'auto', cursor: 'pointer' } : {}}
+                    aria-disabled={checkboxDisabled}
+                    tabIndex={checkboxDisabled ? -1 : 0}
+                  >
+                    {t('deadlines.confirm-dates')}
+                  </Button>
+                  {checkboxDisabled && tooltip && (
+                    <div className="custom-tooltip">{tooltip}</div>
+                  )}
+                </div>
+              )}
             </>
-          }
+          )}
         </>
-      )
+      );
     }
-  }
-  else{
+  } else{
     return (
       <Checkbox
         aria-label={name}
