@@ -668,6 +668,46 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       return topmostItem ? { item: topmostItem, dom: topmostItemDom } : null;
     };
 
+    // Helper to find item in itemsPhaseDatesOnlyRef by id
+    const findGroupMaaraaika = (group, refArr) => {
+      const targetId = group + " maaraaika";
+      return refArr.find(refItem => refItem?.id === targetId);
+    };
+
+    // Helper to compare days moved between attributeDate and original date from visValuesRef.current
+    const getDaysMoved = (attributeToUpdate, attributeDate) => {
+      const originalDateStr = visValuesRef.current?.[attributeToUpdate];
+      if (originalDateStr) {
+        const originalDate = moment(originalDateStr);
+        const newDate = moment(attributeDate);
+
+        const totalDays = newDate.diff(originalDate, 'days');
+        if (totalDays === 0) {
+          return -1;
+        }
+        if (Math.abs(totalDays) === 1) {
+          return totalDays;
+        }
+
+        let count = 0;
+        let step = totalDays > 0 ? 1 : -1;
+        let current = originalDate.clone();
+        while (
+          (step > 0 && current.isBefore(newDate, 'day')) ||
+          (step < 0 && current.isAfter(newDate, 'day'))
+        ) {
+          current.add(step, 'days');
+          const dayOfWeek = current.day();
+          if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+            count += step;
+          }
+        }
+        return count;
+      }
+      return null;
+    };
+
+
     useEffect(() => {
 
       const options = {
@@ -899,9 +939,18 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               const hasTitleSeparator = item.title.includes("-");
               // Determine which part was dragged and set appropriate values
               if(dragElement === "elements"){
-                // If dragging the start handle of a confirmed item
                 attributeDate = item.start;
                 attributeToUpdate = hasTitleSeparator ? item.title.split("-")[0].trim() : item.title;
+                //Days to move määräaika
+                const daysMoved = getDaysMoved(attributeToUpdate, attributeDate);
+                //Get määräaika item from group
+                let groupMaaraaikaItem = findGroupMaaraaika(item.group, itemsPhaseDatesOnlyRef.current);
+                const maaraaikaToUpdate = hasTitleSeparator ? groupMaaraaikaItem.title.split("-")[0].trim() : groupMaaraaikaItem.title;
+                //Add or reduce days from määräaika
+                let maaraaikaDate = groupMaaraaikaItem.start = moment(groupMaaraaikaItem.start).add(daysMoved, 'days').toDate();
+                //Add maaraaika to be moved in end of dispatch that moves start and end date automatically in reducer logic
+                attributeDate = maaraaikaDate
+                attributeToUpdate = maaraaikaToUpdate
               }
               else if (dragElement === "left") {
                 // If dragging the start handle
