@@ -625,8 +625,7 @@ const convertPayloadValues = (payload) => {
   return { ...convertedKeyPayload,selectedPhase: phaseName };
 };
 
-
-export default {
+const exported = {
     getHighestNumberedObject,
     getMinObject,
     findValuesWithStrings,
@@ -648,3 +647,9 @@ export default {
     convertPayloadValues,
     filterHiddenKeysUsingSections
 }
+
+if (process.env.UNIT_TEST === "true"){
+  exported.getNumberFromString = getNumberFromString
+}
+
+export default exported;
