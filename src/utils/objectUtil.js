@@ -574,6 +574,8 @@ const exported = {
 if (process.env.UNIT_TEST === "true"){
   exported.getNumberFromString = getNumberFromString
   exported.increasePhaseValues = increasePhaseValues
+  exported.sortPhaseData = sortPhaseData
+  exported.expectedOrder = order
 }
 
 export default exported;

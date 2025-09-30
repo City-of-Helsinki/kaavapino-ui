@@ -67,6 +67,12 @@ describe("Test ObjectUtil utility functions", () => {
         expect(result_data[1]).toEqual({key: "date_3", value: "2024-12-31"});
     });
 
+    test("increasePhaseValues handles empty and single-item arrays", () => {
+        expect(objectUtil.increasePhaseValues([])).toEqual([]);
+        const single_item = [{ key: "some_date", value: "2024-01-01"}];
+        expect(objectUtil.increasePhaseValues(single_item)).toEqual(single_item);
+    });
+
     test("increasePhaseValues updates phase start dates if they are before the previous phase end date", () => {
         const test_data = [
             { key: "projektin_kaynnistys_pvm", value: "2024-01-01"},
@@ -90,6 +96,48 @@ describe("Test ObjectUtil utility functions", () => {
         expect(result[7].value).toBe("2025-03-03"); // Unchanged (already after previous end date)
     });
 
-    
-    
+    test("sortPhaseData sorts the array based on predefined order", () => {
+        const test_data = [
+            { key: "oasvaihe_paattyy_pvm", value: "2025-02-01"},
+            { key: "projektin_kaynnistys_pvm", value: "2024-01-01"},
+            { key: "periaatteetvaihe_alkaa_pvm", value: "2022-06-01"},
+            { key: "kaynnistys_paattyy_pvm", value: "2023-12-01"},
+            { key: "luonnosvaihe_alkaa_pvm", value: "2025-03-03"},
+            { key: "periaatteetvaihe_paattyy_pvm", value: "2024-05-01"},
+            { key: "oasvaihe_alkaa_pvm", value: "2024-05-01"},
+        ];
+        const result = objectUtil.sortPhaseData(test_data, objectUtil.expectedOrder);
+        expect(result.length).toBe(test_data.length);
+        for (let i = 0; i < test_data.length; i++) {
+            expect(result[i].key).toBe(objectUtil.expectedOrder[i]);
+        }
+    });
+
+    test("sortPhaseData handles items with 'order' property correctly", () => {
+        const test_data = [
+            { key: "oasvaihe_paattyy_pvm", value: "2025-02-01"},
+            { key: "custom_item_1", value: "Custom 1", order: true},
+            { key: "projektin_kaynnistys_pvm", value: "2024-01-01"},
+            { key: "custom_item_2", value: "Custom 2", order: true},
+            { key: "periaatteetvaihe_alkaa_pvm", value: "2022-06-01"},
+            { key: "kaynnistys_paattyy_pvm", value: "2023-12-01"},
+            { key: "luonnosvaihe_alkaa_pvm", value: "2025-03-03"},
+            { key: "custom_item_3", value: "Custom 3", order: true},
+            { key: "periaatteetvaihe_paattyy_pvm", value: "2024-05-01"},
+            { key: "oasvaihe_alkaa_pvm", value: "2024-05-01"},
+        ];
+        const result = objectUtil.sortPhaseData(test_data, objectUtil.expectedOrder);
+        expect(result.length).toBe(test_data.length);
+        expect(result[0].key).toBe("custom_item_1");
+        expect(result[1].key).toBe("custom_item_2");
+        expect(result[2].key).toBe("custom_item_3");
+
+        let result_index = 0;
+        for (let i = 0; i < result.length; i++) {
+            if (!result[i].key.startsWith("custom_item_")) {
+                expect(result[i].key).toBe(objectUtil.expectedOrder[result_index]);
+                result_index++;
+            }
+        }
+    });
 });
