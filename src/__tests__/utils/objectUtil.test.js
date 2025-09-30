@@ -46,9 +46,50 @@ describe("Test ObjectUtil utility functions", () => {
             .toBe("periaatteet_esillaolokerta_3");
     });
 
-    test ("findValuesWithStrings return the correct object", () => {
+    test("findValuesWithStrings return the correct object", () => {
         const result = objectUtil.findValuesWithStrings(test_objects, "milloin", "oas", "esillaolo", "alkaa");
         expect(result?.name).toEqual("milloin_oas_esillaolo_alkaa_2");
     });
+
+    test("generateDateStringArray returns empty array for invalid input", () => {
+        expect(objectUtil.generateDateStringArray({})).toEqual([]);
+    });
+
+    test("generateDateStringArray returns correct array for valid input", () => {
+        const test_data = {
+            "date_1": "2023-01-01",
+            "date_2": "not-a-date",
+            "date_3": "2024-12-31",
+        };
+        const result_data = objectUtil.generateDateStringArray(test_data);
+        expect(result_data?.length).toBe(2);
+        expect(result_data[0]).toEqual({key: "date_1", value: "2023-01-01"});
+        expect(result_data[1]).toEqual({key: "date_3", value: "2024-12-31"});
+    });
+
+    test("increasePhaseValues updates phase start dates if they are before the previous phase end date", () => {
+        const test_data = [
+            { key: "projektin_kaynnistys_pvm", value: "2024-01-01"},
+            { key: "kaynnistys_paattyy_pvm", value: "2023-12-01"},
+            { key: "periaatteetvaihe_alkaa_pvm", value: "2022-06-01"},
+            { key: "milloin_periaatteet_lautakunnassa", value: "2024-06-23"},
+            { key: "periaatteetvaihe_paattyy_pvm", value: "2024-05-01"},
+            { key: "oasvaihe_alkaa_pvm", value: "2024-05-01"},
+            { key: "oasvaihe_paattyy_pvm", value: "2025-02-01"},
+            { key: "luonnosvaihe_alkaa_pvm", value: "2025-03-03"},
+        ];
+        const result = objectUtil.increasePhaseValues(test_data);
+        expect(result.length).toBe(test_data.length);
+        expect(result[0].value).toBe("2024-01-01"); // Unchanged
+        expect(result[1].value).toBe("2023-12-01"); // Unchanged despite being before start date
+        expect(result[2].value).toBe("2023-12-01"); // Changed to match previous phase end date
+        expect(result[3].value).toBe("2024-06-23"); // Unchanged (ignored)
+        expect(result[4].value).toBe("2024-05-01"); // Unchanged (is end date)
+        expect(result[5].value).toBe("2024-05-01"); // Unchanged (equals previous end date)
+        expect(result[6].value).toBe("2025-02-01"); // Unchanged
+        expect(result[7].value).toBe("2025-03-03"); // Unchanged (already after previous end date)
+    });
+
+    
     
 });

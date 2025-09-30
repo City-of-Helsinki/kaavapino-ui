@@ -573,6 +573,7 @@ const exported = {
 
 if (process.env.UNIT_TEST === "true"){
   exported.getNumberFromString = getNumberFromString
+  exported.increasePhaseValues = increasePhaseValues
 }
 
 export default exported;
