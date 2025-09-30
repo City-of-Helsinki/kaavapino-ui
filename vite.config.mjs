@@ -9,6 +9,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '') //Load .env variables before Vite
 
+  if (mode === 'test') {
+    env.UNIT_TEST = 'true';
+  }
+
   return {
     plugins: [
       react(),
@@ -51,6 +55,7 @@ export default defineConfig(({ mode }) => {
       'process.env.REACT_APP_OPENID_ENDPOINT': JSON.stringify(env.REACT_APP_OPENID_ENDPOINT || ''),
       'process.env.REACT_APP_OPENID_CONNECT_CLIENT_ID': JSON.stringify(env.REACT_APP_OPENID_CONNECT_CLIENT_ID || ''),
       'process.env.REACT_APP_OPENID_AUDIENCE': JSON.stringify(env.REACT_APP_OPENID_AUDIENCE || ''),
+      'process.env.UNIT_TEST': JSON.stringify(env.UNIT_TEST === 'true'),
     },
     server: {
       port: 3000,

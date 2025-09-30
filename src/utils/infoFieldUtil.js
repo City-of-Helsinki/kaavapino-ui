@@ -249,6 +249,19 @@ const getInfoFieldData = (placeholder,name,data,deadlines,selectedPhase) => {
   return [startDate,endDate,startModified,endModified,hide,living,office,general,other,boardDate,confirmBoard,boardText,boardModified,starText,endText,suggestionPhase]
 }
   
-export default {
-  getInfoFieldData
+const exported = {
+  getInfoFieldData,
 }
+
+if (process.env.UNIT_TEST === 'true') {
+  exported.userHasModified = userHasModified;
+  exported.isConfirmed = isConfirmed;
+  exported.getPrincipleDates = getPrincipleDates;
+  exported.getOASDates = getOASDates;
+  exported.getDraftDates = getDraftDates;
+  exported.getSuggestion = getSuggestion;
+  exported.getReviewSuggestion = getReviewSuggestion;
+  exported.getAcceptanceDate = getAcceptanceDate;
+}
+
+export default exported
