@@ -33,6 +33,15 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [selectedGroupId, setSelectedGroupId] = useState(null);
     const selectedGroupIdRef = useRef(selectedGroupId);
     const dragHandleRef = useRef("");
+    const dragStartSnapshotsRef = useRef(null); // { groupId, items: { [id]: {start: Date, end: Date|null} } }
+    const dragStartItemIdRef = useRef(null);
+    // cluster/group dragging state
+    const clusterDragRef = useRef({
+      isPoint: false,
+      clusterKey: null,        // e.g. "27_26" from className
+      snapshot: null,          // { groupId, items: { [id]: { start: Date|null, end: Date|null, className: string } } }
+      movingId: null
+    });
 
     const [toggleTimelineModal, setToggleTimelineModal] = useState({open: false, highlight: false, deadlinegroup: false});
     const [timelineData, setTimelineData] = useState({group: false, content: false});
@@ -777,8 +786,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           let hour = 60 * 60 * 1000;
           return Math.round(date / hour) * hour;
         },
-        onMoving: function (item, callback) {
-          // Create or update tooltip for moving item
+        onMoving: function (item, callback) {          
           let tooltipEl = document.getElementById('moving-item-tooltip');
           if (!tooltipEl) {
             tooltipEl = document.createElement('div');
@@ -786,29 +794,16 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             tooltipEl.className = 'vis-moving-tooltip';
             document.body.appendChild(tooltipEl);
           }
-          
-          // Format dates for display
           const startDate = item.start ? new Date(item.start).toLocaleDateString('fi-FI') : '';
           const endDate = item.end ? new Date(item.end).toLocaleDateString('fi-FI') : '';
-          const dragElement = dragHandleRef.current;
-          // Position tooltip near mouse cursor
+          const dragElementRaw = dragHandleRef.current || '';
+          const dragElement = dragElementRaw.split(' ')[0];
           const event = window.event;
-          // Simple zero / negative duration guard (range items)
+
           if (dragElement && allowedToEdit) {
-            // Range: block zero / negative duration
             if (item.start && item.end && item.end <= item.start) {
               callback(null);
               return;
-            }
-            else if(item.start && !item.end || dragElement === "left"){
-              const visibleItems = itemsPhaseDatesOnlyRef.current;
-              const indexOfMovingItem = visibleItems?.findIndex(i => String(i.id) === String(item.id));
-              const prevItem = indexOfMovingItem > 0 ? visibleItems[indexOfMovingItem - 1] : null;
-              const prevItemDate = prevItem?.end ? prevItem?.end : prevItem?.start
-              if(prevItemDate && item.start <= prevItemDate){
-                callback(null);
-                return;
-              }
             }
           }
 
@@ -817,26 +812,51 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             tooltipEl.style.position = 'absolute';
             tooltipEl.style.left = `${event.pageX - 20}px`;
             tooltipEl.style.top = `${event.pageY - 60}px`;
-            
-            // Set tooltip content based on which part is being dragged
-            if (dragElement === "left") {
-              tooltipEl.innerHTML = startDate;
-            } else if (dragElement === "right" && endDate) {
-              tooltipEl.innerHTML = endDate;
-            } else if(dragElement){
-              tooltipEl.innerHTML = startDate;
+            if (dragElement === "right" && endDate) tooltipEl.innerHTML = endDate;
+            else tooltipEl.innerHTML = startDate;
+          }
+
+          const { snapshot, movingId } = clusterDragRef.current;
+          const setItems = timelineInstanceRef?.current?.itemSet?.items;
+
+          const shouldMoveRelated =
+            allowedToEdit &&
+            dragElement !== 'right' &&
+            snapshot &&
+            setItems &&
+            snapshot.items &&
+            snapshot.items[String(item.id)];
+
+          if (shouldMoveRelated) {
+            const orig = snapshot.items[String(item.id)];
+            const baseStart = orig?.start ? orig.start.getTime() : null;
+            const curStart = item?.start ? new Date(item.start).getTime() : baseStart;
+
+            if (baseStart != null && curStart != null) {
+              const deltaMs = curStart - baseStart;
+
+              Object.entries(snapshot.items).forEach(([idKey, snapTimes]) => {
+                if (idKey === String(item.id)) return; // current item already moved
+                const inst = setItems[idKey] ?? setItems[Number(idKey)];
+                if (!inst || !inst.setData) return;
+
+                const newData = { ...inst.data };
+                if (snapTimes.start) newData.start = new Date(snapTimes.start.getTime() + deltaMs);
+                if (snapTimes.end)   newData.end   = new Date(snapTimes.end.getTime() + deltaMs);
+
+                inst.setData(newData);
+                if (inst.repositionX) inst.repositionX();
+              });
             }
           }
-          // Call the original callback
-          if(dragElement && allowedToEdit){
+
+          if (dragElement && allowedToEdit) {
             callback(item);
-          }
-          else{
+          } else {
             tooltipEl.style.display = 'none';
             tooltipEl.innerHTML = '';
             callback(null);
           }
-
         },
         onMove(item, callback) {
           // Remove the moving tooltip
@@ -1197,19 +1217,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         // Track currently styled dragged group so we can remove styling on mouseUp
         const draggingGroupRef = { current: null };
         timeline.on('mouseDown', (props) => {
-          //props.item can be number or a string, only perform .includes on strings
-          const blockedByLabel = typeof props?.item === 'string' && (
-            props.item.includes('Hyväksyminen') || props.item.includes('Voimaantulo')
-          );
-          // Prevent cursor-moving styling for Hyväksyminen or Voimaantulo items
-          if (allowedToEdit && props?.item && !blockedByLabel) {
-            // Add global cursor when a draggable interaction begins (only if an item is targeted and editing allowed)
+          if (allowedToEdit && props?.item) {
             document.body.classList.add('cursor-moving');
-            // Also add cursor-moving-target to the parent .vis-group for scoped shadow styling
             const targetEl = props?.event?.target;
-            const groupEl = targetEl && targetEl.closest && targetEl.closest('.vis-group');
-            if(groupEl && groupEl !== draggingGroupRef.current){
-              if(draggingGroupRef.current){
+            const groupEl = targetEl?.closest?.('.vis-group');
+            if (groupEl && groupEl !== draggingGroupRef.current) {
+              if (draggingGroupRef.current) {
                 draggingGroupRef.current.classList.remove('cursor-moving-target');
               }
               groupEl.classList.add('cursor-moving-target');
@@ -1217,40 +1230,98 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             }
           }
 
+          // determine which handle/part was grabbed
           if (props.item) {
             const element = props.event.target;
-            const parent = props.event.target.parentElement
-            // Check if parent element has 'confirmed' class
-            const isConfirmed = props?.event?.target?.parentElement?.classList?.contains('confirmed') || element?.classList?.contains('confirmed') ? " confirmed" : "";
-            // Determine if this click is on a right-side board item (target or its parent)
+            const parent = element.parentElement;
+            const isConfirmed = parent?.classList?.contains('confirmed') || element?.classList?.contains('confirmed') ? " confirmed" : "";
             const isBoardRight = element.classList.contains('board-right') || parent?.classList?.contains('board-right');
-            // Ensure any 'board-right' never routes to the left handle branch
-          if (element.classList.contains('vis-item-overflow') && parent?.classList?.contains('inner-end')) {
-            dragHandleRef.current = "elements" + isConfirmed;
-          }
-          else if (!isBoardRight && (element.classList.contains('vis-drag-left') || element.classList.contains('vis-point') || parent.classList.contains('board'))) {
+
+            if (element.classList.contains('vis-item-overflow') && parent?.classList?.contains('inner-end')) {
+              dragHandleRef.current = "elements" + isConfirmed;
+            } else if (!isBoardRight && (element.classList.contains('vis-drag-left') || parent?.classList?.contains('board'))) {
               dragHandleRef.current = "left" + isConfirmed;
-            }else if(isBoardRight){
+            } else if (isBoardRight) {
               dragHandleRef.current = "board-right" + isConfirmed;
             } else if (element.classList.contains('vis-drag-right')) {
               dragHandleRef.current = "right" + isConfirmed;
-            } else {
+            } else if (element.classList.contains('vis-point') || element.closest('.vis-point')) {
+              dragHandleRef.current = "point" + isConfirmed;
+            } else if (element.classList.contains('board-date') || element.closest('.board-date')) {
+              dragHandleRef.current = "board-date" + isConfirmed;
+            }
+            else {
               dragHandleRef.current = "" + isConfirmed;
             }
           } else {
             const isConfirmed = props?.event?.target?.parentElement?.classList?.contains('confirmed') ? " confirmed" : "";
             dragHandleRef.current = "" + isConfirmed;
           }
+
+          //build a snapshot of items we will move together
+          clusterDragRef.current = { isPoint: false, clusterKey: null, snapshot: null, movingId: null };
+
+          if (!allowedToEdit || props?.item == null) return;
+
+          // find the dataset item (handles numeric/string ids)
+          const baseItem =
+            items.get(props.item) ||
+            items.get(String(props.item)) ||
+            items.get(Number(props.item)) ||
+            items.get().find(it => String(it.id) === String(props.item));
+
+          if (!baseItem || baseItem.group == null) return;
+
+          // read classes from the actual DOM item to extract the cluster token (e.g., "27_26")
+          const itemEl = props?.event?.target?.closest?.('.vis-item');
+          const classTokens = (itemEl?.className || '').split(/\s+/);
+          const clusterKey = classTokens.find(t => /^\d+_\d+$/.test(t)) || null;
+          const isPoint = !!(itemEl && (itemEl.classList.contains('vis-point') || itemEl.querySelector('.vis-point')));
+
+          // choose which items to snapshot:
+          // - if dragging a point: only items in same group that share the clusterKey and are one of
+          //   ['inner-end', 'vis-point', 'vis-dot'] (so your inner-end ranges + the point move together)
+          // - otherwise (left/move/board-left/etc): snapshot whole group (your earlier requirement)
+          const groupId = baseItem.group;
+          const allInGroup = items.get().filter(it => it.group === groupId);
+
+          const belongsToCluster = (it) => {
+            const cn = (it.className || '');
+            const hasKey = clusterKey ? cn.includes(clusterKey) : true;
+
+            // include: inner-end, vis-point, vis-dot, divider, board, board-date, deadline
+            const isRelevantType = /\b(inner-end|vis-point|vis-dot|divider|board|board-date|deadline)\b/.test(cn);
+            return hasKey && isRelevantType;
+          };
+
+          const itemsToSnapshot = (  dragHandleRef.current.startsWith('point') || dragHandleRef.current.startsWith('board-date'))
+            ? allInGroup.filter(belongsToCluster)
+            : allInGroup;
+
+          const snapshot = { groupId, items: {} };
+          itemsToSnapshot.forEach(it => {
+            snapshot.items[String(it.id)] = {
+              start: it.start ? new Date(it.start) : null,
+              end: it.end ? new Date(it.end) : null,
+              className: it.className || ''
+            };
+          });
+
+          clusterDragRef.current = {
+            isPoint,
+            clusterKey,
+            snapshot,
+            movingId: String(baseItem.id)
+          };
         });
 
         timeline.on('mouseUp', () => {
-          if(document.body.classList.contains('cursor-moving')){
-            document.body.classList.remove('cursor-moving');
-          }
-          if(draggingGroupRef.current){
+          document.body.classList.remove('cursor-moving');
+          if (draggingGroupRef.current) {
             draggingGroupRef.current.classList.remove('cursor-moving-target');
             draggingGroupRef.current = null;
           }
+          clusterDragRef.current = { isPoint: false, clusterKey: null, snapshot: null, movingId: null };
         });
 
         // Add click event listener to timeline container so clicking on the timeline items works
