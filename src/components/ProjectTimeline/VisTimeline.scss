@@ -209,6 +209,7 @@
         height: $size24;
         border-radius: 15px;
         top: 5.5px !important;
+        cursor: url('../../assets/icons/vector.svg') 8 8, move !important;
         .vis-item-overflow{
             position: relative;
             border: 2px solid $black1;
@@ -1133,6 +1134,9 @@ body.cursor-moving {
         transform: translate(-50%, -50%) scale(1);
         opacity: 1;
     }
+}
+.vis-group.cursor-moving-target .inner-end .vis-item-overflow::after {
+    background-color: #808080 !important;
 }
 
 // When applied to a group, only descendants visually highlight
