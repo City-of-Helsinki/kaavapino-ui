@@ -33,8 +33,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [selectedGroupId, setSelectedGroupId] = useState(null);
     const selectedGroupIdRef = useRef(selectedGroupId);
     const dragHandleRef = useRef("");
-    const dragStartSnapshotsRef = useRef(null); // { groupId, items: { [id]: {start: Date, end: Date|null} } }
-    const dragStartItemIdRef = useRef(null);
     // cluster/group dragging state
     const clusterDragRef = useRef({
       isPoint: false,
@@ -716,6 +714,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       return null;
     };
 
+    const isBlockedLabel = (id) =>
+    typeof id === "string" &&
+    (id.includes("Hyväksyminen") || id.includes("Voimaantulo"));
+
 
     useEffect(() => {
 
@@ -958,19 +960,31 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               let attributeToUpdate;
               const hasTitleSeparator = item.title.includes("-");
               // Determine which part was dragged and set appropriate values
-              if(dragElement === "elements"){
+              if (dragElement === "elements") {
+                // base: use the dragged item's own values
                 attributeDate = item.start;
                 attributeToUpdate = hasTitleSeparator ? item.title.split("-")[0].trim() : item.title;
-                //Days to move määräaika
+
+                // how many days the attribute moved
                 const daysMoved = getDaysMoved(attributeToUpdate, attributeDate);
-                //Get määräaika item from group
-                let groupMaaraaikaItem = findGroupMaaraaika(item.group, itemsPhaseDatesOnlyRef.current);
-                const maaraaikaToUpdate = hasTitleSeparator ? groupMaaraaikaItem.title.split("-")[0].trim() : groupMaaraaikaItem.title;
-                //Add or reduce days from määräaika
-                let maaraaikaDate = groupMaaraaikaItem.start = moment(groupMaaraaikaItem.start).add(daysMoved, 'days').toDate();
-                //Add maaraaika to be moved in end of dispatch that moves start and end date automatically in reducer logic
-                attributeDate = maaraaikaDate
-                attributeToUpdate = maaraaikaToUpdate
+
+                // try to find the group's määräaika item
+                const groupMaaraaikaItem = findGroupMaaraaika(item.group, itemsPhaseDatesOnlyRef.current);
+
+                // only if we found one, shift it and override attribute* to that määräaika
+                if (groupMaaraaikaItem) {
+                  const maaraaikaToUpdate = hasTitleSeparator
+                    ? groupMaaraaikaItem.title.split("-")[0].trim()
+                    : groupMaaraaikaItem.title;
+
+                  // move määräaika by the same number of days
+                  const maaraaikaDate = moment(groupMaaraaikaItem.start).add(daysMoved, "days").toDate();
+                  groupMaaraaikaItem.start = maaraaikaDate;
+
+                  // override what will be dispatched
+                  attributeDate = maaraaikaDate;
+                  attributeToUpdate = maaraaikaToUpdate;
+                }
               }
               else if (dragElement === "left") {
                 // If dragging the start handle
@@ -1217,6 +1231,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         // Track currently styled dragged group so we can remove styling on mouseUp
         const draggingGroupRef = { current: null };
         timeline.on('mouseDown', (props) => {
+          // Block hyväksyminen and voimaantulo dragging
+          if(isBlockedLabel(props?.item)) return;
+          
           if (allowedToEdit && props?.item) {
             document.body.classList.add('cursor-moving');
             const targetEl = props?.event?.target;
