@@ -709,14 +709,17 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const show3Months = () => {
-      // Preserve current center like showMonths, expand to ~3 months
       const range = timeline.getWindow();
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 30 * 3; // approx 3 months
       restoreNormalMonths(moment);
       timelineRef.current.classList.remove("months");
       timelineRef.current.classList.add("years");
-      timeline.setOptions({timeAxis: {scale: 'week'}});
+      timeline.setOptions({timeAxis: {scale: 'week'},      
+        format: {
+          minorLabels: { week: '[Viikko] w' }, // Week label: "Viikko 51"
+          majorLabels: { week: 'MMM YYYY' }    // Top axis: month + year
+        }});
 
       const newStart = new Date(center.getTime() - rangeDuration / 2);
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
