@@ -191,4 +191,26 @@ describe("Test ObjectUtil utility functions", () => {
             distance_to_next: 7, distance_from_previous: 7, initial_distance: 7, order: 2});
     });
 
+    test("reverseIterateArray looks up the correct value from array", () => {
+        const test_arr = [
+            { key: "oasvaihe_alkaa_pvm", value: "2024-01-01"},
+            { key: "milloin_oas_esillaolo_alkaa", value: "2024-01-03"},
+            { key: "milloin_oas_esillaolo_paattyy", value: "2024-01-04"},
+            { key: "oasvaihe_paattyy_pvm", value: "2024-01-05"},
+            { key: "ehdotusvaihe_alkaa_pvm", value: "2024-01-06"},
+            { key: "milloin_ehdotuksen_nahtavilla_alkaa_pieni", value: "2024-01-07"},
+            { key: "ehdotusvaihe_paattyy_pvm", value: "2024-01-08"},
+            { key: "tarkistettuehdotusvaihe_alkaa_pvm", value: "2024-01-09"},
+            { key: "tarkistettu_ehdotus_kylk_maaraaika", value: "2024-01-10"},
+            { key: "tarkistettuehdotusvaihe_paattyy_pvm", value: "2024-01-11" }
+        ];
+
+        expect(objectUtil.reverseIterateArray(test_arr, 3, "oas")).toBe("2024-01-04");
+        expect(objectUtil.reverseIterateArray(test_arr, 8, "ehdotus")).toBe("2024-01-07");
+        expect(objectUtil.reverseIterateArray(test_arr, 10, "tarkistettuehdotus")).toBe("2024-01-10");
+
+        expect(objectUtil.reverseIterateArray(test_arr, 2, "tarkistettuehdotus")).toBeNull(); // index too low
+        expect(objectUtil.reverseIterateArray(test_arr, 10,"nonexistent_key")).toBeNull();
+    });
+    
 });
