@@ -140,4 +140,55 @@ describe("Test ObjectUtil utility functions", () => {
             }
         }
     });
+
+    test("compareAndUpdateArrays returns updated array", () => {
+        const createSectionAttribute =(name, distanceVal=null, dateType=null) => ({
+            name: name, distance_from_previous: distanceVal,
+            distance_to_next: distanceVal,
+            initial_distance: {distance: distanceVal},
+            date_type: dateType
+        });
+
+        const test_sections = [
+            {name: "Käynnistys", sections: [
+                {"name": "1. Käynnistys", "attributes": [
+                    createSectionAttribute("projektin_kaynnistys_pvm"),
+                    createSectionAttribute("kaynnistys_paattyy_pvm"),
+            ]},
+            {name: "Periaatteet", "attributes": [
+                createSectionAttribute("periaatteetvaihe_alkaa_pvm", 5),
+                createSectionAttribute("milloin_periaatteet_lautakunnassa", 3, "työpäivät"),
+            ]},
+            {name: "OAS", "attributes": [
+                createSectionAttribute("oasvaihe_alkaa_pvm", 1),
+                createSectionAttribute("oasvaihe_paattyy_pvm", 7),
+            ]},
+        ]}];
+        const arr1 = [
+            { key: "milloin_periaatteet_lautakunnassa", value: "2023-06-01"},
+            { key: "projektin_kaynnistys_pvm", value: "2023-01-01"},
+        ];
+        const arr2 = [
+            { key: "oasvaihe_paattyy_pvm", value: "2024-06-01"}, // New date
+            { key: "projektin_kaynnistys_pvm", value: "2023-01-01"}, // No change
+            { key: "milloin_periaatteet_lautakunnassa", value: "2023-06-27"}, // Change
+            { key: "aloituskokous_suunniteltu_pvm_readonly", value: "2023-06-27"} // Special case; exclude from result
+        ];
+        const result = objectUtil.compareAndUpdateArrays(arr1, arr2, test_sections);
+
+        // Result should be ordered according to sections, with distance & date_type values copied
+        // the values of arr1 are updated according to values in arr2
+        // order field is the original order of arr1 items
+        expect(result.length).toBe(3);
+        expect(result[0]).toEqual({ 
+            key: "projektin_kaynnistys_pvm", value: "2023-01-01", date_type: "arkipäivät",
+            distance_to_next: null, distance_from_previous: null, initial_distance: null, order: 1});
+        expect(result[1]).toEqual({ 
+            key: "milloin_periaatteet_lautakunnassa", value: "2023-06-27", date_type: "työpäivät",
+            distance_to_next: 3, distance_from_previous: 3, initial_distance: 3, order: 0});
+        expect(result[2]).toEqual({ 
+            key: "oasvaihe_paattyy_pvm", value: "2024-06-01", date_type: "arkipäivät",
+            distance_to_next: 7, distance_from_previous: 7, initial_distance: 7, order: 2});
+    });
+
 });
