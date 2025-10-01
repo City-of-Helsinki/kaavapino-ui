@@ -676,7 +676,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       restoreNormalMonths(moment);
       timelineRef.current.classList.remove("years")
       timelineRef.current.classList.add("months")
-      timeline.setOptions({timeAxis: {scale: 'weekday'}});
+      timeline.setOptions({locale: 'fi',moment: (date) => moment(date).locale('fi'),timeAxis: {scale: 'weekday'}});
       //Keep view centered on where user is
       const newStart = new Date(center.getTime() - rangeDuration / 2);
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
@@ -693,7 +693,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       restoreNormalMonths(moment);
       timelineRef.current.classList.remove("months");
       timelineRef.current.classList.add("years");
-      timeline.setOptions({timeAxis: {scale: 'week'}});
+      timeline.setOptions({locale: 'fi',moment: (date) => moment(date).locale('fi'),timeAxis: {scale: 'week'}});
 
       const newStart = new Date(center.getTime() - rangeDuration / 2);
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
@@ -703,14 +703,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const show6Months = () => {
-      // Preserve current center like showMonths, expand to ~6 months
       const range = timeline.getWindow();
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 30 * 6; // approx 6 months
       restoreNormalMonths(moment);
+      restoreStandardLabelFormat();
       timelineRef.current.classList.remove("months");
       timelineRef.current.classList.add("years");
-      timeline.setOptions({timeAxis: {scale: 'month'}});
+      timeline.setOptions({locale: 'fi',moment: (date) => moment(date).locale('fi'),timeAxis: {scale: 'month'}});
 
       const newStart = new Date(center.getTime() - rangeDuration / 2);
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
@@ -724,9 +724,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 365; // about 1 year
       restoreNormalMonths(moment);
+      restoreStandardLabelFormat();
       timelineRef.current.classList.remove("months")
       timelineRef.current.classList.add("years")
-      timeline.setOptions({timeAxis: {scale: 'month'}});
+      timeline.setOptions({locale: 'fi',moment: (date) => moment(date).locale('fi'),timeAxis: {scale: 'month'}});
       //Keep view centered on where user is
       const newStart = new Date(center.getTime() - rangeDuration / 2);
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
@@ -736,35 +737,30 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const show2Years = () => {
-      // center on current window like your original code
+      // 2-year view with quarter labels
       const range = timeline.getWindow();
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 365 * 2; // ~2 years
-
-      // set CSS classes
+      restoreNormalMonths(moment); // ensure normal month names restored
       timelineRef.current.classList.remove("months");
       timelineRef.current.classList.add("years");
-
-      // Use scoped quarter locale ONLY here
-      const qLocale = ensureQuarterLocale(moment);
-
+      // Use moment's quarter token Q; '[Q]Q' renders e.g. Q1, Q2
       timeline.setOptions({
-        moment,               // make sure vis-timeline uses *your* moment
-        locale: qLocale,      // switch to quarter labels for this view only
-        timeAxis: { scale: "month", step: 3 },
-        format: {
-          // Strings, not functions -> avoids format2.replace error
-          minorLabels: { month: "MMM" }, // Q1/Q2/Q3/Q4 (from locale)
-          majorLabels: { year: "YYYY" }  // 2024, 2025, ...
-        },
-        showCurrentTime: false,
+      locale: 'fi',
+      moment: (date) => moment(date).locale('fi'),
+      timeAxis: { scale: 'month', step: 3 },
+      format: {
+        minorLabels: { month: '[Q]Q' },
+        majorLabels: { year: 'YYYY' }
+      }
       });
 
       const newStart = new Date(center.getTime() - rangeDuration / 2);
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
       timeline.setWindow(newStart, newEnd);
-
-      setCurrentFormat("show2Years");
+      // Ensure recalculation
+      timeline.redraw();
+      setCurrentFormat('show2Years');
       highlightJanuaryFirst();
     };
 
@@ -773,44 +769,40 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       let currentYear = now.getFullYear();
       let startOf5Years = new Date(currentYear, now.getMonth(), 1);
       let endOf5Years = new Date(currentYear + 5, now.getMonth(), 0);
-      timeline.setOptions({timeAxis: {scale: 'month'}});
+      restoreStandardLabelFormat();
+      timeline.setOptions({locale: 'fi',moment: (date) => moment(date).locale('fi'),timeAxis: {scale: 'month'}});
       timeline.setWindow(startOf5Years, endOf5Years);
     }
 
-    const ensureQuarterLocale = (moment) => {
-      const base = moment.locale();
-      const qLocale = `quarter-${base}`;
-      const has = typeof moment.locales === 'function'
-        ? moment.locales().includes(qLocale)
-        : false;
-
-      if (!has) {
-        moment.defineLocale(qLocale, {
-          parentLocale: base,
-          monthsShort: ['Q1','Q1','Q1','Q2','Q2','Q2','Q3','Q3','Q3','Q4','Q4','Q4'],
-          months:      ['Q1','Q1','Q1','Q2','Q2','Q2','Q3','Q3','Q3','Q4','Q4','Q4'],
-        });
-      }
-      return qLocale;
-    }
 
     const restoreNormalMonths = (moment) => {
-      const loc = moment.locale();
+      const loc = moment.locale('fi');
       const ld = moment.localeData(loc);
       const current = ld.monthsShort();
 
       // If months are Q1/Q2/... put real month names back using Intl
       if (current && current[0] === 'Q1') {
-        // Use the browser/user locale to rebuild month names
-        const lang = navigator.language || 'en';
+        const lang = 'fi';
         const longFmt  = new Intl.DateTimeFormat(lang,  { month: 'long'  });
         const shortFmt = new Intl.DateTimeFormat(lang,  { month: 'short' });
-
         const months = Array.from({length:12}, (_,i) => longFmt .format(new Date(2020, i, 1)));
         const monthsShort = Array.from({length:12}, (_,i) => shortFmt.format(new Date(2020, i, 1)));
-
         moment.updateLocale(loc, { months, monthsShort });
       }
+    }
+
+    // Reset quarter formatting when leaving 2-year quarter view
+    const restoreStandardLabelFormat = () => {
+      if (!timeline) return;
+      timeline.setOptions({
+        locale: 'fi',
+        moment: (date) => moment(date).locale('fi'),
+        format: {
+          minorLabels: { month: 'MMM' },
+          majorLabels: { year: 'YYYY' }
+        }
+
+      });
     }
 
     // attach events to the navigation buttons
@@ -927,6 +919,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     useEffect(() => {
 
       const options = {
+        // Provide the localized moment instance so vis-timeline uses Finnish labels
+        moment: (date) => moment(date).locale('fi'),
         locales: {
           fi: {
             current: "Nykyinen",
