@@ -17,13 +17,13 @@ import PropTypes from 'prop-types';
 import { getVisibilityBoolName, getVisBoolsByPhaseName, isDeadlineConfirmed } from '../../utils/projectVisibilityUtils';
 import { useTimelineTooltip } from '../../hooks/useTimelineTooltip';
 import './VisTimeline.scss'
-Moment().locale('fi');
+Moment.locale('fi');
 
 const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, phaseList, currentPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes, showTimetableForm}, ref) => {
     const dispatch = useDispatch();
     const moment = extendMoment(Moment);
 
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const timelineRef = useRef(null);
     const observerRef = useRef(null); // Store the MutationObserver
     const timelineInstanceRef = useRef(null);
@@ -49,6 +49,29 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     useImperativeHandle(ref, () => ({
       getTimelineInstance: () => timelineInstanceRef.current,
     }));
+
+    // Locale enforcement helper
+    const ensureFinnishLocale = () => {
+      // Always make sure global locale is fi
+      if (Moment.locale() !== 'fi') {
+        Moment.locale('fi');
+      }
+      const ld = Moment.localeData('fi');
+      // Patch if missing OR still lowercase (Moment fi default uses lowercase) OR not capitalized as requested
+      const needsPatch = !ld ||
+        !ld.monthsShort ||
+        (ld.monthsShort() && (ld.monthsShort()[0] !== 'Tammi' || ld.monthsShort()[4] === 'touko')) ||
+        (ld.weekdays && ld.weekdays()[0] !== 'Sunnuntai');
+      if (needsPatch) {
+        Moment.updateLocale('fi', {
+          months: ['Tammikuu','Helmikuu','Maaliskuu','Huhtikuu','Toukokuu','Kesäkuu','Heinäkuu','Elokuu','Syyskuu','Lokakuu','Marraskuu','Joulukuu'],
+          monthsShort: ['Tammi','Helmi','Maalis','Huhti','Touko','Kesä','Heinä','Elo','Syys','Loka','Marras','Joulu'],
+          weekdays: ['Sunnuntai','Maanantai','Tiistai','Keskiviikko','Torstai','Perjantai','Lauantai'],
+          weekdaysShort: ['Su','Ma','Ti','Ke','To','Pe','La'],
+          weekdaysMin: ['Su','Ma','Ti','Ke','To','Pe','La'],
+        });
+      }
+    };
 
 
     const groupDragged = (id) => {
@@ -676,7 +699,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       restoreNormalMonths(moment);
       timelineRef.current.classList.remove("years")
       timelineRef.current.classList.add("months")
-      timeline.setOptions({locale: 'fi',moment: (date) => moment(date).locale('fi'),timeAxis: {scale: 'weekday'}});
+      timeline.setOptions({timeAxis: {scale: 'weekday'}});
       //Keep view centered on where user is
       const newStart = new Date(center.getTime() - rangeDuration / 2);
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
@@ -693,7 +716,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       restoreNormalMonths(moment);
       timelineRef.current.classList.remove("months");
       timelineRef.current.classList.add("years");
-      timeline.setOptions({locale: 'fi',moment: (date) => moment(date).locale('fi'),timeAxis: {scale: 'week'}});
+      timeline.setOptions({timeAxis: {scale: 'week'}});
 
       const newStart = new Date(center.getTime() - rangeDuration / 2);
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
@@ -710,7 +733,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       restoreStandardLabelFormat();
       timelineRef.current.classList.remove("months");
       timelineRef.current.classList.add("years");
-      timeline.setOptions({locale: 'fi',moment: (date) => moment(date).locale('fi'),timeAxis: {scale: 'month'}});
+      timeline.setOptions({timeAxis: {scale: 'month'}});
 
       const newStart = new Date(center.getTime() - rangeDuration / 2);
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
@@ -727,7 +750,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       restoreStandardLabelFormat();
       timelineRef.current.classList.remove("months")
       timelineRef.current.classList.add("years")
-      timeline.setOptions({locale: 'fi',moment: (date) => moment(date).locale('fi'),timeAxis: {scale: 'month'}});
+      timeline.setOptions({timeAxis: {scale: 'month'}});
       //Keep view centered on where user is
       const newStart = new Date(center.getTime() - rangeDuration / 2);
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
@@ -746,8 +769,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       timelineRef.current.classList.add("years");
       // Use moment's quarter token Q; '[Q]Q' renders e.g. Q1, Q2
       timeline.setOptions({
-      locale: 'fi',
-      moment: (date) => moment(date).locale('fi'),
       timeAxis: { scale: 'month', step: 3 },
       format: {
         minorLabels: { month: '[Q]Q' },
@@ -770,7 +791,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       let startOf5Years = new Date(currentYear, now.getMonth(), 1);
       let endOf5Years = new Date(currentYear + 5, now.getMonth(), 0);
       restoreStandardLabelFormat();
-      timeline.setOptions({locale: 'fi',moment: (date) => moment(date).locale('fi'),timeAxis: {scale: 'month'}});
+      timeline.setOptions({timeAxis: {scale: 'month'}});
       timeline.setWindow(startOf5Years, endOf5Years);
     }
 
@@ -795,8 +816,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const restoreStandardLabelFormat = () => {
       if (!timeline) return;
       timeline.setOptions({
-        locale: 'fi',
-        moment: (date) => moment(date).locale('fi'),
         format: {
           minorLabels: { month: 'MMM' },
           majorLabels: { year: 'YYYY' }
@@ -917,10 +936,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     };
 
     useEffect(() => {
+      // Ensure capitalized Finnish locale BEFORE creating timeline so initial labels are correct
+      ensureFinnishLocale();
 
       const options = {
-        // Provide the localized moment instance so vis-timeline uses Finnish labels
-        moment: (date) => moment(date).locale('fi'),
         locales: {
           fi: {
             current: "Nykyinen",
