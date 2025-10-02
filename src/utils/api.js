@@ -14,8 +14,8 @@ class Api {
         (url, key, i) =>
           `${url}${
             i !== 0
-              ? `&${key}=${queryParameters[key]}`
-              : `?${key}=${queryParameters[key]}`
+              ? `&${key}=${encodeURIComponent(queryParameters[key])}`
+              : `?${key}=${encodeURIComponent(queryParameters[key])}`
           }`,
         `${this.apiUrl}${opt}`
       )

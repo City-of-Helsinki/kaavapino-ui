@@ -141,7 +141,7 @@ const TimelineModal = ({ open,group,content,deadlinegroup,deadlines, onClose,vis
       let miniumObject
 
       const phaseObject = lautakunta.length != 0 && lautakunta.length >= esillaolo.length || lautakunta.length != 0 && lautakunta.length >= nahtavillaolo.length ? lautakunta : esillaolo.length > 0 ? esillaolo : nahtavillaolo
-      latestGroup = objectUtil.getHighestNumberedObject(phaseObject,groups);
+      latestGroup = objectUtil.getHighestNumberedObject(phaseObject);
       latestObject = attr[latestGroup?.deadlinegroup]
       if(latestObject){
         miniumObject = objectUtil.getMinObject(latestObject)
