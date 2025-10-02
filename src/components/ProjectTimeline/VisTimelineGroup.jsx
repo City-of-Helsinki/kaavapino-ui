@@ -17,13 +17,13 @@ import PropTypes from 'prop-types';
 import { getVisibilityBoolName, getVisBoolsByPhaseName, isDeadlineConfirmed } from '../../utils/projectVisibilityUtils';
 import { useTimelineTooltip } from '../../hooks/useTimelineTooltip';
 import './VisTimeline.scss'
-Moment().locale('fi');
+Moment.locale('fi');
 
 const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, phaseList, currentPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes, showTimetableForm}, ref) => {
     const dispatch = useDispatch();
     const moment = extendMoment(Moment);
 
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const timelineRef = useRef(null);
     const observerRef = useRef(null); // Store the MutationObserver
     const timelineInstanceRef = useRef(null);
@@ -49,6 +49,29 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     useImperativeHandle(ref, () => ({
       getTimelineInstance: () => timelineInstanceRef.current,
     }));
+
+    // Locale enforcement helper
+    const ensureFinnishLocale = () => {
+      // Always make sure global locale is fi
+      if (Moment.locale() !== 'fi') {
+        Moment.locale('fi');
+      }
+      const ld = Moment.localeData('fi');
+      // Patch if missing OR still lowercase (Moment fi default uses lowercase) OR not capitalized as requested
+      const needsPatch = !ld ||
+        !ld.monthsShort ||
+        (ld.monthsShort() && (ld.monthsShort()[0] !== 'Tammi' || ld.monthsShort()[4] === 'touko')) ||
+        (ld.weekdays && ld.weekdays()[0] !== 'Sunnuntai');
+      if (needsPatch) {
+        Moment.updateLocale('fi', {
+          months: ['Tammikuu','Helmikuu','Maaliskuu','Huhtikuu','Toukokuu','Kesäkuu','Heinäkuu','Elokuu','Syyskuu','Lokakuu','Marraskuu','Joulukuu'],
+          monthsShort: ['Tammi','Helmi','Maalis','Huhti','Touko','Kesä','Heinä','Elo','Syys','Loka','Marras','Joulu'],
+          weekdays: ['Sunnuntai','Maanantai','Tiistai','Keskiviikko','Torstai','Perjantai','Lauantai'],
+          weekdaysShort: ['Su','Ma','Ti','Ke','To','Pe','La'],
+          weekdaysMin: ['Su','Ma','Ti','Ke','To','Pe','La'],
+        });
+      }
+    };
 
 
     const groupDragged = (id) => {
@@ -686,14 +709,17 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const show3Months = () => {
-      // Preserve current center like showMonths, expand to ~3 months
       const range = timeline.getWindow();
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 30 * 3; // approx 3 months
       restoreNormalMonths(moment);
       timelineRef.current.classList.remove("months");
       timelineRef.current.classList.add("years");
-      timeline.setOptions({timeAxis: {scale: 'week'}});
+      timeline.setOptions({timeAxis: {scale: 'week'},      
+        format: {
+          minorLabels: { week: '[Viikko] w' }, // Week label: "Viikko 51"
+          majorLabels: { week: 'MMM YYYY' }    // Top axis: month + year
+        }});
 
       const newStart = new Date(center.getTime() - rangeDuration / 2);
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
@@ -703,11 +729,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const show6Months = () => {
-      // Preserve current center like showMonths, expand to ~6 months
       const range = timeline.getWindow();
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 30 * 6; // approx 6 months
       restoreNormalMonths(moment);
+      restoreStandardLabelFormat();
       timelineRef.current.classList.remove("months");
       timelineRef.current.classList.add("years");
       timeline.setOptions({timeAxis: {scale: 'month'}});
@@ -724,6 +750,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 365; // about 1 year
       restoreNormalMonths(moment);
+      restoreStandardLabelFormat();
       timelineRef.current.classList.remove("months")
       timelineRef.current.classList.add("years")
       timeline.setOptions({timeAxis: {scale: 'month'}});
@@ -736,35 +763,28 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const show2Years = () => {
-      // center on current window like your original code
+      // 2-year view with quarter labels
       const range = timeline.getWindow();
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 365 * 2; // ~2 years
-
-      // set CSS classes
+      restoreNormalMonths(moment); // ensure normal month names restored
       timelineRef.current.classList.remove("months");
       timelineRef.current.classList.add("years");
-
-      // Use scoped quarter locale ONLY here
-      const qLocale = ensureQuarterLocale(moment);
-
+      // Use moment's quarter token Q; '[Q]Q' renders e.g. Q1, Q2
       timeline.setOptions({
-        moment,               // make sure vis-timeline uses *your* moment
-        locale: qLocale,      // switch to quarter labels for this view only
-        timeAxis: { scale: "month", step: 3 },
-        format: {
-          // Strings, not functions -> avoids format2.replace error
-          minorLabels: { month: "MMM" }, // Q1/Q2/Q3/Q4 (from locale)
-          majorLabels: { year: "YYYY" }  // 2024, 2025, ...
-        },
-        showCurrentTime: false,
+      timeAxis: { scale: 'month', step: 3 },
+      format: {
+        minorLabels: { month: '[Q]Q' },
+        majorLabels: { year: 'YYYY' }
+      }
       });
 
       const newStart = new Date(center.getTime() - rangeDuration / 2);
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
       timeline.setWindow(newStart, newEnd);
-
-      setCurrentFormat("show2Years");
+      // Ensure recalculation
+      timeline.redraw();
+      setCurrentFormat('show2Years');
       highlightJanuaryFirst();
     };
 
@@ -773,44 +793,38 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       let currentYear = now.getFullYear();
       let startOf5Years = new Date(currentYear, now.getMonth(), 1);
       let endOf5Years = new Date(currentYear + 5, now.getMonth(), 0);
+      restoreStandardLabelFormat();
       timeline.setOptions({timeAxis: {scale: 'month'}});
       timeline.setWindow(startOf5Years, endOf5Years);
     }
 
-    const ensureQuarterLocale = (moment) => {
-      const base = moment.locale();
-      const qLocale = `quarter-${base}`;
-      const has = typeof moment.locales === 'function'
-        ? moment.locales().includes(qLocale)
-        : false;
-
-      if (!has) {
-        moment.defineLocale(qLocale, {
-          parentLocale: base,
-          monthsShort: ['Q1','Q1','Q1','Q2','Q2','Q2','Q3','Q3','Q3','Q4','Q4','Q4'],
-          months:      ['Q1','Q1','Q1','Q2','Q2','Q2','Q3','Q3','Q3','Q4','Q4','Q4'],
-        });
-      }
-      return qLocale;
-    }
 
     const restoreNormalMonths = (moment) => {
-      const loc = moment.locale();
+      const loc = moment.locale('fi');
       const ld = moment.localeData(loc);
       const current = ld.monthsShort();
 
       // If months are Q1/Q2/... put real month names back using Intl
       if (current && current[0] === 'Q1') {
-        // Use the browser/user locale to rebuild month names
-        const lang = navigator.language || 'en';
+        const lang = 'fi';
         const longFmt  = new Intl.DateTimeFormat(lang,  { month: 'long'  });
         const shortFmt = new Intl.DateTimeFormat(lang,  { month: 'short' });
-
         const months = Array.from({length:12}, (_,i) => longFmt .format(new Date(2020, i, 1)));
         const monthsShort = Array.from({length:12}, (_,i) => shortFmt.format(new Date(2020, i, 1)));
-
         moment.updateLocale(loc, { months, monthsShort });
       }
+    }
+
+    // Reset quarter formatting when leaving 2-year quarter view
+    const restoreStandardLabelFormat = () => {
+      if (!timeline) return;
+      timeline.setOptions({
+        format: {
+          minorLabels: { month: 'MMM' },
+          majorLabels: { year: 'YYYY' }
+        }
+
+      });
     }
 
     // attach events to the navigation buttons
@@ -925,6 +939,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     };
 
     useEffect(() => {
+      // Ensure capitalized Finnish locale BEFORE creating timeline so initial labels are correct
+      ensureFinnishLocale();
 
       const options = {
         locales: {
