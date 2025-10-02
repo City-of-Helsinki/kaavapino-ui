@@ -149,6 +149,18 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
       endsText = cardValues[14] ? t(cardValues[14]) : ""
     }
 
+    const startStatus = cardValues[4]
+      ? t('custom-card.confirmed')
+      : cardValues[2]
+        ? t('custom-card.modified')
+        : t('custom-card.evaluation');
+
+    const endStatus = cardValues[4]
+      ? t('custom-card.confirmed')
+      : cardValues[3]
+        ? t('custom-card.modified')
+        : t('custom-card.evaluation');
+
     fields = <>  
       {cardValues[0] &&
         <div className='custom-card-info-container'>
@@ -156,10 +168,7 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
           <div className='custom-card-date'>
             <span className='date'>{moment(cardValues[0]).format('DD.MM.YYYY')}</span>
             <span className='divider'>-</span>
-            {/* Fix: Use cardValues[4] for both start and end date status */}
-            <span className='status'>
-              {cardValues[4] ? t('custom-card.confirmed') : (cardValues[2] ? t('custom-card.modified') : t('custom-card.evaluation'))}
-            </span>
+            <span className='status'>{startStatus}</span>
           </div>
         </div>
       }
@@ -169,10 +178,7 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
           <div className='custom-card-date'>
             <span className='date'>{moment(cardValues[1]).format('DD.MM.YYYY')}</span>
             <span className='divider'>-</span>
-            {/* Fix: Use cardValues[4] for both start and end date status */}
-            <span className='status'>
-              {cardValues[4] ? t('custom-card.confirmed') : (cardValues[3] ? t('custom-card.modified') : t('custom-card.evaluation'))}
-            </span>
+            <span className='status'>{endStatus}</span>
           </div>
         </div>
       }
