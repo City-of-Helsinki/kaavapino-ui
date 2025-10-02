@@ -209,14 +209,6 @@ const getSuggestion = (data,deadlines) => {
     startModified = userHasModified(attributeStartText,deadlines,"Ehdotus")
     endModified = userHasModified("milloin_ehdotuksen_nahtavilla_paattyy",deadlines,"Ehdotus")
   }
-  else {
-    hide = isConfirmed(confirmStartAttr)
-    startDate = startAttribute
-    endDate = data?.milloin_ehdotuksen_nahtavilla_paattyy
-    const attributeStartText = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso ? "milloin_ehdotuksen_nahtavilla_alkaa_iso" : "milloin_ehdotuksen_nahtavilla_alkaa_pieni"
-    startModified = userHasModified(attributeStartText,deadlines,"Ehdotus")
-    endModified = userHasModified("milloin_ehdotuksen_nahtavilla_paattyy",deadlines,"Ehdotus")
-  }
 
   return [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText,boardModified,starText,endText]
 }
