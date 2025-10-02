@@ -1190,3 +1190,11 @@
     border-left:$size1 solid $border-gray4 !important;
     opacity: 0.8;
 }
+
+// Week labels being cut off by vis to 2 separate elements when month changes but this overrides and show them properly
+.vis-text.vis-minor[class*="vis-week"]:not(:empty) {
+    display: inline-block;
+    white-space: nowrap;
+    overflow: visible;
+    z-index: 2;
+}
