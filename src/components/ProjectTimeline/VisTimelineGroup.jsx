@@ -801,8 +801,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           const dragElementRaw = dragHandleRef.current || '';
           const dragElement = dragElementRaw.split(' ')[0];
           const event = window.event;
-
-          if (dragElement && allowedToEdit) {
+          //Item is not allowed to be dragged if it is already confirmed
+          if(item?.className?.includes("confirmed")){
+              callback(null);
+              return;
+          }
+          else if (dragElement && allowedToEdit) {
             if (item.start && item.end && item.end <= item.start) {
               callback(null);
               return;
@@ -1254,7 +1258,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             const isConfirmed = parent?.classList?.contains('confirmed') || element?.classList?.contains('confirmed') ? " confirmed" : "";
             const isBoardRight = element.classList.contains('board-right') || parent?.classList?.contains('board-right');
 
-            if (element.classList.contains('vis-item-overflow') && parent?.classList?.contains('inner-end')) {
+            // Allow center dragging for inner-end and kaynnistys_1 by clicking anywhere inside overflow/content (excluding explicit drag handles)
+            const compositeContainer = element.closest && element.closest('.inner-end, .kaynnistys_1');
+            const insideOverflow = element.classList.contains('vis-item-overflow') || (!!element.closest && element.closest('.vis-item-overflow'));
+            const isDragHandle = element.classList.contains('vis-drag-left') || element.classList.contains('vis-drag-right');
+            if (compositeContainer && insideOverflow && !isDragHandle) {
               dragHandleRef.current = "elements" + isConfirmed;
             } else if (!isBoardRight && (element.classList.contains('vis-drag-left') || parent?.classList?.contains('board'))) {
               dragHandleRef.current = "left" + isConfirmed;
@@ -1306,8 +1314,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             const cn = (it.className || '');
             const hasKey = clusterKey ? cn.includes(clusterKey) : true;
 
-            // include: inner-end, vis-point, vis-dot, divider, board, board-date, deadline
-            const isRelevantType = /\b(inner-end|vis-point|vis-dot|divider|board|board-date|deadline)\b/.test(cn);
+            // include: inner-end, kaynnistys_1 (treated like inner-end), vis-point, vis-dot, divider, board, board-date, deadline
+            const isRelevantType = /\b(inner-end|kaynnistys_1|vis-point|vis-dot|divider|board|board-date|deadline)\b/.test(cn);
             return hasKey && isRelevantType;
           };
 
