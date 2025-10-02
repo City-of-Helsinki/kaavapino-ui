@@ -150,22 +150,32 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
     }
 
     fields = <>  
-    {cardValues[0] ?
-    <div className='custom-card-info-container'>
-      <div className='custom-card-info'>{startsText}</div>
-      <div className='custom-card-date'><span className='date'>{moment(cardValues[0]).format('DD.MM.YYYY')}</span><span className='divider'>-</span><span className='status'> {!cardValues[4] ? cardValues[2] ? t('custom-card.modified') : t('custom-card.evaluation') : t('custom-card.confirmed')}</span></div>
-    </div>
-    :
-    ""
-    }
-    {cardValues[1] ?
-    <div className='custom-card-info-container'>
-      <div className='custom-card-info'>{endsText}</div>
-      <div className='custom-card-date'><span className='date'>{moment(cardValues[1]).format('DD.MM.YYYY')}</span><span className='divider'>-</span><span className='status'> {!cardValues[4] ? cardValues[3] ? t('custom-card.modified') : t('custom-card.evaluation') : t('custom-card.confirmed')}</span></div>
-    </div>
-    :
-    ""
-    }
+      {cardValues[0] &&
+        <div className='custom-card-info-container'>
+          <div className='custom-card-info'>{startsText}</div>
+          <div className='custom-card-date'>
+            <span className='date'>{moment(cardValues[0]).format('DD.MM.YYYY')}</span>
+            <span className='divider'>-</span>
+            {/* Fix: Use cardValues[4] for both start and end date status */}
+            <span className='status'>
+              {cardValues[4] ? t('custom-card.confirmed') : (cardValues[2] ? t('custom-card.modified') : t('custom-card.evaluation'))}
+            </span>
+          </div>
+        </div>
+      }
+      {cardValues[1] &&
+        <div className='custom-card-info-container'>
+          <div className='custom-card-info'>{endsText}</div>
+          <div className='custom-card-date'>
+            <span className='date'>{moment(cardValues[1]).format('DD.MM.YYYY')}</span>
+            <span className='divider'>-</span>
+            {/* Fix: Use cardValues[4] for both start and end date status */}
+            <span className='status'>
+              {cardValues[4] ? t('custom-card.confirmed') : (cardValues[3] ? t('custom-card.modified') : t('custom-card.evaluation'))}
+            </span>
+          </div>
+        </div>
+      }
     </>
 
     //XL princibles and draft phases have 2 acceptance checkboxes others only one. Selecting all acceptance checkboxes in current phase disables edit button.
