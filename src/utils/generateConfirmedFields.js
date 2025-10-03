@@ -14,6 +14,14 @@ function getRegularFields(phase, group, finalSuffix, attributeData) {
   return fields.filter(key => key in attributeData);
 }
 
+function addMielipiteetField(confirmedFields, seenPhases, phase, attributeData) {
+  const mielipiteet = `viimeistaan_mielipiteet_${phase}`;
+  if (!seenPhases.has(phase) && mielipiteet in attributeData) {
+    confirmedFields.push(mielipiteet);
+    seenPhases.add(phase);
+  }
+}
+
 export function generateConfirmedFields(attributeData, confirmationAttributeNames, phaseNames) {
   const filteredConfirmationAttributeNames = confirmationAttributeNames.filter(
     key => key.includes('_alkaa') || key.includes('_lautakunnassa')
@@ -41,16 +49,12 @@ export function generateConfirmedFields(attributeData, confirmationAttributeName
 
     if (parts.length === 1) {
       confirmedFields.push(...getSpecialCaseFields(phase, base, finalSuffix));
+      addMielipiteetField(confirmedFields, seenPhases, phase, attributeData);
       continue;
     }
 
     confirmedFields.push(...getRegularFields(phase, group, finalSuffix, attributeData));
-
-    const mielipiteet = `viimeistaan_mielipiteet_${phase}`;
-    if (!seenPhases.has(phase) && mielipiteet in attributeData) {
-      confirmedFields.push(mielipiteet);
-      seenPhases.add(phase);
-    }
+    addMielipiteetField(confirmedFields, seenPhases, phase, attributeData);
   }
 
   return [...new Set(confirmedFields)];
