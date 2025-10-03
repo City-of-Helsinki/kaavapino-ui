@@ -1,5 +1,4 @@
 export function generateConfirmedFields(attributeData, confirmationAttributeNames, phaseNames) {
-  // Filter out deprecated vahvista_x_paattyy attributes before processing
   const filteredConfirmationAttributeNames = confirmationAttributeNames.filter(
     key => key.includes('_alkaa') || key.includes('_lautakunnassa')
   );
@@ -7,12 +6,12 @@ export function generateConfirmedFields(attributeData, confirmationAttributeName
   const confirmedFields = [];
   const seenPhases = new Set();
 
-  filteredConfirmationAttributeNames.forEach((confirmationKey) => {
-    if (!attributeData[confirmationKey]) return;
+  for (const confirmationKey of filteredConfirmationAttributeNames) {
+    if (!attributeData[confirmationKey]) continue;
 
     const rawKey = confirmationKey.replace(/^vahvista_/, '');
     const phase = phaseNames.find((p) => rawKey === p || rawKey.startsWith(p + '_'));
-    if (!phase) return;
+    if (!phase) continue;
 
     const suffixMatch = rawKey.match(/(_\d+)$/);
     const suffix = suffixMatch ? suffixMatch[1] : '';
@@ -31,7 +30,7 @@ export function generateConfirmedFields(attributeData, confirmationAttributeName
       const field2 = `${phase}_lautakunta_aineiston_maaraaika${finalSuffix}`;
       confirmedFields.push(field1);
       confirmedFields.push(field2);
-      return;
+      continue;
     }
 
     // Regular case
@@ -40,17 +39,17 @@ export function generateConfirmedFields(attributeData, confirmationAttributeName
     const paattyy = `milloin_${phase}_${group}_paattyy${finalSuffix}`;
     const mielipiteet = `viimeistaan_mielipiteet_${phase}`;
 
-    [aineisto, alkaa, paattyy].forEach((key) => {
+    for (const key of [aineisto, alkaa, paattyy]) {
       if (key in attributeData) {
         confirmedFields.push(key);
       }
-    });
+    }
 
     if (!seenPhases.has(phase) && mielipiteet in attributeData) {
       confirmedFields.push(mielipiteet);
       seenPhases.add(phase);
     }
-  });
+  }
 
   return [...new Set(confirmedFields)];
 }
