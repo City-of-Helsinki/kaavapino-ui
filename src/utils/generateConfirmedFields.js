@@ -1,8 +1,13 @@
 export function generateConfirmedFields(attributeData, confirmationAttributeNames, phaseNames) {
+  // Filter out deprecated vahvista_x_paattyy attributes before processing
+  const filteredConfirmationAttributeNames = confirmationAttributeNames.filter(
+    key => key.includes('_alkaa') || key.includes('_lautakunnassa')
+  );
+
   const confirmedFields = [];
   const seenPhases = new Set();
 
-  confirmationAttributeNames.forEach((confirmationKey) => {
+  filteredConfirmationAttributeNames.forEach((confirmationKey) => {
     if (!attributeData[confirmationKey]) return;
 
     const rawKey = confirmationKey.replace(/^vahvista_/, '');
@@ -24,10 +29,8 @@ export function generateConfirmedFields(attributeData, confirmationAttributeName
       // Special case like vahvista_periaatteet_lautakunnassa
       const field1 = `milloin_${phase}_${base}${finalSuffix}`;
       const field2 = `${phase}_lautakunta_aineiston_maaraaika${finalSuffix}`;
-
       confirmedFields.push(field1);
       confirmedFields.push(field2);
-
       return;
     }
 

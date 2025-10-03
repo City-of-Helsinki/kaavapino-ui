@@ -756,8 +756,8 @@ function* validateProjectTimetable() {
     const phaseNames = [
       'periaatteet',
       'oas',
-      'luonnos',
-      'ehdotus',
+      'kaavaluonnos',
+      'kaavaehdotus',
       'tarkistettu_ehdotus'
     ];
     //Find confirmed fields from attribute_data so backend knows not to edit them
@@ -853,8 +853,8 @@ function* saveProjectTimetable(action,retryCount = 0) {
     const phaseNames = [
       'periaatteet',
       'oas',
-      'luonnos',
-      'ehdotus',
+      'kaavaluonnos',
+      'kaavaehdotus',
       'tarkistettu_ehdotus'
     ];
     
