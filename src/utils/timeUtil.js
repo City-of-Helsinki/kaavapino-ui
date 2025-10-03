@@ -748,6 +748,16 @@ const compareAndUpdateDates = (data) => {
     return isNaN(d) ? null : d.toISOString().slice(0, 10);
   };
 
+  // Return latest (max) valid date among baseKey and its *_2..*_4 variants
+  const getLatestDateValue = (baseKey) => {
+    const candidates = [baseKey, `${baseKey}_2`, `${baseKey}_3`, `${baseKey}_4`]
+      .map(k => validateAndNormalizeDate(data[k]))
+      .filter(Boolean);
+    if (!candidates.length) return null;
+    // pick max chronologically
+    return candidates.reduce((a, b) => (b > a ? b : a));
+  };
+
   lausuntoPairs.forEach(([dst, src]) => {
     const srcDate = validateAndNormalizeDate(data[src]);
     if (srcDate && data[dst] !== srcDate) {
@@ -768,10 +778,11 @@ const compareAndUpdateDates = (data) => {
   };
 
   const phasePairs = buildPhasePairs(data["kaavaprosessin_kokoluokka"]);
-  phasePairs.forEach(([dst, src]) => {
-    const srcDate = validateAndNormalizeDate(data[src]);
-    if (srcDate && data[dst] !== srcDate) {
-      data[dst] = srcDate;
+  phasePairs.forEach(([dst, srcBase]) => {
+    // Always pick the latest available date among base + suffixed variants
+    const latest = getLatestDateValue(srcBase);
+    if (latest && data[dst] !== latest) {
+      data[dst] = latest;
     }
   });
   // Generic adjacency enforcement: each phase's start >= previous phase's end.
