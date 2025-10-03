@@ -755,7 +755,7 @@ const compareAndUpdateDates = (data) => {
       .filter(Boolean);
     if (!candidates.length) return null;
     // pick max chronologically
-    return candidates.reduce((a, b) => (b > a ? b : a));
+    return candidates.reduce((a, b) => (b > a ? b : a), candidates[0]);
   };
 
   lausuntoPairs.forEach(([dst, src]) => {
