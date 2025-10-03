@@ -734,23 +734,83 @@ const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues
 };
 
 const compareAndUpdateDates = (data) => {
-  //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
-  const pairs = [
+  // Static pairs: viimeistaan lausunnot -> ehdotuksen nähtävillä päättyy variants
+  const lausuntoPairs = [
     ["viimeistaan_lausunnot_ehdotuksesta", "milloin_ehdotuksen_nahtavilla_paattyy"],
     ["viimeistaan_lausunnot_ehdotuksesta_2", "milloin_ehdotuksen_nahtavilla_paattyy_2"],
     ["viimeistaan_lausunnot_ehdotuksesta_3", "milloin_ehdotuksen_nahtavilla_paattyy_3"],
     ["viimeistaan_lausunnot_ehdotuksesta_4", "milloin_ehdotuksen_nahtavilla_paattyy_4"]
   ];
 
-  pairs.forEach(([key1, key2]) => {
-    if (data[key1] && data[key2]) {
-      const date1 = new Date(data[key1]).toISOString().slice(0, 10);
-      const date2 = new Date(data[key2]).toISOString().slice(0, 10);
-      if (date1 < date2) {
-        data[key1] = date2;
-      }
+  const validateAndNormalizeDate = (val) => {
+    if (!val) return null;
+    const d = new Date(val);
+    return isNaN(d) ? null : d.toISOString().slice(0, 10);
+  };
+
+  // Return latest (max) valid date among baseKey and its *_2..*_4 variants
+  const getLatestDateValue = (baseKey) => {
+    const candidates = [baseKey, `${baseKey}_2`, `${baseKey}_3`, `${baseKey}_4`]
+      .map(k => validateAndNormalizeDate(data[k]))
+      .filter(Boolean);
+    if (!candidates.length) return null;
+    // pick max chronologically
+    return candidates.reduce((a, b) => (b > a ? b : a), candidates[0]);
+  };
+
+  lausuntoPairs.forEach(([dst, src]) => {
+    const srcDate = validateAndNormalizeDate(data[src]);
+    if (srcDate && data[dst] !== srcDate) {
+      data[dst] = srcDate;
     }
   });
+  //Check that phase end date line is moved to phases actual last date 
+  const buildPhasePairs = (size) => {
+    const isXL = size === "XL";
+    return [
+      ["periaatteetvaihe_paattyy_pvm", "milloin_periaatteet_lautakunnassa"],
+      ["oasvaihe_paattyy_pvm", "milloin_oas_esillaolo_paattyy"],
+      ["luonnosvaihe_paattyy_pvm", "milloin_kaavaluonnos_lautakunnassa"],
+      ["ehdotusvaihe_paattyy_pvm", isXL ? "milloin_ehdotuksen_nahtavilla_paattyy" : "milloin_ehdotus_esillaolo_paattyy"],
+      ["tarkistettuehdotusvaihe_paattyy_pvm", "milloin_tarkistettu_ehdotus_lautakunnassa"],
+      // hyvaksyminen & voimaantulo intentionally excluded (no paired controlling date specified)
+    ];
+  };
+
+  const phasePairs = buildPhasePairs(data["kaavaprosessin_kokoluokka"]);
+  phasePairs.forEach(([dst, srcBase]) => {
+    // Always pick the latest available date among base + suffixed variants
+    const latest = getLatestDateValue(srcBase);
+    if (latest && data[dst] !== latest) {
+      data[dst] = latest;
+    }
+  });
+  // Generic adjacency enforcement: each phase's start >= previous phase's end.
+  // Ordered phases including optional ones (periaatteet, luonnos) which may be absent.
+  const orderedPhases = [
+    { start: "kaynnistysvaihe_alkaa_pvm", end: "kaynnistysvaihe_paattyy_pvm" },
+    { start: "periaatteetvaihe_alkaa_pvm", end: "periaatteetvaihe_paattyy_pvm", optional: true },
+    { start: "oasvaihe_alkaa_pvm", end: "oasvaihe_paattyy_pvm" },
+    { start: "luonnosvaihe_alkaa_pvm", end: "luonnosvaihe_paattyy_pvm", optional: true },
+    { start: "ehdotusvaihe_alkaa_pvm", end: "ehdotusvaihe_paattyy_pvm" },
+    { start: "tarkistettuehdotusvaihe_alkaa_pvm", end: "tarkistettuehdotusvaihe_paattyy_pvm" },
+    { start: "hyvaksyminenvaihe_alkaa_pvm", end: "hyvaksyminenvaihe_paattyy_pvm" },
+    { start: "voimaantulovaihe_alkaa_pvm", end: "voimaantulovaihe_paattyy_pvm" }
+  ];
+
+  // Build a filtered sequence of phases that actually exist (have either start or end present)
+  const existingPhases = orderedPhases.filter(p => data[p.start] || data[p.end]);
+
+  for (let i = 1; i < existingPhases.length; i++) {
+    const prev = existingPhases[i - 1];
+    const cur = existingPhases[i];
+    const prevEnd = validateAndNormalizeDate(data[prev.end]);
+    const curStart = validateAndNormalizeDate(data[cur.start]);
+    if (prevEnd && curStart && curStart < prevEnd) {
+      // Move current start forward to previous end
+      data[cur.start] = prevEnd;
+    }
+  }
 };
  
 export default {
