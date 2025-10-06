@@ -750,12 +750,51 @@ const compareAndUpdateDates = (data) => {
 
   // Return latest (max) valid date among baseKey and its *_2..*_4 variants
   const getLatestDateValue = (baseKey) => {
-    const candidates = [baseKey, `${baseKey}_2`, `${baseKey}_3`, `${baseKey}_4`]
-      .map(k => validateAndNormalizeDate(data[k]))
-      .filter(Boolean);
-    if (!candidates.length) return null;
-    // pick max chronologically
-    return candidates.reduce((a, b) => (b > a ? b : a), candidates[0]);
+    // Map date base keys to one or more activation boolean prefixes.
+    // For each numeric suffix n (1..4), if ALL listed prefixes exist for that n and are false, the candidate is ignored.
+    // Base variant without suffix corresponds logically to _1 booleans.
+    const activationMap = {
+      milloin_periaatteet_lautakunnassa: ["periaatteet_lautakuntaan"],
+      milloin_kaavaluonnos_lautakunnassa: ["kaavaluonnos_lautakuntaan"],
+      milloin_tarkistettu_ehdotus_lautakunnassa: ["tarkistettu_ehdotus_lautakuntaan"],
+      milloin_kaavaehdotus_lautakunnassa: ["kaavaehdotus_lautakuntaan"],
+      // Ehdotuksen nähtävillä end dates may be controlled either by initial nahtaville_1 or uudelleen_nahtaville_n flags
+      milloin_ehdotuksen_nahtavilla_paattyy: ["kaavaehdotus_nahtaville", "kaavaehdotus_uudelleen_nahtaville"],
+      // Esilläolo variants (example pattern) – extend if needed later
+      milloin_periaatteet_esillaolo_paattyy: ["jarjestetaan_periaatteet_esillaolo"],
+      milloin_luonnos_esillaolo_paattyy: ["jarjestetaan_luonnos_esillaolo"],
+      milloin_oas_esillaolo_paattyy: ["jarjestetaan_oas_esillaolo"]
+    };
+
+    const activationPrefixes = activationMap[baseKey] || [];
+
+    const variantKeys = [baseKey, `${baseKey}_2`, `${baseKey}_3`, `${baseKey}_4`];
+    const validVariants = [];
+
+    for (let i = 0; i < variantKeys.length; i++) {
+      const key = variantKeys[i];
+      const normalized = validateAndNormalizeDate(data[key]);
+      if (!normalized) continue; // skip empty / invalid
+      const suffixNumber = i === 0 ? 1 : (i + 1); // base -> 1, _2 -> 2, etc.
+      // Determine activation booleans for this suffix
+      let hasAtLeastOneActivation = false;
+      let anyActive = false;
+      for (const prefix of activationPrefixes) {
+        const boolKey = `${prefix}_${suffixNumber}`;
+        if (Object.prototype.hasOwnProperty.call(data, boolKey)) {
+          hasAtLeastOneActivation = true;
+          if (data[boolKey] === true) {
+            anyActive = true;
+          }
+        }
+      }
+      // If there were activation flags and none are active, skip this variant
+      if (hasAtLeastOneActivation && !anyActive) continue;
+      validVariants.push(normalized);
+    }
+
+    if (!validVariants.length) return null;
+    return validVariants.reduce((a, b) => (b > a ? b : a), validVariants[0]);
   };
 
   lausuntoPairs.forEach(([dst, src]) => {
