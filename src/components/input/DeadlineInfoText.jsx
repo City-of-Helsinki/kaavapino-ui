@@ -122,7 +122,6 @@ const DeadlineInfoText = props => {
   useEffect(() => {
     if (props.input.name.includes("nahtavillaolopaivien_lukumaara")
       && (value !== formValues["nahtavillaolopaivien_lukumaara"])) {
-      console.log(value);
       dispatch(
         autofill(
           EDIT_PROJECT_TIMETABLE_FORM,
