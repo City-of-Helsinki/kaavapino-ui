@@ -1124,3 +1124,52 @@
 .ui.modal {
   pointer-events: auto;
 }
+
+.filterModal {
+  .modal-content {
+    width: min(1080px, calc(100vw - 64px));
+    margin: 96px auto;
+    box-shadow: 0px 2px 8px 0px #00000080;
+  }
+
+  .modal-header { display: none; }
+  .modal-header h2 { margin: 0; line-height: 1.25; }
+
+  .modal-body { padding: 8px 24px 16px; }
+
+  /* Columns */
+  .filterModal__cols {
+    display: flex;
+    flex-wrap: nowrap;         /* keep in a single row */
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  .filterModal__col {
+    flex: 1 1 0%;
+    padding-right: 64px;       /* column spacing via padding (no gap) */
+  }
+  .filterModal__col:last-child { padding-right: 0; }
+
+  /* Headings and list spacing */
+  .filterModal__col > h3 { margin: 0 0 8px 0; font-size: 20px; line-height: 1.2; }
+
+  .filterModal__list .Checkbox-module_checkbox__3L0GR {
+    display: flex;
+    align-items: center;
+    margin: 0 0 12px 0;        /* vertical spacing (no gap) */
+  }
+
+  .remove-filters { margin-top: 8px; }
+
+  /* Footer buttons left-aligned; spacing by margins (no gap) */
+  .modal-footer { display: flex; justify-content: flex-start; padding: 16px 24px 24px; border-top: 1px solid #eee; }
+  .modal-footer > * + * { margin-left: 12px; }
+
+  /* Small screens: keep original stacked layout */
+  @media (max-width: 860px) {
+    .modal-content { width: calc(100vw - 32px); margin: 64px auto; }
+    .filterModal__cols { display: block; }
+    .filterModal__col { padding-right: 0; margin-bottom: 16px; }
+  }
+}
