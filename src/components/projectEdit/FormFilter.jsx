@@ -54,11 +54,11 @@ useEffect(() => {
     if(schema){
         let roles = schema.filters.subroles
         for (let x = 0; x < roles.length; x++) {
-            if(roles[x] === "Projektin vastuuhenkilö"){
+            if(roles[x] === "Projektin vastuuhenkilö" || roles[x] === "Rakennussuojelu" || roles[x] === "Suunnitteluavustaja"){
                 optionsArray[2].roles.push(roles[x]);
             }
             else if(roles[x] === "Kaavoitussihteeri" || roles[x] === "Kanslian pääkäyttäjä" ||
-            roles[x] === "Suunnitteluassistentti" || roles[x] === "Tontit-yksikön pääkäyttäjä"){
+            roles[x] === "Suunnitteluassistentti" || roles[x] === "Tontit-yksikön pääkäyttäjä" || roles[x] === "Kaavamaksut ja seuranta"){
                 optionsArray[1].roles.push(roles[x]);
             }
             else{
@@ -129,7 +129,10 @@ const handleChange = (e) => {
 };
 
 const openModal = () => {
-    modal.style.display = "block";
+    if(modal){
+        modal.classList.add("filterModal");
+        modal.style.display = "block";
+    }
 }
 
 const closeModal = () => {
@@ -242,28 +245,29 @@ return (
                     <h2>Suodattimet</h2>
                 </div>
                 <div className="modal-body">
-                    {(() => {
-                    let row = []
-                        for (let i = 0; i < options.length; i++) {
-                            let header = options[i].header
-                            let roles = options[i].roles
-                            row.push(<h3 key={header + i}>{header}</h3>)
-                            for (let x = 0; x < roles.length; x++) {
-                                row.push(<Checkbox
-                                    key={`checkbox-${roles[x]}-filter`}
-                                    id={`checkbox-${roles[x]}-filter`}
-                                    label={roles[x]}
-                                    name={roles[x]}
-                                    checked={checkedItems[roles[x]]}
-                                    onChange={handleChange}
-                                />)
-                            }
-                        }
-                        return row
-                    })()}
-                    <Button onClick={() => removeFilters()} className="remove-filters" variant="supplementary" iconLeft={<IconTrash />}>
-                        Poista kaikki valinnat
-                    </Button>
+                <div className="filterModal__cols">
+                    {options.map((opt, i) => (
+                        <div className="filterModal__col" key={`col-${i}`}>
+                            <h3>{opt.header}</h3>
+                            <div className="filterModal__list">
+                            {opt.roles.map((role) => (
+                                <Checkbox
+                                key={`checkbox-${role}-filter`}
+                                id={`checkbox-${role}-filter`}
+                                label={role}
+                                name={role}
+                                checked={!!checkedItems[role]}
+                                onChange={handleChange}
+                                />
+                            ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                <Button onClick={removeFilters} className="remove-filters" variant="supplementary" iconLeft={<IconTrash />}>
+                    Poista kaikki valinnat
+                </Button>
                 </div>
                 <div className="modal-footer">
                     <Button className="save" size="small" onClick={() => saveSelections()}>Tallenna</Button>
