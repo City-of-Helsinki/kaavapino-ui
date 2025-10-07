@@ -301,7 +301,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   };
 
   const handleInputChange = useCallback((event, readonly) => {
-    const isConnected = connection.connection !== undefined ? connection.connection : true;
+    const isConnected = connection.connection ?? true;
     let value = event.target.value;
 
     // Special handling for kerrosalatiedot (floor area) integer fields
