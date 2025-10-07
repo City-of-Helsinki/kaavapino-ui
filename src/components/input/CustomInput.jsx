@@ -291,21 +291,45 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     }
   }
 
-  const handleInputChange = useCallback((event,readonly) => {
-    const isConnected = connection.connection || typeof connection.connection === "undefined" ? true : false
-    if(!readonly || custom.type === "date" || isConnected){
-      if(!event.target.value?.trim() && custom?.fieldData?.isRequired){
-        setHasError(true)
+  const handleInputChange = useCallback((event, readonly) => {
+    const isConnected = connection.connection || typeof connection.connection === "undefined" ? true : false;
+    let value = event.target.value;
+
+    // Restrict for kerrosalatiedot (floor area) number fields
+    if (custom.type === 'number' && custom.isFloorAreaForm) {
+      // Remove all non-digit characters
+      value = value.replace(/[^0-9]/g, '');
+
+      // Prevent negative numbers (shouldn't be possible, but just in case)
+      if (value.startsWith('-')) {
+        value = value.substring(1);
       }
-      else{
-        setHasError(false)
+
+      // If value is empty, treat as 0 or empty string as needed
+      if (value === '') {
+        setHasError(custom?.fieldData?.isRequired);
+        input.onChange('', input.name);
+        if (custom.isFloorAreaForm) {
+          let newObject = custom.floorValue;
+          newObject[input.name] = '';
+          dispatch(updateFloorValues(newObject));
+        }
+        return;
       }
-      input.onChange(event.target.value, input.name)
-      if(custom.isFloorAreaForm){
-        //Edit floor area model object data with current value and dispatch change for form total value recalculation
-        let newObject = custom.floorValue
-        newObject[input.name] = Number(event.target.value)
-        dispatch(updateFloorValues(newObject))
+    }
+
+    if (!readonly || custom.type === "date" || isConnected) {
+      if (!value?.trim() && custom?.fieldData?.isRequired) {
+        setHasError(true);
+      } else {
+        setHasError(false);
+      }
+      input.onChange(value, input.name);
+      if (custom.isFloorAreaForm) {
+        // Edit floor area model object data with current value and dispatch change for form total value recalculation
+        let newObject = custom.floorValue;
+        newObject[input.name] = value === '' ? '' : Number(value);
+        dispatch(updateFloorValues(newObject));
       }
     }
   }, [input.name, input.value]);
@@ -351,10 +375,23 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           fluid="true"
           {...input}
           {...restCustom}
+          min={custom.type === 'number' && custom.isFloorAreaForm ? 0 : undefined}
+          inputMode={custom.type === 'number' && custom.isFloorAreaForm ? "numeric" : undefined}
+          pattern={custom.type === 'number' && custom.isFloorAreaForm ? "[0-9]*" : undefined}
           disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled}
-          onChange={(event) =>{handleInputChange(event,readonly.read)}}
-          onBlur={(event) => {handleBlur(event,readonly.read)}}
-          onFocus={() => {handleFocus()}}
+          onKeyDown={custom.type === 'number' && custom.isFloorAreaForm ? (e) => {
+            // Allow: digits, navigation keys, editing keys
+            const allowed =
+              (e.key.length === 1 && /^[0-9]$/.test(e.key)) ||
+              ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Home', 'End'].includes(e.key);
+
+            if (!allowed) {
+              e.preventDefault();
+            }
+          } : undefined}
+          onChange={(event) => { handleInputChange(event, readonly.read) }}
+          onBlur={(event) => { handleBlur(event, readonly.read) }}
+          onFocus={() => { handleFocus() }}
           readOnly={readonly.read || lastSaved?.status === "error"}
         />
         {saving && isInstanceSaving && (
