@@ -509,7 +509,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const visiblityBool = getVisibilityBoolName(dataToRemove.deadlinegroup)
       if (visiblityBool) {
         dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, visiblityBool, false));
-        const confirmationObject = isDeadlineConfirmed(visValuesRef.current, dataToRemove.deadlinegroup, true);
+        const confirmationObject = isDeadlineConfirmed(visValuesRef.current, dataToRemove.deadlinegroup, true, false);
         if(confirmationObject?.key && confirmationObject?.value){
           dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, confirmationObject.key, false));
         }

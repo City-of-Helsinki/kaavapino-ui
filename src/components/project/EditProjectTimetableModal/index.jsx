@@ -665,7 +665,7 @@ class EditProjectTimeTableModal extends Component {
           if (innerEnd < currentDate) {
             innerStyle += " past";
           }
-          if (isDeadlineConfirmed(formValues, deadlineGroup, false)) {
+          if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
             innerStyle += " confirmed";
           }
         }
@@ -717,7 +717,7 @@ class EditProjectTimeTableModal extends Component {
             innerStyle += " past";
           }
 
-          if (isDeadlineConfirmed(formValues, deadlineGroup, false)) {
+          if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
             innerStyle += " confirmed";
           }
         }
@@ -750,7 +750,7 @@ class EditProjectTimeTableModal extends Component {
             innerStyle += " past";
           }
 
-          if (isDeadlineConfirmed(formValues, deadlineGroup, false)) {
+          if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
             innerStyle += " confirmed";
           }
         }

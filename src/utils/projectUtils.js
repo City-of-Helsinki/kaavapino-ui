@@ -449,13 +449,20 @@ function isSceduleAccepted(attributeData, currentSchema) {
   let scheduleIsAccepted = []
   if(currentSchema?.sections){
     const { sections } = currentSchema
+    const currentPhaseRaw = attributeData?.kaavan_vaihe || '';
+    const currentPhaseName = currentPhaseRaw.split('.').pop().trim();
     // Go through every single field
     sections.forEach(({name,attributes }) => {
+      const sectionPhaseName = (name || '').split('.').pop().trim();
+      if (sectionPhaseName !== currentPhaseName) return;
       if(name === "2. OAS" || name === "3. Ehdotus" || name === "4. Tarkistettu ehdotus" || name === "XL. Periaatteet" || name === "XL. Luonnos"){
         attributes.forEach(field => {
           if (showField(field, attributeData)) {
             if (confirmationAttributes.includes(field.name)) {
-              const confirmName = field.name.replace("_readonly", "")
+              //Only first confirm needs to be checked for acceptance
+              const confirmName = field.name
+                .replace("_readonly", "")
+                .replace(/_\d+$/, '')
               const value = findValueFromObject(attributeData, confirmName)
               if (!value) {
                 //increase array size with false value and prevent acceptance

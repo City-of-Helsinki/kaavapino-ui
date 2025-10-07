@@ -216,7 +216,7 @@ export const shouldDeadlineBeVisible = (deadlineName, deadlineGroup, attributeDa
 }
 
 // Helper function to check if dates are confirmed
-export const isDeadlineConfirmed = (formValues, deadlineGroup, returnField) => {
+export const isDeadlineConfirmed = (formValues, deadlineGroup, returnField, breakAtFirst) => {
     // ReturnField true is used when deleting phase and making sure confirmation is deleted too.
     // Extract the number from deadlineGroup if it exists
     const extractDigitsFromEnd = (str) => {
@@ -246,6 +246,9 @@ export const isDeadlineConfirmed = (formValues, deadlineGroup, returnField) => {
         if (matchNumber && matchNumber === "1") {
           // If number is 1, use the base key
           confirmationKey = baseKeys[key];
+          if(breakAtFirst){
+            break;
+          }
         } else if (matchNumber) {
           // If number is bigger, construct the confirmationKey using the number
           confirmationKey = `${baseKeys[key]}_${matchNumber}`;
@@ -296,7 +299,7 @@ export const isDeadlineConfirmed = (formValues, deadlineGroup, returnField) => {
 
     const visibleGroups = groupKeys.filter(g => shouldDeadlineBeVisible(null, g, attribute_data));
     for (const g of visibleGroups) {
-      if (isDeadlineConfirmed(attribute_data, g, false)) {
+      if (isDeadlineConfirmed(attribute_data, g, false, true)) {
         return true;
       }
     }
