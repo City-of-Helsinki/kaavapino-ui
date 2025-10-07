@@ -291,21 +291,26 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     }
   }
 
+  // Helper for sanitizing floor area integer input
+  function sanitizeFloorAreaValue(value) {
+    // Remove all non-digit characters using concise character class and replaceAll
+    return value.replaceAll(/\D/g, '');
+  }
+
   const handleInputChange = useCallback((event, readonly) => {
     const isConnected = connection.connection || typeof connection.connection === "undefined" ? true : false;
     let value = event.target.value;
 
-    // Restrict for kerrosalatiedot (floor area) number fields
+    // Special handling for kerrosalatiedot (floor area) integer fields
     if (custom.type === 'number' && custom.isFloorAreaForm) {
-      // Remove all non-digit characters
-      value = value.replace(/[^0-9]/g, '');
+      value = sanitizeFloorAreaValue(value);
 
       // Prevent negative numbers (shouldn't be possible, but just in case)
       if (value.startsWith('-')) {
         value = value.substring(1);
       }
 
-      // If value is empty, treat as 0 or empty string as needed
+      // Early return for empty value
       if (value === '') {
         setHasError(custom?.fieldData?.isRequired);
         input.onChange('', input.name);
@@ -318,6 +323,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
       }
     }
 
+    // Main input logic
     if (!readonly || custom.type === "date" || isConnected) {
       if (!value?.trim() && custom?.fieldData?.isRequired) {
         setHasError(true);
@@ -326,7 +332,6 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
       }
       input.onChange(value, input.name);
       if (custom.isFloorAreaForm) {
-        // Edit floor area model object data with current value and dispatch change for form total value recalculation
         let newObject = custom.floorValue;
         newObject[input.name] = value === '' ? '' : Number(value);
         dispatch(updateFloorValues(newObject));
@@ -382,9 +387,8 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           onKeyDown={custom.type === 'number' && custom.isFloorAreaForm ? (e) => {
             // Allow: digits, navigation keys, editing keys
             const allowed =
-              (e.key.length === 1 && /^[0-9]$/.test(e.key)) ||
+              (e.key.length === 1 && /^\d$/.test(e.key)) ||
               ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Home', 'End'].includes(e.key);
-
             if (!allowed) {
               e.preventDefault();
             }
