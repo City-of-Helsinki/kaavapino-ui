@@ -20,7 +20,7 @@ const order = [
   'voimaantulovaihe_paattyy_pvm'
 ];
 
-const getHighestNumberedObject = (obj1, arr) => {
+const getHighestNumberedObject = (obj1) => {
   // Helper function to extract the number from a content string
   const extractNumber = str => {
     // Find the last digit in the string
@@ -36,9 +36,6 @@ const getHighestNumberedObject = (obj1, arr) => {
     }
     return numStr ? parseInt(numStr, 10) : -Infinity; // Return -Infinity if no number is found
   };
-
-  // If no objects exist in the array, return null
-  if (arr.length === 0) return null;
 
   // If 'asd_x' objects exist, find the one with the highest number
   if (obj1.length > 0) {
@@ -555,8 +552,7 @@ const convertPayloadValues = (payload) => {
   return { ...convertedKeyPayload,selectedPhase: phaseName };
 };
 
-
-export default {
+const exported = {
     getHighestNumberedObject,
     getMinObject,
     findValuesWithStrings,
@@ -574,3 +570,9 @@ export default {
     convertPayloadValues,
     filterHiddenKeysUsingSections
 }
+
+if (process.env.UNIT_TEST === "true"){
+  exported.getNumberFromString = getNumberFromString
+}
+
+export default exported;
