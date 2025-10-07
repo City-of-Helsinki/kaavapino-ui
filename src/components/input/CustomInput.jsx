@@ -292,27 +292,24 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   }
 
   // Helper for sanitizing floor area integer input
-  function sanitizeFloorAreaValue(value) {
-    // Remove all non-digit characters using concise character class and replaceAll
-    return value.replaceAll(/\D/g, '');
-  }
+  const sanitizeFloorAreaValue = (value) => value.replaceAll(/\D/g, '');
+
+  const processFloorAreaInput = (value) => {
+    let sanitized = sanitizeFloorAreaValue(value);
+    if (sanitized.startsWith('-')) sanitized = sanitized.substring(1);
+    return sanitized;
+  };
 
   const handleInputChange = useCallback((event, readonly) => {
-    const isConnected = connection.connection || typeof connection.connection === "undefined" ? true : false;
+    const isConnected = connection.connection !== undefined ? connection.connection : true;
     let value = event.target.value;
 
     // Special handling for kerrosalatiedot (floor area) integer fields
     if (custom.type === 'number' && custom.isFloorAreaForm) {
-      value = sanitizeFloorAreaValue(value);
+      value = processFloorAreaInput(value);
 
-      // Prevent negative numbers (shouldn't be possible, but just in case)
-      if (value.startsWith('-')) {
-        value = value.substring(1);
-      }
-
-      // Early return for empty value
       if (value === '') {
-        setHasError(custom?.fieldData?.isRequired);
+        setHasError(!!custom?.fieldData?.isRequired);
         input.onChange('', input.name);
         if (custom.isFloorAreaForm) {
           let newObject = custom.floorValue;
@@ -323,13 +320,8 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
       }
     }
 
-    // Main input logic
     if (!readonly || custom.type === "date" || isConnected) {
-      if (!value?.trim() && custom?.fieldData?.isRequired) {
-        setHasError(true);
-      } else {
-        setHasError(false);
-      }
+      setHasError(!value?.trim() && !!custom?.fieldData?.isRequired);
       input.onChange(value, input.name);
       if (custom.isFloorAreaForm) {
         let newObject = custom.floorValue;
