@@ -496,10 +496,6 @@
         &.past {
             background: $color-gray;
         }
-        &.board-only {
-            background-color: transparent;
-            left: 0;
-        }
     }
 
     .vis-dot.board-only{
