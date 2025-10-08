@@ -269,29 +269,6 @@ function isFieldOrMatrixOrFieldsetMissing(field, attributeData) {
   }
 }
 
-function hasAcceptancePhaseMissingFields(attributeData) {
-  const rawPhase = attributeData?.kaavan_vaihe || '';
-  const phaseName = rawPhase.split('.').pop().replace(/\s/g, '');
-  if (phaseName !== 'Hyväksyminen') return false;
-
-  const requiredAcceptanceKeys = [
-    'valtuusto_paatti',
-    'valtuusto_hyvaksymispaatos_pykala',
-    'hyvaksymispaatos_pvm',
-    'valtuusto_poytakirja_nahtavilla_pvm',
-    'valtuusto_hyvaksymiskuulutus_pvm',
-    'hyvaksymispaatos_valitusaika_paattyy'
-  ];
-  for (let i = 0; i < requiredAcceptanceKeys.length; i++) {
-    const key = requiredAcceptanceKeys[i];
-    const val = attributeData?.[key];
-    if (val === undefined || val === null || val === '') {
-      return true;
-    }
-  }
-  return false;
-}
-
 function hasUnconfirmedRequiredConfirmations(attributeData, currentSchema) {
   if (!currentSchema?.title) return false;
 
@@ -345,31 +322,31 @@ function hasUnconfirmedRequiredConfirmations(attributeData, currentSchema) {
 
 function hasMissingFields(attributeData, currentProject, schema, action) {
   const currentSchema = schema.phases.find(s => s.id === currentProject.phase);
+  const currentDeadlineSchema = schema.deadline_sections.find(s => s.id === currentProject.phase)
   const { sections } = currentSchema;
-  let missingFields = false;
 
   // 1. Check all fields
-  sections.forEach(({ fields }) => {
-    fields.forEach(field => {
-      if (showField(field, attributeData)) {
-        if (isFieldOrMatrixOrFieldsetMissing(field, attributeData)) {
-          missingFields = true;
-        }
-      }
-    });
-  });
-
-  // 2. Check acceptance phase
-  if (action === 'changeCurrentPhase' && hasAcceptancePhaseMissingFields(attributeData)) {
-    missingFields = true;
+  const missingFields = sections.some(({ fields }) =>
+      fields.some(field =>
+          showField(field, attributeData) &&
+          isFieldOrMatrixOrFieldsetMissing(field, attributeData)
+      )
+  );
+  if (missingFields) return true;
+  // 2. Check deadline schema required attributes
+  if (action === 'changeCurrentPhase' && currentDeadlineSchema) {
+    const tmpErrors = checkDeadlineSchemaErrors([], currentDeadlineSchema, attributeData);
+    if (tmpErrors.length > 0) {
+      return true;
+    }
   }
 
   // 3. Check phase confirmations
-  if (!missingFields && hasUnconfirmedRequiredConfirmations(attributeData, currentSchema)) {
-    missingFields = true;
+  if (hasUnconfirmedRequiredConfirmations(attributeData, currentSchema)) {
+    return true;
   }
 
-  return missingFields;
+  return false;
 }
 
 function checkErrors(errorFields,currentSchema,attributeData) {
@@ -409,7 +386,37 @@ function checkErrors(errorFields,currentSchema,attributeData) {
   return errorFields
 }
 
-function getErrorFields(checkDocuments, attributeData, currentSchema, phase, origin) {
+// Timetable modal required fields checks.
+function checkDeadlineSchemaErrors(errorFields, currentDeadlineSchema, attributeData) {
+  console.log(attributeData)
+  if (!currentDeadlineSchema) return errorFields
+  let sections = currentDeadlineSchema?.sections || []
+  sections.forEach(section => {
+    const attrs = section?.attributes || []
+    attrs.forEach(attr => {
+      if (attr?.required) {
+        // Exception: confirmation attributes with numeric suffix (e.g. vahvista_xxx_2)
+        // If such a key does not exist in attributeData, we skip adding an error.
+        if (/^vahvista_.*_\d+$/.test(attr.name) && attributeData[attr.name] === undefined) {
+          return
+        }
+        const val = findValueFromObject(attributeData, attr.name)
+        if (val === undefined || val === null || val === '' || (Array.isArray(val) && val.length === 0)) {
+          console.log(attr.name,val)
+          errorFields.push({
+            "title": "Aikataulun muokkausnäkymä",
+            "errorSection": section.name,
+            "errorField": attr.label || attr.name,
+            "fieldAnchorKey": attr.name
+          })
+        }
+      }
+    })
+  })
+  return errorFields
+}
+
+function getErrorFields(checkDocuments, attributeData, currentSchema, phase, origin, currentDeadlineSchema) {
   let errorFields = []
   const phaseName = attributeData.kaavan_vaihe.split(".").pop().replace(/\s/g,'');
   const title = currentSchema.title.replace(/\s/g,'');
@@ -417,26 +424,8 @@ function getErrorFields(checkDocuments, attributeData, currentSchema, phase, ori
   if(checkDocuments && currentSchema?.id === phase && currentSchema?.sections && title === phaseName || !checkDocuments && currentSchema?.sections){
     // Go through every single field
     errorFields = checkErrors(errorFields,currentSchema,attributeData)
-    // Additional acceptance phase specific required textual fields
-    if(phaseName === 'Hyväksyminen' && origin === 'closephase'){
-      // List of attribute keys that must exist and be non-empty string
-      const requiredAcceptanceKeys = [
-        'valtuusto_paatti',
-        'valtuusto_hyvaksymispaatos_pykala',
-        'hyvaksymispaatos_pvm',
-        'valtuusto_poytakirja_nahtavilla_pvm',
-        'valtuusto_hyvaksymiskuulutus_pvm',
-        'hyvaksymispaatos_valitusaika_paattyy'
-      ]
-      requiredAcceptanceKeys.forEach(key => {
-        const val = attributeData?.[key]
-        const missing = val === undefined || val === null || val === ''
-        if(missing){
-          // Use a generic section label "Hyväksyminen" and anchor key as attribute name
-          errorFields.push({"title":"Aikataulun muokkausnäkymä","errorSection":key,"errorField":'Hyväksyminen',"fieldAnchorKey":key})
-        }
-      })
-    }
+    // Validate deadline schema required attributes using dedicated helper (phase already scoped)
+    errorFields = checkDeadlineSchemaErrors(errorFields, currentDeadlineSchema, attributeData)
   }
   else if(checkDocuments && currentSchema?.id === phase){
     //Show error for hide download button on document download view if not currently active phase
