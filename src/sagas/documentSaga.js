@@ -165,7 +165,7 @@ function* downloadDocumentPreviewSaga({ payload }) {
   let isError = false
 
   let counter = 0
-  const modifiedUrl = payload.file + '?preview=true&immediate=true'
+  const modifiedUrl = payload.file + '?preview=true'
   yield put(downloadDocumentDone(false))
   toastr.info(
     i18next.t('document-loading.wait-title'),
@@ -174,17 +174,16 @@ function* downloadDocumentPreviewSaga({ payload }) {
   )
 
   try {
-    res = yield call(axios.get, modifiedUrl, { responseType: 'blob' })
+    res = yield call(axios.get, modifiedUrl, { responseType: 'json' })
     currentTask = res && res.data ? res.data.detail : null
 
-    if (!currentTask && res.status !== 200) {
+    if (!currentTask) {
       toastr.removeByType('info')
       toastr.error(
         i18next.t('document-loading.error-title'),
         i18next.t('document-loading.document-preview-error'),
         {icon: <IconErrorFill />}
       )
-
       isError = true
       yield put(downloadDocumentDone(true))
     } else {
