@@ -425,18 +425,7 @@ const TimelineModal = ({
     return { lautakuntaInPast: anyPast, tooltip, disabled };
   };
 
-  // --- Normalization for title ---
-  const normalizeTitle = (group, title) => {
-    // For Tarkistettu ehdotus Lautakunta, always use "Lautakunta - 1"
-    if (
-      group === "Tarkistettu ehdotus" &&
-      (title.trim().toLowerCase().includes("lautakunta") ||
-        title.trim().toLowerCase().includes("lautakuntakerta"))
-    ) {
-      return "Lautakunta - 1";
-    }
-    return title;
-  };
+  const normalizeTitle = (group, title) => title;
 
   const renderSection = (section, sectionIndex, title) => {
     // Normalize title for consistent confirmedValue logic
