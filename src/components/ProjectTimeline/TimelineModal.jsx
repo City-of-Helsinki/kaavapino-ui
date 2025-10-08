@@ -425,7 +425,16 @@ const TimelineModal = ({
     return { lautakuntaInPast: anyPast, tooltip, disabled };
   };
 
-  const normalizeTitle = (group, title) => title;
+
+  const normalizeTitle = (group, title) => {
+      if (
+          title === undefined &&
+          group === "Tarkistettu ehdotus"
+      ) {
+          return "Lautakunta - 1";
+      }
+      return title;
+  };
 
   const renderSection = (section, sectionIndex, title) => {
     // Normalize title for consistent confirmedValue logic

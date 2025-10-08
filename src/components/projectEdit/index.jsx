@@ -416,6 +416,9 @@ class ProjectEditPage extends Component {
                         if (groupTitle === 'Aikataulun muokkausnäkymä') {
                           const currentPhaseId = this.props.currentProject?.phase;
                           const matchedDeadline = (this.props.currentProject?.deadlines || []).find(d => d?.deadline?.phase_id === currentPhaseId);
+                          console.log(error.fieldAnchorKey)
+                          console.log(currentPhaseId)
+                          console.log(matchedDeadline?.deadline);
                           this.props.showTimetable(true, error.fieldAnchorKey, currentPhaseId, matchedDeadline?.deadline || {});
                         } else {
                           this.showErrorField(error.errorSection, error.fieldAnchorKey);

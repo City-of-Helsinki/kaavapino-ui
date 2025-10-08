@@ -388,7 +388,6 @@ function checkErrors(errorFields,currentSchema,attributeData) {
 
 // Timetable modal required fields checks.
 function checkDeadlineSchemaErrors(errorFields, currentDeadlineSchema, attributeData) {
-  console.log(attributeData)
   if (!currentDeadlineSchema) return errorFields
   let sections = currentDeadlineSchema?.sections || []
   sections.forEach(section => {
@@ -397,12 +396,14 @@ function checkDeadlineSchemaErrors(errorFields, currentDeadlineSchema, attribute
       if (attr?.required) {
         // Exception: confirmation attributes with numeric suffix (e.g. vahvista_xxx_2)
         // If such a key does not exist in attributeData, we skip adding an error.
-        if (/^vahvista_.*_\d+$/.test(attr.name) && attributeData[attr.name] === undefined) {
-          return
+        const isNumericConfirmation = /^vahvista_.*_\d+$/.test(attr.name)
+        if (isNumericConfirmation && attributeData[attr.name] === undefined) {
+            return
         }
         const val = findValueFromObject(attributeData, attr.name)
-        if (val === undefined || val === null || val === '' || (Array.isArray(val) && val.length === 0)) {
-          console.log(attr.name,val)
+        const isIndexOneConfirmation = /^vahvista_.*_1$/.test(attr.name)
+        const isBaseConfirmation = /^vahvista_/.test(attr.name) && !isNumericConfirmation
+        if (val === undefined || val === null || val === '' || (Array.isArray(val) && val.length === 0)|| ( (isIndexOneConfirmation || isBaseConfirmation) && val === false) ) {
           errorFields.push({
             "title": "Aikataulun muokkausnäkymä",
             "errorSection": section.name,
