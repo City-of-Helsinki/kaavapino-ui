@@ -414,6 +414,22 @@ function checkDeadlineSchemaErrors(errorFields, currentDeadlineSchema, attribute
       }
     })
   })
+  // Extra aggregate validation for Voimaantulo phase: require at least one of the given keys to have a non-empty string value (these keys are not marked as required)
+  if (currentDeadlineSchema?.title === 'Voimaantulo') {
+    const requiredKeys = ['tullut_osittain_voimaan_pvm','voimaantulo_pvm','kumottu_pvm','rauennut']
+    const hasAny = requiredKeys.some(k => {
+      const v = attributeData[k]
+      return typeof v === 'string' && v.trim() !== ''
+    })
+    if (!hasAny) {
+      errorFields.push({
+        "title": "Aikataulun muokkausnäkymä",
+        "errorSection": currentDeadlineSchema.title,
+        "errorField": "Voimaantulo: vähintään yksi kenttä (tullut osittain voimaan / voimaantulo / kumottu / rauennut) on täytettävä",
+        "fieldAnchorKey": requiredKeys[0]
+      })
+    }
+  }
   return errorFields
 }
 
