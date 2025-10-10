@@ -10,7 +10,7 @@ const SPECIAL_CASES = [
   'tarkistettu_ehdotus_kylk_maaraaika'
 ];
 
-// Helper to get all possible vaihe fields for a phase (with and without underscore)
+// Get all possible vaihe fields for a phase (with and without underscore)
 function getVaiheFields(phase, attributeData) {
   const variants = [
     `${phase}vaihe_alkaa_pvm`,
@@ -21,88 +21,87 @@ function getVaiheFields(phase, attributeData) {
   return variants.filter(key => key in attributeData);
 }
 
-// Helper to add mielipiteet fields with all suffixes
-function addMielipiteetField(confirmedFields, seenPhases, phase, attributeData) {
+// Get all timetable fields for a phase/group/suffix combination
+function getGroupSuffixFields(phase, attributeData) {
+  const fields = [];
+  for (const group of GROUPS) {
+    for (const suffix of SUFFIXES) {
+      [
+        `${phase}_${group}_aineiston_maaraaika${suffix}`,
+        `milloin_${phase}_${group}_alkaa${suffix}`,
+        `milloin_${phase}_${group}_paattyy${suffix}`,
+        `milloin_${phase}_${group}_alkaa_pieni`,
+        `milloin_${phase}_${group}_alkaa_iso`,
+        `${phase}_${group}_aineiston_maaraaika_pieni`,
+        `${phase}_${group}_aineiston_maaraaika_iso`
+      ].forEach(key => {
+        if (key in attributeData) fields.push(key);
+      });
+    }
+  }
+  return fields;
+}
+
+// Get special case fields for a phase
+function getSpecialCaseFields(phase, attributeData) {
+  return SPECIAL_CASES.filter(
+    key => key.includes(phase) && key in attributeData
+  );
+}
+
+// Get all mielipiteet fields for a phase (with sta/ista/numeric suffixes)
+function getMielipiteetFields(phase, attributeData, seenPhases) {
+  const fields = [];
   const nums = ['', '_2', '_3', '_4'];
   for (const suffix of MIELIPITEET_SUFFIXES) {
     for (const num of nums) {
       const key = `viimeistaan_mielipiteet_${phase}${suffix}${num}`;
       if (!seenPhases.has(key) && key in attributeData) {
-        confirmedFields.push(key);
+        fields.push(key);
         seenPhases.add(key);
       }
     }
   }
+  return fields;
 }
 
-// Helper to add all *_fieldset fields if present
-function addFieldsetFields(confirmedFields, attributeData) {
-  Object.keys(attributeData).forEach(key => {
-    if (key.endsWith('_fieldset') && !confirmedFields.includes(key)) {
-      confirmedFields.push(key);
-    }
-  });
+// Get all *_fieldset fields present in attributeData
+function getFieldsetFields(attributeData, confirmedFields) {
+  return Object.keys(attributeData).filter(
+    key => key.endsWith('_fieldset') && !confirmedFields.includes(key)
+  );
 }
 
-// Main function
+// Collect all fields that should be confirmed/locked for the backend
 export function generateConfirmedFields(attributeData, confirmationAttributeNames, phaseNames) {
   const confirmedFields = [];
   const seenPhases = new Set();
 
-  for (const confirmationKey of confirmationAttributeNames) {
-    if (!confirmationKey.startsWith('vahvista_')) continue;
+  confirmationAttributeNames.forEach(confirmationKey => {
+    if (!confirmationKey.startsWith('vahvista_')) return;
+    const rawKey = confirmationKey.replace(/^vahvista_/, '');
+    const phase = phaseNames.find(p => rawKey === p || rawKey.startsWith(p + '_'));
+    if (!phase) return;
 
-    let rawKey = confirmationKey.replace(/^vahvista_/, '');
-    let phase = phaseNames.find((p) => rawKey === p || rawKey.startsWith(p + '_'));
-    if (!phase) continue;
+    confirmedFields.push(
+      ...getGroupSuffixFields(phase, attributeData),
+      ...getVaiheFields(phase, attributeData),
+      ...getSpecialCaseFields(phase, attributeData),
+      ...getMielipiteetFields(phase, attributeData, seenPhases)
+    );
+  });
 
-    // Try all suffixes and groups
-    for (const group of GROUPS) {
-      for (const suffix of SUFFIXES) {
-        const possibleKeys = [
-          `${phase}_${group}_aineiston_maaraaika${suffix}`,
-          `milloin_${phase}_${group}_alkaa${suffix}`,
-          `milloin_${phase}_${group}_paattyy${suffix}`,
-          `milloin_${phase}_${group}_alkaa_pieni`,
-          `milloin_${phase}_${group}_alkaa_iso`,
-          `${phase}_${group}_aineiston_maaraaika_pieni`,
-          `${phase}_${group}_aineiston_maaraaika_iso`
-        ];
-        for (const key of possibleKeys) {
-          if (key in attributeData && !confirmedFields.includes(key)) {
-            confirmedFields.push(key);
-          }
-        }
-      }
-    }
-
-    // Add vaihe fields if present
-    for (const key of getVaiheFields(phase, attributeData)) {
-      if (!confirmedFields.includes(key)) {
-        confirmedFields.push(key);
-      }
-    }
-
-    // Add special cases for this phase
-    for (const specialKey of SPECIAL_CASES) {
-      if (specialKey.includes(phase) && specialKey in attributeData && !confirmedFields.includes(specialKey)) {
-        confirmedFields.push(specialKey);
-      }
-    }
-
-    // Add mielipiteet field if present
-    addMielipiteetField(confirmedFields, seenPhases, phase, attributeData);
-  }
-
-  // Also add any other special cases you see in your data
-  for (const specialKey of SPECIAL_CASES) {
-    if (specialKey in attributeData && !confirmedFields.includes(specialKey)) {
-      confirmedFields.push(specialKey);
-    }
-  }
+  // Add global special cases if present
+  confirmedFields.push(
+    ...SPECIAL_CASES.filter(
+      key => key in attributeData && !confirmedFields.includes(key)
+    )
+  );
 
   // Add all *_fieldset fields if present
-  addFieldsetFields(confirmedFields, attributeData);
+  confirmedFields.push(
+    ...getFieldsetFields(attributeData, confirmedFields)
+  );
 
   return [...new Set(confirmedFields)];
 }
