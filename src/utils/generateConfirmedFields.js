@@ -18,7 +18,11 @@ function getVaiheFields(phase, attributeData) {
     `${phase}_vaihe_alkaa_pvm`,
     `${phase}_vaihe_paattyy_pvm`
   ];
-  return variants.filter(key => key in attributeData);
+  const result = [];
+  for (const key of variants) {
+    if (key in attributeData) result.push(key);
+  }
+  return result;
 }
 
 // Get all timetable fields for a phase/group/suffix combination
@@ -26,7 +30,7 @@ function getGroupSuffixFields(phase, attributeData) {
   const fields = [];
   for (const group of GROUPS) {
     for (const suffix of SUFFIXES) {
-      [
+      const possibleKeys = [
         `${phase}_${group}_aineiston_maaraaika${suffix}`,
         `milloin_${phase}_${group}_alkaa${suffix}`,
         `milloin_${phase}_${group}_paattyy${suffix}`,
@@ -34,9 +38,10 @@ function getGroupSuffixFields(phase, attributeData) {
         `milloin_${phase}_${group}_alkaa_iso`,
         `${phase}_${group}_aineiston_maaraaika_pieni`,
         `${phase}_${group}_aineiston_maaraaika_iso`
-      ].forEach(key => {
+      ];
+      for (const key of possibleKeys) {
         if (key in attributeData) fields.push(key);
-      });
+      }
     }
   }
   return fields;
@@ -44,9 +49,13 @@ function getGroupSuffixFields(phase, attributeData) {
 
 // Get special case fields for a phase
 function getSpecialCaseFields(phase, attributeData) {
-  return SPECIAL_CASES.filter(
-    key => key.includes(phase) && key in attributeData
-  );
+  const result = [];
+  for (const key of SPECIAL_CASES) {
+    if (key.includes(phase) && key in attributeData) {
+      result.push(key);
+    }
+  }
+  return result;
 }
 
 // Get all mielipiteet fields for a phase (with sta/ista/numeric suffixes)
@@ -67,41 +76,46 @@ function getMielipiteetFields(phase, attributeData, seenPhases) {
 
 // Get all *_fieldset fields present in attributeData
 function getFieldsetFields(attributeData, confirmedFields) {
-  return Object.keys(attributeData).filter(
-    key => key.endsWith('_fieldset') && !confirmedFields.includes(key)
-  );
+  const result = [];
+  for (const key of Object.keys(attributeData)) {
+    if (key.endsWith('_fieldset') && !confirmedFields.includes(key)) {
+      result.push(key);
+    }
+  }
+  return result;
 }
 
 // Collect all fields that should be confirmed/locked for the backend
 export function generateConfirmedFields(attributeData, confirmationAttributeNames, phaseNames) {
-  const confirmedFields = [];
+  let confirmedFields = [];
   const seenPhases = new Set();
 
-  confirmationAttributeNames.forEach(confirmationKey => {
-    if (!confirmationKey.startsWith('vahvista_')) return;
+  for (const confirmationKey of confirmationAttributeNames) {
+    if (!confirmationKey.startsWith('vahvista_')) continue;
     const rawKey = confirmationKey.replace(/^vahvista_/, '');
     const phase = phaseNames.find(p => rawKey === p || rawKey.startsWith(p + '_'));
-    if (!phase) return;
+    if (!phase) continue;
 
-    confirmedFields.push(
-      ...getGroupSuffixFields(phase, attributeData),
-      ...getVaiheFields(phase, attributeData),
-      ...getSpecialCaseFields(phase, attributeData),
-      ...getMielipiteetFields(phase, attributeData, seenPhases)
+    confirmedFields = confirmedFields.concat(
+      getGroupSuffixFields(phase, attributeData),
+      getVaiheFields(phase, attributeData),
+      getSpecialCaseFields(phase, attributeData),
+      getMielipiteetFields(phase, attributeData, seenPhases)
     );
-  });
+  }
 
   // Add global special cases if present
-  confirmedFields.push(
-    ...SPECIAL_CASES.filter(
+  confirmedFields = confirmedFields.concat(
+    SPECIAL_CASES.filter(
       key => key in attributeData && !confirmedFields.includes(key)
     )
   );
 
   // Add all *_fieldset fields if present
-  confirmedFields.push(
-    ...getFieldsetFields(attributeData, confirmedFields)
+  confirmedFields = confirmedFields.concat(
+    getFieldsetFields(attributeData, confirmedFields)
   );
 
+  // Remove duplicates
   return [...new Set(confirmedFields)];
 }
