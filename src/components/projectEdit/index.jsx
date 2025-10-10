@@ -415,10 +415,12 @@ class ProjectEditPage extends Component {
                         e.preventDefault();
                         if (groupTitle === 'Aikataulun muokkausnäkymä') {
                           const currentPhaseId = this.props.currentProject?.phase;
-                          const matchedDeadline = (this.props.currentProject?.deadlines || []).find(d => d?.deadline?.phase_id === currentPhaseId);
-                          console.log(error.fieldAnchorKey)
-                          console.log(currentPhaseId)
-                          console.log(matchedDeadline?.deadline);
+                          let matchedDeadline = (this.props.currentProject?.deadlines || []).find(d => d?.deadline?.phase_id === currentPhaseId);
+                          if(matchedDeadline?.deadline?.attribute?.includes("alkaa_pvm")){
+                            matchedDeadline = (this.props.currentProject?.deadlines || []).find(
+                            	d => d?.deadline?.phase_id === currentPhaseId && d?.deadline?.deadlinegroup?.includes('_1')
+                            );
+                          }
                           this.props.showTimetable(true, error.fieldAnchorKey, currentPhaseId, matchedDeadline?.deadline || {});
                         } else {
                           this.showErrorField(error.errorSection, error.fieldAnchorKey);
