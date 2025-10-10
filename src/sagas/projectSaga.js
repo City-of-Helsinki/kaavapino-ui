@@ -1,4 +1,5 @@
 import axios from 'axios'
+import React from 'react';
 import { eventChannel } from 'redux-saga';
 import { take, takeLatest, put, all, call, select, takeEvery, delay, race } from 'redux-saga/effects'
 import { isEqual, isEmpty, isArray } from 'lodash'
@@ -756,6 +757,8 @@ function* validateProjectTimetable() {
     const phaseNames = [
       'periaatteet',
       'oas',
+      'luonnos',
+      'ehdotus',
       'kaavaluonnos',
       'kaavaehdotus',
       'tarkistettu_ehdotus'
@@ -853,6 +856,8 @@ function* saveProjectTimetable(action,retryCount = 0) {
     const phaseNames = [
       'periaatteet',
       'oas',
+      'luonnos',
+      'ehdotus',
       'kaavaluonnos',
       'kaavaehdotus',
       'tarkistettu_ehdotus'
