@@ -309,9 +309,11 @@
                 .element-tooltip-right {
                     margin-left: 64px;
                     .symbol-column {
-                        .symbol-row:first-child .symbol-icon {
+                        // The following rule is needed for correct alignment of the "Käyttäjä on valinnut määräajan" icon.
+                        // It can be uncommented when the feature and icon are enabled in the tooltip component again.
+                       /*  .symbol-row:first-child .symbol-icon {
                         margin-left: -4px;
-                        }
+                        } */
                         .symbol-row:nth-child(3) {
                             position: relative;
                             top: -4px;

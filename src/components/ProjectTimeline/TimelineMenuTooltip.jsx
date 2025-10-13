@@ -26,20 +26,24 @@ const leftLabels = [
   "Vaiheen kesto"
 ];
 
+// NOTE: When restoring the "Käyttäjä on valinnut määräajan" icon, also restore the related
+// CSS rule in VisTimeline.scss for correct alignment.
+
+// The following icons/labels are commented out until the related features are implemented.
 const rightIcons = [
-  <ValittuMaaraaikaIcon key="valittu-maaraaika" className="symbol-icon" />,
-  <ValittuEsillaoloIcon key="valittu-esillaolo" className="symbol-icon" />,
+  // <ValittuMaaraaikaIcon key="valittu-maaraaika" className="symbol-icon" />,
+  // <ValittuEsillaoloIcon key="valittu-esillaolo" className="symbol-icon" />,
   <VahvistettuIcon key="vahvistettu" className="symbol-icon" />,
   <MennytIcon key="mennyt" className="symbol-icon" />,
-  <MyohassaIcon key="myohassa" className="symbol-icon" />,
+  // <MyohassaIcon key="myohassa" className="symbol-icon" />,
 ];
 
 const rightLabels = [
-  "Käyttäjä on valinnut määräajan",
-  "Käyttäjä on valinnut esilläolon",
+  // "Käyttäjä on valinnut määräajan",
+  // "Käyttäjä on valinnut esilläolon",
   "Kaavoitussihteeri on vahvistanut päivämäärät",
   "Päivämäärät on vahvistettu, mennyt ajanhetki",
-  <>Päivämääriä ei ole vahvistettu, mennyt ajanhetki,<span>&nbsp;myöhässä</span></>
+  // <>Päivämääriä ei ole vahvistettu, mennyt ajanhetki,<span>&nbsp;myöhässä</span></>
 ];
 
 const TimelineMenuTooltip = () => (
