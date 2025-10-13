@@ -78,10 +78,13 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   }, [custom.isTabActive, saving])
 
   useEffect(() => {
+    //!ismount skips initial render
     if(!isMount){
+      //Adds field to error list that don't trigger toastr right away (too many chars,empty field etc) and shows them when trying to save
       if(hasError){
         dispatch(formErrorList(true,input.name))
       }
+      //removes field from error list
       else{
         dispatch(formErrorList(false,input.name))
       }
@@ -90,11 +93,13 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
 
   useEffect(() => {
     if(lastSaved?.status === "error"){
+      //Unable to lock fields and connection backend not working so prevent editing
       document.activeElement.blur()
     }
   }, [lastSaved?.status === "error"])
 
   useEffect(() => {
+    //Chekcs that locked status has more data then inital empty object
     if(lockedStatus && Object.keys(lockedStatus).length > 0){
       if(lockedStatus.lock === false){
         let identifier;
@@ -102,12 +107,15 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
 
         if(custom.insideFieldset){
           if(name){
+            //Get index of fieldset
             name = name.split('.')[0]
           }
         }
+        //Field is fieldset field and has different type of identifier
         if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
           identifier = lockedStatus.lockData.attribute_lock.field_identifier;
         }
+        //is normal field
         else{
           identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
         }
@@ -121,11 +129,13 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
             const fieldSetFields = lockedStatus.lockData.attribute_lock.field_data
   
             if(field){
+              //Get single field
               field = field.split('.')[1]
             }
             
             if(fieldSetFields){
               for (const [key, value] of Object.entries(fieldSetFields)) {
+                //If field is this instance of component then set value for it from db
                 if(key === field){
                   fieldData = value
                 }
@@ -142,18 +152,23 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           }
         }
         else{
+          //Check if locked field name matches with instance and that owner is true to allow edit
           if(lock && lockedStatus.lockData.attribute_lock.owner){
             if(lastModified === input.name && lockedStatus?.saving){
               setReadOnly({name:input.name,read:true})
             }
+            //someone else is editing and prevent editing
             else{
+              //Add changed value from db if there has been changes
               setReadOnly({name:input.name,read:false})
               setValue(lockedStatus.lockData.attribute_lock.field_data)
+              //Change styles from FormField
               custom.lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
             }
           }
           else{
             setReadOnly({name:input.name,read:true})
+            //Change styles from FormField
             custom.lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
           }
         }
@@ -163,29 +178,37 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
 
   const handleFocus = () => {
     if (typeof custom.onFocus === 'function' && !lockedStatus?.saving && !custom.insideFieldset) {
+      //Sent a call to lock field to backend
       custom.onFocus(input.name);
     }
 
     if(lastSaved?.status === "error"){
+      //Prevent focus and editing to field if not locked
       document.activeElement.blur()
     }
   }
 
   const handleBlur = (event,readonly) => {
     let identifier;
+    //Chekcs that locked status has more data then inital empty object
     if(lockedStatus && Object.keys(lockedStatus).length > 0){
+      //Field is fieldset field and has different type of identifier
       if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
         identifier = lockedStatus.lockData.attribute_lock.field_identifier;
       }
+      //is normal field
       else{
         identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
       }
     }
+    //Check lockfield if component is used somewhere where locking is not used.
     if (typeof lockField === 'function' && !custom.insideFieldset) {
+      //Send identifier data to change styles from FormField.js
       custom.lockField(false,false,identifier)
     }
     if (typeof custom.handleUnlockField === 'function' && !custom.insideFieldset && 
       lockedStatus.lockData.attribute_lock.owner) {
+      //Sent a call to unlock field to backend
       custom.handleUnlockField(input.name)
     }
     let originalData
@@ -197,9 +220,12 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     }
 
     if (event.target.value !== originalData) {
+      //prevent saving if locked
       if (!readonly) {
+        //Sent call to save changes
         if (typeof custom.onBlur === 'function') {
           if(custom.type === "date"){
+            //Validate date
             let dateOk = moment(event.target.value, 'YYYY-MM-DD',false).isValid()
             if (event.target.value === "" && !custom?.fieldData?.required) {
               dateOk = true
@@ -241,6 +267,8 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     }
   }
 
+  // Sets the value of the input from the database if it has changed,
+  // used when field locking/unlocking or when data is updated externally
   const setValue = (dbValue) => {
     let name = input.name;
     let originalData = custom?.attributeData[name]
@@ -248,6 +276,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
       let fieldsetName
       let fieldName
       let index
+       //Get fieldset name, index and field of fieldset
       fieldsetName = name.split('[')[0]
       index = name.split('[').pop().split(']')[0];
       fieldName = name.split('.')[1]
@@ -255,6 +284,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
         originalData = custom?.attributeData[fieldsetName][index][fieldName]
       }
     }
+    //set editor value from db value updated with focus and lock call if data has changed on db
     if(dbValue && originalData !== dbValue || connection.connection){
       input.onChange(dbValue, input.name)
     }
@@ -280,6 +310,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
         setHasError(!!custom?.fieldData?.isRequired);
         input.onChange('', input.name);
         if (custom.isFloorAreaForm) {
+          //Edit floor area model object data with current value and dispatch change for form total value recalculation
           let newObject = custom.floorValue;
           newObject[input.name] = '';
           dispatch(updateFloorValues(newObject));
@@ -312,6 +343,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     }, 200);
   }
 
+  // Renders the rolling info field (read-only or with edit option)
   const renderRollingInfo = () => (
     <RollingInfo 
       name={input.name} 
@@ -326,6 +358,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     />
   );
 
+  // Renders the standard text input with error handling and loading spinner
   const renderTextInput = () => {
     const errorString = custom.customError || (custom.type === 'number' ? t('project.error-input-int') : t('project.error'));
     return (
@@ -342,6 +375,8 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           inputMode={custom.type === 'number' && custom.isFloorAreaForm ? "numeric" : undefined}
           pattern={custom.type === 'number' && custom.isFloorAreaForm ? "[0-9]*" : undefined}
           disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled}
+          // Only allow numeric input and navigation keys for floor area fields.
+          // Prevents entering non-numeric characters except for control/navigation keys.
           onKeyDown={custom.type === 'number' && custom.isFloorAreaForm ? (e) => {
             const allowed =
               (e.key.length === 1 && /^\d$/.test(e.key)) ||
@@ -372,10 +407,13 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     );
   };
 
+  // Decides whether to show a rolling info field or a normal text input
   const normalOrRollingElement = () => {
+     // If the field is non-editable, or rollingInfo is enabled and not in edit mode, show rolling info
     if (custom.nonEditable || (custom.rollingInfo && !editField)) {
       return renderRollingInfo();
     }
+    // Otherwise, show the standard text input
     return renderTextInput();
   };
 
