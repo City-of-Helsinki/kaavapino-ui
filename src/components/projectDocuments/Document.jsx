@@ -19,7 +19,6 @@ function Document({
   phaseEnded,
   isUserResponsible,
   hideButtons,
-  scheduleAccepted,
   schema,
   phaseIndex,
   attribute_data,
@@ -69,7 +68,7 @@ function Document({
     }
   }
 
-  const disableDownload = (ended,hide,accepted,schema) => {
+  const disableDownload = (ended,hide,schema) => {
     let currentSchemaIndex = schema?.subtype_name === "XL" && attribute_data?.luonnos_luotu && !attribute_data?.periaatteet_luotu ? phaseIndex - 2 : phaseIndex - 1
     if(schema?.subtype_name === "XL" && !attribute_data?.luonnos_luotu && attribute_data?.periaatteet_luotu && phaseIndex === 5){
       currentSchemaIndex = 3
@@ -79,7 +78,7 @@ function Document({
     } 
     const currentSchema = schema?.phases[currentSchemaIndex]
     const phaseConfirmed = isCurrentPhaseConfirmed(attribute_data)
-    return !ended && !hide && accepted && schema && currentSchema?.id === project?.phase && phaseConfirmed ? false : true
+    return !ended && !hide && schema && currentSchema?.id === project?.phase && phaseConfirmed ? false : true
   }
 
   const preview = () => {
@@ -119,7 +118,7 @@ function Document({
                 onClick={() => download()}
                 href={file}
                 className="document-button"
-                disabled={disableDownload(phaseEnded,hideButtons,scheduleAccepted,schema) || !downloadingDocumentReady}
+                disabled={disableDownload(phaseEnded,hideButtons,schema) || !downloadingDocumentReady}
               >
                 {t('project.load')}
               </Button>

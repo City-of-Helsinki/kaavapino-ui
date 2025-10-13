@@ -402,8 +402,32 @@ function checkDeadlineSchemaErrors(errorFields, currentDeadlineSchema, attribute
         }
         const val = findValueFromObject(attributeData, attr.name)
         const isIndexOneConfirmation = /^vahvista_.*_1$/.test(attr.name)
-        const isBaseConfirmation = /^vahvista_/.test(attr.name) && !isNumericConfirmation
-        if (val === undefined || val === null || val === '' || (Array.isArray(val) && val.length === 0)|| ( (isIndexOneConfirmation || isBaseConfirmation) && val === false) ) {
+        // Base confirmation now defined strictly as a member of a pair *_esillaolo_alkaa or *_lautakunnassa (without numeric suffix)
+        const basePairMatch = attr.name.match(/^vahvista_(.+?)_(esillaolo_alkaa|lautakunnassa)$/)
+        const isBaseConfirmation = !!basePairMatch && !isNumericConfirmation
+        let missing = false
+        // Generic missing value checks
+        if (val === undefined || val === null || val === '' || (Array.isArray(val) && val.length === 0)) {
+          missing = true
+        }
+        // For index one confirmations treat explicit false as missing
+        if (!missing && (isIndexOneConfirmation || isBaseConfirmation) && val === false) {
+          missing = true
+        }
+        // Pair logic: if part of *_esillaolo_alkaa / *_lautakunnassa pair, require at least ONE of them to be true; if either true => satisfied
+        if (basePairMatch) {
+          const segment = basePairMatch[1]
+          const pairStartKey = `vahvista_${segment}_esillaolo_alkaa`
+            .replace(/__+/, '_') // safety collapse
+          const pairLautKey = `vahvista_${segment}_lautakunnassa`
+          const pairSatisfied = attributeData[pairStartKey] === true || attributeData[pairLautKey] === true
+          if (pairSatisfied) {
+            missing = false // override even if current attr itself false/empty
+          } else {
+            missing = true
+          }
+        }
+        if (missing) {
           errorFields.push({
             "title": "Aikataulun muokkausnäkymä",
             "errorSection": section.name,
