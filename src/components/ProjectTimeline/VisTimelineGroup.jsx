@@ -714,11 +714,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const rangeDuration = 1000 * 60 * 60 * 24 * 30 * 3; // approx 3 months
       restoreNormalMonths(moment);
       timelineRef.current.classList.remove("months");
-      timelineRef.current.classList.add("years");
+      timelineRef.current.classList.add("months");
       timeline.setOptions({timeAxis: {scale: 'week'},      
         format: {
           minorLabels: { week: '[Viikko] w' }, // Week label: "Viikko 51"
-          majorLabels: { week: 'MMM YYYY' }    // Top axis: month + year
+          majorLabels: { week: 'MMMM YYYY' }    // Top axis: month + year
         }});
 
       const newStart = new Date(center.getTime() - rangeDuration / 2);
@@ -820,7 +820,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       if (!timeline) return;
       timeline.setOptions({
         format: {
-          minorLabels: { month: 'MMM' },
+          minorLabels: { month: 'MMMM' },
           majorLabels: { year: 'YYYY' }
         }
 
@@ -989,7 +989,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               weekday:    'D<br>ddd',
               day:        'D',
               week:       'w',
-              month:      'MMM',
+              month:      'MMMM',
               year:       'YYYY'
           },
           majorLabels: {
