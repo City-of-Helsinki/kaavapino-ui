@@ -33,7 +33,7 @@ function VisTimelineMenu({goToToday,moveLeft,moveRight,showYears,showMonths,show
             <Button size="small" variant="secondary" className={selectedButton === 'show3Months' ? 'selected' : ''} onClick={() => {show3Months(); handleClick('show3Months');}}>3 kuukautta</Button>
             <Button size="small" variant="secondary" className={selectedButton === 'show6Months' ? 'selected' : ''} onClick={() => {show6Months(); handleClick('show6Months');}}>6 kuukautta</Button>
             <Button size="small" variant="secondary" className={selectedButton === 'showYears' ? 'selected' : ''}  onClick={() => {showYears(); handleClick('showYears');}}>1 vuosi</Button>
-            <Button size="small" variant="secondary" className={selectedButton === 'show2Years' ? 'selected' : ''} onClick={() => {show2Years(); handleClick('show2Years');}}>2 Vuotta</Button>
+            <Button size="small" variant="secondary" className={selectedButton === 'show2Years' ? 'selected' : ''} onClick={() => {show2Years(); handleClick('show2Years');}}>2 vuotta</Button>
              {/*<Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {show5Yers()}}>5 Vuotta</Button>
             <Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {showWeeks()}}>Weeks</Button>
             <Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {showDays()}}>Days</Button> */}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal } from 'semantic-ui-react'
 import { Button, Tabs, IconCross } from 'hds-react'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
@@ -33,6 +34,8 @@ const TimelineModal = ({
   isAdmin,
   initialTab
 }) => {
+
+  const { t } = useTranslation();
 
   const getAttributeValues = (attributes) => {
     return Object.values(attributes).flatMap((v) => Object.values(v));
@@ -272,43 +275,63 @@ const TimelineModal = ({
     return confirmedValue.replace(/\s+/g, '');
   };
 
-  // Improved past-date check: use actual Esilläolo/Nähtävilläolo start date if possible
+  // build Esilläolo date key
+  const getEsillaoloDateKey = (group, index) => {
+    const groupKeyMap = {
+      'Luonnos': 'milloin_luonnos_esillaolo_alkaa',
+      'Ehdotus': 'milloin_ehdotus_esillaolo_alkaa',
+      'Tarkistettu ehdotus': 'milloin_tarkistettu_ehdotus_esillaolo_alkaa',
+      'OAS': 'milloin_oas_esillaolo_alkaa'
+    };
+    const base = groupKeyMap[group];
+    return base ? `${base}${index}` : null;
+  };
+
+  // build Nähtävilläolo date key for Ehdotus
+  const getNahtavillaoloDateKey = (group, index, visValues) => {
+    if (group !== 'Ehdotus') return null;
+    const keyPieni = `milloin_ehdotuksen_nahtavilla_alkaa_pieni${index}`;
+    const keyIso = `milloin_ehdotuksen_nahtavilla_alkaa_iso${index}`;
+    const keyPlain = `milloin_ehdotuksen_nahtavilla_alkaa${index}`;
+    if (visValues[keyPieni]) return keyPieni;
+    if (visValues[keyIso]) return keyIso;
+    if (visValues[keyPlain]) return keyPlain;
+    return null;
+  };
+
+  // fallback phase key
+  const getPhaseFallbackKey = (group) => {
+    const phaseKeyMap = {
+      'Ehdotus': 'ehdotus',
+      'Tarkistettu ehdotus': 'tarkistettu_ehdotus',
+      'Luonnos': 'luonnos',
+      'OAS': 'oas',
+      'Periaatteet': 'periaatteet'
+    };
+    const phaseKey = phaseKeyMap[group] || group?.toLowerCase().replace(/\s+/g, '_');
+    return `${phaseKey}vaihe_alkaa_pvm`;
+  };
 
   const isEsillaoloOrNahtavillaStartDateInPast = (group, title, visValues) => {
     const lowerTitle = title.toLowerCase();
     let dateKey = null;
     let index = '';
 
-    // Try to extract index from title, e.g. "Esilläolo - 2"
-    const match = lowerTitle.match(/esilläolo\s*-\s*(\d+)/) || lowerTitle.match(/esillaolo\s*-\s*(\d+)/);
+    // Extract index from title, e.g. "Esilläolo - 2"
+    const match = lowerTitle.match(/esilläolo\s*-\s*(\d+)/) || lowerTitle.match(/esillaolo\s*-\s*(\d+)/) ||
+                  lowerTitle.match(/nähtävilläolo\s*-\s*(\d+)/) || lowerTitle.match(/nahtavillaolo\s*-\s*(\d+)/);
     if (match) {
-      index = `_${match[1]}`;
+      index = match[1] !== "1" ? `_${match[1]}` : '';
     }
 
-    // Esilläolo keys
     if (lowerTitle.includes('esilläolo') || lowerTitle.includes('esillaolo')) {
-      if (group === 'Luonnos') dateKey = `milloin_luonnos_esillaolo_alkaa${index}`;
-      else if (group === 'Ehdotus') dateKey = `milloin_ehdotus_esillaolo_alkaa${index}`;
-      else if (group === 'Tarkistettu ehdotus') dateKey = `milloin_tarkistettu_ehdotus_esillaolo_alkaa${index}`;
-      else if (group === 'OAS') dateKey = `milloin_oas_esillaolo_alkaa${index}`;
-      // Add more as needed for other phases
-    }
-    // Nähtävilläolo keys
-    else if (lowerTitle.includes('nähtävilläolo') || lowerTitle.includes('nahtavillaolo')) {
-      if (group === 'Ehdotus') dateKey = `milloin_ehdotuksen_nahtavilla_alkaa_iso${index}`;
-      // Add more as needed
+      dateKey = getEsillaoloDateKey(group, index);
+    } else if (lowerTitle.includes('nähtävilläolo') || lowerTitle.includes('nahtavillaolo')) {
+      dateKey = getNahtavillaoloDateKey(group, index, visValues);
     }
 
-    // Fallback: use phase start date if no specific key found
     if (!dateKey) {
-      let phaseKey;
-      if (group === 'Ehdotus') phaseKey = 'ehdotus';
-      else if (group === 'Tarkistettu ehdotus') phaseKey = 'tarkistettu_ehdotus';
-      else if (group === 'Luonnos') phaseKey = 'luonnos';
-      else if (group === 'OAS') phaseKey = 'oas';
-      else if (group === 'Periaatteet') phaseKey = 'periaatteet';
-      else phaseKey = group?.toLowerCase().replace(/\s+/g, '_');
-      dateKey = `${phaseKey}vaihe_alkaa_pvm`;
+      dateKey = getPhaseFallbackKey(group);
     }
 
     const dateStr = visValues?.[dateKey];
@@ -399,27 +422,28 @@ const TimelineModal = ({
 
     // Unify past-date lock for lautakunta and esilläolo/nähtävilläolo; keep prop name for downstream component
     const anyPast = lautakuntaInPast || esillaoloNahtavillaInPast;
+
     const tooltip =
       phaseClosed
         ? confirmed
-          ? 'Vahvistusta ei voi perua, koska vaihe on lopetettu.'
-          : 'Vahvistusta ei voi tehdä, koska vaihe on lopetettu.'
+          ? t('deadlines.tooltip.phaseClosedConfirmed')
+          : t('deadlines.tooltip.phaseClosed')
         : !phaseIsActive
           ? confirmed
-            ? 'Vahvistuksen voi perua vain aktiivisessa vaiheessa.'
-            : 'Vahvistus on mahdollista vain aktiivisessa vaiheessa.'
+            ? t('deadlines.tooltip.notActiveConfirmed')
+            : t('deadlines.tooltip.notActive')
         : esillaoloNotConfirmedBeforeLautakunta
-          ? 'Lautakuntaa ei voi vahvistaa ennen kuin esilläolo on vahvistettu.'
+          ? t('deadlines.tooltip.lautakuntaNeedsEsillaolo')
         : esillaoloLockedByLautakunta
-          ? 'Esilläolon vahvistusta ei voi perua, koska lautakunta on jo vahvistettu.'
+          ? t('deadlines.tooltip.esillaoloLockedByLautakunta')
         : lautakuntaInPast
-          ? 'Vahvistusta ei voi perua, koska lautakunta sijaitsee menneessä ajanhetkessä.'
+          ? t('deadlines.tooltip.lautakuntaInPast')
         : anyPast
           ? confirmed
-            ? 'Vahvistusta ei voi perua, koska päivämäärä on menneisyydessä.'
-            : 'Päivämäärää ei voi vahvistaa, koska se sijaitsee menneisyydessä.'
+            ? t('deadlines.tooltip.anyPastConfirmed')
+            : t('deadlines.tooltip.anyPast')
         : disableConfirmButton
-          ? `Vahvistusta ei voi perua, koska seuraava ${nextGroupWord} on jo lisätty.`
+          ? t('deadlines.tooltip.disableConfirmButton', { nextGroupWord })
         : null;
 
     return { lautakuntaInPast: anyPast, tooltip, disabled };
