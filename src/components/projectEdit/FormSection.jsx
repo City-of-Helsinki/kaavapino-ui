@@ -53,7 +53,13 @@ const FormSection = ({
           rollingInfo = false
         }
         let highlightStyle = highlightedTag === field.field_subroles ? 'yellow' : ''
-        if(filterFieldsArray.length === 0 || filterFieldsArray.includes(field.field_subroles)){
+        let matchesFilter = (filterFieldsArray.length === 0) || filterFieldsArray.includes(field.field_subroles)
+        if(!matchesFilter && field.categorization === 'fieldset' && Array.isArray(field.fieldset_attributes)){
+          matchesFilter = field.fieldset_attributes.some(attr =>
+            attr?.field_subroles && filterFieldsArray.includes(attr.field_subroles)
+          )
+        }
+        if(matchesFilter){
           count++
           return (<FormField
             key={`${field.name}-${i}-${field.label}`}
