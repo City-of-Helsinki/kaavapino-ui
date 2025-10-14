@@ -46,6 +46,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
     const { showTooltip, hideTooltip } = useTimelineTooltip();
 
+    // Store original month names so we can temporarily swap in quarter range labels
+    const originalMonthsRef = useRef(null);
+
     useImperativeHandle(ref, () => ({
       getTimelineInstance: () => timelineInstanceRef.current,
     }));
@@ -749,7 +752,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const range = timeline.getWindow();
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 365; // about 1 year
-      restoreNormalMonths(moment);
+      restoreNormalMonths(moment); // also restores after quarter view
       restoreStandardLabelFormat();
       timelineRef.current.classList.remove("months")
       timelineRef.current.classList.add("years")
@@ -762,27 +765,57 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       highlightJanuaryFirst()
     }
 
+    // Apply quarter range labels by temporarily replacing the Finnish month names
+    const applyQuarterRangeLabels = () => {
+      if (!originalMonthsRef.current) {
+        const ld = Moment.localeData('fi');
+        originalMonthsRef.current = {
+          months: ld.months(),
+          monthsShort: ld.monthsShort()
+        };
+      }
+      const months = [...originalMonthsRef.current.months];
+      const monthsShort = [...originalMonthsRef.current.monthsShort];
+      months[0] = 'Tammikuu - Maaliskuu';
+      months[3] = 'Huhtikuu - Kesäkuu';
+      months[6] = 'Heinäkuu - Syyskuu';
+      months[9] = 'Lokakuu - Joulukuu';
+      // Short variants (kept concise; not shown with current format but safe)
+      monthsShort[0] = 'Tam-Maa';
+      monthsShort[3] = 'Huh-Kes';
+      monthsShort[6] = 'Hei-Syy';
+      monthsShort[9] = 'Lok-Jou';
+      Moment.updateLocale('fi', { months, monthsShort });
+    };
+
+    const restoreQuarterRangeLabels = () => {
+      if (originalMonthsRef.current) {
+        Moment.updateLocale('fi', {
+          months: originalMonthsRef.current.months,
+          monthsShort: originalMonthsRef.current.monthsShort
+        });
+        originalMonthsRef.current = null;
+      }
+    };
+
     const show2Years = () => {
-      // 2-year view with quarter labels
       const range = timeline.getWindow();
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 365 * 2; // ~2 years
-      restoreNormalMonths(moment); // ensure normal month names restored
-      timelineRef.current.classList.remove("months");
-      timelineRef.current.classList.add("years");
-      // Use moment's quarter token Q; '[Q]Q' renders e.g. Q1, Q2
+      restoreQuarterRangeLabels(); // ensure clean before applying
+      applyQuarterRangeLabels();
+      timelineRef.current.classList.remove('months');
+      timelineRef.current.classList.add('years');
       timeline.setOptions({
-      timeAxis: { scale: 'month', step: 3 },
-      format: {
-        minorLabels: { month: '[Q]Q' },
-        majorLabels: { year: 'YYYY' }
-      }
+        timeAxis: { scale: 'month', step: 3 },
+        format: {
+          minorLabels: { month: 'MMMM' },
+          majorLabels: { year: 'YYYY' }
+        }
       });
-
       const newStart = new Date(center.getTime() - rangeDuration / 2);
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
       timeline.setWindow(newStart, newEnd);
-      // Ensure recalculation
       timeline.redraw();
       setCurrentFormat('show2Years');
       highlightJanuaryFirst();
@@ -803,6 +836,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const loc = moment.locale('fi');
       const ld = moment.localeData(loc);
       const current = ld.monthsShort();
+
+      // If we had quarter range labels applied, restore originals
+      if (originalMonthsRef.current) {
+        restoreQuarterRangeLabels();
+      }
 
       // If months are Q1/Q2/... put real month names back using Intl
       if (current && current[0] === 'Q1') {
