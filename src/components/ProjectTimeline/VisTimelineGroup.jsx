@@ -39,6 +39,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [addDialogData, setAddDialogData] = useState({group:false,deadlineSections:false,showPresence:false,showBoard:false,nextEsillaolo:false,nextLautakunta:false,esillaoloReason:"",lautakuntaReason:"",hidePresence:false,hideBoard:false});
     const [toggleOpenAddDialog, setToggleOpenAddDialog] = useState(false)
     const [currentFormat, setCurrentFormat] = useState("showYears");
+    const currentFormatRef = useRef("showYears");
+    const weekAxisListenerRef = useRef(null);
     const [openConfirmModal, setOpenConfirmModal] = useState(false);
     const [dataToRemove, setDataToRemove] = useState({});
     const [timelineAddButton, setTimelineAddButton] = useState();
@@ -696,6 +698,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const showMonths = () => {
+      // Leaving 3-month view? detach listener
+      if(currentFormatRef.current === 'show3Months') detachWeekAxisHover();
+      currentFormatRef.current = 'showMonths';
       const range = timeline.getWindow();
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 30; // about 1 month
@@ -728,10 +733,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
       timeline.setWindow(newStart, newEnd);
       setCurrentFormat("show3Months");
+      currentFormatRef.current = 'show3Months';
+      attachWeekAxisHover();
       highlightJanuaryFirst();
     }
 
     const show6Months = () => {
+      if(currentFormatRef.current === 'show3Months') detachWeekAxisHover();
       const range = timeline.getWindow();
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 30 * 6; // approx 6 months
@@ -745,10 +753,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
       timeline.setWindow(newStart, newEnd);
       setCurrentFormat("show6Months");
+      currentFormatRef.current = 'show6Months';
       highlightJanuaryFirst();
     }
 
     const showYears = () => {
+      if(currentFormatRef.current === 'show3Months') detachWeekAxisHover();
       const range = timeline.getWindow();
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 365; // about 1 year
@@ -762,6 +772,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
       timeline.setWindow(newStart, newEnd);
       setCurrentFormat("showYears");
+      currentFormatRef.current = 'showYears';
       highlightJanuaryFirst()
     }
 
@@ -799,6 +810,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     };
 
     const show2Years = () => {
+      if(currentFormatRef.current === 'show3Months') detachWeekAxisHover();
       const range = timeline.getWindow();
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 365 * 2; // ~2 years
@@ -818,10 +830,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       timeline.setWindow(newStart, newEnd);
       timeline.redraw();
       setCurrentFormat('show2Years');
+      currentFormatRef.current = 'show2Years';
       highlightJanuaryFirst();
     };
 
     const show5Years = () => {
+      if(currentFormatRef.current === 'show3Months') detachWeekAxisHover();
       let now = new Date();
       let currentYear = now.getFullYear();
       let startOf5Years = new Date(currentYear, now.getMonth(), 1);
@@ -829,7 +843,72 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       restoreStandardLabelFormat();
       timeline.setOptions({timeAxis: {scale: 'month'}});
       timeline.setWindow(startOf5Years, endOf5Years);
+      setCurrentFormat('show5Years');
+      currentFormatRef.current = 'show5Years';
     }
+
+    // Week hover logic (native title) for show3Months
+    const computeWeekRange = (weekNum, anchorYear) => {
+      // Use ISO week; handle year wrap by trying anchorYear then +/-1 if needed
+      let start = moment().isoWeekYear(anchorYear).isoWeek(weekNum).isoWeekday(1).startOf('day');
+      if(start.isoWeek() !== weekNum) start = moment().isoWeekYear(anchorYear+1).isoWeek(weekNum).isoWeekday(1).startOf('day');
+      let end = moment(start).isoWeekday(7).endOf('day');
+      return {start, end};
+    };
+
+    const deriveYearForLabel = (labelEl) => {
+      // Walk previous siblings for a major label with year
+      let parent = labelEl.parentNode;
+      if(!parent) return new Date().getFullYear();
+      const siblings = Array.from(parent.children);
+      const idx = siblings.indexOf(labelEl);
+      for(let i=idx; i>=0; i--){
+        const sib = siblings[i];
+        if(sib.classList && sib.classList.contains('vis-major')){
+          const txt = sib.textContent || '';
+          const m = txt.match(/(\d{4})/);
+          if(m) return parseInt(m[1],10);
+        }
+      }
+      // Fallback: center year of current window
+      const range = timeline.getWindow();
+      return new Date((range.start.getTime()+range.end.getTime())/2).getFullYear();
+    };
+
+    const weekLabelHoverHandler = (e) => {
+      if(currentFormatRef.current !== 'show3Months') return;
+      const target = e.target;
+      if(!target || !target.classList || !target.classList.contains('vis-text') || !target.classList.contains('vis-minor')) return;
+      // Find vis-weekNN class even if empty label
+      let weekNum = null;
+      target.classList.forEach(cls => { const m = cls.match(/^vis-week(\d{1,2})$/); if(m) weekNum = parseInt(m[1],10); });
+      if(!weekNum) return;
+      const year = deriveYearForLabel(target);
+      const {start, end} = computeWeekRange(weekNum, year);
+      // Format: 29.1 - 4.2.2024 (omit year from first date)
+      const startStr = start.format('D.M');
+      const endStr = end.format('D.M.YYYY');
+      const rangeStr = `${startStr} - ${endStr}`;
+      // Use native title attribute only (per current simplified requirement)
+      target.setAttribute('title', rangeStr);
+    };
+
+    const attachWeekAxisHover = () => {
+      if(weekAxisListenerRef.current) return;
+      const axis = timelineRef.current?.querySelector('.vis-time-axis.vis-foreground');
+      if(axis){
+        axis.addEventListener('mouseover', weekLabelHoverHandler, true);
+        weekAxisListenerRef.current = axis;
+      }
+    };
+
+    const detachWeekAxisHover = () => {
+      if(!weekAxisListenerRef.current) return;
+      weekAxisListenerRef.current.removeEventListener('mouseover', weekLabelHoverHandler, true);
+      weekAxisListenerRef.current = null;
+    };
+
+    useEffect(() => () => { detachWeekAxisHover(); }, []);
 
 
     const restoreNormalMonths = (moment) => {
