@@ -61,9 +61,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     if(custom.type === "date" && !custom.insideFieldset){
       setReadOnly({name:input.name,read:true})
     }
-    return () => {
-
-    };
+    return () => {};
   }, [])
 
   useEffect(() => {
@@ -80,14 +78,14 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   }, [custom.isTabActive, saving])
 
   useEffect(() => {
+    //!ismount skips initial render
     if(!isMount){
-      //!ismount skips initial render
+      //Adds field to error list that don't trigger toastr right away (too many chars,empty field etc) and shows them when trying to save
       if(hasError){
-        //Adds field to error list that don't trigger toastr right away (too many chars,empty field etc) and shows them when trying to save
         dispatch(formErrorList(true,input.name))
       }
+      //removes field from error list
       else{
-        //removes field from error list
         dispatch(formErrorList(false,input.name))
       }
     }
@@ -114,10 +112,10 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           }
         }
         //Field is fieldset field and has different type of identifier
-        //else is normal field
         if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
           identifier = lockedStatus.lockData.attribute_lock.field_identifier;
         }
+        //is normal field
         else{
           identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
         }
@@ -137,8 +135,8 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
             
             if(fieldSetFields){
               for (const [key, value] of Object.entries(fieldSetFields)) {
+                //If field is this instance of component then set value for it from db
                 if(key === field){
-                  //If field is this instance of component then set value for it from db
                   fieldData = value
                 }
               }
@@ -155,14 +153,14 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
         }
         else{
           //Check if locked field name matches with instance and that owner is true to allow edit
-          //else someone else is editing and prevent editing
           if(lock && lockedStatus.lockData.attribute_lock.owner){
             if(lastModified === input.name && lockedStatus?.saving){
               setReadOnly({name:input.name,read:true})
             }
+            //someone else is editing and prevent editing
             else{
-              setReadOnly({name:input.name,read:false})
               //Add changed value from db if there has been changes
+              setReadOnly({name:input.name,read:false})
               setValue(lockedStatus.lockData.attribute_lock.field_data)
               //Change styles from FormField
               custom.lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
@@ -195,10 +193,10 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     //Chekcs that locked status has more data then inital empty object
     if(lockedStatus && Object.keys(lockedStatus).length > 0){
       //Field is fieldset field and has different type of identifier
-      //else is normal field
       if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
         identifier = lockedStatus.lockData.attribute_lock.field_identifier;
       }
+      //is normal field
       else{
         identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
       }
@@ -252,7 +250,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
               const regex = new RegExp(custom.regex);
               setHasError(event.target.value !== "" && !regex.test(event.target.value))
             } else if(custom.type === 'number') {
-              const regex = new RegExp("^[+-]?\\d+$");
+              const regex = /^\d+$/;
               setHasError(event.target.value !== "" && !regex.test(event.target.value))
             }
           }
@@ -269,15 +267,16 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     }
   }
 
+  // Sets the value of the input from the database if it has changed,
+  // used when field locking/unlocking or when data is updated externally
   const setValue = (dbValue) => {
-
     let name = input.name;
     let originalData = custom?.attributeData[name]
     if(custom.insideFieldset && !custom.nonEditable || !custom.rollingInfo){
       let fieldsetName
       let fieldName
       let index
-      //Get fieldset name, index and field of fieldset
+       //Get fieldset name, index and field of fieldset
       fieldsetName = name.split('[')[0]
       index = name.split('[').pop().split(']')[0];
       fieldName = name.split('.')[1]
@@ -291,21 +290,42 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     }
   }
 
-  const handleInputChange = useCallback((event,readonly) => {
-    const isConnected = connection.connection || typeof connection.connection === "undefined" ? true : false
-    if(!readonly || custom.type === "date" || isConnected){
-      if(!event.target.value?.trim() && custom?.fieldData?.isRequired){
-        setHasError(true)
+  // Helper for sanitizing floor area integer input
+  const sanitizeFloorAreaValue = (value) => value.replaceAll(/\D/g, '');
+
+  const processFloorAreaInput = (value) => {
+    let sanitized = sanitizeFloorAreaValue(value);
+    if (sanitized.startsWith('-')) sanitized = sanitized.substring(1);
+    return sanitized;
+  };
+
+  const handleInputChange = useCallback((event, readonly) => {
+    const isConnected = connection.connection ?? true;
+    let value = event.target.value;
+
+    if (custom.type === 'number' && custom.isFloorAreaForm) {
+      value = processFloorAreaInput(value);
+
+      if (value === '') {
+        setHasError(!!custom?.fieldData?.isRequired);
+        input.onChange('', input.name);
+        if (custom.isFloorAreaForm) {
+          //Edit floor area model object data with current value and dispatch change for form total value recalculation
+          let newObject = custom.floorValue;
+          newObject[input.name] = '';
+          dispatch(updateFloorValues(newObject));
+        }
+        return;
       }
-      else{
-        setHasError(false)
-      }
-      input.onChange(event.target.value, input.name)
-      if(custom.isFloorAreaForm){
-        //Edit floor area model object data with current value and dispatch change for form total value recalculation
-        let newObject = custom.floorValue
-        newObject[input.name] = Number(event.target.value)
-        dispatch(updateFloorValues(newObject))
+    }
+
+    if (!readonly || custom.type === "date" || isConnected) {
+      setHasError(!value?.trim() && !!custom?.fieldData?.isRequired);
+      input.onChange(value, input.name);
+      if (custom.isFloorAreaForm) {
+        let newObject = custom.floorValue;
+        newObject[input.name] = value === '' ? '' : Number(value);
+        dispatch(updateFloorValues(newObject));
       }
     }
   }, [input.name, input.value]);
@@ -323,26 +343,26 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     }, 200);
   }
 
+  // Renders the rolling info field (read-only or with edit option)
+  const renderRollingInfo = () => (
+    <RollingInfo 
+      name={input.name} 
+      value={input.value} 
+      nonEditable={custom.nonEditable}
+      modifyText={custom.modifyText}
+      rollingInfoText={custom.rollingInfoText}
+      editRollingField={editRollingField}
+      type={"input"}
+      phaseIsClosed={custom.phaseIsClosed}
+      factaInfo={custom?.fieldData?.assistive_text}
+    />
+  );
 
-  const normalOrRollingElement = () => {
-    const errorString = custom.customError || (custom.type === 'number'? t('project.error-input-int') : t('project.error'))
-    //Render rolling info field or normal edit field
-    //If clicking rolling field button makes positive lock check then show normal editable field
-    //Rolling field can be nonEditable
-    const elements = custom.nonEditable || custom.rollingInfo && !editField ?
-      <RollingInfo 
-        name={input.name} 
-        value={input.value} 
-        nonEditable={custom.nonEditable}
-        modifyText={custom.modifyText}
-        rollingInfoText={custom.rollingInfoText}
-        editRollingField={editRollingField}
-        type={"input"}
-        phaseIsClosed={custom.phaseIsClosed}
-        factaInfo={custom?.fieldData?.assistive_text}
-      />
-      :    
-      <div className={custom.disabled || !inputUtils.hasError(error).toString() || !hasError ? "text-input " : "text-input " +t('project.error')}>
+  // Renders the standard text input with error handling and loading spinner
+  const renderTextInput = () => {
+    const errorString = custom.customError || (custom.type === 'number' ? t('project.error-input-int') : t('project.error'));
+    return (
+      <div className={custom.disabled || !inputUtils.hasError(error).toString() || !hasError ? "text-input " : "text-input " + t('project.error')}>
         <TextInput
           ref={inputRef}
           aria-label={input.name}
@@ -351,11 +371,23 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           fluid="true"
           {...input}
           {...restCustom}
-          label={null}
+          min={custom.type === 'number' && custom.isFloorAreaForm ? 0 : undefined}
+          inputMode={custom.type === 'number' && custom.isFloorAreaForm ? "numeric" : undefined}
+          pattern={custom.type === 'number' && custom.isFloorAreaForm ? "[0-9]*" : undefined}
           disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled}
-          onChange={(event) =>{handleInputChange(event,readonly.read)}}
-          onBlur={(event) => {handleBlur(event,readonly.read)}}
-          onFocus={() => {handleFocus()}}
+          // Only allow numeric input and navigation keys for floor area fields.
+          // Prevents entering non-numeric characters except for control/navigation keys.
+          onKeyDown={custom.type === 'number' && custom.isFloorAreaForm ? (e) => {
+            const allowed =
+              (e.key.length === 1 && /^\d$/.test(e.key)) ||
+              ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Home', 'End'].includes(e.key);
+            if (!allowed) {
+              e.preventDefault();
+            }
+          } : undefined}
+          onChange={(event) => { handleInputChange(event, readonly.read) }}
+          onBlur={(event) => { handleBlur(event, readonly.read) }}
+          onFocus={() => { handleFocus() }}
           readOnly={readonly.read || lastSaved?.status === "error"}
         />
         {saving && isInstanceSaving && (
@@ -372,9 +404,18 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           </>
         )}
       </div>
-    
-    return elements
-  }
+    );
+  };
+
+  // Decides whether to show a rolling info field or a normal text input
+  const normalOrRollingElement = () => {
+     // If the field is non-editable, or rollingInfo is enabled and not in edit mode, show rolling info
+    if (custom.nonEditable || (custom.rollingInfo && !editField)) {
+      return renderRollingInfo();
+    }
+    // Otherwise, show the standard text input
+    return renderTextInput();
+  };
 
   return (
     normalOrRollingElement()
