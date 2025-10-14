@@ -98,7 +98,7 @@
   }
 }
 .tooltip {
-  margin-top: 0 !important;
+  margin-top: 0;
   &.ui.grid > .row {
     padding: 0;
   }
@@ -125,7 +125,6 @@
   }
 
   min-width: 300px;
-  margin-top: 10px;
 }
 .map-area {
   .filters-list {
