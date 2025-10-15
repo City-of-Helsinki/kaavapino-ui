@@ -2,6 +2,7 @@ import React from 'react'
 import Document from './Document.jsx'
 import { Accordion,IconAlertCircle,IconCheck } from 'hds-react'
 import projectUtils from '../../utils/projectUtils'
+import { isCurrentPhaseConfirmed } from '../../utils/projectVisibilityUtils'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 
@@ -23,19 +24,6 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
     return hasErrors
   }
 
-  const isSceduleAccepted = () => {
-    const currentSchemaIndex = getCorrectPhaseIndex()
-    const currentSchema = schema?.deadline_sections[currentSchemaIndex]
-    const nonAcceptedFields = projectUtils.isSceduleAccepted(attribute_data, currentSchema)
-    let accepted
-    if(nonAcceptedFields.length > 0){
-      accepted = false
-    }
-    else{
-      accepted = true
-    }
-    return accepted
-  }
 
   const getCorrectPhaseIndex = () => {
     //XL Luonnos -2 to starting index so document accordians are check correctly
@@ -60,7 +48,7 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
     const currentSchemaIndex = getCorrectPhaseIndex()
     const currentSchema = schema?.phases[currentSchemaIndex]
     const requirements = checkRequired()
-    const scheduleAccepted = isSceduleAccepted()
+    const phaseConfirmed = isCurrentPhaseConfirmed(attribute_data)
     let status
     if(phaseEnded){
       status = 
@@ -71,7 +59,7 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
         <div className='document-status-info'><span>{t('project.phase-preview-ended')}</span></div>
       </div>
     }
-    else if(schema && !requirements && scheduleAccepted && currentSchema?.id === project?.phase){
+    else if(schema && !requirements && currentSchema?.id === project?.phase && phaseConfirmed){
       status = 
       <div className='document-group-requirements'>
         <div className='document-status required-success-text'>
@@ -119,7 +107,6 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
               selectedPhase={selectedPhase}
               search={search}
               hideButtons={schema ? hideButtons() : true}
-              scheduleAccepted={schema ? isSceduleAccepted() : false}
               project={project}
               disableDownloads={disableDownloads}
               downloadingDocumentReady={downloadingDocumentReady}

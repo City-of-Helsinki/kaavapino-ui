@@ -32,6 +32,7 @@ const FormField = ({
   unlockAllFields,
   highlightedTag,
   highlightStyle,
+  highlightedInFieldset,
   insideFieldset,
   disabled,
   lautakuntaInPast,
@@ -155,6 +156,8 @@ const FormField = ({
             allowedToEdit={allowedToEdit}
             isAdmin={isAdmin}
             timetable_editable={timetable_editable}
+            highlightedInFieldset={highlightedInFieldset}
+            highlightedTag={highlightedTag}
           />
         )
     }

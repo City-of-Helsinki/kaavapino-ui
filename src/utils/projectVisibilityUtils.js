@@ -268,7 +268,8 @@ export const isDeadlineConfirmed = (formValues, deadlineGroup, returnField, brea
     if (!attribute_data || !attribute_data.kaavan_vaihe) return false;
 
     // Remove leading numbering like "3. " then normalize (lowercase, remove spaces)
-    const raw = attribute_data.kaavan_vaihe.replace(/^[\d]+\.\s*/, '');
+    // Also remove a possible leading 'XL.' (roman numeral / size marker) prefix
+    const raw = attribute_data.kaavan_vaihe.replace(/^(?:[\d]+\.|XL\.)\s*/i, '');
     // Use shared utility to normalize Scandinavian characters
     let phase = textUtil.replaceScandics(raw).toLowerCase().trim();
     // Exception: keep tarkistettu_ehdotus with underscore (do NOT concatenate)

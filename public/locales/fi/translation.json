@@ -117,7 +117,19 @@
     "delete-first-lautakunta":"Riviä ei voi poistaa, koska vaiheen ensimmäinen lautakunta on pakollinen.",
     "delete-first-nahtavillaolo":"Riviä ei voi poistaa, koska vaiheen ensimmäinen nähtävilläolo on pakollinen.",
     "timeline-group-header": "Vaiheiden etapit",
-    "modify-timeline":"Muokkaa aikataulua"
+    "modify-timeline":"Muokkaa aikataulua",
+    "tooltip": {
+      "phaseClosedConfirmed": "Vahvistusta ei voi perua, koska vaihe on lopetettu.",
+      "phaseClosed": "Vahvistusta ei voi tehdä, koska vaihe on lopetettu.",
+      "notActiveConfirmed": "Vahvistuksen voi perua vain aktiivisessa vaiheessa.",
+      "notActive": "Vahvistus on mahdollista vain aktiivisessa vaiheessa.",
+      "lautakuntaNeedsEsillaolo": "Lautakuntaa ei voi vahvistaa ennen kuin esilläolo on vahvistettu.",
+      "esillaoloLockedByLautakunta": "Esilläolon vahvistusta ei voi perua, koska lautakunta on jo vahvistettu.",
+      "lautakuntaInPast": "Vahvistusta ei voi perua, koska lautakunta sijaitsee menneessä ajanhetkessä.",
+      "anyPastConfirmed": "Vahvistusta ei voi perua, koska päivämäärä on menneisyydessä.",
+      "anyPast": "Päivämäärää ei voi vahvistaa, koska se sijaitsee menneisyydessä.",
+      "disableConfirmButton": "Vahvistusta ei voi perua, koska seuraava {{nextGroupWord}} on jo lisätty."
+    }
   },
   "common": {
     "cancel": "Peruuta",

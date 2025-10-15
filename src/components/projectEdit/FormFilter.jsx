@@ -104,8 +104,18 @@ const calculateFields = (all) => {
    for (let i = 0; i < all.length; i++) {
        let field = all[i].fields
        for (let x = 0; x < field.length; x++) {
+           // Count direct field match
            if(fields.includes(field[x].field_subroles)){
-            totalFilteredFields = totalFilteredFields + 1
+				totalFilteredFields = totalFilteredFields + 1
+				continue;
+			}
+           // Also allow fieldsets to match if ANY of their attributes has matching subrole
+           if(
+           	field[x].categorization === 'fieldset' &&
+           	Array.isArray(field[x].fieldset_attributes) &&
+           	field[x].fieldset_attributes.some(attr => attr?.field_subroles && fields.includes(attr.field_subroles))
+           ){
+           	totalFilteredFields = totalFilteredFields + 1
            }
        }
    }

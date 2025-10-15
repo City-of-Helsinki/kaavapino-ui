@@ -39,12 +39,22 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [addDialogData, setAddDialogData] = useState({group:false,deadlineSections:false,showPresence:false,showBoard:false,nextEsillaolo:false,nextLautakunta:false,esillaoloReason:"",lautakuntaReason:"",hidePresence:false,hideBoard:false});
     const [toggleOpenAddDialog, setToggleOpenAddDialog] = useState(false)
     const [currentFormat, setCurrentFormat] = useState("showYears");
+    const currentFormatRef = useRef("showYears");
+    const weekAxisListenerRef = useRef(null);
+    // Week range floating tooltip
+    const weekTooltipRef = useRef(null);
+    const weekTooltipActiveRef = useRef(false);
     const [openConfirmModal, setOpenConfirmModal] = useState(false);
     const [dataToRemove, setDataToRemove] = useState({});
     const [timelineAddButton, setTimelineAddButton] = useState();
     //const [lock, setLock] = useState({group:false,id:false,locked:false,abbreviation:false});
+  // Track whether weekend alignment shift has been applied (3-month view only)
+  const weekendShiftAppliedRef = useRef(false);
 
     const { showTooltip, hideTooltip } = useTimelineTooltip();
+
+    // Store original month names so we can temporarily swap in quarter range labels
+    const originalMonthsRef = useRef(null);
 
     useImperativeHandle(ref, () => ({
       getTimelineInstance: () => timelineInstanceRef.current,
@@ -693,11 +703,18 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const showMonths = () => {
+      // Leaving 3-month view? detach listener & revert shift
+      if(currentFormatRef.current === 'show3Months') {
+        detachWeekAxisHover();
+        revertWeekendShift();
+      }
+      currentFormatRef.current = 'showMonths';
       const range = timeline.getWindow();
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 30; // about 1 month
       restoreNormalMonths(moment);
       timelineRef.current.classList.remove("years")
+      timelineRef.current.classList.remove("hide-lines");
       timelineRef.current.classList.add("months")
       timeline.setOptions({timeAxis: {scale: 'weekday'}});
       //Keep view centered on where user is
@@ -713,27 +730,33 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 30 * 3; // approx 3 months
       restoreNormalMonths(moment);
-      timelineRef.current.classList.remove("months");
-      timelineRef.current.classList.add("years");
+      timelineRef.current.classList.remove("years");
+      timelineRef.current.classList.add("months");
+      timelineRef.current.classList.add("hide-lines");
       timeline.setOptions({timeAxis: {scale: 'week'},      
         format: {
           minorLabels: { week: '[Viikko] w' }, // Week label: "Viikko 51"
-          majorLabels: { week: 'MMM YYYY' }    // Top axis: month + year
+          majorLabels: { week: 'MMMM YYYY' }    // Top axis: month + year
         }});
 
       const newStart = new Date(center.getTime() - rangeDuration / 2);
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
       timeline.setWindow(newStart, newEnd);
       setCurrentFormat("show3Months");
+      currentFormatRef.current = 'show3Months';
+      attachWeekAxisHover();
+      applyWeekendShift();
       highlightJanuaryFirst();
     }
 
     const show6Months = () => {
+      if(currentFormatRef.current === 'show3Months') { detachWeekAxisHover(); revertWeekendShift(); }
       const range = timeline.getWindow();
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 30 * 6; // approx 6 months
       restoreNormalMonths(moment);
       restoreStandardLabelFormat();
+      timelineRef.current.classList.remove("hide-lines");
       timelineRef.current.classList.remove("months");
       timelineRef.current.classList.add("years");
       timeline.setOptions({timeAxis: {scale: 'month'}});
@@ -742,16 +765,19 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
       timeline.setWindow(newStart, newEnd);
       setCurrentFormat("show6Months");
+      currentFormatRef.current = 'show6Months';
       highlightJanuaryFirst();
     }
 
     const showYears = () => {
+      if(currentFormatRef.current === 'show3Months') { detachWeekAxisHover(); revertWeekendShift(); }
       const range = timeline.getWindow();
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 365; // about 1 year
-      restoreNormalMonths(moment);
+      restoreNormalMonths(moment); // also restores after quarter view
       restoreStandardLabelFormat();
       timelineRef.current.classList.remove("months")
+      timelineRef.current.classList.remove("hide-lines");
       timelineRef.current.classList.add("years")
       timeline.setOptions({timeAxis: {scale: 'month'}});
       //Keep view centered on where user is
@@ -759,36 +785,71 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
       timeline.setWindow(newStart, newEnd);
       setCurrentFormat("showYears");
+      currentFormatRef.current = 'showYears';
       highlightJanuaryFirst()
     }
 
+    // Apply quarter range labels by temporarily replacing the Finnish month names
+    const applyQuarterRangeLabels = () => {
+      if (!originalMonthsRef.current) {
+        const ld = Moment.localeData('fi');
+        originalMonthsRef.current = {
+          months: ld.months(),
+          monthsShort: ld.monthsShort()
+        };
+      }
+      const months = [...originalMonthsRef.current.months];
+      const monthsShort = [...originalMonthsRef.current.monthsShort];
+      months[0] = 'Tammikuu - Maaliskuu';
+      months[3] = 'Huhtikuu - Kesäkuu';
+      months[6] = 'Heinäkuu - Syyskuu';
+      months[9] = 'Lokakuu - Joulukuu';
+      // Short variants (kept concise; not shown with current format but safe)
+      monthsShort[0] = 'Tam-Maa';
+      monthsShort[3] = 'Huh-Kes';
+      monthsShort[6] = 'Hei-Syy';
+      monthsShort[9] = 'Lok-Jou';
+      Moment.updateLocale('fi', { months, monthsShort });
+    };
+
+    const restoreQuarterRangeLabels = () => {
+      if (originalMonthsRef.current) {
+        Moment.updateLocale('fi', {
+          months: originalMonthsRef.current.months,
+          monthsShort: originalMonthsRef.current.monthsShort
+        });
+        originalMonthsRef.current = null;
+      }
+    };
+
     const show2Years = () => {
-      // 2-year view with quarter labels
+      if(currentFormatRef.current === 'show3Months') { detachWeekAxisHover(); revertWeekendShift(); }
       const range = timeline.getWindow();
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 365 * 2; // ~2 years
-      restoreNormalMonths(moment); // ensure normal month names restored
-      timelineRef.current.classList.remove("months");
-      timelineRef.current.classList.add("years");
-      // Use moment's quarter token Q; '[Q]Q' renders e.g. Q1, Q2
+      restoreQuarterRangeLabels(); // ensure clean before applying
+      applyQuarterRangeLabels();
+      timelineRef.current.classList.remove('months');
+      timelineRef.current.classList.remove("hide-lines");
+      timelineRef.current.classList.add('years');
       timeline.setOptions({
-      timeAxis: { scale: 'month', step: 3 },
-      format: {
-        minorLabels: { month: '[Q]Q' },
-        majorLabels: { year: 'YYYY' }
-      }
+        timeAxis: { scale: 'month', step: 3 },
+        format: {
+          minorLabels: { month: 'MMMM' },
+          majorLabels: { year: 'YYYY' }
+        }
       });
-
       const newStart = new Date(center.getTime() - rangeDuration / 2);
       const newEnd = new Date(center.getTime() + rangeDuration / 2);
       timeline.setWindow(newStart, newEnd);
-      // Ensure recalculation
       timeline.redraw();
       setCurrentFormat('show2Years');
+      currentFormatRef.current = 'show2Years';
       highlightJanuaryFirst();
     };
 
     const show5Years = () => {
+      if(currentFormatRef.current === 'show3Months') { detachWeekAxisHover(); revertWeekendShift(); }
       let now = new Date();
       let currentYear = now.getFullYear();
       let startOf5Years = new Date(currentYear, now.getMonth(), 1);
@@ -796,13 +857,180 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       restoreStandardLabelFormat();
       timeline.setOptions({timeAxis: {scale: 'month'}});
       timeline.setWindow(startOf5Years, endOf5Years);
+      setCurrentFormat('show5Years');
+      currentFormatRef.current = 'show5Years';
     }
+
+    // Week hover logic (native title) for show3Months
+    const computeWeekRange = (weekNum, anchorYear) => {
+      // Use ISO week; handle year wrap by trying anchorYear then +/-1 if needed
+      let start = moment().isoWeekYear(anchorYear).isoWeek(weekNum).isoWeekday(1).startOf('day');
+      if(start.isoWeek() !== weekNum) start = moment().isoWeekYear(anchorYear+1).isoWeek(weekNum).isoWeekday(1).startOf('day');
+      let end = moment(start).isoWeekday(7).endOf('day');
+      return {start, end};
+    };
+
+    const deriveYearForLabel = (labelEl) => {
+      // Walk previous siblings for a major label with year
+      let parent = labelEl.parentNode;
+      if(!parent) return new Date().getFullYear();
+      const siblings = Array.from(parent.children);
+      const idx = siblings.indexOf(labelEl);
+      for(let i=idx; i>=0; i--){
+        const sib = siblings[i];
+        if(sib.classList && sib.classList.contains('vis-major')){
+          const txt = sib.textContent || '';
+          const m = txt.match(/(\d{4})/);
+          if(m) return parseInt(m[1],10);
+        }
+      }
+      // Fallback: center year of current window
+      const range = timeline.getWindow();
+      return new Date((range.start.getTime()+range.end.getTime())/2).getFullYear();
+    };
+
+    // --- Week tooltip helpers ---
+    const ensureWeekTooltip = () => {
+      if(!weekTooltipRef.current){
+        const div = document.createElement('div');
+        div.className = 'week-tooltip';
+        div.style.position = 'fixed';
+        div.style.pointerEvents = 'none';
+        div.style.display = 'none';
+        document.body.appendChild(div);
+        weekTooltipRef.current = div;
+      }
+    };
+
+    const showWeekTooltip = (text, clientX, clientY) => {
+      ensureWeekTooltip();
+      const el = weekTooltipRef.current;
+      el.textContent = text;
+      el.style.display = 'block';
+      const offset = 16;
+      el.style.left = `${clientX + offset}px`;
+      el.style.top = `${clientY + offset}px`;
+      weekTooltipActiveRef.current = true;
+    };
+
+    const moveWeekTooltip = (clientX, clientY) => {
+      if(!weekTooltipActiveRef.current || !weekTooltipRef.current) return;
+      const offset = 16;
+      weekTooltipRef.current.style.left = `${clientX + offset}px`;
+      weekTooltipRef.current.style.top = `${clientY + offset}px`;
+    };
+
+    const hideWeekTooltip = () => {
+      if(weekTooltipRef.current){
+        weekTooltipRef.current.style.display = 'none';
+      }
+      weekTooltipActiveRef.current = false;
+    };
+
+    const weekAxisPointerMove = (e) => {
+      if(currentFormatRef.current !== 'show3Months') return;
+      const target = e.target;
+      if(!target || !target.classList || !target.classList.contains('vis-text') || !target.classList.contains('vis-minor')){ hideWeekTooltip(); return; }
+      let weekNum = null;
+      target.classList.forEach(cls => { const m = cls.match(/^vis-week(\d{1,2})$/); if(m) weekNum = parseInt(m[1],10); });
+      if(!weekNum){ hideWeekTooltip(); return; }
+      const year = deriveYearForLabel(target);
+      const {start, end} = computeWeekRange(weekNum, year);
+      const startStr = start.format('D.M');
+      const endStr = end.format('D.M.YYYY');
+      const rangeStr = `${startStr} - ${endStr}`;
+      if(!weekTooltipActiveRef.current){
+        showWeekTooltip(rangeStr, e.clientX, e.clientY);
+      } else {
+        moveWeekTooltip(e.clientX, e.clientY);
+        if(weekTooltipRef.current) weekTooltipRef.current.textContent = rangeStr;
+      }
+    };
+
+    const weekAxisPointerLeave = () => { hideWeekTooltip(); };
+
+    const attachWeekAxisHover = () => {
+      if(weekAxisListenerRef.current) return;
+      const axis = timelineRef.current?.querySelector('.vis-time-axis.vis-foreground');
+      if(axis){
+        axis.addEventListener('pointermove', weekAxisPointerMove, true);
+        axis.addEventListener('pointerleave', weekAxisPointerLeave, true);
+        weekAxisListenerRef.current = axis;
+      }
+    };
+
+    const detachWeekAxisHover = () => {
+      if(!weekAxisListenerRef.current) return;
+      weekAxisListenerRef.current.removeEventListener('pointermove', weekAxisPointerMove, true);
+      weekAxisListenerRef.current.removeEventListener('pointerleave', weekAxisPointerLeave, true);
+      hideWeekTooltip();
+      weekAxisListenerRef.current = null;
+    };
+
+    useEffect(() => () => { detachWeekAxisHover(); revertWeekendShift(); }, []);
+
+    // --- Weekend shift helpers (3-month view alignment) ---
+    const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+    const applyWeekendShift = () => {
+      if (weekendShiftAppliedRef.current || !items || currentFormatRef.current !== 'show3Months') return;
+      const weekendItems = items.get({
+        filter: itm => itm?.type === 'background' && typeof itm.className === 'string' && itm.className.includes('normal-weekend')
+      });
+      if (!weekendItems.length) return;
+      const updates = [];
+      for (const itm of weekendItems) {
+        if (itm._origStart) continue; // already shifted
+        const startMs = new Date(itm.start).getTime() - ONE_DAY_MS;
+        const endMs = new Date(itm.end).getTime() - ONE_DAY_MS;
+        updates.push({
+          ...itm,
+          start: new Date(startMs),
+          end: new Date(endMs),
+          _origStart: itm.start,
+          _origEnd: itm.end
+        });
+      }
+      if (updates.length) {
+        items.update(updates);
+        timelineInstanceRef.current?.redraw();
+        weekendShiftAppliedRef.current = true;
+      }
+    };
+
+    const revertWeekendShift = () => {
+      if (!weekendShiftAppliedRef.current || !items) return;
+      const shifted = items.get({ filter: itm => itm?._origStart });
+      if (!shifted.length) { weekendShiftAppliedRef.current = false; return; }
+      const restores = shifted.map(itm => ({
+        ...itm,
+        start: itm._origStart,
+        end: itm._origEnd,
+        _origStart: undefined,
+        _origEnd: undefined
+      }));
+      items.update(restores);
+      timelineInstanceRef.current?.redraw();
+      weekendShiftAppliedRef.current = false;
+    };
+
+    // Cleanup tooltip DOM on unmount
+    useEffect(() => () => {
+      if(weekTooltipRef.current){
+        weekTooltipRef.current.remove();
+        weekTooltipRef.current = null;
+      }
+    }, []);
 
 
     const restoreNormalMonths = (moment) => {
       const loc = moment.locale('fi');
       const ld = moment.localeData(loc);
       const current = ld.monthsShort();
+
+      // If we had quarter range labels applied, restore originals
+      if (originalMonthsRef.current) {
+        restoreQuarterRangeLabels();
+      }
 
       // If months are Q1/Q2/... put real month names back using Intl
       if (current && current[0] === 'Q1') {
@@ -820,7 +1048,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       if (!timeline) return;
       timeline.setOptions({
         format: {
-          minorLabels: { month: 'MMM' },
+          minorLabels: { month: 'MMMM' },
           majorLabels: { year: 'YYYY' }
         }
 
@@ -989,7 +1217,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               weekday:    'D<br>ddd',
               day:        'D',
               week:       'w',
-              month:      'MMM',
+              month:      'MMMM',
               year:       'YYYY'
           },
           majorLabels: {

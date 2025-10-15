@@ -345,6 +345,16 @@ export default function QuickNav({
           highlightNumber = highlightNumber + 1
         }
       }
+      else if(fields[x].categorization === 'fieldset' && Array.isArray(fields[x].fieldset_attributes)){
+        for (const field of fields[x].fieldset_attributes) {
+            if(field.field_subroles === highlighted){
+              highlight = true
+            }
+          if (field?.field_subroles && filterFieldsArray.includes(field.field_subroles)) {
+            highlightNumber = highlightNumber + 1
+          }
+        }
+      }
       else{
         if(filterFieldsArray.includes(fields[x].field_subroles)){
           filterNumber = filterNumber + 1

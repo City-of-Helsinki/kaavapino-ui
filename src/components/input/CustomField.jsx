@@ -453,7 +453,9 @@ class CustomField extends Component {
       lockStatus,
       unlockAllFields,
       rollingInfo,
-      phaseIsClosed
+      phaseIsClosed,
+      highlightedInFieldset,
+      highlightedTag
     } = this.props
 
     return (
@@ -482,6 +484,8 @@ class CustomField extends Component {
         phaseIsClosed={phaseIsClosed}
         fieldsetTotal={field.fieldset_total}
         isTabActive={this.props.isTabActive}
+        highlightedInFieldset={highlightedInFieldset}
+        highlightedTag={highlightedTag}
       />
     )
   }
