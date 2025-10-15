@@ -902,13 +902,30 @@
         }
     }
 
+    .vis-text.vis-major::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -0.5px;
+        width: 1px;
+        height: 100%;
+        background-color: #999999;
+        transform: translateX(-50%);
+    }
+
+    .vis-time-axis.vis-foreground > div {
+        color: #1a1a1a;
+        font-size: 0.875rem;
+        left: 2px;
+    }
+
     .vis-text.vis-minor {
         color: $black1;
         &.vis-current-month, &.vis-even, &.vis-odd {
             align-content: center;
             text-align: center;
             border-color: $color-black-20;
-            left: 2px;
+            left: 3px;
         }
     }
 
@@ -1055,7 +1072,7 @@
         text-transform: capitalize;
     }
     .vis-minor.vis-january {
-        border-left: 0.063rem solid #999999 !important;
+        //border-left: 0.063rem solid #999999 !important;
     }
     .vis-text.vis-major:nth-last-of-type(2) {
         &::before {
@@ -1213,4 +1230,52 @@
     box-shadow: 0px 2px 8px 0px #00000099;
     z-index: 3000;
     user-select: none;
+}
+//Only in 3 months view
+.hide-lines {
+    .negative .holiday {
+        background: #F2F2F2;
+    }
+    // Exclude week items (classes containing 'vis-week') from border removal
+    .negative:not([class*="vis-week"]) {
+        .vis-item-overflow {
+            background: $color-black-5;
+            border-right: 0 !important;
+            border-left: 0 !important;
+        }
+    }
+    .holiday:not([class*="vis-week"]) {
+        top: 0;
+        z-index: 0;
+        .vis-item-overflow {
+            background: $color-summer-light;
+            border-right: 0 !important;
+            border-left: 0 !important;
+        }
+    }
+
+    .negative:is([class*="vis-week"]) {
+        .vis-item-overflow {
+            background: $color-black-5;
+            border-right: 1px solid $border-gray4 !important;
+            border-left: 1px solid $border-gray4 !important;
+        }
+    }
+    .holiday:is([class*="vis-week"]) {
+        top: 0;
+        z-index: 0;
+        .vis-item-overflow {
+            background: $color-summer-light;
+            border-right: 1px solid $border-gray4 !important;
+            border-left: 1px solid $border-gray4 !important;
+        }
+    }
+
+    // Re‑add left border only for week grid lines (major or minor)
+    .vis-time-axis
+        .vis-grid.vis-vertical.vis-major[class*="vis-week"],
+    .vis-time-axis
+        .vis-grid.vis-vertical.vis-minor[class*="vis-week"] {
+        border-left: 1px solid $border-gray4 !important; // or your desired color
+    }
 }
