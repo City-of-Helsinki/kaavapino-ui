@@ -13,7 +13,7 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
     let hasErrors
     const currentSchema = schema?.phases[index]
     const currentDeadlineSchema = schema.deadline_sections[index]
-    const errorFields = projectUtils.getErrorFields(true,attribute_data,currentSchema,project?.phase,currentDeadlineSchema)
+    const errorFields = projectUtils.getErrorFields(true,attribute_data,currentSchema,project?.phase,currentDeadlineSchema,false)
     if(errorFields.length > 0){
       hasErrors = true
     }
