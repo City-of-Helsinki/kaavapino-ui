@@ -41,6 +41,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [currentFormat, setCurrentFormat] = useState("showYears");
     const currentFormatRef = useRef("showYears");
     const weekAxisListenerRef = useRef(null);
+    // Week range floating tooltip
+    const weekTooltipRef = useRef(null);
+    const weekTooltipActiveRef = useRef(false);
     const [openConfirmModal, setOpenConfirmModal] = useState(false);
     const [dataToRemove, setDataToRemove] = useState({});
     const [timelineAddButton, setTimelineAddButton] = useState();
@@ -875,40 +878,93 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       return new Date((range.start.getTime()+range.end.getTime())/2).getFullYear();
     };
 
-    const weekLabelHoverHandler = (e) => {
+    // --- Week tooltip helpers ---
+    const ensureWeekTooltip = () => {
+      if(!weekTooltipRef.current){
+        const div = document.createElement('div');
+        div.className = 'week-tooltip';
+        div.style.position = 'fixed';
+        div.style.pointerEvents = 'none';
+        div.style.display = 'none';
+        document.body.appendChild(div);
+        weekTooltipRef.current = div;
+      }
+    };
+
+    const showWeekTooltip = (text, clientX, clientY) => {
+      ensureWeekTooltip();
+      const el = weekTooltipRef.current;
+      el.textContent = text;
+      el.style.display = 'block';
+      const offset = 16;
+      el.style.left = `${clientX + offset}px`;
+      el.style.top = `${clientY + offset}px`;
+      weekTooltipActiveRef.current = true;
+    };
+
+    const moveWeekTooltip = (clientX, clientY) => {
+      if(!weekTooltipActiveRef.current || !weekTooltipRef.current) return;
+      const offset = 16;
+      weekTooltipRef.current.style.left = `${clientX + offset}px`;
+      weekTooltipRef.current.style.top = `${clientY + offset}px`;
+    };
+
+    const hideWeekTooltip = () => {
+      if(weekTooltipRef.current){
+        weekTooltipRef.current.style.display = 'none';
+      }
+      weekTooltipActiveRef.current = false;
+    };
+
+    const weekAxisPointerMove = (e) => {
       if(currentFormatRef.current !== 'show3Months') return;
       const target = e.target;
-      if(!target || !target.classList || !target.classList.contains('vis-text') || !target.classList.contains('vis-minor')) return;
-      // Find vis-weekNN class even if empty label
+      if(!target || !target.classList || !target.classList.contains('vis-text') || !target.classList.contains('vis-minor')){ hideWeekTooltip(); return; }
       let weekNum = null;
       target.classList.forEach(cls => { const m = cls.match(/^vis-week(\d{1,2})$/); if(m) weekNum = parseInt(m[1],10); });
-      if(!weekNum) return;
+      if(!weekNum){ hideWeekTooltip(); return; }
       const year = deriveYearForLabel(target);
       const {start, end} = computeWeekRange(weekNum, year);
-      // Format: 29.1 - 4.2.2024 (omit year from first date)
       const startStr = start.format('D.M');
       const endStr = end.format('D.M.YYYY');
       const rangeStr = `${startStr} - ${endStr}`;
-      // Use native title attribute only (per current simplified requirement)
-      target.setAttribute('title', rangeStr);
+      if(!weekTooltipActiveRef.current){
+        showWeekTooltip(rangeStr, e.clientX, e.clientY);
+      } else {
+        moveWeekTooltip(e.clientX, e.clientY);
+        if(weekTooltipRef.current) weekTooltipRef.current.textContent = rangeStr;
+      }
     };
+
+    const weekAxisPointerLeave = () => { hideWeekTooltip(); };
 
     const attachWeekAxisHover = () => {
       if(weekAxisListenerRef.current) return;
       const axis = timelineRef.current?.querySelector('.vis-time-axis.vis-foreground');
       if(axis){
-        axis.addEventListener('mouseover', weekLabelHoverHandler, true);
+        axis.addEventListener('pointermove', weekAxisPointerMove, true);
+        axis.addEventListener('pointerleave', weekAxisPointerLeave, true);
         weekAxisListenerRef.current = axis;
       }
     };
 
     const detachWeekAxisHover = () => {
       if(!weekAxisListenerRef.current) return;
-      weekAxisListenerRef.current.removeEventListener('mouseover', weekLabelHoverHandler, true);
+      weekAxisListenerRef.current.removeEventListener('pointermove', weekAxisPointerMove, true);
+      weekAxisListenerRef.current.removeEventListener('pointerleave', weekAxisPointerLeave, true);
+      hideWeekTooltip();
       weekAxisListenerRef.current = null;
     };
 
     useEffect(() => () => { detachWeekAxisHover(); }, []);
+
+    // Cleanup tooltip DOM on unmount
+    useEffect(() => () => {
+      if(weekTooltipRef.current){
+        weekTooltipRef.current.remove();
+        weekTooltipRef.current = null;
+      }
+    }, []);
 
 
     const restoreNormalMonths = (moment) => {
