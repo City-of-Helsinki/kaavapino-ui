@@ -1,5 +1,5 @@
 import { isArray } from 'lodash'
-import { showField } from './projectVisibilityUtils'
+import { showField, vis_bool_group_map } from './projectVisibilityUtils'
 
 let confirmationAttributeNames = [
   'vahvista_oas_esillaolo_alkaa','vahvista_oas_esillaolo_paattyy',
@@ -335,7 +335,7 @@ function hasMissingFields(attributeData, currentProject, schema, action) {
   if (missingFields) return true;
   // 2. Check deadline schema required attributes
   if (action === 'changeCurrentPhase' && currentDeadlineSchema) {
-    const tmpErrors = checkDeadlineSchemaErrors([], currentDeadlineSchema, attributeData);
+    const tmpErrors = checkDeadlineSchemaErrors([], currentDeadlineSchema, attributeData, true);
     if (tmpErrors.length > 0) {
       return true;
     }
@@ -387,46 +387,71 @@ function checkErrors(errorFields,currentSchema,attributeData) {
 }
 
 // Timetable modal required fields checks.
-function checkDeadlineSchemaErrors(errorFields, currentDeadlineSchema, attributeData) {
+function checkDeadlineSchemaErrors(errorFields, currentDeadlineSchema, attributeData,isEndPhaseCheck) {
   if (!currentDeadlineSchema) return errorFields
+  const groupMap = vis_bool_group_map
   let sections = currentDeadlineSchema?.sections || []
   sections.forEach(section => {
     const attrs = section?.attributes || []
     attrs.forEach(attr => {
-      if (attr?.required) {
-        // Exception: confirmation attributes with numeric suffix (e.g. vahvista_xxx_2)
-        // If such a key does not exist in attributeData, we skip adding an error.
-        const isNumericConfirmation = /^vahvista_.*_\d+$/.test(attr.name)
-        if (isNumericConfirmation && attributeData[attr.name] === undefined) {
-            return
-        }
-        const val = findValueFromObject(attributeData, attr.name)
-        const isIndexOneConfirmation = /^vahvista_.*_1$/.test(attr.name)
-        // Base confirmation now defined strictly as a member of a pair *_esillaolo_alkaa or *_lautakunnassa (without numeric suffix)
-        const basePairMatch = attr.name.match(/^vahvista_(.+?)_(esillaolo_alkaa|lautakunnassa)$/)
-        const isBaseConfirmation = !!basePairMatch && !isNumericConfirmation
-        let missing = false
-        // Generic missing value checks
-        if (val === undefined || val === null || val === '' || (Array.isArray(val) && val.length === 0)) {
-          missing = true
-        }
-        // For index one confirmations treat explicit false as missing
-        if (!missing && (isIndexOneConfirmation || isBaseConfirmation) && val === false) {
-          missing = true
-        }
-        // Pair logic: if part of *_esillaolo_alkaa / *_lautakunnassa pair, require at least ONE of them to be true; if either true => satisfied
-        if (basePairMatch) {
-          const segment = basePairMatch[1]
-          const pairStartKey = `vahvista_${segment}_esillaolo_alkaa`
-            .replace(/__+/, '_') // safety collapse
-          const pairLautKey = `vahvista_${segment}_lautakunnassa`
-          const pairSatisfied = attributeData[pairStartKey] === true || attributeData[pairLautKey] === true
-          if (pairSatisfied) {
-            missing = false // override even if current attr itself false/empty
-          } else {
-            missing = true
+      if (!attr?.required) return
+      const val = findValueFromObject(attributeData, attr.name)
+      //Ending phase specific checks
+      if (isEndPhaseCheck) {
+        // Check that if added lautakunta,esillaolo is true at data then confirmation for that has to be true too
+        const confirmationPattern = /^vahvista_([a-z_]+)_(esillaolo_alkaa(?:_(pieni|iso))?|esillaolo_paattyy|lautakunnassa)(?:_(\d+))?$/
+        const match = attr.name.match(confirmationPattern)
+        if (match) {
+          const segment = match[1] // e.g. periaatteet, oas, luonnos, ehdotus, kaavaluonnos, kaavaehdotus, tarkistettu_ehdotus
+          const typePart = match[2] // esillaolo_alkaa(_pieni|_iso)? | esillaolo_paattyy | lautakunnassa
+          const idx = match[4] || '1'
+          let groupKey = null
+          if (typePart.startsWith('esillaolo_')) {
+            groupKey = `${segment}_esillaolokerta_${idx}`
+          } else if (typePart === 'lautakunnassa') {
+            groupKey = `${segment}_lautakuntakerta_${idx}`
           }
+          // (nahtavilla groups would map if confirmation fields existed following pattern)
+          if (groupKey && Object.prototype.hasOwnProperty.call(groupMap, groupKey)) {
+            const triggerBoolName = groupMap[groupKey] // may be null when always visible
+            if (triggerBoolName) {
+              if (attributeData[triggerBoolName] !== true) return // trigger inactive => skip
+            }
+            // Trigger active (or none needed) => confirmation must be true
+            if (val !== true) {
+              errorFields.push({
+                "title": "Aikataulun muokkausnäkymä",
+                "errorSection": section.name,
+                "errorField": attr.label || attr.name,
+                "fieldAnchorKey": attr.name
+              })
+            }
+            return
+          }
+          // Fall through to generic handling if groupKey not mapped
         }
+        const missing = val === undefined || val === null || val === '' || (Array.isArray(val) && val.length === 0)
+        if (missing) {
+          errorFields.push({
+            "title": "Aikataulun muokkausnäkymä",
+            "errorSection": section.name,
+            "errorField": attr.label || attr.name,
+            "fieldAnchorKey": attr.name
+          })
+        }
+      } 
+      else {
+        // document download checks
+        const isNumericConfirmation = /^vahvista_.*_\d+$/.test(attr.name)
+        if (isNumericConfirmation && attributeData[attr.name] === undefined) return
+        const isIndexOneConfirmation = /^vahvista_.*_1$/.test(attr.name)
+        const isBaseConfirmation = /^vahvista_/.test(attr.name) && !isNumericConfirmation
+        const missing =
+          val === undefined ||
+          val === null ||
+          val === '' ||
+          (Array.isArray(val) && val.length === 0) ||
+          ((isIndexOneConfirmation || isBaseConfirmation) && val === false)
         if (missing) {
           errorFields.push({
             "title": "Aikataulun muokkausnäkymä",
@@ -457,7 +482,7 @@ function checkDeadlineSchemaErrors(errorFields, currentDeadlineSchema, attribute
   return errorFields
 }
 
-function getErrorFields(checkDocuments, attributeData, currentSchema, phase, origin, currentDeadlineSchema) {
+function getErrorFields(checkDocuments, attributeData, currentSchema, phase, origin, currentDeadlineSchema, isEndPhaseCheck) {
   let errorFields = []
   const phaseName = attributeData.kaavan_vaihe.split(".").pop().replace(/\s/g,'');
   const title = currentSchema.title.replace(/\s/g,'');
@@ -466,7 +491,7 @@ function getErrorFields(checkDocuments, attributeData, currentSchema, phase, ori
     // Go through every single field
     errorFields = checkErrors(errorFields,currentSchema,attributeData)
     // Validate deadline schema required attributes using dedicated helper (phase already scoped)
-    errorFields = checkDeadlineSchemaErrors(errorFields, currentDeadlineSchema, attributeData)
+    errorFields = checkDeadlineSchemaErrors(errorFields, currentDeadlineSchema, attributeData,isEndPhaseCheck)
   }
   else if(checkDocuments && currentSchema?.id === phase){
     //Show error for hide download button on document download view if not currently active phase
