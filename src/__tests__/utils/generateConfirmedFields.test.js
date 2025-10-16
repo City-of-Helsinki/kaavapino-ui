@@ -74,10 +74,10 @@ describe('generateConfirmedFields utility function', () => {
     });
 
     test("generateConfirmedFields does not use outdated confirmation attributes", () => {
-        const outdated_attributes = [...confirmationAttributeNames].filter(attr => attr.includes('paattyy'));
+        const outdated_attributes = new Set([...confirmationAttributeNames].filter(attr => attr.includes('paattyy')));
         const test_data = {...test_attribute_data_XL};
         for (const confirm_attribute of confirmationAttributeNames) {
-            test_data[confirm_attribute] = outdated_attributes.includes(confirm_attribute);
+            test_data[confirm_attribute] = outdated_attributes.has(confirm_attribute);
         }
         expect(generateConfirmedFields(test_data, confirmationAttributeNames, phaseNames).length).toBe(0);
     });
