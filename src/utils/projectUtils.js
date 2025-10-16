@@ -491,7 +491,10 @@ function getErrorFields(checkDocuments, attributeData, currentSchema, phase, ori
     // Go through every single field
     errorFields = checkErrors(errorFields,currentSchema,attributeData)
     // Validate deadline schema required attributes using dedicated helper (phase already scoped)
-    errorFields = checkDeadlineSchemaErrors(errorFields, currentDeadlineSchema, attributeData,isEndPhaseCheck)
+    if(isEndPhaseCheck){
+      //Check only and show required fields from deadlines when trying to change or archive phase
+      errorFields = checkDeadlineSchemaErrors(errorFields, currentDeadlineSchema, attributeData,isEndPhaseCheck)
+    }
   }
   else if(checkDocuments && currentSchema?.id === phase){
     //Show error for hide download button on document download view if not currently active phase

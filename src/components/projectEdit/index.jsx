@@ -491,7 +491,8 @@ class ProjectEditPage extends Component {
     const currentSchemaIndex = schema.phases.findIndex(s => s.id === schemaUtils.getSelectedPhase(this.props.location.search,this.props.selectedPhase))
     const currentSchema = schema.phases[currentSchemaIndex]
     const currentDeadlineSchema = schema.deadline_sections[currentSchemaIndex]
-    const errorFields = projectUtils.getErrorFields(false,attribute_data,currentSchema,phase,origin,currentDeadlineSchema,true)
+    const closephase = origin === "closephase" ? true : false
+    const errorFields = projectUtils.getErrorFields(false,attribute_data,currentSchema,phase,origin,currentDeadlineSchema,closephase)
     this.setState({errorFields:errorFields})
     if(errorFields?.length === 0 && !documentsDownloaded){
       const elements = <div>
