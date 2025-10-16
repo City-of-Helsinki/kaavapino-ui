@@ -418,10 +418,18 @@ class ProjectEditPage extends Component {
                           let matchedDeadline = (this.props.currentProject?.deadlines || []).find(d => d?.deadline?.phase_id === currentPhaseId);
                           //Extract suffix from error.fieldAnchorKey if there is one to variable
                           const fieldSuffix = (error.fieldAnchorKey && error.fieldAnchorKey.match(/(_\d+)$/) || [])[0] || '';
-                          // fieldSuffix example: '_2' (empty string if no numeric suffix)
+                          // Extract 'esillaolo/nahtavillaolo' from fieldAnchorKey
+                          const nahtavillaoresilla = matchedDeadline?.deadline?.phase_name === "Ehdotus" ? 'nahtavillaolo' : 'esillaolo'; 
+                          const esillaoloOrLautakunta = error.fieldAnchorKey?.includes('esillaolo')
+                            ? nahtavillaoresilla
+                            : (error.fieldAnchorKey?.includes('lautakunta') || error.fieldAnchorKey?.includes('lautakunnassa')
+                                ? 'lautakuntakerta'
+                                : ''
+                            );
+                          const anchorKeyWithSuffix = esillaoloOrLautakunta + fieldSuffix;
                           if(matchedDeadline?.deadline?.attribute?.includes("alkaa_pvm")){
                             matchedDeadline = (this.props.currentProject?.deadlines || []).find(
-                              d => d?.deadline?.phase_id === currentPhaseId && d?.deadline?.deadlinegroup?.includes(fieldSuffix || '_1')
+                              d => d?.deadline?.phase_id === currentPhaseId && d?.deadline?.deadlinegroup?.includes(anchorKeyWithSuffix)
                             );
                           }
                           this.props.showTimetable(true, error.fieldAnchorKey, currentPhaseId, matchedDeadline?.deadline || {});

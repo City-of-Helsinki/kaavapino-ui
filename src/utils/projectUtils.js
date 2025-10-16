@@ -398,26 +398,29 @@ function checkDeadlineSchemaErrors(errorFields, currentDeadlineSchema, attribute
       const val = findValueFromObject(attributeData, attr.name)
       //Ending phase specific checks
       if (isEndPhaseCheck) {
-        // Check that if added lautakunta,esillaolo is true at data then confirmation for that has to be true too
-        const confirmationPattern = /^vahvista_([a-z_]+)_(esillaolo_alkaa(?:_(pieni|iso))?|esillaolo_paattyy|lautakunnassa)(?:_(\d+))?$/
+        // Confirmation fields should only error when their occurrence trigger boolean is active.
+        const confirmationPattern = /^vahvista_([a-z_]+)_(esillaolo(?:_alkaa(?:_(pieni|iso))?|_paattyy)?|lautakunnassa)(?:_(\d+))?$/
         const match = attr.name.match(confirmationPattern)
         if (match) {
-          const segment = match[1] // e.g. periaatteet, oas, luonnos, ehdotus, kaavaluonnos, kaavaehdotus, tarkistettu_ehdotus
+          let segment = match[1] // e.g. periaatteet, oas, luonnos, ehdotus, kaavaluonnos, kaavaehdotus, tarkistettu_ehdotus
           const typePart = match[2] // esillaolo_alkaa(_pieni|_iso)? | esillaolo_paattyy | lautakunnassa
           const idx = match[4] || '1'
+          if (segment === 'kaavaehdotus') segment = 'ehdotus'
           let groupKey = null
-          if (typePart.startsWith('esillaolo_')) {
-            groupKey = `${segment}_esillaolokerta_${idx}`
+          if (typePart.startsWith('esillaolo')) {
+            const candidateNahtavilla = `${segment}_nahtavillaolokerta_${idx}`
+            if (Object.prototype.hasOwnProperty.call(groupMap, candidateNahtavilla)) {
+              groupKey = candidateNahtavilla
+            } else {
+              groupKey = `${segment}_esillaolokerta_${idx}`
+            }
           } else if (typePart === 'lautakunnassa') {
             groupKey = `${segment}_lautakuntakerta_${idx}`
           }
-          // (nahtavilla groups would map if confirmation fields existed following pattern)
           if (groupKey && Object.prototype.hasOwnProperty.call(groupMap, groupKey)) {
-            const triggerBoolName = groupMap[groupKey] // may be null when always visible
-            if (triggerBoolName) {
-              if (attributeData[triggerBoolName] !== true) return // trigger inactive => skip
-            }
-            // Trigger active (or none needed) => confirmation must be true
+            const triggerBoolName = groupMap[groupKey]
+            const active = !triggerBoolName || findValueFromObject(attributeData, triggerBoolName) === true
+            if (!active) return // occurrence not enabled => skip confirmation
             if (val !== true) {
               errorFields.push({
                 "title": "Aikataulun muokkausnäkymä",
