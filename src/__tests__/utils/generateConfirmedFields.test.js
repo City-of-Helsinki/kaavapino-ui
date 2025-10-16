@@ -42,13 +42,14 @@ const all_deadline_attribute_keys = [
 
 describe('generateConfirmedFields utility function', () => {
     test('at least one field is found for all known confirmation attributes', () => {
-        for(const confirm_attribute of confirmationAttributeNames ) {
-            if (confirm_attribute === 'vahvista_ehdotus_esillaolo_alkaa_pieni') {
-                // Not present in XL test data
-                continue;
-            }
+        const full_test_data = {};
+        for (const attr of all_deadline_attribute_keys) {
+            full_test_data[attr] = "1970-01-01";
+        }
+        for(const confirm_attribute of confirmationAttributeNames.filter(attr => !attr.includes('paattyy'))) {
+            let test_data = {... full_test_data, [confirm_attribute]: true}
             expect(generateConfirmedFields(
-                {...test_attribute_data_XL, [confirm_attribute]: true}, confirmationAttributeNames, phaseNames), 
+                test_data, confirmationAttributeNames, phaseNames), 
                 `${confirm_attribute} should have related confirm field(s)`
             ).not.empty;
         }
