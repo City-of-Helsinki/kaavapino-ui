@@ -416,9 +416,12 @@ class ProjectEditPage extends Component {
                         if (groupTitle === 'Aikataulun muokkausnäkymä') {
                           const currentPhaseId = this.props.currentProject?.phase;
                           let matchedDeadline = (this.props.currentProject?.deadlines || []).find(d => d?.deadline?.phase_id === currentPhaseId);
+                          //Extract suffix from error.fieldAnchorKey if there is one to variable
+                          const fieldSuffix = (error.fieldAnchorKey && error.fieldAnchorKey.match(/(_\d+)$/) || [])[0] || '';
+                          // fieldSuffix example: '_2' (empty string if no numeric suffix)
                           if(matchedDeadline?.deadline?.attribute?.includes("alkaa_pvm")){
                             matchedDeadline = (this.props.currentProject?.deadlines || []).find(
-                            	d => d?.deadline?.phase_id === currentPhaseId && d?.deadline?.deadlinegroup?.includes('_1')
+                              d => d?.deadline?.phase_id === currentPhaseId && d?.deadline?.deadlinegroup?.includes(fieldSuffix || '_1')
                             );
                           }
                           this.props.showTimetable(true, error.fieldAnchorKey, currentPhaseId, matchedDeadline?.deadline || {});

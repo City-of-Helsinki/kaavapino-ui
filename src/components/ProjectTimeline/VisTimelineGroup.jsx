@@ -1733,9 +1733,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }, [visValues]);
 
     function getHighlightedElement(offset) {
+      const raw = Number(offset); // 1 in date is 0 in dom elements so we need to subtract
+      const adjusted = !isNaN(raw) && raw > 0 ? raw - 1 : 0; // subtract 1 when > 0, never below 0
       const container = document.querySelector('.vis-labelset');
+      if(!container) return null;
       const all = Array.from(container.querySelectorAll('.vis-nested-group'));
-      return all[offset] || null;
+      return all[adjusted] || null;
     }
 
     // Function to highlight elements based on phase name and suffix when redirected from the form to the timeline
@@ -1773,7 +1776,15 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
     const generateTitle = (deadlinegroup) => {
       if (!deadlinegroup) return '';
-      const parts = deadlinegroup.split('_');
+      // Special handling: treat 'tarkistettu_ehdotus' as one phase token, not two
+      let parts = [];
+      if (deadlinegroup.startsWith('tarkistettu_ehdotus_')) {
+        // Remove the combined prefix and reconstruct parts so that index 0 is the phase
+        const remainder = deadlinegroup.substring('tarkistettu_ehdotus_'.length);
+        parts = ['tarkistettu_ehdotus', ...remainder.split('_')];
+      } else {
+        parts = deadlinegroup.split('_');
+      }
       if (parts.length < 3) return deadlinegroup;
       const formattedString = `${parts[1].replace('kerta', '')}-${parts[2]}`;
       return formattedString.charAt(0).toUpperCase() + formattedString.slice(1);
