@@ -1744,19 +1744,18 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     // Function to highlight elements based on phase name and suffix when redirected from the form to the timeline
     const highlightTimelineElements = (deadlineGroup) => {
       if (!deadlineGroup || !timelineRef.current) return;
-      // Extract the phase name and suffix from the deadlinegroup
-      const parts = deadlineGroup.split('_');
-      let suffix = "1"; // Default to 1 if no suffix
-      
-      // Get the numeric suffix (like "_1", "_2") if it exists
-      if (parts.length > 2) {
-        const lastPart = parts[parts.length - 1];
-        if (/^\d+$/.test(lastPart)) {
-          suffix = lastPart;
-        }
-      }
-      const highlightedElement = getHighlightedElement(suffix)
-      if(highlightedElement){
+      // Find the element whose className contains the full deadlineGroup string
+      const container = document.querySelector('.vis-labelset');
+      if (!container) return;
+      // Normalize: vis.js may replace ä/ö/å with a/o/a and lowercase
+      const normalize = str => str
+        .replace(/[äå]/gi, 'a')
+        .replace(/ö/gi, 'o')
+        .toLowerCase();
+      const normalizedGroup = normalize(deadlineGroup);
+      const all = Array.from(container.querySelectorAll('.vis-nested-group'));
+      const highlightedElement = all.find(el => normalize(el.className).includes(normalizedGroup));
+      if (highlightedElement) {
         highlightedElement.classList.add('highlight-selected');
       }
     };
@@ -1769,8 +1768,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       if (showTimetableForm.selectedPhase !== null) {
         setToggleTimelineModal({open:!toggleTimelineModal.open, highlight:true, deadlinegroup:showTimetableForm?.matchedDeadline?.deadlinegroup})
         setTimelineData({group:showTimetableForm.selectedPhase, content:formatDeadlineGroupTitle(showTimetableForm)})
-        // Call the highlighting function
-        highlightTimelineElements(showTimetableForm?.matchedDeadline?.deadlinegroup);
+        // Call the highlighting function. Defer highlight to after DOM update
+        setTimeout(() => {
+          highlightTimelineElements(showTimetableForm?.matchedDeadline?.deadlinegroup);
+        }, 50);
       }
     }, [showTimetableForm.selectedPhase])
 
