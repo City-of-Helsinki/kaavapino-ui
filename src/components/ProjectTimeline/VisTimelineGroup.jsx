@@ -1818,6 +1818,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
     };
 
+    const timelineInitialTab = showTimetableForm?.selectedPhase === "Voimaantulo" && showTimetableForm?.name === "voimaantulo_pvm" ? 1 : showTimetableForm?.subgroup === "Päätös" ? 1 : 0;
+
     return (
       !deadlines ? <LoadingSpinner />
       :
@@ -1861,7 +1863,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           items={items?.get()}
           sectionAttributes={sectionAttributes}
           isAdmin={isAdmin}
-          initialTab={showTimetableForm?.selectedPhase === "Voimaantulo" && showTimetableForm?.name === "voimaantulo_pvm" ? 1 : 0 }
+          initialTab={timelineInitialTab}
         />
         <AddGroupModal
           toggleOpenAddDialog={toggleOpenAddDialog}

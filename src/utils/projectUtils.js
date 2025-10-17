@@ -426,7 +426,8 @@ function checkDeadlineSchemaErrors(errorFields, currentDeadlineSchema, attribute
                 "title": "Aikataulun muokkausnäkymä",
                 "errorSection": section.name,
                 "errorField": attr.label || attr.name,
-                "fieldAnchorKey": attr.name
+                "fieldAnchorKey": attr.name,
+                "attr":attr
               })
             }
             return
@@ -439,7 +440,8 @@ function checkDeadlineSchemaErrors(errorFields, currentDeadlineSchema, attribute
             "title": "Aikataulun muokkausnäkymä",
             "errorSection": section.name,
             "errorField": attr.label || attr.name,
-            "fieldAnchorKey": attr.name
+            "fieldAnchorKey": attr.name,
+            "attr":attr
           })
         }
       } 
@@ -460,7 +462,8 @@ function checkDeadlineSchemaErrors(errorFields, currentDeadlineSchema, attribute
             "title": "Aikataulun muokkausnäkymä",
             "errorSection": section.name,
             "errorField": attr.label || attr.name,
-            "fieldAnchorKey": attr.name
+            "fieldAnchorKey": attr.name,
+            "attr":attr
           })
         }
       }

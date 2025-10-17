@@ -432,7 +432,7 @@ class ProjectEditPage extends Component {
                               d => d?.deadline?.phase_id === currentPhaseId && d?.deadline?.deadlinegroup?.includes(anchorKeyWithSuffix)
                             );
                           }
-                          this.props.showTimetable(true, error.fieldAnchorKey, currentPhaseId, matchedDeadline?.deadline || {});
+                          this.props.showTimetable(true, error.fieldAnchorKey, currentPhaseId, matchedDeadline?.deadline || {},error?.attr?.attributesubgroup);
                         } else {
                           this.showErrorField(error.errorSection, error.fieldAnchorKey);
                         }
