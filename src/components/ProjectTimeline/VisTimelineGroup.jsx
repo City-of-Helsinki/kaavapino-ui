@@ -974,7 +974,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const applyWeekendShift = () => {
       if (weekendShiftAppliedRef.current || !items || currentFormatRef.current !== 'show3Months') return;
       const weekendItems = items.get({
-        filter: itm => itm?.type === 'background' && typeof itm.className === 'string' && itm.className.includes('normal-weekend')
+        filter: itm => itm?.type === 'background' && typeof itm.className === 'string' && (itm.className.includes('normal-weekend') || itm.className.includes('negative'))
       });
       if (!weekendItems.length) return;
       const updates = [];
