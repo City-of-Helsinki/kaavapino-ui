@@ -251,7 +251,7 @@
     .vis-point.inner-end {
         z-index: 1000;
         pointer-events: auto !important;
-        cursor: url('../../assets/icons/vector.svg') 8 8, move !important;
+        cursor: url('../../assets/icons/arrow4dir.svg') 8 8, move !important;
         .vis-item-overflow{
             position: relative;
             border: 2px solid $black1;
@@ -292,7 +292,7 @@
             height: $size24;
             border-radius: 15px;
             top: 5.5px !important;
-            cursor: url('../../assets/icons/vector.svg') 8 8, move !important;
+            cursor: url('../../assets/icons/arrow4dir.svg') 8 8, move !important;
             .vis-item-overflow{
                 position: relative;
                 border: 2px solid $black1;
@@ -307,13 +307,14 @@
                     height: 8px;
                     background-color: #B3B3B3;
                     border-radius: 50%;
-                    transform: translate(-50%, -50%) scale(0);
-                    opacity: 0;
+                    transform: translate(-50%, -50%) scale(1);
+                    opacity: 1;
                     transition: opacity .15s ease, transform .15s ease;
                 }
                 &:hover::after,&:active::after {
                     transform: translate(-50%, -50%) scale(1);
                     opacity: 1;
+                    background-color: #808080;
                 }
                 .vis-item-content{
                     pointer-events: auto !important;
@@ -332,7 +333,7 @@
             border: 2px solid $black1;
             background: $white;
             border-radius: 15px;
-            cursor: url('../../assets/icons/vector.svg') 8 8, move !important;
+            cursor: url('../../assets/icons/arrow4dir.svg') 8 8, move !important;
             &::after {
                 content: "";
                 position: absolute;
@@ -342,13 +343,14 @@
                 height: 8px;
                 background-color: #B3B3B3;
                 border-radius: 50%;
-                transform: translate(-50%, -50%) scale(0);
-                opacity: 0;
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
                 transition: opacity .15s ease, transform .15s ease;
             }
             &:hover::after,&:active::after {
                 transform: translate(-50%, -50%) scale(1);
                 opacity: 1;
+                background-color: #808080;
             }
             .vis-item-content{
                 pointer-events: auto;
@@ -474,7 +476,7 @@
         height: $size24;
         width: $size24;
         z-index: 200;
-        cursor: url('../../assets/icons/vector.svg') 8 8, move !important;
+        cursor: url('../../assets/icons/arrow4dir.svg') 8 8, move !important;
          // base (hidden) grey dot
         &::after {
             content: "";
@@ -485,8 +487,8 @@
             height: 8px;
             background-color: #B3B3B3;
             border-radius: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            opacity: 0;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
             transition: opacity .15s ease, transform .15s ease;
             pointer-events: none;
         }
@@ -495,11 +497,13 @@
         &:hover::after {
             transform: translate(-50%, -50%) scale(1);
             opacity: 1;
+            background-color: #808080;
         }
 
         &:active::after {
             transform: translate(-50%, -50%) scale(1);
             opacity: 1;
+            background-color: #808080;
         }
         &.past {
             background: $color-gray;
@@ -545,10 +549,10 @@
             left: 50%;
             width: 8px;
             height: 8px;
-            background-color: #B3B3B3;
+            background-color: #808080;
             border-radius: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            opacity: 0;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
             transition: opacity .15s ease, transform .15s ease;
             pointer-events: none;
         }
@@ -580,16 +584,17 @@
             left: 50%;
             width: 8px;
             height: 8px;
-            background-color: #B3B3B3;
+            background-color: #808080;
             border-radius: 50%;
-            transform: translate(-50%, -50%) scale(0); // use -50% if perfect centering needed
-            opacity: 0;
+            transform: translate(-50%, -50%) scale(1); // use -50% if perfect centering needed
+            opacity: 1;
             transition: opacity .15s ease, transform .15s ease;
             pointer-events: none;
         }
         &:hover::after,&:active::after {
             transform: translate(-50%, -50%) scale(1);
             opacity: 1;
+            background-color: #B3B3B3;
         }
     }
 
@@ -1261,10 +1266,10 @@ body.cursor-moving {
         left: 50%;
         width: 8px;
         height: 8px;
-        background-color: #808080;
+        background-color: #E6E6E6;
         border-radius: 50%;
-        transform: translate(-50%, -50%) scale(0);
-        opacity: 0;
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
         transition: opacity .15s ease, transform .15s ease;
         pointer-events: none;
     }
@@ -1279,6 +1284,44 @@ body.cursor-moving {
 }
 .vis-group.cursor-moving-target .inner-end .vis-item-overflow::after {
     background-color: #808080 !important;
+}
+
+.vis-group.cursor-moving-target.kaynnistys_1{
+    .vis-item-overflow{
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background-color:#4D4D4D;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            transition: opacity .15s ease, transform .15s ease;
+            pointer-events: none;
+        }
+    }
+}
+
+.vis-group.cursor-moving-target[class*="ehdotus_nahtavillaolokerta"]{
+    .vis-item-overflow{
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 12px;
+            width: 8px;
+            height: 8px;
+            background-color:#4D4D4D !important;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            transition: opacity .15s ease, transform .15s ease;
+            pointer-events: none;
+        }
+    }
 }
 
 // When applied to a group, only descendants visually highlight
@@ -1299,14 +1342,75 @@ body.cursor-moving {
         height: $size24;
         width: $size24;
         z-index: 200;
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background-color: #E6E6E6;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            transition: opacity .15s ease, transform .15s ease;
+            pointer-events: none;
+        }
     }
-    .vis-point { background-color: $white; }
-    .board-date { background-color: $black1; box-shadow: inset 0 0 0 2px $white, 0px 4px 4px 0px $black1; }
+    .vis-point { 
+        background-color: $white;
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background-color: #4D4D4D;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            transition: opacity .15s ease, transform .15s ease;
+            pointer-events: none;
+        }
+    }
+    .board-date { 
+        background-color: $black1; 
+        box-shadow: inset 0 0 0 2px $white, 0px 4px 4px 0px $black1;
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background-color: #E6E6E6;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            transition: opacity .15s ease, transform .15s ease;
+            pointer-events: none;
+        }
+    }
     .vis-point.board-only {
         background-color: $black1;
         border: 2px solid $black1;
         box-shadow: inset 0 0 0 2px $white, 0px 4px 4px 0px #00000040;
         border-radius: 50%;
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background-color: #E6E6E6;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            transition: opacity .15s ease, transform .15s ease;
+            pointer-events: none;
+        }
     }
 }
 
