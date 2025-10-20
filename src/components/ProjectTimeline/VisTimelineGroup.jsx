@@ -965,30 +965,28 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               const hasTitleSeparator = item.title.includes("-");
               // Determine which part was dragged and set appropriate values
               if (dragElement === "elements") {
-                // base: use the dragged item's own values
+                // Preserve original start-end duration for composite phase ranges
                 attributeDate = item.start;
-                attributeToUpdate = hasTitleSeparator ? item.title.split("-")[0].trim() : item.title;
-
-                // how many days the attribute moved
-                const daysMoved = getDaysMoved(attributeToUpdate, attributeDate);
-
-                // try to find the group's määräaika item
-                const groupMaaraaikaItem = findGroupMaaraaika(item.group, itemsPhaseDatesOnlyRef.current);
-
-                // only if we found one, shift it and override attribute* to that määräaika
-                if (groupMaaraaikaItem) {
-                  const maaraaikaToUpdate = hasTitleSeparator
-                    ? groupMaaraaikaItem.title.split("-")[0].trim()
-                    : groupMaaraaikaItem.title;
-
-                  // move määräaika by the same number of days
-                  const maaraaikaDate = moment(groupMaaraaikaItem.start).add(daysMoved, "days").toDate();
-                  groupMaaraaikaItem.start = maaraaikaDate;
-
-                  // override what will be dispatched
-                  attributeDate = maaraaikaDate;
-                  attributeToUpdate = maaraaikaToUpdate;
+                attributeToUpdate = hasTitleSeparator ? item.title.split('-')[0].trim() : item.title;
+                const pairedEndKey = hasTitleSeparator ? item.title.split('-')[1].trim() : null;
+                let originalDurationDays = 0;
+                if (item.start && item.end) {
+                  originalDurationDays = moment(item.end).diff(moment(item.start),'days');
                 }
+                const formattedStart = moment(attributeDate).format('YYYY-MM-DD');
+                dispatch(updateDateTimeline(
+                  attributeToUpdate,
+                  formattedStart,
+                  visValuesRef.current,
+                  false,
+                  deadlineSections,
+                  true,
+                  originalDurationDays,
+                  pairedEndKey
+                ));
+                // Skip generic dispatch at end
+                attributeDate = null;
+                attributeToUpdate = null;
               }
               else if (dragElement === "left") {
                 // If dragging the start handle
