@@ -878,6 +878,7 @@
     .vis-text.vis-major {
         text-align: center;
         border-color: transparent !important;
+        border-left: 0.063rem solid #999999 !important;
         &::before {
             content: "";
             position: absolute;
@@ -916,7 +917,7 @@
     .vis-time-axis.vis-foreground > div {
         color: #1a1a1a;
         font-size: 0.875rem;
-        left: 2px;
+        left: 3px;
     }
 
     .vis-text.vis-minor {
@@ -1278,4 +1279,12 @@
         .vis-grid.vis-vertical.vis-minor[class*="vis-week"] {
         border-left: 1px solid $border-gray4 !important; // or your desired color
     }
+
+    .vis-text.vis-minor[class*=vis-week]:empty {
+        border-left: 0 !important;
+    }
+}
+
+.vis .vis-time-axis.vis-foreground:first-of-type > div{
+    left: 0px !important;
 }
