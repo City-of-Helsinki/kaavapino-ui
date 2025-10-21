@@ -235,29 +235,62 @@ class EditProjectTimeTableModal extends Component {
       const day = date.getDay();
       return day === 0 || day === 6; // Sunday or Saturday
     };
-  
-    for (let i = 0; i < dates.length; i++) {
-      const currentDate = new Date(dates[i]);
-      currentDate.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(dates[i]);
-      endOfDay.setHours(23, 59, 59, 999);
 
-      if (holidays) {
-        items.add([{
-          id: `holiday_${i}`,
-          start: currentDate,
-          end: endOfDay,
-          type: "background",
-          className: "holiday",
-        }]);
+    const consecutiveGroups = [];
+
+    // Group consecutive dates together
+    let currentGroup = [dates[0]];
+
+    for (let i = 1; i < dates.length; i++) {
+      const prev = new Date(dates[i - 1]);
+      const curr = new Date(dates[i]);
+      const diffDays = (curr - prev) / (1000 * 60 * 60 * 24);
+
+      if (diffDays === 1) {
+        // consecutive day → same group
+        currentGroup.push(dates[i]);
       } else {
-        items.add([{
-          id: `disabled_date_${i}`,
-          start: currentDate,
-          end: endOfDay,
-          type: "background",
-          className: isWeekend(currentDate) ? "negative normal-weekend" : "negative",
-        }]);
+        // gap → new group
+        consecutiveGroups.push(currentGroup);
+        currentGroup = [dates[i]];
+      }
+    }
+    consecutiveGroups.push(currentGroup);
+    for (let group of consecutiveGroups) {
+      for (let i = 0; i < group.length; i++) {
+        const currentDate = new Date(group[i]);
+        currentDate.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date(group[i]);
+        endOfDay.setHours(23, 59, 59, 998);
+
+        // mark last item in this group
+        const isLast = i === group.length - 1;
+        const extraClass = (isLast && group.length > 1) ? "last" : "";
+        const isSunday = currentDate.getDay() === 0;
+        if (holidays) {
+          items.add([
+            {
+              id: `holiday_${group[i]}`,
+              start: currentDate,
+              end: endOfDay,
+              type: "background",
+              className: `holiday ${extraClass}`,
+            },
+          ]);
+        } else {
+          items.add([
+            {
+              id: `disabled_date_${group[i]}`,
+              start: currentDate,
+              end: endOfDay,
+              type: "background",
+              className: isWeekend(currentDate)
+                ? `negative normal-weekend ${isSunday ? 'sunday ' : ''}${extraClass}`
+                : `negative ${extraClass}`,
+            },
+          ]);
+        }
       }
     }
 

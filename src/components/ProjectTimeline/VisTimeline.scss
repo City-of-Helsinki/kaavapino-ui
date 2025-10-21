@@ -1232,6 +1232,78 @@
     z-index: 3000;
     user-select: none;
 }
+
+.vis .vis-time-axis.vis-foreground:first-of-type > div{
+    left: 0px !important;
+}
+
+.years{
+    .vis-time-axis .vis-grid.vis-vertical.vis-major, .vis-time-axis .vis-grid.vis-vertical.vis-minor
+    {
+        border-left: 2px solid #e2e2e2 !important;
+        left: -4px !important;
+    }
+    .vis-item.vis-background.holiday.last {
+        width: 0.5px !important; // reduce by 1px
+    }
+
+    .vis-item.vis-background.negative.last {
+        width: 1px !important;
+    }
+}
+
+.years2{
+    .vis-item.vis-background.holiday.last {
+        width: 0.1px !important; // reduce by 1px
+        margin-left: -4px;
+    }
+}
+
+.months6{
+    .vis-item.vis-background.holiday.last {
+       width: inherit;
+    }
+    .vis-time-axis .vis-grid.vis-vertical.vis-major, .vis-time-axis .vis-grid.vis-vertical.vis-minor
+    {
+        border-left: 2px solid #e2e2e2 !important;
+        left: -4px !important;
+    }
+}
+
+.month1{
+    .vis-time-axis .vis-grid.vis-vertical.vis-minor
+    {
+        border-right: 0;
+        border-left: 2px solid #e2e2e2 !important;
+        left: -4px !important;
+    }
+    .vis-grid.vis-vertical.vis-major{
+        border-left: none !important;
+    }
+    .vis-item.vis-background.negative.normal-weekend{
+        margin-left: -3px;
+    }
+
+    .negative:not(.normal-weekend){
+        margin-left: -3px;
+    }
+    .holiday:not(.normal-weekend){
+        margin-left: -3px;
+    }
+    //:not(.normal-weekend)
+    .vis-grid.vis-vertical.vis-major {
+        border-left: 1px solid #d8d8d8 !important;
+        margin-left: -3px;
+    }   
+}
+
+.year1{
+    .vis-item.vis-background.holiday.last {
+        width: 0.1px !important; // reduce by 1px
+        margin-left: -4px;
+    }
+}
+
 //Only in 3 months view
 .hide-lines {
     .negative .holiday {
@@ -1274,17 +1346,31 @@
 
     // Re‑add left border only for week grid lines (major or minor)
     .vis-time-axis
-        .vis-grid.vis-vertical.vis-major[class*="vis-week"],
+    .vis-grid.vis-vertical.vis-major{
+        border-left: none !important;
+    }
+
     .vis-time-axis
         .vis-grid.vis-vertical.vis-minor[class*="vis-week"] {
-        border-left: 1px solid $border-gray4 !important; // or your desired color
+        border-left: 2px solid #d8d8d8 !important; // or your desired color
+        left: -4px !important;
     }
 
     .vis-text.vis-minor[class*=vis-week]:empty {
         border-left: 0 !important;
     }
-}
 
-.vis .vis-time-axis.vis-foreground:first-of-type > div{
-    left: 0px !important;
+    .holiday.normal-weekend.last{
+        margin-left: -4px;
+    }
+
+    .negative.normal-weekend.last {
+        border-right: 2px solid #d8d8d8;
+        margin-left: -1px !important;
+    }
+
+    .sunday:not(.last) {
+        border-right: 2px solid #D8D8D8;
+        margin-left: -1px;
+    }
 }

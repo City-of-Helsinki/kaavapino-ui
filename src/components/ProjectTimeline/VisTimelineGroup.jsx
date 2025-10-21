@@ -713,9 +713,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
       const rangeDuration = 1000 * 60 * 60 * 24 * 30; // about 1 month
       restoreNormalMonths(moment);
-      timelineRef.current.classList.remove("years")
+      timelineRef.current.classList.remove("years");
       timelineRef.current.classList.remove("hide-lines");
-      timelineRef.current.classList.add("months")
+      timelineRef.current.classList.remove("months6");
+      timelineRef.current.classList.remove("years2");
+      timelineRef.current.classList.remove("year1")
+      timelineRef.current.classList.add("months");
+      timelineRef.current.classList.add("month1");
       timeline.setOptions({timeAxis: {scale: 'weekday'}});
       //Keep view centered on where user is
       const newStart = new Date(center.getTime() - rangeDuration / 2);
@@ -731,6 +735,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const rangeDuration = 1000 * 60 * 60 * 24 * 30 * 3; // approx 3 months
       restoreNormalMonths(moment);
       timelineRef.current.classList.remove("years");
+      timelineRef.current.classList.remove("months6");
+      timelineRef.current.classList.remove("years2");
+      timelineRef.current.classList.remove("month1");
+      timelineRef.current.classList.remove("year1")
       timelineRef.current.classList.add("months");
       timelineRef.current.classList.add("hide-lines");
       timeline.setOptions({timeAxis: {scale: 'week'},      
@@ -758,7 +766,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       restoreStandardLabelFormat();
       timelineRef.current.classList.remove("hide-lines");
       timelineRef.current.classList.remove("months");
+      timelineRef.current.classList.remove("years2");
+      timelineRef.current.classList.remove("month1");
+      timelineRef.current.classList.remove("year1")
       timelineRef.current.classList.add("years");
+      timelineRef.current.classList.add("months6");
       timeline.setOptions({timeAxis: {scale: 'month'}});
 
       const newStart = new Date(center.getTime() - rangeDuration / 2);
@@ -778,7 +790,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       restoreStandardLabelFormat();
       timelineRef.current.classList.remove("months")
       timelineRef.current.classList.remove("hide-lines");
+      timelineRef.current.classList.remove("months6");
+      timelineRef.current.classList.remove("years2");
+      timelineRef.current.classList.remove("month1");
       timelineRef.current.classList.add("years")
+      timelineRef.current.classList.add("year1")
       timeline.setOptions({timeAxis: {scale: 'month'}});
       //Keep view centered on where user is
       const newStart = new Date(center.getTime() - rangeDuration / 2);
@@ -831,7 +847,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       applyQuarterRangeLabels();
       timelineRef.current.classList.remove('months');
       timelineRef.current.classList.remove("hide-lines");
+      timelineRef.current.classList.remove("months6");
+      timelineRef.current.classList.remove("month1");
+      timelineRef.current.classList.remove("year1")
       timelineRef.current.classList.add('years');
+      timelineRef.current.classList.add("years2");
       timeline.setOptions({
         timeAxis: { scale: 'month', step: 3 },
         format: {
