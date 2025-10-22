@@ -419,12 +419,12 @@ class ProjectEditPage extends Component {
                           //Extract suffix from error.fieldAnchorKey if there is one to variable
                           const fieldSuffix = (error.fieldAnchorKey && error.fieldAnchorKey.match(/(_\d+)$/) || [])[0] || '';
                           // Extract 'esillaolo/nahtavillaolo' from fieldAnchorKey
-                          const nahtavillaoresilla = matchedDeadline?.deadline?.phase_name === "Ehdotus" ? 'nahtavillaolo' : 'esillaolo'; 
+                          const nahtavillaoresilla = matchedDeadline?.deadline?.phase_name === "Ehdotus" ? 'nahtavillaolokerta' : 'esillaolokerta';
                           const esillaoloOrLautakunta = error.fieldAnchorKey?.includes('esillaolo')
                             ? nahtavillaoresilla
                             : (error.fieldAnchorKey?.includes('lautakunta') || error.fieldAnchorKey?.includes('lautakunnassa')
                                 ? 'lautakuntakerta'
-                                : ''
+                                : 'lautakuntakerta'
                             );
                           const anchorKeyWithSuffix = esillaoloOrLautakunta + fieldSuffix;
                           if(matchedDeadline?.deadline?.attribute?.includes("alkaa_pvm")){

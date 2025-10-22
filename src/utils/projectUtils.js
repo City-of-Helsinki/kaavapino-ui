@@ -405,7 +405,8 @@ function checkDeadlineSchemaErrors(errorFields, currentDeadlineSchema, attribute
           let segment = match[1] // e.g. periaatteet, oas, luonnos, ehdotus, kaavaluonnos, kaavaehdotus, tarkistettu_ehdotus
           const typePart = match[2] // esillaolo_alkaa(_pieni|_iso)? | esillaolo_paattyy | lautakunnassa
           const idx = match[4] || '1'
-          if (segment === 'kaavaehdotus') segment = 'ehdotus'
+          if (segment === 'kaavaehdotus') segment = 'ehdotus' 
+          if (segment === 'kaavaluonnos') segment = 'luonnos'
           let groupKey = null
           if (typePart.startsWith('esillaolo')) {
             const candidateNahtavilla = `${segment}_nahtavillaolokerta_${idx}`
