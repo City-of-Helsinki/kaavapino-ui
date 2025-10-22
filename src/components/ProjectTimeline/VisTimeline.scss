@@ -1374,3 +1374,144 @@
         margin-left: -1px;
     }
 }
+
+/* Normal monitors (DPR < 2): trigger around 1450px */
+@media (max-width: 1550px) and (max-resolution: 1.99dppx) {
+    .years{
+        .vis-time-axis .vis-grid.vis-vertical.vis-major, .vis-time-axis .vis-grid.vis-vertical.vis-minor
+        {
+            border-left: 2px solid #e2e2e2 !important;
+            left: -3px !important;
+        }
+        .vis-item.vis-background.holiday.last {
+            width: 0.5px !important; // reduce by 1px
+        }
+
+        .vis-item.vis-background.negative.last {
+            width: 1px !important;
+        }
+    }
+
+    .years2{
+        .vis-item.vis-background.holiday.last {
+            width: 0.1px !important; // reduce by 1px
+            margin-left: -4px;
+        }
+    }
+
+    .months6{
+        .vis-item.vis-background.holiday.last {
+        width: inherit;
+        }
+        .vis-time-axis .vis-grid.vis-vertical.vis-major, .vis-time-axis .vis-grid.vis-vertical.vis-minor
+        {
+            border-left: 2px solid #e2e2e2 !important;
+            left: -3px !important;
+        }
+    }
+
+    .month1{
+        .vis-time-axis .vis-grid.vis-vertical.vis-minor
+        {
+            border-right: 0;
+            border-left: 2px solid #e2e2e2 !important;
+            left: -3px !important;
+        }
+        .vis-grid.vis-vertical.vis-major{
+            border-left: none !important;
+        }
+        .vis-item.vis-background.negative.normal-weekend{
+            margin-left: -2px;
+        }
+
+        .negative:not(.normal-weekend){
+            margin-left: -2px;
+        }
+        .holiday:not(.normal-weekend){
+            margin-left: -2px;
+        }
+        //:not(.normal-weekend)
+        .vis-grid.vis-vertical.vis-major {
+            border-left: 1px solid #d8d8d8 !important;
+            margin-left: -2px;
+        }   
+    }
+
+    .year1{
+        .vis-item.vis-background.holiday.last {
+            width: 0.1px !important; // reduce by 1px
+            margin-left: -4px;
+        }
+    }
+}
+
+/* Laptops / Retina-ish (DPR ≥ 2): trigger around 1750px */
+@media (max-width: 1750px) and (min-resolution: 2dppx) {
+  /* rules for MacBook/retina */
+   .years{
+        .vis-time-axis .vis-grid.vis-vertical.vis-major, .vis-time-axis .vis-grid.vis-vertical.vis-minor
+        {
+            border-left: 2px solid #e2e2e2 !important;
+            left: -2.5px !important;
+        }
+        .vis-item.vis-background.holiday.last {
+            width: 0.5px !important; // reduce by 1px
+        }
+
+        .vis-item.vis-background.negative.last {
+            width: 1px !important;
+        }
+    }
+
+    .years2{
+        .vis-item.vis-background.holiday.last {
+            width: 0.1px !important; // reduce by 1px
+            margin-left: -4px;
+        }
+    }
+
+    .months6{
+        .vis-item.vis-background.holiday.last {
+        width: inherit;
+        }
+        .vis-time-axis .vis-grid.vis-vertical.vis-major, .vis-time-axis .vis-grid.vis-vertical.vis-minor
+        {
+            border-left: 2px solid #e2e2e2 !important;
+            left: -2.5px !important;
+        }
+    }
+
+    .month1{
+        .vis-time-axis .vis-grid.vis-vertical.vis-minor
+        {
+            border-right: 0;
+            border-left: 2px solid #e2e2e2 !important;
+            left: -3px !important;
+        }
+        .vis-grid.vis-vertical.vis-major{
+            border-left: none !important;
+        }
+        .vis-item.vis-background.negative.normal-weekend{
+            margin-left: -2px;
+        }
+
+        .negative:not(.normal-weekend){
+            margin-left: -2px;
+        }
+        .holiday:not(.normal-weekend){
+            margin-left: -2px;
+        }
+        //:not(.normal-weekend)
+        .vis-grid.vis-vertical.vis-major {
+            border-left: 1px solid #d8d8d8 !important;
+            margin-left: -2px;
+        }   
+    }
+
+    .year1{
+        .vis-item.vis-background.holiday.last {
+            width: 0.1px !important; // reduce by 1px
+            margin-left: -4px;
+        }
+    }
+}
