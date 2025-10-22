@@ -420,12 +420,7 @@ class ProjectEditPage extends Component {
                           const fieldSuffix = (error.fieldAnchorKey && error.fieldAnchorKey.match(/(_\d+)$/) || [])[0] || '';
                           // Extract 'esillaolo/nahtavillaolo' from fieldAnchorKey
                           const nahtavillaoresilla = matchedDeadline?.deadline?.phase_name === "Ehdotus" ? 'nahtavillaolokerta' : 'esillaolokerta';
-                          const esillaoloOrLautakunta = error.fieldAnchorKey?.includes('esillaolo')
-                            ? nahtavillaoresilla
-                            : (error.fieldAnchorKey?.includes('lautakunta') || error.fieldAnchorKey?.includes('lautakunnassa')
-                                ? 'lautakuntakerta'
-                                : 'lautakuntakerta'
-                            );
+                          const esillaoloOrLautakunta = error.fieldAnchorKey?.includes('esillaolo') ? nahtavillaoresilla : 'lautakuntakerta';
                           const anchorKeyWithSuffix = esillaoloOrLautakunta + fieldSuffix;
                           if(matchedDeadline?.deadline?.attribute?.includes("alkaa_pvm")){
                             matchedDeadline = (this.props.currentProject?.deadlines || []).find(
