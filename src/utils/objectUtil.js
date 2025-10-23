@@ -577,6 +577,8 @@ if (process.env.UNIT_TEST === "true"){
   exported.sortPhaseData = sortPhaseData
   exported.reverseIterateArray = reverseIterateArray
   exported.expectedOrder = order
+  exported.findDeadlineInDeadlines = findDeadlineInDeadlines
+  exported.findDeadlineInDeadlineSections = findDeadlineInDeadlineSections
 }
 
 export default exported;
