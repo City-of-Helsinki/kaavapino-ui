@@ -321,6 +321,17 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     };
 
     const getLautakuntaConfirmed = (visValRef, phase, lautakuntaCount) => {
+      const projectSize = visValRef?.kaavaprosessin_kokoluokka;
+      //L AND XL has phase order reversed on ehdotus phase and it is not allowed for lautakunta to be added after nahtavillaolo
+      if (
+          phase === "ehdotus" &&
+          (projectSize === "XL" || projectSize === "L") &&
+          visValRef?.vahvista_ehdotus_esillaolo === true &&
+          visValRef?.vahvista_kaavaehdotus_lautakunnassa === true
+      ) {
+          return false;
+      }
+
       if (phase === "ehdotus" && "vahvista_kaavaehdotus_lautakunnassa" in visValRef) {
         return true;
       }
