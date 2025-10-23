@@ -332,9 +332,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           return false;
       }
 
-      if (phase === "ehdotus" && "vahvista_kaavaehdotus_lautakunnassa" in visValRef) {
-        return true;
-      }
       if (phase === "luonnos") {
         return lautakuntaCount === 1
           ? visValRef["vahvista_kaavaluonnos_lautakunnassa"] === true
