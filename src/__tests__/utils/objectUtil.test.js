@@ -284,13 +284,78 @@ describe("Test ObjectUtil utility functions", () => {
         });
     });
 
-    test ("compareObjectValues works correctly", () => {
-        const obj1 = { "a": 1, "b": 2, "c": 3};
-        const obj2 = { "a": 1, "b": 20, "d": 4};
-        expect(objectUtil.compareObjectValues(obj1, obj2)).toBe(true);
-        expect(objectUtil.compareObjectValues(obj1, obj1)).toBe(false);
-        expect(objectUtil.compareObjectValues({}, obj2)).toBe(true);
-        expect(objectUtil.compareObjectValues(obj1, {})).toBe(false);
-        expect(objectUtil.compareObjectValues({}, {})).toBe(false);
+    test("findDifferencesInObjects works correctly", () => {
+        const obj1 = { "a": 1, "b": 2, "c": 3, "nested": { "x": 10 } };
+        const obj2 = { "a": 1, "b": 20, "d": 4, "nested": { "x": 10, "y": 20 } };
+        const result1 = objectUtil.findDifferencesInObjects(obj1, obj2);
+        expect(result1.length).toBe(4);
+        expect(result1).toContainEqual({ key: "b", obj1: 2, obj2: 20 });
+        expect(result1).toContainEqual({ key: "c", obj1: 3, obj2: undefined });
+        expect(result1).toContainEqual({ key: "d", obj1: undefined, obj2: 4 });
+        expect(result1).toContainEqual({ key: "nested.y", obj1: undefined, obj2: 20 });
+
+        const result2 = objectUtil.findDifferencesInObjects(obj2, obj1);
+        expect(result2.length).toBe(4);
+        expect(result2).toContainEqual({ key: "b", obj1: 20, obj2: 2 });
+        expect(result2).toContainEqual({ key: "d", obj1: 4, obj2: undefined });
+        expect(result2).toContainEqual({ key: "c", obj1: undefined, obj2: 3 });
+        expect(result2).toContainEqual({ key: "nested.y", obj1: 20, obj2: undefined });
+
+        const result3 = objectUtil.findDifferencesInObjects({}, { "a": 1 });
+        expect(result3).toContainEqual({ key: "a", obj1: undefined, obj2: 1 });
+
+        const result4 = objectUtil.findDifferencesInObjects({ "a": 1 }, {});
+        expect(result4).toContainEqual({ key: "a", obj1: 1, obj2: undefined });
+
+        const result5 = objectUtil.findDifferencesInObjects(obj1, obj1);
+        expect(result5.length).toBe(0);
+    });
+    test("findMatchingName returns correct item", () => {
+        const test_array = [
+            { name: "item_one", value: 1 },
+            { name: "item_two", value: 2 },
+            { name: "item_three", value: 3 },
+        ];
+        const result = objectUtil.findMatchingName(test_array, "item_two", "name");
+        expect(result).toEqual({ name: "item_two", value: 2 });
+    });
+    test("findItem returns next item when direction is 1", () => {
+        const test_array = [
+            { name: "item_one", value: 1 },
+            { name: "item_two", value: 2 },
+            { name: "item_three", value: 3 },
+        ];
+        const result = objectUtil.findItem(test_array, "item_one", "name", 1);
+        expect(result).toEqual({ name: "item_two", value: 2 });
+    });
+
+    test("findItem returns previous item when direction is -1", () => {
+        const test_array = [
+            { name: "item_one", value: 1 },
+            { name: "item_two", value: 2 },
+            { name: "item_three", value: 3 },
+        ];
+        const result = objectUtil.findItem(test_array, "item_three", "name", -1);
+        expect(result).toEqual({ name: "item_two", value: 2 });
+    });
+
+    test("findItem returns null if inputName not found", () => {
+        const test_array = [
+            { name: "item_one", value: 1 },
+            { name: "item_two", value: 2 },
+        ];
+        const result = objectUtil.findItem(test_array, "item_three", "name", 1);
+        expect(result).toBeNull();
+    });
+
+    test("findItem returns null if next/previous index is out of bounds", () => {
+        const test_array = [
+            { name: "item_one", value: 1 },
+            { name: "item_two", value: 2 },
+        ];
+        // Next after last
+        expect(objectUtil.findItem(test_array, "item_two", "name", 1)).toBeNull();
+        // Previous before first
+        expect(objectUtil.findItem(test_array, "item_one", "name", -1)).toBeNull();
     });
 });
