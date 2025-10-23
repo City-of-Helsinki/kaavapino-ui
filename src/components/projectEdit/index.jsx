@@ -420,14 +420,18 @@ class ProjectEditPage extends Component {
                           const fieldSuffix = (error.fieldAnchorKey && error.fieldAnchorKey.match(/(_\d+)$/) || [])[0] || '';
                           // Extract 'esillaolo/nahtavillaolo' from fieldAnchorKey
                           const nahtavillaoresilla = matchedDeadline?.deadline?.phase_name === "Ehdotus" ? 'nahtavillaolokerta' : 'esillaolokerta';
-                          const esillaoloOrLautakunta = error.fieldAnchorKey?.includes('esillaolo') ? nahtavillaoresilla : 'lautakuntakerta';
+                          //Voimaantulo and Hyväksyminen phases are bit different and need own extra check
+                          const specialPhases = matchedDeadline?.deadline?.phase_name === "Hyväksyminen" ? 'hyvaksyminen_1' : matchedDeadline?.deadline?.phase_name === "Voimaantulo" ? 'voimaantulo_1' : false;
+                          const esillaoloOrLautakunta = error.fieldAnchorKey?.includes('esillaolo') ? nahtavillaoresilla : specialPhases ? specialPhases : 'lautakuntakerta';
                           const anchorKeyWithSuffix = esillaoloOrLautakunta + fieldSuffix;
+                          //Special case for Voimaantulo phase where some of 4 fields needs to be filled and are not marked required on Excel level
+                          const subGroup = error?.errorSection === "Voimaantulo" && error?.title === "Aikataulun muokkausnäkymä" ? "Lopputulos" : error?.attr?.attributesubgroup
                           if(matchedDeadline?.deadline?.attribute?.includes("alkaa_pvm")){
                             matchedDeadline = (this.props.currentProject?.deadlines || []).find(
                               d => d?.deadline?.phase_id === currentPhaseId && d?.deadline?.deadlinegroup?.includes(anchorKeyWithSuffix)
                             );
                           }
-                          this.props.showTimetable(true, error.fieldAnchorKey, currentPhaseId, matchedDeadline?.deadline || {},error?.attr?.attributesubgroup);
+                          this.props.showTimetable(true, error.fieldAnchorKey, currentPhaseId, matchedDeadline?.deadline || {}, subGroup);
                         } else {
                           this.showErrorField(error.errorSection, error.fieldAnchorKey);
                         }

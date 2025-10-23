@@ -1839,7 +1839,23 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
     };
 
-    const timelineInitialTab = showTimetableForm?.selectedPhase === "Voimaantulo" && showTimetableForm?.name === "voimaantulo_pvm" ? 1 : showTimetableForm?.subgroup === "Päätös" ? 1 : 0;
+    const getTimelineInitialTab = (data) => {
+      if(!data) return 0;
+      const { selectedPhase, subgroup, name } = data;
+      if(selectedPhase === "Hyväksyminen"){
+          if(subgroup === "Jatkotoimet") return 1;
+          if(subgroup === "Pöytäkirjasta") return 0;
+      }
+      if(selectedPhase === "Voimaantulo"){
+          if(subgroup === "Valitukset") return 0;
+          if(subgroup === "Lopputulos") return 1;
+          if(name === "voimaantulo_pvm") return 1;
+          return subgroup === "Päätös" ? 1 : 0;
+      }
+      return subgroup === "Päätös" ? 1 : 0;
+    };
+
+    const timelineInitialTab = getTimelineInitialTab(showTimetableForm);
 
     return (
       !deadlines ? <LoadingSpinner />
