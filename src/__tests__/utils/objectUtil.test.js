@@ -358,4 +358,40 @@ describe("Test ObjectUtil utility functions", () => {
         // Previous before first
         expect(objectUtil.findItem(test_array, "item_one", "name", -1)).toBeNull();
     });
+    test("findDeadlineInDeadlines returns correct deadline object", () => {
+        const deadlines = [
+            { deadline: { attribute: "deadline_1", deadlinegroup: "groupA" } },
+            { deadline: { attribute: "deadline_2", deadlinegroup: "groupB" } },
+            { deadline: { attribute: "deadline_3", deadlinegroup: "groupC" } }
+        ];
+        expect(objectUtil.findDeadlineInDeadlines("deadline_2", deadlines)).toEqual(deadlines[1]);
+        expect(objectUtil.findDeadlineInDeadlines("deadline_1", deadlines)).toEqual(deadlines[0]);
+        expect(objectUtil.findDeadlineInDeadlines("nonexistent", deadlines)).toBeUndefined();
+    });
+
+    test("findDeadlineInDeadlines returns undefined for empty or malformed input", () => {
+        expect(objectUtil.findDeadlineInDeadlines("deadline_1", [])).toBeUndefined();
+        expect(objectUtil.findDeadlineInDeadlines("", [])).toBeUndefined();
+        expect(objectUtil.findDeadlineInDeadlines(null, [])).toBeUndefined();
+        expect(objectUtil.findDeadlineInDeadlines("deadline_1", [{ notDeadline: {} }])).toBeUndefined();
+    });
+
+    test("findDeadlineInDeadlineSections returns correct attribute object", () => {
+        const deadlineSections = [
+            {sections: [{attributes: [{ name: "deadline_1", attributegroup: "groupA" },{ name: "deadline_2", attributegroup: "groupB" }]}]},
+            {sections: [{attributes: [{ name: "deadline_3", attributegroup: "groupC" }]}]}
+        ];
+        expect(objectUtil.findDeadlineInDeadlineSections("deadline_2", deadlineSections))
+            .toEqual({ name: "deadline_2", attributegroup: "groupB" });
+        expect(objectUtil.findDeadlineInDeadlineSections("deadline_3", deadlineSections))
+            .toEqual({ name: "deadline_3", attributegroup: "groupC" });
+        expect(objectUtil.findDeadlineInDeadlineSections("nonexistent", deadlineSections)).toBeUndefined();
+    });
+
+    test("findDeadlineInDeadlineSections returns undefined for empty or malformed input", () => {
+        expect(objectUtil.findDeadlineInDeadlineSections("deadline_1", [])).toBeUndefined();
+        expect(objectUtil.findDeadlineInDeadlineSections("deadline_1", [{ sections: [{}] }])).toBeUndefined();
+        expect(objectUtil.findDeadlineInDeadlineSections("deadline_1", [{ sections: [{ attributes: [] }] }])).toBeUndefined();
+        expect(objectUtil.findDeadlineInDeadlineSections("deadline_1", [{ sections: [{ attributes: [{ name: "other" }] }] }])).toBeUndefined();
+    });
 });
