@@ -301,28 +301,23 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const getEsillaoloConfirmed = (visValRef, phase, attributeEsillaoloKeys, nextIndex) => {
-      if (
-        (phase === "luonnos" && !("jarjestetaan_" + phase + "_esillaolo_1" in visValRef)) ||
-        (phase === "periaatteet" && !("jarjestetaan_" + phase + "_esillaolo_1" in visValRef))
-      ) {
-        return true;
-      }
-      if (nextIndex <= 1) {
-        return true;
-      }
+      // Allow adding first occurrence
+      if (nextIndex <= 1) return true;
+
       const prevKey = attributeEsillaoloKeys[nextIndex - 2];
       if (!prevKey) return false;
 
-      if (phase === "luonnos" || phase === "periaatteet") {
-        const confirmKeys = getConfirmationKeyForEsillaoloKey(phase, prevKey);
-        if (Array.isArray(confirmKeys)) {
-          return visValRef[prevKey] === true && confirmKeys.some(key => visValRef[key] === true);
-        } else {
-          return visValRef[prevKey] === true && visValRef[confirmKeys] === true;
-        }
+      // Legacy auto‑allow when first luonnos/periaatteet key not present at all
+      if ((phase === 'luonnos' || phase === 'periaatteet') &&
+          !("jarjestetaan_" + phase + "_esillaolo_1" in visValRef)) {
+          return true;
       }
 
-      return visValRef[prevKey] === true;
+      const confirmKey = getConfirmationKeyForEsillaoloKey(phase, prevKey);
+      if (Array.isArray(confirmKey)) {
+          return visValRef[prevKey] === true && confirmKey.some(k => visValRef[k] === true);
+      }
+      return visValRef[prevKey] === true && visValRef[confirmKey] === true;
     };
 
     const getLautakuntaConfirmed = (visValRef, phase, lautakuntaCount) => {
