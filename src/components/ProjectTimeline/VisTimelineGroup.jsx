@@ -427,6 +427,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         canAddLautakunta,
         data
       );
+      // Force-disable esilläolo add if lautakunta is confirmed in this phase
+      if (lautakuntaConfirmed && 
+      !["XL. Ehdotus", "L. Ehdotus"].includes(visValRef.kaavan_vaihe)
+      ) {
+        canAddEsillaolo = false;
+        nextEsillaoloClean = false;
+        if (!esillaoloReason) esillaoloReason = "lautakuntaConfirmed";
+      }
 
       // Check max lautakunta limit
       const maxLautakunta = data.group?.maxLautakunta || data.maxLautakunta;
@@ -1520,7 +1528,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                   removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-confirmed')}</div>`;
                 }
               } else if (isFirst) {
-                remove.classList.add("button-disabled");
+                if(group?.nestedInGroup !== "Periaatteet" && group?.nestedInGroup !== "Luonnos"){
+                  remove.classList.add("button-disabled");
+                }
                 if (label.innerHTML.includes("Esilläolo")) {
                   removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-first-esillaolo')}</div>`;
                 } else if (label.innerHTML.includes("Lautakunta")) {
