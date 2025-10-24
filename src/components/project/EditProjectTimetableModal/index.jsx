@@ -1029,6 +1029,19 @@ class EditProjectTimeTableModal extends Component {
           if(newItem){
             const newVal = validValues.find(item => item.key === newItem)
             newDate = new Date(newVal.value)
+                // --- Ensure new date is at least tomorrow ---
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            newDate.setHours(0, 0, 0, 0);
+            if (newDate <= today) {
+                newDate = new Date(today);
+                newDate.setDate(today.getDate() + 1);
+                // Also update validValues so subsequent calculations use the corrected date
+                const idx = validValues.findIndex(item => item.key === newItem);
+                if (idx !== -1) {
+                    validValues[idx].value = newDate.toISOString().split('T')[0];
+                }
+            }
             matchingSection = objectUtil.findItem(distanceArray,newItem,"name",1)
           }
           else{
