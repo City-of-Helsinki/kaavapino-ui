@@ -801,6 +801,34 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           const dragElementRaw = dragHandleRef.current || '';
           const dragElement = dragElementRaw.split(' ')[0];
           const event = window.event;
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+                    // Check if trying to move an item from a phase that has already passed
+          if (item.phaseName && visValuesRef.current.kaavan_vaihe) {
+            // Define the phase order
+            const phaseOrder = [
+              "Käynnistys", 
+              "Periaatteet", 
+              "OAS", 
+              "Luonnos", 
+              "Ehdotus", 
+              "Tarkistettu ehdotus", 
+              "Hyväksyminen", 
+              "Voimaantulo"
+            ];
+            
+            // Extract the phase name without numbering from kaavan_vaihe
+            const currentPhaseFullName = visValuesRef.current.kaavan_vaihe;
+            const currentPhaseName = currentPhaseFullName.replace(/^\d+\.\s+/, '');
+              // Get the index of current phase and item's phase
+            const currentPhaseIndex = phaseOrder.indexOf(currentPhaseName);
+            const itemPhaseIndex = phaseOrder.indexOf(item.phaseName);
+            // If item's phase is before the current project phase, prevent the move
+            if (itemPhaseIndex < currentPhaseIndex) {
+              callback(null);
+              return;
+            }
+          }
           //Item is not allowed to be dragged if it is already confirmed
           if(item?.className?.includes("confirmed")){
               callback(null);
@@ -881,39 +909,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           //Prevent move
           if (
           !allowedToEdit ||
-          !dragElement || isConfirmed || isMovingToPast || 
+          !dragElement || isConfirmed || 
           item?.phaseName === "Hyväksyminen" || item?.phaseName === "Voimaantulo"
           ) {
             callback(null);
             return;
-          }
-          // Check if trying to move an item from a phase that has already passed
-          if (item.phaseName && visValuesRef.current.kaavan_vaihe) {
-            // Define the phase order
-            const phaseOrder = [
-              "Käynnistys", 
-              "Periaatteet", 
-              "OAS", 
-              "Luonnos", 
-              "Ehdotus", 
-              "Tarkistettu ehdotus", 
-              "Hyväksyminen", 
-              "Voimaantulo"
-            ];
-            
-            // Extract the phase name without numbering from kaavan_vaihe
-            const currentPhaseFullName = visValuesRef.current.kaavan_vaihe;
-            const currentPhaseName = currentPhaseFullName.replace(/^\d+\.\s+/, '');
-              // Get the index of current phase and item's phase
-            const currentPhaseIndex = phaseOrder.indexOf(currentPhaseName);
-            const itemPhaseIndex = phaseOrder.indexOf(item.phaseName);
-            
-            // If item's phase is before the current project phase, prevent the move
-            if (itemPhaseIndex < currentPhaseIndex) {
-              preventMove = true;
-              callback(null);
-              return;
-            }
           }
 
           const adjustIfWeekend = (date) => {
