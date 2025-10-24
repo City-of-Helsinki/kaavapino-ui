@@ -579,7 +579,7 @@ class EditProjectTimeTableModal extends Component {
           end: dashEnd,
           id: numberOfPhases,
           content: "",
-          className: dashedStyle + " " + highlightID + allowEditStyle,
+          className: dashedStyle + " " + highlightID + allowEditStyle + " only-inner-end",
           title: deadlines[i - 1].deadline.attribute +"-"+ deadlines[i].deadline.attribute,
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
