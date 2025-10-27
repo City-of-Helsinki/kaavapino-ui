@@ -278,10 +278,11 @@ const TimelineModal = ({
   // build Esilläolo date key
   const getEsillaoloDateKey = (group, index) => {
     const groupKeyMap = {
-      'Luonnos': 'milloin_luonnos_esillaolo_alkaa',
-      'Ehdotus': 'milloin_ehdotus_esillaolo_alkaa',
-      'Tarkistettu ehdotus': 'milloin_tarkistettu_ehdotus_esillaolo_alkaa',
-      'OAS': 'milloin_oas_esillaolo_alkaa'
+      'Periaatteet': 'milloin_periaatteet_esillaolo_paattyy',
+      'Luonnos': 'milloin_luonnos_esillaolo_paattyy',
+      'Ehdotus': 'milloin_ehdotus_esillaolo_paattyy',
+      'Tarkistettu ehdotus': 'milloin_tarkistettu_ehdotus_esillaolo_paattyy',
+      'OAS': 'milloin_oas_esillaolo_paattyy'
     };
     const base = groupKeyMap[group];
     return base ? `${base}${index}` : null;
