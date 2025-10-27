@@ -179,6 +179,18 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       } else {
         canAdd = confirmed ? count <= deadlineCount : canAdd;
       }
+      //kaavaehdotus_lautakuntaan_1 true
+      //kaavaehdotus_nahtaville_1 true)
+      if(reasonLabel === "lautakunta" && phase === "ehdotus" && visValues[`kaavaehdotus_nahtaville_${count -1}`] && visValues[`kaavaehdotus_lautakuntaan_${count -1}`] && (visValuesRef.current.kaavaprosessin_kokoluokka === "XL" || visValuesRef.current.kaavaprosessin_kokoluokka === "L")){
+        const nextGroupWord = 'nähtävilläolo';
+        reason = t('deadlines.tooltip.disableConfirmButton', { nextGroupWord });
+        console.log(reason)
+      }
+
+      if(reasonLabel === "esillaolo" && phase !== "ehdotus" && (visValuesRef.current.kaavaprosessin_kokoluokka === "XL" || visValuesRef.current.kaavaprosessin_kokoluokka === "L")){
+        const nextGroupWord = 'lautakunta';
+        reason = t('deadlines.tooltip.disableConfirmButton', { nextGroupWord });
+      }
 
       return [canAdd, nextStr, reason];
     }
@@ -328,8 +340,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       if (
           phase === "ehdotus" &&
           (projectSize === "XL" || projectSize === "L") &&
-          visValRef?.vahvista_ehdotus_esillaolo === true &&
-          visValRef?.vahvista_kaavaehdotus_lautakunnassa === true
+          visValRef?.vahvista_ehdotus_esillaolo === true
       ) {
           return false;
       }
@@ -488,7 +499,16 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
       if (!lautakuntaConfirmed) {
         canAddLautakunta = false;
-        lautakuntaReason = "noconfirmation";
+
+        if(lautakuntaReason === ""){
+          lautakuntaReason = "noconfirmation";
+        }
+      }
+      else if(lautakuntaConfirmed && !["XL. Ehdotus", "L. Ehdotus"].includes(visValRef.kaavan_vaihe)){
+
+        if(esillaoloReason === ""){
+          esillaoloReason = "noconfirmation";
+        }
       } else if (
         paatos === "palautettu_uudelleen_valmisteltavaksi" ||
         paatos === "asia_jai_poydalle"
