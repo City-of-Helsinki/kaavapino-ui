@@ -333,6 +333,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
 
       if (phase === "luonnos") {
+        if(visValRef["luonnos_luotu"] === true && visValRef["kaavaluonnos_lautakuntaan_1"] === false){
+          //Luonnos and periaatteet phase can be deleted or added later
+          return true
+        }
         return lautakuntaCount === 1
           ? visValRef["vahvista_kaavaluonnos_lautakunnassa"] === true
           : visValRef[`vahvista_kaavaluonnos_lautakunnassa_${lautakuntaCount}`] === true;
@@ -341,6 +345,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           ? visValRef["vahvista_kaavaehdotus_lautakunnassa"] === true
           : visValRef[`vahvista_kaavaehdotus_lautakunnassa_${lautakuntaCount}`] === true;
       } else if (phase === "periaatteet") {
+        if(visValRef["periaatteet_luotu"] === true && visValRef["periaatteet_lautakuntaan_1"] === false){
+          //Luonnos and periaatteet phase can be deleted or added later
+          return true
+        }
         return lautakuntaCount === 1
           ? visValRef["vahvista_periaatteet_lautakunnassa"] === true
           : visValRef[`vahvista_periaatteet_lautakunnassa_${lautakuntaCount}`] === true;
@@ -482,7 +490,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           canAddLautakunta = false;
           lautakuntaReason = "max";
         }
-      } else {
+      }
+      else if(phase === "periaatteet" && visValRef["periaatteet_luotu"] === true && visValRef["periaatteet_lautakuntaan_1"] === false || 
+              phase === "luonnos" && visValRef["luonnos_luotu"] === true && visValRef["kaavaluonnos_lautakuntaan_1"] === false){
+                //Luonnos and periaatteet phase can be deleted or added later
+          canAddLautakunta = true;
+          lautakuntaReason = "";
+      }
+      else {
         canAddLautakunta = false;
         lautakuntaReason = "palautettu_tai_jai_poydalle";
       }
