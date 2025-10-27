@@ -829,6 +829,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               return;
             }
           }
+          //Item is not allowed to be dragged to past dates       
+          if (item.start && today) {
+              if (new Date(item.start).setHours(0,0,0,0) < today.getTime()) {
+                  callback(null);
+                  return;
+              }
+          }
           //Item is not allowed to be dragged if it is already confirmed
           if(item?.className?.includes("confirmed")){
               callback(null);
