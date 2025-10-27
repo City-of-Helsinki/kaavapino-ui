@@ -300,7 +300,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
     }
 
-    const getEsillaoloConfirmed = (visValRef, phase, attributeEsillaoloKeys, nextIndex) => {
+    const getEsillaoloConfirmed = (visValRef, phase, attributeEsillaoloKeys, nextIndex, hasFirstLautakunta) => {
+      // Prevent adding if first lautakunta already added
+      if (hasFirstLautakunta) return false;
       // Allow adding first occurrence
       if (nextIndex <= 1) return true;
 
@@ -398,7 +400,16 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const canGroupBeAdded = (visValRef, data) => {
       const phase = getPhaseKey(data);
       const lautakuntaCount = getLautakuntaCount(groups, data);
-
+      // Prevent adding esillaolo/nahtavillaolo if lautakunta has been added and confirmed
+      // Exception for XL/L ehdotus phase where lautakunta comes before esillaolo
+      const firstLautakuntaKey = phase === 'luonnos'
+        ? 'kaavaluonnos_lautakuntaan_1'
+        : phase === 'ehdotus'
+        ? 'kaavaehdotus_lautakuntaan_1'
+        : `${phase}_lautakuntaan_1`;
+      const projectSize = visValRef?.kaavaprosessin_kokoluokka;
+      const skipFirstCheck = phase === 'ehdotus' && (projectSize === 'XL' || projectSize === 'L');
+      const hasFirstLautakunta = skipFirstCheck ? false : visValRef[firstLautakuntaKey] === true;
       // Esilläolo confirmation
       const attributeEsillaoloKeys = getVisBoolsByPhaseName(phase).filter(
         (bool_name) => bool_name.includes('esillaolo') || bool_name.includes('nahtaville')
@@ -406,8 +417,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const esillaoloCount = attributeEsillaoloKeys.filter(key => visValRef[key] === true).length;
       const nextEsillaoloIndex = esillaoloCount + 1;
 
-      const esillaoloConfirmed = getEsillaoloConfirmed(visValRef, phase, attributeEsillaoloKeys, nextEsillaoloIndex);
-
+      const esillaoloConfirmed = getEsillaoloConfirmed(visValRef, phase, attributeEsillaoloKeys, nextEsillaoloIndex, hasFirstLautakunta);
       // Lautakunta confirmation
       const lautakuntaConfirmed = getLautakuntaConfirmed(visValRef, phase, lautakuntaCount);
 
