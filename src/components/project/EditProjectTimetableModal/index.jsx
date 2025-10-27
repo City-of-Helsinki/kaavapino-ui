@@ -1257,17 +1257,16 @@ class EditProjectTimeTableModal extends Component {
     this.setState({ collapseData: updatedCollapseData });
   }
 
-  getPhaseList = (kokoluokka) => {
+  getPhaseList = (kokoluokka, periaatteet_luotu, luonnos_luotu) => {
     const PHASES_XL = [
       "Käynnistys",
-      "Periaatteet",
       "OAS",
-      "Luonnos",
       "Ehdotus",
       "Tarkistettu ehdotus",
       "Hyväksyminen",
       "Voimaantulo"
     ];
+
     const PHASES_OTHER = [
       "Käynnistys",
       "OAS",
@@ -1276,8 +1275,22 @@ class EditProjectTimeTableModal extends Component {
       "Hyväksyminen",
       "Voimaantulo"
     ];
-    return kokoluokka === "XL" ? PHASES_XL : PHASES_OTHER;
-  }
+
+    if (kokoluokka === "XL") {
+      // Insert "Periaatteet" after "Käynnistys" if created
+      if (periaatteet_luotu) {
+        PHASES_XL.splice(1, 0, "Periaatteet");
+      }
+      // Insert "Luonnos" after "OAS" if created
+      if (luonnos_luotu) {
+        const oasIndex = PHASES_XL.indexOf("OAS");
+        PHASES_XL.splice(oasIndex + 1, 0, "Luonnos");
+      }
+      return PHASES_XL;
+    }
+
+    return PHASES_OTHER;
+  };
 
   render() {
     const { loading } = this.state
@@ -1303,7 +1316,7 @@ class EditProjectTimeTableModal extends Component {
 
     // Calculate ongoingPhase, phaseList, and currentPhaseIndex here:
     const ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe);
-    const phaseList = this.getPhaseList(attributeData?.kaavaprosessin_kokoluokka);
+    const phaseList = this.getPhaseList(attributeData?.kaavaprosessin_kokoluokka,attributeData?.periaatteet_luotu,attributeData?.luonnos_luotu);
     const currentPhaseIndex = phaseList.indexOf(ongoingPhase);
     
     return (
