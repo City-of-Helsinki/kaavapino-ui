@@ -245,7 +245,6 @@ const getHighestNumberedObject = (obj1) => {
   const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize,attributeData) => {
     // Lock logic: do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
     // attributeData is the filtered attribute_data object (only visible fields) so we can inspect confirmation flags
-    // NOTE: keep logic lightweight – precompute confirmed field list once
     let confirmedFieldSet = null;
     const today = new Date();
     today.setHours(0,0,0,0);
@@ -265,10 +264,8 @@ const getHighestNumberedObject = (obj1) => {
     // Helper to decide if an item should be frozen
     const isLocked = (item) => {
       if(!item?.value) return false;
-      // Past date?
       const d = new Date(item.value);
       if(!isNaN(d) && d < today) return true;
-      // Confirmed?
       return confirmedFieldSet ? confirmedFieldSet.has(item.key) : false;
     };
     // Find the index of the next item where dates should start being pushed
