@@ -51,15 +51,17 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
           </Button>
           {addDialogData.esillaoloReason && (
             <span className='add-button-info'>
-              {addDialogData.esillaoloReason === "Vahvistusta ei voi perua, koska seuraava lautakunta on jo lisätty."
-                ? "Esilläoloa ei voi lisätä, koska seuraava lautakunta on jo vahvistettu."
-                : addDialogData.group.id === "Ehdotus"
-                  ? (addDialogData.esillaoloReason === "noconfirmation"
-                      ? "Kaavoitussihteerin tulee vahvistaa aikaisempi nähtävilläolo, ennen uuden nähtävilläolon lisäämistä."
-                      : "Nähtävilläolojen enimmäismäärä on saavutettu.")
-                  : (addDialogData.esillaoloReason === "noconfirmation"
-                      ? "Kaavoitussihteerin tulee vahvistaa aikaisempi esilläolo, ennen uuden esilläolon lisäämistä."
-                      : "Esilläolojen enimmäismäärä on saavutettu.")}
+              {(addDialogData.nextEsillaolo === "jarjestetaan_periaatteet_esillaolo_1" || addDialogData.nextEsillaolo === "jarjestetaan_luonnos_esillaolo_1") && addDialogData.nextLautakunta === false
+                ? ""
+                : (addDialogData.esillaoloReason === "Vahvistusta ei voi perua, koska seuraava lautakunta on jo lisätty."
+                  ? "Esilläoloa ei voi lisätä, koska seuraava lautakunta on jo vahvistettu."
+                  : addDialogData.group.id === "Ehdotus"
+                    ? (addDialogData.esillaoloReason === "noconfirmation"
+                        ? "Kaavoitussihteerin tulee vahvistaa aikaisempi nähtävilläolo, ennen uuden nähtävilläolon lisäämistä."
+                        : "Nähtävilläolojen enimmäismäärä on saavutettu.")
+                    : (addDialogData.esillaoloReason === "noconfirmation"
+                        ? "Kaavoitussihteerin tulee vahvistaa aikaisempi esilläolo, ennen uuden esilläolon lisäämistä."
+                        : "Esilläolojen enimmäismäärä on saavutettu."))}
             </span>
           )}
         </>

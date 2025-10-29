@@ -203,11 +203,11 @@ const TimelineModal = ({
     }
 
     // Try to extract index from title, e.g. "Lautakunta-2"
-    const match = title.match(/lautakunta-?(\d*)/i);
-    if (match) {
-      lautakuntaIndex = match[1] ? `_${match[1]}` : '';
+    const match = title.match(/lautakunta(?:\s*-?\s*)?(\d+)/i);
+    if (match && match[1]) {
+        // omit suffix for "1" to keep existing key logic
+        lautakuntaIndex = match[1] === '1' ? '' : `_${match[1]}`;
     }
-
     // Build the key for visValues
     let dateKey = '';
     if (phaseKey === 'kaavaehdotus') {

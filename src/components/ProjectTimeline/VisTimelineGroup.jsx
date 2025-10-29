@@ -179,19 +179,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       } else {
         canAdd = confirmed ? count <= deadlineCount : canAdd;
       }
-      //kaavaehdotus_lautakuntaan_1 true
-      //kaavaehdotus_nahtaville_1 true)
+
       if(reasonLabel === "lautakunta" && phase === "ehdotus" && visValues[`kaavaehdotus_nahtaville_${count -1}`] && visValues[`kaavaehdotus_lautakuntaan_${count -1}`] && (visValuesRef.current.kaavaprosessin_kokoluokka === "XL" || visValuesRef.current.kaavaprosessin_kokoluokka === "L")){
         const nextGroupWord = 'nähtävilläolo';
         reason = t('deadlines.tooltip.disableConfirmButton', { nextGroupWord });
-        console.log(reason)
       }
-
-      if(reasonLabel === "esillaolo" && phase !== "ehdotus" && (visValuesRef.current.kaavaprosessin_kokoluokka === "XL" || visValuesRef.current.kaavaprosessin_kokoluokka === "L")){
-        const nextGroupWord = 'lautakunta';
-        reason = t('deadlines.tooltip.disableConfirmButton', { nextGroupWord });
-      }
-
       return [canAdd, nextStr, reason];
     }
 
@@ -413,14 +405,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const lautakuntaCount = getLautakuntaCount(groups, data);
       // Prevent adding esillaolo/nahtavillaolo if lautakunta has been added and confirmed
       // Exception for XL/L ehdotus phase where lautakunta comes before esillaolo
-      const firstLautakuntaKey = phase === 'luonnos'
-        ? 'kaavaluonnos_lautakuntaan_1'
-        : phase === 'ehdotus'
+      const firstLautakuntaKey = 
+        phase === 'ehdotus'
         ? 'kaavaehdotus_lautakuntaan_1'
         : `${phase}_lautakuntaan_1`;
       const projectSize = visValRef?.kaavaprosessin_kokoluokka;
-      const skipFirstCheck = phase === 'ehdotus' && (projectSize === 'XL' || projectSize === 'L');
-      const hasFirstLautakunta = skipFirstCheck ? false : visValRef[firstLautakuntaKey] === true;
+      const skipFirstCheck = phase === 'ehdotus' && (projectSize === 'XL' || projectSize === 'L') ? true : false;
+      const hasFirstLautakunta = skipFirstCheck ? false : phase === 'ehdotus' ? visValRef[firstLautakuntaKey] === true : false;
       // Esilläolo confirmation
       const attributeEsillaoloKeys = getVisBoolsByPhaseName(phase).filter(
         (bool_name) => bool_name.includes('esillaolo') || bool_name.includes('nahtaville')
@@ -504,12 +495,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           lautakuntaReason = "noconfirmation";
         }
       }
-      else if(lautakuntaConfirmed && !["XL. Ehdotus", "L. Ehdotus"].includes(visValRef.kaavan_vaihe)){
-
-        if(esillaoloReason === ""){
-          esillaoloReason = "noconfirmation";
-        }
-      } else if (
+      else if (
         paatos === "palautettu_uudelleen_valmisteltavaksi" ||
         paatos === "asia_jai_poydalle"
       ) {
@@ -532,6 +518,17 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         lautakuntaReason = "palautettu_tai_jai_poydalle";
       }
 
+      // First lautakunta confirmation key check for current phase
+      // Map phase name exceptions: luonnos -> kaavaluonnos, ehdotus -> kaavaehdotus, others use phase as-is
+      const phaseMapped = phase === 'luonnos' ? 'kaavaluonnos' : (phase === 'ehdotus' ? 'kaavaehdotus' : phase);
+      const firstLautakuntaConfirmKey = `vahvista_${phaseMapped}_lautakunnassa`;
+      const preventEsillaoloAdd = visValRef[firstLautakuntaConfirmKey] === true;
+      // Apply prevention except for XL/L ehdotus where lautakunta precedes esillaolo
+      if(!(phase === 'ehdotus' && (projectSize === 'XL' || projectSize === 'L')) && preventEsillaoloAdd){
+        canAddEsillaolo = false;
+        nextEsillaoloClean = false;
+        esillaoloReason = "Vahvistusta ei voi perua, koska seuraava lautakunta on jo lisätty."
+      }
       return [
         canAddEsillaolo,
         nextEsillaoloClean,
