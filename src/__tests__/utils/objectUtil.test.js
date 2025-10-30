@@ -2,7 +2,6 @@ import { describe, test, expect } from 'vitest';
 import objectUtil from '../../utils/objectUtil';
 import mockData from './checkForDecreasingValues_test_data.js';
 
-
 const test_objects = [
     {"content": "Käynnistys", "attributegroup": "kaynnistys_1", "name": "kaynnistys_alkaa_pvm"},
     {"content": "Esilläolo-2", "attributegroup": "oas_esillaolokerta_2", "name": "milloin_oas_esillaolo_alkaa_2"},
@@ -514,5 +513,60 @@ describe("Test ObjectUtil utility functions", () => {
         expect(objectUtil.findDeadlineInDeadlineSections("deadline_1", [{ sections: [{}] }])).toBeUndefined();
         expect(objectUtil.findDeadlineInDeadlineSections("deadline_1", [{ sections: [{ attributes: [] }] }])).toBeUndefined();
         expect(objectUtil.findDeadlineInDeadlineSections("deadline_1", [{ sections: [{ attributes: [{ name: "other" }] }] }])).toBeUndefined();
+    });
+
+    test("filterHiddenKeys filters out deadline keys that are hidden", () => {
+        const test_attribute_data = {
+            "kaavaprosessin_kokoluokka": "S",
+            "milloin_oas_esillaolo_alkaa": "2024-01-15",
+            "milloin_oas_esillaolo_alkaa_2": "2024-02-01",
+            "milloin_tarkistettu_ehdotus_lautakunnassa": "2024-03-01",
+            "jarjestetaan_oas_esillaolo_1": true,
+            "jarjestetaan_oas_esillaolo_2": false,
+        };
+        const test_deadlines = [
+            { deadline: { attribute: "milloin_oas_esillaolo_alkaa", deadlinegroup: "oas_esillaolokerta_1" } },
+            { deadline: { attribute: "milloin_oas_esillaolo_alkaa_2", deadlinegroup: "oas_esillaolokerta_2" } },
+            { deadline: { attribute: "milloin_tarkistettu_ehdotus_lautakunnassa", deadlinegroup: "tarkistettu_ehdotus_lautakuntakerta_1" }}
+        ];
+        const result = objectUtil.filterHiddenKeys(test_attribute_data, test_deadlines);
+        expect(Object.keys(result).length).toBe(5); // oas_esillaolo_alkaa_2 should be filtered out
+        expect(Object.keys(result)).not.toContain("milloin_oas_esillaolo_alkaa_2");
+        expect(Object.keys(result), "milloin_oas_esillaolo_alkaa should be visible because it has a true visibility attribute")
+            .toContain("milloin_oas_esillaolo_alkaa");
+        expect(Object.keys(result), "milloin_tarkistettu_ehdotus_lautakunnassa should be visible because it has not been explicitly hidden")
+            .toContain("milloin_tarkistettu_ehdotus_lautakunnassa");
+    });
+
+    test("filterHiddenKeysUsingSections filters out deadline keys that are hidden", () => {
+        const test_attribute_data = {
+            "kaavaprosessin_kokoluokka": "XL",
+            "milloin_periaatteet_esillaolo_alkaa_1": "2024-01-15",
+            "milloin_periaatteet_esillaolo_alkaa_2": "2024-02-01",
+            "milloin_kaavaluonnos_lautakunnassa": "2024-03-01",
+            "jarjestetaan_periaatteet_esillaolo_1": true,
+            "jarjestetaan_periaatteet_esillaolo_2": false,
+        };
+        const test_deadline_sections = [
+            { sections: [
+                { attributes: [
+                    { name: "milloin_periaatteet_esillaolo_alkaa_1", attributegroup: "periaatteet_esillaolokerta_1" },
+                    { name: "milloin_periaatteet_esillaolo_alkaa_2", attributegroup: "periaatteet_esillaolokerta_2" }
+                ] }
+            ] },
+            { sections: [
+                { attributes: [
+                    { name: "milloin_kaavaluonnos_lautakunnassa", attributegroup: "luonnos_lautakuntakerta_1" }
+                ] }
+            ] }
+        ];
+        const result = objectUtil.filterHiddenKeysUsingSections(test_attribute_data, test_deadline_sections);
+        expect(Object.keys(result).length).toBe(5); // periaatteet_esillaolo_alkaa_2 should be filtered out
+        expect(Object.keys(result)).not.toContain("milloin_periaatteet_esillaolo_alkaa_2");
+        expect(Object.keys(result), "milloin_periaatteet_esillaolo_alkaa_1 should be visible because it has a true visibility attribute")
+            .toContain("milloin_periaatteet_esillaolo_alkaa_1");
+        expect(Object.keys(result), "milloin_kaavaluonnos_lautakunnassa should be visible because it has not been explicitly hidden")
+            .toContain("milloin_kaavaluonnos_lautakunnassa");
+        
     });
 });
