@@ -421,6 +421,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
       const esillaoloConfirmed = getEsillaoloConfirmed(visValRef, phase, attributeEsillaoloKeys, nextEsillaoloIndex, hasFirstLautakunta);
       // Lautakunta confirmation
+
       const lautakuntaConfirmed = getLautakuntaConfirmed(visValRef, phase, lautakuntaCount);
 
       // Use helper to get addability and reasons
@@ -449,11 +450,16 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       );
       // Force-disable esilläolo add if lautakunta is confirmed in this phase
       if (lautakuntaConfirmed && 
-      !["XL. Ehdotus", "L. Ehdotus"].includes(visValRef.kaavan_vaihe)
-      ) {
-        canAddEsillaolo = false;
-        nextEsillaoloClean = false;
-        if (!esillaoloReason) esillaoloReason = "lautakuntaConfirmed";
+      !["XL. Ehdotus", "L. Ehdotus"].includes(visValRef.kaavan_vaihe)) {
+        //Exception if first elements are deleted in luonnos/periaatteet phase
+        const exceptionApplies =
+        (visValRef.kaavan_vaihe === "XL. Luonnos" && visValRef["kaavaluonnos_lautakuntaan_1"] === false) ||
+        (visValRef.kaavan_vaihe === "XL. Periaatteet" && visValRef["periaatteet_lautakuntaan_1"] === false);
+        if (!exceptionApplies) {
+            canAddEsillaolo = false;
+            nextEsillaoloClean = false;
+            if (!esillaoloReason) esillaoloReason = "lautakuntaConfirmed";
+        }
       }
 
       // Check max lautakunta limit
@@ -507,15 +513,22 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           lautakuntaReason = "max";
         }
       }
-      else if(phase === "periaatteet" && visValRef["periaatteet_luotu"] === true && visValRef["periaatteet_lautakuntaan_1"] === false || 
-              phase === "luonnos" && visValRef["luonnos_luotu"] === true && visValRef["kaavaluonnos_lautakuntaan_1"] === false){
-                //Luonnos and periaatteet phase can be deleted or added later
-          canAddLautakunta = true;
-          lautakuntaReason = "";
-      }
       else {
         canAddLautakunta = false;
         lautakuntaReason = "palautettu_tai_jai_poydalle";
+      }
+
+      if(phase === "periaatteet" && visValRef["periaatteet_luotu"] === true && visValRef["periaatteet_lautakuntaan_1"] === false || 
+         phase === "luonnos" && visValRef["luonnos_luotu"] === true && visValRef["kaavaluonnos_lautakuntaan_1"] === false){
+          //Luonnos and periaatteet phase can be deleted or added later
+          canAddLautakunta = true;
+          lautakuntaReason = "";
+      }
+      if(phase === "periaatteet" && visValRef["periaatteet_luotu"] === true && visValRef["jarjestetaan_periaatteet_esillaolo_1"] === false || 
+         phase === "luonnos" && visValRef["luonnos_luotu"] === true && visValRef["jarjestetaan_luonnos_esillaolo_1"] === false){
+            //Luonnos and periaatteet phase can be deleted or added later
+          canAddEsillaolo = true;
+          esillaoloReason = "";
       }
 
       // First lautakunta confirmation key check for current phase
