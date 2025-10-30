@@ -210,7 +210,7 @@ const TimelineModal = ({
         // omit suffix for "1" to keep existing key logic
         lautakuntaIndex = match[1] === '1' ? '' : `_${match[1]}`;
     }
-    console.log(lautakuntaIndex);
+
     // Build the key for visValues
     let dateKey = '';
     if (phaseKey === 'kaavaehdotus') {
@@ -253,10 +253,8 @@ const TimelineModal = ({
     splitTitle[1] = splitTitle[1]?.trim() === "1" ? "" : "_" + splitTitle[1]?.trim();
 
     let confirmedValue;
-
-    if (group === "Ehdotus" && splitTitle[0].trim() === "nähtävilläolo") {
-      splitTitle[0] = "esillaolo";
-      confirmedValue = "vahvista_" + group.toLowerCase() + "_" + splitTitle[0] + splitTitle[1];
+    if (group === "Ehdotus" && splitTitle[0].trim() === "nähtävilläolo" || group === "Ehdotus" && splitTitle[0].trim() === "nahtavillaolo") {
+      confirmedValue = "vahvista_" + group.toLowerCase() + "_esillaolo" + splitTitle[1];
     }
     else if (group === "Tarkistettu ehdotus" && splitTitle[0].trim() === "lautakunta") {
       confirmedValue = "vahvista_" + "tarkistettu_ehdotus_" + "lautakunnassa" + splitTitle[1];
@@ -393,27 +391,61 @@ const TimelineModal = ({
         esillaoloNotConfirmedBeforeLautakunta = true;
       }
     }
+    // Special rule: Lautakunta confirmation cannot be cancelled while any Nahtavillaolo is confirmed (Ehdotus L/XL)
+    let lautakuntaLockedByNahtavillaolo = false;
+    if (
+      phaseIsActive &&
+      isLautakunta &&
+      group === 'Ehdotus' &&
+      (visValues['kaavaprosessin_kokoluokka'] === 'L' || visValues['kaavaprosessin_kokoluokka'] === 'XL')
+    ) {
+      // Find all Nahtavillaolo groups in this phase
+      const nahtavillaoloGroups = groups
+        .filter(g => g.nestedInGroup === group && /nähtävilläolo[-\s]?|nahtavillaolo[-\s]?/i.test(g.content))
+        .map(g => g.content);
+      // Check if any Nahtavillaolo is confirmed
+      const anyNahtavillaoloConfirmed = nahtavillaoloGroups.some(nTitle => {
+        const key = getConfirmedValue(group, nTitle);
+        return !!visValues[key];
+      });
+      // Check if current Lautakunta is confirmed
+      const currentLautakuntaConfirmKey = getConfirmedValue(group, title);
+      const currentLautakuntaConfirmed = !!visValues[currentLautakuntaConfirmKey];
+      if (anyNahtavillaoloConfirmed && currentLautakuntaConfirmed) {
+        lautakuntaLockedByNahtavillaolo = true;
+      }
+    }
     // Rule 2: Esilläolo confirmation cannot be cancelled while a Lautakunta is confirmed
     let esillaoloLockedByLautakunta = false;
-    if (phaseIsActive && isEsillaolo && lastLautakunta) {
-      const lautakuntaConfirmKey = getConfirmedValue(group, lastLautakunta);
-      const lautakuntaConfirmed = !!visValues[lautakuntaConfirmKey];
-      if (lautakuntaConfirmed) {
-        const currentEsillaoloConfirmKey = getConfirmedValue(group, title);
-        // Only lock if this Esilläolo is currently confirmed (prevent un-confirm)
-        const currentEsillaoloConfirmed = !!visValues[currentEsillaoloConfirmKey];
-        if (currentEsillaoloConfirmed) {
-          esillaoloLockedByLautakunta = true;
+    // Check if ANY Lautakunta in this phase is confirmed (not only the last)
+    // Exception: if phase is 'Ehdotus' and project size (kaavaprosessin_kokoluokka) is L or XL, skip locking completely.
+    if (phaseIsActive && isEsillaolo) {
+      const skipLockForEhdotusLarge = group === 'Ehdotus' && (visValues['kaavaprosessin_kokoluokka'] === 'L' || visValues['kaavaprosessin_kokoluokka'] === 'XL');
+      if (!skipLockForEhdotusLarge) {
+        const lautakuntaGroups = groups
+          .filter(g => g.nestedInGroup === group && /^lautakunta[-\s]?/i.test(g.content))
+          .map(g => g.content);
+        const anyLautakuntaConfirmed = lautakuntaGroups.some(lTitle => {
+          const key = getConfirmedValue(group, lTitle);
+          return !!visValues[key];
+        });
+        if (anyLautakuntaConfirmed) {
+          const currentEsillaoloConfirmKey = getConfirmedValue(group, title);
+          // Only lock if this Esilläolo is currently confirmed (prevent un-confirm)
+          const currentEsillaoloConfirmed = !!visValues[currentEsillaoloConfirmKey];
+          if (currentEsillaoloConfirmed) {
+            esillaoloLockedByLautakunta = true;
+          }
         }
       }
     }
-
     const disabled =
       archived ||
       disableConfirmButton ||
       !phaseIsActive ||
       esillaoloNotConfirmedBeforeLautakunta ||
       esillaoloLockedByLautakunta ||
+      lautakuntaLockedByNahtavillaolo ||
       esillaoloNahtavillaInPast
         ? true
         : sectionIndex < projectPhaseIndex;
