@@ -473,10 +473,8 @@ const TimelineModal = ({
           ? t('deadlines.tooltip.esillaoloLockedByLautakunta')
         : lautakuntaInPast
           ? t('deadlines.tooltip.lautakuntaInPast')
-        : anyPast
-          ? confirmed
-            ? t('deadlines.tooltip.anyPastConfirmed')
-            : t('deadlines.tooltip.anyPastConfirmed')
+        : anyPast 
+          ? t('deadlines.tooltip.anyPastConfirmed')
         : disableConfirmButton
           ? t('deadlines.tooltip.disableConfirmButton', { nextGroupWord })
         : null;
