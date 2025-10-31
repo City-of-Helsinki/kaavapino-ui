@@ -237,6 +237,7 @@ const FormField = ({
       ...field,
       type: 'readonly'
     }
+
     return renderField(newProps)
   }
 

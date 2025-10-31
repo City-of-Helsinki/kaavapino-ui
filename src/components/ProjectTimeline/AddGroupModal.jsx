@@ -53,7 +53,9 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
             <span className='add-button-info'>
               {(addDialogData.nextEsillaolo === "jarjestetaan_periaatteet_esillaolo_1" || addDialogData.nextEsillaolo === "jarjestetaan_luonnos_esillaolo_1") && addDialogData.nextLautakunta === false
                 ? ""
-                : (addDialogData.esillaoloReason === "Vahvistusta ei voi perua, koska seuraava lautakunta on jo lisätty."
+                : (
+                  (addDialogData.esillaoloReason === "Vahvistusta ei voi perua, koska seuraava lautakunta on jo lisätty." ||
+                   addDialogData.esillaoloReason === "lautakuntaConfirmed")
                   ? "Esilläoloa ei voi lisätä, koska seuraava lautakunta on jo vahvistettu."
                   : addDialogData.group.id === "Ehdotus"
                     ? (addDialogData.esillaoloReason === "noconfirmation"
@@ -61,7 +63,10 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
                         : "Nähtävilläolojen enimmäismäärä on saavutettu.")
                     : (addDialogData.esillaoloReason === "noconfirmation"
                         ? "Kaavoitussihteerin tulee vahvistaa aikaisempi esilläolo, ennen uuden esilläolon lisäämistä."
-                        : "Esilläolojen enimmäismäärä on saavutettu."))}
+                        : "Esilläolojen enimmäismäärä on saavutettu."
+                      )
+                )
+              }
             </span>
           )}
         </>

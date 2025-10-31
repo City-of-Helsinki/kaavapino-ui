@@ -439,6 +439,7 @@ const TimelineModal = ({
         }
       }
     }
+
     const disabled =
       archived ||
       disableConfirmButton ||
@@ -446,9 +447,7 @@ const TimelineModal = ({
       esillaoloNotConfirmedBeforeLautakunta ||
       esillaoloLockedByLautakunta ||
       lautakuntaLockedByNahtavillaolo ||
-      esillaoloNahtavillaInPast
-        ? true
-        : sectionIndex < projectPhaseIndex;
+      sectionIndex < projectPhaseIndex;
 
     const nextGroupWord =
       isLautakunta ? 'lautakunta'
@@ -477,7 +476,7 @@ const TimelineModal = ({
         : anyPast
           ? confirmed
             ? t('deadlines.tooltip.anyPastConfirmed')
-            : t('deadlines.tooltip.anyPast')
+            : t('deadlines.tooltip.anyPastConfirmed')
         : disableConfirmButton
           ? t('deadlines.tooltip.disableConfirmButton', { nextGroupWord })
         : null;
@@ -522,8 +521,9 @@ const TimelineModal = ({
       const attr = subsection?.attributes
       const [maxDateToMove, maxMoveGroup] = getMaxiumDateToMove(attr)
       if (attr[deadlinegroup]) {
+        const clampedInitialTabIndex = Number.isInteger(initialTab) && initialTab >= 0 ? initialTab : 0;
         renderedSections.push(
-          <Tabs key={"tab" + sectionIndex} initiallyActiveTab={initialTab}>
+          <Tabs key={`tab-${sectionIndex}-${normalizedTitle}-${deadlinegroup}-${clampedInitialTabIndex}`} initiallyActiveTab={clampedInitialTabIndex}>
             <Tabs.TabList className='tab-header' style={{ marginBottom: 'var(--spacing-m)' }}>
               {Object.keys(attr[deadlinegroup]).map((key) => {
                 let tabContent = key === "default" ? content : key
