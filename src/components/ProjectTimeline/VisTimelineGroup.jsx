@@ -457,7 +457,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         (visValRef.kaavan_vaihe === "XL. Periaatteet" && visValRef["periaatteet_lautakuntaan_1"] === false);
         if (!exceptionApplies) {
             canAddEsillaolo = false;
-            nextEsillaoloClean = false;
             if (!esillaoloReason) esillaoloReason = "lautakuntaConfirmed";
         }
       }
