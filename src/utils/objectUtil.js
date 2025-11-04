@@ -248,7 +248,7 @@ const getHighestNumberedObject = (obj1) => {
     let confirmedFieldSet = null;
     const today = new Date();
     today.setHours(0,0,0,0);
-    if(attributeData){
+/*     if(attributeData){
       try {
         // Lazy load to avoid circular deps (generateConfirmedFields depends on constants only)
         const { confirmationAttributeNames } = require('./constants');
@@ -267,7 +267,7 @@ const getHighestNumberedObject = (obj1) => {
       const d = new Date(item.value);
       if(!isNaN(d) && d < today) return true;
       return confirmedFieldSet ? confirmedFieldSet.has(item.key) : false;
-    };
+    }; */
     // Find the index of the next item where dates should start being pushed
     const currentIndex = arr.findIndex(item => item.key === field);
     let indexToContinue = 0
@@ -275,7 +275,7 @@ const getHighestNumberedObject = (obj1) => {
     if (isAdd) {
       // Move the nextItem and all following items forward if item minium is exceeded
       for (let i = currentIndex; i < arr.length; i++) {
-		    if(isLocked(arr[i])) continue; // skip locked items entirely
+		    //if(isLocked(arr[i])) continue; // skip locked items entirely
         if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
           && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
           && !arr[i].key.includes("hyvaksymispaatos_pvm")){
@@ -321,7 +321,7 @@ const getHighestNumberedObject = (obj1) => {
     }
     else if(currentIndex !== -1){
       for (let i = currentIndex; i < arr.length; i++) {
-		    if(isLocked(arr[i])) continue; // do not move locked items
+		    //if(isLocked(arr[i])) continue; // do not move locked items
         if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
           && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
           && !arr[i].key.includes("hyvaksymispaatos_pvm")){
