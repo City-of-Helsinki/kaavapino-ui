@@ -258,7 +258,6 @@ const getHighestNumberedObject = (obj1) => {
         confirmedFieldSet = new Set(generateConfirmedFields(attributeData, confirmationAttributeNames, phaseNames));
       }
       catch(e){
-        console.log(e)
         // Fail silently – if generation fails we simply don't lock by confirmation (past locking still applies)
       }
     }
