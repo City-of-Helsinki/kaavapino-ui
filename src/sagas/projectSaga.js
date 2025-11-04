@@ -728,7 +728,7 @@ function* saveProjectFloorArea() {
 }
 
 // Selectively update redux-form initial values for timetable form without overwriting current edits.
-function* reinitializeTimetableFormIfNeeded(responseData) {
+/* function* reinitializeTimetableFormIfNeeded(responseData) {
     const formState = yield select(editProjectTimetableFormSelector)
     if (!responseData?.attribute_data || !formState?.values) return
     const resp = responseData.attribute_data
@@ -743,7 +743,7 @@ function* reinitializeTimetableFormIfNeeded(responseData) {
     if (!changed) return
     const nextInitial = { ...initial, ...resp }
     yield put(initialize(EDIT_PROJECT_TIMETABLE_FORM, nextInitial))
-}
+} */
 
 function* validateProjectTimetable() {
   // Remove success toastr before showing info
@@ -812,7 +812,7 @@ function* validateProjectTimetable() {
       // Backend may have edited phase start/end dates, so update project
       yield put(updateProject(response));
       // Refresh baseline (initial) without clobbering unsaved edits so boolean toggles diff correctly later
-      yield call(reinitializeTimetableFormIfNeeded, response)
+      //yield call(reinitializeTimetableFormIfNeeded, response)
     } catch (e) {
       if (e?.code === 'ERR_NETWORK') {
         toastr.error(i18.t('messages.validation-error'), '', {
@@ -897,7 +897,7 @@ function* saveProjectTimetable(action,retryCount = 0) {
 
       yield put(updateProject(updatedProject))
       // Refresh baseline (initial) for accurate future diffs
-      yield call(reinitializeTimetableFormIfNeeded, updatedProject)
+      //yield call(reinitializeTimetableFormIfNeeded, updatedProject)
       yield put(setSubmitSucceeded(EDIT_PROJECT_TIMETABLE_FORM))
       yield put(saveProjectTimetableSuccessful(true))
       yield put(setAllEditFields())
