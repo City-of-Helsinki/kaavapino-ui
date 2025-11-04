@@ -124,6 +124,7 @@
       "notActiveConfirmed": "Vahvistuksen voi perua vain aktiivisessa vaiheessa.",
       "notActive": "Vahvistus on mahdollista vain aktiivisessa vaiheessa.",
       "lautakuntaNeedsEsillaolo": "Lautakuntaa ei voi vahvistaa ennen kuin esilläolo on vahvistettu.",
+      "nahtavillaoloNeedsLautakunta": "Nähtävilläoloa ei voi vahvistaa ennen kuin lautakunta on vahvistettu.",
       "esillaoloLockedByLautakunta": "Esilläolon vahvistusta ei voi perua, koska lautakunta on jo vahvistettu.",
       "lautakuntaInPast": "Vahvistusta ei voi perua, koska lautakunta sijaitsee menneessä ajanhetkessä.",
       "anyPastConfirmed": "Vahvistusta ei voi perua, koska päivämäärä on menneisyydessä.",

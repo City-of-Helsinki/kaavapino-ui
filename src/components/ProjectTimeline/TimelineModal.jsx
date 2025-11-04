@@ -440,6 +440,31 @@ const TimelineModal = ({
       }
     }
 
+    // Exception In Ehdotus (L/XL), Nähtävilläolo-1 requires Lautakunta-1 confirmed first and Nähtävilläolo-1 confirm to be disabled
+    let anyNahtavillaoloLockedByLautakunta = false;
+    if (
+        phaseIsActive &&
+        isNahtavillaolo &&
+        group === 'Ehdotus' &&
+        (visValues['kaavaprosessin_kokoluokka'] === 'L' || visValues['kaavaprosessin_kokoluokka'] === 'XL')
+    ) {
+        const NAHTAVILLA_INDEX_RE = /(nähtävilläolo|nahtavillaolo)[-\s]*(\d+)/i;
+        const m = NAHTAVILLA_INDEX_RE.exec(title);
+        const idxNumber = m && m[2] ? parseInt(m[2], 10) : 1;
+        const lautakuntaContent = `Lautakunta-${idxNumber}`;
+        const lautakuntaGroupObj = groups.find(g =>
+            g.nestedInGroup === group &&
+            g.content.toLowerCase().replace(/\s+/g,'') === lautakuntaContent.toLowerCase().replace(/\s+/g,'')
+        );
+        if (lautakuntaGroupObj) {
+            const lautakuntaConfirmKey = getConfirmedValue(group, lautakuntaGroupObj.content);
+            const lautakuntaConfirmed = !!visValues[lautakuntaConfirmKey];
+            if (!lautakuntaConfirmed) {
+                anyNahtavillaoloLockedByLautakunta = true;
+            }
+        }
+    }
+
     const disabled =
       archived ||
       disableConfirmButton ||
@@ -447,6 +472,7 @@ const TimelineModal = ({
       esillaoloNotConfirmedBeforeLautakunta ||
       esillaoloLockedByLautakunta ||
       lautakuntaLockedByNahtavillaolo ||
+      anyNahtavillaoloLockedByLautakunta ||
       sectionIndex < projectPhaseIndex;
 
     const nextGroupWord =
@@ -471,6 +497,8 @@ const TimelineModal = ({
           ? t('deadlines.tooltip.lautakuntaNeedsEsillaolo')
         : esillaoloLockedByLautakunta
           ? t('deadlines.tooltip.esillaoloLockedByLautakunta')
+        : anyNahtavillaoloLockedByLautakunta
+          ? t('deadlines.tooltip.nahtavillaoloNeedsLautakunta')
         : lautakuntaInPast
           ? t('deadlines.tooltip.lautakuntaInPast')
         : anyPast 
