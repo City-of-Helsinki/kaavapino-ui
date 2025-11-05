@@ -473,6 +473,22 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         }
       }
 
+      if ((phase === "luonnos" || phase === "periaatteet") && (projectSize === "XL" || projectSize === "L")) {
+        const anyLautakuntaConfirmed = attributeEsillaoloKeys.some(key => {
+        if (visValRef[key] === true) {
+            const confirmKey = getConfirmationKeyForEsillaoloKey(phase, key);
+            if (Array.isArray(confirmKey)) {
+              return confirmKey.some(k => visValRef[k] === true);
+            }
+            return visValRef[confirmKey] === true;
+          }
+          return false;
+        });
+        if(anyLautakuntaConfirmed){
+          esillaoloReason = "lautakuntaConfirmed";
+        }
+      }
+
       // Check max lautakunta limit
       const maxLautakunta = data.group?.maxLautakunta || data.maxLautakunta;
       if (lautakuntaCount >= maxLautakunta) {
