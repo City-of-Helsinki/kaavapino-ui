@@ -457,8 +457,20 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         }
       }
      
-      if (esillaoloConfirmed && phase === "ehdotus" && (projectSize === "XL" || projectSize === "L")) {
+      if (phase === "ehdotus" && (projectSize === "XL" || projectSize === "L")) {
+        const anyEsillaoloConfirmed = attributeEsillaoloKeys.some(key => {
+        if (visValRef[key] === true) {
+            const confirmKey = getConfirmationKeyForEsillaoloKey(phase, key);
+            if (Array.isArray(confirmKey)) {
+              return confirmKey.some(k => visValRef[k] === true);
+            }
+            return visValRef[confirmKey] === true;
+          }
+          return false;
+        });
+        if(anyEsillaoloConfirmed){
           lautakuntaReason = "nahtavillaolo vahvistettu.";
+        }
       }
 
       // Check max lautakunta limit
