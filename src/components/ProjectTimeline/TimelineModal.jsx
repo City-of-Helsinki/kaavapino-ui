@@ -440,7 +440,6 @@ const TimelineModal = ({
       }
     }
 
-    // Exception In Ehdotus (L/XL), Nähtävilläolo-1 requires Lautakunta-1 confirmed first and Nähtävilläolo-1 confirm to be disabled
     let anyNahtavillaoloLockedByLautakunta = false;
     if (
         phaseIsActive &&
@@ -448,20 +447,18 @@ const TimelineModal = ({
         group === 'Ehdotus' &&
         (visValues['kaavaprosessin_kokoluokka'] === 'L' || visValues['kaavaprosessin_kokoluokka'] === 'XL')
     ) {
-        const NAHTAVILLA_INDEX_RE = /(nähtävilläolo|nahtavillaolo)[-\s]*(\d+)/i;
-        const m = NAHTAVILLA_INDEX_RE.exec(title);
-        const idxNumber = m && m[2] ? parseInt(m[2], 10) : 1;
-        const lautakuntaContent = `Lautakunta-${idxNumber}`;
-        const lautakuntaGroupObj = groups.find(g =>
+        // Collect all Lautakunta-* groups in this phase
+        const lautakuntaGroups = groups.filter(g =>
             g.nestedInGroup === group &&
-            g.content.toLowerCase().replace(/\s+/g,'') === lautakuntaContent.toLowerCase().replace(/\s+/g,'')
+            /^lautakunta[-\s]*/i.test(g.content)
         );
-        if (lautakuntaGroupObj) {
-            const lautakuntaConfirmKey = getConfirmedValue(group, lautakuntaGroupObj.content);
-            const lautakuntaConfirmed = !!visValues[lautakuntaConfirmKey];
-            if (!lautakuntaConfirmed) {
-                anyNahtavillaoloLockedByLautakunta = true;
-            }
+        // Lock Nähtävilläolo if ANY Lautakunta is still unconfirmed
+        const anyUnconfirmedLautakunta = lautakuntaGroups.some(lg => {
+            const key = getConfirmedValue(group, lg.content);
+            return !visValues[key];
+        });
+        if (anyUnconfirmedLautakunta) {
+            anyNahtavillaoloLockedByLautakunta = true;
         }
     }
 
