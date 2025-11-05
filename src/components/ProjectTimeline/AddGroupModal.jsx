@@ -86,7 +86,7 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
           </Button>
           {addDialogData.lautakuntaReason && !addDialogData.showBoard && (
             <span className='add-button-info'>
-              {addDialogData.lautakuntaReason === "Vahvistusta ei voi perua, koska seuraava nähtävilläolo on jo lisätty."
+              {addDialogData.lautakuntaReason === "Vahvistusta ei voi perua, koska seuraava nähtävilläolo on jo lisätty." || addDialogData.lautakuntaReason === "nahtavillaolo vahvistettu."
                 ? "Lautakuntaa ei voi lisätä, koska seuraava nähtävilläolo on jo vahvistettu."
                 : addDialogData.lautakuntaReason === "noconfirmation"
                   ? "Kaavoitussihteerin tulee vahvistaa aikaisempi lautakunta, ennen uuden lautakunnan lisäämistä."

@@ -180,10 +180,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         canAdd = confirmed ? count <= deadlineCount : canAdd;
       }
 
-      if(reasonLabel === "lautakunta" && phase === "ehdotus" && visValues[`kaavaehdotus_nahtaville_${count -1}`] && visValues[`kaavaehdotus_lautakuntaan_${count -1}`] && (visValuesRef.current.kaavaprosessin_kokoluokka === "XL" || visValuesRef.current.kaavaprosessin_kokoluokka === "L")){
-        const nextGroupWord = 'nähtävilläolo';
-        reason = t('deadlines.tooltip.disableConfirmButton', { nextGroupWord });
-      }
       return [canAdd, nextStr, reason];
     }
 
@@ -459,6 +455,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             canAddEsillaolo = false;
             if (!esillaoloReason) esillaoloReason = "lautakuntaConfirmed";
         }
+      }
+     
+      if (esillaoloConfirmed && phase === "ehdotus" && (projectSize === "XL" || projectSize === "L")) {
+          lautakuntaReason = "nahtavillaolo vahvistettu.";
       }
 
       // Check max lautakunta limit
