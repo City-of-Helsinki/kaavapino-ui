@@ -300,6 +300,18 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
     }
 
+    function getConfirmationKeyForLautakuntaKey(phase, lautakuntaKey) {
+      const match = lautakuntaKey.match(/_(\d+)$/);
+      const idx = match ? match[1] : "1";
+      let normalizedPhase = phase;
+      if (normalizedPhase === "kaavaehdotus") normalizedPhase = "ehdotus";
+      if (normalizedPhase === "kaavaluonnos") normalizedPhase = "luonnos";
+      // periaatteet & tarkistettu_ehdotus stay as-is
+      return idx === "1"
+        ? `vahvista_${normalizedPhase}_lautakunnassa`
+        : `vahvista_${normalizedPhase}_lautakunnassa_${idx}`;
+    }
+
     const getEsillaoloConfirmed = (visValRef, phase, attributeEsillaoloKeys, nextIndex, hasFirstLautakunta) => {
       // Prevent adding if first lautakunta already added
       if (hasFirstLautakunta) return false;
@@ -412,6 +424,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const attributeEsillaoloKeys = getVisBoolsByPhaseName(phase).filter(
         (bool_name) => bool_name.includes('esillaolo') || bool_name.includes('nahtaville')
       );
+      // Lautakunta confirmation
+      const attributeLautakuntaKeys = getVisBoolsByPhaseName(phase).filter(
+        (bool_name) => bool_name.includes('lautakunta')
+      );
+
       const esillaoloCount = attributeEsillaoloKeys.filter(key => visValRef[key] === true).length;
       const nextEsillaoloIndex = esillaoloCount + 1;
 
@@ -474,9 +491,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
 
       if ((phase === "luonnos" || phase === "periaatteet") && (projectSize === "XL" || projectSize === "L")) {
-        const anyLautakuntaConfirmed = attributeEsillaoloKeys.some(key => {
+        const anyLautakuntaConfirmed = attributeLautakuntaKeys.some(key => {
         if (visValRef[key] === true) {
-            const confirmKey = getConfirmationKeyForEsillaoloKey(phase, key);
+            const confirmKey = getConfirmationKeyForLautakuntaKey(phase, key);
             if (Array.isArray(confirmKey)) {
               return confirmKey.some(k => visValRef[k] === true);
             }
