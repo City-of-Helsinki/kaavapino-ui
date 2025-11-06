@@ -461,6 +461,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         canAddLautakunta,
         data
       );
+      
       // Force-disable esilläolo add if lautakunta is confirmed in this phase
       if (lautakuntaConfirmed && 
       !["XL. Ehdotus", "L. Ehdotus"].includes(visValRef.kaavan_vaihe)) {
@@ -503,6 +504,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         });
         if(anyLautakuntaConfirmed){
           esillaoloReason = "lautakuntaConfirmed";
+          canAddEsillaolo = false;
         }
       }
 
