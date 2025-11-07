@@ -53,7 +53,19 @@ const FormSection = ({
           rollingInfo = false
         }
         let highlightStyle = highlightedTag === field.field_subroles ? 'yellow' : ''
-        if(filterFieldsArray.length === 0 || filterFieldsArray.includes(field.field_subroles)){
+        let highlightedInFieldset = ''
+        let matchesFilter = (filterFieldsArray.length === 0) || filterFieldsArray.includes(field.field_subroles)
+        if(field.categorization === 'fieldset' && Array.isArray(field.fieldset_attributes)){
+          if (highlightedTag && field.fieldset_attributes.some(attr => attr?.field_subroles === highlightedTag)) {
+            highlightedInFieldset = 'yellow'
+          }
+          if(!matchesFilter){
+            matchesFilter = field.fieldset_attributes.some(attr =>
+              attr?.field_subroles && filterFieldsArray.includes(attr.field_subroles)
+            )
+          }
+        }
+        if(matchesFilter){
           count++
           return (<FormField
             key={`${field.name}-${i}-${field.label}`}
@@ -75,6 +87,7 @@ const FormSection = ({
             unlockAllFields={unlockAllFields}
             highlightedTag={highlightedTag}
             highlightStyle={highlightStyle}
+            highlightedInFieldset={highlightedInFieldset}
             deadlines={deadlines}
             rollingInfo={rollingInfo}
             isCurrentPhase={isCurrentPhase}

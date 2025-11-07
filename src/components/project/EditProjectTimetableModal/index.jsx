@@ -204,6 +204,9 @@ class EditProjectTimeTableModal extends Component {
     if (!isNaN(phaseOnly[0])) {  // Check if the part before the dot is a number
       phaseOnly = phaseOnly[1].trim();  // The part after the dot, with leading/trailing spaces removed
     }
+    if (Array.isArray(phaseOnly)) {
+      phaseOnly = phaseOnly.length > 1 ? phaseOnly[1].trim() : phaseOnly[0].trim();
+    }
     return phaseOnly
   } 
 
@@ -232,29 +235,62 @@ class EditProjectTimeTableModal extends Component {
       const day = date.getDay();
       return day === 0 || day === 6; // Sunday or Saturday
     };
-  
-    for (let i = 0; i < dates.length; i++) {
-      const currentDate = new Date(dates[i]);
-      currentDate.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(dates[i]);
-      endOfDay.setHours(23, 59, 59, 999);
 
-      if (holidays) {
-        items.add([{
-          id: `holiday_${i}`,
-          start: currentDate,
-          end: endOfDay,
-          type: "background",
-          className: "holiday",
-        }]);
+    const consecutiveGroups = [];
+
+    // Group consecutive dates together
+    let currentGroup = [dates[0]];
+
+    for (let i = 1; i < dates.length; i++) {
+      const prev = new Date(dates[i - 1]);
+      const curr = new Date(dates[i]);
+      const diffDays = (curr - prev) / (1000 * 60 * 60 * 24);
+
+      if (diffDays === 1) {
+        // consecutive day → same group
+        currentGroup.push(dates[i]);
       } else {
-        items.add([{
-          id: `disabled_date_${i}`,
-          start: currentDate,
-          end: endOfDay,
-          type: "background",
-          className: isWeekend(currentDate) ? "negative normal-weekend" : "negative",
-        }]);
+        // gap → new group
+        consecutiveGroups.push(currentGroup);
+        currentGroup = [dates[i]];
+      }
+    }
+    consecutiveGroups.push(currentGroup);
+    for (let group of consecutiveGroups) {
+      for (let i = 0; i < group.length; i++) {
+        const currentDate = new Date(group[i]);
+        currentDate.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date(group[i]);
+        endOfDay.setHours(23, 59, 59, 998);
+
+        // mark last item in this group
+        const isLast = i === group.length - 1;
+        const extraClass = (isLast && group.length > 1) ? "last" : "";
+        const isSunday = currentDate.getDay() === 0;
+        if (holidays) {
+          items.add([
+            {
+              id: `holiday_${group[i]}`,
+              start: currentDate,
+              end: endOfDay,
+              type: "background",
+              className: `holiday ${extraClass}`,
+            },
+          ]);
+        } else {
+          items.add([
+            {
+              id: `disabled_date_${group[i]}`,
+              start: currentDate,
+              end: endOfDay,
+              type: "background",
+              className: isWeekend(currentDate)
+                ? `negative normal-weekend ${isSunday ? 'sunday ' : ''}${extraClass}`
+                : `negative ${extraClass}`,
+            },
+          ]);
+        }
       }
     }
 
@@ -561,6 +597,9 @@ class EditProjectTimeTableModal extends Component {
     ){
       undeletable = true
     }
+
+    //POC KAAV-3345 add a fixed child under it (level 3)
+    const rolesChildId = `${numberOfPhases}::roles`; //POC CODE
     nestedDeadlines.push({
       id: numberOfPhases,
       content: deadlines[i].deadline.deadlinegroup?.includes("lautakunta") ? "Lautakunta" +indexString : (deadlines[i].deadline.deadlinegroup?.includes("nahtavillaolo") ? "Nahtavillaolo" +indexString : "Esilläolo" +indexString),
@@ -571,8 +610,73 @@ class EditProjectTimeTableModal extends Component {
       generated:deadlines[i].generated,
       undeletable:undeletable,
       phaseID: deadlines[i].deadline.phase_id,
-      className: `${deadlines[i].deadline.deadlinegroup}`
+      className: `${deadlines[i].deadline.deadlinegroup}`,
+      showNested: false,
+      nestedGroups: [rolesChildId]
     });
+    //POC CODE from here onwards
+    const testChildId = `${rolesChildId}::test`;
+    const testChildId2 = `${rolesChildId}::test2`;
+    nestedDeadlines.push({
+      id: rolesChildId,
+      content: "Roolien määräajat",
+      className: "roles-subgroup",
+      nestedInGroup: numberOfPhases,
+      showNested: false,
+      nestedGroups: [testChildId, testChildId2]
+    });
+
+        // Added test nested subgroup
+    nestedDeadlines.push({
+        id: testChildId,
+        content: "Test määräaika",
+        className: "roles-test-subgroup",
+        nestedInGroup: rolesChildId,
+    });
+    nestedDeadlines.push({
+        id: testChildId2,
+        content: "Test määräaika 2",
+        className: "roles-test-subgroup",
+        nestedInGroup: rolesChildId,
+    });
+    // POC Add a test timeline item under the "Test määräaika" subgroup
+    const testItemDate = new Date();
+    testItemDate.setHours(12, 0, 0, 0);
+    if (testItemDate) {
+        phaseData.push({
+            start: testItemDate,
+            id: `test1${rolesChildId}`,
+            content: "",
+            className: "roles-test-item " + highlightID,
+            title: `test1${rolesChildId}`,
+            phaseID: deadlines[i].deadline.phase_id, // keep real phase id
+            phase: false,
+            group: testChildId, // place inside the test subgroup
+            locked: false,
+            type: 'point',
+            phaseName: deadlines[i].deadline.phase_name,
+            groupInfo: `test1${rolesChildId}`
+        });
+    }
+    const testItemDate2 = new Date();
+    testItemDate2.setDate(testItemDate2.getDate() + 20);
+    testItemDate2.setHours(12, 0, 0, 0);
+    if (testItemDate2) {
+        phaseData.push({
+            start: testItemDate2,
+            id: `test2${rolesChildId}`,
+            content: "",
+            className: "roles-test-item " + highlightID,
+            title: `test2${rolesChildId}`,
+            phaseID: deadlines[i].deadline.phase_id, // keep real phase id
+            phase: false,
+            group: testChildId2, // place inside the test subgroup
+            locked: false,
+            type: 'point',
+            phaseName: deadlines[i].deadline.phase_name,
+            groupInfo: `test2${rolesChildId}`
+        });
+    }
 
     return [phaseData, deadLineGroups, nestedDeadlines];
   }
@@ -662,7 +766,7 @@ class EditProjectTimeTableModal extends Component {
           if (innerEnd < currentDate) {
             innerStyle += " past";
           }
-          if (isDeadlineConfirmed(formValues, deadlineGroup, false)) {
+          if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
             innerStyle += " confirmed";
           }
         }
@@ -714,7 +818,7 @@ class EditProjectTimeTableModal extends Component {
             innerStyle += " past";
           }
 
-          if (isDeadlineConfirmed(formValues, deadlineGroup, false)) {
+          if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
             innerStyle += " confirmed";
           }
         }
@@ -747,7 +851,7 @@ class EditProjectTimeTableModal extends Component {
             innerStyle += " past";
           }
 
-          if (isDeadlineConfirmed(formValues, deadlineGroup, false)) {
+          if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
             innerStyle += " confirmed";
           }
         }
@@ -993,6 +1097,19 @@ class EditProjectTimeTableModal extends Component {
           if(newItem){
             const newVal = validValues.find(item => item.key === newItem)
             newDate = new Date(newVal.value)
+                // --- Ensure new date is at least tomorrow ---
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            newDate.setHours(0, 0, 0, 0);
+            if (newDate <= today) {
+                newDate = new Date(today);
+                newDate.setDate(today.getDate() + 1);
+                // Also update validValues so subsequent calculations use the corrected date
+                const idx = validValues.findIndex(item => item.key === newItem);
+                if (idx !== -1) {
+                    validValues[idx].value = newDate.toISOString().split('T')[0];
+                }
+            }
             matchingSection = objectUtil.findItem(distanceArray,newItem,"name",1)
           }
           else{
@@ -1208,9 +1325,45 @@ class EditProjectTimeTableModal extends Component {
     this.setState({ collapseData: updatedCollapseData });
   }
 
+  getPhaseList = (kokoluokka, periaatteet_luotu, luonnos_luotu) => {
+    const PHASES_XL = [
+      "Käynnistys",
+      "OAS",
+      "Ehdotus",
+      "Tarkistettu ehdotus",
+      "Hyväksyminen",
+      "Voimaantulo"
+    ];
+
+    const PHASES_OTHER = [
+      "Käynnistys",
+      "OAS",
+      "Ehdotus",
+      "Tarkistettu ehdotus",
+      "Hyväksyminen",
+      "Voimaantulo"
+    ];
+
+    if (kokoluokka === "XL") {
+      // Insert "Periaatteet" after "Käynnistys" if created
+      if (periaatteet_luotu) {
+        PHASES_XL.splice(1, 0, "Periaatteet");
+      }
+      // Insert "Luonnos" after "OAS" if created
+      if (luonnos_luotu) {
+        const oasIndex = PHASES_XL.indexOf("OAS");
+        PHASES_XL.splice(oasIndex + 1, 0, "Luonnos");
+      }
+      return PHASES_XL;
+    }
+
+    return PHASES_OTHER;
+  };
+
   render() {
     const { loading } = this.state
     const { 
+      attributeData,
       open, 
       formValues, 
       deadlines, 
@@ -1229,6 +1382,11 @@ class EditProjectTimeTableModal extends Component {
       return null
     }
 
+    // Calculate ongoingPhase, phaseList, and currentPhaseIndex here:
+    const ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe);
+    const phaseList = this.getPhaseList(attributeData?.kaavaprosessin_kokoluokka,attributeData?.periaatteet_luotu,attributeData?.luonnos_luotu);
+    const currentPhaseIndex = phaseList.indexOf(ongoingPhase);
+    
     return (
       <Modal
         size="large"
@@ -1247,6 +1405,8 @@ class EditProjectTimeTableModal extends Component {
             </div>
             <VisTimelineGroup
               timelineRef={this.timelineRef}
+              phaseList={phaseList}
+              currentPhaseIndex={currentPhaseIndex}
               options={this.state.options}
               groups={this.state.groups}
               changedItem={this.state.item}

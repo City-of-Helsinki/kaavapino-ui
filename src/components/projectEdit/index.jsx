@@ -350,13 +350,13 @@ class ProjectEditPage extends Component {
     return newPhases
   }
 
-  hasMissingFields = () => {
+  hasMissingFields = (action) => {
     const {
       project: { attribute_data },
       currentProject,
       schema
     } = this.props
-    return projectUtils.hasMissingFields(attribute_data, currentProject, schema)
+    return projectUtils.hasMissingFields(attribute_data, currentProject, schema, action)
   }
   //choose the screen size
   handleResize = () => {
@@ -391,6 +391,61 @@ class ProjectEditPage extends Component {
 
   filterFields = (fields) => {
     this.setState({ filterFieldsArray: fields })
+  }
+
+  renderErrorNotifications = () => {
+    const { errorFields } = this.state
+    if(!errorFields || errorFields.length === 0){
+      return ''
+    }
+    const grouped = errorFields.reduce((acc,err) => { const group = err.title || 'Muut'; if(!acc[group]) acc[group] = []; acc[group].push(err); return acc; }, {})
+    return (
+      <div tabIndex="0" ref={this.errorField} className='required-fields-container'>
+        <Notification id='required-fields-notification' label='Lomakkeelta puuttuu pakollisia tietoja' type="error" style={{marginTop: 'var(--spacing-s)'}}>
+          {Object.entries(grouped).map(([groupTitle, errors]) => (
+            <div key={groupTitle} className='error-group'>
+              <div className='error-group-header' role="heading" aria-level="3">{groupTitle}</div>
+              <ul>
+                {errors.map((error,index) => (
+                  <li key={error.errorSection + error.errorField}>
+                    Virhe {index + 1}: <a
+                      href='#0'
+                      role="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (groupTitle === 'Aikataulun muokkausnäkymä') {
+                          const currentPhaseId = this.props.currentProject?.phase;
+                          let matchedDeadline = (this.props.currentProject?.deadlines || []).find(d => d?.deadline?.phase_id === currentPhaseId);
+                          //Extract suffix from error.fieldAnchorKey if there is one to variable
+                          const fieldSuffix = (error.fieldAnchorKey && error.fieldAnchorKey.match(/(_\d+)$/) || [])[0] || '';
+                          // Extract 'esillaolo/nahtavillaolo' from fieldAnchorKey
+                          const nahtavillaoresilla = matchedDeadline?.deadline?.phase_name === "Ehdotus" ? 'nahtavillaolokerta' : 'esillaolokerta';
+                          //Voimaantulo and Hyväksyminen phases are bit different and need own extra check
+                          const specialPhases = matchedDeadline?.deadline?.phase_name === "Hyväksyminen" ? 'hyvaksyminen_1' : matchedDeadline?.deadline?.phase_name === "Voimaantulo" ? 'voimaantulo_1' : false;
+                          const esillaoloOrLautakunta = error.fieldAnchorKey?.includes('esillaolo') ? nahtavillaoresilla : specialPhases ? specialPhases : 'lautakuntakerta';
+                          const anchorKeyWithSuffix = esillaoloOrLautakunta + fieldSuffix;
+                          //Special case for Voimaantulo phase where some of 4 fields needs to be filled and are not marked required on Excel level
+                          const subGroup = error?.errorSection === "Voimaantulo" && error?.title === "Aikataulun muokkausnäkymä" ? "Lopputulos" : error?.attr?.attributesubgroup
+                          if(matchedDeadline?.deadline?.attribute?.includes("alkaa_pvm")){
+                            matchedDeadline = (this.props.currentProject?.deadlines || []).find(
+                              d => d?.deadline?.phase_id === currentPhaseId && d?.deadline?.deadlinegroup?.includes(anchorKeyWithSuffix)
+                            );
+                          }
+                          this.props.showTimetable(true, error.fieldAnchorKey, currentPhaseId, matchedDeadline?.deadline || {}, subGroup);
+                        } else {
+                          this.showErrorField(error.errorSection, error.fieldAnchorKey);
+                        }
+                      }}
+                      className='required-fields-notification-link'
+                    >{error.errorSection} - {error.errorField}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </Notification>
+      </div>
+    )
   }
 
   isHighlightedTag = (tag) => {
@@ -445,7 +500,9 @@ class ProjectEditPage extends Component {
 
     const currentSchemaIndex = schema.phases.findIndex(s => s.id === schemaUtils.getSelectedPhase(this.props.location.search,this.props.selectedPhase))
     const currentSchema = schema.phases[currentSchemaIndex]
-    const errorFields = projectUtils.getErrorFields(false,attribute_data,currentSchema,phase)
+    const currentDeadlineSchema = schema.deadline_sections[currentSchemaIndex]
+    const closephase = origin === "closephase" ? true : false
+    const errorFields = projectUtils.getErrorFields(false,attribute_data,currentSchema,phase,origin,currentDeadlineSchema,closephase)
     this.setState({errorFields:errorFields})
     if(errorFields?.length === 0 && !documentsDownloaded){
       const elements = <div>
@@ -496,6 +553,7 @@ class ProjectEditPage extends Component {
         theme: "light",
         });
     }
+    return errorFields
   }
 
   checkTarget = (target) => {
@@ -676,23 +734,7 @@ class ProjectEditPage extends Component {
           currentlyHighlighted={this.state.highlightedTag}
           showSection={this.state.showSection}
         />
-        {this.state.errorFields?.length > 0 ?
-        <div tabIndex="0" ref={this.errorField} className='required-fields-container'>
-          <Notification id="required-fields-notification" label="Lomakkeelta puuttuu pakollisia tietoja" type="error" style={{marginTop: 'var(--spacing-s)'}}>
-            <ul>
-            {this.state.errorFields.map((error,index) =>{
-              return (
-                <li key={error.errorSection + error.errorField}>
-                  Virhe {index + 1}: <a href='#0' role="button" onClick={() => this.showErrorField(error.errorSection,error.fieldAnchorKey)} className='required-fields-notification-link'>{error.errorSection} - {error.errorField}</a>
-                </li>
-              )
-            })}
-            </ul>
-          </Notification>
-        </div>
-        :
-        ""
-        }
+        {this.renderErrorNotifications()}
         <div aria-hidden="true" className="block-div"></div>
         <div className={`project-input-container ${highlightGroup}`}>
           <div className="project-input-left">

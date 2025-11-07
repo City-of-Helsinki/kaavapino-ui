@@ -718,19 +718,32 @@ const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues
   const previousItem = objectUtil.findItem(sectionAttributes, name, "name", -1);
   const nextItem = objectUtil.findItem(sectionAttributes, name, "name", 1);
   const phaseName = currentDeadline?.deadline?.phase_name?.toLowerCase();
+  let allowedDates;
   if (name.includes("projektin_kaynnistys_pvm") || name.includes("kaynnistys_paattyy_pvm")) {
-    return getDisabledDatesForProjectStart(name, formValues, previousItem, nextItem, dateTypes);
+      allowedDates = getDisabledDatesForProjectStart(name, formValues, previousItem, nextItem, dateTypes);
   } else if (["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauenut"].includes(name)) {
-    return getDisabledDatesForApproval(name, formValues, matchingItem, dateTypes, size);
+      allowedDates = getDisabledDatesForApproval(name, formValues, matchingItem, dateTypes, size);
   } else if (name === "hyvaksymispaatos_valitusaika_paattyy" || name === "valitusaika_paattyy_hallinto_oikeus") {
-    return dateTypes?.arkipäivät?.dates;
+      allowedDates = dateTypes?.arkipäivät?.dates;
   } else if (currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')) {
-    return getDisabledDatesForLautakunta(name, formValues, phaseName, matchingItem, previousItem, dateTypes);
+      allowedDates = getDisabledDatesForLautakunta(name, formValues, phaseName, matchingItem, previousItem, dateTypes);
   } else if (!nahtavillaolo) {
-    return getDisabledDatesForSizeXSXL(name, formValues, matchingItem, dateTypes);
+      allowedDates = getDisabledDatesForSizeXSXL(name, formValues, matchingItem, dateTypes);
   } else {
-    return getDisabledDatesForNahtavillaolo(name, formValues, phaseName, matchingItem, dateTypes, size);
+      allowedDates = getDisabledDatesForNahtavillaolo(name, formValues, phaseName, matchingItem, dateTypes, size);
   }
+  // Filter out past dates (before today)
+  const todayStr = (() => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+  })();
+  return Array.isArray(allowedDates)
+      ? allowedDates.filter(date => date >= todayStr)
+      : [];
 };
 
 const compareAndUpdateDates = (data) => {

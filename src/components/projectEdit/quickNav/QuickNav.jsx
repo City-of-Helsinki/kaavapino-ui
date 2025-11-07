@@ -57,7 +57,7 @@ export default function QuickNav({
   const onCheckPressed = () => {
     setAllowPhaseClose(false)
     setCheckButtonPressed(true)
-    const value = hasMissingFields()
+    const value = hasMissingFields('onCheckPressed')
     setHasErrors(value)
     setValidationOk(true)
     handleCheck(true,"checkphase")
@@ -269,11 +269,11 @@ export default function QuickNav({
       }
     }
 
-    setAllowPhaseClose(documentsDownloaded)
-    const value = hasMissingFields()
+    const value = !hasMissingFields('changeCurrentPhase')
     setHasErrors(value)
     setValidationOk(true)
-    handleCheck(documentsDownloaded,"closephase")
+    const returnedErrorFields = handleCheck(documentsDownloaded,"closephase") || []
+    setAllowPhaseClose(documentsDownloaded && value && returnedErrorFields.length === 0)
   }
 
   const phaseCallback = currentChange => {
@@ -343,6 +343,16 @@ export default function QuickNav({
         highlight = true
         if(filterFieldsArray.includes(fields[x].field_subroles)){
           highlightNumber = highlightNumber + 1
+        }
+      }
+      else if(fields[x].categorization === 'fieldset' && Array.isArray(fields[x].fieldset_attributes)){
+        for (const field of fields[x].fieldset_attributes) {
+            if(field.field_subroles === highlighted){
+              highlight = true
+            }
+          if (field?.field_subroles && filterFieldsArray.includes(field.field_subroles)) {
+            highlightNumber = highlightNumber + 1
+          }
         }
       }
       else{
