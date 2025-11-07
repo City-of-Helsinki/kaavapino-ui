@@ -597,6 +597,9 @@ class EditProjectTimeTableModal extends Component {
     ){
       undeletable = true
     }
+
+    //POC KAAV-3345 add a fixed child under it (level 3)
+    const rolesChildId = `${numberOfPhases}::roles`; //POC CODE
     nestedDeadlines.push({
       id: numberOfPhases,
       content: deadlines[i].deadline.deadlinegroup?.includes("lautakunta") ? "Lautakunta" +indexString : (deadlines[i].deadline.deadlinegroup?.includes("nahtavillaolo") ? "Nahtavillaolo" +indexString : "Esilläolo" +indexString),
@@ -607,8 +610,73 @@ class EditProjectTimeTableModal extends Component {
       generated:deadlines[i].generated,
       undeletable:undeletable,
       phaseID: deadlines[i].deadline.phase_id,
-      className: `${deadlines[i].deadline.deadlinegroup}`
+      className: `${deadlines[i].deadline.deadlinegroup}`,
+      showNested: false,
+      nestedGroups: [rolesChildId]
     });
+    //POC CODE from here onwards
+    const testChildId = `${rolesChildId}::test`;
+    const testChildId2 = `${rolesChildId}::test2`;
+    nestedDeadlines.push({
+      id: rolesChildId,
+      content: "Roolien määräajat",
+      className: "roles-subgroup",
+      nestedInGroup: numberOfPhases,
+      showNested: false,
+      nestedGroups: [testChildId, testChildId2]
+    });
+
+        // Added test nested subgroup
+    nestedDeadlines.push({
+        id: testChildId,
+        content: "Test määräaika",
+        className: "roles-test-subgroup",
+        nestedInGroup: rolesChildId,
+    });
+    nestedDeadlines.push({
+        id: testChildId2,
+        content: "Test määräaika 2",
+        className: "roles-test-subgroup",
+        nestedInGroup: rolesChildId,
+    });
+    // POC Add a test timeline item under the "Test määräaika" subgroup
+    const testItemDate = new Date();
+    testItemDate.setHours(12, 0, 0, 0);
+    if (testItemDate) {
+        phaseData.push({
+            start: testItemDate,
+            id: `test1${rolesChildId}`,
+            content: "",
+            className: "roles-test-item " + highlightID,
+            title: `test1${rolesChildId}`,
+            phaseID: deadlines[i].deadline.phase_id, // keep real phase id
+            phase: false,
+            group: testChildId, // place inside the test subgroup
+            locked: false,
+            type: 'point',
+            phaseName: deadlines[i].deadline.phase_name,
+            groupInfo: `test1${rolesChildId}`
+        });
+    }
+    const testItemDate2 = new Date();
+    testItemDate2.setDate(testItemDate2.getDate() + 20);
+    testItemDate2.setHours(12, 0, 0, 0);
+    if (testItemDate2) {
+        phaseData.push({
+            start: testItemDate2,
+            id: `test2${rolesChildId}`,
+            content: "",
+            className: "roles-test-item " + highlightID,
+            title: `test2${rolesChildId}`,
+            phaseID: deadlines[i].deadline.phase_id, // keep real phase id
+            phase: false,
+            group: testChildId2, // place inside the test subgroup
+            locked: false,
+            type: 'point',
+            phaseName: deadlines[i].deadline.phase_name,
+            groupInfo: `test2${rolesChildId}`
+        });
+    }
 
     return [phaseData, deadLineGroups, nestedDeadlines];
   }

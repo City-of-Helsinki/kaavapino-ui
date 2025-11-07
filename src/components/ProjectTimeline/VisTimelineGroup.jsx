@@ -1455,6 +1455,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             let label = document.createElement("span");
             label.innerHTML = group.content + " ";
             container.insertAdjacentElement("afterBegin", label);
+
+            // POC KAAV-3345: skip add button if any nested group is a roles group (e.g. "7::roles", "10::roles", "5345::roles")
+            const hasRolesNested = Array.isArray(group.nestedGroups) && group.nestedGroups.some(g => typeof g === 'string' && g.includes('::roles'));
+            if (hasRolesNested) {
+                return container;
+            }
             let add = document.createElement("button");
             add.classList.add("timeline-add-button");
             add.style.fontSize = "small";
@@ -1538,11 +1544,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               let isConfirmed = false;
 
               // Common numeric suffix extraction
-              const getNum = k => {
+              const getNum = (k) => {
+                if (typeof k !== "string") return 1;
                 const m = k.match(/_(\d+)$/);
                 return m ? parseInt(m[1], 10) : 1;
               };
-              const groupNum = getNum(group.deadlinegroup);
+              const groupNum = getNum(group?.deadlinegroup);
               isFirst = groupNum === 1;
 
               // Esilläolo or Nähtävilläolo

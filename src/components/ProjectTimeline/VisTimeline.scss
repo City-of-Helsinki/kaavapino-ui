@@ -1515,3 +1515,55 @@
         }
     }
 }
+//POC KAAV-3345
+.roles-subgroup{
+    .timeline-add-button{
+        pointer-events: auto;
+        z-index: 1000;
+        position: absolute;
+        right: -40px;
+        top: 6px;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        background:url('../../assets/icons/plus-blue.svg') no-repeat;
+        background-position-x: center;
+        background-position-y: center;
+        background-size: $size24;
+        border: none;
+        cursor: pointer;
+        &:hover {
+            background-color: #CCCCFF;
+        }
+        &:active, &.menu-open {
+            background-color: #CCCCFF;
+            outline: 2px solid #0072c6;
+            outline-offset: 2px;
+        }
+        &:focus, &:focus-visible {
+            outline: 2px solid #0072c6;
+            outline-offset: 2px;
+        }
+    }
+    .timeline-add-text {
+        color: $color-black-90;
+        display: none;
+        position: absolute;
+        top: 35px;
+        right: 1px;
+        background-color: #ffffff;
+        width: 180px;
+        height: auto;
+        padding: 8px 12px;
+        box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.6);
+        z-index: 1005;
+        font-size: $size14;
+        font-weight: 400;
+    }
+}
+
+.vis-item.roles-test-item,
+.vis-point.roles-test-item {
+    border: 2px solid #1a1a1a !important;
+    border-radius: 50%;
+}
