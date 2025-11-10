@@ -588,6 +588,16 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         nextEsillaoloClean = false;
         esillaoloReason = "Vahvistusta ei voi perua, koska seuraava lautakunta on jo lisätty."
       }
+      // Allow re-adding first deleted Lautakunta for Ehdotus XL
+      if (
+          phase === "ehdotus" &&
+          projectSize === "XL" &&
+          visValRef["kaavaehdotus_lautakuntaan_1"] === false
+      ) {
+          canAddLautakunta = true;
+          nextLautakuntaClean = "kaavaehdotus_lautakuntaan_1";
+          lautakuntaReason = "";
+      }
       return [
         canAddEsillaolo,
         nextEsillaoloClean,
@@ -1629,8 +1639,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                   removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-confirmed')}</div>`;
                 }
               } else if (isFirst) {
-                if(group?.nestedInGroup !== "Periaatteet" && group?.nestedInGroup !== "Luonnos"){
-                  remove.classList.add("button-disabled");
+                const isEhdotusXL = group?.nestedInGroup === "Ehdotus" && visValuesRef.current?.kaavaprosessin_kokoluokka === "XL";
+                const isLautakunta = label.innerHTML.includes("Lautakunta");
+                if (
+                    group?.nestedInGroup !== "Periaatteet" &&
+                    group?.nestedInGroup !== "Luonnos" &&
+                    !(isEhdotusXL && isLautakunta)
+                ) {
+                    remove.classList.add("button-disabled");
                 }
                 if (label.innerHTML.includes("Esilläolo")) {
                   removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-first-esillaolo')}</div>`;
