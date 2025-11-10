@@ -661,6 +661,7 @@ function RichTextEditor(props) {
       type="richtext"
       phaseIsClosed={phaseIsClosed}
       maxSizeOver={maxSizeOver}
+      attributeData={attributeData}
     />
     :    
     <div

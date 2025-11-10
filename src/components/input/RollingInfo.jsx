@@ -8,8 +8,7 @@ import ReactQuill from 'react-quill'
 import infoBothDir from '../../assets/icons/Infobothdir.svg'
 import PropTypes from 'prop-types'
 
-function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField,type,phaseIsClosed,factaInfo,maxSizeOver}) {
-
+function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField,type,phaseIsClosed,factaInfo,maxSizeOver,attributeData}) {
   const { t } = useTranslation()
 
   const users = useSelector(state => usersSelector(state))
@@ -21,6 +20,33 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
     const user = projectUtils.formatUsersName(users.find(u => u.id === value))
     inputText = user
   } 
+
+  //Derive lines from milta_muilta_pyydetaan_lausunto_fieldset when special readonly field name
+  if(name === 'viranomaistahon_nimi_ehdotus_readonly'
+    && attributeData
+    && Array.isArray(attributeData.milta_muilta_pyydetaan_lausunto_fieldset)
+    && attributeData.milta_muilta_pyydetaan_lausunto_fieldset.length){
+    const lines = attributeData.milta_muilta_pyydetaan_lausunto_fieldset
+      .filter(item => item && !item._deleted)
+      .map(item => {
+        const delta = item && item.viranomaistahon_nimi_ehdotus
+        if(!delta || !Array.isArray(delta.ops)) return null
+        const text = delta.ops
+          .map(op => (op && typeof op.insert === 'string') ? op.insert : '')
+          .join('')
+          .split('\n') // preserve explicit line breaks inside one delta
+          .map(s => s.trim())
+          .filter(Boolean)
+        return text
+      })
+      .filter(Boolean)
+      .flat()
+    if(lines.length){
+      inputText = {
+        ops: lines.flatMap(l => [{ insert: l }, { insert: '\n' }])
+      }
+    }
+  }
 
   const openEdit = () => {
     editRollingField()
@@ -45,7 +71,11 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
       <div className={value === "" ? "text-input-italic" : "text-input"}>
         {type === "richtext" ?
         <ReactQuill
-          value={value === "" ? noValue : value}
+          value={
+            name === 'viranomaistahon_nimi_ehdotus_readonly'
+              ? (inputText || noValue)
+              : (value === "" ? noValue : value)
+          }
           tabIndex="0"
           theme="snow"
           readOnly={true}
