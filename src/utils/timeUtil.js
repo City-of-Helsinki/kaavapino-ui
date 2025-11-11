@@ -28,6 +28,36 @@ import objectUtil from "./objectUtil";
     return `${year}-${month}-${day}`;
   };
 
+  // Returns localized relative date string using provided t function; always plural for months/years.
+	const formatRelativeDate = (timestamp, tFn) => {
+		if(!timestamp){
+			return ''
+		}
+		const updatedDate = new Date(timestamp)
+		const now = new Date()
+		const oneDayMs = 24 * 60 * 60 * 1000
+		const diffMs = now.getTime() - updatedDate.getTime()
+    if (diffMs < 0 || diffMs < oneDayMs) {
+      return tFn ? tFn('relativeDates.today') : 'Today'
+		}
+		const days = Math.floor(diffMs / oneDayMs)
+    if (days === 1) {
+      return tFn ? tFn('relativeDates.yesterday') : 'Yesterday'
+		}
+    if (days < 30) {
+      return tFn ? tFn('relativeDates.days-ago', { count: days }) : `${days} days ago`
+		}
+		let months = (now.getFullYear() - updatedDate.getFullYear()) * 12 + (now.getMonth() - updatedDate.getMonth())
+		if (months <= 0) {
+			months = 1
+		}
+    if (months < 12) {
+      return tFn ? tFn('relativeDates.month-ago', { count: months }) : `${months} months ago`
+		}
+		const years = Math.floor(months / 12)
+    return tFn ? tFn('relativeDates.years-ago', { count: years }) : `${years} years ago`
+	}
+
   // Helper function to check if a date is a holiday
   const isHoliday = (date,isInFilter,holidays) => {
     const dateStr = date.toISOString().split('T')[0]; // Convert to 'YYYY-MM-DD' format
@@ -771,6 +801,7 @@ export default {
     addDays,
     subtractDays,
     formatDate,
+    formatRelativeDate,
     subtractDaysFromDate,
     moveItemForward,
     sortObjectByDate,

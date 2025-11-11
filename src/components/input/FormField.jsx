@@ -4,6 +4,7 @@ import Matrix from './Matrix'
 import { Form, Label, Popup } from 'semantic-ui-react'
 import Info from './Info.jsx'
 import projectUtils from '../../utils/projectUtils'
+import timeUtil from '../../utils/timeUtil'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { IconClock,IconLock } from 'hds-react'
@@ -289,22 +290,25 @@ const FormField = ({
             </div>
             <div className="input-header-icons">
             {updated && !isReadOnly && (
-              <Popup
-                trigger={<IconClock />}
-                inverted
-                on="hover"
-                position="top center"
-                hideOnScroll
-                content={
-                  <span className="input-history">
-                    <span>{`${projectUtils.formatDate(
-                      updated.timestamp
-                    )} ${projectUtils.formatTime(updated.timestamp)} ${
-                      updated.user_name
-                    }`}</span>
-                  </span>
-                }
-              />
+              <>
+                <div>{`${timeUtil.formatRelativeDate(updated.timestamp, t)} ${projectUtils.formatTime(updated.timestamp)}`}</div>
+                <Popup
+                  trigger={<IconClock />}
+                  inverted
+                  on="hover"
+                  position="top center"
+                  hideOnScroll
+                  content={
+                    <span className="input-history">
+                      <span>{`${projectUtils.formatDate(
+                        updated.timestamp
+                      )} ${projectUtils.formatTime(updated.timestamp)} ${
+                        updated.user_name
+                      }`}</span>
+                    </span>
+                  }
+                />
+              </>
             )}
             {field.help_text && (
               <Info content={field.help_text} link={field.help_link} linked={field.linked_fields} help_img_link={field.help_img_link} />

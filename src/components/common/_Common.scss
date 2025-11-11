@@ -582,6 +582,27 @@ header{
   .error{
     color: $color-error !important;
   }
+  .icons-container-flex{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    .error{
+      margin-bottom: 0;
+      padding-right: 8px;
+      color: $color-error !important;
+    }
+    .error-icon{
+      display: inline-flex;
+      color: $color-error !important;
+    }
+    .question-icon{
+      display: inline-flex;
+      color: $black1;
+      svg{
+        color:$black1;
+      }
+    }
+  }
 }
 
 .document-page-header {

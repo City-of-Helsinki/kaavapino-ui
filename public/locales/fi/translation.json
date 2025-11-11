@@ -20,7 +20,8 @@
     "documents-menu-back": "Palaa takaisin projektin muokkaukseen",
     "edit-menu-no-save":"Ei tallentamattomia tietoja",
     "edit-menu-saved":"Tallennettu: ",
-    "edit-menu-save-fail":"Tallennus epäonnistui: "
+    "edit-menu-save-fail":"Tallennus epäonnistui: ",
+    "latest-save":"Viimeisin tallennus: "
   },
   "document-loading": {
     "wait-title": "Odota",
@@ -489,5 +490,12 @@
     "suggestion-end-text":"Milloin kaavaehdotuksen nähtävilläolo päättyy",
     "acceptance-date-text":"Hyväksymispäätöksen päivämäärä",
     "datemissing":"Tieto puuttuu"
+  },
+  "relativeDates": {
+    "today": "Tänään",
+    "yesterday": "Eilen",
+    "days-ago": "{{count}} päivää sitten",
+    "month-ago": "{{count}} kuukautta sitten",
+    "years-ago": "{{count}} vuotta sitten"
   }
 }

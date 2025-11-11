@@ -6,7 +6,9 @@ import {
   IconAngleLeft,
   IconCross,
   IconCheck,
-  LoadingSpinner
+  IconErrorFill,
+  LoadingSpinner,
+  Tooltip
 } from 'hds-react'
 import { withRouter, useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -115,7 +117,7 @@ const Header = props => {
     let newErrorField
 
     if(lastSaved?.time && lastSaved?.status){
-        latestUpdate = {status:t('header.edit-menu-saved'),time:lastSaved.time}
+        latestUpdate = {status:t('header.latest-save'),time:lastSaved.time}
         let elements = ""
         if(lastSaved?.fields){
           //Get the latest field and value from error fields and set the values for this toast
@@ -278,7 +280,7 @@ const Header = props => {
           //set polling time to default
           setCount(1)
           setExistingErrors([])
-          latestUpdate = {status:t('header.edit-menu-saved'),time:lastSaved.time}
+          latestUpdate = {status:t('header.latest-save'),time:lastSaved.time}
           elements = <div>
           <div>
             <h3>{t('messages.connection-info-header')}
@@ -413,8 +415,12 @@ const Header = props => {
               <LoadingSpinner className="loading-spinner" small></LoadingSpinner>
               <span className="loading-spinner">{lastSaved?.status === "error" ? t('messages.connect-again') : ""}</span>
             </div>
-            {updateTime?.status === t('header.edit-menu-saved') ? <IconCheck className='check-icon'/> : ""}
-            <p className={updateTime?.status === t('header.edit-menu-save-fail') ? "error" : ""}>{updateTime?.status}{updateTime?.time}</p>
+            <div className='icons-container-flex'>
+              {updateTime?.status === t('header.latest-save') ? <IconCheck className='check-icon'/> : ""}
+              {updateTime?.status === t('header.edit-menu-save-fail') ? <IconErrorFill className='error-icon'/> : ""}
+              <p className={updateTime?.status === t('header.edit-menu-save-fail') ? "error" : ""}>{updateTime?.status}{updateTime?.time}</p>
+              {updateTime?.status === t('header.edit-menu-save-fail') ? <Tooltip placement="bottom" className='question-icon'>{t('header.latest-save')}{updateTime?.time}</Tooltip> : ""}
+            </div>
           </div>
         </Navigation.Row>
       </Navigation>
