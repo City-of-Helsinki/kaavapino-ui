@@ -127,9 +127,53 @@ describe('test projectUtils utility functions', () => {
     expect(modified_at_date.getMonth()).toBe(0);
     expect(modified_at_date.getDate()).toBe(1);
   });
+
+  test("FormatNextDeadline returns formatted date for deadline", () => {
+    const test_deadlines = [
+      { phase_id: 123, deadline: "2023-01-31" },
+      { phase_id: 456, deadline: "2023-02-28" }
+    ];
+    const result = projectUtils.formatNextDeadline(test_deadlines, 123);
+    expect(result).toBe("31.01.2023");
+  });
+
+  test("formatSubtype returns correct subtype name", () => {
+    const subtypes = [
+      { id: 21, name: "Luonnos" },
+      { id: 22, name: "Ehdotus" }
+    ];
+    expect(projectUtils.formatSubtype(21, subtypes)).toBe("Luonnos");
+    expect(projectUtils.formatSubtype(22, subtypes)).toBe("Ehdotus");
+    expect(projectUtils.formatSubtype(23, subtypes)).toBe(undefined);
+  });
+
+  test("getFieldsetAttributes function works correctly", () => {
+    const sections = [
+      {
+        title: "Section 1",
+        fields: [{
+          'name': 'some_details',
+          'fieldset_attributes': [{name: "attribute1", value: "value1"}, {name: "attribute2", value: "value2"}]
+        },
+        {'name': 'other_field', 'fieldset_attributes': []}]
+      },
+      {
+        title: "Section 2",
+        fields: [{
+          'name': 'additional_info',
+          'fieldset_attributes': [{name: "attribute3", value: "value3"}, {name: "attribute4", value: "value4"}]
+        }]
+      }
+    ];
+    expect(projectUtils.getFieldsetAttributes("additional_info", sections)).toStrictEqual(["attribute3", "attribute4"]);
+    expect(projectUtils.getFieldsetAttributes("other_field", sections)).toStrictEqual([]);
+    expect(projectUtils.getFieldsetAttributes("non_existent", sections)).toBeUndefined();
+  });
+
 });
 
-describe("sortProjects function", () => {
+
+describe("projectUtils.sortProjects sorts projects correctly", () => {
 
   const SORT_TEST_PHASES = [
     { id: 1, name: "Käynnistys", index: 2, color_code: "#ff0000" },
@@ -185,11 +229,11 @@ describe("sortProjects function", () => {
 
   test("sortProjects sorts by name descending", () => {
     const options = {
-    sort: 2, // 'name'
-    dir: 1, // descending
-    phases: SORT_TEST_PHASES,
-    amountOfProjectsToShow: 3,
-    users: SORT_TEST_USERS
+      sort: 2, // 'name'
+      dir: 1, // descending
+      phases: SORT_TEST_PHASES,
+      amountOfProjectsToShow: 3,
+      users: SORT_TEST_USERS
     };
     const sorted = projectUtils.sortProjects(SORT_TEST_PROJECTS, options);
     expect(sorted[0].name).toBe("Gamma");
@@ -199,11 +243,11 @@ describe("sortProjects function", () => {
 
   test("sortProjects returns unsorted if sort < 0", () => {
     const options = {
-    sort: -1,
-    dir: 0,
-    phases: SORT_TEST_PHASES,
-    amountOfProjectsToShow: 3,
-    users: SORT_TEST_USERS
+      sort: -1,
+      dir: 0,
+      phases: SORT_TEST_PHASES,
+      amountOfProjectsToShow: 3,
+      users: SORT_TEST_USERS
     };
     const sorted = projectUtils.sortProjects(SORT_TEST_PROJECTS, options);
     expect(sorted).toEqual(SORT_TEST_PROJECTS);
@@ -211,11 +255,11 @@ describe("sortProjects function", () => {
 
   test("sortProjects respects amountOfProjectsToShow", () => {
     const options = {
-    sort: 2,
-    dir: 0,
-    phases: SORT_TEST_PHASES,
-    amountOfProjectsToShow: 2,
-    users: SORT_TEST_USERS
+      sort: 2,
+      dir: 0,
+      phases: SORT_TEST_PHASES,
+      amountOfProjectsToShow: 2,
+      users: SORT_TEST_USERS
     };
     const sorted = projectUtils.sortProjects(SORT_TEST_PROJECTS, options);
     expect(sorted.length).toBe(3);
