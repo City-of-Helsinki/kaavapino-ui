@@ -153,15 +153,15 @@ describe('test projectUtils utility functions', () => {
         title: "Section 1",
         fields: [{
           'name': 'some_details',
-          'fieldset_attributes': [{name: "attribute1", value: "value1"}, {name: "attribute2", value: "value2"}]
+          'fieldset_attributes': [{ name: "attribute1", value: "value1" }, { name: "attribute2", value: "value2" }]
         },
-        {'name': 'other_field', 'fieldset_attributes': []}]
+        { 'name': 'other_field', 'fieldset_attributes': [] }]
       },
       {
         title: "Section 2",
         fields: [{
           'name': 'additional_info',
-          'fieldset_attributes': [{name: "attribute3", value: "value3"}, {name: "attribute4", value: "value4"}]
+          'fieldset_attributes': [{ name: "attribute3", value: "value3" }, { name: "attribute4", value: "value4" }]
         }]
       }
     ];
@@ -170,6 +170,101 @@ describe('test projectUtils utility functions', () => {
     expect(projectUtils.getFieldsetAttributes("non_existent", sections)).toBeUndefined();
   });
 
+  test("getDefaultValue returns the first value from fieldsets", () => {
+    const attr_data = {
+      field1: "value1",
+      fieldset_1: [
+        { attr1: "val1", attr2: "val2" },
+        { attr1: "val3", attr2: "val4" },
+      ]
+    };
+    expect(projectUtils.getDefaultValue('fieldset_1', attr_data, "attr1")).toBe("val1");
+    expect(projectUtils.getDefaultValue('field1', attr_data, "attr1")).toBeUndefined();
+    expect(projectUtils.getDefaultValue('non_existent', attr_data, "attr1")).toBeUndefined();
+  });
+
+  test("generateArrayOfYears generates correct array", () => {
+    const years = projectUtils.generateArrayOfYears();
+    const currentYear = new Date().getFullYear();
+    expect(years.length).toBe(21); // from currentYear + 2 to currentYear - 18
+    for (let i = 0; i < years.length; i++) {
+      const yearObj = years[i];
+      const expectedYear = currentYear + 2 - i;
+      expect(yearObj.key).toBe(expectedYear.toString());
+      expect(yearObj.label).toBe(expectedYear.toString());
+      expect(yearObj.value).toBe(expectedYear);
+      expect(Object.keys(yearObj)).toContain('parameter');
+      expect(yearObj.parameter).toBeUndefined();
+    }
+    const customParam = "testParam";
+    const yearsWithParam = projectUtils.generateArrayOfYears(customParam);
+    expect(yearsWithParam[0].parameter).toBe(customParam);
+  });
+
+  test("generateArrayOfYearsForChart generates correct array", () => {
+    const years = projectUtils.generateArrayOfYearsForChart();
+    const currentYear = new Date().getFullYear();
+    expect(years.length).toBe(15); // from currentYear + 9 to currentYear - 5
+    for (let i = 0; i < years.length; i++) {
+      const yearObj = years[i];
+      const expectedYear = currentYear - 5 + i;
+      expect(yearObj.key).toBe(expectedYear.toString());
+      expect(yearObj.label).toBe(expectedYear.toString());
+      expect(yearObj.value).toBe(expectedYear);
+    }
+  });
+
+  test("findValueFromObject finds correct value", () => {
+    const testObj = {
+      level1: {
+        level2: {
+          level3: "finalValue"
+        },
+        fieldsetWithDeleted: [{
+          _deleted: true,
+          temporaryValue: "shouldNotFind",
+        },
+        {
+          _deleted: false,
+          temporaryValue: "not_deleted_value"
+        }]
+      },
+      topLevel: "topValue"
+    };
+    expect(projectUtils.findValueFromObject(testObj, 'level3')).toBe("finalValue");
+    expect(projectUtils.findValueFromObject(testObj, 'temporaryValue')).toBe("not_deleted_value");
+    expect(projectUtils.findValueFromObject(testObj, 'topLevel')).toBe("topValue");
+    expect(projectUtils.findValueFromObject(testObj, 'non.existent.path')).toBeUndefined();
+  });
+
+  test("findValuesFromObject adds values to the provided array", ()=> {
+    const testObj = {
+      level1: {
+        level2: {
+          target: "level2Value",
+
+        },
+        fieldsetWithDeleted: [{
+          _deleted: true,
+          target: "shouldNotFind",
+        },
+        {
+          _deleted: false,
+          target: "not_deleted_value"
+        }],
+        something_else: 123,
+      },
+      target: "topValue"
+    };
+    const valuesArray = [];
+    projectUtils.findValuesFromObject(testObj, 'target', valuesArray);
+    expect(valuesArray).toContain("not_deleted_value");
+    expect(valuesArray).not.toContain("shouldNotFind");
+
+    const valuesArray2 = [];
+    projectUtils.findValuesFromObject(testObj, 'target', valuesArray2);
+    expect(valuesArray2).toContain("level2Value");
+  });
 });
 
 
