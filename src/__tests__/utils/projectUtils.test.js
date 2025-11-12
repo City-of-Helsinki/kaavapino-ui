@@ -107,9 +107,9 @@ describe('test projectUtils utility functions', () => {
         hankenumero: "HNK-456",
         other_field: "1234"
       }
-    }
+    };
     const formattedProject = projectUtils.formatFilterProject(test_project, false, phases, test_users);
-    expect (Object.keys(formattedProject).length).toBe(7);
+    expect(Object.keys(formattedProject).length).toBe(7);
 
     expect(formattedProject.name).toBe("Test Project");
     expect(formattedProject.hankenumero).toBe("HNK-456");
@@ -127,5 +127,100 @@ describe('test projectUtils utility functions', () => {
     expect(modified_at_date.getMonth()).toBe(0);
     expect(modified_at_date.getDate()).toBe(1);
   });
+});
 
+describe("sortProjects function", () => {
+
+  const SORT_TEST_PHASES = [
+    { id: 1, name: "Käynnistys", index: 2, color_code: "#ff0000" },
+    { id: 2, project_subtype: "Luonnos", index: 1, color_code: "#00ff00" },
+    { id: 3, project_subtype: "Ehdotus", index: 0, color_code: "#0000ff" }
+  ];
+  const SORT_TEST_USERS = [
+    { id: 1, last_name: 'Meikäläinen', first_name: 'Matti' },
+    { id: 2, last_name: 'Virtanen', first_name: 'Liisa' }
+  ];
+  const SORT_TEST_PROJECTS = [
+    {
+      pino_number: 123,
+      name: "Alpha",
+      phase: 2,
+      user: 1,
+      modified_at: new Date("2023-01-01"),
+      subtype: 21,
+      attribute_data: { hankenumero: "HNK-456" }
+    },
+    {
+      pino_number: 456,
+      name: "Beta",
+      phase: 1,
+      user: 2,
+      modified_at: new Date("2022-12-01"),
+      subtype: 22,
+      attribute_data: { hankenumero: "HNK-789" }
+    },
+    {
+      pino_number: 789,
+      name: "Gamma",
+      phase: 3,
+      user: 1,
+      modified_at: new Date("2023-02-01"),
+      subtype: 23,
+      attribute_data: { hankenumero: "HNK-000" }
+    }
+  ];
+  test("sortProjects sorts by name ascending", () => {
+    const options = {
+      sort: 2, // 'name'
+      dir: 0, // ascending
+      phases: SORT_TEST_PHASES,
+      amountOfProjectsToShow: 3,
+      users: SORT_TEST_USERS
+    };
+    const sorted = projectUtils.sortProjects(SORT_TEST_PROJECTS, options);
+    expect(sorted[0].name).toBe("Alpha");
+    expect(sorted[1].name).toBe("Beta");
+    expect(sorted[2].name).toBe("Gamma");
+  });
+
+  test("sortProjects sorts by name descending", () => {
+    const options = {
+    sort: 2, // 'name'
+    dir: 1, // descending
+    phases: SORT_TEST_PHASES,
+    amountOfProjectsToShow: 3,
+    users: SORT_TEST_USERS
+    };
+    const sorted = projectUtils.sortProjects(SORT_TEST_PROJECTS, options);
+    expect(sorted[0].name).toBe("Gamma");
+    expect(sorted[1].name).toBe("Beta");
+    expect(sorted[2].name).toBe("Alpha");
+  });
+
+  test("sortProjects returns unsorted if sort < 0", () => {
+    const options = {
+    sort: -1,
+    dir: 0,
+    phases: SORT_TEST_PHASES,
+    amountOfProjectsToShow: 3,
+    users: SORT_TEST_USERS
+    };
+    const sorted = projectUtils.sortProjects(SORT_TEST_PROJECTS, options);
+    expect(sorted).toEqual(SORT_TEST_PROJECTS);
+  });
+
+  test("sortProjects respects amountOfProjectsToShow", () => {
+    const options = {
+    sort: 2,
+    dir: 0,
+    phases: SORT_TEST_PHASES,
+    amountOfProjectsToShow: 2,
+    users: SORT_TEST_USERS
+    };
+    const sorted = projectUtils.sortProjects(SORT_TEST_PROJECTS, options);
+    expect(sorted.length).toBe(3);
+    expect(sorted[0].name).toBe("Alpha");
+    expect(sorted[1].name).toBe("Beta");
+    expect(sorted[2].name).toBe("Gamma");
+  });
 });
