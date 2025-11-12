@@ -43,7 +43,9 @@ const FieldSet = ({
   updateField,
   phaseIsClosed,
   fieldsetTotal,
-  isTabActive
+  isTabActive,
+  highlightedInFieldset,
+  highlightedTag
 }) => {
   const handleBlur = () => {
     setShowSaving(true)
@@ -307,7 +309,8 @@ const FieldSet = ({
                       className={`input-container ${showError ? 'error' : ''} ${fieldsetDisabled ? 'disabled-fieldset' : ''}`}
                       key={j}
                     >
-                      <Form.Field required={required}>
+                      <Form.Field required={required} className={field?.field_subroles === highlightedTag && highlightedInFieldset === "yellow" ? "yellow-fieldset" : ""}>
+                        {field?.field_subroles === highlightedTag && highlightedInFieldset === "yellow" ? <div className={"yellow-fieldset" + " highlight-flag"}>{highlightedTag}</div> : ''}
                         <div className="input-header">
                           <Label
                             className={`input-title${required ? ' highlight' : ''} ${showError ? 'error' : ''
@@ -382,6 +385,8 @@ const FieldSet = ({
                           nonEditable={nonEditable}
                           phaseIsClosed={phaseIsClosed}
                           isTabActive={isTabActive}
+                          highlightedInFieldset={highlightedInFieldset}
+                          highlightedTag={highlightedTag}
                         />
                         {showError && <div className="error-text">{showError}</div>}
                         {assistiveText && <div className='assistive-text'>{assistiveText}.</div>}

@@ -1,4 +1,5 @@
 import { defineConfig, loadEnv } from 'vite'
+import { coverageConfigDefaults } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import svgr from 'vite-plugin-svgr'
 import path, { dirname } from 'path'
@@ -8,6 +9,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '') //Load .env variables before Vite
+
+  if (mode === 'test') {
+    env.UNIT_TEST = 'true';
+  }
 
   return {
     plugins: [
@@ -51,6 +56,7 @@ export default defineConfig(({ mode }) => {
       'process.env.REACT_APP_OPENID_ENDPOINT': JSON.stringify(env.REACT_APP_OPENID_ENDPOINT || ''),
       'process.env.REACT_APP_OPENID_CONNECT_CLIENT_ID': JSON.stringify(env.REACT_APP_OPENID_CONNECT_CLIENT_ID || ''),
       'process.env.REACT_APP_OPENID_AUDIENCE': JSON.stringify(env.REACT_APP_OPENID_AUDIENCE || ''),
+      'process.env.UNIT_TEST': JSON.stringify(env.UNIT_TEST === 'true'),
     },
     server: {
       port: 3000,
@@ -65,7 +71,13 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom',
       setupFiles: './src/setupTests.js',
       coverage: {
-        reporter: ['text', 'json', 'lcov']
+        reporter: ['text', 'json', 'lcov'],
+        exclude: [
+          ...coverageConfigDefaults.exclude,
+          'build',
+          'public',
+          'src/__mocks__/**',
+        ],
       }
     }
   }
