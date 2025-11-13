@@ -363,3 +363,101 @@ describe("projectUtils.sortProjects sorts projects correctly", () => {
     expect(sorted[2].name).toBe("Gamma");
   });
 });
+
+describe("projectUtils.hasMissingFields checks for missing fields correctly", () => {
+  // TODO: fieldsets, matrices, autofills, readonlys
+  const TEST_PROJECT = {
+    phase: 123
+  };
+  const SCHEMA_TEMPLATE = {
+    phases: [
+      {
+        id: 123, 
+        sections: [
+        { title: "Section 1", fields: [
+          // Fill in in tests
+        ]},
+      ]},
+      {id: 456, sections: []}
+    ]
+  };
+
+  test("hasMissingFields detects missing simple fields", () => {
+    const test_attribute_data = {
+      mandatory_field1: null,
+      optional_field: null,
+    };
+    const test_schema = JSON.parse(JSON.stringify(SCHEMA_TEMPLATE));
+    test_schema.phases[0].sections[0].fields = [
+          {name: "mandatory_field1", required: true},
+          {name: "optional_field", required: false},
+    ];
+    const result = projectUtils.hasMissingFields(test_attribute_data, TEST_PROJECT, test_schema);
+    expect(result).toBe(true);
+    test_attribute_data.mandatory_field1 = "now_filled";
+    const result2 = projectUtils.hasMissingFields(test_attribute_data, TEST_PROJECT, test_schema);
+    expect(result2).toBe(false);
+  });
+
+  test("hasMissingFields detects missing matrix field", () => {
+      const test_attribute_data = {
+      matrix_field: [
+        { matrix_mandatory_1: null, matrix_optional_1: null },
+      ]
+    };
+    const test_schema = JSON.parse(JSON.stringify(SCHEMA_TEMPLATE));
+    test_schema.phases[0].sections[0].fields = [
+          {name: "matrix_field", type: "matrix", matrix: {
+            fields: [
+              { name: "matrix_mandatory_1", required: true },
+              { name: "matrix_optional_1", required: false }
+            ]
+          }}
+    ];
+    const result = projectUtils.hasMissingFields(test_attribute_data, TEST_PROJECT, test_schema);
+    expect(result).toBe(true);
+    test_attribute_data.matrix_field[0].matrix_mandatory_1 = "now_filled";
+    const result2 = projectUtils.hasMissingFields(test_attribute_data, TEST_PROJECT, test_schema);
+    expect(result2).toBe(false);
+  });
+  test("hasMissingFields does not flag autofill field", () => {
+      const test_attribute_data = {
+      autofill_field: [
+        { autofill_mandatory_1: null, autofill_optional_1: null },
+      ]
+    };
+    const test_schema = JSON.parse(JSON.stringify(SCHEMA_TEMPLATE));
+    test_schema.phases[0].sections[0].fields = [
+          {name: "autofill_field", type: "autofill", autofill: {
+            fields: [
+              { name: "autofill_mandatory_1", required: true, autofill_readonly: true },
+              { name: "autofill_optional_1", required: false, autofill_readonly: true }
+            ]
+          }}
+    ];
+    const result = projectUtils.hasMissingFields(test_attribute_data, TEST_PROJECT, test_schema);
+    expect(result).toBe(false);
+  });
+
+  test("hasMissingFields checks fieldsets correctly", () => {
+      const test_attribute_data = {
+      fieldset_field: [
+        { "fieldset_mandatory": null, _deleted: true},
+        { "fieldset_optional": null, _deleted: true }
+      ]
+    };
+    const test_schema = JSON.parse(JSON.stringify(SCHEMA_TEMPLATE));
+    test_schema.phases[0].sections[0].fields = [
+          {name: "fieldset_field", type: "fieldset", fieldset_attributes: [
+              { name: "fieldset_mandatory", required: true, },
+              { name: "fieldset_optional_1", required: false }
+          ]}
+    ];
+    const result = projectUtils.hasMissingFields(test_attribute_data, TEST_PROJECT, test_schema);
+    expect(result).toBe(true);
+    test_attribute_data.fieldset_field[0].fieldset_mandatory = "now_filled";
+    test_attribute_data.fieldset_field[0]._deleted = false;
+    const result2 = projectUtils.hasMissingFields(test_attribute_data, TEST_PROJECT, test_schema);
+    expect(result2).toBe(false);
+  });
+});
