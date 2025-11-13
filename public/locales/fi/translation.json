@@ -492,7 +492,7 @@
     "datemissing":"Tieto puuttuu"
   },
   "relativeDates": {
-    "today": "Tänään",
+    "today": "Tänään,",
     "yesterday": "Eilen",
     "days-ago": "{{count}} päivää sitten",
     "month-ago": "{{count}} kuukautta sitten",

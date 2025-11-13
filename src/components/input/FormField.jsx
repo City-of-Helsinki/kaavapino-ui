@@ -7,7 +7,9 @@ import projectUtils from '../../utils/projectUtils'
 import timeUtil from '../../utils/timeUtil'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
-import { IconClock,IconLock } from 'hds-react'
+import { IconClock,IconLock,LoadingSpinner } from 'hds-react'
+import { useSelector } from 'react-redux'
+import { savingSelector } from '../../selectors/projectSelector'
 import { withTranslation } from 'react-i18next'
 import { isArray } from 'lodash'
 import PropTypes from 'prop-types'
@@ -64,6 +66,7 @@ const FormField = ({
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
+  const saving = useSelector(state => savingSelector(state))
   const handleBlurSave = useCallback(() => {
     if (typeof handleSave === 'function') {
       handleSave()
@@ -289,25 +292,37 @@ const FormField = ({
               </Label>
             </div>
             <div className="input-header-icons">
-            {updated && !isReadOnly && (
+            {!isReadOnly && (
               <>
-                <div>{`${timeUtil.formatRelativeDate(updated.timestamp, t)} ${projectUtils.formatTime(updated.timestamp)}`}</div>
-                <Popup
-                  trigger={<IconClock />}
-                  inverted
-                  on="hover"
-                  position="top center"
-                  hideOnScroll
-                  content={
-                    <span className="input-history">
-                      <span>{`${projectUtils.formatDate(
-                        updated.timestamp
-                      )} ${projectUtils.formatTime(updated.timestamp)} ${
-                        updated.user_name
-                      }`}</span>
-                    </span>
-                  }
-                />
+                <div className='popup-container'>
+                  {saving ? (
+                    <div className='spinner-container'>
+                      <LoadingSpinner className='loading-spinner' small />
+                    </div>
+                  ) : (
+                    updated && (
+                      <Popup
+                        trigger={<IconClock />}
+                        inverted
+                        on="hover"
+                        position="top center"
+                        hideOnScroll
+                        content={
+                          <span className="input-history">
+                            <span>{`${projectUtils.formatDate(
+                              updated.timestamp
+                            )} ${projectUtils.formatTime(updated.timestamp)} ${
+                              updated.user_name
+                            }`}</span>
+                          </span>
+                        }
+                      />
+                    )
+                  )}
+                </div>
+                {updated && (
+                  <div className='time-container'>{`${timeUtil.formatRelativeDate(updated.timestamp, t)} ${projectUtils.formatTime(updated.timestamp)}`}</div>
+                )}
               </>
             )}
             {field.help_text && (

@@ -82,6 +82,7 @@ h4 {
     &:active {
       background-color: white;
       border-color: $color-button-emphasis;
+      padding-bottom: $size5;
       color: $color-button-emphasis;
     }
   }
@@ -189,6 +190,49 @@ ul {
 
 .input-container {
   position: relative;
+  .input-header-icons{
+    div{
+      padding-left: $size2;
+    }
+    .popup-container{
+      font-family: 'Helsinki Grotesk Regular', sans-serif;
+      display: inline-flex;
+      align-items: center;
+      font-weight: 400;
+      font-style: normal;
+      font-size: $size14;
+      line-height: $size24;
+      letter-spacing: 0;
+      color: $black1;
+      padding-bottom: $size5;
+      svg {
+        width: 0.833rem;
+        height: 0.833rem;
+      }
+      .spinner-container{
+        width: 0.833rem;
+        height: 0.833rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: $size5;
+        .loading-spinner{
+          width: 100%;
+          height: 100%;
+        }
+      }
+    }
+    .time-container{
+      font-family: 'Helsinki Grotesk Regular', sans-serif;
+      font-weight: 400;
+      font-style: normal;
+      font-size: $size14;
+      line-height: $size24;
+      letter-spacing: 0;
+      color: $black1;
+      padding-right: $size5;
+    }
+  }
 }
 
 .project-input-container .ui.segment .field {
