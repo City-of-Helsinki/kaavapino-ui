@@ -1,0 +1,207 @@
+// NetworkErrorState.scss
+// Styles for the NetworkErrorState component
+
+// ---- HDS palette refs ----
+$hds-red-dark:   #b01038;
+$hds-red-light:  #fdf3f2;
+$hds-green: #008741;
+
+$hds-blue-dark:  #003b80;
+$hds-blue-mid:   #0059b3;
+$hds-blue-light: #edf5ff;
+
+$hds-yellow-bg:      #fff4d6;
+$hds-yellow-border:  #f3ce00;
+
+$hds-gray-text: #2b2b2b;
+
+// ---- Root wrapper ----
+.network-error-state {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;          // compact spacing like screenshots
+  width: 100%;
+  margin-top: 0.5rem;
+  z-index: 1000;
+
+  // =========================
+  // Notification (banner)
+  // =========================
+  .nes-notification {
+    padding: 0.9rem 1rem;
+    position: relative;
+    --notification-border-color: none;
+
+    // Remove the thick left stripe/rail some HDS themes add
+    &::before {
+      display: none !important;
+      content: none !important;
+    }
+
+    // We only want the header row (label). Hide body/content.
+    .hds-notification__content {
+      display: none;
+    }
+
+    .hds-notification__label {
+      font-weight: 700;
+      font-size: 1.25rem;
+      line-height: 1.2;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    // SUCCESS variant (OK state): keep green check icon, but use pale blue bg
+    &.nes-success {
+      --notification-background-color: #{$hds-blue-light};
+      --notification-border-color: rgba(0, 89, 179, 0.2);
+      --notification-icon-color: $hds-blue-dark; // keep HDS success icon color
+      --notification-label-color: #1a1a1a;
+      background-color: var(--notification-background-color) !important;
+      border: 1px solid var(--notification-border-color) !important;
+      color: var(--notification-label-color);
+      overflow: hidden; // keep corners clean after rail removal
+      font-family: 'Helsinki Grotesk', Arial, sans-serif; // primary + fallbacks
+      font-weight: 700;
+      font-style: normal; // design spec says Bold; handled via font-weight
+      font-size: 16px;
+      line-height: 24px;
+      letter-spacing: 0; // explicit for clarity
+      vertical-align: middle; // align text vertically with icon
+      svg {
+        color: $hds-green;
+      }
+      
+    }
+    // ERROR variant (if you show it): light red bg + subtle border
+    &.nes-error {
+      --notification-icon-color: #{$hds-red-dark};
+
+      background-color: var(--notification-background-color) !important;
+      border: 1px solid var(--notification-border-color) !important;
+      color: var(--notification-label-color);
+      font-family: 'Helsinki Grotesk', Arial, sans-serif;
+      font-weight: 700;
+      font-style: normal; // Bold via weight
+      font-size: 16px;
+      line-height: 24px;
+      letter-spacing: 0;
+      vertical-align: middle;
+      svg {
+        color: $hds-red-dark;
+      }
+    }
+  }
+
+  // =========================
+  // Yellow inline warning panel
+  // =========================
+  .nes-notification.nes-warning-notification {
+    --notification-border-color: var(--color-alert-dark, #c4741b);
+    --notification-label-color: #1a1a1a;
+
+    background-color: var(--notification-background-color) !important;
+    color: var(--notification-label-color);
+    font-family: 'Helsinki Grotesk', Arial, sans-serif; // primary + fallbacks
+    font-weight: 700;
+    font-style: normal; // design spec says Bold; handled via font-weight
+    font-size: 16px;
+    line-height: 24px;
+    letter-spacing: 0; // explicit for clarity
+    vertical-align: middle; // align text vertically with icon
+
+    // re-enable a warm left rail only for warning
+    &[class^="notification_hds-notification__"],
+    &[class*=" notification_hds-notification__"],
+    &[class*=" hds-notification__"] {
+      &::before {
+        display: block !important;
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 10px;
+        background-color: #c4741b;  // warm orange rail
+        border-top-left-radius: 12px;
+        border-bottom-left-radius: 12px;
+      }
+    }
+
+    .hds-notification__label {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      margin-bottom: .5rem;
+      font-size: 1.125rem;
+      font-weight: 700;
+    }
+
+    .hds-notification__icon {
+      color: #d27700; // warning icon tone
+    }
+
+    .nes-warning-notification__content {
+      font-size: .95rem;
+      line-height: 1.55;
+      --notification-border-color: var(--color-alert-dark, #c4741b);
+
+      p { margin: 0 0 0.85rem 0; }
+      p:last-child { margin-bottom: 0; }
+    }
+
+    .nes-warning-notification__actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.25rem;
+      justify-content: flex-end;
+
+      .hds-button--primary { min-width: 230px; } // wide blue button
+      .hds-button--danger  { min-width: 160px; } // red filled
+    }
+  }
+
+  // =========================
+  // Confirm dialog tweaks
+  // =========================
+  .hds-dialog--danger {
+    .hds-dialog__header {
+      background-color: #fff0f2 !important;
+      border-bottom: 1px solid $hds-red-dark;
+    }
+    .hds-button--danger {
+      background-color: $hds-red-dark;
+      color: #fff;
+
+      &:hover {
+        background-color: $hds-red-dark, 10%;
+      }
+    }
+  }
+
+  // =========================
+  // Responsive
+  // =========================
+  @media (max-width: 768px) {
+    .nes-notification {
+      padding: 0.75rem 0.9rem;
+
+      .hds-notification__label {
+        font-size: 1.1rem;
+      }
+    }
+
+    .nes-warning__actions {
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-end;
+
+      .hds-button {
+        width: 100%;
+        min-width: 0;
+      }
+    }
+  }
+}

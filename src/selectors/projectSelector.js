@@ -279,6 +279,11 @@ export const cancelTimetableSaveSelector = createSelector(
   selectProject,
   project => project?.cancelTimetableSave
 )
+// Network status selector (component should switch to use state.project.network via this selector)
+export const projectNetworkSelector = createSelector(
+  selectProject,
+  project => project?.network || { status: 'ok' }
+)
 
 export const validatingTimetableSelector = createSelector(
   selectProject,

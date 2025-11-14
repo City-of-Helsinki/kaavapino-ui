@@ -191,6 +191,8 @@ ul {
 .input-container {
   position: relative;
   .input-header-icons{
+    justify-content: center;
+    align-items: flex-end;
     div{
       padding-left: $size2;
     }
@@ -231,6 +233,10 @@ ul {
       letter-spacing: 0;
       color: $black1;
       padding-right: $size5;
+    }
+    [class^="Tooltip-module_button"],
+    [class*=" Tooltip-module_button"] {
+      display: flex;
     }
   }
 }

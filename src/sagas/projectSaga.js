@@ -25,6 +25,7 @@ import {
   formErrorListSelector,
   lastSavedSelector
 } from '../selectors/projectSelector'
+import { projectNetworkSelector } from '../selectors/projectSelector'
 import { userIdSelector } from '../selectors/authSelector'
 import { phasesSelector } from '../selectors/phaseSelector'
 import {
@@ -659,8 +660,20 @@ function* saveProjectPayload({ payload }) {
     )
     yield put(updateProject(updatedProject))
     yield put(initializeProjectAction(currentProjectId))
+    // Network success transition if recovering from previous error
+    const net = yield select(projectNetworkSelector)
+    if (net?.status === 'error') {
+		yield put({ type: 'Set network status', payload: { status: 'success', okMessage: i18.t('messages.deadlines-successfully-saved') } })
+		yield delay(5000)
+		yield put({ type: 'Reset network status' })
+    }
   } catch (e) {
     yield put(error(e))
+    const isNetworkErr = e?.code === 'ERR_NETWORK'
+    const statusCode = e?.response?.status
+    if (isNetworkErr || !statusCode || statusCode >= 500) {
+		yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
+    }
   }
 }
 
@@ -684,11 +697,22 @@ function* saveProjectBase({ payload }) {
       yield put(updateProject(updatedProject))
       yield put(setSubmitSucceeded(NEW_PROJECT_FORM))
       yield put(initializeProjectAction(currentProjectId))
+      const net = yield select(projectNetworkSelector)
+      if (net?.status === 'error') {
+		yield put({ type: 'Set network status', payload: { status: 'success', okMessage: i18.t('messages.deadlines-successfully-saved') } })
+		yield delay(5000)
+		yield put({ type: 'Reset network status' })
+      }
     } catch (e) {
       if (e.response.status === 400) {
         yield put(stopSubmit(NEW_PROJECT_FORM, e.response.data))
       } else {
         yield put(error(e))
+        const isNetworkErr = e?.code === 'ERR_NETWORK'
+        const statusCode = e?.response?.status
+        if (isNetworkErr || !statusCode || statusCode >= 500) {
+			yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
+        }
       }
     }
   }
@@ -716,13 +740,24 @@ function* saveProjectFloorArea() {
       toastr.success(i18.t('messages.timelines-successfully-saved'), '', {
         icon: <IconCheckCircleFill />
       })
+      const net = yield select(projectNetworkSelector)
+      if (net?.status === 'error') {
+		yield put({ type: 'Set network status', payload: { status: 'success', okMessage: i18.t('messages.timelines-successfully-saved') } })
+		yield delay(5000)
+		yield put({ type: 'Reset network status' })
+      }
     } catch (e) {
       if (e?.code === "ERR_NETWORK") {
         toastr.error(i18.t('messages.general-save-error'), '', {
           icon: <IconErrorFill />
         })
+        yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
       }
       yield put(stopSubmit(EDIT_FLOOR_AREA_FORM, e.response && e.response.data))
+      const statusCode = e?.response?.status
+      if (!statusCode || statusCode >= 500) {
+		yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
+      }
     }
   }
 }
@@ -901,15 +936,22 @@ function* saveProjectTimetable(action,retryCount = 0) {
       yield put(setSubmitSucceeded(EDIT_PROJECT_TIMETABLE_FORM))
       yield put(saveProjectTimetableSuccessful(true))
       yield put(setAllEditFields())
+      // If we previously had an error, mark success transiently
+      yield put({ type: 'Set network status', payload: { status: 'success', okMessage: i18.t('messages.deadlines-successfully-saved') } })
       toastr.success(i18.t('messages.deadlines-successfully-saved'), '', {
         icon: <IconCheckCircleFill />
       })
+      // Auto reset network status back to ok after 5s
+      yield delay(5000)
+      yield put({ type: 'Reset network status' })
     } 
     catch (e) {
       if (e?.code === "ERR_NETWORK" && retryCount <= maxRetries) {
         toastr.error(i18.t('messages.error-connection'), '', {
           icon: <IconErrorFill />
         })
+        // Set network status to error on connectivity issue
+        yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.error-connection') } })
         yield race({
           online: take(onlineChannel), // Wait for the online event
           timeout: delay(5000) // Wait for 5 seconds before retrying
@@ -929,6 +971,8 @@ function* saveProjectTimetable(action,retryCount = 0) {
           className: 'rrt-error',
           icon: <IconErrorFill />
         });
+        // Generic failure => set network status error
+        yield put({ type: 'Set network status', payload: { status: 'error', errorMessage } })
         yield put(saveProjectTimetableFailed(false))
       }
     }
@@ -1081,13 +1125,20 @@ function* saveProject(data) {
         } else {
           yield put(setPoll(false))
         }
+        yield put({ type: 'Set network status', payload: { status: 'success', okMessage: i18.t('messages.deadlines-successfully-saved') } })
         yield put(setLastSaved("success",time,[],[],false))
+        
       } catch (e) {
         if (e.response && e.response.status === 400) {
           yield put(setLastSaved("field_error",time,Object.keys(attribute_data),Object.values(attribute_data),false))
           yield put(stopSubmit(EDIT_PROJECT_FORM, e.response.data))
         } else {
           yield put(setLastSaved("error",time,Object.keys(attribute_data),Object.values(attribute_data),false))
+        }
+        const isNetworkErr = e?.code === 'ERR_NETWORK'
+        const statusCode = e?.response?.status
+        if (isNetworkErr || !statusCode || statusCode >= 500) {
+			    yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
         }
       }
     }
