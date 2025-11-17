@@ -1,64 +1,95 @@
-// NetworkErrorState.jsx
-import React, { useMemo, useState, useCallback } from 'react';
-import { useSelector } from 'react-redux';
-import { projectNetworkSelector } from '../../selectors/projectSelector';
+import React, { useMemo, useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { projectNetworkSelector,lastSavedSelector } from '../../selectors/projectSelector';
 import { Dialog, Button, Notification, IconCheckCircle } from 'hds-react';
+import { useTranslation } from 'react-i18next';
 import './NetworkErrorState.scss';
 
 export default function NetworkErrorState() {
-  // ---- Redux state ----
-  // Network state via memoized selector (avoids recreating object + keeps pattern consistent)
   const network = useSelector(projectNetworkSelector);
-  console.log('Network state:', network);
+  const lastSaved = useSelector(state => lastSavedSelector(state))
+  const dispatch = useDispatch();
+  const { t } = useTranslation();
+
   const status = network.status || 'ok';
   const hasError = status === 'error';
   const isSuccess = status === 'success';
-  // Banner only shown for error or success states; hidden in 'ok'
+
   const banner = useMemo(() => {
     if (hasError) {
       return {
         type: 'error',
-        label: 'Tallennus epäonnistui',
-        message: network.errorMessage || 'Tallennus epäonnistui yhteysongelman vuoksi.'
+        label: t('messages.network-save-failed-label'),
+        message: network.errorMessage || t('messages.network-save-failed-connection')
       };
     }
     if (isSuccess) {
       return {
         type: 'success',
-        label: 'Yhteys palautunut',
-        message: network.okMessage || 'Yhteys palautunut.'
+        label: t('messages.network-connection-restored-label'),
+        message: network.okMessage || t('messages.network-connection-restored-message')
       };
     }
-    return null; // status 'ok' => hide banner
+    return null;
   }, [hasError, isSuccess, network.errorMessage, network.okMessage]);
 
-  // Inline yellow panel visibility
   const [showWarning, setShowWarning] = useState(true);
-  // Only the confirm is a dialog
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const onCopyClick = useCallback(async () => {
-    const text = network.tempFieldContents || '';
-    try {
-      if (navigator?.clipboard?.writeText) {
-        await navigator.clipboard.writeText(text);
-      } else {
-        const el = document.createElement('textarea');
-        el.value = text;
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
-        document.body.removeChild(el);
+  const getFieldSetValues = (object) => {
+    const arrayValues = [];
+    let index = 1;
+    for (let i = 0; i < object.length; i++) {
+      const fieldsetObject = object[i];
+      for (const data in fieldsetObject) {
+        if (Object.prototype.hasOwnProperty.call(fieldsetObject, data)) {
+          if (fieldsetObject[data]?.ops) {
+            const opsArray = fieldsetObject[data].ops;
+            for (let j = 0; j < opsArray.length; j++) {
+              arrayValues.push('fieldset-' + index);
+              arrayValues.push(data + ': ' + opsArray[j].insert);
+              index = index + 1;
+            }
+          }
+        }
       }
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error('Clipboard copy failed', e);
     }
-  }, [network.tempFieldContents]);
+    return arrayValues;
+  };
+
+  let newErrorValue = lastSaved?.values || [];
+  let arrayValues = [];
+
+  if (Array.isArray(newErrorValue) && newErrorValue.length > 0) {
+    if (newErrorValue[0]?.ops) {
+      const opsArray = newErrorValue[0].ops;
+      for (let i = 0; i < opsArray.length; i++) {
+        arrayValues.push(opsArray[i].insert);
+      }
+      newErrorValue = arrayValues.toString();
+      arrayValues = [];
+    }
+    else if (typeof newErrorValue[0] === 'object' && newErrorValue[0] !== null) {
+      arrayValues = getFieldSetValues(newErrorValue[0]);
+    }
+  }
+
+  let errorTextValue = arrayValues.length > 0 ? arrayValues : newErrorValue.toString();
+  if (errorTextValue.includes('true') || errorTextValue.includes('false')) {
+    errorTextValue = errorTextValue === 'true' ? 'Kyllä' : 'Ei';
+  } else if (errorTextValue === '') {
+    errorTextValue = 'Tieto puuttuu';
+  }
+  const copyFieldsetValues = arrayValues.map(a => a).join('\n');
+
+  useEffect(() => {
+    if (hasError && !showWarning) {
+      setShowWarning(true);
+    }
+  }, [hasError, showWarning]);
 
   return (
     <div className="network-error-state" aria-live="polite" aria-atomic="true">
-      {/* Banner shown only when status is error or success */}
       {banner && (
         <Notification
           type={banner.type}
@@ -69,33 +100,31 @@ export default function NetworkErrorState() {
           className={`nes-notification nes-${banner.type}`}
         />
       )}
-      {/* Warning panel only during error state */}
-      {showWarning && hasError && (
+      {showWarning && (hasError || isSuccess) && (
         <Notification
           type="alert"
-          label="Kenttä sisältää tallentamatonta tietoa"
+          label={t('messages.unsaved-field-warning-label')}
           dismissible={false}
           size="default"
           className="nes-notification nes-warning-notification"
         >
           <div className="nes-warning-notification__content">
-            <p className="mb-4">
-              Kentän tallennus epäonnistui yhteysongelman vuoksi. Muokkaamasi tiedot on tallennettu
-              väliaikaisesti muistiin. Kopioi kentän sisältö talteen. Kun yhteys palautuu, tarkista kentän
-              tiedot ja päivitä ne tarvittaessa, sillä joku toinen käyttäjä on saattanut jo tehdä muutoksia
-              samaan kenttään.
-            </p>
-            <p>
-              Jos poistut näkymästä tai suljet tämän ilmoituksen, muutokset katoavat väliaikaisesta
-              muistista, etkä voi enää kopioida niitä talteen.
-            </p>
+            <p className="mb-4">{t('messages.unsaved-field-warning-text1')}</p>
+            <p>{t('messages.unsaved-field-warning-text2')}</p>
           </div>
           <div className="nes-warning-notification__actions">
-            <Button onClick={onCopyClick} variant="primary">
-              Kopioi kentän sisältö
+            <Button
+              onClick={() => {
+                const toCopy = arrayValues.length > 0 ? copyFieldsetValues : errorTextValue;
+                navigator.clipboard.writeText(toCopy);
+              }}
+              size="small"
+              variant="primary"
+            >
+              {t('messages.copy-value')}
             </Button>
             <Button onClick={() => setConfirmOpen(true)} variant="danger">
-              Sulje ilmoitus
+              {t('messages.close-notification')}
             </Button>
           </div>
         </Notification>
@@ -112,26 +141,24 @@ export default function NetworkErrorState() {
             id="network-warning-close-confirm-title"
             iconLeft={<IconCheckCircle aria-hidden />}
           >
-            Haluatko sulkea ilmoituksen?
+            {t('messages.close-notification-question')}
           </Dialog.Header>
           <Dialog.Content>
-            <p>
-              Jos suljet ilmoituksen, et voi enää kopioida talteen väliaikaisessa muistissa olevaa,
-              tallentamatonta sisältöä.
-            </p>
+            <p>{t('messages.close-notification-warning')}</p>
           </Dialog.Content>
           <Dialog.ActionButtons>
             <Button onClick={() => setConfirmOpen(false)} variant="secondary">
-              Peruuta
+              {t('messages.cancel-button-text')}
             </Button>
             <Button
               onClick={() => {
                 setConfirmOpen(false);
                 setShowWarning(false);
+                dispatch({ type: 'Set network status', payload: { status: 'ok', okMessage: '', errorMessage: '' } });
               }}
               variant="danger"
             >
-              Sulje ilmoitus
+              {t('messages.close-notification')}
             </Button>
           </Dialog.ActionButtons>
         </Dialog>

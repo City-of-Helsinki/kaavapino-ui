@@ -1125,7 +1125,15 @@ function* saveProject(data) {
         } else {
           yield put(setPoll(false))
         }
-        yield put({ type: 'Set network status', payload: { status: 'success', okMessage: i18.t('messages.deadlines-successfully-saved') } })
+        // Network status: only show transient success if recovering from an error
+        const net = yield select(projectNetworkSelector)
+        if (net?.status === 'error') {
+          yield put({ type: 'Set network status', payload: { status: 'success', okMessage: i18.t('messages.deadlines-successfully-saved') } })
+        } 
+        else {
+          // Ensure state remains clean 'ok' without success banner spam
+          yield put({ type: 'Set network status', payload: { status: 'ok', okMessage: '', errorMessage: '' } })
+        }
         yield put(setLastSaved("success",time,[],[],false))
         
       } catch (e) {

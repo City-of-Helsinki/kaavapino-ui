@@ -145,6 +145,17 @@
     "date-missing":" Päivämäärä puuttuu"
   },
   "messages": {
+    "network-save-failed-label": "Tallennus epäonnistui",
+    "network-save-failed-connection": "Tallennus epäonnistui yhteysongelman vuoksi.",
+    "network-connection-restored-label": "Yhteys palautunut",
+    "network-connection-restored-message": "Yhteys palautunut.",
+    "unsaved-field-warning-label": "Kenttä sisältää tallentamatonta tietoa",
+    "unsaved-field-warning-text1": "Kentän tallennus epäonnistui yhteysongelman vuoksi. Muokkaamasi tiedot on tallennettu väliaikaisesti muistiin. Kopioi kentän sisältö talteen. Kun yhteys palautuu, tarkista kentän tiedot ja päivitä ne tarvittaessa, sillä joku toinen käyttäjä on saattanut jo tehdä muutoksia samaan kenttään.",
+    "unsaved-field-warning-text2": "Jos poistut näkymästä tai suljet tämän ilmoituksen, muutokset katoavat väliaikaisesta muistista, etkä voi enää kopioida niitä talteen.",
+    "close-notification": "Sulje ilmoitus",
+    "close-notification-question": "Haluatko sulkea ilmoituksen?",
+    "close-notification-warning": "Jos suljet ilmoituksen, et voi enää kopioida talteen väliaikaisessa muistissa olevaa, tallentamatonta sisältöä.",
+    "cancel-button-text": "Peruuta",
     "deadlines-successfully-saved": "Aikataulut tallennettu",
     "min-distance": "Valitse myöhempi päivä, koska tämä on liian lähellä edellistä etappia.",
     "max-distance": "Valitse aikaisempi päivä, koska tämä on liian lähellä seuraavaa etappia.",
