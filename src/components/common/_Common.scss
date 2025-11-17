@@ -212,6 +212,21 @@ ul {
     }
   }
 
+  .field.yellow-fieldset{
+    border-left: 6px solid #ffc61f;
+    margin-left: -6px !important;
+    margin-top: 20px;
+    .highlight-flag {
+      position: absolute;
+      top: -29px;
+      left: -6px;
+      padding: 3px 8px 3px 10px;
+      border-radius: 2px 2px 2px 0;
+      font-size: $size14;
+      background-color: $tagyellow;
+    }
+  }
+
   span.yellow {
     background-color: $tagyellow;
   }

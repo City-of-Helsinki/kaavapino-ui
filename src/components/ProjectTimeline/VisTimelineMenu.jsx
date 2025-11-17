@@ -1,9 +1,13 @@
-import React, { useState } from 'react'
-import {Button,IconAngleLeft,IconAngleRight} from 'hds-react'
+import React, { useState, useRef } from 'react'
+import {Button,IconAngleLeft,IconAngleRight,IconQuestionCircle} from 'hds-react'
 import PropTypes from 'prop-types';
+import TimelineMenuTooltip from './TimelineMenuTooltip';
 
-function VisTimelineMenu({goToToday, moveLeft, moveRight,showYears,showMonths}) {
+function VisTimelineMenu({goToToday,moveLeft,moveRight,showYears,showMonths,show6Months,show3Months,show2Years}) {
   const [selectedButton, setSelectedButton] = useState('showYears');
+  const [showElementTooltip, setShowElementTooltip] = useState(false);
+
+  const elementButtonRef = useRef(null);
 
   const handleClick = (buttonName) => {
     setSelectedButton(buttonName);
@@ -26,13 +30,34 @@ function VisTimelineMenu({goToToday, moveLeft, moveRight,showYears,showMonths}) 
           </div>
           <div className='zoom-menu'>
             <Button size="small" variant="secondary" className={selectedButton === 'showMonths' ? 'selected' : ''}  onClick={() => {showMonths(); handleClick('showMonths');}}>1 kuukausi</Button>
+            <Button size="small" variant="secondary" className={selectedButton === 'show3Months' ? 'selected' : ''} onClick={() => {show3Months(); handleClick('show3Months');}}>3 kuukautta</Button>
+            <Button size="small" variant="secondary" className={selectedButton === 'show6Months' ? 'selected' : ''} onClick={() => {show6Months(); handleClick('show6Months');}}>6 kuukautta</Button>
             <Button size="small" variant="secondary" className={selectedButton === 'showYears' ? 'selected' : ''}  onClick={() => {showYears(); handleClick('showYears');}}>1 vuosi</Button>
+            <Button size="small" variant="secondary" className={selectedButton === 'show2Years' ? 'selected' : ''} onClick={() => {show2Years(); handleClick('show2Years');}}>2 vuotta</Button>
              {/*<Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {show5Yers()}}>5 Vuotta</Button>
-            <Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {show2Yers()}}>2 Vuotta</Button>
-            <Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {show6Months()}}>6 kuukautta</Button>
-            <Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {show3Months()}}>3 kuukautta</Button>
             <Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {showWeeks()}}>Weeks</Button>
             <Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {showDays()}}>Days</Button> */}
+          </div>
+          <div className="element-menu" style={{ position: 'relative' }}>
+            <Button
+              ref={elementButtonRef}
+              size="small"
+              variant="supplementary"
+              className={showElementTooltip ? 'element-tooltip-open' : ''}
+              onClick={() => {
+                setShowElementTooltip(v => {
+                  if (v && elementButtonRef.current) {
+                    setTimeout(() => elementButtonRef.current.blur(), 0);
+                  }
+                  return !v;
+                });
+              }}
+            >
+              <IconQuestionCircle />
+            </Button>
+            {showElementTooltip && (
+              <TimelineMenuTooltip />
+            )}
           </div>
         </div>
     </div>

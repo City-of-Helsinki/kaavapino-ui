@@ -242,7 +242,32 @@ const getHighestNumberedObject = (obj1) => {
     return result
   }
 
-  const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize) => {
+  const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize,attributeData) => {
+    // Lock logic: do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
+    // attributeData is the filtered attribute_data object (only visible fields) so we can inspect confirmation flags
+    let confirmedFieldSet = null;
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    if(attributeData){
+      try {
+        // Lazy load to avoid circular deps (generateConfirmedFields depends on constants only)
+        const { confirmationAttributeNames } = require('./constants');
+        const { generateConfirmedFields } = require('./generateConfirmedFields');
+        // Phase names that have confirmation flags (exclude kaynnistys, hyvaksyminen, voimaantulo as per saga usage)
+        const phaseNames = ['periaatteet','oas','luonnos','ehdotus','tarkistettu_ehdotus'];
+        confirmedFieldSet = new Set(generateConfirmedFields(attributeData, confirmationAttributeNames, phaseNames));
+      }
+      catch(e){
+        // Fail silently – if generation fails we simply don't lock by confirmation (past locking still applies)
+      }
+    }
+    // Helper to decide if an item should be frozen
+    const isLocked = (item) => {
+      if(!item?.value) return false;
+      const d = new Date(item.value);
+      if(!isNaN(d) && d < today) return true;
+      return confirmedFieldSet ? confirmedFieldSet.has(item.key) : false;
+    };
     // Find the index of the next item where dates should start being pushed
     const currentIndex = arr.findIndex(item => item.key === field);
     let indexToContinue = 0
@@ -250,6 +275,7 @@ const getHighestNumberedObject = (obj1) => {
     if (isAdd) {
       // Move the nextItem and all following items forward if item minium is exceeded
       for (let i = currentIndex; i < arr.length; i++) {
+		    if(isLocked(arr[i])) continue; // skip locked items entirely
         if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
           && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
           && !arr[i].key.includes("hyvaksymispaatos_pvm")){
@@ -295,6 +321,7 @@ const getHighestNumberedObject = (obj1) => {
     }
     else if(currentIndex !== -1){
       for (let i = currentIndex; i < arr.length; i++) {
+		    if(isLocked(arr[i])) continue; // do not move locked items
         if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
           && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
           && !arr[i].key.includes("hyvaksymispaatos_pvm")){
