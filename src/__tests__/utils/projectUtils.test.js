@@ -237,7 +237,7 @@ describe('test projectUtils utility functions', () => {
     expect(projectUtils.findValueFromObject(testObj, 'non.existent.path')).toBeUndefined();
   });
 
-  test("findValuesFromObject adds values to the provided array", ()=> {
+  test("findValuesFromObject adds values to the provided array", () => {
     const testObj = {
       level1: {
         level2: {
@@ -264,6 +264,33 @@ describe('test projectUtils utility functions', () => {
     const valuesArray2 = [];
     projectUtils.findValuesFromObject(testObj, 'target', valuesArray2);
     expect(valuesArray2).toContain("level2Value");
+  });
+  test("isSceduleAccepted detects false confirmation attributes", () => {
+    const test_schema = {
+      sections: [
+        {
+          name: "2. OAS",
+          attributes: [
+            { name: "deadline_1" },
+            { name: "deadline_2" },
+            { name: "vahvista_oas_esillaolo_alkaa" },
+            { name: "vahvista_oas_esillaolo_alkaa_2" },
+          ]
+        },
+      ]
+    };
+    const test_attribute_data = {
+      deadline_1: null,
+      deadline_2: "2023-12-31",
+      vahvista_oas_esillaolo_alkaa: true,
+      vahvista_oas_esillaolo_alkaa_2: false,
+    };
+    const result = projectUtils.isSceduleAccepted(test_attribute_data, test_schema);
+    expect(result.length).toBe(1);
+    expect(result[0]).toBe("vahvista_oas_esillaolo_alkaa_2");
+    test_attribute_data.vahvista_oas_esillaolo_alkaa_2 = true;
+    const result2 = projectUtils.isSceduleAccepted(test_attribute_data, test_schema);
+    expect(result2).toEqual([]);
   });
 });
 
@@ -365,20 +392,22 @@ describe("projectUtils.sortProjects sorts projects correctly", () => {
 });
 
 describe("projectUtils.hasMissingFields checks for missing fields correctly", () => {
-  // TODO: fieldsets, matrices, autofills, readonlys
   const TEST_PROJECT = {
     phase: 123
   };
   const SCHEMA_TEMPLATE = {
     phases: [
       {
-        id: 123, 
+        id: 123,
         sections: [
-        { title: "Section 1", fields: [
-          // Fill in in tests
-        ]},
-      ]},
-      {id: 456, sections: []}
+          {
+            title: "Section 1", fields: [
+              // Fill in in tests
+            ]
+          },
+        ]
+      },
+      { id: 456, sections: [] }
     ]
   };
 
@@ -389,8 +418,8 @@ describe("projectUtils.hasMissingFields checks for missing fields correctly", ()
     };
     const test_schema = JSON.parse(JSON.stringify(SCHEMA_TEMPLATE));
     test_schema.phases[0].sections[0].fields = [
-          {name: "mandatory_field1", required: true},
-          {name: "optional_field", required: false},
+      { name: "mandatory_field1", required: true },
+      { name: "optional_field", required: false },
     ];
     const result = projectUtils.hasMissingFields(test_attribute_data, TEST_PROJECT, test_schema);
     expect(result).toBe(true);
@@ -400,19 +429,21 @@ describe("projectUtils.hasMissingFields checks for missing fields correctly", ()
   });
 
   test("hasMissingFields detects missing matrix field", () => {
-      const test_attribute_data = {
+    const test_attribute_data = {
       matrix_field: [
         { matrix_mandatory_1: null, matrix_optional_1: null },
       ]
     };
     const test_schema = JSON.parse(JSON.stringify(SCHEMA_TEMPLATE));
     test_schema.phases[0].sections[0].fields = [
-          {name: "matrix_field", type: "matrix", matrix: {
-            fields: [
-              { name: "matrix_mandatory_1", required: true },
-              { name: "matrix_optional_1", required: false }
-            ]
-          }}
+      {
+        name: "matrix_field", type: "matrix", matrix: {
+          fields: [
+            { name: "matrix_mandatory_1", required: true },
+            { name: "matrix_optional_1", required: false }
+          ]
+        }
+      }
     ];
     const result = projectUtils.hasMissingFields(test_attribute_data, TEST_PROJECT, test_schema);
     expect(result).toBe(true);
@@ -421,37 +452,41 @@ describe("projectUtils.hasMissingFields checks for missing fields correctly", ()
     expect(result2).toBe(false);
   });
   test("hasMissingFields does not flag autofill field", () => {
-      const test_attribute_data = {
+    const test_attribute_data = {
       autofill_field: [
         { autofill_mandatory_1: null, autofill_optional_1: null },
       ]
     };
     const test_schema = JSON.parse(JSON.stringify(SCHEMA_TEMPLATE));
     test_schema.phases[0].sections[0].fields = [
-          {name: "autofill_field", type: "autofill", autofill: {
-            fields: [
-              { name: "autofill_mandatory_1", required: true, autofill_readonly: true },
-              { name: "autofill_optional_1", required: false, autofill_readonly: true }
-            ]
-          }}
+      {
+        name: "autofill_field", type: "autofill", autofill: {
+          fields: [
+            { name: "autofill_mandatory_1", required: true, autofill_readonly: true },
+            { name: "autofill_optional_1", required: false, autofill_readonly: true }
+          ]
+        }
+      }
     ];
     const result = projectUtils.hasMissingFields(test_attribute_data, TEST_PROJECT, test_schema);
     expect(result).toBe(false);
   });
 
   test("hasMissingFields checks fieldsets correctly", () => {
-      const test_attribute_data = {
+    const test_attribute_data = {
       fieldset_field: [
-        { "fieldset_mandatory": null, _deleted: true},
+        { "fieldset_mandatory": null, _deleted: true },
         { "fieldset_optional": null, _deleted: true }
       ]
     };
     const test_schema = JSON.parse(JSON.stringify(SCHEMA_TEMPLATE));
     test_schema.phases[0].sections[0].fields = [
-          {name: "fieldset_field", type: "fieldset", fieldset_attributes: [
-              { name: "fieldset_mandatory", required: true, },
-              { name: "fieldset_optional_1", required: false }
-          ]}
+      {
+        name: "fieldset_field", type: "fieldset", fieldset_attributes: [
+          { name: "fieldset_mandatory", required: true, },
+          { name: "fieldset_optional_1", required: false }
+        ]
+      }
     ];
     const result = projectUtils.hasMissingFields(test_attribute_data, TEST_PROJECT, test_schema);
     expect(result).toBe(true);
@@ -459,5 +494,129 @@ describe("projectUtils.hasMissingFields checks for missing fields correctly", ()
     test_attribute_data.fieldset_field[0]._deleted = false;
     const result2 = projectUtils.hasMissingFields(test_attribute_data, TEST_PROJECT, test_schema);
     expect(result2).toBe(false);
+  });
+});
+
+describe("projectUtils.checkErrors checks for erroneous fields correctly", () => {
+  const SCHEMA_TEMPLATE = {
+    phases: [
+      {
+        id: 123,
+        sections: [
+          {
+            title: "Section 1", fields: [
+              // Fill in in tests
+            ]
+          },
+        ]
+      },
+      { id: 456, sections: [] }
+    ]
+  };
+
+  test("checkErrors detects missing simple fields", () => {
+    const test_attribute_data = {
+      mandatory_field1: null,
+      mandatory_field2: "filled",
+      mandatory_field3: "",
+      optional_field: null,
+    };
+    const test_schema = JSON.parse(JSON.stringify(SCHEMA_TEMPLATE.phases[0]));
+    test_schema.sections[0].fields = [
+      { name: "mandatory_field1", required: true, label: "Mandatory Field 1" },
+      { name: "mandatory_field2", required: true, label: "Mandatory Field 2" },
+      { name: "mandatory_field3", required: true, label: "Mandatory Field 3" },
+      { name: "optional_field", required: false, label: "Optional Field" },
+    ];
+    const result = projectUtils.checkErrors([], test_schema, test_attribute_data);
+    expect(result.length).toBe(2);
+    expect(result[0]).toMatchObject({ errorField: "Mandatory Field 1", errorSection: "Section 1", "fieldAnchorKey": "mandatory_field1" });
+    expect(result[1]).toMatchObject({ errorField: "Mandatory Field 3", errorSection: "Section 1", "fieldAnchorKey": "mandatory_field3" });
+    test_attribute_data.mandatory_field1 = "now_filled";
+    const result2 = projectUtils.checkErrors([], test_schema, test_attribute_data);
+    expect(result2[0]).toMatchObject({ errorField: "Mandatory Field 3", errorSection: "Section 1", "fieldAnchorKey": "mandatory_field3" });
+  });
+  test("checkErrors detects missing matrix field", () => {
+    const test_attribute_data = {
+      matrix_field: [
+        { matrix_mandatory_1: null, matrix_optional_1: null },
+      ]
+    };
+    const test_schema = JSON.parse(JSON.stringify(SCHEMA_TEMPLATE.phases[0]));
+    test_schema.sections[0].fields = [
+      {
+        name: "matrix_field", type: "matrix", label: "Matrix Field", matrix: {
+          fields: [
+            { name: "matrix_mandatory_1", required: true, label: "Matrix Mandatory 1" },
+            { name: "matrix_optional_1", required: false, label: "Matrix Optional 1" }
+          ]
+        }
+      }
+    ];
+    const result = projectUtils.checkErrors([], test_schema, test_attribute_data);
+    expect(result.length).toBe(1);
+    expect(result[0]).toMatchObject({ errorField: "Matrix Mandatory 1", errorSection: "Section 1", fieldAnchorKey: "matrix_mandatory_1" });
+    test_attribute_data.matrix_field[0].matrix_mandatory_1 = "now_filled";
+    const result2 = projectUtils.checkErrors([], test_schema, test_attribute_data);
+    expect(result2).toEqual([]);
+  });
+  test("checkErrors checks fieldsets correctly", () => {
+    const test_attribute_data = {
+      fieldset_field: [
+        { "fieldset_mandatory": null, _deleted: true },
+        { "fieldset_optional": null, _deleted: true }
+      ]
+    };
+    const test_schema = JSON.parse(JSON.stringify(SCHEMA_TEMPLATE.phases[0]));
+    test_schema.sections[0].fields = [
+      {
+        name: "fieldset_field", type: "fieldset", label: "Fieldset Field", fieldset_attributes: [
+          { name: "fieldset_mandatory", required: true, label: "Fieldset Mandatory" },
+          { name: "fieldset_optional_1", required: false, label: "Fieldset Optional 1" }
+        ]
+      }
+    ];
+    const result = projectUtils.checkErrors([], test_schema, test_attribute_data);
+    expect(result.length).toBe(1);
+    expect(result[0]).toMatchObject({ errorField: "Fieldset Field", errorSection: "Section 1", fieldAnchorKey: "fieldset_field" });
+    test_attribute_data.fieldset_field[0].fieldset_mandatory = "now_filled";
+    test_attribute_data.fieldset_field[0]._deleted = false;
+    const result2 = projectUtils.checkErrors([], test_schema, test_attribute_data);
+    expect(result2).toEqual([]);
+  });
+});
+
+describe("projectUtils.getErrorFields returns correct error fields", () => {
+  const SCHEMA_TEMPLATE = {
+    id: 123,
+    title: "Käynnistys",
+    sections: [
+      {
+        title: "Section 1", fields: [
+          // Fill in in tests
+        ]
+      },
+    ]
+  };
+  const TEST_PROJECT = {
+    phase: 123
+  };
+
+  test("getErrorFields returns missing fields as errors", () => {
+    const test_attribute_data = {
+      mandatory_field1: null,
+      kaavan_vaihe: "1. Käynnistys",
+    };
+    const test_schema = JSON.parse(JSON.stringify(SCHEMA_TEMPLATE));
+    test_schema.sections[0].fields = [
+      { name: "mandatory_field1", required: true, label: "Mandatory Field 1" },
+    ];
+    const result = projectUtils.getErrorFields(true, test_attribute_data, test_schema, TEST_PROJECT.phase);
+    expect(result.length).toBe(1);
+    expect(result[0]).toEqual({ errorField: "Mandatory Field 1", errorSection: "Section 1", fieldAnchorKey: "mandatory_field1" });
+    // Checkdocuments can be false if schema.sections is provided
+    const result2 = projectUtils.getErrorFields(false, test_attribute_data, test_schema, TEST_PROJECT.phase);
+    expect(result2.length).toBe(1);
+    expect(result2[0]).toEqual({ errorField: "Mandatory Field 1", errorSection: "Section 1", fieldAnchorKey: "mandatory_field1" });
   });
 });
