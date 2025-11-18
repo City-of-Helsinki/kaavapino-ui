@@ -188,9 +188,9 @@ export const showFloorArea = (showEditFloorAreaForm) => ({
   type: SHOW_FLOOR_AREA,
   payload:showEditFloorAreaForm
 })
-export const showTimetable = (showTimetable,name,selectedPhase,matchedDeadline) => ({
+export const showTimetable = (showTimetable,name,selectedPhase,matchedDeadline,subgroup) => ({
   type: SHOW_TIMETABLE,
-  payload:{showTimetable,name,selectedPhase,matchedDeadline}
+  payload:{showTimetable,name,selectedPhase,matchedDeadline,subgroup}
 })
 export const pollConnection = (connection) => ({
   type: POLL_CONNECTION,

@@ -46,7 +46,6 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
         {type === "richtext" ?
         <ReactQuill
           value={value === "" ? noValue : value}
-          tabIndex="0"
           theme="snow"
           readOnly={true}
           className="rolling-richtext"

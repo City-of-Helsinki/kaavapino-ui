@@ -32,8 +32,11 @@ const FormField = ({
   unlockAllFields,
   highlightedTag,
   highlightStyle,
+  highlightedInFieldset,
   insideFieldset,
   disabled,
+  lautakuntaInPast,
+  tooltip,
   deadlines,
   isProjectTimetableEdit,
   rollingInfo,
@@ -112,6 +115,8 @@ const FormField = ({
           <CustomField
             {...rest}
             disabled={typeof newField.disabled === "undefined" ? disabled : newField.disabled}
+            lautakuntaInPast={lautakuntaInPast}
+            tooltip={tooltip}
             field={newField}
             attributeData={attributeData}
             className={className}
@@ -151,6 +156,8 @@ const FormField = ({
             allowedToEdit={allowedToEdit}
             isAdmin={isAdmin}
             timetable_editable={timetable_editable}
+            highlightedInFieldset={highlightedInFieldset}
+            highlightedTag={highlightedTag}
           />
         )
     }
@@ -230,6 +237,7 @@ const FormField = ({
       ...field,
       type: 'readonly'
     }
+
     return renderField(newProps)
   }
 
