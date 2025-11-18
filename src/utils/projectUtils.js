@@ -753,6 +753,8 @@ const exported = {  confirmationAttributes,
 
 if (process.env.UNIT_TEST === "true"){
   exported.checkErrors = checkErrors;
+  exported.hasUnconfirmedRequiredConfirmations = hasUnconfirmedRequiredConfirmations;
+  exported.checkDeadlineSchemaErrors = checkDeadlineSchemaErrors;
 }
 
 export default exported;
