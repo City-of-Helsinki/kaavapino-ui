@@ -6,6 +6,7 @@ import { isArray, isEqual, uniq, uniqBy } from 'lodash'
 import { useSelector } from 'react-redux'
 import {lockedSelector,savingSelector } from '../../selectors/projectSelector'
 import RollingInfo from '../input/RollingInfo.jsx'
+import NetworkErrorState from './NetworkErrorState.jsx'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
 
 // Label when there are more than one same option. To avoid key errors.
@@ -349,6 +350,7 @@ const SelectInput = ({
             <LoadingSpinner className="loading-spinner" />
           </div>
         )}
+        <NetworkErrorState fieldName={input.name} />
       </div>
     return elements
   }

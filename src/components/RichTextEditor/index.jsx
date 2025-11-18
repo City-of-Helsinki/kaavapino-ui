@@ -790,7 +790,7 @@ function RichTextEditor(props) {
       ) : null}
     </div>
       {counter.current > maxSize && charLimitOver || maxSizeOver ? <div className='max-chars-error'><IconAlertCircleFill color="#B01038" aria-hidden="true"/> {t('project.charsover')}</div> : ""}
-      <NetworkErrorState />
+      <NetworkErrorState fieldName={inputProps.name} />
     </div>
     
     return elements

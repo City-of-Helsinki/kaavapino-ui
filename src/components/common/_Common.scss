@@ -207,9 +207,26 @@ ul {
       letter-spacing: 0;
       color: $black1;
       padding-bottom: $size5;
+      padding-right: $size2;
+      /* Target the icon inside HDS tooltip button */
+      [class^="Tooltip-module_button"] svg {
+        display: none; /* hide the default question-mark icon */
+      }
+
+      /* Add your clock icon as background */
+      [class^="Tooltip-module_button"]::before {
+        content: "";
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        background-color: currentColor;
+        mask: url("../../assets/icons/clock.svg") no-repeat center / contain;
+        -webkit-mask: url("../../assets/icons/clock.svg") no-repeat center / contain;
+        padding-right: $size2;
+      }
       svg {
-        width: 0.833rem;
-        height: 0.833rem;
+        width: 1rem;
+        height: 1rem;
       }
       .spinner-container{
         width: 0.833rem;
@@ -222,6 +239,9 @@ ul {
           width: 100%;
           height: 100%;
         }
+      }
+      .input-history{
+        color: #1A1A1A;
       }
     }
     .time-container{

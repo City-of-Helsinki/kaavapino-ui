@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { RadioButton, Button, IconPlus, LoadingSpinner } from 'hds-react'
 import RollingInfo from '../input/RollingInfo.jsx'
+import NetworkErrorState from './NetworkErrorState.jsx'
 import { useSelector } from 'react-redux'
 import { savingSelector } from '../../selectors/projectSelector'
 import { useTranslation } from 'react-i18next'
@@ -111,6 +112,7 @@ const RadioBooleanButton = ({
             <LoadingSpinner className="loading-spinner" />
           </div>
         )}
+        <NetworkErrorState fieldName={name} />
       </div>
   }
   

@@ -1,11 +1,18 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { projectNetworkSelector,lastSavedSelector } from '../../selectors/projectSelector';
-import { Dialog, Button, Notification, IconCheckCircle } from 'hds-react';
+import { Dialog, Button, Notification, IconAlertCircle } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 import './NetworkErrorState.scss';
+import PropTypes from 'prop-types';
 
-export default function NetworkErrorState() {
+export default function NetworkErrorState({ fieldName }) {
+  if (typeof window !== 'undefined' && !window.__clearedIsRelevantField) {
+      try {
+          localStorage.removeItem('isRelevantField');
+      } catch (e) {}
+      window.__clearedIsRelevantField = true;
+  }
   const network = useSelector(projectNetworkSelector);
   const lastSaved = useSelector(state => lastSavedSelector(state))
   const dispatch = useDispatch();
@@ -88,6 +95,26 @@ export default function NetworkErrorState() {
     }
   }, [hasError, showWarning]);
 
+  // Limit visibility to fields present in lastSaved.fields when error/success
+  const savedFields = Array.isArray(lastSaved?.fields) ? lastSaved.fields : [];
+  const storedFieldName = localStorage.getItem('isRelevantField') || null;
+  const isRelevantField = fieldName ? savedFields.includes(fieldName) : false;
+  const storedRelevant = fieldName ? storedFieldName === fieldName : false;
+
+  useEffect(() => {
+    if (hasError && !storedFieldName && isRelevantField) {
+        try {
+          localStorage.setItem('isRelevantField', fieldName);
+        } catch (e) {}
+    }
+  }, [hasError, storedFieldName, isRelevantField, fieldName]);
+  
+  const showNotifications = showWarning && (isRelevantField || storedRelevant) && (hasError || isSuccess);
+
+  if (!showNotifications) {
+      return null;
+  }
+
   return (
     <div className="network-error-state" aria-live="polite" aria-atomic="true">
       {banner && (
@@ -139,21 +166,21 @@ export default function NetworkErrorState() {
         >
           <Dialog.Header
             id="network-warning-close-confirm-title"
-            iconLeft={<IconCheckCircle aria-hidden />}
-          >
-            {t('messages.close-notification-question')}
-          </Dialog.Header>
+            iconLeft={<IconAlertCircle aria-hidden />}
+            title={t('messages.close-notification-question')}
+          />
           <Dialog.Content>
             <p>{t('messages.close-notification-warning')}</p>
           </Dialog.Content>
           <Dialog.ActionButtons>
-            <Button onClick={() => setConfirmOpen(false)} variant="secondary">
+            <Button onClick={() => setConfirmOpen(false)} variant="secondary" className='red'>
               {t('messages.cancel-button-text')}
             </Button>
             <Button
               onClick={() => {
                 setConfirmOpen(false);
                 setShowWarning(false);
+                localStorage.removeItem('isRelevantField');
                 dispatch({ type: 'Set network status', payload: { status: 'ok', okMessage: '', errorMessage: '' } });
               }}
               variant="danger"
@@ -165,4 +192,8 @@ export default function NetworkErrorState() {
       )}
     </div>
   );
+}
+
+NetworkErrorState.propTypes = {
+	fieldName: PropTypes.string
 }

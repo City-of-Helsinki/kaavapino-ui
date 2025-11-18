@@ -8,6 +8,7 @@ import {lockedSelector,lastModifiedSelector,pollSelector,lastSavedSelector,savin
 import moment from 'moment'
 import { useTranslation } from 'react-i18next'
 import RollingInfo from '../input/RollingInfo.jsx'
+import NetworkErrorState from './NetworkErrorState.jsx'
 import {useFocus} from '../../hooks/useRefFocus'
 import { useIsMount } from '../../hooks/IsMounted'
 import './Input.scss'
@@ -390,6 +391,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           onFocus={() => { handleFocus() }}
           readOnly={readonly.read || lastSaved?.status === "error"}
         />
+        <NetworkErrorState fieldName={input.name} />
         {saving && isInstanceSaving && (
           <>
             {custom.type === "date" ? (

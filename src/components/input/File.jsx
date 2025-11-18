@@ -10,6 +10,7 @@ import { withTranslation } from 'react-i18next'
 import { Button, IconDownload, IconCrossCircle, IconUpload } from 'hds-react'
 import infoBothDir from '../../assets/icons/Infobothdir.svg'
 import PropTypes from 'prop-types'
+import NetworkErrorState from './NetworkErrorState.jsx'
 
 class File extends Component {
   constructor(props) {
@@ -255,6 +256,7 @@ class File extends Component {
           </>
         }
         </div>
+        <NetworkErrorState fieldName={field.name} />
       </div>
     )
   }

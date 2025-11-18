@@ -7,6 +7,7 @@ import { useSelector,useDispatch } from 'react-redux'
 import { savingSelector } from '../../selectors/projectSelector'
 import { useTranslation } from 'react-i18next';
 import RollingInfo from '../input/RollingInfo.jsx'
+import NetworkErrorState from './NetworkErrorState.jsx'
 import { useIsMount } from '../../hooks/IsMounted'
 import {formErrorList} from '../../actions/projectActions'
 
@@ -128,6 +129,7 @@ const Link = props => {
         phaseIsClosed={props.phaseIsClosed}
       />
       :    
+      <>
       <div className="link-container">
         <div className="link-input-wrapper">
         <TextInput
@@ -166,7 +168,8 @@ const Link = props => {
         <div className="error-text">{t('project.link-is-broken')}</div>
         )}
       </div>
-
+      <NetworkErrorState fieldName={props.input.name} />
+      </>
     return elements
   }
 

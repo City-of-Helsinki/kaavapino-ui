@@ -1,13 +1,13 @@
 import React, {useCallback,useState} from 'react'
 import CustomField from './CustomField.jsx'
 import Matrix from './Matrix'
-import { Form, Label, Popup } from 'semantic-ui-react'
+import { Form, Label } from 'semantic-ui-react'
 import Info from './Info.jsx'
 import projectUtils from '../../utils/projectUtils'
 import timeUtil from '../../utils/timeUtil'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
-import { IconClock,IconLock,LoadingSpinner } from 'hds-react'
+import { IconLock,LoadingSpinner, Tooltip } from 'hds-react'
 import { useSelector } from 'react-redux'
 import { savingSelector } from '../../selectors/projectSelector'
 import { withTranslation } from 'react-i18next'
@@ -301,22 +301,17 @@ const FormField = ({
                     </div>
                   ) : (
                     updated && (
-                      <Popup
-                        trigger={<IconClock />}
-                        inverted
-                        on="hover"
-                        position="top center"
-                        hideOnScroll
-                        content={
-                          <span className="input-history">
+                      <Tooltip
+                        placement="top"
+                      >
+                       <span className="input-history">
                             <span>{`${projectUtils.formatDate(
                               updated.timestamp
                             )} ${projectUtils.formatTime(updated.timestamp)} ${
                               updated.user_name
                             }`}</span>
                           </span>
-                        }
-                      />
+                      </Tooltip>
                     )
                   )}
                 </div>
