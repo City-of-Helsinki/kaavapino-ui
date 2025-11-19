@@ -538,7 +538,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
       // Check if the next lautakunta slot is false
       const nextLautakuntaKey = `${lautakuntaBase}_${latestIndex + 1}`;
-      const canAddNextLautakunta = visValRef[nextLautakuntaKey] === false;
+      const canAddNextLautakunta = !visValRef[nextLautakuntaKey]
 
       if (!lautakuntaConfirmed) {
         canAddLautakunta = false;
