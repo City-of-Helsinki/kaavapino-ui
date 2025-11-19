@@ -568,8 +568,8 @@ const getDisabledDatesForProjectStart = (name, formValues, previousItem, nextIte
 const getDisabledDatesForApproval = (name, formValues, matchingItem, dateTypes, projectSize) => {
   const miniumDaysBetween = matchingItem?.distance_from_previous;
   const dateToCompare = name.includes("hyvaksymispaatos_pvm") ? formValues["hyvaksyminenvaihe_alkaa_pvm"] : formValues["voimaantulovaihe_alkaa_pvm"];
-  const filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates, dateToCompare);
-  let newDisabledDates = dateTypes?.työpäivät?.dates;
+  const filteredDateToCompare = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompare);
+  let newDisabledDates = dateTypes?.arkipäivät?.dates;
   const lastPossibleDateToSelect = addDays("työpäivät", filteredDateToCompare, miniumDaysBetween, dateTypes?.työpäivät?.dates, true);
   //Approval dates can be same as last phases ending date when XS or S size
   if(name.includes("hyvaksymispaatos_pvm") && (projectSize === 'XS' || projectSize === 'S')){
