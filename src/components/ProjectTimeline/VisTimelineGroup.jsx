@@ -2421,7 +2421,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         <ConfirmModal
           openConfirmModal={openConfirmModal}
           headerText={"Haluatko poistaa rivin?"} 
-          contentText={"Jos poistat tämän rivin, et voi palauttaa sitä myöhemmin."} 
+          contentText={""} 
           button1Text={"Peruuta"} 
           button2Text={"Poista rivi"}
           onButtonPress1={handleCancelRemove} 
