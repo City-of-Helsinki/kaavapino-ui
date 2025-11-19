@@ -1435,6 +1435,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           return Math.round(date / hour) * hour;
         },
         onMoving: function (item, callback) {          
+          if (!item) {
+            callback(null);
+            return;
+          }
+          
           let tooltipEl = document.getElementById('moving-item-tooltip');
           if (!tooltipEl) {
             tooltipEl = document.createElement('div');
@@ -1516,6 +1521,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
           if (shouldMoveRelated) {
             const orig = snapshot.items[String(item.id)];
+            if (!orig) return;
             const baseStart = orig?.start ? orig.start.getTime() : null;
             const curStart = item?.start ? new Date(item.start).getTime() : baseStart;
 
@@ -1523,16 +1529,26 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               const deltaMs = curStart - baseStart;
 
               Object.entries(snapshot.items).forEach(([idKey, snapTimes]) => {
-                if (idKey === String(item.id)) return; // current item already moved
-                const inst = setItems[idKey] ?? setItems[Number(idKey)];
-                if (!inst || !inst.setData) return;
+                try {
+                  if (idKey === String(item.id)) return; // current item already moved
+                  const inst = setItems[idKey] ?? setItems[Number(idKey)];
+                  if (!inst || !inst.setData || !inst.data) return;
 
-                const newData = { ...inst.data };
-                if (snapTimes.start) newData.start = new Date(snapTimes.start.getTime() + deltaMs);
-                if (snapTimes.end)   newData.end   = new Date(snapTimes.end.getTime() + deltaMs);
+                  const newData = { ...inst.data };
+                  if (snapTimes && snapTimes.start) newData.start = new Date(snapTimes.start.getTime() + deltaMs);
+                  if (snapTimes && snapTimes.end) newData.end = new Date(snapTimes.end.getTime() + deltaMs);
 
-                inst.setData(newData);
-                if (inst.repositionX) inst.repositionX();
+                  inst.setData(newData);
+                  if (inst.repositionX) {
+                    try {
+                      inst.repositionX();
+                    } catch (e) {
+                      // Silently ignore repositionX errors and prevent breaking timeline element structure visually
+                    }
+                  }
+                } catch (e) {
+                  // Silently ignore timeline library errors
+                }
               });
             }
           }

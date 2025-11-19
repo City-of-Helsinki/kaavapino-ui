@@ -852,6 +852,9 @@
 
     .vis-range{
         border-color: $black1;
+        // Disable any mouse interaction / grabbing for timeline ranges
+        pointer-events: none !important;
+        cursor: default !important;
         &.confirmed::after {
             content: "";
             position: absolute;
