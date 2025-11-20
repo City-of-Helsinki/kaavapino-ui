@@ -58,8 +58,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [dataToRemove, setDataToRemove] = useState({});
     const [timelineAddButton, setTimelineAddButton] = useState();
     //const [lock, setLock] = useState({group:false,id:false,locked:false,abbreviation:false});
-  // Track whether weekend alignment shift has been applied (3-month view only)
-  const weekendShiftAppliedRef = useRef(false);
+    // Track whether weekend alignment shift has been applied (3-month view only)
+    const weekendShiftAppliedRef = useRef(false);
 
     const { showTooltip, hideTooltip } = useTimelineTooltip();
 
@@ -97,7 +97,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     useEffect(() => {
       itemsPhaseDatesOnlyRef.current = itemsPhaseDatesOnly;
     }, [itemsPhaseDatesOnly]);
-
 
     const preventDefaultAndStopPropagation = (event) => {
       event.preventDefault();
@@ -549,7 +548,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
       // Check if the next lautakunta slot is false
       const nextLautakuntaKey = `${lautakuntaBase}_${latestIndex + 1}`;
-      const canAddNextLautakunta = visValRef[nextLautakuntaKey] === false;
+      const canAddNextLautakunta = !visValRef[nextLautakuntaKey]
 
       if (!lautakuntaConfirmed) {
         canAddLautakunta = false;
