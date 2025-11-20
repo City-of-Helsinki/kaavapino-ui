@@ -48,8 +48,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [dataToRemove, setDataToRemove] = useState({});
     const [timelineAddButton, setTimelineAddButton] = useState();
     //const [lock, setLock] = useState({group:false,id:false,locked:false,abbreviation:false});
-  // Track whether weekend alignment shift has been applied (3-month view only)
-  const weekendShiftAppliedRef = useRef(false);
+    // Track whether weekend alignment shift has been applied (3-month view only)
+    const weekendShiftAppliedRef = useRef(false);
 
     const { showTooltip, hideTooltip } = useTimelineTooltip();
 
@@ -82,7 +82,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         });
       }
     };
-
 
     const groupDragged = (id) => {
       console.log('onChange:', id)
