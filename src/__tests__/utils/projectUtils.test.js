@@ -339,6 +339,46 @@ describe('test projectUtils utility functions', () => {
     const result4 = projectUtils.hasUnconfirmedRequiredConfirmations(test_attribute_data, test_schema);
     expect(result4).toBe(false);
   });
+  test("getField returns correct field from sections", () => {
+    const sections = [
+        {
+          name: "Section 1",
+          fields: [
+            { name: "field1", value: "some value" },
+            { name: "field2", value: "another value" },
+            { name: "field3", value: "more value" },
+            { name: "field4", value: "different value" },
+          ]
+        },
+      ];
+
+    const field = projectUtils.getField("field2", sections);
+    expect(field).toEqual({ name: "field2", value: "another value" });
+    expect(projectUtils.getField("field5", sections)).toBeNull();
+  });
+
+  test("getField returns correct field from fieldsets", () => {
+    const sections = [
+        {
+          name: "Section 1",
+          fields: [
+            { name: "field1", value: "some value" },
+            { name: "field2", value: "another value" },
+            { name: "fieldset1", type: "fieldset", fieldset_attributes: [
+              { name: "fieldset_item1", value: "fieldset value 1" },
+              { name: "fieldset_item2", value: "fieldset value 2" }
+            ]},
+            { name: "deep_fieldset", type: "fieldset", fieldset_attributes: [
+              { name: "nested_fieldset", type: "fieldset", fieldset_attributes: [
+                { name: "deep_item", value: "deep value" }
+              ]}
+            ]}
+          ]
+        },
+      ];
+    expect(projectUtils.getField("fieldset_item2", sections)).toEqual({ name: "fieldset_item2", value: "fieldset value 2" });
+    expect(projectUtils.getField("deep_item", sections)).toEqual({ name: "deep_item", value: "deep value" });
+  });
 });
 
 
@@ -727,7 +767,7 @@ describe("projectUtils.checkErrors checks for erroneous fields correctly", () =>
   });
 });
 
-describe.skip("projectUtils.getErrorFields returns correct error fields", () => {
+describe("projectUtils.getErrorFields returns correct error fields", () => {
   const SCHEMA_TEMPLATE = {
     id: 123,
     title: "Käynnistys",
@@ -754,10 +794,10 @@ describe.skip("projectUtils.getErrorFields returns correct error fields", () => 
     ];
     const result = projectUtils.getErrorFields(true, test_attribute_data, test_schema, TEST_PROJECT.phase);
     expect(result.length).toBe(1);
-    expect(result[0]).toEqual({ errorField: "Mandatory Field 1", errorSection: "Section 1", fieldAnchorKey: "mandatory_field1" });
+    expect(result[0]).toEqual({ errorField: "Mandatory Field 1", errorSection: "Section 1", fieldAnchorKey: "mandatory_field1", title: "Tämä näkymä" });
     // Checkdocuments can be false if schema.sections is provided
     const result2 = projectUtils.getErrorFields(false, test_attribute_data, test_schema, TEST_PROJECT.phase);
     expect(result2.length).toBe(1);
-    expect(result2[0]).toEqual({ errorField: "Mandatory Field 1", errorSection: "Section 1", fieldAnchorKey: "mandatory_field1" });
+    expect(result2[0]).toEqual({ errorField: "Mandatory Field 1", errorSection: "Section 1", fieldAnchorKey: "mandatory_field1", title: "Tämä näkymä" });
   });
 });
