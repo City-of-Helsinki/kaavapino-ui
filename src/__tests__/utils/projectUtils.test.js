@@ -379,6 +379,54 @@ describe('test projectUtils utility functions', () => {
     expect(projectUtils.getField("fieldset_item2", sections)).toEqual({ name: "fieldset_item2", value: "fieldset value 2" });
     expect(projectUtils.getField("deep_item", sections)).toEqual({ name: "deep_item", value: "deep value" });
   });
+
+  test("objectsEqual compares two shallow objects correctly", () => {
+    const obj1 = { a: 1, b: 2, c: 3 };
+    const obj2 = { a: 1, b: 2, c: 3 };
+    const obj3 = { a: 1, b: 2, c: 4 };
+    expect(projectUtils.objectsEqual(obj1, obj2)).toBe(true);
+    expect(projectUtils.objectsEqual(obj1, obj3)).toBe(false);
+  });
+
+  test("diffArray finds differences between two arrays", () => {
+    const arr1 = [1, 2, 3, 4];
+    const arr2 = [3, 4, 5, 6];
+    const diff = projectUtils.diffArray(arr1, arr2);
+    expect(diff).toEqual([1, 2, 5, 6]);
+  });
+  
+  test("getMissingGeoData returns missing or updated geoData entries", () => {
+
+    const attData = { a: 1 };
+    const geoData = { a: 1, b: 2, c: "3.5" };
+    expect(projectUtils.getMissingGeoData(attData, geoData),
+    "getMissingGeoData returns missing keys from geoData if not present in attData").toEqual({ b: 2, c: "3.5" });
+
+    const attData2 = { a: 1, b: 0, c: "0.0" };
+    const geoData2 = { a: 1, b: 5, c: "4.2" };
+    expect(projectUtils.getMissingGeoData(attData2, geoData2),
+    "getMissingGeoData returns updated values from geoData if different and truthy").toEqual({ b: 5, c: "4.2" });
+
+    const attData3 = { a: 1 };
+    const geoData3 = { a: 1, b: "0.0" };
+    expect(projectUtils.getMissingGeoData(attData3, geoData3), 
+    "getMissingGeodata returns 0.0 from geodata if no value is saved in attribute_data").toEqual({"b": "0.0"});
+
+    const attData4 = { a: 1};
+    const geoData4 = { a: 2.5 };
+    expect(projectUtils.getMissingGeoData(attData4, geoData4),
+    "getMissingGeoData overwrites existing attData values with geoData values").toEqual({ a: 2.5 });
+
+    // Case: geoData value is falsy (should not include)
+    const attData5 = { a: 1, b:2, c:3, d:4, e:5 };
+    const geoData5 = { a: 1, b: 0, c: null, d: undefined, e: "" };
+    expect(projectUtils.getMissingGeoData(attData5, geoData5)).toEqual({});
+
+    // Case: attData has same value as geoData, should not include
+    const attData6 = { a: 1, b: 2 };
+    const geoData6 = { a: 1, b: 2 };
+    expect(projectUtils.getMissingGeoData(attData6, geoData6)).toEqual({});
+  });
 });
 
 
