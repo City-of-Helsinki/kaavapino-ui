@@ -2,12 +2,13 @@ import React, { useState, useRef, useEffect } from 'react'
 import { connect, useDispatch } from 'react-redux'
 import { checkingSelector, savingSelector, formErrorListSelector, lastSavedSelector, updateFieldSelector} from '../../selectors/projectSelector'
 import CustomField from './CustomField.jsx'
-import { Form, Label, Popup } from 'semantic-ui-react'
+import NetworkErrorState from './NetworkErrorState.jsx'
+import { Form, Label } from 'semantic-ui-react'
 import projectUtils from '../../utils/projectUtils'
 import Info from './Info.jsx'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { has, get, startCase } from 'lodash'
-import { Button, IconLock, IconClock, IconPlus, IconTrash, IconAngleDown, IconAngleUp, LoadingSpinner } from 'hds-react'
+import { Button, IconLock, IconPlus, IconTrash, IconAngleDown, IconAngleUp, LoadingSpinner, Tooltip } from 'hds-react'
 import { change } from 'redux-form'
 import { useTranslation } from 'react-i18next';
 import { OutsideClick } from '../../hooks/OutsideClick'
@@ -336,21 +337,32 @@ const FieldSet = ({
                           </Label>
                           <div className="input-header-icons">
                             {fieldUpdated && !isReadOnly && (
-                              <Popup
-                                trigger={<IconClock />}
-                                inverted
-                                on="hover"
-                                position="top center"
-                                hideOnScroll
-                                content={
-                                  <span className="input-history">
-                                    <span>{`${projectUtils.formatDate(
-                                      updated.timestamp
-                                    )} ${projectUtils.formatTime(updated.timestamp)} ${updated.user_name
-                                      }`}</span>
-                                  </span>
-                                }
-                              />
+                              <>
+                                <div className='popup-container'>
+                                  {savingField === field.name ? (
+                                    <div className='spinner-container'>
+                                      <LoadingSpinner className='loading-spinner' small />
+                                    </div>
+                                  ) : (
+                                    updated && (
+                                      <Tooltip
+                                        placement="top"
+                                      >
+                                      <span className="input-history">
+                                            <span>{`${projectUtils.formatDate(
+                                              updated.timestamp
+                                            )} ${projectUtils.formatTime(updated.timestamp)} ${
+                                              updated.user_name
+                                            }`}</span>
+                                          </span>
+                                      </Tooltip>
+                                    )
+                                  )}
+                                </div>
+                                {updated && (
+                                  <div className='time-container'>{`${timeUtil.formatRelativeDate(updated.timestamp, t)} ${projectUtils.formatTime(updated.timestamp)}`}</div>
+                                )}
+                              </>
                             )}
                             {field.help_text && (
                               <Info content={field.help_text} link={field.help_link} linked={field.linked_fields} help_img_link={field.help_img_link}/>

@@ -19,7 +19,7 @@ import {
 import { currentProjectIdSelector,savingSelector,lockedSelector, lastModifiedSelector, pollSelector,lastSavedSelector } from '../../selectors/projectSelector'
 import commentIcon from '@/assets/icons/comment-icon.svg';
 import { useTranslation } from 'react-i18next'
-import {IconAlertCircleFill,LoadingSpinner} from 'hds-react'
+import {IconAlertCircleFill} from 'hds-react'
 import RollingInfo from '../input/RollingInfo.jsx'
 import NetworkErrorState from '../input/NetworkErrorState.jsx'
 import { useIsMount } from '../../hooks/IsMounted'
@@ -102,7 +102,6 @@ function RichTextEditor(props) {
   const projectId = useSelector(currentProjectIdSelector)
   const connection = useSelector(state => pollSelector(state))
   const lastSaved = useSelector(state => lastSavedSelector(state))
-  const [isInstanceSaving, setIsInstanceSaving] = useState(false);
 
   const [showComments, setShowComments] = useState(false)
   const [toolbarVisible, setToolbarVisible] = useState(false)
@@ -323,11 +322,7 @@ function RichTextEditor(props) {
 
   }, [lockedStatusJsonString, connection.connection, inputProps.name])
 
-  useEffect(() => {
-    if (!saving && isInstanceSaving) {
-      setIsInstanceSaving(false);
-    }
-  }, [saving]);
+
 
   const checkClickedElement = (e) => {
     let previousElement = localStorage.getItem("previousElement")
@@ -495,7 +490,6 @@ function RichTextEditor(props) {
             if (editorEmpty) {
               editor = null
             }
-            setIsInstanceSaving(true);
             onBlur();
             oldValueRef.current = editor?.ops;
           }
@@ -722,11 +716,6 @@ function RichTextEditor(props) {
             </button>
           </span>
         </div>
-        {saving && isInstanceSaving && (
-          <div className="quill-spinner-overlay">
-            <LoadingSpinner className="loading-spinner" />
-          </div>
-        )}
         <ReactQuill
           tabIndex="0"
           id={toolbarName + "input"}

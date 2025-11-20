@@ -66,13 +66,12 @@ const FormField = ({
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
-  const saving = useSelector(state => savingSelector(state))
+  const savingField = useSelector(state => state.project.savingField)
   const handleBlurSave = useCallback(() => {
     if (typeof handleSave === 'function') {
-      handleSave()
+      handleSave(field.name)
     }
-  }, []);
-
+  }, [field.name, handleSave]);
   const lockField = (lockStyle,owner,identifier) => {
     let fieldName = identifier;
     let fieldSetId = "";
@@ -295,7 +294,7 @@ const FormField = ({
             {!isReadOnly && (
               <>
                 <div className='popup-container'>
-                  {saving ? (
+                  {savingField === field.name ? (
                     <div className='spinner-container'>
                       <LoadingSpinner className='loading-spinner' small />
                     </div>

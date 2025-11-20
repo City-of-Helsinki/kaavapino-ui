@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
-import { TextInput, LoadingSpinner } from 'hds-react'
+import { TextInput } from 'hds-react'
 import { useDispatch, useSelector } from 'react-redux'
 import {updateFloorValues,formErrorList} from '../../actions/projectActions'
 import {lockedSelector,lastModifiedSelector,pollSelector,lastSavedSelector,savingSelector } from '../../selectors/projectSelector'
@@ -40,7 +40,6 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   const [hasError,setHasError] = useState(false)
   const [editField,setEditField] = useState(false)
   const [hadFocusBeforeTabOut, setHadFocusBeforeTabOut] = useState(false)
-  const [isInstanceSaving, setIsInstanceSaving] = useState(false);
 
   const lastModified = useSelector(state => lastModifiedSelector(state))
   const lockedStatus = useSelector(state => lockedSelector(state))
@@ -232,14 +231,12 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
               dateOk = true
             }
             if(dateOk){
-              setIsInstanceSaving(true);
               localStorage.setItem("changedValues", input.name);
               custom.onBlur(input.name);
               oldValueRef.current = event.target.value;
             }
           }
           else{
-            setIsInstanceSaving(true);
             localStorage.setItem("changedValues", input.name);
             custom.onBlur(input.name);
             if(!custom.insideFieldset){
@@ -331,11 +328,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     }
   }, [input.name, input.value]);
 
-  useEffect(() => {
-    if (!saving && isInstanceSaving) {
-      setIsInstanceSaving(false);
-    }
-  }, [saving]);
+
 
   const editRollingField = () => {
     setEditField(true)
@@ -392,19 +385,6 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           readOnly={readonly.read || lastSaved?.status === "error"}
         />
         <NetworkErrorState fieldName={input.name} />
-        {saving && isInstanceSaving && (
-          <>
-            {custom.type === "date" ? (
-              <div className="input-spinner-datetime">
-                <LoadingSpinner className="loading-spinner" />
-              </div>
-            ) : (
-              <div className="input-spinner">
-                <LoadingSpinner className="loading-spinner" />
-              </div>
-            )}
-          </>
-        )}
       </div>
     );
   };

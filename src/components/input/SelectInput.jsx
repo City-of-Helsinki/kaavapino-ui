@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
-import { Select, LoadingSpinner } from 'hds-react'
+import { Select } from 'hds-react'
 import { isArray, isEqual, uniq, uniqBy } from 'lodash'
 import { useSelector } from 'react-redux'
 import {lockedSelector,savingSelector } from '../../selectors/projectSelector'
@@ -43,7 +43,6 @@ const SelectInput = ({
   const [readonly, setReadOnly] = useState(false)
   const [fieldName, setFieldName] = useState("")
   const [editField,setEditField] = useState(false)
-  const [isInstanceSaving, setIsInstanceSaving] = useState(false);
   const saving =  useSelector(state => savingSelector(state))
 
   useEffect(() => {
@@ -119,12 +118,7 @@ const SelectInput = ({
       }
     }
   }, [lockedStatusJsonString]);
-
-  useEffect(() => {
-    if (!saving && isInstanceSaving) {
-      setIsInstanceSaving(false);
-    }
-  }, [saving]);
+  
 
   useEffect(() => {
     oldValueRef.current = input.value;
@@ -343,12 +337,6 @@ const SelectInput = ({
             }
           }}
         />
-        )}
-
-        {saving && isInstanceSaving && (
-          <div className={`select-spinner-overlay ${multiple ? 'multi' : 'single'}`}>
-            <LoadingSpinner className="loading-spinner" />
-          </div>
         )}
         <NetworkErrorState fieldName={input.name} />
       </div>

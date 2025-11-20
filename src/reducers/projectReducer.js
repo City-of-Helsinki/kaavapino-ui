@@ -93,7 +93,8 @@ import {
   UPDATE_PROJECT_FAILURE,
   UPDATE_ATTRIBUTE,
   SAVE_PROJECT_TIMETABLE_FAILED,
-  VALIDATING_TIMETABLE
+  VALIDATING_TIMETABLE,
+  SET_SAVING_FIELD
 } from '../actions/projectActions'
 
 import timeUtil from '../utils/timeUtil'
@@ -115,6 +116,7 @@ export const initialState = {
   currentProject: null,
   currentProjectLoaded: false,
   saving: false,
+  savingField: null,
   changingPhase: false,
   validating: false,
   hasErrors: false,
@@ -151,7 +153,8 @@ export const initialState = {
   validated:false,
   cancelTimetableSave:false,
   validatingTimetable: {started: false, ended: false},
-  network: { status: 'ok', hasError: false, errorMessage: '', okMessage: '', tempFieldContents: '' }
+  network: { status: 'ok', hasError: false, errorMessage: '', okMessage: '', tempFieldContents: '' },
+  savingField: null
 }
 
 export const reducer = (state = initialState, action) => {
@@ -187,6 +190,13 @@ export const reducer = (state = initialState, action) => {
     			tempFieldContents: state.network.tempFieldContents // keep last cached text until component discards
     		}
     	}
+    }
+
+    case SET_SAVING_FIELD: {
+      return {
+        ...state,
+        savingField: action.payload
+      }
     }
 
     case UPDATE_ATTRIBUTE: {

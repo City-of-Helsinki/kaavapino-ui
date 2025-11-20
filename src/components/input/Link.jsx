@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { TextInput } from 'hds-react'
 import isUrl from 'is-url'
 import ipRegex from 'ip-regex'
-import { IconCross, IconCheck, Button, IconLink, LoadingSpinner } from 'hds-react'
+import { IconCross, IconCheck, Button, IconLink } from 'hds-react'
 import { useSelector,useDispatch } from 'react-redux'
 import { savingSelector } from '../../selectors/projectSelector'
 import { useTranslation } from 'react-i18next';
@@ -53,7 +53,6 @@ const Link = props => {
 
   const [currentValue, setCurrentValue] = useState(props.input.value)
   const [editField,setEditField] = useState(false)
-  const [isInstanceSaving, setIsInstanceSaving] = useState(false);
   const saving =  useSelector(state => savingSelector(state))
   const isValid = value => isUrl(value) || ipRegex({ exact: true }).test(value) || value === "" 
 
@@ -67,11 +66,7 @@ const Link = props => {
     oldValueRef.current = props.input.value;
   }, [])
 
-  useEffect(() => {
-  if (!saving && isInstanceSaving) {
-    setIsInstanceSaving(false);
-  }
-  }, [saving]);
+
 
   useEffect(() => {
     if(!isMount){
@@ -142,11 +137,6 @@ const Link = props => {
           className={(!isLinkValid && currentValue && !multipleLinks) ? 'error link' : 'link'}
           aria-label="link"
         />
-        {saving && isInstanceSaving && (
-          <div className="link-spinner-overlay">
-            <LoadingSpinner className="loading-spinner" />
-          </div>
-        )}
         </div>
         {!multipleLinks && (
         <Button

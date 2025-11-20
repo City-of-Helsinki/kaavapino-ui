@@ -73,6 +73,7 @@ import {
   saveProjectTimetableFailed,
   SAVE_PROJECT,
   saveProjectSuccessful,
+  setSavingField,
   CHANGE_PROJECT_PHASE,
   changeProjectPhaseSuccessful,
   changeProjectPhaseFailure,
@@ -1056,8 +1057,12 @@ function addListingInfo(deltaOps) {
 }
 
 function* saveProject(data) {
-  const {fileOrimgSave,insideFieldset,fieldsetData,fieldsetPath} = data.payload
-
+  const {fileOrimgSave,insideFieldset,fieldsetData,fieldsetPath,fieldName} = data.payload
+  // Set saving state with field name from action payload
+  if (fieldName) {
+    yield put(setSavingField(fieldName))
+  }
+  
   const currentProjectId = yield select(currentProjectIdSelector)
   const editForm = yield select(editFormSelector) || {}
   const visibleErrors = yield select(formErrorListSelector)
@@ -1116,6 +1121,7 @@ function* saveProject(data) {
           ':id/'
         )
         yield put(updateProject(updatedProject))
+        yield put(setSavingField(null))
         yield put(setAllEditFields())
 
         // Set connection poll status to true after recovering from error
@@ -1143,6 +1149,8 @@ function* saveProject(data) {
         } else {
           yield put(setLastSaved("error",time,Object.keys(attribute_data),Object.values(attribute_data),false))
         }
+        // Clear saving field on error
+        yield put(setSavingField(null))
         const isNetworkErr = e?.code === 'ERR_NETWORK'
         const statusCode = e?.response?.status
         if (isNetworkErr || !statusCode || statusCode >= 500) {
