@@ -48,8 +48,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [dataToRemove, setDataToRemove] = useState({});
     const [timelineAddButton, setTimelineAddButton] = useState();
     //const [lock, setLock] = useState({group:false,id:false,locked:false,abbreviation:false});
-  // Track whether weekend alignment shift has been applied (3-month view only)
-  const weekendShiftAppliedRef = useRef(false);
+    // Track whether weekend alignment shift has been applied (3-month view only)
+    const weekendShiftAppliedRef = useRef(false);
 
     const { showTooltip, hideTooltip } = useTimelineTooltip();
 
@@ -82,7 +82,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         });
       }
     };
-
 
     const groupDragged = (id) => {
       console.log('onChange:', id)
@@ -538,7 +537,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
       // Check if the next lautakunta slot is false
       const nextLautakuntaKey = `${lautakuntaBase}_${latestIndex + 1}`;
-      const canAddNextLautakunta = visValRef[nextLautakuntaKey] === false;
+      const canAddNextLautakunta = !visValRef[nextLautakuntaKey]
 
       if (!lautakuntaConfirmed) {
         canAddLautakunta = false;
@@ -587,6 +586,16 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         canAddEsillaolo = false;
         nextEsillaoloClean = false;
         esillaoloReason = "Vahvistusta ei voi perua, koska seuraava lautakunta on jo lisätty."
+      }
+      // Allow re-adding first deleted Lautakunta for Ehdotus XL
+      if (
+          phase === "ehdotus" &&
+          projectSize === "XL" &&
+          visValRef["kaavaehdotus_lautakuntaan_1"] === false
+      ) {
+          canAddLautakunta = true;
+          nextLautakuntaClean = "kaavaehdotus_lautakuntaan_1";
+          lautakuntaReason = "";
       }
       return [
         canAddEsillaolo,
@@ -1629,8 +1638,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                   removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-confirmed')}</div>`;
                 }
               } else if (isFirst) {
-                if(group?.nestedInGroup !== "Periaatteet" && group?.nestedInGroup !== "Luonnos"){
-                  remove.classList.add("button-disabled");
+                const isEhdotusXL = group?.nestedInGroup === "Ehdotus" && visValuesRef.current?.kaavaprosessin_kokoluokka === "XL";
+                const isLautakunta = label.innerHTML.includes("Lautakunta");
+                if (
+                    group?.nestedInGroup !== "Periaatteet" &&
+                    group?.nestedInGroup !== "Luonnos" &&
+                    !(isEhdotusXL && isLautakunta)
+                ) {
+                    remove.classList.add("button-disabled");
                 }
                 if (label.innerHTML.includes("Esilläolo")) {
                   removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-first-esillaolo')}</div>`;

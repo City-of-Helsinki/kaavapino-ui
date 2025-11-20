@@ -269,11 +269,11 @@ export default function QuickNav({
       }
     }
 
-    const value = !hasMissingFields('changeCurrentPhase')
-    setHasErrors(value)
+    const missing = hasMissingFields('changeCurrentPhase')
+    setHasErrors(missing)
     setValidationOk(true)
     const returnedErrorFields = handleCheck(documentsDownloaded,"closephase") || []
-    setAllowPhaseClose(documentsDownloaded && value && returnedErrorFields.length === 0)
+    setAllowPhaseClose(documentsDownloaded && !missing && returnedErrorFields.length === 0)
   }
 
   const phaseCallback = currentChange => {
