@@ -598,8 +598,8 @@ const getDisabledDatesForProjectStart = (name, formValues, previousItem, nextIte
 const getDisabledDatesForApproval = (name, formValues, matchingItem, dateTypes, projectSize) => {
   const miniumDaysBetween = matchingItem?.distance_from_previous;
   const dateToCompare = name.includes("hyvaksymispaatos_pvm") ? formValues["hyvaksyminenvaihe_alkaa_pvm"] : formValues["voimaantulovaihe_alkaa_pvm"];
-  const filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates, dateToCompare);
-  let newDisabledDates = dateTypes?.työpäivät?.dates;
+  const filteredDateToCompare = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompare);
+  let newDisabledDates = dateTypes?.arkipäivät?.dates;
   const lastPossibleDateToSelect = addDays("työpäivät", filteredDateToCompare, miniumDaysBetween, dateTypes?.työpäivät?.dates, true);
   //Approval dates can be same as last phases ending date when XS or S size
   if(name.includes("hyvaksymispaatos_pvm") && (projectSize === 'XS' || projectSize === 'S')){
@@ -743,6 +743,7 @@ const getDisabledDatesForNahtavillaolo = (name, formValues, phaseName, matchingI
   }
 };
 
+// Note: despite the name, this function returns allowed dates, not disabled ones
 const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues, sectionAttributes, currentDeadline) => {
   const matchingItem = objectUtil.findMatchingName(sectionAttributes, name, "name");
   const previousItem = objectUtil.findItem(sectionAttributes, name, "name", -1);
@@ -753,6 +754,7 @@ const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues
       allowedDates = getDisabledDatesForProjectStart(name, formValues, previousItem, nextItem, dateTypes);
   } else if (["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauenut"].includes(name)) {
       allowedDates = getDisabledDatesForApproval(name, formValues, matchingItem, dateTypes, size);
+      return allowedDates; // Skip filtering past dates for approval dates
   } else if (name === "hyvaksymispaatos_valitusaika_paattyy" || name === "valitusaika_paattyy_hallinto_oikeus") {
       allowedDates = dateTypes?.arkipäivät?.dates;
   } else if (currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')) {

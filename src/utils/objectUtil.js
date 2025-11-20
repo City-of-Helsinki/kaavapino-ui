@@ -600,6 +600,12 @@ const exported = {
 
 if (process.env.UNIT_TEST === "true"){
   exported.getNumberFromString = getNumberFromString
+  exported.increasePhaseValues = increasePhaseValues
+  exported.sortPhaseData = sortPhaseData
+  exported.reverseIterateArray = reverseIterateArray
+  exported.expectedOrder = order
+  exported.findDeadlineInDeadlines = findDeadlineInDeadlines
+  exported.findDeadlineInDeadlineSections = findDeadlineInDeadlineSections
 }
 
 export default exported;

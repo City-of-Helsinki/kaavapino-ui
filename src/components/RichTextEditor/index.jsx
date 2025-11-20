@@ -220,7 +220,7 @@ function RichTextEditor(props) {
 
   useEffect(() => {
     // Checks on page load and on value change if the input value character count exceeds maxSize
-    const maxSize = props.maxSize || 10000
+    const maxSize = props.maxSize || 20000
    //Get the maxSize from backend or use default
     if (value && value.ops) {
       let valueCount = 0;
@@ -397,7 +397,7 @@ function RichTextEditor(props) {
         const editorEmpty = actualDeltaText.trim().length === 0 ? true : false
         setValueIsEmpty(editorEmpty)
         //maxsize from backend or default
-        const maxSize = props.maxSize || 10000
+        const maxSize = props.maxSize || 20000
         if(counter?.current <= maxSize){
           //Set prevent save charlimit back to false and allow saving
           setCharLimitOver(false)
@@ -637,8 +637,8 @@ function RichTextEditor(props) {
       })
     }
 
-    //Default maxsize 10000
-    const maxSize = props.maxSize ? props.maxSize : 10000;
+    //Default maxsize 20000
+    const maxSize = props.maxSize ? props.maxSize : 20000;
     let RichTextClassName = "rich-text-editor"
     
     if (counter.current > maxSize) {
@@ -662,6 +662,7 @@ function RichTextEditor(props) {
       type="richtext"
       phaseIsClosed={phaseIsClosed}
       maxSizeOver={maxSizeOver}
+      attributeData={attributeData}
     />
     :    
     <div
