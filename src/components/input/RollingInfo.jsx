@@ -8,6 +8,30 @@ import ReactQuill from 'react-quill'
 import infoBothDir from '../../assets/icons/Infobothdir.svg'
 import PropTypes from 'prop-types'
 
+// Helper function to process viranomaistaho data
+const processViranomaistahoData = (attributeData) => {
+  const lines = attributeData.milta_muilta_pyydetaan_lausunto_fieldset
+    .filter(item => item && !item._deleted)
+    .map(item => {
+      const delta = item?.viranomaistahon_nimi_ehdotus
+      if(!delta || !Array.isArray(delta.ops)) return null
+      const text = delta.ops
+        .map(op => (op && typeof op.insert === 'string') ? op.insert : '')
+        .join('')
+        .split('\n') // preserve explicit line breaks inside one delta
+        .map(s => s.trim())
+        .filter(Boolean)
+      return text
+    })
+    .filter(Boolean)
+    .flat()
+  if(lines.length){
+    return {
+      ops: lines.flatMap(l => [{ insert: l }, { insert: '\n' }])
+    }
+  }
+}
+
 function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField,type,phaseIsClosed,factaInfo,maxSizeOver,attributeData}) {
   const { t } = useTranslation()
 
@@ -23,28 +47,11 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
 
   //Derive lines from milta_muilta_pyydetaan_lausunto_fieldset when special readonly field name
   if(name === 'viranomaistahon_nimi_ehdotus_readonly'
-    && attributeData
-    && Array.isArray(attributeData.milta_muilta_pyydetaan_lausunto_fieldset)
+    && Array.isArray(attributeData?.milta_muilta_pyydetaan_lausunto_fieldset)
     && attributeData.milta_muilta_pyydetaan_lausunto_fieldset.length){
-    const lines = attributeData.milta_muilta_pyydetaan_lausunto_fieldset
-      .filter(item => item && !item._deleted)
-      .map(item => {
-        const delta = item && item.viranomaistahon_nimi_ehdotus
-        if(!delta || !Array.isArray(delta.ops)) return null
-        const text = delta.ops
-          .map(op => (op && typeof op.insert === 'string') ? op.insert : '')
-          .join('')
-          .split('\n') // preserve explicit line breaks inside one delta
-          .map(s => s.trim())
-          .filter(Boolean)
-        return text
-      })
-      .filter(Boolean)
-      .flat()
-    if(lines.length){
-      inputText = {
-        ops: lines.flatMap(l => [{ insert: l }, { insert: '\n' }])
-      }
+    const processedData = processViranomaistahoData(attributeData)
+    if(processedData){
+      inputText = processedData
     }
   }
 
@@ -69,28 +76,25 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
     <>
     <div className='rolling-info-container'>
       <div className={value === "" ? "text-input-italic" : "text-input"}>
-        {type === "richtext" ?
-        <ReactQuill
-          value={
-            name === 'viranomaistahon_nimi_ehdotus_readonly'
+        {type === "richtext" ? (
+          <ReactQuill
+            value={name === 'viranomaistahon_nimi_ehdotus_readonly'
               ? (inputText || noValue)
-              : (value === "" ? noValue : value)
-          }
-          tabIndex="0"
-          theme="snow"
-          readOnly={true}
-          className="rolling-richtext"
-        />
-        :
+              : (value === "" ? noValue : value)}
+            tabIndex="0"
+            theme="snow"
+            readOnly={true}
+            className="rolling-richtext"
+          />
+        ) :
         <div className='content'>{formatInputText(inputText)}</div>
         }
       </div>
-      {nonEditable ? 
-      <></> 
-      : 
-      <Button disabled={phaseIsClosed} onClick={() => {openEdit()}} size="small" variant="supplementary" iconLeft={<IconPenLine />}>
+      {!nonEditable && (
+      <Button disabled={phaseIsClosed} onClick={openEdit} size="small" variant="supplementary" iconLeft={<IconPenLine />}>
         {modifyText}
-      </Button>}
+      </Button>
+      )}
     </div>
     {nonEditable ?
     <div className='rolling-text'>
@@ -98,24 +102,18 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
       <span>{rollingInfoText}</span>
     </div> :
     <div className='rolling-text'>
-    {value && !maxSizeOver ?
+    {value && !maxSizeOver && (
       <>
         <img alt='' aria-hidden="true" src={infoBothDir} />
         <span>{rollingInfoText}</span>
       </>
-      :
-      <>
-      </>
-    }
-    {maxSizeOver ?
+    )}
+    {maxSizeOver && (
       <div className='max-chars-error'>
         <IconAlertCircleFill color="#B01038" aria-hidden="true"/>
          {t('project.charsover')}
       </div>
-      :
-      <>
-      </>
-    }
+    )}
     </div>
     }
   </>
@@ -132,7 +130,10 @@ RollingInfo.propTypes = {
   type:PropTypes.string,
   phaseIsClosed: PropTypes.bool,
   factaInfo: PropTypes.string,
-  maxSizeOver: PropTypes.bool
+  maxSizeOver: PropTypes.bool,
+  attributeData: PropTypes.shape({
+    milta_muilta_pyydetaan_lausunto_fieldset: PropTypes.array
+  })
 }
 
 export default RollingInfo
