@@ -230,9 +230,9 @@ class ProjectEditPage extends Component {
     }
   }
 
-  handleSave = () => {
+  handleSave = (fieldName) => {
     const projectName = this.props.currentProject.name;
-    this.props.saveProject()
+    this.props.saveProject(false, false, null, null, fieldName)
     this.props.unlockAllFields(projectName)
   }
 

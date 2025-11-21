@@ -3,7 +3,7 @@ import { RadioButton, Button, IconPlus } from 'hds-react'
 import RollingInfo from '../input/RollingInfo.jsx'
 import NetworkErrorState from './NetworkErrorState.jsx'
 import { useSelector } from 'react-redux'
-import { savingSelector } from '../../selectors/projectSelector'
+import { savingSelector,lastModifiedSelector } from '../../selectors/projectSelector'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types';
 
@@ -26,13 +26,22 @@ const RadioBooleanButton = ({
   const { t } = useTranslation()
   const [radioValue, setRadioValue] = useState(null)
   const [editField,setEditField] = useState(false)
+  const lastModified = useSelector(state => lastModifiedSelector(state))
+  const [isThisFieldSaving, setIsThisFieldSaving] = useState(false)
   const saving =  useSelector(state => savingSelector(state))
-
+  useEffect(() => {
+    // Reset isThisFieldSaving when saving is complete for this field
+    if (!saving) {
+      setIsThisFieldSaving(false);
+    }
+  }, [saving, lastModified, name, isThisFieldSaving])
+  
   const handleOnChange = (value) => {
     setRadioValue(value)
     rest.onChange(value)
     if (onRadioChange) {
-      onRadioChange()
+      setIsThisFieldSaving(true);
+      onRadioChange(name)
     }
     if(rollingInfo){
       setEditField(false)
@@ -85,6 +94,7 @@ const RadioBooleanButton = ({
   }
   
   const getNormalElements = (nonEditable, rollingInfo, editField, name, readableValue, modifyText, rollingInfoText, editRollingField, phaseIsClosed, className, disabled, timeTableDisabled, error, handleOnChange, radioValue, double, showNoInformation) => {
+    const radioButtonClass = isThisFieldSaving ? 'radio-button-wrapper blurred' : `radio-button-wrapper ${className}`;
     return nonEditable || rollingInfo && !editField ?
       <RollingInfo 
         name={name} 
@@ -97,7 +107,7 @@ const RadioBooleanButton = ({
         phaseIsClosed={phaseIsClosed}
       />
       : 
-      <div className={`radio-button-wrapper ${className}`}>
+      <div className={radioButtonClass}>
         {getRadioButton("radio1", "Kyllä", `${name}-true`, `${name}-true`, disabled || timeTableDisabled, `radio-button radio-button-true ${disabled || timeTableDisabled ? 'radio-button-disabled' : ''}`, "Kyllä", error, name, () => handleOnChange(true), radioValue === true)}
         {getRadioButton("radio2", "Ei", `${name}-false`, `${name}-false`, disabled || timeTableDisabled, `radio-button radio-button-false ${disabled || timeTableDisabled ? 'radio-button-disabled' : ''}`, "Ei", error, name, () => handleOnChange(false), radioValue === false)}
         {!double && showNoInformation && getRadioButton("radio3", "Tieto puuttuu", `${name}-null`, `${name}-null`, disabled || timeTableDisabled, `radio-button radio-button-null ${disabled || timeTableDisabled ? 'radio-button-disabled' : ''}`, "", error, name, () => handleOnChange(null), radioValue !== false && radioValue !== true)}

@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
-import { TextInput } from 'hds-react'
+import { TextInput, NumberInput } from 'hds-react'
 import { useDispatch, useSelector } from 'react-redux'
 import {updateFloorValues,formErrorList} from '../../actions/projectActions'
 import {lockedSelector,lastModifiedSelector,pollSelector,lastSavedSelector,savingSelector } from '../../selectors/projectSelector'
@@ -40,6 +40,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   const [hasError,setHasError] = useState(false)
   const [editField,setEditField] = useState(false)
   const [hadFocusBeforeTabOut, setHadFocusBeforeTabOut] = useState(false)
+  const [isThisFieldSaving, setIsThisFieldSaving] = useState(false)
 
   const lastModified = useSelector(state => lastModifiedSelector(state))
   const lockedStatus = useSelector(state => lockedSelector(state))
@@ -97,6 +98,13 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
       document.activeElement.blur()
     }
   }, [lastSaved?.status === "error"])
+
+  useEffect(() => {
+    // Reset isThisFieldSaving when saving is complete for this field
+    if (isThisFieldSaving && (!saving || lastModified !== input.name)) {
+      setIsThisFieldSaving(false);
+    }
+  }, [saving, lastModified, input.name, isThisFieldSaving])
 
   useEffect(() => {
     //Chekcs that locked status has more data then inital empty object
@@ -189,6 +197,31 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   }
 
   const handleBlur = (event,readonly) => {
+    // Ignore blur only when moving focus to the +/- buttons of the *same* NumberInput
+    if (
+      custom.type === 'number' &&
+      !custom.isFloorAreaForm &&
+      event &&
+      event.relatedTarget
+    ) {
+      const currentContainer = inputRef.current
+        ? inputRef.current.closest('.NumberInput-module_numberInputContainer__hKNPp')
+        : null;
+      const nextContainer = event.relatedTarget.closest(
+        '.NumberInput-module_numberInputContainer__hKNPp'
+      );
+
+      if (currentContainer && nextContainer && currentContainer === nextContainer) {
+        // Moving from input to its +/- button: keep it as one control.
+        // Refocus the input so that the *next* click outside will blur it and trigger onBlur normally.
+        setTimeout(() => {
+          if (inputRef.current && typeof inputRef.current.focus === 'function') {
+            inputRef.current.focus();
+          }
+        }, 0);
+        return;
+      }
+    }
     let identifier;
     //Chekcs that locked status has more data then inital empty object
     if(lockedStatus && Object.keys(lockedStatus).length > 0){
@@ -232,12 +265,14 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
             }
             if(dateOk){
               localStorage.setItem("changedValues", input.name);
+              setIsThisFieldSaving(true);
               custom.onBlur(input.name);
               oldValueRef.current = event.target.value;
             }
           }
           else{
             localStorage.setItem("changedValues", input.name);
+            setIsThisFieldSaving(true);
             custom.onBlur(input.name);
             if(!custom.insideFieldset){
               const readOnlyValue = !custom?.isProjectTimetableEdit
@@ -317,7 +352,8 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
       }
     }
 
-    if (!readonly || custom.type === "date" || isConnected) {
+    // Allow NumberInput changes even when readonly for immediate UI feedback
+    if (!readonly || custom.type === "date" || custom.type === "number" || isConnected) {
       setHasError(!value?.trim() && !!custom?.fieldData?.isRequired);
       input.onChange(value, input.name);
       if (custom.isFloorAreaForm) {
@@ -355,35 +391,44 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   // Renders the standard text input with error handling and loading spinner
   const renderTextInput = () => {
     const errorString = custom.customError || (custom.type === 'number' ? t('project.error-input-int') : t('project.error'));
+    const blurredClass = isThisFieldSaving ? ' blurred' : '';
     return (
-      <div className={custom.disabled || !inputUtils.hasError(error).toString() || !hasError ? "text-input " : "text-input " + t('project.error')}>
-        <TextInput
-          ref={inputRef}
-          aria-label={input.name}
-          error={inputUtils.hasError(error).toString()}
-          errorText={custom.disabled || !inputUtils.hasError(error).toString() || !hasError ? "" : errorString}
-          fluid="true"
-          {...input}
-          {...restCustom}
-          min={custom.type === 'number' && custom.isFloorAreaForm ? 0 : undefined}
-          inputMode={custom.type === 'number' && custom.isFloorAreaForm ? "numeric" : undefined}
-          pattern={custom.type === 'number' && custom.isFloorAreaForm ? "[0-9]*" : undefined}
-          disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled}
-          // Only allow numeric input and navigation keys for floor area fields.
-          // Prevents entering non-numeric characters except for control/navigation keys.
-          onKeyDown={custom.type === 'number' && custom.isFloorAreaForm ? (e) => {
-            const allowed =
-              (e.key.length === 1 && /^\d$/.test(e.key)) ||
-              ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Home', 'End'].includes(e.key);
-            if (!allowed) {
-              e.preventDefault();
-            }
-          } : undefined}
-          onChange={(event) => { handleInputChange(event, readonly.read) }}
-          onBlur={(event) => { handleBlur(event, readonly.read) }}
-          onFocus={() => { handleFocus() }}
-          readOnly={readonly.read || lastSaved?.status === "error"}
-        />
+      <div className={`${custom.disabled || !inputUtils.hasError(error).toString() || !hasError ? "text-input" : "text-input " + t('project.error')}${custom.type === 'number' ? ' number-input' : ''}${blurredClass}`}>
+        {custom.type === 'number' ? (
+          <NumberInput
+            ref={inputRef}
+            aria-label={input.name}
+            error={inputUtils.hasError(error).toString()}
+            errorText={custom.disabled || !inputUtils.hasError(error).toString() || !hasError ? "" : errorString}
+            fluid="true"
+            {...input}
+            {...restCustom}
+            min={custom.isFloorAreaForm ? 0 : undefined}
+            step={1}
+            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled}
+            onChange={(event) => { handleInputChange(event, readonly.read) }}
+            onBlur={(event) => { handleBlur(event, readonly.read) }}
+            onFocus={() => { handleFocus() }}
+            readOnly={readonly.read || lastSaved?.status === "error"}
+            minusStepButtonAriaLabel="Vähennä yhdellä"
+            plusStepButtonAriaLabel="Lisää yhdellä"
+          />
+        ) : (
+          <TextInput
+            ref={inputRef}
+            aria-label={input.name}
+            error={inputUtils.hasError(error).toString()}
+            errorText={custom.disabled || !inputUtils.hasError(error).toString() || !hasError ? "" : errorString}
+            fluid="true"
+            {...input}
+            {...restCustom}
+            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled}
+            onChange={(event) => { handleInputChange(event, readonly.read) }}
+            onBlur={(event) => { handleBlur(event, readonly.read) }}
+            onFocus={() => { handleFocus() }}
+            readOnly={readonly.read || lastSaved?.status === "error"}
+          />
+        )}
         <NetworkErrorState fieldName={input.name} />
       </div>
     );
