@@ -153,8 +153,7 @@ export const initialState = {
   validated:false,
   cancelTimetableSave:false,
   validatingTimetable: {started: false, ended: false},
-  network: { status: 'ok', hasError: false, errorMessage: '', okMessage: '', tempFieldContents: '' },
-  savingField: null
+  network: { status: 'ok', hasError: false, errorMessage: '', okMessage: '', tempFieldContents: '' }
 }
 
 export const reducer = (state = initialState, action) => {
