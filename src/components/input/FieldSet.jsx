@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect } from 'react'
 import { connect, useDispatch } from 'react-redux'
 import { checkingSelector, savingSelector, formErrorListSelector, lastSavedSelector, updateFieldSelector} from '../../selectors/projectSelector'
 import CustomField from './CustomField.jsx'
-import NetworkErrorState from './NetworkErrorState.jsx'
 import { Form, Label } from 'semantic-ui-react'
 import projectUtils from '../../utils/projectUtils'
+import inputUtils from '../../utils/inputUtils'
 import Info from './Info.jsx'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { has, get, startCase } from 'lodash'
@@ -338,30 +338,8 @@ const FieldSet = ({
                           <div className="input-header-icons">
                             {fieldUpdated && !isReadOnly && (
                               <>
-                                <div className='popup-container'>
-                                  {savingField === field.name ? (
-                                    <div className='spinner-container'>
-                                      <LoadingSpinner className='loading-spinner' small />
-                                    </div>
-                                  ) : (
-                                    updated && (
-                                      <Tooltip
-                                        placement="top"
-                                      >
-                                      <span className="input-history">
-                                            <span>{`${projectUtils.formatDate(
-                                              updated.timestamp
-                                            )} ${projectUtils.formatTime(updated.timestamp)} ${
-                                              updated.user_name
-                                            }`}</span>
-                                          </span>
-                                      </Tooltip>
-                                    )
-                                  )}
-                                </div>
-                                {updated && (
-                                  <div className='time-container'>{`${timeUtil.formatRelativeDate(updated.timestamp, t)} ${projectUtils.formatTime(updated.timestamp)}`}</div>
-                                )}
+                                {inputUtils.renderUpdatedFieldInfo({ savingField, fieldName: field.name, updated, t })}
+                                {inputUtils.renderTimeContainer({ updated, t })}
                               </>
                             )}
                             {field.help_text && (

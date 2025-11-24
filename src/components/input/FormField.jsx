@@ -4,12 +4,11 @@ import Matrix from './Matrix'
 import { Form, Label } from 'semantic-ui-react'
 import Info from './Info.jsx'
 import projectUtils from '../../utils/projectUtils'
-import timeUtil from '../../utils/timeUtil'
+import inputUtils from '../../utils/inputUtils'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
-import { IconLock,LoadingSpinner, Tooltip } from 'hds-react'
+import { IconLock } from 'hds-react'
 import { useSelector } from 'react-redux'
-import { savingSelector } from '../../selectors/projectSelector'
 import { withTranslation } from 'react-i18next'
 import { isArray } from 'lodash'
 import PropTypes from 'prop-types'
@@ -293,30 +292,8 @@ const FormField = ({
             <div className="input-header-icons">
             {!isReadOnly && (
               <>
-                <div className='popup-container'>
-                  {savingField === field.name ? (
-                    <div className='spinner-container'>
-                      <LoadingSpinner className='loading-spinner' small />
-                    </div>
-                  ) : (
-                    updated && (
-                      <Tooltip
-                        placement="top"
-                      >
-                       <span className="input-history">
-                            <span>{`${projectUtils.formatDate(
-                              updated.timestamp
-                            )} ${projectUtils.formatTime(updated.timestamp)} ${
-                              updated.user_name
-                            }`}</span>
-                          </span>
-                      </Tooltip>
-                    )
-                  )}
-                </div>
-                {updated && (
-                  <div className='time-container'>{`${timeUtil.formatRelativeDate(updated.timestamp, t)} ${projectUtils.formatTime(updated.timestamp)}`}</div>
-                )}
+                {inputUtils.renderUpdatedFieldInfo({ savingField, fieldName: field.name, updated, t })}
+                {inputUtils.renderTimeContainer({ updated, t })}
               </>
             )}
             {field.help_text && (
@@ -366,6 +343,10 @@ const FormField = ({
 FormField.propTypes = {
   disabled: PropTypes.bool,
   field: PropTypes.object,
+  updated: PropTypes.shape({
+    timestamp: PropTypes.string,
+    user_name: PropTypes.string
+  }),
   deadlines:PropTypes.array,
   isProjectTimetableEdit:PropTypes.bool,
   rollingInfo:PropTypes.bool,
