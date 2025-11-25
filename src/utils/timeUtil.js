@@ -767,8 +767,8 @@ const compareAndUpdateDates = (data) => {
     }
   });
 };
- 
-export default {
+
+const exported = {
     isWeekend,
     addDays,
     subtractDays,
@@ -786,4 +786,9 @@ export default {
     findAllowedDate,
     findAllowedLautakuntaDate,
     compareAndUpdateDates
+};
+if (process.env.UNIT_TEST === 'true') {
+    exported.getPastDate = getPastDate;
 }
+
+export default exported;
