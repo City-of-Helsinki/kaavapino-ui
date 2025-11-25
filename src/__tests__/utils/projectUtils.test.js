@@ -644,7 +644,7 @@ describe("projectUtils.hasMissingFields checks for missing fields correctly", ()
       mandatory_field1: null,
       optional_field: null,
     };
-    const test_schema = JSON.parse(JSON.stringify(SCHEMA_TEMPLATE));
+    const test_schema = structuredClone(SCHEMA_TEMPLATE);
     test_schema.phases[0].sections[0].fields = [
       { name: "mandatory_field1", required: true },
       { name: "optional_field", required: false },
@@ -662,7 +662,7 @@ describe("projectUtils.hasMissingFields checks for missing fields correctly", ()
         { matrix_mandatory_1: null, matrix_optional_1: null },
       ]
     };
-    const test_schema = JSON.parse(JSON.stringify(SCHEMA_TEMPLATE));
+    const test_schema = structuredClone(SCHEMA_TEMPLATE);
     test_schema.phases[0].sections[0].fields = [
       {
         name: "matrix_field", type: "matrix", matrix: {
@@ -686,7 +686,7 @@ describe("projectUtils.hasMissingFields checks for missing fields correctly", ()
         { autofill_mandatory_1: null, autofill_optional_1: null },
       ]
     };
-    const test_schema = JSON.parse(JSON.stringify(SCHEMA_TEMPLATE));
+    const test_schema = structuredClone(SCHEMA_TEMPLATE);
     test_schema.phases[0].sections[0].fields = [
       {
         name: "autofill_field", type: "autofill", autofill: {
@@ -708,7 +708,7 @@ describe("projectUtils.hasMissingFields checks for missing fields correctly", ()
         { "fieldset_optional": null, _deleted: true }
       ]
     };
-    const test_schema = JSON.parse(JSON.stringify(SCHEMA_TEMPLATE));
+    const test_schema = structuredClone(SCHEMA_TEMPLATE);
     test_schema.phases[0].sections[0].fields = [
       {
         name: "fieldset_field", type: "fieldset", fieldset_attributes: [
@@ -750,7 +750,7 @@ describe("projectUtils.checkErrors checks for erroneous fields correctly", () =>
       mandatory_field3: "",
       optional_field: null,
     };
-    const test_schema = JSON.parse(JSON.stringify(SCHEMA_TEMPLATE.phases[0]));
+    const test_schema = structuredClone(SCHEMA_TEMPLATE.phases[0]);
     test_schema.sections[0].fields = [
       { name: "mandatory_field1", required: true, label: "Mandatory Field 1" },
       { name: "mandatory_field2", required: true, label: "Mandatory Field 2" },
@@ -771,7 +771,7 @@ describe("projectUtils.checkErrors checks for erroneous fields correctly", () =>
         { matrix_mandatory_1: null, matrix_optional_1: null },
       ]
     };
-    const test_schema = JSON.parse(JSON.stringify(SCHEMA_TEMPLATE.phases[0]));
+    const test_schema = structuredClone(SCHEMA_TEMPLATE.phases[0]);
     test_schema.sections[0].fields = [
       {
         name: "matrix_field", type: "matrix", label: "Matrix Field", matrix: {
@@ -796,7 +796,7 @@ describe("projectUtils.checkErrors checks for erroneous fields correctly", () =>
         { "fieldset_optional": null, _deleted: true }
       ]
     };
-    const test_schema = JSON.parse(JSON.stringify(SCHEMA_TEMPLATE.phases[0]));
+    const test_schema = structuredClone(SCHEMA_TEMPLATE.phases[0]);
     test_schema.sections[0].fields = [
       {
         name: "fieldset_field", type: "fieldset", label: "Fieldset Field", fieldset_attributes: [
@@ -836,7 +836,7 @@ describe("projectUtils.getErrorFields returns correct error fields", () => {
       mandatory_field1: null,
       kaavan_vaihe: "1. Käynnistys",
     };
-    const test_schema = JSON.parse(JSON.stringify(SCHEMA_TEMPLATE));
+    const test_schema = structuredClone(SCHEMA_TEMPLATE);
     test_schema.sections[0].fields = [
       { name: "mandatory_field1", required: true, label: "Mandatory Field 1" },
     ];
