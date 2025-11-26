@@ -1426,7 +1426,7 @@ class EditProjectTimeTableModal extends Component {
           <span className="form-buttons">
             <Button
               variant="primary"
-              disabled={loading || !allowedToEdit}
+              disabled={this.props.validatingTimetable?.started || loading || !allowedToEdit}
               loadingText={t('common.save-timeline')}
               isLoading={loading}
               type="submit"
