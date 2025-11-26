@@ -1,7 +1,7 @@
 const generateMockArkipäivät = () => {
     const dates = [];
-    let currentDate = new Date("2025-09-24");
-    const endDate = new Date("2029-12-30");
+    let currentDate = new Date("2025-01-01");
+    const endDate = new Date("2029-12-31");
 
     while (currentDate <= endDate) {
         const day = currentDate.getDay();
@@ -9,6 +9,26 @@ const generateMockArkipäivät = () => {
             const year = currentDate.getFullYear();
             const month = String(currentDate.getMonth() + 1).padStart(2, '0');
             const date = String(currentDate.getDate()).padStart(2, '0');
+            dates.push(`${year}-${month}-${date}`);
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    return dates;
+}
+
+const generateMockTyöpäivät = () => {
+    const dates = [];
+    let currentDate = new Date("2025-01-01");
+    const endDate = new Date("2029-12-31");
+
+    // Exclude weekends, all july dates, and dates from 24.12 to 6.1
+    while (currentDate <= endDate) {
+        const day = currentDate.getDay();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const date = String(currentDate.getDate()).padStart(2, '0');
+        if (day !== 0 && day !== 6 && month !== '07' &&
+            !(month === '12' && date >= '24') && !(month === '01' && date <= '06')) {
+            const year = currentDate.getFullYear();
             dates.push(`${year}-${month}-${date}`);
         }
         currentDate.setDate(currentDate.getDate() + 1);
@@ -351,6 +371,11 @@ const test_disabledDates = {
             name: "Arkipäivät",
             identifier: "arkipäivät",
             dates: generateMockArkipäivät()
+        },
+        "työpäivät": {
+            name: "Työpäivät",
+            identifier: "työpäivät",
+            dates: generateMockTyöpäivät()
         },
         "lautakunnan_kokouspäivät": {
             name: "Lautakunnan kokouspäivät",

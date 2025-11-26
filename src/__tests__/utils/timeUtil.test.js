@@ -54,24 +54,40 @@ describe("timeUtils general utility function tests", () => {
 
 describe ("addDays and subtractDays with disabled dates", () => {
     test("addDays correctly adds days taking weekends into account", () => {
-        const type = "arkipäivät"
+        const type = "työpäivät"
         const date = "2025-10-10"
         const days = 10
-        const disabledDates = structuredClone(data.test_disabledDates.date_types.arkipäivät.dates);
+        const disabledDates = structuredClone(data.test_disabledDates.date_types.työpäivät.dates);
         const excludeWeekends = true
         const result = timeUtil.addDays(type, date, days, disabledDates, excludeWeekends);
         expect(result).toBe("2025-10-24");
     });
-    test("addDays correctly adds board meeting days and lands on a valid date", () => {
-        const type = "lautakunta"
+    test("addDays correctly adds days without taking weekends into account", () => {
+        const type = "työpäivät"
         const date = "2025-10-10"
         const days = 10
-        const allowedDates = structuredClone(data.test_disabledDates.date_types.lautakunnan_kokouspäivät.dates);
-        const excludeWeekends = true
-        const result = timeUtil.addDays(type, date, days, allowedDates, excludeWeekends);
-        expect(result).toBe("2025-10-28");
-        const resultDate = new Date(result);
-        expect(resultDate.getDay()).toBe(2); // Ensure it's a Tuesday
+        const disabledDates = structuredClone(data.test_disabledDates.date_types.työpäivät.dates);
+        const excludeWeekends = false
+        const result = timeUtil.addDays(type, date, days, disabledDates, excludeWeekends);
+        expect(result).toBe("2025-10-20");
     });
-    /* TODO: Add all params to above test */
+
+    test("subtractDays correctly subtracts days taking weekends into account", () => {
+        const type = "työpäivät"
+        const date = "2025-10-24"
+        const days = 10
+        const disabledDates = structuredClone(data.test_disabledDates.date_types.työpäivät.dates);
+        const excludeWeekends = true
+        const result = timeUtil.subtractDays(type, date, days, disabledDates, excludeWeekends);
+        expect(result).toBe("2025-10-10");
+    });
+    test("subtractDays correctly subtracts days without taking weekends into account", () => {
+        const type = "työpäivät"
+        const date = "2025-10-24"
+        const days = 10
+        const disabledDates = structuredClone(data.test_disabledDates.date_types.työpäivät.dates);
+        const excludeWeekends = false
+        const result = timeUtil.subtractDays(type, date, days, disabledDates, excludeWeekends);
+        expect(result).toBe("2025-10-14");
+    });
 });
