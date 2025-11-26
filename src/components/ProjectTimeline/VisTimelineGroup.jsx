@@ -1361,6 +1361,34 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     typeof id === "string" &&
     (id.includes("Hyväksyminen") || id.includes("Voimaantulo"));
 
+    const isMovingBeforeEarlierGroup = (item, groups, items) => {
+      if (!item.group || !item.start) return false;
+      
+      const currentGroup = groups.get(item.group);
+      if (!currentGroup) return false;
+      
+      const allOtherItems = items.get().filter(i => i.id !== item.id && i.start && i.group);
+      const earlierItems = allOtherItems.filter(i => {
+        const itemGroup = groups.get(i.group);
+        return itemGroup && itemGroup.order < currentGroup.order;
+      });
+      
+      if (earlierItems.length === 0) {
+        const earlierItemsByGroupId = allOtherItems.filter(i => {
+          const itemGroup = groups.get(i.group);
+          return itemGroup && itemGroup.id < currentGroup.id;
+        });
+        earlierItems.push(...earlierItemsByGroupId);
+      }
+      
+      if (earlierItems.length > 0) {
+        const latestEarlierEnd = Math.max(...earlierItems.map(i => new Date(i.end || i.start).getTime()));
+        return new Date(item.start).getTime() <= latestEarlierEnd;
+      }
+      
+      return false;
+    };
+
 
     useEffect(() => {
       // Ensure capitalized Finnish locale BEFORE creating timeline so initial labels are correct
@@ -1486,6 +1514,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                   return;
               }
           }
+
+          // Check if trying to move before any earlier group's end date
+          if (isMovingBeforeEarlierGroup(item, groups, items)) {
+            callback(null);
+            return;
+          }
+
           //Item is not allowed to be dragged if it is already confirmed
           if(item?.className?.includes("confirmed")){
               callback(null);
