@@ -789,6 +789,7 @@ const exported = {
 };
 if (process.env.UNIT_TEST === 'true') {
     exported.getPastDate = getPastDate;
+    exported.findNextPossibleValue = findNextPossibleValue;
 }
 
 export default exported;

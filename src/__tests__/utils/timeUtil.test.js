@@ -50,6 +50,57 @@ describe("timeUtils general utility function tests", () => {
         const pastDate = timeUtil.getPastDate(date, 10, true, holidays);
         expect(timeUtil.formatDate(pastDate)).toBe("2024-12-12");
     });
+    test("sortObjectByDate sorts object keys by their date values", () => {
+        const dates = {
+            "event1": "2024-05-01",
+            "event2": "2023-12-15",
+            "event3": "2024-01-20"
+        };
+        const sorted = timeUtil.sortObjectByDate(dates);
+        const sortedKeys = sorted.map((date) => date["key"]);
+        expect(sortedKeys).toEqual(["event2", "event3", "event1"]);
+    });
+    test("findNextPossibleValue handles special/invalid cases", () => {
+        expect(() => timeUtil.findNextPossibleValue(null, "2024-01-01")).toThrow();
+        expect(() => timeUtil.findNextPossibleValue(["2024-01-01"], null)).toThrow();
+        const dateArray = [
+            "2024-01-01",
+            "2024-02-01",
+            "2024-03-01"
+        ];
+        expect(timeUtil.findNextPossibleValue([], "2024-01-01")).toBeNull();
+        expect(timeUtil.findNextPossibleValue(dateArray, "2024-02-25", 99)).toBeNull();
+        expect(timeUtil.findNextPossibleValue(dateArray, "2024-01-01", -99)).toBe("2024-01-01");
+    });
+    test("findNextPossibleValue Finds next possible date from from array if the value does not exist in it", () => {
+        const dateArray = [
+            "2024-01-01",
+            "2024-02-01",
+            "2024-03-01",
+            "2024-04-01",
+        ];
+        const value1 = "2024-02-15";
+        const value2 = "2024-03-01";
+        const result1 = timeUtil.findNextPossibleValue(dateArray, value1);
+        const result2 = timeUtil.findNextPossibleValue(dateArray, value2);
+        expect(result1).toBe("2024-03-01");
+        expect(result2).toBe("2024-03-01");
+    });
+    test("findNextPossibleValue works correctly with addedDays", () => {
+        const dateArray = [
+            "2024-01-01",
+            "2024-02-01",
+            "2024-03-01",
+            "2024-04-01",
+            "2024-05-01",
+            "2024-06-01",
+            "2024-07-01",
+        ];
+        const value = "2024-02-15";
+        const addedDays = 3;
+        const result = timeUtil.findNextPossibleValue(dateArray, value, addedDays);
+        expect(result).toBe("2024-06-01");
+    });
 });
 
 describe ("addDays and subtractDays with disabled dates", () => {
