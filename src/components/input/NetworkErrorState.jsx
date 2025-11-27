@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { projectNetworkSelector,lastSavedSelector } from '../../selectors/projectSelector';
-import { Button, Notification, IconAlertCircle } from 'hds-react';
+import { Button, Notification, IconAlertCircle, IconCross } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 import './NetworkErrorState.scss';
 import PropTypes from 'prop-types';
@@ -171,19 +171,35 @@ export default function NetworkErrorState({ fieldName }) {
         <div 
           className="custom-dialog-backdrop"
           onClick={() => setConfirmOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setConfirmOpen(false);
+            }
+          }}
           role="dialog"
           aria-modal="true"
           aria-labelledby="custom-dialog-title"
+          tabIndex={-1}
         >
           <div 
             className="custom-dialog-content"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="custom-dialog-header">
-              <IconAlertCircle className="custom-dialog-icon" />
-              <h2 id="custom-dialog-title" className="custom-dialog-title">
-                {t('messages.close-notification-question')}
-              </h2>
+              <div className="custom-dialog-header-content">
+                <IconAlertCircle className="custom-dialog-icon" />
+                <h2 id="custom-dialog-title" className="custom-dialog-title">
+                  {t('messages.close-notification-question')}
+                </h2>
+              </div>
+              <button
+                className="custom-dialog-close"
+                onClick={() => setConfirmOpen(false)}
+                aria-label={t('common.close')}
+                type="button"
+              >
+                <IconCross size="s" />
+              </button>
             </div>
             
             <div className="custom-dialog-body">

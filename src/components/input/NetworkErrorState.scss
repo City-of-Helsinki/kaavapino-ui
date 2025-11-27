@@ -247,15 +247,46 @@ $hds-gray-text: #2b2b2b;
 	opacity: 1;
 	padding: 32px 32px 24px 32px;
 	gap: 16px;
-	overflow: auto;
 }
 
 .custom-dialog-header {
 	display: flex;
 	align-items: center;
-	gap: 16px;
+	justify-content: space-between;
 	padding: 0;
 	margin-bottom: 16px;
+}
+
+.custom-dialog-header-content {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+}
+
+.custom-dialog-close {
+	background: transparent;
+	border: none;
+	padding: 12px;
+	cursor: pointer;
+	color: #1a1a1a;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 2px;
+	flex-shrink: 0;
+	position: relative;
+	
+	&:focus {
+		outline: 3px solid #0072ce;
+		outline-offset: 2px;
+	}
+	
+	svg {
+		color: #000000;
+		opacity: 1;
+		transform: rotate(0deg);
+		position: absolute;
+	}
 }
 
 .custom-dialog-icon {
