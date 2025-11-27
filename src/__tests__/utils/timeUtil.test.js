@@ -163,3 +163,87 @@ describe ("addDays and subtractDays with disabled dates", () => {
         expect(result).toBe("2025-10-14");
     });
 });
+
+describe("getDisabledDates for various phases", () => {
+    test("getDisabledDatesForProjectStart returns valid *allowed* dates", () => {
+        const name = "projektin_kaynnistys_pvm";
+        const formValues = {
+            "projektin_kaynnistys_pvm": "2025-04-01",
+            "kaynnistys_paattyy_pvm": "2025-06-01"
+        };
+        const previousItem = null; // No previous item for project start
+        const nextItem = {
+            name: "kaynnistys_paattyy_pvm",
+            distance_from_previous: 10
+        };
+        const dateTypes = data.test_disabledDates.date_types;
+
+        const result = timeUtil.getDisabledDatesForProjectStart(name, formValues, previousItem, nextItem, dateTypes);
+        expect(result[result.length-1]).toBe("2025-05-19"); //maintain 10 working days distance
+        const nextDate = new Date(formValues["kaynnistys_paattyy_pvm"]);
+        for (let date of result) {
+            let newDate = new Date(date);
+            expect(newDate < nextDate).toBe(true);
+            expect(newDate.getDay() !== 0 && newDate.getDay() !== 6).toBe(true); // Not weekend
+        }
+    });
+    test("getDisabledDatesForApproval returns valid *allowed* dates", () => {
+        const name = "hyvaksymispaatos_pvm";
+        const formValues = {
+            "hyvaksyminenvaihe_alkaa_pvm": "2025-05-01",
+            "hyvaksymispaatos_pvm": "2025-08-01",
+        };
+        const matchingItem = {
+            name: "hyvaksyminenvaihe_alkaa_pvm",
+            distance_from_previous: 15
+        };
+        const dateTypes = data.test_disabledDates.date_types;
+        const result = timeUtil.getDisabledDatesForApproval(name, formValues, matchingItem, dateTypes, "M");
+        expect(result[0]).toBe("2025-05-23"); // maintain 15 working days distance
+        const previousDate = new Date(formValues["hyvaksyminenvaihe_alkaa_pvm"]);
+        for (let date of result) {
+            let newDate = new Date(date);
+            expect(newDate > previousDate).toBe(true);
+            expect(newDate.getDay() !== 0 && newDate.getDay() !== 6).toBe(true); // Not weekend
+        }
+        const resultXS = timeUtil.getDisabledDatesForApproval(name, formValues, matchingItem, dateTypes, "XS");
+        expect(resultXS[0]).toBe("2025-05-22"); // 1 extra day for XS/S
+    });
+    test("getDisabledDatesForLautakunta returns valid *allowed* dates", () => {
+        const name = "milloin_tarkistettu_ehdotus_lautakunnassa";
+        const formValues = {
+            "tarkistettuehdotusvaihe_alkaa_pvm": "2025-08-01",
+            "tarkistettu_ehdotus_kylk_maaraaika": "2025-08-15",
+            "milloin_tarkistettu_ehdotus_lautakunnassa": "2025-09-01",
+            "tarkistettuehdotusvaihe_paattyy_pvm": "2025-09-01",
+        };
+        const phaseName = "tarkistettu_ehdotus"
+        const matchingItem = {
+            name: "milloin_tarkistettu_ehdotus_lautakunnassa",
+            distance_from_previous: 27,
+            previous_deadline: "tarkistettu_ehdotus_kylk_maaraaika",
+            initial_distance: {
+                distance: 21,
+                base_deadline: "tarkistettu_ehdotus_kylk_maaraaika"
+            }
+        };
+        const previousItem = {
+            name: "tarkistettu_ehdotus_kylk_maaraaika",
+            distance_from_previous: 6,
+            initial_distance: {
+                distance: 10,
+                base_deadline: "tarkistettuehdotusvaihe_alkaa_pvm"
+            }
+        };
+        const dateTypes = data.test_disabledDates.date_types;
+        const result = timeUtil.getDisabledDatesForLautakunta(name, formValues, phaseName, matchingItem, previousItem, dateTypes);
+        const previousDate = new Date(formValues["tarkistettu_ehdotus_kylk_maaraaika"]);
+        // 27 work days distance from maaraika (23rd), then next possible tuesday (30th)
+        expect(result[0]).toBe("2025-09-30"); 
+        for (let date of result) {
+            let newDate = new Date(date);
+            expect(newDate > previousDate).toBe(true);
+            expect(newDate.getDay()).toBe(2); // Only tuesdays
+        }
+    });
+});

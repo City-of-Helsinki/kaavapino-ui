@@ -38,7 +38,7 @@ const generateMockTyöpäivät = () => {
 
 const generateMockLautakuntapäivät = () => {
     const dates = [];
-    let currentDate = new Date("2025-09-24");
+    let currentDate = new Date("2025-01-01");
     const endDate = new Date("2029-12-30");
 
     while (currentDate <= endDate) {
