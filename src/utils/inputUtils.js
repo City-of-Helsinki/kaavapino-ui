@@ -15,15 +15,14 @@ const hasError = error => {
 
 const renderUpdatedFieldInfo = ({ savingField, fieldName, updated, t, isFieldset, fieldsetFields }) => {
 	let shouldShowSpinner = false;
-	
+
 	if (isFieldset && fieldsetFields && savingField) {
 		// For fieldset components: show spinner if savingField matches any field within this fieldset
 		shouldShowSpinner = fieldsetFields.some(field => field.name === savingField);
 	} else if (fieldName && fieldName.endsWith('_fieldset') && savingField) {
 		// For fieldset containers: show spinner if savingField could belong to this fieldset
-		// Check if savingField starts with the fieldset prefix (remove '_fieldset' suffix)
 		const fieldsetPrefix = fieldName.replace('_fieldset', '');
-		shouldShowSpinner = savingField.startsWith(fieldsetPrefix + '_');
+		shouldShowSpinner = savingField.includes(fieldsetPrefix);
 	} else {
 		// For individual fields: show spinner only for exact match
 		shouldShowSpinner = savingField === fieldName;
