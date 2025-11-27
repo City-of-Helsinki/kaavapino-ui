@@ -184,6 +184,7 @@ export default function NetworkErrorState({ fieldName }) {
           <div 
             className="custom-dialog-content"
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
           >
             <div className="custom-dialog-header">
               <div className="custom-dialog-header-content">
