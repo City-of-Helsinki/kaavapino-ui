@@ -43,7 +43,6 @@ const SelectInput = ({
   const [readonly, setReadOnly] = useState(false)
   const [fieldName, setFieldName] = useState("")
   const [editField,setEditField] = useState(false)
-  const saving =  useSelector(state => savingSelector(state))
 
   useEffect(() => {
     //Chekcs that locked status has more data then inital empty object
@@ -205,7 +204,6 @@ const SelectInput = ({
       //prevent saving if locked
       if (!readonly) {
         if (typeof onBlur === 'function') {
-          setIsInstanceSaving(true);
           //Sent call to save changes
           onBlur();
           oldValueRef.current = selectValues;

@@ -52,10 +52,12 @@ import objectUtil from "./objectUtil";
 			months = 1
 		}
     if (months < 12) {
-      return tFn ? tFn('relativeDates.month-ago', { count: months }) : `${months} months ago`
+      const monthKey = months === 1 ? 'relativeDates.month-ago-singular' : 'relativeDates.month-ago'
+      return tFn ? tFn(monthKey, { count: months }) : `${months} months ago`
 		}
 		const years = Math.floor(months / 12)
-    return tFn ? tFn('relativeDates.years-ago', { count: years }) : `${years} years ago`
+		const yearKey = years === 1 ? 'relativeDates.years-ago-singular' : 'relativeDates.years-ago'
+    return tFn ? tFn(yearKey, { count: years }) : `${years} years ago`
 	}
 
   // Helper function to check if a date is a holiday

@@ -507,6 +507,8 @@
     "yesterday": "Eilen",
     "days-ago": "{{count}} päivää sitten",
     "month-ago": "{{count}} kuukautta sitten",
-    "years-ago": "{{count}} vuotta sitten"
+    "month-ago-singular": "{{count}} kuukausi sitten",
+    "years-ago": "{{count}} vuotta sitten",
+    "years-ago-singular": "{{count}} vuosi sitten"
   }
 }

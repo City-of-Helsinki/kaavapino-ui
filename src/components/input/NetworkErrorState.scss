@@ -1,6 +1,8 @@
 // NetworkErrorState.scss
 // Styles for the NetworkErrorState component
 
+@use "sass:color";
+
 // ---- HDS palette refs ----
 $hds-red-dark:   #b01038;
 $hds-red-light:  #fdf3f2;
@@ -218,13 +220,118 @@ $hds-gray-text: #2b2b2b;
   outline-color: #B01038;
 }
 
-// Ensure dialog header text is visible (override any unintended inheritance)
-#network-warning-close-confirm-title {
-  color: #1a1a1a;
-  font-family: 'Helsinki Grotesk', Arial, sans-serif !important;
-  font-weight: 700 !important;
-  font-style: normal;
-  font-size: $size18 !important;
-  line-height: 150% !important;
-  letter-spacing: 0;
+// =========================
+// Custom Dialog Styles
+// =========================
+.custom-dialog-backdrop {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.6);
+	z-index: 9999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+}
+
+.custom-dialog-content {
+	background: white;
+	border-top: 8px solid #B01038;
+	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+	max-width: 558px;
+	max-height: 231px;
+  width: 100%;
+	opacity: 1;
+	padding: 32px 32px 24px 32px;
+	gap: 16px;
+	overflow: auto;
+}
+
+.custom-dialog-header {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 0;
+	margin-bottom: 16px;
+}
+
+.custom-dialog-icon {
+	color: #1a1a1a;
+	flex-shrink: 0;
+	width: 24px;
+	height: 24px;
+}
+
+.custom-dialog-title {
+	font-family: "Helsinki Grotesk", Arial, sans-serif !important;
+	font-weight: 700 !important;
+	font-style: normal;
+	font-size: 18px !important;
+	line-height: 150% !important;
+	letter-spacing: 0;
+	margin: 0;
+	color: #1a1a1a;
+}
+
+.custom-dialog-body {
+	padding: 0;
+	margin-bottom: 16px;
+	
+	p {
+		font-family: 'Helsinki Grotesk', Arial, sans-serif;
+		font-weight: 400;
+		font-style: normal;
+		font-size: 16px;
+		line-height: 24px;
+		letter-spacing: 0;
+		margin: 0;
+		color: #1A1A1A;
+	}
+}
+
+.custom-dialog-actions {
+	display: flex;
+	gap: 16px;
+	justify-content: flex-start;
+	padding: 0;
+}
+
+.custom-dialog-cancel {
+	color: $hds-red-dark !important;
+	border-color: $hds-red-dark !important;
+	
+	&:focus {
+		outline-color: $hds-red-dark;
+	}
+}
+
+.custom-dialog-confirm {
+	background-color: $hds-red-dark !important;
+	
+	&:hover {
+		background-color: color.adjust($hds-red-dark, $lightness: -10%) !important;
+	}
+}
+
+// Responsive design
+@media (max-width: 768px) {
+	.custom-dialog-backdrop {
+		padding: 0.5rem;
+	}
+	
+	.custom-dialog-content {
+		max-width: none;
+		margin: 0;
+	}
+	
+	.custom-dialog-actions {
+		flex-direction: column;
+		
+		.hds-button {
+			width: 100%;
+		}
+	}
 }

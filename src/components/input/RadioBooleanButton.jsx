@@ -95,6 +95,7 @@ const RadioBooleanButton = ({
   
   const getNormalElements = (nonEditable, rollingInfo, editField, name, readableValue, modifyText, rollingInfoText, editRollingField, phaseIsClosed, className, disabled, timeTableDisabled, error, handleOnChange, radioValue, double, showNoInformation) => {
     const radioButtonClass = isThisFieldSaving ? 'radio-button-wrapper blurred' : `radio-button-wrapper ${className}`;
+    const isDisabled = disabled || timeTableDisabled || isThisFieldSaving;
     return nonEditable || rollingInfo && !editField ?
       <RollingInfo 
         name={name} 
@@ -108,9 +109,9 @@ const RadioBooleanButton = ({
       />
       : 
       <div className={radioButtonClass}>
-        {getRadioButton("radio1", "Kyllä", `${name}-true`, `${name}-true`, disabled || timeTableDisabled, `radio-button radio-button-true ${disabled || timeTableDisabled ? 'radio-button-disabled' : ''}`, "Kyllä", error, name, () => handleOnChange(true), radioValue === true)}
-        {getRadioButton("radio2", "Ei", `${name}-false`, `${name}-false`, disabled || timeTableDisabled, `radio-button radio-button-false ${disabled || timeTableDisabled ? 'radio-button-disabled' : ''}`, "Ei", error, name, () => handleOnChange(false), radioValue === false)}
-        {!double && showNoInformation && getRadioButton("radio3", "Tieto puuttuu", `${name}-null`, `${name}-null`, disabled || timeTableDisabled, `radio-button radio-button-null ${disabled || timeTableDisabled ? 'radio-button-disabled' : ''}`, "", error, name, () => handleOnChange(null), radioValue !== false && radioValue !== true)}
+        {getRadioButton("radio1", "Kyllä", `${name}-true`, `${name}-true`, isDisabled, `radio-button radio-button-true ${isDisabled ? 'radio-button-disabled' : ''}`, "Kyllä", error, name, () => handleOnChange(true), radioValue === true)}
+        {getRadioButton("radio2", "Ei", `${name}-false`, `${name}-false`, isDisabled, `radio-button radio-button-false ${isDisabled ? 'radio-button-disabled' : ''}`, "Ei", error, name, () => handleOnChange(false), radioValue === false)}
+        {!double && showNoInformation && getRadioButton("radio3", "Tieto puuttuu", `${name}-null`, `${name}-null`, isDisabled, `radio-button radio-button-null ${isDisabled ? 'radio-button-disabled' : ''}`, "", error, name, () => handleOnChange(null), radioValue !== false && radioValue !== true)}
         <NetworkErrorState fieldName={name} />
       </div>
   }

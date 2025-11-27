@@ -405,7 +405,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
             {...restCustom}
             min={custom.isFloorAreaForm ? 0 : undefined}
             step={1}
-            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled}
+            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled || isThisFieldSaving}
             onChange={(event) => { handleInputChange(event, readonly.read) }}
             onBlur={(event) => { handleBlur(event, readonly.read) }}
             onFocus={() => { handleFocus() }}

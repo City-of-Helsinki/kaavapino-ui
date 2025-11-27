@@ -1194,6 +1194,10 @@ function* projectFileUpload({
 }) {
   const dateVariable = new Date()
   const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+  
+  // Set saving field indicator to show loading state in FormField
+  yield put(setSavingField(attribute))
+  
   try {
     const currentProjectId = yield select(currentProjectIdSelector)
 
@@ -1257,8 +1261,24 @@ function* projectFileUpload({
     }
     yield put(projectFileUploadSuccessful(res))
     yield put(saveProjectAction(true,insideFieldset,fieldsetData,fieldsetPath))
+    
+    // Fetch fresh project data to get updated metadata with timestamps
+    const updatedProject = yield call(
+      projectApi.get,
+      { path: { projectId: currentProjectId } },
+      ':projectId/'
+    )
+    
+    // Update project state to trigger FormField timestamp updates
+    yield put(updateProject(updatedProject))
+    
+    // Clear saving field indicator
+    yield put(setSavingField(null))
     yield put(setLastSaved("success",time,[],[],false))
   } catch (e) {
+    // Clear saving field indicator on error
+    yield put(setSavingField(null))
+    
     if (!axios.isCancel(e)) {
       yield put(error(e))
     }
@@ -1268,6 +1288,9 @@ function* projectFileUpload({
 }
 
 function* projectFileRemove({ payload }) {
+  // Set saving field indicator to show loading state in FormField
+  yield put(setSavingField(payload))
+  
   try {
     const currentProjectId = yield select(currentProjectIdSelector)
     const attribute_data = {}
@@ -1283,8 +1306,23 @@ function* projectFileRemove({ payload }) {
     )
     yield put(projectFileRemoveSuccessful(payload))
     yield put(saveProjectAction(true,false,false,false))
+    
+    // Fetch fresh project data to get updated metadata with timestamps
+    const updatedProject = yield call(
+      projectApi.get,
+      { path: { projectId: currentProjectId } },
+      ':projectId/'
+    )
+    
+    // Update project state to trigger FormField timestamp updates
+    yield put(updateProject(updatedProject))
+    
+    // Clear saving field indicator
+    yield put(setSavingField(null))
     yield put(setLastSaved("success",time,[],[],false))
   } catch (e) {
+    // Clear saving field indicator on error
+    yield put(setSavingField(null))
     yield put(error(e))
   }
 }
