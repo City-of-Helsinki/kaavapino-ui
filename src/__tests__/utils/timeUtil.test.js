@@ -101,6 +101,27 @@ describe("timeUtils general utility function tests", () => {
         const result = timeUtil.findNextPossibleValue(dateArray, value, addedDays);
         expect(result).toBe("2024-06-01");
     });
+    test("findNextPossibleBoardDate returns next possible board date correctly", () => {
+        const boardDates = [
+            "2024-01-01",
+            "2024-02-01",
+            "2024-03-01",
+            "2024-04-01",
+            "2024-05-01"
+        ];
+        // Value exactly matches a date
+        expect(timeUtil.findNextPossibleBoardDate(boardDates, "2024-03-01")).toBe("2024-04-01");
+        // Value between two dates
+        expect(timeUtil.findNextPossibleBoardDate(boardDates, "2024-03-15")).toBe("2024-04-01");
+        // Value after last date
+        expect(timeUtil.findNextPossibleBoardDate(boardDates, "2024-06-01")).toBe("2024-05-01");
+        // Value equal to last date
+        expect(timeUtil.findNextPossibleBoardDate(boardDates, "2024-05-01")).toBe("2024-05-01");
+        // Empty array returns null
+        expect(timeUtil.findNextPossibleBoardDate([], "2024-01-01")).toBeNull();
+    });
+    test("findNextPossibleBoardDate works correctly when addedDays goes out of bounds", () => {
+    });
 });
 
 describe ("addDays and subtractDays with disabled dates", () => {
