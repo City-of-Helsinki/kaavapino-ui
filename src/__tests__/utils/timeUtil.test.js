@@ -209,16 +209,20 @@ describe("getDisabledDates for various phases", () => {
         const resultXS = timeUtil.getDisabledDatesForApproval(name, formValues, matchingItem, dateTypes, "XS");
         expect(resultXS[0]).toBe("2025-05-22"); // 1 extra day for XS/S
     });
-    test("getDisabledDatesForLautakunta returns valid *allowed* dates", () => {
-        const name = "milloin_tarkistettu_ehdotus_lautakunnassa";
+
+    test("getDisabledDatesForLautakunta returns valid allowed dates for tarkistettu ehdotus", () => {
         const formValues = {
             "tarkistettuehdotusvaihe_alkaa_pvm": "2025-08-01",
             "tarkistettu_ehdotus_kylk_maaraaika": "2025-08-15",
             "milloin_tarkistettu_ehdotus_lautakunnassa": "2025-09-01",
             "tarkistettuehdotusvaihe_paattyy_pvm": "2025-09-01",
         };
-        const phaseName = "tarkistettu_ehdotus"
-        const matchingItem = {
+        const vaiheAlkaaItem = {
+            name: "tarkistettuehdotusvaihe_alkaa_pvm",
+            distance_from_previous: 0,
+            previous_deadline: "tarkistettuehdotusvaihe_alkaa_pvm",
+        }
+        const lautakuntaItem = {
             name: "milloin_tarkistettu_ehdotus_lautakunnassa",
             distance_from_previous: 27,
             previous_deadline: "tarkistettu_ehdotus_kylk_maaraaika",
@@ -227,7 +231,7 @@ describe("getDisabledDates for various phases", () => {
                 base_deadline: "tarkistettu_ehdotus_kylk_maaraaika"
             }
         };
-        const previousItem = {
+        const kylkItem = {
             name: "tarkistettu_ehdotus_kylk_maaraaika",
             distance_from_previous: 6,
             initial_distance: {
@@ -236,14 +240,51 @@ describe("getDisabledDates for various phases", () => {
             }
         };
         const dateTypes = data.test_disabledDates.date_types;
-        const result = timeUtil.getDisabledDatesForLautakunta(name, formValues, phaseName, matchingItem, previousItem, dateTypes);
+        const result_maaraika = timeUtil.getDisabledDatesForLautakunta("tarkistettu_ehdotus_kylk_maaraaika", formValues, "tarkistettu_ehdotus", kylkItem, vaiheAlkaaItem, dateTypes);
+        expect(result_maaraika[0]).toBe("2025-08-11");
+        const previousDate_maaraika = new Date(formValues["tarkistettuehdotusvaihe_alkaa_pvm"]);
+        for (let date of result_maaraika) {
+            let newDate = new Date(date);
+            expect(newDate > previousDate_maaraika).toBe(true);
+            expect([0, 6].includes(newDate.getDay())).toBe(false);
+        }
+        const result_lautakunta = timeUtil.getDisabledDatesForLautakunta("milloin_tarkistettu_ehdotus_lautakunnassa", formValues, "tarkistettu_ehdotus", lautakuntaItem, kylkItem, dateTypes);
         const previousDate = new Date(formValues["tarkistettu_ehdotus_kylk_maaraaika"]);
         // 27 work days distance from maaraika (23rd), then next possible tuesday (30th)
-        expect(result[0]).toBe("2025-09-30"); 
-        for (let date of result) {
+        expect(result_lautakunta[0]).toBe("2025-09-30");
+        for (let date of result_lautakunta) {
             let newDate = new Date(date);
             expect(newDate > previousDate).toBe(true);
             expect(newDate.getDay()).toBe(2); // Only tuesdays
         }
+    });
+    test("getDisableDatesForLautakunta handles Luonnos-phase correctly", () => {
+        const formValues = {
+            "kaavaluonnos_lautakuntaan_1": true,
+            "jarjestetaan_luonnos_esillaolo_1": true,
+            "jarjestetaan_luonnos_esillaolo_2": true,
+            "luonnosvaihe_alkaa_pvm": "2025-08-01",
+            "milloin_luonnos_esillaolo_paattyy_2": "2025-08-31",
+            "luonnosaineiston_maaraaika": "2025-09-15",
+            "milloin_kaavaluonnos_lautakunnassa": "2025-10-01",
+            "luonnosvaihe_paattyy_pvm": "2025-10-01",
+        };
+        const lautakuntaItem = {
+            name: "milloin_kaavaluonnos_lautakunnassa",
+            distance_from_previous: 20,
+            previous_deadline: "luonnosaineiston_maaraaika",
+            initial_distance: {
+                distance: 15,
+                base_deadline: "luonnosaineiston_maaraaika"
+            }
+        };
+        const kylkItem = {
+            name: "luonnosaineiston_maaraaika",
+            distance_from_previous: 5,
+        };
+        const dateTypes = data.test_disabledDates.date_types;
+        // Should use latest esillaolo
+        const result_lk = timeUtil.getDisabledDatesForLautakunta("milloin_kaavaluonnos_lautakunnassa", formValues, "luonnos", lautakuntaItem, kylkItem, dateTypes);
+        expect(result_lk[0]).toBe("2025-09-30");
     });
 });
