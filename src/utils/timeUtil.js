@@ -725,8 +725,11 @@ const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues
   } else if (["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauenut"].includes(name)) {
       allowedDates = getDisabledDatesForApproval(name, formValues, matchingItem, dateTypes, size);
       return allowedDates; // Skip filtering past dates for approval dates
-  } else if (name === "hyvaksymispaatos_valitusaika_paattyy" || name === "valitusaika_paattyy_hallinto_oikeus") {
-      allowedDates = dateTypes?.arkipäivät?.dates;
+  } else if (
+    ["valtuusto_poytakirja_nahtavilla_pvm", "valtuusto_hyvaksymiskuulutus_pvm",
+    "hyvaksymispaatos_valitusaika_paattyy", "valitusaika_paattyy_hallinto_oikeus",
+    "valitusten_ratkaisu_hallinto_oikeus", "valitusten_ratkaisu_kho"].includes(name)) {
+      return dateTypes?.arkipäivät?.dates;
   } else if (currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')) {
       allowedDates = getDisabledDatesForLautakunta(name, formValues, phaseName, matchingItem, previousItem, dateTypes);
   } else if (!nahtavillaolo) {
