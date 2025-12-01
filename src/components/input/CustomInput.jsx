@@ -283,7 +283,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
               const regex = new RegExp(custom.regex);
               setHasError(event.target.value !== "" && !regex.test(event.target.value))
             } else if(custom.type === 'number') {
-              const regex = /^\d+$/;
+              const regex = /^-?\d+$/;
               setHasError(event.target.value !== "" && !regex.test(event.target.value))
             }
           }
