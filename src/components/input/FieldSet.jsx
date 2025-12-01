@@ -289,7 +289,7 @@ const FieldSet = ({
                    * here to modify the input header accordingly. */
                   const showError = required ? t('project.required-field') : error
                   const fieldUpdated = updated?.new_value && has(updated?.new_value[0], field.name)
-                  const fieldSpecificUpdated = fieldUpdated ? updated?.new_value[0][field.name] : updated
+                  const fieldSpecificUpdated = fieldUpdated ? updated : (updated?.timestamp ? updated : undefined)
                   let fieldRollingInfo
                   let rollingInfoText = "Tieto siirtyy vaiheiden välillä ja sitä voi täydentää"
                   let nonEditable = false
@@ -338,7 +338,7 @@ const FieldSet = ({
                             } */}
                           </Label>
                           <div className="input-header-icons">
-                            {savingField && !isReadOnly && (
+                            {!isReadOnly && (
                               <>
                                 {inputUtils.renderUpdatedFieldInfo({ savingField, fieldName: field.name, updated: fieldSpecificUpdated, t, isFieldset: false })}
                                 {inputUtils.renderTimeContainer({ updated: fieldSpecificUpdated, t })}

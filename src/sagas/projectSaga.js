@@ -1091,7 +1091,6 @@ function* saveProject(data) {
                   for (const key of itemKeys) {
                       if (!isEqual(currentItem[key], initialItem[key])) {
                           actualFieldName = key; // Found the field that actually changed
-                          console.log(`Found changed field: ${key}`, 'current:', currentItem[key], 'initial:', initialItem[key]);
                           break;
                       }
                   }

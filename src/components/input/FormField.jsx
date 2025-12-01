@@ -160,6 +160,7 @@ const FormField = ({
             timetable_editable={timetable_editable}
             highlightedInFieldset={highlightedInFieldset}
             highlightedTag={highlightedTag}
+            updated={updated}
           />
         )
     }

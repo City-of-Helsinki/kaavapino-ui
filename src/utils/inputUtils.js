@@ -35,7 +35,7 @@ const renderUpdatedFieldInfo = ({ savingField, fieldName, updated, t, isFieldset
 					<LoadingSpinner className='loading-spinner' small />
 				</div>
 			) : (
-				updated && (
+				updated && updated.timestamp && (
 					<Tooltip
 						placement="top"
 					>
@@ -54,7 +54,7 @@ const renderUpdatedFieldInfo = ({ savingField, fieldName, updated, t, isFieldset
 }
 
 const renderTimeContainer = ({ updated, t }) => {
-	return updated ? (
+	return updated && updated.timestamp ? (
 		<div className='time-container'>{`${timeUtil.formatRelativeDate(updated.timestamp, t)} ${projectUtils.formatTime(updated.timestamp)}`}</div>
 	) : null
 }
