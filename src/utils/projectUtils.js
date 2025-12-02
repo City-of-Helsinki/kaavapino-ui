@@ -718,8 +718,7 @@ const getMissingGeoData = (attData, geoData) => {
 }
 
 
-export default {
-  confirmationAttributes,
+const exported = {  confirmationAttributes,
   formatDate,
   formatTime,
   formatDateTime,
@@ -750,5 +749,12 @@ export default {
   objectsEqual,
   diffArray,
   diffArrayObject,
-  getMissingGeoData
+  getMissingGeoData}
+
+if (process.env.UNIT_TEST === "true"){
+  exported.checkErrors = checkErrors;
+  exported.hasUnconfirmedRequiredConfirmations = hasUnconfirmedRequiredConfirmations;
+  exported.checkDeadlineSchemaErrors = checkDeadlineSchemaErrors;
 }
+
+export default exported;
