@@ -545,12 +545,15 @@
     }
 
     .kaynnistys_1{
+        pointer-events: auto !important;
+        cursor: url('../../assets/icons/arrow4dir.svg') 8 8, move !important;
         .vis-item-overflow{
             position: relative;
             border: 2px solid $black1;
             background: $white;
             border-radius: 15px;
             cursor: url('../../assets/icons/arrow4dir.svg') 8 8, move !important;
+            pointer-events: auto !important;
             &::after {
                 content: "";
                 position: absolute;
@@ -570,7 +573,7 @@
                 background-color: #808080;
             }
             .vis-item-content{
-                pointer-events: auto;
+                pointer-events: auto !important;
                 padding:0;
             }
         }
