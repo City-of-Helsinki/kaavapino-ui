@@ -418,15 +418,15 @@ class EditProjectTimeTableModal extends Component {
     return formValues && formValues[deadline.attribute] ? formValues[deadline.attribute] : deadline.date;
   }
 
-  addMainGroup = (deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines, disabled, lockedStyle) => {
+  addMainGroup = (deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines, disabled) => {
     const currentDateString = new Date().toJSON().slice(0, 10);
-    const currentDate = new Date(currentDateString);
+    const currentDate = new Date(currentDateString); 
     phaseData.push({
       id: numberOfPhases,
       content: '',
       start: startDate,
       end: endDate,
-      className: style + " phase-holder" + lockedStyle,
+      className: style + " phase-holder",
       phaseID: deadlines[i].deadline.phase_id,
       phase: true,
       group: deadlines[i].deadline.phase_name,
@@ -444,7 +444,7 @@ class EditProjectTimeTableModal extends Component {
         content: "",
         start: startDate,
         end: endDate,
-        className: disabled || (currentDate > endDate) ? "phase-length past" : "phase-length" + " " +highlightID + allowEditStyle + lockedStyle,
+        className: disabled || (currentDate > endDate) ? "phase-length past" : "phase-length" + " " +highlightID + allowEditStyle,
         title: dlTitle,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -899,7 +899,7 @@ class EditProjectTimeTableModal extends Component {
 
       if(startDate && endDate){
         //Main group items not movable(Käynnistys, Periaatteet, OAS etc)
-        let mainGroup = this.addMainGroup(deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines, disabled, lockedStyle);
+        let mainGroup = this.addMainGroup(deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines, disabled);
         [phaseData, deadLineGroups, nestedDeadlines] = mainGroup;
         startDate = false
         endDate = false

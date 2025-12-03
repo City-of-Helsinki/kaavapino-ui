@@ -1424,6 +1424,42 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       return false;
     };
 
+    const isMovingPastLockedDate = (item, items) => {
+      if (!item) return false;
+
+      // Get all locked items (items with locked-color className)
+      const lockedItems = items.get().filter(i => i?.className?.includes('locked-color'));
+      if (lockedItems.length === 0) return false;
+
+      // Find the earliest locked date
+      let earliestLockedDate = null;
+      lockedItems.forEach(lockedItem => {
+        if (lockedItem.start) {
+          const lockedDate = new Date(lockedItem.start).getTime();
+          if (!earliestLockedDate || lockedDate < earliestLockedDate) {
+            earliestLockedDate = lockedDate;
+          }
+        }
+        if (lockedItem.end) {
+          const lockedDate = new Date(lockedItem.end).getTime();
+          if (!earliestLockedDate || lockedDate < earliestLockedDate) {
+            earliestLockedDate = lockedDate;
+          }
+        }
+      });
+
+      if (!earliestLockedDate) return false;
+
+      // Check if item would move past the earliest locked date
+      const itemStart = item.start ? new Date(item.start).getTime() : null;
+      const itemEnd = item.end ? new Date(item.end).getTime() : null;
+
+      if (itemStart && itemStart >= earliestLockedDate) return true;
+      if (itemEnd && itemEnd >= earliestLockedDate) return true;
+
+      return false;
+    };
+
 
     useEffect(() => {
       // Ensure capitalized Finnish locale BEFORE creating timeline so initial labels are correct
@@ -1570,7 +1606,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             callback(null);
             return;
           }
-
+          // Check if trying to move past any locked date
+          if (isMovingPastLockedDate(item, items)) {
+            callback(null);
+            return;
+          }          
           //Item is not allowed to be dragged if it is already confirmed
           if(item?.className?.includes("confirmed")){
               callback(null);
@@ -2079,9 +2119,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                           //Add all phases that are in lock
                           lockedPhases.push(item.groupName)
                         }
-                        // Append a new class while preserving existing ones
-                        const newClassName = locked ? item.className ? item.className + ' locked-color' : 'locked-color' : item.className ? item.className.replace(/\blocked-color\b/g, '').trim() : '';
-                        items.update({ id: item.id, className: newClassName, locked: !item.locked });
+                        // Append locked-color class only to non-phase-holder items (exclude phase === true items)
+                        if (item.phase !== true) {
+                          const newClassName = locked ? item.className ? item.className + ' locked-color' : 'locked-color' : item.className ? item.className.replace(/\blocked-color\b/g, '').trim() : '';
+                          items.update({ id: item.id, className: newClassName, locked: !item.locked });
+                        }
                       }
                     }
                     // Get the first item from lockedPhases
