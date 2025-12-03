@@ -1511,6 +1511,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             return;
           }
           
+          // Prevent dragging items with locked-color className
+          if (item?.className?.includes('locked-color')) {
+            callback(null);
+            return;
+          }
+          
           let tooltipEl = document.getElementById('moving-item-tooltip');
           if (!tooltipEl) {
             tooltipEl = document.createElement('div');
@@ -1645,6 +1651,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           if (moveTooltip) {
             moveTooltip.style.display = 'none';
           }
+          
+          // Prevent moving items with locked-color className
+          if (item?.className?.includes('locked-color')) {
+            callback(null);
+            return;
+          }
+          
           let preventMove = false;
           // Determine which part of the item is being dragged
           const dragElement = dragHandleRef.current;

@@ -1399,6 +1399,21 @@
     }
     .locked-color{
         background-color: grey !important;
+        pointer-events: none !important;
+        cursor: default !important;
+        
+        // Override all draggable elements within locked items
+        &.vis-point,
+        &.inner-end,
+        &.vis-point.inner-end,
+        &.kaynnistys_1,
+        &.board-date,
+        .vis-item-overflow,
+        .vis-drag-left,
+        .vis-drag-right {
+            pointer-events: none !important;
+            cursor: default !important;
+        }
     }
 
     .vis-foreground .vis-group {
