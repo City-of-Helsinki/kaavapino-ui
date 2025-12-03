@@ -1,4 +1,3 @@
-import { max } from "moment";
 import objectUtil from "./objectUtil";
 
   const isWeekend = (date) => {
