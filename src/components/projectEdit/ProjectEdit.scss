@@ -281,12 +281,48 @@
 .required-fields-container{
   ul{
     font-size: $size16;
+    margin: 0;
+    padding-left: $size24;
     li{
-      padding-top: 10px;
+      font-family: 'Helsinki Grotesk Medium','Helsinki Grotesk',sans-serif;
+      font-weight: 500;
+      font-size: $size14;
+      line-height: $size24;
+      letter-spacing: 0;
+      color: $black1;
       .required-fields-notification-link{
         text-decoration: underline;
         color: $color-bus;
+        font-family: 'Helsinki Grotesk Medium','Helsinki Grotesk',sans-serif;
+        font-weight: 500;
+        font-size: $size14;
+        line-height: $size24;
+        letter-spacing: 0;
       }
+    }
+  }
+  // Style the main notification label
+  section {
+    // HDS Notification wraps label text typically in first child div/span element
+    > div:first-child > div:first-child {
+       font-family: 'Helsinki Grotesk Bold', 'Helsinki Grotesk', sans-serif !important;
+      font-weight: 700 !important;
+      font-size: $size18 !important;
+      line-height: 150% !important;
+      letter-spacing: 0 !important;
+      color: $black1 !important;
+    }
+    .error-group-header{
+      font-family: 'Helsinki Grotesk Bold', 'Helsinki Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: $size14;
+      line-height: $size24;
+      letter-spacing: 0;
+      color: $black1;
+      margin: 0;
+    }
+    .error-group:not(:first-child) .error-group-header{
+      margin-top: $size16;
     }
   }
 }
@@ -543,7 +579,7 @@
 
 .modal-center-big{
   max-height: 98vh;
-  width: stretch !important;
+  width: 98% !important;
   margin: 0 16px !important;
   position: relative !important;
   font-family: 'Helsinki Grotesk Regular', sans-serif !important;
@@ -591,8 +627,9 @@
     }
 
     &::-webkit-scrollbar-track {
-      background-color: transparent;
-      margin-block-start: 165px;
+      background-color: #D8D8D8;
+      margin-block-start: 155px;
+      margin-block-end: 4px;
     }
 
     .timeline-group-header {
@@ -658,7 +695,7 @@
         justify-content: flex-start;
         margin:0;
         div{
-          margin: $size12;
+          margin: $size10;
         }
         span{
           color: $black1;
@@ -673,7 +710,6 @@
         color: $color-black-40 !important;
         cursor: not-allowed;
         pointer-events: none;
-        border: none;
         span {
           color: $color-black-40 !important;
         }
@@ -685,7 +721,7 @@
     }
 
     .add-button-info{
-      color: $color-info;
+      color: #0062b9;
       padding-left: $size48;
       padding-right: $size24;
       padding-bottom: $size12;
@@ -702,7 +738,7 @@
 
   .actions{
     position: absolute;
-    width: stretch;
+    width: 100%;
     height: 104px;
     display: flex;
     bottom: 0;
@@ -710,6 +746,10 @@
     margin: 0px 0 0 0 !important;
     border-top: 1px solid #808080 !important;
     background-color: #fff !important;
+    font-family: 'Helsinki Grotesk Medium', sans-serif !important;
+    font-size: $size16;
+    font-weight: 500;
+    line-height: $size24;
     .form-buttons{
       margin-top: 24px;
       margin-bottom: 24px;
@@ -738,12 +778,6 @@
 }
 
 .timeline-edit-right{
-/*   max-height: 79vh;
-  max-width: 513px !important;
-  margin: auto 8px auto auto !important;
-  position: relative !important;
-  margin-top: 70px !important;
-  overflow-y: auto; */
   height: calc(98% - 177px);
   max-width: 529px !important;
   position: absolute !important;
@@ -876,7 +910,7 @@
       flex-direction: row;
       flex-wrap: wrap;
       gap: 20px;
-      padding: 0 17px 31px 34px;
+      padding: 0 17px 75px 34px;
       & > div{
         width: 100%;
       }
@@ -1012,8 +1046,51 @@
       .deadlines-confirm-button{
         max-width: 210px;
       }
-      .deadlines-col section {
-        font-weight: 400;
+      .deadlines-col {
+        position: relative;
+
+        .custom-tooltip {
+          visibility: hidden;
+          position: absolute;
+          display: flex;
+          left: 137px;
+          top: 100%;
+          margin-top: 4px;
+          margin-left: 8px;
+          width: 177px;
+          height: auto;
+          background: #FFFFFF;
+          box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.6);
+          opacity: 1;
+          padding: 8px 12px;
+          border-radius: 2px;
+          font-family: 'Helsinki Grotesk', 'Helsinki Grotesk Regular', sans-serif;
+          font-weight: 400;
+          font-size: 14px;
+          line-height: 24px;
+          color: #000;
+          z-index: 10;
+          gap: 10px;
+        }
+
+        &:hover .custom-tooltip,
+        &:focus-within .custom-tooltip {
+          visibility: visible;
+        }
+
+        & > section {
+          font-weight: 400;
+        }
+        & > button:disabled {
+          background-color: $color-black-20;
+          color: $color-white;
+          font-family: 'Helsinki Grotesk Regular', sans-serif;
+          line-height: 24px;
+        }
+        & > button:disabled:active, button:disabled:focus-visible {
+          outline: none !important;
+          --focus-outline-color: transparent;
+        }
       }
     }
     .add-content{
@@ -1046,4 +1123,53 @@
 
 .ui.modal {
   pointer-events: auto;
+}
+
+.filterModal {
+  .modal-content {
+    width: min(1080px, calc(100vw - 64px));
+    margin: 96px auto;
+    box-shadow: 0px 2px 8px 0px #00000080;
+  }
+
+  .modal-header { display: none; }
+  .modal-header h2 { margin: 0; line-height: 1.25; }
+
+  .modal-body { padding: 8px 24px 16px; }
+
+  /* Columns */
+  .filterModal__cols {
+    display: flex;
+    flex-wrap: nowrap;         /* keep in a single row */
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  .filterModal__col {
+    flex: 1 1 0%;
+    padding-right: 64px;       /* column spacing via padding (no gap) */
+  }
+  .filterModal__col:last-child { padding-right: 0; }
+
+  /* Headings and list spacing */
+  .filterModal__col > h3 { margin: 0 0 8px 0; font-size: 20px; line-height: 1.2; }
+
+  .filterModal__list .Checkbox-module_checkbox__3L0GR {
+    display: flex;
+    align-items: center;
+    margin: 0 0 12px 0;        /* vertical spacing (no gap) */
+  }
+
+  .remove-filters { margin-top: 8px; }
+
+  /* Footer buttons left-aligned; spacing by margins (no gap) */
+  .modal-footer { display: flex; justify-content: flex-start; padding: 16px 24px 24px; border-top: 1px solid #eee; }
+  .modal-footer > * + * { margin-left: 12px; }
+
+  /* Small screens: keep original stacked layout */
+  @media (max-width: 860px) {
+    .modal-content { width: calc(100vw - 32px); margin: 64px auto; }
+    .filterModal__cols { display: block; }
+    .filterModal__col { padding-right: 0; margin-bottom: 16px; }
+  }
 }

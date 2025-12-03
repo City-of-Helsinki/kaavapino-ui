@@ -20,7 +20,7 @@ const order = [
   'voimaantulovaihe_paattyy_pvm'
 ];
 
-const getHighestNumberedObject = (obj1, arr) => {
+const getHighestNumberedObject = (obj1) => {
   // Helper function to extract the number from a content string
   const extractNumber = str => {
     // Find the last digit in the string
@@ -36,9 +36,6 @@ const getHighestNumberedObject = (obj1, arr) => {
     }
     return numStr ? parseInt(numStr, 10) : -Infinity; // Return -Infinity if no number is found
   };
-
-  // If no objects exist in the array, return null
-  if (arr.length === 0) return null;
 
   // If 'asd_x' objects exist, find the one with the highest number
   if (obj1.length > 0) {
@@ -89,79 +86,6 @@ const getHighestNumberedObject = (obj1, arr) => {
     const largest = getNumberFromString(arrOfObj);
     return largest
   };
-
-  const findLargestSuffix = (object,suffix) => {
-    // Ensure input is a valid object
-    if (typeof object !== 'object' || object === null || Object.keys(object).length === 0) {
-      return false;
-    }
-
-    let maxNumber = -1;  // Track the largest number
-    let resultKey = null;  // Store the key with the largest suffix
-
-    // Fetch all keys in the object
-    const keys = Object.keys(object);
-
-    // Iterate over all the keys
-    for (let i = 0; i < keys.length; i++) {
-      const key = keys[i];
-
-      // Only match keys starting with "milloin_oas_esillaolo_paattyy" and "milloin_oas_esillaolo_paattyy_2" for example
-      const match = key.match(suffix);
-
-      if (match) {
-        // If there's a number, parse it, otherwise assume 0
-        const number = match[1] ? parseInt(match[1], 10) : 0;
-
-        // If the extracted number is larger, update maxNumber and resultKey
-        if (number > maxNumber) {
-          maxNumber = number;
-          resultKey = key;
-        }
-      }
-    }
-    // If nothing found at all, return false
-    return resultKey !== null ? object[resultKey] : false;
-  }
-
-  const getPreviousObjectByName = (arr, id) => {
-    // Find the index of the object where object.name === name
-    const index = arr.findIndex(obj => obj.id === id);
-  
-    // If the index is greater than 0, return the object at one index earlier
-    if (index > 0) {
-      return arr[index - 1];
-    }
-  
-    // Return null or undefined if it's the first index or not found
-    return null;
-  }
-
-  const getObjectByName = (arr, id) => {
-    // Find the index of the object where object.name === name
-    const index = arr.findIndex(obj => obj.id === id);
-  
-    // return the object
-    if (index) {
-      return arr[index];
-    }
-  
-    // Return null or undefined if it's the first index or not found
-    return null;
-  }
-  //Make these one and the same and add parameter for what type find is
-  const getPreviousObjectByGroup = (arr, deadlinegroup) => {
-    // Find the index of the object where object.name === name
-    const index = arr.findIndex(obj => obj.deadlinegroup === deadlinegroup);
-  
-    // If the index is greater than 0, return the object at one index earlier
-    if (index > 0) {
-      return arr[index - 1];
-    }
-  
-    // Return null or undefined if it's the first index or not found
-    return null;
-  }
 
   const generateDateStringArray = (updatedAttributeData) => {
     const updateAttributeArray = [];
@@ -318,7 +242,32 @@ const getHighestNumberedObject = (obj1, arr) => {
     return result
   }
 
-  const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize,lockedGroup) => {
+  const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize,attributeData,lockedGroup) => {
+    // Lock logic: do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
+    // attributeData is the filtered attribute_data object (only visible fields) so we can inspect confirmation flags
+    let confirmedFieldSet = null;
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    if(attributeData){
+      try {
+        // Lazy load to avoid circular deps (generateConfirmedFields depends on constants only)
+        const { confirmationAttributeNames } = require('./constants');
+        const { generateConfirmedFields } = require('./generateConfirmedFields');
+        // Phase names that have confirmation flags (exclude kaynnistys, hyvaksyminen, voimaantulo as per saga usage)
+        const phaseNames = ['periaatteet','oas','luonnos','ehdotus','tarkistettu_ehdotus'];
+        confirmedFieldSet = new Set(generateConfirmedFields(attributeData, confirmationAttributeNames, phaseNames));
+      }
+      catch(e){
+        // Fail silently – if generation fails we simply don't lock by confirmation (past locking still applies)
+      }
+    }
+    // Helper to decide if an item should be frozen
+    const isLocked = (item) => {
+      if(!item?.value) return false;
+      const d = new Date(item.value);
+      if(!isNaN(d) && d < today) return true;
+      return confirmedFieldSet ? confirmedFieldSet.has(item.key) : false;
+    };
     // Find the index of the next item where dates should start being pushed
     const currentIndex = arr.findIndex(item => item.key === field);
     let indexToContinue = 0
@@ -326,6 +275,7 @@ const getHighestNumberedObject = (obj1, arr) => {
     if (isAdd) {
       // Move the nextItem and all following items forward if item minium is exceeded
       for (let i = currentIndex; i < arr.length; i++) {
+		    if(isLocked(arr[i])) continue; // skip locked items entirely
         if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
           && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
           && !arr[i].key.includes("hyvaksymispaatos_pvm")){
@@ -371,6 +321,7 @@ const getHighestNumberedObject = (obj1, arr) => {
     }
     else if(currentIndex !== -1){
       for (let i = currentIndex; i < arr.length; i++) {
+		    if(isLocked(arr[i])) continue; // do not move locked items
         if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
           && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
           && !arr[i].key.includes("hyvaksymispaatos_pvm")){
@@ -404,13 +355,26 @@ const getHighestNumberedObject = (obj1, arr) => {
               }
               else if(arr[currentIndex]?.key?.includes("maaraaika")){
                 //Maaraiaka moving
+                const oldStartISO = arr[i + 1]?.value;
+                const oldEndISO = arr[i + 2]?.value;
+                const endAllowed = disabledDates?.date_types[arr[i + 2]?.date_type]?.dates || [];
                 const alkaaResult = timeUtil.findAllowedDate(movedDate, arr[i + 1].initial_distance, disabledDates?.date_types[arr[i]?.date_type]?.dates, false);
                 arr[i + 1].value = new Date(alkaaResult).toISOString().split('T')[0];
                 indexToContinue = i + 1
                 if(!arr[currentIndex]?.key?.includes("kylk_maaraaika") && !arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("lautakunnassa") && arr[currentIndex]?.key?.includes("maaraaika")){
-                  const paattyyResult = timeUtil.findAllowedDate(alkaaResult, arr[i + 2].initial_distance, disabledDates?.date_types[arr[i +2]?.date_type]?.dates, false);
-                  //When moving maaraaika in esillaolo or nahtavillaolo not in lautakunta
-                  arr[i + 2].value = new Date(paattyyResult).toISOString().split('T')[0];
+                  let timespan = 0;
+                  //Keep the same timespan between alkaa and paattyy if both are defined
+                  if (endAllowed.length && oldStartISO && oldEndISO) {
+                    const start = endAllowed.findIndex(d => d >= oldStartISO);
+                    const end = endAllowed.findIndex(d => d >= oldEndISO);
+                    if (start !== -1 && end !== -1 && end >= start) timespan = end - start;
+                  }
+                  const val = endAllowed.findIndex(d => d >= arr[i + 1].value);
+                  let kept = (val !== -1 && val + timespan < endAllowed.length) ? endAllowed[val + timespan] : null;
+                  if (!kept) {
+                    kept = timeUtil.findAllowedDate(arr[i + 1].value, arr[i + 2].initial_distance, endAllowed, false);
+                  }
+                  arr[i + 2].value = new Date(kept).toISOString().split('T')[0];
                   indexToContinue = i + 2
                 }
               }
@@ -628,15 +592,10 @@ const convertPayloadValues = (payload) => {
   return { ...convertedKeyPayload,selectedPhase: phaseName };
 };
 
-
-export default {
+const exported = {
     getHighestNumberedObject,
     getMinObject,
     findValuesWithStrings,
-    findLargestSuffix,
-    getPreviousObjectByName,
-    getObjectByName,
-    getPreviousObjectByGroup,
     compareAndUpdateArrays,
     checkForDecreasingValues,
     generateDateStringArray,
@@ -651,3 +610,15 @@ export default {
     convertPayloadValues,
     filterHiddenKeysUsingSections
 }
+
+if (process.env.UNIT_TEST === "true"){
+  exported.getNumberFromString = getNumberFromString
+  exported.increasePhaseValues = increasePhaseValues
+  exported.sortPhaseData = sortPhaseData
+  exported.reverseIterateArray = reverseIterateArray
+  exported.expectedOrder = order
+  exported.findDeadlineInDeadlines = findDeadlineInDeadlines
+  exported.findDeadlineInDeadlineSections = findDeadlineInDeadlineSections
+}
+
+export default exported;

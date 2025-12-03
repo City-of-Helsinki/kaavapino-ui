@@ -1,11 +1,16 @@
 import React from 'react'
 import TestRenderer from 'react-test-renderer'
-import {render,screen} from '@testing-library/react'
-import '@testing-library/jest-dom'
+import {render, screen, cleanup} from '@testing-library/react'
+import { describe, test, expect, afterEach } from 'vitest';
 import { MemoryRouter, Route, Switch } from 'react-router-dom'
 import ProtectedRoute from '../../../components/common/ProtectedRoute'
 
 describe('<ProtectedRoute />', () => {
+
+
+  afterEach(() => {
+    cleanup();
+  });
 
   test('renders a component when pred is true', () => {
     render(

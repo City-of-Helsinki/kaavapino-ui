@@ -1,4 +1,5 @@
 @use './components/common/Common';
+@use '@/components/common/Fonts'; // single global font-face import
 @import 'react-redux-toastr/lib/css/react-redux-toastr.min.css';
 @import '../node_modules/react-datetime/css/react-datetime.css';
 

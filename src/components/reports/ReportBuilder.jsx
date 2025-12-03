@@ -94,28 +94,29 @@ function ReportBuilder(props) {
     : null
 
   const getHeaders = () => {
-    const columns = []
     const data = current && current.data
 
     if (!data || !data[0]) {
-      return columns
+      return []
     }
 
     const headerRow = data[0]
+    const columns = []
 
     headerRow.forEach(column => {
       if (column === 'Selite') {
-        return columns.push({
+        columns.push({
           Header: column,
           accessor: getNonDuplicateName(column, columns),
           minWidth: 200,
           width: 200
         })
+      } else {
+        columns.push({
+          Header: column,
+          accessor: getNonDuplicateName(column, columns)
+        })
       }
-      return columns.push({
-        Header: column,
-        accessor: getNonDuplicateName(column, columns)
-      })
     })
 
     return columns

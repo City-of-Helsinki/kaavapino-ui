@@ -1,14 +1,15 @@
 import { showField } from '../../../utils/projectVisibilityUtils'
+import { describe, test, expect } from 'vitest'
 
 const field = {}
-  const field2 = {}
-  const field3 = {}
-  const field4 = {}
-  const field5 = {}
-  const field6 = {}
-  const field7 = {}
-  const field8 = {}
-  const field9 = {}
+const field2 = {}
+const field3 = {}
+const field4 = {}
+const field5 = {}
+const field6 = {}
+const field7 = {}
+const field8 = {}
+const field9 = {}
 
   field.visibility_conditions = [{
       variable: 'a',

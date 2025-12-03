@@ -43,9 +43,12 @@ const FieldSet = ({
   updateField,
   phaseIsClosed,
   fieldsetTotal,
-  isTabActive
+  isTabActive,
+  highlightedInFieldset,
+  highlightedTag
 }) => {
   const handleBlur = () => {
+    setShowSaving(true)
     onBlur()
   }
 
@@ -61,13 +64,16 @@ const FieldSet = ({
   const [hiddenIndex, setHiddenIndex] = useState(-1)
   const [expanded, setExpanded] = useState([])
   const [adding,setAdding] = useState(false)
+  const [showSaving,setShowSaving] = useState(false)
 
   const [hiding,setHiding] = useState(false)
+  const [currentFieldset,setCurrentFieldset] = useState(false)
 
   const refreshFieldset = () => {
     //Fetch fieldset data from backend and see if there is new sub fieldset or data changes before adding new sub fieldset
     //After completed fetch useEffect adds new sub fieldset to updated last fieldset index and saves
     setAdding(true)
+    setCurrentFieldset(name)
     dispatch(getAttributeData(attributeData?.projektin_nimi,name))
   }
 
@@ -87,6 +93,7 @@ const FieldSet = ({
     if(!isMount){
       if(updateField?.fieldName === name && adding){
         //Add new fieldset to last index after fetching latest fieldset data
+        setCurrentFieldset(name)
         sets.push({})
         handleBlur()
         handleOutsideClick()
@@ -94,13 +101,24 @@ const FieldSet = ({
       }
       else if(updateField?.fieldName === name && hiding){
         //Hide fieldset after fetching latest fieldset data
+        setCurrentFieldset(name)
         dispatch(change(updateField?.formName, updateField?.set, updateField?.nulledFields))
         setHiddenIndex(updateField?.i)
         handleBlur()
         setHiding(false)
       }
+      else if(updateField?.fieldName === name && saving){
+        setCurrentFieldset(name)
+      }
     }
   }, [updateField?.fieldName,updateField?.data]) 
+
+  useEffect(() => {
+    if (!saving) {
+      setCurrentFieldset(false)
+      setShowSaving(false)
+    }
+  }, [saving])
 
   const checkLocked = (e,set,i) => {
     //Fetch fieldset data from backend and see if there is new sub fieldset or data changes
@@ -291,7 +309,8 @@ const FieldSet = ({
                       className={`input-container ${showError ? 'error' : ''} ${fieldsetDisabled ? 'disabled-fieldset' : ''}`}
                       key={j}
                     >
-                      <Form.Field required={required}>
+                      <Form.Field required={required} className={field?.field_subroles === highlightedTag && highlightedInFieldset === "yellow" ? "yellow-fieldset" : ""}>
+                        {field?.field_subroles === highlightedTag && highlightedInFieldset === "yellow" ? <div className={"yellow-fieldset" + " highlight-flag"}>{highlightedTag}</div> : ''}
                         <div className="input-header">
                           <Label
                             className={`input-title${required ? ' highlight' : ''} ${showError ? 'error' : ''
@@ -339,7 +358,7 @@ const FieldSet = ({
                           </div>
                         </div>
                         <CustomField
-                          field={{ ...field, name: currentName, disabled, automatically_added }}
+                          field={{ ...field, name: currentName, disabled: disabled || hiding || saving || adding, automatically_added }}
                           attributeData={attributeData}
                           fieldset={field.type === 'fieldset'}
                           parentName={name}
@@ -366,6 +385,8 @@ const FieldSet = ({
                           nonEditable={nonEditable}
                           phaseIsClosed={phaseIsClosed}
                           isTabActive={isTabActive}
+                          highlightedInFieldset={highlightedInFieldset}
+                          highlightedTag={highlightedTag}
                         />
                         {showError && <div className="error-text">{showError}</div>}
                         {assistiveText && <div className='assistive-text'>{assistiveText}.</div>}
@@ -375,8 +396,8 @@ const FieldSet = ({
                 })}
                 {(!disable_fieldset_delete_add && !automatically_added && !disabled) && (
                   <Button
-                    className={hiding ? "hidden" : fieldsetDisabled ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'}
-                    disabled={sets.length < 1 || disabled || fieldsetDisabled}
+                    className={`${fieldsetDisabled || saving ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'} ${hiding ? ' hidden' : ''}`}
+                    disabled={sets.length < 1 || disabled || fieldsetDisabled || saving}
                     variant="secondary"
                     size='small'
                     iconLeft={<IconTrash/>}
@@ -408,12 +429,12 @@ const FieldSet = ({
           onClick={() => {
             refreshFieldset()
           }}
-          disabled={disabled || visibleErrors.length > 0}
+          disabled={disabled || visibleErrors.length > 0 || saving}
           variant="supplementary"
           size='small'
           fullWidth={true}
           iconLeft={
-          saving || adding || hiding ? (
+          (currentFieldset === name) && adding ? (
             <div className="fieldset-spinner-button">
               <LoadingSpinner className="loading-spinner" />
             </div>
@@ -422,19 +443,20 @@ const FieldSet = ({
           )
         }
         >
-        {saving
-          ? t('project.saving')
-          : adding
+        {(currentFieldset === name) && adding
           ? t('project.adding')
-          : hiding
-          ? t('project.deleting')
           : t('project.add')}
         </Button>
-        {saving && adding && (
-        <div className="fieldset-spinner">
-          <LoadingSpinner className="loading-spinner" />
-        </div>
-        )}
+        {(updateField?.fieldName === name) && showSaving
+         ? (
+           <div className='fieldset-saving-notification'>
+             <div className="fieldset-spinner">
+               <LoadingSpinner className="loading-spinner" />
+             </div>
+             {t('project.saving')}
+           </div>
+         )
+         : <></>}
         {visibleErrors?.length > 0 ? <div className="error-text add-error">{t('project.error-prevent-add')}</div> : ""}
       </>
       )}

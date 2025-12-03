@@ -36,7 +36,8 @@ export default function QuickNav({
   currentSchema,
   documentIndex,
   locationSearch,
-  isTheResponsiblePerson
+  isTheResponsiblePerson,
+  showSection
 }) {
   const [verifying, setVerifying] = useState(false)
   const [checkButtonPressed, setCheckButtonPressed] = useState(false)
@@ -56,7 +57,7 @@ export default function QuickNav({
   const onCheckPressed = () => {
     setAllowPhaseClose(false)
     setCheckButtonPressed(true)
-    const value = hasMissingFields()
+    const value = hasMissingFields('onCheckPressed')
     setHasErrors(value)
     setValidationOk(true)
     handleCheck(true,"checkphase")
@@ -268,11 +269,11 @@ export default function QuickNav({
       }
     }
 
-    setAllowPhaseClose(documentsDownloaded)
-    const value = hasMissingFields()
-    setHasErrors(value)
+    const missing = hasMissingFields('changeCurrentPhase')
+    setHasErrors(missing)
     setValidationOk(true)
-    handleCheck(documentsDownloaded,"closephase")
+    const returnedErrorFields = handleCheck(documentsDownloaded,"closephase") || []
+    setAllowPhaseClose(documentsDownloaded && !missing && returnedErrorFields.length === 0)
   }
 
   const phaseCallback = currentChange => {
@@ -342,6 +343,16 @@ export default function QuickNav({
         highlight = true
         if(filterFieldsArray.includes(fields[x].field_subroles)){
           highlightNumber = highlightNumber + 1
+        }
+      }
+      else if(fields[x].categorization === 'fieldset' && Array.isArray(fields[x].fieldset_attributes)){
+        for (const field of fields[x].fieldset_attributes) {
+            if(field.field_subroles === highlighted){
+              highlight = true
+            }
+          if (field?.field_subroles && filterFieldsArray.includes(field.field_subroles)) {
+            highlightNumber = highlightNumber + 1
+          }
         }
       }
       else{
@@ -457,8 +468,8 @@ export default function QuickNav({
         </nav>
       </div>
 
-      <div className="quicknav-buttons">{renderButtons()}</div>
-      {isResponsible && <div className="quicknav-onhold">{renderCheckBox()}</div>}
+      {showSection && <div className="quicknav-buttons">{renderButtons()}</div>}
+      {isResponsible && showSection && <div className="quicknav-onhold">{renderCheckBox()}</div>}
       {isResponsible && notLastPhase && allowPhaseClose && (
         <ConfirmModal
           callback={phaseCallback}

@@ -134,9 +134,9 @@ export const resetAttributeData = (initialData) => ({
   type: RESET_ATTRIBUTE_DATA,
   payload: {initialData},
 });
-export const updateDateTimeline = (field, newDate, formValues, isAdd, deadlineSections, lockedGroup) => ({
+export const updateDateTimeline = (field, newDate, formValues, isAdd, deadlineSections, keepDuration=false, originalDurationDays=0, pairedEndKey=null, lockedGroup) => ({
   type: UPDATE_DATE_TIMELINE,
-  payload: { field, newDate, formValues, isAdd, deadlineSections, lockedGroup},
+  payload: { field, newDate, formValues, isAdd, deadlineSections, keepDuration, originalDurationDays, pairedEndKey , lockedGroup},
 });
 export const removeDeadlines = (deadlines) => ({
   type: REMOVE_DEADLINES,
@@ -189,9 +189,9 @@ export const showFloorArea = (showEditFloorAreaForm) => ({
   type: SHOW_FLOOR_AREA,
   payload:showEditFloorAreaForm
 })
-export const showTimetable = (showTimetable,name,selectedPhase,matchedDeadline) => ({
+export const showTimetable = (showTimetable,name,selectedPhase,matchedDeadline,subgroup) => ({
   type: SHOW_TIMETABLE,
-  payload:{showTimetable,name,selectedPhase,matchedDeadline}
+  payload:{showTimetable,name,selectedPhase,matchedDeadline,subgroup}
 })
 export const pollConnection = (connection) => ({
   type: POLL_CONNECTION,

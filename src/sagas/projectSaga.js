@@ -126,7 +126,7 @@ import {
   UPDATE_PROJECT_FAILURE,
   setValidatingTimetable
 } from '../actions/projectActions'
-import { startSubmit, stopSubmit, setSubmitSucceeded } from 'redux-form'
+import { startSubmit, stopSubmit, setSubmitSucceeded, initialize } from 'redux-form'
 import { error } from '../actions/apiActions'
 import { setAllEditFields } from '../actions/schemaActions'
 import projectUtils from '../utils/projectUtils'
@@ -326,27 +326,25 @@ function* getProject({ payload: projectId }) {
 }
 
 function getQueryValues(page_size,page,searchQuery,sortField,sortDir,status){
-  let query
-
-  query = {
+  const query = {
     page: page + 1,
     ordering: sortDir === 1 ? sortField : '-'+sortField,
     status: status,
     page_size: page_size ? page_size : 10
-  }
+  };
 
   if (searchQuery.length > 0) {
     if(searchQuery[0] !== ""){
-      query.search = searchQuery[0]
+      query.search = encodeURIComponent(searchQuery[0]);
     }
     if(searchQuery[1] !== ""){
-      query.department = searchQuery[1]
+      query.department = encodeURIComponent(searchQuery[1]);
     }
     if(searchQuery[2].length > 0){
-      query.includes_users = searchQuery[2]
+      query.includes_users = searchQuery[2].map(user => encodeURIComponent(user));
     }
   }
-  return query
+  return query;
 }
 
 function* fetchOnholdProjects({ payload }) {
@@ -601,6 +599,8 @@ const adjustDeadlineData = (attributeData, allAttributeData) => {
         key.includes("milloin_ehdotuksen_nahtavilla_paattyy") ||
         key.includes("viimeistaan_lausunnot_ehdotuksesta") ||
         key.includes("milloin_tarkistettu_ehdotus_lautakunnassa") ||
+        key.includes("kaavaehdotus_nahtaville") ||
+        key.includes("kaavaehdotus_uudelleen_nahtaville") ||
         key.includes("vahvista")) {
       attributeData[key] = attributeData[key] || allAttributeData[key]
     }
@@ -727,6 +727,24 @@ function* saveProjectFloorArea() {
   }
 }
 
+// Selectively update redux-form initial values for timetable form without overwriting current edits.
+/* function* reinitializeTimetableFormIfNeeded(responseData) {
+    const formState = yield select(editProjectTimetableFormSelector)
+    if (!responseData?.attribute_data || !formState?.values) return
+    const resp = responseData.attribute_data
+    const initial = formState.initial || {}
+    let changed = false
+    for (const k in resp) {
+        if (!isEqual(initial[k], resp[k])) {
+            changed = true
+            break
+        }
+    }
+    if (!changed) return
+    const nextInitial = { ...initial, ...resp }
+    yield put(initialize(EDIT_PROJECT_TIMETABLE_FORM, nextInitial))
+} */
+
 function* validateProjectTimetable() {
   // Remove success toastr before showing info
   toastr.removeByType('success');
@@ -791,9 +809,10 @@ function* validateProjectTimetable() {
 
       // Success. Prevent further validation calls by setting state
       yield put(setValidatingTimetable(true, true));
-
       // Backend may have edited phase start/end dates, so update project
       yield put(updateProject(response));
+      // Refresh baseline (initial) without clobbering unsaved edits so boolean toggles diff correctly later
+      //yield call(reinitializeTimetableFormIfNeeded, response)
     } catch (e) {
       if (e?.code === 'ERR_NETWORK') {
         toastr.error(i18.t('messages.validation-error'), '', {
@@ -877,6 +896,8 @@ function* saveProjectTimetable(action,retryCount = 0) {
       )
 
       yield put(updateProject(updatedProject))
+      // Refresh baseline (initial) for accurate future diffs
+      //yield call(reinitializeTimetableFormIfNeeded, updatedProject)
       yield put(setSubmitSucceeded(EDIT_PROJECT_TIMETABLE_FORM))
       yield put(saveProjectTimetableSuccessful(true))
       yield put(setAllEditFields())
@@ -891,9 +912,9 @@ function* saveProjectTimetable(action,retryCount = 0) {
         })
         yield race({
           online: take(onlineChannel), // Wait for the online event
-          timeout: delay(2500) // Wait for 2.5 seconds before retrying
+          timeout: delay(5000) // Wait for 5 seconds before retrying
         });
-        yield delay(2500); // Wait for 2.5 seconds before retrying
+        yield delay(5000); // Wait for 5 seconds before retrying
         yield call(saveProjectTimetable,action, retryCount + 1);
       }
       else {
@@ -905,7 +926,7 @@ function* saveProjectTimetable(action,retryCount = 0) {
           timeOut: 0,
           removeOnHover: false,
           showCloseButton: true,
-          className: 'large-scrollable-toastr rrt-error',
+          className: 'rrt-error',
           icon: <IconErrorFill />
         });
         yield put(saveProjectTimetableFailed(false))

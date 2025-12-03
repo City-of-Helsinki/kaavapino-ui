@@ -140,7 +140,7 @@ export const initialState = {
   lastSaved:{},
   connection:{"connection":false},
   showEditFloorAreaForm:false,
-  showEditProjectTimetableForm:{showTimetable:false,timetableTarget:"",selectedPhase:"",matchedDeadline:{}},
+  showEditProjectTimetableForm:{showTimetable:false,timetableTarget:"",selectedPhase:"",matchedDeadline:{},subGroup:""},
   lastModified:false,
   updatedFloorValue:{},
   formErrorList:[],
@@ -174,7 +174,7 @@ export const reducer = (state = initialState, action) => {
     }
 
     case UPDATE_DATE_TIMELINE: {
-      const { field, newDate, formValues, isAdd, deadlineSections, lockedGroup } = action.payload;
+      const { field, newDate, formValues, isAdd, deadlineSections, keepDuration, originalDurationDays, pairedEndKey, lockedGroup } = action.payload;
       // Create a copy of the state and attribute_data
       let updatedAttributeData
       if(formValues){
@@ -196,6 +196,13 @@ export const reducer = (state = initialState, action) => {
       const newDateObj = new Date(newDate);
       // Update the specific date at the given field
       filteredAttributeData[field] = timeUtil.formatDate(newDateObj);
+      let preservedEndValue = null;
+      if (keepDuration && originalDurationDays > 0 && pairedEndKey) {
+        const endDateObj = new Date(newDateObj);
+        endDateObj.setDate(endDateObj.getDate() + originalDurationDays);
+        preservedEndValue = timeUtil.formatDate(endDateObj);
+        filteredAttributeData[pairedEndKey] = preservedEndValue; // initial set before adjustments
+      }
       if(field === "hyvaksymispaatos_pvm" && filteredAttributeData["hyvaksyminenvaihe_paattyy_pvm"]){
         filteredAttributeData["hyvaksyminenvaihe_paattyy_pvm"] = timeUtil.formatDate(newDateObj);
       }
@@ -213,9 +220,13 @@ export const reducer = (state = initialState, action) => {
       //Compare for changes with dates in order sorted array
       const changes = objectUtil.compareAndUpdateArrays(origSortedData,updateAttributeArray,deadlineSections)
       //Find out is next date below minium and add difference of those days to all values after and move them forward 
-      const decreasingValues = objectUtil.checkForDecreasingValues(changes,isAdd,field,state.disabledDates,oldDate,newDate,moveToPast,projectSize,lockedGroup);
+      const decreasingValues = objectUtil.checkForDecreasingValues(changes,isAdd,field,state.disabledDates,oldDate,newDate,moveToPast,projectSize,filteredAttributeData,lockedGroup);
       //Add new values from array to updatedAttributeData object
       objectUtil.updateOriginalObject(filteredAttributeData,decreasingValues)
+      // Restore preserved end after adjustments if any logic changed it
+      if (keepDuration && preservedEndValue && pairedEndKey) {
+        filteredAttributeData[pairedEndKey] = preservedEndValue;
+      }
       //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
       timeUtil.compareAndUpdateDates(filteredAttributeData)
       // Return the updated state with the modified currentProject and attribute_data

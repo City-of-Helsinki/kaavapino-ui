@@ -1,9 +1,10 @@
 import React from 'react'
 import {render,screen} from '@testing-library/react'
-import '@testing-library/jest-dom'
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import SelectInput from '../../../components/input/SelectInput'
+import { describe, test, expect} from 'vitest';
+
 
 describe('<SelectInput />', () => {
   const mockStore = configureStore();

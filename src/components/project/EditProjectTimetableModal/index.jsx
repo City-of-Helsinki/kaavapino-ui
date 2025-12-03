@@ -32,12 +32,39 @@ class EditProjectTimeTableModal extends Component {
       item: null,
       items: false,
       groups: false,
+      itemsPhaseDatesOnly: [],
       showModal: false,
       collapseData: {},
       sectionAttributes: []
     }
     this.timelineRef = createRef();
   }
+
+  // Return sorted array of timeline items with a title excluding dividers
+  getSortedPhaseDateItems = (itemsDataSet) => {
+    if(!itemsDataSet || typeof itemsDataSet.get !== 'function') return [];
+    const all = itemsDataSet.get().filter(it => !!it?.title && it.title !== 'divider');
+    // Primary: start ascending. If start equal OR missing, compare end (later end should come after earlier end). Finally tie-break by id string.
+    all.sort((a,b) => {
+      // For phase-length items prefer ordering by their end (span) to keep long phases naturally after contained point events.
+      const aIsPhase = typeof a?.className === 'string' && a.className.includes('phase-length');
+      const bIsPhase = typeof b?.className === 'string' && b.className.includes('phase-length');
+      const aPrimary = aIsPhase ? (a?.end instanceof Date ? a.end.getTime() : (a?.end ? new Date(a.end).getTime() : 0)) : (a?.start instanceof Date ? a.start.getTime() : (a?.start ? new Date(a.start).getTime() : 0));
+      const bPrimary = bIsPhase ? (b?.end instanceof Date ? b.end.getTime() : (b?.end ? new Date(b.end).getTime() : 0)) : (b?.start instanceof Date ? b.start.getTime() : (b?.start ? new Date(b.start).getTime() : 0));
+      if(aPrimary !== bPrimary) return aPrimary - bPrimary;
+      // Secondary: if both primary equal, compare raw start then raw end to stabilize.
+      const aStart = a?.start instanceof Date ? a.start.getTime() : (a?.start ? new Date(a.start).getTime() : 0);
+      const bStart = b?.start instanceof Date ? b.start.getTime() : (b?.start ? new Date(b.start).getTime() : 0);
+      if(aStart !== bStart) return aStart - bStart;
+      const aEnd = a?.end instanceof Date ? a.end.getTime() : (a?.end ? new Date(a.end).getTime() : 0);
+      const bEnd = b?.end instanceof Date ? b.end.getTime() : (b?.end ? new Date(b.end).getTime() : 0);
+      if(aEnd !== bEnd) return aEnd - bEnd;
+      const aId = (a?.id || '').toString();
+      const bId = (b?.id || '').toString();
+      return aId.localeCompare(bId);
+    });
+    return all;
+  };
 
   componentDidMount() {
     const { initialize, attributeData, deadlines, deadlineSections, disabledDates,lomapaivat } = this.props
@@ -52,9 +79,11 @@ class EditProjectTimeTableModal extends Component {
       groups.add(deadLineGroups);
       groups.add(nestedDeadlines);
       items.add(phaseData)
+      // Have own state for filtered out phase indicators, dividers, disabled and holiday items for comparison reasons at VisTimelineGroup
+      const itemsPhaseDatesOnly = this.getSortedPhaseDateItems(items);
       items = this.findConsecutivePeriods(disabledDates,items,false);
       items = this.findConsecutivePeriods(lomapaivat,items,true)
-      this.setState({items,groups,visValues:attributeData})
+      this.setState({items,groups,visValues:attributeData, itemsPhaseDatesOnly})
 
       let sectionAttributes = []
       this.extractAttributes(deadlineSections, attributeData, sectionAttributes, (attribute, attributeData) => {
@@ -108,7 +137,11 @@ class EditProjectTimeTableModal extends Component {
           const combinedGroups = nestedDeadlines? deadLineGroups.concat(nestedDeadlines) : deadLineGroups
           this.state.groups.clear();
           this.state.groups.add(combinedGroups)
+          // phaseData is an array, not a DataSet; update directly
           this.state.items.update(phaseData)
+          this.setState(prevState => ({
+            itemsPhaseDatesOnly: this.getSortedPhaseDateItems(prevState.items)
+          }))
           const newObjectArray = objectUtil.findDifferencesInObjects(prevProps.formValues,formValues)
 
           //No dispatch when confirmed is added to formValues as new data
@@ -200,11 +233,21 @@ class EditProjectTimeTableModal extends Component {
   }
 
   trimPhase = (phase) => {
-    let phaseOnly = phase.split('.', 2); // Split the string at the first dot
-    if (!isNaN(phaseOnly[0])) {  // Check if the part before the dot is a number
-      phaseOnly = phaseOnly[1].trim();  // The part after the dot, with leading/trailing spaces removed
+    if(!phase || typeof phase !== 'string') return '';
+    const parts = phase.split('.', 2);
+    if(parts.length === 1) return phase.trim();
+    const prefix = parts[0].trim();
+    const rest = parts[1].trim();
+    // Drop numeric index (e.g. "2. Phase") OR size code (XL, L, M, S, XS, etc) OR short roman numeral
+    if(/^(\d+|XS|S|M|L|XL|XXL|[IVX]{1,4})$/i.test(prefix)) {
+      return rest; 
     }
-    return phaseOnly
+    /*if (Array.isArray(phaseOnly)) {
+      phaseOnly = phaseOnly.length > 1 ? phaseOnly[1].trim() : phaseOnly[0].trim();
+    }
+    return phaseOnly */
+    // Otherwise if previously logic would have returned an array, still just return trimmed original phase
+    return phase.trim();
   } 
 
   addOneDay = (dateString) => {
@@ -232,29 +275,62 @@ class EditProjectTimeTableModal extends Component {
       const day = date.getDay();
       return day === 0 || day === 6; // Sunday or Saturday
     };
-  
-    for (let i = 0; i < dates.length; i++) {
-      const currentDate = new Date(dates[i]);
-      currentDate.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(dates[i]);
-      endOfDay.setHours(23, 59, 59, 999);
 
-      if (holidays) {
-        items.add([{
-          id: `holiday_${i}`,
-          start: currentDate,
-          end: endOfDay,
-          type: "background",
-          className: "holiday",
-        }]);
+    const consecutiveGroups = [];
+
+    // Group consecutive dates together
+    let currentGroup = [dates[0]];
+
+    for (let i = 1; i < dates.length; i++) {
+      const prev = new Date(dates[i - 1]);
+      const curr = new Date(dates[i]);
+      const diffDays = (curr - prev) / (1000 * 60 * 60 * 24);
+
+      if (diffDays === 1) {
+        // consecutive day → same group
+        currentGroup.push(dates[i]);
       } else {
-        items.add([{
-          id: `disabled_date_${i}`,
-          start: currentDate,
-          end: endOfDay,
-          type: "background",
-          className: isWeekend(currentDate) ? "negative normal-weekend" : "negative",
-        }]);
+        // gap → new group
+        consecutiveGroups.push(currentGroup);
+        currentGroup = [dates[i]];
+      }
+    }
+    consecutiveGroups.push(currentGroup);
+    for (let group of consecutiveGroups) {
+      for (let i = 0; i < group.length; i++) {
+        const currentDate = new Date(group[i]);
+        currentDate.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date(group[i]);
+        endOfDay.setHours(23, 59, 59, 998);
+
+        // mark last item in this group
+        const isLast = i === group.length - 1;
+        const extraClass = (isLast && group.length > 1) ? "last" : "";
+        const isSunday = currentDate.getDay() === 0;
+        if (holidays) {
+          items.add([
+            {
+              id: `holiday_${group[i]}`,
+              start: currentDate,
+              end: endOfDay,
+              type: "background",
+              className: `holiday ${extraClass}`,
+            },
+          ]);
+        } else {
+          items.add([
+            {
+              id: `disabled_date_${group[i]}`,
+              start: currentDate,
+              end: endOfDay,
+              type: "background",
+              className: isWeekend(currentDate)
+                ? `negative normal-weekend ${isSunday ? 'sunday ' : ''}${extraClass}`
+                : `negative ${extraClass}`,
+            },
+          ]);
+        }
       }
     }
 
@@ -277,14 +353,18 @@ class EditProjectTimeTableModal extends Component {
   }
 
   // Helper to determine expanded state
-  getExpandedState = (title, ongoingPhase, isMounting, collapseData, showTimetableForm) => (
-    collapseData[title] ||
-    ((title === ongoingPhase && isMounting) || title === showTimetableForm?.selectedPhase) || false
-  )
+  getExpandedState = (title, ongoingPhase, isMounting, collapseData, showTimetableForm) => {
+    const normaliseText = v => (v || '').toString().trim().toLowerCase();
+    return (
+      collapseData[title] ||
+      ((normaliseText(title) === normaliseText(ongoingPhase) && isMounting) || normaliseText(title) === normaliseText(showTimetableForm?.selectedPhase)) || false
+    );
+  }
 
   addDeadLineGroups = (deadlineSections, deadLineGroups, ongoingPhase, isMounting) => {
     // Collect collapseData updates to avoid calling setState in a loop
     let collapseDataUpdates = {};
+    const normaliseText = v => (v || '').toString().trim().toLowerCase();
 
     deadlineSections.forEach(section => {
       section.grouped_sections.forEach(groupedSection => {
@@ -303,7 +383,7 @@ class EditProjectTimeTableModal extends Component {
           if (
             expanded &&
             !this.state.collapseData[section.title] &&
-            (section.title === ongoingPhase || section.title === this.props.showTimetableForm?.selectedPhase)
+            (normaliseText(section.title) === normaliseText(ongoingPhase) || normaliseText(section.title) === normaliseText(this.props.showTimetableForm?.selectedPhase))
           ) {
             collapseDataUpdates[section.title] = true;
           }
@@ -346,7 +426,7 @@ class EditProjectTimeTableModal extends Component {
       content: '',
       start: startDate,
       end: endDate,
-      className: style + lockedStyle,
+      className: style + " phase-holder" + lockedStyle,
       phaseID: deadlines[i].deadline.phase_id,
       phase: true,
       group: deadlines[i].deadline.phase_name,
@@ -356,13 +436,16 @@ class EditProjectTimeTableModal extends Component {
   
     if (deadlines[i].deadline.phase_name === "Käynnistys" || deadlines[i].deadline.phase_name === "Hyväksyminen" || deadlines[i].deadline.phase_name === "Voimaantulo") {
       const highlightID = `${deadlines[i].deadline.phase_id}_${numberOfPhases}`;
+      //Add both titles of the element start date and end date to item title so when dragging we can extract the correct date to update
+      const dlTitle = deadlines[i].deadline.phase_name === "Käynnistys" ? "projektin_kaynnistys_pvm" +"-"+ deadlines[i].deadline.attribute  : deadlines[i - 1].deadline.attribute +"-"+ deadlines[i].deadline.attribute
+      const allowEditStyle = this.props?.allowedToEdit ? "" : " disable-edit"
       phaseData.push({
         id: numberOfPhases + deadlines[i].deadline.phase_name,
         content: "",
         start: startDate,
         end: endDate,
-        className: disabled || (currentDate > endDate) ? "phase-length past" : "phase-length" + " " +highlightID + lockedStyle,
-        title: deadlines[i].deadline.attribute,
+        className: disabled || (currentDate > endDate) ? "phase-length past" : "phase-length" + " " +highlightID + allowEditStyle + lockedStyle,
+        title: dlTitle,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
         group: numberOfPhases,
@@ -408,12 +491,13 @@ class EditProjectTimeTableModal extends Component {
 
   addSubgroup = (deadlines, i, numberOfPhases, dashStart, dashEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone, formValues, lockedStyle) => {
     const highlightID = `${deadlines[i].deadline.phase_id}_${numberOfPhases}`;
+    const allowEditStyle = this.props?.allowedToEdit ? "" : " disable-edit"
     if(dashStart === null && milestone === null && dashEnd){
       phaseData.push({
         start: dashEnd,
         id: numberOfPhases,
         content: "",
-        className: "board-only " + dashedStyle + " " + highlightID + lockedStyle,
+        className: "board-only " + dashedStyle + " " + highlightID + allowEditStyle + lockedStyle,
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -430,7 +514,7 @@ class EditProjectTimeTableModal extends Component {
         start: dashStart,
         id: numberOfPhases,
         content: "",
-        className: dashedStyle + " " + highlightID + lockedStyle,
+        className: dashedStyle + " " + highlightID + allowEditStyle + lockedStyle,
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -447,8 +531,8 @@ class EditProjectTimeTableModal extends Component {
         start: milestone,
         id: numberOfPhases + " maaraaika",
         content: "",
-        className: dashedStyle + " " + highlightID + lockedStyle,
-        title: deadlines[i].deadline.attribute,
+        className: dashedStyle + " " + highlightID + allowEditStyle + lockedStyle,
+        title: deadlines[i - 2].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
         group: numberOfPhases,
@@ -463,7 +547,7 @@ class EditProjectTimeTableModal extends Component {
         end: dashStart,
         id: numberOfPhases + " divider",
         content: "",
-        className: "divider" + " " + highlightID + lockedStyle,
+        className: "divider" + " " + highlightID + allowEditStyle + lockedStyle,
         title: "divider",
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -478,8 +562,8 @@ class EditProjectTimeTableModal extends Component {
         end: dashEnd,
         id: numberOfPhases,
         content: "",
-        className: dashedStyle + " " + highlightID + lockedStyle,
-        title: deadlines[i].deadline.attribute,
+        className: dashedStyle + " " + highlightID + allowEditStyle + lockedStyle,
+        title: deadlines[i - 1].deadline.attribute + "-" +  deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
         group: numberOfPhases,
@@ -495,8 +579,8 @@ class EditProjectTimeTableModal extends Component {
           start: dashStart,
           id: numberOfPhases + " maaraaika",
           content: "",
-          className: dashedStyle + " deadline" + " " + highlightID + lockedStyle,
-          title: deadlines[i].deadline.attribute,
+          className: dashedStyle + " deadline" + " " + highlightID + allowEditStyle + lockedStyle,
+          title: deadlines[i - 1].deadline.attribute,
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
           group: numberOfPhases,
@@ -511,7 +595,7 @@ class EditProjectTimeTableModal extends Component {
           end: dashEnd,
           id: numberOfPhases + " divider",
           content: "",
-          className: "divider" + " " + highlightID + lockedStyle,
+          className: "divider" + " " + highlightID + allowEditStyle + lockedStyle,
           title: "divider",
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
@@ -525,7 +609,7 @@ class EditProjectTimeTableModal extends Component {
           start: dashEnd,
           id: numberOfPhases + " lautakunta",
           content: "",
-          className: dashedStyle + " board-date" + " " + highlightID + lockedStyle,
+          className: dashedStyle + " board-date" + (deadlines[i].deadline.phase_name === "Tarkistettu ehdotus" ? " board-right" : "") + " " + highlightID + allowEditStyle + lockedStyle,
           title: deadlines[i].deadline.attribute,
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
@@ -542,8 +626,8 @@ class EditProjectTimeTableModal extends Component {
           end: dashEnd,
           id: numberOfPhases,
           content: "",
-          className: dashedStyle + " " + highlightID + lockedStyle,
-          title: deadlines[i].deadline.attribute,
+          className: dashedStyle + " " + highlightID + allowEditStyle + " only-inner-end" + lockedStyle,
+          title: deadlines[i - 1].deadline.attribute +"-"+ deadlines[i].deadline.attribute,
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
           group: numberOfPhases,
@@ -634,6 +718,7 @@ class EditProjectTimeTableModal extends Component {
           startDate = formValues && formValues["hyvaksymispaatos_pvm"] 
           ? new Date(formValues["hyvaksymispaatos_pvm"]) 
           : phaseStart
+          startDate.setHours(12, 0, 0, 0);
         }
         else{
           //If formValues has deadline.attribute use that values, it if not then use deadline[i].date in startDate.
@@ -677,7 +762,7 @@ class EditProjectTimeTableModal extends Component {
           if (innerEnd < currentDate) {
             innerStyle += " past";
           }
-          if (isDeadlineConfirmed(formValues, deadlineGroup, false)) {
+          if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
             innerStyle += " confirmed" + lockedStyle;
           }
         }
@@ -729,7 +814,7 @@ class EditProjectTimeTableModal extends Component {
             innerStyle += " past";
           }
 
-          if (isDeadlineConfirmed(formValues, deadlineGroup, false)) {
+          if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
             innerStyle += " confirmed" + lockedStyle;
           }
         }
@@ -762,7 +847,7 @@ class EditProjectTimeTableModal extends Component {
             innerStyle += " past";
           }
 
-          if (isDeadlineConfirmed(formValues, deadlineGroup, false)) {
+          if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
             innerStyle += " confirmed" + lockedStyle;
           }
         }
@@ -1008,6 +1093,19 @@ class EditProjectTimeTableModal extends Component {
           if(newItem){
             const newVal = validValues.find(item => item.key === newItem)
             newDate = new Date(newVal.value)
+                // --- Ensure new date is at least tomorrow ---
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            newDate.setHours(0, 0, 0, 0);
+            if (newDate <= today) {
+                newDate = new Date(today);
+                newDate.setDate(today.getDate() + 1);
+                // Also update validValues so subsequent calculations use the corrected date
+                const idx = validValues.findIndex(item => item.key === newItem);
+                if (idx !== -1) {
+                    validValues[idx].value = newDate.toISOString().split('T')[0];
+                }
+            }
             matchingSection = objectUtil.findItem(distanceArray,newItem,"name",1)
           }
           else{
@@ -1223,9 +1321,45 @@ class EditProjectTimeTableModal extends Component {
     this.setState({ collapseData: updatedCollapseData });
   }
 
+  getPhaseList = (kokoluokka, periaatteet_luotu, luonnos_luotu) => {
+    const PHASES_XL = [
+      "Käynnistys",
+      "OAS",
+      "Ehdotus",
+      "Tarkistettu ehdotus",
+      "Hyväksyminen",
+      "Voimaantulo"
+    ];
+
+    const PHASES_OTHER = [
+      "Käynnistys",
+      "OAS",
+      "Ehdotus",
+      "Tarkistettu ehdotus",
+      "Hyväksyminen",
+      "Voimaantulo"
+    ];
+
+    if (kokoluokka === "XL") {
+      // Insert "Periaatteet" after "Käynnistys" if created
+      if (periaatteet_luotu) {
+        PHASES_XL.splice(1, 0, "Periaatteet");
+      }
+      // Insert "Luonnos" after "OAS" if created
+      if (luonnos_luotu) {
+        const oasIndex = PHASES_XL.indexOf("OAS");
+        PHASES_XL.splice(oasIndex + 1, 0, "Luonnos");
+      }
+      return PHASES_XL;
+    }
+
+    return PHASES_OTHER;
+  };
+
   render() {
     const { loading } = this.state
     const { 
+      attributeData,
       open, 
       formValues, 
       deadlines, 
@@ -1244,6 +1378,11 @@ class EditProjectTimeTableModal extends Component {
       return null
     }
 
+    // Calculate ongoingPhase, phaseList, and currentPhaseIndex here:
+    const ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe);
+    const phaseList = this.getPhaseList(attributeData?.kaavaprosessin_kokoluokka,attributeData?.periaatteet_luotu,attributeData?.luonnos_luotu);
+    const currentPhaseIndex = phaseList.indexOf(ongoingPhase);
+    
     return (
       <Modal
         size="large"
@@ -1262,6 +1401,8 @@ class EditProjectTimeTableModal extends Component {
             </div>
             <VisTimelineGroup
               timelineRef={this.timelineRef}
+              phaseList={phaseList}
+              currentPhaseIndex={currentPhaseIndex}
               options={this.state.options}
               groups={this.state.groups}
               changedItem={this.state.item}
@@ -1281,6 +1422,7 @@ class EditProjectTimeTableModal extends Component {
               trackExpandedGroups={this.trackExpandedGroups}
               sectionAttributes={this.state.sectionAttributes}
               showTimetableForm={this.props.showTimetableForm}
+              itemsPhaseDatesOnly={this.state.itemsPhaseDatesOnly}
             /> 
             <ConfirmModal 
               openConfirmModal={this.state.showModal}
@@ -1300,7 +1442,7 @@ class EditProjectTimeTableModal extends Component {
           <span className="form-buttons">
             <Button
               variant="primary"
-              disabled={loading || !allowedToEdit}
+              disabled={this.props.validatingTimetable?.started || loading || !allowedToEdit}
               loadingText={t('common.save-timeline')}
               isLoading={loading}
               type="submit"

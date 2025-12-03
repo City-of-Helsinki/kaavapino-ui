@@ -3,7 +3,7 @@ import { Button, Tag, IconTrash, Checkbox } from 'hds-react';
 import { getOffset } from '../../hooks/getOffset';
 import './ProjectEdit.scss'
 
-function FormFilter({schema,filterFields,isHighlightedTag,selectedPhase,allfields,currentlyHighlighted}) {
+function FormFilter({schema,filterFields,isHighlightedTag,selectedPhase,allfields,currentlyHighlighted,showSection}) {
 
 const openButtonRef = useRef(null);
 const modal = document.getElementById("myModal");
@@ -14,6 +14,8 @@ const [selectedTag, setSelectedTag] = useState("")
 const [options,setOptions] = useState([]);
 const [totalFilteredFields,setTotalFilteredFields] = useState(0)
 const [isVisible,setVisible] = useState(true);
+
+const prevTotalFilteredFields = useRef(totalFilteredFields);
 
 useEffect(() => {
     window.addEventListener("scroll",listenToScroll);
@@ -28,19 +30,20 @@ useEffect(() => {
         }
     }
     setTagArray(tagArray)
-
-    //If no filters and leghty form +2000px etc and user has scrolled a lot and sets filter with only few result,
-    //scroll back to top off form instead of leaving scroll position near the footer and hiding results of filtering.
-    const formHeight = document.getElementsByClassName("form-container")[0]
-    const windowHeight = window.innerHeight
-
-    if(windowHeight > formHeight.offsetHeight){
-        const startOffForm = document.getElementById("accordion-title")
-        if(startOffForm){
-            startOffForm.scrollIntoView()
-        }
-    }
 }, [tags])
+
+useEffect(() => {
+    const startOffForm = document.getElementById("accordion-title");
+    if (startOffForm) {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                const y = startOffForm.getBoundingClientRect().top + window.pageYOffset - 250;
+                window.scrollTo({ top: y, behavior: "smooth" });
+            });
+        });
+    }
+    prevTotalFilteredFields.current = totalFilteredFields;
+}, [totalFilteredFields]);
 
 useEffect(() => {
     calculateFields(allfields)
@@ -51,11 +54,11 @@ useEffect(() => {
     if(schema){
         let roles = schema.filters.subroles
         for (let x = 0; x < roles.length; x++) {
-            if(roles[x] === "Projektin vastuuhenkilö"){
+            if(roles[x] === "Projektin vastuuhenkilö" || roles[x] === "Rakennussuojelu" || roles[x] === "Suunnitteluavustaja"){
                 optionsArray[2].roles.push(roles[x]);
             }
             else if(roles[x] === "Kaavoitussihteeri" || roles[x] === "Kanslian pääkäyttäjä" ||
-            roles[x] === "Suunnitteluassistentti" || roles[x] === "Tontit-yksikön pääkäyttäjä"){
+            roles[x] === "Suunnitteluassistentti" || roles[x] === "Tontit-yksikön pääkäyttäjä" || roles[x] === "Kaavamaksut ja seuranta"){
                 optionsArray[1].roles.push(roles[x]);
             }
             else{
@@ -101,8 +104,18 @@ const calculateFields = (all) => {
    for (let i = 0; i < all.length; i++) {
        let field = all[i].fields
        for (let x = 0; x < field.length; x++) {
+           // Count direct field match
            if(fields.includes(field[x].field_subroles)){
-            totalFilteredFields = totalFilteredFields + 1
+				totalFilteredFields = totalFilteredFields + 1
+				continue;
+			}
+           // Also allow fieldsets to match if ANY of their attributes has matching subrole
+           if(
+           	field[x].categorization === 'fieldset' &&
+           	Array.isArray(field[x].fieldset_attributes) &&
+           	field[x].fieldset_attributes.some(attr => attr?.field_subroles && fields.includes(attr.field_subroles))
+           ){
+           	totalFilteredFields = totalFilteredFields + 1
            }
        }
    }
@@ -126,7 +139,10 @@ const handleChange = (e) => {
 };
 
 const openModal = () => {
-    modal.style.display = "block";
+    if(modal){
+        modal.classList.add("filterModal");
+        modal.style.display = "block";
+    }
 }
 
 const closeModal = () => {
@@ -229,7 +245,7 @@ return (
             {renderedTags}
         </div>
         <div className='right-container'>
-            <Button ref={openButtonRef} onClick={() => openModal()} className="toggle-filters" variant="secondary" size="small">
+            <Button ref={openButtonRef} onClick={() => openModal()} className="toggle-filters" variant="secondary" size="small" disabled={!showSection}>
                 Muokkaa suodattimia
             </Button>
         </div>
@@ -239,28 +255,29 @@ return (
                     <h2>Suodattimet</h2>
                 </div>
                 <div className="modal-body">
-                    {(() => {
-                    let row = []
-                        for (let i = 0; i < options.length; i++) {
-                            let header = options[i].header
-                            let roles = options[i].roles
-                            row.push(<h3 key={header + i}>{header}</h3>)
-                            for (let x = 0; x < roles.length; x++) {
-                                row.push(<Checkbox
-                                    key={`checkbox-${roles[x]}-filter`}
-                                    id={`checkbox-${roles[x]}-filter`}
-                                    label={roles[x]}
-                                    name={roles[x]}
-                                    checked={checkedItems[roles[x]]}
-                                    onChange={handleChange}
-                                />)
-                            }
-                        }
-                        return row
-                    })()}
-                    <Button onClick={() => removeFilters()} className="remove-filters" variant="supplementary" iconLeft={<IconTrash />}>
-                        Poista kaikki valinnat
-                    </Button>
+                <div className="filterModal__cols">
+                    {options.map((opt, i) => (
+                        <div className="filterModal__col" key={`col-${i}`}>
+                            <h3>{opt.header}</h3>
+                            <div className="filterModal__list">
+                            {opt.roles.map((role) => (
+                                <Checkbox
+                                key={`checkbox-${role}-filter`}
+                                id={`checkbox-${role}-filter`}
+                                label={role}
+                                name={role}
+                                checked={!!checkedItems[role]}
+                                onChange={handleChange}
+                                />
+                            ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                <Button onClick={removeFilters} className="remove-filters" variant="supplementary" iconLeft={<IconTrash />}>
+                    Poista kaikki valinnat
+                </Button>
                 </div>
                 <div className="modal-footer">
                     <Button className="save" size="small" onClick={() => saveSelections()}>Tallenna</Button>
