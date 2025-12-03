@@ -35,7 +35,6 @@ const getLautakuntaDates = (deadlinegroup, data, deadlines) => {
   const confirmBoard = !!isDeadlineConfirmed(data, deadlinegroup);
   const boardDate = lautakuntaAttribute ? data[lautakuntaAttribute] : "";
   const boardModified = !!lautakuntaDeadline?.edited;
-  console.log("returning lautakunta dates", boardDate, confirmBoard, boardModified);
   return { boardDate, confirmBoard, boardModified };
 }
 
@@ -108,88 +107,53 @@ const getDraftDates = (data,deadlines) => {
 }
 
 const getSuggestion = (data,deadlines) => {
-  let hide = false
+  let nahtavillaConfirmed = true
   let startDate = ""
   let endDate = ""
   let startModified = false
   let endModified = false
   const starText = "custom-card.suggestion-start-text"
   const endText = "custom-card.suggestion-end-text"
-  const boardDate = data?.milloin_kaavaehdotus_lautakunnassa
-  const confirmBoard = data?.vahvista_kaavaehdotus_lautakunnassa
   const boardText = "custom-card.suggestion-board-text"
-  const boardModified = userHasModified("milloin_kaavaehdotus_lautakunnassa",deadlines,"Ehdotus")
-  const startAttribute = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso || data?.milloin_ehdotuksen_nahtavilla_alkaa_pieni
-  const startAttribute_2 = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_2 || data?.milloin_ehdotuksen_nahtavilla_alkaa_pieni_2
-  const startAttribute_3 = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_3 || data?.milloin_ehdotuksen_nahtavilla_alkaa_pieni_3
-  const startAttribute_4 = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_4 || data?.milloin_ehdotuksen_nahtavilla_alkaa_pieni_4
-
-  const confirmStartAttr = data?.vahvista_ehdotus_esillaolo_alkaa_iso || data?.vahvista_ehdotus_esillaolo_alkaa_pieni || data?.vahvista_ehdotus_esillaolo;
-  const confirmStartAttr2 = data?.vahvista_ehdotus_esillaolo_alkaa_iso_2 || data?.vahvista_ehdotus_esillaolo_alkaa_pieni_2
-  const confirmStartAttr3 = data?.vahvista_ehdotus_esillaolo_alkaa_iso_3 || data?.vahvista_ehdotus_esillaolo_alkaa_pieni_3
-  const confirmStartAttr4 = data?.vahvista_ehdotus_esillaolo_alkaa_iso_4 || data?.vahvista_ehdotus_esillaolo_alkaa_pieni_4
-
-  if (
-    data?.kaavaehdotus_uudelleen_nahtaville_4 === true &&
-    confirmStartAttr4 === true &&
-    startAttribute_4 &&
-    data?.milloin_ehdotuksen_nahtavilla_paattyy_4
-  ) {
-    hide = isConfirmed(confirmStartAttr4)
-    startDate = startAttribute_4
-    endDate = data?.milloin_ehdotuksen_nahtavilla_paattyy_4
-    const attributeStartText = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_4 ? "milloin_ehdotuksen_nahtavilla_alkaa_iso_4" : "milloin_ehdotuksen_nahtavilla_alkaa_pieni_4"
-    startModified = userHasModified(attributeStartText,deadlines,"Ehdotus")
-    endModified = userHasModified("milloin_ehdotuksen_nahtavilla_paattyy_4",deadlines,"Ehdotus")
-  }
-  else if (
-    data?.kaavaehdotus_uudelleen_nahtaville_3 === true &&
-    confirmStartAttr3 === true &&
-    startAttribute_3 &&
-    data?.milloin_ehdotuksen_nahtavilla_paattyy_3
-  ) {
-    hide = isConfirmed(confirmStartAttr3)
-    startDate = startAttribute_3
-    endDate = data?.milloin_ehdotuksen_nahtavilla_paattyy_3
-    const attributeStartText = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_3 ? "milloin_ehdotuksen_nahtavilla_alkaa_iso_3" : "milloin_ehdotuksen_nahtavilla_alkaa_pieni_3"
-    startModified = userHasModified(attributeStartText,deadlines,"Ehdotus")
-    endModified = userHasModified("milloin_ehdotuksen_nahtavilla_paattyy_3",deadlines,"Ehdotus")
-  }
-  else if (
-    data?.kaavaehdotus_uudelleen_nahtaville_2 === true &&
-    confirmStartAttr2 === true &&
-    startAttribute_2 &&
-    data?.milloin_ehdotuksen_nahtavilla_paattyy_2
-  ) {
-    hide = isConfirmed(confirmStartAttr2)
-    startDate = startAttribute_2
-    endDate = data?.milloin_ehdotuksen_nahtavilla_paattyy_2
-    const attributeStartText = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_2 ? "milloin_ehdotuksen_nahtavilla_alkaa_iso_2" : "milloin_ehdotuksen_nahtavilla_alkaa_pieni_2"
-    startModified = userHasModified(attributeStartText,deadlines,"Ehdotus")
-    endModified = userHasModified("milloin_ehdotuksen_nahtavilla_paattyy_2",deadlines,"Ehdotus")
-  }
-  else if (
-    data?.kaavaehdotus_nahtaville_1 === true &&
-    confirmStartAttr === true &&
-    startAttribute &&
-    data?.milloin_ehdotuksen_nahtavilla_paattyy
-  ) {
-    hide = isConfirmed(confirmStartAttr)
-    startDate = startAttribute
-    endDate = data?.milloin_ehdotuksen_nahtavilla_paattyy
-    const attributeStartText = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso ? "milloin_ehdotuksen_nahtavilla_alkaa_iso" : "milloin_ehdotuksen_nahtavilla_alkaa_pieni"
-    startModified = userHasModified(attributeStartText,deadlines,"Ehdotus")
-    endModified = userHasModified("milloin_ehdotuksen_nahtavilla_paattyy",deadlines,"Ehdotus")
+  let lkDates = {
+    boardDate: "",
+    confirmBoard: false,
+    boardModified: false
   }
 
-  return [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText,boardModified,starText,endText]
+  let nahtavillaDone = false;
+  for (let i = 4, lkDone = false; i > 0; i--) {
+    if ((!lkDone) && data?.[`kaavaehdotus_lautakuntaan_${i}`]) {
+      lkDates = getLautakuntaDates(`ehdotus_lautakuntakerta_${i}`, data, deadlines);
+      lkDone = true;
+    }
+    if ((!nahtavillaDone) && data?.[`kaavaehdotus_uudelleen_nahtaville_${i}`]) {
+      [startDate,endDate,nahtavillaConfirmed,startModified,endModified] = getEsillaoloDates(`ehdotus_nahtavillaolokerta_${i}`, data, deadlines);
+      nahtavillaDone = true;
+    }
+  }
+  if (!nahtavillaDone && data?.kaavaehdotus_nahtaville_1 !== false) {
+    [startDate,endDate,nahtavillaConfirmed,startModified,endModified] = getEsillaoloDates("ehdotus_nahtavillaolokerta_1", data, deadlines);
+  }
+
+  return [startDate,endDate,nahtavillaConfirmed,startModified,endModified,
+    lkDates.boardDate,lkDates.confirmBoard,boardText,lkDates.boardModified,starText,endText]
 }
 
 const getReviewSuggestion = (data,deadlines) => {
-  const boardDate = data?.milloin_tarkistettu_ehdotus_lautakunnassa
-  const confirmBoard = data?.vahvista_tarkistettu_ehdotus_lautakunnassa
   const boardText = "custom-card.review-suggestion-board-text"
-  const boardModified = userHasModified("milloin_tarkistettu_ehdotus_lautakunnassa",deadlines,"Tarkistettu ehdotus")
+  let lkDates = {
+    boardDate: "",
+    confirmBoard: false,
+    boardModified: false
+  }
+  for (let i = 4; i > 0; i--) {
+    if (data?.[`tarkistettu_ehdotus_lautakuntaan_${i}`]) {
+      lkDates = getLautakuntaDates(`tarkistettu_ehdotus_lautakuntakerta_${i}`, data, deadlines);
+      break;
+    }
+  }
+  const { boardDate, confirmBoard, boardModified } = lkDates;
   return ["","",confirmBoard,true,true,boardDate,confirmBoard,boardText,boardModified]
 }
 
