@@ -63,7 +63,7 @@ const CustomCheckbox = ({
 
     setChecked( inputValue )
   }, [value])
- 
+  
   const onChangeSave = () => {
     setChecked( !checked )
     onChange(!checked)

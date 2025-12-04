@@ -20,6 +20,32 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
     }
   }
 
+  const getReasonMessage = (reason, groupId, t) => {
+    if (reason === "Lukitus päällä") {
+      return t('project.locking-enabled');
+    }
+    
+    if (reason === "noconfirmation") {
+      return groupId === "Ehdotus" 
+        ? t('project.confirm-previous-presence-first')
+        : t('project.confirm-previous-display-first');
+    }
+    
+    return groupId === "Ehdotus"
+      ? t('project.max-presences-reached')
+      : t('project.max-displays-reached');
+  };
+
+  const getBoardReasonMessage = (reason, t) => {
+    if (reason === "Lukitus päällä") {
+      return t('project.locking-enabled');
+    }
+    
+    return reason === "noconfirmation"
+      ? t('project.confirm-previous-board-first')
+      : t('project.max-boards-reached');
+  };
+
   useEffect(() => {
     if (timelineAddButton) {
       if (toggleOpenAddDialog) {
@@ -51,6 +77,7 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
           </Button>
           {addDialogData.esillaoloReason && (
             <span className='add-button-info'>
+              {getReasonMessage(addDialogData.esillaoloReason, addDialogData.group.id, t)}
               {(addDialogData.nextEsillaolo === "jarjestetaan_periaatteet_esillaolo_1" || addDialogData.nextEsillaolo === "jarjestetaan_luonnos_esillaolo_1") && addDialogData.nextLautakunta === false
                 ? ""
                 : (
@@ -86,6 +113,7 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
           </Button>
           {addDialogData.lautakuntaReason && !addDialogData.showBoard && (
             <span className='add-button-info'>
+              {getBoardReasonMessage(addDialogData.lautakuntaReason, t)}
               {addDialogData.lautakuntaReason === "Vahvistusta ei voi perua, koska seuraava nähtävilläolo on jo lisätty." || addDialogData.lautakuntaReason === "nahtavillaolo vahvistettu."
                 ? "Lautakuntaa ei voi lisätä, koska seuraava nähtävilläolo on jo vahvistettu."
                 : addDialogData.lautakuntaReason === "noconfirmation"

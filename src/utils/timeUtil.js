@@ -532,6 +532,41 @@ const findNextPossibleValue = (array, value, addedDays) => {
   return null;
 }
 
+const calculateTotalDistances = (startIndex, endIndex, sectionAttributes, formValues, dateTypes) => {
+  const formStartDate = formValues[sectionAttributes[startIndex].name];
+  const formEndDate = formValues[sectionAttributes[endIndex].name];
+  let totalDistance = 0;
+  let holidayCount = 0;
+  // Calculate original total distance from section attributes
+  for (let i = startIndex; i <= endIndex; i++) {
+    if (i !== startIndex) {
+      totalDistance += (sectionAttributes[i]?.distance_from_previous || 0);
+    }
+  }
+  // Use arkipäivät to find holidays (weekdays not in arkipäivät = holidays)
+  if (formStartDate && formEndDate && dateTypes["arkipäivät"]?.dates) {
+    const weekdayDates = dateTypes["arkipäivät"].dates;
+    const endDate = new Date(formEndDate);
+    
+    for (let currentDate = new Date(formStartDate); ; currentDate.setDate(currentDate.getDate() + 1)) {
+      if (currentDate > endDate) {
+        break;
+      }
+      const dateStr = formatDate(currentDate);
+      const dayOfWeek = currentDate.getDay();
+      // If it's a weekday (Mon-Fri) but NOT in arkipäivät, it's a holiday
+      if (dayOfWeek !== 0 && dayOfWeek !== 6 && !weekdayDates.includes(dateStr)) {
+        holidayCount++;
+      }
+    }
+  }
+  // Subtract holidays from total distance
+  if(sectionAttributes[startIndex].date_type !== "esilläolopäivät"){
+    totalDistance -= holidayCount;
+  }
+  return totalDistance;
+};
+
 const findNextPossibleBoardDate = (array, value) => {
   if (!Array.isArray(array) || typeof value !== 'string') {
     throw new Error('Invalid input. Provide an array of strings and a value as a string.');
@@ -557,12 +592,24 @@ const findNextPossibleBoardDate = (array, value) => {
  return closestIndex < array.length - 1 ? array[closestIndex + 1] : array[closestIndex];
 }
 
-const getDisabledDatesForProjectStart = (name, formValues, previousItem, nextItem, dateTypes) => {
+const getDisabledDatesForProjectStart = (name, formValues, previousItem, nextItem, dateTypes, lockedItem, maxLockedDistance, lockDateLimit) => {
   const miniumDaysBetween = nextItem?.distance_from_previous;
-  const dateToCompare = name.includes("kaynnistys_paattyy_pvm") ? formValues[previousItem?.name] : formValues[nextItem?.name];
+  const dateToCompare = name.includes("kaynnistys_paattyy_pvm")
+    ? formValues[previousItem?.name]
+    : formValues[nextItem?.name];
   let newDisabledDates = dateTypes?.arkipäivät?.dates;
-  const lastPossibleDateToSelect = name.includes("kaynnistys_paattyy_pvm") ? findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompare,miniumDaysBetween) : findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompare,-miniumDaysBetween);
-  return name.includes("kaynnistys_paattyy_pvm") ? newDisabledDates.filter(date => date >= lastPossibleDateToSelect) : newDisabledDates.filter(date => date <= lastPossibleDateToSelect);
+
+  const firstPossibleDateToSelect = name.includes("kaynnistys_paattyy_pvm")
+    ? findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompare, miniumDaysBetween)
+    : findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompare, -miniumDaysBetween);
+
+  const lastPossibleDateToSelect = lockedItem
+    ? findNextPossibleValue(dateTypes?.arkipäivät?.dates, lockDateLimit, -maxLockedDistance)
+    : null;
+
+  return name.includes("kaynnistys_paattyy_pvm")
+    ? newDisabledDates.filter(date => date >= firstPossibleDateToSelect && (!lockedItem || date <= lastPossibleDateToSelect))
+    : newDisabledDates.filter(date => date <= firstPossibleDateToSelect && (!lockedItem || date <= lastPossibleDateToSelect));
 };
 
 const getDisabledDatesForApproval = (name, formValues, matchingItem, dateTypes, projectSize) => {
@@ -581,12 +628,12 @@ const getDisabledDatesForApproval = (name, formValues, matchingItem, dateTypes, 
 
 };
 
-const getDisabledDatesForLautakunta = (name, formValues, phaseName, matchingItem, previousItem, dateTypes) => {
+const getDisabledDatesForLautakunta = (name, formValues, phaseName, matchingItem, previousItem, dateTypes, lockedItem, maxLockedDistance, lockDateLimit) => {
   let dateToComparePast;
   let miniumDaysPast;
   let filteredDateToCompare;
   let firstPossibleDateToSelect;
-  //Change to correct comparable phase name from tarkistettu ehdotus to tarkistettu_ehdotus
+
   phaseName = phaseName?.includes("tarkistettu") && "tarkistettu_" + phaseName.replace("tarkistettu ", "") || phaseName;
 
   if (name.includes("_maaraaika")) {
@@ -600,17 +647,27 @@ const getDisabledDatesForLautakunta = (name, formValues, phaseName, matchingItem
       miniumDaysPast = matchingItem?.distance_from_previous || 5;
       firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.työpäivät?.dates, dateToComparePast, miniumDaysPast);
     }
+
+    const lastPossibleDateToSelect = lockedItem
+      ? findNextPossibleValue(dateTypes?.työpäivät?.dates, lockDateLimit, -maxLockedDistance)
+      : null;
+
     let newDisabledDates = dateTypes?.työpäivät?.dates;
-    return newDisabledDates.filter(date => date >= firstPossibleDateToSelect);
-  } else if (name.includes("_lautakunnassa")) {
+    return newDisabledDates.filter(date =>
+      date >= firstPossibleDateToSelect &&
+      (!lockedItem || date <= lastPossibleDateToSelect)
+    );
+  }
+
+  else if (name.includes("_lautakunnassa")) {
     const isPastFirst = formValues[`jarjestetaan_${phaseName}_esillaolo_2`] || formValues[`${phaseName}_lautakuntaan_2`] || formValues[`kaava${phaseName}_lautakuntaan_2`];
-    //Tarkistettu ehdotus 2-4 phases have only lautakunta so only 5 days minimum
     const fromPrevious = isPastFirst ? matchingItem?.distance_from_previous : false;
     miniumDaysPast = fromPrevious || (matchingItem?.initial_distance.distance + previousItem?.distance_from_previous);
+
     if ((phaseName === "periaatteet" || phaseName === "luonnos") && !isPastFirst) {
       dateToComparePast = formValues[previousItem?.previous_deadline] || formValues[previousItem?.initial_distance?.base_deadline];
       filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates, dateToComparePast, miniumDaysPast);
-    } else if (matchingItem?.name === "milloin_kaavaluonnos_lautakunnassa" || matchingItem?.name === "milloin_periaatteet_lautakunnassa") {
+    } else if (["milloin_kaavaluonnos_lautakunnassa", "milloin_periaatteet_lautakunnassa"].includes(matchingItem?.name)) {
       const esillaoloKeys = Object.keys(formValues).filter(key => key.includes(`jarjestetaan_${phaseName}_esillaolo`) && formValues[key] === true);
       const highestEsillaoloKey = esillaoloKeys.reduce((highestNumber, currentKey) => {
         const match = /_(\d+)$/.exec(currentKey);
@@ -627,18 +684,31 @@ const getDisabledDatesForLautakunta = (name, formValues, phaseName, matchingItem
     }
 
     const firstPossibleDateToSelect = findNextPossibleBoardDate(dateTypes?.lautakunnan_kokouspäivät?.dates, filteredDateToCompare);
+    const lastPossibleDateToSelect = lockedItem
+      ? findNextPossibleValue(dateTypes?.työpäivät?.dates, lockDateLimit, -maxLockedDistance)
+      : null;
+
     let newDisabledDates = dateTypes?.lautakunnan_kokouspäivät?.dates;
-    return newDisabledDates.filter(date => date >= firstPossibleDateToSelect);
+    return newDisabledDates.filter(date =>
+      date >= firstPossibleDateToSelect &&
+      (!lockedItem || date < lastPossibleDateToSelect)
+    );
   }
 };
 
-const getDisabledDatesForSizeXSXL = (name, formValues, matchingItem, dateTypes) => {
+const getDisabledDatesForSizeXSXL = (name, formValues, matchingItem, dateTypes, lockedItem, maxLockedDistance, lockDateLimit) => {
   if (name.includes("_maaraaika")) {
     const miniumDaysBetween = matchingItem?.distance_from_previous;
     const dateToCompare = formValues[matchingItem?.previous_deadline];
     let newDisabledDates = dateTypes?.työpäivät?.dates;
     const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.työpäivät?.dates, dateToCompare, miniumDaysBetween);
-    return newDisabledDates.filter(date => date >= firstPossibleDateToSelect);
+    const lastPossibleDateToSelect = lockedItem
+      ? findNextPossibleValue(dateTypes?.työpäivät?.dates, lockDateLimit, -maxLockedDistance)
+      : null;
+    return newDisabledDates.filter(date =>
+      date >= firstPossibleDateToSelect &&
+      (!lockedItem || date <= lastPossibleDateToSelect)
+    );
   } else if (name.includes("_alkaa")) {
     const miniumDaysPast = matchingItem?.distance_from_previous;
     const miniumDaysFuture = matchingItem?.distance_to_next;
@@ -647,13 +717,22 @@ const getDisabledDatesForSizeXSXL = (name, formValues, matchingItem, dateTypes) 
     let newDisabledDates = dateTypes?.esilläolopäivät?.dates;
     const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.esilläolopäivät?.dates, dateToComparePast, miniumDaysPast);
     const lastPossibleDateToSelect = findNextPossibleValue(dateTypes?.esilläolopäivät?.dates, dateToCompareFuture, -miniumDaysFuture);
-    return newDisabledDates.filter(date => date >= firstPossibleDateToSelect && date <= lastPossibleDateToSelect);
+    return newDisabledDates.filter(date =>
+      date >= firstPossibleDateToSelect &&
+      date < lastPossibleDateToSelect
+    );
   } else if (name.includes("_paattyy")) {
     const miniumDaysPast = matchingItem?.distance_from_previous;
     const dateToComparePast = formValues[matchingItem?.previous_deadline];
     let newDisabledDates = dateTypes?.esilläolopäivät?.dates;
     const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.esilläolopäivät?.dates, dateToComparePast, miniumDaysPast);
-    return newDisabledDates.filter(date => date >= firstPossibleDateToSelect);
+    const lastPossibleDateToSelect = lockedItem
+      ? findNextPossibleValue(dateTypes?.esilläolopäivät?.dates, lockDateLimit, -maxLockedDistance)
+      : null;
+    return newDisabledDates.filter(date =>
+      date >= firstPossibleDateToSelect &&
+      (!lockedItem || date <= lastPossibleDateToSelect)
+    );
   }
 };
 
@@ -674,8 +753,7 @@ const getHighestLautakuntaDate = (formValues) => {
 };
 
 
-const getDisabledDatesForNahtavillaolo = (name, formValues, phaseName, matchingItem, dateTypes, projectSize) => {
-
+const getDisabledDatesForNahtavillaolo = (name, formValues, phaseName, matchingItem, dateTypes, projectSize, lockedItem, maxLockedDistance, lockDateLimit) => {
   if (name.includes("_maaraaika")) {
     const miniumDaysBetween = matchingItem?.distance_from_previous;
     const dateToCompare = formValues[matchingItem?.previous_deadline];
@@ -697,42 +775,66 @@ const getDisabledDatesForNahtavillaolo = (name, formValues, phaseName, matchingI
     else{
       dateToComparePast = formValues[matchingItem?.previous_deadline];
     }
+
     const miniumDaysPast = matchingItem?.distance_from_previous;
     const miniumDaysFuture = matchingItem?.distance_to_next;
     const dateToCompareFuture = formValues[matchingItem?.next_deadline];
     let newDisabledDates = dateTypes?.arkipäivät?.dates;
     const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToComparePast, miniumDaysPast);
     const lastPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompareFuture, -miniumDaysFuture);
-    return newDisabledDates.filter(date => date >= firstPossibleDateToSelect && date <= lastPossibleDateToSelect);
+    return newDisabledDates.filter(date =>
+      date >= firstPossibleDateToSelect &&
+      date < lastPossibleDateToSelect
+    );
   } else if (name.includes("_paattyy") || name.includes("viimeistaan_lausunnot")) {
     const miniumDaysPast = matchingItem?.distance_from_previous;
     const dateToComparePast = formValues[matchingItem?.previous_deadline];
     let newDisabledDates = dateTypes?.arkipäivät?.dates;
     const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToComparePast, miniumDaysPast);
-    return newDisabledDates.filter(date => date >= firstPossibleDateToSelect);
+    const lastPossibleDateToSelect = lockedItem
+      ? findNextPossibleValue(dateTypes?.arkipäivät?.dates, lockDateLimit, -maxLockedDistance)
+      : null;
+    return newDisabledDates.filter(date =>
+      date >= firstPossibleDateToSelect &&
+      (!lockedItem || date < lastPossibleDateToSelect)
+    );
   }
 };
 
 // Note: despite the name, this function returns allowed dates, not disabled ones
-const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues, sectionAttributes, currentDeadline) => {
+const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues, sectionAttributes, currentDeadline, lockedGroup) => {
   const matchingItem = objectUtil.findMatchingName(sectionAttributes, name, "name");
   const previousItem = objectUtil.findItem(sectionAttributes, name, "name", -1);
   const nextItem = objectUtil.findItem(sectionAttributes, name, "name", 1);
   const phaseName = currentDeadline?.deadline?.phase_name?.toLowerCase();
   let allowedDates;
+  const lockedItem = objectUtil.findMatchingName(sectionAttributes, lockedGroup?.lockedGroup, "attributegroup", 1);
+  let maxLockedDistance = 0;
+  const startIndex = sectionAttributes.findIndex(attr => attr.attributegroup === matchingItem?.attributegroup && attr.name === name);
+  const endIndex = sectionAttributes.findIndex(attr => attr.attributegroup === lockedItem?.attributegroup);
+  //Date for last possible date to select if locking is on
+  const lockDateLimit = lockedItem ? (() => {
+    const date = new Date(lockedGroup?.lockedStartTime);
+    date.setDate(date.getDate());
+    return date.toISOString().slice(0, 10);
+  })() : false;
+
+  if(lockedItem && startIndex !== -1 && endIndex !== -1){
+    maxLockedDistance = calculateTotalDistances(startIndex,endIndex, sectionAttributes, formValues, dateTypes);
+  }
   if (name.includes("projektin_kaynnistys_pvm") || name.includes("kaynnistys_paattyy_pvm")) {
-      allowedDates = getDisabledDatesForProjectStart(name, formValues, previousItem, nextItem, dateTypes);
+      allowedDates = getDisabledDatesForProjectStart(name, formValues, previousItem, nextItem, dateTypes, lockedItem, maxLockedDistance, lockDateLimit);
   } else if (["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauenut"].includes(name)) {
       allowedDates = getDisabledDatesForApproval(name, formValues, matchingItem, dateTypes, size);
       return allowedDates; // Skip filtering past dates for approval dates
   } else if (name === "hyvaksymispaatos_valitusaika_paattyy" || name === "valitusaika_paattyy_hallinto_oikeus") {
       allowedDates = dateTypes?.arkipäivät?.dates;
   } else if (currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')) {
-      allowedDates = getDisabledDatesForLautakunta(name, formValues, phaseName, matchingItem, previousItem, dateTypes);
+      allowedDates = getDisabledDatesForLautakunta(name, formValues, phaseName, matchingItem, previousItem, dateTypes, lockedItem, maxLockedDistance, lockDateLimit);
   } else if (!nahtavillaolo) {
-      allowedDates = getDisabledDatesForSizeXSXL(name, formValues, matchingItem, dateTypes);
+      allowedDates = getDisabledDatesForSizeXSXL(name, formValues, matchingItem, dateTypes, lockedItem, maxLockedDistance, lockDateLimit);
   } else {
-      allowedDates = getDisabledDatesForNahtavillaolo(name, formValues, phaseName, matchingItem, dateTypes, size);
+      allowedDates = getDisabledDatesForNahtavillaolo(name, formValues, phaseName, matchingItem, dateTypes, size, lockedItem, maxLockedDistance, lockDateLimit);
   }
   // Filter out past dates (before today)
   const todayStr = (() => {
@@ -749,23 +851,122 @@ const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues
 };
 
 const compareAndUpdateDates = (data) => {
-  //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
-  const pairs = [
+  // Static pairs: viimeistaan lausunnot -> ehdotuksen nähtävillä päättyy variants
+  const lausuntoPairs = [
     ["viimeistaan_lausunnot_ehdotuksesta", "milloin_ehdotuksen_nahtavilla_paattyy"],
     ["viimeistaan_lausunnot_ehdotuksesta_2", "milloin_ehdotuksen_nahtavilla_paattyy_2"],
     ["viimeistaan_lausunnot_ehdotuksesta_3", "milloin_ehdotuksen_nahtavilla_paattyy_3"],
     ["viimeistaan_lausunnot_ehdotuksesta_4", "milloin_ehdotuksen_nahtavilla_paattyy_4"]
   ];
 
-  pairs.forEach(([key1, key2]) => {
-    if (data[key1] && data[key2]) {
-      const date1 = new Date(data[key1]).toISOString().slice(0, 10);
-      const date2 = new Date(data[key2]).toISOString().slice(0, 10);
-      if (date1 < date2) {
-        data[key1] = date2;
+  const validateAndNormalizeDate = (val) => {
+    if (!val) return null;
+    const d = new Date(val);
+    return isNaN(d) ? null : d.toISOString().slice(0, 10);
+  };
+
+  // Return latest (max) valid date among baseKey and its *_2..*_4 variants
+  const getLatestDateValue = (baseKey) => {
+    // Map date base keys to one or more activation boolean prefixes.
+    // For each numeric suffix n (1..4), if ALL listed prefixes exist for that n and are false, the candidate is ignored.
+    // Base variant without suffix corresponds logically to _1 booleans.
+    const activationMap = {
+      milloin_periaatteet_lautakunnassa: ["periaatteet_lautakuntaan"],
+      milloin_kaavaluonnos_lautakunnassa: ["kaavaluonnos_lautakuntaan"],
+      milloin_tarkistettu_ehdotus_lautakunnassa: ["tarkistettu_ehdotus_lautakuntaan"],
+      milloin_kaavaehdotus_lautakunnassa: ["kaavaehdotus_lautakuntaan"],
+      // Ehdotuksen nähtävillä end dates may be controlled either by initial nahtaville_1 or uudelleen_nahtaville_n flags
+      milloin_ehdotuksen_nahtavilla_paattyy: ["kaavaehdotus_nahtaville", "kaavaehdotus_uudelleen_nahtaville"],
+      // Esilläolo variants (example pattern) – extend if needed later
+      milloin_periaatteet_esillaolo_paattyy: ["jarjestetaan_periaatteet_esillaolo"],
+      milloin_luonnos_esillaolo_paattyy: ["jarjestetaan_luonnos_esillaolo"],
+      milloin_oas_esillaolo_paattyy: ["jarjestetaan_oas_esillaolo"]
+    };
+
+    const activationPrefixes = activationMap[baseKey] || [];
+
+    const variantKeys = [baseKey, `${baseKey}_2`, `${baseKey}_3`, `${baseKey}_4`];
+    const validVariants = [];
+
+    for (let i = 0; i < variantKeys.length; i++) {
+      const key = variantKeys[i];
+      const normalized = validateAndNormalizeDate(data[key]);
+      if (!normalized) continue; // skip empty / invalid
+      const suffixNumber = i === 0 ? 1 : (i + 1); // base -> 1, _2 -> 2, etc.
+      // Determine activation booleans for this suffix
+      let hasAtLeastOneActivation = false;
+      let anyActive = false;
+      for (const prefix of activationPrefixes) {
+        const boolKey = `${prefix}_${suffixNumber}`;
+        if (Object.prototype.hasOwnProperty.call(data, boolKey)) {
+          hasAtLeastOneActivation = true;
+          if (data[boolKey] === true) {
+            anyActive = true;
+          }
+        }
       }
+      // If there were activation flags and none are active, skip this variant
+      if (hasAtLeastOneActivation && !anyActive) continue;
+      validVariants.push(normalized);
+    }
+
+    if (!validVariants.length) return null;
+    return validVariants.reduce((a, b) => (b > a ? b : a), validVariants[0]);
+  };
+
+  lausuntoPairs.forEach(([dst, src]) => {
+    const srcDate = validateAndNormalizeDate(data[src]);
+    if (srcDate && data[dst] !== srcDate) {
+      data[dst] = srcDate;
     }
   });
+  //Check that phase end date line is moved to phases actual last date 
+  const buildPhasePairs = (size) => {
+    const isXL = size === "XL";
+    return [
+      ["periaatteetvaihe_paattyy_pvm", "milloin_periaatteet_lautakunnassa"],
+      ["oasvaihe_paattyy_pvm", "milloin_oas_esillaolo_paattyy"],
+      ["luonnosvaihe_paattyy_pvm", "milloin_kaavaluonnos_lautakunnassa"],
+      ["ehdotusvaihe_paattyy_pvm", isXL ? "milloin_ehdotuksen_nahtavilla_paattyy" : "milloin_ehdotus_esillaolo_paattyy"],
+      ["tarkistettuehdotusvaihe_paattyy_pvm", "milloin_tarkistettu_ehdotus_lautakunnassa"],
+      // hyvaksyminen & voimaantulo intentionally excluded (no paired controlling date specified)
+    ];
+  };
+
+  const phasePairs = buildPhasePairs(data["kaavaprosessin_kokoluokka"]);
+  phasePairs.forEach(([dst, srcBase]) => {
+    // Always pick the latest available date among base + suffixed variants
+    const latest = getLatestDateValue(srcBase);
+    if (latest && data[dst] !== latest) {
+      data[dst] = latest;
+    }
+  });
+  // Generic adjacency enforcement: each phase's start >= previous phase's end.
+  // Ordered phases including optional ones (periaatteet, luonnos) which may be absent.
+  const orderedPhases = [
+    { start: "kaynnistysvaihe_alkaa_pvm", end: "kaynnistysvaihe_paattyy_pvm" },
+    { start: "periaatteetvaihe_alkaa_pvm", end: "periaatteetvaihe_paattyy_pvm", optional: true },
+    { start: "oasvaihe_alkaa_pvm", end: "oasvaihe_paattyy_pvm" },
+    { start: "luonnosvaihe_alkaa_pvm", end: "luonnosvaihe_paattyy_pvm", optional: true },
+    { start: "ehdotusvaihe_alkaa_pvm", end: "ehdotusvaihe_paattyy_pvm" },
+    { start: "tarkistettuehdotusvaihe_alkaa_pvm", end: "tarkistettuehdotusvaihe_paattyy_pvm" },
+    { start: "hyvaksyminenvaihe_alkaa_pvm", end: "hyvaksyminenvaihe_paattyy_pvm" },
+    { start: "voimaantulovaihe_alkaa_pvm", end: "voimaantulovaihe_paattyy_pvm" }
+  ];
+
+  // Build a filtered sequence of phases that actually exist (have either start or end present)
+  const existingPhases = orderedPhases.filter(p => data[p.start] || data[p.end]);
+
+  for (let i = 1; i < existingPhases.length; i++) {
+    const prev = existingPhases[i - 1];
+    const cur = existingPhases[i];
+    const prevEnd = validateAndNormalizeDate(data[prev.end]);
+    const curStart = validateAndNormalizeDate(data[cur.start]);
+    if (prevEnd && curStart && curStart < prevEnd) {
+      // Move current start forward to previous end
+      data[cur.start] = prevEnd;
+    }
+  }
 };
  
 export default {

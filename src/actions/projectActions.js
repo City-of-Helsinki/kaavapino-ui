@@ -117,6 +117,7 @@ export const UPDATE_PROJECT_FAILURE = 'updateProjectFailure';
 export const UPDATE_ATTRIBUTE = 'updateAttribute';
 export const SAVE_PROJECT_TIMETABLE_FAILED = "saveProjectTimetableFailed";
 export const VALIDATING_TIMETABLE = "validatingTimetable"
+export const LOCK_TIMETABLE = "lockTimetable"
 
 export const updateAttribute = (field,value) => ({
   type: UPDATE_ATTRIBUTE,
@@ -133,9 +134,9 @@ export const resetAttributeData = (initialData) => ({
   type: RESET_ATTRIBUTE_DATA,
   payload: {initialData},
 });
-export const updateDateTimeline = (field, newDate, formValues, isAdd, deadlineSections) => ({
+export const updateDateTimeline = (field, newDate, formValues, isAdd, deadlineSections, keepDuration=false, originalDurationDays=0, pairedEndKey=null, lockedGroup) => ({
   type: UPDATE_DATE_TIMELINE,
-  payload: { field, newDate, formValues, isAdd, deadlineSections},
+  payload: { field, newDate, formValues, isAdd, deadlineSections, keepDuration, originalDurationDays, pairedEndKey , lockedGroup},
 });
 export const removeDeadlines = (deadlines) => ({
   type: REMOVE_DEADLINES,
@@ -537,6 +538,18 @@ export const setValidatingTimetable = (validationStarted, validationEnded) => {
     payload: {
       started: validationStarted,
       ended: validationEnded
+    }
+  }
+}
+
+export const lockTimetable = (group,phases,locked,time) => {
+  return {
+    type: LOCK_TIMETABLE,
+    payload: {
+      lockedGroup: group,
+      lockedPhases: phases,
+      locked: locked,
+      lockedStartTime: time
     }
   }
 }
