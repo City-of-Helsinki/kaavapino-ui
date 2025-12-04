@@ -27,10 +27,12 @@
             border-bottom: none;
         }
         .vis-panel.vis-center {
-            left: 292px !important;
-            border: 0;
-            border-left: 1px;
-            border-left-color:RGBA(0,0,0,0);
+            border-left-color: RGBA(0,0,0,0);
+        }
+        //Extra tooltip that shows for some reason, the actual tooltip we want to show is outside of timeline.
+        .vis-tooltip{
+            visibility: hidden !important;
+            display: none !important;
         }
     }
 
@@ -67,7 +69,7 @@
     .timeline-menu-container {
         position: sticky;
         top: 0;
-        background-color: #ffffff;
+        background-color: $white;
         z-index: 1000;
         border-bottom: 1px solid $color-black-20;
     }
@@ -154,7 +156,7 @@
                 height: $size32;
                 background: $dropdown-divider-color;
                 color: $black1;
-                border: 1px #1A1A1A solid;
+                border: 1px $black1 solid;
                 border-radius: $size16;
                 margin-right: $size16;
                 &:hover {
@@ -189,7 +191,7 @@
                 height: $size32;
                 background: $color-black-20;
                 color: $black1;
-                border: 1px #1A1A1A solid;
+                border: 1px $black1 solid;
                 border-radius: $size16;
                 outline-offset: 2px;
                 margin-right: $size16;
@@ -336,22 +338,252 @@
 
     .inner-end{
         z-index: 1000;
-        pointer-events: auto;
         border-width: 0;
         height: $size24;
         border-radius: 15px;
         top: 5.5px !important;
+        //disabled for v1 draging
+        //pointer-events: auto;
+        //cursor: url('../../assets/icons/vector.svg') 8 8, move !important;
+        pointer-events: none !important;
+        cursor: default !important;
         .vis-item-overflow{
+            position: relative;
             border: 2px solid $black1;
-            background: #fff;
+            background: $white;
             border-radius: 15px;
+            &::after {
+                content: "";
+                //Disabled for v1 dragging
+               /*  position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 8px;
+                height: 8px;
+                background-color: #B3B3B3;
+                border-radius: 50%;
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+                transition: opacity .15s ease, transform .15s ease; */
+            }
+            &:hover::after,&:active::after {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
             .vis-item-content{
-                pointer-events: auto;
+                //disabled for v1 dragging
+                //pointer-events: auto;
+                pointer-events: none !important;
                 padding:0;
             }
         }
         &.past .vis-item-overflow {
             background: $color-gray;
+        }
+    }
+    //Added for v1 dragging
+    .vis-point.inner-end {
+        z-index: 1000;
+        pointer-events: auto !important;
+        cursor: url('../../assets/icons/arrow4dir.svg') 8 8, move !important;
+        .vis-item-overflow{
+            position: relative;
+            border: 2px solid $black1;
+            background: $white;
+            border-radius: 15px;
+            &::after {
+                content: "";
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 8px;
+                height: 8px;
+                background-color: #B3B3B3;
+                border-radius: 50%;
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+                transition: opacity .15s ease, transform .15s ease;
+            }
+            &:hover::after,&:active::after {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            .vis-item-content{
+                pointer-events: auto !important;
+                padding:0;
+            }
+        }
+        &.past .vis-item-overflow {
+            background: $color-gray;
+        }
+    }
+    //Added for v1 dragging
+    [class*="ehdotus_nahtavillaolokerta"] {
+        .inner-end{
+            z-index: 1000;
+            pointer-events: none !important;
+            border-width: 0;
+            height: $size24;
+            border-radius: 15px;
+            top: 5.5px !important;
+            cursor: default;
+            .vis-item-overflow{
+                position: relative;
+                border: 2px solid $black1;
+                background: $white;
+                border-radius: 15px;
+                &::after {
+                    content: "";
+                    position: absolute;
+                    top: 50%;
+                    left: 12px;
+                    width: 8px;
+                    height: 8px;
+                    background-color: #B3B3B3;
+                    border-radius: 50%;
+                    transform: translate(-50%, -50%) scale(0);
+                    opacity: 0;
+                    transition: opacity .15s ease, transform .15s ease;
+                }
+                &:hover::after,&:active::after {
+                    transform: translate(-50%, -50%) scale(0);
+                    opacity: 0;
+                    background-color: #808080;
+                }
+                .vis-item-content{
+                    pointer-events: auto !important;
+                    padding:0;
+                }
+            }
+            &.past .vis-item-overflow {
+                background: $color-gray;
+            }
+        }
+
+        .only-inner-end{
+            z-index: 1000;
+            pointer-events: auto !important;
+            border-width: 0;
+            height: $size24;
+            border-radius: 15px;
+            top: 5.5px !important;
+            cursor: url('../../assets/icons/arrow4dir.svg') 8 8, move !important;
+            .vis-item-overflow{
+                position: relative;
+                border: 2px solid $black1;
+                background: $white;
+                border-radius: 15px;
+                &::after {
+                    content: "";
+                    position: absolute;
+                    top: 50%;
+                    left: 12px;
+                    width: 8px;
+                    height: 8px;
+                    background-color: #B3B3B3;
+                    border-radius: 50%;
+                    transform: translate(-50%, -50%) scale(1);
+                    opacity: 1;
+                    transition: opacity .15s ease, transform .15s ease;
+                }
+                &:hover::after,&:active::after {
+                    transform: translate(-50%, -50%) scale(1);
+                    opacity: 1;
+                    background-color: #808080;
+                }
+                .vis-item-content{
+                    pointer-events: auto !important;
+                    padding:0;
+                }
+            }
+            &.past .vis-item-overflow {
+                background: $color-gray;
+            }
+        }
+
+        .vis-point.inner-end {
+            z-index: 1000;
+            pointer-events: auto !important;
+            cursor: url('../../assets/icons/arrow4dir.svg') 8 8, move !important;
+            top: -4.5px !important;
+            left: -10px;
+            border: 2px solid $black1;
+            background-color: $white;
+            height: $size24;
+            width: $size24;
+            .vis-item-overflow{
+                position: relative;
+                border: 2px solid $black1;
+                background: $white;
+                border-radius: 15px;
+                &::after {
+                    content: "";
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    width: 8px;
+                    height: 8px;
+                    background-color: #B3B3B3;
+                    border-radius: 50%;
+                    transform: translate(-50%, -50%) scale(0);
+                    opacity: 0;
+                    transition: opacity .15s ease, transform .15s ease;
+                }
+                &:hover::after,&:active::after {
+                    transform: translate(-50%, -50%) scale(1);
+                    opacity: 1;
+                }
+                .vis-item-content{
+                    pointer-events: auto !important;
+                    padding:0;
+                }
+            }
+            &.past .vis-item-overflow {
+                background: $color-gray;
+            }
+        }
+    }
+
+    .kaynnistys_1{
+        pointer-events: auto !important;
+        cursor: url('../../assets/icons/arrow4dir.svg') 8 8, move !important;
+        .vis-item-overflow{
+            position: relative;
+            border: 2px solid $black1;
+            background: $white;
+            border-radius: 15px;
+            cursor: url('../../assets/icons/arrow4dir.svg') 8 8, move !important;
+            pointer-events: auto !important;
+            &::after {
+                content: "";
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 8px;
+                height: 8px;
+                background-color: #B3B3B3;
+                border-radius: 50%;
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+                transition: opacity .15s ease, transform .15s ease;
+            }
+            &:hover::after,&:active::after {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+                background-color: #808080;
+            }
+            .vis-item-content{
+                pointer-events: auto !important;
+                padding:0;
+            }
+        }
+    }
+
+    .kaynnistys_1.cursor-moving-target{
+        .vis-item-overflow{
+            &::after {
+                background-color: $color-black-50;
+            }
         }
     }
 
@@ -362,10 +594,10 @@
         left: -12px !important;
         max-width: 100%;
         display: inline-block;
-        border: 2px solid #1a1a1a;
+        border: 2px solid $black1;
         border-radius: 14px;
         padding: 5px;
-        background-color: #fff;
+        background-color: $white;
         z-index: 1500;
         .vis-dot {
             display: none;
@@ -410,18 +642,18 @@
         }
     }
     .board.board-date {
-        height: 1.3rem !important;
-        width: 1.3rem !important;
+        height: $size24 !important;
+        width: $size24 !important;
         top: -5px !important;
         left: -12px !important;
         max-width: 100%;
         right: 0;
         display: inline-block;
-        border: 2px solid #fff;
-        border-radius: 14px;
-        padding: 5px;
-        background-color: #1a1a1a;
-        box-shadow: 0 0 0 2px #1a1a1a;
+        border: 2px solid $black1;
+        border-radius: 50%;
+        padding: 0;
+        background-color: $black1;
+        box-shadow: inset 0 0 0 2px $white;
         z-index: 1500;
         .vis-dot {
             display: none;
@@ -429,19 +661,21 @@
         &.past {
             outline: 2px solid $color-gray;
             outline-offset: -2px;
-            background-color: #1a1a1a !important;
+            background-color: $black1 !important;
         }
         &.confirmed::after {
             content: "";
             position: absolute;
-            top: -13px;
-            right: -15px;
+            top: 0px;
+            left: 22.5px;
             width: 21px;
             height: 21px;
-            background: #fff url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
+            background: $white url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
             background-position: center;
             background-size: contain;
             border-radius: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
         }
     }
 
@@ -454,7 +688,7 @@
         border-radius: 6px;
         .vis-item-overflow{
             border: 2px solid $black1;
-            background: #fff;
+            background: $white;
             border-radius: inherit;
             .vis-item-content{
                 pointer-events: auto;
@@ -472,58 +706,158 @@
         border-width: 1px !important;
         border-style: solid;
         border-radius: 8px;
-        background-color: #1a1a1a;
-        border-color: #fff;
-        box-shadow: 0 0 0 2px #1a1a1a;
+        background-color: $black1;
+        border-color: $white;
+        box-shadow: 0 0 0 2px $black1;
     }
 
     .divider{
         position: absolute;
-        background-color: #1a1a1a;
-        border-color: #1a1a1a;
+        background-color: $black1;
+        border-color: $black1;
         height: 4px;
         top: 15.5px !important;
         left: 4px;
         z-index: 100;
+        cursor: default !important;
+        pointer-events: none !important;
     }
 
     .vis-point {
         top: -4.5px !important;
         left: -10px;
         border: 2px solid $black1;
-        background-color: #fff;
+        background-color: $white;
         height: $size24;
         width: $size24;
         z-index: 200;
+        cursor: url('../../assets/icons/arrow4dir.svg') 8 8, move !important;
+         // base (hidden) grey dot
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background-color: #B3B3B3;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            transition: opacity .15s ease, transform .15s ease;
+            pointer-events: none;
+        }
+
+        // show dot on hover
+        &:hover::after {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            background-color: #808080;
+        }
+
+        &:active::after {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            background-color: #808080;
+        }
         &.past {
             background: $color-gray;
+        }
+        &.board-only {
+            left: -12px !important;
+            top: -5px !important;
+            background-color: $black1;
+            border: 2px solid $black1 !important;
+            box-shadow: inset 0 0 0 2px $white;
+            border-radius: 50%;
+            >.vis-dot.board-only { display: none !important; }
+            &.confirmed::after {
+            content: "";
+                position: absolute;
+                top: 0px;
+                left: 22.5px;
+                width: 21px;
+                height: 21px;
+                background: $white url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
+                background-position: center;
+                background-size: contain;
+                border-radius: 50%;
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
         }
     }
 
     .vis-dot.board-only{
-        border: $size1 solid #fff;
-        border-radius: 14px;
-        padding: 5px;
-        background-color: #1a1a1a;
-        box-shadow: 0 0 0 2px #1a1a1a;
-        height: $size20;
-        width: $size20;
+        border: 1px solid $black1 !important;
+        border-radius: 50%;
+        padding: 0;
+        background-color: $black1;
+        box-shadow: inset 0 0 0 2px $white;
+        height: $size24;
+        width: $size24;
+        position: relative;
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background-color: #808080;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            transition: opacity .15s ease, transform .15s ease;
+            pointer-events: none;
+        }
+        &:hover::after,&:active::after {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
         &.confirmed::after {
             content: "";
             position: absolute;
-            top: -9px;
-            right: -10px;
+            top: -13px;
+            right: -15px;
             width: 21px;
             height: 21px;
-            background: #fff url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
+            background: $white url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
             background-position: center;
             background-size: contain;
             border-radius: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+    }
+
+    .board-date{
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background-color: #808080;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(1); // use -50% if perfect centering needed
+            opacity: 1;
+            transition: opacity .15s ease, transform .15s ease;
+            pointer-events: none;
+        }
+        &:hover::after,&:active::after {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            background-color: #B3B3B3;
         }
     }
 
     .vis-range{
-        border-color: #1a1a1a;
+        border-color: $black1;
+        // Disable any mouse interaction / grabbing for timeline ranges
+        pointer-events: none !important;
+        cursor: default !important;
         &.confirmed::after {
             content: "";
             position: absolute;
@@ -531,7 +865,7 @@
             right: -11.5px;
             width: 21px;
             height: 21px;
-            background: #fff url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
+            background: $white url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
             background-position: center;
             background-size: contain;
             border-radius: 50%;
@@ -558,7 +892,7 @@
         border-top: none;
         border-left: none;
         border-right: none;
-        background: #ffffff !important;
+        background: $white !important;
         height: 36px !important;
         .vis-inner{
             padding: 0;
@@ -651,7 +985,7 @@
                     position: absolute;
                     top: 35px;
                     right: 1px;
-                    background-color: #ffffff;
+                    background-color: $white;
                     width: 177px;
                     height: auto;
                     padding: 8px;
@@ -946,7 +1280,7 @@
 
     .vis-minor{
         height: 59px;
-        background-color: #ffffff;
+        background-color: $white;
         border-left: $size1 solid #CCCCCC;
         border-top: $size1 solid $color-black-20;
         border-bottom: $size1 solid $color-black-20;
@@ -1031,24 +1365,403 @@
         }
     }
 
-    /*TODO: v1.2 Disabled for now because we don't want to allow dragging the timeline at this point set to auto*/
-    /* .vis-drag-left{
-        pointer-events:none;
-    }
-    .vis-drag-right{
-        pointer-events:none;
-    }
-    .vis-item{
+    .vis-drag-left{
+        /*v1 dragging disbled for now*/
+        /*min-width: none !important;
+        max-width: none !important;
+        pointer-events:auto;
+        cursor: url('../../assets/icons/vector.svg') 8 8, move !important; */
         pointer-events: none;
+        cursor: default !important;
+    }
+    /*v1 dragging disbled for now     .vis-drag-left:hover::before {
+        content: '';
+        position: absolute;
+        left: 14px;
+        top: 6px;
+        bottom: 6px;
+        width: 2px;
+        background-color: #B3B3B3;
+    }
+    .vis-drag-left:active::before {
+        content: '';
+        position: absolute;
+        left: 14px;
+        top: 6px;
+        bottom: 6px;
+        width: 2px;
+        background-color: #808080;
+    } */
+
+    .vis-drag-right{
+        /*v1 dragging disbled for now
+        min-width: none !important;
+        max-width: none !important;
+        pointer-events:auto;
+        cursor: url('../../assets/icons/vector.svg') 8 8, move !important;*/
+        pointer-events: none;
+        cursor: default !important;
+    }
+    /*    v1 dragging disbled for now .vis-drag-right:hover::before {
+        content: '';
+        position: absolute;
+        left: 7px;
+        top: 6px;
+        bottom: 6px;
+        width: 2px;
+        background-color: #B3B3B3;
+    }
+    .vis-drag-right:active::before {
+        content: '';
+        position: absolute;
+        left: 7px;
+        top: 6px;
+        bottom: 6px;
+        width: 2px;
+        background-color: #808080;
+    } */
+
+    .vis-item{
+        pointer-events: auto;
     }
 
     .inner{
-        pointer-events: none;
+        pointer-events: auto;
     }
     .inner-end{
+        pointer-events: auto;
+    }
+
+    .vis-point:active{
+        pointer-events: auto;
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background-color: #808080;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+          }
+    }
+
+	// Disable drag handles (left/right) for specific groups where dragging should not be allowed
+	.voimaantulo_1, .hyvaksyminen_1 {
+		.vis-drag-left, .vis-drag-right {
+			pointer-events: none;
+			cursor: default;
+			&::before { display: none; }
+		}
+	}
+    // If the timeline item is in the past, show regular pointer cursor on drag handles
+    .vis-item.past {
+        .vis-drag-left,
+        .vis-drag-right {
+            cursor: pointer !important;
+        }
+    }
+    .phase-holder, .disable-edit{
+        cursor: default;
+        .vis-drag-left,
+        .vis-drag-right,
+        .vis-item-overflow,
+        .vis-item {
+            cursor: default !important;
+        }
+        // Ensure hover / active states also stay neutral (no special cursors or drag indicators)
+        &:hover { cursor: default !important; }
+        .vis-drag-left:hover,
+        .vis-drag-left:active,
+        .vis-drag-right:hover,
+        .vis-drag-right:active,
+        .vis-item-overflow:hover,
+        .vis-item-overflow:active,
+        .vis-item:hover,
+        .vis-item:active {
+            cursor: default !important;
+        }
+        // Suppress drag handle visual bars inside disabled contexts
+        .vis-drag-left:hover::before,
+        .vis-drag-left:active::before,
+        .vis-drag-right:hover::before,
+        .vis-drag-right:active::before { display: none !important; }
+        // Disable board-date hover/active inner dot reveal
+        // Need to cover cases where .phase-holder/.disable-edit is either an ancestor OR on the same element
+        // Keep confirmed checkmark visible -> restrict to :not(.confirmed)
+        .board-date:not(.confirmed):hover::after,
+        .board-date:not(.confirmed):active::after,
+        &.board-date:not(.confirmed):hover::after,
+        &.board-date:not(.confirmed):active::after {
+            transform: translate(-50%, -50%) scale(0) !important;
+            opacity: 0 !important;
+        }
+        // Disable vis-point hover/active inner dot reveal
+        .vis-point:hover::after,
+        .vis-point:active::after,
+        &.vis-point:hover::after,
+        &.vis-point:active::after {
+            transform: translate(-50%, -50%) scale(0) !important;
+            opacity: 0 !important;
+        }
+    }
+}
+
+// Global cursor style applied while dragging/moving timeline items (now only sets the cursor)
+body.cursor-moving {
+    cursor: url('../../assets/icons/arrow4dir.svg') 8 8, move !important;
+}
+// Element-level highlight for the actual dragged item
+.cursor-moving-target.vis-dot,
+.cursor-moving-target.vis-range,
+.cursor-moving-target.vis-item {
+    box-shadow: 0px 4px 4px 0px #00000040;
+}
+.cursor-moving-target.vis-point {
+    top: -4.5px !important;
+    left: -10px;
+    border: 2px solid $black1;
+    background-color: $white;
+    height: $size24;
+    width: $size24;
+    z-index: 200;
+    box-shadow: 0px 4px 4px 0px #00000040;
+    &::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 8px;
+        height: 8px;
+        background-color: #808080;
+        border-radius: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+        transition: opacity .15s ease, transform .15s ease;
         pointer-events: none;
-    } */
-    /*1.2v end*/
+    }
+    &:hover::after {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    &:active::after {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    &.past {
+        background: $color-gray;
+    }
+}
+.cursor-moving-target.vis-point.board-only {
+    background-color: $black1;
+    border: 2px solid $black1 !important;
+    box-shadow: inset 0 0 0 2px $white, 0px 4px 4px 0px #00000040;
+    border-radius: 50%;
+    &::after {
+        content: none;
+    }
+}
+.cursor-moving-target.vis-dot.board-only {
+    border: 2px solid $black1 !important;
+    background-color: $black1;
+    box-shadow: inset 0 0 0 2px $white, 0px 4px 4px 0px #00000040;
+    border-radius: 50%;
+}
+.cursor-moving-target.board-date {
+    top: -4.5px !important;
+    left: -10px;
+    height: $size24;
+    width: $size24;
+    z-index: 200;
+    box-shadow: inset 0 0 0 2px $white, 0px 4px 4px 0px $black1;
+    &::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 8px;
+        height: 8px;
+        background-color: #E6E6E6;
+        border-radius: 50%;
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+        transition: opacity .15s ease, transform .15s ease;
+        pointer-events: none;
+    }
+    &:hover::after {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    &:active::after {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+.vis-group.cursor-moving-target .inner-end .vis-item-overflow::after {
+    background-color: #808080 !important;
+}
+
+.vis-group.cursor-moving-target.kaynnistys_1{
+    .vis-item-overflow{
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background-color:#4D4D4D;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            transition: opacity .15s ease, transform .15s ease;
+            pointer-events: none;
+        }
+    }
+}
+
+.vis-group.cursor-moving-target[class*="ehdotus_nahtavillaolokerta"]{
+    .only-inner-end{
+        .vis-item-overflow{
+            &::after {
+                content: "";
+                position: absolute;
+                top: 50%;
+                left: 12px;
+                width: 8px;
+                height: 8px;
+                background-color:#4D4D4D !important;
+                border-radius: 50%;
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+                transition: opacity .15s ease, transform .15s ease;
+                pointer-events: none;
+            }
+        }
+    }
+}
+
+// When applied to a group, only descendants visually highlight
+.vis-group.cursor-moving-target {
+    .vis-item.vis-range,
+    .vis-item.vis-dot,
+    .vis-item.vis-point,
+    .vis-dot,
+    .vis-range,
+    .board-date {
+        box-shadow: 0px 4px 4px 0px #00000040;
+    }
+    .vis-point,
+    .board-date {
+        top: -4.5px !important;
+        left: -10px;
+        border: 2px solid $black1;
+        height: $size24;
+        width: $size24;
+        z-index: 200;
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background-color: #E6E6E6;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            transition: opacity .15s ease, transform .15s ease;
+            pointer-events: none;
+        }
+    }
+    .vis-point { 
+        background-color: $white;
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background-color: #4D4D4D;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            transition: opacity .15s ease, transform .15s ease;
+            pointer-events: none;
+        }
+    }
+    .board-date { 
+        background-color: $black1; 
+        box-shadow: inset 0 0 0 2px $white, 0px 4px 4px 0px $black1;
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background-color: #E6E6E6;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            transition: opacity .15s ease, transform .15s ease;
+            pointer-events: none;
+        }
+    }
+    .vis-point.board-only {
+        background-color: $black1;
+        border: 2px solid $black1;
+        box-shadow: inset 0 0 0 2px $white, 0px 4px 4px 0px #00000040;
+        border-radius: 50%;
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background-color: #E6E6E6;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            transition: opacity .15s ease, transform .15s ease;
+            pointer-events: none;
+        }
+    }
+}
+
+// Highlight only the active vis-group while dragging an item within it
+.vis-group.dragging-group {
+    .vis-item.vis-range,
+    .vis-item.vis-dot,
+    .vis-item.vis-point,
+    .vis-dot,
+    .vis-range,
+    .board-date {
+        box-shadow: 0px 4px 4px 0px #00000040;
+    }
+    .vis-point,
+    .board-date {
+        top: -4.5px !important;
+        left: -10px;
+        border: 2px solid $black1;
+        height: $size24;
+        width: $size24;
+        z-index: 200;
+    }
+    .vis-point { background-color: $white; }
+    .board-date { background-color: $black1; box-shadow: inset 0 0 0 2px $white, 0px 4px 4px 0px $black1; }
+    .vis-point.board-only {
+        background-color: $black1;
+        border: 2px solid $black1;
+        box-shadow: inset 0 0 0 2px $white, 0px 4px 4px 0px #00000040;
+        border-radius: 50%;
+    }
 }
 
 .dimmer{
@@ -1145,7 +1858,7 @@
     
     .vis-time-axis .vis-saturday,
     .vis-time-axis .vis-sunday {
-        background-color: #ffffff !important;
+        background-color: $white !important;
     }
     .vis-major > div {
         font-family: 'Helsinki Grotesk Medium', sans-serif;
@@ -1177,7 +1890,7 @@
 
 .vis-tooltip{
     visibility: visible !important;
-    background-color: #ffffff !important;
+    background-color: $white !important;
     box-shadow: 0px 2px 8px 0px #00000099 !important;
     width: auto !important; 
     padding: 12px !important;
@@ -1197,6 +1910,21 @@
     }
 }
 
+.vis-moving-tooltip {
+    pointer-events: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    background-color: rgba(204, 204, 204, 0.9) !important;
+    color: $black1 !important;
+    padding: 5px 8px !important;
+    border-radius: 4px !important;
+    font-family: 'Helsinki Grotesk', sans-serif !important;
+    font-weight: 900 !important;
+    font-size: 14px !important;
+    line-height: 14px !important;
+    letter-spacing: 0% !important;
+    text-align: center !important;
+    z-index: 2000 !important;
+}
 .foreground-highlight{
     background-color: #F0F0FF80;
     z-index: 100;
@@ -1207,6 +1935,27 @@
     opacity: 0.8;
 }
 
+.vis-item.board.board-date,
+.vis-item.board.board-date.vis-selected,
+.vis-item.board.board-date.vis-active {
+  background-color: $black1 !important;
+  border: 2px solid $black1 !important;
+  box-shadow: inset 0 0 0 2px $white !important;
+  border-radius: 50%;
+}
+
+.vis-item.vis-dot.board.board-date,
+.vis-item.vis-dot.board.board-date.vis-selected,
+.vis-item.vis-dot.board.board-date.vis-active {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  pointer-events: none;
+}
+
+.vis-group.cursor-moving-target .vis-item.board.board-date {
+  box-shadow: inset 0 0 0 2px $white, 0 4px 4px 0 #00000040 !important;
+}
 // Week labels being cut off by vis to 2 separate elements when month changes but this overrides and show them properly
 .vis-text.vis-minor[class*="vis-week"]:not(:empty) {
     display: inline-block;

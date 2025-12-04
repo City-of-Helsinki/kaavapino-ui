@@ -6,7 +6,9 @@ import {
   IconAngleLeft,
   IconCross,
   IconCheck,
-  LoadingSpinner
+  IconErrorFill,
+  LoadingSpinner,
+  Tooltip
 } from 'hds-react'
 import { withRouter, useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -115,7 +117,7 @@ const Header = props => {
     let newErrorField
 
     if(lastSaved?.time && lastSaved?.status){
-        latestUpdate = {status:t('header.edit-menu-saved'),time:lastSaved.time}
+        latestUpdate = {status:t('header.latest-save'),time:lastSaved.time}
         let elements = ""
         if(lastSaved?.fields){
           //Get the latest field and value from error fields and set the values for this toast
@@ -243,42 +245,43 @@ const Header = props => {
           let errors = errorCount
           const found = lastSaved?.fields.every(r=> existingErrors.includes(r))
           //If true every error is already shown to user so do not pop another toastr
-          if(!found){
-            // show new toastr error
-            toast.error(elements, {
-              toastId:errorCount,
-              className: "saveFailToastr",
-              position: "top-right",
-              autoClose: false,
-              hideProgressBar: false,
-              closeOnClick: false,
-              pauseOnHover: false,
-              draggable: false,
-              progress: undefined,
-              theme: "light",
-              closeButton: <Button className='close-button' size="small" variant='supplementary' onClick={() => dismiss(errorCount)}><IconCross size="s" /></Button>
-            });
-            //Add error toast count, used as an toastid needed to close correct toast
-            setErrorCount(errors + 1)
-            setErrorFields(lastSaved?.fields)
-            setErrorValues(lastSaved?.values)
-            setLatestErrorField(newErrorField)
-            const newError = lastSaved?.fields[lastSaved?.fields.length - 1]
-            //Push to state if not existing in it
-            if(!existingErrors.includes(newError)){
-              let errorList = existingErrors
-              errorList.push(newError)
-              //this state controls error toastr pop up
-              setExistingErrors(errorList)
+          if (!found) {
+            if(lastSaved?.lock || lastSaved.status === "field_error"){
+              // show new toastr error
+              toast.error(elements, {
+                toastId:errorCount,
+                className: "saveFailToastr",
+                position: "top-right",
+                autoClose: false,
+                hideProgressBar: false,
+                closeOnClick: false,
+                pauseOnHover: false,
+                draggable: false,
+                progress: undefined,
+                theme: "light",
+                closeButton: <Button className='close-button' size="small" variant='supplementary' onClick={() => dismiss(errorCount)}><IconCross size="s" /></Button>
+              });
+              //Add error toast count, used as an toastid needed to close correct toast
+              setErrorCount(errors + 1)
+              setErrorFields(lastSaved?.fields)
+              setErrorValues(lastSaved?.values)
+              setLatestErrorField(newErrorField)
+              const newError = lastSaved?.fields[lastSaved?.fields.length - 1]
+              //Push to state if not existing in it
+              if(!existingErrors.includes(newError)){
+                let errorList = existingErrors
+                errorList.push(newError)
+                //this state controls error toastr pop up
+                setExistingErrors(errorList)
+              }
             }
           }
-
         }
         else if(lastSaved?.status === "success" && connection.connection){
           //set polling time to default
           setCount(1)
           setExistingErrors([])
-          latestUpdate = {status:t('header.edit-menu-saved'),time:lastSaved.time}
+          latestUpdate = {status:t('header.latest-save'),time:lastSaved.time}
           elements = <div>
           <div>
             <h3>{t('messages.connection-info-header')}
@@ -413,8 +416,12 @@ const Header = props => {
               <LoadingSpinner className="loading-spinner" small></LoadingSpinner>
               <span className="loading-spinner">{lastSaved?.status === "error" ? t('messages.connect-again') : ""}</span>
             </div>
-            {updateTime?.status === t('header.edit-menu-saved') ? <IconCheck className='check-icon'/> : ""}
-            <p className={updateTime?.status === t('header.edit-menu-save-fail') ? "error" : ""}>{updateTime?.status}{updateTime?.time}</p>
+            <div className='icons-container-flex'>
+              {updateTime?.status === t('header.latest-save') ? <IconCheck className='check-icon'/> : ""}
+              {updateTime?.status === t('header.edit-menu-save-fail') ? <IconErrorFill className='error-icon'/> : ""}
+              <p className={updateTime?.status === t('header.edit-menu-save-fail') ? "error" : ""}>{updateTime?.status}{updateTime?.time}</p>
+              {updateTime?.status === t('header.edit-menu-save-fail') ? <Tooltip placement="bottom" className='question-icon'>{t('header.latest-save')}{updateTime?.time}</Tooltip> : ""}
+            </div>
           </div>
         </Navigation.Row>
       </Navigation>

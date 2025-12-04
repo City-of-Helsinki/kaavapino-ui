@@ -26,6 +26,7 @@ export const SAVE_PROJECT_TIMETABLE = 'Save project timetable'
 export const SAVE_PROJECT_TIMETABLE_SUCCESSFUL = 'Save project timetable successful'
 export const SAVE_PROJECT = 'Save project'
 export const SAVE_PROJECT_SUCCESSFUL = 'Save project successful'
+export const SET_SAVING_FIELD = 'Set saving field'
 export const VALIDATE_PROJECT_FIELDS = 'Validate project fields'
 export const VALIDATE_PROJECT_FIELDS_SUCCESSFUL = 'Validate project fields successful'
 export const CHANGE_PROJECT_PHASE = 'Change phase'
@@ -133,9 +134,9 @@ export const resetAttributeData = (initialData) => ({
   type: RESET_ATTRIBUTE_DATA,
   payload: {initialData},
 });
-export const updateDateTimeline = (field, newDate, formValues, isAdd, deadlineSections) => ({
+export const updateDateTimeline = (field, newDate, formValues, isAdd, deadlineSections, keepDuration=false, originalDurationDays=0, pairedEndKey=null) => ({
   type: UPDATE_DATE_TIMELINE,
-  payload: { field, newDate, formValues, isAdd, deadlineSections},
+  payload: { field, newDate, formValues, isAdd, deadlineSections, keepDuration, originalDurationDays, pairedEndKey },
 });
 export const removeDeadlines = (deadlines) => ({
   type: REMOVE_DEADLINES,
@@ -368,7 +369,9 @@ export const saveProjectTimetableFailed = success => ({
 
 export const resetTimetableSave = () => ({type: RESET_TIMETABLE_SAVE})
 
-export const saveProject = (fileOrimgSave,insideFieldset,fieldsetData,fieldsetPath) => ({ type: SAVE_PROJECT,payload: {fileOrimgSave,insideFieldset,fieldsetData,fieldsetPath} })
+export const saveProject = (fileOrimgSave,insideFieldset,fieldsetData,fieldsetPath,fieldName) => ({ type: SAVE_PROJECT,payload: {fileOrimgSave,insideFieldset,fieldsetData,fieldsetPath,fieldName} })
+
+export const setSavingField = (fieldName) => ({ type: SET_SAVING_FIELD, payload: fieldName })
 export const saveProjectSuccessful = () => ({ type: SAVE_PROJECT_SUCCESSFUL })
 
 export const validateProjectFields = formValues => ({
