@@ -1079,6 +1079,11 @@
         padding-left: 15px;
     }
 
+    // Apply blue border-right to all vis-label siblings after the one containing timeline-lock-button.lock
+    .vis-label:has(.vis-inner .timeline-lock-button.lock) ~ .vis-label {
+        border-right: 4px solid $color-bus;
+    }
+
     .vis-group-level-0:not(.vis-nested-group){
         display: flex;
         justify-content: flex-start;
