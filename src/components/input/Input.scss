@@ -1351,6 +1351,13 @@
   }
 }
 
+.selection.blurred {
+	button[id*="delete-button"] {
+		pointer-events: none !important;
+		opacity: 0.5;
+	}
+}
+
 .fieldset-spinner {
   display: inline-flex;
   align-items: center;

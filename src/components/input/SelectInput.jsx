@@ -327,7 +327,7 @@ const SelectInput = ({
         <Select
           data-testid="select-multi"
           placeholder={placeholder}
-          className={readOnlyStyle}
+          className={`${readOnlyStyle}${isThisFieldSaving ? ' blurred' : ''}`}
           id={input.name}
           name={input.name}
           multiselect={multiple}
