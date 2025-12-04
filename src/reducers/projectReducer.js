@@ -93,7 +93,8 @@ import {
   UPDATE_PROJECT_FAILURE,
   UPDATE_ATTRIBUTE,
   SAVE_PROJECT_TIMETABLE_FAILED,
-  VALIDATING_TIMETABLE
+  VALIDATING_TIMETABLE,
+  SET_SAVING_FIELD
 } from '../actions/projectActions'
 
 import timeUtil from '../utils/timeUtil'
@@ -115,6 +116,7 @@ export const initialState = {
   currentProject: null,
   currentProjectLoaded: false,
   saving: false,
+  savingField: null,
   changingPhase: false,
   validating: false,
   hasErrors: false,
@@ -150,12 +152,51 @@ export const initialState = {
   dateValidationResult: {valid: false, result: {}},
   validated:false,
   cancelTimetableSave:false,
-  validatingTimetable: {started: false, ended: false}
+  validatingTimetable: {started: false, ended: false},
+  network: { status: 'ok', hasError: false, errorMessage: '', okMessage: '', tempFieldContents: '' }
 }
 
 export const reducer = (state = initialState, action) => {
 
   switch (action.type) {
+    // ---- Network status (human readable string action types added only here) ----
+    // We keep network state inside project slice to avoid creating new top-level reducer.
+    // NetworkErrorState component currently reads state.network; it will need to be updated
+    // to use project slice (e.g. state.project.network) or selector. For now we expose via selector.
+    case 'Set network status': {
+    	const { status, errorMessage, okMessage, tempFieldContents } = action.payload || {}
+    	return {
+    		...state,
+    		network: {
+    			status: status || state.network?.status || 'ok',
+    			hasError: status === 'error',
+    			errorMessage: errorMessage !== undefined ? errorMessage : state.network?.errorMessage || '',
+    			okMessage: okMessage !== undefined ? okMessage : state.network?.okMessage || '',
+    			tempFieldContents: tempFieldContents !== undefined ? tempFieldContents : state.network?.tempFieldContents || ''
+    		}
+    	}
+    }
+    case 'Reset network status': {
+    	if (!state.network) return state
+    	return {
+    		...state,
+    		network: {
+    			...state.network,
+    			status: 'ok',
+    			hasError: false,
+    			errorMessage: '',
+    			okMessage: '',
+    			tempFieldContents: state.network.tempFieldContents // keep last cached text until component discards
+    		}
+    	}
+    }
+
+    case SET_SAVING_FIELD: {
+      return {
+        ...state,
+        savingField: action.payload
+      }
+    }
 
     case UPDATE_ATTRIBUTE: {
       const { field, value } = action.payload

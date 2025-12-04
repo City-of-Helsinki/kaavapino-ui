@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { projectFileUpload, projectFileRemove } from '../../actions/projectActions'
+import { savingSelector,lastModifiedSelector } from '../../selectors/projectSelector'
 import { downloadFile } from '../../actions/apiActions'
 import { Progress } from 'semantic-ui-react'
 import 'core-js/features/array/at';
@@ -10,6 +11,7 @@ import { withTranslation } from 'react-i18next'
 import { Button, IconDownload, IconCrossCircle, IconUpload } from 'hds-react'
 import infoBothDir from '../../assets/icons/Infobothdir.svg'
 import PropTypes from 'prop-types'
+import NetworkErrorState from './NetworkErrorState.jsx'
 
 class File extends Component {
   constructor(props) {
@@ -24,7 +26,8 @@ class File extends Component {
       percentCompleted: 0,
       current,
       uploading: false,
-      reading: false
+      reading: false,
+      isThisFieldSaving: false
     }
     this.inputRef = React.createRef()
     if (props.image) {
@@ -50,6 +53,13 @@ class File extends Component {
       if (image && this.imageRef.current) {
         this.imageRef.current.src = src
       }
+    }
+
+    // Reset isThisFieldSaving when saving is complete for this field
+    const { saving, lastModified, field } = this.props
+    const { isThisFieldSaving } = this.state
+    if (isThisFieldSaving && (!saving || lastModified !== field.name)) {
+      this.setState({ isThisFieldSaving: false })
     }
   }
 
@@ -79,6 +89,8 @@ class File extends Component {
     const confirmText = t('file.remove-question', { current: current })
     const confirm = window.confirm(confirmText)
     if (confirm) {
+      this.setState({ isThisFieldSaving: true })
+      localStorage.setItem("changedValues", name)
       this.inputRef.current.value = ''
       this.setState({ current: null })
       projectFileRemove(name)
@@ -86,8 +98,10 @@ class File extends Component {
   }
 
   download = () => {
-    const { src } = this.props
+    const { src, field } = this.props
     const { current } = this.state
+    this.setState({ isThisFieldSaving: true })
+    localStorage.setItem("changedValues", field.name)
     this.props.downloadFile({ src, name: current })
   }
 
@@ -188,7 +202,7 @@ class File extends Component {
       <div>
         <div className="file-input-container">
           <Button
-            disabled={uploading || disabled}
+            disabled={uploading || disabled || this.state.isThisFieldSaving}
             iconLeft={<IconUpload />}
             variant="secondary"
             onClick={this.handleClick}
@@ -204,7 +218,7 @@ class File extends Component {
               <Button
                 iconLeft={<IconDownload />}
                 onClick={this.download}
-                disabled={disabled}
+                disabled={disabled || this.state.isThisFieldSaving}
                 variant="secondary"
                 className="download-button"
               >{t('file.preview')} </Button>
@@ -214,7 +228,7 @@ class File extends Component {
                 iconLeft={<IconCrossCircle />}
                 variant="secondary"
                 className="remove-button remove"
-                disabled={disabled}
+                disabled={disabled || this.state.isThisFieldSaving}
                 onClick={this.reset}
               >{t('file.remove')} </Button>
             )}
@@ -235,7 +249,7 @@ class File extends Component {
           multiple
           type="file"
           onChange={this.onChangeFile}
-          disabled={disabled}
+          disabled={disabled || this.props.saving}
         />
         {uploading && <Progress percent={percentCompleted} progress indicating />}
         {filePreview}
@@ -255,6 +269,7 @@ class File extends Component {
           </>
         }
         </div>
+        <NetworkErrorState fieldName={field.name} />
       </div>
     )
   }
@@ -269,8 +284,15 @@ File.propTypes = {
   src: PropTypes.string,
   formValues: PropTypes.object,
   rollingInfo: PropTypes.bool,
-  rollingInfoText: PropTypes.string
+  rollingInfoText: PropTypes.string,
+  saving: PropTypes.bool,
+  lastModified: PropTypes.string
 }
+
+const mapStateToProps = state => ({
+	saving: savingSelector(state),
+	lastModified: lastModifiedSelector(state)
+})
 
 const mapDispatchToProps = {
   projectFileUpload,
@@ -278,4 +300,4 @@ const mapDispatchToProps = {
   downloadFile
 }
 
-export default connect(null, mapDispatchToProps)(withTranslation()(File))
+export default connect(mapStateToProps, mapDispatchToProps)(withTranslation()(File))

@@ -14,6 +14,7 @@
     font-weight: bold;
     justify-content: flex-start;
     z-index: 1;
+    max-width: 70%;
     .input-title{
       display: flex;
       flex-flow: column;
@@ -1202,6 +1203,44 @@
       --spinner-color: #0000bf;
     }
   }
+
+// Hide native browser stepper buttons
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+  }
+  
+  input[type="number"] {
+      -moz-appearance: textfield;
+  }
+  
+  // Hide HDS NumberInput stepper buttons by default - correct selectors for actual DOM
+  div[class*="minusButtonWrapper"],
+  div[class*="plusButtonWrapper"] {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+  }
+  
+  // Show stepper buttons only when input is focused (not on hover)
+  &:focus-within div[class*="minusButtonWrapper"],
+  &:focus-within div[class*="plusButtonWrapper"] {
+      opacity: 1;
+      pointer-events: auto;
+  }
+
+  &.blurred {
+    input[type="text"],
+    input[type="number"],
+    input[type="date"] {
+      background-color: #E6E6E6 !important;
+    }
+  }
+}
+
+.number-input{
+  max-width: 288px;
 }
 
 .fieldset-accordian-open{
@@ -1285,6 +1324,12 @@
       --spinner-color: #0000bf;
     }
   }
+
+  &.blurred {
+    label::before{
+      background-color: #E6E6E6 !important;
+    }
+  }
 }
 
 .link-input-wrapper {
@@ -1304,6 +1349,13 @@
       --spinner-color: #0000bf;
     }
   }
+}
+
+.selection.blurred {
+	button[id*="delete-button"] {
+		pointer-events: none !important;
+		opacity: 0.5;
+	}
 }
 
 .fieldset-spinner {

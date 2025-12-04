@@ -230,13 +230,13 @@ class ProjectEditPage extends Component {
     }
   }
 
-  handleSave = () => {
+  handleSave = (fieldName) => {
     const projectName = this.props.currentProject.name;
-    this.props.saveProject()
+    this.props.saveProject(false, false, null, null, fieldName)
     this.props.unlockAllFields(projectName)
   }
 
-  handleAutoSave = () => {
+  handleAutoSave = (fieldName) => {
     if (this.props.showEditFloorAreaForm || this.props.showEditProjectTimetableForm) {
       return
     }
@@ -246,7 +246,7 @@ class ProjectEditPage extends Component {
       this.props.setLastSaved("field_error",time,[],[],false)
       return
     }
-    this.props.saveProject()
+    this.props.saveProject(false, false, null, null, fieldName)
   }
 
   unlockFields = () => {
