@@ -1434,6 +1434,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       // Find the earliest locked date
       let earliestLockedDate = null;
       lockedItems.forEach(lockedItem => {
+        console.log(lockedItem?.distanceToPrevious)
         if (lockedItem.start) {
           const lockedDate = new Date(lockedItem.start).getTime();
           if (!earliestLockedDate || lockedDate < earliestLockedDate) {

@@ -232,7 +232,40 @@ class EditProjectTimeTableModal extends Component {
     return obj?.key.includes(substr) && typeof obj?.obj2 === "string";
   }
 
-  trimPhase = (phase) => {
+	findMinimum = (deadlineAttribute, deadlineSections) => {
+		if (!deadlineAttribute || !deadlineSections || !Array.isArray(deadlineSections)) {
+			return null;
+		}
+
+		// Search through the nested structure: deadlineSections -> sections -> attributes
+		for (let i = 0; i < deadlineSections.length; i++) {
+			const sections = deadlineSections[i].sections;
+			if (!Array.isArray(sections)) continue;
+
+			for (let j = 0; j < sections.length; j++) {
+				const attributes = sections[j].attributes;
+				if (!Array.isArray(attributes)) continue;
+
+				for (let k = 0; k < attributes.length; k++) {
+					const attr = attributes[k];
+					// Match by name, label, or attribute field
+					if (attr.name === deadlineAttribute || 
+						attr.label === deadlineAttribute ||
+						attr.attribute === deadlineAttribute) {
+						// Return the distance_from_previous value if found
+						if (attr.distance_from_previous !== null && attr.distance_from_previous !== undefined) {
+							return attr.distance_from_previous;
+						}
+					}
+				}
+			}
+		}
+
+		// Return null if not found
+		return null;
+	}
+
+	trimPhase = (phase) => {
     if(!phase || typeof phase !== 'string') return '';
     const parts = phase.split('.', 2);
     if(parts.length === 1) return phase.trim();
@@ -493,6 +526,7 @@ class EditProjectTimeTableModal extends Component {
     const highlightID = `${deadlines[i].deadline.phase_id}_${numberOfPhases}`;
     const allowEditStyle = this.props?.allowedToEdit ? "" : " disable-edit"
     if(dashStart === null && milestone === null && dashEnd){
+      const distanceToPrevious = this.findMinimum(deadlines[i].deadline.attribute, this.props.deadlineSections) || 0;
       phaseData.push({
         start: dashEnd,
         id: numberOfPhases,
@@ -506,10 +540,12 @@ class EditProjectTimeTableModal extends Component {
         type: 'point',
         phaseName: deadlines[i].deadline.phase_name,
         groupInfo: "Lautakunta",
-        groupName: deadlines[i].deadline.deadlinegroup
+        groupName: deadlines[i].deadline.deadlinegroup,
+        distanceToPrevious: distanceToPrevious
       });
     }
     else if(dashEnd === null){
+      const distanceToPrevious = this.findMinimum(deadlines[i].deadline.attribute, this.props.deadlineSections) || 0;
       phaseData.push({
         start: dashStart,
         id: numberOfPhases,
@@ -523,10 +559,13 @@ class EditProjectTimeTableModal extends Component {
         type: 'point',
         phaseName: deadlines[i].deadline.phase_name,
         groupInfo: "Lautakunta",
-        groupName: deadlines[i].deadline.deadlinegroup
+        groupName: deadlines[i].deadline.deadlinegroup,
+        distanceToPrevious: distanceToPrevious
       });
     }
     else if(dashStart && dashEnd && milestone){
+      const distanceToPrevious = this.findMinimum(deadlines[i - 2].deadline.attribute, this.props.deadlineSections) || 0;
+      console.log('Minimum distance:', distanceToPrevious);
       phaseData.push({
         start: milestone,
         id: numberOfPhases + " maaraaika",
@@ -540,7 +579,8 @@ class EditProjectTimeTableModal extends Component {
         type: 'point',
         phaseName: deadlines[i].deadline.phase_name,
         groupInfo: "Määräaika",
-        groupName: deadlines[i].deadline.deadlinegroup
+        groupName: deadlines[i].deadline.deadlinegroup,
+        distanceToPrevious: distanceToPrevious
       });
       phaseData.push({
         start: milestone,
@@ -555,8 +595,10 @@ class EditProjectTimeTableModal extends Component {
         locked: false,
         phaseName: deadlines[i].deadline.phase_name,
         groupInfo: "Kaavoitussihteerin työaika",
-        groupName: deadlines[i].deadline.deadlinegroup
+        groupName: deadlines[i].deadline.deadlinegroup,
+        distanceToPrevious: 0
       });
+      const distanceToPreviousEsilla = this.findMinimum(deadlines[i].deadline.attribute, this.props.deadlineSections) || 0;
       phaseData.push({
         start: dashStart,
         end: dashEnd,
@@ -570,11 +612,14 @@ class EditProjectTimeTableModal extends Component {
         locked: false,
         phaseName: deadlines[i].deadline.phase_name,
         groupInfo: "Esilläolo",
-        groupName: deadlines[i].deadline.deadlinegroup
+        groupName: deadlines[i].deadline.deadlinegroup,
+        distanceToPrevious: distanceToPreviousEsilla
       });
     }
     else{
       if (dashedStyle.includes("board") && dashStart && dashEnd) {
+        const distanceToPreviousEsilla = this.findMinimum(deadlines[i - 1].deadline.attribute, this.props.deadlineSections) || 0;
+        console.log('Minimum distance:', distanceToPreviousEsilla);
         phaseData.push({
           start: dashStart,
           id: numberOfPhases + " maaraaika",
@@ -588,7 +633,8 @@ class EditProjectTimeTableModal extends Component {
           type: 'point',
           phaseName: deadlines[i].deadline.phase_name,
           groupInfo: "Määräaika",
-          groupName: deadlines[i].deadline.deadlinegroup
+          groupName: deadlines[i].deadline.deadlinegroup,
+          distanceToPrevious: distanceToPreviousEsilla
         });
         phaseData.push({
           start: dashStart,
@@ -603,8 +649,10 @@ class EditProjectTimeTableModal extends Component {
           locked: false,
           phaseName: deadlines[i].deadline.phase_name,
           groupInfo: "Kaavoitussihteerin työaika",
-          groupName: deadlines[i].deadline.deadlinegroup
+          groupName: deadlines[i].deadline.deadlinegroup,
+          distanceToPrevious: 0
         });
+        const distanceToPreviousLautakunta = this.findMinimum(deadlines[i].deadline.attribute, this.props.deadlineSections) || 0;
         phaseData.push({
           start: dashEnd,
           id: numberOfPhases + " lautakunta",
@@ -618,9 +666,11 @@ class EditProjectTimeTableModal extends Component {
           type: 'point',
           phaseName: deadlines[i].deadline.phase_name,
           groupInfo: "Lautakunta",
-          groupName: deadlines[i].deadline.deadlinegroup
+          groupName: deadlines[i].deadline.deadlinegroup,
+          distanceToPrevious: distanceToPreviousLautakunta
         });
       } else {
+        const distanceToPreviousNahtavilla = this.findMinimum(deadlines[i].deadline.attribute, this.props.deadlineSections) || 0;
         phaseData.push({
           start: dashStart,
           end: dashEnd,
@@ -634,7 +684,8 @@ class EditProjectTimeTableModal extends Component {
           locked: false,
           phaseName: deadlines[i].deadline.phase_name,
           groupInfo: "Nähtävilläolo",
-          groupName: deadlines[i].deadline.deadlinegroup
+          groupName: deadlines[i].deadline.deadlinegroup,
+          distanceToPrevious: distanceToPreviousNahtavilla
         });
       }
     }
