@@ -1437,7 +1437,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       let earliestLockedDate = null;
       lockedItems.forEach(lockedItem => {
         const distanceToPrevious = lockedItem.distanceToPrevious ?? 0;
-        const distanceDays = distanceToPrevious === 0 ? 0 : distanceToPrevious + 1;
+        const distanceDays = distanceToPrevious === 0 ? 0 : distanceToPrevious + 2;
         const distanceAdjustment = distanceDays * ONE_DAY_MS;
         
         if (lockedItem.start) {
