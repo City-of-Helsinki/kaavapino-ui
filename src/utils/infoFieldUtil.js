@@ -38,7 +38,7 @@ const getLautakuntaDates = (deadlinegroup, data, deadlines) => {
   return { boardDate, confirmBoard, boardModified };
 }
 
-const getPrincipleDates = (data,deadlines) => {
+const getEsillaoloLautakuntaDates = (esillaGroupName, esillaVisBoolName, lkGroupName, lkVisBoolName, data, deadlines) => {
   let startDate = ""
   let endDate = ""
   let esillaConfirmed = true
@@ -49,19 +49,27 @@ const getPrincipleDates = (data,deadlines) => {
     confirmBoard: false,
     boardModified: false
   }
-  const boardText = "custom-card.principles-board-text";
-
   // Get data from latest esillaolo and lautakunta
-  for (let i = 4, lkDone = false, esillaDone = false; i > 0; i--) {
-    if ((!lkDone) && data?.[`periaatteet_lautakuntaan_${i}`]) {
-      lkDates = getLautakuntaDates(`periaatteet_lautakuntakerta_${i}`, data, deadlines);
-      lkDone = true;
-    }
-    if ((!esillaDone) && data?.[`jarjestetaan_periaatteet_esillaolo_${i}`]) {
-      [startDate,endDate,esillaConfirmed,startModified,endModified] = getEsillaoloDates(`periaatteet_esillaolokerta_${i}`, data, deadlines);
+  for (let i = 4, lkDone = false, esillaDone = false; i > 0 && !(lkDone && esillaDone); i--) {
+    if ((!esillaDone) && data?.[`${esillaVisBoolName}_${i}`]) {
+      [startDate,endDate,esillaConfirmed,startModified,endModified] = getEsillaoloDates(`${esillaGroupName}_${i}`, data, deadlines);
       esillaDone = true;
     }
+    if ((!lkDone) && data?.[`${lkVisBoolName}_${i}`]) {
+      lkDates = getLautakuntaDates(`${lkGroupName}_${i}`, data, deadlines);
+      lkDone = true;
+    }
   }
+  return {startDate, endDate, esillaConfirmed, startModified, endModified, lkDates}
+}
+
+const getPrincipleDates = (data,deadlines) => {
+  const boardText = "custom-card.principles-board-text";
+  const { startDate, endDate, esillaConfirmed, startModified, endModified, lkDates } = getEsillaoloLautakuntaDates(
+    "periaatteet_esillaolokerta", "jarjestetaan_periaatteet_esillaolo",
+    "periaatteet_lautakuntakerta","periaatteet_lautakuntaan",
+    data,deadlines
+  );
   return [startDate,endDate,esillaConfirmed,startModified,endModified,lkDates.boardDate,lkDates.confirmBoard,boardText,lkDates.boardModified];
 }
 
@@ -80,64 +88,32 @@ const getOASDates = (data,deadlines) => {
 }
 
 const getDraftDates = (data,deadlines) => {
-  let startDate = ""
-  let endDate = ""
-  let esillaConfirmed = true
-  let startModified = false
-  let endModified = false
-  let lkDates = {
-    boardDate: "",
-    confirmBoard: false,
-    boardModified: false
-  }
-  const boardText = "custom-card.draft-board-text";
-
-  // Get data from latest esillaolo and lautakunta
-  for (let i = 4, lkDone = false, esillaDone = false; i > 0; i--) {
-    if ((!lkDone) && data?.[`kaavaluonnos_lautakuntaan_${i}`]) {
-      lkDates = getLautakuntaDates(`luonnos_lautakuntakerta_${i}`, data, deadlines);
-      lkDone = true;
-    }
-    if ((!esillaDone) && data?.[`jarjestetaan_luonnos_esillaolo_${i}`]) {
-      [startDate,endDate,esillaConfirmed,startModified,endModified] = getEsillaoloDates(`luonnos_esillaolokerta_${i}`, data, deadlines);
-      esillaDone = true;
-    }
-  }
-  return [startDate,endDate,esillaConfirmed,startModified,endModified,lkDates.boardDate,lkDates.confirmBoard,boardText,lkDates.boardModified]
+  const boardText = "custom-card.principles-board-text";
+  const { startDate, endDate, esillaConfirmed, startModified, endModified, lkDates } = getEsillaoloLautakuntaDates(
+    "luonnos_esillaolokerta", "jarjestetaan_luonnos_esillaolo",
+    "luonnos_lautakuntakerta","kaavaluonnos_lautakuntaan",
+    data,deadlines
+  );
+  return [startDate,endDate,esillaConfirmed,startModified,endModified,lkDates.boardDate,lkDates.confirmBoard,boardText,lkDates.boardModified];
 }
 
 const getSuggestion = (data,deadlines) => {
-  let nahtavillaConfirmed = true
-  let startDate = ""
-  let endDate = ""
-  let startModified = false
-  let endModified = false
   const starText = "custom-card.suggestion-start-text"
   const endText = "custom-card.suggestion-end-text"
   const boardText = "custom-card.suggestion-board-text"
-  let lkDates = {
-    boardDate: "",
-    confirmBoard: false,
-    boardModified: false
+
+  let { startDate, endDate, esillaConfirmed, startModified, endModified, lkDates } = getEsillaoloLautakuntaDates(
+    "ehdotus_nahtavillaolokerta", "kaavaehdotus_uudelleen_nahtaville",
+    "ehdotus_lautakuntakerta","kaavaehdotus_lautakuntaan",
+    data,deadlines
+  );
+  // ehdotus uses inconsistent key for first esillaolo. If 2nd is not set in above function, check 1st here.
+  if (!startDate && data?.kaavaehdotus_nahtaville_1 !== false) {
+    [startDate,endDate,esillaConfirmed,startModified,endModified] = getEsillaoloDates("ehdotus_nahtavillaolokerta_1", data, deadlines);
   }
 
-  let nahtavillaDone = false;
-  for (let i = 4, lkDone = false; i > 0; i--) {
-    if ((!lkDone) && data?.[`kaavaehdotus_lautakuntaan_${i}`]) {
-      lkDates = getLautakuntaDates(`ehdotus_lautakuntakerta_${i}`, data, deadlines);
-      lkDone = true;
-    }
-    if ((!nahtavillaDone) && data?.[`kaavaehdotus_uudelleen_nahtaville_${i}`]) {
-      [startDate,endDate,nahtavillaConfirmed,startModified,endModified] = getEsillaoloDates(`ehdotus_nahtavillaolokerta_${i}`, data, deadlines);
-      nahtavillaDone = true;
-    }
-  }
-  if (!nahtavillaDone && data?.kaavaehdotus_nahtaville_1 !== false) {
-    [startDate,endDate,nahtavillaConfirmed,startModified,endModified] = getEsillaoloDates("ehdotus_nahtavillaolokerta_1", data, deadlines);
-  }
-
-  return [startDate,endDate,nahtavillaConfirmed,startModified,endModified,
-    lkDates.boardDate,lkDates.confirmBoard,boardText,lkDates.boardModified,starText,endText]
+  return [startDate,endDate,esillaConfirmed,startModified,endModified,
+    lkDates.boardDate,lkDates.confirmBoard,boardText,lkDates.boardModified,starText,endText];
 }
 
 const getReviewSuggestion = (data,deadlines) => {
