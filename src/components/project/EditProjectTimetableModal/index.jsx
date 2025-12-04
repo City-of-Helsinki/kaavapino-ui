@@ -565,7 +565,6 @@ class EditProjectTimeTableModal extends Component {
     }
     else if(dashStart && dashEnd && milestone){
       const distanceToPrevious = this.findMinimum(deadlines[i - 2].deadline.attribute, this.props.deadlineSections) || 0;
-      console.log('Minimum distance:', distanceToPrevious);
       phaseData.push({
         start: milestone,
         id: numberOfPhases + " maaraaika",
@@ -619,7 +618,6 @@ class EditProjectTimeTableModal extends Component {
     else{
       if (dashedStyle.includes("board") && dashStart && dashEnd) {
         const distanceToPreviousEsilla = this.findMinimum(deadlines[i - 1].deadline.attribute, this.props.deadlineSections) || 0;
-        console.log('Minimum distance:', distanceToPreviousEsilla);
         phaseData.push({
           start: dashStart,
           id: numberOfPhases + " maaraaika",

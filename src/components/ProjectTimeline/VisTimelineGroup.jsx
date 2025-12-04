@@ -1431,18 +1431,23 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       const lockedItems = items.get().filter(i => i?.className?.includes('locked-color'));
       if (lockedItems.length === 0) return false;
 
-      // Find the earliest locked date
+      const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+      // Find the earliest locked date adjusted by distanceToPrevious
       let earliestLockedDate = null;
       lockedItems.forEach(lockedItem => {
-        console.log(lockedItem?.distanceToPrevious)
+        const distanceToPrevious = lockedItem.distanceToPrevious ?? 0;
+        const distanceDays = distanceToPrevious === 0 ? 0 : distanceToPrevious + 1;
+        const distanceAdjustment = distanceDays * ONE_DAY_MS;
+        
         if (lockedItem.start) {
-          const lockedDate = new Date(lockedItem.start).getTime();
+          const lockedDate = new Date(lockedItem.start).getTime() - distanceAdjustment;
           if (!earliestLockedDate || lockedDate < earliestLockedDate) {
             earliestLockedDate = lockedDate;
           }
         }
         if (lockedItem.end) {
-          const lockedDate = new Date(lockedItem.end).getTime();
+          const lockedDate = new Date(lockedItem.end).getTime() - distanceAdjustment;
           if (!earliestLockedDate || lockedDate < earliestLockedDate) {
             earliestLockedDate = lockedDate;
           }
