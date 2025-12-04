@@ -200,12 +200,14 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
       }
     </>
 
-    //XL princibles and draft phases have 2 acceptance checkboxes others only one. Selecting all acceptance checkboxes in current phase disables edit button.
-    const disableEdit = selectedPhase === 26 || selectedPhase === 28 ? cardData.confirmed && cardData.boardConfirmed : cardData.confirmed || cardData.boardConfirmed
+    const allConfirmed = !(
+      (cardData.startDate && !cardData.confirmed) ||
+      (cardData.boardDate && !cardData.boardConfirmed)
+    );
     const invalidDate = moment(cardData.boardDate).format('DD.MM.YYYY') === "Invalid date"
 
     editDataLink = 
-    disableEdit
+    allConfirmed
     ? 
     <div className='rolling-text'>
       <IconCheckCircle aria-hidden="true" />

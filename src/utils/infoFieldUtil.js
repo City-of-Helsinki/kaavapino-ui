@@ -32,10 +32,10 @@ const getLautakuntaDates = (deadlinegroup, data, deadlines) => {
   const lautakuntaDeadline = deadlines.find(
     (d) => d.deadline?.deadlinegroup === deadlinegroup && d.deadline?.attribute?.includes("_lautakunnassa"));
   const lautakuntaAttribute = lautakuntaDeadline?.deadline?.attribute;
-  const confirmBoard = !!isDeadlineConfirmed(data, deadlinegroup);
+  const boardConfirmed = !!isDeadlineConfirmed(data, deadlinegroup);
   const boardDate = lautakuntaAttribute ? data[lautakuntaAttribute] : "";
   const boardModified = !!lautakuntaDeadline?.edited;
-  return { boardDate, confirmBoard, boardModified };
+  return { boardDate, boardConfirmed, boardModified };
 }
 
 
