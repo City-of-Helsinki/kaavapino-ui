@@ -1424,44 +1424,38 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       return false;
     };
 
-    const isMovingPastLockedDate = (item, items) => {
+    const isMovingPastLockedDate = (item, items, snapshot) => {
       if (!item) return false;
-
       // Get all locked items (items with locked-color className)
-      const lockedItems = items.get().filter(i => i?.className?.includes('locked-color'));
+      const lockedItems = items.get().filter(i => 
+        i?.className?.includes('locked-color') && 
+        !i?.className?.includes('divider') &&
+        i?.start);
       if (lockedItems.length === 0) return false;
-
+      // First locked item is the buffer
+      const firstLocked = lockedItems[0];
+      const distanceToPrevious = firstLocked.distanceToPrevious ?? 0;
+      const distanceDays = distanceToPrevious === 0 ? 0 : distanceToPrevious + 2;
       const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-
-      // Find the earliest locked date adjusted by distanceToPrevious
-      let earliestLockedDate = null;
-      lockedItems.forEach(lockedItem => {
-        const distanceToPrevious = lockedItem.distanceToPrevious ?? 0;
-        const distanceDays = distanceToPrevious === 0 ? 0 : distanceToPrevious + 2;
-        const distanceAdjustment = distanceDays * ONE_DAY_MS;
-        
-        if (lockedItem.start) {
-          const lockedDate = new Date(lockedItem.start).getTime() - distanceAdjustment;
-          if (!earliestLockedDate || lockedDate < earliestLockedDate) {
-            earliestLockedDate = lockedDate;
+      let minStart = null;
+      let maxEnd = null;
+      //item group
+      if (snapshot?.items) {
+        Object.values(snapshot.items).forEach(i => {
+          if (i.start) {
+            const s = new Date(i.start).getTime();
+            if (minStart === null || s < minStart) minStart = s;
+            const e = i.end ? new Date(i.end).getTime() : s;
+            if (maxEnd === null || e > maxEnd) maxEnd = e;
           }
-        }
-        if (lockedItem.end) {
-          const lockedDate = new Date(lockedItem.end).getTime() - distanceAdjustment;
-          if (!earliestLockedDate || lockedDate < earliestLockedDate) {
-            earliestLockedDate = lockedDate;
-          }
-        }
-      });
-
-      if (!earliestLockedDate) return false;
-
-      // Check if item would move past the earliest locked date
-      const itemStart = item.start ? new Date(item.start).getTime() : null;
-      const itemEnd = item.end ? new Date(item.end).getTime() : null;
-
-      if (itemStart && itemStart >= earliestLockedDate) return true;
-      if (itemEnd && itemEnd >= earliestLockedDate) return true;
+        });
+      }
+      const dist = (minStart !== null && maxEnd !== null) 
+        ? (maxEnd - minStart) / ONE_DAY_MS 
+        : 0;
+      const itemStart = new Date(item.start).getTime();
+      const buffer = new Date(firstLocked.start).getTime() - (dist + distanceDays) * ONE_DAY_MS
+      if (itemStart && itemStart >= buffer) return true;
 
       return false;
     };
@@ -1573,7 +1567,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           const event = window.event;
           const today = new Date();
           today.setHours(0, 0, 0, 0);
-                    // Check if trying to move an item from a phase that has already passed
+          const { snapshot, movingId } = clusterDragRef.current;
+          // Check if trying to move an item from a phase that has already passed
           if (item.phaseName && visValuesRef.current.kaavan_vaihe) {
             // Define the phase order
             const phaseOrder = [
@@ -1613,7 +1608,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             return;
           }
           // Check if trying to move past any locked date
-          if (isMovingPastLockedDate(item, items)) {
+          if (isMovingPastLockedDate(item, items, snapshot)) {
             callback(null);
             return;
           }          
@@ -1638,7 +1633,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             else tooltipEl.innerHTML = startDate;
           }
 
-          const { snapshot, movingId } = clusterDragRef.current;
           const setItems = timelineInstanceRef?.current?.itemSet?.items;
 
           const shouldMoveRelated =
