@@ -200,11 +200,16 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
       }
     </>
 
-    const allConfirmed = !(
+    let allConfirmed = !(
       (cardData.acceptanceDate) ||
       (cardData.startDate && !cardData.confirmed) ||
       (cardData.boardDate && !cardData.boardConfirmed)
     );
+
+    if (!cardData.startDate && !cardData.endDate && !cardData.boardDate) {
+      allConfirmed = false;
+    }
+
     const invalidDate = moment(cardData.boardDate).format('DD.MM.YYYY') === "Invalid date"
 
     editDataLink = 
@@ -244,6 +249,19 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
       </div>
       :
       ""
+
+    if (!container && !container2) {
+      container =
+      <div className='custom-card-container'>
+        <div className='custom-card-item-container'>
+          <div className='custom-card-info-container'>
+            <div className='custom-card-info'>
+              {t('custom-card.no-dates-set')}
+            </div>
+          </div>
+        </div>
+    </div>
+    }
   }
   if(type === "Tarkasta kerrosalatiedot"){
     buttonText = t('custom-card.modify-floor-area')
