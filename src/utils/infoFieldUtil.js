@@ -132,7 +132,7 @@ const getAcceptanceDate = (data,name) => {
   }
   const boardText = "custom-card.acceptance-date-text"
   const acceptanceDate = date
-  return {acceptanceDate, boardText};
+  return {boardDate: acceptanceDate, boardText};
 }
 
 const getInfoFieldData = (placeholder,name,data,deadlines,selectedPhase) => {
