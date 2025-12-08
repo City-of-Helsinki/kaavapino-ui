@@ -711,7 +711,7 @@
     padding-top: 16px;
     background-color: $color-fog-light;
     display: block;
-    overflow: hidden;
+    overflow: visible;
     border-bottom: 0.7px solid $color-black-60;
     .input-container {
       background-color: $color-fog-light;
