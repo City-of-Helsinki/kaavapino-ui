@@ -355,13 +355,26 @@ const getHighestNumberedObject = (obj1) => {
               }
               else if(arr[currentIndex]?.key?.includes("maaraaika")){
                 //Maaraiaka moving
+                const oldStartISO = arr[i + 1]?.value;
+                const oldEndISO = arr[i + 2]?.value;
+                const endAllowed = disabledDates?.date_types[arr[i + 2]?.date_type]?.dates || [];
                 const alkaaResult = timeUtil.findAllowedDate(movedDate, arr[i + 1].initial_distance, disabledDates?.date_types[arr[i]?.date_type]?.dates, false);
                 arr[i + 1].value = new Date(alkaaResult).toISOString().split('T')[0];
                 indexToContinue = i + 1
                 if(!arr[currentIndex]?.key?.includes("kylk_maaraaika") && !arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("lautakunnassa") && arr[currentIndex]?.key?.includes("maaraaika")){
-                  const paattyyResult = timeUtil.findAllowedDate(alkaaResult, arr[i + 2].initial_distance, disabledDates?.date_types[arr[i +2]?.date_type]?.dates, false);
-                  //When moving maaraaika in esillaolo or nahtavillaolo not in lautakunta
-                  arr[i + 2].value = new Date(paattyyResult).toISOString().split('T')[0];
+                  let timespan = 0;
+                  //Keep the same timespan between alkaa and paattyy if both are defined
+                  if (endAllowed.length && oldStartISO && oldEndISO) {
+                    const start = endAllowed.findIndex(d => d >= oldStartISO);
+                    const end = endAllowed.findIndex(d => d >= oldEndISO);
+                    if (start !== -1 && end !== -1 && end >= start) timespan = end - start;
+                  }
+                  const val = endAllowed.findIndex(d => d >= arr[i + 1].value);
+                  let kept = (val !== -1 && val + timespan < endAllowed.length) ? endAllowed[val + timespan] : null;
+                  if (!kept) {
+                    kept = timeUtil.findAllowedDate(arr[i + 1].value, arr[i + 2].initial_distance, endAllowed, false);
+                  }
+                  arr[i + 2].value = new Date(kept).toISOString().split('T')[0];
                   indexToContinue = i + 2
                 }
               }

@@ -93,7 +93,8 @@ import {
   UPDATE_PROJECT_FAILURE,
   UPDATE_ATTRIBUTE,
   SAVE_PROJECT_TIMETABLE_FAILED,
-  VALIDATING_TIMETABLE
+  VALIDATING_TIMETABLE,
+  SET_SAVING_FIELD
 } from '../actions/projectActions'
 
 import timeUtil from '../utils/timeUtil'
@@ -115,6 +116,7 @@ export const initialState = {
   currentProject: null,
   currentProjectLoaded: false,
   saving: false,
+  savingField: null,
   changingPhase: false,
   validating: false,
   hasErrors: false,
@@ -150,12 +152,51 @@ export const initialState = {
   dateValidationResult: {valid: false, result: {}},
   validated:false,
   cancelTimetableSave:false,
-  validatingTimetable: {started: false, ended: false}
+  validatingTimetable: {started: false, ended: false},
+  network: { status: 'ok', hasError: false, errorMessage: '', okMessage: '', tempFieldContents: '' }
 }
 
 export const reducer = (state = initialState, action) => {
 
   switch (action.type) {
+    // ---- Network status (human readable string action types added only here) ----
+    // We keep network state inside project slice to avoid creating new top-level reducer.
+    // NetworkErrorState component currently reads state.network; it will need to be updated
+    // to use project slice (e.g. state.project.network) or selector. For now we expose via selector.
+    case 'Set network status': {
+    	const { status, errorMessage, okMessage, tempFieldContents } = action.payload || {}
+    	return {
+    		...state,
+    		network: {
+    			status: status || state.network?.status || 'ok',
+    			hasError: status === 'error',
+    			errorMessage: errorMessage !== undefined ? errorMessage : state.network?.errorMessage || '',
+    			okMessage: okMessage !== undefined ? okMessage : state.network?.okMessage || '',
+    			tempFieldContents: tempFieldContents !== undefined ? tempFieldContents : state.network?.tempFieldContents || ''
+    		}
+    	}
+    }
+    case 'Reset network status': {
+    	if (!state.network) return state
+    	return {
+    		...state,
+    		network: {
+    			...state.network,
+    			status: 'ok',
+    			hasError: false,
+    			errorMessage: '',
+    			okMessage: '',
+    			tempFieldContents: state.network.tempFieldContents // keep last cached text until component discards
+    		}
+    	}
+    }
+
+    case SET_SAVING_FIELD: {
+      return {
+        ...state,
+        savingField: action.payload
+      }
+    }
 
     case UPDATE_ATTRIBUTE: {
       const { field, value } = action.payload
@@ -172,7 +213,7 @@ export const reducer = (state = initialState, action) => {
     }
 
     case UPDATE_DATE_TIMELINE: {
-      const { field, newDate, formValues, isAdd, deadlineSections } = action.payload;
+      const { field, newDate, formValues, isAdd, deadlineSections, keepDuration, originalDurationDays, pairedEndKey } = action.payload;
       // Create a copy of the state and attribute_data
       let updatedAttributeData
       if(formValues){
@@ -194,6 +235,13 @@ export const reducer = (state = initialState, action) => {
       const newDateObj = new Date(newDate);
       // Update the specific date at the given field
       filteredAttributeData[field] = timeUtil.formatDate(newDateObj);
+      let preservedEndValue = null;
+      if (keepDuration && originalDurationDays > 0 && pairedEndKey) {
+        const endDateObj = new Date(newDateObj);
+        endDateObj.setDate(endDateObj.getDate() + originalDurationDays);
+        preservedEndValue = timeUtil.formatDate(endDateObj);
+        filteredAttributeData[pairedEndKey] = preservedEndValue; // initial set before adjustments
+      }
       if(field === "hyvaksymispaatos_pvm" && filteredAttributeData["hyvaksyminenvaihe_paattyy_pvm"]){
         filteredAttributeData["hyvaksyminenvaihe_paattyy_pvm"] = timeUtil.formatDate(newDateObj);
       }
@@ -214,6 +262,10 @@ export const reducer = (state = initialState, action) => {
       const decreasingValues = objectUtil.checkForDecreasingValues(changes,isAdd,field,state.disabledDates,oldDate,newDate,moveToPast,projectSize,filteredAttributeData);
       //Add new values from array to updatedAttributeData object
       objectUtil.updateOriginalObject(filteredAttributeData,decreasingValues)
+      // Restore preserved end after adjustments if any logic changed it
+      if (keepDuration && preservedEndValue && pairedEndKey) {
+        filteredAttributeData[pairedEndKey] = preservedEndValue;
+      }
       //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
       timeUtil.compareAndUpdateDates(filteredAttributeData)
       // Return the updated state with the modified currentProject and attribute_data

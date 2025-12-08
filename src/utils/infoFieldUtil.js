@@ -1,3 +1,5 @@
+import { isDeadlineConfirmed } from "./projectVisibilityUtils";
+
 const userHasModified = (field,deadlines,phase) => {
   for (let i = 0; i < deadlines.length; i++) {
     if(deadlines[i].deadline.phase_name === phase && deadlines[i].deadline?.attribute === field){
@@ -11,214 +13,110 @@ const isConfirmed = (startDateConfirmed) => {
   return startDateConfirmed === true;
 }
 
-const getPrincipleDates = (data,deadlines) => {
-  let startDate = ""
-  let endDate = ""
-  let hide = false
-  let startModified = false
-  let endModified = false
-  const boardDate = data?.milloin_periaatteet_lautakunnassa
-  const confirmBoard = data?.vahvista_periaatteet_lautakunnassa
-  const boardText = "custom-card.principles-board-text"
-  const boardModified = userHasModified("milloin_periaatteet_lautakunnassa",deadlines,"Periaatteet")
+const getEsillaoloDates = (deadlinegroup, data, deadlines) => {
+  const alkaaDeadline = deadlines.find(
+    (d) => d.deadline?.deadlinegroup === deadlinegroup && d.deadline?.attribute?.includes("_alkaa"));
+  const paattyyDeadline = deadlines.find(
+    (d) => d.deadline?.deadlinegroup === deadlinegroup && d.deadline?.attribute?.includes("_paattyy"));
+  const alkaaAttribute = alkaaDeadline?.deadline?.attribute;
+  const paattyyAttribute = paattyyDeadline?.deadline?.attribute;
+  const confirmed = !!isDeadlineConfirmed(data, deadlinegroup);
+  const startDate = alkaaAttribute ? data[alkaaAttribute] : "";
+  const endDate = paattyyAttribute ? data[paattyyAttribute] : "";
+  const startModified = !!alkaaDeadline?.edited;
+  const endModified = !!paattyyDeadline?.edited;
+  return {startDate, endDate, confirmed, startModified, endModified};
+}
 
-  if (
-    data?.jarjestetaan_periaatteet_esillaolo_3 === true &&
-    data?.vahvista_periaatteet_esillaolo_alkaa_3 === true &&
-    data?.milloin_periaatteet_esillaolo_alkaa_3 &&
-    data?.milloin_periaatteet_esillaolo_paattyy_3
-  ) {
-    hide = isConfirmed(data?.vahvista_periaatteet_esillaolo_alkaa_3)
-    startDate = data?.milloin_periaatteet_esillaolo_alkaa_3
-    endDate = data?.milloin_periaatteet_esillaolo_paattyy_3
-    startModified = userHasModified("milloin_periaatteet_esillaolo_alkaa_3",deadlines,"Periaatteet")
-    endModified = userHasModified("milloin_periaatteet_esillaolo_paattyy_3",deadlines,"Periaatteet")
-  }
-  else if (
-    data?.jarjestetaan_periaatteet_esillaolo_2 === true &&
-    data?.vahvista_periaatteet_esillaolo_alkaa_2 === true &&
-    data?.milloin_periaatteet_esillaolo_alkaa_2 &&
-    data?.milloin_periaatteet_esillaolo_paattyy_2
-  ) {
-    hide = isConfirmed(data?.vahvista_periaatteet_esillaolo_alkaa_2)
-    startDate = data?.milloin_periaatteet_esillaolo_alkaa_2
-    endDate = data?.milloin_periaatteet_esillaolo_paattyy_2
-    startModified = userHasModified("milloin_periaatteet_esillaolo_alkaa_2",deadlines,"Periaatteet")
-    endModified = userHasModified("milloin_periaatteet_esillaolo_paattyy_2",deadlines,"Periaatteet")
-  }
-  else if (
-    data?.jarjestetaan_periaatteet_esillaolo_1 === true &&
-    data?.vahvista_periaatteet_esillaolo_alkaa === true &&
-    data?.milloin_periaatteet_esillaolo_alkaa &&
-    data?.milloin_periaatteet_esillaolo_paattyy
-  ) {
-    hide = isConfirmed(data?.vahvista_periaatteet_esillaolo_alkaa)
-    startDate = data?.milloin_periaatteet_esillaolo_alkaa
-    endDate = data?.milloin_periaatteet_esillaolo_paattyy
-    startModified = userHasModified("milloin_periaatteet_esillaolo_alkaa",deadlines,"Periaatteet")
-    endModified = userHasModified("milloin_periaatteet_esillaolo_paattyy",deadlines,"Periaatteet")
-  }
-  else {
-    if (
-      data?.jarjestetaan_periaatteet_esillaolo_1 ||
-      data?.jarjestetaan_periaatteet_esillaolo_2 ||
-      data?.jarjestetaan_periaatteet_esillaolo_3
-    ) {
-      startDate = data?.milloin_periaatteet_esillaolo_alkaa
-      endDate = data?.milloin_periaatteet_esillaolo_paattyy
+const getLautakuntaDates = (deadlinegroup, data, deadlines) => {
+  const lautakuntaDeadline = deadlines.find(
+    (d) => d.deadline?.deadlinegroup === deadlinegroup && d.deadline?.attribute?.includes("_lautakunnassa"));
+  const lautakuntaAttribute = lautakuntaDeadline?.deadline?.attribute;
+  const boardConfirmed = !!isDeadlineConfirmed(data, deadlinegroup);
+  const boardDate = lautakuntaAttribute ? data[lautakuntaAttribute] : "";
+  const boardModified = !!lautakuntaDeadline?.edited;
+  return { boardDate, boardConfirmed, boardModified };
+}
+
+
+const getEsillaoloLautakuntaDates = (esillaGroupName, esillaVisBoolName, lkGroupName, lkVisBoolName, data, deadlines) => {
+  // Get data from latest esillaolo and lautakunta
+  let esillaObject = {};
+  let lkObject = {};
+  for (let i = 4, lkDone = false, esillaDone = false; i > 0 && !(lkDone && esillaDone); i--) {
+    if ((!esillaDone) && data?.[`${esillaVisBoolName}_${i}`]) {
+      esillaObject = getEsillaoloDates(`${esillaGroupName}_${i}`, data, deadlines);
+      esillaDone = true;
     }
-    startModified = userHasModified("milloin_periaatteet_esillaolo_alkaa",deadlines,"Periaatteet")
-    endModified = userHasModified("milloin_periaatteet_esillaolo_paattyy",deadlines,"Periaatteet")
-    hide = isConfirmed(data?.vahvista_periaatteet_esillaolo_alkaa)
+    if ((!lkDone) && data?.[`${lkVisBoolName}_${i}`]) {
+      lkObject = getLautakuntaDates(`${lkGroupName}_${i}`, data, deadlines);
+      lkDone = true;
+    }
   }
+  return {esillaObject, lkObject};
+}
 
-  return [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText,boardModified]
+const getPrincipleDates = (data,deadlines) => {
+  const boardText = "custom-card.principles-board-text";
+  const {esillaObject, lkObject} = getEsillaoloLautakuntaDates(
+    "periaatteet_esillaolokerta", "jarjestetaan_periaatteet_esillaolo",
+    "periaatteet_lautakuntakerta","periaatteet_lautakuntaan",
+    data,deadlines
+  );
+  return {...esillaObject, ...lkObject, boardText};
 }
 
 const getOASDates = (data,deadlines) => {
-  let startDate = ""
-  let endDate = ""
-  let hide = false
-  let startModified = false
-  let endModified = false
-
-  if (
-    data?.jarjestetaan_oas_esillaolo_3 &&
-    data?.vahvista_oas_esillaolo_alkaa_3 === true &&
-    data?.milloin_oas_esillaolo_alkaa_3 &&
-    data?.milloin_oas_esillaolo_paattyy_3
-  ) {
-    hide = isConfirmed(data?.vahvista_oas_esillaolo_alkaa_3)
-    startDate = data?.milloin_oas_esillaolo_alkaa_3
-    endDate = data?.milloin_oas_esillaolo_paattyy_3
-    startModified = userHasModified("milloin_oas_esillaolo_alkaa_3",deadlines,"OAS")
-    endModified = userHasModified("milloin_oas_esillaolo_paattyy_3",deadlines,"OAS")
+  let esillaOloObject = {};
+  if (data?.jarjestetaan_oas_esillaolo_3) {
+    esillaOloObject = getEsillaoloDates("oas_esillaolokerta_3", data, deadlines);
   }
-  else if (
-    data?.jarjestetaan_oas_esillaolo_2 &&
-    data?.vahvista_oas_esillaolo_alkaa_2 === true &&
-    data?.milloin_oas_esillaolo_alkaa_2 &&
-    data?.milloin_oas_esillaolo_paattyy_2
-  ) {
-    hide = isConfirmed(data?.vahvista_oas_esillaolo_alkaa_2)
-    startDate = data?.milloin_oas_esillaolo_alkaa_2
-    endDate = data?.milloin_oas_esillaolo_paattyy_2
-    startModified = userHasModified("milloin_oas_esillaolo_alkaa_2",deadlines,"OAS")
-    endModified = userHasModified("milloin_oas_esillaolo_paattyy_2",deadlines,"OAS")
+  else if (data?.jarjestetaan_oas_esillaolo_2) {
+    esillaOloObject = getEsillaoloDates("oas_esillaolokerta_2", data, deadlines);
   }
   else {
-    hide = isConfirmed(data?.vahvista_oas_esillaolo_alkaa)
-    startDate = data?.milloin_oas_esillaolo_alkaa
-    endDate = data?.milloin_oas_esillaolo_paattyy
-    startModified = userHasModified("milloin_oas_esillaolo_alkaa",deadlines,"OAS")
-    endModified = userHasModified("milloin_oas_esillaolo_paattyy",deadlines,"OAS")
+    esillaOloObject = getEsillaoloDates("oas_esillaolokerta_1", data, deadlines);
   }
-
-  return [startDate,endDate,hide,startModified,endModified,hide]
+  return {...esillaOloObject, confirmBoard: esillaOloObject.confirmed};
 }
 
 const getDraftDates = (data,deadlines) => {
-  const hide = isConfirmed(data?.vahvista_luonnos_esillaolo_alkaa)
-  let startDate = ""
-  let endDate = ""
-  const startModified = userHasModified("milloin_luonnos_esillaolo_alkaa",deadlines,"Luonnos")
-  const endModified = userHasModified("milloin_luonnos_esillaolo_paattyy",deadlines,"Luonnos")
-  const boardDate = data?.milloin_kaavaluonnos_lautakunnassa
-  const confirmBoard = data?.vahvista_kaavaluonnos_lautakunnassa
-  const boardText = "custom-card.draft-board-text"
-  const boardModified = userHasModified("milloin_kaavaluonnos_lautakunnassa",deadlines,"Luonnos")
-  if(data?.jarjestetaan_luonnos_esillaolo_1){
-    startDate = data?.milloin_luonnos_esillaolo_alkaa
-    endDate = data?.milloin_luonnos_esillaolo_paattyy
-  }
-
-  return [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText,boardModified]
+  const boardText = "custom-card.principles-board-text";
+  const {esillaObject, lkObject} = getEsillaoloLautakuntaDates(
+    "luonnos_esillaolokerta", "jarjestetaan_luonnos_esillaolo",
+    "luonnos_lautakuntakerta","kaavaluonnos_lautakuntaan",
+    data,deadlines
+  );
+  return {...esillaObject, ...lkObject, boardText};
 }
 
 const getSuggestion = (data,deadlines) => {
-  let hide = false
-  let startDate = ""
-  let endDate = ""
-  let startModified = false
-  let endModified = false
-  const starText = "custom-card.suggestion-start-text"
-  const endText = "custom-card.suggestion-end-text"
-  const boardDate = data?.milloin_kaavaehdotus_lautakunnassa
-  const confirmBoard = data?.vahvista_kaavaehdotus_lautakunnassa
-  const boardText = "custom-card.suggestion-board-text"
-  const boardModified = userHasModified("milloin_kaavaehdotus_lautakunnassa",deadlines,"Ehdotus")
-  const startAttribute = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso || data?.milloin_ehdotuksen_nahtavilla_alkaa_pieni
-  const startAttribute_2 = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_2 || data?.milloin_ehdotuksen_nahtavilla_alkaa_pieni_2
-  const startAttribute_3 = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_3 || data?.milloin_ehdotuksen_nahtavilla_alkaa_pieni_3
-  const startAttribute_4 = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_4 || data?.milloin_ehdotuksen_nahtavilla_alkaa_pieni_4
+  const startText = "custom-card.suggestion-start-text";
+  const endText = "custom-card.suggestion-end-text";
+  const boardText = "custom-card.suggestion-board-text";
 
-  const confirmStartAttr = data?.vahvista_ehdotus_esillaolo_alkaa_iso || data?.vahvista_ehdotus_esillaolo_alkaa_pieni || data?.vahvista_ehdotus_esillaolo;
-  const confirmStartAttr2 = data?.vahvista_ehdotus_esillaolo_alkaa_iso_2 || data?.vahvista_ehdotus_esillaolo_alkaa_pieni_2
-  const confirmStartAttr3 = data?.vahvista_ehdotus_esillaolo_alkaa_iso_3 || data?.vahvista_ehdotus_esillaolo_alkaa_pieni_3
-  const confirmStartAttr4 = data?.vahvista_ehdotus_esillaolo_alkaa_iso_4 || data?.vahvista_ehdotus_esillaolo_alkaa_pieni_4
-
-  if (
-    data?.kaavaehdotus_uudelleen_nahtaville_4 === true &&
-    confirmStartAttr4 === true &&
-    startAttribute_4 &&
-    data?.milloin_ehdotuksen_nahtavilla_paattyy_4
-  ) {
-    hide = isConfirmed(confirmStartAttr4)
-    startDate = startAttribute_4
-    endDate = data?.milloin_ehdotuksen_nahtavilla_paattyy_4
-    const attributeStartText = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_4 ? "milloin_ehdotuksen_nahtavilla_alkaa_iso_4" : "milloin_ehdotuksen_nahtavilla_alkaa_pieni_4"
-    startModified = userHasModified(attributeStartText,deadlines,"Ehdotus")
-    endModified = userHasModified("milloin_ehdotuksen_nahtavilla_paattyy_4",deadlines,"Ehdotus")
+  let {esillaObject, lkObject} = getEsillaoloLautakuntaDates(
+    "ehdotus_nahtavillaolokerta", "kaavaehdotus_uudelleen_nahtaville",
+    "ehdotus_lautakuntakerta","kaavaehdotus_lautakuntaan",
+    data,deadlines
+  );
+  // ehdotus uses inconsistent key for first esillaolo. If 2nd is not set in above function, check 1st here.
+  if (!esillaObject.startDate && data?.kaavaehdotus_nahtaville_1 !== false) {
+    esillaObject = getEsillaoloDates("ehdotus_nahtavillaolokerta_1", data, deadlines);
   }
-  else if (
-    data?.kaavaehdotus_uudelleen_nahtaville_3 === true &&
-    confirmStartAttr3 === true &&
-    startAttribute_3 &&
-    data?.milloin_ehdotuksen_nahtavilla_paattyy_3
-  ) {
-    hide = isConfirmed(confirmStartAttr3)
-    startDate = startAttribute_3
-    endDate = data?.milloin_ehdotuksen_nahtavilla_paattyy_3
-    const attributeStartText = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_3 ? "milloin_ehdotuksen_nahtavilla_alkaa_iso_3" : "milloin_ehdotuksen_nahtavilla_alkaa_pieni_3"
-    startModified = userHasModified(attributeStartText,deadlines,"Ehdotus")
-    endModified = userHasModified("milloin_ehdotuksen_nahtavilla_paattyy_3",deadlines,"Ehdotus")
-  }
-  else if (
-    data?.kaavaehdotus_uudelleen_nahtaville_2 === true &&
-    confirmStartAttr2 === true &&
-    startAttribute_2 &&
-    data?.milloin_ehdotuksen_nahtavilla_paattyy_2
-  ) {
-    hide = isConfirmed(confirmStartAttr2)
-    startDate = startAttribute_2
-    endDate = data?.milloin_ehdotuksen_nahtavilla_paattyy_2
-    const attributeStartText = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso_2 ? "milloin_ehdotuksen_nahtavilla_alkaa_iso_2" : "milloin_ehdotuksen_nahtavilla_alkaa_pieni_2"
-    startModified = userHasModified(attributeStartText,deadlines,"Ehdotus")
-    endModified = userHasModified("milloin_ehdotuksen_nahtavilla_paattyy_2",deadlines,"Ehdotus")
-  }
-  else if (
-    data?.kaavaehdotus_nahtaville_1 === true &&
-    confirmStartAttr === true &&
-    startAttribute &&
-    data?.milloin_ehdotuksen_nahtavilla_paattyy
-  ) {
-    hide = isConfirmed(confirmStartAttr)
-    startDate = startAttribute
-    endDate = data?.milloin_ehdotuksen_nahtavilla_paattyy
-    const attributeStartText = data?.milloin_ehdotuksen_nahtavilla_alkaa_iso ? "milloin_ehdotuksen_nahtavilla_alkaa_iso" : "milloin_ehdotuksen_nahtavilla_alkaa_pieni"
-    startModified = userHasModified(attributeStartText,deadlines,"Ehdotus")
-    endModified = userHasModified("milloin_ehdotuksen_nahtavilla_paattyy",deadlines,"Ehdotus")
-  }
-
-  return [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText,boardModified,starText,endText]
+  return {...esillaObject, ...lkObject, startText, endText, boardText};
 }
 
 const getReviewSuggestion = (data,deadlines) => {
-  const boardDate = data?.milloin_tarkistettu_ehdotus_lautakunnassa
-  const confirmBoard = data?.vahvista_tarkistettu_ehdotus_lautakunnassa
   const boardText = "custom-card.review-suggestion-board-text"
-  const boardModified = userHasModified("milloin_tarkistettu_ehdotus_lautakunnassa",deadlines,"Tarkistettu ehdotus")
-  return ["","",confirmBoard,true,true,boardDate,confirmBoard,boardText,boardModified]
+  let lkDates = {};
+  for (let i = 4; i > 0; i--) {
+    if (data?.[`tarkistettu_ehdotus_lautakuntaan_${i}`]) {
+      lkDates = getLautakuntaDates(`tarkistettu_ehdotus_lautakuntakerta_${i}`, data, deadlines);
+      break;
+    }
+  }
+  return { ...lkDates, boardText };
 }
 
 const getAcceptanceDate = (data,name) => {
@@ -234,41 +132,52 @@ const getAcceptanceDate = (data,name) => {
   }
   const boardText = "custom-card.acceptance-date-text"
   const acceptanceDate = date
-  return ["","","",false,false,acceptanceDate,false,boardText,false]
+  return {boardDate: acceptanceDate, boardText};
 }
 
 const getInfoFieldData = (placeholder,name,data,deadlines,selectedPhase) => {
   const suggestionPhase = [29, 21, 15, 9, 3].includes(selectedPhase)
   const reviewSuggestionPhase = [30, 22, 16, 10, 4].includes(selectedPhase)
-
-  const living = data?.asuminen_yhteensa || 0
-  const office = data?.toimitila_yhteensa || 0
-  const general = data?.julkiset_yhteensa || 0
-  const other = data?.muut_yhteensa || 0
-
-  let [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText,boardModified,starText,endText] = ["","","",false,false,"",false,"",false,"",""]
+  let infoData = {
+    livingFloorArea: data?.asuminen_yhteensa || 0,
+    officeFloorArea: data?.toimitila_yhteensa || 0,
+    generalFloorArea: data?.julkiset_yhteensa || 0,
+    otherFloorArea: data?.muut_yhteensa || 0,
+    startDate: "",
+    endDate: "",
+    confirmed: "",
+    startModified: false,
+    endModified: false,
+    boardDate: "",
+    boardConfirmed: false,
+    boardText: "",
+    boardModified: false,
+    startText: "",
+    endText: "",
+    isSuggestionPhase: suggestionPhase
+  }
   if(placeholder === "Tarkasta esilläolopäivät" && name === "tarkasta_esillaolo_periaatteet_fieldset"){
-    [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText,boardModified] = getPrincipleDates(data,deadlines)
+    infoData = {...infoData, ...getPrincipleDates(data,deadlines)}
   }
   else if(placeholder === "Tarkasta esilläolopäivät" && name === "tarkasta_esillaolo_luonnos_fieldset" && data?.luonnos_luotu){
-    [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText,boardModified] = getDraftDates(data,deadlines)
+    infoData = {...infoData, ...getDraftDates(data,deadlines)}
   }
   else if(placeholder === "Tarkasta esilläolopäivät" && name === "tarkasta_esillaolo_oas_fieldset"){
-    [startDate,endDate,hide,startModified,endModified,confirmBoard] = getOASDates(data,deadlines) 
+    infoData = {...infoData, ...getOASDates(data,deadlines)} 
   }
   else if(suggestionPhase && placeholder === "Tarkasta kerrosalatiedot" && name === "tarkasta_kerrosala_fieldset"){
-    [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText,boardModified,starText,endText] = getSuggestion(data,deadlines)
+    infoData = {...infoData, ...getSuggestion(data,deadlines)}
   }
   else if(reviewSuggestionPhase && placeholder === "Tarkasta kerrosalatiedot" && name === "tarkasta_kerrosala_fieldset"){
-    [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText,boardModified] = getReviewSuggestion(data,deadlines)
+    infoData = {...infoData, ...getReviewSuggestion(data,deadlines)}
   }
   else if(placeholder === "Merkitse hyväksymispäivä" || placeholder === "Merkitse muutoksenhakua koskevat päivämäärät" || placeholder === "Merkitse voimaantuloa koskevat päivämäärät"){
-    [startDate,endDate,hide,startModified,endModified,boardDate,confirmBoard,boardText,boardModified] = getAcceptanceDate(data,placeholder)
+    infoData = {...infoData, ...getAcceptanceDate(data,placeholder)}
   }
 
-  return [startDate,endDate,startModified,endModified,hide,living,office,general,other,boardDate,confirmBoard,boardText,boardModified,starText,endText,suggestionPhase]
+  return infoData;
 }
-  
+
 const exported = {
   getInfoFieldData,
 }
