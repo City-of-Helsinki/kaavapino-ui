@@ -201,6 +201,7 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
     </>
 
     const allConfirmed = !(
+      (cardData.acceptanceDate) ||
       (cardData.startDate && !cardData.confirmed) ||
       (cardData.boardDate && !cardData.boardConfirmed)
     );
