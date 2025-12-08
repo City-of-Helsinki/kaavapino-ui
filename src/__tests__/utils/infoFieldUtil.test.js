@@ -3,36 +3,60 @@ import infoFieldUtil from '../../utils/infoFieldUtil';
 
 const test_dls = [
     {
-    "date": "2025-12-23",
-    "abbreviation": "O2",
-    "deadline": { "attribute": "oas_esillaolo_aineiston_maaraaika", "phase_name": "OAS" },
-    "edited": true
+        deadline: { attribute: "oas_esillaolo_aineiston_maaraaika", deadlinegroup: "oas_esillaolokerta_1" },
+        edited: true
     },
     {
-    "date": "2026-05-15",
-    "abbreviation": "E5",
-    "deadline": { "attribute": "milloin_ehdotuksen_nahtavilla_paattyy", "phase_name": "Ehdotus" },
-    "edited": false
+        deadline: { attribute: "milloin_oas_esillaolo_alkaa", deadlinegroup: "oas_esillaolokerta_1" },
+        edited: true
     },
     {
-        "date": "2026-11-17",
-        "abbreviation": "E6.4",
-        "deadline": { "abbreviation": "E6.4", "attribute": "viimeistaan_lausunnot_ehdotuksesta_4", "phase_name": "Ehdotus"},
-        "edited": null,
+        deadline: { attribute: "milloin_oas_esillaolo_paattyy", deadlinegroup: "oas_esillaolokerta_1" },
+        edited: false
+    },
+    {
+        deadline: { attribute: "tarkistettu_ehdotus_kylk_maaraaika", deadlinegroup: "tarkistettu_ehdotus_lautakuntakerta_1" },
+        edited: false
+    },
+    {
+        deadline: { attribute: "tarkistettu_ehdotus_lautakunnassa", deadlinegroup: "tarkistettu_ehdotus_lautakuntakerta_1" },
+        edited: true
     }
 ];
 
-describe("infoFieldUtil functions work", () => {
-    test("userHasModified checks edited field correctly", () => {
-        const retval = infoFieldUtil.userHasModified("oas_esillaolo_aineiston_maaraaika", test_dls, "OAS");
-        expect(retval).true;
+describe("infoFieldUtil functions", () => {
+    test("getEsillaoloDates returns correct data", () => {
+        const data = {
+            milloin_oas_esillaolo_alkaa: "2025-11-01",
+            milloin_oas_esillaolo_paattyy: "2025-11-30",
+            vahvista_oas_esillaolo_alkaa: false
+        };
+        const result = infoFieldUtil.getEsillaoloDates("oas_esillaolokerta_1", data, test_dls);
+        expect(result).toStrictEqual({
+            startDate: "2025-11-01",
+            endDate: "2025-11-30",
+            confirmed: false,
+            startModified: true,
+            endModified: false
+        });
+        data.vahvista_oas_esillaolo_alkaa = true;
+        const result2 = infoFieldUtil.getEsillaoloDates("oas_esillaolokerta_1", data, test_dls);
+        expect(result2.confirmed).toBe(true);
     });
-    test("userHasModified checks untouched fields correctly", () => {
-        expect(infoFieldUtil.userHasModified("milloin_ehdotuksen_nahtavilla_paattyy", test_dls, "Ehdotus")).false;
-        expect(infoFieldUtil.userHasModified("viimeistaan_lausunnot_ehdotuksesta_4", test_dls, "Ehdotus")).false;
-    });
-    test("userHasModified returns false if deadline or phase is incorrect", () => {
-        expect(infoFieldUtil.userHasModified("kaynnistys_vaihe_alkaa", test_dls, "Käynnistys")).false;
-        expect(infoFieldUtil.userHasModified("oas_esillaolo_aineiston_maaraaika", test_dls, "Ehdotus")).false;
+    test("getLautakuntaDates returns correct data", () => {
+        const data = {
+            tarkistettu_ehdotus_kylk_maaraaika: "2025-12-01",
+            tarkistettu_ehdotus_lautakunnassa: "2025-12-15",
+            vahvista_tarkistettu_ehdotus_lautakunnassa: false
+        };
+        const result = infoFieldUtil.getLautakuntaDates("tarkistettu_ehdotus_lautakuntakerta_1", data, test_dls);
+        expect(result).toStrictEqual({
+            boardDate: "2025-12-15",
+            boardConfirmed: false,
+            boardModified: true
+        });
+        data.vahvista_tarkistettu_ehdotus_lautakunnassa = true;
+        const result2 = infoFieldUtil.getLautakuntaDates("tarkistettu_ehdotus_lautakuntakerta_1", data, test_dls);
+        expect(result2.boardConfirmed).toBe(true);
     });
 });
