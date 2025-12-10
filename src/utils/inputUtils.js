@@ -13,15 +13,29 @@ const hasError = error => {
   return false
 }
 
-const renderUpdatedFieldInfo = ({ savingField, fieldName, updated, t }) => {
+const renderUpdatedFieldInfo = ({ savingField, fieldName, updated, t, isFieldset, fieldsetFields }) => {
+	let shouldShowSpinner = false;
+
+	if (isFieldset && fieldsetFields && savingField) {
+		// For fieldset components: show spinner if savingField matches any field within this fieldset
+		shouldShowSpinner = fieldsetFields.some(field => field.name === savingField);
+	} else if (fieldName && fieldName.endsWith('_fieldset') && savingField) {
+		// For fieldset containers: show spinner if savingField could belong to this fieldset
+		const fieldsetPrefix = fieldName.replace('_fieldset', '');
+		shouldShowSpinner = savingField.includes(fieldsetPrefix);
+	} else {
+		// For individual fields: show spinner only for exact match
+		shouldShowSpinner = savingField === fieldName;
+	}
+	
 	return (
 		<div className='popup-container'>
-			{savingField === fieldName ? (
+			{shouldShowSpinner ? (
 				<div className='spinner-container'>
 					<LoadingSpinner className='loading-spinner' small />
 				</div>
 			) : (
-				updated && (
+				updated && updated.timestamp && (
 					<Tooltip
 						placement="top"
 					>
@@ -40,7 +54,7 @@ const renderUpdatedFieldInfo = ({ savingField, fieldName, updated, t }) => {
 }
 
 const renderTimeContainer = ({ updated, t }) => {
-	return updated ? (
+	return updated && updated.timestamp ? (
 		<div className='time-container'>{`${timeUtil.formatRelativeDate(updated.timestamp, t)} ${projectUtils.formatTime(updated.timestamp)}`}</div>
 	) : null
 }

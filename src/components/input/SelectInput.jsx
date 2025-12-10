@@ -4,7 +4,7 @@ import inputUtils from '../../utils/inputUtils'
 import { Select } from 'hds-react'
 import { isArray, isEqual, uniq, uniqBy } from 'lodash'
 import { useSelector } from 'react-redux'
-import {lockedSelector,savingSelector } from '../../selectors/projectSelector'
+import {lockedSelector,savingSelector,lastModifiedSelector } from '../../selectors/projectSelector'
 import RollingInfo from '../input/RollingInfo.jsx'
 import NetworkErrorState from './NetworkErrorState.jsx'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
@@ -36,16 +36,18 @@ const SelectInput = ({
   timetable_editable
 }) => {
   const currentValue = []
-  const oldValueRef = useRef('');
-  const [selectValues, setSelectValues] = useState('')
-  const lockedStatus = useSelector(state => lockedSelector(state))
-  const lockedStatusJsonString = JSON.stringify(lockedStatus);
-  const [readonly, setReadOnly] = useState(false)
-  const [fieldName, setFieldName] = useState("")
-  const [editField,setEditField] = useState(false)
-  const saving =  useSelector(state => savingSelector(state))
+	const oldValueRef = useRef('');
+	const [selectValues, setSelectValues] = useState('')
+	const lockedStatus = useSelector(state => lockedSelector(state))
+	const lockedStatusJsonString = JSON.stringify(lockedStatus);
+	const saving = useSelector(state => savingSelector(state))
+	const lastModified = useSelector(state => lastModifiedSelector(state))
+	const [readonly, setReadOnly] = useState(false)
+	const [fieldName, setFieldName] = useState("")
+	const [editField,setEditField] = useState(false)
+	const [isThisFieldSaving, setIsThisFieldSaving] = useState(false)
 
-  useEffect(() => {
+	useEffect(() => {
     //Chekcs that locked status has more data then inital empty object
     if(lockedStatus && Object.keys(lockedStatus).length > 0){
       if(lockedStatus.lock === false){
@@ -120,15 +122,22 @@ const SelectInput = ({
   }, [lockedStatusJsonString]);
   
 
-  useEffect(() => {
-    oldValueRef.current = input.value;
-    setSelectValues(input.value);
-    return () => {
+	useEffect(() => {
+		oldValueRef.current = input.value;
+		setSelectValues(input.value);
+		return () => {
 
-    };
-  }, [])
+		};
+	}, [])
 
-  const getLabel = value => {
+	useEffect(() => {
+		// Reset isThisFieldSaving when saving is complete for this field
+		if (isThisFieldSaving && (!saving || lastModified !== input.name)) {
+			setIsThisFieldSaving(false);
+		}
+	}, [saving, lastModified, input.name, isThisFieldSaving])
+
+	const getLabel = value => {
     const current = options && options.find(option => option.value === value)
     if (current && current.label && current.label !== ' ') {
       return current.label
@@ -205,8 +214,9 @@ const SelectInput = ({
       //prevent saving if locked
       if (!readonly) {
         if (typeof onBlur === 'function') {
-          setIsInstanceSaving(true);
           //Sent call to save changes
+          localStorage.setItem("changedValues", input.name);
+          setIsThisFieldSaving(true);
           onBlur();
           oldValueRef.current = selectValues;
         }
@@ -299,7 +309,7 @@ const SelectInput = ({
           onBlur={handleBlur}
           onFocus={handleFocus}
           clearable={false}
-          disabled={disabled || editDisabled || (isProjectTimetableEdit && !timetable_editable)}
+          disabled={disabled || editDisabled || isThisFieldSaving || (isProjectTimetableEdit && !timetable_editable)}
           options={preparedOptions}
           value={currentSingleValue}
           onChange={data => {
@@ -317,7 +327,7 @@ const SelectInput = ({
         <Select
           data-testid="select-multi"
           placeholder={placeholder}
-          className={readOnlyStyle}
+          className={`${readOnlyStyle}${isThisFieldSaving ? ' blurred' : ''}`}
           id={input.name}
           name={input.name}
           multiselect={multiple}
@@ -325,7 +335,7 @@ const SelectInput = ({
           onBlur={handleBlur}
           onFocus={handleFocus}
           clearable={true}
-          disabled={disabled || editDisabled || (isProjectTimetableEdit && !timetable_editable)}
+          disabled={disabled || editDisabled || isThisFieldSaving || (isProjectTimetableEdit && !timetable_editable)}
           options={preparedOptions}
           defaultValue={currentValue}
           onChange={data => {

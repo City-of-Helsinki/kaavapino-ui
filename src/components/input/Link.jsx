@@ -4,7 +4,7 @@ import isUrl from 'is-url'
 import ipRegex from 'ip-regex'
 import { IconCross, IconCheck, Button, IconLink } from 'hds-react'
 import { useSelector,useDispatch } from 'react-redux'
-import { savingSelector } from '../../selectors/projectSelector'
+import { savingSelector,lastModifiedSelector } from '../../selectors/projectSelector'
 import { useTranslation } from 'react-i18next';
 import RollingInfo from '../input/RollingInfo.jsx'
 import NetworkErrorState from './NetworkErrorState.jsx'
@@ -54,6 +54,8 @@ const Link = props => {
   const [currentValue, setCurrentValue] = useState(props.input.value)
   const [editField,setEditField] = useState(false)
   const saving =  useSelector(state => savingSelector(state))
+  const lastModified = useSelector(state => lastModifiedSelector(state))
+  const [isThisFieldSaving, setIsThisFieldSaving] = useState(false)
   const isValid = value => isUrl(value) || ipRegex({ exact: true }).test(value) || value === "" 
 
   const multipleLinks = props.type === 'select-multiple'
@@ -81,12 +83,20 @@ const Link = props => {
     }
   }, [isLinkValid, currentValue])
 
+  useEffect(() => {
+    // Reset isThisFieldSaving when saving is complete for this field
+    if (isThisFieldSaving && (!saving || lastModified !== props.input.name)) {
+      setIsThisFieldSaving(false);
+    }
+  }, [saving, lastModified, props.input.name, isThisFieldSaving])
+
   const onBlur = (event) => {
     if (isLinkValid) {
       if(event.target.value !== oldValueRef.current){
         oldValueRef.current = event.target.value;
-        setIsInstanceSaving(true);
-        props.onBlur()
+        setIsThisFieldSaving(true);
+        localStorage.setItem("changedValues", props.input.name);
+        props.onBlur(props.input.name)
       }
     }
     if(props.rollingInfo){
@@ -136,12 +146,13 @@ const Link = props => {
           onChange={onChange}
           className={(!isLinkValid && currentValue && !multipleLinks) ? 'error link' : 'link'}
           aria-label="link"
+          disabled={props.disabled || saving}
         />
         </div>
         {!multipleLinks && (
         <Button
           className="link-button"
-          disabled={!isLinkValid}
+          disabled={!isLinkValid || props.disabled || saving}
           iconLeft={<IconLink />}
           onClick={openLink}
         >

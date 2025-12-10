@@ -675,6 +675,32 @@ header{
   }
 }
 
+// HDS Tooltip styling for icons-container-flex
+.icons-container-flex {
+  .Tooltip-module_tooltip {
+    background-color: $color-coat-of-arms;
+    color: $white;
+    
+    .Tooltip-module_arrow {
+      &:before {
+        border-color: $color-coat-of-arms;
+      }
+    }
+  }
+
+  // Ensure tooltip arrow is visible
+  [class*="Tooltip-module_arrow"] {
+    &:before {
+      content: "";
+      position: absolute;
+      border: 6px solid transparent;
+      border-bottom-color: $color-coat-of-arms;
+      top: 4px;
+      left: -6px;
+    }
+  }
+}
+
 .document-page-header {
   header{
     --header-height: 56px;

@@ -185,6 +185,11 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   }, [lockedStatusJsonString, connection.connection]);
 
   const handleFocus = () => {
+    // Clear readonly state when there's a validation error to allow editing
+    if(!custom.insideFieldset && !custom?.isProjectTimetableEdit && hasError){
+      setReadOnly({name:input.name,read:false})
+    }
+
     if (typeof custom.onFocus === 'function' && !lockedStatus?.saving && !custom.insideFieldset) {
       //Sent a call to lock field to backend
       custom.onFocus(input.name);
@@ -274,17 +279,29 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
             localStorage.setItem("changedValues", input.name);
             setIsThisFieldSaving(true);
             custom.onBlur(input.name);
-            if(!custom.insideFieldset){
-              const readOnlyValue = !custom?.isProjectTimetableEdit
-              setReadOnly({name:input.name,read:readOnlyValue})
-            }
             oldValueRef.current = event.target.value;
+            
+            // Check for validation errors first
+            let validationError = false;
             if(custom.regex){
               const regex = new RegExp(custom.regex);
-              setHasError(event.target.value !== "" && !regex.test(event.target.value))
+              validationError = event.target.value !== "" && !regex.test(event.target.value);
+              setHasError(validationError);
             } else if(custom.type === 'number') {
-              const regex = /^\d+$/;
-              setHasError(event.target.value !== "" && !regex.test(event.target.value))
+              const regex = /^-?\d+$/;
+              validationError = event.target.value !== "" && !regex.test(event.target.value);
+              setHasError(validationError);
+            }
+            
+            // Only set readonly if there's no validation error
+            if(!custom.insideFieldset){
+              if(!validationError){
+                const readOnlyValue = !custom?.isProjectTimetableEdit
+                setReadOnly({name:input.name,read:readOnlyValue})
+              } else {
+                // Keep field editable when there's a validation error
+                setReadOnly({name:input.name,read:false})
+              }
             }
           }
         }
@@ -303,6 +320,11 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   // Sets the value of the input from the database if it has changed,
   // used when field locking/unlocking or when data is updated externally
   const setValue = (dbValue) => {
+    // Don't overwrite if this field is currently saving or has focus
+    if(isThisFieldSaving || document.activeElement === inputRef.current){
+      return;
+    }
+    
     let name = input.name;
     let originalData = custom?.attributeData[name]
     if(custom.insideFieldset && !custom.nonEditable || !custom.rollingInfo){
@@ -352,9 +374,27 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
       }
     }
 
-    // Allow NumberInput changes even when readonly for immediate UI feedback
-    if (!readonly || custom.type === "date" || custom.type === "number" || isConnected) {
+    // Always allow changes for immediate UI feedback - readOnly on NumberInput is handled by the prop
+    const isConnectedOrAllowEdits = !readonly || custom.type === "date" || custom.type === "number" || isConnected;
+    
+    // Validate number input during typing
+    if(custom.type === 'number' && !custom.isFloorAreaForm) {
+      if(value === '') {
+        // Empty field - error only if required
+        setHasError(!!custom?.fieldData?.isRequired);
+      } else {
+        // Non-empty field - check if valid integer
+        const regex = /^-?\d+$/;
+        const isValid = regex.test(value);
+        setHasError(!isValid);
+      }
+    } else if(custom.type !== 'number' || custom.isFloorAreaForm) {
+      // For other types, only error if empty and required
       setHasError(!value?.trim() && !!custom?.fieldData?.isRequired);
+    }
+    
+    // Always update the value for number inputs to ensure UI is responsive
+    if (custom.type === 'number' || isConnectedOrAllowEdits) {
       input.onChange(value, input.name);
       if (custom.isFloorAreaForm) {
         let newObject = custom.floorValue;
@@ -393,19 +433,19 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     const errorString = custom.customError || (custom.type === 'number' ? t('project.error-input-int') : t('project.error'));
     const blurredClass = isThisFieldSaving ? ' blurred' : '';
     return (
-      <div className={`${custom.disabled || !inputUtils.hasError(error).toString() || !hasError ? "text-input" : "text-input " + t('project.error')}${custom.type === 'number' ? ' number-input' : ''}${blurredClass}`}>
+      <div className={`${custom.disabled || (!inputUtils.hasError(error) && !hasError) ? "text-input" : "text-input " + t('project.error')}${custom.type === 'number' ? ' number-input' : ''}${blurredClass}`}>
         {custom.type === 'number' ? (
           <NumberInput
             ref={inputRef}
             aria-label={input.name}
-            error={inputUtils.hasError(error).toString()}
-            errorText={custom.disabled || !inputUtils.hasError(error).toString() || !hasError ? "" : errorString}
+            error={inputUtils.hasError(error) || hasError}
+            errorText={custom.disabled || (!inputUtils.hasError(error) && !hasError) ? "" : errorString}
             fluid="true"
             {...input}
             {...restCustom}
             min={custom.isFloorAreaForm ? 0 : undefined}
-            step={1}
-            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled}
+            step={custom.isFloorAreaForm ? null : 1}
+            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled || isThisFieldSaving}
             onChange={(event) => { handleInputChange(event, readonly.read) }}
             onBlur={(event) => { handleBlur(event, readonly.read) }}
             onFocus={() => { handleFocus() }}
@@ -417,8 +457,8 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           <TextInput
             ref={inputRef}
             aria-label={input.name}
-            error={inputUtils.hasError(error).toString()}
-            errorText={custom.disabled || !inputUtils.hasError(error).toString() || !hasError ? "" : errorString}
+            error={inputUtils.hasError(error) || hasError}
+            errorText={custom.disabled || (!inputUtils.hasError(error) && !hasError) ? "" : errorString}
             fluid="true"
             {...input}
             {...restCustom}

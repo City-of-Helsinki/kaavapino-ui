@@ -14,7 +14,7 @@
     font-weight: bold;
     justify-content: flex-start;
     z-index: 1;
-    max-width: 60%;
+    max-width: 70%;
     .input-title{
       display: flex;
       flex-flow: column;
@@ -711,7 +711,7 @@
     padding-top: 16px;
     background-color: $color-fog-light;
     display: block;
-    overflow: hidden;
+    overflow: visible;
     border-bottom: 0.7px solid $color-black-60;
     .input-container {
       background-color: $color-fog-light;
@@ -1349,6 +1349,13 @@
       --spinner-color: #0000bf;
     }
   }
+}
+
+.selection.blurred {
+	button[id*="delete-button"] {
+		pointer-events: none !important;
+		opacity: 0.5;
+	}
 }
 
 .fieldset-spinner {

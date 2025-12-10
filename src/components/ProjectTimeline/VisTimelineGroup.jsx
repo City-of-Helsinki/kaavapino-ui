@@ -16,10 +16,11 @@ import ConfirmModal from '../common/ConfirmModal'
 import PropTypes from 'prop-types';
 import { getVisibilityBoolName, getVisBoolsByPhaseName, isDeadlineConfirmed } from '../../utils/projectVisibilityUtils';
 import { useTimelineTooltip } from '../../hooks/useTimelineTooltip';
+import { updateDateTimeline } from '../../actions/projectActions';
 import './VisTimeline.scss'
 Moment.locale('fi');
 
-const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, phaseList, currentPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes, showTimetableForm}, ref) => {
+const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, phaseList, currentPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes, showTimetableForm, itemsPhaseDatesOnly}, ref) => {
     const dispatch = useDispatch();
     const moment = extendMoment(Moment);
 
@@ -28,9 +29,18 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const observerRef = useRef(null); // Store the MutationObserver
     const timelineInstanceRef = useRef(null);
     const visValuesRef = useRef(visValues);
+    const itemsPhaseDatesOnlyRef = useRef(itemsPhaseDatesOnly);
 
     const [selectedGroupId, setSelectedGroupId] = useState(null);
     const selectedGroupIdRef = useRef(selectedGroupId);
+    const dragHandleRef = useRef("");
+    // cluster/group dragging state
+    const clusterDragRef = useRef({
+      isPoint: false,
+      clusterKey: null,        // e.g. "27_26" from className
+      snapshot: null,          // { groupId, items: { [id]: { start: Date|null, end: Date|null, className: string } } }
+      movingId: null
+    });
 
     const [toggleTimelineModal, setToggleTimelineModal] = useState({open: false, highlight: false, deadlinegroup: false});
     const [timelineData, setTimelineData] = useState({group: false, content: false});
@@ -83,9 +93,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
     };
 
-    const groupDragged = (id) => {
-      console.log('onChange:', id)
-    }
+    // Keep latest itemsPhaseDatesOnly available inside event handlers
+    useEffect(() => {
+      itemsPhaseDatesOnlyRef.current = itemsPhaseDatesOnly;
+    }, [itemsPhaseDatesOnly]);
 
     const preventDefaultAndStopPropagation = (event) => {
       event.preventDefault();
@@ -1307,6 +1318,78 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       return idx > -1 && idx < currentPhaseIndex;
     };
 
+    // Helper to find item in itemsPhaseDatesOnlyRef by id
+    const findGroupMaaraaika = (group, refArr) => {
+      const targetId = group + " maaraaika";
+      return refArr.find(refItem => refItem?.id === targetId);
+    };
+
+    // Helper to compare days moved between attributeDate and original date from visValuesRef.current
+    const getDaysMoved = (attributeToUpdate, attributeDate) => {
+      const originalDateStr = visValuesRef.current?.[attributeToUpdate];
+      if (originalDateStr) {
+        const originalDate = moment(originalDateStr);
+        const newDate = moment(attributeDate);
+
+        const totalDays = newDate.diff(originalDate, 'days');
+        if (totalDays === 0) {
+          return -1;
+        }
+        if (Math.abs(totalDays) === 1) {
+          return totalDays;
+        }
+
+        let count = 0;
+        let step = totalDays > 0 ? 1 : -1;
+        let current = originalDate.clone();
+        while (
+          (step > 0 && current.isBefore(newDate, 'day')) ||
+          (step < 0 && current.isAfter(newDate, 'day'))
+        ) {
+          current.add(step, 'days');
+          const dayOfWeek = current.day();
+          if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+            count += step;
+          }
+        }
+        return count;
+      }
+      return null;
+    };
+
+    const isBlockedLabel = (id) =>
+    typeof id === "string" &&
+    (id.includes("Hyväksyminen") || id.includes("Voimaantulo"));
+
+    const isMovingBeforeEarlierGroup = (item, groups, items) => {
+      if (!item.group || !item.start) return false;
+      
+      const currentGroup = groups.get(item.group);
+      if (!currentGroup) return false;
+      
+      const allOtherItems = items.get().filter(i => i.id !== item.id && i.start && i.group);
+      const earlierItems = allOtherItems.filter(i => {
+        const itemGroup = groups.get(i.group);
+        return itemGroup && itemGroup.order < currentGroup.order;
+      });
+      
+      if (earlierItems.length === 0) {
+        const earlierItemsByGroupId = allOtherItems.filter(i => {
+          const itemGroup = groups.get(i.group);
+          return itemGroup && itemGroup.id < currentGroup.id;
+        });
+        earlierItems.push(...earlierItemsByGroupId);
+      }
+      
+      if (earlierItems.length > 0) {
+        const latestEarlierEnd = Math.max(...earlierItems.map(i => new Date(i.end || i.start).getTime()));
+        return new Date(item.start).getTime() <= latestEarlierEnd;
+      }
+      
+      return false;
+    };
+
+
     useEffect(() => {
       // Ensure capitalized Finnish locale BEFORE creating timeline so initial labels are correct
       ensureFinnishLocale();
@@ -1343,8 +1426,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           overrideItems: false  // allow these options to override item.editable
         },
         itemsAlwaysDraggable: { // Dragging is disabled, allow in v1.2
-            item:false, // change to true to allow dragging of items
-            range:false // change to true to allow dragging of ranges
+            item:true, // change to true to allow dragging of items
+            range:true // change to true to allow dragging of ranges
         },
         orientation:{
           axis: "top",
@@ -1378,17 +1461,173 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           let hour = 60 * 60 * 1000;
           return Math.round(date / hour) * hour;
         },
+        onMoving: function (item, callback) {          
+          if (!item) {
+            callback(null);
+            return;
+          }
+          
+          let tooltipEl = document.getElementById('moving-item-tooltip');
+          if (!tooltipEl) {
+            tooltipEl = document.createElement('div');
+            tooltipEl.id = 'moving-item-tooltip';
+            tooltipEl.className = 'vis-moving-tooltip';
+            document.body.appendChild(tooltipEl);
+          }
+          const startDate = item.start ? new Date(item.start).toLocaleDateString('fi-FI') : '';
+          const endDate = item.end ? new Date(item.end).toLocaleDateString('fi-FI') : '';
+          const dragElementRaw = dragHandleRef.current || '';
+          const dragElement = dragElementRaw.split(' ')[0];
+          const event = window.event;
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+                    // Check if trying to move an item from a phase that has already passed
+          if (item.phaseName && visValuesRef.current.kaavan_vaihe) {
+            // Define the phase order
+            const phaseOrder = [
+              "Käynnistys", 
+              "Periaatteet", 
+              "OAS", 
+              "Luonnos", 
+              "Ehdotus", 
+              "Tarkistettu ehdotus", 
+              "Hyväksyminen", 
+              "Voimaantulo"
+            ];
+            
+            // Extract the phase name without numbering from kaavan_vaihe
+            const currentPhaseFullName = visValuesRef.current.kaavan_vaihe;
+            const currentPhaseName = currentPhaseFullName.replace(/^\d+\.\s+/, '');
+              // Get the index of current phase and item's phase
+            const currentPhaseIndex = phaseOrder.indexOf(currentPhaseName);
+            const itemPhaseIndex = phaseOrder.indexOf(item.phaseName);
+            // If item's phase is before the current project phase, prevent the move
+            if (itemPhaseIndex < currentPhaseIndex) {
+              callback(null);
+              return;
+            }
+          }
+          //Item is not allowed to be dragged to past dates       
+          if (item.start && today) {
+              if (new Date(item.start).setHours(0,0,0,0) < today.getTime()) {
+                  callback(null);
+                  return;
+              }
+          }
+
+          // Check if trying to move before any earlier group's end date
+          if (isMovingBeforeEarlierGroup(item, groups, items)) {
+            callback(null);
+            return;
+          }
+
+          //Item is not allowed to be dragged if it is already confirmed
+          if(item?.className?.includes("confirmed")){
+              callback(null);
+              return;
+          }
+          else if (dragElement && allowedToEdit) {
+            if (item.start && item.end && item.end <= item.start) {
+              callback(null);
+              return;
+            }
+          }
+
+          if (event) {
+            tooltipEl.style.display = 'block';
+            tooltipEl.style.position = 'absolute';
+            tooltipEl.style.left = `${event.pageX - 20}px`;
+            tooltipEl.style.top = `${event.pageY - 60}px`;
+            if (dragElement === "right" && endDate) tooltipEl.innerHTML = endDate;
+            else tooltipEl.innerHTML = startDate;
+          }
+
+          const { snapshot, movingId } = clusterDragRef.current;
+          const setItems = timelineInstanceRef?.current?.itemSet?.items;
+
+          const shouldMoveRelated =
+            allowedToEdit &&
+            dragElement !== 'right' &&
+            snapshot &&
+            setItems &&
+            snapshot.items &&
+            snapshot.items[String(item.id)];
+
+          if (shouldMoveRelated) {
+            const orig = snapshot.items[String(item.id)];
+            if (!orig) return;
+            const baseStart = orig?.start ? orig.start.getTime() : null;
+            const curStart = item?.start ? new Date(item.start).getTime() : baseStart;
+
+            if (baseStart != null && curStart != null) {
+              const deltaMs = curStart - baseStart;
+
+              Object.entries(snapshot.items).forEach(([idKey, snapTimes]) => {
+                try {
+                  if (idKey === String(item.id)) return; // current item already moved
+                  const inst = setItems[idKey] ?? setItems[Number(idKey)];
+                  if (!inst || !inst.setData || !inst.data) return;
+
+                  const newData = { ...inst.data };
+                  if (snapTimes && snapTimes.start) newData.start = new Date(snapTimes.start.getTime() + deltaMs);
+                  if (snapTimes && snapTimes.end) newData.end = new Date(snapTimes.end.getTime() + deltaMs);
+
+                  inst.setData(newData);
+                  if (inst.repositionX) {
+                    try {
+                      inst.repositionX();
+                    } catch (e) {
+                      // Silently ignore repositionX errors and prevent breaking timeline element structure visually
+                    }
+                  }
+                } catch (e) {
+                  // Silently ignore timeline library errors
+                }
+              });
+            }
+          }
+
+          if (dragElement && allowedToEdit) {
+            callback(item);
+          } else {
+            tooltipEl.style.display = 'none';
+            tooltipEl.innerHTML = '';
+            callback(null);
+          }
+        },
         onMove(item, callback) {
+          // Remove the moving tooltip
+          const moveTooltip = document.getElementById('moving-item-tooltip');
+          if (moveTooltip) {
+            moveTooltip.style.display = 'none';
+          }
           let preventMove = false;
+          // Determine which part of the item is being dragged
+          const dragElement = dragHandleRef.current;
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          // Check if the item is confirmed or moving items to past dates and prevent moving
+          const isConfirmed = dragElement?.includes("confirmed");
+          const isMovingToPast = (item.start && item.start < today) || (item.end && item.end < today);
+          //Prevent move
+          if (
+          !allowedToEdit ||
+          !dragElement || isConfirmed || 
+          item?.phaseName === "Hyväksyminen" || item?.phaseName === "Voimaantulo"
+          ) {
+            callback(null);
+            return;
+          }
 
           const adjustIfWeekend = (date) => {
+            if (!date) return false; // Add check if date is undefined or null
             if (!(date.getDay() % 6)) {
               adjustWeekend(date);
               return true;
             }
             return false;
           }
-        
+
           if (!adjustIfWeekend(item.start) && !adjustIfWeekend(item.end)) {
             const movingTimetableItem = moment.range(item.start, item.end);
             if (item.phase) {
@@ -1406,21 +1645,83 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                 if (i.id !== item.id) {
                   if (item.phaseID === i.phaseID && !preventMove && !i.locked) {
                     preventMove = false;
-                  } else {
+                  } /* else {
                     const statickTimetables = moment.range(i.start, i.end);
                     if (movingTimetableItem.overlaps(statickTimetables)) {
                       preventMove = true;
                     }
-                  }
+                  } */
                 }
               });
             }
           }
         
-          if (item.content != null && !preventMove) {
-            callback(item); // send back adjusted item
+          if (item?.content != null && !preventMove) {
+            // Call the callback to update the item position in the timeline
+            callback(item);
+            
+            // After successfully moving the item, update the data in the store
+            if (item?.title) {
+              // Initialize variables for date and title
+              let attributeDate;
+              let attributeToUpdate;
+              const hasTitleSeparator = item.title.includes("-");
+              // Determine which part was dragged and set appropriate values
+              if (dragElement === "elements") {
+                // Preserve original start-end duration for composite phase ranges
+                attributeDate = item.start;
+                attributeToUpdate = hasTitleSeparator ? item.title.split('-')[0].trim() : item.title;
+                const pairedEndKey = hasTitleSeparator ? item.title.split('-')[1].trim() : null;
+                let originalDurationDays = 0;
+                if (item.start && item.end) {
+                  originalDurationDays = moment(item.end).diff(moment(item.start),'days');
+                }
+                const formattedStart = moment(attributeDate).format('YYYY-MM-DD');
+                dispatch(updateDateTimeline(
+                  attributeToUpdate,
+                  formattedStart,
+                  visValuesRef.current,
+                  false,
+                  deadlineSections,
+                  true,
+                  originalDurationDays,
+                  pairedEndKey
+                ));
+                // Skip generic dispatch at end
+                attributeDate = null;
+                attributeToUpdate = null;
+              }
+              else if (dragElement === "left") {
+                // If dragging the start handle
+                attributeDate = item.start;
+                attributeToUpdate = hasTitleSeparator ? item.title.split("-")[0].trim() : item.title;
+              } 
+              else if (dragElement === "right") {
+                // If dragging the end handle
+                attributeDate = item.end;
+                attributeToUpdate = hasTitleSeparator ? item.title.split("-")[1].trim() : item.title;
+              } 
+              else {
+                // If dragging element with single handle
+                attributeDate = item.end ? item.end : item.start;
+                attributeToUpdate = hasTitleSeparator ? item.title.split("-")[0].trim() : item.title;
+              }
+              
+              // Only dispatch if we have valid data
+              if (attributeToUpdate && attributeDate) {
+                const formattedDate = moment(attributeDate).format('YYYY-MM-DD');
+                dispatch(updateDateTimeline(
+                  attributeToUpdate,
+                  formattedDate, 
+                  visValuesRef.current,
+                  false,
+                  deadlineSections
+                ));
+              }
+            }
           } else {
-            callback(null); // cancel updating the item
+            // Cancel the update if content is null or move is prevented
+            callback(null);
           }
         },
         groupTemplate: function (group) {
@@ -1740,8 +2041,122 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         new vis.Timeline(timelineRef.current, items, options, groups);
         timelineInstanceRef.current = timeline
         setTimeline(timeline)
-        // add event listener
-        timeline.on('groupDragged', groupDragged)
+        // Track currently styled dragged group so we can remove styling on mouseUp
+        const draggingGroupRef = { current: null };
+        timeline.on('mouseDown', (props) => {
+          // Block hyväksyminen and voimaantulo dragging
+          if(isBlockedLabel(props?.item)) return;
+          
+          if (allowedToEdit && props?.item) {
+            document.body.classList.add('cursor-moving');
+            const targetEl = props?.event?.target;
+            const groupEl = targetEl?.closest?.('.vis-group');
+            if (groupEl && groupEl !== draggingGroupRef.current) {
+              if (draggingGroupRef.current) {
+                draggingGroupRef.current.classList.remove('cursor-moving-target');
+              }
+              groupEl.classList.add('cursor-moving-target');
+              draggingGroupRef.current = groupEl;
+            }
+          }
+
+          // determine which handle/part was grabbed
+          if (props.item) {
+            const element = props.event.target;
+            const parent = element.parentElement;
+            const isConfirmed = parent?.classList?.contains('confirmed') || element?.classList?.contains('confirmed') ? " confirmed" : "";
+            const isBoardRight = element.classList.contains('board-right') || parent?.classList?.contains('board-right');
+
+            // Allow center dragging for inner-end and kaynnistys_1 by clicking anywhere inside overflow/content (excluding explicit drag handles)
+            const compositeContainer = element.closest && element.closest('.inner-end, .kaynnistys_1');
+            const insideOverflow = element.classList.contains('vis-item-overflow') || (!!element.closest && element.closest('.vis-item-overflow'));
+            const isDragHandle = element.classList.contains('vis-drag-left') || element.classList.contains('vis-drag-right');
+            if (compositeContainer && insideOverflow && !isDragHandle) {
+              dragHandleRef.current = "elements" + isConfirmed;
+            } else if (!isBoardRight && (element.classList.contains('vis-drag-left') || parent?.classList?.contains('board'))) {
+              dragHandleRef.current = "left" + isConfirmed;
+            } else if (isBoardRight) {
+              dragHandleRef.current = "board-right" + isConfirmed;
+            } else if (element.classList.contains('vis-drag-right')) {
+              dragHandleRef.current = "right" + isConfirmed;
+            } else if (element.classList.contains('vis-point') || element.closest('.vis-point')) {
+              dragHandleRef.current = "point" + isConfirmed;
+            } else if (element.classList.contains('board-date') || element.closest('.board-date')) {
+              dragHandleRef.current = "board-date" + isConfirmed;
+            }
+            else {
+              dragHandleRef.current = "" + isConfirmed;
+            }
+          } else {
+            const isConfirmed = props?.event?.target?.parentElement?.classList?.contains('confirmed') ? " confirmed" : "";
+            dragHandleRef.current = "" + isConfirmed;
+          }
+
+          //build a snapshot of items we will move together
+          clusterDragRef.current = { isPoint: false, clusterKey: null, snapshot: null, movingId: null };
+
+          if (!allowedToEdit || props?.item == null) return;
+
+          // find the dataset item (handles numeric/string ids)
+          const baseItem =
+            items.get(props.item) ||
+            items.get(String(props.item)) ||
+            items.get(Number(props.item)) ||
+            items.get().find(it => String(it.id) === String(props.item));
+
+          if (!baseItem || baseItem.group == null) return;
+
+          // read classes from the actual DOM item to extract the cluster token (e.g., "27_26")
+          const itemEl = props?.event?.target?.closest?.('.vis-item');
+          const classTokens = (itemEl?.className || '').split(/\s+/);
+          const clusterKey = classTokens.find(t => /^\d+_\d+$/.test(t)) || null;
+          const isPoint = !!(itemEl && (itemEl.classList.contains('vis-point') || itemEl.querySelector('.vis-point')));
+
+          // choose which items to snapshot:
+          // - if dragging a point: only items in same group that share the clusterKey and are one of
+          //   ['inner-end', 'vis-point', 'vis-dot'] (so your inner-end ranges + the point move together)
+          // - otherwise (left/move/board-left/etc): snapshot whole group (your earlier requirement)
+          const groupId = baseItem.group;
+          const allInGroup = items.get().filter(it => it.group === groupId);
+
+          const belongsToCluster = (it) => {
+            const cn = (it.className || '');
+            const hasKey = clusterKey ? cn.includes(clusterKey) : true;
+
+            // include: inner-end, kaynnistys_1 (treated like inner-end), vis-point, vis-dot, divider, board, board-date, deadline
+            const isRelevantType = /\b(inner-end|kaynnistys_1|vis-point|vis-dot|divider|board|board-date|deadline)\b/.test(cn);
+            return hasKey && isRelevantType;
+          };
+
+          const itemsToSnapshot = (  dragHandleRef.current.startsWith('point') || dragHandleRef.current.startsWith('board-date'))
+            ? allInGroup.filter(belongsToCluster)
+            : allInGroup;
+
+          const snapshot = { groupId, items: {} };
+          itemsToSnapshot.forEach(it => {
+            snapshot.items[String(it.id)] = {
+              start: it.start ? new Date(it.start) : null,
+              end: it.end ? new Date(it.end) : null,
+              className: it.className || ''
+            };
+          });
+
+          clusterDragRef.current = {
+            isPoint,
+            clusterKey,
+            snapshot,
+            movingId: String(baseItem.id)
+          };
+        });
+
+        timeline.on('mouseUp', () => {
+          document.body.classList.remove('cursor-moving');
+          if (draggingGroupRef.current) {
+            draggingGroupRef.current.classList.remove('cursor-moving-target');
+            draggingGroupRef.current = null;
+          }
+          clusterDragRef.current = { isPoint: false, clusterKey: null, snapshot: null, movingId: null };
+        });
 
         // Add click event listener to timeline container so clicking on the timeline items works
         timelineRef.current.addEventListener('click', function(event) {
@@ -1812,12 +2227,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             timelineInstanceRef.current.destroy();
             timelineInstanceRef.current.off('itemover', showTooltip);
             timelineInstanceRef.current.off('itemout', hideTooltip);
-            // Remove mousemove from timelineRef.current
-            if (timelineRef.current) {
-              timelineRef.current.removeEventListener('mousemove', handleMouseMove);
-            }
+            document.body.removeEventListener('mousemove', handleMouseMove);
           }
-          timeline.off('groupDragged', groupDragged)
+          timeline.off('mouseDown');
           observerRef?.current?.disconnect();
           //timeline.off('rangechanged', onRangeChanged);
         }
@@ -2043,7 +2455,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         <ConfirmModal
           openConfirmModal={openConfirmModal}
           headerText={"Haluatko poistaa rivin?"} 
-          contentText={"Jos poistat tämän rivin, et voi palauttaa sitä myöhemmin."} 
+          contentText={""} 
           button1Text={"Peruuta"} 
           button2Text={"Poista rivi"}
           onButtonPress1={handleCancelRemove} 

@@ -1,7 +1,8 @@
 import React, { useMemo, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { projectNetworkSelector,lastSavedSelector } from '../../selectors/projectSelector';
-import { Dialog, Button, Notification, IconAlertCircle } from 'hds-react';
+import { Button, Notification, IconAlertCircle, IconCross } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 import './NetworkErrorState.scss';
 import PropTypes from 'prop-types';
@@ -42,6 +43,16 @@ export default function NetworkErrorState({ fieldName }) {
 
   const [showWarning, setShowWarning] = useState(true);
   const [confirmOpen, setConfirmOpen] = useState(false);
+
+  // Simple scroll lock for custom dialog
+  useEffect(() => {
+    if (confirmOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [confirmOpen]);
 
   const getFieldSetValues = (object) => {
     const arrayValues = [];
@@ -156,39 +167,70 @@ export default function NetworkErrorState({ fieldName }) {
           </div>
         </Notification>
       )}
-      {confirmOpen && (
-        <Dialog
-          id="network-warning-close-confirm"
-          aria-labelledby="network-warning-close-confirm-title"
-          isOpen
-          close={() => setConfirmOpen(false)}
-          variant="danger"
+      {confirmOpen && createPortal(
+        <div 
+          className="custom-dialog-backdrop"
+          onClick={() => setConfirmOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setConfirmOpen(false);
+            }
+          }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="custom-dialog-title"
+          tabIndex={-1}
         >
-          <Dialog.Header
-            id="network-warning-close-confirm-title"
-            iconLeft={<IconAlertCircle aria-hidden />}
-            title={t('messages.close-notification-question')}
-          />
-          <Dialog.Content>
-            <p>{t('messages.close-notification-warning')}</p>
-          </Dialog.Content>
-          <Dialog.ActionButtons>
-            <Button onClick={() => setConfirmOpen(false)} variant="secondary" className='red'>
-              {t('messages.cancel-button-text')}
-            </Button>
-            <Button
-              onClick={() => {
-                setConfirmOpen(false);
-                setShowWarning(false);
-                localStorage.removeItem('isRelevantField');
-                dispatch({ type: 'Set network status', payload: { status: 'ok', okMessage: '', errorMessage: '' } });
-              }}
-              variant="danger"
-            >
-              {t('messages.close-notification')}
-            </Button>
-          </Dialog.ActionButtons>
-        </Dialog>
+          <div 
+            className="custom-dialog-content"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
+            <div className="custom-dialog-header">
+              <div className="custom-dialog-header-content">
+                <IconAlertCircle className="custom-dialog-icon" />
+                <h2 id="custom-dialog-title" className="custom-dialog-title">
+                  {t('messages.close-notification-question')}
+                </h2>
+              </div>
+              <button
+                className="custom-dialog-close"
+                onClick={() => setConfirmOpen(false)}
+                aria-label={t('common.close')}
+                type="button"
+              >
+                <IconCross size="s" />
+              </button>
+            </div>
+            
+            <div className="custom-dialog-body">
+              <p>{t('messages.close-notification-warning')}</p>
+            </div>
+            
+            <div className="custom-dialog-actions">
+              <Button 
+                onClick={() => setConfirmOpen(false)} 
+                variant="secondary" 
+                className="custom-dialog-cancel"
+              >
+                {t('messages.cancel-button-text')}
+              </Button>
+              <Button
+                onClick={() => {
+                  setConfirmOpen(false);
+                  setShowWarning(false);
+                  localStorage.removeItem('isRelevantField');
+                  dispatch({ type: 'Set network status', payload: { status: 'ok', okMessage: '', errorMessage: '' } });
+                }}
+                variant="danger"
+                className="custom-dialog-confirm"
+              >
+                {t('messages.close-notification')}
+              </Button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );

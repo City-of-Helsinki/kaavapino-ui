@@ -1058,11 +1058,6 @@ function addListingInfo(deltaOps) {
 
 function* saveProject(data) {
   const {fileOrimgSave,insideFieldset,fieldsetData,fieldsetPath,fieldName} = data.payload
-  // Set saving state with field name from action payload
-  if (fieldName) {
-    yield put(setSavingField(fieldName))
-  }
-  
   const currentProjectId = yield select(currentProjectIdSelector)
   const editForm = yield select(editFormSelector) || {}
   const visibleErrors = yield select(formErrorListSelector)
@@ -1078,6 +1073,35 @@ function* saveProject(data) {
     if(visibleErrors.length === 0){
       changedValues = getChangedAttributeData(values, initial)
       keys = Object.keys(changedValues)
+    }
+    // Set saving state with field name from action payload
+    if (fieldName) {
+      let actualFieldName = fieldName;
+      // Check if fieldName corresponds to a fieldset in changedValues
+      if (typeof fieldName === 'string' && fieldName.endsWith('_fieldset') && changedValues[fieldName]) {
+          const fieldsetArray = changedValues[fieldName];
+          const initialFieldsetArray = initial && initial[fieldName];
+          if (Array.isArray(fieldsetArray) && fieldsetArray.length > 0) {
+              const currentItem = fieldsetArray[0];
+              const initialItem = Array.isArray(initialFieldsetArray) && initialFieldsetArray.length > 0 ? initialFieldsetArray[0] : {};
+              if (typeof currentItem === 'object' && currentItem !== null) {
+                  // Get all keys from current item (excluding _deleted and other metadata)
+                  const itemKeys = Object.keys(currentItem).filter(key => !key.startsWith('_'));
+                  // Compare each field with initial to find the changed one
+                  for (const key of itemKeys) {
+                      if (!isEqual(currentItem[key], initialItem[key])) {
+                          actualFieldName = key; // Found the field that actually changed
+                          break;
+                      }
+                  }
+                  // If no specific change found, use first field as fallback
+                  if (actualFieldName === fieldName && itemKeys.length > 0) {
+                      actualFieldName = itemKeys[0];
+                  }
+              }
+          }
+      }
+      yield put(setSavingField(actualFieldName));
     }
     //Get latest modified field and send it to components to prevent new modification for that field until saved. 
     //Prevents only user that was editing and saving. Richtext and custominput.
@@ -1194,6 +1218,10 @@ function* projectFileUpload({
 }) {
   const dateVariable = new Date()
   const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+  
+  // Set saving field indicator to show loading state in FormField
+  yield put(setSavingField(attribute))
+  
   try {
     const currentProjectId = yield select(currentProjectIdSelector)
 
@@ -1257,8 +1285,24 @@ function* projectFileUpload({
     }
     yield put(projectFileUploadSuccessful(res))
     yield put(saveProjectAction(true,insideFieldset,fieldsetData,fieldsetPath))
+    
+    // Fetch fresh project data to get updated metadata with timestamps
+    const updatedProject = yield call(
+      projectApi.get,
+      { path: { projectId: currentProjectId } },
+      ':projectId/'
+    )
+    
+    // Update project state to trigger FormField timestamp updates
+    yield put(updateProject(updatedProject))
+    
+    // Clear saving field indicator
+    yield put(setSavingField(null))
     yield put(setLastSaved("success",time,[],[],false))
   } catch (e) {
+    // Clear saving field indicator on error
+    yield put(setSavingField(null))
+    
     if (!axios.isCancel(e)) {
       yield put(error(e))
     }
@@ -1268,6 +1312,9 @@ function* projectFileUpload({
 }
 
 function* projectFileRemove({ payload }) {
+  // Set saving field indicator to show loading state in FormField
+  yield put(setSavingField(payload))
+  
   try {
     const currentProjectId = yield select(currentProjectIdSelector)
     const attribute_data = {}
@@ -1283,8 +1330,23 @@ function* projectFileRemove({ payload }) {
     )
     yield put(projectFileRemoveSuccessful(payload))
     yield put(saveProjectAction(true,false,false,false))
+    
+    // Fetch fresh project data to get updated metadata with timestamps
+    const updatedProject = yield call(
+      projectApi.get,
+      { path: { projectId: currentProjectId } },
+      ':projectId/'
+    )
+    
+    // Update project state to trigger FormField timestamp updates
+    yield put(updateProject(updatedProject))
+    
+    // Clear saving field indicator
+    yield put(setSavingField(null))
     yield put(setLastSaved("success",time,[],[],false))
   } catch (e) {
+    // Clear saving field indicator on error
+    yield put(setSavingField(null))
     yield put(error(e))
   }
 }
