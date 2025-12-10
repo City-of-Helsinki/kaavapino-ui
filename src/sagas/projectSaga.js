@@ -1,4 +1,5 @@
 import axios from 'axios'
+import React from 'react';
 import { eventChannel } from 'redux-saga';
 import { take, takeLatest, put, all, call, select, takeEvery, delay, race } from 'redux-saga/effects'
 import { isEqual, isEmpty, isArray } from 'lodash'
@@ -814,6 +815,8 @@ function* validateProjectTimetable() {
       'oas',
       'luonnos',
       'ehdotus',
+      'kaavaluonnos',
+      'kaavaehdotus',
       'tarkistettu_ehdotus'
     ];
     //Find confirmed fields from attribute_data so backend knows not to edit them
@@ -912,6 +915,8 @@ function* saveProjectTimetable(action,retryCount = 0) {
       'oas',
       'luonnos',
       'ehdotus',
+      'kaavaluonnos',
+      'kaavaehdotus',
       'tarkistettu_ehdotus'
     ];
     
