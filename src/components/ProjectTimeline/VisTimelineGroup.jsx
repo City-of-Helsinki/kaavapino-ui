@@ -806,38 +806,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         timeline.itemSet.items[i.id].repositionX()
       }
     }
-    //For vis timeline dragging 1.2v
-  /*const onRangeChanged = ({ start, end }) => {
-      console.log(start, end)
-      const Min = 1000 * 60 * 60 * 24; // one day in milliseconds
-      const Max = 31556952000; // 1000 * 60 * 60 * 24 * 365.25 one year in milliseconds
-      let a0 = 10;
-      let a100 = moment.duration(moment(Max).diff(moment(Min))).asMilliseconds();
-      let  distance = (a100 - a0)/ 100;
-      let startTime = moment(start);
-      let endTime = moment(end);
-      const duration = moment.duration(endTime.diff(startTime));
-      const mins = duration.asMilliseconds();
-        // Arithmatic progression variables
-      if (mins !== 0) {
-        const x = (mins - a0) / distance; // Arithmatic progression formula
-        console.log(x)
-        if(x > 50){
-          console.log("smaller then 50")
-          document.querySelectorAll('.inner, .inner-end').forEach(el => el.classList.add('hiddenTimes'));
-        }
-        else if(x < 50 && document.querySelectorAll('.hiddenTimes')){
-          console.log("bigger then 50")
-          document.querySelectorAll('.inner, .inner-end').forEach(el => el.classList.remove('hiddenTimes'));
-        }
-      } else {
-        if(!document.querySelectorAll('.hiddenTimes')){
-          console.log("100")
-          document.querySelectorAll('.inner, .inner-end').forEach(el => el.classList.add('hiddenTimes'));
-        }
-      }
-      
-    } */
 
     /**
    * Move the timeline a given percentage to left or right
@@ -1468,11 +1436,91 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }, [lock]);
 
     useEffect(() => {
-
+/*        console.log(visValuesRef,items.get().filter(i =>  
+        !i?.className?.includes('divider') && !i?.className?.includes('phase-holder'))) */
       if (localStorage.getItem("lockedState")) {
          //Remove the locked button state from localStorage when page/component is reloaded
         localStorage.removeItem("lockedState");
       }
+
+            // Replace computeLockedDragBoundary (around line 1447) with this:
+      const computeLockedDragBoundary = (itemsData, clusterRef) => {
+          const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+          const rawItems = itemsData.get(); // Keep unfiltered for holidays
+          const allItems = itemsData.get().filter(i => 
+              i?.title && 
+              !i?.className?.includes('divider') && 
+              i?.type !== 'background' &&
+              !i?.phase
+          );
+          
+          // Find first locked item
+          const lockedItems = allItems.filter(i => i?.className?.includes('locked-color'));
+          if (!lockedItems.length) return { lockedStartMs: null, totalBufferDays: 0 };
+          
+          lockedItems.sort((a, b) => new Date(a.start) - new Date(b.start));
+          const firstLocked = lockedItems[0];
+          const lockedStartMs = new Date(firstLocked.start).getTime();
+          
+          // Find cluster's earliest date
+          const snapshot = clusterRef?.current?.snapshot;
+          if (!snapshot?.items) return { lockedStartMs, totalBufferDays: 0 };
+          
+          let clusterMinMs = null;
+          let clusterMaxMs = null;
+          Object.values(snapshot.items).forEach(si => {
+              const s = si?.start?.getTime();
+              const e = si?.end?.getTime();
+              if (s != null) {
+                  if (clusterMinMs == null || s < clusterMinMs) clusterMinMs = s;
+                  if (clusterMaxMs == null || s > clusterMaxMs) clusterMaxMs = s;
+              }
+              if (e != null) {
+                  if (clusterMinMs == null || e < clusterMinMs) clusterMinMs = e;
+                  if (clusterMaxMs == null || e > clusterMaxMs) clusterMaxMs = e;
+              }
+          });
+          
+          if (clusterMinMs == null) return { lockedStartMs, totalBufferDays: 0 };
+          
+          // Cluster span in days
+          const clusterSpanDays = clusterMaxMs != null ? Math.ceil((clusterMaxMs - clusterMinMs) / ONE_DAY_MS) : 0;
+          
+          // Get all items from cluster start to locked, sum their distanceToPrevious
+          const clusterItemIds = new Set(Object.keys(snapshot.items));
+          const itemsInRange = allItems.filter(i => {
+              const s = new Date(i.start).getTime();
+              return s >= clusterMinMs && s <= lockedStartMs && !clusterItemIds.has(String(i.id));
+          });
+          
+          // Sum all distanceToPrevious (with +2 rule)
+          let distanceSum = itemsInRange.reduce((sum, i) => {
+              const d = i.distanceToPrevious ?? 0;
+              return sum + (d === 0 ? 0 : d + 2);
+          }, 0);
+          
+          // Add locked item's distance
+          const lockedDist = firstLocked.distanceToPrevious ?? 0;
+          distanceSum += lockedDist === 0 ? 0 : lockedDist + 2;
+
+              // Count holiday days between cluster and locked
+          const holidayItems = rawItems.filter(i =>  
+              i?.className?.includes('holiday')
+          );
+          console.log(holidayItems)
+          let holidayDays = 0;
+          holidayItems.forEach(h => {
+              const hStart = new Date(h.start).getTime();
+              // Holiday is in range if it falls between cluster max and locked start
+              if (hStart > clusterMaxMs && hStart < lockedStartMs) {
+                  holidayDays++;
+              }
+          });
+          return {
+              lockedStartMs,
+              totalBufferDays: clusterSpanDays + distanceSum + (holidayDays * 2)
+          };
+      };
 
       const options = {
         locales: {
@@ -1546,7 +1594,19 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             callback(null);
             return;
           }
-          
+          const { lockedStartMs, totalBufferDays } = computeLockedDragBoundary(items, clusterDragRef);
+          if (lockedStartMs != null) {
+              const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+              const curStart = item?.start ? new Date(item.start).getTime() : null;
+              const stopBoundary = lockedStartMs - (totalBufferDays * ONE_DAY_MS);
+              
+              console.log({ totalBufferDays, curStart: new Date(curStart).toLocaleDateString('fi-FI'), stopBoundary: new Date(stopBoundary).toLocaleDateString('fi-FI') });
+              
+              if (curStart != null && curStart >= stopBoundary) {
+                  callback(null);
+                  return;
+              }
+          }
           // Prevent dragging items with locked-color className
           if (item?.className?.includes('locked-color')) {
             callback(null);
