@@ -120,8 +120,37 @@ describe("timeUtils general utility function tests", () => {
         // Empty array returns null
         expect(timeUtil.findNextPossibleBoardDate([], "2024-01-01")).toBeNull();
     });
-    test("findNextPossibleBoardDate works correctly when addedDays goes out of bounds", () => {
+    test("formatRelativeDate formats relative dates correctly", () => {
+        const now = new Date();
+        const today = now.toISOString();
+        expect(timeUtil.formatRelativeDate(today)).toBe('Today');
+
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        expect(timeUtil.formatRelativeDate(yesterday.toISOString())).toBe('Yesterday');
+
+        const fiveDaysAgo = new Date(now);
+        fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+        expect(timeUtil.formatRelativeDate(fiveDaysAgo.toISOString())).toBe('5 days ago');
+        
+        const twoMonthsAgo = new Date(now);
+        twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+        expect(timeUtil.formatRelativeDate(twoMonthsAgo.toISOString())).toBe('2 months ago');
+        
+        const twoYearsAgo = new Date(now);
+        twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+        expect(timeUtil.formatRelativeDate(twoYearsAgo.toISOString())).toBe('2 years ago');
+        
+        expect(timeUtil.formatRelativeDate(null)).toBe('');
+        expect(timeUtil.formatRelativeDate('')).toBe('');
+        
+        // Test with translation function
+        const mockTFn = (key, opts) => `translated_${key}_${opts?.count || ''}`;
+        const threeDaysAgo = new Date(now);
+        threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+        expect(timeUtil.formatRelativeDate(threeDaysAgo.toISOString(), mockTFn)).toBe('translated_relativeDates.days-ago_3');
     });
+    test("formatRelativeDate formats relative dates correctly", () => {});
 });
 
 describe ("addDays and subtractDays with disabled dates", () => {
