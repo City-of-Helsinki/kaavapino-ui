@@ -287,4 +287,108 @@ describe("getDisabledDates for various phases", () => {
         const result_lk = timeUtil.getDisabledDatesForLautakunta("milloin_kaavaluonnos_lautakunnassa", formValues, "luonnos", lautakuntaItem, kylkItem, dateTypes);
         expect(result_lk[0]).toBe("2025-09-30");
     });
+    test("getDisabledDatesForSizeXSXL gets the right dates", () => {
+        const name = "oas_esillaolo_aineiston_maaraaika";
+        const formValues = {
+            "oasvaihe_alkaa_pvm": "2025-02-03",
+            "oas_esillaolo_aineiston_maaraaika": "2025-02-20",
+            "milloin_oas_esillaolo_alkaa": "2025-02-25",
+            "milloin_oas_esillaolo_paattyy": "2025-04-10",
+        }
+        const maaraAikaItem = {
+            name: "oas_esillaolo_aineiston_maaraaika",
+            distance_from_previous: 10,
+            previous_deadline: "oasvaihe_alkaa_pvm"
+        }
+        const alkaaItem = {
+            name: "milloin_oas_esillaolo_alkaa",
+            distance_from_previous: 5,
+            previous_deadline: "oas_esillaolo_aineiston_maaraaika",
+            distance_to_next: 15,
+            next_deadline: "milloin_oas_esillaolo_paattyy"
+        };
+        const paattyyItem = {
+            name: "milloin_oas_esillaolo_paattyy",
+            distance_from_previous: 15,
+            previous_deadline: "milloin_oas_esillaolo_alkaa",
+        };
+        const dateTypes = data.test_disabledDates.date_types;
+        const maaraAikaResult = timeUtil.getDisabledDatesForSizeXSXL(name, formValues, maaraAikaItem, dateTypes);
+        expect(maaraAikaResult.length).toBeGreaterThan(0);
+        expect(maaraAikaResult[0]).toBe("2025-02-17"); // 10 working days from previous
+        for (let date of maaraAikaResult) {
+            expect(date >= "2025-02-17").toBe(true);
+            let newDate = new Date(date);
+            expect(newDate.getDay() !== 0 && newDate.getDay() !== 6).toBe(true); // Not weekend
+        }
+        const alkaaResult = timeUtil.getDisabledDatesForSizeXSXL("milloin_oas_esillaolo_alkaa", formValues, alkaaItem, dateTypes);
+        expect(alkaaResult.length).toBeGreaterThan(0);
+        expect(alkaaResult[0]).toBe("2025-02-28"); // 5 working days from maaraika AFTER week 8
+        expect(alkaaResult[alkaaResult.length-1]).toBe("2025-03-20");
+        for (let date of alkaaResult) {
+            expect(date >= "2025-02-28").toBe(true);
+            expect(date <= "2025-03-20").toBe(true);
+            let newDate = new Date(date);
+            expect(newDate.getDay() !== 0 && newDate.getDay() !== 6).toBe(true);
+        }
+        const paattyyResult = timeUtil.getDisabledDatesForSizeXSXL("milloin_oas_esillaolo_paattyy", formValues, paattyyItem, dateTypes);
+        expect(paattyyResult.length).toBeGreaterThan(0);
+        expect(paattyyResult[0]).toBe("2025-03-18");
+        for (let date of paattyyResult) {
+            expect(date >= "2025-03-18").toBe(true);
+            let newDate = new Date(date);
+            expect(newDate.getDay() !== 0 && newDate.getDay() !== 6).toBe(true); // Not weekend
+        }
+    });
+    test("getHighestLautakuntaDate returns correct date", () => {
+        const formValues = {
+            "milloin_kaavaehdotus_lautakunnassa_1": "2025-05-01",
+            "milloin_kaavaehdotus_lautakunnassa_2": "2025-06-01",
+            "milloin_kaavaehdotus_lautakunnassa_3":"2025-08-01",
+            "milloin_kaavaehdotus_lautakunnassa_4": "2025-09-01"
+        };
+        const result = timeUtil.getHighestLautakuntaDate(formValues, "ehdotus");
+        expect(result).toBe("2025-09-01");
+        const formValues2 = {
+            "milloin_kaavaehdotus_lautakunnassa": "2025-05-01",
+            "milloin_kaavaluonnos_lautakunnassa": "2026-01-01"
+        }
+        expect(timeUtil.getHighestLautakuntaDate(formValues2, "ehdotus")).toBe("2025-05-01");
+    });
+    test("getDisabledDatesForNahtavillaolo", () => {
+        const formValues = {
+            "ehdotusvaihe_alkaa_pvm": "2025-03-03",
+            "milloin_kaavaehdotus_lautakunnassa": "2025-03-10",
+            "ehdotus_nahtaville_aineiston_maaraaika": "2025-03-20",
+            "milloin_ehdotus_nahtavilla_alkaa": "2025-03-25",
+            "milloin_ehdotus_nahtavilla_paattyy": "2025-05-09",
+        }
+        const maaraAikaItem = {
+            name: "ehdotus_nahtaville_aineiston_maaraaika",
+            distance_from_previous: 10,
+            previous_deadline: "ehdotusvaihe_alkaa_pvm"
+        }
+        const alkaaItem = {
+            name: "milloin_ehdotus_nahtavilla_alkaa",
+            distance_from_previous: 5,
+            previous_deadline: "ehdotus_nahtaville_aineiston_maaraaika",
+            distance_to_next: 15,
+            next_deadline: "milloin_ehdotus_nahtavilla_paattyy"
+        }
+        const paattyyItem = {
+            name: "milloin_ehdotus_nahtavilla_paattyy",
+            distance_from_previous: 15,
+            previous_deadline: "milloin_ehdotus_nahtavilla_alkaa",
+        };
+        const dateTypes = data.test_disabledDates.date_types;
+        const maaraAikaResult = timeUtil.getDisabledDatesForNahtavillaolo("ehdotus_nahtaville_aineiston_maaraaika", formValues, "Ehdotus", maaraAikaItem, dateTypes, "XL");
+        expect(maaraAikaResult[0]).toBe("2025-03-17"); // 10 working days from previous
+        const alkaaResult = timeUtil.getDisabledDatesForNahtavillaolo("milloin_ehdotus_nahtavilla_alkaa", formValues, "Ehdotus", alkaaItem, dateTypes, "XL");
+        // Date is relative to lautakunta because XL does not have maaraaika
+        expect(alkaaResult[0]).toBe("2025-03-17");
+        // easter holidays not included in test data
+        expect(alkaaResult[alkaaResult.length-1]).toBe("2025-04-18");
+        const paattyyResult = timeUtil.getDisabledDatesForNahtavillaolo("milloin_ehdotus_nahtavilla_paattyy", formValues, "Ehdotus", paattyyItem, dateTypes, "XL");
+        expect(paattyyResult[0]).toBe("2025-04-15");
+    });
 });

@@ -277,8 +277,8 @@ describe("infoFieldUtil functions", () => {
         expect(result4.boardDate).toBe("Tieto puuttuu");
     });
     test("getInfoFieldData calls each branch without crashing", () => {
-        // could not get vi.spyOn to detect sub-function calls, so just testing that no errors are thrown
-        // use test-coverage to verify all are called
+        // just verifying that no errors are thrown
+        // use test-coverage to verify all subfunctions are called
         infoFieldUtil.getInfoFieldData("Tarkasta esilläolopäivät", "tarkasta_esillaolo_periaatteet_fieldset", {}, test_dls, 39);
         infoFieldUtil.getInfoFieldData("Tarkasta esilläolopäivät", "tarkasta_esillaolo_oas_fieldset", {oas_luotu: true}, test_dls, 35);
         infoFieldUtil.getInfoFieldData("Tarkasta esilläolopäivät", "tarkasta_esillaolo_luonnos_fieldset", {luonnos_luotu: true}, test_dls, 29);

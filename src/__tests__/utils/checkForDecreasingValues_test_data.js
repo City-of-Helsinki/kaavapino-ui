@@ -54,6 +54,15 @@ const generateMockLautakuntapäivät = () => {
     return dates;
 }
 
+const generateMockEsillaolopaivat = () => {
+    const base_dates = generateMockTyöpäivät();
+    return base_dates.filter(date => {
+        const dateObj = new Date(date)
+        const weekNumber = Math.ceil((((dateObj - new Date(dateObj.getFullYear(),0,1)) / 86400000) + dateObj.getDay()+1)/7);
+        return !(weekNumber === 8 || weekNumber === 42);
+    });
+}
+
 const decreasing_test_arr = [
     {
         "key": "projektin_kaynnistys_pvm",
@@ -381,6 +390,11 @@ const test_disabledDates = {
             name: "Lautakunnan kokouspäivät",
             identifier: "lautakunnan_kokouspäivät",
             dates: generateMockLautakuntapäivät()
+        },
+        "esilläolopäivät": {
+            name: "Esilläolopäivät",
+            identifier: "esillaolopäivät",
+            dates: generateMockEsillaolopaivat()
         },
         "disabled_dates": {
             name: "Poissuljetut päivät",
