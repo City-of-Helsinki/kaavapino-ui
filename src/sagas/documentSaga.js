@@ -52,7 +52,7 @@ function* downloadDocumentSaga({ payload }) {
   { closeOnToastrClick: false, timeOut:0, removeOnHover: false, removeOnHoverTimeOut: 0, icon: <IconInfoCircleFill /> }
   )
   try {
-    res = yield call(axios.get, modifiedUrl, { responseType: 'blob' })
+    res = yield call(axios.get, modifiedUrl)
 
     currentTask = res && res.data ? res.data.detail : null
 
@@ -174,7 +174,7 @@ function* downloadDocumentPreviewSaga({ payload }) {
   )
 
   try {
-    res = yield call(axios.get, modifiedUrl, { responseType: 'blob' })
+    res = yield call(axios.get, modifiedUrl)
     currentTask = res && res.data ? res.data.detail : null
 
     if (!currentTask && res.status !== 200) {
