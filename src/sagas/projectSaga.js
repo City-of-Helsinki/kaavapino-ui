@@ -745,7 +745,7 @@ function* saveProjectFloorArea() {
     yield put(initialize(EDIT_PROJECT_TIMETABLE_FORM, nextInitial))
 } */
 
-function* validateProjectTimetable() {
+function* validateProjectTimetable({ payload }) {
   // Remove success toastr before showing info
   toastr.removeByType('success');
   toastr.clean(); // Clear existing toastr notifications
@@ -761,6 +761,7 @@ function* validateProjectTimetable() {
 
   const { initial, values } = yield select(editProjectTimetableFormSelector);
   const currentProjectId = yield select(currentProjectIdSelector);
+  const lockedFromField = payload?.lockedFromField || null;
 
   if (values) {
     let changedAttributeData = getChangedAttributeData(values, initial);
@@ -793,6 +794,7 @@ function* validateProjectTimetable() {
         {
           attribute_data,
           confirmed_fields,
+          locked_from_field: lockedFromField,
         },
         { path: { id: currentProjectId } },
         ':id/?fake=true'

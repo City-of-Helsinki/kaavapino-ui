@@ -127,8 +127,9 @@ export const updateProjectFailure = (errorData, formValues) => ({
   type: UPDATE_PROJECT_FAILURE,
   payload: {errorData, formValues}
 });
-export const validateProjectTimetable = () => ({
-   type: VALIDATE_PROJECT_TIMETABLE 
+export const validateProjectTimetable = (lockedFromField = null) => ({
+   type: VALIDATE_PROJECT_TIMETABLE,
+   payload: { lockedFromField }
 });
 export const resetAttributeData = (initialData) => ({
   type: RESET_ATTRIBUTE_DATA,

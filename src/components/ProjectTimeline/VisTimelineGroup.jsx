@@ -1774,6 +1774,25 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                   originalDurationDays = moment(item.end).diff(moment(item.start),'days');
                 }
                 const formattedStart = moment(attributeDate).format('YYYY-MM-DD');
+                
+                // Extract first locked item field name to freeze cascade from that point
+                const lockedItems = items.get().filter(i => 
+                  i?.className?.includes('locked-color') && 
+                  !i?.className?.includes('divider') &&
+                  i?.phase !== true &&
+                  i?.title
+                );
+                let lockedFromField = null;
+                if (lockedItems.length > 0) {
+                  // Sort by start date to find the earliest locked item
+                  lockedItems.sort((a, b) => new Date(a.start) - new Date(b.start));
+                  const firstLockedItem = lockedItems[0];
+                  // Extract field name from title, handling "field1 - field2" format
+                  lockedFromField = firstLockedItem.title.includes('-') 
+                    ? firstLockedItem.title.split('-')[0].trim() 
+                    : firstLockedItem.title;
+                }
+                
                 dispatch(updateDateTimeline(
                   attributeToUpdate,
                   formattedStart,
@@ -1782,7 +1801,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                   deadlineSections,
                   true,
                   originalDurationDays,
-                  pairedEndKey
+                  pairedEndKey,
+                  lockedFromField
                 ));
                 // Skip generic dispatch at end
                 attributeDate = null;
@@ -1807,12 +1827,35 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               // Only dispatch if we have valid data
               if (attributeToUpdate && attributeDate) {
                 const formattedDate = moment(attributeDate).format('YYYY-MM-DD');
+                
+                // Extract first locked item field name to freeze cascade from that point
+                const lockedItems = items.get().filter(i => 
+                  i?.className?.includes('locked-color') && 
+                  !i?.className?.includes('divider') &&
+                  i?.phase !== true &&
+                  i?.title
+                );
+                let lockedFromField = null;
+                if (lockedItems.length > 0) {
+                  // Sort by start date to find the earliest locked item
+                  lockedItems.sort((a, b) => new Date(a.start) - new Date(b.start));
+                  const firstLockedItem = lockedItems[0];
+                  // Extract field name from title, handling "field1 - field2" format
+                  lockedFromField = firstLockedItem.title.includes('-') 
+                    ? firstLockedItem.title.split('-')[0].trim() 
+                    : firstLockedItem.title;
+                }
+                
                 dispatch(updateDateTimeline(
                   attributeToUpdate,
                   formattedDate, 
                   visValuesRef.current,
                   false,
-                  deadlineSections
+                  deadlineSections,
+                  false,
+                  0,
+                  null,
+                  lockedFromField
                 ));
               }
             }

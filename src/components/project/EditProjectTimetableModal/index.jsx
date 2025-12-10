@@ -165,7 +165,24 @@ class EditProjectTimeTableModal extends Component {
           if (visBoolChanged || this.state.unfilteredSectionAttributes?.some( attr =>
             attr.type === 'date' && Object.keys(changedValues).includes(attr.name))) {
             if (!this.props.validatingTimetable?.started || !this.props.validatingTimetable?.ended) {
-              this.props.dispatch(validateProjectTimetable());
+              // Extract first locked item field name from timeline
+              let lockedFromField = null;
+              if (this.state.items) {
+                const lockedItems = this.state.items.get().filter(i => 
+                  i?.className?.includes('locked-color') && 
+                  !i?.className?.includes('divider') &&
+                  i?.phase !== true &&
+                  i?.title
+                );
+                if (lockedItems.length > 0) {
+                  lockedItems.sort((a, b) => new Date(a.start) - new Date(b.start));
+                  const firstLockedItem = lockedItems[0];
+                  lockedFromField = firstLockedItem.title.includes('-') 
+                    ? firstLockedItem.title.split('-')[0].trim() 
+                    : firstLockedItem.title;
+                }
+              }
+              this.props.dispatch(validateProjectTimetable(lockedFromField));
             }
           }
         }

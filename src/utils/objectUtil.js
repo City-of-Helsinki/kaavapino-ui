@@ -242,7 +242,7 @@ const getHighestNumberedObject = (obj1) => {
     return result
   }
 
-  const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize,attributeData,lockedGroup) => {
+  const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize,attributeData,lockedFromField) => {
     // Lock logic: do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
     // attributeData is the filtered attribute_data object (only visible fields) so we can inspect confirmation flags
     let confirmedFieldSet = null;
@@ -274,7 +274,15 @@ const getHighestNumberedObject = (obj1) => {
     // If adding items
     if (isAdd) {
       // Move the nextItem and all following items forward if item minium is exceeded
+      let reachedLockedField = false;
       for (let i = currentIndex; i < arr.length; i++) {
+        // Check if we've reached the locked field - freeze all items from this point onward
+        if (lockedFromField && arr[i].key === lockedFromField) {
+          reachedLockedField = true;
+        }
+        // Skip all items from locked field onward
+        if (reachedLockedField) continue;
+        
 		    if(isLocked(arr[i])) continue; // skip locked items entirely
         if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
           && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
@@ -320,7 +328,15 @@ const getHighestNumberedObject = (obj1) => {
       }
     }
     else if(currentIndex !== -1){
+      let reachedLockedField = false;
       for (let i = currentIndex; i < arr.length; i++) {
+        // Check if we've reached the locked field - freeze all items from this point onward
+        if (lockedFromField && arr[i].key === lockedFromField) {
+          reachedLockedField = true;
+        }
+        // Skip all items from locked field onward
+        if (reachedLockedField) continue;
+        
 		    if(isLocked(arr[i])) continue; // do not move locked items
         if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
           && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
