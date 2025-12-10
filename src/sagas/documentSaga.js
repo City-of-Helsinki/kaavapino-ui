@@ -40,7 +40,7 @@ function* downloadDocumentSaga({ payload }) {
   let isError = false
 
   let counter = 0
-  const modifiedUrl = payload.file + '?immediate=true'
+  const modifiedUrl = payload.file + '?immediate=false'
   yield put(downloadDocumentDone(false))
   toastr.info(
     payload.projectCard
@@ -165,7 +165,7 @@ function* downloadDocumentPreviewSaga({ payload }) {
   let isError = false
 
   let counter = 0
-  const modifiedUrl = payload.file + '?preview=true&immediate=true'
+  const modifiedUrl = payload.file + '?preview=true&immediate=false'
   yield put(downloadDocumentDone(false))
   toastr.info(
     i18next.t('document-loading.wait-title'),
