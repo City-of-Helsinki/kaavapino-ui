@@ -261,7 +261,12 @@ const FormField = ({
     // This should be removed once the system is updated to match the requirements specified in Excel.
     // Remove this check when the field logic is fixed and works as intended.
     // See: KAAV-3496
-    if (field.name === 'tarkasta_lautakunta_periaatteet_fieldset') {
+    if (
+      field.name === 'tarkasta_lautakunta_periaatteet_fieldset' ||
+      field.name === 'tarkasta_lautakunta_luonnos_fieldset' ||
+      field.name === 'tarkasta_lautakunta_ehdotus_fieldset' ||
+      field.name === 'tarkasta_lautakunta_tarkistettu_ehdotus_fieldset'
+    ) {
       return null;
     }
 
