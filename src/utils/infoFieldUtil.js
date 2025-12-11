@@ -1,18 +1,5 @@
 import { isDeadlineConfirmed } from "./projectVisibilityUtils";
 
-const userHasModified = (field,deadlines,phase) => {
-  for (let i = 0; i < deadlines.length; i++) {
-    if(deadlines[i].deadline.phase_name === phase && deadlines[i].deadline?.attribute === field){
-      return !!deadlines[i]?.edited
-    }
-  }
-  return false
-}
-
-const isConfirmed = (startDateConfirmed) => {
-  return startDateConfirmed === true;
-}
-
 const getEsillaoloDates = (deadlinegroup, data, deadlines) => {
   const alkaaDeadline = deadlines.find(
     (d) => d.deadline?.deadlinegroup === deadlinegroup && d.deadline?.attribute?.includes("_alkaa"));
@@ -183,8 +170,8 @@ const exported = {
 }
 
 if (process.env.UNIT_TEST === 'true') {
-  exported.userHasModified = userHasModified;
-  exported.isConfirmed = isConfirmed;
+  exported.getEsillaoloDates = getEsillaoloDates;
+  exported.getLautakuntaDates = getLautakuntaDates;
   exported.getPrincipleDates = getPrincipleDates;
   exported.getOASDates = getOASDates;
   exported.getDraftDates = getDraftDates;

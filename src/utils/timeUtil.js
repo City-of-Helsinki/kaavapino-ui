@@ -898,8 +898,8 @@ const compareAndUpdateDates = (data) => {
     }
   }
 };
- 
-export default {
+
+const exported = {
     isWeekend,
     addDays,
     subtractDays,
@@ -918,4 +918,17 @@ export default {
     findAllowedDate,
     findAllowedLautakuntaDate,
     compareAndUpdateDates
+};
+if (process.env.UNIT_TEST === 'true') {
+    exported.getPastDate = getPastDate;
+    exported.findNextPossibleValue = findNextPossibleValue;
+    exported.findNextPossibleBoardDate = findNextPossibleBoardDate;
+    exported.getDisabledDatesForProjectStart = getDisabledDatesForProjectStart;
+    exported.getDisabledDatesForApproval = getDisabledDatesForApproval;
+    exported.getDisabledDatesForLautakunta = getDisabledDatesForLautakunta;
+    exported.getDisabledDatesForSizeXSXL = getDisabledDatesForSizeXSXL;
+    exported.getDisabledDatesForNahtavillaolo = getDisabledDatesForNahtavillaolo;
+    exported.getHighestLautakuntaDate = getHighestLautakuntaDate;
 }
+
+export default exported;
