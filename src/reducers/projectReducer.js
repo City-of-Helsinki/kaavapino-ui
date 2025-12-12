@@ -94,7 +94,8 @@ import {
   UPDATE_ATTRIBUTE,
   SAVE_PROJECT_TIMETABLE_FAILED,
   VALIDATING_TIMETABLE,
-  LOCK_TIMETABLE
+  LOCK_TIMETABLE,
+  SET_SHIFTED_BACKWARDS
 } from '../actions/projectActions'
 
 import timeUtil from '../utils/timeUtil'
@@ -152,7 +153,8 @@ export const initialState = {
   validated:false,
   cancelTimetableSave:false,
   validatingTimetable: {started: false, ended: false},
-  timetableLocked: {lockedGroup:false,lockedPhases:[],locked:false,lockedStartTime:false}
+  timetableLocked: {lockedGroup:false,lockedPhases:[],locked:false,lockedStartTime:false},
+  shiftedBackwards: false
 }
 
 export const reducer = (state = initialState, action) => {
@@ -175,6 +177,7 @@ export const reducer = (state = initialState, action) => {
 
     case UPDATE_DATE_TIMELINE: {
       const { field, newDate, formValues, isAdd, deadlineSections, keepDuration, originalDurationDays, pairedEndKey, lockedGroup } = action.payload;
+      console.log(lockedGroup)
       // Create a copy of the state and attribute_data
       let updatedAttributeData
       if(formValues){
@@ -220,7 +223,7 @@ export const reducer = (state = initialState, action) => {
       //Compare for changes with dates in order sorted array
       const changes = objectUtil.compareAndUpdateArrays(origSortedData,updateAttributeArray,deadlineSections)
       //Find out is next date below minium and add difference of those days to all values after and move them forward 
-      const decreasingValues = objectUtil.checkForDecreasingValues(changes,isAdd,field,state.disabledDates,oldDate,newDate,moveToPast,projectSize,filteredAttributeData,lockedGroup);
+      const { arr: decreasingValues, didShiftBackwards } = objectUtil.checkForDecreasingValues(changes,isAdd,field,state.disabledDates,oldDate,newDate,moveToPast,projectSize,filteredAttributeData,lockedGroup);
       //Add new values from array to updatedAttributeData object
       objectUtil.updateOriginalObject(filteredAttributeData,decreasingValues)
       // Restore preserved end after adjustments if any logic changed it
@@ -236,6 +239,7 @@ export const reducer = (state = initialState, action) => {
           ...state.currentProject,
           attribute_data: filteredAttributeData,
         },
+        shiftedBackwards: didShiftBackwards
       };
     }
 

@@ -9,7 +9,7 @@ import { EDIT_PROJECT_TIMETABLE_FORM } from '../../../constants'
 import './styles.scss'
 import { deadlineSectionsSelector } from '../../../selectors/schemaSelector'
 import { withTranslation } from 'react-i18next'
-import { deadlinesSelector,validatedSelector,dateValidationResultSelector,cancelTimetableSaveSelector, validatingTimetableSelector, lockingTimetableSelector } from '../../../selectors/projectSelector'
+import { deadlinesSelector,validatedSelector,dateValidationResultSelector,cancelTimetableSaveSelector, validatingTimetableSelector, lockingTimetableSelector, shiftedBackwardsSelector } from '../../../selectors/projectSelector'
 import { Button,IconInfoCircle } from 'hds-react'
 import { isEqual } from 'lodash'
 import VisTimelineGroup from '../../ProjectTimeline/VisTimelineGroup.jsx'
@@ -18,7 +18,7 @@ import ConfirmModal from '../../common/ConfirmModal.jsx';
 import withValidateDate from '../../../hocs/withValidateDate.jsx';
 import objectUtil from '../../../utils/objectUtil'
 import textUtil from '../../../utils/textUtil'
-import { updateDateTimeline,validateProjectTimetable,setValidatingTimetable } from '../../../actions/projectActions';
+import { updateDateTimeline,validateProjectTimetable,setValidatingTimetable,setShiftedBackwards } from '../../../actions/projectActions';
 import { getVisibilityBoolName, vis_bool_group_map, getPhaseNameByVisBool, isDeadlineConfirmed } from '../../../utils/projectVisibilityUtils';
 import timeUtil from '../../../utils/timeUtil'
 
@@ -166,23 +166,42 @@ class EditProjectTimeTableModal extends Component {
             attr.type === 'date' && Object.keys(changedValues).includes(attr.name))) {
             if (!this.props.validatingTimetable?.started || !this.props.validatingTimetable?.ended) {
               // Extract first locked item field name from timeline
-              let lockedFromField = null;
+              let lockedItems = false;
+              let lockedAttributes = {};
               if (this.state.items) {
-                const lockedItems = this.state.items.get().filter(i => 
+                lockedItems = this.state.items.get().filter(i => 
                   i?.className?.includes('locked-color') && 
                   !i?.className?.includes('divider') &&
                   i?.phase !== true &&
                   i?.title
                 );
-                if (lockedItems.length > 0) {
-                  lockedItems.sort((a, b) => new Date(a.start) - new Date(b.start));
-                  const firstLockedItem = lockedItems[0];
-                  lockedFromField = firstLockedItem.title.includes('-') 
-                    ? firstLockedItem.title.split('-')[0].trim() 
-                    : firstLockedItem.title;
+                console.log(lockedItems)
+                // Extract field names and values from formValues
+                if (lockedItems && lockedItems.length > 0) {
+                  lockedItems.forEach(item => {
+                    if (item.title) {
+                      // Check if title contains a dash (compound field)
+                      if (item.title.includes('-')) {
+                        const fieldNames = item.title.split('-');
+                        fieldNames.forEach(fieldName => {
+                          if (formValues[fieldName] !== undefined) {
+                            lockedAttributes[fieldName] = formValues[fieldName];
+                          }
+                        });
+                      } else if (formValues[item.title] !== undefined) {
+                        lockedAttributes[item.title] = formValues[item.title];
+                      }
+                    }
+                  });
                 }
               }
-              this.props.dispatch(validateProjectTimetable(lockedFromField));
+              // Only validate if backwards shift did not occur
+              if (!this.props.shiftedBackwards) {
+                this.props.dispatch(validateProjectTimetable(lockedAttributes));
+              } else {
+                // Reset the flag after handling
+                this.props.dispatch(setShiftedBackwards(false));
+              }
             }
           }
         }
@@ -1567,7 +1586,8 @@ EditProjectTimeTableModal.propTypes = {
     lockedPhases:PropTypes.array,
     locked:PropTypes.bool,
     lockedStartTime:PropTypes.bool
-  })
+  }),
+  shiftedBackwards: PropTypes.bool
 }
 
 const mapStateToProps = state => ({
@@ -1579,7 +1599,8 @@ const mapStateToProps = state => ({
   dateValidationResult : dateValidationResultSelector(state),
   cancelTimetableSave: cancelTimetableSaveSelector(state),
   validatingTimetable: validatingTimetableSelector(state),
-  timetableLocked: lockingTimetableSelector(state)
+  timetableLocked: lockingTimetableSelector(state),
+  shiftedBackwards: shiftedBackwardsSelector(state)
 })
 
 const decoratedForm = reduxForm({

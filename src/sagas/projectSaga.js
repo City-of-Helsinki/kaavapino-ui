@@ -761,7 +761,7 @@ function* validateProjectTimetable({ payload }) {
 
   const { initial, values } = yield select(editProjectTimetableFormSelector);
   const currentProjectId = yield select(currentProjectIdSelector);
-  const lockedFromField = payload?.lockedFromField || null;
+  const lockedAttributes = payload?.lockedAttributes || false;
 
   if (values) {
     let changedAttributeData = getChangedAttributeData(values, initial);
@@ -794,7 +794,7 @@ function* validateProjectTimetable({ payload }) {
         {
           attribute_data,
           confirmed_fields,
-          locked_from_field: lockedFromField,
+          lockedAttributes: lockedAttributes,
         },
         { path: { id: currentProjectId } },
         ':id/?fake=true'

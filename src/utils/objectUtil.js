@@ -246,6 +246,7 @@ const getHighestNumberedObject = (obj1) => {
     // Lock logic: do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
     // attributeData is the filtered attribute_data object (only visible fields) so we can inspect confirmation flags
     let confirmedFieldSet = null;
+    let didShiftBackwards = false;
     const today = new Date();
     today.setHours(0,0,0,0);
     if(attributeData){
@@ -277,11 +278,16 @@ const getHighestNumberedObject = (obj1) => {
       let reachedLockedField = false;
       for (let i = currentIndex; i < arr.length; i++) {
         // Check if we've reached the locked field - freeze all items from this point onward
-        if (lockedFromField && arr[i].key === lockedFromField) {
+        if (lockedFromField && arr[i].key === lockedFromField?.key) {
           reachedLockedField = true;
         }
-        // Skip all items from locked field onward
-        if (reachedLockedField) continue;
+        // If current value meets/exceeds locked value, shift backwards and stop
+        if (lockedFromField?.value && arr[i]?.value && new Date(arr[i].value) >= new Date(lockedFromField.value)) {
+          didShiftBackwards = shiftDatesBackwards(arr, i, currentIndex, disabledDates, projectSize, lockedFromField);
+          break;
+        }
+        // Exit processing once we reach the locked field
+        if (reachedLockedField) break;
         
 		    if(isLocked(arr[i])) continue; // skip locked items entirely
         if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
@@ -331,11 +337,16 @@ const getHighestNumberedObject = (obj1) => {
       let reachedLockedField = false;
       for (let i = currentIndex; i < arr.length; i++) {
         // Check if we've reached the locked field - freeze all items from this point onward
-        if (lockedFromField && arr[i].key === lockedFromField) {
+        if (lockedFromField && arr[i].key === lockedFromField?.key) {
           reachedLockedField = true;
         }
-        // Skip all items from locked field onward
-        if (reachedLockedField) continue;
+        // If current value meets/exceeds locked value, shift backwards and stop
+        if (lockedFromField?.value && arr[i]?.value && new Date(arr[i].value) >= new Date(lockedFromField.value)) {
+          didShiftBackwards = shiftDatesBackwards(arr, i, currentIndex, disabledDates, projectSize, lockedFromField);
+          break;
+        }
+        // Exit processing once we reach the locked field
+        if (reachedLockedField) break;
         
 		    if(isLocked(arr[i])) continue; // do not move locked items
         if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
@@ -434,7 +445,82 @@ const getHighestNumberedObject = (obj1) => {
       }
     }
     sortPhaseData(arr,order)
-    return arr
+    return { arr, didShiftBackwards }
+  }
+
+  // Shift values from index i down to currentIndex backwards by per-item distance_from_previous,
+  // honoring date types and disabled days via timeUtil helpers.
+  const shiftDatesBackwards = (arr, startIndex, stopIndex, disabledDates, projectSize, lockedKey) => {
+    let lockedDistance
+    let previousIterationAfterLocked = false
+    const lockedValue = lockedKey?.value || null;
+    let distToPrevious
+    for (let k = startIndex; k >= stopIndex; k--) {
+      const item = arr[k];
+      console.log(item)
+
+      if (!item || lockedKey?.key === item?.key){
+        if(item){
+          lockedDistance = item?.distance_from_previous
+          previousIterationAfterLocked = k - 1
+        }
+        continue;
+      }
+
+      if(item?.key.includes("viimeistaan_")){
+        item.value = arr[k + 1]?.value
+        continue;
+      }
+
+      if(previousIterationAfterLocked && k === previousIterationAfterLocked){
+        const lockedDate = new Date(lockedValue);
+        console.log(lockedDistance)
+        lockedDate.setDate(lockedDate.getDate() - (lockedDistance + 2));
+        item.value = lockedDate.toISOString().split('T')[0];
+        distToPrevious = item?.distance_from_previous + 2
+        previousIterationAfterLocked = false
+        console.log(item)
+        continue;
+      }
+      // Use distance_from_previous; fallback to 0 and clamp at 0
+      console.log(item.key, distToPrevious)
+      const gap = Math.max(0, Number(distToPrevious) || Number(item?.distance_from_previous) || 0);
+      console.log('Gap for', item.key, 'is', gap);
+      const allowed = disabledDates?.date_types?.[item?.date_type]?.dates;
+      distToPrevious = item?.distance_from_previous
+      const currentISO = item?.value;
+      if (!currentISO) continue;
+
+      let newISO = null;
+      if (Array.isArray(allowed) && allowed.length) {
+        // Find exact index of current date (or the closest previous allowed date)
+        let idx = allowed.findIndex(d => d === currentISO);
+        if (idx === -1) {
+          // If currentISO not in allowed, use the last allowed date before currentISO
+          for (let ai = allowed.length - 1; ai >= 0; ai--) {
+            if (allowed[ai] <= currentISO) { idx = ai; break; }
+          }
+        }
+        // Move backwards by gap, but use earliest date if we go before start
+        const targetIdx = idx !== -1 ? Math.max(0, idx - gap) : 0;
+        newISO = allowed[targetIdx];
+      }
+      // Log shift details for debugging/tracing
+      try {
+        console.log('[shiftDatesBackwards]', {
+          key: item.key,
+          from: currentISO,
+          to: newISO,
+          gap,
+          stopIndex,
+          startIndex
+        });
+      } catch (e) {
+        // no-op
+      }
+      item.value = newISO;
+    }
+    return true; // Return true to indicate backwards shift occurred
   }
 
    const reverseIterateArray = (arr,index,target) => {

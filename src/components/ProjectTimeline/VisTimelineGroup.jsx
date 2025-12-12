@@ -1507,7 +1507,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           const holidayItems = rawItems.filter(i =>  
               i?.className?.includes('holiday')
           );
-          console.log(holidayItems)
           let holidayDays = 0;
           holidayItems.forEach(h => {
               const hStart = new Date(h.start).getTime();
@@ -1594,19 +1593,18 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             callback(null);
             return;
           }
-          const { lockedStartMs, totalBufferDays } = computeLockedDragBoundary(items, clusterDragRef);
+/*           const { lockedStartMs, totalBufferDays } = computeLockedDragBoundary(items, clusterDragRef);
           if (lockedStartMs != null) {
               const ONE_DAY_MS = 24 * 60 * 60 * 1000;
               const curStart = item?.start ? new Date(item.start).getTime() : null;
               const stopBoundary = lockedStartMs - (totalBufferDays * ONE_DAY_MS);
               
-              console.log({ totalBufferDays, curStart: new Date(curStart).toLocaleDateString('fi-FI'), stopBoundary: new Date(stopBoundary).toLocaleDateString('fi-FI') });
               
               if (curStart != null && curStart >= stopBoundary) {
                   callback(null);
                   return;
               }
-          }
+          } */
           // Prevent dragging items with locked-color className
           if (item?.className?.includes('locked-color')) {
             callback(null);
@@ -1847,10 +1845,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                   // Sort by start date to find the earliest locked item
                   lockedItems.sort((a, b) => new Date(a.start) - new Date(b.start));
                   const firstLockedItem = lockedItems[0];
-                  // Extract field name from title, handling "field1 - field2" format
-                  lockedFromField = firstLockedItem.title.includes('-') 
-                    ? firstLockedItem.title.split('-')[0].trim() 
+                  // Build key/value from first locked item
+                  const key = firstLockedItem.title.includes('-')
+                    ? firstLockedItem.title.split('-')[0].trim()
                     : firstLockedItem.title;
+                  const value = firstLockedItem.start
+                    ? moment(firstLockedItem.start).format('YYYY-MM-DD')
+                    : null;
+                  lockedFromField = { key, value };
                 }
                 
                 dispatch(updateDateTimeline(
@@ -1900,10 +1902,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                   // Sort by start date to find the earliest locked item
                   lockedItems.sort((a, b) => new Date(a.start) - new Date(b.start));
                   const firstLockedItem = lockedItems[0];
-                  // Extract field name from title, handling "field1 - field2" format
-                  lockedFromField = firstLockedItem.title.includes('-') 
-                    ? firstLockedItem.title.split('-')[0].trim() 
+                  // Build key/value from first locked item
+                  const key = firstLockedItem.title.includes('-')
+                    ? firstLockedItem.title.split('-')[0].trim()
                     : firstLockedItem.title;
+                  const value = firstLockedItem.start
+                    ? moment(firstLockedItem.start).format('YYYY-MM-DD')
+                    : null;
+                  lockedFromField = { key, value };
                 }
                 
                 dispatch(updateDateTimeline(
