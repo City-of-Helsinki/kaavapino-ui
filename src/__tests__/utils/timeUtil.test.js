@@ -420,4 +420,96 @@ describe("getDisabledDates for various phases", () => {
         const paattyyResult = timeUtil.getDisabledDatesForNahtavillaolo("milloin_ehdotus_nahtavilla_paattyy", formValues, "Ehdotus", paattyyItem, dateTypes, "XL");
         expect(paattyyResult[0]).toBe("2025-04-15");
     });
+    test("calculateDisabledDates takes past dates into account", () => {
+        // Due to the complexity of calculateDisabledDates, here we just test that it calls the correct sub-functions   
+        const dateTypes = data.test_disabledDates.date_types;
+        const name = "projektin_kaynnistys_pvm";
+        const nextDate = new Date();
+        nextDate.setDate(nextDate.getDate() + 30);
+        const formValues = {
+            "projektin_kaynnistys_pvm": new Date().toISOString().split('T')[0],
+            "kaynnistys_paattyy_pvm": nextDate.toISOString().split('T')[0]
+        };
+        const sectionAttributes = [
+            { name: "projektin_kaynnistys_pvm" },
+            { name: "kaynnistys_paattyy_pvm", distance_from_previous: 10 },
+            { name: "periaatteetvaihe_alkaa_pvm", previous_deadline: "kaynnistys_paattyy_pvm", distance_from_previous: 0 }
+        ];
+        const currentDeadline = sectionAttributes[1];
+
+        const result = timeUtil.calculateDisabledDates(false, "M", dateTypes, name, formValues, sectionAttributes, currentDeadline);
+        for (let date of result) {
+            let newDate = new Date(date);
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            expect(newDate >= today).toBe(true); // No past dates
+        }
+        // End date in past
+        const pastDate = new Date();
+        pastDate.setDate(pastDate.getDate() - 10);
+        formValues["kaynnistys_paattyy_pvm"] = pastDate.toISOString().split('T')[0];
+        const result2 = timeUtil.calculateDisabledDates(false, "M", dateTypes, name, formValues, sectionAttributes, currentDeadline);
+        expect(result2.length).toBe(0); // No allowed dates
+    });
+    test("calculateDisabledDates ignores past date filtering for approval dates", () => {
+        const dateTypes = data.test_disabledDates.date_types;
+        const name = "hyvaksymispaatos_pvm";
+        const pastDate = new Date();
+        pastDate.setDate(pastDate.getDate() - 30);
+        const formValues = {
+            "hyvaksyminenvaihe_alkaa_pvm": pastDate.toISOString().split('T')[0],
+            "hyvaksymispaatos_pvm": pastDate.toISOString().split('T')[0],
+        };
+        const sectionAttributes = [
+            { name: "hyvaksyminenvaihe_alkaa_pvm" },
+            { name: "hyvaksymispaatos_pvm", distance_from_previous: 15 }
+        ];
+        const currentDeadline = sectionAttributes[1];
+
+        const result = timeUtil.calculateDisabledDates(false, "M", dateTypes, name, formValues, sectionAttributes, currentDeadline);
+        expect(result.length).toBeGreaterThan(0); // Should have allowed dates even if in past
+    });
+    test("ensure calculateDisabledDates handles all cases without crashing", () => {
+        // Functionality covered in previous tests. Just ensuring no crashes here for coverage.
+        const dateTypes = data.test_disabledDates.date_types;
+        const sectionAttributes = [
+            { name: "hyvaksymispaatos_valitusaika_paattyy"},
+            { name: "milloin_tarkistettu_ehdotus_lautakunnassa",
+                previous_deadline: "tarkistettu_ehdotus_kylk_maaraaika",
+                initial_distance: {
+                    distance: 10,
+                    base_deadline: "tarkistettuehdotusvaihe_alkaa_pvm"
+                },
+                deadline: { deadlinegroup: "tarkistettu_ehdotus_lautakuntakerta_1" }
+            },
+            {
+                name: "oas_esillaolo_aineiston_maaraaika",
+                distance_from_previous: 10,
+                previous_deadline: "oasvaihe_alkaa_pvm"
+            },
+            { 
+                name: "milloin_oas_esillaolo_alkaa", 
+                distance_from_previous: 5, 
+                previous_deadline: "oas_esillaolo_aineiston_maaraaika", 
+                distance_to_next: 15, next_deadline: "milloin_oas_esillaolo_paattyy" 
+            }
+        ];
+        const currentDeadline1 = sectionAttributes[0];
+        const currentDeadline2 = sectionAttributes[1];
+        const currentDeadline3 = sectionAttributes[2];
+        const currentDeadline4 = sectionAttributes[3];
+        const formValues = {
+            "oasvaihe_alkaa_pvm": "2028-01-01",
+            "oas_esillaolo_aineiston_maaraaika": "2028-02-01",
+            "milloin_oas_esillaolo_alkaa": "2028-02-15",
+            "milloin_oas_esillaolo_paattyy": "2028-04-01",
+            "hyvaksymispaatos_valitusaika_paattyy": "2028-04-01",
+            "tarkistettu_ehdotus_kylk_maaraaika": "2028-03-01",
+            "milloin_tarkistettu_ehdotus_lautakunnassa": "2028-05-01",
+        };
+        timeUtil.calculateDisabledDates(false, "M", dateTypes, "hyvaksymispaatos_valitusaika_paattyy", formValues, sectionAttributes, currentDeadline1);
+        timeUtil.calculateDisabledDates(false, "M", dateTypes, "milloin_tarkistettu_ehdotus_lautakunnassa", formValues, sectionAttributes, currentDeadline2);
+        timeUtil.calculateDisabledDates(true, "M", dateTypes, "oas_esillaolo_aineiston_maaraaika", formValues, sectionAttributes, currentDeadline3);
+        timeUtil.calculateDisabledDates(false, "M", dateTypes, "milloin_oas_esillaolo_alkaa", formValues, sectionAttributes, currentDeadline4);
+    });
 });
