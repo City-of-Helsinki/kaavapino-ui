@@ -243,6 +243,7 @@ const getHighestNumberedObject = (obj1) => {
   }
 
   const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize,attributeData,lockedFromField) => {
+    console.log(movedDate,attributeData,arr)
     // Lock logic: do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
     // attributeData is the filtered attribute_data object (only visible fields) so we can inspect confirmation flags
     let confirmedFieldSet = null;
@@ -281,11 +282,6 @@ const getHighestNumberedObject = (obj1) => {
         if (lockedFromField && arr[i].key === lockedFromField?.key) {
           reachedLockedField = true;
         }
-        // If current value meets/exceeds locked value, shift backwards and stop
-        if (lockedFromField?.value && arr[currentIndex]?.value && new Date(arr[currentIndex].value) >= new Date(lockedFromField.value)) {
-          didShiftBackwards = shiftDatesBackwards(arr, i, currentIndex, disabledDates, projectSize, lockedFromField);
-          break;
-        }
         // Exit processing once we reach the locked field
         if (reachedLockedField) break;
         
@@ -307,7 +303,20 @@ const getHighestNumberedObject = (obj1) => {
           }
           // Update the array with the new date
           newDate.setDate(newDate.getDate());
-          arr[i].value = newDate.toISOString().split('T')[0];
+          const newDateISO = newDate.toISOString().split('T')[0];
+          
+          // Check if the NEW calculated date would exceed locked boundary
+          if (lockedFromField?.value && new Date(newDateISO) >= new Date(lockedFromField.value)) {
+            // Only trigger backwards shift if the new date is different (actually moving forward into locked)
+            if (arr[i].value !== newDateISO) {
+              // Find the locked field's index - shiftDatesBackwards expects to start FROM the locked field
+              const lockedIndex = arr.findIndex(item => item?.key === lockedFromField?.key);
+              didShiftBackwards = shiftDatesBackwards(arr, lockedIndex, currentIndex + 1, disabledDates, projectSize, lockedFromField);
+            }
+            break;
+          }
+          
+          arr[i].value = newDateISO;
           //Move phase start and end dates
           if(arr[i].distance_from_previous === undefined && arr[i].key.endsWith('_pvm') && arr[i].key.includes("_paattyy_")){
             const targetSubstring = arr[i].key.split('vaihe')[0];
@@ -339,11 +348,6 @@ const getHighestNumberedObject = (obj1) => {
         // Check if we've reached the locked field - freeze all items from this point onward
         if (lockedFromField && arr[i].key === lockedFromField?.key) {
           reachedLockedField = true;
-        }
-        // If current value meets/exceeds locked value, shift backwards and stop
-        if (lockedFromField?.value && arr[i]?.value && new Date(arr[i].value) >= new Date(lockedFromField.value)) {
-          didShiftBackwards = shiftDatesBackwards(arr, i, currentIndex, disabledDates, projectSize, lockedFromField);
-          break;
         }
         // Exit processing once we reach the locked field
         if (reachedLockedField) break;
@@ -417,7 +421,20 @@ const getHighestNumberedObject = (obj1) => {
           }
           // Update the array with the new date
           newDate.setDate(newDate.getDate());
-          arr[i].value = newDate.toISOString().split('T')[0];
+          const newDateISO = newDate.toISOString().split('T')[0];
+          
+          // Check if the NEW calculated date would exceed locked boundary
+          if (lockedFromField?.value && new Date(newDateISO) >= new Date(lockedFromField.value)) {
+            // Only trigger backwards shift if the new date is different (actually moving forward into locked)
+            if (arr[i].value !== newDateISO) {
+              // Find the locked field's index - shiftDatesBackwards expects to start FROM the locked field
+              const lockedIndex = arr.findIndex(item => item?.key === lockedFromField?.key);
+              didShiftBackwards = shiftDatesBackwards(arr, lockedIndex, currentIndex + 1, disabledDates, projectSize, lockedFromField);
+            }
+            break;
+          }
+          
+          arr[i].value = newDateISO;
           //Move phase start and end dates
           if(arr[i].distance_from_previous === undefined && arr[i].key.endsWith('_pvm') && arr[i].key.includes("_paattyy_") 
             && !arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")){
