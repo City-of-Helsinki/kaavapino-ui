@@ -282,7 +282,7 @@ const getHighestNumberedObject = (obj1) => {
           reachedLockedField = true;
         }
         // If current value meets/exceeds locked value, shift backwards and stop
-        if (lockedFromField?.value && arr[i]?.value && new Date(arr[i].value) >= new Date(lockedFromField.value)) {
+        if (lockedFromField?.value && arr[currentIndex]?.value && new Date(arr[currentIndex].value) >= new Date(lockedFromField.value)) {
           didShiftBackwards = shiftDatesBackwards(arr, i, currentIndex, disabledDates, projectSize, lockedFromField);
           break;
         }
@@ -455,6 +455,8 @@ const getHighestNumberedObject = (obj1) => {
     let previousIterationAfterLocked = false
     const lockedValue = lockedKey?.value || null;
     let distToPrevious
+    // Track the previous item's new value to chain calculations
+    let previousNewISO = null;
     for (let k = startIndex; k >= stopIndex; k--) {
       const item = arr[k];
       console.log(item)
@@ -463,12 +465,15 @@ const getHighestNumberedObject = (obj1) => {
         if(item){
           lockedDistance = item?.distance_from_previous
           previousIterationAfterLocked = k - 1
+          // The locked item's value becomes the reference point
+          previousNewISO = lockedValue;
         }
         continue;
       }
 
       if(item?.key.includes("viimeistaan_")){
         item.value = arr[k + 1]?.value
+        previousNewISO = item.value;
         continue;
       }
 
@@ -479,6 +484,8 @@ const getHighestNumberedObject = (obj1) => {
         item.value = lockedDate.toISOString().split('T')[0];
         distToPrevious = item?.distance_from_previous + 2
         previousIterationAfterLocked = false
+        // Store this item's new value for the next iteration
+        previousNewISO = item.value;
         console.log(item)
         continue;
       }
@@ -488,20 +495,22 @@ const getHighestNumberedObject = (obj1) => {
       console.log('Gap for', item.key, 'is', gap);
       const allowed = disabledDates?.date_types?.[item?.date_type]?.dates;
       distToPrevious = item?.distance_from_previous
-      const currentISO = item?.value;
-      if (!currentISO) continue;
+
+      // Use the previous item's NEW value as reference, not item.value
+      const referenceISO = previousNewISO;
+      if (!referenceISO) continue;
 
       let newISO = null;
       if (Array.isArray(allowed) && allowed.length) {
-        // Find exact index of current date (or the closest previous allowed date)
-        let idx = allowed.findIndex(d => d === currentISO);
+        // Find index of the PREVIOUS item's new value in allowed array
+        let idx = allowed.findIndex(d => d === referenceISO);
         if (idx === -1) {
-          // If currentISO not in allowed, use the last allowed date before currentISO
+          // If referenceISO not in allowed, use the last allowed date before it
           for (let ai = allowed.length - 1; ai >= 0; ai--) {
-            if (allowed[ai] <= currentISO) { idx = ai; break; }
+            if (allowed[ai] <= referenceISO) { idx = ai; break; }
           }
         }
-        // Move backwards by gap, but use earliest date if we go before start
+        // Move backwards by gap from the reference point
         const targetIdx = idx !== -1 ? Math.max(0, idx - gap) : 0;
         newISO = allowed[targetIdx];
       }
@@ -509,8 +518,9 @@ const getHighestNumberedObject = (obj1) => {
       try {
         console.log('[shiftDatesBackwards]', {
           key: item.key,
-          from: currentISO,
+          from: item.value,
           to: newISO,
+          referenceISO,
           gap,
           stopIndex,
           startIndex
@@ -519,11 +529,13 @@ const getHighestNumberedObject = (obj1) => {
         // no-op
       }
       item.value = newISO;
+      // Update reference for next iteration
+      previousNewISO = newISO;
     }
     return true; // Return true to indicate backwards shift occurred
   }
 
-   const reverseIterateArray = (arr,index,target) => {
+  const reverseIterateArray = (arr,index,target) => {
     let targetString = target
     if(target === "tarkistettuehdotus"){
       //other values in array at tarkistettu ehdotus phase are with _ but phase values are without
