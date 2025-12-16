@@ -17,6 +17,7 @@ import PropTypes from 'prop-types';
 import { getVisibilityBoolName, getVisBoolsByPhaseName, isDeadlineConfirmed } from '../../utils/projectVisibilityUtils';
 import { useTimelineTooltip } from '../../hooks/useTimelineTooltip';
 import { updateDateTimeline } from '../../actions/projectActions';
+import { toastr } from 'react-redux-toastr';
 import { lockTimetable } from '../../actions/projectActions';
 import './VisTimeline.scss'
 Moment.locale('fi');
@@ -425,7 +426,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const canGroupBeAdded = (visValRef, data) => {
-      const phase = getPhaseKey(data);
+      // Get phase directly from data.content (getPhaseKey returns array when locked)
+      const phase = data.content.toLowerCase().replace(/\s+/g, '_');
       const lautakuntaCount = getLautakuntaCount(groups, data);
       // Prevent adding esillaolo/nahtavillaolo if lautakunta has been added and confirmed
       // Exception for XL/L ehdotus phase where lautakunta comes before esillaolo
@@ -624,6 +626,61 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       ];
     };
 
+    /**
+     * Check if a new element set fits on the timeline before the locked boundary.
+     * @param {string} phase - Phase name (e.g., 'luonnos', 'ehdotus', 'periaatteet')
+     * @param {string} elementType - 'esillaolo' or 'lautakunta'
+     * @param {string} addedKey - Visibility bool key (e.g., 'jarjestetaan_periaatteet_esillaolo_2')
+     * @returns {{ fits: boolean, requiredDays: number, availableDays: number }}
+     */
+    const checkElementFitsBeforeLock = (phase, elementType, addedKey) => {
+      const { locked, lockedStartTime } = lockRef.current;
+      if (!locked || !lockedStartTime) {
+        return { fits: true, requiredDays: 0, availableDays: Infinity };
+      }
+
+      const ONE_DAY_MS = 86400000;
+      const lockedStartMs = new Date(lockedStartTime).getTime();
+      const allItems = items?.get() || [];
+
+      // Helper: check if item is a valid timeline element (not divider/background/phase)
+      const isValidItem = (i) => i?.title && !i?.className?.includes('divider') && 
+        i?.type !== 'background' && i?.phase !== true && i?.start;
+
+      // Find last unlocked item end time before locked boundary
+      const lastUnlockedEndMs = allItems
+        .filter(i => isValidItem(i) && !i.className?.includes('locked-color') && 
+          new Date(i.start).getTime() < lockedStartMs)
+        .reduce((max, i) => {
+          const endMs = new Date(i.end || i.start).getTime();
+          return endMs > max ? endMs : max;
+        }, null) ?? Date.now();
+
+      const availableDays = Math.floor((lockedStartMs - lastUnlockedEndMs) / ONE_DAY_MS);
+
+      // Extract element index from key (e.g., 'jarjestetaan_periaatteet_esillaolo_2' -> 2)
+      const elementIndex = parseInt(addedKey?.match(/_(\d+)$/)?.[1], 10) || 1;
+
+      // Build target group name to match
+      const normalizedPhase = phase === 'kaavaluonnos' ? 'luonnos' : 
+        phase === 'kaavaehdotus' ? 'ehdotus' : phase;
+      const targetGroup = `${normalizedPhase}_${elementType === 'esillaolo' ? 'esillaolokerta' : 'lautakuntakerta'}_${elementIndex}`.toLowerCase();
+
+      // Sum distanceToPrevious for matching group items
+      const requiredFromGroup = allItems
+        .filter(i => isValidItem(i) && i.groupName?.toLowerCase() === targetGroup)
+        .reduce((sum, i) => sum + Math.max(0, i.distanceToPrevious ?? 0), 0);
+
+      // Add first locked item's distance as buffer
+      const firstLockedDist = allItems
+        .filter(i => isValidItem(i) && i.className?.includes('locked-color'))
+        .sort((a, b) => new Date(a.start) - new Date(b.start))[0]?.distanceToPrevious ?? 0;
+
+      const requiredDays = requiredFromGroup + (firstLockedDist > 0 ? firstLockedDist + 2 : 0);
+
+      return { fits: availableDays >= requiredDays, requiredDays, availableDays };
+    };
+
     const openAddDialog = (visValRef,data,event) => {
       const [addEsillaolo,nextEsillaolo,addLautakunta,nextLautakunta,esillaoloReason,lautakuntaReason] = canGroupBeAdded(visValRef,data)
       const rect = event.target.getBoundingClientRect();
@@ -637,10 +694,17 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         top: `${rect.bottom - 4}px`
       })
 
+      // Get phase for fit checking in AddGroupModal
+      const phase = data.content.toLowerCase().replace(/\s+/g, '_');
+
       const [hidePresence,hideBoard] = hideSelection(data.content,visValRef)
       setAddDialogData({group:data,deadlineSections:deadlineSections,showPresence:addEsillaolo,showBoard:addLautakunta,
         nextEsillaolo:nextEsillaolo,nextLautakunta:nextLautakunta,esillaoloReason:esillaoloReason,lautakuntaReason:lautakuntaReason,
-        hidePresence:hidePresence,hideBoard:hideBoard})
+        hidePresence:hidePresence,hideBoard:hideBoard,
+        // Pass data needed for fit check
+        phase:phase,
+        isLocked:lockRef.current.locked,
+        checkElementFitsBeforeLock:checkElementFitsBeforeLock})
       setToggleOpenAddDialog(prevState => !prevState)
     }
 

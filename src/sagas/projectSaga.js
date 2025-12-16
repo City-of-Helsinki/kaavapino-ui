@@ -802,12 +802,23 @@ function* validateProjectTimetable({ payload }) {
 
       // Remove the loading icon
       toastr.removeByType('info');
-      toastr.success(i18.t('messages.dates-confirmed'), {
-        timeOut: 10000,
-        removeOnHover: false,
-        showCloseButton: true,
-        icon: <IconCheckCircleFill />
-      });
+
+      // Check if backend auto-fixed any lock boundary violations
+      if (response?.lock_warnings && response.lock_warnings.length > 0) {
+        toastr.warning(i18.t('messages.dates-adjusted'), response.lock_warnings.join('; '), {
+          timeOut: 10000,
+          removeOnHover: false,
+          showCloseButton: true,
+          icon: <IconAlertCircleFill />
+        });
+      } else {
+        toastr.success(i18.t('messages.dates-confirmed'), {
+          timeOut: 10000,
+          removeOnHover: false,
+          showCloseButton: true,
+          icon: <IconCheckCircleFill />
+        });
+      }
 
       // Success. Prevent further validation calls by setting state
       yield put(setValidatingTimetable(true, true));

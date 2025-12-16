@@ -297,7 +297,8 @@
     "confirm-previous-display-first": "Kaavoitussihteerin tulee vahvistaa aikaisempi esilläolo, jonka jälkeen voidaan lisätä uusi.",
     "max-presences-reached": "Nähtävilläolojen maksimimäärä on saavutettu.",
     "max-displays-reached": "Esilläolojen maksimimäärä on saavutettu.",
-    "locking-enabled": "Lukitus on päällä, poista lukitus lisätäksesi uuden vaiheen."
+    "locking-enabled": "Lukitus on päällä, poista lukitus lisätäksesi uuden vaiheen.",
+    "element-not-fit": "Elementtijoukko ei sovi aikajanalle lukituksen vuoksi."
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}",
