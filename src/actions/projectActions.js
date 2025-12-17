@@ -83,6 +83,11 @@ export const FETCH_ARCHIVED_PROJECTS = "Fetch archived projects"
 export const FETCH_ARCHIVED_PROJECTS_SUCCESSFUL = "Fetch arcvhived projects successful"
 export const SET_TOTAL_ARCHIVED_PROJECTS = "Set total archived projects"
 export const SET_TOTAL_ONHOLD_PROJECTS = "Set total onhold projects"
+
+// Timetable snapshot lifecycle
+export const SET_TIMETABLE_SNAPSHOT = 'Set timetable snapshot'
+export const RESTORE_TIMETABLE_SNAPSHOT = 'Restore timetable snapshot'
+export const CLEAR_TIMETABLE_SNAPSHOT = 'Clear timetable snapshot'
 export const SET_ONHOLD_PROJECTS = "Set onhold projects"
 export const SET_ARCHIVED_PROJECTS = "Set archived projects"
 export const RESET_PROJECT_DEADLINES_SUCCESSFUL = "Resetting project deadlines successful"
@@ -559,4 +564,13 @@ export const lockTimetable = (group,phases,locked,time) => {
 export const setShiftedBackwards = payload => ({
   type: SET_SHIFTED_BACKWARDS,
   payload
+})
+
+export const setTimetableSnapshot = snapshot => ({
+  type: SET_TIMETABLE_SNAPSHOT,
+  payload: snapshot
+})
+
+export const clearTimetableSnapshot = () => ({
+  type: CLEAR_TIMETABLE_SNAPSHOT
 })

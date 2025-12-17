@@ -18,7 +18,7 @@ import ConfirmModal from '../../common/ConfirmModal.jsx';
 import withValidateDate from '../../../hocs/withValidateDate.jsx';
 import objectUtil from '../../../utils/objectUtil'
 import textUtil from '../../../utils/textUtil'
-import { updateDateTimeline,validateProjectTimetable,setValidatingTimetable,setShiftedBackwards } from '../../../actions/projectActions';
+import { updateDateTimeline,validateProjectTimetable,setValidatingTimetable,setShiftedBackwards,setTimetableSnapshot } from '../../../actions/projectActions';
 import { getVisibilityBoolName, vis_bool_group_map, getPhaseNameByVisBool, isDeadlineConfirmed } from '../../../utils/projectVisibilityUtils';
 import timeUtil from '../../../utils/timeUtil'
 
@@ -67,8 +67,15 @@ class EditProjectTimeTableModal extends Component {
   };
 
   componentDidMount() {
-    const { initialize, attributeData, deadlines, deadlineSections, disabledDates,lomapaivat } = this.props
+    const { initialize, attributeData, deadlines, deadlineSections, disabledDates,lomapaivat, dispatch } = this.props
     initialize(attributeData)
+    
+    // Capture snapshot of timetable form's initial state
+    if (attributeData) {
+      console.log(attributeData)
+      dispatch(setTimetableSnapshot(attributeData))
+    }
+    
    // Check if the key exists and its value is true
     if(attributeData && deadlines && deadlineSections && disabledDates && lomapaivat){
       let items = new visdata.DataSet()
@@ -106,7 +113,8 @@ class EditProjectTimeTableModal extends Component {
       submitFailed,
       formValues,
       deadlines,
-      deadlineSections
+      deadlineSections,
+      validatingTimetable
     } = this.props
     if (prevProps.attributeData && !isEqual(prevProps.attributeData, attributeData)) {
       let sectionAttributes = [];
@@ -114,11 +122,17 @@ class EditProjectTimeTableModal extends Component {
         attribute.label !== "Lausunnot viimeistään" && attributeData[attribute.name]
       );
       this.setState({sectionAttributes})
-      //when UPDATE_DATE_TIMELINE updates attribute values
-      Object.keys(attributeData).forEach(fieldName => 
-        this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, fieldName, attributeData[fieldName])));
+      
+      // Don't overwrite form fields when validation just ended (snapshot being restored)
+      const justFinishedValidation = validatingTimetable?.ended && !prevProps.validatingTimetable?.ended
+      if (!justFinishedValidation) {
+        //when UPDATE_DATE_TIMELINE updates attribute values
+        Object.keys(attributeData).forEach(fieldName => 
+          this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, fieldName, attributeData[fieldName])));
+      }
     }
     if(prevProps.formValues && !isEqual(prevProps.formValues, formValues)){
+      console.log(this.props.attributeData)
       //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
       timeUtil.compareAndUpdateDates(formValues)
       if(deadlineSections && deadlines && formValues){
@@ -164,7 +178,6 @@ class EditProjectTimeTableModal extends Component {
 
           if (visBoolChanged || this.state.unfilteredSectionAttributes?.some( attr =>
             attr.type === 'date' && Object.keys(changedValues).includes(attr.name))) {
-            if (!this.props.validatingTimetable?.started || !this.props.validatingTimetable?.ended) {
               // Extract first locked item field name from timeline
               let lockedItems = false;
               let lockedAttributes = {};
@@ -195,9 +208,13 @@ class EditProjectTimeTableModal extends Component {
                   });
                 }
               }
+            // Dispatch validation only when not currently validating and not previously ended
+            if ((lockedAttributes && !this.props.validatingTimetable?.started && !this.props.validatingTimetable?.ended)) {
               // Only validate if backwards shift did not occur
-                this.props.dispatch(validateProjectTimetable(lockedAttributes));
-
+              this.props.dispatch(validateProjectTimetable(lockedAttributes));
+            }
+            else {
+              this.props.dispatch(validateProjectTimetable(lockedAttributes));
             }
           }
         }
@@ -1378,6 +1395,8 @@ class EditProjectTimeTableModal extends Component {
   handleClose = () => {
     localStorage.removeItem('timelineHighlightedElement');
     localStorage.removeItem('menuHighlight');
+    // Clear session-only timetable snapshot
+    this.props.dispatch({ type: 'Clear timetable snapshot' })
     this.props.handleClose()
   }
 

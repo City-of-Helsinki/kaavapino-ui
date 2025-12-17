@@ -95,7 +95,10 @@ import {
   SAVE_PROJECT_TIMETABLE_FAILED,
   VALIDATING_TIMETABLE,
   LOCK_TIMETABLE,
-  SET_SHIFTED_BACKWARDS
+  SET_SHIFTED_BACKWARDS,
+  SET_TIMETABLE_SNAPSHOT,
+  RESTORE_TIMETABLE_SNAPSHOT,
+  CLEAR_TIMETABLE_SNAPSHOT
 } from '../actions/projectActions'
 
 import timeUtil from '../utils/timeUtil'
@@ -154,7 +157,9 @@ export const initialState = {
   cancelTimetableSave:false,
   validatingTimetable: {started: false, ended: false},
   timetableLocked: {lockedGroup:false,lockedPhases:[],locked:false,lockedStartTime:false},
-  shiftedBackwards: false
+    shiftedBackwards: false,
+    // Session-only snapshot of timetable attribute_data
+    timetableSnapshot: {}
 }
 
 export const reducer = (state = initialState, action) => {
@@ -178,6 +183,9 @@ export const reducer = (state = initialState, action) => {
     case UPDATE_DATE_TIMELINE: {
       const { field, newDate, formValues, isAdd, deadlineSections, keepDuration, originalDurationDays, pairedEndKey, lockedGroup } = action.payload;
       console.log(lockedGroup)
+      // Existing logic omitted in summary; ensure validating flags reset on user edits
+      const nextState = { ...state }
+      nextState.validatingTimetable = { started: false, ended: false }
       // Create a copy of the state and attribute_data
       let updatedAttributeData
       if(formValues){
@@ -635,6 +643,26 @@ export const reducer = (state = initialState, action) => {
         totalProjects: action.payload
       }
     }
+
+      // Timetable snapshot lifecycle
+      case SET_TIMETABLE_SNAPSHOT: {
+        return {
+          ...state,
+          timetableSnapshot: action.payload || {}
+        }
+      }
+      case RESTORE_TIMETABLE_SNAPSHOT: {
+        // Reducer keeps snapshot; actual form restore done in saga via redux-form initialize
+        return {
+          ...state
+        }
+      }
+      case CLEAR_TIMETABLE_SNAPSHOT: {
+        return {
+          ...state,
+          timetableSnapshot: {}
+        }
+      }
 
     case SET_TOTAL_OWN_PROJECTS: {
       return {
