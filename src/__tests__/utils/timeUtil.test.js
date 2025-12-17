@@ -571,7 +571,6 @@ describe("compareAndUpdateDates function", () => {
         test_data["tarkistettu_ehdotus_lautakuntaan_3"] = false;
         test_data["tarkistettu_ehdotus_lautakuntaan_4"] = false;
 
-        //expect(test_data["periaatteetvaihe_paattyy_pvm"]).toBe(test_data["milloin_periaatteet_lautakunnassa_2"]);
         expect(test_data["oasvaihe_paattyy_pvm"]).toBe(test_data["milloin_oas_esillaolo_paattyy_2"]);
         expect(test_data["luonnosvaihe_paattyy_pvm"]).toBe(test_data["milloin_kaavaluonnos_lautakunnassa_2"]);
         expect(test_data["ehdotusvaihe_paattyy_pvm"]).toBe(test_data["milloin_kaavaehdotus_lautakunnassa_2"]);
