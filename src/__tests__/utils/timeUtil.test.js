@@ -1,6 +1,7 @@
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, beforeEach } from 'vitest';
 import timeUtil from '../../utils/timeUtil.js';
 import data from './checkForDecreasingValues_test_data.js';
+import {test_attribute_data_XL as test_attribute_data} from './test_attribute_data.js';
 
 describe("timeUtils general utility function tests", () => {
     test("getHighestDate returns the latest date from an array of date strings", () => {
@@ -512,4 +513,113 @@ describe("getDisabledDates for various phases", () => {
         timeUtil.calculateDisabledDates(true, "M", dateTypes, "oas_esillaolo_aineiston_maaraaika", formValues, sectionAttributes, currentDeadline3);
         timeUtil.calculateDisabledDates(false, "M", dateTypes, "milloin_oas_esillaolo_alkaa", formValues, sectionAttributes, currentDeadline4);
     });
+});
+
+describe("compareAndUpdateDates function", () => {
+    let test_data = null;
+
+    beforeEach(() => {
+        test_data = structuredClone(test_attribute_data)
+    });
+
+    test("compareAndUpdateDates viimeistaan_ dates correctly", () => {
+        const viimeistaan_items = {
+            "viimeistaan_lausunnot_ehdotuksesta": "milloin_ehdotuksen_nahtavilla_paattyy",
+            "viimeistaan_lausunnot_ehdotuksesta_2": "milloin_ehdotuksen_nahtavilla_paattyy_2",
+            "viimeistaan_lausunnot_ehdotuksesta_3": "milloin_ehdotuksen_nahtavilla_paattyy_3",
+            "viimeistaan_lausunnot_ehdotuksesta_4": "milloin_ehdotuksen_nahtavilla_paattyy_4"
+        }
+        for (let key in viimeistaan_items) {
+            test_data[key] = null;
+        }
+        timeUtil.compareAndUpdateDates(test_data);
+        for (let key in viimeistaan_items) {
+            expect(test_data[key], `Key ${key} was not updated`).toBe(test_data[viimeistaan_items[key]]);
+        }
+    });
+    test.skip("compareAndUpdateDates phase end dates correctly", () => {
+        const end_keys = [
+            "periaatteetvaihe_paattyy_pvm",
+            "oasvaihe_paattyy_pvm",
+            "luonnosvaihe_paattyy_pvm",
+            "ehdotusvaihe_paattyy_pvm",
+            "tarkistettuehdotusvaihe_paattyy_pvm"
+        ];
+        for (let key of end_keys) {
+            test_data[key] = undefined;
+        }
+        timeUtil.compareAndUpdateDates(test_data);
+        for (let key of end_keys) {
+            expect(test_data[key], `Key ${key} was not updated`).toBeDefined();
+        }
+        test_data["periaatteet_lautakuntaan_1"] = true;
+        test_data["periaatteet_lautakuntaan_2"] = true;
+        test_data["periaatteet_lautakuntaan_3"] = false;
+        test_data["periaatteet_lautakuntaan_4"] = false;
+        test_data["jarjestetaan_oas_esillaolo_1"] = true;
+        test_data["jarjestetaan_oas_esillaolo_2"] = true;
+        test_data["jarjestetaan_oas_esillaolo_3"] = false;
+        test_data["jarjestetaan_luonnos_esillaolo_1"] = true;
+        test_data["kaavaluonnos_lautakuntaan_1"] = true;
+        test_data["kaavaluonnos_lautakuntaan_2"] = true;
+        test_data["kaavaluonnos_lautakuntaan_3"] = false;
+        test_data["kaavehdotus_nahtaville_1"] = true;
+        test_data["kaavehdotus_uudelleen_nahtaville_2"] = true;
+        test_data["kaavehdotus_uudelleen_nahtaville_3"] = false;
+        test_data["tarkistettu_ehdotus_lautakuntaan_1"] = true;
+        test_data["tarkistettu_ehdotus_lautakuntaan_2"] = true;
+        test_data["tarkistettu_ehdotus_lautakuntaan_3"] = false;
+        test_data["tarkistettu_ehdotus_lautakuntaan_4"] = false;
+
+        //expect(test_data["periaatteetvaihe_paattyy_pvm"]).toBe(test_data["milloin_periaatteet_lautakunnassa_2"]);
+        expect(test_data["oasvaihe_paattyy_pvm"]).toBe(test_data["milloin_oas_esillaolo_paattyy_2"]);
+        expect(test_data["luonnosvaihe_paattyy_pvm"]).toBe(test_data["milloin_kaavaluonnos_lautakunnassa_2"]);
+        expect(test_data["ehdotusvaihe_paattyy_pvm"]).toBe(test_data["milloin_kaavaehdotus_lautakunnassa_2"]);
+        expect(test_data["tarkistettuehdotusvaihe_paattyy_pvm"]).toBe(test_data["milloin_tarkistettu_ehdotus_lautakunnassa_2"]);
+        timeUtil.compareAndUpdateDates(test_data);
+    });
+    test.skip("compareAndUpdateDates end dates, periaatteet with no lautakunta", () => {
+        test_data["periaatteetvaihe_paattyy_pvm"] = undefined;
+        test_data["periaatteet_lautakuntaan_1"] = false;
+        test_data["periaatteet_lautakuntaan_2"] = false;
+        test_data["periaatteet_lautakuntaan_3"] = false;
+        test_data["periaatteet_lautakuntaan_4"] = false;
+        test_data["jarjestetaan_periaatteet_esillaolo_1"] = true;
+        test_data["jarjestetaan_periaatteet_esillaolo_2"] = false;
+        test_data["jarjestetaan_periaatteet_esillaolo_3"] = false;
+        timeUtil.compareAndUpdateDates(test_data);
+        expect(test_data["periaatteetvaihe_paattyy_pvm"]).toBe(test_data["milloin_periaatteet_esillaolo_paattyy"]);
+    });
+    test.skip("compareAndUpdateDates end dates, luonnos with no lautakunta", () => {
+        test_data["luonnosvaihe_paattyy_pvm"] = undefined;
+        test_data["kaavaluonnos_lautakuntaan_1"] = false;
+        test_data["kaavaluonnos_lautakuntaan_2"] = false;
+        test_data["kaavaluonnos_lautakuntaan_3"] = false;
+        test_data["kaavaluonnos_lautakuntaan_4"] = false;
+        test_data["jarjestetaan_luonnos_esillaolo_1"] = true;
+        test_data["jarjestetaan_luonnos_esillaolo_2"] = false;
+        test_data["jarjestetaan_luonnos_esillaolo_3"] = false;
+        timeUtil.compareAndUpdateDates(test_data);
+        expect(test_data["luonnosvaihe_paattyy_pvm"]).toBe(test_data["milloin_luonnos_esillaolo_paattyy"]);
+    });
+    test.skip("compareAndUpdateDates end dates, ehdotus in XS size", () => {
+        test_data["ehdotusvaihe_paattyy_pvm"] = undefined;
+        test_data["kaavaprosessin_kokoluokka"] = "XS";
+        test_data["kaavaehdotus_lautakuntaan_1"] = false;
+        test_data["kaavaehdotus_lautakuntaan_2"] = false;
+        test_data["kaavaehdotus_lautakuntaan_3"] = false;
+        test_data["kaavaehdotus_lautakuntaan_4"] = false;
+        test_data["kaavehdotus_nahtaville_1"] = true;
+        test_data["kaavehdotus_uudelleen_nahtaville_2"] = false;
+        test_data["kaavehdotus_uudelleen_nahtaville_3"] = false;
+        timeUtil.compareAndUpdateDates(test_data);
+        expect(test_data["ehdotusvaihe_paattyy_pvm"]).toBe(test_data["milloin_ehdotuksen_nahtavilla_paattyy"]);
+    });
+    test.skip("compareAndUpdateDates moves backwards start dates to match previous end dates", () => {
+        test_data["periaatteetvaihe_alkaa_pvm"] = "2025-05-01";
+        test_data["kaynnistys_paattyy_pvm"] = "2025-06-01";
+        timeUtil.compareAndUpdateDates(test_data);
+        expect(test_data["periaatteetvaihe_alkaa_pvm"]).toBe("2025-06-01");
+    });
+
 });
