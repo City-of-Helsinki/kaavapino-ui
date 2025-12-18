@@ -11,6 +11,7 @@ export const test_attribute_data_XL = {
         "luodaanko_nakyvaksi": true,
         "oasvaihe_paattyy_pvm": "2026-11-06",
         "ehdotusvaihe_alkaa_pvm": "2027-05-25",
+        "kaynnistysvaihe_alkaa_pvm": "2025-09-24",
         "kaynnistys_paattyy_pvm": "2025-12-10",
         "luonnosvaihe_alkaa_pvm": "2026-11-06",
         "ehdotusvaihe_paattyy_pvm": "2028-01-27",

@@ -82,6 +82,7 @@ h4 {
     &:active {
       background-color: white;
       border-color: $color-button-emphasis;
+      padding-bottom: $size5;
       color: $color-button-emphasis;
     }
   }
@@ -189,6 +190,75 @@ ul {
 
 .input-container {
   position: relative;
+  .input-header-icons{
+    justify-content: center;
+    align-items: flex-end;
+    div{
+      padding-left: $size2;
+    }
+    .popup-container{
+      font-family: 'Helsinki Grotesk Regular', sans-serif;
+      display: inline-flex;
+      align-items: center;
+      font-weight: 400;
+      font-style: normal;
+      font-size: $size14;
+      line-height: $size24;
+      letter-spacing: 0;
+      color: $black1;
+      padding-bottom: $size5;
+      padding-right: $size2;
+      /* Target the icon inside HDS tooltip button */
+      [class^="Tooltip-module_button"] svg {
+        display: none; /* hide the default question-mark icon */
+      }
+
+      /* Add your clock icon as background */
+      [class^="Tooltip-module_button"]::before {
+        content: "";
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        background-color: currentColor;
+        mask: url("../../assets/icons/clock.svg") no-repeat center / contain;
+        -webkit-mask: url("../../assets/icons/clock.svg") no-repeat center / contain;
+        padding-right: $size2;
+      }
+      svg {
+        width: 1rem;
+        height: 1rem;
+      }
+      .spinner-container{
+        width: 0.833rem;
+        height: 0.833rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: $size5;
+        .loading-spinner{
+          width: 100%;
+          height: 100%;
+        }
+      }
+      .input-history{
+        color: #1A1A1A;
+      }
+    }
+    .time-container{
+      font-family: 'Helsinki Grotesk Regular', sans-serif;
+      font-weight: 400;
+      font-style: normal;
+      font-size: $size14;
+      line-height: $size24;
+      letter-spacing: 0;
+      color: $black1;
+      padding-right: $size5;
+    }
+    [class^="Tooltip-module_button"],
+    [class*=" Tooltip-module_button"] {
+      display: flex;
+    }
+  }
 }
 
 .project-input-container .ui.segment .field {
@@ -581,6 +651,53 @@ header{
   }
   .error{
     color: $color-error !important;
+  }
+  .icons-container-flex{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    .error{
+      margin-bottom: 0;
+      padding-right: 8px;
+      color: $color-error !important;
+    }
+    .error-icon{
+      display: inline-flex;
+      color: $color-error !important;
+    }
+    .question-icon{
+      display: inline-flex;
+      color: $black1;
+      svg{
+        color:$black1;
+      }
+    }
+  }
+}
+
+// HDS Tooltip styling for icons-container-flex
+.icons-container-flex {
+  .Tooltip-module_tooltip {
+    background-color: $color-coat-of-arms;
+    color: $white;
+    
+    .Tooltip-module_arrow {
+      &:before {
+        border-color: $color-coat-of-arms;
+      }
+    }
+  }
+
+  // Ensure tooltip arrow is visible
+  [class*="Tooltip-module_arrow"] {
+    &:before {
+      content: "";
+      position: absolute;
+      border: 6px solid transparent;
+      border-bottom-color: $color-coat-of-arms;
+      top: 4px;
+      left: -6px;
+    }
   }
 }
 

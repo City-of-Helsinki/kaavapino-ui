@@ -33,6 +33,7 @@ class EditProjectTimeTableModal extends Component {
       items: false,
       groups: false,
       itemsPhaseDatesOnly: [],
+      itemsPhaseDatesOnly: [],
       showModal: false,
       collapseData: {},
       sectionAttributes: []
