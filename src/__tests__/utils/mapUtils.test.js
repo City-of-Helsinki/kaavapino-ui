@@ -1,11 +1,9 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import L from 'leaflet'
 import {
-
-helsinkiCenter,
-EPSG3879,
-formatGeoJSONToPositions,
-formatPositionsToGeoJSON
+    EPSG3879,
+    formatGeoJSONToPositions,
+    formatPositionsToGeoJSON
 } from '../../utils/mapUtils'
 
 describe('mapUtils', () => {
