@@ -57,9 +57,14 @@ const generateMockLautakuntapäivät = () => {
 const generateMockEsillaolopaivat = () => {
     const base_dates = generateMockTyöpäivät();
     return base_dates.filter(date => {
-        const dateObj = new Date(date)
-        const weekNumber = Math.ceil((((dateObj - new Date(dateObj.getFullYear(),0,1)) / 86400000) + dateObj.getDay()+1)/7);
-        return !(weekNumber === 8 || weekNumber === 42);
+        // Use ISO 8601 week calculation in UTC
+        const dateObj = new Date(date + 'T12:00:00Z');
+        const yearStart = new Date(Date.UTC(dateObj.getUTCFullYear(), 0, 1));
+        const dayOfYear = Math.floor((dateObj - yearStart) / 86400000);
+        // ISO week: week 1 contains first Thursday, adjust for day of week
+        const dayOfWeek = yearStart.getUTCDay();
+        const isoWeek = Math.floor((dayOfYear + dayOfWeek) / 7);
+        return !(isoWeek === 7 || isoWeek === 41); // Week 8 and 42 in ISO are indices 7 and 41
     });
 }
 
