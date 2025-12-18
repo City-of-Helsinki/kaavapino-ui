@@ -16,9 +16,7 @@ import ConfirmModal from '../common/ConfirmModal'
 import PropTypes from 'prop-types';
 import { getVisibilityBoolName, getVisBoolsByPhaseName, isDeadlineConfirmed } from '../../utils/projectVisibilityUtils';
 import { useTimelineTooltip } from '../../hooks/useTimelineTooltip';
-import { updateDateTimeline } from '../../actions/projectActions';
-import { toastr } from 'react-redux-toastr';
-import { lockTimetable } from '../../actions/projectActions';
+import { updateDateTimeline,lockTimetable } from '../../actions/projectActions';
 import './VisTimeline.scss'
 Moment.locale('fi');
 

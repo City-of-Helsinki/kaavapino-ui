@@ -96,7 +96,6 @@ import {
   VALIDATING_TIMETABLE,
   SET_SAVING_FIELD,
   LOCK_TIMETABLE,
-  SET_SHIFTED_BACKWARDS,
   SET_TIMETABLE_SNAPSHOT,
   RESTORE_TIMETABLE_SNAPSHOT,
   CLEAR_TIMETABLE_SNAPSHOT
@@ -160,9 +159,8 @@ export const initialState = {
   validatingTimetable: {started: false, ended: false},
   network: { status: 'ok', hasError: false, errorMessage: '', okMessage: '', tempFieldContents: '' },
   timetableLocked: {lockedGroup:false,lockedPhases:[],locked:false,lockedStartTime:false},
-    shiftedBackwards: false,
-    // Session-only snapshot of timetable attribute_data
-    timetableSnapshot: {}
+  // Session-only snapshot of timetable attribute_data
+  timetableSnapshot: {}
 }
 
 export const reducer = (state = initialState, action) => {
@@ -286,8 +284,7 @@ export const reducer = (state = initialState, action) => {
         currentProject: {
           ...state.currentProject,
           attribute_data: filteredAttributeData,
-        },
-        shiftedBackwards: didShiftBackwards
+        }
       };
     }
 

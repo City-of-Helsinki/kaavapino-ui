@@ -294,8 +294,3 @@ export const lockingTimetableSelector = createSelector(
   selectProject,
   project => project?.timetableLocked
 )
-
-export const shiftedBackwardsSelector = createSelector(
-  selectProject,
-  project => project?.shiftedBackwards
-)

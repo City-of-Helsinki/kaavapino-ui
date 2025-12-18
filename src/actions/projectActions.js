@@ -93,7 +93,6 @@ export const SET_ONHOLD_PROJECTS = "Set onhold projects"
 export const SET_ARCHIVED_PROJECTS = "Set archived projects"
 export const RESET_PROJECT_DEADLINES_SUCCESSFUL = "Resetting project deadlines successful"
 export const LOCK_PROJECT_FIELD = "lockProjectField"
-export const SET_SHIFTED_BACKWARDS = "Set shifted backwards"
 export const UNLOCK_PROJECT_FIELD = "unlockProjectField"
 export const SET_LOCK_STATUS = "setLockStatus"
 export const SET_UNLOCK_STATUS = "setUnLockStatus"
@@ -563,11 +562,6 @@ export const lockTimetable = (group,phases,locked,time) => {
     }
   }
 }
-
-export const setShiftedBackwards = payload => ({
-  type: SET_SHIFTED_BACKWARDS,
-  payload
-})
 
 export const setTimetableSnapshot = snapshot => ({
   type: SET_TIMETABLE_SNAPSHOT,

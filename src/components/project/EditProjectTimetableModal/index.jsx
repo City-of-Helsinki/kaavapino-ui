@@ -9,7 +9,7 @@ import { EDIT_PROJECT_TIMETABLE_FORM } from '../../../constants'
 import './styles.scss'
 import { deadlineSectionsSelector } from '../../../selectors/schemaSelector'
 import { withTranslation } from 'react-i18next'
-import { deadlinesSelector,validatedSelector,dateValidationResultSelector,cancelTimetableSaveSelector, validatingTimetableSelector, lockingTimetableSelector, shiftedBackwardsSelector } from '../../../selectors/projectSelector'
+import { deadlinesSelector,validatedSelector,dateValidationResultSelector,cancelTimetableSaveSelector, validatingTimetableSelector, lockingTimetableSelector } from '../../../selectors/projectSelector'
 import { Button,IconInfoCircle } from 'hds-react'
 import { isEqual } from 'lodash'
 import VisTimelineGroup from '../../ProjectTimeline/VisTimelineGroup.jsx'
@@ -18,7 +18,7 @@ import ConfirmModal from '../../common/ConfirmModal.jsx';
 import withValidateDate from '../../../hocs/withValidateDate.jsx';
 import objectUtil from '../../../utils/objectUtil'
 import textUtil from '../../../utils/textUtil'
-import { updateDateTimeline,validateProjectTimetable,setValidatingTimetable,setShiftedBackwards,setTimetableSnapshot } from '../../../actions/projectActions';
+import { updateDateTimeline,validateProjectTimetable,setValidatingTimetable,setTimetableSnapshot } from '../../../actions/projectActions';
 import { getVisibilityBoolName, vis_bool_group_map, getPhaseNameByVisBool, isDeadlineConfirmed } from '../../../utils/projectVisibilityUtils';
 import timeUtil from '../../../utils/timeUtil'
 
@@ -1598,8 +1598,7 @@ EditProjectTimeTableModal.propTypes = {
     lockedPhases:PropTypes.array,
     locked:PropTypes.bool,
     lockedStartTime:PropTypes.bool
-  }),
-  shiftedBackwards: PropTypes.bool
+  })
 }
 
 const mapStateToProps = state => ({
@@ -1611,8 +1610,7 @@ const mapStateToProps = state => ({
   dateValidationResult : dateValidationResultSelector(state),
   cancelTimetableSave: cancelTimetableSaveSelector(state),
   validatingTimetable: validatingTimetableSelector(state),
-  timetableLocked: lockingTimetableSelector(state),
-  shiftedBackwards: shiftedBackwardsSelector(state)
+  timetableLocked: lockingTimetableSelector(state)
 })
 
 const decoratedForm = reduxForm({
