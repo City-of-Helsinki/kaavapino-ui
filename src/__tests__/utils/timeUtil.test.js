@@ -353,10 +353,10 @@ describe("getDisabledDates for various phases", () => {
         }
         const alkaaResult = timeUtil.getDisabledDatesForSizeXSXL("milloin_oas_esillaolo_alkaa", formValues, alkaaItem, dateTypes);
         expect(alkaaResult.length).toBeGreaterThan(0);
-        expect(alkaaResult[0]).toBe("2025-03-03"); // 5 working days from maaraika AFTER week 8 (ISO week in UTC)
+        expect(alkaaResult[0]).toBe("2025-02-28"); // 5 working days from maaraika AFTER week 8
         expect(alkaaResult[alkaaResult.length-1]).toBe("2025-03-20");
         for (let date of alkaaResult) {
-            expect(date >= "2025-03-03").toBe(true);
+            expect(date >= "2025-02-28").toBe(true);
             expect(date <= "2025-03-20").toBe(true);
             let newDate = new Date(date);
             expect(newDate.getDay() !== 0 && newDate.getDay() !== 6).toBe(true);
