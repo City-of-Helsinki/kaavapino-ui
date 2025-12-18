@@ -224,7 +224,7 @@ describe("Test ObjectUtil utility functions", () => {
             modified_test_arr[modified_test_arr.findIndex(item => item.key === field)].value = movedDate;
             // milloin_oas_esillaolo_paattyy is moved to 2027-02-05 (future)
             const original = JSON.parse(JSON.stringify(modified_test_arr));
-            const result = objectUtil.checkForDecreasingValues(
+            const { arr: result } = objectUtil.checkForDecreasingValues(
                 modified_test_arr,isAdd,field,mockData.test_disabledDates,oldDate,movedDate,moveToPast,projectSize
             );
             expect(result.length).toEqual(mockData.decreasing_test_arr.length);
@@ -269,7 +269,7 @@ describe("Test ObjectUtil utility functions", () => {
             const projectSize = "XL";
             modified_test_arr[modified_test_arr.findIndex(item => item.key === field)].value = movedDate;
             const original = JSON.parse(JSON.stringify(modified_test_arr));
-            const result = objectUtil.checkForDecreasingValues(
+            const { arr: result } = objectUtil.checkForDecreasingValues(
                 modified_test_arr,isAdd,field,mockData.test_disabledDates,oldDate,movedDate,moveToPast,projectSize
             );
             expect(result.length).toEqual(mockData.decreasing_test_arr.length);
@@ -307,7 +307,7 @@ describe("Test ObjectUtil utility functions", () => {
             const projectSize = "XL";
             modified_test_arr[modified_test_arr.findIndex(item => item.key === field)].value = movedDate;
             const original = JSON.parse(JSON.stringify(modified_test_arr));
-            const result = objectUtil.checkForDecreasingValues(
+            const { arr: result } = objectUtil.checkForDecreasingValues(
                 modified_test_arr,isAdd,field,mockData.test_disabledDates,oldDate,movedDate,moveToPast,projectSize
             );
             for (const item of result) {
@@ -351,7 +351,7 @@ describe("Test ObjectUtil utility functions", () => {
             const projectSize = "XL";
             modified_test_arr[modified_test_arr.findIndex(item => item.key === field)].value = movedDate;
             const original = JSON.parse(JSON.stringify(modified_test_arr));
-            const result = objectUtil.checkForDecreasingValues(
+            const { arr: result } = objectUtil.checkForDecreasingValues(
                 modified_test_arr,isAdd,field,mockData.test_disabledDates,oldDate,movedDate,moveToPast,projectSize
             );
             for (const item of result) {

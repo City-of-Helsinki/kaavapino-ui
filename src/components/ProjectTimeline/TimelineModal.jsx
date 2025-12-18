@@ -4,7 +4,7 @@ import { Modal } from 'semantic-ui-react'
 import { Button, Tabs, IconCross } from 'hds-react'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import FormField from '../input/FormField'
-import { isArray } from 'lodash'
+import { isArray, split } from 'lodash'
 import { showField } from '../../utils/projectVisibilityUtils'
 import textUtil from '../../utils/textUtil'
 import objectUtil from '../../utils/objectUtil';
@@ -32,7 +32,7 @@ const TimelineModal = ({
   items,
   sectionAttributes,
   isAdmin,
-  initialTab
+  initialTab, lockedGroup
 }) => {
 
   const { t } = useTranslation();
@@ -136,6 +136,7 @@ const TimelineModal = ({
           sectionAttributes={sectionAttributes}
           isAdmin={isAdmin}
           timetable_editable={fieldProps?.field?.timetable_editable}
+          lockedGroup={lockedGroup}
         />
         {modifiedError && <div className="field-error">{modifiedError}</div>}
       </>
@@ -461,7 +462,7 @@ const TimelineModal = ({
             anyNahtavillaoloLockedByLautakunta = true;
         }
     }
-
+    const isGroupLocked = lockedGroup?.lockedPhases?.includes(deadlinegroup) && lockedGroup?.locked
     const disabled =
       archived ||
       disableConfirmButton ||
@@ -470,7 +471,8 @@ const TimelineModal = ({
       esillaoloLockedByLautakunta ||
       lautakuntaLockedByNahtavillaolo ||
       anyNahtavillaoloLockedByLautakunta ||
-      sectionIndex < projectPhaseIndex;
+      sectionIndex < projectPhaseIndex || 
+      isGroupLocked ? true : sectionIndex < projectPhaseIndex;
 
     const nextGroupWord =
       isLautakunta ? 'lautakunta'

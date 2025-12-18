@@ -17,6 +17,8 @@ import PropTypes from 'prop-types';
 import { getVisibilityBoolName, getVisBoolsByPhaseName, isDeadlineConfirmed } from '../../utils/projectVisibilityUtils';
 import { useTimelineTooltip } from '../../hooks/useTimelineTooltip';
 import { updateDateTimeline } from '../../actions/projectActions';
+import { toastr } from 'react-redux-toastr';
+import { lockTimetable } from '../../actions/projectActions';
 import './VisTimeline.scss'
 Moment.locale('fi');
 
@@ -57,7 +59,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [openConfirmModal, setOpenConfirmModal] = useState(false);
     const [dataToRemove, setDataToRemove] = useState({});
     const [timelineAddButton, setTimelineAddButton] = useState();
-    //const [lock, setLock] = useState({group:false,id:false,locked:false,abbreviation:false});
+    const [lock, setLock] = useState({lockedGroup:false,lockedPhases:[],locked:false,lockedStartTime:false});
     // Track whether weekend alignment shift has been applied (3-month view only)
     const weekendShiftAppliedRef = useRef(false);
 
@@ -65,6 +67,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
     // Store original month names so we can temporarily swap in quarter range labels
     const originalMonthsRef = useRef(null);
+    const lockRef = useRef(lock);
 
     useImperativeHandle(ref, () => ({
       getTimelineInstance: () => timelineInstanceRef.current,
@@ -273,6 +276,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const getPhaseKey = (data) => {
+      if(lockRef.current.locked){
+        // If locked, return false for all options
+        return [false, false, false, false, "Lukitus päällä", "Lukitus päällä"];
+      }
       return data.content.toLowerCase().replace(/\s+/g, '_');
     }
 
@@ -419,7 +426,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     const canGroupBeAdded = (visValRef, data) => {
-      const phase = getPhaseKey(data);
+      // Get phase directly from data.content (getPhaseKey returns array when locked)
+      const phase = data.content.toLowerCase().replace(/\s+/g, '_');
       const lautakuntaCount = getLautakuntaCount(groups, data);
       // Prevent adding esillaolo/nahtavillaolo if lautakunta has been added and confirmed
       // Exception for XL/L ehdotus phase where lautakunta comes before esillaolo
@@ -618,6 +626,61 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       ];
     };
 
+    /**
+     * Check if a new element set fits on the timeline before the locked boundary.
+     * @param {string} phase - Phase name (e.g., 'luonnos', 'ehdotus', 'periaatteet')
+     * @param {string} elementType - 'esillaolo' or 'lautakunta'
+     * @param {string} addedKey - Visibility bool key (e.g., 'jarjestetaan_periaatteet_esillaolo_2')
+     * @returns {{ fits: boolean, requiredDays: number, availableDays: number }}
+     */
+    const checkElementFitsBeforeLock = (phase, elementType, addedKey) => {
+      const { locked, lockedStartTime } = lockRef.current;
+      if (!locked || !lockedStartTime) {
+        return { fits: true, requiredDays: 0, availableDays: Infinity };
+      }
+
+      const ONE_DAY_MS = 86400000;
+      const lockedStartMs = new Date(lockedStartTime).getTime();
+      const allItems = items?.get() || [];
+
+      // Helper: check if item is a valid timeline element (not divider/background/phase)
+      const isValidItem = (i) => i?.title && !i?.className?.includes('divider') && 
+        i?.type !== 'background' && i?.phase !== true && i?.start;
+
+      // Find last unlocked item end time before locked boundary
+      const lastUnlockedEndMs = allItems
+        .filter(i => isValidItem(i) && !i.className?.includes('locked-color') && 
+          new Date(i.start).getTime() < lockedStartMs)
+        .reduce((max, i) => {
+          const endMs = new Date(i.end || i.start).getTime();
+          return endMs > max ? endMs : max;
+        }, null) ?? Date.now();
+
+      const availableDays = Math.floor((lockedStartMs - lastUnlockedEndMs) / ONE_DAY_MS);
+
+      // Extract element index from key (e.g., 'jarjestetaan_periaatteet_esillaolo_2' -> 2)
+      const elementIndex = parseInt(addedKey?.match(/_(\d+)$/)?.[1], 10) || 1;
+
+      // Build target group name to match
+      const normalizedPhase = phase === 'kaavaluonnos' ? 'luonnos' : 
+        phase === 'kaavaehdotus' ? 'ehdotus' : phase;
+      const targetGroup = `${normalizedPhase}_${elementType === 'esillaolo' ? 'esillaolokerta' : 'lautakuntakerta'}_${elementIndex}`.toLowerCase();
+
+      // Sum distanceToPrevious for matching group items
+      const requiredFromGroup = allItems
+        .filter(i => isValidItem(i) && i.groupName?.toLowerCase() === targetGroup)
+        .reduce((sum, i) => sum + Math.max(0, i.distanceToPrevious ?? 0), 0);
+
+      // Add first locked item's distance as buffer
+      const firstLockedDist = allItems
+        .filter(i => isValidItem(i) && i.className?.includes('locked-color'))
+        .sort((a, b) => new Date(a.start) - new Date(b.start))[0]?.distanceToPrevious ?? 0;
+
+      const requiredDays = requiredFromGroup + (firstLockedDist > 0 ? firstLockedDist + 2 : 0);
+
+      return { fits: availableDays >= requiredDays, requiredDays, availableDays };
+    };
+
     const openAddDialog = (visValRef,data,event) => {
       const [addEsillaolo,nextEsillaolo,addLautakunta,nextLautakunta,esillaoloReason,lautakuntaReason] = canGroupBeAdded(visValRef,data)
       const rect = event.target.getBoundingClientRect();
@@ -631,10 +694,17 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         top: `${rect.bottom - 4}px`
       })
 
+      // Get phase for fit checking in AddGroupModal
+      const phase = data.content.toLowerCase().replace(/\s+/g, '_');
+
       const [hidePresence,hideBoard] = hideSelection(data.content,visValRef)
       setAddDialogData({group:data,deadlineSections:deadlineSections,showPresence:addEsillaolo,showBoard:addLautakunta,
         nextEsillaolo:nextEsillaolo,nextLautakunta:nextLautakunta,esillaoloReason:esillaoloReason,lautakuntaReason:lautakuntaReason,
-        hidePresence:hidePresence,hideBoard:hideBoard})
+        hidePresence:hidePresence,hideBoard:hideBoard,
+        // Pass data needed for fit check
+        phase:phase,
+        isLocked:lockRef.current.locked,
+        checkElementFitsBeforeLock:checkElementFitsBeforeLock})
       setToggleOpenAddDialog(prevState => !prevState)
     }
 
@@ -664,8 +734,37 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     };
   
   
-    const lockLine = (data) => {
-      console.log(data)
+    const lockElements = (data,lockedPhases,locked,lockedStartTime) => {
+      //Send call to action to disable confirm and date inputs
+      if(locked){
+        setLock({lockedGroup:data.deadlinegroup,lockedPhases:lockedPhases,locked:locked,lockedStartTime:lockedStartTime})
+        document.querySelectorAll('.lock').forEach(lockElement => {
+          let parent = lockElement.closest('.vis-label'); // Find the closest 'vis-label' parent
+          if (!parent) return; // Skip if no parent is found (safety check)
+          let nextElement = parent.nextElementSibling; // Start with the next sibling element
+          // Traverse all siblings
+          while (nextElement) {
+              // Check if the sibling has the 'vis-nesting-group' class
+              if(locked){
+                nextElement.classList.add('buttons-locked'); // Add the 'buttons-locked' class
+              } 
+              else{
+                nextElement.classList.remove('buttons-locked'); // Remove the 'buttons-locked' class
+              }
+              nextElement = nextElement.nextElementSibling; // Move to the next sibling
+          }
+        });
+        // Dispatch action with true value
+        dispatch(lockTimetable(data.deadlinegroup,lockedPhases,locked,lockedStartTime));
+      }
+      else{
+        setLock({lockedGroup:data.deadlinegroup,lockedPhases:[],locked:locked,lockedStartTime:false})
+        document.querySelectorAll('.buttons-locked').forEach(element => {
+          element.classList.remove('buttons-locked');
+        });
+        // Dispatch action with false value
+        dispatch(lockTimetable(false,[],locked,false));
+      }
       //setLock({group:data.nestedInGroup,id:data.id,abbreviation:data.abbreviation,locked:!data.locked})
     }
 
@@ -771,38 +870,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         timeline.itemSet.items[i.id].repositionX()
       }
     }
-    //For vis timeline dragging 1.2v
-  /*const onRangeChanged = ({ start, end }) => {
-      console.log(start, end)
-      const Min = 1000 * 60 * 60 * 24; // one day in milliseconds
-      const Max = 31556952000; // 1000 * 60 * 60 * 24 * 365.25 one year in milliseconds
-      let a0 = 10;
-      let a100 = moment.duration(moment(Max).diff(moment(Min))).asMilliseconds();
-      let  distance = (a100 - a0)/ 100;
-      let startTime = moment(start);
-      let endTime = moment(end);
-      const duration = moment.duration(endTime.diff(startTime));
-      const mins = duration.asMilliseconds();
-        // Arithmatic progression variables
-      if (mins !== 0) {
-        const x = (mins - a0) / distance; // Arithmatic progression formula
-        console.log(x)
-        if(x > 50){
-          console.log("smaller then 50")
-          document.querySelectorAll('.inner, .inner-end').forEach(el => el.classList.add('hiddenTimes'));
-        }
-        else if(x < 50 && document.querySelectorAll('.hiddenTimes')){
-          console.log("bigger then 50")
-          document.querySelectorAll('.inner, .inner-end').forEach(el => el.classList.remove('hiddenTimes'));
-        }
-      } else {
-        if(!document.querySelectorAll('.hiddenTimes')){
-          console.log("100")
-          document.querySelectorAll('.inner, .inner-end').forEach(el => el.classList.add('hiddenTimes'));
-        }
-      }
-      
-    } */
 
     /**
    * Move the timeline a given percentage to left or right
@@ -1389,10 +1456,54 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       return false;
     };
 
+    const isMovingPastLockedDate = (item, items, snapshot) => {
+      if (!item) return false;
+      // Get all locked items (items with locked-color className)
+      const lockedItems = items.get().filter(i => 
+        i?.className?.includes('locked-color') && 
+        !i?.className?.includes('divider') &&
+        i?.start);
+      if (lockedItems.length === 0) return false;
+      // First locked item is the buffer
+      const firstLocked = lockedItems[0];
+      const distanceToPrevious = firstLocked.distanceToPrevious ?? 0;
+      const distanceDays = distanceToPrevious === 0 ? 0 : distanceToPrevious + 2;
+      const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+      let minStart = null;
+      let maxEnd = null;
+      //item group
+      if (snapshot?.items) {
+        Object.values(snapshot.items).forEach(i => {
+          if (i.start) {
+            const s = new Date(i.start).getTime();
+            if (minStart === null || s < minStart) minStart = s;
+            const e = i.end ? new Date(i.end).getTime() : s;
+            if (maxEnd === null || e > maxEnd) maxEnd = e;
+          }
+        });
+      }
+      const dist = (minStart !== null && maxEnd !== null) 
+        ? (maxEnd - minStart) / ONE_DAY_MS 
+        : 0;
+      const itemStart = new Date(item.start).getTime();
+      const buffer = new Date(firstLocked.start).getTime() - (dist + distanceDays) * ONE_DAY_MS
+      if (itemStart && itemStart >= buffer) return true;
+
+      return false;
+    };
+
 
     useEffect(() => {
       // Ensure capitalized Finnish locale BEFORE creating timeline so initial labels are correct
       ensureFinnishLocale();
+      lockRef.current = lock;
+    }, [lock]);
+
+    useEffect(() => {
+      if (localStorage.getItem("lockedState")) {
+         //Remove the locked button state from localStorage when page/component is reloaded
+        localStorage.removeItem("lockedState");
+      }   
 
       const options = {
         locales: {
@@ -1460,6 +1571,149 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         snap: function (date) {
           let hour = 60 * 60 * 1000;
           return Math.round(date / hour) * hour;
+        },
+        onMoving: function (item, callback) {          
+          if (!item) {
+            callback(null);
+            return;
+          }
+          // Prevent dragging items with locked-color className
+          if (item?.className?.includes('locked-color')) {
+            callback(null);
+            return;
+          }
+          
+          let tooltipEl = document.getElementById('moving-item-tooltip');
+          if (!tooltipEl) {
+            tooltipEl = document.createElement('div');
+            tooltipEl.id = 'moving-item-tooltip';
+            tooltipEl.className = 'vis-moving-tooltip';
+            document.body.appendChild(tooltipEl);
+          }
+          const startDate = item.start ? new Date(item.start).toLocaleDateString('fi-FI') : '';
+          const endDate = item.end ? new Date(item.end).toLocaleDateString('fi-FI') : '';
+          const dragElementRaw = dragHandleRef.current || '';
+          const dragElement = dragElementRaw.split(' ')[0];
+          const event = window.event;
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const { snapshot, movingId } = clusterDragRef.current;
+          // Check if trying to move an item from a phase that has already passed
+          if (item.phaseName && visValuesRef.current.kaavan_vaihe) {
+            // Define the phase order
+            const phaseOrder = [
+              "Käynnistys", 
+              "Periaatteet", 
+              "OAS", 
+              "Luonnos", 
+              "Ehdotus", 
+              "Tarkistettu ehdotus", 
+              "Hyväksyminen", 
+              "Voimaantulo"
+            ];
+            
+            // Extract the phase name without numbering from kaavan_vaihe
+            const currentPhaseFullName = visValuesRef.current.kaavan_vaihe;
+            const currentPhaseName = currentPhaseFullName.replace(/^\d+\.\s+/, '');
+              // Get the index of current phase and item's phase
+            const currentPhaseIndex = phaseOrder.indexOf(currentPhaseName);
+            const itemPhaseIndex = phaseOrder.indexOf(item.phaseName);
+            // If item's phase is before the current project phase, prevent the move
+            if (itemPhaseIndex < currentPhaseIndex) {
+              callback(null);
+              return;
+            }
+          }
+          //Item is not allowed to be dragged to past dates       
+          if (item.start && today) {
+              if (new Date(item.start).setHours(0,0,0,0) < today.getTime()) {
+                  callback(null);
+                  return;
+              }
+          }
+
+          // Check if trying to move before any earlier group's end date
+          if (isMovingBeforeEarlierGroup(item, groups, items)) {
+            callback(null);
+            return;
+          }
+          // Check if trying to move past any locked date
+          if (isMovingPastLockedDate(item, items, snapshot)) {
+            callback(null);
+            return;
+          }          
+          //Item is not allowed to be dragged if it is already confirmed
+          if(item?.className?.includes("confirmed")){
+              callback(null);
+              return;
+          }
+          else if (dragElement && allowedToEdit) {
+            if (item.start && item.end && item.end <= item.start) {
+              callback(null);
+              return;
+            }
+          }
+
+          if (event) {
+            tooltipEl.style.display = 'block';
+            tooltipEl.style.position = 'absolute';
+            tooltipEl.style.left = `${event.pageX - 20}px`;
+            tooltipEl.style.top = `${event.pageY - 60}px`;
+            if (dragElement === "right" && endDate) tooltipEl.innerHTML = endDate;
+            else tooltipEl.innerHTML = startDate;
+          }
+
+          const setItems = timelineInstanceRef?.current?.itemSet?.items;
+
+          const shouldMoveRelated =
+            allowedToEdit &&
+            dragElement !== 'right' &&
+            snapshot &&
+            setItems &&
+            snapshot.items &&
+            snapshot.items[String(item.id)];
+
+          if (shouldMoveRelated) {
+            const orig = snapshot.items[String(item.id)];
+            if (!orig) return;
+            const baseStart = orig?.start ? orig.start.getTime() : null;
+            const curStart = item?.start ? new Date(item.start).getTime() : baseStart;
+
+            if (baseStart != null && curStart != null) {
+              const deltaMs = curStart - baseStart;
+
+              Object.entries(snapshot.items).forEach(([idKey, snapTimes]) => {
+                try {
+                  if (idKey === String(item.id)) return; // current item already moved
+                  const inst = setItems[idKey] ?? setItems[Number(idKey)];
+                  if (!inst || !inst.setData || !inst.data) return;
+
+                  const newData = { ...inst.data };
+                  if (snapTimes && snapTimes.start) newData.start = new Date(snapTimes.start.getTime() + deltaMs);
+                  if (snapTimes && snapTimes.end) newData.end = new Date(snapTimes.end.getTime() + deltaMs);
+
+                  inst.setData(newData);
+                  if (inst.repositionX) {
+                    try {
+                      inst.repositionX();
+                    } catch (e) {
+                      // Silently ignore repositionX errors and prevent breaking timeline element structure visually
+                    }
+                  }
+                } catch (e) {
+                  // Silently ignore timeline library errors
+                }
+              });
+            }
+          }
+
+          if (dragElement && allowedToEdit) {
+            callback(item);
+          } else {
+            tooltipEl.style.display = 'none';
+            tooltipEl.innerHTML = '';
+            callback(null);
+          }
         },
         onMoving: function (item, callback) {          
           if (!item) {
@@ -1601,6 +1855,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           if (moveTooltip) {
             moveTooltip.style.display = 'none';
           }
+          
+          // Prevent moving items with locked-color className
+          if (item?.className?.includes('locked-color')) {
+            callback(null);
+            return;
+          }
+          
           let preventMove = false;
           // Determine which part of the item is being dragged
           const dragElement = dragHandleRef.current;
@@ -1608,7 +1869,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           today.setHours(0, 0, 0, 0);
           // Check if the item is confirmed or moving items to past dates and prevent moving
           const isConfirmed = dragElement?.includes("confirmed");
-          const isMovingToPast = (item.start && item.start < today) || (item.end && item.end < today);
           //Prevent move
           if (
           !allowedToEdit ||
@@ -1677,6 +1937,29 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                   originalDurationDays = moment(item.end).diff(moment(item.start),'days');
                 }
                 const formattedStart = moment(attributeDate).format('YYYY-MM-DD');
+                
+                // Extract first locked item field name to freeze cascade from that point
+                const lockedItems = items.get().filter(i => 
+                  i?.className?.includes('locked-color') && 
+                  !i?.className?.includes('divider') &&
+                  i?.phase !== true &&
+                  i?.title
+                );
+                let lockedFromField = null;
+                if (lockedItems.length > 0) {
+                  // Sort by start date to find the earliest locked item
+                  lockedItems.sort((a, b) => new Date(a.start) - new Date(b.start));
+                  const firstLockedItem = lockedItems[0];
+                  // Build key/value from first locked item
+                  const key = firstLockedItem.title.includes('-')
+                    ? firstLockedItem.title.split('-')[0].trim()
+                    : firstLockedItem.title;
+                  const value = firstLockedItem.start
+                    ? moment(firstLockedItem.start).format('YYYY-MM-DD')
+                    : null;
+                  lockedFromField = { key, value };
+                }
+                
                 dispatch(updateDateTimeline(
                   attributeToUpdate,
                   formattedStart,
@@ -1685,7 +1968,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                   deadlineSections,
                   true,
                   originalDurationDays,
-                  pairedEndKey
+                  pairedEndKey,
+                  lockedFromField
                 ));
                 // Skip generic dispatch at end
                 attributeDate = null;
@@ -1710,12 +1994,39 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               // Only dispatch if we have valid data
               if (attributeToUpdate && attributeDate) {
                 const formattedDate = moment(attributeDate).format('YYYY-MM-DD');
+                
+                // Extract first locked item field name to freeze cascade from that point
+                const lockedItems = items.get().filter(i => 
+                  i?.className?.includes('locked-color') && 
+                  !i?.className?.includes('divider') &&
+                  i?.phase !== true &&
+                  i?.title
+                );
+                let lockedFromField = null;
+                if (lockedItems.length > 0) {
+                  // Sort by start date to find the earliest locked item
+                  lockedItems.sort((a, b) => new Date(a.start) - new Date(b.start));
+                  const firstLockedItem = lockedItems[0];
+                  // Build key/value from first locked item
+                  const key = firstLockedItem.title.includes('-')
+                    ? firstLockedItem.title.split('-')[0].trim()
+                    : firstLockedItem.title;
+                  const value = firstLockedItem.start
+                    ? moment(firstLockedItem.start).format('YYYY-MM-DD')
+                    : null;
+                  lockedFromField = { key, value };
+                }
+                
                 dispatch(updateDateTimeline(
                   attributeToUpdate,
                   formattedDate, 
                   visValuesRef.current,
                   false,
-                  deadlineSections
+                  deadlineSections,
+                  false,
+                  0,
+                  null,
+                  lockedFromField
                 ));
               }
             }
@@ -1731,6 +2042,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
           let container = document.createElement("div");
           container.classList.add("timeline-buttons-container");
+          container.id = "timeline-button-"+group.id;
           container.setAttribute("tabindex", "0");
           container.id = `timeline-group-${group.id}`;
 
@@ -1755,10 +2067,22 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
           // Hover effect
           container.addEventListener("mouseenter", function () {
-            container.classList.add("show-buttons");
+            //If element is locked then do not show buttons
+            if (!container.querySelector(".lock")) {
+              if(document.querySelector('.lock')){
+                container.classList.add("has-lock")
+              }
+              container.classList.add("show-buttons");
+            }
           });
+
           container.addEventListener("mouseleave", function () {
-            container.classList.remove("show-buttons");
+            if (container.classList.contains("show-buttons")) {
+              container.classList.remove("show-buttons");
+            }
+            if (container.classList.contains("has-lock")) {
+              container.classList.remove("has-lock");
+            }
           });
 
           if (group?.nestedGroups !== undefined && allowedToEdit && !contentIncludesString) {
@@ -1972,12 +2296,76 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               }
 
               let lock = document.createElement("button");
-              lock.classList.add("timeline-lock-button");
+              lock.classList.toggle("timeline-lock-button");
               lock.style.fontSize = "small";
               lock.addEventListener("click", function () {
                 lock.classList.toggle("lock");
-                lockLine(group);
+                const locked = lock.classList.contains("lock") ? true : false;
+                if (locked) {
+                  //Save the locked button state to localStorage
+                  localStorage.setItem("lockedState", "timeline-group-" + group.id);
+                } 
+                else {
+                  //Remove the locked button state from localStorage
+                  localStorage.removeItem("lockedState");
+                }
+
+                let lockedPhases = []
+                let lockedStartTime
+                let visibleItems = timelineInstanceRef.current?.itemsData?.get().filter(item => item.type !== 'background' || item.type === undefined) || [];
+                let allGroups = timelineInstanceRef?.current?.groupsData?.get();
+                let mainGroups = allGroups?.filter(group => group.nestedGroups !== undefined).map(group => group.id);
+
+                 if(visibleItems){
+                    //TODO clean this to function
+                    for (const visibleItem of visibleItems) {
+                      const item = visibleItem;
+                      if (item.group >= group.id || item.id >= group.id) {
+                        if (item.start && item.phase === false) {
+                          //Find the date where lock starts
+                          const itemStartDate = new Date(item.start);
+                          if (!lockedStartTime || itemStartDate < lockedStartTime) {
+                            lockedStartTime = itemStartDate;
+                          }
+                        }
+                        
+                        if(!lockedPhases?.includes(item?.phaseName)){
+                          //Add all phases that are in lock
+                          lockedPhases.push(item.groupName)
+                        }
+                        // Append locked-color class only to non-phase-holder items (exclude phase === true items)
+                        if (item.phase !== true) {
+                          const newClassName = locked ? item.className ? item.className + ' locked-color' : 'locked-color' : item.className ? item.className.replace(/\blocked-color\b/g, '').trim() : '';
+                          items.update({ id: item.id, className: newClassName, locked: !item.locked });
+                        }
+                      }
+                    }
+                    // Get the first item from lockedPhases
+                    const firstLockedPhase = lockedPhases[0];
+                    // Find the index of the firstLockedPhase in mainGroups
+                    const firstLockedPhaseIndex = mainGroups.indexOf(firstLockedPhase);
+                    // Add all mainGroups after the firstLockedPhase to lockedPhases
+                    if (firstLockedPhaseIndex !== -1) {
+                      const additionalLockedPhases = mainGroups.slice(firstLockedPhaseIndex + 1);
+                      lockedPhases = [...lockedPhases, ...additionalLockedPhases];
+                    }
+                    
+        /*             lockedPhases = lockedPhases.length > 0 ? lockedPhases.map(phase => 
+                      phase.toLowerCase().replace(/ /g, '_')
+                    ) : lockedPhases;*/
+                    // Remove duplicates from lockedPhases
+                    lockedPhases = [...new Set(lockedPhases)].filter(phase => phase !== undefined && phase !== null);
+                  }
+                lockElements(group,lockedPhases,locked,lockedStartTime);
               });
+
+              const lockedState = localStorage.getItem("lockedState");
+              //vis timeline renders all the time so get lock state from localstorage if it exists
+              if (lockedState) {
+                if (container.id === lockedState) {
+                    lock.classList.add("lock");
+                }
+              }
               container.insertAdjacentElement("beforeEnd", lock);
 
             }
@@ -2232,6 +2620,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           timeline.off('mouseDown');
           observerRef?.current?.disconnect();
           //timeline.off('rangechanged', onRangeChanged);
+          //Remove the locked button state from localStorage
+          if (localStorage.getItem("lockedState")) {
+            localStorage.removeItem("lockedState");
+          }
         }
       }
     }, [])
@@ -2442,6 +2834,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           sectionAttributes={sectionAttributes}
           isAdmin={isAdmin}
           initialTab={timelineInitialTab}
+          lockedGroup={lock}
         />
         <AddGroupModal
           toggleOpenAddDialog={toggleOpenAddDialog}

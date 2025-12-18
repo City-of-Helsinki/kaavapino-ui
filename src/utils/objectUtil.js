@@ -242,10 +242,11 @@ const getHighestNumberedObject = (obj1) => {
     return result
   }
 
-  const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize,attributeData) => {
+  const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize,attributeData,lockedFromField) => {
     // Lock logic: do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
     // attributeData is the filtered attribute_data object (only visible fields) so we can inspect confirmation flags
     let confirmedFieldSet = null;
+    let didShiftBackwards = false;
     const today = new Date();
     today.setHours(0,0,0,0);
     if(attributeData){
@@ -274,7 +275,15 @@ const getHighestNumberedObject = (obj1) => {
     // If adding items
     if (isAdd) {
       // Move the nextItem and all following items forward if item minium is exceeded
+      let reachedLockedField = false;
       for (let i = currentIndex; i < arr.length; i++) {
+        // Check if we've reached the locked field - freeze all items from this point onward
+        if (lockedFromField && arr[i].key === lockedFromField?.key) {
+          reachedLockedField = true;
+        }
+        // Exit processing once we reach the locked field
+        if (reachedLockedField) break;
+        
 		    if(isLocked(arr[i])) continue; // skip locked items entirely
         if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
           && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
@@ -293,7 +302,20 @@ const getHighestNumberedObject = (obj1) => {
           }
           // Update the array with the new date
           newDate.setDate(newDate.getDate());
-          arr[i].value = newDate.toISOString().split('T')[0];
+          const newDateISO = newDate.toISOString().split('T')[0];
+          
+          // Check if the NEW calculated date would exceed locked boundary
+          if (lockedFromField?.value && new Date(newDateISO) >= new Date(lockedFromField.value)) {
+            // Only trigger backwards shift if the new date is different (actually moving forward into locked)
+            if (arr[i].value !== newDateISO) {
+              // Find the locked field's index - shiftDatesBackwards expects to start FROM the locked field
+              const lockedIndex = arr.findIndex(item => item?.key === lockedFromField?.key);
+              didShiftBackwards = shiftDatesBackwards(arr, lockedIndex, currentIndex + 1, disabledDates, projectSize, lockedFromField);
+            }
+            break;
+          }
+          
+          arr[i].value = newDateISO;
           //Move phase start and end dates
           if(arr[i].distance_from_previous === undefined && arr[i].key.endsWith('_pvm') && arr[i].key.includes("_paattyy_")){
             const targetSubstring = arr[i].key.split('vaihe')[0];
@@ -320,7 +342,15 @@ const getHighestNumberedObject = (obj1) => {
       }
     }
     else if(currentIndex !== -1){
+      let reachedLockedField = false;
       for (let i = currentIndex; i < arr.length; i++) {
+        // Check if we've reached the locked field - freeze all items from this point onward
+        if (lockedFromField && arr[i].key === lockedFromField?.key) {
+          reachedLockedField = true;
+        }
+        // Exit processing once we reach the locked field
+        if (reachedLockedField) break;
+        
 		    if(isLocked(arr[i])) continue; // do not move locked items
         if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
           && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
@@ -390,7 +420,20 @@ const getHighestNumberedObject = (obj1) => {
           }
           // Update the array with the new date
           newDate.setDate(newDate.getDate());
-          arr[i].value = newDate.toISOString().split('T')[0];
+          const newDateISO = newDate.toISOString().split('T')[0];
+          
+          // Check if the NEW calculated date would exceed locked boundary
+          if (lockedFromField?.value && new Date(newDateISO) >= new Date(lockedFromField.value)) {
+            // Only trigger backwards shift if the new date is different (actually moving forward into locked)
+            if (arr[i].value !== newDateISO) {
+              // Find the locked field's index - shiftDatesBackwards expects to start FROM the locked field
+              const lockedIndex = arr.findIndex(item => item?.key === lockedFromField?.key);
+              didShiftBackwards = shiftDatesBackwards(arr, lockedIndex, currentIndex + 1, disabledDates, projectSize, lockedFromField);
+            }
+            break;
+          }
+          
+          arr[i].value = newDateISO;
           //Move phase start and end dates
           if(arr[i].distance_from_previous === undefined && arr[i].key.endsWith('_pvm') && arr[i].key.includes("_paattyy_") 
             && !arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")){
@@ -418,10 +461,78 @@ const getHighestNumberedObject = (obj1) => {
       }
     }
     sortPhaseData(arr,order)
-    return arr
+    return { arr, didShiftBackwards }
   }
 
-   const reverseIterateArray = (arr,index,target) => {
+  // Shift values from index i down to currentIndex backwards by per-item distance_from_previous,
+  // honoring date types and disabled days via timeUtil helpers.
+  const shiftDatesBackwards = (arr, startIndex, stopIndex, disabledDates, projectSize, lockedKey) => {
+    let lockedDistance
+    let previousIterationAfterLocked = false
+    const lockedValue = lockedKey?.value || null;
+    let distToPrevious
+    // Track the previous item's new value to chain calculations
+    let previousNewISO = null;
+    for (let k = startIndex; k >= stopIndex; k--) {
+      const item = arr[k];
+
+      if (!item || lockedKey?.key === item?.key){
+        if(item){
+          lockedDistance = item?.distance_from_previous
+          previousIterationAfterLocked = k - 1
+          // The locked item's value becomes the reference point
+          previousNewISO = lockedValue;
+        }
+        continue;
+      }
+
+      if(item?.key.includes("viimeistaan_")){
+        item.value = arr[k + 1]?.value
+        previousNewISO = item.value;
+        continue;
+      }
+
+      if(previousIterationAfterLocked && k === previousIterationAfterLocked){
+        const lockedDate = new Date(lockedValue);
+        lockedDate.setDate(lockedDate.getDate() - (lockedDistance + 2));
+        item.value = lockedDate.toISOString().split('T')[0];
+        distToPrevious = item?.distance_from_previous + 2
+        previousIterationAfterLocked = false
+        // Store this item's new value for the next iteration
+        previousNewISO = item.value;
+        continue;
+      }
+      // Use distance_from_previous; fallback to 0 and clamp at 0
+      const gap = Math.max(0, Number(distToPrevious) || Number(item?.distance_from_previous) || 0);
+      const allowed = disabledDates?.date_types?.[item?.date_type]?.dates;
+      distToPrevious = item?.distance_from_previous
+
+      // Use the previous item's NEW value as reference, not item.value
+      const referenceISO = previousNewISO;
+      if (!referenceISO) continue;
+
+      let newISO = null;
+      if (Array.isArray(allowed) && allowed.length) {
+        // Find index of the PREVIOUS item's new value in allowed array
+        let idx = allowed.findIndex(d => d === referenceISO);
+        if (idx === -1) {
+          // If referenceISO not in allowed, use the last allowed date before it
+          for (let ai = allowed.length - 1; ai >= 0; ai--) {
+            if (allowed[ai] <= referenceISO) { idx = ai; break; }
+          }
+        }
+        // Move backwards by gap from the reference point
+        const targetIdx = idx !== -1 ? Math.max(0, idx - gap) : 0;
+        newISO = allowed[targetIdx];
+      }
+      item.value = newISO;
+      // Update reference for next iteration
+      previousNewISO = newISO;
+    }
+    return true; // Return true to indicate backwards shift occurred
+  }
+
+  const reverseIterateArray = (arr,index,target) => {
     let targetString = target
     if(target === "tarkistettuehdotus"){
       //other values in array at tarkistettu ehdotus phase are with _ but phase values are without

@@ -21,12 +21,12 @@ const createRootReducer = (history) =>
 
 const middlewareArray = [routerMiddleware(history), sagaMiddleware]
 
-if (process.env.NODE_ENV === 'development') {
+/* if (process.env.NODE_ENV === 'development') {
   const logger = createLogger({
     collapsed: true
   })
   middlewareArray.push(logger)
-}
+} */
 
 const composeEnhancers = composeWithDevTools({})
 

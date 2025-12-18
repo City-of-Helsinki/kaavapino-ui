@@ -62,6 +62,7 @@ const FormField = ({
   allowedToEdit,
   timetable_editable,
   isAdmin,
+  lockedGroup,
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
@@ -160,6 +161,7 @@ const FormField = ({
             timetable_editable={timetable_editable}
             highlightedInFieldset={highlightedInFieldset}
             highlightedTag={highlightedTag}
+            lockedGroup={lockedGroup}
           />
         )
     }

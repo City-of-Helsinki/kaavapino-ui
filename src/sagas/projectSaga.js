@@ -126,7 +126,8 @@ import {
   setDateValidationResult,
   VALIDATE_PROJECT_TIMETABLE,
   UPDATE_PROJECT_FAILURE,
-  setValidatingTimetable
+  setValidatingTimetable,
+  SET_TIMETABLE_SNAPSHOT
 } from '../actions/projectActions'
 import { startSubmit, stopSubmit, setSubmitSucceeded, initialize } from 'redux-form'
 import { error } from '../actions/apiActions'
@@ -781,7 +782,7 @@ function* saveProjectFloorArea() {
     yield put(initialize(EDIT_PROJECT_TIMETABLE_FORM, nextInitial))
 } */
 
-function* validateProjectTimetable() {
+function* validateProjectTimetable({ payload }) {
   // Remove success toastr before showing info
   toastr.removeByType('success');
   toastr.clean(); // Clear existing toastr notifications
@@ -797,6 +798,9 @@ function* validateProjectTimetable() {
 
   const { initial, values } = yield select(editProjectTimetableFormSelector);
   const currentProjectId = yield select(currentProjectIdSelector);
+  const lockedAttributes = payload?.lockedAttributes || false;
+  // Read the stored snapshot for potential restore
+  const timetableSnapshot = yield select(state => state.project && state.project.timetableSnapshot || {})
 
   if (values) {
     let changedAttributeData = getChangedAttributeData(values, initial);
@@ -829,6 +833,7 @@ function* validateProjectTimetable() {
         {
           attribute_data,
           confirmed_fields,
+          lockedAttributes: lockedAttributes,
         },
         { path: { id: currentProjectId } },
         ':id/?fake=true'
@@ -836,20 +841,36 @@ function* validateProjectTimetable() {
 
       // Remove the loading icon
       toastr.removeByType('info');
-      toastr.success(i18.t('messages.dates-confirmed'), {
-        timeOut: 10000,
-        removeOnHover: false,
-        showCloseButton: true,
-        icon: <IconCheckCircleFill />
-      });
+
+      // Check if backend auto-fixed any lock boundary violations
+      if (response?.lock_warnings && response.lock_warnings.length > 0) {
+        toastr.warning(i18.t('messages.dates-adjusted'), response.lock_warnings.join('; '), {
+          timeOut: 10000,
+          removeOnHover: false,
+          showCloseButton: true,
+          icon: <IconAlertCircleFill />
+        });
+      } else {
+        toastr.success(i18.t('messages.dates-confirmed'), {
+          timeOut: 10000,
+          removeOnHover: false,
+          showCloseButton: true,
+          icon: <IconCheckCircleFill />
+        });
+      }
 
       // Success. Prevent further validation calls by setting state
       yield put(setValidatingTimetable(true, true));
       // Backend may have edited phase start/end dates, so update project
       yield put(updateProject(response));
+      // Refresh snapshot after successful validation
+      const nextSnapshot = response?.attribute_data || {}
+      yield put({ type: SET_TIMETABLE_SNAPSHOT, payload: nextSnapshot })
       // Refresh baseline (initial) without clobbering unsaved edits so boolean toggles diff correctly later
       //yield call(reinitializeTimetableFormIfNeeded, response)
     } catch (e) {
+      // Remove the loading icon
+      toastr.removeByType('info');
       if (e?.code === 'ERR_NETWORK') {
         toastr.error(i18.t('messages.validation-error'), '', {
           icon: <IconErrorFill />
@@ -882,6 +903,26 @@ function* validateProjectTimetable() {
       // });
 
       // Dispatch failure action with error data for the reducer to handle date correction to timeline form
+      // If backend returned locked field violations, show minimal warning
+      const lockedFields = e?.response?.data?.locked_fields
+      if (lockedFields && Array.isArray(lockedFields) && lockedFields.length > 0) {
+        toastr.warning(i18.t('project.element-not-fit'), lockedFields.join(', '), {
+          timeOut: 10000,
+          removeOnHover: false,
+          showCloseButton: true,
+          icon: <IconAlertCircleFill />
+        });
+      }
+
+      // Restore form values to the per-session snapshot
+      if (lockedFields && timetableSnapshot && Object.keys(timetableSnapshot).length > 0) {
+        yield put(initialize(EDIT_PROJECT_TIMETABLE_FORM, timetableSnapshot))
+        // After snapshot restore, set ended=true to prevent auto-retry
+        // User must manually change dates to trigger new validation
+        yield put(setValidatingTimetable(false, true));
+      }
+
+      // Dispatch failure action with error data for reducer debugging/logging
       yield put({
         type: UPDATE_PROJECT_FAILURE,
         payload: { errorData: e?.response?.data, formValues: attribute_data },
