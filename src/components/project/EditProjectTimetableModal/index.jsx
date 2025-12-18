@@ -33,7 +33,6 @@ class EditProjectTimeTableModal extends Component {
       items: false,
       groups: false,
       itemsPhaseDatesOnly: [],
-      itemsPhaseDatesOnly: [],
       showModal: false,
       collapseData: {},
       sectionAttributes: []
@@ -212,7 +211,7 @@ class EditProjectTimeTableModal extends Component {
               this.props.dispatch(validateProjectTimetable(lockedAttributes));
             }
             else {
-              this.props.dispatch(validateProjectTimetable(lockedAttributes));
+              this.props.dispatch(validateProjectTimetable({}));
             }
           }
         }
