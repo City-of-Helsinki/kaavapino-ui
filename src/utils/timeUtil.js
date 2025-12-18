@@ -635,7 +635,7 @@ const getDisabledDatesForProjectStart = (name, formValues, previousItem, nextIte
     ? findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompare, miniumDaysBetween)
     : findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompare, -miniumDaysBetween);
 
-  const lastPossibleDateToSelect = lockedItem
+  const lastPossibleDateToSelect = lockedItem && lockDateLimit
     ? findNextPossibleValue(dateTypes?.arkipäivät?.dates, lockDateLimit, -maxLockedDistance)
     : null;
 
@@ -680,7 +680,7 @@ const getDisabledDatesForLautakunta = (name, formValues, phaseName, matchingItem
       firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.työpäivät?.dates, dateToComparePast, miniumDaysPast);
     }
 
-    const lastPossibleDateToSelect = lockedItem
+    const lastPossibleDateToSelect = lockedItem && lockDateLimit
       ? findNextPossibleValue(dateTypes?.työpäivät?.dates, lockDateLimit, -maxLockedDistance)
       : null;
 
@@ -716,7 +716,7 @@ const getDisabledDatesForLautakunta = (name, formValues, phaseName, matchingItem
     }
 
     const firstPossibleDateToSelect = findNextPossibleBoardDate(dateTypes?.lautakunnan_kokouspäivät?.dates, filteredDateToCompare);
-    const lastPossibleDateToSelect = lockedItem
+    const lastPossibleDateToSelect = lockedItem && lockDateLimit
       ? findNextPossibleValue(dateTypes?.työpäivät?.dates, lockDateLimit, -maxLockedDistance)
       : null;
 
@@ -734,7 +734,7 @@ const getDisabledDatesForSizeXSXL = (name, formValues, matchingItem, dateTypes, 
     const dateToCompare = formValues[matchingItem?.previous_deadline];
     let newDisabledDates = dateTypes?.työpäivät?.dates;
     const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.työpäivät?.dates, dateToCompare, miniumDaysBetween);
-    const lastPossibleDateToSelect = lockedItem
+    const lastPossibleDateToSelect = lockedItem && lockDateLimit
       ? findNextPossibleValue(dateTypes?.työpäivät?.dates, lockDateLimit, -maxLockedDistance)
       : null;
     return newDisabledDates.filter(date =>
@@ -751,14 +751,14 @@ const getDisabledDatesForSizeXSXL = (name, formValues, matchingItem, dateTypes, 
     const lastPossibleDateToSelect = findNextPossibleValue(dateTypes?.esilläolopäivät?.dates, dateToCompareFuture, -miniumDaysFuture);
     return newDisabledDates.filter(date =>
       date >= firstPossibleDateToSelect &&
-      date < lastPossibleDateToSelect
+      date <= lastPossibleDateToSelect
     );
   } else if (name.includes("_paattyy")) {
     const miniumDaysPast = matchingItem?.distance_from_previous;
     const dateToComparePast = formValues[matchingItem?.previous_deadline];
     let newDisabledDates = dateTypes?.esilläolopäivät?.dates;
     const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.esilläolopäivät?.dates, dateToComparePast, miniumDaysPast);
-    const lastPossibleDateToSelect = lockedItem
+    const lastPossibleDateToSelect = lockedItem && lockDateLimit
       ? findNextPossibleValue(dateTypes?.esilläolopäivät?.dates, lockDateLimit, -maxLockedDistance)
       : null;
     return newDisabledDates.filter(date =>
@@ -816,14 +816,14 @@ const getDisabledDatesForNahtavillaolo = (name, formValues, phaseName, matchingI
     const lastPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompareFuture, -miniumDaysFuture);
     return newDisabledDates.filter(date =>
       date >= firstPossibleDateToSelect &&
-      date < lastPossibleDateToSelect
+      date <= lastPossibleDateToSelect
     );
   } else if (name.includes("_paattyy") || name.includes("viimeistaan_lausunnot")) {
     const miniumDaysPast = matchingItem?.distance_from_previous;
     const dateToComparePast = formValues[matchingItem?.previous_deadline];
     let newDisabledDates = dateTypes?.arkipäivät?.dates;
     const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToComparePast, miniumDaysPast);
-    const lastPossibleDateToSelect = lockedItem
+    const lastPossibleDateToSelect = lockedItem && lockDateLimit
       ? findNextPossibleValue(dateTypes?.arkipäivät?.dates, lockDateLimit, -maxLockedDistance)
       : null;
     return newDisabledDates.filter(date =>
@@ -845,11 +845,14 @@ const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues
   const startIndex = sectionAttributes.findIndex(attr => attr.attributegroup === matchingItem?.attributegroup && attr.name === name);
   const endIndex = sectionAttributes.findIndex(attr => attr.attributegroup === lockedItem?.attributegroup);
   //Date for last possible date to select if locking is on
-  const lockDateLimit = lockedItem ? (() => {
-    const date = new Date(lockedGroup?.lockedStartTime);
+  const lockDateLimit = lockedItem && lockedGroup?.lockedStartTime ? (() => {
+    const date = new Date(lockedGroup.lockedStartTime);
+    if (isNaN(date.getTime())) {
+      return null;
+    }
     date.setDate(date.getDate());
     return date.toISOString().slice(0, 10);
-  })() : false;
+  })() : null;
 
   if(lockedItem && startIndex !== -1 && endIndex !== -1){
     maxLockedDistance = calculateTotalDistances(startIndex,endIndex, sectionAttributes, formValues, dateTypes);
