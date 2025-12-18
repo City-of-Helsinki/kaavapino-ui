@@ -182,7 +182,6 @@ export const reducer = (state = initialState, action) => {
 
     case UPDATE_DATE_TIMELINE: {
       const { field, newDate, formValues, isAdd, deadlineSections, keepDuration, originalDurationDays, pairedEndKey, lockedGroup } = action.payload;
-      console.log(lockedGroup)
       // Existing logic omitted in summary; ensure validating flags reset on user edits
       const nextState = { ...state }
       nextState.validatingTimetable = { started: false, ended: false }

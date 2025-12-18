@@ -765,7 +765,6 @@ function* validateProjectTimetable({ payload }) {
   const lockedAttributes = payload?.lockedAttributes || false;
   // Read the stored snapshot for potential restore
   const timetableSnapshot = yield select(state => state.project && state.project.timetableSnapshot || {})
-  console.log('[SNAPSHOT] - Snapshot exists in state:', timetableSnapshot)
 
   if (values) {
     let changedAttributeData = getChangedAttributeData(values, initial);
@@ -791,7 +790,7 @@ function* validateProjectTimetable({ payload }) {
       confirmationAttributeNames,
       phaseNames
     );
-    console.log(lockedAttributes)
+
     try {
       const response = yield call(
         projectApi.patch,
@@ -830,7 +829,6 @@ function* validateProjectTimetable({ payload }) {
       yield put(updateProject(response));
       // Refresh snapshot after successful validation
       const nextSnapshot = response?.attribute_data || {}
-      console.log('[SNAPSHOT] Updating snapshot after successful validation:', Object.keys(nextSnapshot).length, 'fields')
       yield put({ type: SET_TIMETABLE_SNAPSHOT, payload: nextSnapshot })
       // Refresh baseline (initial) without clobbering unsaved edits so boolean toggles diff correctly later
       //yield call(reinitializeTimetableFormIfNeeded, response)
@@ -871,7 +869,6 @@ function* validateProjectTimetable({ payload }) {
       // Dispatch failure action with error data for the reducer to handle date correction to timeline form
       // If backend returned locked field violations, show minimal warning
       const lockedFields = e?.response?.data?.locked_fields
-      console.log('Locked fields from backend:', lockedFields)
       if (lockedFields && Array.isArray(lockedFields) && lockedFields.length > 0) {
         toastr.warning(i18.t('project.element-not-fit'), lockedFields.join(', '), {
           timeOut: 10000,
@@ -883,8 +880,6 @@ function* validateProjectTimetable({ payload }) {
 
       // Restore form values to the per-session snapshot
       if (lockedFields && timetableSnapshot && Object.keys(timetableSnapshot).length > 0) {
-        console.log('[SNAPSHOT] Restoring snapshot to form')
-        console.log(timetableSnapshot)
         yield put(initialize(EDIT_PROJECT_TIMETABLE_FORM, timetableSnapshot))
         // After snapshot restore, set ended=true to prevent auto-retry
         // User must manually change dates to trigger new validation

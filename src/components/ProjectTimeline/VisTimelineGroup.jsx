@@ -763,7 +763,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           element.classList.remove('buttons-locked');
         });
         // Dispatch action with false value
-        dispatch(lockTimetable(data.deadlinegroup,[],locked,false));
+        dispatch(lockTimetable(false,[],locked,false));
       }
       //setLock({group:data.nestedInGroup,id:data.id,abbreviation:data.abbreviation,locked:!data.locked})
     }
@@ -1500,90 +1500,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }, [lock]);
 
     useEffect(() => {
-/*        console.log(visValuesRef,items.get().filter(i =>  
-        !i?.className?.includes('divider') && !i?.className?.includes('phase-holder'))) */
       if (localStorage.getItem("lockedState")) {
          //Remove the locked button state from localStorage when page/component is reloaded
         localStorage.removeItem("lockedState");
-      }
-
-            // Replace computeLockedDragBoundary (around line 1447) with this:
-      const computeLockedDragBoundary = (itemsData, clusterRef) => {
-          const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-          const rawItems = itemsData.get(); // Keep unfiltered for holidays
-          const allItems = itemsData.get().filter(i => 
-              i?.title && 
-              !i?.className?.includes('divider') && 
-              i?.type !== 'background' &&
-              !i?.phase
-          );
-          
-          // Find first locked item
-          const lockedItems = allItems.filter(i => i?.className?.includes('locked-color'));
-          if (!lockedItems.length) return { lockedStartMs: null, totalBufferDays: 0 };
-          
-          lockedItems.sort((a, b) => new Date(a.start) - new Date(b.start));
-          const firstLocked = lockedItems[0];
-          const lockedStartMs = new Date(firstLocked.start).getTime();
-          
-          // Find cluster's earliest date
-          const snapshot = clusterRef?.current?.snapshot;
-          if (!snapshot?.items) return { lockedStartMs, totalBufferDays: 0 };
-          
-          let clusterMinMs = null;
-          let clusterMaxMs = null;
-          Object.values(snapshot.items).forEach(si => {
-              const s = si?.start?.getTime();
-              const e = si?.end?.getTime();
-              if (s != null) {
-                  if (clusterMinMs == null || s < clusterMinMs) clusterMinMs = s;
-                  if (clusterMaxMs == null || s > clusterMaxMs) clusterMaxMs = s;
-              }
-              if (e != null) {
-                  if (clusterMinMs == null || e < clusterMinMs) clusterMinMs = e;
-                  if (clusterMaxMs == null || e > clusterMaxMs) clusterMaxMs = e;
-              }
-          });
-          
-          if (clusterMinMs == null) return { lockedStartMs, totalBufferDays: 0 };
-          
-          // Cluster span in days
-          const clusterSpanDays = clusterMaxMs != null ? Math.ceil((clusterMaxMs - clusterMinMs) / ONE_DAY_MS) : 0;
-          
-          // Get all items from cluster start to locked, sum their distanceToPrevious
-          const clusterItemIds = new Set(Object.keys(snapshot.items));
-          const itemsInRange = allItems.filter(i => {
-              const s = new Date(i.start).getTime();
-              return s >= clusterMinMs && s <= lockedStartMs && !clusterItemIds.has(String(i.id));
-          });
-          
-          // Sum all distanceToPrevious (with +2 rule)
-          let distanceSum = itemsInRange.reduce((sum, i) => {
-              const d = i.distanceToPrevious ?? 0;
-              return sum + (d === 0 ? 0 : d + 2);
-          }, 0);
-          
-          // Add locked item's distance
-          const lockedDist = firstLocked.distanceToPrevious ?? 0;
-          distanceSum += lockedDist === 0 ? 0 : lockedDist + 2;
-
-              // Count holiday days between cluster and locked
-          const holidayItems = rawItems.filter(i =>  
-              i?.className?.includes('holiday')
-          );
-          let holidayDays = 0;
-          holidayItems.forEach(h => {
-              const hStart = new Date(h.start).getTime();
-              // Holiday is in range if it falls between cluster max and locked start
-              if (hStart > clusterMaxMs && hStart < lockedStartMs) {
-                  holidayDays++;
-              }
-          });
-          return {
-              lockedStartMs,
-              totalBufferDays: clusterSpanDays + distanceSum + (holidayDays * 2)
-          };
-      };
+      }   
 
       const options = {
         locales: {
@@ -1657,18 +1577,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             callback(null);
             return;
           }
-/*           const { lockedStartMs, totalBufferDays } = computeLockedDragBoundary(items, clusterDragRef);
-          if (lockedStartMs != null) {
-              const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-              const curStart = item?.start ? new Date(item.start).getTime() : null;
-              const stopBoundary = lockedStartMs - (totalBufferDays * ONE_DAY_MS);
-              
-              
-              if (curStart != null && curStart >= stopBoundary) {
-                  callback(null);
-                  return;
-              }
-          } */
           // Prevent dragging items with locked-color className
           if (item?.className?.includes('locked-color')) {
             callback(null);

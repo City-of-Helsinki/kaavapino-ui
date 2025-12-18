@@ -243,7 +243,6 @@ const getHighestNumberedObject = (obj1) => {
   }
 
   const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize,attributeData,lockedFromField) => {
-    console.log(movedDate,attributeData,arr)
     // Lock logic: do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
     // attributeData is the filtered attribute_data object (only visible fields) so we can inspect confirmation flags
     let confirmedFieldSet = null;
@@ -476,7 +475,6 @@ const getHighestNumberedObject = (obj1) => {
     let previousNewISO = null;
     for (let k = startIndex; k >= stopIndex; k--) {
       const item = arr[k];
-      console.log(item)
 
       if (!item || lockedKey?.key === item?.key){
         if(item){
@@ -496,20 +494,16 @@ const getHighestNumberedObject = (obj1) => {
 
       if(previousIterationAfterLocked && k === previousIterationAfterLocked){
         const lockedDate = new Date(lockedValue);
-        console.log(lockedDistance)
         lockedDate.setDate(lockedDate.getDate() - (lockedDistance + 2));
         item.value = lockedDate.toISOString().split('T')[0];
         distToPrevious = item?.distance_from_previous + 2
         previousIterationAfterLocked = false
         // Store this item's new value for the next iteration
         previousNewISO = item.value;
-        console.log(item)
         continue;
       }
       // Use distance_from_previous; fallback to 0 and clamp at 0
-      console.log(item.key, distToPrevious)
       const gap = Math.max(0, Number(distToPrevious) || Number(item?.distance_from_previous) || 0);
-      console.log('Gap for', item.key, 'is', gap);
       const allowed = disabledDates?.date_types?.[item?.date_type]?.dates;
       distToPrevious = item?.distance_from_previous
 
@@ -530,20 +524,6 @@ const getHighestNumberedObject = (obj1) => {
         // Move backwards by gap from the reference point
         const targetIdx = idx !== -1 ? Math.max(0, idx - gap) : 0;
         newISO = allowed[targetIdx];
-      }
-      // Log shift details for debugging/tracing
-      try {
-        console.log('[shiftDatesBackwards]', {
-          key: item.key,
-          from: item.value,
-          to: newISO,
-          referenceISO,
-          gap,
-          stopIndex,
-          startIndex
-        });
-      } catch (e) {
-        // no-op
       }
       item.value = newISO;
       // Update reference for next iteration

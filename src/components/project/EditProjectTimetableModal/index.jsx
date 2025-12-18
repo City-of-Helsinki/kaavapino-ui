@@ -72,7 +72,6 @@ class EditProjectTimeTableModal extends Component {
     
     // Capture snapshot of timetable form's initial state
     if (attributeData) {
-      console.log(attributeData)
       dispatch(setTimetableSnapshot(attributeData))
     }
     
@@ -132,7 +131,6 @@ class EditProjectTimeTableModal extends Component {
       }
     }
     if(prevProps.formValues && !isEqual(prevProps.formValues, formValues)){
-      console.log(this.props.attributeData)
       //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
       timeUtil.compareAndUpdateDates(formValues)
       if(deadlineSections && deadlines && formValues){
@@ -188,7 +186,6 @@ class EditProjectTimeTableModal extends Component {
                   i?.phase !== true &&
                   i?.title
                 );
-                console.log(lockedItems)
                 // Extract field names and values from formValues
                 if (lockedItems && lockedItems.length > 0) {
                   lockedItems.forEach(item => {
