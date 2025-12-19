@@ -205,14 +205,7 @@ class EditProjectTimeTableModal extends Component {
                   });
                 }
               }
-            // Dispatch validation only when not currently validating and not previously ended
-            if ((lockedAttributes && !this.props.validatingTimetable?.started && !this.props.validatingTimetable?.ended)) {
-              // Only validate if backwards shift did not occur
               this.props.dispatch(validateProjectTimetable(lockedAttributes));
-            }
-            else {
-              this.props.dispatch(validateProjectTimetable({}));
-            }
           }
         }
         let sectionAttributes = [];
