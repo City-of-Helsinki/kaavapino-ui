@@ -2,6 +2,37 @@ import { describe, test, expect } from 'vitest';
 import objectUtil from '../../utils/objectUtil';
 import mockData from './checkForDecreasingValues_test_data.js';
 
+// Helper function to execute checkForDecreasingValues with common setup
+const executeCheckForDecreasingValues = (field, movedDate, oldDate, moveToPast, isAdd = false) => {
+	const modified_test_arr = JSON.parse(JSON.stringify(mockData.decreasing_test_arr));
+	const originalField = modified_test_arr.find(item => item.key === field);
+	const projectSize = "XL";
+	modified_test_arr[modified_test_arr.findIndex(item => item.key === field)].value = movedDate;
+	const original = JSON.parse(JSON.stringify(modified_test_arr));
+	const { arr: result } = objectUtil.checkForDecreasingValues(
+		modified_test_arr, isAdd, field, mockData.test_disabledDates, oldDate, movedDate, moveToPast, projectSize
+	);
+	return { result, original, originalField };
+};
+
+// Helper to validate items before and after changed date
+const validateDateOrdering = (result, original, originalField, movedDate, additionalChecks = {}) => {
+	for (const item of result) {
+		if (item.order && item.order < originalField.order && !additionalChecks.skipBeforeCheck?.(item)) {
+			const originalItem = original.find(orig => orig.key === item.key);
+			expect(item.value, `items before the changed date should be untouched ${item.key}`).toBe(originalItem.value);
+		}
+		if (item.order && item.order > originalField.order) {
+			expect(new Date(item.value) >= new Date(movedDate),
+				'items after the changed date should be adjusted to be after the movedDate').toBe(true);
+		}
+		// Execute additional field-specific checks
+		if (additionalChecks[item.key]) {
+			additionalChecks[item.key](item, result, movedDate);
+		}
+	}
+};
+
 const test_objects = [
     {"content": "Käynnistys", "attributegroup": "kaynnistys_1", "name": "kaynnistys_alkaa_pvm"},
     {"content": "Esilläolo-2", "attributegroup": "oas_esillaolokerta_2", "name": "milloin_oas_esillaolo_alkaa_2"},
@@ -215,43 +246,27 @@ describe("Test ObjectUtil utility functions", () => {
 
     test("checkForDecreasingValues adjusts future values when moving a esillaolo_maaraaika", () => {
         const test_esillaolo_date_adjustment = (movedDate, moveToPast) => {
-            const modified_test_arr = JSON.parse(JSON.stringify(mockData.decreasing_test_arr));
-            const isAdd = false;
             const field = "oas_esillaolo_aineiston_maaraaika";
-            const originalField = modified_test_arr.find(item => item.key === field);
             const oldDate = "2026-10-29";
-            const projectSize = "XL";
-            modified_test_arr[modified_test_arr.findIndex(item => item.key === field)].value = movedDate;
-            // milloin_oas_esillaolo_paattyy is moved to 2027-02-05 (future)
-            const original = JSON.parse(JSON.stringify(modified_test_arr));
-            const { arr: result } = objectUtil.checkForDecreasingValues(
-                modified_test_arr,isAdd,field,mockData.test_disabledDates,oldDate,movedDate,moveToPast,projectSize
-            );
+            const { result, original, originalField } = executeCheckForDecreasingValues(field, movedDate, oldDate, moveToPast);
+            
             expect(result.length).toEqual(mockData.decreasing_test_arr.length);
             
-            for (const item of result) {
-                if (item.order && item.order <  originalField.order) {
-                    const originalItem = original.find(orig => orig.key === item.key);
-                    expect(item.value, 'items before the changed date should be untouched').toBe(originalItem.value);
-                }
-                if (item.order && item.order > originalField.order) {
-                    expect(new Date(item.value) >= new Date(movedDate),
-                        'items after the changed date should be adjusted to be after the moved date').toBe(true);
-                }
-                if (item.key === "milloin_oas_esillaolo_alkaa") {
+            validateDateOrdering(result, original, originalField, movedDate, {
+                "milloin_oas_esillaolo_alkaa": (item, result, movedDate) => {
                     const expectedDate = new Date(movedDate);
                     expectedDate.setDate(expectedDate.getDate() + 14);
                     expect(new Date(item.value) >= expectedDate,
                         "oas esillaolo dates should be at least 14 days after the previous one").toBe(true);
                     expect(new Date(item.value).getDay(), "oas esillaolo should fall on a weekend").not.toBeOneOf([6,0]);
-                }
-                if (item.key === "milloin_oas_esillaolo_paattyy") {
+                },
+                "milloin_oas_esillaolo_paattyy": (item, result) => {
                     const expectedDate = new Date(result.find(i => i.key === "milloin_oas_esillaolo_alkaa").value);
                     expectedDate.setDate(expectedDate.getDate() + 14);
                     expect(new Date(item.value) >= expectedDate,
                         "oas esillaolo dates should be at least 14 days after the previous one").toBe(true);
                 }
-            }
+            });
         };
         test_esillaolo_date_adjustment("2027-02-05", false);
         test_esillaolo_date_adjustment("2027-06-20", false);
@@ -261,35 +276,21 @@ describe("Test ObjectUtil utility functions", () => {
 
     test("checkForDecreasingValues behaves correctly when adjusting kylk date", () => {
         const test_kylk_date = (movedDate, moveToPast) => {
-            const modified_test_arr = JSON.parse(JSON.stringify(mockData.decreasing_test_arr));
-            const isAdd = false;
             const field = "kaavaluonnos_kylk_aineiston_maaraaika";
-            const originalField = modified_test_arr.find(item => item.key === field);
             const oldDate = "2027-05-10";
-            const projectSize = "XL";
-            modified_test_arr[modified_test_arr.findIndex(item => item.key === field)].value = movedDate;
-            const original = JSON.parse(JSON.stringify(modified_test_arr));
-            const { arr: result } = objectUtil.checkForDecreasingValues(
-                modified_test_arr,isAdd,field,mockData.test_disabledDates,oldDate,movedDate,moveToPast,projectSize
-            );
+            const { result, original, originalField } = executeCheckForDecreasingValues(field, movedDate, oldDate, moveToPast);
+            
             expect(result.length).toEqual(mockData.decreasing_test_arr.length);
-            for (const item of result) {
-                if (item.order && item.order <  originalField.order) {
-                    const originalItem = original.find(orig => orig.key === item.key);
-                    expect(item.value, 'items before the changed date should be untouched').toBe(originalItem.value);
-                }
-                if (item.order && item.order > originalField.order) {
-                    expect(new Date(item.value) >= new Date(movedDate),
-                        'items after the changed date should be adjusted to be after the movedDate').toBe(true);
-                }
-                if (item.key === "milloin_kaavaluonnos_lautakunnassa") {
+            
+            validateDateOrdering(result, original, originalField, movedDate, {
+                "milloin_kaavaluonnos_lautakunnassa": (item, result, movedDate) => {
                     const expectedDate = new Date(movedDate);
                     expectedDate.setDate(expectedDate.getDate() + 27);
                     expect(new Date(item.value) >= expectedDate, 
                         "milloin_kaavaluonnos_lautakunnassa should be at least 27 days after kaavaluonnos_kylk_aineiston_maaraaika").toBe(true);
                     expect(new Date(item.value).getDay(), "milloin_kaavaluonnos_lautakunnassa should fall on a tuesday").toBe(2);
                 }
-            }
+            });
         }
         test_kylk_date("2027-06-05", false);
         test_kylk_date("2028-04-21", false);
@@ -299,41 +300,27 @@ describe("Test ObjectUtil utility functions", () => {
 
         test("checkForDecreasingValues behaves correctly when adjusting milloin_lautakunnassa date", () => {
         const test_lautakunta_date = (movedDate, moveToPast) => {
-            const modified_test_arr = JSON.parse(JSON.stringify(mockData.decreasing_test_arr));
-            const isAdd = false;
             const field = "milloin_kaavaehdotus_lautakunnassa";
-            const originalField = modified_test_arr.find(item => item.key === field);
             const oldDate = "2028-05-16";
-            const projectSize = "XL";
-            modified_test_arr[modified_test_arr.findIndex(item => item.key === field)].value = movedDate;
-            const original = JSON.parse(JSON.stringify(modified_test_arr));
-            const { arr: result } = objectUtil.checkForDecreasingValues(
-                modified_test_arr,isAdd,field,mockData.test_disabledDates,oldDate,movedDate,moveToPast,projectSize
-            );
-            for (const item of result) {
-                if (item.order && item.order < originalField.order && item.key !== "ehdotus_kylk_aineiston_maaraaika") {
-                    const originalItem = original.find(orig => orig.key === item.key);
-                    expect(item.value, `items before the changed date should be untouched ${item.key}`).toBe(originalItem.value);
-                }
-                if (item.key === "ehdotus_kylk_aineiston_maaraaika") {
+            const { result, original, originalField } = executeCheckForDecreasingValues(field, movedDate, oldDate, moveToPast);
+            
+            validateDateOrdering(result, original, originalField, movedDate, {
+                skipBeforeCheck: (item) => item.key === "ehdotus_kylk_aineiston_maaraaika",
+                "ehdotus_kylk_aineiston_maaraaika": (item, result, movedDate) => {
                     const expectedDate = new Date(movedDate);
                     expectedDate.setDate(expectedDate.getDate() - 14);
                     expect(new Date(item.value) <= expectedDate,
                         "ehdotus_kylk_aineiston_maaraaika should be at least 14 days before movedDate").toBe(true);
                     expect(new Date(item.value).getDay(), "ehdotus_kylk_aineiston_maaraaika not fall on a weekend").not.toBeOneOf([6,0]);
-                }
-                if (item.order && item.order > originalField.order) {
-                    expect(new Date(item.value) >= new Date(movedDate),
-                        'items after the changed date should be adjusted to be after the movedDate').toBe(true);
-                }
-                if (item.key === "milloin_ehdotuksen_nahtavilla_alkaa_iso") {
+                },
+                "milloin_ehdotuksen_nahtavilla_alkaa_iso": (item, result, movedDate) => {
                     const expectedDate = new Date(movedDate);
                     expectedDate.setDate(expectedDate.getDate() + 1);
                     expect(new Date(item.value) >= expectedDate,
                         "milloin_ehdotuksen_nahtavilla_alkaa_iso should be at least 1 day after movedDate").toBe(true);
                     expect(new Date(item.value).getDay(), "milloin_ehdotuksen_nahtavilla_alkaa_iso not fall on a weekend").not.toBeOneOf([6,0]);
                 }
-            }
+            });
         }
         test_lautakunta_date("2028-05-23", false);
         test_lautakunta_date("2028-12-19", false);
@@ -343,45 +330,30 @@ describe("Test ObjectUtil utility functions", () => {
 
     test("checkForDecreasingValues behaves correctly when adding new element group", () => {
         const test_add_date = (movedDate, moveToPast) => {
-            const modified_test_arr = JSON.parse(JSON.stringify(mockData.decreasing_test_arr));
-            const isAdd = true;
             const field = "periaatteet_esillaolo_aineiston_maaraaika_2";
-            const originalField = modified_test_arr.find(item => item.key === field);
             const oldDate = "2026-04-15";
-            const projectSize = "XL";
-            modified_test_arr[modified_test_arr.findIndex(item => item.key === field)].value = movedDate;
-            const original = JSON.parse(JSON.stringify(modified_test_arr));
-            const { arr: result } = objectUtil.checkForDecreasingValues(
-                modified_test_arr,isAdd,field,mockData.test_disabledDates,oldDate,movedDate,moveToPast,projectSize
-            );
-            for (const item of result) {
-                if (item.order && item.order < originalField.order) {
-                    const originalItem = original.find(orig => orig.key === item.key);
-                    expect(item.value, `items before the changed date should be untouched ${item.key}`).toBe(originalItem.value);
-                }
-                if (item.order && item.order > originalField.order) {
-                    expect(new Date(item.value) >= new Date(movedDate),
-                        'items after the changed date should be adjusted to be after the movedDate').toBe(true);
-                }
-                if (item.key === "milloin_periaatteet_esillaolo_alkaa_2") {
+            const { result, original, originalField } = executeCheckForDecreasingValues(field, movedDate, oldDate, moveToPast, true);
+            
+            validateDateOrdering(result, original, originalField, movedDate, {
+                "milloin_periaatteet_esillaolo_alkaa_2": (item, result, movedDate) => {
                     const expectedDate = new Date(movedDate);
                     expectedDate.setDate(expectedDate.getDate() + 19);
                     expect(new Date(item.value) >= expectedDate,
                         "milloin_periaatteet_esillaolo_alkaa_2 should be at least 19 days after movedDate").toBe(true);
                     expect(new Date(item.value).getDay(), "milloin_periaatteet_esillaolo_alkaa_2 not fall on a weekend").not.toBeOneOf([6,0]);
-                }
-                if (item.key === "milloin_periaatteet_esillaolo_paattyy_2") {
+                },
+                "milloin_periaatteet_esillaolo_paattyy_2": (item, result) => {
                     const expectedDate = new Date(result.find(i => i.key === "milloin_periaatteet_esillaolo_alkaa_2").value);
                     expectedDate.setDate(expectedDate.getDate() + 14);
                     expect(new Date(item.value) >= expectedDate,
                         "milloin_periaatteet_esillaolo_paattyy_2 should be at least 14 days after milloin_periaatteet_esillaolo_alkaa_2").toBe(true);
                     expect(new Date(item.value).getDay(), "milloin_periaatteet_esillaolo_paattyy_2 not fall on a weekend").not.toBeOneOf([6,0]);
-                }
-                if( item.key === "viimeistaan_mielipiteet_periaatteista_2") {
+                },
+                "viimeistaan_mielipiteet_periaatteista_2": (item, result) => {
                     expect(new Date(item.value), "viimeistaan_mielipiteet should match milloin_paattyy")
                     .toEqual(new Date(result.find(i => i.key === "milloin_periaatteet_esillaolo_paattyy_2").value));
                 }
-            }
+            });
         }
         test_add_date("2027-05-23", false);
         test_add_date("2027-06-23", false);
