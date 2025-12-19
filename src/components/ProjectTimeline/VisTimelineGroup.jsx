@@ -327,6 +327,20 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         : `vahvista_${normalizedPhase}_lautakunnassa_${idx}`;
     }
 
+    // Helper to check if any keys in attributeKeys are confirmed using the provided confirmation function
+    const checkAnyConfirmed = (visValRef, attributeKeys, phase, getConfirmationKeyFn) => {
+      return attributeKeys.some(key => {
+        if (visValRef[key] === true) {
+          const confirmKey = getConfirmationKeyFn(phase, key);
+          if (Array.isArray(confirmKey)) {
+            return confirmKey.some(k => visValRef[k] === true);
+          }
+          return visValRef[confirmKey] === true;
+        }
+        return false;
+      });
+    };
+
     const getEsillaoloConfirmed = (visValRef, phase, attributeEsillaoloKeys, nextIndex, hasFirstLautakunta) => {
       // Prevent adding if first lautakunta already added
       if (hasFirstLautakunta) return false;
@@ -492,32 +506,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
      
       if (phase === "ehdotus" && (projectSize === "XL" || projectSize === "L")) {
-        const anyEsillaoloConfirmed = attributeEsillaoloKeys.some(key => {
-        if (visValRef[key] === true) {
-            const confirmKey = getConfirmationKeyForEsillaoloKey(phase, key);
-            if (Array.isArray(confirmKey)) {
-              return confirmKey.some(k => visValRef[k] === true);
-            }
-            return visValRef[confirmKey] === true;
-          }
-          return false;
-        });
+        const anyEsillaoloConfirmed = checkAnyConfirmed(visValRef, attributeEsillaoloKeys, phase, getConfirmationKeyForEsillaoloKey);
         if(anyEsillaoloConfirmed){
           lautakuntaReason = "nahtavillaolo vahvistettu.";
         }
       }
 
       if ((phase === "luonnos" || phase === "periaatteet") && (projectSize === "XL" || projectSize === "L")) {
-        const anyLautakuntaConfirmed = attributeLautakuntaKeys.some(key => {
-        if (visValRef[key] === true) {
-            const confirmKey = getConfirmationKeyForLautakuntaKey(phase, key);
-            if (Array.isArray(confirmKey)) {
-              return confirmKey.some(k => visValRef[k] === true);
-            }
-            return visValRef[confirmKey] === true;
-          }
-          return false;
-        });
+        const anyLautakuntaConfirmed = checkAnyConfirmed(visValRef, attributeLautakuntaKeys, phase, getConfirmationKeyForLautakuntaKey);
         if(anyLautakuntaConfirmed){
           esillaoloReason = "lautakuntaConfirmed";
           canAddEsillaolo = false;
