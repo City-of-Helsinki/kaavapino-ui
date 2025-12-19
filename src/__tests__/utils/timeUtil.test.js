@@ -362,8 +362,10 @@ describe("getDisabledDates for various phases", () => {
         const alkaaResult = timeUtil.getDisabledDatesForSizeXSXL("milloin_oas_esillaolo_alkaa", formValues, alkaaItem, dateTypes);
         expect(alkaaResult.length).toBeGreaterThan(0);
         // First allowed date: distance_from_previous=5 working days from oas_esillaolo_aineiston_maaraaika (2025-02-20).
-        // Week 8 (around Feb 17-23) is excluded from esilläolopäivät, so first valid date is 2025-02-28.
-        expect(alkaaResult[0]).toBe("2025-02-28");
+        // With UTC-based week calculation, week 8 excludes Feb 18-20, 23-24. First available working day >= 2025-02-20
+        // is Feb 21. Adding 5 working days from Feb 21 gives Mar 3 (Feb 21, 25, 26, 27, 28, Mar 3).
+        // Updated from "2025-02-28" after fixing timezone-dependent week calculation to use UTC.
+        expect(alkaaResult[0]).toBe("2025-03-03");
         // Last allowed date: must maintain distance_to_next=15 working days before milloin_oas_esillaolo_paattyy (2025-04-10).
         // Code uses `date < lastPossibleDateToSelect` (strict less-than, see timeUtil.js line 753) which excludes
         // the boundary date. Before adding vi.setSystemTime(), this test passed with "2025-03-20" due to timezone
@@ -371,7 +373,7 @@ describe("getDisabledDates for various phases", () => {
         // correct, deterministic result of "2025-03-19".
         expect(alkaaResult[alkaaResult.length-1]).toBe("2025-03-19");
         for (let date of alkaaResult) {
-            expect(date >= "2025-02-28").toBe(true);
+            expect(date >= "2025-03-03").toBe(true);
             expect(date <= "2025-03-19").toBe(true);
             let newDate = new Date(date);
             expect(newDate.getDay() !== 0 && newDate.getDay() !== 6).toBe(true);
