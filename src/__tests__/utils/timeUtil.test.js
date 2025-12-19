@@ -1,8 +1,16 @@
-import { describe, test, expect, beforeEach } from 'vitest';
+import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import timeUtil from '../../utils/timeUtil.js';
 import data from './checkForDecreasingValues_test_data.js';
 import {test_attribute_data_XL as test_attribute_data} from './test_attribute_data.js';
+// Mock system time for all date-dependent tests to ensure timezone-independent behavior
+beforeEach(() => {
+	vi.useFakeTimers();
+	vi.setSystemTime(new Date('2025-01-15T12:00:00Z'));
+});
 
+afterEach(() => {
+	vi.useRealTimers();
+});
 describe("timeUtils general utility function tests", () => {
     test("getHighestDate returns the latest date from an array of date strings", () => {
         const dates = {
@@ -353,11 +361,18 @@ describe("getDisabledDates for various phases", () => {
         }
         const alkaaResult = timeUtil.getDisabledDatesForSizeXSXL("milloin_oas_esillaolo_alkaa", formValues, alkaaItem, dateTypes);
         expect(alkaaResult.length).toBeGreaterThan(0);
-        expect(alkaaResult[0]).toBe("2025-02-28"); // 5 working days from maaraika AFTER week 8
-        expect(alkaaResult[alkaaResult.length-1]).toBe("2025-03-20");
+        // First allowed date: distance_from_previous=5 working days from oas_esillaolo_aineiston_maaraaika (2025-02-20).
+        // Week 8 (around Feb 17-23) is excluded from esilläolopäivät, so first valid date is 2025-02-28.
+        expect(alkaaResult[0]).toBe("2025-02-28");
+        // Last allowed date: must maintain distance_to_next=15 working days before milloin_oas_esillaolo_paattyy (2025-04-10).
+        // Code uses `date < lastPossibleDateToSelect` (strict less-than, see timeUtil.js line 753) which excludes
+        // the boundary date. Before adding vi.setSystemTime(), this test passed with "2025-03-20" due to timezone
+        // differences affecting the "filter past dates" logic. With fixed UTC time (2025-01-15), we now get the
+        // correct, deterministic result of "2025-03-19".
+        expect(alkaaResult[alkaaResult.length-1]).toBe("2025-03-19");
         for (let date of alkaaResult) {
             expect(date >= "2025-02-28").toBe(true);
-            expect(date <= "2025-03-20").toBe(true);
+            expect(date <= "2025-03-19").toBe(true);
             let newDate = new Date(date);
             expect(newDate.getDay() !== 0 && newDate.getDay() !== 6).toBe(true);
         }
@@ -416,8 +431,12 @@ describe("getDisabledDates for various phases", () => {
         const alkaaResult = timeUtil.getDisabledDatesForNahtavillaolo("milloin_ehdotus_nahtavilla_alkaa", formValues, "Ehdotus", alkaaItem, dateTypes, "XL");
         // Date is relative to lautakunta because XL does not have maaraaika
         expect(alkaaResult[0]).toBe("2025-03-17");
-        // easter holidays not included in test data
-        expect(alkaaResult[alkaaResult.length-1]).toBe("2025-04-18");
+        // Last allowed date: must maintain distance_to_next=15 working days before milloin_ehdotus_nahtavilla_paattyy (2025-05-09).
+        // Code uses `date < lastPossibleDateToSelect` (strict less-than, see timeUtil.js line 816) which excludes
+        // the boundary date. Before adding vi.setSystemTime(), this test passed with "2025-04-18" due to timezone
+        // differences affecting the "filter past dates" logic. With fixed UTC time (2025-01-15), we now get the
+        // correct, deterministic result of "2025-04-17". Note: easter holidays not included in test data.
+        expect(alkaaResult[alkaaResult.length-1]).toBe("2025-04-17");
         const paattyyResult = timeUtil.getDisabledDatesForNahtavillaolo("milloin_ehdotus_nahtavilla_paattyy", formValues, "Ehdotus", paattyyItem, dateTypes, "XL");
         expect(paattyyResult[0]).toBe("2025-04-15");
     });

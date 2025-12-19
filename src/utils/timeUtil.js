@@ -751,7 +751,7 @@ const getDisabledDatesForSizeXSXL = (name, formValues, matchingItem, dateTypes, 
     const lastPossibleDateToSelect = findNextPossibleValue(dateTypes?.esilläolopäivät?.dates, dateToCompareFuture, -miniumDaysFuture);
     return newDisabledDates.filter(date =>
       date >= firstPossibleDateToSelect &&
-      date <= lastPossibleDateToSelect
+      date < lastPossibleDateToSelect
     );
   } else if (name.includes("_paattyy")) {
     const miniumDaysPast = matchingItem?.distance_from_previous;
@@ -816,7 +816,7 @@ const getDisabledDatesForNahtavillaolo = (name, formValues, phaseName, matchingI
     const lastPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompareFuture, -miniumDaysFuture);
     return newDisabledDates.filter(date =>
       date >= firstPossibleDateToSelect &&
-      date <= lastPossibleDateToSelect
+      date < lastPossibleDateToSelect
     );
   } else if (name.includes("_paattyy") || name.includes("viimeistaan_lausunnot")) {
     const miniumDaysPast = matchingItem?.distance_from_previous;
