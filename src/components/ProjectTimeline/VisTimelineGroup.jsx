@@ -341,6 +341,44 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       });
     };
 
+    // Helper to update timeline CSS classes and apply timeline settings
+    const updateTimelineClasses = (classesToRemove, classesToAdd, timeAxisScale, format) => {
+      classesToRemove.forEach(cls => timelineRef.current.classList.remove(cls));
+      classesToAdd.forEach(cls => timelineRef.current.classList.add(cls));
+      timeline.setOptions({timeAxis: {scale: timeAxisScale}});
+      const range = timeline.getWindow();
+      const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
+      const rangeDuration = format.rangeDuration;
+      const newStart = new Date(center.getTime() - rangeDuration / 2);
+      const newEnd = new Date(center.getTime() + rangeDuration / 2);
+      timeline.setWindow(newStart, newEnd);
+      setCurrentFormat(format.name);
+    };
+
+    // Helper to extract the first locked item field for cascade freezing
+    const getFirstLockedItemField = (items) => {
+      const lockedItems = items.get().filter(i => 
+        i?.className?.includes('locked-color') && 
+        !i?.className?.includes('divider') &&
+        i?.phase !== true &&
+        i?.title
+      );
+      
+      if (lockedItems.length === 0) return null;
+      
+      lockedItems.sort((a, b) => new Date(a.start) - new Date(b.start));
+      const firstLockedItem = lockedItems[0];
+      
+      const key = firstLockedItem.title.includes('-')
+        ? firstLockedItem.title.split('-')[0].trim()
+        : firstLockedItem.title;
+      const value = firstLockedItem.start
+        ? moment(firstLockedItem.start).format('YYYY-MM-DD')
+        : null;
+      
+      return { key, value };
+    };
+
     const getEsillaoloConfirmed = (visValRef, phase, attributeEsillaoloKeys, nextIndex, hasFirstLautakunta) => {
       // Prevent adding if first lautakunta already added
       if (hasFirstLautakunta) return false;
@@ -902,23 +940,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         revertWeekendShift();
       }
       currentFormatRef.current = 'showMonths';
-      const range = timeline.getWindow();
-      const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
-      const rangeDuration = 1000 * 60 * 60 * 24 * 30; // about 1 month
       restoreNormalMonths(moment);
-      timelineRef.current.classList.remove("years");
-      timelineRef.current.classList.remove("hide-lines");
-      timelineRef.current.classList.remove("months6");
-      timelineRef.current.classList.remove("years2");
-      timelineRef.current.classList.remove("year1")
-      timelineRef.current.classList.add("months");
-      timelineRef.current.classList.add("month1");
-      timeline.setOptions({timeAxis: {scale: 'weekday'}});
-      //Keep view centered on where user is
-      const newStart = new Date(center.getTime() - rangeDuration / 2);
-      const newEnd = new Date(center.getTime() + rangeDuration / 2);
-      timeline.setWindow(newStart, newEnd);
-      setCurrentFormat("showMonths");
+      updateTimelineClasses(
+        ["years", "hide-lines", "months6", "years2", "year1"],
+        ["months", "month1"],
+        'weekday',
+        { name: "showMonths", rangeDuration: 1000 * 60 * 60 * 24 * 30 }
+      );
       highlightJanuaryFirst()
     }
 
@@ -952,24 +980,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
     const show6Months = () => {
       if(currentFormatRef.current === 'show3Months') { detachWeekAxisHover(); revertWeekendShift(); }
-      const range = timeline.getWindow();
-      const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
-      const rangeDuration = 1000 * 60 * 60 * 24 * 30 * 6; // approx 6 months
       restoreNormalMonths(moment);
       restoreStandardLabelFormat();
-      timelineRef.current.classList.remove("hide-lines");
-      timelineRef.current.classList.remove("months");
-      timelineRef.current.classList.remove("years2");
-      timelineRef.current.classList.remove("month1");
-      timelineRef.current.classList.remove("year1")
-      timelineRef.current.classList.add("years");
-      timelineRef.current.classList.add("months6");
-      timeline.setOptions({timeAxis: {scale: 'month'}});
-
-      const newStart = new Date(center.getTime() - rangeDuration / 2);
-      const newEnd = new Date(center.getTime() + rangeDuration / 2);
-      timeline.setWindow(newStart, newEnd);
-      setCurrentFormat("show6Months");
+      updateTimelineClasses(
+        ["hide-lines", "months", "years2", "month1", "year1"],
+        ["years", "months6"],
+        'month',
+        { name: "show6Months", rangeDuration: 1000 * 60 * 60 * 24 * 30 * 6 }
+      );
       currentFormatRef.current = 'show6Months';
       highlightJanuaryFirst();
     }
@@ -1798,27 +1816,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                 }
                 const formattedStart = moment(attributeDate).format('YYYY-MM-DD');
                 
-                // Extract first locked item field name to freeze cascade from that point
-                const lockedItems = items.get().filter(i => 
-                  i?.className?.includes('locked-color') && 
-                  !i?.className?.includes('divider') &&
-                  i?.phase !== true &&
-                  i?.title
-                );
-                let lockedFromField = null;
-                if (lockedItems.length > 0) {
-                  // Sort by start date to find the earliest locked item
-                  lockedItems.sort((a, b) => new Date(a.start) - new Date(b.start));
-                  const firstLockedItem = lockedItems[0];
-                  // Build key/value from first locked item
-                  const key = firstLockedItem.title.includes('-')
-                    ? firstLockedItem.title.split('-')[0].trim()
-                    : firstLockedItem.title;
-                  const value = firstLockedItem.start
-                    ? moment(firstLockedItem.start).format('YYYY-MM-DD')
-                    : null;
-                  lockedFromField = { key, value };
-                }
+                const lockedFromField = getFirstLockedItemField(items);
                 
                 dispatch(updateDateTimeline(
                   attributeToUpdate,
@@ -1855,27 +1853,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               if (attributeToUpdate && attributeDate) {
                 const formattedDate = moment(attributeDate).format('YYYY-MM-DD');
                 
-                // Extract first locked item field name to freeze cascade from that point
-                const lockedItems = items.get().filter(i => 
-                  i?.className?.includes('locked-color') && 
-                  !i?.className?.includes('divider') &&
-                  i?.phase !== true &&
-                  i?.title
-                );
-                let lockedFromField = null;
-                if (lockedItems.length > 0) {
-                  // Sort by start date to find the earliest locked item
-                  lockedItems.sort((a, b) => new Date(a.start) - new Date(b.start));
-                  const firstLockedItem = lockedItems[0];
-                  // Build key/value from first locked item
-                  const key = firstLockedItem.title.includes('-')
-                    ? firstLockedItem.title.split('-')[0].trim()
-                    : firstLockedItem.title;
-                  const value = firstLockedItem.start
-                    ? moment(firstLockedItem.start).format('YYYY-MM-DD')
-                    : null;
-                  lockedFromField = { key, value };
-                }
+                const lockedFromField = getFirstLockedItemField(items);
                 
                 dispatch(updateDateTimeline(
                   attributeToUpdate,
