@@ -242,10 +242,77 @@ const getHighestNumberedObject = (obj1) => {
     return result
   }
 
-  const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize,attributeData) => {
+  // Helper to process date adjustments in a loop with locked field checks
+  const processDateAdjustments = (arr, currentIndex, lockedFromField, isLocked, disabledDates, projectSize, calculateNewDate) => {
+    let reachedLockedField = false;
+    let didShiftBackwards = false;
+    
+    for (let i = currentIndex; i < arr.length; i++) {
+      // Check if we've reached the locked field - freeze all items from this point onward
+      if (lockedFromField && arr[i].key === lockedFromField?.key) {
+        reachedLockedField = true;
+      }
+      // Exit processing once we reach the locked field
+      if (reachedLockedField) break;
+      
+      if(isLocked(arr[i])) continue; // skip locked items
+      if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
+        && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
+        && !arr[i].key.includes("hyvaksymispaatos_pvm")){
+        
+        let newDate = calculateNewDate(arr, i);
+        
+        // Update the array with the new date
+        newDate.setDate(newDate.getDate());
+        const newDateISO = newDate.toISOString().split('T')[0];
+        
+        // Check if the NEW calculated date would exceed locked boundary
+        if (lockedFromField?.value && new Date(newDateISO) >= new Date(lockedFromField.value)) {
+          // Only trigger backwards shift if the new date is different (actually moving forward into locked)
+          if (arr[i].value !== newDateISO) {
+            // Find the locked field's index - shiftDatesBackwards expects to start FROM the locked field
+            const lockedIndex = arr.findIndex(item => item?.key === lockedFromField?.key);
+            didShiftBackwards = shiftDatesBackwards(arr, lockedIndex, currentIndex + 1, disabledDates, projectSize, lockedFromField);
+          }
+          break;
+        }
+        
+        arr[i].value = newDateISO;
+        //Move phase start and end dates
+        const isPhaseEnd = arr[i].distance_from_previous === undefined && 
+                          arr[i].key.endsWith('_pvm') && 
+                          arr[i].key.includes("_paattyy_");
+        if(isPhaseEnd){
+          const targetSubstring = arr[i].key.split('vaihe')[0];
+          // Iterate backwards from the given index
+          const res = reverseIterateArray(arr,i,targetSubstring)
+          const differenceInTime = new Date(res) - new Date(arr[i].value)
+          const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
+          if(differenceInDays >= 5){
+            arr[i].value = res
+            if(arr[i]?.key?.includes("tarkistettuehdotusvaihe_paattyy_pvm")){
+              //Move hyvaksyminenvaihe_paattyy_pvm and voimaantulovaihe_paattyy_pvm as many days as tarkistettuehdotusvaihe_paattyy_pvm
+              const items = arr.filter(el => el.key?.includes("hyvaksyminenvaihe_paattyy_pvm") || el.key?.includes("voimaantulovaihe_paattyy_pvm"));
+              if (items) {
+                items.forEach(item => {
+                  const currentDate = new Date(item.value);
+                  currentDate.setDate(currentDate.getDate() + differenceInDays);
+                  item.value = currentDate.toISOString().split('T')[0];
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+    return didShiftBackwards;
+  };
+
+  const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize,attributeData,lockedFromField) => {
     // Lock logic: do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
     // attributeData is the filtered attribute_data object (only visible fields) so we can inspect confirmation flags
     let confirmedFieldSet = null;
+    let didShiftBackwards = false;
     const today = new Date();
     today.setHours(0,0,0,0);
     if(attributeData){
@@ -274,154 +341,163 @@ const getHighestNumberedObject = (obj1) => {
     // If adding items
     if (isAdd) {
       // Move the nextItem and all following items forward if item minium is exceeded
-      for (let i = currentIndex; i < arr.length; i++) {
-		    if(isLocked(arr[i])) continue; // skip locked items entirely
-        if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
-          && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
-          && !arr[i].key.includes("hyvaksymispaatos_pvm")){
-          let newDate = new Date(arr[i].value);
-          //At the moment some previous values are falsely null for some reason, can be remove when is fixed on backend and Excel.
-          //Get minium gap for two dates next to each other that are moved
-          const miniumGap = arr[i].initial_distance === null ? arr[i].key.includes("lautakunnassa") ? 22 : 5 : arr[i].initial_distance 
-          if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")){
-            //mielipiteet and paattyy is always the same value
-            newDate = new Date(arr[i - 1].value);
-          }
-          else{
-            //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
-            newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.disabled_dates?.dates,miniumGap,projectSize,true) : newDate
-          }
-          // Update the array with the new date
-          newDate.setDate(newDate.getDate());
-          arr[i].value = newDate.toISOString().split('T')[0];
-          //Move phase start and end dates
-          if(arr[i].distance_from_previous === undefined && arr[i].key.endsWith('_pvm') && arr[i].key.includes("_paattyy_")){
-            const targetSubstring = arr[i].key.split('vaihe')[0];
-            // Iterate backwards from the given index
-            const res = reverseIterateArray(arr,i,targetSubstring)
-            const differenceInTime = new Date(res) - new Date(arr[i].value)
-            const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
-            if(differenceInDays >= 5){
-              arr[i].value = res
-              if(arr[i]?.key?.includes("tarkistettuehdotusvaihe_paattyy_pvm")){
-                //Move hyvaksyminenvaihe_paattyy_pvm and voimaantulovaihe_paattyy_pvm as many days as tarkistettuehdotusvaihe_paattyy_pvm
-                const items = arr.filter(el => el.key?.includes("hyvaksyminenvaihe_paattyy_pvm") || el.key?.includes("voimaantulovaihe_paattyy_pvm"));
-                if (items) {
-                  items.forEach(item => {
-                    const currentDate = new Date(item.value);
-                    currentDate.setDate(currentDate.getDate() + differenceInDays);
-                    item.value = currentDate.toISOString().split('T')[0];
-                  });
-                }
-              }
-            }
-          }
+      didShiftBackwards = processDateAdjustments(arr, currentIndex, lockedFromField, isLocked, disabledDates, projectSize, (arr, i) => {
+        let newDate = new Date(arr[i].value);
+        //At the moment some previous values are falsely null for some reason, can be remove when is fixed on backend and Excel.
+        //Get minium gap for two dates next to each other that are moved
+        const miniumGap = arr[i].initial_distance === null ? arr[i].key.includes("lautakunnassa") ? 22 : 5 : arr[i].initial_distance 
+        if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")){
+          //mielipiteet and paattyy is always the same value
+          newDate = new Date(arr[i - 1].value);
         }
-      }
+        else{
+          //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
+          newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.disabled_dates?.dates,miniumGap,projectSize,true) : newDate
+        }
+        return newDate;
+      });
     }
     else if(currentIndex !== -1){
-      for (let i = currentIndex; i < arr.length; i++) {
-		    if(isLocked(arr[i])) continue; // do not move locked items
-        if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
-          && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
-          && !arr[i].key.includes("hyvaksymispaatos_pvm")){
-          let newDate = new Date(arr[i].value);
-          if(arr[i - 1]?.key?.includes("paattyy") && arr[i]?.key?.includes("mielipiteet")){
-            //mielipiteet and paattyy is always the same value
-            newDate = new Date(arr[i - 1].value);
+      didShiftBackwards = processDateAdjustments(arr, currentIndex, lockedFromField, isLocked, disabledDates, projectSize, (arr, i) => {
+        let newDate = new Date(arr[i].value);
+        if(arr[i - 1]?.key?.includes("paattyy") && arr[i]?.key?.includes("mielipiteet")){
+          //mielipiteet and paattyy is always the same value
+          newDate = new Date(arr[i - 1].value);
+        }
+        else{
+          //Paattyy and nahtavillaolo l-xl are independent of other values
+          if(
+            ((projectSize === "XS" || projectSize === "S" || projectSize === "M") && i === currentIndex) ||
+            ((projectSize === "XL" || projectSize === "L") && i === currentIndex) 
+          ){
+            //Make next or previous or previous and 1 after previous dates follow the moved date if needed
+            if(arr[currentIndex]?.key?.includes("kylk_maaraaika") || arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") || arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika")){
+              //maaraika in lautakunta moving
+              const lautakuntaResult = timeUtil.findAllowedLautakuntaDate(movedDate, arr[i + 1].initial_distance, disabledDates?.date_types[arr[i + 1]?.date_type]?.dates, false, disabledDates?.date_types[arr[i]?.date_type]?.dates);
+              arr[i + 1].value = new Date(lautakuntaResult).toISOString().split('T')[0];
+              indexToContinue = i + 1
+            }
+            else if(arr[currentIndex]?.key?.includes("paattyy") || ( (projectSize === "XL" || projectSize === "L") && (arr[currentIndex]?.key.includes("nahtavilla_alkaa") || arr[currentIndex]?.key.includes("nahtavilla_paattyy")) ) ){
+              newDate = new Date(arr[i].value);
+              indexToContinue = i
+            }
+            else if(arr[currentIndex]?.key?.includes("lautakunnassa") && !arr[currentIndex]?.key?.includes("lautakunnassa_") || arr[currentIndex]?.key?.includes("alkaa")){
+              //lautakunta and alkaa values
+              const maaraaikaResult = timeUtil.findAllowedDate(movedDate, arr[i].initial_distance, disabledDates?.date_types[arr[i -1]?.date_type]?.dates, true);
+              arr[i - 1].value = new Date(maaraaikaResult).toISOString().split('T')[0];
+              indexToContinue = i
+            }
+            else if(arr[currentIndex]?.key?.includes("maaraaika")){
+              //Maaraiaka moving
+              const oldStartISO = arr[i + 1]?.value;
+              const oldEndISO = arr[i + 2]?.value;
+              const endAllowed = disabledDates?.date_types[arr[i + 2]?.date_type]?.dates || [];
+              const alkaaResult = timeUtil.findAllowedDate(movedDate, arr[i + 1].initial_distance, disabledDates?.date_types[arr[i]?.date_type]?.dates, false);
+              arr[i + 1].value = new Date(alkaaResult).toISOString().split('T')[0];
+              indexToContinue = i + 1
+              if(!arr[currentIndex]?.key?.includes("kylk_maaraaika") && !arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("lautakunnassa") && arr[currentIndex]?.key?.includes("maaraaika")){
+                let timespan = 0;
+                //Keep the same timespan between alkaa and paattyy if both are defined
+                if (endAllowed.length && oldStartISO && oldEndISO) {
+                  const start = endAllowed.findIndex(d => d >= oldStartISO);
+                  const end = endAllowed.findIndex(d => d >= oldEndISO);
+                  if (start !== -1 && end !== -1 && end >= start) timespan = end - start;
+                }
+                const val = endAllowed.findIndex(d => d >= arr[i + 1].value);
+                let kept = (val !== -1 && val + timespan < endAllowed.length) ? endAllowed[val + timespan] : null;
+                if (!kept) {
+                  kept = timeUtil.findAllowedDate(arr[i + 1].value, arr[i + 2].initial_distance, endAllowed, false);
+                }
+                arr[i + 2].value = new Date(kept).toISOString().split('T')[0];
+                indexToContinue = i + 2
+              }
+            }
           }
           else{
-            //Paattyy and nahtavillaolo l-xl are independent of other values
-            if(
-              ((projectSize === "XS" || projectSize === "S" || projectSize === "M") && i === currentIndex) ||
-              ((projectSize === "XL" || projectSize === "L") && i === currentIndex) 
-            ){
-              //Make next or previous or previous and 1 after previous dates follow the moved date if needed
-              if(arr[currentIndex]?.key?.includes("kylk_maaraaika") || arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") || arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika")){
-                //maaraika in lautakunta moving
-                const lautakuntaResult = timeUtil.findAllowedLautakuntaDate(movedDate, arr[i + 1].initial_distance, disabledDates?.date_types[arr[i + 1]?.date_type]?.dates, false, disabledDates?.date_types[arr[i]?.date_type]?.dates);
-                arr[i + 1].value = new Date(lautakuntaResult).toISOString().split('T')[0];
-                indexToContinue = i + 1
-              }
-              else if(arr[currentIndex]?.key?.includes("paattyy") || ( (projectSize === "XL" || projectSize === "L") && (arr[currentIndex]?.key.includes("nahtavilla_alkaa") || arr[currentIndex]?.key.includes("nahtavilla_paattyy")) ) ){
-                newDate = new Date(arr[i].value);
-                indexToContinue = i
-              }
-              else if(arr[currentIndex]?.key?.includes("lautakunnassa") && !arr[currentIndex]?.key?.includes("lautakunnassa_") || arr[currentIndex]?.key?.includes("alkaa")){
-                //lautakunta and alkaa values
-                const maaraaikaResult = timeUtil.findAllowedDate(movedDate, arr[i].initial_distance, disabledDates?.date_types[arr[i -1]?.date_type]?.dates, true);
-                arr[i - 1].value = new Date(maaraaikaResult).toISOString().split('T')[0];
-                indexToContinue = i
-              }
-              else if(arr[currentIndex]?.key?.includes("maaraaika")){
-                //Maaraiaka moving
-                const oldStartISO = arr[i + 1]?.value;
-                const oldEndISO = arr[i + 2]?.value;
-                const endAllowed = disabledDates?.date_types[arr[i + 2]?.date_type]?.dates || [];
-                const alkaaResult = timeUtil.findAllowedDate(movedDate, arr[i + 1].initial_distance, disabledDates?.date_types[arr[i]?.date_type]?.dates, false);
-                arr[i + 1].value = new Date(alkaaResult).toISOString().split('T')[0];
-                indexToContinue = i + 1
-                if(!arr[currentIndex]?.key?.includes("kylk_maaraaika") && !arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("lautakunnassa") && arr[currentIndex]?.key?.includes("maaraaika")){
-                  let timespan = 0;
-                  //Keep the same timespan between alkaa and paattyy if both are defined
-                  if (endAllowed.length && oldStartISO && oldEndISO) {
-                    const start = endAllowed.findIndex(d => d >= oldStartISO);
-                    const end = endAllowed.findIndex(d => d >= oldEndISO);
-                    if (start !== -1 && end !== -1 && end >= start) timespan = end - start;
-                  }
-                  const val = endAllowed.findIndex(d => d >= arr[i + 1].value);
-                  let kept = (val !== -1 && val + timespan < endAllowed.length) ? endAllowed[val + timespan] : null;
-                  if (!kept) {
-                    kept = timeUtil.findAllowedDate(arr[i + 1].value, arr[i + 2].initial_distance, endAllowed, false);
-                  }
-                  arr[i + 2].value = new Date(kept).toISOString().split('T')[0];
-                  indexToContinue = i + 2
-                }
-              }
-            }
-            else{
-              if(!moveToPast && i > indexToContinue){
-                const miniumGap = arr[i].initial_distance === null ? arr[i].key.includes("lautakunnassa") ? 22 : 5 : arr[i].initial_distance 
-                //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
-                newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.disabled_dates?.dates,miniumGap,projectSize,false) : newDate
-                newDate = new Date(newDate)
-              }
-            }
-          }
-          // Update the array with the new date
-          newDate.setDate(newDate.getDate());
-          arr[i].value = newDate.toISOString().split('T')[0];
-          //Move phase start and end dates
-          if(arr[i].distance_from_previous === undefined && arr[i].key.endsWith('_pvm') && arr[i].key.includes("_paattyy_") 
-            && !arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")){
-            const targetSubstring = arr[i].key.split('vaihe')[0];
-            // Iterate backwards from the given index
-            const res = reverseIterateArray(arr,i,targetSubstring)
-            const differenceInTime = new Date(res) - new Date(arr[i].value)
-            const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
-            if(differenceInDays >= 5){
-              arr[i].value = res
-              if(arr[i]?.key?.includes("tarkistettuehdotusvaihe_paattyy_pvm")){
-                //Move hyvaksyminenvaihe_paattyy_pvm and voimaantulovaihe_paattyy_pvm as many days as tarkistettuehdotusvaihe_paattyy_pvm
-                const items = arr.filter(el => el.key?.includes("hyvaksyminenvaihe_paattyy_pvm") || el.key?.includes("voimaantulovaihe_paattyy_pvm"));
-                if (items) {
-                  items.forEach(item => {
-                    const currentDate = new Date(item.value);
-                    currentDate.setDate(currentDate.getDate() + differenceInDays);
-                    item.value = currentDate.toISOString().split('T')[0];
-                  });
-                }
-              }
+            if(!moveToPast && i > indexToContinue){
+              const miniumGap = arr[i].initial_distance === null ? arr[i].key.includes("lautakunnassa") ? 22 : 5 : arr[i].initial_distance 
+              //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
+              newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.disabled_dates?.dates,miniumGap,projectSize,false) : newDate
+              newDate = new Date(newDate)
             }
           }
         }
-      }
+        return newDate;
+      });
     }
     sortPhaseData(arr,order)
-    return arr
+    return { arr, didShiftBackwards }
   }
 
-   const reverseIterateArray = (arr,index,target) => {
+  // Shift values from index i down to currentIndex backwards by per-item distance_from_previous,
+  // honoring date types and disabled days via timeUtil helpers.
+  const shiftDatesBackwards = (arr, startIndex, stopIndex, disabledDates, projectSize, lockedKey) => {
+    let lockedDistance
+    let previousIterationAfterLocked = false
+    const lockedValue = lockedKey?.value || null;
+    let distToPrevious
+    // Track the previous item's new value to chain calculations
+    let previousNewISO = null;
+    for (let k = startIndex; k >= stopIndex; k--) {
+      const item = arr[k];
+
+      if (!item || lockedKey?.key === item?.key){
+        if(item){
+          lockedDistance = item?.distance_from_previous
+          previousIterationAfterLocked = k - 1
+          // The locked item's value becomes the reference point
+          previousNewISO = lockedValue;
+        }
+        continue;
+      }
+
+      if(item?.key.includes("viimeistaan_")){
+        item.value = arr[k + 1]?.value
+        previousNewISO = item.value;
+        continue;
+      }
+
+      if(previousIterationAfterLocked && k === previousIterationAfterLocked){
+        const lockedDate = new Date(lockedValue);
+        lockedDate.setDate(lockedDate.getDate() - (lockedDistance + 2));
+        item.value = lockedDate.toISOString().split('T')[0];
+        distToPrevious = item?.distance_from_previous + 2
+        previousIterationAfterLocked = false
+        // Store this item's new value for the next iteration
+        previousNewISO = item.value;
+        continue;
+      }
+      // Use distance_from_previous; fallback to 0 and clamp at 0
+      const gap = Math.max(0, Number(distToPrevious) || Number(item?.distance_from_previous) || 0);
+      const allowed = disabledDates?.date_types?.[item?.date_type]?.dates;
+      distToPrevious = item?.distance_from_previous
+
+      // Use the previous item's NEW value as reference, not item.value
+      const referenceISO = previousNewISO;
+      if (!referenceISO) continue;
+
+      let newISO = null;
+      if (Array.isArray(allowed) && allowed.length) {
+        // Find index of the PREVIOUS item's new value in allowed array
+        let idx = allowed.findIndex(d => d === referenceISO);
+        if (idx === -1) {
+          // If referenceISO not in allowed, use the last allowed date before it
+          for (let ai = allowed.length - 1; ai >= 0; ai--) {
+            if (allowed[ai] <= referenceISO) { idx = ai; break; }
+          }
+        }
+        // Move backwards by gap from the reference point
+        const targetIdx = idx !== -1 ? Math.max(0, idx - gap) : 0;
+        newISO = allowed[targetIdx];
+      }
+      item.value = newISO;
+      // Update reference for next iteration
+      previousNewISO = newISO;
+    }
+    return true; // Return true to indicate backwards shift occurred
+  }
+
+  const reverseIterateArray = (arr,index,target) => {
     let targetString = target
     if(target === "tarkistettuehdotus"){
       //other values in array at tarkistettu ehdotus phase are with _ but phase values are without

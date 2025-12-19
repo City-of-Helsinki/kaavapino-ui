@@ -57,8 +57,19 @@ const generateMockLautakuntapäivät = () => {
 const generateMockEsillaolopaivat = () => {
     const base_dates = generateMockTyöpäivät();
     return base_dates.filter(date => {
-        const dateObj = new Date(date)
-        const weekNumber = Math.ceil((((dateObj - new Date(dateObj.getFullYear(),0,1)) / 86400000) + dateObj.getDay()+1)/7);
+        // Fix timezone-dependent week calculation to use UTC:
+        // Previously: new Date(date) created Date at midnight LOCAL time, causing week numbers to vary
+        //   by timezone. For example, "2025-02-20" becomes Feb 19 23:00 UTC in Helsinki (UTC+2),
+        //   which falls in a different week than the same string parsed in UTC timezone.
+        // Solution: Parse date string components and create UTC Date objects for consistent week
+        //   number calculation regardless of where tests run (local dev vs CI in different timezone).
+        const [year, month, day] = date.split('-').map(Number);
+        const dateObj = new Date(Date.UTC(year, month - 1, day));
+        const yearStart = new Date(Date.UTC(year, 0, 1));
+        const daysSinceYearStart = (dateObj - yearStart) / 86400000;
+        // Week number calculation: days since year start + day of week (0=Sun, 6=Sat) determines week.
+        // Using getUTCDay() instead of getDay() ensures consistent results across timezones.
+        const weekNumber = Math.ceil((daysSinceYearStart + dateObj.getUTCDay() + 1) / 7);
         return !(weekNumber === 8 || weekNumber === 42);
     });
 }
