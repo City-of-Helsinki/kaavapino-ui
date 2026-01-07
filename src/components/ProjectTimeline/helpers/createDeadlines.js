@@ -5,29 +5,51 @@ import dayjs from 'dayjs'
 /**
  * @desc creates array of deadlines with milestones that should be rendered, from deadline
  * @param deadlines - deadlines from api
+ * @param monthsMeta - optional metadata describing month ordering and week counts
  * @return function
  */
-export function createDeadlines(deadlines) {
+export function createDeadlines(deadlines, monthsMeta = []) {
   // check deadline errors
   if (checkDeadlines(deadlines)) {
     return { deadlines: null, error: true }
   }
+  const monthDatesArray = buildMonthDatesArray(monthsMeta)
+  return createStartAndEndPoints(monthDatesArray, cleanDeadlines(deadlines))
+}
+
+const buildMonthDatesArray = monthsMeta => {
+  if (!monthsMeta || !monthsMeta.length) {
+    return buildDefaultMonthDatesArray()
+  }
+  const monthDatesArray = []
+  monthsMeta.forEach(month => {
+    const weekCount = month.weeks || 5
+    for (let week = 1; week <= weekCount; week++) {
+      monthDatesArray.push({
+        date: month.date,
+        week
+      })
+    }
+  })
+  return monthDatesArray
+}
+
+const buildDefaultMonthDatesArray = () => {
   let date = dayjs()
-  let monthDatesArray = []
   let week = 1
+  const monthDatesArray = []
 
   date = date.subtract(1, 'month')
   for (let i = 0; i < 65; i++) {
     if (i > 0 && Number.isInteger(i / 5)) {
       date = date.date(1)
       date = date.add(1, 'month')
-
     }
 
     const tempMonth = date.add(1, 'month')
     monthDatesArray.push({
       date: `${tempMonth.year()}-${tempMonth.month()}`,
-      week: week
+      week
     })
 
     week++
@@ -37,7 +59,7 @@ export function createDeadlines(deadlines) {
     }
   }
 
-  return createStartAndEndPoints(monthDatesArray, cleanDeadlines(deadlines))
+  return monthDatesArray
 }
 
 /**
@@ -58,12 +80,10 @@ function createStartAndEndPoints(inputMonths, deadlines) {
         deadline.deadline.deadline_types[0] === 'phase_start' ||
         deadline.deadline.deadline_types[0] === 'phase_end'
       ) {
-        let date = dayjs(deadline.date)
-        const week = findWeek(date.date())
-        const tempDate = date.add(1, 'month')
-        date = `${tempDate.year()}-${tempDate.month()}`
+        const date = dayjs(deadline.date)
+        const week = findWeek(date)
         const monthIndex = findInMonths(date, week, monthDates)
-        if (monthIndex) {
+        if (monthIndex !== null && monthIndex !== undefined) {
           if (monthDates[monthIndex][deadline.deadline.abbreviation]) {
             if (
               monthDates[monthIndex][deadline.deadline.abbreviation].deadline_type[0] ===
@@ -205,7 +225,7 @@ function fillGaps(inputMonths, deadlines) {
           }
         }
         // Dont round out last milestone item
-        if (i >= 64) {
+        if (i === monthDates.length - 1) {
           if (monthDates[monthDateIndex]) {
             monthDates[monthDateIndex][
               deadlinePropAbbreviation
@@ -267,14 +287,11 @@ function createMilestones(inputMonths, deadlines) {
         deadlineTypes === 'inner_end'
       ) {
         let date = dayjs(deadline.date)
-        const week = findWeek(date.date())
-
-        let tempDate = date.add(1, 'month')
-        date = `${tempDate.year()}-${tempDate.month()}-${tempDate.date()}`
+        const week = findWeek(date)
         const monthIndex = findInMonths(date, week, monthDates)
-        if (monthIndex) {
+        if (monthIndex !== null && monthIndex !== undefined) {
           monthDates[monthIndex].milestone = true
-          monthDates[monthIndex].milestoneDate = date
+          monthDates[monthIndex].milestoneDate = date.format('YYYY-MM-DD')
           monthDates[monthIndex].milestone_types = deadline.deadline.deadline_types
         }
       }

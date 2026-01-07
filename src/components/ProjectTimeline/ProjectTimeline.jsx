@@ -9,8 +9,8 @@ import { getProject, getProjectSuccessful } from '../../actions/projectActions'
 import { findWeek } from './helpers/helpers'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
-import { getVisibilityBoolName } from '../../utils/projectVisibilityUtils';
-import { attributeDataSelector } from '../../selectors/projectSelector';
+import timeUtil from '../../utils/timeUtil'
+import { shouldDeadlineBeVisible } from '../../utils/projectVisibilityUtils';
 
 function ProjectTimeline(props) {
   const { deadlines, projectView, onhold, attribute_data } = props
@@ -18,6 +18,7 @@ function ProjectTimeline(props) {
   const [showError, setShowError] = useState(false)
   const [drawMonths, setDrawMonths] = useState([])
   const [drawItems, setDrawItems] = useState([])
+  const [columnCount, setColumnCount] = useState(65)
   const monthNames = {
     0: t('deadlines.months.jan'),
     1: t('deadlines.months.feb'),
@@ -33,53 +34,86 @@ function ProjectTimeline(props) {
     11: t('deadlines.months.dec')
   }
   useEffect(() => {
-    const filteredDeadlines = filterVisibleDeadlines(deadlines, attribute_data)
+    if (!deadlines || !deadlines.length) {
+      setDrawItems([])
+      setDrawMonths([])
+      setColumnCount(0)
+      return
+    }
+    const mergedDeadlines = mergeDeadlinesWithAttributes(deadlines, attribute_data)
+    const filteredDeadlines = filterVisibleDeadlines(mergedDeadlines, attribute_data)
+    if (!filteredDeadlines || !filteredDeadlines.length) {
+      setDrawItems([])
+      setDrawMonths([])
+      setColumnCount(0)
+      setShowError(false)
+      return
+    }
     if (!projectView) {
       const months = createMonths(filteredDeadlines)
-      createDrawMonths(months.months)
-    } else {
-      createTimelineItems(filteredDeadlines)
+      const columns = createDrawMonths(months.months)
+      setColumnCount(columns)
     }
-  }, []);
+    createTimelineItems(filteredDeadlines)
+  }, [deadlines, attribute_data, projectView]);
 
-  useEffect(() => {
-    const filteredDeadlines = filterVisibleDeadlines(deadlines, attribute_data)
-    if (filteredDeadlines) {
-      createTimelineItems(filteredDeadlines)
-    }
-  }, [deadlines, attribute_data]);
-
-  function filterVisibleDeadlines(deadlineArray, attributeData) {
-    return deadlineArray.filter((deadline) => {
-      const group = deadline?.deadline?.deadlinegroup;
-      if (!group) {
-        // Phase start/end dates have no group; this is ok.
-        return true;
-      }
-      const visBool = getVisibilityBoolName(group);
-      if (!visBool) {
-        // deadlines with no visibility bool should be shown by default
-        return true;
-      }
-      // Special cases where bool is missing from attributeData
-      if (['oas_esillaolokerta_1','ehdotus_nahtavillaolokerta_1','tarkistettu_ehdotus_lautakuntakerta_1'].includes(group)){
-        return true;
-      }
-      return attributeData ? attributeData[visBool] : false;
-    });
+  function filterVisibleDeadlines(deadlineArray = [], attributeData) {
+    const data = attributeData || {};
+    const filtered = deadlineArray.filter(deadline =>
+      shouldDeadlineBeVisible(
+        deadline?.deadline?.attribute || deadline?.deadline?.name,
+        deadline?.deadline?.deadlinegroup,
+        data
+      )
+    );
+    return filtered;
   }
 
-  function createNowMarker(week) {
+  function mergeDeadlinesWithAttributes(deadlineArray = [], attributeData = {}) {
+    const sourceAttributes = attributeData || {}
+    if (!deadlineArray.length || !Object.keys(sourceAttributes).length) {
+      return deadlineArray
+    }
+    const overrides = []
+    const merged = deadlineArray.map((deadline, index) => {
+      const attributeKey = deadline?.deadline?.attribute || deadline?.deadline?.name
+      if (!attributeKey) {
+        return deadline
+      }
+      const attributeValue = sourceAttributes[attributeKey]
+      if (!attributeValue || typeof attributeValue !== 'string') {
+        return deadline
+      }
+      const normalizedValue = attributeValue.trim()
+      if (!timeUtil.isDate(normalizedValue) || normalizedValue === deadline?.date) {
+        return deadline
+      }
+      const updatedDeadline = {
+        ...deadline,
+        date: normalizedValue
+      }
+      overrides.push({
+        attribute: attributeKey,
+        newDate: normalizedValue,
+        originalDate: deadlineArray[index]?.date
+      })
+      return updatedDeadline
+    })
+    return merged
+  }
+
+  function createNowMarker(week, weeksInMonth) {
+    const totalWeeks = weeksInMonth || 5
+    const normalizedWeek = Math.min(Math.max(week, 1), totalWeeks)
     let nowMarker = []
-    for (let i = 1; i <= 5; i++) {
-      if (i === week) {
+    for (let i = 1; i <= totalWeeks; i++) {
+      if (i === normalizedWeek) {
         nowMarker.push(
           <div key={i} className="now-marker">
             <span>{t('deadlines.now')}</span>
           </div>
         )
       } else {
-     
         nowMarker.push(<div key={i} className="now-marker-filler" />)
       }
     }
@@ -87,28 +121,43 @@ function ProjectTimeline(props) {
   }
   
   function createDrawMonths(months) {
+    if (!months || !months.length) {
+      setDrawMonths([])
+      return 0
+    }
     const drawableMonths = []
     const nowDate = dayjs()
-     for (let i = 0; i < months.length; i++) {
-      const date = dayjs(months[i].date)
-      if (i === 1) {
-        drawableMonths.push(
-          <div key={i} className="timeline-month">
-            <div className="timeline-now-month">
-              {createNowMarker(findWeek(nowDate.date()))}
+    const nowKey = `${nowDate.year()}-${nowDate.month()}`
+    let totalColumns = 0
+    for (let i = 0; i < months.length; i++) {
+      const monthData = months[i]
+      const weeks = monthData?.weeks || 5
+      const date = dayjs()
+        .year(monthData.year)
+        .month(monthData.month)
+        .date(1)
+      totalColumns += weeks
+      const showNowMarker = monthData.date === nowKey
+      drawableMonths.push(
+        <div
+          key={`${monthData.date}-${i}`}
+          className="timeline-month"
+          style={{ gridColumn: `span ${weeks}` }}
+        >
+          {showNowMarker ? (
+            <div
+              className="timeline-now-month"
+              style={{ gridTemplateColumns: `repeat(${weeks}, 1fr)` }}
+            >
+              {createNowMarker(findWeek(nowDate), weeks)}
             </div>
-            <span>{`${monthNames[date.month()]} ${date.year()}`}</span>
-          </div>
-        )
-      } else {
-        drawableMonths.push(
-          <div key={i} className="timeline-month">
-            <span>{`${monthNames[date.month()]} ${date.year()}`}</span>
-          </div>
-        )
-      }
+          ) : null}
+          <span>{`${monthNames[date.month()]} ${date.year()}`}</span>
+        </div>
+      )
     }
     setDrawMonths([...drawableMonths])
+    return totalColumns
   }
   function checkDeadlineType(monthDates, property, propI, loopIndex) {
     switch (monthDates[loopIndex][property].deadline_type[0]) {
@@ -229,15 +278,23 @@ function ProjectTimeline(props) {
         // object has 2 keys by default (date, week), check if any additional keys have been added
         if (Object.keys(monthDates[i]).length > 2) {
           let propI = 0
+          let rendered = false
           for (const property in monthDates[i]) {
             if (has.call(monthDates[i], property)) {
               if (typeof monthDates[i][property] === 'object') {
                 if (Array.isArray(monthDates[i][property].deadline_type)) {
                   propI++
                   drawableItems.push(checkDeadlineType(monthDates, property, propI, i))
+                  rendered = true
+                  break
                 }
               }
             }
+          }
+          if (!rendered) {
+            drawableItems.push(
+              <div className="timeline-item" key={`space-${i}`} />
+            )
           }
         } else {
           drawableItems.push(
@@ -260,13 +317,11 @@ function ProjectTimeline(props) {
             switch (milestone_type) {
               case 'dashed_start':
                 if (monthDates[index].milestone_types.includes('milestone')) {
-
-                  const tempDate = date.add(1, 'month')
                   showMessage = (
                     <span className="milestone-message">
                       {t('deadlines.deadline-label', {
-                        date: tempDate.date(),
-                        month: tempDate.month() || 12 // December = 0
+                        date: date.date(),
+                        month: date.month() + 1
                       })}
                     </span>
                   )
@@ -284,8 +339,6 @@ function ProjectTimeline(props) {
                 break
               case 'dashed_end':
                 if (monthDates[index].milestone_types.includes('milestone')) {
-
-                  const tempDate = date.add(1, 'month')
                   showMessage = (
                     <span
                       className={`milestone-message ${
@@ -293,8 +346,8 @@ function ProjectTimeline(props) {
                       }`}
                     >
                       {t('deadlines.kylk-message', {
-                        date: tempDate.date(),
-                        month: tempDate.month() === 0 ? 12 : tempDate.month()
+                        date: date.date(),
+                        month: date.month() + 1
                       })}
                     </span>
                   )
@@ -359,11 +412,14 @@ function ProjectTimeline(props) {
 
   function createTimelineItems(timelineDeadlines) {
     const months = createMonths(timelineDeadlines)
-    const deadlineArray = createDeadlines(timelineDeadlines)
+    const deadlineArray = createDeadlines(timelineDeadlines, months.months)
     if (months.error || deadlineArray.error) {
       setShowError(true)
     }
-    createDrawMonths(months.months)
+    const columnsFromMonths = createDrawMonths(months.months)
+    const columns = columnsFromMonths || months.totalWeeks
+    const resolvedColumns = columns || (deadlineArray.deadlines ? deadlineArray.deadlines.length : 0)
+    setColumnCount(resolvedColumns)
     createDrawItems(deadlineArray.deadlines)
   }
   const containerClass =
@@ -384,11 +440,14 @@ function ProjectTimeline(props) {
       ) : null}
       <div
         className={`timeline-item-container ${showError ? 'timeline-error' : ''}`}
-        style={{ gridTemplateColumns: `repeat(${drawItems.length}, 1fr)` }}
+        style={{ gridTemplateColumns: `repeat(${Math.max(columnCount, 1)}, 1fr)` }}
       >
         {drawItems}
       </div>
-      <div className={`timeline-months ${showError ? 'timeline-error' : ''}`}>
+      <div
+        className={`timeline-months ${showError ? 'timeline-error' : ''}`}
+        style={{ gridTemplateColumns: `repeat(${Math.max(columnCount, 1)}, 1fr)` }}
+      >
         {drawMonths}
       </div>
     </div>
