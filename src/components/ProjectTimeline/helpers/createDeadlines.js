@@ -63,6 +63,86 @@ const buildDefaultMonthDatesArray = () => {
 }
 
 /**
+ * @desc Computes the actual start date for a month slot
+ * @param slot - slot object with date and week properties
+ * @return dayjs date
+ */
+function getSlotDate(slot) {
+  const [yearStr, monthStr] = slot.date.split('-')
+  const year = Number(yearStr) || 0
+  const month = Number(monthStr) || 0
+  const baseDate = dayjs(new Date(year, month, 1))
+  const weekIndex = (Number(slot.week) || 1) - 1
+  return baseDate.add(weekIndex * 7, 'day')
+}
+
+/**
+ * @desc Build phase timeline from deadlines: maps phase_id -> { start, end, ... }
+ * @param deadlines - deadlines from api
+ * @return object with phase timelines
+ */
+function buildPhaseTimeline(deadlines) {
+  const phases = {}
+  deadlines.forEach(dl => {
+    if (!dl.deadline || !dl.date) return
+    const phaseId = dl.deadline.phase_id
+    if (!phases[phaseId]) {
+      phases[phaseId] = {
+        phase_id: phaseId,
+        phase_name: dl.deadline.phase_name,
+        color_code: dl.deadline.phase_color_code,
+        starts: [],
+        ends: []
+      }
+    }
+    if (dl.deadline.deadline_types?.includes('phase_start')) {
+      phases[phaseId].starts.push({ date: dayjs(dl.date), deadline: dl })
+    }
+    if (dl.deadline.deadline_types?.includes('phase_end')) {
+      phases[phaseId].ends.push({ date: dayjs(dl.date), deadline: dl })
+    }
+  })
+  // Determine effective start/end for each phase (earliest start, latest end)
+  for (const phaseId in phases) {
+    const p = phases[phaseId]
+    if (p.starts.length) {
+      p.starts.sort((a, b) => a.date.valueOf() - b.date.valueOf())
+      p.effectiveStart = p.starts[0].date
+      p.startDeadline = p.starts[0].deadline
+    }
+    if (p.ends.length) {
+      p.ends.sort((a, b) => a.date.valueOf() - b.date.valueOf())
+      p.effectiveEnd = p.ends[p.ends.length - 1].date
+      p.endDeadline = p.ends[p.ends.length - 1].deadline
+    }
+  }
+  return phases
+}
+
+/**
+ * @desc Find which phase is active at a given date
+ * @param phases - phase timeline object
+ * @param date - dayjs date to check
+ * @return phase object or null
+ */
+function findActivePhaseAtDate(phases, date) {
+  let activePhase = null
+  for (const phaseId in phases) {
+    const p = phases[phaseId]
+    // Phase is active if: effectiveStart <= date AND (no end OR effectiveEnd >= date)
+    const startOk = p.effectiveStart && !p.effectiveStart.isAfter(date, 'day')
+    const endOk = !p.effectiveEnd?.isBefore(date, 'day')
+    if (startOk && endOk) {
+      // If multiple phases qualify, prefer the one with latest start (most recent phase)
+      if (!activePhase || p.effectiveStart.isAfter(activePhase.effectiveStart)) {
+        activePhase = p
+      }
+    }
+  }
+  return activePhase
+}
+
+/**
  * @desc checks deadlines for start and end points and adds them to the month object
  * @param inputMonths - array that contains months
  * @param deadlines - deadlines returned from api
@@ -72,15 +152,51 @@ function createStartAndEndPoints(inputMonths, deadlines) {
   if (!inputMonths || !deadlines) {
     return { deadlines: null, error: true }
   }
+
+  // Compute visible date range
+  const visibleStart = getSlotDate(inputMonths[0])
+  const visibleEnd = getSlotDate(inputMonths[inputMonths.length - 1]).add(6, 'day')
+
+  // Build phase timeline
+  const phases = buildPhaseTimeline(deadlines)
+
+  // Find which phases actually overlap with the visible range
+  const overlappingPhases = {}
+  for (const phaseId in phases) {
+    const p = phases[phaseId]
+    // Phase overlaps if: effectiveStart <= visibleEnd AND effectiveEnd >= visibleStart
+    const startsBeforeEnd = p.effectiveStart && !p.effectiveStart.isAfter(visibleEnd, 'day')
+    const endsAfterStart = p.effectiveEnd && !p.effectiveEnd.isBefore(visibleStart, 'day')
+    // Also check that start is before end (valid phase)
+    const validPhase = p.effectiveStart && p.effectiveEnd && !p.effectiveStart.isAfter(p.effectiveEnd, 'day')
+    if (startsBeforeEnd && endsAfterStart && validPhase) {
+      overlappingPhases[phaseId] = p
+    }
+  }
+
   let monthDates = inputMonths
   let firstDeadline = false
+
+  // Only process deadlines for phases that actually overlap with visible range
   deadlines.forEach(deadline => {
     if (deadline.deadline) {
+      const phaseId = deadline.deadline.phase_id
+      // Skip if this phase doesn't overlap with visible range
+      if (!overlappingPhases[phaseId]) {
+        return
+      }
+
       if (
         deadline.deadline.deadline_types[0] === 'phase_start' ||
         deadline.deadline.deadline_types[0] === 'phase_end'
       ) {
         const date = dayjs(deadline.date)
+        
+        // Skip if this specific date is outside visible range
+        if (date.isBefore(visibleStart, 'day') || date.isAfter(visibleEnd, 'day')) {
+          return
+        }
+
         const week = findWeek(date)
         const monthIndex = findInMonths(date, week, monthDates)
         if (monthIndex !== null && monthIndex !== undefined) {
@@ -238,27 +354,20 @@ function fillGaps(inputMonths, deadlines) {
 
   // Special case: no phase start/endpoints are in visible range
   if (!has_endpoint_in_range) {
-    let [min_year, min_month] = monthDates[0].date.split('-');
-    min_month = min_month.length == 1 ? "0" + min_month : min_month;
-    let min_day = (((monthDates[0].week-1) * 7) +1).toString();
-    min_day = min_day.length == 1 ? "0" + min_day : min_day;
-    const min_date = Date.parse([min_year, min_month, min_day].join('-'));
-
-    let phase_color, abbr;
-    for (const dl of deadlines) {
-      if (dl.deadline?.deadline_types?.includes('phase_start')) {
-        phase_color = dl.deadline?.phase_color_code;
-        abbr = dl.deadline?.abbreviation
-      }
-      if (dl.date && Date.parse(dl.date) > min_date){
-        break;
-      }
-    }
-    for (let i = 0; i < monthDates.length; i++) {
-      monthDates[i].midpoint = {
-        abbreviation: abbr,
-        deadline_type: ['mid_point'],
-        color_code: phase_color
+    // Use buildPhaseTimeline and findActivePhaseAtDate to get the correct active phase
+    const phases = buildPhaseTimeline(deadlines)
+    const visibleStart = getSlotDate(monthDates[0])
+    const activePhase = findActivePhaseAtDate(phases, visibleStart)
+    
+    console.log('Fallback: visibleStart=', visibleStart.format('YYYY-MM-DD'), 'activePhase=', activePhase)
+    
+    if (activePhase) {
+      for (let i = 0; i < monthDates.length; i++) {
+        monthDates[i].midpoint = {
+          abbreviation: activePhase.startDeadline?.deadline?.abbreviation,
+          deadline_type: ['mid_point'],
+          color_code: activePhase.color_code
+        }
       }
     }
   }
