@@ -285,6 +285,7 @@ function fillGaps(inputMonths, deadlines) {
   let monthDates = inputMonths
   let deadlineAbbreviation = null
   let color_code = null
+  let phase_name = null
   let deadlineLength = 2
   let deadlinePropAbbreviation = null
   let monthDateIndex = null
@@ -299,6 +300,7 @@ function fillGaps(inputMonths, deadlines) {
             if (monthDates[i][prop].deadline_type[0] === 'phase_start' || monthDates[i][prop].deadline_type[0] === 'past_start_point') {
               deadlineAbbreviation = monthDates[i][prop].abbreviation
               color_code = monthDates[i][prop].color_code
+              phase_name = monthDates[i][prop].phase_name
               deadlinePropAbbreviation = prop
               monthDateIndex = i
             } else if (monthDates[i][prop].deadline_type[0] === 'phase_end') {
@@ -309,6 +311,7 @@ function fillGaps(inputMonths, deadlines) {
               }
               deadlineAbbreviation = null
               color_code = null
+              phase_name = null
               deadlineLength = 2
               monthDateIndex = null
             }
@@ -317,7 +320,8 @@ function fillGaps(inputMonths, deadlines) {
             monthDates[i].midpoint = {
               abbreviation: deadlineAbbreviation,
               deadline_type: ['mid_point'],
-              color_code: color_code
+              color_code: color_code,
+              phase_name: phase_name
             }
           }
         } else {
@@ -325,6 +329,7 @@ function fillGaps(inputMonths, deadlines) {
             if (monthDates[i][prop].deadline_type[0] === 'phase_start' || monthDates[i][prop].deadline_type[0] === 'past_start_point') {
               deadlineAbbreviation = monthDates[i][prop].abbreviation
               color_code = monthDates[i][prop].color_code
+              phase_name = monthDates[i][prop].phase_name
               deadlinePropAbbreviation = prop
               monthDateIndex = i
             } else {
@@ -335,6 +340,7 @@ function fillGaps(inputMonths, deadlines) {
               }
               deadlineAbbreviation = null
               color_code = null
+              phase_name = null
               monthDateIndex = null
               deadlineLength = 2
             }
@@ -359,14 +365,13 @@ function fillGaps(inputMonths, deadlines) {
     const visibleStart = getSlotDate(monthDates[0])
     const activePhase = findActivePhaseAtDate(phases, visibleStart)
     
-    console.log('Fallback: visibleStart=', visibleStart.format('YYYY-MM-DD'), 'activePhase=', activePhase)
-    
     if (activePhase) {
       for (let i = 0; i < monthDates.length; i++) {
         monthDates[i].midpoint = {
           abbreviation: activePhase.startDeadline?.deadline?.abbreviation,
           deadline_type: ['mid_point'],
-          color_code: activePhase.color_code
+          color_code: activePhase.color_code,
+          phase_name: activePhase.phase_name
         }
       }
     }
@@ -460,5 +465,73 @@ function fillMilestoneGaps(inputMonths) {
       milestoneSpace++
     }
   }
-  return { deadlines: monthDates, error: false }
+  return markColorTransitions(monthDates)
+}
+
+/**
+ * @desc Marks items with is_first/is_last based on color transitions
+ * @param inputMonths - array that contains months with deadline items
+ * @return object with deadlines array and error flag
+ */
+function markColorTransitions(inputMonths) {
+  if (!inputMonths) {
+    return { deadlines: null, error: true }
+  }
+  const has = Object.prototype.hasOwnProperty
+  
+  // Helper to get the color_code from a slot
+  const getSlotColor = (slot) => {
+    if (!slot) return null
+    for (const prop in slot) {
+      if (has.call(slot, prop) && typeof slot[prop] === 'object' && slot[prop]?.color_code) {
+        return slot[prop].color_code
+      }
+    }
+    return null
+  }
+  
+  // Helper to get the deadline item from a slot
+  const getSlotItem = (slot) => {
+    if (!slot) return null
+    for (const prop in slot) {
+      if (has.call(slot, prop) && typeof slot[prop] === 'object' && slot[prop]?.deadline_type) {
+        return slot[prop]
+      }
+    }
+    return null
+  }
+  
+  for (let i = 0; i < inputMonths.length; i++) {
+    const currentItem = getSlotItem(inputMonths[i])
+    if (!currentItem) continue
+    
+    const currentColor = currentItem.color_code
+    const prevColor = i > 0 ? getSlotColor(inputMonths[i - 1]) : null
+    const nextColor = i < inputMonths.length - 1 ? getSlotColor(inputMonths[i + 1]) : null
+    const deadlineType = currentItem.deadline_type?.[0]
+    
+    // Mark as first if:
+    // - It's a phase_start (actual start of phase)
+    // - OR there's a real color transition (prevColor exists AND is different)
+    // But NOT for past_start_point (continuation from before visible range)
+    if (deadlineType === 'phase_start' || deadlineType === 'start_end_point') {
+      currentItem.is_first = true
+    } else if (deadlineType !== 'past_start_point' && currentColor && prevColor && currentColor !== prevColor) {
+      // Real color transition: previous slot had different color
+      currentItem.is_first = true
+    }
+    
+    // Mark as last if:
+    // - It's a phase_end or start_end_point (actual end of phase)
+    // - OR there's a real color transition (nextColor exists AND is different)
+    // But NOT when phase continues beyond visible range (nextColor is null)
+    if (deadlineType === 'phase_end' || deadlineType === 'start_end_point') {
+      currentItem.is_last = true
+    } else if (currentColor && nextColor && currentColor !== nextColor) {
+      // Real color transition: next slot has different color (not just empty/null)
+      currentItem.is_last = true
+    }
+  }
+  
+  return { deadlines: inputMonths, error: false }
 }

@@ -161,71 +161,94 @@ function ProjectTimeline(props) {
   }
   function checkDeadlineType(monthDates, property, propI, loopIndex) {
     switch (monthDates[loopIndex][property].deadline_type[0]) {
-      case 'phase_start':
+      case 'phase_start': {
+        const startItem = monthDates[loopIndex][property]
+        let startClass = 'timeline-item'
+        if (startItem.is_first && startItem.is_last) {
+          startClass = 'timeline-item first last'
+        } else if (startItem.is_first) {
+          startClass = 'timeline-item first'
+        } else if (startItem.is_last) {
+          startClass = 'timeline-item last'
+        } else {
+          // Fallback for phase_start (legacy behavior)
+          startClass = 'timeline-item first'
+        }
         return (
           <div
-            key={`${monthDates[loopIndex][property].abbreviation}-${loopIndex}`}
+            key={`${startItem.abbreviation}-${loopIndex}`}
             style={{
-              background: monthDates[loopIndex][property].color_code
+              background: startItem.color_code
             }}
-            className="timeline-item first"
+            className={startClass}
           >
             <span
               className={`deadline-name-${
-                monthDates[loopIndex][property].deadline_length > 4 ? 'over' : 'inside'
+                startItem.deadline_length > 4 ? 'over' : 'inside'
               }`}
             >
-              {monthDates[loopIndex][property].phase_name}
+              {startItem.phase_name}
             </span>
             {monthDates[loopIndex].milestone
               ? createMilestoneItem(loopIndex, propI, monthDates)
               : ''}
           </div>
         )
-      case 'mid_point':
+      }
+      case 'mid_point': {
+        const item = monthDates[loopIndex][property]
+        let midClass = 'timeline-item'
+        if (item.is_first && item.is_last) {
+          midClass = 'timeline-item first last'
+        } else if (item.is_first) {
+          midClass = 'timeline-item first'
+        } else if (item.is_last) {
+          midClass = 'timeline-item last'
+        }
         return (
           <div
-            key={`${monthDates[loopIndex][property].abbreviation}-${loopIndex}`}
+            key={`${item.abbreviation}-${loopIndex}`}
             style={{
-              background: monthDates[loopIndex][property].color_code
+              background: item.color_code
             }}
-            className="timeline-item"
+            className={midClass}
+          >
+            {item.is_first && item.phase_name ? (
+              <span className="deadline-name-over">{item.phase_name}</span>
+            ) : null}
+            {monthDates[loopIndex].milestone
+              ? createMilestoneItem(loopIndex, propI, monthDates)
+              : ''}
+          </div>
+        )
+      }
+      case 'phase_end': {
+        const endItem = monthDates[loopIndex][property]
+        let endClass = 'timeline-item'
+        if (endItem.is_first && endItem.is_last) {
+          endClass = 'timeline-item first last'
+        } else if (endItem.is_first) {
+          endClass = 'timeline-item first'
+        } else if (endItem.is_last) {
+          endClass = 'timeline-item last'
+        } else if (!endItem.not_last_end_point) {
+          // Fallback for phase_end that should have last (legacy behavior)
+          endClass = 'timeline-item last'
+        }
+        return (
+          <div
+            key={`${endItem.abbreviation}-${loopIndex}`}
+            style={{
+              background: endItem.color_code
+            }}
+            className={endClass}
           >
             {monthDates[loopIndex].milestone
               ? createMilestoneItem(loopIndex, propI, monthDates)
               : ''}
           </div>
         )
-      case 'phase_end':
-        if (monthDates[loopIndex][property].not_last_end_point) {
-          return (
-            <div
-              key={`${monthDates[loopIndex][property].abbreviation}-${loopIndex}`}
-              style={{
-                background: monthDates[loopIndex][property].color_code
-              }}
-              className="timeline-item"
-            >
-              {monthDates[loopIndex].milestone
-                ? createMilestoneItem(loopIndex, propI, monthDates)
-                : ''}
-            </div>
-          )
-        } else {
-          return (
-            <div
-              key={`${monthDates[loopIndex][property].abbreviation}-${loopIndex}`}
-              style={{
-                background: monthDates[loopIndex][property].color_code
-              }}
-              className="timeline-item last"
-            >
-              {monthDates[loopIndex].milestone
-                ? createMilestoneItem(loopIndex, propI, monthDates)
-                : ''}
-            </div>
-          )
-        }
+      }
       case 'start_end_point':
         return (
           <div
@@ -245,27 +268,37 @@ function ProjectTimeline(props) {
             {monthDates[loopIndex].milestone ? createMilestoneItem(loopIndex, propI) : ''}
           </div>
         )
-      case 'past_start_point':
+      case 'past_start_point': {
+        const pastItem = monthDates[loopIndex][property]
+        let pastClass = 'timeline-item'
+        if (pastItem.is_first && pastItem.is_last) {
+          pastClass = 'timeline-item first last'
+        } else if (pastItem.is_first) {
+          pastClass = 'timeline-item first'
+        } else if (pastItem.is_last) {
+          pastClass = 'timeline-item last'
+        }
         return (
           <div
-            key={`${monthDates[loopIndex][property].abbreviation}-${loopIndex}`}
+            key={`${pastItem.abbreviation}-${loopIndex}`}
             style={{
-              background: monthDates[loopIndex][property].color_code
+              background: pastItem.color_code
             }}
-            className="timeline-item"
+            className={pastClass}
           >
             <span
               className={`deadline-name-${
-                monthDates[loopIndex][property].deadline_length > 4 ? 'over' : 'inside'
+                pastItem.deadline_length > 4 ? 'over' : 'inside'
               }`}
             >
-              {monthDates[loopIndex][property].phase_name}
+              {pastItem.phase_name}
             </span>
             {monthDates[loopIndex].milestone
               ? createMilestoneItem(loopIndex, propI, monthDates)
               : ''}
           </div>
         )
+      }
       default:
         return null
     }

@@ -69,6 +69,7 @@
 
   .timeline-item-container {
     display: grid;
+    gap: 0;
 
     .timeline-item {
       position: relative;
@@ -122,12 +123,17 @@
           &.inner {
             top: 4px;
             height: 12px;
-            width: 17px;
+            width: 100%;
+            left: 0;
             &.start {
+              width: 17px;
+              left: auto;
               border-bottom-left-radius: 5px;
               border-top-left-radius: 5px;
             }
             &.end {
+              width: 17px;
+              left: auto;
               right: 2px;
               border-bottom-right-radius: 5px;
               border-top-right-radius: 5px;
