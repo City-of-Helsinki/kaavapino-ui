@@ -1,13 +1,14 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
-import { TextInput, LoadingSpinner } from 'hds-react'
+import { TextInput, NumberInput } from 'hds-react'
 import { useDispatch, useSelector } from 'react-redux'
 import {updateFloorValues,formErrorList} from '../../actions/projectActions'
 import {lockedSelector,lastModifiedSelector,pollSelector,lastSavedSelector,savingSelector } from '../../selectors/projectSelector'
 import moment from 'moment'
 import { useTranslation } from 'react-i18next'
 import RollingInfo from '../input/RollingInfo.jsx'
+import NetworkErrorState from './NetworkErrorState.jsx'
 import {useFocus} from '../../hooks/useRefFocus'
 import { useIsMount } from '../../hooks/IsMounted'
 import './Input.scss'
@@ -39,7 +40,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   const [hasError,setHasError] = useState(false)
   const [editField,setEditField] = useState(false)
   const [hadFocusBeforeTabOut, setHadFocusBeforeTabOut] = useState(false)
-  const [isInstanceSaving, setIsInstanceSaving] = useState(false);
+  const [isThisFieldSaving, setIsThisFieldSaving] = useState(false)
 
   const lastModified = useSelector(state => lastModifiedSelector(state))
   const lockedStatus = useSelector(state => lockedSelector(state))
@@ -61,9 +62,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     if(custom.type === "date" && !custom.insideFieldset){
       setReadOnly({name:input.name,read:true})
     }
-    return () => {
-
-    };
+    return () => {};
   }, [])
 
   useEffect(() => {
@@ -80,14 +79,14 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   }, [custom.isTabActive, saving])
 
   useEffect(() => {
+    //!ismount skips initial render
     if(!isMount){
-      //!ismount skips initial render
+      //Adds field to error list that don't trigger toastr right away (too many chars,empty field etc) and shows them when trying to save
       if(hasError){
-        //Adds field to error list that don't trigger toastr right away (too many chars,empty field etc) and shows them when trying to save
         dispatch(formErrorList(true,input.name))
       }
+      //removes field from error list
       else{
-        //removes field from error list
         dispatch(formErrorList(false,input.name))
       }
     }
@@ -99,6 +98,13 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
       document.activeElement.blur()
     }
   }, [lastSaved?.status === "error"])
+
+  useEffect(() => {
+    // Reset isThisFieldSaving when saving is complete for this field
+    if (isThisFieldSaving && (!saving || lastModified !== input.name)) {
+      setIsThisFieldSaving(false);
+    }
+  }, [saving, lastModified, input.name, isThisFieldSaving])
 
   useEffect(() => {
     //Chekcs that locked status has more data then inital empty object
@@ -114,10 +120,10 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           }
         }
         //Field is fieldset field and has different type of identifier
-        //else is normal field
         if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
           identifier = lockedStatus.lockData.attribute_lock.field_identifier;
         }
+        //is normal field
         else{
           identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
         }
@@ -137,8 +143,8 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
             
             if(fieldSetFields){
               for (const [key, value] of Object.entries(fieldSetFields)) {
+                //If field is this instance of component then set value for it from db
                 if(key === field){
-                  //If field is this instance of component then set value for it from db
                   fieldData = value
                 }
               }
@@ -155,14 +161,14 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
         }
         else{
           //Check if locked field name matches with instance and that owner is true to allow edit
-          //else someone else is editing and prevent editing
           if(lock && lockedStatus.lockData.attribute_lock.owner){
             if(lastModified === input.name && lockedStatus?.saving){
               setReadOnly({name:input.name,read:true})
             }
+            //someone else is editing and prevent editing
             else{
-              setReadOnly({name:input.name,read:false})
               //Add changed value from db if there has been changes
+              setReadOnly({name:input.name,read:false})
               setValue(lockedStatus.lockData.attribute_lock.field_data)
               //Change styles from FormField
               custom.lockField(lockedStatus,lockedStatus.lockData.attribute_lock.owner,identifier)
@@ -179,6 +185,11 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   }, [lockedStatusJsonString, connection.connection]);
 
   const handleFocus = () => {
+    // Clear readonly state when there's a validation error to allow editing
+    if(!custom.insideFieldset && !custom?.isProjectTimetableEdit && hasError){
+      setReadOnly({name:input.name,read:false})
+    }
+
     if (typeof custom.onFocus === 'function' && !lockedStatus?.saving && !custom.insideFieldset) {
       //Sent a call to lock field to backend
       custom.onFocus(input.name);
@@ -191,14 +202,39 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   }
 
   const handleBlur = (event,readonly) => {
+    // Ignore blur only when moving focus to the +/- buttons of the *same* NumberInput
+    if (
+      custom.type === 'number' &&
+      !custom.isFloorAreaForm &&
+      event &&
+      event.relatedTarget
+    ) {
+      const currentContainer = inputRef.current
+        ? inputRef.current.closest('.NumberInput-module_numberInputContainer__hKNPp')
+        : null;
+      const nextContainer = event.relatedTarget.closest(
+        '.NumberInput-module_numberInputContainer__hKNPp'
+      );
+
+      if (currentContainer && nextContainer && currentContainer === nextContainer) {
+        // Moving from input to its +/- button: keep it as one control.
+        // Refocus the input so that the *next* click outside will blur it and trigger onBlur normally.
+        setTimeout(() => {
+          if (inputRef.current && typeof inputRef.current.focus === 'function') {
+            inputRef.current.focus();
+          }
+        }, 0);
+        return;
+      }
+    }
     let identifier;
     //Chekcs that locked status has more data then inital empty object
     if(lockedStatus && Object.keys(lockedStatus).length > 0){
       //Field is fieldset field and has different type of identifier
-      //else is normal field
       if(lockedStatus.lockData.attribute_lock.fieldset_attribute_identifier){
         identifier = lockedStatus.lockData.attribute_lock.field_identifier;
       }
+      //is normal field
       else{
         identifier = lockedStatus.lockData.attribute_lock.attribute_identifier;
       }
@@ -233,27 +269,39 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
               dateOk = true
             }
             if(dateOk){
-              setIsInstanceSaving(true);
               localStorage.setItem("changedValues", input.name);
+              setIsThisFieldSaving(true);
               custom.onBlur(input.name);
               oldValueRef.current = event.target.value;
             }
           }
           else{
-            setIsInstanceSaving(true);
             localStorage.setItem("changedValues", input.name);
+            setIsThisFieldSaving(true);
             custom.onBlur(input.name);
-            if(!custom.insideFieldset){
-              const readOnlyValue = !custom?.isProjectTimetableEdit
-              setReadOnly({name:input.name,read:readOnlyValue})
-            }
             oldValueRef.current = event.target.value;
+            
+            // Check for validation errors first
+            let validationError = false;
             if(custom.regex){
               const regex = new RegExp(custom.regex);
-              setHasError(event.target.value !== "" && !regex.test(event.target.value))
+              validationError = event.target.value !== "" && !regex.test(event.target.value);
+              setHasError(validationError);
             } else if(custom.type === 'number') {
-              const regex = new RegExp("^[+-]?\\d+$");
-              setHasError(event.target.value !== "" && !regex.test(event.target.value))
+              const regex = /^-?\d+$/;
+              validationError = event.target.value !== "" && !regex.test(event.target.value);
+              setHasError(validationError);
+            }
+            
+            // Only set readonly if there's no validation error
+            if(!custom.insideFieldset){
+              if(!validationError){
+                const readOnlyValue = !custom?.isProjectTimetableEdit
+                setReadOnly({name:input.name,read:readOnlyValue})
+              } else {
+                // Keep field editable when there's a validation error
+                setReadOnly({name:input.name,read:false})
+              }
             }
           }
         }
@@ -269,15 +317,21 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     }
   }
 
+  // Sets the value of the input from the database if it has changed,
+  // used when field locking/unlocking or when data is updated externally
   const setValue = (dbValue) => {
-
+    // Don't overwrite if this field is currently saving or has focus
+    if(isThisFieldSaving || document.activeElement === inputRef.current){
+      return;
+    }
+    
     let name = input.name;
     let originalData = custom?.attributeData[name]
     if(custom.insideFieldset && !custom.nonEditable || !custom.rollingInfo){
       let fieldsetName
       let fieldName
       let index
-      //Get fieldset name, index and field of fieldset
+       //Get fieldset name, index and field of fieldset
       fieldsetName = name.split('[')[0]
       index = name.split('[').pop().split(']')[0];
       fieldName = name.split('.')[1]
@@ -291,30 +345,66 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     }
   }
 
-  const handleInputChange = useCallback((event,readonly) => {
-    const isConnected = connection.connection || typeof connection.connection === "undefined" ? true : false
-    if(!readonly || custom.type === "date" || isConnected){
-      if(!event.target.value?.trim() && custom?.fieldData?.isRequired){
-        setHasError(true)
+  // Helper for sanitizing floor area integer input
+  const sanitizeFloorAreaValue = (value) => value.replaceAll(/\D/g, '');
+
+  const processFloorAreaInput = (value) => {
+    let sanitized = sanitizeFloorAreaValue(value);
+    if (sanitized.startsWith('-')) sanitized = sanitized.substring(1);
+    return sanitized;
+  };
+
+  const handleInputChange = useCallback((event, readonly) => {
+    const isConnected = connection.connection ?? true;
+    let value = event.target.value;
+
+    if (custom.type === 'number' && custom.isFloorAreaForm) {
+      value = processFloorAreaInput(value);
+
+      if (value === '') {
+        setHasError(!!custom?.fieldData?.isRequired);
+        input.onChange('', input.name);
+        if (custom.isFloorAreaForm) {
+          //Edit floor area model object data with current value and dispatch change for form total value recalculation
+          let newObject = custom.floorValue;
+          newObject[input.name] = '';
+          dispatch(updateFloorValues(newObject));
+        }
+        return;
       }
-      else{
-        setHasError(false)
+    }
+
+    // Always allow changes for immediate UI feedback - readOnly on NumberInput is handled by the prop
+    const isConnectedOrAllowEdits = !readonly || custom.type === "date" || custom.type === "number" || isConnected;
+    
+    // Validate number input during typing
+    if(custom.type === 'number' && !custom.isFloorAreaForm) {
+      if(value === '') {
+        // Empty field - error only if required
+        setHasError(!!custom?.fieldData?.isRequired);
+      } else {
+        // Non-empty field - check if valid integer
+        const regex = /^-?\d+$/;
+        const isValid = regex.test(value);
+        setHasError(!isValid);
       }
-      input.onChange(event.target.value, input.name)
-      if(custom.isFloorAreaForm){
-        //Edit floor area model object data with current value and dispatch change for form total value recalculation
-        let newObject = custom.floorValue
-        newObject[input.name] = Number(event.target.value)
-        dispatch(updateFloorValues(newObject))
+    } else if(custom.type !== 'number' || custom.isFloorAreaForm) {
+      // For other types, only error if empty and required
+      setHasError(!value?.trim() && !!custom?.fieldData?.isRequired);
+    }
+    
+    // Always update the value for number inputs to ensure UI is responsive
+    if (custom.type === 'number' || isConnectedOrAllowEdits) {
+      input.onChange(value, input.name);
+      if (custom.isFloorAreaForm) {
+        let newObject = custom.floorValue;
+        newObject[input.name] = value === '' ? '' : Number(value);
+        dispatch(updateFloorValues(newObject));
       }
     }
   }, [input.name, input.value]);
 
-  useEffect(() => {
-    if (!saving && isInstanceSaving) {
-      setIsInstanceSaving(false);
-    }
-  }, [saving]);
+
 
   const editRollingField = () => {
     setEditField(true)
@@ -323,58 +413,76 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     }, 200);
   }
 
+  // Renders the rolling info field (read-only or with edit option)
+  const renderRollingInfo = () => (
+    <RollingInfo 
+      name={input.name} 
+      value={input.value} 
+      nonEditable={custom.nonEditable}
+      modifyText={custom.modifyText}
+      rollingInfoText={custom.rollingInfoText}
+      editRollingField={editRollingField}
+      type={"input"}
+      phaseIsClosed={custom.phaseIsClosed}
+      factaInfo={custom?.fieldData?.assistive_text}
+    />
+  );
 
-  const normalOrRollingElement = () => {
-    const errorString = custom.customError || (custom.type === 'number'? t('project.error-input-int') : t('project.error'))
-    //Render rolling info field or normal edit field
-    //If clicking rolling field button makes positive lock check then show normal editable field
-    //Rolling field can be nonEditable
-    const elements = custom.nonEditable || custom.rollingInfo && !editField ?
-      <RollingInfo 
-        name={input.name} 
-        value={input.value} 
-        nonEditable={custom.nonEditable}
-        modifyText={custom.modifyText}
-        rollingInfoText={custom.rollingInfoText}
-        editRollingField={editRollingField}
-        type={"input"}
-        phaseIsClosed={custom.phaseIsClosed}
-        factaInfo={custom?.fieldData?.assistive_text}
-      />
-      :    
-      <div className={custom.disabled || !inputUtils.hasError(error).toString() || !hasError ? "text-input " : "text-input " +t('project.error')}>
-        <TextInput
-          ref={inputRef}
-          aria-label={input.name}
-          error={inputUtils.hasError(error).toString()}
-          errorText={custom.disabled || !inputUtils.hasError(error).toString() || !hasError ? "" : errorString}
-          fluid="true"
-          {...input}
-          {...restCustom}
-          label={null}
-          disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled}
-          onChange={(event) =>{handleInputChange(event,readonly.read)}}
-          onBlur={(event) => {handleBlur(event,readonly.read)}}
-          onFocus={() => {handleFocus()}}
-          readOnly={readonly.read || lastSaved?.status === "error"}
-        />
-        {saving && isInstanceSaving && (
-          <>
-            {custom.type === "date" ? (
-              <div className="input-spinner-datetime">
-                <LoadingSpinner className="loading-spinner" />
-              </div>
-            ) : (
-              <div className="input-spinner">
-                <LoadingSpinner className="loading-spinner" />
-              </div>
-            )}
-          </>
+  // Renders the standard text input with error handling and loading spinner
+  const renderTextInput = () => {
+    const errorString = custom.customError || (custom.type === 'number' ? t('project.error-input-int') : t('project.error'));
+    const blurredClass = isThisFieldSaving ? ' blurred' : '';
+    return (
+      <div className={`${custom.disabled || (!inputUtils.hasError(error) && !hasError) ? "text-input" : "text-input " + t('project.error')}${custom.type === 'number' ? ' number-input' : ''}${blurredClass}`}>
+        {custom.type === 'number' ? (
+          <NumberInput
+            ref={inputRef}
+            aria-label={input.name}
+            error={inputUtils.hasError(error) || hasError}
+            errorText={custom.disabled || (!inputUtils.hasError(error) && !hasError) ? "" : errorString}
+            fluid="true"
+            {...input}
+            {...restCustom}
+            min={custom.isFloorAreaForm ? 0 : undefined}
+            step={custom.isFloorAreaForm ? null : 1}
+            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled || isThisFieldSaving}
+            onChange={(event) => { handleInputChange(event, readonly.read) }}
+            onBlur={(event) => { handleBlur(event, readonly.read) }}
+            onFocus={() => { handleFocus() }}
+            readOnly={readonly.read || lastSaved?.status === "error"}
+            minusStepButtonAriaLabel="Vähennä yhdellä"
+            plusStepButtonAriaLabel="Lisää yhdellä"
+          />
+        ) : (
+          <TextInput
+            ref={inputRef}
+            aria-label={input.name}
+            error={inputUtils.hasError(error) || hasError}
+            errorText={custom.disabled || (!inputUtils.hasError(error) && !hasError) ? "" : errorString}
+            fluid="true"
+            {...input}
+            {...restCustom}
+            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled}
+            onChange={(event) => { handleInputChange(event, readonly.read) }}
+            onBlur={(event) => { handleBlur(event, readonly.read) }}
+            onFocus={() => { handleFocus() }}
+            readOnly={readonly.read || lastSaved?.status === "error"}
+          />
         )}
+        <NetworkErrorState fieldName={input.name} />
       </div>
-    
-    return elements
-  }
+    );
+  };
+
+  // Decides whether to show a rolling info field or a normal text input
+  const normalOrRollingElement = () => {
+     // If the field is non-editable, or rollingInfo is enabled and not in edit mode, show rolling info
+    if (custom.nonEditable || (custom.rollingInfo && !editField)) {
+      return renderRollingInfo();
+    }
+    // Otherwise, show the standard text input
+    return renderTextInput();
+  };
 
   return (
     normalOrRollingElement()

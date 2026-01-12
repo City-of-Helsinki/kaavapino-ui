@@ -143,7 +143,9 @@
   }
   .rich-text-disabled {
     pointer-events: none;
-    opacity: .35;
+    .ql-editor{
+      background-color: #E6E6E6;
+    }
   }
   .quill-counter {
     font-family: "Helsinki Grotesk Bold", sans-serif;

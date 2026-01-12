@@ -154,6 +154,9 @@ const DeadLineInput = ({
   }
 
   const isDisabledDate = (date) => {
+    if (currentDeadline === undefined) {
+      return false;
+    }
     //20 years is the calendars range to check work days, holidays etc from current date
     const twentyYearsAgo = new Date();
     twentyYearsAgo.setFullYear(twentyYearsAgo.getFullYear() - 20);

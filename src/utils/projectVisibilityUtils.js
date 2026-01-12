@@ -1,5 +1,6 @@
 import { includes, get } from 'lodash'
 import projectUtils from './projectUtils'
+import textUtil from './textUtil'
 // Field returns info whether field given as a parameter should be shown or not.
 
 export const vis_bool_group_map = Object.freeze({
@@ -215,7 +216,7 @@ export const shouldDeadlineBeVisible = (deadlineName, deadlineGroup, attributeDa
 }
 
 // Helper function to check if dates are confirmed
-export const isDeadlineConfirmed = (formValues, deadlineGroup, returnField) => {
+export const isDeadlineConfirmed = (formValues, deadlineGroup, returnField, breakAtFirst) => {
     // ReturnField true is used when deleting phase and making sure confirmation is deleted too.
     // Extract the number from deadlineGroup if it exists
     const extractDigitsFromEnd = (str) => {
@@ -245,6 +246,9 @@ export const isDeadlineConfirmed = (formValues, deadlineGroup, returnField) => {
         if (matchNumber && matchNumber === "1") {
           // If number is 1, use the base key
           confirmationKey = baseKeys[key];
+          if(breakAtFirst){
+            break;
+          }
         } else if (matchNumber) {
           // If number is bigger, construct the confirmationKey using the number
           confirmationKey = `${baseKeys[key]}_${matchNumber}`;
@@ -257,4 +261,48 @@ export const isDeadlineConfirmed = (formValues, deadlineGroup, returnField) => {
     }
     const returnValue = returnField ? { key: confirmationKey, value: formValues[confirmationKey] } : formValues[confirmationKey];
     return returnValue;
+  };
+
+  // Helper: does current phase have at least one confirmed deadline
+  export const isCurrentPhaseConfirmed = (attribute_data) => {
+    if (!attribute_data || !attribute_data.kaavan_vaihe) return false;
+
+    // Remove leading numbering like "3. " then normalize (lowercase, remove spaces)
+    // Also remove a possible leading 'XL.' (roman numeral / size marker) prefix
+    const raw = attribute_data.kaavan_vaihe.replace(/^(?:[\d]+\.|XL\.)\s*/i, '');
+    // Use shared utility to normalize Scandinavian characters
+    let phase = textUtil.replaceScandics(raw).toLowerCase().trim();
+    // Exception: keep tarkistettu_ehdotus with underscore (do NOT concatenate)
+    if (phase === 'tarkistettu ehdotus') {
+      phase = 'tarkistettu_ehdotus';
+    } else {
+      // Other phases: remove spaces entirely
+      phase = phase.replace(/\s+/g, '');
+    }
+
+    // These phases should bypass confirmation requirement
+    if (phase === 'kaynnistys' || phase === 'hyvaksyminen' || phase === 'voimaantulo') {
+      return true;
+    }
+
+    // Collect candidate deadline groups for this phase
+    const groupKeys = Object.keys(vis_bool_group_map).filter(group => {
+      if (group.startsWith('tarkistettu_ehdotus')) {
+        return phase === 'tarkistettu_ehdotus';
+      }
+      const firstToken = group.split('_')[0];
+      return firstToken === phase;
+    });
+
+    if (groupKeys.length === 0) {
+      return false; // No groups -> block
+    }
+
+    const visibleGroups = groupKeys.filter(g => shouldDeadlineBeVisible(null, g, attribute_data));
+    for (const g of visibleGroups) {
+      if (isDeadlineConfirmed(attribute_data, g, false, true)) {
+        return true;
+      }
+    }
+    return false;
   };

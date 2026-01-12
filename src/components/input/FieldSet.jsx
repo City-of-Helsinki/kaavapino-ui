@@ -2,12 +2,13 @@ import React, { useState, useRef, useEffect } from 'react'
 import { connect, useDispatch } from 'react-redux'
 import { checkingSelector, savingSelector, formErrorListSelector, lastSavedSelector, updateFieldSelector} from '../../selectors/projectSelector'
 import CustomField from './CustomField.jsx'
-import { Form, Label, Popup } from 'semantic-ui-react'
+import { Form, Label } from 'semantic-ui-react'
 import projectUtils from '../../utils/projectUtils'
+import inputUtils from '../../utils/inputUtils'
 import Info from './Info.jsx'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { has, get, startCase } from 'lodash'
-import { Button, IconLock, IconClock, IconPlus, IconTrash, IconAngleDown, IconAngleUp, LoadingSpinner } from 'hds-react'
+import { Button, IconLock, IconPlus, IconTrash, IconAngleDown, IconAngleUp, LoadingSpinner, Tooltip } from 'hds-react'
 import { change } from 'redux-form'
 import { useTranslation } from 'react-i18next';
 import { OutsideClick } from '../../hooks/OutsideClick'
@@ -43,7 +44,10 @@ const FieldSet = ({
   updateField,
   phaseIsClosed,
   fieldsetTotal,
-  isTabActive
+  isTabActive,
+  highlightedInFieldset,
+  highlightedTag,
+  savingField
 }) => {
   const handleBlur = () => {
     setShowSaving(true)
@@ -285,6 +289,7 @@ const FieldSet = ({
                    * here to modify the input header accordingly. */
                   const showError = required ? t('project.required-field') : error
                   const fieldUpdated = updated?.new_value && has(updated?.new_value[0], field.name)
+                  const fieldSpecificUpdated = fieldUpdated ? updated : (updated?.timestamp ? updated : undefined)
                   let fieldRollingInfo
                   let rollingInfoText = "Tieto siirtyy vaiheiden välillä ja sitä voi täydentää"
                   let nonEditable = false
@@ -307,7 +312,8 @@ const FieldSet = ({
                       className={`input-container ${showError ? 'error' : ''} ${fieldsetDisabled ? 'disabled-fieldset' : ''}`}
                       key={j}
                     >
-                      <Form.Field required={required}>
+                      <Form.Field required={required} className={field?.field_subroles === highlightedTag && highlightedInFieldset === "yellow" ? "yellow-fieldset" : ""}>
+                        {field?.field_subroles === highlightedTag && highlightedInFieldset === "yellow" ? <div className={"yellow-fieldset" + " highlight-flag"}>{highlightedTag}</div> : ''}
                         <div className="input-header">
                           <Label
                             className={`input-title${required ? ' highlight' : ''} ${showError ? 'error' : ''
@@ -332,22 +338,11 @@ const FieldSet = ({
                             } */}
                           </Label>
                           <div className="input-header-icons">
-                            {fieldUpdated && !isReadOnly && (
-                              <Popup
-                                trigger={<IconClock />}
-                                inverted
-                                on="hover"
-                                position="top center"
-                                hideOnScroll
-                                content={
-                                  <span className="input-history">
-                                    <span>{`${projectUtils.formatDate(
-                                      updated.timestamp
-                                    )} ${projectUtils.formatTime(updated.timestamp)} ${updated.user_name
-                                      }`}</span>
-                                  </span>
-                                }
-                              />
+                            {!isReadOnly && (
+                              <>
+                                {inputUtils.renderUpdatedFieldInfo({ savingField, fieldName: field.name, updated: fieldSpecificUpdated, t, isFieldset: false })}
+                                {inputUtils.renderTimeContainer({ updated: fieldSpecificUpdated, t })}
+                              </>
                             )}
                             {field.help_text && (
                               <Info content={field.help_text} link={field.help_link} linked={field.linked_fields} help_img_link={field.help_img_link}/>
@@ -382,6 +377,8 @@ const FieldSet = ({
                           nonEditable={nonEditable}
                           phaseIsClosed={phaseIsClosed}
                           isTabActive={isTabActive}
+                          highlightedInFieldset={highlightedInFieldset}
+                          highlightedTag={highlightedTag}
                         />
                         {showError && <div className="error-text">{showError}</div>}
                         {assistiveText && <div className='assistive-text'>{assistiveText}.</div>}
@@ -442,7 +439,7 @@ const FieldSet = ({
           ? t('project.adding')
           : t('project.add')}
         </Button>
-        {(updateField?.fieldName === name) && showSaving
+        {((updateField?.fieldName === name) && showSaving) || (savingField && fields.some(field => field.name === savingField))
          ? (
            <div className='fieldset-saving-notification'>
              <div className="fieldset-spinner">
@@ -465,7 +462,8 @@ const mapStateToProps = state => ({
   saving: savingSelector(state),
   visibleErrors:formErrorListSelector(state),
   lastSaved: lastSavedSelector(state),
-  updateField: updateFieldSelector(state)
+  updateField: updateFieldSelector(state),
+  savingField: state.project.savingField
 })
 
 FieldSet.propTypes = {

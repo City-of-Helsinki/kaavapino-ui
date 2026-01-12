@@ -1,12 +1,14 @@
 import React, {useCallback,useState} from 'react'
 import CustomField from './CustomField.jsx'
 import Matrix from './Matrix'
-import { Form, Label, Popup } from 'semantic-ui-react'
+import { Form, Label } from 'semantic-ui-react'
 import Info from './Info.jsx'
 import projectUtils from '../../utils/projectUtils'
+import inputUtils from '../../utils/inputUtils'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
-import { IconClock,IconLock } from 'hds-react'
+import { IconLock } from 'hds-react'
+import { useSelector } from 'react-redux'
 import { withTranslation } from 'react-i18next'
 import { isArray } from 'lodash'
 import PropTypes from 'prop-types'
@@ -32,8 +34,11 @@ const FormField = ({
   unlockAllFields,
   highlightedTag,
   highlightStyle,
+  highlightedInFieldset,
   insideFieldset,
   disabled,
+  lautakuntaInPast,
+  tooltip,
   deadlines,
   isProjectTimetableEdit,
   rollingInfo,
@@ -60,12 +65,12 @@ const FormField = ({
   ...rest
 }) => {
   const [lockStatus, setLockStatus] = useState({})
+  const savingField = useSelector(state => state.project.savingField)
   const handleBlurSave = useCallback(() => {
     if (typeof handleSave === 'function') {
-      handleSave()
+      handleSave(field.name)
     }
-  }, []);
-
+  }, [field.name, handleSave]);
   const lockField = (lockStyle,owner,identifier) => {
     let fieldName = identifier;
     let fieldSetId = "";
@@ -112,6 +117,8 @@ const FormField = ({
           <CustomField
             {...rest}
             disabled={typeof newField.disabled === "undefined" ? disabled : newField.disabled}
+            lautakuntaInPast={lautakuntaInPast}
+            tooltip={tooltip}
             field={newField}
             attributeData={attributeData}
             className={className}
@@ -151,6 +158,8 @@ const FormField = ({
             allowedToEdit={allowedToEdit}
             isAdmin={isAdmin}
             timetable_editable={timetable_editable}
+            highlightedInFieldset={highlightedInFieldset}
+            highlightedTag={highlightedTag}
           />
         )
     }
@@ -230,6 +239,7 @@ const FormField = ({
       ...field,
       type: 'readonly'
     }
+
     return renderField(newProps)
   }
 
@@ -245,6 +255,21 @@ const FormField = ({
     }
 
     const assistiveText = field.assistive_text
+
+    // TEMPORARY WORKAROUND:
+    // The field 'tarkasta_lautakunta_periaatteet_fieldset' is hidden due to current system limitations.
+    // This should be removed once the system is updated to match the requirements specified in Excel.
+    // Remove this check when the field logic is fixed and works as intended.
+    // See: KAAV-3496
+    if (
+      field.name === 'tarkasta_lautakunta_periaatteet_fieldset' ||
+      field.name === 'tarkasta_lautakunta_luonnos_fieldset' ||
+      field.name === 'tarkasta_lautakunta_ehdotus_fieldset' ||
+      field.name === 'tarkasta_lautakunta_tarkistettu_ehdotus_fieldset'
+    ) {
+      return null;
+    }
+
     return (
       <>
       <Form.Field
@@ -280,23 +305,11 @@ const FormField = ({
               </Label>
             </div>
             <div className="input-header-icons">
-            {updated && !isReadOnly && (
-              <Popup
-                trigger={<IconClock />}
-                inverted
-                on="hover"
-                position="top center"
-                hideOnScroll
-                content={
-                  <span className="input-history">
-                    <span>{`${projectUtils.formatDate(
-                      updated.timestamp
-                    )} ${projectUtils.formatTime(updated.timestamp)} ${
-                      updated.user_name
-                    }`}</span>
-                  </span>
-                }
-              />
+            {!isReadOnly && (
+              <>
+                {inputUtils.renderUpdatedFieldInfo({ savingField, fieldName: field.name, updated, t })}
+                {inputUtils.renderTimeContainer({ updated, t })}
+              </>
             )}
             {field.help_text && (
               <Info content={field.help_text} link={field.help_link} linked={field.linked_fields} help_img_link={field.help_img_link} />
@@ -345,6 +358,10 @@ const FormField = ({
 FormField.propTypes = {
   disabled: PropTypes.bool,
   field: PropTypes.object,
+  updated: PropTypes.shape({
+    timestamp: PropTypes.string,
+    user_name: PropTypes.string
+  }),
   deadlines:PropTypes.array,
   isProjectTimetableEdit:PropTypes.bool,
   rollingInfo:PropTypes.bool,

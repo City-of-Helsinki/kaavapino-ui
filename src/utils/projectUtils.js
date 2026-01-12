@@ -1,5 +1,5 @@
 import { isArray } from 'lodash'
-import { showField } from './projectVisibilityUtils'
+import { showField, vis_bool_group_map } from './projectVisibilityUtils'
 
 let confirmationAttributeNames = [
   'vahvista_oas_esillaolo_alkaa','vahvista_oas_esillaolo_paattyy',
@@ -258,45 +258,95 @@ const findValuesFromObject = (object, key, returnArray) => {
   return value
 }
 
-function hasMissingFields(attributeData, currentProject, schema) {
-    const currentSchema = schema.phases.find(s => s.id === currentProject.phase)
-    const { sections } = currentSchema
-    let missingFields = false
-    // Go through every single field
-    sections.forEach(({ fields }) => {
-      fields.forEach(field => {
-        // Only validate visible fields
-        if (showField(field, attributeData)) {
-          // Matrices can contain any kinds of fields, so
-          // we must go through them separately
-          if (field.type === 'matrix') {
-            const { matrix } = field
-            matrix.fields.forEach(({ required, name }) => {
-              if (isFieldMissing(name, required, attributeData)) {
-                missingFields = true
-              }
-            })
+function isFieldOrMatrixOrFieldsetMissing(field, attributeData) {
+  if (field.type === 'matrix') {
+    const { matrix } = field;
+    return matrix.fields.some(({ required, name }) => isFieldMissing(name, required, attributeData));
+  } else if (field.type === 'fieldset') {
+    return hasFieldsetErrors(field.name, field.fieldset_attributes, attributeData);
+  } else {
+    return isFieldMissing(field.name, field.required, attributeData, field.autofill_readonly);
+  }
+}
 
-            // Fieldsets can contain any fields (except matrices)
-            // multiple times, so we need to go through them all
-          } else if (field.type === 'fieldset') {
-            if (hasFieldsetErrors(field.name, field.fieldset_attributes, attributeData)) {
-              missingFields = true
-            }
-          } else if (
-            isFieldMissing(
-              field.name,
-              field.required,
-              attributeData,
-              field.autofill_readonly
-            )
-          ) {
-            missingFields = true
-          }
-        }
-      })
-    })
-    return missingFields 
+function hasUnconfirmedRequiredConfirmations(attributeData, currentSchema) {
+  if (!currentSchema?.title) return false;
+
+  const phaseTitleNormalized = (currentSchema.title || '').toLowerCase().trim();
+  let allowedSegments = [];
+  if (phaseTitleNormalized.includes('oas')) allowedSegments = ['oas'];
+  else if (phaseTitleNormalized.includes('periaatteet')) allowedSegments = ['periaatteet'];
+  else if (phaseTitleNormalized.includes('luonnos')) allowedSegments = ['luonnos','kaavaluonnos'];
+  else if (phaseTitleNormalized.includes('tarkistettu') && phaseTitleNormalized.includes('ehdotus')) allowedSegments = ['tarkistettu_ehdotus'];
+  else if (phaseTitleNormalized.includes('ehdotus')) allowedSegments = ['kaavaehdotus','ehdotus'];
+
+  const triggerTrueList = [];
+  const requiredConfirmations = [];
+
+  const esillaoloRegex = /^jarjestetaan_(\w+)_esillaolo_(\d+)$/;
+  const lautakuntaRegex = /^(\w+)_lautakuntaan_(\d+)$/;
+
+  Object.entries(attributeData).forEach(([key, value]) => {
+    if (value !== true) return;
+    let match = key.match(esillaoloRegex);
+    if (match) {
+      const seg = match[1];
+      const idx = parseInt(match[2], 10);
+      if (!allowedSegments.includes(seg)) return;
+      triggerTrueList.push(key);
+      const suffix = idx > 1 ? '_' + idx : '';
+      requiredConfirmations.push(`vahvista_${seg}_esillaolo_alkaa${suffix}`);
+      return;
+    }
+    match = key.match(lautakuntaRegex);
+    if (match) {
+      const seg = match[1];
+      const idx = parseInt(match[2], 10);
+      if (!allowedSegments.includes(seg)) return;
+      triggerTrueList.push(key);
+      const suffix = idx > 1 ? '_' + idx : '';
+      requiredConfirmations.push(`vahvista_${seg}_lautakunnassa${suffix}`);
+      return;
+    }
+  });
+
+  for (let i = 0; i < requiredConfirmations.length; i++) {
+    const cKey = requiredConfirmations[i];
+    const cVal = attributeData[cKey];
+    if (cVal !== true) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function hasMissingFields(attributeData, currentProject, schema, action) {
+  const currentSchema = schema.phases.find(s => s.id === currentProject.phase);
+  const currentDeadlineSchema = schema.deadline_sections.find(s => s.id === currentProject.phase)
+  const { sections } = currentSchema;
+
+  // 1. Check all fields
+  const missingFields = sections.some(({ fields }) =>
+      fields.some(field =>
+          showField(field, attributeData) &&
+          isFieldOrMatrixOrFieldsetMissing(field, attributeData)
+      )
+  );
+  if (missingFields) return true;
+  // 2. Check deadline schema required attributes
+  if (action === 'changeCurrentPhase' && currentDeadlineSchema) {
+    const tmpErrors = checkDeadlineSchemaErrors([], currentDeadlineSchema, attributeData, true);
+    if (tmpErrors.length > 0) {
+      return true;
+    }
+  }
+
+  // 3. Check phase confirmations
+  if (hasUnconfirmedRequiredConfirmations(attributeData, currentSchema)) {
+    return true;
+  }
+
+  return false;
 }
 
 function checkErrors(errorFields,currentSchema,attributeData) {
@@ -311,14 +361,14 @@ function checkErrors(errorFields,currentSchema,attributeData) {
           const { matrix } = field
           matrix.fields.forEach(({ required, name, label }) => {
             if (isFieldMissing(name, required, attributeData)) {
-              errorFields.push({"errorSection":title,"errorField":label,"fieldAnchorKey":name})
+              errorFields.push({"title":"Tämä näkymä","errorSection":title,"errorField":label,"fieldAnchorKey":name})
             }
           })
           // Fieldsets can contain any fields (except matrices)
           // multiple times, so we need to go through them all
         } else if (field.type === 'fieldset') {
           if (hasFieldsetErrors(field.name, field.fieldset_attributes, attributeData)) {
-            errorFields.push({"errorSection":title,"errorField":field.label,"fieldAnchorKey":field.name})
+            errorFields.push({"title":"Tämä näkymä","errorSection":title,"errorField":field.label,"fieldAnchorKey":field.name})
           }
         } else if (
           isFieldMissing(
@@ -328,7 +378,7 @@ function checkErrors(errorFields,currentSchema,attributeData) {
             field.autofill_readonly
           )
         ) {
-          errorFields.push({"errorSection":title,"errorField":field.label,"fieldAnchorKey":field.name})
+          errorFields.push({"title":"Tämä näkymä","errorSection":title,"errorField":field.label,"fieldAnchorKey":field.name})
         }
       }
     })
@@ -336,7 +386,110 @@ function checkErrors(errorFields,currentSchema,attributeData) {
   return errorFields
 }
 
-function getErrorFields(checkDocuments, attributeData, currentSchema, phase) {
+// Timetable modal required fields checks.
+function checkDeadlineSchemaErrors(errorFields, currentDeadlineSchema, attributeData,isEndPhaseCheck) {
+  if (!currentDeadlineSchema) return errorFields
+  const groupMap = vis_bool_group_map
+  let sections = currentDeadlineSchema?.sections || []
+  sections.forEach(section => {
+    const attrs = section?.attributes || []
+    attrs.forEach(attr => {
+      if (!attr?.required) return
+      const val = findValueFromObject(attributeData, attr.name)
+      //Ending phase specific checks
+      if (isEndPhaseCheck) {
+        // Confirmation fields should only error when their occurrence trigger boolean is active.
+        const confirmationPattern = /^vahvista_([a-z_]+)_(esillaolo(?:_alkaa(?:_(pieni|iso))?|_paattyy)?|lautakunnassa)(?:_(\d+))?$/
+        const match = attr.name.match(confirmationPattern)
+        if (match) {
+          let segment = match[1] // e.g. periaatteet, oas, luonnos, ehdotus, kaavaluonnos, kaavaehdotus, tarkistettu_ehdotus
+          const typePart = match[2] // esillaolo_alkaa(_pieni|_iso)? | esillaolo_paattyy | lautakunnassa
+          const idx = match[4] || '1'
+          if (segment === 'kaavaehdotus') segment = 'ehdotus' 
+          if (segment === 'kaavaluonnos') segment = 'luonnos'
+          let groupKey = null
+          if (typePart.startsWith('esillaolo')) {
+            const candidateNahtavilla = `${segment}_nahtavillaolokerta_${idx}`
+            if (Object.prototype.hasOwnProperty.call(groupMap, candidateNahtavilla)) {
+              groupKey = candidateNahtavilla
+            } else {
+              groupKey = `${segment}_esillaolokerta_${idx}`
+            }
+          } else if (typePart === 'lautakunnassa') {
+            groupKey = `${segment}_lautakuntakerta_${idx}`
+          }
+          if (groupKey && Object.prototype.hasOwnProperty.call(groupMap, groupKey)) {
+            const triggerBoolName = groupMap[groupKey]
+            const active = !triggerBoolName || findValueFromObject(attributeData, triggerBoolName) === true
+            if (!active) return // occurrence not enabled => skip confirmation
+            if (val !== true) {
+              errorFields.push({
+                "title": "Aikataulun muokkausnäkymä",
+                "errorSection": section.name,
+                "errorField": attr.label || attr.name,
+                "fieldAnchorKey": attr.name,
+                "attr":attr
+              })
+            }
+            return
+          }
+          // Fall through to generic handling if groupKey not mapped
+        }
+        const missing = val === undefined || val === null || val === '' || (Array.isArray(val) && val.length === 0)
+        if (missing) {
+          errorFields.push({
+            "title": "Aikataulun muokkausnäkymä",
+            "errorSection": section.name,
+            "errorField": attr.label || attr.name,
+            "fieldAnchorKey": attr.name,
+            "attr":attr
+          })
+        }
+      } 
+      else {
+        // document download checks
+        const isNumericConfirmation = /^vahvista_.*_\d+$/.test(attr.name)
+        if (isNumericConfirmation && attributeData[attr.name] === undefined) return
+        const isIndexOneConfirmation = /^vahvista_.*_1$/.test(attr.name)
+        const isBaseConfirmation = /^vahvista_/.test(attr.name) && !isNumericConfirmation
+        const missing =
+          val === undefined ||
+          val === null ||
+          val === '' ||
+          (Array.isArray(val) && val.length === 0) ||
+          ((isIndexOneConfirmation || isBaseConfirmation) && val === false)
+        if (missing) {
+          errorFields.push({
+            "title": "Aikataulun muokkausnäkymä",
+            "errorSection": section.name,
+            "errorField": attr.label || attr.name,
+            "fieldAnchorKey": attr.name,
+            "attr":attr
+          })
+        }
+      }
+    })
+  })
+  // Extra aggregate validation for Voimaantulo phase: require at least one of the given keys to have a non-empty string value (these keys are not marked as required)
+  if (currentDeadlineSchema?.title === 'Voimaantulo') {
+    const requiredKeys = ['tullut_osittain_voimaan_pvm','voimaantulo_pvm','kumottu_pvm','rauennut']
+    const hasAny = requiredKeys.some(k => {
+      const v = attributeData[k]
+      return typeof v === 'string' && v.trim() !== ''
+    })
+    if (!hasAny) {
+      errorFields.push({
+        "title": "Aikataulun muokkausnäkymä",
+        "errorSection": currentDeadlineSchema.title,
+        "errorField": "Voimaantulo: vähintään yksi kenttä (tullut osittain voimaan / voimaantulo / kumottu / rauennut) on täytettävä",
+        "fieldAnchorKey": requiredKeys[0]
+      })
+    }
+  }
+  return errorFields
+}
+
+function getErrorFields(checkDocuments, attributeData, currentSchema, phase, origin, currentDeadlineSchema, isEndPhaseCheck) {
   let errorFields = []
   const phaseName = attributeData.kaavan_vaihe.split(".").pop().replace(/\s/g,'');
   const title = currentSchema.title.replace(/\s/g,'');
@@ -344,6 +497,11 @@ function getErrorFields(checkDocuments, attributeData, currentSchema, phase) {
   if(checkDocuments && currentSchema?.id === phase && currentSchema?.sections && title === phaseName || !checkDocuments && currentSchema?.sections){
     // Go through every single field
     errorFields = checkErrors(errorFields,currentSchema,attributeData)
+    // Validate deadline schema required attributes using dedicated helper (phase already scoped)
+    if(isEndPhaseCheck){
+      //Check only and show required fields from deadlines when trying to change or archive phase
+      errorFields = checkDeadlineSchemaErrors(errorFields, currentDeadlineSchema, attributeData,isEndPhaseCheck)
+    }
   }
   else if(checkDocuments && currentSchema?.id === phase){
     //Show error for hide download button on document download view if not currently active phase
@@ -356,13 +514,20 @@ function isSceduleAccepted(attributeData, currentSchema) {
   let scheduleIsAccepted = []
   if(currentSchema?.sections){
     const { sections } = currentSchema
+    const currentPhaseRaw = attributeData?.kaavan_vaihe || '';
+    const currentPhaseName = currentPhaseRaw.split('.').pop().trim();
     // Go through every single field
     sections.forEach(({name,attributes }) => {
+      const sectionPhaseName = (name || '').split('.').pop().trim();
+      if (sectionPhaseName !== currentPhaseName) return;
       if(name === "2. OAS" || name === "3. Ehdotus" || name === "4. Tarkistettu ehdotus" || name === "XL. Periaatteet" || name === "XL. Luonnos"){
         attributes.forEach(field => {
           if (showField(field, attributeData)) {
             if (confirmationAttributes.includes(field.name)) {
-              const confirmName = field.name.replace("_readonly", "")
+              //Only first confirm needs to be checked for acceptance
+              const confirmName = field.name
+                .replace("_readonly", "")
+                .replace(/_\d+$/, '')
               const value = findValueFromObject(attributeData, confirmName)
               if (!value) {
                 //increase array size with false value and prevent acceptance
@@ -553,8 +718,7 @@ const getMissingGeoData = (attData, geoData) => {
 }
 
 
-export default {
-  confirmationAttributes,
+const exported = {  confirmationAttributes,
   formatDate,
   formatTime,
   formatDateTime,
@@ -585,5 +749,12 @@ export default {
   objectsEqual,
   diffArray,
   diffArrayObject,
-  getMissingGeoData
+  getMissingGeoData}
+
+if (process.env.UNIT_TEST === "true"){
+  exported.checkErrors = checkErrors;
+  exported.hasUnconfirmedRequiredConfirmations = hasUnconfirmedRequiredConfirmations;
+  exported.checkDeadlineSchemaErrors = checkDeadlineSchemaErrors;
 }
+
+export default exported;

@@ -1,4 +1,5 @@
 import { defineConfig, loadEnv } from 'vite'
+import { coverageConfigDefaults } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import svgr from 'vite-plugin-svgr'
 import path, { dirname } from 'path'
@@ -70,7 +71,13 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom',
       setupFiles: './src/setupTests.js',
       coverage: {
-        reporter: ['text', 'json', 'lcov']
+        reporter: ['text', 'json', 'lcov'],
+        exclude: [
+          ...coverageConfigDefaults.exclude,
+          'build',
+          'public',
+          'src/__mocks__/**',
+        ],
       }
     }
   }

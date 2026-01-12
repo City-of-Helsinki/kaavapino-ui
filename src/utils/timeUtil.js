@@ -28,6 +28,38 @@ import objectUtil from "./objectUtil";
     return `${year}-${month}-${day}`;
   };
 
+  // Returns localized relative date string using provided t function; always plural for months/years.
+	const formatRelativeDate = (timestamp, tFn) => {
+		if(!timestamp){
+			return ''
+		}
+		const updatedDate = new Date(timestamp)
+		const now = new Date()
+		const oneDayMs = 24 * 60 * 60 * 1000
+		const diffMs = now.getTime() - updatedDate.getTime()
+    if (diffMs < 0 || diffMs < oneDayMs) {
+      return tFn ? tFn('relativeDates.today') : 'Today'
+		}
+		const days = Math.floor(diffMs / oneDayMs)
+    if (days === 1) {
+      return tFn ? tFn('relativeDates.yesterday') : 'Yesterday'
+		}
+    if (days < 30) {
+      return tFn ? tFn('relativeDates.days-ago', { count: days }) : `${days} days ago`
+		}
+		let months = (now.getFullYear() - updatedDate.getFullYear()) * 12 + (now.getMonth() - updatedDate.getMonth())
+		if (months <= 0) {
+			months = 1
+		}
+    if (months < 12) {
+      const monthKey = months === 1 ? 'relativeDates.month-ago-singular' : 'relativeDates.month-ago'
+      return tFn ? tFn(monthKey, { count: months }) : `${months} months ago`
+		}
+		const years = Math.floor(months / 12)
+		const yearKey = years === 1 ? 'relativeDates.years-ago-singular' : 'relativeDates.years-ago'
+    return tFn ? tFn(yearKey, { count: years }) : `${years} years ago`
+	}
+
   // Helper function to check if a date is a holiday
   const isHoliday = (date,isInFilter,holidays) => {
     const dateStr = date.toISOString().split('T')[0]; // Convert to 'YYYY-MM-DD' format
@@ -568,8 +600,8 @@ const getDisabledDatesForProjectStart = (name, formValues, previousItem, nextIte
 const getDisabledDatesForApproval = (name, formValues, matchingItem, dateTypes, projectSize) => {
   const miniumDaysBetween = matchingItem?.distance_from_previous;
   const dateToCompare = name.includes("hyvaksymispaatos_pvm") ? formValues["hyvaksyminenvaihe_alkaa_pvm"] : formValues["voimaantulovaihe_alkaa_pvm"];
-  const filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates, dateToCompare);
-  let newDisabledDates = dateTypes?.työpäivät?.dates;
+  const filteredDateToCompare = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompare);
+  let newDisabledDates = dateTypes?.arkipäivät?.dates;
   const lastPossibleDateToSelect = addDays("työpäivät", filteredDateToCompare, miniumDaysBetween, dateTypes?.työpäivät?.dates, true);
   //Approval dates can be same as last phases ending date when XS or S size
   if(name.includes("hyvaksymispaatos_pvm") && (projectSize === 'XS' || projectSize === 'S')){
@@ -713,51 +745,166 @@ const getDisabledDatesForNahtavillaolo = (name, formValues, phaseName, matchingI
   }
 };
 
+// Note: despite the name, this function returns allowed dates, not disabled ones
 const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues, sectionAttributes, currentDeadline) => {
   const matchingItem = objectUtil.findMatchingName(sectionAttributes, name, "name");
   const previousItem = objectUtil.findItem(sectionAttributes, name, "name", -1);
   const nextItem = objectUtil.findItem(sectionAttributes, name, "name", 1);
   const phaseName = currentDeadline?.deadline?.phase_name?.toLowerCase();
+  let allowedDates;
   if (name.includes("projektin_kaynnistys_pvm") || name.includes("kaynnistys_paattyy_pvm")) {
-    return getDisabledDatesForProjectStart(name, formValues, previousItem, nextItem, dateTypes);
+      allowedDates = getDisabledDatesForProjectStart(name, formValues, previousItem, nextItem, dateTypes);
   } else if (["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauenut"].includes(name)) {
-    return getDisabledDatesForApproval(name, formValues, matchingItem, dateTypes, size);
+      allowedDates = getDisabledDatesForApproval(name, formValues, matchingItem, dateTypes, size);
+      return allowedDates; // Skip filtering past dates for approval dates
   } else if (name === "hyvaksymispaatos_valitusaika_paattyy" || name === "valitusaika_paattyy_hallinto_oikeus") {
-    return dateTypes?.arkipäivät?.dates;
+      allowedDates = dateTypes?.arkipäivät?.dates;
   } else if (currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')) {
-    return getDisabledDatesForLautakunta(name, formValues, phaseName, matchingItem, previousItem, dateTypes);
+      allowedDates = getDisabledDatesForLautakunta(name, formValues, phaseName, matchingItem, previousItem, dateTypes);
   } else if (!nahtavillaolo) {
-    return getDisabledDatesForSizeXSXL(name, formValues, matchingItem, dateTypes);
+      allowedDates = getDisabledDatesForSizeXSXL(name, formValues, matchingItem, dateTypes);
   } else {
-    return getDisabledDatesForNahtavillaolo(name, formValues, phaseName, matchingItem, dateTypes, size);
+      allowedDates = getDisabledDatesForNahtavillaolo(name, formValues, phaseName, matchingItem, dateTypes, size);
   }
+  // Filter out past dates (before today)
+  const todayStr = (() => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+  })();
+  return Array.isArray(allowedDates)
+      ? allowedDates.filter(date => date >= todayStr)
+      : [];
 };
 
 const compareAndUpdateDates = (data) => {
-  //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
-  const pairs = [
+  // Static pairs: viimeistaan lausunnot -> ehdotuksen nähtävillä päättyy variants
+  const lausuntoPairs = [
     ["viimeistaan_lausunnot_ehdotuksesta", "milloin_ehdotuksen_nahtavilla_paattyy"],
     ["viimeistaan_lausunnot_ehdotuksesta_2", "milloin_ehdotuksen_nahtavilla_paattyy_2"],
     ["viimeistaan_lausunnot_ehdotuksesta_3", "milloin_ehdotuksen_nahtavilla_paattyy_3"],
     ["viimeistaan_lausunnot_ehdotuksesta_4", "milloin_ehdotuksen_nahtavilla_paattyy_4"]
   ];
 
-  pairs.forEach(([key1, key2]) => {
-    if (data[key1] && data[key2]) {
-      const date1 = new Date(data[key1]).toISOString().slice(0, 10);
-      const date2 = new Date(data[key2]).toISOString().slice(0, 10);
-      if (date1 < date2) {
-        data[key1] = date2;
+  const validateAndNormalizeDate = (val) => {
+    if (!val) return null;
+    const d = new Date(val);
+    return isNaN(d) ? null : d.toISOString().slice(0, 10);
+  };
+
+  // Return latest (max) valid date among baseKey and its *_2..*_4 variants
+  const getLatestDateValue = (baseKey) => {
+    // Map date base keys to one or more activation boolean prefixes.
+    // For each numeric suffix n (1..4), if ALL listed prefixes exist for that n and are false, the candidate is ignored.
+    // Base variant without suffix corresponds logically to _1 booleans.
+    const activationMap = {
+      milloin_periaatteet_lautakunnassa: ["periaatteet_lautakuntaan"],
+      milloin_kaavaluonnos_lautakunnassa: ["kaavaluonnos_lautakuntaan"],
+      milloin_tarkistettu_ehdotus_lautakunnassa: ["tarkistettu_ehdotus_lautakuntaan"],
+      milloin_kaavaehdotus_lautakunnassa: ["kaavaehdotus_lautakuntaan"],
+      // Ehdotuksen nähtävillä end dates may be controlled either by initial nahtaville_1 or uudelleen_nahtaville_n flags
+      milloin_ehdotuksen_nahtavilla_paattyy: ["kaavaehdotus_nahtaville", "kaavaehdotus_uudelleen_nahtaville"],
+      // Esilläolo variants (example pattern) – extend if needed later
+      milloin_periaatteet_esillaolo_paattyy: ["jarjestetaan_periaatteet_esillaolo"],
+      milloin_luonnos_esillaolo_paattyy: ["jarjestetaan_luonnos_esillaolo"],
+      milloin_oas_esillaolo_paattyy: ["jarjestetaan_oas_esillaolo"]
+    };
+
+    const activationPrefixes = activationMap[baseKey] || [];
+
+    const variantKeys = [baseKey, `${baseKey}_2`, `${baseKey}_3`, `${baseKey}_4`];
+    const validVariants = [];
+
+    for (let i = 0; i < variantKeys.length; i++) {
+      const key = variantKeys[i];
+      const normalized = validateAndNormalizeDate(data[key]);
+      if (!normalized) continue; // skip empty / invalid
+      const suffixNumber = i === 0 ? 1 : (i + 1); // base -> 1, _2 -> 2, etc.
+      // Determine activation booleans for this suffix
+      let hasAtLeastOneActivation = false;
+      let anyActive = false;
+      for (const prefix of activationPrefixes) {
+        const boolKey = `${prefix}_${suffixNumber}`;
+        if (Object.prototype.hasOwnProperty.call(data, boolKey)) {
+          hasAtLeastOneActivation = true;
+          if (data[boolKey] === true) {
+            anyActive = true;
+          }
+        }
       }
+      // If there were activation flags and none are active, skip this variant
+      if (hasAtLeastOneActivation && !anyActive) continue;
+      validVariants.push(normalized);
+    }
+
+    if (!validVariants.length) return null;
+    return validVariants.reduce((a, b) => (b > a ? b : a), validVariants[0]);
+  };
+
+  lausuntoPairs.forEach(([dst, src]) => {
+    const srcDate = validateAndNormalizeDate(data[src]);
+    if (srcDate && data[dst] !== srcDate) {
+      data[dst] = srcDate;
     }
   });
+  //Check that phase end date line is moved to phases actual last date 
+  const buildPhasePairs = (size) => {
+    const isXL = size === "XL";
+    return [
+      ["periaatteetvaihe_paattyy_pvm", "milloin_periaatteet_lautakunnassa"],
+      ["oasvaihe_paattyy_pvm", "milloin_oas_esillaolo_paattyy"],
+      ["luonnosvaihe_paattyy_pvm", "milloin_kaavaluonnos_lautakunnassa"],
+      ["ehdotusvaihe_paattyy_pvm", isXL ? "milloin_ehdotuksen_nahtavilla_paattyy" : "milloin_ehdotus_esillaolo_paattyy"],
+      ["tarkistettuehdotusvaihe_paattyy_pvm", "milloin_tarkistettu_ehdotus_lautakunnassa"],
+      // hyvaksyminen & voimaantulo intentionally excluded (no paired controlling date specified)
+    ];
+  };
+
+  const phasePairs = buildPhasePairs(data["kaavaprosessin_kokoluokka"]);
+  phasePairs.forEach(([dst, srcBase]) => {
+    // Always pick the latest available date among base + suffixed variants
+    const latest = getLatestDateValue(srcBase);
+    if (latest && data[dst] !== latest) {
+      data[dst] = latest;
+    }
+  });
+  // Generic adjacency enforcement: each phase's start >= previous phase's end.
+  // Ordered phases including optional ones (periaatteet, luonnos) which may be absent.
+  const orderedPhases = [
+    { start: "kaynnistysvaihe_alkaa_pvm", end: "kaynnistysvaihe_paattyy_pvm" },
+    { start: "periaatteetvaihe_alkaa_pvm", end: "periaatteetvaihe_paattyy_pvm", optional: true },
+    { start: "oasvaihe_alkaa_pvm", end: "oasvaihe_paattyy_pvm" },
+    { start: "luonnosvaihe_alkaa_pvm", end: "luonnosvaihe_paattyy_pvm", optional: true },
+    { start: "ehdotusvaihe_alkaa_pvm", end: "ehdotusvaihe_paattyy_pvm" },
+    { start: "tarkistettuehdotusvaihe_alkaa_pvm", end: "tarkistettuehdotusvaihe_paattyy_pvm" },
+    { start: "hyvaksyminenvaihe_alkaa_pvm", end: "hyvaksyminenvaihe_paattyy_pvm" },
+    { start: "voimaantulovaihe_alkaa_pvm", end: "voimaantulovaihe_paattyy_pvm" }
+  ];
+
+  // Build a filtered sequence of phases that actually exist (have either start or end present)
+  const existingPhases = orderedPhases.filter(p => data[p.start] || data[p.end]);
+
+  for (let i = 1; i < existingPhases.length; i++) {
+    const prev = existingPhases[i - 1];
+    const cur = existingPhases[i];
+    const prevEnd = validateAndNormalizeDate(data[prev.end]);
+    const curStart = validateAndNormalizeDate(data[cur.start]);
+    if (prevEnd && curStart && curStart < prevEnd) {
+      // Move current start forward to previous end
+      data[cur.start] = prevEnd;
+    }
+  }
 };
- 
-export default {
+
+const exported = {
     isWeekend,
     addDays,
     subtractDays,
     formatDate,
+    formatRelativeDate,
     subtractDaysFromDate,
     moveItemForward,
     sortObjectByDate,
@@ -771,4 +918,17 @@ export default {
     findAllowedDate,
     findAllowedLautakuntaDate,
     compareAndUpdateDates
+};
+if (process.env.UNIT_TEST === 'true') {
+    exported.getPastDate = getPastDate;
+    exported.findNextPossibleValue = findNextPossibleValue;
+    exported.findNextPossibleBoardDate = findNextPossibleBoardDate;
+    exported.getDisabledDatesForProjectStart = getDisabledDatesForProjectStart;
+    exported.getDisabledDatesForApproval = getDisabledDatesForApproval;
+    exported.getDisabledDatesForLautakunta = getDisabledDatesForLautakunta;
+    exported.getDisabledDatesForSizeXSXL = getDisabledDatesForSizeXSXL;
+    exported.getDisabledDatesForNahtavillaolo = getDisabledDatesForNahtavillaolo;
+    exported.getHighestLautakuntaDate = getHighestLautakuntaDate;
 }
+
+export default exported;

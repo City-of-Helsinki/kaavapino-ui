@@ -453,7 +453,9 @@ class CustomField extends Component {
       lockStatus,
       unlockAllFields,
       rollingInfo,
-      phaseIsClosed
+      phaseIsClosed,
+      highlightedInFieldset,
+      highlightedTag
     } = this.props
 
     return (
@@ -482,6 +484,8 @@ class CustomField extends Component {
         phaseIsClosed={phaseIsClosed}
         fieldsetTotal={field.fieldset_total}
         isTabActive={this.props.isTabActive}
+        highlightedInFieldset={highlightedInFieldset}
+        highlightedTag={highlightedTag}
       />
     )
   }
@@ -517,12 +521,14 @@ class CustomField extends Component {
   }
 
   renderCustomCheckbox = props => {
-    const { field,formName,disabled,isProjectTimetableEdit,isAdmin } = this.props
+    const { field,formName,disabled, tooltip, lautakuntaInPast, isProjectTimetableEdit,isAdmin } = this.props
     return (
       <CustomCheckbox
         {...props}
         label={field.label}
         autofillRule={field.autofill_rule}
+        lautakuntaInPast={lautakuntaInPast}
+        tooltip={tooltip}
         formName={formName}
         display={field.display}
         disabled={disabled}
