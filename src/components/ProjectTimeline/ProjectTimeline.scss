@@ -123,7 +123,7 @@
           &.inner {
             top: 4px;
             height: 12px;
-            width: 100%;
+            width: calc(100% + 1px) !important;
             left: 0;
             &.start {
               width: 17px;
