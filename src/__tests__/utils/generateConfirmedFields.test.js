@@ -60,7 +60,7 @@ describe('generateConfirmedFields utility function', () => {
         for (const confirm_attribute of confirmationAttributeNames) {
             test_data[confirm_attribute] = true;
         }
-        const result = generateConfirmedFields({...test_attribute_data_XL}, confirmationAttributeNames, phaseNames);
+        const result = generateConfirmedFields(test_data, confirmationAttributeNames, phaseNames);
         for (const r of all_deadline_attribute_keys) {
             expect.soft(result, `Confirmed fields should include ${r}`).toContain(r);
         }
