@@ -326,6 +326,7 @@ function fillGaps(inputMonths, deadlines) {
           }
         } else {
           if (Array.isArray(monthDates[i][prop].deadline_type)) {
+            has_endpoint_in_range = true;
             if (monthDates[i][prop].deadline_type[0] === 'phase_start' || monthDates[i][prop].deadline_type[0] === 'past_start_point') {
               deadlineAbbreviation = monthDates[i][prop].abbreviation
               color_code = monthDates[i][prop].color_code
