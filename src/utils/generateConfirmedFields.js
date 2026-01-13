@@ -44,45 +44,57 @@
     return false;
   }
 
-  export function generateConfirmedFields(attributeData, confirmationAttributeNames, phaseNames) {
-    const confirmedFields = new Set();
-    const attributeKeys = Object.keys(attributeData);
+  function getPhaseFromConfirmationKey(confirmationKey, phaseNames) {
+    const match = confirmationKey.match(/^vahvista_([a-z0-9_]+)$/);
+    if (!match) return null;
+    const phasePart = match[1];
+    return phaseNames.find(p => phasePart === p || phasePart.startsWith(p + '_'));
+  }
 
-    for (const confirmationKey of confirmationAttributeNames) {
-      if (confirmationKey.includes('paattyy')) continue; // skip outdated
-      if (!attributeData[confirmationKey]) continue;
-      const match = confirmationKey.match(/^vahvista_([a-z0-9_]+)$/);
-      if (!match) continue;
-      const phasePart = match[1];
-      const phase = phaseNames.find(p => phasePart === p || phasePart.startsWith(p + '_'));
-      if (!phase) continue;
-      const aliases = PHASE_ALIASES[phase] || [phase];
-
-      // Add all fields containing any alias substring
-      for (const alias of aliases) {
-        for (const key of attributeKeys) {
-          if (key.includes(alias)) {
-            confirmedFields.add(key);
-          }
-        }
-      }
-
-      // Add special-case fields for this phase
-      for (const key of SPECIAL_CASES) {
-        if (key in attributeData && isSpecialCaseForPhase(key, phase)) {
+  function addAliasFields(confirmedFields, attributeKeys, aliases) {
+    for (const alias of aliases) {
+      for (const key of attributeKeys) {
+        if (key.includes(alias)) {
           confirmedFields.add(key);
         }
       }
     }
+  }
 
-    // Add *_fieldset fields if present
+  function addSpecialCaseFields(confirmedFields, attributeData, phase) {
+    for (const key of SPECIAL_CASES) {
+      if (key in attributeData && isSpecialCaseForPhase(key, phase)) {
+        confirmedFields.add(key);
+      }
+    }
+  }
+
+  function addFieldsetFields(confirmedFields, attributeKeys) {
     for (const key of attributeKeys) {
       if (key.endsWith('_fieldset')) {
         confirmedFields.add(key);
       }
     }
+  }
 
-    // Remove confirmation attributes from the result
+  export function generateConfirmedFields(attributeData, confirmationAttributeNames, phaseNames) {
+    const confirmedFields = new Set();
+    const attributeKeys = Object.keys(attributeData);
+
+    confirmationAttributeNames.forEach(confirmationKey => {
+      if (confirmationKey.includes('paattyy')) return;
+      if (!attributeData[confirmationKey]) return;
+
+      const phase = getPhaseFromConfirmationKey(confirmationKey, phaseNames);
+      if (!phase) return;
+
+      const aliases = PHASE_ALIASES[phase] || [phase];
+      addAliasFields(confirmedFields, attributeKeys, aliases);
+      addSpecialCaseFields(confirmedFields, attributeData, phase);
+    });
+
+    addFieldsetFields(confirmedFields, attributeKeys);
+
     const filteredFields = Array.from(confirmedFields).filter(
       key => !isConfirmationKey(key)
     );
