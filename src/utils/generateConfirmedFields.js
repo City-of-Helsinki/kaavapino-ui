@@ -87,5 +87,5 @@
       key => !isConfirmationKey(key)
     );
 
-    return filteredFields.sort();
+    return filteredFields.sort((a, b) => a.localeCompare(b));
   }
