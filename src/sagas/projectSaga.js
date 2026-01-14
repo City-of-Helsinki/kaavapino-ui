@@ -850,17 +850,9 @@ function* validateProjectTimetable() {
     } catch (e) {
       // Remove loading icon on error
       toastr.removeByType('info');
-      
-      if (e?.code === 'ERR_NETWORK') {
-        toastr.error(i18.t('messages.validation-error'), '', {
-          icon: <IconErrorFill />
-        });
-      } else {
-        // Handle non-date validation errors from backend
-        toastr.error(i18.t('messages.validation-error'), '', {
-          icon: <IconErrorFill />
-        });
-      }
+      toastr.error(i18.t('messages.validation-error'), '', {
+        icon: <IconErrorFill />
+      });
 
       // Reset validation state so user can try again
       yield put(setValidatingTimetable(false, false));
