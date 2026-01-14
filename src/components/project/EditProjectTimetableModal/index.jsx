@@ -38,6 +38,8 @@ class EditProjectTimeTableModal extends Component {
       sectionAttributes: []
     }
     this.timelineRef = createRef();
+    // Flag to prevent re-triggering validation when applying backend corrections
+    this.isApplyingBackendCorrections = false;
   }
 
   // Return sorted array of timeline items with a title excluding dividers
@@ -115,8 +117,11 @@ class EditProjectTimeTableModal extends Component {
       );
       this.setState({sectionAttributes})
       //when UPDATE_DATE_TIMELINE updates attribute values
+      // Set flag to prevent re-triggering validation when applying backend corrections
+      this.isApplyingBackendCorrections = true;
       Object.keys(attributeData).forEach(fieldName => 
         this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, fieldName, attributeData[fieldName])));
+      this.isApplyingBackendCorrections = false;
     }
     if(prevProps.formValues && !isEqual(prevProps.formValues, formValues)){
       //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
@@ -159,11 +164,12 @@ class EditProjectTimeTableModal extends Component {
           this.setState({visValues:formValues})
 
           // Validate timetable if at least one date has changed, or a group has been added/deleted
+          // Skip validation if we're applying backend corrections to avoid cascade
           const visBoolChanged = Object.keys(changedValues).some(key =>
             Object.values(vis_bool_group_map).includes(key) && key !== null);
 
-          if (visBoolChanged || this.state.unfilteredSectionAttributes?.some( attr =>
-            attr.type === 'date' && Object.keys(changedValues).includes(attr.name))) {
+          if (!this.isApplyingBackendCorrections && (visBoolChanged || this.state.unfilteredSectionAttributes?.some( attr =>
+            attr.type === 'date' && Object.keys(changedValues).includes(attr.name)))) {
             if (!this.props.validatingTimetable?.started || !this.props.validatingTimetable?.ended) {
               this.props.dispatch(validateProjectTimetable());
             }
