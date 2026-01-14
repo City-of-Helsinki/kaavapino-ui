@@ -125,7 +125,6 @@ import {
   VALIDATE_DATE,
   setDateValidationResult,
   VALIDATE_PROJECT_TIMETABLE,
-  UPDATE_PROJECT_FAILURE,
   setValidatingTimetable
 } from '../actions/projectActions'
 import { startSubmit, stopSubmit, setSubmitSucceeded, initialize } from 'redux-form'
@@ -856,6 +855,7 @@ function* validateProjectTimetable() {
 
       // Reset validation state so user can try again
       yield put(setValidatingTimetable(false, false));
+      yield put(error(e));
     }
   }
 }
