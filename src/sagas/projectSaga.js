@@ -845,47 +845,25 @@ function* validateProjectTimetable() {
 
       // Success. Prevent further validation calls by setting state
       yield put(setValidatingTimetable(true, true));
-      // Backend may have edited phase start/end dates, so update project
+      // Backend returns corrected dates in response.attribute_data, update project
       yield put(updateProject(response));
-      // Refresh baseline (initial) without clobbering unsaved edits so boolean toggles diff correctly later
-      //yield call(reinitializeTimetableFormIfNeeded, response)
     } catch (e) {
+      // Remove loading icon on error
+      toastr.removeByType('info');
+      
       if (e?.code === 'ERR_NETWORK') {
+        toastr.error(i18.t('messages.validation-error'), '', {
+          icon: <IconErrorFill />
+        });
+      } else {
+        // Handle non-date validation errors from backend
         toastr.error(i18.t('messages.validation-error'), '', {
           icon: <IconErrorFill />
         });
       }
 
-      // Catch reached so dates were not correct,
-      // get days and update them to form from projectReducer UPDATE_PROJECT_FAILURE
-
-      // For debugging
-      // Get the error message string dynamically
-      // const errorMessage = errorUtil.getErrorMessage(e?.response?.data);
-      // toastr.removeByType('info');
-      // toastr.info(i18.t('messages.error-with-dates'), errorMessage, {
-      //   timeOut: 10000,
-      //   removeOnHover: false,
-      //   showCloseButton: true,
-      //   preventDuplicates: true,
-      //   className: 'large-scrollable-toastr rrt-info',
-      // });
-
-      // Show a message of a dates changed
-      // const message = errorUtil.getErrorMessage(e?.response?.data, 'date');
-      // toastr.warning(i18.t('messages.fixed-timeline-dates'), message, {
-      //   timeOut: 10000,
-      //   removeOnHover: false,
-      //   showCloseButton: true,
-      //   preventDuplicates: true,
-      //   className: 'large-scrollable-toastr rrt-warning',
-      // });
-
-      // Dispatch failure action with error data for the reducer to handle date correction to timeline form
-      yield put({
-        type: UPDATE_PROJECT_FAILURE,
-        payload: { errorData: e?.response?.data, formValues: attribute_data },
-      });
+      // Reset validation state so user can try again
+      yield put(setValidatingTimetable(false, false));
     }
   }
 }
