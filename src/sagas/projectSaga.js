@@ -127,7 +127,7 @@ import {
   VALIDATE_PROJECT_TIMETABLE,
   setValidatingTimetable
 } from '../actions/projectActions'
-import { startSubmit, stopSubmit, setSubmitSucceeded, initialize } from 'redux-form'
+import { startSubmit, stopSubmit, setSubmitSucceeded, initialize, change } from 'redux-form'
 import { error } from '../actions/apiActions'
 import { setAllEditFields } from '../actions/schemaActions'
 import projectUtils from '../utils/projectUtils'
@@ -780,7 +780,10 @@ function* saveProjectFloorArea() {
     yield put(initialize(EDIT_PROJECT_TIMETABLE_FORM, nextInitial))
 } */
 
-function* validateProjectTimetable() {
+function* validateProjectTimetable({ payload }) {
+  // KAAV-3492: Use passed attributeData if available (contains cascaded values from frontend)
+  const passedAttributeData = payload?.attributeData;
+  
   // Remove success toastr before showing info
   toastr.removeByType('success');
   toastr.clean(); // Clear existing toastr notifications
@@ -797,14 +800,18 @@ function* validateProjectTimetable() {
   const { initial, values } = yield select(editProjectTimetableFormSelector);
   const currentProjectId = yield select(currentProjectIdSelector);
 
-  if (values) {
-    let changedAttributeData = getChangedAttributeData(values, initial);
+  // Use passed data if available, otherwise fall back to form values
+  const sourceValues = passedAttributeData || values;
+  
+  if (sourceValues) {
+    // Always compute changed attributes vs initial to only send what's different
+    let changedAttributeData = getChangedAttributeData(sourceValues, initial);
 
     if (changedAttributeData.oikaisukehoituksen_alainen_readonly) {
       delete changedAttributeData.oikaisukehoituksen_alainen_readonly;
     }
 
-    let attribute_data = adjustDeadlineData(changedAttributeData, values);
+    let attribute_data = adjustDeadlineData(changedAttributeData, sourceValues);
 
     // Add confirmed field locking from vahvista_* flags
     // leave 'kaynnistys','hyvaksyminen','voimaantulo' out because no vahvista flags there
@@ -844,8 +851,13 @@ function* validateProjectTimetable() {
 
       // Success. Prevent further validation calls by setting state
       yield put(setValidatingTimetable(true, true));
-      // Backend returns corrected dates in response.attribute_data, update project
-      yield put(updateProject(response));
+      // KAAV-3492: Only update form with corrected dates from response, don't replace whole project
+      // The response.attribute_data contains only the attributes that were sent in the payload
+      if (response.attribute_data) {
+        for (const [key, value] of Object.entries(response.attribute_data)) {
+          yield put(change(EDIT_PROJECT_TIMETABLE_FORM, key, value));
+        }
+      }
     } catch (e) {
       // Remove loading icon on error
       toastr.removeByType('info');
