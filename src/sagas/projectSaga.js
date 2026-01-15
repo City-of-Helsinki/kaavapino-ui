@@ -127,7 +127,7 @@ import {
   VALIDATE_PROJECT_TIMETABLE,
   setValidatingTimetable
 } from '../actions/projectActions'
-import { startSubmit, stopSubmit, setSubmitSucceeded, initialize, change } from 'redux-form'
+import { startSubmit, stopSubmit, setSubmitSucceeded, change } from 'redux-form'
 import { error } from '../actions/apiActions'
 import { setAllEditFields } from '../actions/schemaActions'
 import projectUtils from '../utils/projectUtils'
