@@ -41,12 +41,19 @@ function ProjectTimeline(props) {
       return
     }
     const mergedDeadlines = mergeDeadlinesWithAttributes(deadlines, attribute_data)
+    // Check for errors on ALL deadlines before filtering (errors may be on invisible deadlines)
+    const hasDeadlineErrors = mergedDeadlines.some(deadline => 
+      deadline?.is_under_min_distance_next ||
+      deadline?.is_under_min_distance_previous ||
+      deadline?.out_of_sync
+    )
     const filteredDeadlines = filterVisibleDeadlines(mergedDeadlines, attribute_data)
     if (!filteredDeadlines || !filteredDeadlines.length) {
       setDrawItems([])
       setDrawMonths([])
       setColumnCount(0)
-      setShowError(false)
+      // Keep error state if we found errors above
+      setShowError(hasDeadlineErrors)
       return
     }
     if (!projectView) {
@@ -54,7 +61,7 @@ function ProjectTimeline(props) {
       const columns = createDrawMonths(months.months)
       setColumnCount(columns)
     }
-    createTimelineItems(filteredDeadlines)
+    createTimelineItems(filteredDeadlines, hasDeadlineErrors)
   }, [deadlines, attribute_data, projectView]);
 
   function filterVisibleDeadlines(deadlineArray = [], attributeData) {
@@ -443,11 +450,13 @@ function ProjectTimeline(props) {
     }
   }
 
-  function createTimelineItems(timelineDeadlines) {
+  function createTimelineItems(timelineDeadlines, hasPreCheckErrors = false) {
     const months = createMonths(timelineDeadlines)
     const deadlineArray = createDeadlines(timelineDeadlines, months.months)
-    if (months.error || deadlineArray.error) {
+    if (months.error || deadlineArray.error || hasPreCheckErrors) {
       setShowError(true)
+    } else {
+      setShowError(false)
     }
     const columnsFromMonths = createDrawMonths(months.months)
     const columns = columnsFromMonths || months.totalWeeks
