@@ -16,7 +16,7 @@ import ConfirmModal from '../common/ConfirmModal'
 import PropTypes from 'prop-types';
 import { getVisibilityBoolName, getVisBoolsByPhaseName, isDeadlineConfirmed } from '../../utils/projectVisibilityUtils';
 import { useTimelineTooltip } from '../../hooks/useTimelineTooltip';
-import { updateDateTimeline, validateProjectTimetable } from '../../actions/projectActions';
+import { updateDateTimeline } from '../../actions/projectActions';
 import './VisTimeline.scss'
 Moment.locale('fi');
 
@@ -1718,7 +1718,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                   false,
                   deadlineSections
                 ));
-                // KAAV-3492: Validation will be triggered by componentDidUpdate after cascade completes
               }
             }
           } else {
