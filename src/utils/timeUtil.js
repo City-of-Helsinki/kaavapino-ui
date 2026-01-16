@@ -852,12 +852,13 @@ const compareAndUpdateDates = (data) => {
   });
   //Check that phase end date line is moved to phases actual last date 
   const buildPhasePairs = (size) => {
-    const isXL = size === "XL";
+    // L and XL have reversed order in ehdotus phase: lautakunta first, nähtävilläolo last
+    const isLargeProject = size === "XL" || size === "L";
     return [
       ["periaatteetvaihe_paattyy_pvm", "milloin_periaatteet_lautakunnassa"],
       ["oasvaihe_paattyy_pvm", "milloin_oas_esillaolo_paattyy"],
       ["luonnosvaihe_paattyy_pvm", "milloin_kaavaluonnos_lautakunnassa"],
-      ["ehdotusvaihe_paattyy_pvm", isXL ? "milloin_ehdotuksen_nahtavilla_paattyy" : "milloin_ehdotus_esillaolo_paattyy"],
+      ["ehdotusvaihe_paattyy_pvm", isLargeProject ? "milloin_ehdotuksen_nahtavilla_paattyy" : "milloin_ehdotus_esillaolo_paattyy"],
       ["tarkistettuehdotusvaihe_paattyy_pvm", "milloin_tarkistettu_ehdotus_lautakunnassa"],
       // hyvaksyminen & voimaantulo intentionally excluded (no paired controlling date specified)
     ];
