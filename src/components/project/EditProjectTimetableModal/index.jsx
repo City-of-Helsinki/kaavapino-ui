@@ -152,7 +152,8 @@ class EditProjectTimeTableModal extends Component {
           const newObjectArray = objectUtil.findDifferencesInObjects(prevProps.formValues,formValues)
 
           //No dispatch when confirmed is added to formValues as new data
-          if(newObjectArray.length === 0 || (typeof newObjectArray[0]?.obj1 === "undefined"  && typeof newObjectArray[0]?.obj2 === "undefined") || newObjectArray[0]?.key.includes("vahvista")){
+          // KAAV-3492: Also skip updateDateTimeline dispatch while validation is in progress to prevent cascade loops
+          if(newObjectArray.length === 0 || (typeof newObjectArray[0]?.obj1 === "undefined"  && typeof newObjectArray[0]?.obj2 === "undefined") || newObjectArray[0]?.key.includes("vahvista") || this.props.validatingTimetable?.started){
             console.log("no disptach")
           }
           else if(typeof newObjectArray[0]?.obj1 === "undefined" && typeof newObjectArray[0]?.obj2 === "string" || newObjectArray[1] && typeof newObjectArray[1]?.obj1 === "undefined" && typeof newObjectArray[1]?.obj2 === "string"){
