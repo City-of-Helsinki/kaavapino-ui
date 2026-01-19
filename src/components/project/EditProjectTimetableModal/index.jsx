@@ -135,6 +135,13 @@ class EditProjectTimeTableModal extends Component {
         if (isGroupAddRemove) {
           this.addGroup(changedValues)
           this.setState({visValues:formValues})
+          // KAAV-3492: Trigger validation after adding new group to cascade dates
+          // Wait for next tick to allow form values to update, then validate
+          setTimeout(() => {
+            if (!this.props.validatingTimetable?.started) {
+              this.props.dispatch(validateProjectTimetable(this.props.formValues));
+            }
+          }, 0);
         }
         if(!this.props.validated){
           let ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe)
