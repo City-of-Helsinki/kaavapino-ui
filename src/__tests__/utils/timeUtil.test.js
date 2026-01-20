@@ -242,15 +242,15 @@ describe("getDisabledDates for various phases", () => {
 
     test("getDisabledDatesForLautakunta returns valid allowed dates for tarkistettu ehdotus", () => {
         const formValues = {
-            "tarkistettuehdotusvaihe_alkaa_pvm": "2025-08-01",
+            "tarkistettu_ehdotusvaihe_alkaa_pvm": "2025-08-01",
             "tarkistettu_ehdotus_kylk_maaraaika": "2025-08-15",
             "milloin_tarkistettu_ehdotus_lautakunnassa": "2025-09-01",
-            "tarkistettuehdotusvaihe_paattyy_pvm": "2025-09-01",
+            "tarkistettu_ehdotusvaihe_paattyy_pvm": "2025-09-01",
         };
         const vaiheAlkaaItem = {
-            name: "tarkistettuehdotusvaihe_alkaa_pvm",
+            name: "tarkistettu_ehdotusvaihe_alkaa_pvm",
             distance_from_previous: 0,
-            previous_deadline: "tarkistettuehdotusvaihe_alkaa_pvm",
+            previous_deadline: "tarkistettu_ehdotusvaihe_alkaa_pvm",
         }
         const lautakuntaItem = {
             name: "milloin_tarkistettu_ehdotus_lautakunnassa",
@@ -272,7 +272,7 @@ describe("getDisabledDates for various phases", () => {
         const dateTypes = data.test_disabledDates.date_types;
         const result_maaraika = timeUtil.getDisabledDatesForLautakunta("tarkistettu_ehdotus_kylk_maaraaika", formValues, "tarkistettu_ehdotus", kylkItem, vaiheAlkaaItem, dateTypes);
         expect(result_maaraika[0]).toBe("2025-08-11");
-        const previousDate_maaraika = new Date(formValues["tarkistettuehdotusvaihe_alkaa_pvm"]);
+        const previousDate_maaraika = new Date(formValues["tarkistettu_ehdotusvaihe_alkaa_pvm"]);
         for (let date of result_maaraika) {
             let newDate = new Date(date);
             expect(newDate > previousDate_maaraika).toBe(true);

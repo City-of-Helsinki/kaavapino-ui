@@ -603,7 +603,11 @@ const adjustDeadlineData = (attributeData, allAttributeData) => {
         key.includes("kaavaehdotus_nahtaville") ||
         key.includes("kaavaehdotus_uudelleen_nahtaville") ||
         key.includes("vahvista")) {
-      attributeData[key] = attributeData[key] || allAttributeData[key]
+      // KAAV-3517: Use nullish coalescing to preserve explicit false values
+      // attributeData[key] || allAttributeData[key] would replace false with true
+      if (attributeData[key] === undefined) {
+        attributeData[key] = allAttributeData[key]
+      }
     }
   })
   return attributeData
@@ -613,6 +617,21 @@ const getChangedAttributeData = (values, initial) => {
   let attribute_data = {}
   let errorValues = false
   const wSpaceRegex = /^(\s+|\s+)$/g
+  
+  // KAAV-3517: Track esillaolo/lautakunta boolean fields that were true in initial
+  // but are now false/undefined in values - these need to be explicitly sent as false
+  const booleanFlagPatterns = [/^jarjestetaan_.*_esillaolo_\d+$/, /lautakuntaan_\d+$/];
+  if (initial) {
+    Object.keys(initial).forEach(key => {
+      if (booleanFlagPatterns.some(p => p.test(key)) && initial[key] === true) {
+        // If this was true in initial but is now falsy in values, send false explicitly
+        if (!values[key]) {
+          attribute_data[key] = false;
+        }
+      }
+    });
+  }
+  
   Object.keys(values).forEach(key => {
     if(key.includes("_readonly")){
       return
@@ -853,8 +872,15 @@ function* validateProjectTimetable({ payload }) {
       yield put(setValidatingTimetable(true, true));
       // KAAV-3492: Only update form with corrected dates from response, don't replace whole project
       // The response.attribute_data contains only the attributes that were sent in the payload
+      // KAAV-3517: Don't overwrite boolean flags (jarjestetaan_*_esillaolo_*, *_lautakuntaan_*) 
+      // from response as they may come from database and override user's local changes
       if (response.attribute_data) {
+        const skipPatterns = [/^jarjestetaan_.*_esillaolo_/, /lautakuntaan_/];
         for (const [key, value] of Object.entries(response.attribute_data)) {
+          // Skip boolean flags that control group visibility
+          if (skipPatterns.some(pattern => pattern.test(key))) {
+            continue;
+          }
           yield put(change(EDIT_PROJECT_TIMETABLE_FORM, key, value));
         }
       }
@@ -1160,7 +1186,7 @@ function* saveProject(data) {
         const isNetworkErr = e?.code === 'ERR_NETWORK'
         const statusCode = e?.response?.status
         if (isNetworkErr || !statusCode || statusCode >= 500) {
-			    yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
+          yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
         }
       }
     }
