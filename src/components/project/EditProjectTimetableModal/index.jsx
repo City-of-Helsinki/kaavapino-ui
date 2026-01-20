@@ -130,13 +130,22 @@ class EditProjectTimeTableModal extends Component {
       timeUtil.compareAndUpdateDates(formValues)
       if(deadlineSections && deadlines && formValues){
         // Check if changedValues contains 'jarjestetaan' or 'lautakuntaan' and the value is a boolean
-        const [isGroupAddRemove,changedValues] = this.getChangedValues(prevProps.formValues, formValues);
+        const [isGroupAdd, isGroupRemove, changedValues] = this.getChangedValues(prevProps.formValues, formValues);
 
-        if (isGroupAddRemove) {
+        if (isGroupAdd) {
           this.addGroup(changedValues)
           this.setState({visValues:formValues})
           // KAAV-3492: Trigger validation after adding new group to cascade dates
           // Wait for next tick to allow form values to update, then validate
+          setTimeout(() => {
+            if (!this.props.validatingTimetable?.started) {
+              this.props.dispatch(validateProjectTimetable(this.props.formValues));
+            }
+          }, 0);
+        }
+        // KAAV-3517: Also trigger validation when removing a group to recalculate phase boundaries
+        if (isGroupRemove) {
+          this.setState({visValues:formValues})
           setTimeout(() => {
             if (!this.props.validatingTimetable?.started) {
               this.props.dispatch(validateProjectTimetable(this.props.formValues));
@@ -1246,11 +1255,13 @@ class EditProjectTimeTableModal extends Component {
       }
     });
     
-    const isAddRemove = Object.entries(changedValues).some(([key, value]) => 
+    const isAdd = Object.entries(changedValues).some(([key, value]) => 
       Object.values(vis_bool_group_map).includes(key) && typeof value === 'boolean' && value === true
     );
-    //If isAddRemove is false then it is a delete and add is true
-    return [isAddRemove,changedValues];
+    const isRemove = Object.entries(changedValues).some(([key, value]) => 
+      Object.values(vis_bool_group_map).includes(key) && typeof value === 'boolean' && value === false
+    );
+    return [isAdd, isRemove, changedValues];
   }
 
   handleSubmit = () => {
