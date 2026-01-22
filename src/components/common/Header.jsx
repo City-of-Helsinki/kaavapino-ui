@@ -469,7 +469,7 @@ const Header = props => {
         >
           <Navigation.Row variant="inline">
             <Navigation.Item
-              as="a"
+              as="button"
               label={t('header.overview')}
               onClick={navigateToHome}
               className={(props.location.pathname === "/")
@@ -482,7 +482,7 @@ const Header = props => {
               }
             />
             <Navigation.Item
-              as="a"
+              as="button"
               label={t('header.projects')}
               onClick={navigateToProjects}
               className={(props.location.pathname.startsWith("/projects"))
@@ -495,7 +495,7 @@ const Header = props => {
               }
             />
             <Navigation.Item
-              as="a"
+              as="button"
               label={t('header.reports')}
               onClick={navigateToReports}
               className={(props.location.pathname === "/reports")
