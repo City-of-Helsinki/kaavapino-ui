@@ -19,235 +19,77 @@ describe("dateDifference function - distance enforcement", () => {
     const lautakuntapäivät = data.test_disabledDates.date_types.lautakunnan_kokouspäivät.dates;
     const disabledDates = data.test_disabledDates.date_types.disabled_dates?.dates || [];
 
+    // Helper to run dateDifference and calculate days difference
+    const runAndGetDaysDiff = ({ cur, previousValue, currentValue, minimumGap, projectSize = "XL", addingNew = true, allowedDays = arkipäivät }) => {
+        const result = timeUtil.dateDifference(cur, previousValue, currentValue, allowedDays, disabledDates, minimumGap, projectSize, addingNew);
+        const daysDiff = Math.ceil((new Date(result) - new Date(previousValue)) / (1000 * 60 * 60 * 24));
+        return { result, daysDiff };
+    };
+
     describe("addingNew=true behavior (new additions)", () => {
-        test("uses full minimumGap when addingNew=true", () => {
-            const cur = "milloin_oas_esillaolo_alkaa";
-            const previousValue = "2027-03-01";
-            const currentValue = "2027-03-05"; // Only 4 days gap, should be pushed
-            const minimumGap = 14; // Excel says 14 days minimum
-            const projectSize = "XL";
-            const addingNew = true;
-
-            const result = timeUtil.dateDifference(
-                cur, previousValue, currentValue, arkipäivät, disabledDates, minimumGap, projectSize, addingNew
-            );
-
-            // Should be pushed to at least 14 working days from previousValue
-            const resultDate = new Date(result);
-            const prevDate = new Date(previousValue);
-            const daysDiff = Math.ceil((resultDate - prevDate) / (1000 * 60 * 60 * 24));
-            expect(daysDiff).toBeGreaterThanOrEqual(14);
-        });
-
-        test("does not reduce gap for maaraaika when addingNew=true", () => {
-            const cur = "oas_esillaolo_aineiston_maaraaika"; // Contains "maaraaika"
-            const previousValue = "2027-03-01";
-            const currentValue = "2027-03-05";
-            const minimumGap = 10;
-            const projectSize = "XL";
-            const addingNew = true;
-
-            const result = timeUtil.dateDifference(
-                cur, previousValue, currentValue, arkipäivät, disabledDates, minimumGap, projectSize, addingNew
-            );
-
-            const resultDate = new Date(result);
-            const prevDate = new Date(previousValue);
-            const daysDiff = Math.ceil((resultDate - prevDate) / (1000 * 60 * 60 * 24));
-            // Should use full 10 days, not reduced to 5
-            expect(daysDiff).toBeGreaterThanOrEqual(10);
-        });
-
-        // KAAV-3492: This test was updated - we now respect database gaps, not hardcoded 22
-        test("respects database-provided gap for M/S ehdotus nahtavillaolo when addingNew=true", () => {
-            const cur = "milloin_ehdotuksen_nahtavilla_paattyy";
-            const previousValue = "2027-03-01";
-            const currentValue = "2027-03-10";
-            const minimumGap = 14; // Database says 14, we should use 14 (not hardcoded 22)
-            const projectSize = "M";
-            const addingNew = true;
-
-            const result = timeUtil.dateDifference(
-                cur, previousValue, currentValue, arkipäivät, disabledDates, minimumGap, projectSize, addingNew
-            );
-
-            const resultDate = new Date(result);
-            const prevDate = new Date(previousValue);
-            const daysDiff = Math.ceil((resultDate - prevDate) / (1000 * 60 * 60 * 24));
-            // Should use database-provided gap (14), not hardcoded 22
+        test.each([
+            { cur: "milloin_oas_esillaolo_alkaa", minimumGap: 14, desc: "uses full minimumGap" },
+            { cur: "oas_esillaolo_aineiston_maaraaika", minimumGap: 10, desc: "does not reduce gap for maaraaika" },
+        ])("$desc when addingNew=true (cur=$cur, gap=$minimumGap)", ({ cur, minimumGap }) => {
+            const { daysDiff } = runAndGetDaysDiff({ cur, previousValue: "2027-03-01", currentValue: "2027-03-05", minimumGap, addingNew: true });
             expect(daysDiff).toBeGreaterThanOrEqual(minimumGap);
+        });
+
+        test("respects database-provided gap for M/S ehdotus nahtavillaolo", () => {
+            const { daysDiff } = runAndGetDaysDiff({
+                cur: "milloin_ehdotuksen_nahtavilla_paattyy", previousValue: "2027-03-01", currentValue: "2027-03-10",
+                minimumGap: 14, projectSize: "M", addingNew: true
+            });
+            expect(daysDiff).toBeGreaterThanOrEqual(14);
         });
     });
 
     describe("addingNew=false behavior (modifications)", () => {
-        // KAAV-3492: This test was updated - we now respect database gaps, not hardcoded 5
-        test("respects database-provided gap for maaraaika fields when addingNew=false", () => {
-            const cur = "oas_esillaolo_aineiston_maaraaika";
-            const previousValue = "2027-03-01";
-            const currentValue = "2027-03-03"; // Very close
-            const minimumGap = 10; // Database says 10, we should use 10 (not hardcoded 5)
-            const projectSize = "XL";
-            const addingNew = false;
-
-            const result = timeUtil.dateDifference(
-                cur, previousValue, currentValue, arkipäivät, disabledDates, minimumGap, projectSize, addingNew
-            );
-
-            const resultDate = new Date(result);
-            const prevDate = new Date(previousValue);
-            const daysDiff = Math.ceil((resultDate - prevDate) / (1000 * 60 * 60 * 24));
-            // Should use full database-provided gap (10), not reduced 5
-            expect(daysDiff).toBeGreaterThanOrEqual(minimumGap);
-        });
-
-        test("does NOT reduce gap for lautakunta_aineiston_maaraaika when addingNew=false", () => {
-            const cur = "ehdotus_lautakunta_aineiston_maaraaika";
-            const previousValue = "2027-03-01";
-            const currentValue = "2027-03-05";
-            const minimumGap = 14;
-            const projectSize = "XL";
-            const addingNew = false;
-
-            const result = timeUtil.dateDifference(
-                cur, previousValue, currentValue, arkipäivät, disabledDates, minimumGap, projectSize, addingNew
-            );
-
-            const resultDate = new Date(result);
-            const prevDate = new Date(previousValue);
-            const daysDiff = Math.ceil((resultDate - prevDate) / (1000 * 60 * 60 * 24));
-            // Should use full gap for lautakunta_aineiston_maaraaika
-            expect(daysDiff).toBeGreaterThanOrEqual(14);
-        });
-
-        test("does NOT reduce gap for kylk_aineiston_maaraaika when addingNew=false", () => {
-            const cur = "ehdotus_kylk_aineiston_maaraaika";
-            const previousValue = "2027-03-01";
-            const currentValue = "2027-03-05";
-            const minimumGap = 14;
-            const projectSize = "XL";
-            const addingNew = false;
-
-            const result = timeUtil.dateDifference(
-                cur, previousValue, currentValue, arkipäivät, disabledDates, minimumGap, projectSize, addingNew
-            );
-
-            const resultDate = new Date(result);
-            const prevDate = new Date(previousValue);
-            const daysDiff = Math.ceil((resultDate - prevDate) / (1000 * 60 * 60 * 24));
-            // Should use full gap for kylk_aineiston_maaraaika
-            expect(daysDiff).toBeGreaterThanOrEqual(14);
-        });
-
-        // KAAV-3492: This test was updated - we now respect database gaps for large values too
-        test("respects database-provided gap even when minimumGap >= 31", () => {
-            const cur = "milloin_oas_esillaolo_alkaa"; // Not a maaraaika field
-            const previousValue = "2027-03-01";
-            const currentValue = "2027-03-10";
-            const minimumGap = 31; // Database says 31, we should use 31 (not hardcoded 5)
-            const projectSize = "XL";
-            const addingNew = false;
-
-            const result = timeUtil.dateDifference(
-                cur, previousValue, currentValue, arkipäivät, disabledDates, minimumGap, projectSize, addingNew
-            );
-
-            const resultDate = new Date(result);
-            const prevDate = new Date(previousValue);
-            const daysDiff = Math.ceil((resultDate - prevDate) / (1000 * 60 * 60 * 24));
-            // Should use full database-provided gap (31), not reduced 5
+        test.each([
+            { cur: "oas_esillaolo_aineiston_maaraaika", minimumGap: 10, desc: "respects DB gap for maaraaika" },
+            { cur: "ehdotus_lautakunta_aineiston_maaraaika", minimumGap: 14, desc: "full gap for lautakunta_aineiston_maaraaika" },
+            { cur: "ehdotus_kylk_aineiston_maaraaika", minimumGap: 14, desc: "full gap for kylk_aineiston_maaraaika" },
+            { cur: "milloin_oas_esillaolo_alkaa", minimumGap: 31, desc: "respects DB gap even when >= 31" },
+        ])("$desc when addingNew=false", ({ cur, minimumGap }) => {
+            const { daysDiff } = runAndGetDaysDiff({ cur, previousValue: "2027-03-01", currentValue: "2027-03-05", minimumGap, addingNew: false });
             expect(daysDiff).toBeGreaterThanOrEqual(minimumGap);
         });
     });
 
     describe("lautakunta Tuesday snapping", () => {
         test("snaps lautakunnassa dates to next Tuesday", () => {
-            const cur = "milloin_kaavaehdotus_lautakunnassa";
-            const previousValue = "2027-03-01"; // Monday
-            const currentValue = "2027-03-03"; // Wednesday
-            const minimumGap = 5;
-            const projectSize = "XL";
-            const addingNew = true;
-
-            const result = timeUtil.dateDifference(
-                cur, previousValue, currentValue, lautakuntapäivät, disabledDates, minimumGap, projectSize, addingNew
-            );
-
-            const resultDate = new Date(result);
-            expect(resultDate.getDay()).toBe(2); // Tuesday
+            const { result } = runAndGetDaysDiff({
+                cur: "milloin_kaavaehdotus_lautakunnassa", previousValue: "2027-03-01", currentValue: "2027-03-03",
+                minimumGap: 5, allowedDays: lautakuntapäivät
+            });
+            expect(new Date(result).getDay()).toBe(2); // Tuesday
         });
 
         test("respects minimum gap before snapping to Tuesday", () => {
-            const cur = "milloin_periaatteet_lautakunnassa";
-            const previousValue = "2027-03-01";
-            const currentValue = "2027-03-02"; // Only 1 day gap
-            const minimumGap = 27; // Large gap
-            const projectSize = "XL";
-            const addingNew = true;
-
-            const result = timeUtil.dateDifference(
-                cur, previousValue, currentValue, lautakuntapäivät, disabledDates, minimumGap, projectSize, addingNew
-            );
-
-            const resultDate = new Date(result);
-            const prevDate = new Date(previousValue);
-            const daysDiff = Math.ceil((resultDate - prevDate) / (1000 * 60 * 60 * 24));
-            
-            expect(resultDate.getDay()).toBe(2); // Must be Tuesday
-            expect(daysDiff).toBeGreaterThanOrEqual(27); // Must respect minimum gap
+            const { result, daysDiff } = runAndGetDaysDiff({
+                cur: "milloin_periaatteet_lautakunnassa", previousValue: "2027-03-01", currentValue: "2027-03-02",
+                minimumGap: 27, allowedDays: lautakuntapäivät
+            });
+            expect(new Date(result).getDay()).toBe(2); // Tuesday
+            expect(daysDiff).toBeGreaterThanOrEqual(27);
         });
     });
 
     describe("edge cases", () => {
-        test("handles currentValue before previousValue", () => {
-            const cur = "milloin_oas_esillaolo_alkaa";
-            const previousValue = "2027-03-15";
-            const currentValue = "2027-03-01"; // Before previous
-            const minimumGap = 5;
-            const projectSize = "XL";
-            const addingNew = true;
-
-            const result = timeUtil.dateDifference(
-                cur, previousValue, currentValue, arkipäivät, disabledDates, minimumGap, projectSize, addingNew
-            );
-
-            const resultDate = new Date(result);
-            const prevDate = new Date(previousValue);
-            expect(resultDate > prevDate).toBe(true);
+        test.each([
+            { desc: "currentValue before previousValue", previousValue: "2027-03-15", currentValue: "2027-03-01" },
+            { desc: "same previousValue and currentValue", previousValue: "2027-03-15", currentValue: "2027-03-15" },
+        ])("handles $desc", ({ previousValue, currentValue }) => {
+            const { result } = runAndGetDaysDiff({ cur: "milloin_oas_esillaolo_alkaa", previousValue, currentValue, minimumGap: 5 });
+            expect(new Date(result) > new Date(previousValue)).toBe(true);
         });
 
-        test("handles same previousValue and currentValue", () => {
-            const cur = "milloin_oas_esillaolo_alkaa";
-            const previousValue = "2027-03-15";
-            const currentValue = "2027-03-15"; // Same date
-            const minimumGap = 5;
-            const projectSize = "XL";
-            const addingNew = true;
-
-            const result = timeUtil.dateDifference(
-                cur, previousValue, currentValue, arkipäivät, disabledDates, minimumGap, projectSize, addingNew
-            );
-
-            const resultDate = new Date(result);
-            const prevDate = new Date(previousValue);
-            expect(resultDate > prevDate).toBe(true);
-        });
-
-        test("skips to next allowed date when landing on disabled date", () => {
-            const cur = "milloin_oas_esillaolo_alkaa";
-            const previousValue = "2027-07-01"; // July - holidays
-            const currentValue = "2027-07-05";
-            const minimumGap = 5;
-            const projectSize = "XL";
-            const addingNew = true;
-
-            // Use työpäivät which excludes July
-            const result = timeUtil.dateDifference(
-                cur, previousValue, currentValue, työpäivät, disabledDates, minimumGap, projectSize, addingNew
-            );
-
-            const resultDate = new Date(result);
-            // Should be pushed to August (first valid month after July)
-            expect(resultDate.getMonth()).toBeGreaterThanOrEqual(7); // August or later
+        test("skips to next allowed date when landing on disabled date (July)", () => {
+            const { result } = runAndGetDaysDiff({
+                cur: "milloin_oas_esillaolo_alkaa", previousValue: "2027-07-01", currentValue: "2027-07-05",
+                minimumGap: 5, allowedDays: työpäivät
+            });
+            expect(new Date(result).getMonth()).toBeGreaterThanOrEqual(7); // August or later
         });
     });
 });
