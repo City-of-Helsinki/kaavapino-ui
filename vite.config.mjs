@@ -71,6 +71,8 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom',
       setupFiles: './src/setupTests.js',
       coverage: {
+        // Note: Upgrade @vitest/coverage-c8 to @vitest/coverage-v8 for coverage to work
+        // with newer vitest versions. Run: yarn add -D @vitest/coverage-v8
         reporter: ['text', 'json', 'lcov'],
         exclude: [
           ...coverageConfigDefaults.exclude,
@@ -78,6 +80,28 @@ export default defineConfig(({ mode }) => {
           'public',
           'src/__mocks__/**',
         ],
+        // Coverage thresholds for critical timeline utility functions
+        // These files handle distance enforcement and must have high test coverage
+        thresholds: {
+          // Global thresholds - set low initially, increase as coverage improves
+          statements: 15,
+          branches: 15,
+          functions: 20,
+          lines: 15,
+          // Per-file thresholds for critical timeline logic
+          'src/utils/timeUtil.js': {
+            statements: 70,
+            branches: 70,
+            functions: 80,
+            lines: 70,
+          },
+          'src/utils/objectUtil.js': {
+            statements: 80,
+            branches: 80,
+            functions: 80,
+            lines: 80,
+          },
+        },
       }
     }
   }

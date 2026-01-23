@@ -21,6 +21,7 @@ import textUtil from '../../../utils/textUtil'
 import { updateDateTimeline,validateProjectTimetable,setValidatingTimetable } from '../../../actions/projectActions';
 import { getVisibilityBoolName, vis_bool_group_map, getPhaseNameByVisBool, isDeadlineConfirmed } from '../../../utils/projectVisibilityUtils';
 import timeUtil from '../../../utils/timeUtil'
+import { shouldDispatchTimelineUpdate } from '../../../utils/timelineDispatchLogic'
 
 class EditProjectTimeTableModal extends Component {
   constructor(props) {
@@ -167,17 +168,37 @@ class EditProjectTimeTableModal extends Component {
           }))
           const newObjectArray = objectUtil.findDifferencesInObjects(prevProps.formValues,formValues)
 
-          //No dispatch when confirmed is added to formValues as new data
-          // KAAV-3492: Also skip updateDateTimeline dispatch while validation is in progress to prevent cascade loops
-          if(newObjectArray.length === 0 || (typeof newObjectArray[0]?.obj1 === "undefined"  && typeof newObjectArray[0]?.obj2 === "undefined") || newObjectArray[0]?.key.includes("vahvista") || this.props.validatingTimetable?.started){
-            console.log("no disptach")
-          }
-          else if(typeof newObjectArray[0]?.obj1 === "undefined" && typeof newObjectArray[0]?.obj2 === "string" || newObjectArray[1] && typeof newObjectArray[1]?.obj1 === "undefined" && typeof newObjectArray[1]?.obj2 === "string"){
+          // KAAV-3492 DEBUG: Log dispatch decision inputs
+          console.log('[KAAV-3492] Dispatch decision inputs:', {
+            isGroupAdd,
+            isGroupRemove,
+            validatingStarted: this.props.validatingTimetable?.started,
+            changedFields: newObjectArray.map(o => o.key),
+            newObjectArrayLength: newObjectArray.length,
+            firstChange: newObjectArray[0]
+          });
+
+          // KAAV-3492 FIX: Use extracted dispatch logic that properly handles isGroupAdd
+          // This fixes the bug where re-adding a group after delete+save didn't trigger cascade
+          // because old dates were still in attribute_data, causing the condition to skip dispatch.
+          const dispatchDecision = shouldDispatchTimelineUpdate(
+            newObjectArray, 
+            this.props.validatingTimetable?.started, 
+            isGroupAdd
+          );
+          
+          // KAAV-3492 DEBUG: Log dispatch decision result
+          console.log('[KAAV-3492] Dispatch decision result:', dispatchDecision);
+          
+          if (!dispatchDecision.shouldDispatch) {
+            console.log("[KAAV-3492] NO DISPATCH:", dispatchDecision.reason)
+          } else {
             //Get added groups last date field and update all timelines ahead
             const { field, formattedDate } = this.getLastDateField(newObjectArray);
+            console.log('[KAAV-3492] DISPATCHING updateDateTimeline:', { field, formattedDate, addingNew: dispatchDecision.addingNew });
             //Dispatch added values to move other values in projectReducer if miniums are reached
             if(field && formattedDate){
-              this.props.dispatch(updateDateTimeline(field,formattedDate,formValues,true,deadlineSections));
+              this.props.dispatch(updateDateTimeline(field, formattedDate, formValues, dispatchDecision.addingNew, deadlineSections));
             }
           }
           this.setState({visValues:formValues})
