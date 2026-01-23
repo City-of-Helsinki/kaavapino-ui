@@ -38,6 +38,65 @@ export const vis_bool_group_map = Object.freeze({
   'voimaantulo_1': null}
 );
 
+/**
+ * KAAV-3492: Get the date field names associated with a deadline group.
+ * Used to clear date fields when a group is deleted, preventing stale data on re-add.
+ * 
+ * @param {string} deadlineGroup - e.g., 'periaatteet_esillaolokerta_1'
+ * @returns {string[]} - Array of date field names to clear
+ */
+export const getDateFieldsForDeadlineGroup = (deadlineGroup) => {
+  if (!deadlineGroup) return [];
+  
+  const fields = [];
+  
+  // Parse the deadline group to extract phase, type, and index
+  // Examples: 'periaatteet_esillaolokerta_1', 'ehdotus_nahtavillaolokerta_2', 'luonnos_lautakuntakerta_1'
+  const parts = deadlineGroup.split('_');
+  if (parts.length < 2) return [];
+  
+  // Handle tarkistettu_ehdotus specially (two-word phase name)
+  let phase, type, indexNum;
+  if (deadlineGroup.startsWith('tarkistettu_ehdotus')) {
+    phase = 'tarkistettu_ehdotus';
+    type = parts[2]?.replace('kerta', ''); // e.g., 'lautakunta' from 'lautakuntakerta'
+    indexNum = parseInt(parts[3], 10);
+  } else {
+    phase = parts[0]; // e.g., 'periaatteet'
+    type = parts[1]?.replace('kerta', ''); // e.g., 'esillaolo' from 'esillaolokerta'
+    indexNum = parseInt(parts[2], 10);
+  }
+  
+  if (!phase || !type || isNaN(indexNum)) return [];
+  
+  // Build suffix for indexed fields (_2, _3, _4) - _1 has no suffix
+  const suffix = indexNum > 1 ? `_${indexNum}` : '';
+  
+  if (type === 'esillaolo') {
+    fields.push(`milloin_${phase}_esillaolo_alkaa${suffix}`);
+    fields.push(`milloin_${phase}_esillaolo_paattyy${suffix}`);
+    fields.push(`${phase}_esillaolo_aineiston_maaraaika${suffix}`);
+  } else if (type === 'lautakunta') {
+    // Different phases have different naming conventions
+    if (phase === 'periaatteet') {
+      fields.push(`milloin_${phase}_lautakunnassa${suffix}`);
+      fields.push(`${phase}_kylk_aineiston_maaraaika${suffix}`);
+    } else {
+      fields.push(`milloin_kaava${phase}_lautakunnassa${suffix}`);
+      fields.push(`kaava${phase}_kylk_aineiston_maaraaika${suffix}`);
+    }
+  } else if (type === 'nahtavillaolo') {
+    // Only for ehdotus phase
+    if (phase === 'ehdotus') {
+      fields.push(`milloin_ehdotuksen_nahtavilla_alkaa${suffix}`);
+      fields.push(`milloin_ehdotuksen_nahtavilla_paattyy${suffix}`);
+      fields.push(`ehdotus_nahtaville_aineiston_maaraaika${suffix}`);
+    }
+  }
+  
+  return fields;
+};
+
 export const showField = (field, formValues, currentName) => {
   let returnValue = false
 

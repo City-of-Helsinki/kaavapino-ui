@@ -14,7 +14,7 @@ import VisTimelineMenu from './VisTimelineMenu'
 import AddGroupModal from './AddGroupModal';
 import ConfirmModal from '../common/ConfirmModal'
 import PropTypes from 'prop-types';
-import { getVisibilityBoolName, getVisBoolsByPhaseName, isDeadlineConfirmed } from '../../utils/projectVisibilityUtils';
+import { getVisibilityBoolName, getVisBoolsByPhaseName, isDeadlineConfirmed, getDateFieldsForDeadlineGroup } from '../../utils/projectVisibilityUtils';
 import { useTimelineTooltip } from '../../hooks/useTimelineTooltip';
 import { updateDateTimeline } from '../../actions/projectActions';
 import './VisTimeline.scss'
@@ -662,6 +662,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         if(confirmationObject?.key && confirmationObject?.value){
           dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, confirmationObject.key, false));
         }
+        
+        // KAAV-3492 FIX: Clear date fields when group is deleted to prevent stale data on re-add
+        // Without this, old dates persist and cause distance enforcement to be skipped
+        const dateFieldsToClear = getDateFieldsForDeadlineGroup(dataToRemove.deadlinegroup);
+        dateFieldsToClear.forEach(fieldName => {
+          dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, fieldName, null));
+        });
       }
       setOpenConfirmModal(!openConfirmModal)
     }

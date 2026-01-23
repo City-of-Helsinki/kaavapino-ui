@@ -243,6 +243,24 @@ const getHighestNumberedObject = (obj1) => {
   }
 
   const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize,attributeData) => {
+    // KAAV-3492 DEBUG: Log cascade invocation to help trace bug
+    console.log('[KAAV-3492] checkForDecreasingValues called:', {
+      isAdd,
+      field,
+      oldDate,
+      movedDate,
+      moveToPast,
+      projectSize,
+      arrLength: arr?.length,
+      // Show first few items with their gaps for debugging
+      firstItems: arr?.slice(0, 5).map(i => ({ 
+        key: i.key, 
+        value: i.value, 
+        initial_distance: i.initial_distance, 
+        distance_from_previous: i.distance_from_previous 
+      }))
+    });
+
     // Lock logic: do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
     // attributeData is the filtered attribute_data object (only visible fields) so we can inspect confirmation flags
     let confirmedFieldSet = null;
@@ -280,9 +298,8 @@ const getHighestNumberedObject = (obj1) => {
           && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
           && !arr[i].key.includes("hyvaksymispaatos_pvm")){
           let newDate = new Date(arr[i].value);
-          //At the moment some previous values are falsely null for some reason, can be remove when is fixed on backend and Excel.
-          //Get minium gap for two dates next to each other that are moved
-          const miniumGap = arr[i].initial_distance === null ? arr[i].key.includes("lautakunnassa") ? 22 : 5 : arr[i].initial_distance 
+          //Get minimum gap for two dates next to each other that are moved
+          const miniumGap = arr[i].initial_distance ?? arr[i].distance_from_previous ?? 0 
           if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")){
             //mielipiteet and paattyy is always the same value
             newDate = new Date(arr[i - 1].value);
@@ -381,7 +398,7 @@ const getHighestNumberedObject = (obj1) => {
             }
             else{
               if(!moveToPast && i > indexToContinue){
-                const miniumGap = arr[i].initial_distance === null ? arr[i].key.includes("lautakunnassa") ? 22 : 5 : arr[i].initial_distance 
+                const miniumGap = arr[i].initial_distance ?? arr[i].distance_from_previous ?? 0
                 //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
                 newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.disabled_dates?.dates,miniumGap,projectSize,false) : newDate
                 newDate = new Date(newDate)
