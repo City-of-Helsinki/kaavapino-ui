@@ -396,9 +396,7 @@ describe('UPDATE_DATE_TIMELINE action', () => {
     });
 
     // End date should be 14 days after new start date
-    // JavaScript Date.setDate adds days: 17 + 14 = 31 (March has 31 days)
-    // However, Date parsing of '2026-03-17' as UTC may affect day calculation
-    // The actual result is 2026-03-30 due to timezone handling - this is the actual behavior
+    // Note: Due to UTC/local timezone handling in Date parsing, result is 2026-03-30
     expect(result.currentProject.attribute_data.milloin_periaatteet_esillaolo_paattyy).toBe('2026-03-30');
   });
 
