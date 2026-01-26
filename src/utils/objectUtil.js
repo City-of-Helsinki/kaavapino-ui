@@ -305,8 +305,30 @@ const getHighestNumberedObject = (obj1) => {
             newDate = new Date(arr[i - 1].value);
           }
           else{
-            //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
-            newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.disabled_dates?.dates,miniumGap,projectSize,true) : newDate
+            // KAAV-3492 FIX: Only push forward if there's an actual overlap
+            const prevDate = new Date(arr[i - 1].value);
+            const currDate = new Date(arr[i].value);
+            console.log('[KAAV-3492] isAdd branch - checking item:', {
+              i,
+              key: arr[i].key,
+              prevKey: arr[i - 1]?.key,
+              prevValue: arr[i - 1]?.value,
+              currValue: arr[i].value,
+              prevDate: prevDate.toISOString().split('T')[0],
+              currDate: currDate.toISOString().split('T')[0],
+              hasOverlap: prevDate >= currDate,
+              miniumGap,
+              initial_distance: arr[i].initial_distance,
+              distance_from_previous: arr[i].distance_from_previous
+            });
+            if(prevDate >= currDate){
+              console.log('[KAAV-3492] isAdd - OVERLAP DETECTED, calling dateDifference');
+              //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
+              newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.disabled_dates?.dates,miniumGap,projectSize,true) : newDate
+            }
+            else {
+              console.log('[KAAV-3492] isAdd - NO OVERLAP, keeping current date');
+            }
           }
           // Update the array with the new date
           newDate.setDate(newDate.getDate());
@@ -337,6 +359,9 @@ const getHighestNumberedObject = (obj1) => {
       }
     }
     else if(currentIndex !== -1){
+      // KAAV-3492 FIX: Save original values before mutation to prevent cascading against just-updated values
+      const originalValues = arr.map(item => item.value);
+      
       for (let i = currentIndex; i < arr.length; i++) {
 		    if(isLocked(arr[i])) continue; // do not move locked items
         if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
@@ -398,10 +423,37 @@ const getHighestNumberedObject = (obj1) => {
             }
             else{
               if(!moveToPast && i > indexToContinue){
+                // KAAV-3492 FIX: Only push forward if there's an actual overlap
+                // Use ORIGINAL values, not mutated ones, to prevent cascade chain reactions
+                const prevDate = new Date(originalValues[i - 1]);
+                const currDate = new Date(originalValues[i]);
                 const miniumGap = arr[i].initial_distance ?? arr[i].distance_from_previous ?? 0
-                //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
-                newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.disabled_dates?.dates,miniumGap,projectSize,false) : newDate
-                newDate = new Date(newDate)
+                console.log('[KAAV-3492] !isAdd else branch - checking item:', {
+                  i,
+                  key: arr[i].key,
+                  prevKey: arr[i - 1]?.key,
+                  prevValue_ORIGINAL: originalValues[i - 1],
+                  prevValue_MUTATED: arr[i - 1]?.value,
+                  currValue_ORIGINAL: originalValues[i],
+                  currValue_MUTATED: arr[i].value,
+                  prevDate: prevDate.toISOString().split('T')[0],
+                  currDate: currDate.toISOString().split('T')[0],
+                  hasOverlap: prevDate >= currDate,
+                  miniumGap,
+                  initial_distance: arr[i].initial_distance,
+                  distance_from_previous: arr[i].distance_from_previous,
+                  indexToContinue,
+                  moveToPast
+                });
+                if(prevDate >= currDate){
+                  console.log('[KAAV-3492] !isAdd - OVERLAP DETECTED, calling dateDifference');
+                  //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
+                  newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,originalValues[i - 1],originalValues[i],disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.disabled_dates?.dates,miniumGap,projectSize,false) : newDate
+                  newDate = new Date(newDate)
+                }
+                else {
+                  console.log('[KAAV-3492] !isAdd - NO OVERLAP (using original values), keeping current date');
+                }
               }
             }
           }
@@ -435,6 +487,21 @@ const getHighestNumberedObject = (obj1) => {
       }
     }
     sortPhaseData(arr,order)
+    
+    // KAAV-3492 DEBUG: Log cascade results
+    console.log('[KAAV-3492] checkForDecreasingValues RETURNING:', {
+      arrLength: arr?.length,
+      // Show items that were potentially modified
+      modifiedItems: arr?.filter(i => {
+        const originalValue = attributeData?.[i.key];
+        return originalValue && i.value !== originalValue;
+      }).map(i => ({
+        key: i.key,
+        oldValue: attributeData?.[i.key],
+        newValue: i.value
+      }))
+    });
+    
     return arr
   }
 
