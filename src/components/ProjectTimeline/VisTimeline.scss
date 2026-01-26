@@ -546,34 +546,36 @@
 
     .kaynnistys_1{
         pointer-events: auto !important;
-        cursor: url('../../assets/icons/arrow4dir.svg') 8 8, move !important;
+        cursor: default !important;
         .vis-item-overflow{
             position: relative;
             border: 2px solid $black1;
             background: $white;
             border-radius: 15px;
-            cursor: url('../../assets/icons/arrow4dir.svg') 8 8, move !important;
-            pointer-events: auto !important;
+            cursor: default !important;
+            pointer-events: none !important;
             &::after {
                 content: "";
                 position: absolute;
                 top: 50%;
                 left: 50%;
-                width: 8px;
-                height: 8px;
-                background-color: #B3B3B3;
+                width: 20px;
+                height: 20px;
+                background: radial-gradient(circle, #B3B3B3 0%, #B3B3B3 4px, transparent 4px, transparent 100%);
                 border-radius: 50%;
                 transform: translate(-50%, -50%) scale(1);
                 opacity: 1;
                 transition: opacity .15s ease, transform .15s ease;
+                pointer-events: auto !important;
+                cursor: url('../../assets/icons/arrow4dir.svg') 8 8, move !important;
             }
             &:hover::after,&:active::after {
                 transform: translate(-50%, -50%) scale(1);
                 opacity: 1;
-                background-color: #808080;
+                background: radial-gradient(circle, #808080 0%, #808080 4px, transparent 4px, transparent 100%);
             }
             .vis-item-content{
-                pointer-events: auto !important;
+                pointer-events: none !important;
                 padding:0;
             }
         }
@@ -582,7 +584,7 @@
     .kaynnistys_1.cursor-moving-target{
         .vis-item-overflow{
             &::after {
-                background-color: $color-black-50;
+                background: radial-gradient(circle, $color-black-50 0%, $color-black-50 4px, transparent 4px, transparent 100%);
             }
         }
     }

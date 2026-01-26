@@ -34,6 +34,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [selectedGroupId, setSelectedGroupId] = useState(null);
     const selectedGroupIdRef = useRef(selectedGroupId);
     const dragHandleRef = useRef("");
+    const modalClosedDuringDragRef = useRef(false);
     // cluster/group dragging state
     const clusterDragRef = useRef({
       isPoint: false,
@@ -43,6 +44,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     });
 
     const [toggleTimelineModal, setToggleTimelineModal] = useState({open: false, highlight: false, deadlinegroup: false});
+    const toggleTimelineModalRef = useRef(toggleTimelineModal);
     const [timelineData, setTimelineData] = useState({group: false, content: false});
     const [timeline, setTimeline] = useState(false);
     const [addDialogStyle, setAddDialogStyle] = useState({ left: 0, top: 0 });
@@ -61,7 +63,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     // Track whether weekend alignment shift has been applied (3-month view only)
     const weekendShiftAppliedRef = useRef(false);
 
-    const { showTooltip, hideTooltip } = useTimelineTooltip();
+    const { onElementEnter, onElementMove, onElementLeave, hideTooltip } = useTimelineTooltip();
 
     // Store original month names so we can temporarily swap in quarter range labels
     const originalMonthsRef = useRef(null);
@@ -97,6 +99,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     useEffect(() => {
       itemsPhaseDatesOnlyRef.current = itemsPhaseDatesOnly;
     }, [itemsPhaseDatesOnly]);
+
+    // Keep toggleTimelineModalRef in sync with state
+    useEffect(() => {
+      toggleTimelineModalRef.current = toggleTimelineModal;
+    }, [toggleTimelineModal]);
 
     const preventDefaultAndStopPropagation = (event) => {
       event.preventDefault();
@@ -1276,31 +1283,87 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
     };
 
+    /**
+     * Finds the topmost (highest z-index) timeline item at given coordinates
+     * Implements priority logic to prevent phase-length elements from stealing
+     * hover from phase-holder elements via buffer zones
+     * @param {number} mouseX - Mouse X coordinate
+     * @param {number} mouseY - Mouse Y coordinate
+     * @param {Object} timelineInstanceRef - Timeline instance reference
+     * @returns {Object|null} Object with item and dom properties, or null
+     */
     const getTopmostTimelineItem = (mouseX, mouseY, timelineInstanceRef) => {
       if (!timelineInstanceRef.current?.itemSet) {
         return null;
       }
+
       const items = Object.values(timelineInstanceRef.current.itemSet.items);
       let highestZIndex = -1;
       let topmostItem = null;
       let topmostItemDom = null;
+      let foundPhaseBar = false; // Track if we find a phase-holder bar
+
+      // Buffer zones for better hover detection (in pixels)
+      const PHASE_TOP_BUFFER = 15;
+      const PHASE_BOTTOM_BUFFER = 3;
 
       items.forEach((item) => {
         const itemDom = item?.dom?.box ?? item?.dom?.point ?? item?.dom?.dot;
-        if (itemDom?.classList?.contains('vis-editable')) {
-          const itemBounds = itemDom.getBoundingClientRect();
+        if (!itemDom?.classList?.contains('vis-editable')) {
+          return;
+        }
 
-          // Only apply buffer for phase-elements (e.g. rangeItem2)
-          const isPhase = itemDom.classList.contains('vis-range');
-          const verticalBuffer = isPhase ? 15 : 0;
+        const itemBounds = itemDom.getBoundingClientRect();
 
-          if (
-            mouseX >= itemBounds.left &&
-            mouseX <= itemBounds.right &&
-            mouseY >= (itemBounds.top - verticalBuffer) &&
-            mouseY <= (itemBounds.bottom + verticalBuffer)
-          ) {
-            const zIndex = parseInt(window.getComputedStyle(itemDom).zIndex, 10);
+        // Apply buffer zones only for range elements
+        const isPhaseRange = itemDom.classList.contains('vis-range');
+        const topBuffer = isPhaseRange ? PHASE_TOP_BUFFER : 0;
+        const bottomBuffer = isPhaseRange ? PHASE_BOTTOM_BUFFER : 0;
+
+        // Check if mouse is within element bounds (including buffer)
+        const isWithinBufferedBounds = (
+          mouseX >= itemBounds.left &&
+          mouseX <= itemBounds.right &&
+          mouseY >= (itemBounds.top - topBuffer) &&
+          mouseY <= (itemBounds.bottom + bottomBuffer)
+        );
+
+        if (!isWithinBufferedBounds) {
+          return;
+        }
+
+        const zIndex = parseInt(window.getComputedStyle(itemDom).zIndex, 10) || 0;
+
+        // Check element types for priority
+        const isPhaseHolder = itemDom.classList.contains('phase-holder') || 
+                              itemDom.classList.contains('phase-element');
+        const isPhaseLength = itemDom.classList.contains('phase-length');
+        const withinActualBounds = mouseY >= itemBounds.top && mouseY <= itemBounds.bottom;
+
+        // Priority order:
+        // 1. phase-holder/phase-element always wins
+        // 2. If we already found a phase-holder, ignore everything else
+        // 3. phase-length only if mouse is actually within its bounds (not just buffer)
+        // 4. Otherwise use z-index
+
+        if (isPhaseHolder) {
+          // Phase holder always takes priority - override anything found before
+          highestZIndex = zIndex;
+          topmostItem = item;
+          topmostItemDom = itemDom;
+          foundPhaseBar = true;
+        } else if (!foundPhaseBar) {
+          // Only consider other elements if we haven't found a phase-holder yet
+          if (isPhaseLength) {
+            // Phase-length should only match if mouse is actually within its bounds
+            // This prevents it from stealing hover from phase-holder via buffer zones
+            if (withinActualBounds && (!topmostItem || zIndex > highestZIndex)) {
+              highestZIndex = zIndex;
+              topmostItem = item;
+              topmostItemDom = itemDom;
+            }
+          } else {
+            // Normal elements use z-index
             if (zIndex > highestZIndex) {
               highestZIndex = zIndex;
               topmostItem = item;
@@ -1466,7 +1529,19 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             callback(null);
             return;
           }
-          
+
+          // Close the modal and tooltip when actually moving/dragging (not just clicking)
+          if (!modalClosedDuringDragRef.current) {
+            if (toggleTimelineModalRef.current.open) {
+              setToggleTimelineModal({open: false, highlight: null, deadlinegroup: null});
+              setSelectedGroupId(null);
+              setTimelineData({group: null, content: null});
+            }
+            // Hide the vis-tooltip when dragging starts
+            hideTooltip();
+            modalClosedDuringDragRef.current = true;
+          }
+
           let tooltipEl = document.getElementById('moving-item-tooltip');
           if (!tooltipEl) {
             tooltipEl = document.createElement('div');
@@ -1993,42 +2068,71 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
 
       // Throttle mousemove for performance
-      let lastCall = 0;
       let animationFrameId = null;
-      const throttleMs = 16;
+      let lastItemId = null; // Track which item we're currently hovering
 
       const handleMouseMove = (event) => {
-        const now = Date.now();
-        if (now - lastCall < throttleMs) return;
-        lastCall = now;
-
         if (animationFrameId) {
           cancelAnimationFrame(animationFrameId);
         }
+
         animationFrameId = requestAnimationFrame(() => {
+          const mouseX = event.clientX;
+          const mouseY = event.clientY;
+
+          // Check if mouse is over the vis-tooltip
+          const visTooltip = document.querySelector('.vis-tooltip');
+          if (visTooltip && visTooltip.style.display === 'block') {
+            const tooltipRect = visTooltip.getBoundingClientRect();
+
+            // If mouse is over the tooltip, don't check for items underneath
+            if (mouseX >= tooltipRect.left && mouseX <= tooltipRect.right &&
+                mouseY >= tooltipRect.top && mouseY <= tooltipRect.bottom) {
+              return;
+            }
+          }
 
           // Check if the legend/info tooltip is open
           const menuTooltip = document.querySelector('.element-tooltip');
           if (menuTooltip && menuTooltip.offsetParent !== null) {
-            hideTooltip();
+            if (lastItemId !== null) {
+              onElementLeave();
+              lastItemId = null;
+            }
             return;
           }
 
-          const mouseX = event.clientX;
-          const mouseY = event.clientY;
-
           // Check if mouseX is less than 310 to avoid showing tooltip over the vis-left
           if (mouseX < 310 || mouseY < 250) {
-            hideTooltip();
+            if (lastItemId !== null) {
+              onElementLeave();
+              lastItemId = null;
+            }
             return;
           }
 
           const result = getTopmostTimelineItem(mouseX, mouseY, timelineInstanceRef);
 
           if (result) {
-            showTooltip(event, result.item.data, result.item.parent.className);
+            const currentItemId = result.item.data.id || result.item.data.content;
+
+            // If we moved to a new item, trigger leave for old and enter for new
+            if (currentItemId !== lastItemId) {
+              if (lastItemId !== null) {
+                onElementLeave();
+              }
+              onElementEnter(event, result.item.data, result.item.parent.className, result.dom);
+              lastItemId = currentItemId;
+            } else {
+              // Same item, just update tooltip position
+              onElementMove(event, result.item.data, result.dom);
+            }
           } else {
-            hideTooltip();
+            // No item under cursor
+            if (lastItemId !== null) {
+              onElementLeave();
+              lastItemId = null;
+            }
           }
         });
       };
@@ -2043,10 +2147,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         setTimeline(timeline)
         // Track currently styled dragged group so we can remove styling on mouseUp
         const draggingGroupRef = { current: null };
+
         timeline.on('mouseDown', (props) => {
           // Block hyväksyminen and voimaantulo dragging
           if(isBlockedLabel(props?.item)) return;
-          
+
+          // Reset the flag on new mouseDown
+          modalClosedDuringDragRef.current = false;
+
           if (allowedToEdit && props?.item) {
             document.body.classList.add('cursor-moving');
             const targetEl = props?.event?.target;
@@ -2225,8 +2333,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         return () => {
           if (timelineInstanceRef.current) {
             timelineInstanceRef.current.destroy();
-            timelineInstanceRef.current.off('itemover', showTooltip);
-            timelineInstanceRef.current.off('itemout', hideTooltip);
             document.body.removeEventListener('mousemove', handleMouseMove);
           }
           timeline.off('mouseDown');
