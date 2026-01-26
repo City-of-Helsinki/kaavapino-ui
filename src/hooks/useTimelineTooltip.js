@@ -44,7 +44,7 @@ function getLineNameFromClassName(className) {
   const lastUnderscore = className.lastIndexOf('_');
   if (lastUnderscore !== -1) {
     const numberPart = className.slice(lastUnderscore + 1);
-    if (numberPart !== '1' && !isNaN(numberPart)) {
+    if (numberPart !== '1' && !Number.isNaN(Number(numberPart))) {
       return `${label} - ${numberPart}`;
     }
   }
@@ -207,6 +207,33 @@ export function useTimelineTooltip() {
   }, []);
 
   /**
+   * Calculates horizontal position preventing clipping
+   */
+  const calculateTooltipLeft = (elementCenterX, tooltipWidth) => {
+    let tooltipLeft = elementCenterX + window.pageXOffset - tooltipWidth / 2;
+    const minLeft = UI_CONSTANTS.LEFT_PANEL_WIDTH + window.pageXOffset;
+
+    // Get the timeline container to calculate right boundary
+    const timelineContainer = document.querySelector('.vis-timeline');
+    const containerRight = timelineContainer
+      ? timelineContainer.getBoundingClientRect().right
+      : window.innerWidth;
+    const maxRight = containerRight + window.pageXOffset - UI_CONSTANTS.TOOLTIP_RIGHT_MARGIN;
+
+    // Prevent clipping on the left (panel)
+    if (tooltipLeft < minLeft) {
+      tooltipLeft = minLeft;
+    }
+
+    // Prevent clipping on the right (container edge)
+    if (tooltipLeft + tooltipWidth > maxRight) {
+      tooltipLeft = maxRight - tooltipWidth;
+    }
+
+    return tooltipLeft;
+  };
+
+  /**
    * Updates tooltip position relative to cursor or element
    * @param {number} pageX - Mouse X coordinate
    @param {number} pageY - Mouse Y coordinate
@@ -249,26 +276,7 @@ export function useTimelineTooltip() {
                             elementDOM.classList.contains('phase-element');
       const offsetY = isPhaseElement ? UI_CONSTANTS.PHASE_ELEMENT_OFFSET : UI_CONSTANTS.NORMAL_ELEMENT_OFFSET;
     
-      // Calculate tooltip left position, ensuring it doesn't clip left or right edge
-      let tooltipLeft = elementCenterX + window.pageXOffset - tooltipWidth / 2;
-      const minLeft = UI_CONSTANTS.LEFT_PANEL_WIDTH + window.pageXOffset;
-    
-      // Get the timeline container to calculate right boundary
-      const timelineContainer = document.querySelector('.vis-timeline');
-      const containerRight = timelineContainer 
-        ? timelineContainer.getBoundingClientRect().right 
-        : window.innerWidth;
-      const maxRight = containerRight + window.pageXOffset - UI_CONSTANTS.TOOLTIP_RIGHT_MARGIN;
-    
-      // Prevent clipping on the left (panel)
-      if (tooltipLeft < minLeft) {
-        tooltipLeft = minLeft;
-      }
-    
-      // Prevent clipping on the right (container edge)
-      if (tooltipLeft + tooltipWidth > maxRight) {
-        tooltipLeft = maxRight - tooltipWidth;
-      }
+      const tooltipLeft = calculateTooltipLeft(elementCenterX, tooltipWidth);
     
       tooltipRef.current.style.left = `${tooltipLeft}px`;
       tooltipRef.current.style.top = `${elementBottom + window.pageYOffset + offsetY}px`;
@@ -304,7 +312,7 @@ export function useTimelineTooltip() {
     isOverElementRef.current = true;
 
     // If tooltip is already showing, update it immediately for the new item
-    if (tooltipRef.current && tooltipRef.current.style.display === 'block') {
+    if (tooltipRef.current?.style?.display === 'block') {
       // Different item - update content and position immediately
       if (currentItemRef.current !== item) {
         currentItemRef.current = item;
@@ -351,7 +359,7 @@ export function useTimelineTooltip() {
     currentElementRef.current = elementDOM;
     
     // Only update tooltip position if it's visible and NOT locked
-    if (tooltipRef.current && tooltipRef.current.style.display === 'block' && currentItemRef.current === item && !isTooltipLockedRef.current) {
+    if (tooltipRef.current?.style?.display === 'block' && currentItemRef.current === item && !isTooltipLockedRef.current) {
       updateTooltipPosition(event.pageX, event.pageY, elementDOM);
     }
   };
