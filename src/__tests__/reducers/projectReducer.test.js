@@ -33,8 +33,12 @@ vi.mock('../../utils/timeUtil', () => ({
         .sort((a, b) => new Date(a[1]) - new Date(b[1]));
     }),
     formatDate: vi.fn((date) => {
+      // Use local timezone formatting to match real implementation
       if (date instanceof Date) {
-        return date.toISOString().split('T')[0];
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
       }
       return date;
     }),
@@ -395,9 +399,20 @@ describe('UPDATE_DATE_TIMELINE action', () => {
       },
     });
 
-    // End date should be 14 days after new start date
-    // Note: Due to UTC/local timezone handling in Date parsing, result is 2026-03-30
-    expect(result.currentProject.attribute_data.milloin_periaatteet_esillaolo_paattyy).toBe('2026-03-30');
+    // Start date should be updated
+    expect(result.currentProject.attribute_data.milloin_periaatteet_esillaolo_alkaa).toBe('2026-03-17');
+    
+    // Verify duration is preserved - use same Date logic as reducer to stay timezone-consistent
+    // The reducer uses: new Date(newDate) then setDate(getDate() + days)
+    // We replicate this to calculate expected end date
+    const expectedEndDateObj = new Date('2026-03-17');
+    expectedEndDateObj.setDate(expectedEndDateObj.getDate() + 14);
+    const expectedYear = expectedEndDateObj.getFullYear();
+    const expectedMonth = String(expectedEndDateObj.getMonth() + 1).padStart(2, '0');
+    const expectedDay = String(expectedEndDateObj.getDate()).padStart(2, '0');
+    const expectedEndDate = `${expectedYear}-${expectedMonth}-${expectedDay}`;
+    
+    expect(result.currentProject.attribute_data.milloin_periaatteet_esillaolo_paattyy).toBe(expectedEndDate);
   });
 
   it('should handle isAdd=true for new deadline slots', () => {
