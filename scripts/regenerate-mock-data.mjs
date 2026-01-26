@@ -87,10 +87,11 @@ function generateDateTypes() {
   const lautakuntapäivät = [];
   const esilläolopäivät = [];
   
-  let currentDate = new Date(`${startYear}-01-01`);
+  const startDate = new Date(`${startYear}-01-01`);
   const endDate = new Date(`${endYear}-12-31`);
   
-  while (currentDate <= endDate) {
+  for (let d = startDate.getTime(); d <= endDate.getTime(); d += 86400000) {
+    const currentDate = new Date(d);
     const day = currentDate.getDay();
     const month = currentDate.getMonth() + 1;
     const date = currentDate.getDate();
@@ -120,8 +121,6 @@ function generateDateTypes() {
     if (day === 2 && month !== 7) {
       lautakuntapäivät.push(dateStr);
     }
-    
-    currentDate.setDate(currentDate.getDate() + 1);
   }
   
   return { arkipäivät, työpäivät, lautakuntapäivät, esilläolopäivät };
