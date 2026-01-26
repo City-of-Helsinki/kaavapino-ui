@@ -1284,6 +1284,52 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     };
 
     /**
+     * Check if mouse is within element bounds including buffer zones
+     */
+    const isMouseWithinBounds = (mouseX, mouseY, itemBounds, topBuffer, bottomBuffer) => {
+      return (
+        mouseX >= itemBounds.left &&
+        mouseX <= itemBounds.right &&
+        mouseY >= (itemBounds.top - topBuffer) &&
+        mouseY <= (itemBounds.bottom + bottomBuffer)
+      );
+    };
+
+    /**
+     * Update topmost item if this element has priority
+     */
+    const updateTopmostItem = (item, itemDom, zIndex, isPhaseHolder, isPhaseLength, withinActualBounds, state) => {
+      const { highestZIndex, topmostItem, foundPhaseBar } = state;
+
+      if (isPhaseHolder) {
+        // Phase holder always takes priority
+        return {
+          highestZIndex: zIndex,
+          topmostItem: item,
+          topmostItemDom: itemDom,
+          foundPhaseBar: true
+        };
+      }
+
+      if (foundPhaseBar) {
+        // Already found phase bar, ignore other elements
+        return state;
+      }
+
+      if (isPhaseLength && withinActualBounds && (!topmostItem || zIndex > highestZIndex)) {
+        // Phase-length only matches if within actual bounds (prevents buffer zone stealing)
+        return { ...state, highestZIndex: zIndex, topmostItem: item, topmostItemDom: itemDom };
+      }
+
+      // Normal elements use z-index
+      if (!isPhaseLength && zIndex > highestZIndex) {
+        return { ...state, highestZIndex: zIndex, topmostItem: item, topmostItemDom: itemDom };
+      }
+
+      return state;
+    };
+
+    /**
      * Finds the topmost (highest z-index) timeline item at given coordinates
      * Implements priority logic to prevent phase-length elements from stealing
      * hover from phase-holder elements via buffer zones
@@ -1298,14 +1344,15 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
 
       const items = Object.values(timelineInstanceRef.current.itemSet.items);
-      let highestZIndex = -1;
-      let topmostItem = null;
-      let topmostItemDom = null;
-      let foundPhaseBar = false; // Track if we find a phase-holder bar
-
-      // Buffer zones for better hover detection (in pixels)
       const PHASE_TOP_BUFFER = 15;
       const PHASE_BOTTOM_BUFFER = 3;
+
+      let state = {
+        highestZIndex: -1,
+        topmostItem: null,
+        topmostItemDom: null,
+        foundPhaseBar: false
+      };
 
       items.forEach((item) => {
         const itemDom = item?.dom?.box ?? item?.dom?.point ?? item?.dom?.dot;
@@ -1314,66 +1361,24 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         }
 
         const itemBounds = itemDom.getBoundingClientRect();
-
-        // Apply buffer zones only for range elements
         const isPhaseRange = itemDom.classList.contains('vis-range');
         const topBuffer = isPhaseRange ? PHASE_TOP_BUFFER : 0;
         const bottomBuffer = isPhaseRange ? PHASE_BOTTOM_BUFFER : 0;
 
-        // Check if mouse is within element bounds (including buffer)
-        const isWithinBufferedBounds = (
-          mouseX >= itemBounds.left &&
-          mouseX <= itemBounds.right &&
-          mouseY >= (itemBounds.top - topBuffer) &&
-          mouseY <= (itemBounds.bottom + bottomBuffer)
-        );
-
-        if (!isWithinBufferedBounds) {
+        if (!isMouseWithinBounds(mouseX, mouseY, itemBounds, topBuffer, bottomBuffer)) {
           return;
         }
 
-        const zIndex = parseInt(window.getComputedStyle(itemDom).zIndex, 10) || 0;
-
-        // Check element types for priority
+        const zIndex = Number.parseInt(globalThis.getComputedStyle(itemDom).zIndex, 10) || 0;
         const isPhaseHolder = itemDom.classList.contains('phase-holder') || 
                               itemDom.classList.contains('phase-element');
         const isPhaseLength = itemDom.classList.contains('phase-length');
         const withinActualBounds = mouseY >= itemBounds.top && mouseY <= itemBounds.bottom;
 
-        // Priority order:
-        // 1. phase-holder/phase-element always wins
-        // 2. If we already found a phase-holder, ignore everything else
-        // 3. phase-length only if mouse is actually within its bounds (not just buffer)
-        // 4. Otherwise use z-index
-
-        if (isPhaseHolder) {
-          // Phase holder always takes priority - override anything found before
-          highestZIndex = zIndex;
-          topmostItem = item;
-          topmostItemDom = itemDom;
-          foundPhaseBar = true;
-        } else if (!foundPhaseBar) {
-          // Only consider other elements if we haven't found a phase-holder yet
-          if (isPhaseLength) {
-            // Phase-length should only match if mouse is actually within its bounds
-            // This prevents it from stealing hover from phase-holder via buffer zones
-            if (withinActualBounds && (!topmostItem || zIndex > highestZIndex)) {
-              highestZIndex = zIndex;
-              topmostItem = item;
-              topmostItemDom = itemDom;
-            }
-          } else {
-            // Normal elements use z-index
-            if (zIndex > highestZIndex) {
-              highestZIndex = zIndex;
-              topmostItem = item;
-              topmostItemDom = itemDom;
-            }
-          }
-        }
+        state = updateTopmostItem(item, itemDom, zIndex, isPhaseHolder, isPhaseLength, withinActualBounds, state);
       });
 
-      return topmostItem ? { item: topmostItem, dom: topmostItemDom } : null;
+      return state.topmostItem ? { item: state.topmostItem, dom: state.topmostItemDom } : null;
     };
 
     const isPhaseClosed = (phase) => {
@@ -2071,6 +2076,51 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       let animationFrameId = null;
       let lastItemId = null; // Track which item we're currently hovering
 
+      /**
+       * Check if mouse is over the vis-tooltip element
+       */
+      const isMouseOverVisTooltip = (mouseX, mouseY) => {
+        const visTooltip = document.querySelector('.vis-tooltip');
+        if (!visTooltip || visTooltip?.style?.display !== 'block') {
+          return false;
+        }
+
+        const tooltipRect = visTooltip.getBoundingClientRect();
+        return (
+          mouseX >= tooltipRect.left && mouseX <= tooltipRect.right &&
+          mouseY >= tooltipRect.top && mouseY <= tooltipRect.bottom
+        );
+      };
+
+      /**
+       * Handle item hover state changes
+       */
+      const handleItemHover = (event, result, mouseX, mouseY) => {
+        if (!result) {
+          // No item under cursor
+          if (lastItemId !== null) {
+            onElementLeave();
+            lastItemId = null;
+          }
+          return;
+        }
+
+        const currentItemId = result.item.data.id || result.item.data.content;
+
+        // Same item, just update tooltip position
+        if (currentItemId === lastItemId) {
+          onElementMove(event, result.item.data, result.dom);
+          return;
+        }
+        
+        // Moved to a new item, trigger leave for old and enter for new
+        if (lastItemId !== null) {
+          onElementLeave();
+        }
+        onElementEnter(event, result.item.data, result.item.parent.className, result.dom);
+        lastItemId = currentItemId;
+      };
+
       const handleMouseMove = (event) => {
         if (animationFrameId) {
           cancelAnimationFrame(animationFrameId);
@@ -2080,30 +2130,17 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           const mouseX = event.clientX;
           const mouseY = event.clientY;
 
-          // Check if mouse is over the vis-tooltip
-          const visTooltip = document.querySelector('.vis-tooltip');
-          if (visTooltip && visTooltip.style.display === 'block') {
-            const tooltipRect = visTooltip.getBoundingClientRect();
-
-            // If mouse is over the tooltip, don't check for items underneath
-            if (mouseX >= tooltipRect.left && mouseX <= tooltipRect.right &&
-                mouseY >= tooltipRect.top && mouseY <= tooltipRect.bottom) {
-              return;
-            }
-          }
-
-          // Check if the legend/info tooltip is open
-          const menuTooltip = document.querySelector('.element-tooltip');
-          if (menuTooltip && menuTooltip.offsetParent !== null) {
-            if (lastItemId !== null) {
-              onElementLeave();
-              lastItemId = null;
-            }
+          // Check if mouse is over the vis-tooltip - just return without clearing
+          if (isMouseOverVisTooltip(mouseX, mouseY)) {
             return;
           }
 
-          // Check if mouseX is less than 310 to avoid showing tooltip over the vis-left
-          if (mouseX < 310 || mouseY < 250) {
+          // Check other skip conditions that should clear the tooltip
+          const menuTooltip = document.querySelector('.element-tooltip');
+          const shouldSkip = (menuTooltip && menuTooltip.offsetParent !== null) || 
+                            (mouseX < 310 || mouseY < 250);
+          
+          if (shouldSkip) {
             if (lastItemId !== null) {
               onElementLeave();
               lastItemId = null;
@@ -2112,28 +2149,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           }
 
           const result = getTopmostTimelineItem(mouseX, mouseY, timelineInstanceRef);
-
-          if (result) {
-            const currentItemId = result.item.data.id || result.item.data.content;
-
-            // If we moved to a new item, trigger leave for old and enter for new
-            if (currentItemId !== lastItemId) {
-              if (lastItemId !== null) {
-                onElementLeave();
-              }
-              onElementEnter(event, result.item.data, result.item.parent.className, result.dom);
-              lastItemId = currentItemId;
-            } else {
-              // Same item, just update tooltip position
-              onElementMove(event, result.item.data, result.dom);
-            }
-          } else {
-            // No item under cursor
-            if (lastItemId !== null) {
-              onElementLeave();
-              lastItemId = null;
-            }
-          }
+          handleItemHover(event, result, mouseX, mouseY);
         });
       };
 
