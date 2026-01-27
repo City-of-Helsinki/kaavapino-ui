@@ -97,54 +97,56 @@ function getPhaseAndIndexFromConfirmationKey(confirmationKey) {
   return { phase, type, index };
 }
 
+// Helper: Check if key should be filtered out
+function shouldFilterKey(key) {
+  return isConfirmationKey(key) || isPhaseDate(key) || isVisibilityBoolean(key) || isMetadataField(key);
+}
+
+// Helper: Check if alias matches the key (at start or end)
+function aliasMatchesKey(key, alias) {
+  if (key.startsWith('milloin_')) {
+    // For milloin_ keys, alias must be first component after milloin_
+    return key.startsWith(`milloin_${alias}_`);
+  }
+
+  // For other keys, alias must be at the very start OR at the end as _alias
+  // This prevents "ehdotus" from matching "tarkistettu_ehdotus_kylk_maaraaika"
+  const startsWithAlias = key.startsWith(alias);
+  const endsWithAlias = key.endsWith(`_${alias}`) || new RegExp(String.raw`_${alias}(_\d+)?$`).exec(key);
+  return startsWithAlias || endsWithAlias;
+}
+
+// Helper: Extract index from attribute key (defaults to '1')
+function extractKeyIndex(key) {
+  const keyIndexMatch = /_(\d+)$/.exec(key);
+  return keyIndexMatch ? keyIndexMatch[1] : '1';
+}
+
+// Helper: Check if key matches the type (esillaolo vs lautakunta)
+function keyMatchesType(key, type) {
+  if (type === 'esillaolo' && (key.includes('lautakunta') || key.includes('lautakunnassa'))) {
+    return false;
+  }
+  if (type === 'lautakunta' && (key.includes('esillaolo') || key.includes('nahtavilla'))) {
+    return false;
+  }
+  return true;
+}
+
 function addAliasFields(confirmedFields, attributeData, aliases, confirmationInfo) {
   // Only add fields that match the phase AND index from the confirmation key
   const { type, index } = confirmationInfo;
 
   for (const alias of aliases) {
     for (const key in attributeData) {
-      if (!Object.prototype.hasOwnProperty.call(attributeData, key)) continue;
-      if (isConfirmationKey(key)) continue;
-      if (isPhaseDate(key)) continue;
-      if (isVisibilityBoolean(key)) continue;
-      if (isMetadataField(key)) continue;
+      if (!Object.hasOwn(attributeData, key)) continue;
+      if (shouldFilterKey(key)) continue;
+      if (!aliasMatchesKey(key, alias)) continue;
 
-      // Check if key matches the phase
-      // Alias must appear at the beginning of the field name (after milloin_ if present)
-      // OR at the end as _alias (for viimeistaan_mielipiteet_oas pattern)
-      // This prevents "ehdotus" from matching "tarkistettu_ehdotus_kylk_maaraaika"
-      if (key.startsWith('milloin_')) {
-        // For milloin_ keys, alias must be first component after milloin_
-        if (!key.startsWith(`milloin_${alias}_`)) continue;
-      } else {
-        // For other keys, alias must be at the very start (including compound words)
-        // OR at the end as _alias or _alias_number
-        // Examples that MATCH "oas":
-        //   - "oas_esillaolo_aineiston_maaraaika" (starts with oas)
-        //   - "viimeistaan_mielipiteet_oas" (ends with _oas)
-        //   - "viimeistaan_mielipiteet_oas_2" (ends with _oas_2)
-        // Examples that DO NOT MATCH "ehdotus":
-        //   - "tarkistettu_ehdotus_kylk_maaraaika" (ehdotus not at start or end)
-        const startsWithAlias = key.startsWith(alias);
-        const endsWithAlias = key.endsWith(`_${alias}`) || key.match(new RegExp(`_${alias}(_\\d+)?$`));
-        if (!startsWithAlias && !endsWithAlias) continue;
-      }
-
-      // Extract index from the attribute key
-      const keyIndexMatch = key.match(/_(\d+)$/);
-      const keyIndex = keyIndexMatch ? keyIndexMatch[1] : '1';
+      const keyIndex = extractKeyIndex(key);
 
       // Match exact index for both esillaolo and lautakunta
-      // Each index has its own confirmation key
-      if (keyIndex === index) {
-        // Additional filtering for esillaolo/lautakunta specific keys
-        if (type === 'esillaolo' && (key.includes('lautakunta') || key.includes('lautakunnassa'))) {
-          continue;
-        }
-        if (type === 'lautakunta' && (key.includes('esillaolo') || key.includes('nahtavilla'))) {
-          continue;
-        }
-
+      if (keyIndex === index && keyMatchesType(key, type)) {
         confirmedFields.add(key);
       }
     }
@@ -172,7 +174,7 @@ function addSpecialCaseFields(confirmedFields, attributeData, confirmationInfo) 
 
     // First remove size suffix if present (_iso or _pieni)
     const keyWithoutSize = key.replace(/_(iso|pieni)(_\d+)?$/, '$2');
-    const keyIndexMatch = keyWithoutSize.match(/_(\d+)$/);
+    const keyIndexMatch = /_(\d+)$/.exec(keyWithoutSize);
     const keyIndex = keyIndexMatch ? keyIndexMatch[1] : '1';
 
     // Only add if the index matches
