@@ -146,8 +146,10 @@ function addAliasFields(confirmedFields, attributeData, aliases, confirmationInf
       const keyIndex = extractKeyIndex(key);
 
       // Match exact index for both esillaolo and lautakunta
-      if (keyIndex === index && keyMatchesType(key, type)) {
-        confirmedFields.add(key);
+      if (keyIndex === index) {
+        if (keyMatchesType(key, type)) {
+          confirmedFields.add(key);
+        }
       }
     }
   }
