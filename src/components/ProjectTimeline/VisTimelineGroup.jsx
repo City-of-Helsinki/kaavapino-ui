@@ -1419,13 +1419,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
 
       let count = 0;
-      let step = totalDays > 0 ? 1 : -1;
-      let current = originalDate.clone();
-      // eslint-disable-next-line no-unmodified-loop-condition
-      while (
-        (step > 0 && current.isBefore(newDate, 'day')) ||
-        (step < 0 && current.isAfter(newDate, 'day'))
-      ) {
+      const step = totalDays > 0 ? 1 : -1;
+      const current = originalDate.clone();
+      const isMovingForward = step > 0;
+      for (; ;) {
+        const shouldContinue = isMovingForward
+          ? current.isBefore(newDate, 'day')
+          : current.isAfter(newDate, 'day');
+        if (!shouldContinue) break;
         current.add(step, 'days');
         const dayOfWeek = current.day();
         if (dayOfWeek !== 0 && dayOfWeek !== 6) {
