@@ -810,20 +810,10 @@ function* validateProjectTimetable() {
 
     // Add confirmed field locking from vahvista_* flags
     // leave 'kaynnistys','hyvaksyminen','voimaantulo' out because no vahvista flags there
-    const phaseNames = [
-      'periaatteet',
-      'oas',
-      'luonnos',
-      'ehdotus',
-      'kaavaluonnos',
-      'kaavaehdotus',
-      'tarkistettu_ehdotus'
-    ];
     //Find confirmed fields from attribute_data so backend knows not to edit them
     const confirmed_fields = generateConfirmedFields(
       attribute_data,
-      confirmationAttributeNames,
-      phaseNames
+      confirmationAttributeNames
     );
 
     try {
@@ -910,21 +900,11 @@ function* saveProjectTimetable(action,retryCount = 0) {
     
     // Add confirmed field locking from vahvista_* flags
     // leave 'kaynnistys','hyvaksyminen','voimaantulo' out because no vahvista flags there
-    const phaseNames = [
-      'periaatteet',
-      'oas',
-      'luonnos',
-      'ehdotus',
-      'kaavaluonnos',
-      'kaavaehdotus',
-      'tarkistettu_ehdotus'
-    ];
     
     //Find confirmed fields from attribute_data so backend knows not to edit them
     const confirmed_fields = generateConfirmedFields(
       attribute_data,
-      confirmationAttributeNames,
-      phaseNames
+      confirmationAttributeNames
     );
 
     const maxRetries = 5;
