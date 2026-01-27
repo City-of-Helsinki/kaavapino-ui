@@ -292,7 +292,7 @@ function* pollConnection() {
     const dateVariable = new Date()
     const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     yield put(setPoll(true))
-    yield put(setLastSaved("success",time,[],[],false))
+    yield put(setLastSaved("connection_restored",time,[],[],false))
   } catch (e) {
     yield put(setPoll(false))
   }
@@ -1034,7 +1034,7 @@ function* lockProjectField(data) {
     catch (e) {
       const dateVariable = new Date()
       const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      yield put(setLastSaved("error",time,[attribute_identifier],[""],true))
+      yield put(setLastSaved("error", time, [attribute_identifier],[""],true))
       yield put(error(e))
     }
   }

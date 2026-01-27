@@ -418,8 +418,11 @@ const Header = props => {
             </div>
             <div className='icons-container-flex'>
               {updateTime?.status === t('header.latest-save') ? <IconCheck className='check-icon'/> : ""}
-              {updateTime?.status === t('header.edit-menu-save-fail') ? <IconErrorFill className='error-icon'/> : ""}
-              <p className={updateTime?.status === t('header.edit-menu-save-fail') ? "error" : ""}>{updateTime?.status}{updateTime?.time}</p>
+              {
+              updateTime?.status === t('header.edit-menu-save-fail') ? 
+              <> <IconErrorFill className='error-icon'/> <p className="error">{updateTime?.status}</p> </> :
+              <p>{updateTime?.status}{updateTime?.time}</p>
+              }
               {updateTime?.status === t('header.edit-menu-save-fail') ? <Tooltip placement="bottom" className='question-icon'>{t('header.latest-save')}{updateTime?.time}</Tooltip> : ""}
             </div>
           </div>
