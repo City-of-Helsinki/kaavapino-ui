@@ -293,7 +293,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       if (normalizedPhase === "periaatteet") normalizedPhase = "periaatteet";
       if (normalizedPhase === "oas") normalizedPhase = "oas";
 
-      // Special case for ehdotus-phase: no _alkaa in the key!
+      // Special case for ehdotus-phase: uses vahvista_ehdotus_esillaolo (no _alkaa suffix)
       if (normalizedPhase === "ehdotus") {
         if (idx === "1") {
           return `vahvista_ehdotus_esillaolo`;
@@ -347,12 +347,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const getLautakuntaConfirmed = (visValRef, phase, lautakuntaCount) => {
       const projectSize = visValRef?.kaavaprosessin_kokoluokka;
       //L AND XL has phase order reversed on ehdotus phase and it is not allowed for lautakunta to be added after nahtavillaolo
-      if (
-          phase === "ehdotus" &&
-          (projectSize === "XL" || projectSize === "L") &&
-          visValRef?.vahvista_ehdotus_esillaolo === true
-      ) {
+      if (phase === "ehdotus" && (projectSize === "XL" || projectSize === "L")) {
+        // Check the confirmation key
+        const confirmKey = `vahvista_ehdotus_esillaolo`;
+        if (visValRef?.[confirmKey] === true) {
           return false;
+        }
       }
 
       if (phase === "luonnos") {
