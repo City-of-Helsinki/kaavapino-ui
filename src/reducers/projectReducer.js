@@ -438,6 +438,9 @@ export const reducer = (state = initialState, action) => {
     }
 
     case SET_LAST_SAVED: {
+      if (action.payload.status !== "success") {
+        action.payload.time = state.lastSaved.time
+      }
       return{
         ...state,
         lastSaved:action.payload,
