@@ -846,7 +846,7 @@ const compareAndUpdateDates = (data) => {
 
   lausuntoPairs.forEach(([lausunto_date, paattyy_date]) => {
     const validPaattyyDate = validateAndNormalizeDate(data[paattyy_date]);
-    if (validPaattyyDate && ( !data[lausunto_date] || data[lausunto_date] < validPaattyyDate)) {
+    if (validPaattyyDate) {
       data[lausunto_date] = validPaattyyDate;
     }
   });
