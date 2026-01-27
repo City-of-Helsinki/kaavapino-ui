@@ -133,23 +133,26 @@ function keyMatchesType(key, type) {
   return true;
 }
 
+// Helper: Check if field should be added based on all criteria
+function shouldAddField(key, alias, index, type, attributeData) {
+  if (!Object.hasOwn(attributeData, key)) return false;
+  if (shouldFilterKey(key)) return false;
+  if (!aliasMatchesKey(key, alias)) return false;
+
+  const keyIndex = extractKeyIndex(key);
+  if (keyIndex !== index) return false;
+
+  return keyMatchesType(key, type);
+}
+
 function addAliasFields(confirmedFields, attributeData, aliases, confirmationInfo) {
   // Only add fields that match the phase AND index from the confirmation key
   const { type, index } = confirmationInfo;
 
   for (const alias of aliases) {
     for (const key in attributeData) {
-      if (!Object.hasOwn(attributeData, key)) continue;
-      if (shouldFilterKey(key)) continue;
-      if (!aliasMatchesKey(key, alias)) continue;
-
-      const keyIndex = extractKeyIndex(key);
-
-      // Match exact index for both esillaolo and lautakunta
-      if (keyIndex === index) {
-        if (keyMatchesType(key, type)) {
-          confirmedFields.add(key);
-        }
+      if (shouldAddField(key, alias, index, type, attributeData)) {
+        confirmedFields.add(key);
       }
     }
   }
