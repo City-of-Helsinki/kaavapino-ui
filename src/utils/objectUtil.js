@@ -48,591 +48,592 @@ const getHighestNumberedObject = (obj1) => {
   return null;
 };
 
-  const getMinObject = (latestObject) => {
-    // Iterate over the keys of the object
-    for (let key in latestObject) {
-        // Check if the value is an array
-        if (Array.isArray(latestObject[key]) && latestObject[key].length > 0) {
-            // Access the first object in the array
-            let firstObject = latestObject[key][0];
-            return firstObject.name
-        }
+const getMinObject = (latestObject) => {
+  // Iterate over the keys of the object
+  for (let key in latestObject) {
+    // Check if the value is an array
+    if (Array.isArray(latestObject[key]) && latestObject[key].length > 0) {
+      // Access the first object in the array
+      let firstObject = latestObject[key][0];
+      return firstObject.name
     }
-    return null;
   }
+  return null;
+}
 
-  // Function to extract the number after the last underscore and return the object with the larger number
-  const getNumberFromString = (arr) => {
-    let largestObject = null;
-    let largestNumber = -Infinity;
+// Function to extract the number after the last underscore and return the object with the larger number
+const getNumberFromString = (arr) => {
+  let largestObject = null;
+  let largestNumber = -Infinity;
 
-    arr.forEach(obj => {
-      const match = obj.attributegroup.match(/_(\d+)$/); // Match digits after the last underscore
-      if (match) {
-        const number = parseInt(match[1], 10); // Get the number
-        if (number > largestNumber) { // Compare with the current largest number
-          largestNumber = number;
-          largestObject = obj;
-        }
-      }
-    });
-
-    return largestObject; // Return the object with the largest number
-  }
-
-  const findValuesWithStrings = (arr, str1, str2, str3, str4) => {
-    let arrOfObj = arr.filter(obj => obj.name.includes(str1) && obj.name.includes(str2) && obj.name.includes(str3) && obj.name.includes(str4));
-    // Get the object with the largest number from the array
-    const largest = getNumberFromString(arrOfObj);
-    return largest
-  };
-
-  const generateDateStringArray = (updatedAttributeData) => {
-    const updateAttributeArray = [];
-
-    // Process only the keys with date strings
-    Object.keys(updatedAttributeData)
-      .filter(key => timeUtil.isDate(updatedAttributeData[key])) // Filter only date keys
-      .map(key => ({ key, date: new Date(updatedAttributeData[key]), value: updatedAttributeData[key] })) // Map keys to real Date objects and values
-      .forEach(item => {
-        updateAttributeArray.push({ key: item.key, value: item.value }); // Push each sorted key-value pair into the array
-    });
-
-    return updateAttributeArray
-  }
-
-  const compareAndUpdateArrays = (arr1, arr2, deadlineSections) => {
-    let changes = [];
-    // Convert arr2 to a map for easier lookups
-    const map2 = new Map(arr2.map(item => [item.key, item.value]));
-  
-    // Iterate through arr1 and update values if a matching key is found in arr2
-    for (let i = 0; i < arr1.length; i++) {
-      const key = arr1[i].key;
-      const value1 = arr1[i].value;
-  
-      if (map2.has(key)) {
-        const value2 = map2.get(key);
-  
-        // If values differ, update the value in arr1 and record the change
-        if (value1 !== value2) {
-          changes.push({
-            key: key,
-            oldValue: value1,
-            newValue: value2
-          });
-          arr1[i].value = value2; // Update the value in arr1
-        }
+  arr.forEach(obj => {
+    const match = obj.attributegroup.match(/_(\d+)$/); // Match digits after the last underscore
+    if (match) {
+      const number = parseInt(match[1], 10); // Get the number
+      if (number > largestNumber) { // Compare with the current largest number
+        largestNumber = number;
+        largestObject = obj;
       }
     }
-  
-    // Check for keys in arr2 that are missing in arr1
-    for (let [key, value2] of map2) {
-      if (!arr1.find(item => item.key === key)) {
+  });
+
+  return largestObject; // Return the object with the largest number
+}
+
+const findValuesWithStrings = (arr, str1, str2, str3, str4) => {
+  let arrOfObj = arr.filter(obj => obj.name.includes(str1) && obj.name.includes(str2) && obj.name.includes(str3) && obj.name.includes(str4));
+  // Get the object with the largest number from the array
+  const largest = getNumberFromString(arrOfObj);
+  return largest
+};
+
+const generateDateStringArray = (updatedAttributeData) => {
+  const updateAttributeArray = [];
+
+  // Process only the keys with date strings
+  Object.keys(updatedAttributeData)
+    .filter(key => timeUtil.isDate(updatedAttributeData[key])) // Filter only date keys
+    .map(key => ({ key, date: new Date(updatedAttributeData[key]), value: updatedAttributeData[key] })) // Map keys to real Date objects and values
+    .forEach(item => {
+      updateAttributeArray.push({ key: item.key, value: item.value }); // Push each sorted key-value pair into the array
+    });
+
+  return updateAttributeArray
+}
+
+const compareAndUpdateArrays = (arr1, arr2, deadlineSections) => {
+  let changes = [];
+  // Convert arr2 to a map for easier lookups
+  const map2 = new Map(arr2.map(item => [item.key, item.value]));
+
+  // Iterate through arr1 and update values if a matching key is found in arr2
+  for (let i = 0; i < arr1.length; i++) {
+    const key = arr1[i].key;
+    const value1 = arr1[i].value;
+
+    if (map2.has(key)) {
+      const value2 = map2.get(key);
+
+      // If values differ, update the value in arr1 and record the change
+      if (value1 !== value2) {
         changes.push({
           key: key,
-          oldValue: 'Not found in first array',
+          oldValue: value1,
           newValue: value2
         });
-        // Optionally, add the missing key-value pair to arr1
-        arr1.push({ key: key, value: value2 });
+        arr1[i].value = value2; // Update the value in arr1
       }
     }
-    // Adding distance_from_previous and distance_to_next to arr1 from deadlineSections
-    for (let i = 0; i < arr1.length; i++) {
-      const arr1Key = arr1[i].key;
+  }
 
-      // Iterate over each section in deadlineSections
-      for (let section of deadlineSections) {
-        // Iterate over each attribute in section's attributes array
-        for (let sec of section.sections) {
-          for (let attribute of sec.attributes) {
-            if (attribute.name === arr1Key) {
-              // Found a match, now add distance_from_previous and distance_to_next
-              arr1[i].distance_from_previous = attribute?.distance_from_previous || null;
-              arr1[i].distance_to_next = attribute?.distance_to_next || null;
-              arr1[i].initial_distance = attribute?.initial_distance?.distance || null
-              arr1[i].date_type = attribute?.date_type ?? "arkipäivät";
-              arr1[i].order = i;
-              break; // Exit the loop once the match is found
-            }
-          }
-        }
-      }
+  // Check for keys in arr2 that are missing in arr1
+  for (let [key, value2] of map2) {
+    if (!arr1.find(item => item.key === key)) {
+      changes.push({
+        key: key,
+        oldValue: 'Not found in first array',
+        newValue: value2
+      });
+      // Optionally, add the missing key-value pair to arr1
+      arr1.push({ key: key, value: value2 });
     }
+  }
+  // Adding distance_from_previous and distance_to_next to arr1 from deadlineSections
+  for (let i = 0; i < arr1.length; i++) {
+    const arr1Key = arr1[i].key;
 
-    // Extract the order of keys (names) from deadlineSections
-    //DeadlineSections has the correct order always
-    let keyOrder = [];
+    // Iterate over each section in deadlineSections
     for (let section of deadlineSections) {
+      // Iterate over each attribute in section's attributes array
       for (let sec of section.sections) {
         for (let attribute of sec.attributes) {
-          keyOrder.push(attribute.name);  // Get the order of names
-        }
-      }
-    }
-
-    // Sort arr1 based on the keyOrder extracted from deadlineSections
-    arr1.sort((a, b) => {
-      const indexA = keyOrder.indexOf(a.key);
-      const indexB = keyOrder.indexOf(b.key);
-    
-      // If both keys exist in keyOrder, sort based on their index
-      if (indexA !== -1 && indexB !== -1) {
-        return indexA - indexB;
-      }
-    
-      // If only one key exists in keyOrder, prioritize that one
-      if (indexA !== -1) return -1;
-      if (indexB !== -1) return 1;
-    
-      // If neither key exists in keyOrder, maintain their original order
-      return 0;
-    });
-
-    //Sort phase start end data by order const
-    arr1 = sortPhaseData(arr1,order)
-    //Return in order array ready for comparing next and previous value distances
-    arr1 = arr1.filter(item => !item.key.includes("viimeistaan_lausunnot_") && !item.key.includes("aloituskokous_suunniteltu_pvm_readonly")); //filter out has no next and prev values
-    return arr1
-  }
-  //Sort by certain predetermined order
-  const sortPhaseData = (arr,order) => {
-    arr.sort((a, b) => {
-      // check for the 'order' property
-      const aHasOrder = Object.prototype.hasOwnProperty.call(a, 'order');
-      const bHasOrder = Object.prototype.hasOwnProperty.call(b, 'order');
-      
-      // If both items have 'order', keep their relative positions
-      if (aHasOrder && bHasOrder) {
-          return 0; // Maintain original order for these items
-      }
-      // If only one of them has 'order', prioritize that one to stay in place
-      if (aHasOrder) return -1;
-      if (bHasOrder) return 1;
-  
-      // Otherwise, sort based on the provided order array
-      return order.indexOf(a.key) - order.indexOf(b.key);
-    });
-  
-    arr = increasePhaseValues(arr)
-    return arr
-  }
-
-  const increasePhaseValues = (arr) => {
-    const filteredArr = arr.filter(item => order.includes(item.key));
-    // Ensure each subsequent value is equal to or greater than the previous one
-    for (let i = 1; i < filteredArr.length; i++) {
-      if (filteredArr[i - 1].key.includes("paattyy_pvm") && filteredArr[i].key.includes("alkaa_pvm") || filteredArr[i].key.includes("kaynnistys_pvm")) {
-        // Convert values to Date objects for comparison
-        const previousValue = new Date(filteredArr[i - 1].value);
-        const currentValue = new Date(filteredArr[i].value);
-
-        // Adjust the current value if it's less than the previous value
-        if (currentValue < previousValue) {
-          filteredArr[i].value = filteredArr[i - 1].value;
-        }
-      }
-    }
-    // Replace the original elements in arr with updated elements from filteredArr
-    const result = arr.map(item => {
-      const updatedItem = filteredArr.find(filteredItem => filteredItem.key === item.key);
-      return updatedItem ? updatedItem : item;
-    });
-    return result
-  }
-
-  const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize,attributeData) => {
-    // KAAV-3492 DEBUG: Log cascade invocation to help trace bug
-    console.log('[KAAV-3492] checkForDecreasingValues called:', {
-      isAdd,
-      field,
-      oldDate,
-      movedDate,
-      moveToPast,
-      projectSize,
-      arrLength: arr?.length,
-      // Show first few items with their gaps for debugging
-      firstItems: arr?.slice(0, 5).map(i => ({ 
-        key: i.key, 
-        value: i.value, 
-        initial_distance: i.initial_distance, 
-        distance_from_previous: i.distance_from_previous 
-      }))
-    });
-
-    // Lock logic: do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
-    // attributeData is the filtered attribute_data object (only visible fields) so we can inspect confirmation flags
-    let confirmedFieldSet = null;
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    if(attributeData){
-      try {
-        // Lazy load to avoid circular deps (generateConfirmedFields depends on constants only)
-        const { confirmationAttributeNames } = require('./constants');
-        const { generateConfirmedFields } = require('./generateConfirmedFields');
-        // Phase names that have confirmation flags (exclude kaynnistys, hyvaksyminen, voimaantulo as per saga usage)
-        const phaseNames = ['periaatteet','oas','luonnos','ehdotus','tarkistettu_ehdotus'];
-        confirmedFieldSet = new Set(generateConfirmedFields(attributeData, confirmationAttributeNames, phaseNames));
-      }
-      catch(e){
-        // Fail silently – if generation fails we simply don't lock by confirmation (past locking still applies)
-      }
-    }
-    // Helper to decide if an item should be frozen
-    const isLocked = (item) => {
-      if(!item?.value) return false;
-      const d = new Date(item.value);
-      if(!isNaN(d) && d < today) return true;
-      return confirmedFieldSet ? confirmedFieldSet.has(item.key) : false;
-    };
-    // Find the index of the next item where dates should start being pushed
-    const currentIndex = arr.findIndex(item => item.key === field);
-    let indexToContinue = 0
-    // If adding items
-    if (isAdd) {
-      // Move the nextItem and all following items forward if item minium is exceeded
-      for (let i = currentIndex; i < arr.length; i++) {
-		    if(isLocked(arr[i])) continue; // skip locked items entirely
-        if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
-          && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
-          && !arr[i].key.includes("hyvaksymispaatos_pvm")){
-          let newDate = new Date(arr[i].value);
-          //Get minimum gap for two dates next to each other that are moved
-          const miniumGap = arr[i].initial_distance ?? arr[i].distance_from_previous ?? 0 
-          if(arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")){
-            //mielipiteet and paattyy is always the same value
-            newDate = new Date(arr[i - 1].value);
-          }
-          else{
-            // KAAV-3492 FIX: Only push forward if there's an actual overlap
-            const prevDate = new Date(arr[i - 1].value);
-            const currDate = new Date(arr[i].value);
-            console.log('[KAAV-3492] isAdd branch - checking item:', {
-              i,
-              key: arr[i].key,
-              prevKey: arr[i - 1]?.key,
-              prevValue: arr[i - 1]?.value,
-              currValue: arr[i].value,
-              prevDate: prevDate.toISOString().split('T')[0],
-              currDate: currDate.toISOString().split('T')[0],
-              hasOverlap: prevDate >= currDate,
-              miniumGap,
-              initial_distance: arr[i].initial_distance,
-              distance_from_previous: arr[i].distance_from_previous
-            });
-            if(prevDate >= currDate){
-              console.log('[KAAV-3492] isAdd - OVERLAP DETECTED, calling dateDifference');
-              //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
-              newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,arr[i - 1].value,arr[i].value,disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.disabled_dates?.dates,miniumGap,projectSize,true) : newDate
-            }
-            else {
-              console.log('[KAAV-3492] isAdd - NO OVERLAP, keeping current date');
-            }
-          }
-          // Update the array with the new date
-          newDate.setDate(newDate.getDate());
-          arr[i].value = newDate.toISOString().split('T')[0];
-          //Move phase start and end dates
-          if(arr[i].distance_from_previous === undefined && arr[i].key.endsWith('_pvm') && arr[i].key.includes("_paattyy_")){
-            const targetSubstring = arr[i].key.split('vaihe')[0];
-            // Iterate backwards from the given index
-            const res = reverseIterateArray(arr,i,targetSubstring)
-            const differenceInTime = new Date(res) - new Date(arr[i].value)
-            const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
-            if(differenceInDays >= 5){
-              arr[i].value = res
-              if(arr[i]?.key?.includes("tarkistettuehdotusvaihe_paattyy_pvm")){
-                //Move hyvaksyminenvaihe_paattyy_pvm and voimaantulovaihe_paattyy_pvm as many days as tarkistettuehdotusvaihe_paattyy_pvm
-                const items = arr.filter(el => el.key?.includes("hyvaksyminenvaihe_paattyy_pvm") || el.key?.includes("voimaantulovaihe_paattyy_pvm"));
-                if (items) {
-                  items.forEach(item => {
-                    const currentDate = new Date(item.value);
-                    currentDate.setDate(currentDate.getDate() + differenceInDays);
-                    item.value = currentDate.toISOString().split('T')[0];
-                  });
-                }
-              }
-            }
+          if (attribute.name === arr1Key) {
+            // Found a match, now add distance_from_previous and distance_to_next
+            arr1[i].distance_from_previous = attribute?.distance_from_previous || null;
+            arr1[i].distance_to_next = attribute?.distance_to_next || null;
+            arr1[i].initial_distance = attribute?.initial_distance?.distance || null
+            arr1[i].date_type = attribute?.date_type ?? "arkipäivät";
+            arr1[i].order = i;
+            break; // Exit the loop once the match is found
           }
         }
       }
     }
-    else if(currentIndex !== -1){
-      // KAAV-3492 FIX: Save original values before mutation to prevent cascading against just-updated values
-      const originalValues = arr.map(item => item.value);
-      
-      for (let i = currentIndex; i < arr.length; i++) {
-		    if(isLocked(arr[i])) continue; // do not move locked items
-        if(!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
-          && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
-          && !arr[i].key.includes("hyvaksymispaatos_pvm")){
-          let newDate = new Date(arr[i].value);
-          if(arr[i - 1]?.key?.includes("paattyy") && arr[i]?.key?.includes("mielipiteet")){
-            //mielipiteet and paattyy is always the same value
-            newDate = new Date(arr[i - 1].value);
+  }
+
+  // Extract the order of keys (names) from deadlineSections
+  //DeadlineSections has the correct order always
+  let keyOrder = [];
+  for (let section of deadlineSections) {
+    for (let sec of section.sections) {
+      for (let attribute of sec.attributes) {
+        keyOrder.push(attribute.name);  // Get the order of names
+      }
+    }
+  }
+
+  // Sort arr1 based on the keyOrder extracted from deadlineSections
+  arr1.sort((a, b) => {
+    const indexA = keyOrder.indexOf(a.key);
+    const indexB = keyOrder.indexOf(b.key);
+
+    // If both keys exist in keyOrder, sort based on their index
+    if (indexA !== -1 && indexB !== -1) {
+      return indexA - indexB;
+    }
+
+    // If only one key exists in keyOrder, prioritize that one
+    if (indexA !== -1) return -1;
+    if (indexB !== -1) return 1;
+
+    // If neither key exists in keyOrder, maintain their original order
+    return 0;
+  });
+
+  //Sort phase start end data by order const
+  arr1 = sortPhaseData(arr1, order)
+  //Return in order array ready for comparing next and previous value distances
+  arr1 = arr1.filter(item => !item.key.includes("viimeistaan_lausunnot_") && !item.key.includes("aloituskokous_suunniteltu_pvm_readonly")); //filter out has no next and prev values
+  return arr1
+}
+//Sort by certain predetermined order
+const sortPhaseData = (arr, order) => {
+  arr.sort((a, b) => {
+    // check for the 'order' property
+    const aHasOrder = Object.prototype.hasOwnProperty.call(a, 'order');
+    const bHasOrder = Object.prototype.hasOwnProperty.call(b, 'order');
+
+    // If both items have 'order', keep their relative positions
+    if (aHasOrder && bHasOrder) {
+      return 0; // Maintain original order for these items
+    }
+    // If only one of them has 'order', prioritize that one to stay in place
+    if (aHasOrder) return -1;
+    if (bHasOrder) return 1;
+
+    // Otherwise, sort based on the provided order array
+    return order.indexOf(a.key) - order.indexOf(b.key);
+  });
+
+  arr = increasePhaseValues(arr)
+  return arr
+}
+
+const increasePhaseValues = (arr) => {
+  const filteredArr = arr.filter(item => order.includes(item.key));
+  // Ensure each subsequent value is equal to or greater than the previous one
+  for (let i = 1; i < filteredArr.length; i++) {
+    if (filteredArr[i - 1].key.includes("paattyy_pvm") && filteredArr[i].key.includes("alkaa_pvm") || filteredArr[i].key.includes("kaynnistys_pvm")) {
+      // Convert values to Date objects for comparison
+      const previousValue = new Date(filteredArr[i - 1].value);
+      const currentValue = new Date(filteredArr[i].value);
+
+      // Adjust the current value if it's less than the previous value
+      if (currentValue < previousValue) {
+        filteredArr[i].value = filteredArr[i - 1].value;
+      }
+    }
+  }
+  // Replace the original elements in arr with updated elements from filteredArr
+  const result = arr.map(item => {
+    const updatedItem = filteredArr.find(filteredItem => filteredItem.key === item.key);
+    return updatedItem ? updatedItem : item;
+  });
+  return result
+}
+
+const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, movedDate, moveToPast, projectSize, attributeData) => {
+  // KAAV-3492 DEBUG: Log cascade invocation to help trace bug
+  console.log('[KAAV-3492] checkForDecreasingValues called:', {
+    isAdd,
+    field,
+    oldDate,
+    movedDate,
+    moveToPast,
+    projectSize,
+    arrLength: arr?.length,
+    // Show first few items with their gaps for debugging
+    firstItems: arr?.slice(0, 5).map(i => ({
+      key: i.key,
+      value: i.value,
+      initial_distance: i.initial_distance,
+      distance_from_previous: i.distance_from_previous
+    }))
+  });
+
+  // Lock logic: do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
+  // attributeData is the filtered attribute_data object (only visible fields) so we can inspect confirmation flags
+  let confirmedFieldSet = null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (attributeData) {
+    try {
+      // Lazy load to avoid circular deps (generateConfirmedFields depends on constants only)
+      const { confirmationAttributeNames } = require('./constants');
+      const { generateConfirmedFields } = require('./generateConfirmedFields');
+      // Phase names that have confirmation flags (exclude kaynnistys, hyvaksyminen, voimaantulo as per saga usage)
+      const phaseNames = ['periaatteet', 'oas', 'luonnos', 'ehdotus', 'tarkistettu_ehdotus'];
+      confirmedFieldSet = new Set(generateConfirmedFields(attributeData, confirmationAttributeNames, phaseNames));
+    }
+    catch (e) {
+      // Fail silently – if generation fails we simply don't lock by confirmation (past locking still applies)
+    }
+  }
+  // Helper to decide if an item should be frozen
+  const isLocked = (item) => {
+    if (!item?.value) return false;
+    const d = new Date(item.value);
+    if (!isNaN(d) && d < today) return true;
+    return confirmedFieldSet ? confirmedFieldSet.has(item.key) : false;
+  };
+  // Find the index of the next item where dates should start being pushed
+  const currentIndex = arr.findIndex(item => item.key === field);
+  let indexToContinue = 0
+  // If adding items
+  if (isAdd) {
+    // Move the nextItem and all following items forward if item minium is exceeded
+    for (let i = currentIndex; i < arr.length; i++) {
+      if (isLocked(arr[i])) continue; // skip locked items entirely
+      if (!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
+        && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
+        && !arr[i].key.includes("hyvaksymispaatos_pvm")) {
+        let newDate = new Date(arr[i].value);
+        // When adding (isAdd=true): use initial_distance for gap calculation
+        const miniumGap = arr[i].initial_distance ?? arr[i].distance_from_previous ?? 0
+        if (arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")) {
+          //mielipiteet and paattyy is always the same value
+          newDate = new Date(arr[i - 1].value);
+        }
+        else {
+          // KAAV-3492 FIX: Only push forward if there's an actual overlap
+          const prevDate = new Date(arr[i - 1].value);
+          const currDate = new Date(arr[i].value);
+          console.log('[KAAV-3492] isAdd branch - checking item:', {
+            i,
+            key: arr[i].key,
+            prevKey: arr[i - 1]?.key,
+            prevValue: arr[i - 1]?.value,
+            currValue: arr[i].value,
+            prevDate: prevDate.toISOString().split('T')[0],
+            currDate: currDate.toISOString().split('T')[0],
+            hasOverlap: prevDate >= currDate,
+            miniumGap,
+            initial_distance: arr[i].initial_distance,
+            distance_from_previous: arr[i].distance_from_previous
+          });
+          if (prevDate >= currDate) {
+            console.log('[KAAV-3492] isAdd - OVERLAP DETECTED, calling dateDifference');
+            //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
+            newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key, arr[i - 1].value, arr[i].value, disabledDates?.date_types[arr[i]?.date_type]?.dates, disabledDates?.date_types?.disabled_dates?.dates, miniumGap, projectSize, true) : newDate
           }
-          else{
-            //Paattyy and nahtavillaolo l-xl are independent of other values
-            if(
-              ((projectSize === "XS" || projectSize === "S" || projectSize === "M") && i === currentIndex) ||
-              ((projectSize === "XL" || projectSize === "L") && i === currentIndex) 
-            ){
-              //Make next or previous or previous and 1 after previous dates follow the moved date if needed
-              if(arr[currentIndex]?.key?.includes("kylk_maaraaika") || arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") || arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika")){
-                //maaraika in lautakunta moving
-                const lautakuntaResult = timeUtil.findAllowedLautakuntaDate(movedDate, arr[i + 1].initial_distance, disabledDates?.date_types[arr[i + 1]?.date_type]?.dates, false, disabledDates?.date_types[arr[i]?.date_type]?.dates);
-                arr[i + 1].value = new Date(lautakuntaResult).toISOString().split('T')[0];
-                indexToContinue = i + 1
-              }
-              else if(arr[currentIndex]?.key?.includes("paattyy") || ( (projectSize === "XL" || projectSize === "L") && (arr[currentIndex]?.key.includes("nahtavilla_alkaa") || arr[currentIndex]?.key.includes("nahtavilla_paattyy")) ) ){
-                newDate = new Date(arr[i].value);
-                indexToContinue = i
-              }
-              else if(arr[currentIndex]?.key?.includes("lautakunnassa") && !arr[currentIndex]?.key?.includes("lautakunnassa_") || arr[currentIndex]?.key?.includes("alkaa")){
-                //lautakunta and alkaa values
-                const maaraaikaResult = timeUtil.findAllowedDate(movedDate, arr[i].initial_distance, disabledDates?.date_types[arr[i -1]?.date_type]?.dates, true);
-                arr[i - 1].value = new Date(maaraaikaResult).toISOString().split('T')[0];
-                indexToContinue = i
-              }
-              else if(arr[currentIndex]?.key?.includes("maaraaika")){
-                //Maaraiaka moving
-                const oldStartISO = arr[i + 1]?.value;
-                const oldEndISO = arr[i + 2]?.value;
-                const endAllowed = disabledDates?.date_types[arr[i + 2]?.date_type]?.dates || [];
-                const alkaaResult = timeUtil.findAllowedDate(movedDate, arr[i + 1].initial_distance, disabledDates?.date_types[arr[i]?.date_type]?.dates, false);
-                arr[i + 1].value = new Date(alkaaResult).toISOString().split('T')[0];
-                indexToContinue = i + 1
-                if(!arr[currentIndex]?.key?.includes("kylk_maaraaika") && !arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("lautakunnassa") && arr[currentIndex]?.key?.includes("maaraaika")){
-                  let timespan = 0;
-                  //Keep the same timespan between alkaa and paattyy if both are defined
-                  if (endAllowed.length && oldStartISO && oldEndISO) {
-                    const start = endAllowed.findIndex(d => d >= oldStartISO);
-                    const end = endAllowed.findIndex(d => d >= oldEndISO);
-                    if (start !== -1 && end !== -1 && end >= start) timespan = end - start;
-                  }
-                  const val = endAllowed.findIndex(d => d >= arr[i + 1].value);
-                  let kept = (val !== -1 && val + timespan < endAllowed.length) ? endAllowed[val + timespan] : null;
-                  if (!kept) {
-                    kept = timeUtil.findAllowedDate(arr[i + 1].value, arr[i + 2].initial_distance, endAllowed, false);
-                  }
-                  arr[i + 2].value = new Date(kept).toISOString().split('T')[0];
-                  indexToContinue = i + 2
-                }
-              }
-            }
-            else{
-              if(!moveToPast && i > indexToContinue){
-                // KAAV-3492 FIX: Only push forward if there's an actual overlap
-                // Use ORIGINAL values, not mutated ones, to prevent cascade chain reactions
-                const prevDate = new Date(originalValues[i - 1]);
-                const currDate = new Date(originalValues[i]);
-                const miniumGap = arr[i].initial_distance ?? arr[i].distance_from_previous ?? 0
-                console.log('[KAAV-3492] !isAdd else branch - checking item:', {
-                  i,
-                  key: arr[i].key,
-                  prevKey: arr[i - 1]?.key,
-                  prevValue_ORIGINAL: originalValues[i - 1],
-                  prevValue_MUTATED: arr[i - 1]?.value,
-                  currValue_ORIGINAL: originalValues[i],
-                  currValue_MUTATED: arr[i].value,
-                  prevDate: prevDate.toISOString().split('T')[0],
-                  currDate: currDate.toISOString().split('T')[0],
-                  hasOverlap: prevDate >= currDate,
-                  miniumGap,
-                  initial_distance: arr[i].initial_distance,
-                  distance_from_previous: arr[i].distance_from_previous,
-                  indexToContinue,
-                  moveToPast
+          else {
+            console.log('[KAAV-3492] isAdd - NO OVERLAP, keeping current date');
+          }
+        }
+        // Update the array with the new date
+        newDate.setDate(newDate.getDate());
+        arr[i].value = newDate.toISOString().split('T')[0];
+        //Move phase start and end dates
+        if (arr[i].distance_from_previous === undefined && arr[i].key.endsWith('_pvm') && arr[i].key.includes("_paattyy_")) {
+          const targetSubstring = arr[i].key.split('vaihe')[0];
+          // Iterate backwards from the given index
+          const res = reverseIterateArray(arr, i, targetSubstring)
+          const differenceInTime = new Date(res) - new Date(arr[i].value)
+          const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
+          if (differenceInDays >= 5) {
+            arr[i].value = res
+            if (arr[i]?.key?.includes("tarkistettuehdotusvaihe_paattyy_pvm")) {
+              //Move hyvaksyminenvaihe_paattyy_pvm and voimaantulovaihe_paattyy_pvm as many days as tarkistettuehdotusvaihe_paattyy_pvm
+              const items = arr.filter(el => el.key?.includes("hyvaksyminenvaihe_paattyy_pvm") || el.key?.includes("voimaantulovaihe_paattyy_pvm"));
+              if (items) {
+                items.forEach(item => {
+                  const currentDate = new Date(item.value);
+                  currentDate.setDate(currentDate.getDate() + differenceInDays);
+                  item.value = currentDate.toISOString().split('T')[0];
                 });
-                if(prevDate >= currDate){
-                  console.log('[KAAV-3492] !isAdd - OVERLAP DETECTED, calling dateDifference');
-                  //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
-                  newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key,originalValues[i - 1],originalValues[i],disabledDates?.date_types[arr[i]?.date_type]?.dates,disabledDates?.date_types?.disabled_dates?.dates,miniumGap,projectSize,false) : newDate
-                  newDate = new Date(newDate)
-                }
-                else {
-                  console.log('[KAAV-3492] !isAdd - NO OVERLAP (using original values), keeping current date');
-                }
-              }
-            }
-          }
-          // Update the array with the new date
-          newDate.setDate(newDate.getDate());
-          arr[i].value = newDate.toISOString().split('T')[0];
-          //Move phase start and end dates
-          if(arr[i].distance_from_previous === undefined && arr[i].key.endsWith('_pvm') && arr[i].key.includes("_paattyy_") 
-            && !arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")){
-            const targetSubstring = arr[i].key.split('vaihe')[0];
-            // Iterate backwards from the given index
-            const res = reverseIterateArray(arr,i,targetSubstring)
-            const differenceInTime = new Date(res) - new Date(arr[i].value)
-            const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
-            if(differenceInDays >= 5){
-              arr[i].value = res
-              if(arr[i]?.key?.includes("tarkistettuehdotusvaihe_paattyy_pvm")){
-                //Move hyvaksyminenvaihe_paattyy_pvm and voimaantulovaihe_paattyy_pvm as many days as tarkistettuehdotusvaihe_paattyy_pvm
-                const items = arr.filter(el => el.key?.includes("hyvaksyminenvaihe_paattyy_pvm") || el.key?.includes("voimaantulovaihe_paattyy_pvm"));
-                if (items) {
-                  items.forEach(item => {
-                    const currentDate = new Date(item.value);
-                    currentDate.setDate(currentDate.getDate() + differenceInDays);
-                    item.value = currentDate.toISOString().split('T')[0];
-                  });
-                }
               }
             }
           }
         }
       }
     }
-    sortPhaseData(arr,order)
-    
-    // KAAV-3492 DEBUG: Log cascade results
-    console.log('[KAAV-3492] checkForDecreasingValues RETURNING:', {
-      arrLength: arr?.length,
-      // Show items that were potentially modified
-      modifiedItems: arr?.filter(i => {
-        const originalValue = attributeData?.[i.key];
-        return originalValue && i.value !== originalValue;
-      }).map(i => ({
-        key: i.key,
-        oldValue: attributeData?.[i.key],
-        newValue: i.value
-      }))
-    });
-    
-    return arr
   }
+  else if (currentIndex !== -1) {
+    // KAAV-3492 FIX: Save original values before mutation to prevent cascading against just-updated values
+    const originalValues = arr.map(item => item.value);
 
-   const reverseIterateArray = (arr,index,target) => {
-    let targetString = target
-    if(target === "tarkistettuehdotus"){
-      //other values in array at tarkistettu ehdotus phase are with _ but phase values are without
-      targetString = "tarkistettu_ehdotus"
-    }
-    else if(target === "ehdotus"){
-      targetString = ["ehdotuksen", "kaavaehdotus", "ehdotus"]
-    }
-    for (let i = index - 1; arr.length >= 0 && i >= 0; i--) {
-      // Check if 'distance_from_previous' attribute does not exist and if the key contains the target substring
-      if(target === "ehdotus"){
-        for (let j = 0; j < targetString.length; j++) {
-          if (!arr[i].key.includes('tarkistettu_ehdotus') && !arr[i].key.endsWith('_pvm') && arr[i].key.includes(targetString[j])) {
-            return arr[i].value;
+    for (let i = currentIndex; i < arr.length; i++) {
+      if (isLocked(arr[i])) continue; // do not move locked items
+      if (!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
+        && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
+        && !arr[i].key.includes("hyvaksymispaatos_pvm")) {
+        let newDate = new Date(arr[i].value);
+        if (arr[i - 1]?.key?.includes("paattyy") && arr[i]?.key?.includes("mielipiteet")) {
+          //mielipiteet and paattyy is always the same value
+          newDate = new Date(arr[i - 1].value);
+        }
+        else {
+          //Paattyy and nahtavillaolo l-xl are independent of other values
+          if (
+            ((projectSize === "XS" || projectSize === "S" || projectSize === "M") && i === currentIndex) ||
+            ((projectSize === "XL" || projectSize === "L") && i === currentIndex)
+          ) {
+            //Make next or previous or previous and 1 after previous dates follow the moved date if needed
+            if (arr[currentIndex]?.key?.includes("kylk_maaraaika") || arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") || arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika")) {
+              //maaraika in lautakunta moving
+              const lautakuntaResult = timeUtil.findAllowedLautakuntaDate(movedDate, arr[i + 1].initial_distance, disabledDates?.date_types[arr[i + 1]?.date_type]?.dates, false, disabledDates?.date_types[arr[i]?.date_type]?.dates);
+              arr[i + 1].value = new Date(lautakuntaResult).toISOString().split('T')[0];
+              indexToContinue = i + 1
+            }
+            else if (arr[currentIndex]?.key?.includes("paattyy") || ((projectSize === "XL" || projectSize === "L") && (arr[currentIndex]?.key.includes("nahtavilla_alkaa") || arr[currentIndex]?.key.includes("nahtavilla_paattyy")))) {
+              newDate = new Date(arr[i].value);
+              indexToContinue = i
+            }
+            else if (arr[currentIndex]?.key?.includes("lautakunnassa") && !arr[currentIndex]?.key?.includes("lautakunnassa_") || arr[currentIndex]?.key?.includes("alkaa")) {
+              //lautakunta and alkaa values
+              const maaraaikaResult = timeUtil.findAllowedDate(movedDate, arr[i].initial_distance, disabledDates?.date_types[arr[i - 1]?.date_type]?.dates, true);
+              arr[i - 1].value = new Date(maaraaikaResult).toISOString().split('T')[0];
+              indexToContinue = i
+            }
+            else if (arr[currentIndex]?.key?.includes("maaraaika")) {
+              //Maaraiaka moving
+              const oldStartISO = arr[i + 1]?.value;
+              const oldEndISO = arr[i + 2]?.value;
+              const endAllowed = disabledDates?.date_types[arr[i + 2]?.date_type]?.dates || [];
+              const alkaaResult = timeUtil.findAllowedDate(movedDate, arr[i + 1].initial_distance, disabledDates?.date_types[arr[i]?.date_type]?.dates, false);
+              arr[i + 1].value = new Date(alkaaResult).toISOString().split('T')[0];
+              indexToContinue = i + 1
+              if (!arr[currentIndex]?.key?.includes("kylk_maaraaika") && !arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("lautakunnassa") && arr[currentIndex]?.key?.includes("maaraaika")) {
+                let timespan = 0;
+                //Keep the same timespan between alkaa and paattyy if both are defined
+                if (endAllowed.length && oldStartISO && oldEndISO) {
+                  const start = endAllowed.findIndex(d => d >= oldStartISO);
+                  const end = endAllowed.findIndex(d => d >= oldEndISO);
+                  if (start !== -1 && end !== -1 && end >= start) timespan = end - start;
+                }
+                const val = endAllowed.findIndex(d => d >= arr[i + 1].value);
+                let kept = (val !== -1 && val + timespan < endAllowed.length) ? endAllowed[val + timespan] : null;
+                if (!kept) {
+                  kept = timeUtil.findAllowedDate(arr[i + 1].value, arr[i + 2].initial_distance, endAllowed, false);
+                }
+                arr[i + 2].value = new Date(kept).toISOString().split('T')[0];
+                indexToContinue = i + 2
+              }
+            }
+          }
+          else {
+            if (!moveToPast && i > indexToContinue) {
+              // KAAV-3492 FIX: Only push forward if there's an actual overlap
+              // Use ORIGINAL values, not mutated ones, to prevent cascade chain reactions
+              const prevDate = new Date(originalValues[i - 1]);
+              const currDate = new Date(originalValues[i]);
+              // When moving (isAdd=false): use distance_from_previous (minimum distance), NOT initial_distance
+              const miniumGap = arr[i].distance_from_previous ?? 0
+              console.log('[KAAV-3492] !isAdd else branch - checking item:', {
+                i,
+                key: arr[i].key,
+                prevKey: arr[i - 1]?.key,
+                prevValue_ORIGINAL: originalValues[i - 1],
+                prevValue_MUTATED: arr[i - 1]?.value,
+                currValue_ORIGINAL: originalValues[i],
+                currValue_MUTATED: arr[i].value,
+                prevDate: prevDate.toISOString().split('T')[0],
+                currDate: currDate.toISOString().split('T')[0],
+                hasOverlap: prevDate >= currDate,
+                miniumGap,
+                initial_distance: arr[i].initial_distance,
+                distance_from_previous: arr[i].distance_from_previous,
+                indexToContinue,
+                moveToPast
+              });
+              if (prevDate >= currDate) {
+                console.log('[KAAV-3492] !isAdd - OVERLAP DETECTED, calling dateDifference');
+                //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
+                newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key, originalValues[i - 1], originalValues[i], disabledDates?.date_types[arr[i]?.date_type]?.dates, disabledDates?.date_types?.disabled_dates?.dates, miniumGap, projectSize, false) : newDate
+                newDate = new Date(newDate)
+              }
+              else {
+                console.log('[KAAV-3492] !isAdd - NO OVERLAP (using original values), keeping current date');
+              }
+            }
+          }
+        }
+        // Update the array with the new date
+        newDate.setDate(newDate.getDate());
+        arr[i].value = newDate.toISOString().split('T')[0];
+        //Move phase start and end dates
+        if (arr[i].distance_from_previous === undefined && arr[i].key.endsWith('_pvm') && arr[i].key.includes("_paattyy_")
+          && !arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")) {
+          const targetSubstring = arr[i].key.split('vaihe')[0];
+          // Iterate backwards from the given index
+          const res = reverseIterateArray(arr, i, targetSubstring)
+          const differenceInTime = new Date(res) - new Date(arr[i].value)
+          const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
+          if (differenceInDays >= 5) {
+            arr[i].value = res
+            if (arr[i]?.key?.includes("tarkistettuehdotusvaihe_paattyy_pvm")) {
+              //Move hyvaksyminenvaihe_paattyy_pvm and voimaantulovaihe_paattyy_pvm as many days as tarkistettuehdotusvaihe_paattyy_pvm
+              const items = arr.filter(el => el.key?.includes("hyvaksyminenvaihe_paattyy_pvm") || el.key?.includes("voimaantulovaihe_paattyy_pvm"));
+              if (items) {
+                items.forEach(item => {
+                  const currentDate = new Date(item.value);
+                  currentDate.setDate(currentDate.getDate() + differenceInDays);
+                  item.value = currentDate.toISOString().split('T')[0];
+                });
+              }
+            }
           }
         }
       }
-      else if (arr[i].key.includes(targetString) && !arr[i].key.endsWith('_pvm')) {
-        return arr[i].value;
-      }
-    }
-    return null; // Return null if no such key is found
-  } 
-
-    // Function to update original object by comparing keys
-  const updateOriginalObject = (originalObj, updatedArr) => {
-    updatedArr.forEach(item => {
-      if (Object.prototype.hasOwnProperty.call(originalObj, item.key)) {
-        originalObj[item.key] = item.value; // Update value if key exists
-      }
-    });
-    return originalObj;
-  }
-
-  // Helper function to compare values
-  const compareObjectValues = (key, value1, value2) => {
-      if (typeof value1 === 'object' && typeof value2 === 'object') {
-        return findDifferencesInObjects(value1, value2).map(diff => ({
-          key: `${key}.${diff.key}`, // Nesting the key to show hierarchy
-          obj1: diff.obj1,
-          obj2: diff.obj2
-      })); // Recursively compare if both are objects
-      } else if (value1 !== value2) {
-        return [{ key, obj1: value1, obj2: value2 }]; // Return an array of differences
-      }
-      return []; // No difference
-    }
-  // compare 2 objects and get differences and return them in array
-  const findDifferencesInObjects = (obj1, obj2) => {
-    let differences = [];
-
-    // Compare properties of obj1 and obj2
-    for (let key in obj1) {
-        if (Object.hasOwn(obj1, key)) {
-          const diff = compareObjectValues(key, obj1[key], obj2[key]);
-          differences = [...differences, ...diff];
-        }
-    }
-    // Check for properties that are in obj2 but not in obj1
-    for (let key in obj2) {
-        if (Object.hasOwn(obj2, key) && !(key in obj1)) {
-            differences.push({ key, obj1: undefined, obj2: obj2[key] });
-        }
-    }
-
-    return differences;
-  }
-  // Function to find the item for example where item.name === inputName
-  const findMatchingName = (array, inputName, key) => {
-    return array.find(item => item[key] === inputName);
-  };
-  // Function to find the item before the one for example where item.name === inputName
-  const findItem = (array, inputName, key, direction) => {
-    //if direction is 1 then find next item or -1 for previous
-    const index = array.findIndex(item => item[key] === inputName);
-    // If index is valid and direction is either 1 (next) or -1 (previous)
-    if (index !== -1) {
-      const newIndex = index + direction;
-      // Ensure the new index is within bounds of the array
-      if (newIndex >= 0 && newIndex < array.length) {
-        return array[newIndex]; // Return the next or previous item based on direction
-      }
-    }
-
-    return null; // Return null if no next or previous item is found
-  };
-
-  const filterHiddenKeys = (attributeData, deadlines) => {
-    return Object.entries(attributeData).reduce((acc, [key, value]) => {
-      const dl = findDeadlineInDeadlines(key, deadlines);
-      if (!dl || shouldDeadlineBeVisible(dl.deadline.attribute, dl.deadline.deadlinegroup, attributeData)) {
-        acc[key] = value;
-      }
-      return acc
-    }, {})
-  }
-
-  const filterHiddenKeysUsingSections = (attributeData, deadlineSections) => {
-    return Object.entries(attributeData).reduce((acc, [key, value]) => {
-      const dl = findDeadlineInDeadlineSections(key, deadlineSections);
-      if (!dl || shouldDeadlineBeVisible(dl.name, dl.attributegroup, attributeData)) {
-        acc[key] = value;
-      }
-      return acc
-    }, {})
-  }
-
-  const findDeadlineInDeadlines = (deadlineName, deadlineObjects) => {
-    for (const deadline of deadlineObjects) {
-      if (deadlineName && deadline?.deadline?.attribute === deadlineName) {
-        return deadline;
-      }
     }
   }
+  sortPhaseData(arr, order)
 
-  const findDeadlineInDeadlineSections = (deadlineName,deadlineSections) => {
-    for (const phaseSection of deadlineSections) {
-      if (!phaseSection?.sections[0]?.attributes){
-        return undefined;
-      }
-      for (const dlObject of phaseSection.sections[0].attributes){
-        if (dlObject.name === deadlineName) {
-          return dlObject;
+  // KAAV-3492 DEBUG: Log cascade results
+  console.log('[KAAV-3492] checkForDecreasingValues RETURNING:', {
+    arrLength: arr?.length,
+    // Show items that were potentially modified
+    modifiedItems: arr?.filter(i => {
+      const originalValue = attributeData?.[i.key];
+      return originalValue && i.value !== originalValue;
+    }).map(i => ({
+      key: i.key,
+      oldValue: attributeData?.[i.key],
+      newValue: i.value
+    }))
+  });
+
+  return arr
+}
+
+const reverseIterateArray = (arr, index, target) => {
+  let targetString = target
+  if (target === "tarkistettuehdotus") {
+    //other values in array at tarkistettu ehdotus phase are with _ but phase values are without
+    targetString = "tarkistettu_ehdotus"
+  }
+  else if (target === "ehdotus") {
+    targetString = ["ehdotuksen", "kaavaehdotus", "ehdotus"]
+  }
+  for (let i = index - 1; arr.length >= 0 && i >= 0; i--) {
+    // Check if 'distance_from_previous' attribute does not exist and if the key contains the target substring
+    if (target === "ehdotus") {
+      for (let j = 0; j < targetString.length; j++) {
+        if (!arr[i].key.includes('tarkistettu_ehdotus') && !arr[i].key.endsWith('_pvm') && arr[i].key.includes(targetString[j])) {
+          return arr[i].value;
         }
       }
     }
+    else if (arr[i].key.includes(targetString) && !arr[i].key.endsWith('_pvm')) {
+      return arr[i].value;
+    }
   }
+  return null; // Return null if no such key is found
+}
+
+// Function to update original object by comparing keys
+const updateOriginalObject = (originalObj, updatedArr) => {
+  updatedArr.forEach(item => {
+    if (Object.prototype.hasOwnProperty.call(originalObj, item.key)) {
+      originalObj[item.key] = item.value; // Update value if key exists
+    }
+  });
+  return originalObj;
+}
+
+// Helper function to compare values
+const compareObjectValues = (key, value1, value2) => {
+  if (typeof value1 === 'object' && typeof value2 === 'object') {
+    return findDifferencesInObjects(value1, value2).map(diff => ({
+      key: `${key}.${diff.key}`, // Nesting the key to show hierarchy
+      obj1: diff.obj1,
+      obj2: diff.obj2
+    })); // Recursively compare if both are objects
+  } else if (value1 !== value2) {
+    return [{ key, obj1: value1, obj2: value2 }]; // Return an array of differences
+  }
+  return []; // No difference
+}
+// compare 2 objects and get differences and return them in array
+const findDifferencesInObjects = (obj1, obj2) => {
+  let differences = [];
+
+  // Compare properties of obj1 and obj2
+  for (let key in obj1) {
+    if (Object.hasOwn(obj1, key)) {
+      const diff = compareObjectValues(key, obj1[key], obj2[key]);
+      differences = [...differences, ...diff];
+    }
+  }
+  // Check for properties that are in obj2 but not in obj1
+  for (let key in obj2) {
+    if (Object.hasOwn(obj2, key) && !(key in obj1)) {
+      differences.push({ key, obj1: undefined, obj2: obj2[key] });
+    }
+  }
+
+  return differences;
+}
+// Function to find the item for example where item.name === inputName
+const findMatchingName = (array, inputName, key) => {
+  return array.find(item => item[key] === inputName);
+};
+// Function to find the item before the one for example where item.name === inputName
+const findItem = (array, inputName, key, direction) => {
+  //if direction is 1 then find next item or -1 for previous
+  const index = array.findIndex(item => item[key] === inputName);
+  // If index is valid and direction is either 1 (next) or -1 (previous)
+  if (index !== -1) {
+    const newIndex = index + direction;
+    // Ensure the new index is within bounds of the array
+    if (newIndex >= 0 && newIndex < array.length) {
+      return array[newIndex]; // Return the next or previous item based on direction
+    }
+  }
+
+  return null; // Return null if no next or previous item is found
+};
+
+const filterHiddenKeys = (attributeData, deadlines) => {
+  return Object.entries(attributeData).reduce((acc, [key, value]) => {
+    const dl = findDeadlineInDeadlines(key, deadlines);
+    if (!dl || shouldDeadlineBeVisible(dl.deadline.attribute, dl.deadline.deadlinegroup, attributeData)) {
+      acc[key] = value;
+    }
+    return acc
+  }, {})
+}
+
+const filterHiddenKeysUsingSections = (attributeData, deadlineSections) => {
+  return Object.entries(attributeData).reduce((acc, [key, value]) => {
+    const dl = findDeadlineInDeadlineSections(key, deadlineSections);
+    if (!dl || shouldDeadlineBeVisible(dl.name, dl.attributegroup, attributeData)) {
+      acc[key] = value;
+    }
+    return acc
+  }, {})
+}
+
+const findDeadlineInDeadlines = (deadlineName, deadlineObjects) => {
+  for (const deadline of deadlineObjects) {
+    if (deadlineName && deadline?.deadline?.attribute === deadlineName) {
+      return deadline;
+    }
+  }
+}
+
+const findDeadlineInDeadlineSections = (deadlineName, deadlineSections) => {
+  for (const phaseSection of deadlineSections) {
+    if (!phaseSection?.sections[0]?.attributes) {
+      return undefined;
+    }
+    for (const dlObject of phaseSection.sections[0].attributes) {
+      if (dlObject.name === deadlineName) {
+        return dlObject;
+      }
+    }
+  }
+}
 
 const convertKey = {
   tarkasta_esillaolo_periaatteet_fieldset: 'milloin_periaatteet_esillaolo_alkaa',
@@ -673,29 +674,29 @@ const convertPhaseIdToPhaseName = (id) => {
 const convertPayloadValues = (payload) => {
   const convertedKeyPayload = convertKeyToMatching(payload);
   const phaseName = convertPhaseIdToPhaseName(payload.selectedPhase);
-  return { ...convertedKeyPayload,selectedPhase: phaseName };
+  return { ...convertedKeyPayload, selectedPhase: phaseName };
 };
 
 const exported = {
-    getHighestNumberedObject,
-    getMinObject,
-    findValuesWithStrings,
-    compareAndUpdateArrays,
-    checkForDecreasingValues,
-    generateDateStringArray,
-    updateOriginalObject,
-    findDifferencesInObjects,
-    compareObjectValues,
-    findMatchingName,
-    findItem,
-    filterHiddenKeys,
-    convertKeyToMatching,
-    convertPhaseIdToPhaseName,
-    convertPayloadValues,
-    filterHiddenKeysUsingSections
+  getHighestNumberedObject,
+  getMinObject,
+  findValuesWithStrings,
+  compareAndUpdateArrays,
+  checkForDecreasingValues,
+  generateDateStringArray,
+  updateOriginalObject,
+  findDifferencesInObjects,
+  compareObjectValues,
+  findMatchingName,
+  findItem,
+  filterHiddenKeys,
+  convertKeyToMatching,
+  convertPhaseIdToPhaseName,
+  convertPayloadValues,
+  filterHiddenKeysUsingSections
 }
 
-if (process.env.UNIT_TEST === "true"){
+if (process.env.UNIT_TEST === "true") {
   exported.getNumberFromString = getNumberFromString
   exported.increasePhaseValues = increasePhaseValues
   exported.sortPhaseData = sortPhaseData
