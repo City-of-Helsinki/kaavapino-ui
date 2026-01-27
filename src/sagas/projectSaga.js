@@ -674,7 +674,7 @@ function* saveProjectPayload({ payload }) {
     const isNetworkErr = e?.code === 'ERR_NETWORK'
     const statusCode = e?.response?.status
     if (isNetworkErr || !statusCode || statusCode >= 500) {
-		yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
+      yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
     }
   }
 }
@@ -1183,7 +1183,7 @@ function* saveProject(data) {
         const isNetworkErr = e?.code === 'ERR_NETWORK'
         const statusCode = e?.response?.status
         if (isNetworkErr || !statusCode || statusCode >= 500) {
-			    yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
+          yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
         }
       }
     }
