@@ -320,6 +320,22 @@
                             position: relative;
                             top: -4px;
                         }
+                        .symbol-icon-wrapper.confirmed {
+                            position: relative;
+                        }
+                        // KAAV-3562: Adding this symbol is temporary solution and will be removed when KAAV-3563 is implemented
+                        .symbol-icon-wrapper.confirmed::after {
+                            content: "";
+                            position: absolute;
+                            top: -9px;
+                            right: -10px;
+                            width: 21px;
+                            height: 21px;
+                            background: $white url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
+                            background-position: center;
+                            background-size: contain;
+                            border-radius: 50%;
+                        }
                     }
                 }
             }
