@@ -97,6 +97,52 @@ export const getDateFieldsForDeadlineGroup = (deadlineGroup) => {
   return fields;
 };
 
+/**
+ * Get all subsequent deadline groups that should also be removed when removing a numbered group.
+ * For example, removing 'ehdotus_nahtavillaolokerta_3' should also remove 'ehdotus_nahtavillaolokerta_4'.
+ * This ensures the timeline groups stay in sequence (can't have 1, 2, 4 without 3).
+ * 
+ * @param {string} deadlineGroup - The deadline group being removed, e.g., 'ehdotus_nahtavillaolokerta_3'
+ * @returns {string[]} - Array of subsequent deadline groups to also remove
+ */
+export const getSubsequentDeadlineGroups = (deadlineGroup) => {
+  if (!deadlineGroup) return [];
+  
+  // Extract the base name and index number
+  // Examples: 'ehdotus_nahtavillaolokerta_3' -> base='ehdotus_nahtavillaolokerta', index=3
+  // 'tarkistettu_ehdotus_lautakuntakerta_2' -> base='tarkistettu_ehdotus_lautakuntakerta', index=2
+  const lastUnderscoreIndex = deadlineGroup.lastIndexOf('_');
+  if (lastUnderscoreIndex === -1) return [];
+  
+  const baseName = deadlineGroup.substring(0, lastUnderscoreIndex);
+  const currentIndex = parseInt(deadlineGroup.substring(lastUnderscoreIndex + 1), 10);
+  
+  if (isNaN(currentIndex)) return [];
+  
+  // Find all groups in the map that match the base name and have a higher index
+  const subsequentGroups = [];
+  for (const groupName of Object.keys(vis_bool_group_map)) {
+    const groupLastUnderscore = groupName.lastIndexOf('_');
+    if (groupLastUnderscore === -1) continue;
+    
+    const groupBaseName = groupName.substring(0, groupLastUnderscore);
+    const groupIndex = parseInt(groupName.substring(groupLastUnderscore + 1), 10);
+    
+    if (groupBaseName === baseName && !isNaN(groupIndex) && groupIndex > currentIndex) {
+      subsequentGroups.push(groupName);
+    }
+  }
+  
+  // Sort by index ascending (e.g., _3, _4, _5...)
+  subsequentGroups.sort((a, b) => {
+    const aIndex = parseInt(a.substring(a.lastIndexOf('_') + 1), 10);
+    const bIndex = parseInt(b.substring(b.lastIndexOf('_') + 1), 10);
+    return aIndex - bIndex;
+  });
+  
+  return subsequentGroups;
+};
+
 export const showField = (field, formValues, currentName) => {
   let returnValue = false
 

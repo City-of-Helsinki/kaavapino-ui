@@ -14,7 +14,7 @@ import VisTimelineMenu from './VisTimelineMenu'
 import AddGroupModal from './AddGroupModal';
 import ConfirmModal from '../common/ConfirmModal'
 import PropTypes from 'prop-types';
-import { getVisibilityBoolName, getVisBoolsByPhaseName, isDeadlineConfirmed, getDateFieldsForDeadlineGroup } from '../../utils/projectVisibilityUtils';
+import { getVisibilityBoolName, getVisBoolsByPhaseName, isDeadlineConfirmed, getDateFieldsForDeadlineGroup, getSubsequentDeadlineGroups } from '../../utils/projectVisibilityUtils';
 import { useTimelineTooltip } from '../../hooks/useTimelineTooltip';
 import { updateDateTimeline } from '../../actions/projectActions';
 import './VisTimeline.scss'
@@ -657,22 +657,36 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   }
 
   const handleRemoveGroup = () => {
-    const visiblityBool = getVisibilityBoolName(dataToRemove.deadlinegroup)
-    if (visiblityBool) {
-      dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, visiblityBool, false));
-      const confirmationObject = isDeadlineConfirmed(visValuesRef.current, dataToRemove.deadlinegroup, true, false);
-      if (confirmationObject?.key && confirmationObject?.value) {
-        dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, confirmationObject.key, false));
-      }
+    // Helper function to remove a single group (set visibility bool to false, clear confirmation, clear dates)
+    const removeGroupByName = (groupName) => {
+      const visibilityBool = getVisibilityBoolName(groupName);
+      if (visibilityBool) {
+        dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, visibilityBool, false));
+        const confirmationObject = isDeadlineConfirmed(visValuesRef.current, groupName, true, false);
+        if (confirmationObject?.key && confirmationObject?.value) {
+          dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, confirmationObject.key, false));
+        }
 
-      // KAAV-3492 FIX: Clear date fields when group is deleted to prevent stale data on re-add
-      // Without this, old dates persist and cause distance enforcement to be skipped
-      const dateFieldsToClear = getDateFieldsForDeadlineGroup(dataToRemove.deadlinegroup);
-      dateFieldsToClear.forEach(fieldName => {
-        dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, fieldName, null));
-      });
-    }
-    setOpenConfirmModal(!openConfirmModal)
+        // KAAV-3492 FIX: Clear date fields when group is deleted to prevent stale data on re-add
+        const dateFieldsToClear = getDateFieldsForDeadlineGroup(groupName);
+        dateFieldsToClear.forEach(fieldName => {
+          dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, fieldName, null));
+        });
+      }
+    };
+
+    // Remove the target group
+    removeGroupByName(dataToRemove.deadlinegroup);
+
+    // CASCADE: Also remove all subsequent numbered groups
+    // e.g., removing nahtavillaolo 3 should also remove nahtavillaolo 4
+    // This ensures timeline groups stay in sequence (can't have 1, 2, 4 without 3)
+    const subsequentGroups = getSubsequentDeadlineGroups(dataToRemove.deadlinegroup);
+    subsequentGroups.forEach(groupName => {
+      removeGroupByName(groupName);
+    });
+
+    setOpenConfirmModal(!openConfirmModal);
   }
 
   const closeAddDialog = () => {
