@@ -243,23 +243,7 @@ const increasePhaseValues = (arr) => {
 }
 
 const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, movedDate, moveToPast, projectSize, attributeData) => {
-  // KAAV-3492 DEBUG: Log cascade invocation to help trace bug
-  console.log('[KAAV-3492] checkForDecreasingValues called:', {
-    isAdd,
-    field,
-    oldDate,
-    movedDate,
-    moveToPast,
-    projectSize,
-    arrLength: arr?.length,
-    // Show first few items with their gaps for debugging
-    firstItems: arr?.slice(0, 5).map(i => ({
-      key: i.key,
-      value: i.value,
-      initial_distance: i.initial_distance,
-      distance_from_previous: i.distance_from_previous
-    }))
-  });
+
 
   // Lock logic: do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
   // attributeData is the filtered attribute_data object (only visible fields) so we can inspect confirmation flags
@@ -308,26 +292,12 @@ const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, mov
           // KAAV-3492 FIX: Only push forward if there's an actual overlap
           const prevDate = new Date(arr[i - 1].value);
           const currDate = new Date(arr[i].value);
-          console.log('[KAAV-3492] isAdd branch - checking item:', {
-            i,
-            key: arr[i].key,
-            prevKey: arr[i - 1]?.key,
-            prevValue: arr[i - 1]?.value,
-            currValue: arr[i].value,
-            prevDate: prevDate.toISOString().split('T')[0],
-            currDate: currDate.toISOString().split('T')[0],
-            hasOverlap: prevDate >= currDate,
-            miniumGap,
-            initial_distance: arr[i].initial_distance,
-            distance_from_previous: arr[i].distance_from_previous
-          });
           if (prevDate >= currDate) {
-            console.log('[KAAV-3492] isAdd - OVERLAP DETECTED, calling dateDifference');
             //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
             newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key, arr[i - 1].value, arr[i].value, disabledDates?.date_types[arr[i]?.date_type]?.dates, disabledDates?.date_types?.disabled_dates?.dates, miniumGap, projectSize, true) : newDate
           }
           else {
-            console.log('[KAAV-3492] isAdd - NO OVERLAP, keeping current date');
+
           }
         }
         // Update the array with the new date
@@ -489,19 +459,7 @@ const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, mov
   }
   sortPhaseData(arr, order)
 
-  // KAAV-3492 DEBUG: Log cascade results
-  console.log('[KAAV-3492] checkForDecreasingValues RETURNING:', {
-    arrLength: arr?.length,
-    // Show items that were potentially modified
-    modifiedItems: arr?.filter(i => {
-      const originalValue = attributeData?.[i.key];
-      return originalValue && i.value !== originalValue;
-    }).map(i => ({
-      key: i.key,
-      oldValue: attributeData?.[i.key],
-      newValue: i.value
-    }))
-  });
+
 
   return arr
 }

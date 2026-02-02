@@ -1130,7 +1130,15 @@ class EditProjectTimeTableModal extends Component {
             matchingSection = objectUtil.findItem(distanceArray,foundItem.key,"name",1)
           }
         }
+        // Skip iteration if matchingSection is null (happens when removing last items in the group)
+        if (!matchingSection) {
+          continue;
+        }
         const matchingItem = objectUtil.findMatchingName(this.state.unfilteredSectionAttributes, matchingSection.name, "name");
+        // Skip iteration if matchingItem is not found
+        if (!matchingItem) {
+          continue;
+        }
         //const previousItem = objectUtil.findItem(this.state.unfilteredSectionAttributes, nextKey, "name", -1);
         //const nextItem = objectUtil.findItem(this.state.unfilteredSectionAttributes, nextKey, "name", 1);
         let dateFilter
