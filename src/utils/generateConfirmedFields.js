@@ -164,52 +164,50 @@ function extractKeyIndex(key) {
   return keyIndexMatch ? keyIndexMatch[1] : '1';
 }
 
-// Helper: Check if key matches the type (esillaolo vs lautakunta)
-function keyMatchesType(key, type) {
-  // Aineiston määräajat ja KYLK määräajat:
-  // Jos kentässä on _esillaolo_, se kuuluu vain esilläoloon
-  // Jos kentässä on _lautakunta_, se kuuluu vain lautakuntaan
-  // Jos kentässä on nahtavilla JA aineiston_maaraaika, se kuuluu esilläoloon (esim. ehdotus_nahtaville_aineiston_maaraaika)
-  // Jos kentässä ei ole mitään näistä markereista (esim. luonnosaineiston_maaraaika), se kuuluu VAIN lautakuntaan
-  if (key.includes('aineiston_maaraaika') || key.includes('kylk_maaraaika')) {
-    // Check which type the field explicitly belongs to
-    const hasEsillaolo = key.includes('_esillaolo_');
-    const hasLautakunta = key.includes('_lautakunta_');
-    const hasNahtaville = key.includes('nahtaville'); // ehdotus_nahtaville_aineiston_maaraaika
-    const hasNahtavilla = key.includes('nahtavilla'); // milloin_ehdotuksen_nahtavilla_paattyy
-    
-    if (hasEsillaolo && type !== 'esillaolo') return false;
-    if (hasLautakunta && type !== 'lautakunta') return false;
-    
-    // If field contains nahtaville/nahtavilla + aineiston_maaraaika, it belongs to esillaolo (nähtävilläolo = display phase)
-    if ((hasNahtaville || hasNahtavilla) && key.includes('aineiston_maaraaika')) {
-      return type === 'esillaolo';
-    }
-    
-    // If no explicit marker, it belongs to lautakunta only
-    if (!hasEsillaolo && !hasLautakunta && !hasNahtaville && !hasNahtavilla) {
-      return type === 'lautakunta';
-    }
-    
-    return true;
+// Helper: Check aineiston_maaraaika and kylk_maaraaika type matching
+function matchesDeadlineFieldType(key, type) {
+  const hasEsillaolo = key.includes('_esillaolo_');
+  const hasLautakunta = key.includes('_lautakunta_');
+  const hasNahtaville = key.includes('nahtaville');
+  const hasNahtavilla = key.includes('nahtavilla');
+  
+  // Field explicitly marked for wrong type
+  if (hasEsillaolo && type !== 'esillaolo') return false;
+  if (hasLautakunta && type !== 'lautakunta') return false;
+  
+  // nahtaville/nahtavilla + aineiston_maaraaika belongs to esillaolo
+  if ((hasNahtaville || hasNahtavilla) && key.includes('aineiston_maaraaika')) {
+    return type === 'esillaolo';
   }
   
-  // Mielipiteet ja lausunnot kuuluvat AINA esilläoloon
+  // No explicit marker means lautakunta only
+  if (!hasEsillaolo && !hasLautakunta && !hasNahtaville && !hasNahtavilla) {
+    return type === 'lautakunta';
+  }
+  
+  return true;
+}
+
+// Helper: Check if key matches the type (esillaolo vs lautakunta)
+function keyMatchesType(key, type) {
+  // Aineiston määräajat ja KYLK määräajat have special rules
+  if (key.includes('aineiston_maaraaika') || key.includes('kylk_maaraaika')) {
+    return matchesDeadlineFieldType(key, type);
+  }
+  
+  // Mielipiteet ja lausunnot always belong to esillaolo
   if (key.includes('mielipiteet') || key.includes('lausunnot')) {
     return type === 'esillaolo';
   }
   
-  // Lautakunta-kentät
+  // Lautakunta fields
   if (type === 'lautakunta') {
-    // Lautakunta-vahvistus: vain milloin_*_lautakunnassa ja aineiston_maaraaika
     return !(key.includes('esillaolo') || key.includes('nahtavilla')) && 
            (key.includes('lautakunta') || key.includes('lautakunnassa'));
   }
   
-  // Esilläolo-kentät
+  // Esillaolo fields
   if (type === 'esillaolo') {
-    // Esilläolo-vahvistus: milloin_*_esillaolo_alkaa/paattyy, nahtavilla, mielipiteet, lausunnot
-    // EI lautakunta-kenttiä (paitsi aineiston_maaraaika joka hyväksytään ylhäällä)
     return !(key.includes('lautakunta') || key.includes('lautakunnassa'));
   }
   
@@ -241,37 +239,32 @@ function addAliasFields(confirmedFields, attributeData, aliases, confirmationInf
   }
 }
 
-// Helper: Check if special case key should be included based on phase and type
-function shouldIncludeSpecialCase(key, phase, type, attributeData) {
+// Helper: Check if special case should be added
+function shouldAddSpecialCase(key, phase, type, index, attributeData) {
+  // Key must exist in data
   if (!(key in attributeData)) return false;
+  
+  // Key must be relevant for this phase
   if (!isSpecialCaseForPhase(key, phase)) return false;
   
-  // For ehdotus and periaatteet phases: special cases belong to esillaolo, not lautakunta
+  // For ehdotus and periaatteet: special cases belong to esillaolo only
   if ((phase === 'ehdotus' || phase === 'periaatteet') && type !== 'esillaolo') {
     return false;
   }
   
-  return true;
-}
-
-// Helper: Extract index from special case key (handling _iso/_pieni suffixes)
-function extractSpecialCaseIndex(key) {
-  // First remove size suffix if present (_iso or _pieni)
+  // Extract and match index
   const keyWithoutSize = key.replace(/_(iso|pieni)(_\d+)?$/, (match, p1, p2) => p2 || '');
   const keyIndexMatch = /_(\d+)$/.exec(keyWithoutSize);
-  return keyIndexMatch ? keyIndexMatch[1] : '1';
+  const keyIndex = keyIndexMatch ? keyIndexMatch[1] : '1';
+  
+  return keyIndex === index;
 }
 
 function addSpecialCaseFields(confirmedFields, attributeData, confirmationInfo) {
   const { phase, type, index } = confirmationInfo;
 
   for (const key of SPECIAL_CASES) {
-    if (!shouldIncludeSpecialCase(key, phase, type, attributeData)) {
-      continue;
-    }
-
-    const keyIndex = extractSpecialCaseIndex(key);
-    if (keyIndex === index) {
+    if (shouldAddSpecialCase(key, phase, type, index, attributeData)) {
       confirmedFields.add(key);
     }
   }
