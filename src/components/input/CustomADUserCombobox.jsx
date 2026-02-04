@@ -8,7 +8,7 @@ class CustomADUserCombobox extends Component {
     this.loadingPlaceholder = { label: "Ladataan...", value: null };
     this.state = {
       options: [ this.loadingPlaceholder ],
-      currentQuery: "",
+      currentQuery: "*",
       currentValue: null,
       page: 1,
       hasMore: true,
@@ -111,8 +111,14 @@ class CustomADUserCombobox extends Component {
   }
 
   handleInputChange = (newValue) => {
+    if (newValue === this.state.currentQuery) return newValue;
+    
     const inputValue = newValue.replace(/[^0-9a-zA-ZåäöÅÄÖ'\s-]/g, '');
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(inputValue);
+
+    // Prevents inf loop when newValue has special characters (and currentQuery was sanitized)
+    // Also handles case when "" is changed to "*"
+    if (inputValue === this.state.currentQuery) return newValue;
 
     // If UUID, fetch directly
     if (isUUID) {
@@ -208,10 +214,8 @@ class CustomADUserCombobox extends Component {
           clearable={true}
           onChange={this.handleChange}
           filter={(_, query) => {
-              if (query !== this.state.currentQuery) {
-                this.handleInputChange(query === "" ? "*" : query);
-              }
-              return this.state.options;
+            this.handleInputChange(query === "" ? "*" : query);
+            return this.state.options;
             }
           }
           onFocus={() => {
