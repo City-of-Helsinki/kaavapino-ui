@@ -39,10 +39,8 @@ class CustomADUserCombobox extends Component {
       const optionValue = name || email;
       const label = name && title ? `${name} (${title})` : optionValue;
 
-      if (modifiedOptions.find(option => option.label === label)) {
-        modifiedOptions.push({ label: email, value: id, email });
-      } else {
-        modifiedOptions.push({ label, value: id, email });
+      if (!modifiedOptions.find(option => option.label === label)) {
+        modifiedOptions.push({ label, id, value:id, email });
       }
     });
 
