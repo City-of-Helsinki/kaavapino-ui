@@ -602,6 +602,8 @@ const adjustDeadlineData = (attributeData, allAttributeData) => {
         key.includes("milloin_ehdotuksen_nahtavilla_paattyy") ||
         key.includes("viimeistaan_lausunnot_ehdotuksesta") ||
         key.includes("milloin_tarkistettu_ehdotus_lautakunnassa") ||
+        key.includes("kylk_maaraaika") ||
+        key.includes("kylk_aineiston_maaraaika") ||
         key.includes("kaavaehdotus_nahtaville") ||
         key.includes("kaavaehdotus_uudelleen_nahtaville") ||
         key.includes("vahvista")) {
