@@ -202,20 +202,15 @@ function keyMatchesType(key, type) {
   // Lautakunta-kentät
   if (type === 'lautakunta') {
     // Lautakunta-vahvistus: vain milloin_*_lautakunnassa ja aineiston_maaraaika
-    if (key.includes('esillaolo') || key.includes('nahtavilla')) {
-      return false;
-    }
-    return key.includes('lautakunta') || key.includes('lautakunnassa');
+    return !(key.includes('esillaolo') || key.includes('nahtavilla')) && 
+           (key.includes('lautakunta') || key.includes('lautakunnassa'));
   }
   
   // Esilläolo-kentät
   if (type === 'esillaolo') {
     // Esilläolo-vahvistus: milloin_*_esillaolo_alkaa/paattyy, nahtavilla, mielipiteet, lausunnot
     // EI lautakunta-kenttiä (paitsi aineiston_maaraaika joka hyväksytään ylhäällä)
-    if (key.includes('lautakunta') || key.includes('lautakunnassa')) {
-      return false;
-    }
-    return true;
+    return !(key.includes('lautakunta') || key.includes('lautakunnassa'));
   }
   
   return true;
@@ -246,40 +241,36 @@ function addAliasFields(confirmedFields, attributeData, aliases, confirmationInf
   }
 }
 
+// Helper: Check if special case key should be included based on phase and type
+function shouldIncludeSpecialCase(key, phase, type, attributeData) {
+  if (!(key in attributeData)) return false;
+  if (!isSpecialCaseForPhase(key, phase)) return false;
+  
+  // For ehdotus and periaatteet phases: special cases belong to esillaolo, not lautakunta
+  if ((phase === 'ehdotus' || phase === 'periaatteet') && type !== 'esillaolo') {
+    return false;
+  }
+  
+  return true;
+}
+
+// Helper: Extract index from special case key (handling _iso/_pieni suffixes)
+function extractSpecialCaseIndex(key) {
+  // First remove size suffix if present (_iso or _pieni)
+  const keyWithoutSize = key.replace(/_(iso|pieni)(_\d+)?$/, (match, p1, p2) => p2 || '');
+  const keyIndexMatch = /_(\d+)$/.exec(keyWithoutSize);
+  return keyIndexMatch ? keyIndexMatch[1] : '1';
+}
+
 function addSpecialCaseFields(confirmedFields, attributeData, confirmationInfo) {
   const { phase, type, index } = confirmationInfo;
 
   for (const key of SPECIAL_CASES) {
-    if (!(key in attributeData)) {
-      continue;
-    }
-    if (!isSpecialCaseForPhase(key, phase)) {
+    if (!shouldIncludeSpecialCase(key, phase, type, attributeData)) {
       continue;
     }
 
-    // For ehdotus phase: special cases belong to esillaolo (nahtavilla), not lautakunta
-    // Only add ehdotus special cases if type is 'esillaolo'
-    if (phase === 'ehdotus' && type !== 'esillaolo') {
-      continue;
-    }
-
-    // For periaatteet phase: special cases belong to esillaolo, not lautakunta
-    if (phase === 'periaatteet' && type !== 'esillaolo') {
-      continue;
-    }
-
-    // Extract index from special case key
-    // For ehdotus: milloin_ehdotuksen_nahtavilla_alkaa_iso -> index '1'
-    //              milloin_ehdotuksen_nahtavilla_alkaa_iso_2 -> index '2'
-    // For periaatteet: viimeistaan_mielipiteet_periaatteista -> index '1'
-    //                  viimeistaan_mielipiteet_periaatteista_2 -> index '2'
-
-    // First remove size suffix if present (_iso or _pieni)
-    const keyWithoutSize = key.replace(/_(iso|pieni)(_\d+)?$/, '$2' || '');
-    const keyIndexMatch = /_(\d+)$/.exec(keyWithoutSize);
-    const keyIndex = keyIndexMatch ? keyIndexMatch[1] : '1';
-
-    // Only add if the index matches
+    const keyIndex = extractSpecialCaseIndex(key);
     if (keyIndex === index) {
       confirmedFields.add(key);
     }
