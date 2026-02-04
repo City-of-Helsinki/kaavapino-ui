@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { Combobox } from 'hds-react'
 import axios from 'axios'
-import { isArray } from 'lodash';
 
 class CustomADUserCombobox extends Component {
   constructor() {
@@ -167,21 +166,20 @@ class CustomADUserCombobox extends Component {
   };
 
   handleChange = (value) => {
-    console.log(value);
-    if (Object.is(value, this.loadingPlaceholder) || Object.is(value?.[0], this.loadingPlaceholder))
+    if (value === undefined || Object.is(value, this.loadingPlaceholder))
       return;
-
-    this.setState(prevState => ({ ...prevState, currentValue: value, options: [] }));
+    if (Array.isArray(value) && value.some(v => (v === undefined) || Object.is(v, this.loadingPlaceholder))){
+      return;
+    }
+    this.setState({ ...this.state, currentValue: value, options: []});
     // Multiselect case
     if (Array.isArray(value)) {
-      const returnValue = value.map(item => ({
-        id: item.value,
-        label: item.label,
-        email: item.email
-      }));
+      const returnValue = [];
+      value.forEach(current => returnValue.push(current));
       this.props.input.onChange(returnValue);
     }
-    else if (value && typeof value === 'object') {// Single-select mode
+    // Single-select mode
+    else if (value && typeof value === 'object') {
       const stringValue = value.id || value.label || '';
       this.props.input.onChange(stringValue);
       return;
@@ -194,23 +192,21 @@ class CustomADUserCombobox extends Component {
 
   
   handleMenuOpen = () => {
-    if (this.state.options.length === 0 || Object.is(this.state.options[0], this.loadingInitial)) {
+    if (this.state.options.length === 0 || Object.is(this.state.options[0], this.loadingPlaceholder)) {
       this.getOptions("*", 1);
     }
   };
 
   render() {
     return (
-      <div id="test" className="ad-combobox">
+      <div id="test" className={`ad-combobox${this.state.loadingInitial ? ' loading' : ''}`}>
         <Combobox
           options={this.state.options}
-          multiselect={!this.state.loadingInitial && this.props.multiselect}
+          multiselect={this.props.multiselect}
           placeholder={this.props.placeholder}
           disabled={this.props.disabled}
           clearable={true}
-          onChange={value => {
-            this.handleChange(value);
-          }}
+          onChange={this.handleChange}
           filter={(_, query) => {
               if (query !== this.state.currentQuery) {
                 this.handleInputChange(query === "" ? "*" : query);
