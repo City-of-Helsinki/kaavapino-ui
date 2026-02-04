@@ -1300,7 +1300,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             mouseY >= (itemBounds.top - verticalBuffer) &&
             mouseY <= (itemBounds.bottom + verticalBuffer)
           ) {
-            const zIndex = parseInt(window.getComputedStyle(itemDom).zIndex, 10);
+            const zIndex = Number.parseInt(globalThis.getComputedStyle(itemDom).zIndex, 10);
             if (zIndex > highestZIndex) {
               highestZIndex = zIndex;
               topmostItem = item;
