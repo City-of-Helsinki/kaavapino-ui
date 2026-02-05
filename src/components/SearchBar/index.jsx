@@ -61,6 +61,7 @@ function SearchBar(props) {
                 }
               }}
               multiselect={false}
+              name="Hae henkilöä"
             />
             </div>
           )

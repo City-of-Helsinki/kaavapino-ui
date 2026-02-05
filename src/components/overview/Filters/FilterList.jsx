@@ -51,6 +51,7 @@ function FilterList({ filterList, currentFilter, onChange, defaultYear, onUserCh
               }}
               multiselect={true}
               placeholder={field.name}
+              name={field.name}
             />
           </Grid.Column>
         )
