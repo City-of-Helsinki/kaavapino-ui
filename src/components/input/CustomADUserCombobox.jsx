@@ -227,7 +227,7 @@ class CustomADUserCombobox extends Component {
   }
 }
 
-CustomADUserCombobox.PropTypes = {
+CustomADUserCombobox.propTypes = {
   multiselect: PropTypes.bool,
   placeholder: PropTypes.string,
   disabled: PropTypes.bool,
