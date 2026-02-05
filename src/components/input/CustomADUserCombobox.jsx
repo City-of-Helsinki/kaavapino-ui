@@ -40,7 +40,7 @@ class CustomADUserCombobox extends Component {
       const optionValue = name || email;
       const label = name && title ? `${name} (${title})` : optionValue;
 
-      if (!modifiedOptions.find(option => option.label === label)) {
+      if (!modifiedOptions.some(option => option.label === label)) {
         modifiedOptions.push({ label, id, value:id, email });
       }
     });
@@ -110,19 +110,18 @@ class CustomADUserCombobox extends Component {
   }
 
   handleInputChange = (newValue) => {
-    if (newValue === this.state.currentQuery) return newValue;
+    if (newValue === this.state.currentQuery) return;
     
     const inputValue = newValue.replaceAll(/[^0-9a-zA-ZåäöÅÄÖ'\s-]/g, '');
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(inputValue);
 
     // Prevents inf loop when newValue has special characters (and currentQuery was sanitized)
     // Also handles case when "" is changed to "*"
-    if (inputValue === this.state.currentQuery) return newValue;
+    if (inputValue === this.state.currentQuery) return;
 
-    // If UUID, fetch directly
     if (isUUID) {
       this.setState({ currentQuery: inputValue }, () => {
-        this.getPersonById(inputValue); // new helper
+        this.getPersonById(inputValue);
       });
     }
     else if (inputValue.length >= 2 || newValue === '*') {
@@ -135,7 +134,6 @@ class CustomADUserCombobox extends Component {
         }
       );
     }
-    return newValue;
   };
 
   loadMoreOptions = async (nextPage) => {
@@ -176,25 +174,24 @@ class CustomADUserCombobox extends Component {
     if (Array.isArray(value) && value.some(v => (v === undefined) || Object.is(v, this.loadingPlaceholder))){
       return;
     }
-    this.setState({ ...this.state, currentValue: value, options: []}, () => {
-      // Multiselect case
-      if (Array.isArray(value)) {
-        const returnValue = [];
-        value.forEach(current => returnValue.push(current));
-        this.props.input.onChange(returnValue);
-      }
-      // Single-select mode
-      else if (value && typeof value === 'object') {
-        const stringValue = value.id || value.label || '';
-        this.props.input.onChange(stringValue);
-        return;
-      }
-      else{
-        // Cleared or invalid selection
-        this.props.input.onChange('');
-      }
-  });
-  };
+    this.setState(prevState => ({ ...prevState, currentValue: value, options: []}));
+    // Multiselect case
+    if (Array.isArray(value)) {
+      const returnValue = [];
+      value.forEach(current => returnValue.push(current));
+      this.props.input.onChange(returnValue);
+    }
+    // Single-select mode
+    else if (value && typeof value === 'object') {
+      const stringValue = value.id || value.label || '';
+      this.props.input.onChange(stringValue);
+      return;
+    }
+    else{
+      // Cleared or invalid selection
+      this.props.input.onChange('');
+    }
+  }
 
   
   handleMenuOpen = () => {
