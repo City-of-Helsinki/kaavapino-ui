@@ -90,6 +90,7 @@ function OwnProjectFilters({ filters, ...props }) {
                         }}
                         multiselect={true}
                         placeholder={t('common.person')}
+                        name={t('common.person')}
                     />
                 </Grid.Column>
                 <Grid.Column key="own2">

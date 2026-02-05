@@ -46,6 +46,7 @@ function FilterField({ type, id, options, change, disabled, inputType, name }) {
         disabled={disabled}
         multiselect={true}
         label={name}
+        name={name}
       />
     )
   }

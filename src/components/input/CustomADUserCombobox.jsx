@@ -221,6 +221,9 @@ class CustomADUserCombobox extends Component {
           value={this.state.currentValue}
           onBlur={this.props.onBlur}
           aria-label={this.props.name}
+          clearButtonAriaLabel="Tyhjennä valinta"
+          selectedItemRemoveButtonAriaLabel="Poista valinta {value}"
+          toggleButtonAriaLabel="Avaa valikko"
         />
       </div>
     );
