@@ -418,8 +418,11 @@ const Header = props => {
             </div>
             <div className='icons-container-flex'>
               {updateTime?.status === t('header.latest-save') ? <IconCheck className='check-icon'/> : ""}
-              {updateTime?.status === t('header.edit-menu-save-fail') ? <IconErrorFill className='error-icon'/> : ""}
-              <p className={updateTime?.status === t('header.edit-menu-save-fail') ? "error" : ""}>{updateTime?.status}{updateTime?.time}</p>
+              {
+              updateTime?.status === t('header.edit-menu-save-fail') ? 
+              <> <IconErrorFill className='error-icon'/> <p className="error">{updateTime?.status}</p> </> :
+              <p>{updateTime?.status}{updateTime?.time}</p>
+              }
               {updateTime?.status === t('header.edit-menu-save-fail') ? <Tooltip placement="bottom" className='question-icon'>{t('header.latest-save')}{updateTime?.time}</Tooltip> : ""}
             </div>
           </div>
@@ -469,7 +472,7 @@ const Header = props => {
         >
           <Navigation.Row variant="inline">
             <Navigation.Item
-              as="a"
+              as="button"
               label={t('header.overview')}
               onClick={navigateToHome}
               className={(props.location.pathname === "/")
@@ -482,7 +485,7 @@ const Header = props => {
               }
             />
             <Navigation.Item
-              as="a"
+              as="button"
               label={t('header.projects')}
               onClick={navigateToProjects}
               className={(props.location.pathname.startsWith("/projects"))
@@ -495,7 +498,7 @@ const Header = props => {
               }
             />
             <Navigation.Item
-              as="a"
+              as="button"
               label={t('header.reports')}
               onClick={navigateToReports}
               className={(props.location.pathname === "/reports")

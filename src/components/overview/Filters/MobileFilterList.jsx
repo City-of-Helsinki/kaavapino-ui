@@ -52,6 +52,7 @@ export default function MobileFilterList({
           input={{ onChange: handleUserChange }}
           multiselect={true}
           currentValue={currentFilterValue}
+          name={filter.name}
         />
       )
     }

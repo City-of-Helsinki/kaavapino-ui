@@ -844,10 +844,10 @@ const compareAndUpdateDates = (data) => {
     return validVariants.reduce((a, b) => (b > a ? b : a), validVariants[0]);
   };
 
-  lausuntoPairs.forEach(([dst, src]) => {
-    const srcDate = validateAndNormalizeDate(data[src]);
-    if (srcDate && data[dst] !== srcDate) {
-      data[dst] = srcDate;
+  lausuntoPairs.forEach(([lausunto_date, paattyy_date]) => {
+    const validPaattyyDate = validateAndNormalizeDate(data[paattyy_date]);
+    if (validPaattyyDate) {
+      data[lausunto_date] = validPaattyyDate;
     }
   });
   //Check that phase end date line is moved to phases actual last date 

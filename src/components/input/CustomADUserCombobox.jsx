@@ -1,84 +1,22 @@
-import React, { Component } from 'react';
-import Select from 'react-select';
-import CustomMenuList from './CustomMenuList.jsx';
-import CustomDropdownIndicator from './CustomDropdownIndicator.jsx'
-import axios from 'axios';
-
-const hdsLikeStyles = {
-  control: (provided, state) => ({
-    ...provided,
-    border: '2px solid #808080',
-    borderRadius: '0',
-    minHeight: '56px',
-    paddingLeft: '8px',
-    paddingRight: '8px',
-    backgroundColor: state.isDisabled ? '#f2f2f2' : '#fff',
-    boxShadow: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    '&:hover': {
-      borderColor: '#000',
-    },
-  }),
-  placeholder: (provided) => ({
-    ...provided,
-    color: '#d1d1d1',
-    fontSize: '16px',
-    lineHeight: '24px',
-    whiteSpace: 'nowrap',
-  }),
-  singleValue: (provided) => ({
-    ...provided,
-    color: '#1a1a1a',
-    fontSize: '16px',
-    lineHeight: '24px',
-  }),
-  input: (provided) => ({
-    ...provided,
-    fontSize: '16px',
-    color: '#1a1a1a',
-  }),
-  dropdownIndicator: (provided) => ({
-    ...provided,
-    padding: '8px',
-    color: '#1a1a1a',
-    display: 'flex',
-    alignItems: 'center',
-  }),
-  indicatorSeparator: () => ({
-    display: 'none',
-  }),
-  menu: (provided) => ({
-    ...provided,
-    zIndex: 9999,
-    border: '1px solid #ccc',
-    borderRadius: '2px',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-    width: '100%',
-    maxWidth: '100%',
-    overflowX: 'hidden',
-    boxSizing: 'border-box'
-  }),
-  menuList: (provided) => ({
-    ...provided,
-    overflowX: 'hidden',
-    paddingRight: 0,
-    boxSizing: 'border-box',
-    wordBreak: 'break-word',
-  }),
-};
+import React, { Component } from 'react'
+import { Combobox } from 'hds-react'
+import PropTypes from 'prop-types'
+import axios from 'axios'
 
 class CustomADUserCombobox extends Component {
   constructor() {
     super();
+    this.loadingPlaceholder = { label: "Ladataan...", value: null };
     this.state = {
-      options: [],
-      currentQuery: "",
+      options: [ this.loadingPlaceholder ],
+      currentQuery: "*",
       currentValue: null,
       page: 1,
       hasMore: true,
-      loadingMore: false
+      loadingInitial: true,
+      loadingMore: false,
     };
+    this.timer = null;
   }
 
   componentDidMount() {
@@ -102,16 +40,8 @@ class CustomADUserCombobox extends Component {
       const optionValue = name || email;
       const label = name && title ? `${name} (${title})` : optionValue;
 
-      const option = {
-        label,
-        value: id,  // required for react-select to work
-        id,
-        email
-      };
-
-      // avoid duplicates
-      if (!modifiedOptions.find(o => o.label === label)) {
-        modifiedOptions.push(option);
+      if (!modifiedOptions.some(option => option.label === label)) {
+        modifiedOptions.push({ label, id, value:id, email });
       }
     });
 
@@ -171,7 +101,8 @@ class CustomADUserCombobox extends Component {
         options: page === 1 ? modifiedResults : [...prev.options, ...modifiedResults],
         currentQuery: query,
         page,
-        hasMore
+        hasMore,
+        loadingInitial: false,
       }));
     } catch (err) {
       console.error("Error fetching personnel:", err);
@@ -179,25 +110,30 @@ class CustomADUserCombobox extends Component {
   }
 
   handleInputChange = (newValue) => {
-    const inputValue = newValue.replace(/[^0-9a-zA-ZåäöÅÄÖÅ'\s-]/g, '');
+    if (newValue === this.state.currentQuery) return;
+    
+    const inputValue = newValue.replaceAll(/[^0-9a-zA-ZåäöÅÄÖ'\s-]/g, '');
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(inputValue);
 
-    // If UUID, fetch directly
+    // Prevents inf loop when newValue has special characters (and currentQuery was sanitized)
+    // Also handles case when "" is changed to "*"
+    if (inputValue === this.state.currentQuery) return;
+
     if (isUUID) {
       this.setState({ currentQuery: inputValue }, () => {
-        this.getPersonById(inputValue); // new helper
+        this.getPersonById(inputValue);
       });
     }
-    else if (inputValue.length >= 3 || inputValue === '*') { // Otherwise: search if long enough
+    else if (inputValue.length >= 2 || newValue === '*') {
       this.setState(
-        { currentQuery: inputValue, page: 1, hasMore: true },
+        { currentQuery: inputValue, page: 1, hasMore: true, loadingInitial: true, options: [this.loadingPlaceholder] },
         () => {
-          this.getOptions(inputValue, 1);
+          // Prevent too many requests as user types
+          clearTimeout(this.timer);
+          this.timer = setTimeout(() => this.getOptions(inputValue, 1), 200);
         }
       );
     }
-
-    return newValue;
   };
 
   loadMoreOptions = async (nextPage) => {
@@ -233,17 +169,20 @@ class CustomADUserCombobox extends Component {
   };
 
   handleChange = (value) => {
-    this.setState(prevState => ({ ...prevState, currentValue: value, options: [] }));
+    if (value === undefined || Object.is(value, this.loadingPlaceholder))
+      return;
+    if (Array.isArray(value) && value.some(v => (v === undefined) || Object.is(v, this.loadingPlaceholder))){
+      return;
+    }
+    this.setState(prevState => ({ ...prevState, currentValue: value, options: []}));
     // Multiselect case
     if (Array.isArray(value)) {
-      const returnValue = value.map(item => ({
-        id: item.value,
-        label: item.label,
-        email: item.email
-      }));
+      const returnValue = [];
+      value.forEach(current => returnValue.push(current));
       this.props.input.onChange(returnValue);
     }
-    else if (value && typeof value === 'object') {// Single-select mode
+    // Single-select mode
+    else if (value && typeof value === 'object') {
       const stringValue = value.id || value.label || '';
       this.props.input.onChange(stringValue);
       return;
@@ -252,40 +191,50 @@ class CustomADUserCombobox extends Component {
       // Cleared or invalid selection
       this.props.input.onChange('');
     }
-  };
+  }
 
   
   handleMenuOpen = () => {
-    if (this.state.options.length === 0) {
+    if (this.state.options.length === 0 || Object.is(this.state.options[0], this.loadingPlaceholder)) {
       this.getOptions("*", 1);
     }
   };
 
   render() {
     return (
-      <div id="test" className="ad-combobox">
-        <Select
-          components={{ MenuList: CustomMenuList, DropdownIndicator: CustomDropdownIndicator }}
-          value={this.state.currentValue || ""}
+      <div id="test" className={`ad-combobox${this.state.loadingInitial ? ' loading' : ''}`}>
+        <Combobox
           options={this.state.options}
-          page={this.state.page}
-          hasMore={this.state.hasMore}
-          loadMoreOptions={this.loadMoreOptions}
-          loadingMore={this.state.loadingMore}
-          onMenuOpen={this.handleMenuOpen}
-          onInputChange={this.handleInputChange}
-          onChange={this.handleChange}
-          isDisabled={this.props.disabled}
-          isMulti={this.props.multiselect}
+          multiselect={this.props.multiselect}
           placeholder={this.props.placeholder}
-          isClearable={true}
+          disabled={this.props.disabled}
+          clearable={true}
+          onChange={this.handleChange}
+          filter={(_, query) => {
+            this.handleInputChange(query === "" ? "*" : query);
+            return this.state.options;
+            }
+          }
+          onFocus={() => {
+            this.handleMenuOpen()
+          }}
+          value={this.state.currentValue}
           onBlur={this.props.onBlur}
-          inputId={this.props.name}
-          styles={hdsLikeStyles}
+          aria-label={this.props.name}
+          clearButtonAriaLabel="Tyhjennä valinta"
+          selectedItemRemoveButtonAriaLabel="Poista valinta {value}"
+          toggleButtonAriaLabel="Avaa valikko"
         />
       </div>
     );
   }
+}
+
+CustomADUserCombobox.propTypes = {
+  multiselect: PropTypes.bool,
+  placeholder: PropTypes.string,
+  disabled: PropTypes.bool,
+  name: PropTypes.string,
 }
 
 export default CustomADUserCombobox;

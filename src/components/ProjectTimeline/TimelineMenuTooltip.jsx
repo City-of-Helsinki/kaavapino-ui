@@ -72,7 +72,10 @@ const TimelineMenuTooltip = () => (
         <div className="symbol-column">
           {rightIcons.map((icon) => (
             <div className="symbol-row" key={icon.key}>
-              <div className="symbol-icon-wrapper">{icon}</div>
+              <div className={`symbol-icon-wrapper ${
+                // KAAV-3562: Adding 'confirmed' class to 'mennyt' icon is a temporary solution and will be removed when KAAV-3563 is implemented
+                icon.key === 'mennyt' ? 'confirmed' : ''
+              }`}>{icon}</div>
             </div>
           ))}
         </div>

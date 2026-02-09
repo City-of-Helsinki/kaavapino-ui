@@ -571,6 +571,7 @@ class CustomField extends Component {
         onBlur={handleBlurSave}
         onFocus={handleLockField}
         handleUnlockField={handleUnlockField}
+        name={field.label}
         {...props}
       />
     )
