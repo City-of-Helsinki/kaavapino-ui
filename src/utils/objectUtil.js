@@ -242,7 +242,7 @@ const getHighestNumberedObject = (obj1) => {
     return result
   }
 
-  const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize,attributeData) => {
+  const checkForDecreasingValues = (arr,isAdd,field,disabledDates,oldDate,movedDate,moveToPast,projectSize,attributeData, deadlineObjects) => {
     // Lock logic: do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
     // attributeData is the filtered attribute_data object (only visible fields) so we can inspect confirmation flags
     let confirmedFieldSet = null;
@@ -253,9 +253,7 @@ const getHighestNumberedObject = (obj1) => {
         // Lazy load to avoid circular deps (generateConfirmedFields depends on constants only)
         const { confirmationAttributeNames } = require('./constants');
         const { generateConfirmedFields } = require('./generateConfirmedFields');
-        // Phase names that have confirmation flags (exclude kaynnistys, hyvaksyminen, voimaantulo as per saga usage)
-        const phaseNames = ['periaatteet','oas','luonnos','ehdotus','tarkistettu_ehdotus'];
-        confirmedFieldSet = new Set(generateConfirmedFields(attributeData, confirmationAttributeNames, phaseNames));
+        confirmedFieldSet = new Set(generateConfirmedFields(attributeData, deadlineObjects));
       }
       catch(e){
         // Fail silently – if generation fails we simply don't lock by confirmation (past locking still applies)
