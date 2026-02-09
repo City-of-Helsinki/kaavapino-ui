@@ -1091,15 +1091,43 @@ class EditProjectTimeTableModal extends Component {
     let newItem
 
     for (const { key } of matchingValues) {
-        let valueToCheck
-        let daysToAdd
+      let valueToCheck
+      let daysToAdd
 
-        let foundItem = matchingValues.find(item => item?.key?.includes("_paattyy") || item?.key?.includes("_lautakunnassa")) || matchingValues[0]?.value;
-        let newDate = new Date(foundItem.value ? foundItem.value : foundItem);
+      const foundItem = matchingValues.find(item => item?.key?.includes("_paattyy") || item?.key?.includes("_lautakunnassa")) || matchingValues[0];
+      const fallbackValue = matchingValues.find(item => item?.value)?.value;
+      let baseValue = foundItem?.value || fallbackValue;
+      let forcedStartSection = null;
+      if (!baseValue) {
+        const firstKey = matchingValues[0]?.key;
+        const firstSection = firstKey
+          ? distanceArray.find(section => section.name === firstKey)
+          : null;
+        const linkedBase = firstSection?.linkedData
+          ? (this.props.formValues?.[firstSection.linkedData] || this.props.attributeData?.[firstSection.linkedData])
+          : null;
+        if (linkedBase) {
+          baseValue = linkedBase;
+          forcedStartSection = firstSection;
+        }
+      }
+      if (!baseValue) {
+        console.error("Cannot add group: missing base date for", phase, matchingValues);
+        return validValues;
+      }
+      let newDate = new Date(baseValue);
+      if (Number.isNaN(newDate.getTime())) {
+        console.error("Cannot add group: invalid base date for", phase, baseValue);
+        return validValues;
+      }
         //let matchingSection = distanceArray.find(section => section.name === nextKey)
         let matchingSection
         if(!newItem){
-          matchingSection = objectUtil.findItem(distanceArray,foundItem.key,"name",1)
+          if (forcedStartSection) {
+            matchingSection = forcedStartSection
+          } else {
+            matchingSection = objectUtil.findItem(distanceArray,foundItem.key,"name",1)
+          }
           if(matchingSection?.name.includes("viimeistaan_lausunnot")){
             matchingSection = objectUtil.findItem(distanceArray,matchingSection.name,"name",1)
           }
@@ -1110,7 +1138,13 @@ class EditProjectTimeTableModal extends Component {
         else{
           if(newItem){
             const newVal = validValues.find(item => item.key === newItem)
+            if (!newVal?.value) {
+              continue;
+            }
             newDate = new Date(newVal.value)
+            if (Number.isNaN(newDate.getTime())) {
+              continue;
+            }
                 // --- Ensure new date is at least tomorrow ---
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -1255,10 +1289,10 @@ class EditProjectTimeTableModal extends Component {
 
     if (validValues.length >= 2 || validValues.length === 1 && validValues[0].key.includes("_lautakunnassa")) {
       let indexString;
-       if (index > 2) {
+      if (index > 1) {
         indexString = "_" + index;
       } else {
-        indexString = "_2";
+        indexString = "";
       }
       validValues.forEach(({ key, value }) => {
         let modifiedKey;
