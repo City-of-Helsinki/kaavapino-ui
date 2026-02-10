@@ -237,7 +237,9 @@ describe('Timeline Lifecycle Integration Tests', () => {
 
     it('getDateFieldsForDeadlineGroup returns correct fields for nahtavillaolo', () => {
       const fields = getDateFieldsForDeadlineGroup('ehdotus_nahtavillaolokerta_1');
-      expect(fields).toContain('milloin_ehdotuksen_nahtavilla_alkaa');
+      // Ehdotus nahtavillaolo has size variants: _pieni (XS/S/M) and _iso (L/XL)
+      expect(fields).toContain('milloin_ehdotuksen_nahtavilla_alkaa_pieni');
+      expect(fields).toContain('milloin_ehdotuksen_nahtavilla_alkaa_iso');
       expect(fields).toContain('milloin_ehdotuksen_nahtavilla_paattyy');
       expect(fields).toContain('ehdotus_nahtaville_aineiston_maaraaika');
     });
