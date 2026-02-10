@@ -605,6 +605,28 @@
         }
     }
 
+    // When kaynnistys_1 contains a past phase, disable all interaction
+    .kaynnistys_1:has(.past) {
+        pointer-events: none !important;
+        cursor: default !important;
+
+        .vis-item-overflow {
+            pointer-events: none !important;
+            cursor: default !important;
+
+            &::after {
+                pointer-events: none !important;
+                cursor: default !important;
+            }
+
+            &:hover::after,
+            &:active::after {
+                pointer-events: none !important;
+                cursor: default !important;
+            }
+        }
+    }
+
     .board.deadline {
         height: $size24 !important;
         width: $size24 !important;
