@@ -785,7 +785,7 @@ const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues
   let allowedDates;
   if (name.includes("projektin_kaynnistys_pvm") || name.includes("kaynnistys_paattyy_pvm")) {
       allowedDates = getDisabledDatesForProjectStart(name, formValues, previousItem, nextItem, dateTypes);
-  } else if (["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauenut"].includes(name)) {
+  } else if (["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauennut"].includes(name)) {
       allowedDates = getDisabledDatesForApproval(name, formValues, matchingItem, dateTypes, size);
       return allowedDates; // Skip filtering past dates for approval dates
   } else if (name === "hyvaksymispaatos_valitusaika_paattyy" || name === "valitusaika_paattyy_hallinto_oikeus") {
