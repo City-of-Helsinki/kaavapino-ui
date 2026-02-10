@@ -87,10 +87,14 @@ export const getDateFieldsForDeadlineGroup = (deadlineGroup) => {
     }
   } else if (type === 'nahtavillaolo') {
     // Only for ehdotus phase
+    // NOTE: Includes size variants - _pieni (XS/S/M) OR _iso (L/XL), never both
+    // Cleanup deletes whichever exists
     if (phase === 'ehdotus') {
-      fields.push(`milloin_ehdotuksen_nahtavilla_alkaa${suffix}`);
-      fields.push(`milloin_ehdotuksen_nahtavilla_paattyy${suffix}`);
       fields.push(`ehdotus_nahtaville_aineiston_maaraaika${suffix}`);
+      fields.push(`milloin_ehdotuksen_nahtavilla_alkaa_pieni${suffix}`);  // XS/S/M only
+      fields.push(`milloin_ehdotuksen_nahtavilla_alkaa_iso${suffix}`);    // L/XL only
+      fields.push(`milloin_ehdotuksen_nahtavilla_paattyy${suffix}`);
+      fields.push(`viimeistaan_lausunnot_ehdotuksesta${suffix}`);
     }
   }
   
