@@ -268,7 +268,7 @@ const compareAndUpdateArrays = (arr1, arr2, deadlineSections) => {
   //Sort phase start end data by order const
   arr1 = sortPhaseData(arr1, order)
   //Return in order array ready for comparing next and previous value distances
-  arr1 = arr1.filter(item => !item.key.includes("viimeistaan_lausunnot_") && !item.key.includes("aloituskokous_suunniteltu_pvm_readonly")); //filter out has no next and prev values
+  arr1 = arr1.filter(item => !item.key.includes("viimeistaan_lausunnot_") && !item.key.includes("viimeistaan_mielipiteet") && !item.key.includes("aloituskokous_suunniteltu_pvm_readonly")); //filter out has no next and prev values
   return arr1
 }
 //Sort by certain predetermined order
@@ -469,15 +469,6 @@ const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, mov
                         newPhaseStartDate = fallbackDate.toISOString().split('T')[0];
                       }
                     }
-                    
-                    console.log('[KAAV-3517] Backward cascade for kylk_maaraaika:', {
-                      key: arr[currentIndex].key,
-                      movedDate,
-                      phaseStartKey,
-                      oldPhaseStart: arr[phaseStartIndex].value,
-                      newPhaseStart: newPhaseStartDate,
-                      distance
-                    });
                     
                     // Only update if new phase start is earlier than current
                     if (new Date(newPhaseStartDate) < new Date(arr[phaseStartIndex].value)) {
@@ -696,11 +687,95 @@ const filterHiddenKeys = (attributeData, deadlines) => {
 const filterHiddenKeysUsingSections = (attributeData, deadlineSections) => {
   return Object.entries(attributeData).reduce((acc, [key, value]) => {
     const dl = findDeadlineInDeadlineSections(key, deadlineSections);
-    if (!dl || shouldDeadlineBeVisible(dl.name, dl.attributegroup, attributeData)) {
-      acc[key] = value;
+    if (dl) {
+      // Deadline found in sections - use standard visibility check
+      if (shouldDeadlineBeVisible(dl.name, dl.attributegroup, attributeData)) {
+        acc[key] = value;
+      } else if (key.includes('luonnos') || key.includes('kaavaluonnos')) {
+        console.log('[KAAV-DEBUG] FILTERED OUT (in sections, not visible):', key, value, 'group:', dl.attributegroup);
+      }
+    } else {
+      // Deadline NOT in sections - check if it's a numbered variant that should be filtered
+      // KAAV-3492 FIX: Numbered deadline keys (_2, _3, _4) not in deadlineSections
+      // must still respect visibility bools to prevent stale dates from affecting cascade
+      const inferredVisibility = inferVisibilityForUnmappedDeadline(key, attributeData);
+      if (inferredVisibility !== false) {
+        acc[key] = value;
+      } else if (key.includes('luonnos') || key.includes('kaavaluonnos')) {
+        console.log('[KAAV-DEBUG] FILTERED OUT (unmapped, inferred false):', key, value);
+      }
     }
     return acc
   }, {})
+}
+
+/**
+ * Infer visibility for deadline keys not present in deadlineSections.
+ * This handles numbered variants (_2, _3, _4) that may not be in the schema but exist in stored data.
+ * 
+ * @param {string} key - The attribute key (e.g., "luonnosaineiston_maaraaika_3")
+ * @param {object} attributeData - The form/attribute data containing visibility bools
+ * @returns {boolean|null} - false if definitely hidden, true/null if should be included
+ */
+const inferVisibilityForUnmappedDeadline = (key, attributeData) => {
+  // Extract the suffix number if present (e.g., "_3" from "luonnosaineiston_maaraaika_3")
+  const suffixMatch = key.match(/_(\d+)$/);
+  if (!suffixMatch) {
+    return true;  // No numbered suffix - not a variant, include it
+  }
+  
+  const index = suffixMatch[1];
+  
+  // Patterns mapped to visibility bool templates
+  // Template uses {index} placeholder
+  const patternToVisBool = [
+    // Luonnos esilläolo
+    { patterns: ['luonnosaineiston_maaraaika', 'luonnos_esillaolo', 'mielipiteet_luonnos'], 
+      visBool: 'jarjestetaan_luonnos_esillaolo_{index}' },
+    // Luonnos lautakunta  
+    { patterns: ['kaavaluonnos_lautakunnassa', 'kaavaluonnos_kylk'], 
+      visBool: 'kaavaluonnos_lautakuntaan_{index}' },
+    // Periaatteet esilläolo
+    { patterns: ['periaatteet_esillaolo', 'mielipiteet_periaatteista'], 
+      visBool: 'jarjestetaan_periaatteet_esillaolo_{index}' },
+    // Periaatteet lautakunta
+    { patterns: ['periaatteet_lautakunnassa', 'periaatteet_lautakunta_aineiston'], 
+      visBool: 'periaatteet_lautakuntaan_{index}' },
+    // OAS esilläolo
+    { patterns: ['oas_esillaolo', 'mielipiteet_oas'], 
+      visBool: 'jarjestetaan_oas_esillaolo_{index}' },
+    // Ehdotus lautakunta
+    { patterns: ['kaavaehdotus_lautakunnassa', 'ehdotus_kylk'], 
+      visBool: 'kaavaehdotus_lautakuntaan_{index}' },
+    // Tarkistettu ehdotus lautakunta
+    { patterns: ['tarkistettu_ehdotus_lautakunnassa', 'tarkistettu_ehdotus_kylk'], 
+      visBool: 'tarkistettu_ehdotus_lautakuntaan_{index}' },
+  ];
+  
+  for (const mapping of patternToVisBool) {
+    if (mapping.patterns.some(p => key.includes(p))) {
+      const visBool = mapping.visBool.replace('{index}', index);
+      if (attributeData[visBool] === false) {
+        return false;
+      }
+      return null;  // Pattern matched, but visibility bool is not false
+    }
+  }
+  
+  // Ehdotus nähtävilläolo - special case with different bool names
+  const nahtavillaPatterns = ['ehdotuksen_nahtavilla', 'ehdotus_nahtaville', 'lausunnot_ehdotuksesta'];
+  if (nahtavillaPatterns.some(p => key.includes(p))) {
+    const visBool = index === '1' 
+      ? `kaavaehdotus_nahtaville_${index}`
+      : `kaavaehdotus_uudelleen_nahtaville_${index}`;
+    if (attributeData[visBool] === false) {
+      return false;
+    }
+    return null;
+  }
+  
+  // No matching pattern found, include by default
+  return null;
 }
 
 const findDeadlineInDeadlines = (deadlineName, deadlineObjects) => {

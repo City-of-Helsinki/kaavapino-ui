@@ -592,6 +592,69 @@ describe("Test ObjectUtil utility functions", () => {
             .toContain("milloin_kaavaluonnos_lautakunnassa");
 
     });
+
+    /**
+     * KAAV-3492: Test that numbered deadline keys NOT in deadlineSections are still filtered
+     * when their corresponding visibility bool is false.
+     * 
+     * This prevents stale dates from disabled groups (e.g., esillaolo_3 when only esillaolo_1 and _2 are active)
+     * from affecting cascade calculations.
+     */
+    test("KAAV-3492: filters out numbered deadline keys not in deadlineSections when visibility bool is false", () => {
+        const test_attribute_data = {
+            "kaavaprosessin_kokoluokka": "XL",
+            "luonnos_luotu": true,
+            // Active group 1
+            "jarjestetaan_luonnos_esillaolo_1": true,
+            "luonnosaineiston_maaraaika": "2029-01-12",
+            "milloin_luonnos_esillaolo_paattyy": "2029-02-28",
+            // Active group 2 (just added)
+            "jarjestetaan_luonnos_esillaolo_2": true,
+            "luonnosaineiston_maaraaika_2": "2029-03-07",
+            "milloin_luonnos_esillaolo_paattyy_2": "2029-04-16",
+            // DISABLED group 3 - has stale dates that should be filtered out
+            "jarjestetaan_luonnos_esillaolo_3": false,
+            "luonnosaineiston_maaraaika_3": "2030-01-11",  // Stale date!
+            "milloin_luonnos_esillaolo_paattyy_3": "2030-02-27",  // Stale date!
+            // Downstream field
+            "kaavaluonnos_kylk_aineiston_maaraaika": "2029-04-23",
+        };
+        // deadlineSections only contains _1 and _2 variants (as would be typical)
+        // _3 variants are NOT in deadlineSections
+        const test_deadline_sections = [
+            {
+                sections: [
+                    {
+                        attributes: [
+                            { name: "luonnosaineiston_maaraaika", attributegroup: "luonnos_esillaolokerta_1" },
+                            { name: "milloin_luonnos_esillaolo_paattyy", attributegroup: "luonnos_esillaolokerta_1" },
+                            { name: "luonnosaineiston_maaraaika_2", attributegroup: "luonnos_esillaolokerta_2" },
+                            { name: "milloin_luonnos_esillaolo_paattyy_2", attributegroup: "luonnos_esillaolokerta_2" },
+                            { name: "kaavaluonnos_kylk_aineiston_maaraaika", attributegroup: "luonnos_lautakuntakerta_1" },
+                        ]
+                    }
+                ]
+            }
+        ];
+        const result = objectUtil.filterHiddenKeysUsingSections(test_attribute_data, test_deadline_sections);
+        
+        // Verify active group dates are included
+        expect(Object.keys(result)).toContain("luonnosaineiston_maaraaika");
+        expect(Object.keys(result)).toContain("milloin_luonnos_esillaolo_paattyy");
+        expect(Object.keys(result)).toContain("luonnosaineiston_maaraaika_2");
+        expect(Object.keys(result)).toContain("milloin_luonnos_esillaolo_paattyy_2");
+        expect(Object.keys(result)).toContain("kaavaluonnos_kylk_aineiston_maaraaika");
+        
+        // CRITICAL: Verify disabled group 3 dates are EXCLUDED (even though not in deadlineSections)
+        expect(Object.keys(result), "luonnosaineiston_maaraaika_3 should be filtered out because jarjestetaan_luonnos_esillaolo_3 is false")
+            .not.toContain("luonnosaineiston_maaraaika_3");
+        expect(Object.keys(result), "milloin_luonnos_esillaolo_paattyy_3 should be filtered out because jarjestetaan_luonnos_esillaolo_3 is false")
+            .not.toContain("milloin_luonnos_esillaolo_paattyy_3");
+        
+        // Non-deadline keys should still be included
+        expect(Object.keys(result)).toContain("kaavaprosessin_kokoluokka");
+        expect(Object.keys(result)).toContain("luonnos_luotu");
+    });
 });
 
 /**
