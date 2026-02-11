@@ -888,5 +888,84 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
                 expect(resultPhaseStart?.value).toBeTruthy();
             }
         });
+
+        test("KAAV-3517: moving kylk_maaraaika backwards should cascade to phase start", () => {
+            // Regression test: When user moves tarkistettu_ehdotus_kylk_maaraaika backwards,
+            // the phase start (tarkistettuehdotusvaihe_alkaa_pvm) must also be pulled back
+            // to maintain the minimum distance. Otherwise backend will enforce and jump dates forward.
+            const newDate = "2026-07-31"; // User drags maaraaika backwards by ~8 months
+            const oldDate = "2027-03-03";
+            
+            const arr = [
+                { key: "milloin_ehdotuksen_nahtavilla_paattyy", value: "2026-07-30", date_type: "arkipäivät", distance_from_previous: 21 },
+                { key: "viimeistaan_lausunnot_ehdotuksesta", value: "2026-07-30", distance_from_previous: 0 },
+                { key: "ehdotusvaihe_paattyy_pvm", value: "2026-11-25" },
+                { key: "tarkistettuehdotusvaihe_alkaa_pvm", value: "2026-11-25" },
+                // The key point: the array value is already updated to the new position (this is how the caller works)
+                { key: "tarkistettu_ehdotus_kylk_maaraaika", value: newDate, date_type: "arkipäivät", distance_from_previous: 6, initial_distance: 50 },
+                { key: "milloin_tarkistettu_ehdotus_lautakunnassa", value: "2027-04-06", date_type: "lautakunnan_kokouspäivät", distance_from_previous: 21, initial_distance: 21 },
+            ];
+            
+            const kylkKey = "tarkistettu_ehdotus_kylk_maaraaika";
+            const moveToPast = true;
+            
+            const result = objectUtil.checkForDecreasingValues(
+                arr, 
+                false, // not adding
+                kylkKey, 
+                mockData.test_disabledDates, 
+                oldDate, 
+                newDate, 
+                moveToPast, 
+                "M"
+            );
+            
+            const resultPhaseStart = result.find(i => i.key === "tarkistettuehdotusvaihe_alkaa_pvm");
+            const resultMaaraaika = result.find(i => i.key === kylkKey);
+            
+            // The phase start should have been pulled back
+            // Since minimum distance is 6 work days, phase start should be ~6 work days before maaraaika
+            expect(resultPhaseStart?.value).toBeTruthy();
+            expect(resultMaaraaika?.value).toBe(newDate);
+            
+            // Phase start should now be before the new maaraaika date
+            const phaseStartDate = new Date(resultPhaseStart.value);
+            const maaraikaDate = new Date(resultMaaraaika.value);
+            expect(phaseStartDate < maaraikaDate).toBe(true);
+            
+            // Phase start should have been pulled back from original (2026-11-25) to earlier
+            expect(new Date(resultPhaseStart.value) < new Date("2026-11-25")).toBe(true);
+        });
+
+        test("KAAV-3517: moving kylk_maaraaika forward should NOT affect phase start", () => {
+            // When moving forward (not to past), the phase start should not be modified
+            const arr = [
+                { key: "ehdotusvaihe_paattyy_pvm", value: "2026-06-02" },
+                { key: "tarkistettuehdotusvaihe_alkaa_pvm", value: "2026-06-02" },
+                { key: "tarkistettu_ehdotus_kylk_maaraaika", value: "2026-06-09", date_type: "arkipäivät", distance_from_previous: 6, initial_distance: 50 },
+                { key: "milloin_tarkistettu_ehdotus_lautakunnassa", value: "2026-07-01", date_type: "lautakunnan_kokouspäivät", distance_from_previous: 21, initial_distance: 21 },
+            ];
+            
+            const kylkKey = "tarkistettu_ehdotus_kylk_maaraaika";
+            const newDate = "2026-07-09"; // Moving forward
+            const oldDate = "2026-06-09";
+            const moveToPast = false;
+            
+            const result = objectUtil.checkForDecreasingValues(
+                arr, 
+                false, 
+                kylkKey, 
+                mockData.test_disabledDates, 
+                oldDate, 
+                newDate, 
+                moveToPast, 
+                "M"
+            );
+            
+            const resultPhaseStart = result.find(i => i.key === "tarkistettuehdotusvaihe_alkaa_pvm");
+            
+            // Phase start should remain unchanged when moving forward
+            expect(resultPhaseStart?.value).toBe("2026-06-02");
+        });
     });
 });

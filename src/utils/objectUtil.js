@@ -25,6 +25,57 @@ const isPhaseBoundary = (key) => {
   return key.endsWith('_alkaa_pvm') || key.endsWith('_paattyy_pvm');
 };
 
+// KAAV-3517: Derive the phase start key from a kylk_maaraaika key
+// Maps e.g. "tarkistettu_ehdotus_kylk_maaraaika" → "tarkistettuehdotusvaihe_alkaa_pvm"
+const derivePhaseStartKeyFromKylkMaaraaika = (key) => {
+  if (!key) return null;
+  
+  // Map from kylk_maaraaika patterns to phase start keys
+  const mappings = {
+    'tarkistettu_ehdotus_kylk_maaraaika': 'tarkistettuehdotusvaihe_alkaa_pvm',
+    'ehdotus_kylk_aineiston_maaraaika': 'ehdotusvaihe_alkaa_pvm',
+    'kaavaluonnos_kylk_aineiston_maaraaika': 'luonnosvaihe_alkaa_pvm',
+    'periaatteet_lautakunta_aineiston_maaraaika': 'periaatteetvaihe_alkaa_pvm',
+  };
+
+  // Direct mapping first
+  if (mappings[key]) return mappings[key];
+
+  // Fallback pattern matching for variations
+  if (key.includes('tarkistettu_ehdotus') && (key.includes('kylk_maaraaika') || key.includes('kylk_aineiston_maaraaika'))) {
+    return 'tarkistettuehdotusvaihe_alkaa_pvm';
+  }
+  if (key.includes('ehdotus') && !key.includes('tarkistettu') && (key.includes('kylk_maaraaika') || key.includes('kylk_aineiston_maaraaika'))) {
+    return 'ehdotusvaihe_alkaa_pvm';
+  }
+  if ((key.includes('luonnos') || key.includes('kaavaluonnos')) && (key.includes('kylk_maaraaika') || key.includes('kylk_aineiston_maaraaika'))) {
+    return 'luonnosvaihe_alkaa_pvm';
+  }
+  if (key.includes('periaatteet') && (key.includes('lautakunta_aineiston_maaraaika') || key.includes('kylk_maaraaika'))) {
+    return 'periaatteetvaihe_alkaa_pvm';
+  }
+
+  return null;
+};
+
+// KAAV-3517: Derive the previous phase end key from a phase start key
+// Maps e.g. "tarkistettuehdotusvaihe_alkaa_pvm" → "ehdotusvaihe_paattyy_pvm"
+const derivePreviousPhaseEndKey = (phaseStartKey) => {
+  if (!phaseStartKey) return null;
+
+  const phaseBoundaryPairs = {
+    'tarkistettuehdotusvaihe_alkaa_pvm': 'ehdotusvaihe_paattyy_pvm',
+    'ehdotusvaihe_alkaa_pvm': 'luonnosvaihe_paattyy_pvm', // Only when luonnos phase exists
+    'luonnosvaihe_alkaa_pvm': 'oasvaihe_paattyy_pvm',
+    'oasvaihe_alkaa_pvm': 'periaatteetvaihe_paattyy_pvm', // Only when periaatteet phase exists
+    'periaatteetvaihe_alkaa_pvm': 'kaynnistys_paattyy_pvm',
+    'hyvaksyminenvaihe_alkaa_pvm': 'tarkistettuehdotusvaihe_paattyy_pvm',
+    'voimaantulovaihe_alkaa_pvm': 'hyvaksyminenvaihe_paattyy_pvm',
+  };
+
+  return phaseBoundaryPairs[phaseStartKey] || null;
+};
+
 //Phase main start and end value order should always be the same
 const order = [
   'projektin_kaynnistys_pvm',
@@ -420,10 +471,68 @@ const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, mov
           ) {
             //Make next or previous or previous and 1 after previous dates follow the moved date if needed
             if (arr[currentIndex]?.key?.includes("kylk_maaraaika") || arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") || arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika")) {
-              //maaraika in lautakunta moving
+              //maaraika in lautakunta moving - forward cascade to lautakunnassa
               const lautakuntaResult = timeUtil.findAllowedLautakuntaDate(movedDate, arr[i + 1].initial_distance, disabledDates?.date_types[arr[i + 1]?.date_type]?.dates, false, disabledDates?.date_types[arr[i]?.date_type]?.dates);
               arr[i + 1].value = new Date(lautakuntaResult).toISOString().split('T')[0];
               indexToContinue = i + 1
+              
+              // KAAV-3517 FIX: Backward cascade when moving kylk_maaraaika to past
+              // The predecessor (phase start like tarkistettuehdotusvaihe_alkaa_pvm) must also move backwards
+              // to maintain the minimum distance (distance_from_previous) from phase start to maaraaika
+              if (moveToPast) {
+                const phaseStartKey = derivePhaseStartKeyFromKylkMaaraaika(arr[currentIndex].key);
+                if (phaseStartKey) {
+                  const phaseStartIndex = arr.findIndex(item => item.key === phaseStartKey);
+                  if (phaseStartIndex !== -1) {
+                    const distance = arr[currentIndex].distance_from_previous ?? 6; // default 6 work days per database_deadline_rules.md
+                    const phaseStartAllowedDates = disabledDates?.date_types[arr[phaseStartIndex]?.date_type]?.dates;
+                    
+                    // Calculate required phase start: movedDate - distance work days
+                    // Phase starts typically don't have date_type, so we may need to calculate manually
+                    let newPhaseStartDate;
+                    if (phaseStartAllowedDates && phaseStartAllowedDates.length > 0) {
+                      const requiredPhaseStart = timeUtil.findAllowedDate(movedDate, distance, phaseStartAllowedDates, true);
+                      newPhaseStartDate = new Date(requiredPhaseStart).toISOString().split('T')[0];
+                    } else {
+                      // Fallback: calculate by subtracting work days manually
+                      // Use the maaraaika's date_type allowed dates to count backwards
+                      const maaraikaAllowedDates = disabledDates?.date_types[arr[currentIndex]?.date_type]?.dates;
+                      if (maaraikaAllowedDates && maaraikaAllowedDates.length > 0) {
+                        const requiredPhaseStart = timeUtil.findAllowedDate(movedDate, distance, maaraikaAllowedDates, true);
+                        newPhaseStartDate = new Date(requiredPhaseStart).toISOString().split('T')[0];
+                      } else {
+                        // Last fallback: simple calendar day subtraction (not work days, but better than nothing)
+                        const fallbackDate = new Date(movedDate);
+                        fallbackDate.setDate(fallbackDate.getDate() - (distance + Math.ceil(distance / 5) * 2)); // Rough work day estimate
+                        newPhaseStartDate = fallbackDate.toISOString().split('T')[0];
+                      }
+                    }
+                    
+                    console.log('[KAAV-3517] Backward cascade for kylk_maaraaika:', {
+                      key: arr[currentIndex].key,
+                      movedDate,
+                      phaseStartKey,
+                      oldPhaseStart: arr[phaseStartIndex].value,
+                      newPhaseStart: newPhaseStartDate,
+                      distance
+                    });
+                    
+                    // Only update if new phase start is earlier than current
+                    if (new Date(newPhaseStartDate) < new Date(arr[phaseStartIndex].value)) {
+                      arr[phaseStartIndex].value = newPhaseStartDate;
+                      
+                      // Also update phase end (paattyy) for the previous phase since phase start = previous phase end
+                      const prevPhaseEndKey = derivePreviousPhaseEndKey(phaseStartKey);
+                      if (prevPhaseEndKey) {
+                        const prevPhaseEndIndex = arr.findIndex(item => item.key === prevPhaseEndKey);
+                        if (prevPhaseEndIndex !== -1 && new Date(newPhaseStartDate) < new Date(arr[prevPhaseEndIndex].value)) {
+                          arr[prevPhaseEndIndex].value = newPhaseStartDate;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
             else if (arr[currentIndex]?.key?.includes("paattyy") || ((projectSize === "XL" || projectSize === "L") && (arr[currentIndex]?.key.includes("nahtavilla_alkaa") || arr[currentIndex]?.key.includes("nahtavilla_paattyy")))) {
               newDate = new Date(arr[i].value);
