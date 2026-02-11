@@ -17,10 +17,24 @@ class CustomADUserCombobox extends Component {
       loadingMore: false,
     };
     this.timer = null;
+    this.containerRef = React.createRef();
   }
 
   componentDidMount() {
     this.getPerson().catch(err => console.error(err));
+    document.addEventListener('keydown', this.handleTabKeyDown);
+  }
+
+  // HDS-react combobox sometimes traps focus inside the menu when open. This is a workaround to allow tabbing out of the menu.
+  handleTabKeyDown = (event) => {
+    const active = document.activeElement;
+    if (event.key === 'Tab' && active && this.containerRef.current && this.containerRef.current.contains(active)) {
+      document.activeElement.blur();
+    }
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleTabKeyDown);
   }
 
   getModifiedOption = ({ name, id, email, title }) => {
@@ -174,7 +188,7 @@ class CustomADUserCombobox extends Component {
     if (Array.isArray(value) && value.some(v => (v === undefined) || Object.is(v, this.loadingPlaceholder))){
       return;
     }
-    this.setState(prevState => ({ ...prevState, currentValue: value, options: []}));
+    this.setState(prevState => ({ ...prevState, currentValue: value}));
     // Multiselect case
     if (Array.isArray(value)) {
       const returnValue = [];
@@ -202,7 +216,7 @@ class CustomADUserCombobox extends Component {
 
   render() {
     return (
-      <div id="test" className={`ad-combobox${this.state.loadingInitial ? ' loading' : ''}`}>
+      <div id="test" className={`ad-combobox${this.state.loadingInitial ? ' loading' : ''}`} ref={this.containerRef}>
         <Combobox
           options={this.state.options}
           multiselect={this.props.multiselect}
