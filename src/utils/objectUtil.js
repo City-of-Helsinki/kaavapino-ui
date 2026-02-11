@@ -718,6 +718,11 @@ const filterHiddenKeysUsingSections = (attributeData, deadlineSections) => {
  * @returns {boolean|null} - false if definitely hidden, true/null if should be included
  */
 const inferVisibilityForUnmappedDeadline = (key, attributeData) => {
+  // Skip visibility bool keys themselves - they should never be filtered
+  if (key.startsWith('jarjestetaan_') || key.match(/_lautakuntaan_\d+$/) || key.match(/nahtaville_\d+$/)) {
+    return true;
+  }
+  
   // Extract the suffix number if present (e.g., "_3" from "luonnosaineiston_maaraaika_3")
   const suffixMatch = key.match(/_(\d+)$/);
   if (!suffixMatch) {
