@@ -667,7 +667,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, confirmationObject.key, false));
         }
 
-        // KAAV-3492 FIX: Clear date fields when group is deleted to prevent stale data on re-add
+        // Clear date fields when group is deleted to prevent stale data on re-add
         const dateFieldsToClear = getDateFieldsForDeadlineGroup(groupName);
         dateFieldsToClear.forEach(fieldName => {
           dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, fieldName, null));
@@ -1794,8 +1794,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                 originalDurationDays,
                 pairedEndKey
               ));
-              // KAAV-3492: Validation will be triggered by componentDidUpdate after cascade completes
-              // Skip generic dispatch at end
+              // Validation will be triggered by componentDidUpdate after cascade completes
               attributeDate = null;
               attributeToUpdate = null;
             }

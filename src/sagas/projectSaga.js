@@ -620,8 +620,6 @@ const getChangedAttributeData = (values, initial) => {
 
   // KAAV-3517: Track esillaolo/lautakunta boolean fields that were true in initial
   // but are now false/undefined in values - these need to be explicitly sent as false
-  // KAAV-3492: Also include kaavaehdotus_nahtaville and kaavaehdotus_uudelleen_nahtaville
-  // for ehdotus nahtavillaolo groups
   const booleanFlagPatterns = [
     /^jarjestetaan_.*_esillaolo_\d+$/,  // periaatteet, oas, luonnos esillaolo
     /lautakuntaan_\d+$/,                 // all lautakunta controls
@@ -807,7 +805,7 @@ function* saveProjectFloorArea() {
 } */
 
 function* validateProjectTimetable({ payload }) {
-  // KAAV-3492: Use passed attributeData if available (contains cascaded values from frontend)
+  // Use passed attributeData if available (contains cascaded values from frontend)
   const passedAttributeData = payload?.attributeData;
 
   // Remove success toastr before showing info
@@ -855,13 +853,6 @@ function* validateProjectTimetable({ payload }) {
       phaseNames
     );
 
-    // KAAV-3492 DEBUG: Log validation payload
-    console.log('[KAAV-3492] validateProjectTimetable sending patch:', {
-      attribute_data_keys: Object.keys(attribute_data),
-      attribute_data_values: attribute_data,
-      confirmed_fields
-    });
-
     try {
       const response = yield call(
         projectApi.patch,
@@ -884,8 +875,7 @@ function* validateProjectTimetable({ payload }) {
 
       // Success. Prevent further validation calls by setting state
       yield put(setValidatingTimetable(true, true));
-      // KAAV-3492: Only update form with corrected dates from response, don't replace whole project
-      // The response.attribute_data contains only the attributes that were sent in the payload
+      // Only update form with corrected dates from response, don't replace whole project
       // KAAV-3517: Don't overwrite boolean flags that control group visibility
       // from response as they may come from database and override user's local changes
       // These include:
@@ -954,12 +944,6 @@ function* saveProjectTimetable(action, retryCount = 0) {
       confirmationAttributeNames,
       phaseNames
     );
-
-    // KAAV-3492 DEBUG: Log payload before sending
-    console.log('[KAAV-3492] saveProjectTimetable sending patch:', {
-      attribute_data_keys: Object.keys(attribute_data),
-      confirmed_fields
-    });
 
     const maxRetries = 5;
     try {

@@ -2,12 +2,6 @@
  * Dispatch decision logic for timeline updates
  * 
  * Extracted from EditProjectTimetableModal.componentDidUpdate for testability.
- * 
- * KAAV-3492: This function determines whether updateDateTimeline should be dispatched
- * when form values change. The bug is that it doesn't account for isGroupAdd.
- */
-
-/**
  * Determines if updateDateTimeline should be dispatched based on form value changes.
  * 
  * @param {Array} newObjectArray - Array of differences from findDifferencesInObjects
@@ -31,8 +25,7 @@ export function shouldDispatchTimelineUpdate(newObjectArray, validatingStarted, 
     return { shouldDispatch: false, addingNew: false, reason: 'confirmation_field' };
   }
 
-  // KAAV-3492 FIX: If this is a group add, ALWAYS dispatch with addingNew=true
-  // This handles re-add after delete+save scenario where old dates still exist
+  // If this is a group add, always dispatch with addingNew=true (handles re-add scenarios)
   if (isGroupAdd) {
     return { shouldDispatch: true, addingNew: true, reason: 'group_add' };
   }

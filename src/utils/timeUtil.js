@@ -113,22 +113,8 @@ import objectUtil from "./objectUtil";
   const dateDifference = (cur, previousValue, currentValue, allowedDays, disabledDays, miniumGap, projectSize, addingNew) => {
     let previousDate = normalizeDate(previousValue);
     let currentDate = normalizeDate(currentValue);
-    // KAAV-3492: Use database-provided miniumGap directly - no hardcoded overrides
-    // The gap values come from DeadlineDistance.distance_from_previous or Deadline.initial_distance
-    // Previously had hardcoded gap=5 for maaraaika and gap=22 for M/S nahtavilla_paattyy
-    // which caused distance rules to be ignored
+    // Use database-provided minimum gap directly (from DeadlineDistance or Deadline models)
     let gap = miniumGap;
-
-    // KAAV-3492 DEBUG: Log gap enforcement
-    console.log('[KAAV-3492] dateDifference:', {
-      field: cur,
-      previousValue,
-      currentValue,
-      miniumGap,
-      gap,
-      addingNew,
-      projectSize
-    });
 
     if (previousDate >= currentDate) {
       currentDate = normalizeDate(previousDate);

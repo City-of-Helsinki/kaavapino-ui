@@ -39,7 +39,7 @@ export const vis_bool_group_map = Object.freeze({
 );
 
 /**
- * KAAV-3492: Get the date field names associated with a deadline group.
+ * Get the date field names associated with a deadline group.
  * Used to clear date fields when a group is deleted, preventing stale data on re-add.
  * 
  * @param {string} deadlineGroup - e.g., 'periaatteet_esillaolokerta_1'

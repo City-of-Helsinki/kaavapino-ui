@@ -269,8 +269,7 @@ export const reducer = (state = initialState, action) => {
       //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
       timeUtil.compareAndUpdateDates(filteredAttributeData)
       
-      // KAAV-3492: Sync phase bar boundaries - each phase end = next phase start
-      // Phase order: kaynnistys → periaatteet → oas → luonnos → ehdotus → tarkistettu → hyvaksyminen → voimaantulo
+      // Sync phase bar boundaries - each phase end = next phase start
       const phaseBoundaries = [
         ['kaynnistys_paattyy_pvm', 'periaatteetvaihe_alkaa_pvm', 'oasvaihe_alkaa_pvm'],
         ['periaatteetvaihe_paattyy_pvm', 'oasvaihe_alkaa_pvm', null],

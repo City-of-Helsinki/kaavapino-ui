@@ -1,8 +1,7 @@
 import { shouldDeadlineBeVisible } from "./projectVisibilityUtils";
 import timeUtil from "./timeUtil";
 
-// KAAV-3492: Helper to extract phase prefix from a deadline key
-// This is used to determine if two deadlines are in the same phase for cascade logic
+// Extract phase prefix from a deadline key to determine if deadlines are in the same phase
 const getPhasePrefix = (key) => {
   if (!key) return null;
   // Phase boundary fields like "oasvaihe_alkaa_pvm" or "periaatteetvaihe_paattyy_pvm"
@@ -19,7 +18,7 @@ const getPhasePrefix = (key) => {
   return null; // Unknown phase
 };
 
-// KAAV-3492: Check if a key is a phase boundary field (alkaa_pvm or paattyy_pvm)
+// Check if a key is a phase boundary field (alkaa_pvm or paattyy_pvm)
 const isPhaseBoundary = (key) => {
   if (!key) return false;
   return key.endsWith('_alkaa_pvm') || key.endsWith('_paattyy_pvm');
@@ -362,45 +361,18 @@ const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, mov
         // miniumGap is kept for compatibility with non-cascade operations within this loop
         const miniumGap = arr[i].initial_distance ?? arr[i].distance_from_previous ?? 0
         
-        // KAAV-3492 DEBUG: Log every item being processed in isAdd branch
-        if (arr[i].key.includes('oas') || arr[i].key.includes('periaatteet')) {
-          console.log('[KAAV-3492 DEBUG isAdd]', {
-            i,
-            key: arr[i].key,
-            value: arr[i].value,
-            prevKey: arr[i - 1]?.key,
-            prevValue: arr[i - 1]?.value,
-            initial_distance: arr[i].initial_distance,
-            distance_from_previous: arr[i].distance_from_previous,
-            miniumGap,
-            newDateBefore: newDate.toISOString().split('T')[0]
-          });
-        }
-        
         if (arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")) {
           //mielipiteet and paattyy is always the same value
           newDate = new Date(arr[i - 1].value);
         }
         else {
-          // KAAV-3492 FIX: Only push forward if there's an actual overlap
+          // Only push forward if there's an actual overlap
           const prevDate = new Date(arr[i - 1].value);
           const currDate = new Date(arr[i].value);
           const hasOverlap = prevDate >= currDate;
           
-          // KAAV-3492 DEBUG: Log overlap check for key fields
-          if (arr[i].key.includes('oas') || arr[i].key.includes('periaatteet')) {
-            console.log('[KAAV-3492 DEBUG isAdd OVERLAP CHECK]', {
-              key: arr[i].key,
-              prevDate: prevDate.toISOString().split('T')[0],
-              currDate: currDate.toISOString().split('T')[0],
-              hasOverlap,
-              distance_from_previous: arr[i].distance_from_previous
-            });
-          }
-          
           if (hasOverlap) {
-            // KAAV-3492 FIX: Use distance_from_previous (minimum distance) for cascade, NOT initial_distance
-            // initial_distance is only for initial project generation; cascade should use minimum
+            // Use distance_from_previous for cascade; initial_distance is only for project generation
             const cascadeGap = arr[i].distance_from_previous ?? miniumGap;
             //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
             newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key, arr[i - 1].value, arr[i].value, disabledDates?.date_types[arr[i]?.date_type]?.dates, disabledDates?.date_types?.disabled_dates?.dates, cascadeGap, projectSize, true) : newDate
@@ -412,16 +384,6 @@ const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, mov
         // Update the array with the new date
         newDate.setDate(newDate.getDate());
         const finalValue = newDate.toISOString().split('T')[0];
-        
-        // KAAV-3492 DEBUG: Log final value after all calculations
-        if (arr[i].key.includes('oas') || arr[i].key.includes('periaatteet')) {
-          console.log('[KAAV-3492 DEBUG isAdd FINAL]', {
-            key: arr[i].key,
-            originalValue: arr[i].value,
-            finalValue,
-            changed: arr[i].value !== finalValue
-          });
-        }
         
         arr[i].value = finalValue;
         //Move phase start and end dates
@@ -450,7 +412,7 @@ const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, mov
     }
   }
   else if (currentIndex !== -1) {
-    // KAAV-3492 FIX: Save original values before mutation to prevent cascading against just-updated values
+    // Save original values before mutation to prevent cascading against just-updated values
     const originalValues = arr.map(item => item.value);
 
     for (let i = currentIndex; i < arr.length; i++) {
@@ -572,62 +534,27 @@ const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, mov
           }
           else {
             if (!moveToPast && i > indexToContinue) {
-              // KAAV-3492 FIX: Only push forward if there's an actual overlap
-              // Use ORIGINAL values, not mutated ones, to prevent cascade chain reactions
+              // Only push forward if there's an actual overlap (use original values to prevent cascade chain reactions)
               const prevDate = new Date(originalValues[i - 1]);
               const currDate = new Date(originalValues[i]);
-              // When moving (isAdd=false): use distance_from_previous (minimum distance), NOT initial_distance
+              // Use distance_from_previous (minimum distance) for moving dates
               const miniumGap = arr[i].distance_from_previous ?? 0
               
-              // KAAV-3492 FIX: Skip cross-phase cascade for non-boundary deadlines
-              // The array is sorted by phase order, but arr[i-1] is NOT necessarily the 
-              // actual predecessor according to distance rules. For non-boundary deadlines
-              // (like oas_esillaolo_aineiston_maaraaika), the predecessor might be 
-              // oasvaihe_alkaa_pvm, not viimeistaan_mielipiteet_periaatteista_2.
-              // Only phase boundaries should cascade across phase transitions.
+              // Skip cross-phase cascade for non-boundary deadlines
+              // Only phase boundaries (alkaa_pvm/paattyy_pvm) cascade across phase transitions
               const currPhase = getPhasePrefix(arr[i].key);
               const prevPhase = getPhasePrefix(arr[i - 1]?.key);
               const isCrossPhase = currPhase && prevPhase && currPhase !== prevPhase;
               const currIsPhaseBoundary = isPhaseBoundary(arr[i].key);
               
-              console.log('[KAAV-3492] !isAdd else branch - checking item:', {
-                i,
-                key: arr[i].key,
-                prevKey: arr[i - 1]?.key,
-                prevValue_ORIGINAL: originalValues[i - 1],
-                prevValue_MUTATED: arr[i - 1]?.value,
-                currValue_ORIGINAL: originalValues[i],
-                currValue_MUTATED: arr[i].value,
-                prevDate: prevDate.toISOString().split('T')[0],
-                currDate: currDate.toISOString().split('T')[0],
-                hasOverlap: prevDate >= currDate,
-                miniumGap,
-                initial_distance: arr[i].initial_distance,
-                distance_from_previous: arr[i].distance_from_previous,
-                indexToContinue,
-                moveToPast,
-                currPhase,
-                prevPhase,
-                isCrossPhase,
-                currIsPhaseBoundary
-              });
-              
-              // KAAV-3492 FIX: Skip cascade if:
-              // - This is a cross-phase transition (prev and curr are in different phases)
-              // - AND the current item is NOT a phase boundary (alkaa_pvm or paattyy_pvm)
-              // Phase boundaries still cascade because they sync with the previous phase end
+              // Skip cascade if cross-phase transition and not a phase boundary
               if (isCrossPhase && !currIsPhaseBoundary) {
-                console.log('[KAAV-3492] !isAdd - SKIPPING cross-phase cascade for non-boundary deadline');
                 // Don't modify newDate - keep the original value
               }
               else if (prevDate >= currDate) {
-                console.log('[KAAV-3492] !isAdd - OVERLAP DETECTED, calling dateDifference');
                 //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
                 newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key, originalValues[i - 1], originalValues[i], disabledDates?.date_types[arr[i]?.date_type]?.dates, disabledDates?.date_types?.disabled_dates?.dates, miniumGap, projectSize, false) : newDate
                 newDate = new Date(newDate)
-              }
-              else {
-                console.log('[KAAV-3492] !isAdd - NO OVERLAP (using original values), keeping current date');
               }
             }
           }
