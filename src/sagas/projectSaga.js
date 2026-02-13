@@ -951,7 +951,7 @@ function* saveProjectTimetable(action, retryCount = 0) {
         projectApi.patch,
         { attribute_data, confirmed_fields },
         { path: { id: currentProjectId } },
-        ':id/'
+        ':id/?timeline_save=true'
       )
 
       yield put(updateProject(updatedProject))

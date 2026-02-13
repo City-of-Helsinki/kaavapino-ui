@@ -361,13 +361,27 @@ const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, mov
         // miniumGap is kept for compatibility with non-cascade operations within this loop
         const miniumGap = arr[i].initial_distance ?? arr[i].distance_from_previous ?? 0
         
-        if (arr[i - 1].key.includes("paattyy") && arr[i].key.includes("mielipiteet") || arr[i - 1].key.includes("paattyy") && arr[i].key.includes("lausunnot")) {
+        // Find predecessor by previous_deadline relationship, fallback to array position
+        let prevItem = null;
+        if (arr[i].previous_deadline) {
+          prevItem = arr.find(item => item.key === arr[i].previous_deadline);
+        }
+        if (!prevItem && i > 0) {
+          prevItem = arr[i - 1];
+        }
+        
+        // Skip cascade if no valid predecessor found
+        if (!prevItem || !prevItem.value) {
+          continue;
+        }
+        
+        if (prevItem.key.includes("paattyy") && arr[i].key.includes("mielipiteet") || prevItem.key.includes("paattyy") && arr[i].key.includes("lausunnot")) {
           //mielipiteet and paattyy is always the same value
-          newDate = new Date(arr[i - 1].value);
+          newDate = new Date(prevItem.value);
         }
         else {
           // Only push forward if there's an actual overlap
-          const prevDate = new Date(arr[i - 1].value);
+          const prevDate = new Date(prevItem.value);
           const currDate = new Date(arr[i].value);
           const hasOverlap = prevDate >= currDate;
           
@@ -375,7 +389,7 @@ const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, mov
             // Use distance_from_previous for cascade; initial_distance is only for project generation
             const cascadeGap = arr[i].distance_from_previous ?? miniumGap;
             //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
-            newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key, arr[i - 1].value, arr[i].value, disabledDates?.date_types[arr[i]?.date_type]?.dates, disabledDates?.date_types?.disabled_dates?.dates, cascadeGap, projectSize, true) : newDate
+            newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key, prevItem.value, arr[i].value, disabledDates?.date_types[arr[i]?.date_type]?.dates, disabledDates?.date_types?.disabled_dates?.dates, cascadeGap, projectSize, true) : newDate
           }
           else {
             // No overlap - keep current date unchanged
@@ -421,9 +435,19 @@ const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, mov
         && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
         && !arr[i].key.includes("hyvaksymispaatos_pvm")) {
         let newDate = new Date(arr[i].value);
-        if (arr[i - 1]?.key?.includes("paattyy") && arr[i]?.key?.includes("mielipiteet")) {
+        
+        // Find predecessor by previous_deadline, fallback to array position
+        let prevItem = null;
+        if (arr[i].previous_deadline) {
+          prevItem = arr.find(item => item.key === arr[i].previous_deadline);
+        }
+        if (!prevItem && i > 0) {
+          prevItem = arr[i - 1];
+        }
+        
+        if (prevItem?.key?.includes("paattyy") && arr[i]?.key?.includes("mielipiteet")) {
           //mielipiteet and paattyy is always the same value
-          newDate = new Date(arr[i - 1].value);
+          newDate = new Date(prevItem.value);
         }
         else {
           //Paattyy and nahtavillaolo l-xl are independent of other values
@@ -492,9 +516,14 @@ const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, mov
               indexToContinue = i
             }
             else if (arr[currentIndex]?.key?.includes("lautakunnassa") && !arr[currentIndex]?.key?.includes("lautakunnassa_") || arr[currentIndex]?.key?.includes("alkaa")) {
-              //lautakunta and alkaa values
-              const maaraaikaResult = timeUtil.findAllowedDate(movedDate, arr[i].initial_distance, disabledDates?.date_types[arr[i - 1]?.date_type]?.dates, true);
-              arr[i - 1].value = new Date(maaraaikaResult).toISOString().split('T')[0];
+              // Backward cascade to maaraaika using previous_deadline
+              let prevIdx = i - 1;
+              if (arr[i].previous_deadline) {
+                const foundIdx = arr.findIndex(item => item.key === arr[i].previous_deadline);
+                if (foundIdx !== -1) prevIdx = foundIdx;
+              }
+              const maaraaikaResult = timeUtil.findAllowedDate(movedDate, arr[i].initial_distance, disabledDates?.date_types[arr[prevIdx]?.date_type]?.dates, true);
+              arr[prevIdx].value = new Date(maaraaikaResult).toISOString().split('T')[0];
               indexToContinue = i
             }
             else if (arr[currentIndex]?.key?.includes("maaraaika")) {
@@ -525,8 +554,15 @@ const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, mov
           }
           else {
             if (!moveToPast && i > indexToContinue) {
+              // Find predecessor by previous_deadline
+              let prevItemIdx = i - 1;
+              if (arr[i].previous_deadline) {
+                const foundIdx = arr.findIndex(item => item.key === arr[i].previous_deadline);
+                if (foundIdx !== -1) prevItemIdx = foundIdx;
+              }
+              
               // Only push forward if there's an actual overlap (use original values to prevent cascade chain reactions)
-              const prevDate = new Date(originalValues[i - 1]);
+              const prevDate = new Date(originalValues[prevItemIdx]);
               const currDate = new Date(originalValues[i]);
               // Use distance_from_previous (minimum distance) for moving dates
               const miniumGap = arr[i].distance_from_previous ?? 0
@@ -534,7 +570,7 @@ const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, mov
               // Skip cross-phase cascade for non-boundary deadlines
               // Only phase boundaries (alkaa_pvm/paattyy_pvm) cascade across phase transitions
               const currPhase = getPhasePrefix(arr[i].key);
-              const prevPhase = getPhasePrefix(arr[i - 1]?.key);
+              const prevPhase = getPhasePrefix(arr[prevItemIdx]?.key);
               const isCrossPhase = currPhase && prevPhase && currPhase !== prevPhase;
               const currIsPhaseBoundary = isPhaseBoundary(arr[i].key);
               
@@ -544,7 +580,7 @@ const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, mov
               }
               else if (prevDate >= currDate) {
                 //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
-                newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key, originalValues[i - 1], originalValues[i], disabledDates?.date_types[arr[i]?.date_type]?.dates, disabledDates?.date_types?.disabled_dates?.dates, miniumGap, projectSize, false) : newDate
+                newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key, originalValues[prevItemIdx], originalValues[i], disabledDates?.date_types[arr[i]?.date_type]?.dates, disabledDates?.date_types?.disabled_dates?.dates, miniumGap, projectSize, false) : newDate
                 newDate = new Date(newDate)
               }
             }
@@ -695,9 +731,7 @@ const filterHiddenKeysUsingSections = (attributeData, deadlineSections) => {
         console.log('[KAAV-DEBUG] FILTERED OUT (in sections, not visible):', key, value, 'group:', dl.attributegroup);
       }
     } else {
-      // Deadline NOT in sections - check if it's a numbered variant that should be filtered
-      // KAAV-3492 FIX: Numbered deadline keys (_2, _3, _4) not in deadlineSections
-      // must still respect visibility bools to prevent stale dates from affecting cascade
+      // Numbered deadline keys not in sections - infer visibility from attribute data
       const inferredVisibility = inferVisibilityForUnmappedDeadline(key, attributeData);
       if (inferredVisibility !== false) {
         acc[key] = value;
