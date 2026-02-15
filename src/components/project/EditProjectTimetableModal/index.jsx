@@ -133,16 +133,20 @@ class EditProjectTimeTableModal extends Component {
         const [isGroupAdd, isGroupRemove, changedValues] = this.getChangedValues(prevProps.formValues, formValues);
 
         if (isGroupAdd) {
-          this.addGroup(changedValues)
-          this.setState({visValues:formValues})
-          // Trigger validation after adding new group to cascade dates
-          setTimeout(() => {
-            if (!this.props.validatingTimetable?.started) {
-              this.props.dispatch(validateProjectTimetable(this.props.formValues));
-            }
-          }, 0);
+          // Capture calculated values from addGroup and merge with formValues
+          // This ensures validation receives freshly calculated dates immediately,
+          // avoiding race condition where change() hasn't updated Redux yet
+          const calculatedValues = this.addGroup(changedValues)
+          // Deep clone to prevent mutation by response handlers
+          const attributeDataWithNewValues = JSON.parse(JSON.stringify({ ...formValues, ...calculatedValues }));
+          this.setState({visValues: attributeDataWithNewValues})
+          // Dispatch validation IMMEDIATELY to ensure our
+          // calculated values are sent before any other validation triggers
+          if (!this.props.validatingTimetable?.started) {
+            this.props.dispatch(validateProjectTimetable(attributeDataWithNewValues));
+          }
         }
-        // KAAV-3517: Also trigger validation when removing a group to recalculate phase boundaries
+        // trigger validation when removing a group to recalculate phase boundaries
         if (isGroupRemove) {
           this.setState({visValues:formValues})
           setTimeout(() => {
@@ -1276,6 +1280,8 @@ class EditProjectTimeTableModal extends Component {
       } else {
         indexString = "";
       }
+      // Build calculatedValues object to return for immediate validation
+      const calculatedValues = {};
       validValues.forEach(({ key, value }) => {
         let modifiedKey;
         const numericRegex = /_\d+$/; // Matches keys that end with an underscore followed by one or more digits
@@ -1284,11 +1290,14 @@ class EditProjectTimeTableModal extends Component {
         } else {
           modifiedKey = key + indexString;
         }
+        calculatedValues[modifiedKey] = value;
         this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, modifiedKey, value));
       });
+      return calculatedValues;
     } else {
       console.error("Not enough matching values to create new items.");
     }
+    return {};
   };
 
   getChangedValues = (prevValues, currentValues) => {
