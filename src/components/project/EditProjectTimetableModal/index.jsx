@@ -1106,6 +1106,30 @@ class EditProjectTimeTableModal extends Component {
           forcedStartSection = firstSection;
         }
       }
+      // FIX: Fallback for lautakunta when esillaolo doesn't exist - use phase_start + initial_distance
+      // Only applies to Periaatteet, Luonnos, Ehdotus phases
+      const isLautakuntaContent = matchingValues.some(item => 
+        item.key?.includes('lautakunta') || item.key?.includes('_kylk_')
+      );
+      const isTargetPhase = ['periaatteet', 'luonnos', 'ehdotus', 'kaavaluonnos', 'kaavaehdotus'].includes(phase);
+      if (!baseValue && isLautakuntaContent && isTargetPhase) {
+        const phaseStartMap = {
+          'periaatteet': 'periaatteetvaihe_alkaa_pvm',
+          'luonnos': 'luonnosvaihe_alkaa_pvm',
+          'ehdotus': 'ehdotusvaihe_alkaa_pvm',
+          'kaavaluonnos': 'luonnosvaihe_alkaa_pvm',
+          'kaavaehdotus': 'ehdotusvaihe_alkaa_pvm'
+        };
+        const phaseStartField = phaseStartMap[phase];
+        const phaseStartDate = phaseStartField 
+          ? (this.props.formValues?.[phaseStartField] || this.props.attributeData?.[phaseStartField])
+          : null;
+        if (phaseStartDate) {
+          baseValue = phaseStartDate;
+          const firstKey = matchingValues[0]?.key;
+          forcedStartSection = firstKey ? distanceArray.find(section => section.name === firstKey) : null;
+        }
+      }
       if (!baseValue) {
         console.error("Cannot add group: missing base date for", phase, matchingValues);
         return validValues;
@@ -1185,7 +1209,15 @@ class EditProjectTimeTableModal extends Component {
           dateFilter = matchingSection.name.includes("_maaraaika") ? this.props.dateTypes?.työpäivät?.dates :  this.props.dateTypes?.arkipäivät?.dates//määräaika or alkaa paattyy
         }
         else{
-          dateFilter = matchingSection.name.includes("_maaraaika") ? this.props.dateTypes?.työpäivät?.dates :  this.props.dateTypes?.lautakunnan_kokouspäivät?.dates//määräaika or lautakuntapäivä
+          // Esityslistalle (lautakunta): use työpäivät for Periaatteet/Luonnos/Ehdotus, lautakunnan_kokouspäivät for others
+          const isTargetLautakuntaPhase = ['periaatteet', 'luonnos', 'ehdotus', 'kaavaluonnos', 'kaavaehdotus'].includes(phase);
+          if (isTargetLautakuntaPhase) {
+            // FIX: Use työpäivät for distance calculation (not lautakunnan_kokouspäivät which has only ~2-3 days/month)
+            dateFilter = this.props.dateTypes?.työpäivät?.dates || []
+          } else {
+            // Other phases (tarkistettu_ehdotus etc): keep original behavior
+            dateFilter = matchingSection.name.includes("_maaraaika") ? this.props.dateTypes?.työpäivät?.dates : this.props.dateTypes?.lautakunnan_kokouspäivät?.dates
+          }
         }
 
         if(matchingSection.name.includes("_alkaa")){
