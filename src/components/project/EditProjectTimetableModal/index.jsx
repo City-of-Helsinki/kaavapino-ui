@@ -834,6 +834,8 @@ class EditProjectTimeTableModal extends Component {
       deadlines[i]?.deadline?.attribute?.includes("tarkistettu_ehdotus_kylk_maaraaika") || 
       deadlines[i]?.deadline?.attribute?.includes("ehdotus_kylk_aineiston_maaraaika") ||
       deadlines[i]?.deadline?.attribute?.includes("kaavaluonnos_kylk_aineiston_maaraaika")){
+        // Clear any leftover milestone from deleted esillaolo to prevent lautakunta using wrong item type
+        milestone = false;
         if(deadline.deadline_types.includes('milestone') && deadline.deadline_types.includes('dashed_start')){
           innerEnd = false
           innerStart = formValues && formValues[deadline.attribute]
@@ -1275,6 +1277,60 @@ class EditProjectTimeTableModal extends Component {
           )
           .map(([key, value]) => ({ key, value }));
       }
+    }
+
+    // When re-adding first element after delete→save, 
+    // date fields don't exist in formValues. Build expected field names from schema.
+    if (matchingValues.length === 0 && index <= 2 && content) {
+      // Build expected field names based on phase and content type
+      // Note: field naming is inconsistent - luonnos uses 'kaavaluonnos_' prefix for maaraaika fields
+      const expectedKeys = [];
+      const isLargeProject = this.props.formValues.kaavaprosessin_kokoluokka === "XL" || 
+                             this.props.formValues.kaavaprosessin_kokoluokka === "L";
+      
+      // Determine the prefix for maaraaika fields (schema uses 'kaavaluonnos' for luonnos phase)
+      const maaraaikaPrefix = phase === "luonnos" ? "kaavaluonnos" : phase;
+      
+      if (content === "lautakunta") {
+        // phase like "periaatteet", "luonnos", "ehdotus"
+        if (phase === "periaatteet") {
+          expectedKeys.push(
+            phase + '_lautakunta_aineiston_maaraaika',
+            'milloin_' + phase + '_lautakunnassa'
+          );
+        } else {
+          // luonnos uses kaavaluonnos_kylk_*, ehdotus uses ehdotus_kylk_*
+          expectedKeys.push(
+            maaraaikaPrefix + '_kylk_aineiston_maaraaika',
+            'milloin_kaava' + phase + '_lautakunnassa'
+          );
+        }
+      } else if (content === "esillaolo") {
+        // Field naming is inconsistent:
+        // - periaatteet: periaatteet_esillaolo_aineiston_maaraaika
+        // - luonnos: luonnosaineiston_maaraaika (NOTE: no underscore, no _esillaolo_!)
+        const maaraaikaKey = phase === "luonnos" 
+          ? 'luonnosaineiston_maaraaika' 
+          : phase + '_esillaolo_aineiston_maaraaika';
+        expectedKeys.push(
+          maaraaikaKey,
+          'milloin_' + phase + '_esillaolo_alkaa',
+          'milloin_' + phase + '_esillaolo_paattyy'
+        );
+      } else if (content === "nahtavillaolo") {
+        const syntaxToCheck = phase === "ehdotus" ? "ehdotuksen" : "";
+        const alkaaKey = isLargeProject 
+          ? 'milloin_' + syntaxToCheck + '_nahtavilla_alkaa_iso'
+          : 'milloin_' + syntaxToCheck + '_nahtavilla_alkaa_pieni';
+        expectedKeys.push(
+          phase + '_nahtaville_aineiston_maaraaika',
+          alkaaKey,
+          'milloin_' + syntaxToCheck + '_nahtavilla_paattyy'
+        );
+      }
+      
+      // Create matchingValues with null values so processValuesSequentially can use linkedData
+      matchingValues = expectedKeys.map(key => ({ key, value: null }));
     }
 
     //Get next values and increment index and calculate new values

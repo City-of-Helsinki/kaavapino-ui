@@ -587,6 +587,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       canAddLautakunta = true;
       lautakuntaReason = "";
     }
+    // Check if first esillaolo is deleted (for exception handling below)
+    const firstEsillaoloDeleted =
+      (phase === "periaatteet" && visValRef["jarjestetaan_periaatteet_esillaolo_1"] === false) ||
+      (phase === "luonnos" && visValRef["jarjestetaan_luonnos_esillaolo_1"] === false);
+
     if (phase === "periaatteet" && visValRef["periaatteet_luotu"] === true && visValRef["jarjestetaan_periaatteet_esillaolo_1"] === false ||
       phase === "luonnos" && visValRef["luonnos_luotu"] === true && visValRef["jarjestetaan_luonnos_esillaolo_1"] === false) {
       //Luonnos and periaatteet phase can be deleted or added later
@@ -600,10 +605,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const firstLautakuntaConfirmKey = `vahvista_${phaseMapped}_lautakunnassa`;
     const preventEsillaoloAdd = visValRef[firstLautakuntaConfirmKey] === true;
     // Apply prevention except for XL/L ehdotus where lautakunta precedes esillaolo
-    if (!(phase === 'ehdotus' && (projectSize === 'XL' || projectSize === 'L')) && preventEsillaoloAdd) {
+    // AND except when first esillaolo is deleted (allow re-add)
+    if (!(phase === 'ehdotus' && (projectSize === 'XL' || projectSize === 'L')) && preventEsillaoloAdd && !firstEsillaoloDeleted) {
       canAddEsillaolo = false;
       nextEsillaoloClean = false;
-      esillaoloReason = "Vahvistusta ei voi perua, koska seuraava lautakunta on jo lisätty."
+      esillaoloReason = "Vahvistusta ei voi perua, koska seuraava lautakunta on jo lisätty.";
     }
     // Allow re-adding first deleted Lautakunta for Ehdotus XL
     if (
