@@ -131,6 +131,8 @@ class EditProjectTimeTableModal extends Component {
       if(deadlineSections && deadlines && formValues){
         // Check if changedValues contains 'jarjestetaan' or 'lautakuntaan' and the value is a boolean
         const [isGroupAdd, isGroupRemove, changedValues] = this.getChangedValues(prevProps.formValues, formValues);
+        // Use calculated values for timeline during group add to prevent visual flash of stale dates
+        let timelineSourceData = formValues;
 
         if (isGroupAdd) {
           // Capture calculated values from addGroup and merge with formValues
@@ -139,6 +141,8 @@ class EditProjectTimeTableModal extends Component {
           const calculatedValues = this.addGroup(changedValues)
           // Deep clone to prevent mutation by response handlers
           const attributeDataWithNewValues = JSON.parse(JSON.stringify({ ...formValues, ...calculatedValues }));
+          // Use calculated values for timeline rendering to prevent visual jump
+          timelineSourceData = attributeDataWithNewValues;
           this.setState({visValues: attributeDataWithNewValues})
           // Dispatch validation IMMEDIATELY to ensure our
           // calculated values are sent before any other validation triggers
@@ -158,7 +162,7 @@ class EditProjectTimeTableModal extends Component {
         if(!this.props.validated){
           let ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe)
           //Form items and groups
-          let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,formValues,deadlines,ongoingPhase,false)
+          let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,timelineSourceData,deadlines,ongoingPhase,false)
           // Update the existing data
           const combinedGroups = nestedDeadlines? deadLineGroups.concat(nestedDeadlines) : deadLineGroups
           this.state.groups.clear();
@@ -187,7 +191,10 @@ class EditProjectTimeTableModal extends Component {
               this.props.dispatch(updateDateTimeline(field, formattedDate, formValues, dispatchDecision.addingNew, deadlineSections));
             }
           }
-          this.setState({visValues:formValues})
+          // Skip visValues update during group add - already set with calculated values above
+          if (!isGroupAdd) {
+            this.setState({visValues:formValues})
+          }
         }
         let sectionAttributes = [];
         this.extractAttributes(deadlineSections, formValues, sectionAttributes, (attribute, formValues) =>
