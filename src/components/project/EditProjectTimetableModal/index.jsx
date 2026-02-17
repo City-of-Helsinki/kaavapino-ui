@@ -1311,9 +1311,13 @@ class EditProjectTimeTableModal extends Component {
       }
     }
 
-    // When re-adding first element after delete→save, 
-    // date fields don't exist in formValues. Build expected field names from schema.
-    if (matchingValues.length === 0 && index <= 2 && content) {
+    // When re-adding first element after delete→save OR after validation clears values,
+    // date fields may not exist or have null/incomplete values. Build expected field names from schema.
+    const hasValidValues = matchingValues.some(item => item.value !== null && item.value !== undefined);
+    // Each content type requires minimum number of keys: lautakunta=2, esillaolo=3, nahtavillaolo=3
+    const minExpectedKeys = content === "lautakunta" ? 2 : 3;
+    const hasEnoughKeys = matchingValues.length >= minExpectedKeys;
+    if ((matchingValues.length === 0 || !hasValidValues || !hasEnoughKeys) && index <= 2 && content) {
       // Build expected field names based on phase and content type
       // Note: field naming is inconsistent - luonnos uses 'kaavaluonnos_' prefix for maaraaika fields
       const expectedKeys = [];
