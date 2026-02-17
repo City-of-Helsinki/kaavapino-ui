@@ -1085,6 +1085,10 @@ class EditProjectTimeTableModal extends Component {
     }
     let newItem
 
+    // DEBUG: Log distanceArray for this phase
+    console.log('[DEBUG processValuesSequentially] Phase:', phase, 'distanceArray:', JSON.stringify(distanceArray, null, 2));
+    console.log('[DEBUG processValuesSequentially] matchingValues input:', JSON.stringify(matchingValues, null, 2));
+
     for (const { key } of matchingValues) {
       let valueToCheck
       let daysToAdd
@@ -1093,14 +1097,25 @@ class EditProjectTimeTableModal extends Component {
       const fallbackValue = matchingValues.find(item => item?.value)?.value;
       let baseValue = foundItem?.value || fallbackValue;
       let forcedStartSection = null;
+
+      // DEBUG: Log initial baseValue determination
+      console.log('[DEBUG processValuesSequentially] foundItem:', foundItem, 'fallbackValue:', fallbackValue, 'initial baseValue:', baseValue);
+
       if (!baseValue) {
         const firstKey = matchingValues[0]?.key;
         const firstSection = firstKey
           ? distanceArray.find(section => section.name === firstKey)
           : null;
+        
+        // DEBUG: Log linkedData lookup
+        console.log('[DEBUG processValuesSequentially] firstKey:', firstKey, 'firstSection found in distanceArray:', firstSection);
+        
         const linkedBase = firstSection?.linkedData
           ? (this.props.formValues?.[firstSection.linkedData] || this.props.attributeData?.[firstSection.linkedData])
           : null;
+        
+        console.log('[DEBUG processValuesSequentially] linkedData:', firstSection?.linkedData, 'linkedBase value:', linkedBase);
+        
         if (linkedBase) {
           baseValue = linkedBase;
           forcedStartSection = firstSection;
@@ -1111,8 +1126,16 @@ class EditProjectTimeTableModal extends Component {
       const isLautakuntaContent = matchingValues.some(item => 
         item.key?.includes('lautakunta') || item.key?.includes('_kylk_')
       );
+      const isEsillaoloContent = matchingValues.some(item => 
+        item.key?.includes('esillaolo') || item.key?.includes('luonnosaineiston')
+      );
       const isTargetPhase = ['periaatteet', 'luonnos', 'ehdotus', 'kaavaluonnos', 'kaavaehdotus'].includes(phase);
-      if (!baseValue && isLautakuntaContent && isTargetPhase) {
+      
+      // DEBUG: Log content type detection
+      console.log('[DEBUG processValuesSequentially] isLautakuntaContent:', isLautakuntaContent, 'isEsillaoloContent:', isEsillaoloContent, 'isTargetPhase:', isTargetPhase, 'baseValue before fallback:', baseValue);
+      
+      if (!baseValue && (isLautakuntaContent || isEsillaoloContent) && isTargetPhase) {
+        console.log('[DEBUG processValuesSequentially] FALLBACK TRIGGERED for', isLautakuntaContent ? 'lautakunta' : 'esillaolo');
         const phaseStartMap = {
           'periaatteet': 'periaatteetvaihe_alkaa_pvm',
           'luonnos': 'luonnosvaihe_alkaa_pvm',
@@ -1124,10 +1147,14 @@ class EditProjectTimeTableModal extends Component {
         const phaseStartDate = phaseStartField 
           ? (this.props.formValues?.[phaseStartField] || this.props.attributeData?.[phaseStartField])
           : null;
+        
+        console.log('[DEBUG processValuesSequentially] phaseStartField:', phaseStartField, 'phaseStartDate:', phaseStartDate);
+        
         if (phaseStartDate) {
           baseValue = phaseStartDate;
           const firstKey = matchingValues[0]?.key;
           forcedStartSection = firstKey ? distanceArray.find(section => section.name === firstKey) : null;
+          console.log('[DEBUG processValuesSequentially] Set baseValue to phaseStartDate:', baseValue, 'forcedStartSection:', forcedStartSection);
         }
       }
       if (!baseValue) {
@@ -1185,11 +1212,17 @@ class EditProjectTimeTableModal extends Component {
         }
         // Skip iteration if matchingSection is null (happens when removing last items in the group)
         if (!matchingSection) {
+          console.log('[DEBUG processValuesSequentially] Skipping: matchingSection is null');
           continue;
         }
+        
+        // DEBUG: Log matchingSection found
+        console.log('[DEBUG processValuesSequentially] matchingSection:', matchingSection.name, 'distance:', matchingSection.distance, 'linkedData:', matchingSection.linkedData);
+        
         const matchingItem = objectUtil.findMatchingName(this.state.unfilteredSectionAttributes, matchingSection.name, "name");
         // Skip iteration if matchingItem is not found
         if (!matchingItem) {
+          console.log('[DEBUG processValuesSequentially] Skipping: matchingItem not found for', matchingSection.name);
           continue;
         }
         //const previousItem = objectUtil.findItem(this.state.unfilteredSectionAttributes, nextKey, "name", -1);
@@ -1232,8 +1265,27 @@ class EditProjectTimeTableModal extends Component {
           valueToCheck = endingObjectValue
         }
         else{
-          //5 if for some reason there is no distance value set in backend/Excel
-          daysToAdd = matchingSection.distance ? matchingSection.distance : 5
+          // FIX: For first esillaolo/lautakunta maaraaika in XL/L projects, use distance_from_previous
+          // instead of initial_distance when re-adding after delete
+          const isXLorL = this.props.attributeData?.kaavaprosessin_kokoluokka === "XL" || 
+                          this.props.attributeData?.kaavaprosessin_kokoluokka === "L";
+          const isPeriaatteetOrLuonnos = ['periaatteet', 'luonnos'].includes(phase);
+          const isEhdotus = phase === 'ehdotus';
+          const isFirstGroup = index == 1;
+          const isMaaraaikaField = matchingSection.name.includes('_maaraaika') || matchingSection.name.includes('aineiston_maaraaika');
+          
+          // Apply fix: esillaolo in Periaatteet/Luonnos, lautakunta in Ehdotus only
+          const shouldUsePrevious = isMaaraaikaField && isXLorL && isFirstGroup && matchingSection.previous && (
+            (isEsillaoloContent && isPeriaatteetOrLuonnos) ||
+            (isLautakuntaContent && isEhdotus)
+          );
+          
+          if (shouldUsePrevious) {
+            daysToAdd = matchingSection.previous;
+          } else {
+            //5 if for some reason there is no distance value set in backend/Excel
+            daysToAdd = matchingSection.distance ? matchingSection.distance : 5
+          }
         }
 
 
@@ -1250,6 +1302,9 @@ class EditProjectTimeTableModal extends Component {
 
         valueToCheck = newDate.toISOString().split('T')[0];
         validValues.push({ key: matchingSection.name, value: valueToCheck });
+        
+        // DEBUG: Log calculated value
+        console.log('[DEBUG processValuesSequentially] Calculated:', matchingSection.name, '=', valueToCheck, 'daysToAdd was:', matchingSection.distance);
 
         if(!validValues.find(item => item?.key?.includes('_lautakunnassa'))){
           newItem = matchingSection.name
@@ -1257,6 +1312,10 @@ class EditProjectTimeTableModal extends Component {
 
         validValues = validValues.filter(item => item?.value !== null)
     }
+    
+    // DEBUG: Log final output
+    console.log('[DEBUG processValuesSequentially] FINAL validValues:', JSON.stringify(validValues, null, 2));
+    
     //new values that are added to vis timeline when add is clicked
     return validValues;
   }
@@ -1274,6 +1333,10 @@ class EditProjectTimeTableModal extends Component {
       content = "esillaolo";
     }
     let index = textUtil.getNumberAfterSuffix(changedVisBool);
+    
+    // DEBUG: Log entry point
+    console.log('[DEBUG addGroup] ENTRY - changedVisBool:', changedVisBool, 'phase:', phase, 'content:', content, 'index:', index);
+    
     let matchingValues = Object.entries(this.props.formValues);
 
     if (content) {
@@ -1310,6 +1373,9 @@ class EditProjectTimeTableModal extends Component {
           .map(([key, value]) => ({ key, value }));
       }
     }
+    
+    // DEBUG: Log matchingValues after filter
+    console.log('[DEBUG addGroup] matchingValues after filter:', JSON.stringify(matchingValues, null, 2));
 
     // When re-adding first element after delete→save OR after validation clears values,
     // date fields may not exist or have null/incomplete values. Build expected field names from schema.
@@ -1317,7 +1383,13 @@ class EditProjectTimeTableModal extends Component {
     // Each content type requires minimum number of keys: lautakunta=2, esillaolo=3, nahtavillaolo=3
     const minExpectedKeys = content === "lautakunta" ? 2 : 3;
     const hasEnoughKeys = matchingValues.length >= minExpectedKeys;
+    
+    // DEBUG: Log fallback condition check
+    console.log('[DEBUG addGroup] hasValidValues:', hasValidValues, 'hasEnoughKeys:', hasEnoughKeys, 'minExpectedKeys:', minExpectedKeys, 'matchingValues.length:', matchingValues.length);
+    console.log('[DEBUG addGroup] Fallback condition check: matchingValues.length === 0:', matchingValues.length === 0, '!hasValidValues:', !hasValidValues, '!hasEnoughKeys:', !hasEnoughKeys, 'index <= 2:', index <= 2);
+    
     if ((matchingValues.length === 0 || !hasValidValues || !hasEnoughKeys) && index <= 2 && content) {
+      console.log('[DEBUG addGroup] FALLBACK TO SCHEMA KEYS TRIGGERED');
       // Build expected field names based on phase and content type
       // Note: field naming is inconsistent - luonnos uses 'kaavaluonnos_' prefix for maaraaika fields
       const expectedKeys = [];
@@ -1367,10 +1439,13 @@ class EditProjectTimeTableModal extends Component {
       
       // Create matchingValues with null values so processValuesSequentially can use linkedData
       matchingValues = expectedKeys.map(key => ({ key, value: null }));
+      console.log('[DEBUG addGroup] Schema fallback - expectedKeys:', expectedKeys, 'matchingValues:', JSON.stringify(matchingValues, null, 2));
     }
 
     //Get next values and increment index and calculate new values
+    console.log('[DEBUG addGroup] Calling processValuesSequentially with matchingValues:', JSON.stringify(matchingValues, null, 2));
     const validValues = this.processValuesSequentially(matchingValues, index, phase);
+    console.log('[DEBUG addGroup] processValuesSequentially returned validValues:', JSON.stringify(validValues, null, 2));
 
     if (validValues.length >= 2 || validValues.length === 1 && validValues[0].key.includes("_lautakunnassa")) {
       let indexString;
