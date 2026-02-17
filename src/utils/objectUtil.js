@@ -353,6 +353,8 @@ const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, mov
     // Move the nextItem and all following items forward if item minium is exceeded
     for (let i = currentIndex; i < arr.length; i++) {
       if (isLocked(arr[i])) continue; // skip locked items entirely
+      // AT1.2.2/AT1.2.4: Käynnistys phase dates are user-editable exceptions - never cascade them
+      if (arr[i].key.includes("kaynnistysvaihe_alkaa_pvm") || arr[i].key.includes("projektin_kaynnistys_pvm") || arr[i].key.includes("kaynnistys_paattyy_pvm")) continue;
       if (!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
         && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
         && !arr[i].key.includes("hyvaksymispaatos_pvm")) {
@@ -431,6 +433,8 @@ const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, mov
 
     for (let i = currentIndex; i < arr.length; i++) {
       if (isLocked(arr[i])) continue; // do not move locked items
+      // AT1.2.2/AT1.2.4: Käynnistys phase dates are user-editable exceptions - never cascade them
+      if (arr[i].key.includes("kaynnistysvaihe_alkaa_pvm") || arr[i].key.includes("projektin_kaynnistys_pvm") || arr[i].key.includes("kaynnistys_paattyy_pvm")) continue;
       if (!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
         && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
         && !arr[i].key.includes("hyvaksymispaatos_pvm")) {
@@ -500,7 +504,8 @@ const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, mov
                       
                       // Also update phase end (paattyy) for the previous phase since phase start = previous phase end
                       const prevPhaseEndKey = derivePreviousPhaseEndKey(phaseStartKey);
-                      if (prevPhaseEndKey) {
+                      // AT1.2.2/AT1.2.4: Never cascade backwards into käynnistys phase - it's user-editable exception
+                      if (prevPhaseEndKey && prevPhaseEndKey !== 'kaynnistys_paattyy_pvm') {
                         const prevPhaseEndIndex = arr.findIndex(item => item.key === prevPhaseEndKey);
                         if (prevPhaseEndIndex !== -1 && new Date(newPhaseStartDate) < new Date(arr[prevPhaseEndIndex].value)) {
                           arr[prevPhaseEndIndex].value = newPhaseStartDate;
