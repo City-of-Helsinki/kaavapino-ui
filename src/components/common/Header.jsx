@@ -460,7 +460,7 @@ const Header = props => {
               <span className="loading-spinner">{lastSaved?.status === "error" ? t('messages.connect-again') : ""}</span>
             </div>
             <div className='icons-container-flex'>
-              {updateTime?.status === t('header.latest-save') ? <IconCheck className='check-icon'/> : ""}
+              {updateTime?.status === t('header.latest-save') && !saving ? <IconCheck className='check-icon'/> : ""}
               {
               updateTime?.status === t('header.edit-menu-save-fail') ? 
               <> <IconErrorFill className='error-icon'/> <p className="error">{updateTime?.status}</p> </> :
