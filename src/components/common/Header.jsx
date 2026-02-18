@@ -139,6 +139,11 @@ const Header = props => {
     }
   },[schema,selectedPhase,props.currentSection])
 
+  // Reset save status when project changes
+  useEffect(() => {
+    setUpdateTime({status: t('header.edit-menu-no-save'), time: ""})
+  }, [props.title])
+
   useEffect(() => {
     if(spinnerRef?.current?.style){
       if(saving){
