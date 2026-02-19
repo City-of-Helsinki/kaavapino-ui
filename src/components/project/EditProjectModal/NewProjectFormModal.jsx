@@ -137,14 +137,21 @@ class NewProjectFormModal extends Component {
         size={'small'}
         onClose={this.props.handleClose}
         open={this.props.modalOpen}
+        onMount={() => {
+          const modalElement = document.querySelector('.form-modal.project-edit')
+          if (modalElement) {
+            modalElement.focus()
+          }
+        }}
         closeIcon
+        as="dialog"
       >
-        <Modal.Header>
+        <Modal.Header as="h2">
           {isEdit ? t('project-base.modify') : t('project-base.add')}
         </Modal.Header>
-        <Modal.Content>
+        <Modal.Content as="section">
           <Form>
-            <Form.Group widths="equal">
+            <Form.Group widths="equal" as="section">
               {this.getFormField({
                 className: 'ui fluid input',
 
@@ -165,7 +172,7 @@ class NewProjectFormModal extends Component {
                 }
               })}
             </Form.Group>
-            <Form.Group widths="equal">
+            <Form.Group widths="equal" as="section">
               {this.getFormField({
                 field: {
                   name: PROJECT_NAME,
@@ -199,7 +206,7 @@ class NewProjectFormModal extends Component {
                 {t('project-base.warning-visibility-change')}
               </div>
             )}
-            <div className="subtype-input-container">
+            <div className="subtype-input-container" as="section">
               {this.getFormField({
                 field: {
                   name: SUB_TYPE,
@@ -244,7 +251,7 @@ class NewProjectFormModal extends Component {
             )}
           </Form>
         </Modal.Content>
-        <Modal.Actions>
+        <Modal.Actions as="section">
           <div className="form-buttons">
             <Button variant="secondary" disabled={loading} onClick={this.handleClose}>
               {t('project.cancel')}
