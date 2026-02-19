@@ -74,7 +74,11 @@ const Header = props => {
         }
       }
       else if (element.id === "nav-user-menu-button" && element.ariaExpanded === "false") {
-        if (event.key === "Enter" || event.key === " ") {
+        if (["Enter", " ", "ArrowDown"].includes(event.key)) {
+          if (event.key === "ArrowDown") {
+            event.preventDefault();
+            element.click();
+          }
           // Timeout needed as menu items are not in DOM immediately after click
           setTimeout(() => {
           document.querySelectorAll("#nav-user-menu-logout").forEach(item => {
@@ -561,10 +565,14 @@ const Header = props => {
                 variant="supplementary"
                 onKeyDown={(event) => {
                   // Manual accessibility implementations
-                  if((event.key === "Tab" && !event.shiftKey) || (event.key === "Escape") ){
+                  if (event.key === "Escape") {
+                    document.dispatchEvent(new Event('click'));
+                    document.getElementById("nav-user-menu-button").focus();
+                  }
+                  else if((event.key === "Tab" && !event.shiftKey)){
                     document.dispatchEvent(new Event('click'));
                   }
-                  if (["ArrowDown","ArrowUp"].includes(event.key)) {
+                  else if (["ArrowDown","ArrowUp"].includes(event.key)) {
                     event.preventDefault();
                   }
                 }}
