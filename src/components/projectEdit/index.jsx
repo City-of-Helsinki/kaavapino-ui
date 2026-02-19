@@ -139,7 +139,10 @@ class ProjectEditPage extends Component {
     }
     if(prevProps.formValues != this.props.formValues){
       if(prevProps.formValues?.projektin_kaynnistys_pvm != this.props.formValues?.projektin_kaynnistys_pvm){
-        this.fetchDisabledDates(this.props.formValues?.projektin_kaynnistys_pvm,this.props.formValues?.projektin_kaynnistys_pvm)
+        // Only fetch disabled dates if not already loaded (large response)
+        if (!this.props.disabledDates || Object.keys(this.props.disabledDates).length === 0) {
+          this.fetchDisabledDates(this.props.formValues?.projektin_kaynnistys_pvm,this.props.formValues?.projektin_kaynnistys_pvm)
+        }
       }
     }
   }

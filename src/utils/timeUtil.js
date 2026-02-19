@@ -113,14 +113,8 @@ import objectUtil from "./objectUtil";
   const dateDifference = (cur, previousValue, currentValue, allowedDays, disabledDays, miniumGap, projectSize, addingNew) => {
     let previousDate = normalizeDate(previousValue);
     let currentDate = normalizeDate(currentValue);
+    // Use database-provided minimum gap directly (from DeadlineDistance or Deadline models)
     let gap = miniumGap;
-    if (!addingNew) {
-      if (!cur.includes("_lautakunta_aineiston_maaraaika") && !cur.includes("kylk_aineiston_maaraaika") && cur.includes("maaraaika") || miniumGap >= 31) {
-        gap = 5;
-      }
-    } else if ((addingNew && (projectSize === 'M' || projectSize === 'S') && cur.includes("milloin_ehdotuksen_nahtavilla_paattyy"))) {
-      gap = 22;
-    }
 
     if (previousDate >= currentDate) {
       currentDate = normalizeDate(previousDate);
@@ -621,41 +615,64 @@ const getDisabledDatesForLautakunta = (name, formValues, phaseName, matchingItem
   //Change to correct comparable phase name from tarkistettu ehdotus to tarkistettu_ehdotus
   phaseName = phaseName?.includes("tarkistettu") && "tarkistettu_" + phaseName.replace("tarkistettu ", "") || phaseName;
 
+  // Check if esilläolo is OFF for this phase (first esilläolo specifically)
+  // Use !value to match Excel condition !jarjestetaan_*_esillaolo_1 (handles false, undefined, null)
+  // Only periaatteet and luonnos phases have esilläolo
+  const hasEsillaolo = phaseName === "periaatteet" || phaseName === "luonnos";
+  const esillaoloOff = hasEsillaolo && !formValues[`jarjestetaan_${phaseName}_esillaolo_1`];
+
   if (name.includes("_maaraaika")) {
-    if (formValues[`jarjestetaan_${phaseName}_esillaolo_1`] === false) {
+    if (hasEsillaolo && esillaoloOff) {
       const phaseStartDate = `${phaseName}vaihe_alkaa_pvm`;
       dateToComparePast = formValues[phaseStartDate];
-      miniumDaysPast = 5;
+      // Excel: P1 + 5 / L1 + 5 when esilläolo OFF
+      miniumDaysPast = matchingItem?.distance_from_previous || 5;
       firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.työpäivät?.dates, dateToComparePast, miniumDaysPast);
     } else {
       dateToComparePast = formValues[previousItem?.name];
+      // Excel: P4 + 5 / L5 + 5 when esilläolo ON
       miniumDaysPast = matchingItem?.distance_from_previous || 5;
       firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.työpäivät?.dates, dateToComparePast, miniumDaysPast);
     }
     let newDisabledDates = dateTypes?.työpäivät?.dates;
     return newDisabledDates.filter(date => date >= firstPossibleDateToSelect);
   } else if (name.includes("_lautakunnassa")) {
-    const isPastFirst = formValues[`jarjestetaan_${phaseName}_esillaolo_2`] || formValues[`${phaseName}_lautakuntaan_2`] || formValues[`kaava${phaseName}_lautakuntaan_2`];
-    //Tarkistettu ehdotus 2-4 phases have only lautakunta so only 5 days minimum
-    const fromPrevious = isPastFirst ? matchingItem?.distance_from_previous : false;
-    miniumDaysPast = fromPrevious || (matchingItem?.initial_distance.distance + previousItem?.distance_from_previous);
-    if ((phaseName === "periaatteet" || phaseName === "luonnos") && !isPastFirst) {
-      dateToComparePast = formValues[previousItem?.previous_deadline] || formValues[previousItem?.initial_distance?.base_deadline];
-      filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates, dateToComparePast, miniumDaysPast);
-    } else if (matchingItem?.name === "milloin_kaavaluonnos_lautakunnassa" || matchingItem?.name === "milloin_periaatteet_lautakunnassa") {
-      const esillaoloKeys = Object.keys(formValues).filter(key => key.includes(`jarjestetaan_${phaseName}_esillaolo`) && formValues[key] === true);
-      const highestEsillaoloKey = esillaoloKeys.reduce((highestNumber, currentKey) => {
-        const match = /_(\d+)$/.exec(currentKey);
-        const currentNumber = parseInt(match ? match[1] : 0, 10);
-        return currentNumber > highestNumber ? currentNumber : highestNumber;
-      }, 0);
-      if (highestEsillaoloKey !== 1) {
-        dateToComparePast = formValues[`milloin_${phaseName}_esillaolo_paattyy_${highestEsillaoloKey}`];
-      }
+    // Handle esilläolo OFF case for Periaatteet/Luonnos phases
+    if (esillaoloOff) {
+      // When esilläolo is OFF, calculate from maaraaika date (P6/L6)
+      // Excel formula: P7 = P6 + 21, L7 = L6 + 21
+      const maaraaikaKey = phaseName === "periaatteet" 
+        ? "periaatteet_lautakunta_aineiston_maaraaika" 
+        : "kaavaluonnos_kylk_aineiston_maaraaika";
+      dateToComparePast = formValues[maaraaikaKey];
+      // Use distance_from_previous for validation (the buffer zone)
+      // Excel shows P6 + 21 / L6 + 21, so fallback is 21 workdays from maaraaika
+      miniumDaysPast = matchingItem?.distance_from_previous || 21;
       filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates, dateToComparePast, miniumDaysPast);
     } else {
-      dateToComparePast = formValues[matchingItem?.previous_deadline] || formValues[matchingItem?.initial_distance?.base_deadline];
-      filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates, dateToComparePast, miniumDaysPast);
+      // Existing logic for when esilläolo is ON
+      const isPastFirst = formValues[`jarjestetaan_${phaseName}_esillaolo_2`] || formValues[`${phaseName}_lautakuntaan_2`] || formValues[`kaava${phaseName}_lautakuntaan_2`];
+      // For validation, use distance_from_previous (buffer zone), not additive formula
+      // Excel: P4 + 27 / L5 + 27 when esilläolo ON
+      miniumDaysPast = matchingItem?.distance_from_previous || 27;
+      if ((phaseName === "periaatteet" || phaseName === "luonnos") && !isPastFirst) {
+        dateToComparePast = formValues[previousItem?.previous_deadline] || formValues[previousItem?.initial_distance?.base_deadline];
+        filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates, dateToComparePast, miniumDaysPast);
+      } else if (matchingItem?.name === "milloin_kaavaluonnos_lautakunnassa" || matchingItem?.name === "milloin_periaatteet_lautakunnassa") {
+        const esillaoloKeys = Object.keys(formValues).filter(key => key.includes(`jarjestetaan_${phaseName}_esillaolo`) && formValues[key] === true);
+        const highestEsillaoloKey = esillaoloKeys.reduce((highestNumber, currentKey) => {
+          const match = /_(\d+)$/.exec(currentKey);
+          const currentNumber = parseInt(match ? match[1] : 0, 10);
+          return currentNumber > highestNumber ? currentNumber : highestNumber;
+        }, 0);
+        if (highestEsillaoloKey !== 1) {
+          dateToComparePast = formValues[`milloin_${phaseName}_esillaolo_paattyy_${highestEsillaoloKey}`];
+        }
+        filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates, dateToComparePast, miniumDaysPast);
+      } else {
+        dateToComparePast = formValues[matchingItem?.previous_deadline] || formValues[matchingItem?.initial_distance?.base_deadline];
+        filteredDateToCompare = findNextPossibleValue(dateTypes?.työpäivät?.dates, dateToComparePast, miniumDaysPast);
+      }
     }
 
     const firstPossibleDateToSelect = findNextPossibleBoardDate(dateTypes?.lautakunnan_kokouspäivät?.dates, filteredDateToCompare);
@@ -852,12 +869,13 @@ const compareAndUpdateDates = (data) => {
   });
   //Check that phase end date line is moved to phases actual last date 
   const buildPhasePairs = (size) => {
-    const isXL = size === "XL";
+    // L and XL have reversed order in ehdotus phase: lautakunta first, nähtävilläolo last
+    const isLargeProject = size === "XL" || size === "L";
     return [
       ["periaatteetvaihe_paattyy_pvm", "milloin_periaatteet_lautakunnassa"],
       ["oasvaihe_paattyy_pvm", "milloin_oas_esillaolo_paattyy"],
       ["luonnosvaihe_paattyy_pvm", "milloin_kaavaluonnos_lautakunnassa"],
-      ["ehdotusvaihe_paattyy_pvm", isXL ? "milloin_ehdotuksen_nahtavilla_paattyy" : "milloin_ehdotus_esillaolo_paattyy"],
+      ["ehdotusvaihe_paattyy_pvm", isLargeProject ? "milloin_ehdotuksen_nahtavilla_paattyy" : "milloin_ehdotus_esillaolo_paattyy"],
       ["tarkistettuehdotusvaihe_paattyy_pvm", "milloin_tarkistettu_ehdotus_lautakunnassa"],
       // hyvaksyminen & voimaantulo intentionally excluded (no paired controlling date specified)
     ];
