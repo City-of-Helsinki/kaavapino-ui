@@ -869,30 +869,36 @@ const compareAndUpdateDates = (data) => {
   });
   //Check that phase end date line is moved to phases actual last date 
   const buildPhasePairs = (size) => {
-    // L and XL have reversed order in ehdotus phase: lautakunta first, nähtävilläolo last
-    const isLargeProject = size === "XL" || size === "L";
+    // Each entry: [dstField, primarySrcBase, fallbackSrcBase?]
+    // Primary is tried first; if getLatestDateValue returns null, fallback is tried.
     return [
-      ["periaatteetvaihe_paattyy_pvm", "milloin_periaatteet_lautakunnassa"],
+      ["periaatteetvaihe_paattyy_pvm", "milloin_periaatteet_lautakunnassa", "milloin_periaatteet_esillaolo_paattyy"],
       ["oasvaihe_paattyy_pvm", "milloin_oas_esillaolo_paattyy"],
-      ["luonnosvaihe_paattyy_pvm", "milloin_kaavaluonnos_lautakunnassa"],
-      ["ehdotusvaihe_paattyy_pvm", isLargeProject ? "milloin_ehdotuksen_nahtavilla_paattyy" : "milloin_ehdotus_esillaolo_paattyy"],
+      ["luonnosvaihe_paattyy_pvm", "milloin_kaavaluonnos_lautakunnassa", "milloin_luonnos_esillaolo_paattyy"],
+      // All sizes use milloin_ehdotuksen_nahtavilla_paattyy for ehdotus end
+      // (milloin_ehdotus_esillaolo_paattyy does not exist in project data; alkaa differs by size but paattyy does not)
+      ["ehdotusvaihe_paattyy_pvm", "milloin_ehdotuksen_nahtavilla_paattyy"],
       ["tarkistettuehdotusvaihe_paattyy_pvm", "milloin_tarkistettu_ehdotus_lautakunnassa"],
       // hyvaksyminen & voimaantulo intentionally excluded (no paired controlling date specified)
     ];
   };
 
   const phasePairs = buildPhasePairs(data["kaavaprosessin_kokoluokka"]);
-  phasePairs.forEach(([dst, srcBase]) => {
+  phasePairs.forEach(([dst, srcBase, fallbackBase]) => {
     // Always pick the latest available date among base + suffixed variants
-    const latest = getLatestDateValue(srcBase);
+    let latest = getLatestDateValue(srcBase);
+    // If primary source yields nothing (e.g. lautakunta disabled), try fallback
+    if (!latest && fallbackBase) {
+      latest = getLatestDateValue(fallbackBase);
+    }
     if (latest && data[dst] !== latest) {
       data[dst] = latest;
     }
   });
-  // Generic adjacency enforcement: each phase's start >= previous phase's end.
-  // Ordered phases including optional ones (periaatteet, luonnos) which may be absent.
+  // Enforce phase adjacency: next phase alkaa >= previous phase paattyy
+  // Spec: P1=K2, O1=P8|K2, L1=O6, E1=L8|O6, T1=E9, H1=T5, V1=H3
   const orderedPhases = [
-    { start: "kaynnistysvaihe_alkaa_pvm", end: "kaynnistysvaihe_paattyy_pvm" },
+    { start: "kaynnistysvaihe_alkaa_pvm", end: "kaynnistys_paattyy_pvm" },
     { start: "periaatteetvaihe_alkaa_pvm", end: "periaatteetvaihe_paattyy_pvm", optional: true },
     { start: "oasvaihe_alkaa_pvm", end: "oasvaihe_paattyy_pvm" },
     { start: "luonnosvaihe_alkaa_pvm", end: "luonnosvaihe_paattyy_pvm", optional: true },
@@ -902,7 +908,7 @@ const compareAndUpdateDates = (data) => {
     { start: "voimaantulovaihe_alkaa_pvm", end: "voimaantulovaihe_paattyy_pvm" }
   ];
 
-  // Build a filtered sequence of phases that actually exist (have either start or end present)
+  // Build filtered sequence of phases that actually exist (have either start or end present)
   const existingPhases = orderedPhases.filter(p => data[p.start] || data[p.end]);
 
   for (let i = 1; i < existingPhases.length; i++) {
@@ -911,7 +917,6 @@ const compareAndUpdateDates = (data) => {
     const prevEnd = validateAndNormalizeDate(data[prev.end]);
     const curStart = validateAndNormalizeDate(data[cur.start]);
     if (prevEnd && curStart && curStart < prevEnd) {
-      // Move current start forward to previous end
       data[cur.start] = prevEnd;
     }
   }

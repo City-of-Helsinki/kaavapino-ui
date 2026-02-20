@@ -628,7 +628,7 @@ describe("compareAndUpdateDates function", () => {
             expect(test_data[key], `Key ${key} was not updated`).toBe(test_data[viimeistaan_items[key]]);
         }
     });
-    test.skip("compareAndUpdateDates phase end dates correctly", () => {
+    test("compareAndUpdateDates phase end dates correctly", () => {
         const end_keys = [
             "periaatteetvaihe_paattyy_pvm",
             "oasvaihe_paattyy_pvm",
@@ -654,21 +654,21 @@ describe("compareAndUpdateDates function", () => {
         test_data["kaavaluonnos_lautakuntaan_1"] = true;
         test_data["kaavaluonnos_lautakuntaan_2"] = true;
         test_data["kaavaluonnos_lautakuntaan_3"] = false;
-        test_data["kaavehdotus_nahtaville_1"] = true;
-        test_data["kaavehdotus_uudelleen_nahtaville_2"] = true;
-        test_data["kaavehdotus_uudelleen_nahtaville_3"] = false;
+        test_data["kaavaehdotus_nahtaville_1"] = true;
+        test_data["kaavaehdotus_uudelleen_nahtaville_2"] = true;
+        test_data["kaavaehdotus_uudelleen_nahtaville_3"] = false;
         test_data["tarkistettu_ehdotus_lautakuntaan_1"] = true;
         test_data["tarkistettu_ehdotus_lautakuntaan_2"] = true;
         test_data["tarkistettu_ehdotus_lautakuntaan_3"] = false;
         test_data["tarkistettu_ehdotus_lautakuntaan_4"] = false;
 
+        timeUtil.compareAndUpdateDates(test_data);
         expect(test_data["oasvaihe_paattyy_pvm"]).toBe(test_data["milloin_oas_esillaolo_paattyy_2"]);
         expect(test_data["luonnosvaihe_paattyy_pvm"]).toBe(test_data["milloin_kaavaluonnos_lautakunnassa_2"]);
-        expect(test_data["ehdotusvaihe_paattyy_pvm"]).toBe(test_data["milloin_kaavaehdotus_lautakunnassa_2"]);
+        expect(test_data["ehdotusvaihe_paattyy_pvm"]).toBe(test_data["viimeistaan_lausunnot_ehdotuksesta_2"]);
         expect(test_data["tarkistettuehdotusvaihe_paattyy_pvm"]).toBe(test_data["milloin_tarkistettu_ehdotus_lautakunnassa_2"]);
-        timeUtil.compareAndUpdateDates(test_data);
     });
-    test.skip("compareAndUpdateDates end dates, periaatteet with no lautakunta", () => {
+    test("compareAndUpdateDates end dates, periaatteet with no lautakunta", () => {
         test_data["periaatteetvaihe_paattyy_pvm"] = undefined;
         test_data["periaatteet_lautakuntaan_1"] = false;
         test_data["periaatteet_lautakuntaan_2"] = false;
@@ -680,7 +680,7 @@ describe("compareAndUpdateDates function", () => {
         timeUtil.compareAndUpdateDates(test_data);
         expect(test_data["periaatteetvaihe_paattyy_pvm"]).toBe(test_data["milloin_periaatteet_esillaolo_paattyy"]);
     });
-    test.skip("compareAndUpdateDates end dates, luonnos with no lautakunta", () => {
+    test("compareAndUpdateDates end dates, luonnos with no lautakunta", () => {
         test_data["luonnosvaihe_paattyy_pvm"] = undefined;
         test_data["kaavaluonnos_lautakuntaan_1"] = false;
         test_data["kaavaluonnos_lautakuntaan_2"] = false;
@@ -692,7 +692,7 @@ describe("compareAndUpdateDates function", () => {
         timeUtil.compareAndUpdateDates(test_data);
         expect(test_data["luonnosvaihe_paattyy_pvm"]).toBe(test_data["milloin_luonnos_esillaolo_paattyy"]);
     });
-    test.skip("compareAndUpdateDates end dates, ehdotus in XS size", () => {
+    test("compareAndUpdateDates end dates, ehdotus in XS size", () => {
         test_data["ehdotusvaihe_paattyy_pvm"] = undefined;
         test_data["kaavaprosessin_kokoluokka"] = "XS";
         test_data["kaavaehdotus_lautakuntaan_1"] = false;
@@ -705,7 +705,7 @@ describe("compareAndUpdateDates function", () => {
         timeUtil.compareAndUpdateDates(test_data);
         expect(test_data["ehdotusvaihe_paattyy_pvm"]).toBe(test_data["milloin_ehdotuksen_nahtavilla_paattyy"]);
     });
-    test.skip("compareAndUpdateDates moves backwards start dates to match previous end dates", () => {
+    test("compareAndUpdateDates moves backwards start dates to match previous end dates", () => {
         test_data["periaatteetvaihe_alkaa_pvm"] = "2025-05-01";
         test_data["kaynnistys_paattyy_pvm"] = "2025-06-01";
         timeUtil.compareAndUpdateDates(test_data);
