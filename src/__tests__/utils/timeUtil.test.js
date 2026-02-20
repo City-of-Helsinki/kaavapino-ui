@@ -286,6 +286,14 @@ describe ("addDays and subtractDays with disabled dates", () => {
 });
 
 describe("getDisabledDates for various phases", () => {
+    /** Assert every date in the array falls on a weekday (Mon-Fri) */
+    const expectAllWeekdays = (dates) => {
+        for (const date of dates) {
+            const day = new Date(date).getDay();
+            expect([0, 6].includes(day), `${date} is a weekend`).toBe(false);
+        }
+    };
+
     test("getDisabledDatesForProjectStart returns valid *allowed* dates", () => {
         const name = "projektin_kaynnistys_pvm";
         const formValues = {
@@ -303,10 +311,9 @@ describe("getDisabledDates for various phases", () => {
         expect(result[result.length-1]).toBe("2025-05-19"); //maintain 10 working days distance
         const nextDate = new Date(formValues["kaynnistys_paattyy_pvm"]);
         for (let date of result) {
-            let newDate = new Date(date);
-            expect(newDate < nextDate).toBe(true);
-            expect(newDate.getDay() !== 0 && newDate.getDay() !== 6).toBe(true); // Not weekend
+            expect(new Date(date) < nextDate).toBe(true);
         }
+        expectAllWeekdays(result);
     });
     test("getDisabledDatesForApproval returns valid *allowed* dates", () => {
         const name = "hyvaksymispaatos_pvm";
@@ -323,10 +330,9 @@ describe("getDisabledDates for various phases", () => {
         expect(result[0]).toBe("2025-05-23"); // maintain 15 working days distance
         const previousDate = new Date(formValues["hyvaksyminenvaihe_alkaa_pvm"]);
         for (let date of result) {
-            let newDate = new Date(date);
-            expect(newDate > previousDate).toBe(true);
-            expect(newDate.getDay() !== 0 && newDate.getDay() !== 6).toBe(true); // Not weekend
+            expect(new Date(date) > previousDate).toBe(true);
         }
+        expectAllWeekdays(result);
         const resultXS = timeUtil.getDisabledDatesForApproval(name, formValues, matchingItem, dateTypes, "XS");
         expect(resultXS[0]).toBe("2025-05-22"); // 1 extra day for XS/S
     });
@@ -365,10 +371,9 @@ describe("getDisabledDates for various phases", () => {
         expect(result_maaraika[0]).toBe("2025-08-11");
         const previousDate_maaraika = new Date(formValues["tarkistettu_ehdotusvaihe_alkaa_pvm"]);
         for (let date of result_maaraika) {
-            let newDate = new Date(date);
-            expect(newDate > previousDate_maaraika).toBe(true);
-            expect([0, 6].includes(newDate.getDay())).toBe(false);
+            expect(new Date(date) > previousDate_maaraika).toBe(true);
         }
+        expectAllWeekdays(result_maaraika);
         const result_lautakunta = timeUtil.getDisabledDatesForLautakunta("milloin_tarkistettu_ehdotus_lautakunnassa", formValues, "tarkistettu_ehdotus", lautakuntaItem, kylkItem, dateTypes);
         const previousDate = new Date(formValues["tarkistettu_ehdotus_kylk_maaraaika"]);
         // 27 work days distance from maaraika (23rd), then next possible tuesday (30th)
@@ -440,26 +445,17 @@ describe("getDisabledDates for various phases", () => {
         // Test maaraAika - should return disabled dates (working days only)
         const maaraAikaResult = timeUtil.getDisabledDatesForSizeXSXL(name, formValues, maaraAikaItem, dateTypes);
         expect(maaraAikaResult.length).toBeGreaterThan(0);
-        for (let date of maaraAikaResult) {
-            let newDate = new Date(date);
-            expect(newDate.getDay() !== 0 && newDate.getDay() !== 6).toBe(true); // Not weekend
-        }
+        expectAllWeekdays(maaraAikaResult);
         
         // Test alkaa - should return disabled dates after prerequisite
         const alkaaResult = timeUtil.getDisabledDatesForSizeXSXL("milloin_oas_esillaolo_alkaa", formValues, alkaaItem, dateTypes);
         expect(alkaaResult.length).toBeGreaterThan(0);
-        for (let date of alkaaResult) {
-            let newDate = new Date(date);
-            expect(newDate.getDay() !== 0 && newDate.getDay() !== 6).toBe(true);
-        }
+        expectAllWeekdays(alkaaResult);
         
         // Test paattyy - should return disabled dates (working days only)
         const paattyyResult = timeUtil.getDisabledDatesForSizeXSXL("milloin_oas_esillaolo_paattyy", formValues, paattyyItem, dateTypes);
         expect(paattyyResult.length).toBeGreaterThan(0);
-        for (let date of paattyyResult) {
-            let newDate = new Date(date);
-            expect(newDate.getDay() !== 0 && newDate.getDay() !== 6).toBe(true); // Not weekend
-        }
+        expectAllWeekdays(paattyyResult);
     });
     test("getHighestLautakuntaDate returns correct date", () => {
         const formValues = {
@@ -668,30 +664,32 @@ describe("compareAndUpdateDates function", () => {
         expect(test_data["ehdotusvaihe_paattyy_pvm"]).toBe(test_data["viimeistaan_lausunnot_ehdotuksesta_2"]);
         expect(test_data["tarkistettuehdotusvaihe_paattyy_pvm"]).toBe(test_data["milloin_tarkistettu_ehdotus_lautakunnassa_2"]);
     });
-    test("compareAndUpdateDates end dates, periaatteet with no lautakunta", () => {
-        test_data["periaatteetvaihe_paattyy_pvm"] = undefined;
-        test_data["periaatteet_lautakuntaan_1"] = false;
-        test_data["periaatteet_lautakuntaan_2"] = false;
-        test_data["periaatteet_lautakuntaan_3"] = false;
-        test_data["periaatteet_lautakuntaan_4"] = false;
-        test_data["jarjestetaan_periaatteet_esillaolo_1"] = true;
-        test_data["jarjestetaan_periaatteet_esillaolo_2"] = false;
-        test_data["jarjestetaan_periaatteet_esillaolo_3"] = false;
-        timeUtil.compareAndUpdateDates(test_data);
-        expect(test_data["periaatteetvaihe_paattyy_pvm"]).toBe(test_data["milloin_periaatteet_esillaolo_paattyy"]);
-    });
-    test("compareAndUpdateDates end dates, luonnos with no lautakunta", () => {
-        test_data["luonnosvaihe_paattyy_pvm"] = undefined;
-        test_data["kaavaluonnos_lautakuntaan_1"] = false;
-        test_data["kaavaluonnos_lautakuntaan_2"] = false;
-        test_data["kaavaluonnos_lautakuntaan_3"] = false;
-        test_data["kaavaluonnos_lautakuntaan_4"] = false;
-        test_data["jarjestetaan_luonnos_esillaolo_1"] = true;
-        test_data["jarjestetaan_luonnos_esillaolo_2"] = false;
-        test_data["jarjestetaan_luonnos_esillaolo_3"] = false;
-        timeUtil.compareAndUpdateDates(test_data);
-        expect(test_data["luonnosvaihe_paattyy_pvm"]).toBe(test_data["milloin_luonnos_esillaolo_paattyy"]);
-    });
+    test.each([
+        {
+            phase: "periaatteet",
+            endKey: "periaatteetvaihe_paattyy_pvm",
+            lautakuntaPrefix: "periaatteet_lautakuntaan",
+            esillaoloPrefix: "jarjestetaan_periaatteet_esillaolo",
+            expectedSrc: "milloin_periaatteet_esillaolo_paattyy",
+        },
+        {
+            phase: "luonnos",
+            endKey: "luonnosvaihe_paattyy_pvm",
+            lautakuntaPrefix: "kaavaluonnos_lautakuntaan",
+            esillaoloPrefix: "jarjestetaan_luonnos_esillaolo",
+            expectedSrc: "milloin_luonnos_esillaolo_paattyy",
+        },
+    ])("compareAndUpdateDates end dates, $phase with no lautakunta",
+        ({ endKey, lautakuntaPrefix, esillaoloPrefix, expectedSrc }) => {
+            test_data[endKey] = undefined;
+            for (let i = 1; i <= 4; i++) test_data[`${lautakuntaPrefix}_${i}`] = false;
+            test_data[`${esillaoloPrefix}_1`] = true;
+            test_data[`${esillaoloPrefix}_2`] = false;
+            test_data[`${esillaoloPrefix}_3`] = false;
+            timeUtil.compareAndUpdateDates(test_data);
+            expect(test_data[endKey]).toBe(test_data[expectedSrc]);
+        }
+    );
     test("compareAndUpdateDates end dates, ehdotus in XS size", () => {
         test_data["ehdotusvaihe_paattyy_pvm"] = undefined;
         test_data["kaavaprosessin_kokoluokka"] = "XS";
