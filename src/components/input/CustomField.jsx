@@ -153,6 +153,7 @@ class CustomField extends Component {
         isTabActive={this.props.isTabActive}
         isProjectTimetableEdit={isProjectTimetableEdit}
         timetable_editable={timetable_editable}
+        hideLabel={this.props.hideLabel}
       />
     )
   }
@@ -884,7 +885,8 @@ CustomField.propTypes = {
     PropTypes.number,
     PropTypes.bool,
   ]),
-  sectionAttributes: PropTypes.array
+  sectionAttributes: PropTypes.array,
+  hideLabel: PropTypes.bool,
 };
 
 export default CustomField

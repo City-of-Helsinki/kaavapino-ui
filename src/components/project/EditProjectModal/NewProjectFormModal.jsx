@@ -164,7 +164,6 @@ class NewProjectFormModal extends Component {
             <Form.Group widths="equal" as="section">
               {this.getFormField({
                 className: 'ui fluid input',
-
                 field: {
                   name: TYPE,
                   label: t('project-base.labels.project-type'),
@@ -189,7 +188,8 @@ class NewProjectFormModal extends Component {
                   label: t('project-base.labels.name'),
                   type: 'text',
                   editable: isEditable
-                }
+                },
+                hideLabel: true
               })}
               {this.getFormField({
                 className: 'ui fluid input user-selection',
