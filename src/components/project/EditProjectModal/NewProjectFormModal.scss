@@ -1,4 +1,15 @@
 .form-modal {
+  .close-new-project-modal{
+    position: relative;
+    float: right;
+    margin-right: 1rem;
+    margin-top: 1rem;
+    color: #000;
+    cursor: pointer;
+    background: none;
+    border: none;
+  }
+
   .subtype-input-container .radio-input-container {
     display: flex;
     flex-direction: row;

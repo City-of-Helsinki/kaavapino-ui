@@ -8,7 +8,7 @@ import { connect } from 'react-redux'
 import { NEW_PROJECT_FORM } from '../../../constants'
 import { newProjectSubtypeSelector } from '../../../selectors/formSelector'
 import FormField from '../../input/FormField.jsx'
-import { Button } from 'hds-react'
+import { Button, IconCross } from 'hds-react'
 import { withTranslation } from 'react-i18next'
 
 const PROJECT_NAME = 'name'
@@ -131,6 +131,16 @@ class NewProjectFormModal extends Component {
 
     const hideSave = hideSaveButton()
 
+    const closeIcon = (
+      <button
+      tabIndex={0}
+      aria-label={t('common.close')}
+      className="close-new-project-modal"
+      >
+      <IconCross aria-label={t('common.close')}  size="m"/>
+      </button>
+    )
+
     return (
       <Modal
         className="form-modal project-edit"
@@ -143,7 +153,7 @@ class NewProjectFormModal extends Component {
             modalElement.focus()
           }
         }}
-        closeIcon
+        closeIcon={closeIcon}
         as="dialog"
       >
         <Modal.Header as="h2">

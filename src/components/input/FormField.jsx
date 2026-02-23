@@ -273,7 +273,6 @@ const FormField = ({
     return (
       <>
       <Form.Field
-        tabIndex="0"
         className={`input-container ${isOneLineField ? 'small-margin' : ''} ${
           showError ? 'error' : ''
         } ${highlightStyle}`}
@@ -283,7 +282,6 @@ const FormField = ({
           <div className='input-header-container'>
             <div className="input-header">
               <Label
-                tabIndex="0"
                 id={field.name}
                 className={`input-title${required ? ' highlight' : ''} ${field.type === "info_fieldset" ? ' hide' : ''}`}
               >
