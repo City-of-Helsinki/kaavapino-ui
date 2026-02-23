@@ -113,7 +113,7 @@ class EditProjectTimeTableModal extends Component {
     if (prevProps.attributeData && !isEqual(prevProps.attributeData, attributeData)) {
       let sectionAttributes = [];
       this.extractAttributes(deadlineSections, attributeData, sectionAttributes, (attribute, attributeData) =>
-        attribute.label !== "Lausunnot viimeistään" && attributeData[attribute.name]
+        attributeData[attribute.name]
       );
       this.setState({sectionAttributes})
       //when UPDATE_DATE_TIMELINE updates attribute values

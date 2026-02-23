@@ -797,7 +797,7 @@ const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues
       : [];
 };
 
-const compareAndUpdateDates = (data) => {
+const compareAndUpdateDates = (data, previousPaattyyValues) => {
   // Static pairs: viimeistaan lausunnot -> ehdotuksen nähtävillä päättyy variants
   const lausuntoPairs = [
     ["viimeistaan_lausunnot_ehdotuksesta", "milloin_ehdotuksen_nahtavilla_paattyy"],
@@ -864,7 +864,23 @@ const compareAndUpdateDates = (data) => {
   lausuntoPairs.forEach(([lausunto_date, paattyy_date]) => {
     const validPaattyyDate = validateAndNormalizeDate(data[paattyy_date]);
     if (validPaattyyDate) {
-      data[lausunto_date] = validPaattyyDate;
+      const currentLausuntoDate = validateAndNormalizeDate(data[lausunto_date]);
+      if (previousPaattyyValues) {
+        // Called from reducer with pre-cascade snapshot: sync lausunnot when paattyy changed
+        const prevPaattyy = validateAndNormalizeDate(previousPaattyyValues[paattyy_date]);
+        if (prevPaattyy !== validPaattyyDate) {
+          // Paattyy changed (any reason) -> force lausunnot to match new paattyy
+          data[lausunto_date] = validPaattyyDate;
+        } else if (!currentLausuntoDate || currentLausuntoDate < validPaattyyDate) {
+          // Paattyy did not change but lausunnot is empty or before paattyy -> floor constraint
+          data[lausunto_date] = validPaattyyDate;
+        }
+      } else {
+        // Called without snapshot (e.g. from EditProjectTimetableModal): apply floor constraint only
+        if (!currentLausuntoDate || currentLausuntoDate < validPaattyyDate) {
+          data[lausunto_date] = validPaattyyDate;
+        }
+      }
     }
   });
   //Check that phase end date line is moved to phases actual last date 
