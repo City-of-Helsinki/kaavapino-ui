@@ -54,7 +54,49 @@ const Header = props => {
   )
 
   const currentEnv = process.env.REACT_APP_ENVIRONMENT
-  
+
+  useEffect(() => {
+    // Manual accessibility implementations for user menu, reconsider when HDS is updated
+    const handleKeyDown = (event) => {
+      const element = document.activeElement;
+      if ((element.id === "nav-user-menu-button" && element.ariaExpanded === "true")) {
+        if (event.key === "Escape" || (event.key === "Tab" && event.shiftKey)) {
+          document.dispatchEvent(new Event('click')); // Closes menu
+        }
+        else if (event.key === "ArrowDown") {
+          event.preventDefault();
+          document.querySelectorAll("#nav-user-menu-logout").forEach(item => {
+            // HDS creates multiple elements with the same id (mobile and desktop), focus only the visible one
+            if (item.offsetParent !== null) {
+              item.focus();
+            }
+          });
+        }
+      }
+      else if (element.id === "nav-user-menu-button" && element.ariaExpanded === "false") {
+        if (["Enter", " ", "ArrowDown"].includes(event.key)) {
+          if (event.key === "ArrowDown") {
+            event.preventDefault();
+            element.click();
+          }
+          // Timeout needed as menu items are not in DOM immediately after click
+          setTimeout(() => {
+          document.querySelectorAll("#nav-user-menu-logout").forEach(item => {
+            if (item.offsetParent !== null) {
+              item.focus(); // Focus the first item in the menu after opening it
+            }
+          });
+          }, 10);
+        }
+      }
+
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, []);
+
   useInterval(() => {
     //polls connection to backend if there is error
     //doubles the time after each try
@@ -418,8 +460,11 @@ const Header = props => {
             </div>
             <div className='icons-container-flex'>
               {updateTime?.status === t('header.latest-save') ? <IconCheck className='check-icon'/> : ""}
-              {updateTime?.status === t('header.edit-menu-save-fail') ? <IconErrorFill className='error-icon'/> : ""}
-              <p className={updateTime?.status === t('header.edit-menu-save-fail') ? "error" : ""}>{updateTime?.status}{updateTime?.time}</p>
+              {
+              updateTime?.status === t('header.edit-menu-save-fail') ? 
+              <> <IconErrorFill className='error-icon'/> <p className="error">{updateTime?.status}</p> </> :
+              <p>{updateTime?.status}{updateTime?.time}</p>
+              }
               {updateTime?.status === t('header.edit-menu-save-fail') ? <Tooltip placement="bottom" className='question-icon'>{t('header.latest-save')}{updateTime?.time}</Tooltip> : ""}
             </div>
           </div>
@@ -469,7 +514,7 @@ const Header = props => {
         >
           <Navigation.Row variant="inline">
             <Navigation.Item
-              as="a"
+              as="button"
               label={t('header.overview')}
               onClick={navigateToHome}
               className={(props.location.pathname === "/")
@@ -482,7 +527,7 @@ const Header = props => {
               }
             />
             <Navigation.Item
-              as="a"
+              as="button"
               label={t('header.projects')}
               onClick={navigateToProjects}
               className={(props.location.pathname.startsWith("/projects"))
@@ -495,7 +540,7 @@ const Header = props => {
               }
             />
             <Navigation.Item
-              as="a"
+              as="button"
               label={t('header.reports')}
               onClick={navigateToReports}
               className={(props.location.pathname === "/reports")
@@ -509,13 +554,28 @@ const Header = props => {
             />
           </Navigation.Row>
           <Navigation.Actions>
-            <Navigation.User userName={label} authenticated={true}>
+            <Navigation.User userName={label} authenticated={true} id="nav-user-menu">
               <Navigation.Item
-                href="#"
+                id="nav-user-menu-logout"
+                className='test_nav_user_menu'
+                tabIndex={0}
                 icon={<IconSignout aria-hidden />}
                 label={t('header.sign-out')}
                 onClick={logout}
                 variant="supplementary"
+                onKeyDown={(event) => {
+                  // Manual accessibility implementations
+                  if (event.key === "Escape") {
+                    document.dispatchEvent(new Event('click'));
+                    document.getElementById("nav-user-menu-button").focus();
+                  }
+                  else if((event.key === "Tab" && !event.shiftKey)){
+                    document.dispatchEvent(new Event('click'));
+                  }
+                  else if (["ArrowDown","ArrowUp"].includes(event.key)) {
+                    event.preventDefault();
+                  }
+                }}
               />
             </Navigation.User>
           </Navigation.Actions>

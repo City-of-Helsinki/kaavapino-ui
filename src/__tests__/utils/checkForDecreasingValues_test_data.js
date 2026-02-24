@@ -1,7 +1,7 @@
 const generateMockArkipäivät = () => {
     const dates = [];
-    let currentDate = new Date("2025-09-24");
-    const endDate = new Date("2029-12-30");
+    let currentDate = new Date("2025-01-01");
+    const endDate = new Date("2029-12-31");
 
     while (currentDate <= endDate) {
         const day = currentDate.getDay();
@@ -16,9 +16,29 @@ const generateMockArkipäivät = () => {
     return dates;
 }
 
+const generateMockTyöpäivät = () => {
+    const dates = [];
+    let currentDate = new Date("2025-01-01");
+    const endDate = new Date("2029-12-31");
+
+    // Exclude weekends, all july dates, and dates from 24.12 to 6.1
+    while (currentDate <= endDate) {
+        const day = currentDate.getDay();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const date = String(currentDate.getDate()).padStart(2, '0');
+        if (day !== 0 && day !== 6 && month !== '07' &&
+            !(month === '12' && date >= '24') && !(month === '01' && date <= '06')) {
+            const year = currentDate.getFullYear();
+            dates.push(`${year}-${month}-${date}`);
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    return dates;
+}
+
 const generateMockLautakuntapäivät = () => {
     const dates = [];
-    let currentDate = new Date("2025-09-24");
+    let currentDate = new Date("2025-01-01");
     const endDate = new Date("2029-12-30");
 
     while (currentDate <= endDate) {
@@ -32,6 +52,15 @@ const generateMockLautakuntapäivät = () => {
         currentDate.setDate(currentDate.getDate() + 1);
     }
     return dates;
+}
+
+const generateMockEsillaolopaivat = () => {
+    const base_dates = generateMockTyöpäivät();
+    return base_dates.filter(date => {
+        const dateObj = new Date(date)
+        const weekNumber = Math.ceil((((dateObj - new Date(dateObj.getFullYear(),0,1)) / 86400000) + dateObj.getDay()+1)/7);
+        return !(weekNumber === 8 || weekNumber === 42);
+    });
 }
 
 const decreasing_test_arr = [
@@ -352,10 +381,20 @@ const test_disabledDates = {
             identifier: "arkipäivät",
             dates: generateMockArkipäivät()
         },
+        "työpäivät": {
+            name: "Työpäivät",
+            identifier: "työpäivät",
+            dates: generateMockTyöpäivät()
+        },
         "lautakunnan_kokouspäivät": {
             name: "Lautakunnan kokouspäivät",
             identifier: "lautakunnan_kokouspäivät",
             dates: generateMockLautakuntapäivät()
+        },
+        "esilläolopäivät": {
+            name: "Esilläolopäivät",
+            identifier: "esillaolopäivät",
+            dates: generateMockEsillaolopaivat()
         },
         "disabled_dates": {
             name: "Poissuljetut päivät",

@@ -40,7 +40,7 @@ function* downloadDocumentSaga({ payload }) {
   let isError = false
 
   let counter = 0
-  const modifiedUrl = payload.file + '?immediate=true'
+  const modifiedUrl = payload.file + '?immediate=false'
   yield put(downloadDocumentDone(false))
   toastr.info(
     payload.projectCard
@@ -52,7 +52,7 @@ function* downloadDocumentSaga({ payload }) {
   { closeOnToastrClick: false, timeOut:0, removeOnHover: false, removeOnHoverTimeOut: 0, icon: <IconInfoCircleFill /> }
   )
   try {
-    res = yield call(axios.get, modifiedUrl, { responseType: 'blob' })
+    res = yield call(axios.get, modifiedUrl)
 
     currentTask = res && res.data ? res.data.detail : null
 
@@ -165,7 +165,7 @@ function* downloadDocumentPreviewSaga({ payload }) {
   let isError = false
 
   let counter = 0
-  const modifiedUrl = payload.file + '?preview=true&immediate=true'
+  const modifiedUrl = payload.file + '?preview=true&immediate=false'
   yield put(downloadDocumentDone(false))
   toastr.info(
     i18next.t('document-loading.wait-title'),
@@ -174,7 +174,7 @@ function* downloadDocumentPreviewSaga({ payload }) {
   )
 
   try {
-    res = yield call(axios.get, modifiedUrl, { responseType: 'blob' })
+    res = yield call(axios.get, modifiedUrl)
     currentTask = res && res.data ? res.data.detail : null
 
     if (!currentTask && res.status !== 200) {

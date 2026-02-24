@@ -38,6 +38,115 @@ export const vis_bool_group_map = Object.freeze({
   'voimaantulo_1': null}
 );
 
+/**
+ * Get the date field names associated with a deadline group.
+ * Used to clear date fields when a group is deleted, preventing stale data on re-add.
+ * 
+ * @param {string} deadlineGroup - e.g., 'periaatteet_esillaolokerta_1'
+ * @returns {string[]} - Array of date field names to clear
+ */
+export const getDateFieldsForDeadlineGroup = (deadlineGroup) => {
+  if (!deadlineGroup) return [];
+  
+  const fields = [];
+  
+  // Parse the deadline group to extract phase, type, and index
+  // Examples: 'periaatteet_esillaolokerta_1', 'ehdotus_nahtavillaolokerta_2', 'luonnos_lautakuntakerta_1'
+  const parts = deadlineGroup.split('_');
+  if (parts.length < 2) return [];
+  
+  // Handle tarkistettu_ehdotus specially (two-word phase name)
+  let phase, type, indexNum;
+  if (deadlineGroup.startsWith('tarkistettu_ehdotus')) {
+    phase = 'tarkistettu_ehdotus';
+    type = parts[2]?.replace('kerta', ''); // e.g., 'lautakunta' from 'lautakuntakerta'
+    indexNum = parseInt(parts[3], 10);
+  } else {
+    phase = parts[0]; // e.g., 'periaatteet'
+    type = parts[1]?.replace('kerta', ''); // e.g., 'esillaolo' from 'esillaolokerta'
+    indexNum = parseInt(parts[2], 10);
+  }
+  
+  if (!phase || !type || isNaN(indexNum)) return [];
+  
+  // Build suffix for indexed fields (_2, _3, _4) - _1 has no suffix
+  const suffix = indexNum > 1 ? `_${indexNum}` : '';
+  
+  if (type === 'esillaolo') {
+    fields.push(`milloin_${phase}_esillaolo_alkaa${suffix}`);
+    fields.push(`milloin_${phase}_esillaolo_paattyy${suffix}`);
+    fields.push(`${phase}_esillaolo_aineiston_maaraaika${suffix}`);
+  } else if (type === 'lautakunta') {
+    // Different phases have different naming conventions
+    if (phase === 'periaatteet') {
+      fields.push(`milloin_${phase}_lautakunnassa${suffix}`);
+      fields.push(`${phase}_kylk_aineiston_maaraaika${suffix}`);
+    } else {
+      fields.push(`milloin_kaava${phase}_lautakunnassa${suffix}`);
+      fields.push(`kaava${phase}_kylk_aineiston_maaraaika${suffix}`);
+    }
+  } else if (type === 'nahtavillaolo') {
+    // Only for ehdotus phase
+    // NOTE: Includes size variants - _pieni (XS/S/M) OR _iso (L/XL), never both
+    // Cleanup deletes whichever exists
+    if (phase === 'ehdotus') {
+      fields.push(`ehdotus_nahtaville_aineiston_maaraaika${suffix}`);
+      fields.push(`milloin_ehdotuksen_nahtavilla_alkaa_pieni${suffix}`);  // XS/S/M only
+      fields.push(`milloin_ehdotuksen_nahtavilla_alkaa_iso${suffix}`);    // L/XL only
+      fields.push(`milloin_ehdotuksen_nahtavilla_paattyy${suffix}`);
+      fields.push(`viimeistaan_lausunnot_ehdotuksesta${suffix}`);
+    }
+  }
+  
+  return fields;
+};
+
+/**
+ * Get all subsequent deadline groups that should also be removed when removing a numbered group.
+ * For example, removing 'ehdotus_nahtavillaolokerta_3' should also remove 'ehdotus_nahtavillaolokerta_4'.
+ * This ensures the timeline groups stay in sequence (can't have 1, 2, 4 without 3).
+ * 
+ * @param {string} deadlineGroup - The deadline group being removed, e.g., 'ehdotus_nahtavillaolokerta_3'
+ * @returns {string[]} - Array of subsequent deadline groups to also remove
+ */
+export const getSubsequentDeadlineGroups = (deadlineGroup) => {
+  if (!deadlineGroup) return [];
+  
+  // Extract the base name and index number
+  // Examples: 'ehdotus_nahtavillaolokerta_3' -> base='ehdotus_nahtavillaolokerta', index=3
+  // 'tarkistettu_ehdotus_lautakuntakerta_2' -> base='tarkistettu_ehdotus_lautakuntakerta', index=2
+  const lastUnderscoreIndex = deadlineGroup.lastIndexOf('_');
+  if (lastUnderscoreIndex === -1) return [];
+  
+  const baseName = deadlineGroup.substring(0, lastUnderscoreIndex);
+  const currentIndex = parseInt(deadlineGroup.substring(lastUnderscoreIndex + 1), 10);
+  
+  if (isNaN(currentIndex)) return [];
+  
+  // Find all groups in the map that match the base name and have a higher index
+  const subsequentGroups = [];
+  for (const groupName of Object.keys(vis_bool_group_map)) {
+    const groupLastUnderscore = groupName.lastIndexOf('_');
+    if (groupLastUnderscore === -1) continue;
+    
+    const groupBaseName = groupName.substring(0, groupLastUnderscore);
+    const groupIndex = parseInt(groupName.substring(groupLastUnderscore + 1), 10);
+    
+    if (groupBaseName === baseName && !isNaN(groupIndex) && groupIndex > currentIndex) {
+      subsequentGroups.push(groupName);
+    }
+  }
+  
+  // Sort by index ascending (e.g., _3, _4, _5...)
+  subsequentGroups.sort((a, b) => {
+    const aIndex = parseInt(a.substring(a.lastIndexOf('_') + 1), 10);
+    const bIndex = parseInt(b.substring(b.lastIndexOf('_') + 1), 10);
+    return aIndex - bIndex;
+  });
+  
+  return subsequentGroups;
+};
+
 export const showField = (field, formValues, currentName) => {
   let returnValue = false
 

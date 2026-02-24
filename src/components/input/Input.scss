@@ -1034,6 +1034,12 @@
   text-align: left;
 }
 
+// Hide checkbox when combobox is loading results
+.ad-combobox.loading span[class^="Combobox-module_checkbox"] {
+  visibility: hidden;
+  width: 0 !important;
+}
+
 .disabled-fieldset{
   pointer-events: none;
   cursor: not-allowed;
