@@ -12,6 +12,7 @@ import DateTime from './DateTime.jsx'
 import { Field, FieldArray } from 'redux-form'
 import CustomRadioButton from './CustomRadioButton.jsx'
 import ToggleButton from './ToggleButton.jsx'
+import HDSToggleButton from './HDSToggleButton.jsx'
 import RichTextEditor from '../RichTextEditor'
 import OnHoldCheckbox from './OnholdCheckbox.jsx'
 import CustomCheckbox from './CustomCheckbox.jsx'
@@ -397,7 +398,15 @@ class CustomField extends Component {
 
   renderToggle = props => {
     const { handleBlurSave } = this.props
+
     return <ToggleButton onBlur={handleBlurSave} {...props} />
+  }
+
+  renderHDSToggle = props => {
+    const { handleBlurSave } = this.props
+    console.log("thisprops", this.props)
+    console.log("props", props)
+    return <HDSToggleButton onBlur={handleBlurSave} {...props} />
   }
 
   renderLink = props => {
@@ -650,6 +659,8 @@ class CustomField extends Component {
         return this.renderBooleanRadio
       case 'toggle':
         return this.renderToggle
+      case 'hds-toggle':
+        return this.renderHDSToggle
       case 'string':
       case 'text':
       case 'uuid':

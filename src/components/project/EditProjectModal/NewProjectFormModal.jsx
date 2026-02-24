@@ -184,6 +184,7 @@ class NewProjectFormModal extends Component {
             <Form.Group widths="equal" as="section">
               {this.getFormField({
                 field: {
+                  id : "new_project_" + PROJECT_NAME,
                   name: PROJECT_NAME,
                   label: t('project-base.labels.name'),
                   type: 'text',
@@ -207,7 +208,9 @@ class NewProjectFormModal extends Component {
                 name: PUBLIC,
                 label: t('project-base.labels.is-visible'),
                 type: 'boolean',
-                editable: isEditable
+                editable: isEditable,
+                as: "fieldset",
+                id : "new_project_" + PUBLIC
               },
               double: true
             })}
@@ -216,10 +219,11 @@ class NewProjectFormModal extends Component {
                 {t('project-base.warning-visibility-change')}
               </div>
             )}
-            <div className="subtype-input-container" as="section">
+            <div className="subtype-input-container">
               {this.getFormField({
                 field: {
                   name: SUB_TYPE,
+                  id : "new_project_" + SUB_TYPE,
                   label: t('project-base.labels.process-size'),
                   type: 'radio',
                   editable: isEditable,
@@ -229,7 +233,8 @@ class NewProjectFormModal extends Component {
                     { value: 3, label: 'M' },
                     { value: 4, label: 'L' },
                     { value: 5, label: 'XL' }
-                  ]
+                  ],
+                  as: "fieldset"
                 }
               })}
             </div>
@@ -241,23 +246,25 @@ class NewProjectFormModal extends Component {
                 </div>
               )}
             {showXLProjectOptions && (
-              <>
-                <h4>{t('project-base.choose-title')}</h4>
+              <fieldset className="xl-project-options">
+                <legend className="xl-project-options-legend">{t('project-base.choose-title')}</legend>
                 {this.getFormField({
                   field: {
                     name: CREATE_PRINCIPLES,
                     label: t('project-base.labels.principles'),
-                    type: 'toggle'
+                    type: 'hds-toggle',
+                    id: "new_project_" + CREATE_PRINCIPLES
                   }
                 })}
                 {this.getFormField({
                   field: {
                     name: CREATE_DRAFT,
                     label: t('project-base.labels.draft'),
-                    type: 'toggle'
+                    type: 'hds-toggle',
+                    id: "new_project_" + CREATE_DRAFT
                   }
                 })}
-              </>
+              </fieldset>
             )}
           </Form>
         </Modal.Content>
