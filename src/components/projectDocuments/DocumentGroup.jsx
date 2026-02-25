@@ -44,7 +44,10 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
       return phase.phaseIndex > 1 ? phase.phaseIndex - 2 : phase.phaseIndex - 1;
     }
     // Both missing is an illegal case, but handling it anyway for future
-    return phase.phaseIndex > 1 ? phase.phaseIndex - 3 : phase.phaseIndex - 1;
+    if (phase.phaseIndex == 3) {
+      return 0; // OAS
+    }
+    return phase.phaseIndex - 3;
   }
 
   const hideButtons = () => {
