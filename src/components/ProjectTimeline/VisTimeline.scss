@@ -320,22 +320,6 @@
                             position: relative;
                             top: -4px;
                         }
-                        .symbol-icon-wrapper.confirmed {
-                            position: relative;
-                        }
-                        // KAAV-3562: Adding this symbol is temporary solution and will be removed when KAAV-3563 is implemented
-                        .symbol-icon-wrapper.confirmed::after {
-                            content: "";
-                            position: absolute;
-                            top: -9px;
-                            right: -10px;
-                            width: 21px;
-                            height: 21px;
-                            background: $white url('../../assets/icons/checkmark-icon-green.svg') no-repeat;
-                            background-position: center;
-                            background-size: contain;
-                            border-radius: 50%;
-                        }
                     }
                 }
             }
@@ -562,36 +546,34 @@
 
     .kaynnistys_1{
         pointer-events: auto !important;
-        cursor: default !important;
+        cursor: url('../../assets/icons/arrow4dir.svg') 8 8, move !important;
         .vis-item-overflow{
             position: relative;
             border: 2px solid $black1;
             background: $white;
             border-radius: 15px;
-            cursor: default !important;
-            pointer-events: none !important;
+            cursor: url('../../assets/icons/arrow4dir.svg') 8 8, move !important;
+            pointer-events: auto !important;
             &::after {
                 content: "";
                 position: absolute;
                 top: 50%;
                 left: 50%;
-                width: 20px;
-                height: 20px;
-                background: radial-gradient(circle, #B3B3B3 0%, #B3B3B3 4px, transparent 4px, transparent 100%);
+                width: 8px;
+                height: 8px;
+                background-color: #B3B3B3;
                 border-radius: 50%;
                 transform: translate(-50%, -50%) scale(1);
                 opacity: 1;
                 transition: opacity .15s ease, transform .15s ease;
-                pointer-events: auto !important;
-                cursor: url('../../assets/icons/arrow4dir.svg') 8 8, move !important;
             }
             &:hover::after,&:active::after {
                 transform: translate(-50%, -50%) scale(1);
                 opacity: 1;
-                background: radial-gradient(circle, #808080 0%, #808080 4px, transparent 4px, transparent 100%);
+                background-color: #808080;
             }
             .vis-item-content{
-                pointer-events: none !important;
+                pointer-events: auto !important;
                 padding:0;
             }
         }
@@ -600,7 +582,7 @@
     .kaynnistys_1.cursor-moving-target{
         .vis-item-overflow{
             &::after {
-                background: radial-gradient(circle, $color-black-50 0%, $color-black-50 4px, transparent 4px, transparent 100%);
+                background-color: $color-black-50;
             }
         }
     }
@@ -961,14 +943,12 @@
                     }
                 }
                 .timeline-lock-button{
-                    visibility: hidden;
+                    display: none;
                     padding: 0;
                     margin-right: 12px;
                     margin-left: 12px;
-                    /*width: 24px;
-                    height: 24px; Hidden for now, unhide when lock feature in dev*/
-                    width: 0;
-                    height: 0;
+                    width: 24px;
+                    height: 24px;
                     background:url('../../assets/icons/lock-open-blue.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;
@@ -977,15 +957,17 @@
                     cursor: pointer;
                 }
                 .lock{
-                    margin-right: 12px;
-                    margin-left: 12px;
+                    display: block;
                     padding: 0;
-                    width: 24px;
-                    height: 24px;
-                    background:url('../../assets/icons/lock-blue.svg') no-repeat;
+                    margin-right: 0px;
+                    margin-left: auto;
+                    width: 48px;
+                    height: 36px;
+                    background:url('../../assets/icons/lock-white.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;
                     background-size: $size24;
+                    background-color: $color-bus;
                     border: none;
                     cursor: pointer;
                 }
@@ -1036,6 +1018,15 @@
                     opacity: 1;
                 }
             }
+            .has-lock{
+                .timeline-lock-button{
+                    pointer-events: none;
+                    cursor: default;
+                    opacity: 0.5;
+                    color: gray;
+                }
+            }
+
             .highlight-selected{
                 .timeline-remove-button{
                     display: block;
@@ -1086,6 +1077,11 @@
 
     .vis-label.vis-nested-group{
         padding-left: 15px;
+    }
+
+    // Apply blue border-right to all vis-label siblings after the one containing timeline-lock-button.lock
+    .vis-label:has(.vis-inner .timeline-lock-button.lock) ~ .vis-label {
+        border-right: 4px solid $color-bus;
     }
 
     .vis-group-level-0:not(.vis-nested-group){
@@ -1191,6 +1187,41 @@
                 .timeline-add-button{
                     display: none;
                 }
+            }
+        }
+    }
+
+    .buttons-locked{
+        .timeline-add-button{
+            pointer-events: none;
+            cursor: default;
+            opacity: 0.5;
+            color: gray;
+        }
+        .show-buttons{
+            .timeline-remove-button{
+                pointer-events: none;
+                cursor: default;
+                opacity: 0.5;
+                color: gray;
+            }
+            .timeline-lock-button{
+                pointer-events: none;
+                cursor: default;
+                opacity: 0.5;
+                color: gray;
+            }
+            .button-disabled{
+                pointer-events: none;
+                cursor: default;
+                opacity: 0.5;
+                color: gray;
+            }
+            .button-enabled{
+                pointer-events: none;
+                cursor: default;
+                opacity: 0.5;
+                color: gray;
             }
         }
     }
@@ -1370,6 +1401,24 @@
 
     .vis-background .vis-group {
         height: 36px !important;
+    }
+    .locked-color{
+        background-color: grey !important;
+        pointer-events: none !important;
+        cursor: default !important;
+        
+        // Override all draggable elements within locked items
+        &.vis-point,
+        &.inner-end,
+        &.vis-point.inner-end,
+        &.kaynnistys_1,
+        &.board-date,
+        .vis-item-overflow,
+        .vis-drag-left,
+        .vis-drag-right {
+            pointer-events: none !important;
+            cursor: default !important;
+        }
     }
 
     .vis-foreground .vis-group {

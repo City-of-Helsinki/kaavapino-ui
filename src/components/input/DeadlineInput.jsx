@@ -28,7 +28,8 @@ const DeadLineInput = ({
   confirmedValue,
   sectionAttributes,
   allowedToEdit,
-  timetable_editable
+  timetable_editable,
+  lockedGroup
 }) => {
 
   const dispatch = useDispatch();
@@ -119,7 +120,9 @@ const DeadLineInput = ({
   }, [input.value,formValues])
 
   useEffect(() => {
-    setDisabledState(formValues[confirmedValue])
+    const disabledValue = typeof timeTableDisabled !== "undefined" ? timeTableDisabled : disabled
+    let confirmValue = typeof formValues[confirmedValue] !== "undefined" ? formValues[confirmedValue] : disabledValue
+    setDisabledState(confirmValue)
   },[formValues[confirmedValue]])
 
   const getInitialMonth = (dateString) => {
@@ -165,7 +168,7 @@ const DeadLineInput = ({
     const ehdotusNahtavillaolo = currentDeadline?.deadline?.phase_name === "Ehdotus" && currentDeadline?.deadline?.deadlinegroup?.includes('nahtavillaolo')
     const datesToDisable = timeUtil.calculateDisabledDates(
       ehdotusNahtavillaolo, attributeData?.kaavaprosessin_kokoluokka, dateTypes, input.name, formValues,
-      getFixedSectionAttributes(), currentDeadline
+      getFixedSectionAttributes(), currentDeadline,lockedGroup
     );
     if (date < twentyYearsAgo || date > twentyYearsLater || !datesToDisable || datesToDisable.length === 0) {
       return false;
@@ -202,7 +205,7 @@ const DeadLineInput = ({
     try {
       let field = input.name;
       setCurrentValue(formattedDate)
-      dispatch(updateDateTimeline(field,formattedDate,formValues,false,deadlineSections));
+      dispatch(updateDateTimeline(field,formattedDate,formValues,false,deadlineSections,lockedGroup));
     } catch (error) {
       console.error('Validation error:', error);
     }
@@ -221,11 +224,7 @@ const DeadLineInput = ({
           value={formatDateToDMYYYY(currentValue ? currentValue : input.value)}
           name={input.name}
           type='text' // type='date' works poorly with hds-DateInput
-          disabled={!timetable_editable || disabledState || 
-            (!attributeData?.kaavan_vaihe.includes("Käynnistys") &&
-              (input?.name?.includes("projektin_kaynnistys_pvm") || input?.name?.includes("kaynnistys_paattyy_pvm"))) ||
-            (input?.name?.includes("viimeistaan_lausunnot_ehdotuksesta")) // Disabled in KAPI-190, re-enable for KAAV-3358
-          }
+          disabled={!timetable_editable || disabledState || !attributeData?.kaavan_vaihe.includes("Käynnistys") && (input?.name?.includes("projektin_kaynnistys_pvm") || input?.name?.includes("kaynnistys_paattyy_pvm"))}
           error={error}
           aria-label={input.name}
           onChange={(event) => {

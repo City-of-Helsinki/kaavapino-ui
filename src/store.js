@@ -26,7 +26,7 @@ const middlewareArray = [routerMiddleware(history), sagaMiddleware]
     collapsed: true
   })
   middlewareArray.push(logger)
-} REDUXED SPAM!*/
+} */
 
 const composeEnhancers = composeWithDevTools({})
 

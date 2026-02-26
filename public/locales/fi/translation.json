@@ -20,7 +20,7 @@
     "documents-menu-back": "Palaa takaisin projektin muokkaukseen",
     "edit-menu-no-save":"Ei tallentamattomia tietoja",
     "edit-menu-saved":"Tallennettu: ",
-    "edit-menu-save-fail":"Tallennus epäonnistui",
+    "edit-menu-save-fail":"Tallennus epäonnistui: ",
     "latest-save":"Viimeisin tallennus: "
   },
   "document-loading": {
@@ -302,7 +302,15 @@
     "add-new-review": "Lisää nähtävilläolo",
     "adding":"Lisätään",
     "saving":"Tietoja tallennetaan",
-    "deleting":"Poistetaan"
+    "deleting":"Poistetaan",
+    "confirm-previous-board-first": "Kaavoitussihteerin tulee vahvistaa aikaisempi lautakunta, jonka jälkeen voidaan lisätä uusi.",
+    "max-boards-reached": "Lautakuntien maksimimäärä on saavutettu.",
+    "confirm-previous-presence-first": "Kaavoitussihteerin tulee vahvistaa aikaisempi nähtävilläolo, jonka jälkeen voidaan lisätä uusi.",
+    "confirm-previous-display-first": "Kaavoitussihteerin tulee vahvistaa aikaisempi esilläolo, jonka jälkeen voidaan lisätä uusi.",
+    "max-presences-reached": "Nähtävilläolojen maksimimäärä on saavutettu.",
+    "max-displays-reached": "Esilläolojen maksimimäärä on saavutettu.",
+    "locking-enabled": "Lukitus on päällä, poista lukitus lisätäksesi uuden vaiheen.",
+    "element-not-fit": "Elementtijoukko ei sovi aikajanalle lukituksen vuoksi."
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}",

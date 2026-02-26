@@ -9,7 +9,7 @@ import { EDIT_PROJECT_TIMETABLE_FORM } from '../../../constants'
 import './styles.scss'
 import { deadlineSectionsSelector } from '../../../selectors/schemaSelector'
 import { withTranslation } from 'react-i18next'
-import { deadlinesSelector,validatedSelector,dateValidationResultSelector,cancelTimetableSaveSelector, validatingTimetableSelector } from '../../../selectors/projectSelector'
+import { deadlinesSelector,validatedSelector,dateValidationResultSelector,cancelTimetableSaveSelector, validatingTimetableSelector, lockingTimetableSelector } from '../../../selectors/projectSelector'
 import { Button,IconInfoCircle } from 'hds-react'
 import { isEqual } from 'lodash'
 import VisTimelineGroup from '../../ProjectTimeline/VisTimelineGroup.jsx'
@@ -18,10 +18,9 @@ import ConfirmModal from '../../common/ConfirmModal.jsx';
 import withValidateDate from '../../../hocs/withValidateDate.jsx';
 import objectUtil from '../../../utils/objectUtil'
 import textUtil from '../../../utils/textUtil'
-import { updateDateTimeline,validateProjectTimetable,setValidatingTimetable } from '../../../actions/projectActions';
+import { updateDateTimeline,validateProjectTimetable,setValidatingTimetable,setTimetableSnapshot } from '../../../actions/projectActions';
 import { getVisibilityBoolName, vis_bool_group_map, getPhaseNameByVisBool, isDeadlineConfirmed } from '../../../utils/projectVisibilityUtils';
 import timeUtil from '../../../utils/timeUtil'
-import { shouldDispatchTimelineUpdate } from '../../../utils/timelineDispatchLogic'
 
 class EditProjectTimeTableModal extends Component {
   constructor(props) {
@@ -36,8 +35,7 @@ class EditProjectTimeTableModal extends Component {
       itemsPhaseDatesOnly: [],
       showModal: false,
       collapseData: {},
-      sectionAttributes: [],
-      unfilteredSectionAttributes: []
+      sectionAttributes: []
     }
     this.timelineRef = createRef();
   }
@@ -69,8 +67,14 @@ class EditProjectTimeTableModal extends Component {
   };
 
   componentDidMount() {
-    const { initialize, attributeData, deadlines, deadlineSections, disabledDates,lomapaivat } = this.props
+    const { initialize, attributeData, deadlines, deadlineSections, disabledDates,lomapaivat, dispatch } = this.props
     initialize(attributeData)
+    
+    // Capture snapshot of timetable form's initial state
+    if (attributeData) {
+      dispatch(setTimetableSnapshot(attributeData))
+    }
+    
    // Check if the key exists and its value is true
     if(attributeData && deadlines && deadlineSections && disabledDates && lomapaivat){
       let items = new visdata.DataSet()
@@ -108,7 +112,8 @@ class EditProjectTimeTableModal extends Component {
       submitFailed,
       formValues,
       deadlines,
-      deadlineSections
+      deadlineSections,
+      validatingTimetable
     } = this.props
     if (prevProps.attributeData && !isEqual(prevProps.attributeData, attributeData)) {
       let sectionAttributes = [];
@@ -116,13 +121,13 @@ class EditProjectTimeTableModal extends Component {
         attribute.label !== "Lausunnot viimeistään" && attributeData[attribute.name]
       );
       this.setState({sectionAttributes})
-      //when UPDATE_DATE_TIMELINE updates attribute values
-      Object.keys(attributeData).forEach(fieldName => 
-        this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, fieldName, attributeData[fieldName])));
       
-      // Trigger validation after cascade is complete
-      if (!this.props.validatingTimetable?.started) {
-        this.props.dispatch(validateProjectTimetable(attributeData));
+      // Don't overwrite form fields when validation just ended (snapshot being restored)
+      const justFinishedValidation = validatingTimetable?.ended && !prevProps.validatingTimetable?.ended
+      if (!justFinishedValidation) {
+        //when UPDATE_DATE_TIMELINE updates attribute values
+        Object.keys(attributeData).forEach(fieldName => 
+          this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, fieldName, attributeData[fieldName])));
       }
     }
     if(prevProps.formValues && !isEqual(prevProps.formValues, formValues)){
@@ -130,39 +135,16 @@ class EditProjectTimeTableModal extends Component {
       timeUtil.compareAndUpdateDates(formValues)
       if(deadlineSections && deadlines && formValues){
         // Check if changedValues contains 'jarjestetaan' or 'lautakuntaan' and the value is a boolean
-        const [isGroupAdd, isGroupRemove, changedValues] = this.getChangedValues(prevProps.formValues, formValues);
-        // Use calculated values for timeline during group add to prevent visual flash of stale dates
-        let timelineSourceData = formValues;
+        const [isGroupAddRemove,changedValues] = this.getChangedValues(prevProps.formValues, formValues);
 
-        if (isGroupAdd) {
-          // Capture calculated values from addGroup and merge with formValues
-          // This ensures validation receives freshly calculated dates immediately,
-          // avoiding race condition where change() hasn't updated Redux yet
-          const calculatedValues = this.addGroup(changedValues)
-          // Deep clone to prevent mutation by response handlers
-          const attributeDataWithNewValues = JSON.parse(JSON.stringify({ ...formValues, ...calculatedValues }));
-          // Use calculated values for timeline rendering to prevent visual jump
-          timelineSourceData = attributeDataWithNewValues;
-          this.setState({visValues: attributeDataWithNewValues})
-          // Dispatch validation IMMEDIATELY to ensure our
-          // calculated values are sent before any other validation triggers
-          if (!this.props.validatingTimetable?.started) {
-            this.props.dispatch(validateProjectTimetable(attributeDataWithNewValues));
-          }
-        }
-        // trigger validation when removing a group to recalculate phase boundaries
-        if (isGroupRemove) {
+        if (isGroupAddRemove) {
+          this.addGroup(changedValues)
           this.setState({visValues:formValues})
-          setTimeout(() => {
-            if (!this.props.validatingTimetable?.started) {
-              this.props.dispatch(validateProjectTimetable(this.props.formValues));
-            }
-          }, 0);
         }
         if(!this.props.validated){
           let ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe)
           //Form items and groups
-          let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,timelineSourceData,deadlines,ongoingPhase,false)
+          let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,formValues,deadlines,ongoingPhase,false)
           // Update the existing data
           const combinedGroups = nestedDeadlines? deadLineGroups.concat(nestedDeadlines) : deadLineGroups
           this.state.groups.clear();
@@ -174,26 +156,56 @@ class EditProjectTimeTableModal extends Component {
           }))
           const newObjectArray = objectUtil.findDifferencesInObjects(prevProps.formValues,formValues)
 
-          // Check if timeline update should be dispatched (handles group add/remove scenarios)
-          const dispatchDecision = shouldDispatchTimelineUpdate(
-            newObjectArray, 
-            this.props.validatingTimetable?.started, 
-            isGroupAdd
-          );
-          
-          if (!dispatchDecision.shouldDispatch) {
-            // Skip dispatch
-          } else {
+          //No dispatch when confirmed is added to formValues as new data
+          if(newObjectArray.length === 0 || (typeof newObjectArray[0]?.obj1 === "undefined"  && typeof newObjectArray[0]?.obj2 === "undefined") || newObjectArray[0]?.key.includes("vahvista")){
+            console.log("no disptach")
+          }
+          else if(typeof newObjectArray[0]?.obj1 === "undefined" && typeof newObjectArray[0]?.obj2 === "string" || newObjectArray[1] && typeof newObjectArray[1]?.obj1 === "undefined" && typeof newObjectArray[1]?.obj2 === "string"){
             //Get added groups last date field and update all timelines ahead
             const { field, formattedDate } = this.getLastDateField(newObjectArray);
             //Dispatch added values to move other values in projectReducer if miniums are reached
             if(field && formattedDate){
-              this.props.dispatch(updateDateTimeline(field, formattedDate, formValues, dispatchDecision.addingNew, deadlineSections));
+              this.props.dispatch(updateDateTimeline(field,formattedDate,formValues,true,deadlineSections,false));
             }
           }
-          // Skip visValues update during group add - already set with calculated values above
-          if (!isGroupAdd) {
-            this.setState({visValues:formValues})
+          this.setState({visValues:formValues})
+
+          // Validate timetable if at least one date has changed, or a group has been added/deleted
+          const visBoolChanged = Object.keys(changedValues).some(key =>
+            Object.values(vis_bool_group_map).includes(key) && key !== null);
+
+          if (visBoolChanged || this.state.unfilteredSectionAttributes?.some( attr =>
+            attr.type === 'date' && Object.keys(changedValues).includes(attr.name))) {
+              // Extract first locked item field name from timeline
+              let lockedItems = false;
+              let lockedAttributes = {};
+              if (this.state.items) {
+                lockedItems = this.state.items.get().filter(i => 
+                  i?.className?.includes('locked-color') && 
+                  !i?.className?.includes('divider') &&
+                  i?.phase !== true &&
+                  i?.title
+                );
+                // Extract field names and values from formValues
+                if (lockedItems && lockedItems.length > 0) {
+                  lockedItems.forEach(item => {
+                    if (item.title) {
+                      // Check if title contains a dash (compound field)
+                      if (item.title.includes('-')) {
+                        const fieldNames = item.title.split('-');
+                        fieldNames.forEach(fieldName => {
+                          if (formValues[fieldName] !== undefined) {
+                            lockedAttributes[fieldName] = formValues[fieldName];
+                          }
+                        });
+                      } else if (formValues[item.title] !== undefined) {
+                        lockedAttributes[item.title] = formValues[item.title];
+                      }
+                    }
+                  });
+                }
+              }
+              this.props.dispatch(validateProjectTimetable(lockedAttributes));
           }
         }
         let sectionAttributes = [];
@@ -259,7 +271,40 @@ class EditProjectTimeTableModal extends Component {
     return obj?.key.includes(substr) && typeof obj?.obj2 === "string";
   }
 
-  trimPhase = (phase) => {
+	findDistanceToPrevious = (deadlineAttribute, deadlineSections) => {
+		if (!deadlineAttribute || !deadlineSections || !Array.isArray(deadlineSections)) {
+			return null;
+		}
+
+		// Search through the nested structure: deadlineSections -> sections -> attributes
+		for (let i = 0; i < deadlineSections.length; i++) {
+			const sections = deadlineSections[i].sections;
+			if (!Array.isArray(sections)) continue;
+
+			for (let j = 0; j < sections.length; j++) {
+				const attributes = sections[j].attributes;
+				if (!Array.isArray(attributes)) continue;
+
+				for (let k = 0; k < attributes.length; k++) {
+					const attr = attributes[k];
+					// Match by name, label, or attribute field
+					if (attr.name === deadlineAttribute || 
+						attr.label === deadlineAttribute ||
+						attr.attribute === deadlineAttribute) {
+						// Return the distance_from_previous value if found
+						if (attr.distance_from_previous !== null && attr.distance_from_previous !== undefined) {
+							return attr.distance_from_previous;
+						}
+					}
+				}
+			}
+		}
+
+		// Return null if not found
+		return null;
+	}
+
+	trimPhase = (phase) => {
     if(!phase || typeof phase !== 'string') return '';
     const parts = phase.split('.', 2);
     if(parts.length === 1) return phase.trim();
@@ -447,7 +492,7 @@ class EditProjectTimeTableModal extends Component {
 
   addMainGroup = (deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines, disabled) => {
     const currentDateString = new Date().toJSON().slice(0, 10);
-    const currentDate = new Date(currentDateString);
+    const currentDate = new Date(currentDateString); 
     phaseData.push({
       id: numberOfPhases,
       content: '',
@@ -457,7 +502,8 @@ class EditProjectTimeTableModal extends Component {
       phaseID: deadlines[i].deadline.phase_id,
       phase: true,
       group: deadlines[i].deadline.phase_name,
-      phaseName: deadlines[i].deadline.phase_name
+      phaseName: deadlines[i].deadline.phase_name,
+      groupName: deadlines[i].deadline.deadlinegroup
     });
   
     if (deadlines[i].deadline.phase_name === "Käynnistys" || deadlines[i].deadline.phase_name === "Hyväksyminen" || deadlines[i].deadline.phase_name === "Voimaantulo") {
@@ -476,7 +522,8 @@ class EditProjectTimeTableModal extends Component {
         phase: false,
         group: numberOfPhases,
         locked: false,
-        phaseName: deadlines[i].deadline.phase_name
+        phaseName: deadlines[i].deadline.phase_name,
+        groupName: deadlines[i].deadline.deadlinegroup
       });
       
       let dlIndex = deadLineGroups.findIndex(group => group.content === deadlines[i].deadline.phase_name);
@@ -514,15 +561,16 @@ class EditProjectTimeTableModal extends Component {
     return false;
   }
 
-  addSubgroup = (deadlines, i, numberOfPhases, dashStart, dashEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone, formValues) => {
+  addSubgroup = (deadlines, i, numberOfPhases, dashStart, dashEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone, formValues, lockedStyle) => {
     const highlightID = `${deadlines[i].deadline.phase_id}_${numberOfPhases}`;
     const allowEditStyle = this.props?.allowedToEdit ? "" : " disable-edit"
     if(dashStart === null && milestone === null && dashEnd){
+      const distanceToPrevious = this.findDistanceToPrevious(deadlines[i].deadline.attribute, this.props.deadlineSections) || 0;
       phaseData.push({
         start: dashEnd,
         id: numberOfPhases,
         content: "",
-        className: "board-only " + dashedStyle + " " + highlightID + allowEditStyle,
+        className: "board-only " + dashedStyle + " " + highlightID + allowEditStyle + lockedStyle,
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -530,15 +578,18 @@ class EditProjectTimeTableModal extends Component {
         locked: false,
         type: 'point',
         phaseName: deadlines[i].deadline.phase_name,
-        groupInfo: "Lautakunta"
+        groupInfo: "Lautakunta",
+        groupName: deadlines[i].deadline.deadlinegroup,
+        distanceToPrevious: distanceToPrevious
       });
     }
     else if(dashEnd === null){
+      const distanceToPrevious = this.findDistanceToPrevious(deadlines[i].deadline.attribute, this.props.deadlineSections) || 0;
       phaseData.push({
         start: dashStart,
         id: numberOfPhases,
         content: "",
-        className: dashedStyle + " " + highlightID + allowEditStyle,
+        className: dashedStyle + " " + highlightID + allowEditStyle + lockedStyle,
         title: deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -546,15 +597,18 @@ class EditProjectTimeTableModal extends Component {
         locked: false,
         type: 'point',
         phaseName: deadlines[i].deadline.phase_name,
-        groupInfo: "Lautakunta"
+        groupInfo: "Lautakunta",
+        groupName: deadlines[i].deadline.deadlinegroup,
+        distanceToPrevious: distanceToPrevious
       });
     }
     else if(dashStart && dashEnd && milestone){
+      const distanceToPrevious = this.findDistanceToPrevious(deadlines[i - 2].deadline.attribute, this.props.deadlineSections) || 0;
       phaseData.push({
         start: milestone,
         id: numberOfPhases + " maaraaika",
         content: "",
-        className: dashedStyle + " " + highlightID + allowEditStyle,
+        className: dashedStyle + " " + highlightID + allowEditStyle + lockedStyle,
         title: deadlines[i - 2].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
@@ -562,44 +616,52 @@ class EditProjectTimeTableModal extends Component {
         locked: false,
         type: 'point',
         phaseName: deadlines[i].deadline.phase_name,
-        groupInfo: "Määräaika"
+        groupInfo: "Määräaika",
+        groupName: deadlines[i].deadline.deadlinegroup,
+        distanceToPrevious: distanceToPrevious
       });
       phaseData.push({
         start: milestone,
         end: dashStart,
         id: numberOfPhases + " divider",
         content: "",
-        className: "divider" + " " + highlightID + allowEditStyle,
+        className: "divider" + " " + highlightID + allowEditStyle + lockedStyle,
         title: "divider",
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
         group: numberOfPhases,
         locked: false,
         phaseName: deadlines[i].deadline.phase_name,
-        groupInfo: "Kaavoitussihteerin työaika"
+        groupInfo: "Kaavoitussihteerin työaika",
+        groupName: deadlines[i].deadline.deadlinegroup,
+        distanceToPrevious: 0
       });
+      const distanceToPreviousEsilla = this.findDistanceToPrevious(deadlines[i].deadline.attribute, this.props.deadlineSections) || 0;
       phaseData.push({
         start: dashStart,
         end: dashEnd,
         id: numberOfPhases,
         content: "",
-        className: dashedStyle + " " + highlightID + allowEditStyle,
+        className: dashedStyle + " " + highlightID + allowEditStyle + lockedStyle,
         title: deadlines[i - 1].deadline.attribute + "-" +  deadlines[i].deadline.attribute,
         phaseID: deadlines[i].deadline.phase_id,
         phase: false,
         group: numberOfPhases,
         locked: false,
         phaseName: deadlines[i].deadline.phase_name,
-        groupInfo: "Esilläolo"
+        groupInfo: "Esilläolo",
+        groupName: deadlines[i].deadline.deadlinegroup,
+        distanceToPrevious: distanceToPreviousEsilla
       });
     }
     else{
       if (dashedStyle.includes("board") && dashStart && dashEnd) {
+        const distanceToPreviousEsilla = this.findDistanceToPrevious(deadlines[i - 1].deadline.attribute, this.props.deadlineSections) || 0;
         phaseData.push({
           start: dashStart,
           id: numberOfPhases + " maaraaika",
           content: "",
-          className: dashedStyle + " deadline" + " " + highlightID + allowEditStyle,
+          className: dashedStyle + " deadline" + " " + highlightID + allowEditStyle + lockedStyle,
           title: deadlines[i - 1].deadline.attribute,
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
@@ -607,27 +669,32 @@ class EditProjectTimeTableModal extends Component {
           locked: false,
           type: 'point',
           phaseName: deadlines[i].deadline.phase_name,
-          groupInfo: "Määräaika"
+          groupInfo: "Määräaika",
+          groupName: deadlines[i].deadline.deadlinegroup,
+          distanceToPrevious: distanceToPreviousEsilla
         });
         phaseData.push({
           start: dashStart,
           end: dashEnd,
           id: numberOfPhases + " divider",
           content: "",
-          className: "divider" + " " + highlightID + allowEditStyle,
+          className: "divider" + " " + highlightID + allowEditStyle + lockedStyle,
           title: "divider",
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
           group: numberOfPhases,
           locked: false,
           phaseName: deadlines[i].deadline.phase_name,
-          groupInfo: "Kaavoitussihteerin työaika"
+          groupInfo: "Kaavoitussihteerin työaika",
+          groupName: deadlines[i].deadline.deadlinegroup,
+          distanceToPrevious: 0
         });
+        const distanceToPreviousLautakunta = this.findDistanceToPrevious(deadlines[i].deadline.attribute, this.props.deadlineSections) || 0;
         phaseData.push({
           start: dashEnd,
           id: numberOfPhases + " lautakunta",
           content: "",
-          className: dashedStyle + " board-date" + (deadlines[i].deadline.phase_name === "Tarkistettu ehdotus" ? " board-right" : "") + " " + highlightID + allowEditStyle,
+          className: dashedStyle + " board-date" + (deadlines[i].deadline.phase_name === "Tarkistettu ehdotus" ? " board-right" : "") + " " + highlightID + allowEditStyle + lockedStyle,
           title: deadlines[i].deadline.attribute,
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
@@ -635,22 +702,27 @@ class EditProjectTimeTableModal extends Component {
           locked: false,
           type: 'point',
           phaseName: deadlines[i].deadline.phase_name,
-          groupInfo: "Lautakunta"
+          groupInfo: "Lautakunta",
+          groupName: deadlines[i].deadline.deadlinegroup,
+          distanceToPrevious: distanceToPreviousLautakunta
         });
       } else {
+        const distanceToPreviousNahtavilla = this.findDistanceToPrevious(deadlines[i].deadline.attribute, this.props.deadlineSections) || 0;
         phaseData.push({
           start: dashStart,
           end: dashEnd,
           id: numberOfPhases,
           content: "",
-          className: dashedStyle + " " + highlightID + allowEditStyle + " only-inner-end",
+          className: dashedStyle + " " + highlightID + allowEditStyle + " only-inner-end" + lockedStyle,
           title: deadlines[i - 1].deadline.attribute +"-"+ deadlines[i].deadline.attribute,
           phaseID: deadlines[i].deadline.phase_id,
           phase: false,
           group: numberOfPhases,
           locked: false,
           phaseName: deadlines[i].deadline.phase_name,
-          groupInfo: "Nähtävilläolo"
+          groupInfo: "Nähtävilläolo",
+          groupName: deadlines[i].deadline.deadlinegroup,
+          distanceToPrevious: distanceToPreviousNahtavilla
         });
       }
     }
@@ -706,6 +778,7 @@ class EditProjectTimeTableModal extends Component {
     let milestone = false
 
     let disabled = false
+    let lockedStyle = ""
 
     const currentDateString = new Date().toJSON().slice(0, 10);
     const currentDate = new Date(currentDateString);
@@ -714,6 +787,10 @@ class EditProjectTimeTableModal extends Component {
       deadline = deadlines[i].deadline
       numberOfPhases = deadline.index
       deadlineGroup = deadline.deadlinegroup;
+      if(this.props.timetableLocked.lockedGroup === deadlineGroup){
+        //Add locked style to all dates after deadline and to the current deadline
+        lockedStyle += " locked-color";
+      }
 
       if(deadline.deadline_types.includes('phase_start')){
         //Special case for project start date
@@ -774,7 +851,7 @@ class EditProjectTimeTableModal extends Component {
             innerStyle += " past";
           }
           if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
-            innerStyle += " confirmed";
+            innerStyle += " confirmed" + lockedStyle;
           }
         }
       }
@@ -826,7 +903,7 @@ class EditProjectTimeTableModal extends Component {
           }
 
           if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
-            innerStyle += " confirmed";
+            innerStyle += " confirmed" + lockedStyle;
           }
         }
       }
@@ -834,8 +911,6 @@ class EditProjectTimeTableModal extends Component {
       deadlines[i]?.deadline?.attribute?.includes("tarkistettu_ehdotus_kylk_maaraaika") || 
       deadlines[i]?.deadline?.attribute?.includes("ehdotus_kylk_aineiston_maaraaika") ||
       deadlines[i]?.deadline?.attribute?.includes("kaavaluonnos_kylk_aineiston_maaraaika")){
-        // Clear any leftover milestone from deleted esillaolo to prevent lautakunta using wrong item type
-        milestone = false;
         if(deadline.deadline_types.includes('milestone') && deadline.deadline_types.includes('dashed_start')){
           innerEnd = false
           innerStart = formValues && formValues[deadline.attribute]
@@ -861,7 +936,7 @@ class EditProjectTimeTableModal extends Component {
           }
 
           if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
-            innerStyle += " confirmed";
+            innerStyle += " confirmed" + lockedStyle;
           }
         }
         else if(deadline.deadline_types.includes('inner_start')){
@@ -922,7 +997,7 @@ class EditProjectTimeTableModal extends Component {
       else if(milestone && deadline.phase_name === "Ehdotus" && deadline.deadlinegroup !== "ehdotus_lautakuntakerta_1"
         && ["XL","L"].includes(formValues.kaavaprosessin_kokoluokka)) {
           if(formValues[deadline.attribute] && this.shouldAddSubgroup(deadline,formValues) && innerStart){
-          let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, null, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone, formValues);
+          let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, null, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone, formValues, lockedStyle);
           [phaseData, deadLineGroups, nestedDeadlines] = subgroup;
         }
         milestone = false
@@ -933,14 +1008,14 @@ class EditProjectTimeTableModal extends Component {
         || innerEnd && deadline.phase_name === "Tarkistettu ehdotus" && (deadline.deadlinegroup === "tarkistettu_ehdotus_lautakuntakerta_2" || deadline.deadlinegroup === "tarkistettu_ehdotus_lautakuntakerta_3" || deadline.deadlinegroup === "tarkistettu_ehdotus_lautakuntakerta_4") 
       ){
         if(formValues[deadline.attribute] && this.shouldAddSubgroup(deadline,formValues)){
-          let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, null, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, null, formValues);
+          let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, null, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, null, formValues, lockedStyle);
           [phaseData, deadLineGroups, nestedDeadlines] = subgroup;
         }
         innerEnd = false
       } 
       else if(innerStart && innerEnd){
         if(formValues[deadline.attribute] && this.shouldAddSubgroup(deadline, formValues)){
-          let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, milestone?milestone:null, formValues);
+          let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, milestone?milestone:null, formValues, lockedStyle);
           [phaseData, deadLineGroups, nestedDeadlines] = subgroup2;
         }
         innerStart = false;
@@ -1085,95 +1160,16 @@ class EditProjectTimeTableModal extends Component {
     }
     let newItem
 
-    // DEBUG: Log distanceArray for this phase
-    console.log('[DEBUG processValuesSequentially] Phase:', phase, 'distanceArray:', JSON.stringify(distanceArray, null, 2));
-    console.log('[DEBUG processValuesSequentially] matchingValues input:', JSON.stringify(matchingValues, null, 2));
-
     for (const { key } of matchingValues) {
-      let valueToCheck
-      let daysToAdd
+        let valueToCheck
+        let daysToAdd
 
-      const foundItem = matchingValues.find(item => item?.key?.includes("_paattyy") || item?.key?.includes("_lautakunnassa")) || matchingValues[0];
-      const fallbackValue = matchingValues.find(item => item?.value)?.value;
-      let baseValue = foundItem?.value || fallbackValue;
-      let forcedStartSection = null;
-
-      // DEBUG: Log initial baseValue determination
-      console.log('[DEBUG processValuesSequentially] foundItem:', foundItem, 'fallbackValue:', fallbackValue, 'initial baseValue:', baseValue);
-
-      if (!baseValue) {
-        const firstKey = matchingValues[0]?.key;
-        const firstSection = firstKey
-          ? distanceArray.find(section => section.name === firstKey)
-          : null;
-        
-        // DEBUG: Log linkedData lookup
-        console.log('[DEBUG processValuesSequentially] firstKey:', firstKey, 'firstSection found in distanceArray:', firstSection);
-        
-        const linkedBase = firstSection?.linkedData
-          ? (this.props.formValues?.[firstSection.linkedData] || this.props.attributeData?.[firstSection.linkedData])
-          : null;
-        
-        console.log('[DEBUG processValuesSequentially] linkedData:', firstSection?.linkedData, 'linkedBase value:', linkedBase);
-        
-        if (linkedBase) {
-          baseValue = linkedBase;
-          forcedStartSection = firstSection;
-        }
-      }
-      // FIX: Fallback for lautakunta when esillaolo doesn't exist - use phase_start + initial_distance
-      // Only applies to Periaatteet, Luonnos, Ehdotus phases
-      const isLautakuntaContent = matchingValues.some(item => 
-        item.key?.includes('lautakunta') || item.key?.includes('_kylk_')
-      );
-      const isEsillaoloContent = matchingValues.some(item => 
-        item.key?.includes('esillaolo') || item.key?.includes('luonnosaineiston')
-      );
-      const isTargetPhase = ['periaatteet', 'luonnos', 'ehdotus', 'kaavaluonnos', 'kaavaehdotus'].includes(phase);
-      
-      // DEBUG: Log content type detection
-      console.log('[DEBUG processValuesSequentially] isLautakuntaContent:', isLautakuntaContent, 'isEsillaoloContent:', isEsillaoloContent, 'isTargetPhase:', isTargetPhase, 'baseValue before fallback:', baseValue);
-      
-      if (!baseValue && (isLautakuntaContent || isEsillaoloContent) && isTargetPhase) {
-        console.log('[DEBUG processValuesSequentially] FALLBACK TRIGGERED for', isLautakuntaContent ? 'lautakunta' : 'esillaolo');
-        const phaseStartMap = {
-          'periaatteet': 'periaatteetvaihe_alkaa_pvm',
-          'luonnos': 'luonnosvaihe_alkaa_pvm',
-          'ehdotus': 'ehdotusvaihe_alkaa_pvm',
-          'kaavaluonnos': 'luonnosvaihe_alkaa_pvm',
-          'kaavaehdotus': 'ehdotusvaihe_alkaa_pvm'
-        };
-        const phaseStartField = phaseStartMap[phase];
-        const phaseStartDate = phaseStartField 
-          ? (this.props.formValues?.[phaseStartField] || this.props.attributeData?.[phaseStartField])
-          : null;
-        
-        console.log('[DEBUG processValuesSequentially] phaseStartField:', phaseStartField, 'phaseStartDate:', phaseStartDate);
-        
-        if (phaseStartDate) {
-          baseValue = phaseStartDate;
-          const firstKey = matchingValues[0]?.key;
-          forcedStartSection = firstKey ? distanceArray.find(section => section.name === firstKey) : null;
-          console.log('[DEBUG processValuesSequentially] Set baseValue to phaseStartDate:', baseValue, 'forcedStartSection:', forcedStartSection);
-        }
-      }
-      if (!baseValue) {
-        console.error("Cannot add group: missing base date for", phase, matchingValues);
-        return validValues;
-      }
-      let newDate = new Date(baseValue);
-      if (Number.isNaN(newDate.getTime())) {
-        console.error("Cannot add group: invalid base date for", phase, baseValue);
-        return validValues;
-      }
+        let foundItem = matchingValues.find(item => item?.key?.includes("_paattyy") || item?.key?.includes("_lautakunnassa")) || matchingValues[0]?.value;
+        let newDate = new Date(foundItem.value ? foundItem.value : foundItem);
         //let matchingSection = distanceArray.find(section => section.name === nextKey)
         let matchingSection
         if(!newItem){
-          if (forcedStartSection) {
-            matchingSection = forcedStartSection
-          } else {
-            matchingSection = objectUtil.findItem(distanceArray,foundItem.key,"name",1)
-          }
+          matchingSection = objectUtil.findItem(distanceArray,foundItem.key,"name",1)
           if(matchingSection?.name.includes("viimeistaan_lausunnot")){
             matchingSection = objectUtil.findItem(distanceArray,matchingSection.name,"name",1)
           }
@@ -1184,13 +1180,7 @@ class EditProjectTimeTableModal extends Component {
         else{
           if(newItem){
             const newVal = validValues.find(item => item.key === newItem)
-            if (!newVal?.value) {
-              continue;
-            }
             newDate = new Date(newVal.value)
-            if (Number.isNaN(newDate.getTime())) {
-              continue;
-            }
                 // --- Ensure new date is at least tomorrow ---
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -1210,21 +1200,7 @@ class EditProjectTimeTableModal extends Component {
             matchingSection = objectUtil.findItem(distanceArray,foundItem.key,"name",1)
           }
         }
-        // Skip iteration if matchingSection is null (happens when removing last items in the group)
-        if (!matchingSection) {
-          console.log('[DEBUG processValuesSequentially] Skipping: matchingSection is null');
-          continue;
-        }
-        
-        // DEBUG: Log matchingSection found
-        console.log('[DEBUG processValuesSequentially] matchingSection:', matchingSection.name, 'distance:', matchingSection.distance, 'linkedData:', matchingSection.linkedData);
-        
         const matchingItem = objectUtil.findMatchingName(this.state.unfilteredSectionAttributes, matchingSection.name, "name");
-        // Skip iteration if matchingItem is not found
-        if (!matchingItem) {
-          console.log('[DEBUG processValuesSequentially] Skipping: matchingItem not found for', matchingSection.name);
-          continue;
-        }
         //const previousItem = objectUtil.findItem(this.state.unfilteredSectionAttributes, nextKey, "name", -1);
         //const nextItem = objectUtil.findItem(this.state.unfilteredSectionAttributes, nextKey, "name", 1);
         let dateFilter
@@ -1242,15 +1218,7 @@ class EditProjectTimeTableModal extends Component {
           dateFilter = matchingSection.name.includes("_maaraaika") ? this.props.dateTypes?.työpäivät?.dates :  this.props.dateTypes?.arkipäivät?.dates//määräaika or alkaa paattyy
         }
         else{
-          // Esityslistalle (lautakunta): use työpäivät for Periaatteet/Luonnos/Ehdotus, lautakunnan_kokouspäivät for others
-          const isTargetLautakuntaPhase = ['periaatteet', 'luonnos', 'ehdotus', 'kaavaluonnos', 'kaavaehdotus'].includes(phase);
-          if (isTargetLautakuntaPhase) {
-            // FIX: Use työpäivät for distance calculation (not lautakunnan_kokouspäivät which has only ~2-3 days/month)
-            dateFilter = this.props.dateTypes?.työpäivät?.dates || []
-          } else {
-            // Other phases (tarkistettu_ehdotus etc): keep original behavior
-            dateFilter = matchingSection.name.includes("_maaraaika") ? this.props.dateTypes?.työpäivät?.dates : this.props.dateTypes?.lautakunnan_kokouspäivät?.dates
-          }
+          dateFilter = matchingSection.name.includes("_maaraaika") ? this.props.dateTypes?.työpäivät?.dates :  this.props.dateTypes?.lautakunnan_kokouspäivät?.dates//määräaika or lautakuntapäivä
         }
 
         if(matchingSection.name.includes("_alkaa")){
@@ -1265,27 +1233,8 @@ class EditProjectTimeTableModal extends Component {
           valueToCheck = endingObjectValue
         }
         else{
-          // FIX: For first esillaolo/lautakunta maaraaika in XL/L projects, use distance_from_previous
-          // instead of initial_distance when re-adding after delete
-          const isXLorL = this.props.attributeData?.kaavaprosessin_kokoluokka === "XL" || 
-                          this.props.attributeData?.kaavaprosessin_kokoluokka === "L";
-          const isPeriaatteetOrLuonnos = ['periaatteet', 'luonnos'].includes(phase);
-          const isEhdotus = phase === 'ehdotus';
-          const isFirstGroup = index == 1;
-          const isMaaraaikaField = matchingSection.name.includes('_maaraaika') || matchingSection.name.includes('aineiston_maaraaika');
-          
-          // Apply fix: esillaolo in Periaatteet/Luonnos, lautakunta in Ehdotus only
-          const shouldUsePrevious = isMaaraaikaField && isXLorL && isFirstGroup && matchingSection.previous && (
-            (isEsillaoloContent && isPeriaatteetOrLuonnos) ||
-            (isLautakuntaContent && isEhdotus)
-          );
-          
-          if (shouldUsePrevious) {
-            daysToAdd = matchingSection.previous;
-          } else {
-            //5 if for some reason there is no distance value set in backend/Excel
-            daysToAdd = matchingSection.distance ? matchingSection.distance : 5
-          }
+          //5 if for some reason there is no distance value set in backend/Excel
+          daysToAdd = matchingSection.distance ? matchingSection.distance : 5
         }
 
 
@@ -1302,9 +1251,6 @@ class EditProjectTimeTableModal extends Component {
 
         valueToCheck = newDate.toISOString().split('T')[0];
         validValues.push({ key: matchingSection.name, value: valueToCheck });
-        
-        // DEBUG: Log calculated value
-        console.log('[DEBUG processValuesSequentially] Calculated:', matchingSection.name, '=', valueToCheck, 'daysToAdd was:', matchingSection.distance);
 
         if(!validValues.find(item => item?.key?.includes('_lautakunnassa'))){
           newItem = matchingSection.name
@@ -1312,10 +1258,6 @@ class EditProjectTimeTableModal extends Component {
 
         validValues = validValues.filter(item => item?.value !== null)
     }
-    
-    // DEBUG: Log final output
-    console.log('[DEBUG processValuesSequentially] FINAL validValues:', JSON.stringify(validValues, null, 2));
-    
     //new values that are added to vis timeline when add is clicked
     return validValues;
   }
@@ -1333,10 +1275,6 @@ class EditProjectTimeTableModal extends Component {
       content = "esillaolo";
     }
     let index = textUtil.getNumberAfterSuffix(changedVisBool);
-    
-    // DEBUG: Log entry point
-    console.log('[DEBUG addGroup] ENTRY - changedVisBool:', changedVisBool, 'phase:', phase, 'content:', content, 'index:', index);
-    
     let matchingValues = Object.entries(this.props.formValues);
 
     if (content) {
@@ -1373,89 +1311,17 @@ class EditProjectTimeTableModal extends Component {
           .map(([key, value]) => ({ key, value }));
       }
     }
-    
-    // DEBUG: Log matchingValues after filter
-    console.log('[DEBUG addGroup] matchingValues after filter:', JSON.stringify(matchingValues, null, 2));
-
-    // When re-adding first element after delete→save OR after validation clears values,
-    // date fields may not exist or have null/incomplete values. Build expected field names from schema.
-    const hasValidValues = matchingValues.some(item => item.value !== null && item.value !== undefined);
-    // Each content type requires minimum number of keys: lautakunta=2, esillaolo=3, nahtavillaolo=3
-    const minExpectedKeys = content === "lautakunta" ? 2 : 3;
-    const hasEnoughKeys = matchingValues.length >= minExpectedKeys;
-    
-    // DEBUG: Log fallback condition check
-    console.log('[DEBUG addGroup] hasValidValues:', hasValidValues, 'hasEnoughKeys:', hasEnoughKeys, 'minExpectedKeys:', minExpectedKeys, 'matchingValues.length:', matchingValues.length);
-    console.log('[DEBUG addGroup] Fallback condition check: matchingValues.length === 0:', matchingValues.length === 0, '!hasValidValues:', !hasValidValues, '!hasEnoughKeys:', !hasEnoughKeys, 'index <= 2:', index <= 2);
-    
-    if ((matchingValues.length === 0 || !hasValidValues || !hasEnoughKeys) && index <= 2 && content) {
-      console.log('[DEBUG addGroup] FALLBACK TO SCHEMA KEYS TRIGGERED');
-      // Build expected field names based on phase and content type
-      // Note: field naming is inconsistent - luonnos uses 'kaavaluonnos_' prefix for maaraaika fields
-      const expectedKeys = [];
-      const isLargeProject = this.props.formValues.kaavaprosessin_kokoluokka === "XL" || 
-                             this.props.formValues.kaavaprosessin_kokoluokka === "L";
-      
-      // Determine the prefix for maaraaika fields (schema uses 'kaavaluonnos' for luonnos phase)
-      const maaraaikaPrefix = phase === "luonnos" ? "kaavaluonnos" : phase;
-      
-      if (content === "lautakunta") {
-        // phase like "periaatteet", "luonnos", "ehdotus"
-        if (phase === "periaatteet") {
-          expectedKeys.push(
-            phase + '_lautakunta_aineiston_maaraaika',
-            'milloin_' + phase + '_lautakunnassa'
-          );
-        } else {
-          // luonnos uses kaavaluonnos_kylk_*, ehdotus uses ehdotus_kylk_*
-          expectedKeys.push(
-            maaraaikaPrefix + '_kylk_aineiston_maaraaika',
-            'milloin_kaava' + phase + '_lautakunnassa'
-          );
-        }
-      } else if (content === "esillaolo") {
-        // Field naming is inconsistent:
-        // - periaatteet: periaatteet_esillaolo_aineiston_maaraaika
-        // - luonnos: luonnosaineiston_maaraaika (NOTE: no underscore, no _esillaolo_!)
-        const maaraaikaKey = phase === "luonnos" 
-          ? 'luonnosaineiston_maaraaika' 
-          : phase + '_esillaolo_aineiston_maaraaika';
-        expectedKeys.push(
-          maaraaikaKey,
-          'milloin_' + phase + '_esillaolo_alkaa',
-          'milloin_' + phase + '_esillaolo_paattyy'
-        );
-      } else if (content === "nahtavillaolo") {
-        const syntaxToCheck = phase === "ehdotus" ? "ehdotuksen" : "";
-        const alkaaKey = isLargeProject 
-          ? 'milloin_' + syntaxToCheck + '_nahtavilla_alkaa_iso'
-          : 'milloin_' + syntaxToCheck + '_nahtavilla_alkaa_pieni';
-        expectedKeys.push(
-          phase + '_nahtaville_aineiston_maaraaika',
-          alkaaKey,
-          'milloin_' + syntaxToCheck + '_nahtavilla_paattyy'
-        );
-      }
-      
-      // Create matchingValues with null values so processValuesSequentially can use linkedData
-      matchingValues = expectedKeys.map(key => ({ key, value: null }));
-      console.log('[DEBUG addGroup] Schema fallback - expectedKeys:', expectedKeys, 'matchingValues:', JSON.stringify(matchingValues, null, 2));
-    }
 
     //Get next values and increment index and calculate new values
-    console.log('[DEBUG addGroup] Calling processValuesSequentially with matchingValues:', JSON.stringify(matchingValues, null, 2));
     const validValues = this.processValuesSequentially(matchingValues, index, phase);
-    console.log('[DEBUG addGroup] processValuesSequentially returned validValues:', JSON.stringify(validValues, null, 2));
 
     if (validValues.length >= 2 || validValues.length === 1 && validValues[0].key.includes("_lautakunnassa")) {
       let indexString;
-      if (index > 1) {
+       if (index > 2) {
         indexString = "_" + index;
       } else {
-        indexString = "";
+        indexString = "_2";
       }
-      // Build calculatedValues object to return for immediate validation
-      const calculatedValues = {};
       validValues.forEach(({ key, value }) => {
         let modifiedKey;
         const numericRegex = /_\d+$/; // Matches keys that end with an underscore followed by one or more digits
@@ -1464,14 +1330,11 @@ class EditProjectTimeTableModal extends Component {
         } else {
           modifiedKey = key + indexString;
         }
-        calculatedValues[modifiedKey] = value;
         this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, modifiedKey, value));
       });
-      return calculatedValues;
     } else {
       console.error("Not enough matching values to create new items.");
     }
-    return {};
   };
 
   getChangedValues = (prevValues, currentValues) => {
@@ -1483,13 +1346,11 @@ class EditProjectTimeTableModal extends Component {
       }
     });
     
-    const isAdd = Object.entries(changedValues).some(([key, value]) => 
+    const isAddRemove = Object.entries(changedValues).some(([key, value]) => 
       Object.values(vis_bool_group_map).includes(key) && typeof value === 'boolean' && value === true
     );
-    const isRemove = Object.entries(changedValues).some(([key, value]) => 
-      Object.values(vis_bool_group_map).includes(key) && typeof value === 'boolean' && value === false
-    );
-    return [isAdd, isRemove, changedValues];
+    //If isAddRemove is false then it is a delete and add is true
+    return [isAddRemove,changedValues];
   }
 
   handleSubmit = () => {
@@ -1524,6 +1385,8 @@ class EditProjectTimeTableModal extends Component {
   handleClose = () => {
     localStorage.removeItem('timelineHighlightedElement');
     localStorage.removeItem('menuHighlight');
+    // Clear session-only timetable snapshot
+    this.props.dispatch({ type: 'Clear timetable snapshot' })
     this.props.handleClose()
   }
 
@@ -1722,6 +1585,12 @@ EditProjectTimeTableModal.propTypes = {
   validatingTimetable: PropTypes.shape({
     started: PropTypes.bool,
     ended: PropTypes.bool
+  }),
+  timetableLocked: PropTypes.shape({
+    lockedGroup:PropTypes.bool,
+    lockedPhases:PropTypes.array,
+    locked:PropTypes.bool,
+    lockedStartTime:PropTypes.bool
   })
 }
 
@@ -1734,6 +1603,7 @@ const mapStateToProps = state => ({
   dateValidationResult : dateValidationResultSelector(state),
   cancelTimetableSave: cancelTimetableSaveSelector(state),
   validatingTimetable: validatingTimetableSelector(state),
+  timetableLocked: lockingTimetableSelector(state)
 })
 
 const decoratedForm = reduxForm({
