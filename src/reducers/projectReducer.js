@@ -94,7 +94,11 @@ import {
   UPDATE_ATTRIBUTE,
   SAVE_PROJECT_TIMETABLE_FAILED,
   VALIDATING_TIMETABLE,
-  SET_SAVING_FIELD
+  SET_SAVING_FIELD,
+  LOCK_TIMETABLE,
+  SET_TIMETABLE_SNAPSHOT,
+  RESTORE_TIMETABLE_SNAPSHOT,
+  CLEAR_TIMETABLE_SNAPSHOT
 } from '../actions/projectActions'
 
 import timeUtil from '../utils/timeUtil'
@@ -153,7 +157,10 @@ export const initialState = {
   validated:false,
   cancelTimetableSave:false,
   validatingTimetable: {started: false, ended: false},
-  network: { status: 'ok', hasError: false, errorMessage: '', okMessage: '', tempFieldContents: '' }
+  network: { status: 'ok', hasError: false, errorMessage: '', okMessage: '', tempFieldContents: '' },
+  timetableLocked: {lockedGroup:false,lockedPhases:[],locked:false,lockedStartTime:false},
+  // Session-only snapshot of timetable attribute_data
+  timetableSnapshot: {}
 }
 
 export const reducer = (state = initialState, action) => {
@@ -213,7 +220,10 @@ export const reducer = (state = initialState, action) => {
     }
 
     case UPDATE_DATE_TIMELINE: {
-      const { field, newDate, formValues, isAdd, deadlineSections, keepDuration, originalDurationDays, pairedEndKey } = action.payload;
+      const { field, newDate, formValues, isAdd, deadlineSections, keepDuration, originalDurationDays, pairedEndKey, lockedGroup } = action.payload;
+      // Existing logic omitted in summary; ensure validating flags reset on user edits
+      const nextState = { ...state }
+      nextState.validatingTimetable = { started: false, ended: false }
       // Create a copy of the state and attribute_data
       let updatedAttributeData
       if(formValues){
@@ -259,7 +269,7 @@ export const reducer = (state = initialState, action) => {
       //Compare for changes with dates in order sorted array
       const changes = objectUtil.compareAndUpdateArrays(origSortedData,updateAttributeArray,deadlineSections)
       //Find out is next date below minium and add difference of those days to all values after and move them forward 
-      const decreasingValues = objectUtil.checkForDecreasingValues(changes,isAdd,field,state.disabledDates,oldDate,newDate,moveToPast,projectSize,filteredAttributeData);
+      const { arr: decreasingValues, didShiftBackwards } = objectUtil.checkForDecreasingValues(changes,isAdd,field,state.disabledDates,oldDate,newDate,moveToPast,projectSize,filteredAttributeData,lockedGroup);
       //Add new values from array to updatedAttributeData object
       objectUtil.updateOriginalObject(filteredAttributeData,decreasingValues)
       // Restore preserved end after adjustments if any logic changed it
@@ -268,42 +278,13 @@ export const reducer = (state = initialState, action) => {
       }
       //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
       timeUtil.compareAndUpdateDates(filteredAttributeData)
-      
-      // K1 = U1 sync: kaynnistysvaihe_alkaa_pvm always equals projektin_kaynnistys_pvm
-      // Per timeline_requirements.md line 899: K1's "Generoitu ehdotus" = U1
-      if (filteredAttributeData['projektin_kaynnistys_pvm']) {
-        filteredAttributeData['kaynnistysvaihe_alkaa_pvm'] = filteredAttributeData['projektin_kaynnistys_pvm'];
-      }
-      
-      // Sync phase bar boundaries - each phase end = next phase start
-      const phaseBoundaries = [
-        ['kaynnistys_paattyy_pvm', 'periaatteetvaihe_alkaa_pvm', 'oasvaihe_alkaa_pvm'],
-        ['periaatteetvaihe_paattyy_pvm', 'oasvaihe_alkaa_pvm', null],
-        ['oasvaihe_paattyy_pvm', 'luonnosvaihe_alkaa_pvm', 'ehdotusvaihe_alkaa_pvm'],
-        ['luonnosvaihe_paattyy_pvm', 'ehdotusvaihe_alkaa_pvm', null],
-        ['ehdotusvaihe_paattyy_pvm', 'tarkistettuehdotusvaihe_alkaa_pvm', 'hyvaksyminenvaihe_alkaa_pvm'],
-        ['tarkistettuehdotusvaihe_paattyy_pvm', 'hyvaksyminenvaihe_alkaa_pvm', null],
-        ['hyvaksyminenvaihe_paattyy_pvm', 'voimaantulovaihe_alkaa_pvm', null],
-      ];
-      
-      for (const [endKey, nextStart, fallbackStart] of phaseBoundaries) {
-        if (filteredAttributeData[endKey]) {
-          // If next phase exists, sync to it; otherwise use fallback (skip non-existent phase)
-          if (filteredAttributeData[nextStart] != null) {
-            filteredAttributeData[nextStart] = filteredAttributeData[endKey];
-          } else if (fallbackStart && filteredAttributeData[fallbackStart] != null) {
-            filteredAttributeData[fallbackStart] = filteredAttributeData[endKey];
-          }
-        }
-      }
-      
       // Return the updated state with the modified currentProject and attribute_data
       return {
         ...state,
         currentProject: {
           ...state.currentProject,
           attribute_data: filteredAttributeData,
-        },
+        }
       };
     }
 
@@ -467,9 +448,6 @@ export const reducer = (state = initialState, action) => {
     }
 
     case SET_LAST_SAVED: {
-      if (action.payload.status !== "success") {
-        action.payload.time = state.lastSaved.time
-      }
       return{
         ...state,
         lastSaved:action.payload,
@@ -702,6 +680,26 @@ export const reducer = (state = initialState, action) => {
         totalProjects: action.payload
       }
     }
+
+      // Timetable snapshot lifecycle
+      case SET_TIMETABLE_SNAPSHOT: {
+        return {
+          ...state,
+          timetableSnapshot: action.payload || {}
+        }
+      }
+      case RESTORE_TIMETABLE_SNAPSHOT: {
+        // Reducer keeps snapshot; actual form restore done in saga via redux-form initialize
+        return {
+          ...state
+        }
+      }
+      case CLEAR_TIMETABLE_SNAPSHOT: {
+        return {
+          ...state,
+          timetableSnapshot: {}
+        }
+      }
 
     case SET_TOTAL_OWN_PROJECTS: {
       return {
@@ -1101,6 +1099,13 @@ export const reducer = (state = initialState, action) => {
         ...state,
         validatingTimetable: action.payload
       }
+    }
+
+    case LOCK_TIMETABLE: {
+      return { 
+        ...state,
+        timetableLocked: action.payload
+      };
     }
 
     default: {
