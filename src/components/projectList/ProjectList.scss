@@ -516,6 +516,10 @@
         overflow-y: scroll;
       }
     }
+    span[class^="Select-module_buttonLabel"] {
+      max-width: 100%;
+      word-break: break-word;
+    }
   }
 
   .projects-filters{
