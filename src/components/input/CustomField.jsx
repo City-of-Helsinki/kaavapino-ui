@@ -403,9 +403,7 @@ class CustomField extends Component {
   }
 
   renderHDSToggle = props => {
-    const { handleBlurSave } = this.props
-    console.log("thisprops", this.props)
-    console.log("props", props)
+    const { handleBlurSave } = this.props;
     return <HDSToggleButton onBlur={handleBlurSave} {...props} />
   }
 
