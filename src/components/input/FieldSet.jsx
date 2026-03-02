@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { connect, useDispatch } from 'react-redux'
 import { checkingSelector, savingSelector, formErrorListSelector, lastSavedSelector, updateFieldSelector} from '../../selectors/projectSelector'
 import CustomField from './CustomField.jsx'
+import NetworkErrorState from './NetworkErrorState.jsx'
 import { Form, Label } from 'semantic-ui-react'
 import projectUtils from '../../utils/projectUtils'
 import inputUtils from '../../utils/inputUtils'
@@ -123,9 +124,6 @@ const FieldSet = ({
   }, [saving])
 
   const checkLocked = (e,set,i) => {
-    //Fetch fieldset data from backend and see if there is new sub fieldset or data changes
-    dispatch(getAttributeData(attributeData?.projektin_nimi,name,formName, set, nulledFields,i))
-
     let expand = false
     //Change expanded styles if close button or accordian heading element is clicked
     const substrings = ["fieldset-accordian-close","accordion-button"];
@@ -142,6 +140,16 @@ const FieldSet = ({
         handleUnlockField(set)
       }
       else{
+        // Opening fieldset - fetch data only if no validation errors in this fieldset
+        // This preserves user's invalid input so they can fix it
+        const hasFieldsetErrors = visibleErrors.some(errorFieldName => 
+          errorFieldName.startsWith(`${set}.`)
+        );
+        
+        if (!hasFieldsetErrors) {
+          dispatch(getAttributeData(attributeData?.projektin_nimi,name,formName, set, nulledFields,i))
+        }
+        
         //Close other accordians and open latest
         expandedArray = [i];
         //check is someone else editing the fieldset or lock it to this user
@@ -386,6 +394,10 @@ const FieldSet = ({
                     </div>
                   )
                 })}
+                {/* Show NetworkErrorState for connection errors in fieldset */}
+                {expanded.includes(i) && (
+                  <NetworkErrorState fieldName={`${set}.${fields[0]?.name}`} />
+                )}
                 {(!disable_fieldset_delete_add && !automatically_added && !disabled) && (
                   <Button
                     className={`${fieldsetDisabled || saving ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'} ${hiding ? ' hidden' : ''}`}
@@ -439,7 +451,7 @@ const FieldSet = ({
           ? t('project.adding')
           : t('project.add')}
         </Button>
-        {((updateField?.fieldName === name) && showSaving) || (savingField && fields.some(field => field.name === savingField))
+        {(((updateField?.fieldName === name) && showSaving) || (savingField && fields.some(field => field.name === savingField))) && visibleErrors?.length === 0
          ? (
            <div className='fieldset-saving-notification'>
              <div className="fieldset-spinner">
