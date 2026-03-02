@@ -696,7 +696,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   }
 
   const closeAddDialog = () => {
-    setToggleOpenAddDialog(prevState => !prevState)
+    setToggleOpenAddDialog(prevState => !prevState);
+    // Close TimelineModal if it's open
+    if (toggleTimelineModal.open) {
+      setToggleTimelineModal({ open: false, highlight: null, deadlinegroup: null });
+    }
   };
 
 
