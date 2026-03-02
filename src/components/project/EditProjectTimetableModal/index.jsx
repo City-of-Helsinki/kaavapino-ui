@@ -90,7 +90,7 @@ class EditProjectTimeTableModal extends Component {
       let sectionAttributes = []
       this.extractAttributes(deadlineSections, attributeData, sectionAttributes, (attribute, attributeData) => {
         return (attribute.label !== "Lausunnot viimeistään" && attributeData[attribute.name]) || 
-        ["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauenut"].includes(attribute.name);
+        ["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauennut"].includes(attribute.name);
       });
       this.setState({sectionAttributes})
       
