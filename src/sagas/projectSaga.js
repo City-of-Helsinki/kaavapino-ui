@@ -73,6 +73,7 @@ import {
   saveProjectTimetableFailed,
   SAVE_PROJECT,
   saveProjectSuccessful,
+  saveProjectFailed,
   setSavingField,
   CHANGE_PROJECT_PHASE,
   changeProjectPhaseSuccessful,
@@ -162,7 +163,7 @@ import dayjs from 'dayjs'
 import { toastr } from 'react-redux-toastr'
 import { confirmationAttributeNames } from '../utils/constants';
 import { generateConfirmedFields } from '../utils/generateConfirmedFields';
-import { IconInfoCircleFill, IconCheckCircleFill, IconErrorFill, IconAlertCircleFill } from 'hds-react'
+import { IconInfoCircleFill, IconCheckCircleFill, IconErrorFill } from 'hds-react'
 
 export default function* projectSaga() {
   yield all([
@@ -1087,7 +1088,6 @@ function* saveProject(data) {
   const { fileOrimgSave, insideFieldset, fieldsetData, fieldsetPath, fieldName } = data.payload
   const currentProjectId = yield select(currentProjectIdSelector)
   const editForm = yield select(editFormSelector) || {}
-  const visibleErrors = yield select(formErrorListSelector)
 
   const { initial, values } = editForm
 
@@ -1097,10 +1097,10 @@ function* saveProject(data) {
   if (values) {
     let keys = {}
     let changedValues = {}
-    if (visibleErrors.length === 0) {
-      changedValues = getChangedAttributeData(values, initial)
-      keys = Object.keys(changedValues)
-    }
+    // Always get changed values, even with validation errors
+    // This allows save attempt which will properly trigger error state
+    changedValues = getChangedAttributeData(values, initial)
+    keys = Object.keys(changedValues)
     // Set saving state with field name from action payload
     if (fieldName) {
       let actualFieldName = fieldName;
@@ -1164,6 +1164,26 @@ function* saveProject(data) {
         }
       }
       const attribute_data = changedValues
+      
+      // Check for client-side validation errors BEFORE attempting to save
+      // Check ALL fields - backend will reject if ANY field has validation errors
+      const { fieldName: savedFieldName } = data.payload || {}
+      const visibleErrors = yield select(formErrorListSelector)
+      
+      // If ANY field has validation errors, block save to backend
+      // Backend will reject the entire save if any field is invalid
+      if(visibleErrors.length > 0) {
+        // Get current field value for copy functionality
+        const fieldValue = savedFieldName && values ? values[savedFieldName] : undefined
+        
+        yield put(setSavingField(null))
+        // Include field value so "copy content" button works correctly
+        yield put(setLastSaved("field_error",time,[savedFieldName],fieldValue ? [fieldValue] : [],false))
+        yield put(stopSubmit(EDIT_PROJECT_FORM, {}))
+        yield put(saveProjectFailed())
+        return
+      }
+      
       try {
         const updatedProject = yield call(
           projectApi.patch,
@@ -1171,7 +1191,30 @@ function* saveProject(data) {
           { path: { id: currentProjectId } },
           ':id/'
         )
-        yield put(updateProject(updatedProject))
+        
+        // CRITICAL: Check if backend returned data matches current form values
+        // If user continued typing after a failed save, don't overwrite their changes
+        let hasUnsavedChanges = false;
+        if (savedFieldName) {
+          const backendValue = updatedProject.attribute_data[savedFieldName];
+          const currentValue = values[savedFieldName];
+          
+          // Deep comparison for objects (like RichTextEditor Delta)
+          const backendStr = typeof backendValue === 'object' ? JSON.stringify(backendValue) : String(backendValue || '');
+          const currentStr = typeof currentValue === 'object' ? JSON.stringify(currentValue) : String(currentValue || '');
+          
+          if (backendStr !== currentStr) {
+            hasUnsavedChanges = true;
+          }
+        }
+        
+        // Update project ONLY if form values match backend
+        // This prevents overwriting user's unsaved changes
+        // Even after connection error recovery, if data matches, it's safe to update
+        if (!hasUnsavedChanges) {
+          yield put(updateProject(updatedProject));
+        }
+        
         yield put(setSavingField(null))
         yield put(setAllEditFields())
 
@@ -1212,9 +1255,6 @@ function* saveProject(data) {
     else if (fileOrimgSave) {
       yield put(setAllEditFields())
       yield put(setPoll(false))
-    }
-    else if (visibleErrors.length > 0) {
-      yield put(setLastSaved("field_error", time, visibleErrors, [], false))
     }
   }
   yield put(saveProjectSuccessful())

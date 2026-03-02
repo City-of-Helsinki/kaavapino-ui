@@ -26,6 +26,7 @@ export const SAVE_PROJECT_TIMETABLE = 'Save project timetable'
 export const SAVE_PROJECT_TIMETABLE_SUCCESSFUL = 'Save project timetable successful'
 export const SAVE_PROJECT = 'Save project'
 export const SAVE_PROJECT_SUCCESSFUL = 'Save project successful'
+export const SAVE_PROJECT_FAILED = 'Save project failed'
 export const SET_SAVING_FIELD = 'Set saving field'
 export const VALIDATE_PROJECT_FIELDS = 'Validate project fields'
 export const VALIDATE_PROJECT_FIELDS_SUCCESSFUL = 'Validate project fields successful'
@@ -177,7 +178,7 @@ export const resetFormErrors = () => ({
 export const formErrorList = (addOrRemove,name) => ({
   type: FORM_ERROR_LIST,
   payload:{addOrRemove,name}
-})
+});
 export const updateFloorValues = (updatedFloorValues) => ({
   type: UPDATE_FLOOR_VALUES,
   payload:updatedFloorValues
@@ -374,6 +375,7 @@ export const saveProject = (fileOrimgSave,insideFieldset,fieldsetData,fieldsetPa
 
 export const setSavingField = (fieldName) => ({ type: SET_SAVING_FIELD, payload: fieldName })
 export const saveProjectSuccessful = () => ({ type: SAVE_PROJECT_SUCCESSFUL })
+export const saveProjectFailed = () => ({ type: SAVE_PROJECT_FAILED })
 
 export const validateProjectFields = formValues => ({
   type: VALIDATE_PROJECT_FIELDS,

@@ -27,6 +27,7 @@ import {
   SAVE_PROJECT,
   SAVE_PROJECT_BASE,
   SAVE_PROJECT_SUCCESSFUL,
+  SAVE_PROJECT_FAILED,
   SAVE_PROJECT_BASE_SUCCESSFUL,
   VALIDATE_PROJECT_FIELDS,
   VALIDATE_PROJECT_FIELDS_SUCCESSFUL,
@@ -467,8 +468,12 @@ export const reducer = (state = initialState, action) => {
     }
 
     case SET_LAST_SAVED: {
-      if (action.payload.status !== "success") {
+      // Only preserve old time if status is not success AND old time exists
+      // For first save attempt (no previous time), clear the time on error
+      if (action.payload.status !== "success" && state.lastSaved?.time) {
         action.payload.time = state.lastSaved.time
+      } else if (action.payload.status !== "success" && !state.lastSaved?.time) {
+        action.payload.time = ""
       }
       return{
         ...state,
@@ -800,6 +805,13 @@ export const reducer = (state = initialState, action) => {
 
     case SAVE_PROJECT_SUCCESSFUL:
     case SAVE_PROJECT_BASE_SUCCESSFUL: {
+      return {
+        ...state,
+        saving: false
+      }
+    }
+
+    case SAVE_PROJECT_FAILED: {
       return {
         ...state,
         saving: false

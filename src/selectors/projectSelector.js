@@ -255,6 +255,34 @@ export const formErrorListSelector = createSelector(
   project => project?.formErrorList
 )
 
+// Selector for fields with connection/lock errors (status="error")
+// Returns array of field names that have connection errors
+export const connectionErrorFieldsSelector = createSelector(
+  selectProject,
+  project => {
+    const lastSaved = project?.lastSaved;
+    // If status is "error" (connection/lock error), return the fields that were being saved
+    if (lastSaved?.status === 'error' && Array.isArray(lastSaved.fields)) {
+      return lastSaved.fields;
+    }
+    return [];
+  }
+)
+
+// Selector for ALL fields that have ANY error visible (connection, lock, validation etc.)
+// This is used to prevent editor content from disappearing during recovery
+export const fieldsWithAnyErrorSelector = createSelector(
+  selectProject,
+  project => {
+    const lastSaved = project?.lastSaved;
+    // If status is "error" OR "field_error", return the fields that have errors
+    if ((lastSaved?.status === 'error' || lastSaved?.status === 'field_error') && Array.isArray(lastSaved.fields)) {
+      return lastSaved.fields;
+    }
+    return [];
+  }
+)
+
 export const updateFieldSelector = createSelector(
   selectProject, 
   project => project?.updateField
