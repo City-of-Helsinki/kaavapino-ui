@@ -458,7 +458,9 @@ class ProjectEditPage extends Component {
   changeSection = (index,title,fields) => {
     //Show fields only from selected navigation link, not the whole phase
     this.setState({ sectionIndex: index, phaseTitle:title, fields:fields })
-    this.props.resetFormErrors()
+    // Don't reset form errors when changing sections - errors should persist across sections
+    // so that field passivation works project-wide
+    // this.props.resetFormErrors()
     //Index to Header component for section title
     if(typeof this.props.getCurrentSection !== "undefined"){
       this.props.getCurrentSection(index)

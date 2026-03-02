@@ -5,6 +5,7 @@ import NetworkErrorState from './NetworkErrorState.jsx'
 import { useSelector } from 'react-redux'
 import { savingSelector,lastModifiedSelector } from '../../selectors/projectSelector'
 import { useTranslation } from 'react-i18next'
+import { useFieldPassivation } from '../../hooks/useFieldPassivation'
 import PropTypes from 'prop-types';
 
 const RadioBooleanButton = ({
@@ -29,6 +30,11 @@ const RadioBooleanButton = ({
   const lastModified = useSelector(state => lastModifiedSelector(state))
   const [isThisFieldSaving, setIsThisFieldSaving] = useState(false)
   const saving =  useSelector(state => savingSelector(state))
+  
+  // Check if other fields have validation errors (UX60.2.5 - passivate fields when error exists)
+  // RadioBooleanButton only checks form errors, not connection errors
+  const shouldDisableForErrors = useFieldPassivation(name, { includeConnectionErrors: false })
+  
   useEffect(() => {
     // Reset isThisFieldSaving when saving is complete for this field
     if (!saving) {
@@ -95,7 +101,7 @@ const RadioBooleanButton = ({
   
   const getNormalElements = (nonEditable, rollingInfo, editField, name, readableValue, modifyText, rollingInfoText, editRollingField, phaseIsClosed, className, disabled, timeTableDisabled, error, handleOnChange, radioValue, double, showNoInformation) => {
     const radioButtonClass = isThisFieldSaving ? 'radio-button-wrapper blurred' : `radio-button-wrapper ${className}`;
-    const isDisabled = disabled || timeTableDisabled || isThisFieldSaving;
+    const isDisabled = disabled || timeTableDisabled || isThisFieldSaving || shouldDisableForErrors;
     return nonEditable || rollingInfo && !editField ?
       <RollingInfo 
         name={name} 
