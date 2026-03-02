@@ -168,11 +168,7 @@
     margin-top: 8px;
   }
   .max-chars-error{
-    display: flex;
-    font-family: "Helsinki Grotesk Regular", sans-serif;
-    font-size: $size16;
-    color: $color-error;
-    line-height: $size24;
+    @include hds-error-notification;
   }
   .quill-warning {
     color: $color-error;
