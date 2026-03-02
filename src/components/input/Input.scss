@@ -215,16 +215,7 @@
   }
 
   .max-chars-error{
-    display: flex;
-    font-family: "Helsinki Grotesk Regular", sans-serif;
-    font-size: $size16;
-    color: $color-error;
-    line-height: $size24;
-    padding-top: 8px;
-  
-    svg {
-      height: $size24;
-    }
+    @include hds-error-notification;
   }
 }
 
@@ -382,7 +373,7 @@
   background-color: yellow;
 }
 .error .selection {
-  border: 3px solid $color-error;
+  border: 2px solid rgba(176, 16, 56, 1);
   
 }
 .error .selection div {
@@ -402,7 +393,7 @@
 }
 
 .error .rich-text-editor-wrapper {
-  border: 3px solid $color-error;
+  border: 2px solid rgba(176, 16, 56, 1);
 
   .rich-text-editor .ql-container {
     border: 0;
@@ -410,16 +401,16 @@
 
 }
 .error .file-input-container button {
-  border: 3px solid $color-error;
+  border: 2px solid rgba(176, 16, 56, 1);
   color: $color-error;
 }
 
 .error .link-container  div:first-of-type {
-  border: 3px solid $color-error;
+  border: 2px solid rgba(176, 16, 56, 1);
  
 }
 .error .ad-combobox {
-  border: 3px solid $color-error;
+  border: 2px solid rgba(176, 16, 56, 1);
 }
 
 .error .ad-combobox  div {
@@ -429,19 +420,19 @@
 .ui.form .field.error input[type=text] {
   background: white !important;
   color: $color-error !important;
-  border: 3px solid $color-error !important;
+  border: 2px solid rgba(176, 16, 56, 1) !important;
   border-radius: 0;
 }
 .ui.form .field.error input[type=number] {
   background: white !important;
   color: $color-error !important;
-  border: 3px solid $color-error !important;
+  border: 2px solid rgba(176, 16, 56, 1) !important;
   border-radius: 0;
 }
 .ui.form .field.error input[type=date] {
   background: white !important;
   color: $color-error !important;
-  border: 3px solid $color-error !important;
+  border: 2px solid rgba(176, 16, 56, 1) !important;
   border-radius: 0;
 }
 
@@ -1004,11 +995,11 @@
   margin-top: 4px;
 }
 .error-text {
-  color: $color-error-border;
+  @include hds-error-notification;
   position: relative;
 }
 .add-error{
-  padding-left: $size16;
+  padding-left: $size8;
 }
 .checkbox {
   display: flex;

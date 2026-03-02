@@ -558,7 +558,7 @@ header{
   nav{
     max-width: 1200px;
     justify-content: space-between;
-    margin-left: 0 !important;
+    margin: 0 auto !important;
   }
   div:not(.spinner-container,.spinner-container *){
     cursor: default;
@@ -578,11 +578,16 @@ header{
         line-height: $size24;
         letter-spacing: 0.5px;
       }
-      span{
-        font-family: "Helsinki Grotesk Regular", sans-serif;
-        font-size: $size12;
-        color: $black1;
-        letter-spacing: 0.375px;
+      .phase-section{
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        span{
+          font-family: "Helsinki Grotesk Regular", sans-serif;
+          font-size: $size12;
+          color: $black1;
+          letter-spacing: 0.375px;
+        }
       }
     }
     .edit-page-save{
