@@ -1,9 +1,12 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { projectNetworkSelector,lastSavedSelector } from '../../selectors/projectSelector';
-import { Button, Notification, IconAlertCircle, IconCross } from 'hds-react';
+import { projectNetworkSelector, lastSavedSelector } from '../../selectors/projectSelector';
+import { Button, Notification, IconAlertCircle } from 'hds-react';
 import { useTranslation } from 'react-i18next';
+import { getFormInitialValues, getFormValues, change, stopSubmit, untouch } from 'redux-form';
+import { setLastSaved, formErrorList } from '../../actions/projectActions';
+import { EDIT_PROJECT_FORM } from '../../constants';
 import './NetworkErrorState.scss';
 import PropTypes from 'prop-types';
 
@@ -11,26 +14,32 @@ export default function NetworkErrorState({ fieldName }) {
   if (typeof window !== 'undefined' && !window.__clearedIsRelevantField) {
       try {
           localStorage.removeItem('isRelevantField');
+          localStorage.removeItem('warningManuallyClosed');
       } catch (e) {}
       window.__clearedIsRelevantField = true;
   }
   const network = useSelector(projectNetworkSelector);
   const lastSaved = useSelector(state => lastSavedSelector(state))
+  const initialValues = useSelector(state => getFormInitialValues(EDIT_PROJECT_FORM)(state))
+  const formValues = useSelector(state => getFormValues(EDIT_PROJECT_FORM)(state))
   const dispatch = useDispatch();
   const { t } = useTranslation();
 
   const status = network.status || 'ok';
-  const hasError = status === 'error';
-  const isSuccess = status === 'success';
+  
+  // Simple flag to track if this field ever had a network error
+  // READ from localStorage on every render to stay in sync
+  const wasNetworkErrorKey = `wasNetworkError_${fieldName}`;
+  const wasNetworkError = localStorage.getItem(wasNetworkErrorKey) === 'true';
+  
+  const hasError = status === 'error' || lastSaved?.status === 'field_error';
+  const isSuccess = status === 'success' || lastSaved?.status === 'connection_restored';
 
   const banner = useMemo(() => {
-    if (hasError) {
-      return {
-        type: 'error',
-        label: t('messages.network-save-failed-label'),
-        message: network.errorMessage || t('messages.network-save-failed-connection')
-      };
-    }
+    // IMPORTANT: Check isSuccess FIRST before hasError!
+    // When connection is restored after error, both isSuccess and hasError can be true
+    // (hasError stays true because storedNetworkError persists until user closes warning)
+    // We want to show SUCCESS banner in this case, not error banner
     if (isSuccess) {
       return {
         type: 'success',
@@ -38,11 +47,72 @@ export default function NetworkErrorState({ fieldName }) {
         message: network.okMessage || t('messages.network-connection-restored-message')
       };
     }
+    if (hasError) {
+      // Differentiate between field validation error and network error
+      const isFieldValidationError = lastSaved?.status === 'field_error';
+      return {
+        type: 'error',
+        label: t('messages.network-save-failed-label'),
+        message: isFieldValidationError 
+          ? t('messages.field-validation-error') || 'Kentän arvo ei ole kelvollinen'
+          : (network.errorMessage || t('messages.network-save-failed-connection'))
+      };
+    }
     return null;
-  }, [hasError, isSuccess, network.errorMessage, network.okMessage]);
+  }, [hasError, isSuccess, network.errorMessage, network.okMessage, lastSaved?.status, t]);
 
   const [showWarning, setShowWarning] = useState(true);
+  const [showNetworkWarning, setShowNetworkWarning] = useState(wasNetworkError); // Separate state for network errors
   const [confirmOpen, setConfirmOpen] = useState(false);
+
+  // Sync showNetworkWarning with localStorage on mount and when wasNetworkError changes
+  useEffect(() => {
+    if (wasNetworkError && !showNetworkWarning) {
+      setShowNetworkWarning(true);
+    }
+  }, [wasNetworkError, showNetworkWarning]);
+
+  // Track when a network error occurs for this field
+  useEffect(() => {
+    if (lastSaved?.status === 'error') {
+      const savedFields = Array.isArray(lastSaved?.fields) ? lastSaved.fields : [];
+      const isThisFieldAffected = fieldName ? savedFields.includes(fieldName) : false;
+      
+      if (isThisFieldAffected) {
+        try {
+          localStorage.setItem(wasNetworkErrorKey, 'true');
+        } catch (e) {}
+        setShowNetworkWarning(true); // Show network warning when error occurs
+      }
+    }
+  }, [lastSaved?.status, fieldName, lastSaved?.fields, wasNetworkErrorKey]);
+
+  // Show connection restored notification when save succeeds after network error
+  useEffect(() => {
+    const hadNetworkError = wasNetworkError; // Read directly from localStorage on each render
+    const isConnectionRestored = lastSaved?.status === 'success' || lastSaved?.status === 'connection_restored';
+    
+    if (hadNetworkError && isConnectionRestored) {
+      try {
+        localStorage.setItem('isRelevantField', fieldName);
+      } catch (e) {}
+    }
+  }, [lastSaved?.status, fieldName, wasNetworkError]);
+
+  // Auto-hide "connection restored" banner after 5 seconds
+  // Note: Don't clear localStorage here - let the warning notification stay until user closes it
+  useEffect(() => {
+    if (isSuccess) {
+      const timer = setTimeout(() => {
+        dispatch({ type: 'Reset network status' });
+        // Also clear lastSaved status to fully hide the success banner
+        dispatch(setLastSaved('', null, [], [], false));
+        // Don't clear isRelevantField or warningManuallyClosed here
+        // The yellow warning box should stay visible until user clicks "Sulje ilmoitus"
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess, dispatch]);
 
   // Simple scroll lock for custom dialog
   useEffect(() => {
@@ -54,57 +124,14 @@ export default function NetworkErrorState({ fieldName }) {
     }
   }, [confirmOpen]);
 
-  const getFieldSetValues = (object) => {
-    const arrayValues = [];
-    let index = 1;
-    for (let i = 0; i < object.length; i++) {
-      const fieldsetObject = object[i];
-      for (const data in fieldsetObject) {
-        if (Object.prototype.hasOwnProperty.call(fieldsetObject, data)) {
-          if (fieldsetObject[data]?.ops) {
-            const opsArray = fieldsetObject[data].ops;
-            for (let j = 0; j < opsArray.length; j++) {
-              arrayValues.push('fieldset-' + index);
-              arrayValues.push(data + ': ' + opsArray[j].insert);
-              index = index + 1;
-            }
-          }
-        }
-      }
-    }
-    return arrayValues;
-  };
-
-  let newErrorValue = lastSaved?.values || [];
-  let arrayValues = [];
-
-  if (Array.isArray(newErrorValue) && newErrorValue.length > 0) {
-    if (newErrorValue[0]?.ops) {
-      const opsArray = newErrorValue[0].ops;
-      for (let i = 0; i < opsArray.length; i++) {
-        arrayValues.push(opsArray[i].insert);
-      }
-      newErrorValue = arrayValues.toString();
-      arrayValues = [];
-    }
-    else if (typeof newErrorValue[0] === 'object' && newErrorValue[0] !== null) {
-      arrayValues = getFieldSetValues(newErrorValue[0]);
-    }
-  }
-
-  let errorTextValue = arrayValues.length > 0 ? arrayValues : newErrorValue.toString();
-  if (errorTextValue.includes('true') || errorTextValue.includes('false')) {
-    errorTextValue = errorTextValue === 'true' ? 'Kyllä' : 'Ei';
-  } else if (errorTextValue === '') {
-    errorTextValue = 'Tieto puuttuu';
-  }
-  const copyFieldsetValues = arrayValues.map(a => a).join('\n');
-
+  // Simple warning logic for validation errors only
   useEffect(() => {
-    if (hasError && !showWarning) {
+    if (lastSaved?.status === 'field_error' && !showWarning) {
       setShowWarning(true);
+    } else if (lastSaved?.status !== 'field_error' && showWarning) {
+      setShowWarning(false);
     }
-  }, [hasError, showWarning]);
+  }, [lastSaved?.status, showWarning]);
 
   // Limit visibility to fields present in lastSaved.fields when error/success
   const savedFields = Array.isArray(lastSaved?.fields) ? lastSaved.fields : [];
@@ -120,7 +147,10 @@ export default function NetworkErrorState({ fieldName }) {
     }
   }, [hasError, storedFieldName, isRelevantField, fieldName]);
   
-  const showNotifications = showWarning && (isRelevantField || storedRelevant) && (hasError || isSuccess);
+  // Show notifications for network errors OR validation errors
+  const showForNetworkError = showNetworkWarning && wasNetworkError && (isRelevantField || storedRelevant);
+  const showForValidationError = showWarning && lastSaved?.status === 'field_error' && (isRelevantField || storedRelevant);
+  const showNotifications = showForNetworkError || showForValidationError;
 
   if (!showNotifications) {
       return null;
@@ -138,7 +168,7 @@ export default function NetworkErrorState({ fieldName }) {
           className={`nes-notification nes-${banner.type}`}
         />
       )}
-      {showWarning && (hasError || isSuccess) && (
+      {(showNetworkWarning && wasNetworkError) || showForValidationError ? (
         <Notification
           type="alert"
           label={t('messages.unsaved-field-warning-label')}
@@ -147,14 +177,34 @@ export default function NetworkErrorState({ fieldName }) {
           className="nes-notification nes-warning-notification"
         >
           <div className="nes-warning-notification__content">
-            <p className="mb-4">{t('messages.unsaved-field-warning-text1')}</p>
-            <p>{t('messages.unsaved-field-warning-text2')}</p>
+            {showForValidationError && !wasNetworkError ? (
+              // Validation error (e.g., character limit exceeded)
+              <p style={{whiteSpace: 'pre-line'}}>{t('messages.unsaved-field-warning-validation')}</p>
+            ) : (
+              // Network error
+              <p style={{whiteSpace: 'pre-line'}}>{t('messages.unsaved-field-warning-network')}</p>
+            )}
           </div>
           <div className="nes-warning-notification__actions">
             <Button
               onClick={() => {
-                const toCopy = arrayValues.length > 0 ? copyFieldsetValues : errorTextValue;
-                navigator.clipboard.writeText(toCopy);
+                // Get current field value from Redux Form
+                const currentValue = formValues?.[fieldName];
+                
+                // Format the value for copying
+                let textToCopy = '';
+                if (currentValue?.ops) {
+                  // Quill Delta format - extract text
+                  textToCopy = currentValue.ops.map(op => op.insert || '').join('');
+                } else if (typeof currentValue === 'string') {
+                  textToCopy = currentValue;
+                } else if (currentValue) {
+                  textToCopy = JSON.stringify(currentValue);
+                } else {
+                  textToCopy = '';
+                }
+                
+                navigator.clipboard.writeText(textToCopy);
               }}
               size="small"
               variant="primary"
@@ -166,7 +216,7 @@ export default function NetworkErrorState({ fieldName }) {
             </Button>
           </div>
         </Notification>
-      )}
+      ) : null}
       {confirmOpen && createPortal(
         <div 
           className="custom-dialog-backdrop"
@@ -193,14 +243,6 @@ export default function NetworkErrorState({ fieldName }) {
                   {t('messages.close-notification-question')}
                 </h2>
               </div>
-              <button
-                className="custom-dialog-close"
-                onClick={() => setConfirmOpen(false)}
-                aria-label={t('common.close')}
-                type="button"
-              >
-                <IconCross size="s" />
-              </button>
             </div>
             
             <div className="custom-dialog-body">
@@ -218,9 +260,51 @@ export default function NetworkErrorState({ fieldName }) {
               <Button
                 onClick={() => {
                   setConfirmOpen(false);
-                  setShowWarning(false);
+                  
+                  // Always restore saved value when closing notification
+                  // If no saved value exists (undefined/null), use empty string to properly clear field
+                  if (fieldName) {
+                    const savedValue = initialValues?.[fieldName];
+                    const valueToRestore = savedValue !== undefined && savedValue !== null ? savedValue : '';
+                    dispatch(change(EDIT_PROJECT_FORM, fieldName, valueToRestore));
+                    
+                    // Mark field as untouched (pristine) to prevent validation errors on empty restore
+                    dispatch(untouch(EDIT_PROJECT_FORM, fieldName));
+                    
+                    // Remove field from error list to stop passivation
+                    dispatch(formErrorList(false, fieldName));
+                  }
+                  
+                  // Clear form-level errors for this field
+                  dispatch(stopSubmit(EDIT_PROJECT_FORM, {}));
+                  
+                  // Check if this is a validation error
+                  const isValidationError = lastSaved?.status === 'field_error';
+                  
+                  if (isValidationError) {
+                    // For validation errors: clear warning state
+                    setShowWarning(false);
+                  } else {
+                    // For network errors: clear network error flags
+                    setShowNetworkWarning(false);
+                    localStorage.removeItem(wasNetworkErrorKey);
+                  }
+                  
+                  // Trigger editor to refresh - needed for BOTH validation and network errors
+                  // The RichTextEditor will listen to this and reset validation states
+                  window.dispatchEvent(new CustomEvent('forceEditorRefresh', { 
+                    detail: { fieldName } 
+                  }));
+                  
+                  // Clear lastSaved if this was the only field with error
+                  // This prevents passivation from continuing
+                  const otherErrorFields = lastSaved?.fields?.filter(f => f !== fieldName) || [];
+                  if (otherErrorFields.length === 0) {
+                    dispatch(setLastSaved('', null, [], [], false));
+                  }
+                  
                   localStorage.removeItem('isRelevantField');
-                  dispatch({ type: 'Set network status', payload: { status: 'ok', okMessage: '', errorMessage: '' } });
+                  dispatch({ type: 'Reset network status' });
                 }}
                 variant="danger"
                 className="custom-dialog-confirm"
