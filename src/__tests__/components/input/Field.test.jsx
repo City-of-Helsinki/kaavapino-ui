@@ -30,7 +30,12 @@ describe('<Field />', () => {
       comment: {
         fieldComments: {}
       },
-      project: { checking: true,  connection: true }
+      project: { 
+        checking: true,  
+        connection: true,
+        formErrorList: [],
+        lastSaved: { status: '', fields: [] }
+      }
     }
     store = mockStore(initialState)
 
