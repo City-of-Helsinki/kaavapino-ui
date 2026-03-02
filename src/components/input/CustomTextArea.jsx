@@ -1,8 +1,10 @@
 import React, { useCallback, useRef, useEffect } from 'react'
 import { TextArea } from 'hds-react'
+import { useFieldPassivation } from '../../hooks/useFieldPassivation';
 
 const CustomTextArea = ({ input, meta: { error }, ...custom }) => {
 
+  const shouldDisableForErrors = useFieldPassivation(input.name);
   const oldValueRef = useRef('');
 
   useEffect(() => {
@@ -33,6 +35,7 @@ const CustomTextArea = ({ input, meta: { error }, ...custom }) => {
         {...input}
         {...custom}
         error={error}
+        disabled={shouldDisableForErrors || custom.disabled}
         onFocus={handleFocus}
         onChange={handleInputChange}
         onBlur={handleBlur}

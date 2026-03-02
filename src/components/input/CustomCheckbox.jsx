@@ -6,6 +6,7 @@ import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
 import { useSelector } from 'react-redux'
 import { Checkbox,Button,Notification } from 'hds-react'
 import { useTranslation } from 'react-i18next'
+import { useFieldPassivation } from '../../hooks/useFieldPassivation';
 
 const CustomCheckbox = ({
   input: { name, value, onChange },
@@ -23,16 +24,17 @@ const CustomCheckbox = ({
   isAdmin
 }) => {
   const { t } = useTranslation()
+  const shouldDisableForErrors = useFieldPassivation(name);
   const formValues = useSelector(getFormValues(formName ? formName : EDIT_PROJECT_TIMETABLE_FORM))
   const notDisabledBoxes = name === "kaavaluonnos_lautakuntaan_1" || name === "periaatteet_lautakuntaan_1" 
   || name === "jarjestetaan_periaatteet_esillaolo_1" || name === "jarjestetaan_luonnos_esillaolo_1"
   let checkboxDisabled
 
   if(notDisabledBoxes){
-    checkboxDisabled = disabled
+    checkboxDisabled = disabled || shouldDisableForErrors
   }
   else{
-    checkboxDisabled = autofillRule || disabled
+    checkboxDisabled = autofillRule || disabled || shouldDisableForErrors
   }
   const [checked, setChecked] = useState()
 

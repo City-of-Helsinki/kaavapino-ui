@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 import { Radio } from 'semantic-ui-react'
+import { useFieldPassivation } from '../../hooks/useFieldPassivation';
 
 const ToggleButton = ({
   input: { value, name, ...rest },
   meta: { error },
   ...custom
 }) => {
+  const shouldDisableForErrors = useFieldPassivation(name);
   const [checked, setChecked ] = useState(value ? true : false)
 
   const onChange = () => {
@@ -23,6 +25,7 @@ const ToggleButton = ({
         name={name}
         onChange={onChange}
         checked={checked}
+        disabled={shouldDisableForErrors || custom.disabled}
       />
     </div>
   )

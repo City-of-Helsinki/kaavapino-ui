@@ -11,9 +11,12 @@ import RollingInfo from '../input/RollingInfo.jsx'
 import NetworkErrorState from './NetworkErrorState.jsx'
 import {useFocus} from '../../hooks/useRefFocus'
 import { useIsMount } from '../../hooks/IsMounted'
+import { useFieldPassivation } from '../../hooks/useFieldPassivation'
 import './Input.scss'
 
-const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
+const CustomInput = ({ fieldData, input, meta, ...custom }) => {
+
+  const { error } = meta;
 
   // destructure props to avoid spreading custom props onto the DOM element
   const {
@@ -53,6 +56,9 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   const oldValueRef = useRef('');
   const { t } = useTranslation()
   const dispatch = useDispatch()
+  
+  // Check if other fields have validation errors OR connection errors (UX60.2.5 - passivate fields when error exists)
+  const shouldDisableForErrors = useFieldPassivation(input.name)
 
   // Needed for using lockedStatus as useEffect dependency
   const lockedStatusJsonString = JSON.stringify(lockedStatus);
@@ -82,15 +88,16 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     //!ismount skips initial render
     if(!isMount){
       //Adds field to error list that don't trigger toastr right away (too many chars,empty field etc) and shows them when trying to save
-      if(hasError){
+      // Only add to error list if field has been touched by user (prevents adding untouched restored fields)
+      if(hasError && meta.touched){
         dispatch(formErrorList(true,input.name))
       }
-      //removes field from error list
-      else{
+      //removes field from error list (can remove even if not touched)
+      else if(!hasError){
         dispatch(formErrorList(false,input.name))
       }
     }
-  }, [hasError])
+  }, [hasError, meta.touched])
 
   useEffect(() => {
     if(lastSaved?.status === "error"){
@@ -101,10 +108,14 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
 
   useEffect(() => {
     // Reset isThisFieldSaving when saving is complete for this field
-    if (isThisFieldSaving && (!saving || lastModified !== input.name)) {
+    // Check both lastModified (old behavior) and lastSaved.status (new behavior for timing sync)
+    const savingComplete = !saving || lastModified !== input.name;
+    const savedSuccessfully = lastSaved?.status === "success";
+    
+    if (isThisFieldSaving && (savingComplete || savedSuccessfully)) {
       setIsThisFieldSaving(false);
     }
-  }, [saving, lastModified, input.name, isThisFieldSaving])
+  }, [saving, lastModified, input.name, isThisFieldSaving, lastSaved?.status])
 
   useEffect(() => {
     //Chekcs that locked status has more data then inital empty object
@@ -195,8 +206,9 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
       custom.onFocus(input.name);
     }
 
+    // Only prevent editing on network errors (not field validation errors)
     if(lastSaved?.status === "error"){
-      //Prevent focus and editing to field if not locked
+      //Prevent focus and editing to field if there's a network error
       document.activeElement.blur()
     }
   }
@@ -244,6 +256,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
       //Send identifier data to change styles from FormField.js
       custom.lockField(false,false,identifier)
     }
+    
     if (typeof custom.handleUnlockField === 'function' && !custom.insideFieldset && 
       lockedStatus.lockData.attribute_lock.owner) {
       //Sent a call to unlock field to backend
@@ -432,20 +445,21 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   const renderTextInput = () => {
     const errorString = custom.customError || (custom.type === 'number' ? t('project.error-input-int') : t('project.error'));
     const blurredClass = isThisFieldSaving ? ' blurred' : '';
+    const hasErrorClass = (inputUtils.hasError(error) || hasError) ? ' error' : '';
     return (
-      <div className={`${custom.disabled || (!inputUtils.hasError(error) && !hasError) ? "text-input" : "text-input " + t('project.error')}${custom.type === 'number' ? ' number-input' : ''}${blurredClass}`}>
+      <div className={`text-input${custom.type === 'number' ? ' number-input' : ''}${blurredClass}${hasErrorClass}`}>
         {custom.type === 'number' ? (
           <NumberInput
             ref={inputRef}
             aria-label={input.name}
-            error={inputUtils.hasError(error) || hasError}
+            error={(inputUtils.hasError(error) || hasError) ? true : undefined}
             errorText={custom.disabled || (!inputUtils.hasError(error) && !hasError) ? "" : errorString}
             fluid="true"
             {...input}
             {...restCustom}
             min={custom.isFloorAreaForm ? 0 : undefined}
             step={custom.isFloorAreaForm ? null : 1}
-            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled || isThisFieldSaving}
+            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled || isThisFieldSaving || shouldDisableForErrors}
             onChange={(event) => { handleInputChange(event, readonly.read) }}
             onBlur={(event) => { handleBlur(event, readonly.read) }}
             onFocus={() => { handleFocus() }}
@@ -457,12 +471,12 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           <TextInput
             ref={inputRef}
             aria-label={input.name}
-            error={inputUtils.hasError(error) || hasError}
+            error={(inputUtils.hasError(error) || hasError) ? true : undefined}
             errorText={custom.disabled || (!inputUtils.hasError(error) && !hasError) ? "" : errorString}
             fluid="true"
             {...input}
             {...restCustom}
-            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled}
+            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled || shouldDisableForErrors}
             onChange={(event) => { handleInputChange(event, readonly.read) }}
             onBlur={(event) => { handleBlur(event, readonly.read) }}
             onFocus={() => { handleFocus() }}

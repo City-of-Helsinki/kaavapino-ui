@@ -8,6 +8,7 @@ import {lockedSelector,savingSelector,lastModifiedSelector } from '../../selecto
 import RollingInfo from '../input/RollingInfo.jsx'
 import NetworkErrorState from './NetworkErrorState.jsx'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
+import { useFieldPassivation } from '../../hooks/useFieldPassivation'
 
 // Label when there are more than one same option. To avoid key errors.
 const MORE_LABEL = ' (2)'
@@ -46,6 +47,9 @@ const SelectInput = ({
 	const [fieldName, setFieldName] = useState("")
 	const [editField,setEditField] = useState(false)
 	const [isThisFieldSaving, setIsThisFieldSaving] = useState(false)
+	
+	// Check if other fields have validation errors OR connection errors (UX60.2.5 - passivate fields when error exists)
+	const shouldDisableForErrors = useFieldPassivation(input.name)
 
 	useEffect(() => {
     //Chekcs that locked status has more data then inital empty object
@@ -309,7 +313,7 @@ const SelectInput = ({
           onBlur={handleBlur}
           onFocus={handleFocus}
           clearable={false}
-          disabled={disabled || editDisabled || isThisFieldSaving || (isProjectTimetableEdit && !timetable_editable)}
+          disabled={disabled || editDisabled || isThisFieldSaving || shouldDisableForErrors || (isProjectTimetableEdit && !timetable_editable)}
           options={preparedOptions}
           value={currentSingleValue}
           onChange={data => {
@@ -335,7 +339,7 @@ const SelectInput = ({
           onBlur={handleBlur}
           onFocus={handleFocus}
           clearable={true}
-          disabled={disabled || editDisabled || isThisFieldSaving || (isProjectTimetableEdit && !timetable_editable)}
+          disabled={disabled || editDisabled || isThisFieldSaving || shouldDisableForErrors || (isProjectTimetableEdit && !timetable_editable)}
           options={preparedOptions}
           defaultValue={currentValue}
           onChange={data => {

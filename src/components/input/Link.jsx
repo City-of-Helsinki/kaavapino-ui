@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import RollingInfo from '../input/RollingInfo.jsx'
 import NetworkErrorState from './NetworkErrorState.jsx'
 import { useIsMount } from '../../hooks/IsMounted'
+import { useFieldPassivation } from '../../hooks/useFieldPassivation'
 import {formErrorList} from '../../actions/projectActions'
 
 const Link = props => {
@@ -56,7 +57,11 @@ const Link = props => {
   const saving =  useSelector(state => savingSelector(state))
   const lastModified = useSelector(state => lastModifiedSelector(state))
   const [isThisFieldSaving, setIsThisFieldSaving] = useState(false)
-  const isValid = value => isUrl(value) || ipRegex({ exact: true }).test(value) || value === "" 
+  const isValid = value => isUrl(value) || ipRegex({ exact: true }).test(value) || value === ""
+  
+  // Check if other fields have validation errors (UX60.2.5 - passivate fields when error exists)
+  // Link only checks form errors, not connection errors
+  const shouldDisableForErrors = useFieldPassivation(props.input.name, { includeConnectionErrors: false })
 
   const multipleLinks = props.type === 'select-multiple'
   const isLinkValid = isValid(currentValue)
@@ -146,13 +151,13 @@ const Link = props => {
           onChange={onChange}
           className={(!isLinkValid && currentValue && !multipleLinks) ? 'error link' : 'link'}
           aria-label="link"
-          disabled={props.disabled || saving}
+          disabled={props.disabled || saving || shouldDisableForErrors}
         />
         </div>
         {!multipleLinks && (
         <Button
           className="link-button"
-          disabled={!isLinkValid || props.disabled || saving}
+          disabled={!isLinkValid || props.disabled || saving || shouldDisableForErrors}
           iconLeft={<IconLink />}
           onClick={openLink}
         >
