@@ -286,6 +286,14 @@ describe ("addDays and subtractDays with disabled dates", () => {
 });
 
 describe("getDisabledDates for various phases", () => {
+    /** Assert every date in the array falls on a weekday (Mon-Fri) */
+    const expectAllWeekdays = (dates) => {
+        for (const date of dates) {
+            const day = new Date(date).getDay();
+            expect([0, 6].includes(day), `${date} is a weekend`).toBe(false);
+        }
+    };
+
     test("getDisabledDatesForProjectStart returns valid *allowed* dates", () => {
         const name = "projektin_kaynnistys_pvm";
         const formValues = {
@@ -303,10 +311,9 @@ describe("getDisabledDates for various phases", () => {
         expect(result[result.length-1]).toBe("2025-05-19"); //maintain 10 working days distance
         const nextDate = new Date(formValues["kaynnistys_paattyy_pvm"]);
         for (let date of result) {
-            let newDate = new Date(date);
-            expect(newDate < nextDate).toBe(true);
-            expect(newDate.getDay() !== 0 && newDate.getDay() !== 6).toBe(true); // Not weekend
+            expect(new Date(date) < nextDate).toBe(true);
         }
+        expectAllWeekdays(result);
     });
     test("getDisabledDatesForApproval returns valid *allowed* dates", () => {
         const name = "hyvaksymispaatos_pvm";
@@ -323,10 +330,9 @@ describe("getDisabledDates for various phases", () => {
         expect(result[0]).toBe("2025-05-23"); // maintain 15 working days distance
         const previousDate = new Date(formValues["hyvaksyminenvaihe_alkaa_pvm"]);
         for (let date of result) {
-            let newDate = new Date(date);
-            expect(newDate > previousDate).toBe(true);
-            expect(newDate.getDay() !== 0 && newDate.getDay() !== 6).toBe(true); // Not weekend
+            expect(new Date(date) > previousDate).toBe(true);
         }
+        expectAllWeekdays(result);
         const resultXS = timeUtil.getDisabledDatesForApproval(name, formValues, matchingItem, dateTypes, "XS");
         expect(resultXS[0]).toBe("2025-05-22"); // 1 extra day for XS/S
     });
@@ -365,10 +371,9 @@ describe("getDisabledDates for various phases", () => {
         expect(result_maaraika[0]).toBe("2025-08-11");
         const previousDate_maaraika = new Date(formValues["tarkistettu_ehdotusvaihe_alkaa_pvm"]);
         for (let date of result_maaraika) {
-            let newDate = new Date(date);
-            expect(newDate > previousDate_maaraika).toBe(true);
-            expect([0, 6].includes(newDate.getDay())).toBe(false);
+            expect(new Date(date) > previousDate_maaraika).toBe(true);
         }
+        expectAllWeekdays(result_maaraika);
         const result_lautakunta = timeUtil.getDisabledDatesForLautakunta("milloin_tarkistettu_ehdotus_lautakunnassa", formValues, "tarkistettu_ehdotus", lautakuntaItem, kylkItem, dateTypes);
         const previousDate = new Date(formValues["tarkistettu_ehdotus_kylk_maaraaika"]);
         // 27 work days distance from maaraika (23rd), then next possible tuesday (30th)
@@ -440,26 +445,17 @@ describe("getDisabledDates for various phases", () => {
         // Test maaraAika - should return disabled dates (working days only)
         const maaraAikaResult = timeUtil.getDisabledDatesForSizeXSXL(name, formValues, maaraAikaItem, dateTypes);
         expect(maaraAikaResult.length).toBeGreaterThan(0);
-        for (let date of maaraAikaResult) {
-            let newDate = new Date(date);
-            expect(newDate.getDay() !== 0 && newDate.getDay() !== 6).toBe(true); // Not weekend
-        }
+        expectAllWeekdays(maaraAikaResult);
         
         // Test alkaa - should return disabled dates after prerequisite
         const alkaaResult = timeUtil.getDisabledDatesForSizeXSXL("milloin_oas_esillaolo_alkaa", formValues, alkaaItem, dateTypes);
         expect(alkaaResult.length).toBeGreaterThan(0);
-        for (let date of alkaaResult) {
-            let newDate = new Date(date);
-            expect(newDate.getDay() !== 0 && newDate.getDay() !== 6).toBe(true);
-        }
+        expectAllWeekdays(alkaaResult);
         
         // Test paattyy - should return disabled dates (working days only)
         const paattyyResult = timeUtil.getDisabledDatesForSizeXSXL("milloin_oas_esillaolo_paattyy", formValues, paattyyItem, dateTypes);
         expect(paattyyResult.length).toBeGreaterThan(0);
-        for (let date of paattyyResult) {
-            let newDate = new Date(date);
-            expect(newDate.getDay() !== 0 && newDate.getDay() !== 6).toBe(true); // Not weekend
-        }
+        expectAllWeekdays(paattyyResult);
     });
     test("getHighestLautakuntaDate returns correct date", () => {
         const formValues = {
@@ -613,22 +609,88 @@ describe("compareAndUpdateDates function", () => {
         test_data = structuredClone(test_attribute_data)
     });
 
-    test("compareAndUpdateDates viimeistaan_ dates correctly", () => {
-        const viimeistaan_items = {
-            "viimeistaan_lausunnot_ehdotuksesta": "milloin_ehdotuksen_nahtavilla_paattyy",
-            "viimeistaan_lausunnot_ehdotuksesta_2": "milloin_ehdotuksen_nahtavilla_paattyy_2",
-            "viimeistaan_lausunnot_ehdotuksesta_3": "milloin_ehdotuksen_nahtavilla_paattyy_3",
-            "viimeistaan_lausunnot_ehdotuksesta_4": "milloin_ehdotuksen_nahtavilla_paattyy_4"
-        }
-        for (let key in viimeistaan_items) {
-            test_data[key] = null;
-        }
-        timeUtil.compareAndUpdateDates(test_data);
-        for (let key in viimeistaan_items) {
-            expect(test_data[key], `Key ${key} was not updated`).toBe(test_data[viimeistaan_items[key]]);
-        }
+    // === LAUSUNNOT VIIMEISTÄÄN RULES ===
+    // Helper: set paattyy and lausunnot for a given suffix
+    const setLausuntoPair = (data, paattyy, lausunnot, suffix = "") => {
+        data[`milloin_ehdotuksen_nahtavilla_paattyy${suffix}`] = paattyy;
+        data[`viimeistaan_lausunnot_ehdotuksesta${suffix}`] = lausunnot;
+    };
+    const makeSnapshot = (values) => ({
+        milloin_ehdotuksen_nahtavilla_paattyy: values[0] ?? null,
+        milloin_ehdotuksen_nahtavilla_paattyy_2: values[1] ?? null,
+        milloin_ehdotuksen_nahtavilla_paattyy_3: values[2] ?? null,
+        milloin_ehdotuksen_nahtavilla_paattyy_4: values[3] ?? null,
     });
-    test.skip("compareAndUpdateDates phase end dates correctly", () => {
+
+    // RULE 1: paattyy changed (any direction) → lausunnot MUST equal new paattyy
+    test.each([
+        { oldP: "2025-01-10", newP: "2025-01-15", oldL: "2025-01-10", desc: "forward, lausunnot was same as old paattyy" },
+        { oldP: "2025-06-15", newP: "2025-06-10", oldL: "2025-06-15", desc: "backward, lausunnot was same as old paattyy" },
+        { oldP: "2025-03-01", newP: "2025-04-01", oldL: "2025-05-01", desc: "forward, lausunnot was much later" },
+        { oldP: "2025-08-20", newP: "2025-07-01", oldL: "2025-12-31", desc: "backward, lausunnot was much later" },
+        { oldP: "2025-12-31", newP: "2026-01-02", oldL: "2025-12-31", desc: "across year boundary" },
+        { oldP: "2025-02-28", newP: "2025-03-01", oldL: "2025-02-28", desc: "across month boundary" },
+        { oldP: "2025-05-10", newP: "2025-05-09", oldL: "2025-05-10", desc: "one day backward" },
+        { oldP: "2025-05-10", newP: "2025-05-11", oldL: "2025-05-10", desc: "one day forward" },
+    ])("RULE: paattyy changed → lausunnot = new paattyy ($desc)", ({ oldP, newP, oldL }) => {
+        setLausuntoPair(test_data, newP, oldL);
+        timeUtil.compareAndUpdateDates(test_data, makeSnapshot([oldP]));
+        expect(test_data["viimeistaan_lausunnot_ehdotuksesta"]).toBe(newP);
+    });
+
+    // RULE 2: paattyy unchanged → lausunnot >= paattyy must be preserved
+    test.each([
+        { paattyy: "2025-03-15", lausunnot: "2025-03-15", desc: "equal to paattyy" },
+        { paattyy: "2025-03-15", lausunnot: "2025-03-16", desc: "one day later" },
+        { paattyy: "2025-03-15", lausunnot: "2025-06-01", desc: "months later" },
+        { paattyy: "2025-01-01", lausunnot: "2025-12-31", desc: "almost a year later" },
+    ])("RULE: paattyy unchanged → preserve lausunnot >= paattyy ($desc)", ({ paattyy, lausunnot }) => {
+        setLausuntoPair(test_data, paattyy, lausunnot);
+        timeUtil.compareAndUpdateDates(test_data, makeSnapshot([paattyy]));
+        expect(test_data["viimeistaan_lausunnot_ehdotuksesta"]).toBe(lausunnot);
+    });
+
+    // RULE 3: paattyy unchanged, lausunnot invalid/before paattyy → floor to paattyy
+    test.each([
+        { paattyy: "2025-06-15", lausunnot: "2025-06-14", desc: "one day before" },
+        { paattyy: "2025-06-15", lausunnot: "2025-01-01", desc: "months before" },
+        { paattyy: "2025-06-15", lausunnot: "", desc: "empty string" },
+        { paattyy: "2025-06-15", lausunnot: null, desc: "null" },
+    ])("RULE: paattyy unchanged, invalid lausunnot → floor to paattyy ($desc)", ({ paattyy, lausunnot }) => {
+        setLausuntoPair(test_data, paattyy, lausunnot);
+        timeUtil.compareAndUpdateDates(test_data, makeSnapshot([paattyy]));
+        expect(test_data["viimeistaan_lausunnot_ehdotuksesta"]).toBe(paattyy);
+    });
+
+    // RULE 4: no snapshot (EditProjectTimetableModal path) → only floor constraint
+    test.each([
+        { paattyy: "2025-04-01", lausunnot: "2025-09-01", expected: "2025-09-01", desc: "later → preserved" },
+        { paattyy: "2025-04-01", lausunnot: "2025-04-01", expected: "2025-04-01", desc: "equal → preserved" },
+        { paattyy: "2025-04-01", lausunnot: "2025-03-01", expected: "2025-04-01", desc: "before → floored" },
+        { paattyy: "2025-04-01", lausunnot: null, expected: "2025-04-01", desc: "null → floored" },
+        { paattyy: "2025-04-01", lausunnot: "", expected: "2025-04-01", desc: "empty → floored" },
+    ])("RULE: no snapshot → floor only ($desc)", ({ paattyy, lausunnot, expected }) => {
+        setLausuntoPair(test_data, paattyy, lausunnot);
+        timeUtil.compareAndUpdateDates(test_data);
+        expect(test_data["viimeistaan_lausunnot_ehdotuksesta"]).toBe(expected);
+    });
+
+    // RULE 5: indexed fields are evaluated independently
+    test("RULE: each suffix syncs/preserves independently based on its own paattyy change", () => {
+        // _1: paattyy changed → sync
+        setLausuntoPair(test_data, "2025-05-20", "2025-08-01", "");
+        // _2: paattyy NOT changed → preserve
+        setLausuntoPair(test_data, "2025-07-15", "2025-09-01", "_2");
+        // _3: paattyy changed → sync
+        setLausuntoPair(test_data, "2025-12-01", "2025-11-15", "_3");
+        const snapshot = makeSnapshot(["2025-05-10", "2025-07-15", "2025-11-01"]);
+        timeUtil.compareAndUpdateDates(test_data, snapshot);
+        expect(test_data["viimeistaan_lausunnot_ehdotuksesta"]).toBe("2025-05-20");     // synced
+        expect(test_data["viimeistaan_lausunnot_ehdotuksesta_2"]).toBe("2025-09-01");   // preserved
+        expect(test_data["viimeistaan_lausunnot_ehdotuksesta_3"]).toBe("2025-12-01");   // synced
+    });
+
+    test("compareAndUpdateDates phase end dates correctly", () => {
         const end_keys = [
             "periaatteetvaihe_paattyy_pvm",
             "oasvaihe_paattyy_pvm",
@@ -654,45 +716,47 @@ describe("compareAndUpdateDates function", () => {
         test_data["kaavaluonnos_lautakuntaan_1"] = true;
         test_data["kaavaluonnos_lautakuntaan_2"] = true;
         test_data["kaavaluonnos_lautakuntaan_3"] = false;
-        test_data["kaavehdotus_nahtaville_1"] = true;
-        test_data["kaavehdotus_uudelleen_nahtaville_2"] = true;
-        test_data["kaavehdotus_uudelleen_nahtaville_3"] = false;
+        test_data["kaavaehdotus_nahtaville_1"] = true;
+        test_data["kaavaehdotus_uudelleen_nahtaville_2"] = true;
+        test_data["kaavaehdotus_uudelleen_nahtaville_3"] = false;
         test_data["tarkistettu_ehdotus_lautakuntaan_1"] = true;
         test_data["tarkistettu_ehdotus_lautakuntaan_2"] = true;
         test_data["tarkistettu_ehdotus_lautakuntaan_3"] = false;
         test_data["tarkistettu_ehdotus_lautakuntaan_4"] = false;
 
+        timeUtil.compareAndUpdateDates(test_data);
         expect(test_data["oasvaihe_paattyy_pvm"]).toBe(test_data["milloin_oas_esillaolo_paattyy_2"]);
         expect(test_data["luonnosvaihe_paattyy_pvm"]).toBe(test_data["milloin_kaavaluonnos_lautakunnassa_2"]);
-        expect(test_data["ehdotusvaihe_paattyy_pvm"]).toBe(test_data["milloin_kaavaehdotus_lautakunnassa_2"]);
+        expect(test_data["ehdotusvaihe_paattyy_pvm"]).toBe(test_data["viimeistaan_lausunnot_ehdotuksesta_2"]);
         expect(test_data["tarkistettuehdotusvaihe_paattyy_pvm"]).toBe(test_data["milloin_tarkistettu_ehdotus_lautakunnassa_2"]);
-        timeUtil.compareAndUpdateDates(test_data);
     });
-    test.skip("compareAndUpdateDates end dates, periaatteet with no lautakunta", () => {
-        test_data["periaatteetvaihe_paattyy_pvm"] = undefined;
-        test_data["periaatteet_lautakuntaan_1"] = false;
-        test_data["periaatteet_lautakuntaan_2"] = false;
-        test_data["periaatteet_lautakuntaan_3"] = false;
-        test_data["periaatteet_lautakuntaan_4"] = false;
-        test_data["jarjestetaan_periaatteet_esillaolo_1"] = true;
-        test_data["jarjestetaan_periaatteet_esillaolo_2"] = false;
-        test_data["jarjestetaan_periaatteet_esillaolo_3"] = false;
-        timeUtil.compareAndUpdateDates(test_data);
-        expect(test_data["periaatteetvaihe_paattyy_pvm"]).toBe(test_data["milloin_periaatteet_esillaolo_paattyy"]);
-    });
-    test.skip("compareAndUpdateDates end dates, luonnos with no lautakunta", () => {
-        test_data["luonnosvaihe_paattyy_pvm"] = undefined;
-        test_data["kaavaluonnos_lautakuntaan_1"] = false;
-        test_data["kaavaluonnos_lautakuntaan_2"] = false;
-        test_data["kaavaluonnos_lautakuntaan_3"] = false;
-        test_data["kaavaluonnos_lautakuntaan_4"] = false;
-        test_data["jarjestetaan_luonnos_esillaolo_1"] = true;
-        test_data["jarjestetaan_luonnos_esillaolo_2"] = false;
-        test_data["jarjestetaan_luonnos_esillaolo_3"] = false;
-        timeUtil.compareAndUpdateDates(test_data);
-        expect(test_data["luonnosvaihe_paattyy_pvm"]).toBe(test_data["milloin_luonnos_esillaolo_paattyy"]);
-    });
-    test.skip("compareAndUpdateDates end dates, ehdotus in XS size", () => {
+    test.each([
+        {
+            phase: "periaatteet",
+            endKey: "periaatteetvaihe_paattyy_pvm",
+            lautakuntaPrefix: "periaatteet_lautakuntaan",
+            esillaoloPrefix: "jarjestetaan_periaatteet_esillaolo",
+            expectedSrc: "milloin_periaatteet_esillaolo_paattyy",
+        },
+        {
+            phase: "luonnos",
+            endKey: "luonnosvaihe_paattyy_pvm",
+            lautakuntaPrefix: "kaavaluonnos_lautakuntaan",
+            esillaoloPrefix: "jarjestetaan_luonnos_esillaolo",
+            expectedSrc: "milloin_luonnos_esillaolo_paattyy",
+        },
+    ])("compareAndUpdateDates end dates, $phase with no lautakunta",
+        ({ endKey, lautakuntaPrefix, esillaoloPrefix, expectedSrc }) => {
+            test_data[endKey] = undefined;
+            for (let i = 1; i <= 4; i++) test_data[`${lautakuntaPrefix}_${i}`] = false;
+            test_data[`${esillaoloPrefix}_1`] = true;
+            test_data[`${esillaoloPrefix}_2`] = false;
+            test_data[`${esillaoloPrefix}_3`] = false;
+            timeUtil.compareAndUpdateDates(test_data);
+            expect(test_data[endKey]).toBe(test_data[expectedSrc]);
+        }
+    );
+    test("compareAndUpdateDates end dates, ehdotus in XS size", () => {
         test_data["ehdotusvaihe_paattyy_pvm"] = undefined;
         test_data["kaavaprosessin_kokoluokka"] = "XS";
         test_data["kaavaehdotus_lautakuntaan_1"] = false;
@@ -705,7 +769,7 @@ describe("compareAndUpdateDates function", () => {
         timeUtil.compareAndUpdateDates(test_data);
         expect(test_data["ehdotusvaihe_paattyy_pvm"]).toBe(test_data["milloin_ehdotuksen_nahtavilla_paattyy"]);
     });
-    test.skip("compareAndUpdateDates moves backwards start dates to match previous end dates", () => {
+    test("compareAndUpdateDates moves backwards start dates to match previous end dates", () => {
         test_data["periaatteetvaihe_alkaa_pvm"] = "2025-05-01";
         test_data["kaynnistys_paattyy_pvm"] = "2025-06-01";
         timeUtil.compareAndUpdateDates(test_data);
