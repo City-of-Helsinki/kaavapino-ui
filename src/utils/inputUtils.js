@@ -32,7 +32,14 @@ const renderUpdatedFieldInfo = ({ savingField, fieldName, updated, t, isFieldset
 		<div className='popup-container'>
 			{shouldShowSpinner ? (
 				<div className='spinner-container'>
-					<LoadingSpinner className='loading-spinner' small />
+					<LoadingSpinner 
+						className='loading-spinner' 
+						small 
+						theme={{
+							'--spinner-color': '#0000BF',
+							'--spinner-thickness': '2px'
+						}}
+					/>
 				</div>
 			) : (
 				updated && updated.timestamp && (

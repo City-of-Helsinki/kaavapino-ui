@@ -13,7 +13,7 @@ import { Button, IconLock, IconPlus, IconTrash, IconAngleDown, IconAngleUp, Load
 import { change } from 'redux-form'
 import { useTranslation } from 'react-i18next';
 import { OutsideClick } from '../../hooks/OutsideClick'
-import {getAttributeData} from '../../actions/projectActions'
+import {getAttributeData, formErrorList} from '../../actions/projectActions'
 import { useIsMount } from '../../hooks/IsMounted'
 import PropTypes from 'prop-types'
 import './Input.scss'
@@ -82,6 +82,14 @@ const FieldSet = ({
 
   const hideFieldset = (formName, set, nulledFields,i) => {
     setHiding(true)
+    
+    // Remove all fields in this fieldset from error list to prevent UI from getting stuck
+    // When a fieldset is deleted, any errors in its fields should be cleared
+    fields.forEach(field => {
+      const fieldName = `${set}.${field.name}`;
+      dispatch(formErrorList(false, fieldName));
+    });
+    
     dispatch(getAttributeData(attributeData?.projektin_nimi,name,formName, set, nulledFields,i))
   }
 
@@ -412,7 +420,13 @@ const FieldSet = ({
                 )}
                 {hiding && (
                 <div className="fieldset-spinner-remove">
-                  <LoadingSpinner className="loading-spinner" />
+                  <LoadingSpinner 
+                    className="loading-spinner" 
+                    theme={{
+                      '--spinner-color': '#0000BF',
+                      '--spinner-thickness': '2px'
+                    }}
+                  />
                   {t('project.deleting')}
                 </div>
                 )}
@@ -440,7 +454,13 @@ const FieldSet = ({
           iconLeft={
           (currentFieldset === name) && adding ? (
             <div className="fieldset-spinner-button">
-              <LoadingSpinner className="loading-spinner" />
+              <LoadingSpinner 
+                className="loading-spinner" 
+                theme={{
+                  '--spinner-color': '#0000BF',
+                  '--spinner-thickness': '2px'
+                }}
+              />
             </div>
           ) : (
             <IconPlus />
@@ -455,7 +475,13 @@ const FieldSet = ({
          ? (
            <div className='fieldset-saving-notification'>
              <div className="fieldset-spinner">
-               <LoadingSpinner className="loading-spinner" />
+               <LoadingSpinner 
+                 className="loading-spinner" 
+                 theme={{
+                   '--spinner-color': '#0000BF',
+                   '--spinner-thickness': '2px'
+                 }}
+               />
              </div>
              {t('project.saving')}
            </div>
