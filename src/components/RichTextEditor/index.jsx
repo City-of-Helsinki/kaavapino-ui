@@ -798,54 +798,89 @@ function RichTextEditor(props) {
     }
   }
 
+  // Helper: Check if editor value update should be blocked
+  const shouldBlockEditorUpdate = () => {
+    // CRITICAL: Don't overwrite editor if field has active network error
+    if (hasActiveNetworkError(inputProps.name)) {
+      return true; // Don't touch editor when network error warning is visible
+    }
+    
+    // CRITICAL: Don't overwrite editor if user is currently editing with char limit error
+    // User needs to see their typed content to be able to fix it
+    if (isFocused && (charLimitOver || maxSizeOver)) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  // Helper: Update editor contents and sync cursor position
+  const updateEditorContents = (dbValue) => {
+    const cursorPosition = editorRef.current.getEditor().getSelection()
+    editorRef.current.getEditor().setContents(dbValue);
+    editorRef.current.getEditor().setSelection(cursorPosition?.index);
+    counter.current = editorRef.current.getEditor().getLength() -1
+    setValueIsEmpty(false)
+  }
+
+  // Helper: Sync fieldset value to Redux Form
+  const syncFieldsetValue = (dbValue) => {
+    const shouldSync = insideFieldset && (!nonEditable || !rollingInfo);
+    const contentsMatch = isEqual(editorRef?.current?.getEditor()?.getContents()?.ops, dbValue?.ops);
+    
+    if (shouldSync && !contentsMatch) {
+      //Set onchange to redux form so values don't get offsync on fieldsets
+      setCurrentTimeout(() =>
+        setTimeout(
+          () =>
+            dispatch(
+              change(
+                fieldFormName,
+                inputProps.name,
+                dbValue
+              )
+            ),
+          1
+        ))
+    }
+  }
+
+  // Helper: Set placeholder when field is empty
+  const setPlaceholderIfEmpty = () => {
+    if (!placeholder || value) {
+      return;
+    }
+    
+    // Only set placeholder if field is truly empty (no Redux Form value)
+    // Don't overwrite existing content or content during error states
+    const placeholderOps = { ops: [{ insert: placeholder + '\n' }] }; // Proper Quill Delta format
+    editorRef.current.getEditor().setContents(placeholderOps);
+  }
+
   const setValue = (dbValue) => {
-    if (editorRef?.current) {
-      // CRITICAL: Don't overwrite editor if field has active network error
-      if (hasActiveNetworkError(inputProps.name)) {
-        return; // Don't touch editor when network error warning is visible
-      }
-      
-      // CRITICAL: Don't overwrite editor if user is currently editing with char limit error
-      // User needs to see their typed content to be able to fix it
-      if (isFocused && (charLimitOver || maxSizeOver)) {
-        return;
-      }
-      
-      let name = inputProps.name;
-      let originalData = attributeData[name]?.ops
-      if(insideFieldset && !nonEditable || !rollingInfo){
-        originalData = getOriginalData(name,originalData)
-      }
-      //set editor value from db value updated with focus and lock call if data has changed on db
-      // or set it when recovering from no connection to backend
-      if(dbValue?.ops && !isEqual(originalData, dbValue?.ops) || connection.connection){
-        const cursorPosition = editorRef.current.getEditor().getSelection()
-        editorRef.current.getEditor().setContents(dbValue);
-        editorRef.current.getEditor().setSelection(cursorPosition?.index);
-        counter.current = editorRef.current.getEditor().getLength() -1
-        setValueIsEmpty(false)
-        if(insideFieldset && (!nonEditable || !rollingInfo) && !isEqual(editorRef?.current?.getEditor()?.getContents()?.ops, dbValue?.ops)){
-          //Set onchange to redux form so values don't get offsync on fieldsets
-          setCurrentTimeout(() =>
-          setTimeout(
-            () =>
-              dispatch(
-                change(
-                  fieldFormName,
-                  inputProps.name,
-                  dbValue
-                )
-              ),
-            1
-          ))
-        }
-      }
-      else if (!dbValue && placeholder && !value) {
-        // Only set placeholder if field is truly empty (no Redux Form value)
-        // Don't overwrite existing content or content during error states
-        const placeholderOps = { ops: [{ insert: placeholder + '\n' }] }; // Proper Quill Delta format
-        editorRef.current.getEditor().setContents(placeholderOps);
-      }
+    if (!editorRef?.current) {
+      return;
+    }
+
+    if (shouldBlockEditorUpdate()) {
+      return;
+    }
+    
+    let name = inputProps.name;
+    let originalData = attributeData[name]?.ops
+    if(insideFieldset && !nonEditable || !rollingInfo){
+      originalData = getOriginalData(name,originalData)
+    }
+    
+    //set editor value from db value updated with focus and lock call if data has changed on db
+    // or set it when recovering from no connection to backend
+    const shouldUpdate = (dbValue?.ops && !isEqual(originalData, dbValue?.ops)) || connection.connection;
+    
+    if (shouldUpdate) {
+      updateEditorContents(dbValue);
+      syncFieldsetValue(dbValue);
+    } else if (!dbValue) {
+      setPlaceholderIfEmpty();
     }
   }
 
