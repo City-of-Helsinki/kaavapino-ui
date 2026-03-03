@@ -62,14 +62,16 @@ describe('inputUtils', () => {
                 })
             )
             expect(container.querySelector('.loading-spinner')).toBeFalsy()
-            expect(container.querySelector('.input-history')).toBeFalsy()
+            expect(container.querySelector('.input-history-tooltip')).toBeFalsy()
 
             // Click tooltip to reveal content
             const tooltipButton = container.querySelector('button')
             expect(tooltipButton).toBeTruthy()
             fireEvent.click(tooltipButton)
             
-            expect(document.querySelector('.input-history')).toBeTruthy()
+            expect(document.querySelector('.input-history-tooltip')).toBeTruthy()
+            expect(document.querySelector('.input-history-title')).toBeTruthy()
+            expect(document.querySelector('.input-history-details')).toBeTruthy()
             expect(projectUtils.formatDate).toHaveBeenCalledWith('2023-01-15T14:30:00Z')
             expect(projectUtils.formatTime).toHaveBeenCalledWith('2023-01-15T14:30:00Z')
         })
