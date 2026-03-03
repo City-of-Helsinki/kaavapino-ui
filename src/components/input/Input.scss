@@ -238,6 +238,11 @@
 
   .max-chars-error{
     @include hds-error-notification;
+    
+    // Hide any manually added SVG icons since mixin provides icon via ::before
+    svg {
+      display: none;
+    }
   }
 }
 
@@ -1195,32 +1200,18 @@
   .input-spinner {
     position: absolute;
     top: 60%;
-    right: 0.75rem; // Adjust depending on padding of your input
+    right: 0.75rem;
     transform: translateY(-50%);
     pointer-events: none;
     z-index: 2;
-  
-    .loading-spinner {
-      --spinner-size: 1.5em; // override default size
-      width: var(--spinner-size);
-      height: var(--spinner-size);
-      --spinner-color: #0000bf;
-    }
   }
   .input-spinner-datetime{
     position: absolute;
     top: 75%;
-    right: 0.75rem; // Adjust depending on padding of your input
+    right: 0.75rem;
     transform: translateY(-50%);
     pointer-events: none;
     z-index: 2;
-  
-    .loading-spinner {
-      --spinner-size: 1.5em; // override default size
-      width: var(--spinner-size);
-      height: var(--spinner-size);
-      --spinner-color: #0000bf;
-    }
   }
 
 // Hide native browser stepper buttons
@@ -1267,32 +1258,18 @@
     .input-spinner {
       position: absolute;
       top: 60%;
-      right: 0.75rem; // Adjust depending on padding of your input
+      right: 0.75rem;
       transform: translateY(-50%);
       pointer-events: none;
       z-index: 2;
-    
-      .loading-spinner {
-        --spinner-size: 1.5em; // override default size
-        width: var(--spinner-size);
-        height: var(--spinner-size);
-        --spinner-color: #0000bf;
-      }
     }
     .input-spinner-datetime{
       position: absolute;
       top: 61%;
-      left: 10.75rem; // Adjust depending on padding of your input
+      left: 10.75rem;
       transform: translateY(-50%);
       pointer-events: none;
       z-index: 2;
-    
-      .loading-spinner {
-        --spinner-size: 1.5em; // override default size
-        width: var(--spinner-size);
-        height: var(--spinner-size);
-        --spinner-color: #0000bf;
-      }
     }
   }
 }
@@ -1303,7 +1280,7 @@
   .select-spinner-overlay {
     position: absolute;
     top: 50%;
-    right: 2.5rem; // Adjust based on spacing inside Select
+    right: 2.5rem;
     transform: translateY(-50%);
     z-index: 2;
     pointer-events: none;
@@ -1313,14 +1290,7 @@
     }
   
     &.multi {
-      right: 5.5rem; // Adjust to align before dropdown icon
-    }
-  
-    .loading-spinner {
-      --spinner-size: 1.25rem;
-      width: var(--spinner-size);
-      height: var(--spinner-size);
-      --spinner-color: #0000bf;
+      right: 5.5rem;
     }
   }
 }
@@ -1335,13 +1305,6 @@
     transform: translateY(-50%);
     z-index: 2;
     pointer-events: none;
-
-    .loading-spinner {
-      --spinner-size: 1.25rem;
-      width: var(--spinner-size);
-      height: var(--spinner-size);
-      --spinner-color: #0000bf;
-    }
   }
 
   &.blurred {
@@ -1356,17 +1319,10 @@
   .link-spinner-overlay {
     position: absolute;
     top: 50%;
-    right: 1rem; // adjust based on TextInput's padding
+    right: 1rem;
     transform: translateY(-50%);
     z-index: 2;
     pointer-events: none;
-  
-    .loading-spinner {
-      --spinner-size: 1.25rem;
-      width: var(--spinner-size);
-      height: var(--spinner-size);
-      --spinner-color: #0000bf;
-    }
   }
 }
 
