@@ -268,90 +268,111 @@ function RichTextEditor(props) {
     }
   }, [charLimitOver, counter.current, props.maxSize]);
 
+  /**
+   * Check if this field has an active network error stored in localStorage
+   */
+  const hasActiveNetworkError = (fieldName) => {
+    const wasNetworkErrorKey = `wasNetworkError_${fieldName}`;
+    try {
+      return localStorage.getItem(wasNetworkErrorKey) === 'true';
+    } catch (e) {
+      return false; // localStorage not available - assume no error to allow editing
+    }
+  };
+
+  /**
+   * Check if we just recovered from a network error
+   */
+  const isJustRecoveredFromError = (prevStatus, currentStatus) => {
+    return (prevStatus === 'error' || prevStatus === 'connection_restored') && 
+           (currentStatus === 'success' || 
+            currentStatus === 'connection_restored' || 
+            currentStatus === '' || 
+            !currentStatus);
+  };
+
+  /**
+   * Update editor content and related states
+   */
+  const updateEditorContent = (editor, newValue) => {
+    editor.setContents(newValue);
+    counter.current = editor.getLength() - 1;
+    
+    const maxSize = props.maxSize || 20000;
+    if (counter.current > maxSize) {
+      setCharLimitOver(true);
+    } else {
+      setCharLimitOver(false);
+    }
+  };
+
+  /**
+   * Determine if editor content should be updated
+   */
+  const shouldUpdateEditorContent = (editor, value, errorWasJustCleared) => {
+    const currentContents = editor.getContents();
+    const currentLength = editor.getLength() - 1;
+    
+    const contentChanged = !isEqual(currentContents, value);
+    const lengthMismatch = Math.abs(currentLength - counter.current) > 5;
+    
+    return (contentChanged && lengthMismatch) || errorWasJustCleared;
+  };
+
   // Force Quill to update when Redux Form value changes externally
   // This handles cases like user closing error notification which reverts the field
   useEffect(() => {
-    // Check if connection was just recovered
-    const connectionJustRecovered = prevNetworkStatus.current === 'error' && network?.status === 'success'
-    prevNetworkStatus.current = network?.status || 'ok'
+    // Track network status transitions
+    const connectionJustRecovered = prevNetworkStatus.current === 'error' && network?.status === 'success';
+    prevNetworkStatus.current = network?.status || 'ok';
     
-    // Track if this field had an error before recovery
-    wasInAnyErrorList.current = fieldsWithAnyError.includes(inputProps.name)
+    // Track error list membership
+    wasInAnyErrorList.current = fieldsWithAnyError.includes(inputProps.name);
     
-    // If connection just recovered and field is focused, skip update to preserve user's edits
-    // If field is unfocused, allow update to refresh the display with server data
+    // Skip update if connection just recovered and user is still editing
     if (connectionJustRecovered && isFocused) {
-      return
+      return;
     }
     
-    // Check if this field was just removed from error list (error was cleared)
-    // Use state instead of ref to preserve this flag across re-renders
+    // Track if field was just removed from error list
     const wasJustCleared = wasInErrorList.current && !formErrors.includes(inputProps.name);
     if (wasJustCleared) {
       setErrorJustCleared(true);
     }
     wasInErrorList.current = formErrors.includes(inputProps.name);
     
-    // Update editor if user is NOT currently editing (field not focused)
-    if (editorRef.current && value && !isFocused) {
-      const editor = editorRef.current.getEditor();
-      if (editor) {
-        // CRITICAL: Check if this field has an active network error in localStorage
-        // If yellow warning box is visible, NEVER update editor to preserve user data
-        const wasNetworkErrorKey = `wasNetworkError_${inputProps.name}`;
-        let hasActiveNetworkError = false;
-        try {
-          hasActiveNetworkError = localStorage.getItem(wasNetworkErrorKey) === 'true';
-        } catch (e) {
-          // localStorage not available - assume no error to allow editing
-        }
-        
-        // CRITICAL: After network error recovery, NEVER update editor to preserve user data
-        // The user's data is still in the editor and in Redux Form (formValues)
-        // Only initialValues gets updated from backend, which might be old data
-        // Check if we just recovered from error OR are in connection_restored state
-        const justRecoveredFromError = (prevLastSavedStatus.current === 'error' || 
-                                       prevLastSavedStatus.current === 'connection_restored') && 
-                                       (lastSaved?.status === 'success' || 
-                                        lastSaved?.status === 'connection_restored' || 
-                                        lastSaved?.status === '' || 
-                                        !lastSaved?.status);
-        
-        if (hasActiveNetworkError || justRecoveredFromError) {
-          // Just update counter, preserve all editor content
-          const currentLength = editor.getLength() - 1;
-          counter.current = currentLength;
-          return; // Don't touch editor content at all
-        }
-        
-        const currentContents = editor.getContents();
-        const currentLength = editor.getLength() - 1;
-        
-        // Only update if the content actually changed from what's in the editor
-        // AND it's not just a case where user just edited the content (counter.current is fresh)
-        // OR if error was just cleared (need to update counter and charLimitOver state even when focused)
-        const contentChanged = !isEqual(currentContents, value);
-        const lengthMismatch = Math.abs(currentLength - counter.current) > 5; // Allow small discrepancies
-        
-        if ((contentChanged && lengthMismatch) || errorJustCleared) {
-          editor.setContents(value);
-          // Update counter to reflect the new content length
-          counter.current = editor.getLength() - 1;
-          // Also update charLimitOver state based on new content
-          const maxSize = props.maxSize || 20000;
-          if (counter.current > maxSize) {
-            setCharLimitOver(true);
-          } else {
-            setCharLimitOver(false);
-          }
-          // Clear the flag immediately after using it
-          if (errorJustCleared) {
-            setErrorJustCleared(false);
-          }
-        }
+    // Only update editor when field is not focused
+    if (!editorRef.current || !value || isFocused) {
+      return;
+    }
+
+    const editor = editorRef.current.getEditor();
+    if (!editor) {
+      return;
+    }
+
+    // Preserve user data if there's an active network error
+    if (hasActiveNetworkError(inputProps.name)) {
+      counter.current = editor.getLength() - 1;
+      return;
+    }
+
+    // Preserve user data if we just recovered from error
+    if (isJustRecoveredFromError(prevLastSavedStatus.current, lastSaved?.status)) {
+      counter.current = editor.getLength() - 1;
+      return;
+    }
+
+    // Update editor content if needed
+    if (shouldUpdateEditorContent(editor, value, errorJustCleared)) {
+      updateEditorContent(editor, value);
+      
+      if (errorJustCleared) {
+        setErrorJustCleared(false);
       }
     }
-    // Update ref AFTER all checks to properly detect transitions
+
+    // Update status tracking
     prevLastSavedStatus.current = lastSaved?.status || '';
   }, [value, isFocused, formErrors, errorJustCleared, network?.status, connectionErrorFields, lastSaved?.status]);
 
