@@ -56,15 +56,5 @@ export const useFieldPassivation = (fieldName, options = {}) => {
   
   const shouldPassivate = shouldPassivateField(fieldName, formErrors, connectionErrorFields, includeConnectionErrors)
   
-  // Debug logging for fieldset connection errors
-  if (connectionErrorFields.length > 0) {
-    console.log(`useFieldPassivation for "${fieldName}":`, {
-      formErrors,
-      connectionErrorFields,
-      shouldPassivate,
-      includeConnectionErrors
-    });
-  }
-  
   return shouldPassivate
 }
