@@ -57,6 +57,18 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
   const { t } = useTranslation()
   const dispatch = useDispatch()
   
+  /**
+   * Check if this field has an active network error stored in localStorage
+   */
+  const hasActiveNetworkError = () => {
+    const wasNetworkErrorKey = `wasNetworkError_${input.name}`;
+    try {
+      return localStorage.getItem(wasNetworkErrorKey) === 'true';
+    } catch (e) {
+      return false;
+    }
+  };
+  
   // Check if other fields have validation errors OR connection errors (UX60.2.5 - passivate fields when error exists)
   const shouldDisableForErrors = useFieldPassivation(input.name)
 
@@ -98,6 +110,20 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
       }
     }
   }, [hasError, meta.touched])
+
+  // Handle error list for rolling info fields (when field is closed but has network errors)
+  useEffect(() => {
+    if(!isMount && custom.rollingInfo && !editField){
+      // When rolling info field is closed and has network error
+      const hasNetworkError = hasActiveNetworkError();
+      
+      if(hasNetworkError){
+        dispatch(formErrorList(true, input.name))
+      } else {
+        dispatch(formErrorList(false, input.name))
+      }
+    }
+  }, [custom.rollingInfo, editField, isMount]);
 
   useEffect(() => {
     if(lastSaved?.status === "error"){
@@ -420,6 +446,10 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
 
 
   const editRollingField = () => {
+    // Don't open field if other fields have errors (passivation active)
+    if (shouldDisableForErrors) {
+      return;
+    }
     setEditField(true)
     setTimeout(function(){
       setInputFocus()
@@ -438,6 +468,7 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
       type={"input"}
       phaseIsClosed={custom.phaseIsClosed}
       factaInfo={custom?.fieldData?.assistive_text}
+      shouldDisableForErrors={shouldDisableForErrors}
     />
   );
 

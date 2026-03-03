@@ -32,7 +32,7 @@ const processViranomaistahoData = (attributeData) => {
   }
 }
 
-function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField,type,phaseIsClosed,factaInfo,maxSizeOver,attributeData}) {
+function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField,type,phaseIsClosed,factaInfo,maxSizeOver,attributeData,shouldDisableForErrors}) {
   const { t } = useTranslation()
 
   const users = useSelector(state => usersSelector(state))
@@ -91,7 +91,7 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
         }
       </div>
       {!nonEditable && (
-      <Button disabled={phaseIsClosed} onClick={openEdit} size="small" variant="supplementary" iconLeft={<IconPenLine />}>
+      <Button disabled={phaseIsClosed || shouldDisableForErrors} onClick={openEdit} size="small" variant="supplementary" iconLeft={<IconPenLine />}>
         {modifyText}
       </Button>
       )}

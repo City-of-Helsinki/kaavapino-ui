@@ -245,6 +245,10 @@ const SelectInput = ({
   }, [input.name, input.value]);
 
   const editRollingField = () => {
+    // Don't open field if other fields have errors (passivation active)
+    if (shouldDisableForErrors) {
+      return;
+    }
     setEditField(true)
   }
 
@@ -299,6 +303,7 @@ const SelectInput = ({
         editRollingField={editRollingField}
         type={"select"}
         phaseIsClosed={phaseIsClosed}
+        shouldDisableForErrors={shouldDisableForErrors}
       />
       :
       <div className="select-input-wrapper">
