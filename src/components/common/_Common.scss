@@ -602,14 +602,22 @@ header{
     .edit-page-save{
       font-family: "Helsinki Grotesk Medium", sans-serif;
       padding-right: 0;
+      position: relative; // For absolute positioning of children
+      display: flex;
+      align-items: center; // Vertically center children
+      
       .spinner-container{
         font-size: $size16;
         display: flex;
         justify-content: flex-start;
+        align-items: center;
         visibility: hidden;
         padding-right: 0;
-        margin-right: -8px;
         color: $color-error;
+        position: absolute; // Don't take up layout space
+        left: -20px;
+        top: 50%;
+        transform: translateY(-50%); // Center vertically
         .loading-spinner{
           --spinner-color: #0000bf;
         }
