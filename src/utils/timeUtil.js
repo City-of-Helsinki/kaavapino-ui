@@ -854,6 +854,9 @@ const compareAndUpdateDates = (data) => {
       }
       // If there were activation flags and none are active, skip this variant
       if (hasAtLeastOneActivation && !anyActive) continue;
+      // KAPI-202: Secondary slots (suffix > 1) without any activation bool should be skipped.
+      // If the bool key doesn't exist, the slot hasn't been added yet.
+      if (!hasAtLeastOneActivation && suffixNumber > 1) continue;
       validVariants.push(normalized);
     }
 
