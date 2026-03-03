@@ -169,6 +169,11 @@
   }
   .max-chars-error{
     @include hds-error-notification;
+    
+    // Hide any manually added SVG icons since mixin provides icon via ::before
+    svg {
+      display: none;
+    }
   }
   .quill-warning {
     color: $color-error;

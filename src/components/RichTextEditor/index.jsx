@@ -254,6 +254,20 @@ function RichTextEditor(props) {
     }
   }, [charLimitOver, valueIsEmpty, isFocused, maxSizeOver])
 
+  // Handle error list for rolling info fields (when field is closed but has errors)
+  useEffect(() => {
+    if (!isMount && rollingInfo && !editField) {
+      // When rolling info field is closed and has errors (maxSizeOver or network error)
+      const hasError = maxSizeOver || hasActiveNetworkError(inputProps.name);
+      
+      if (hasError) {
+        dispatch(formErrorList(true, inputProps.name));
+      } else {
+        dispatch(formErrorList(false, inputProps.name));
+      }
+    }
+  }, [rollingInfo, editField, maxSizeOver, isMount]);
+
   // NOTE: Removed automatic charLimitOver reset when field removed from error list
   // The charLimitOver state should only be controlled by:
   // 1. handleChange when user types and counter.current changes
@@ -602,16 +616,8 @@ function RichTextEditor(props) {
   }, [inputProps.name, value, dispatch, props.maxSize])
 
   const handleFocus = (event,source) => {
-    // CRITICAL: If charLimitOver is true, the editor might be showing placeholder text
-    // while Redux Form value contains the actual long text. Sync them before focusing.
-    if (charLimitOver && editorRef.current && value) {
-      const editor = editorRef.current.getEditor();
-      const currentContents = editor.getContents();
-      if (!isEqual(currentContents, value)) {
-        // Use 'silent' to avoid triggering handleChange which would set valueIsSet=true
-        editor.setContents(value, 'silent');
-      }
-    }
+    // DO NOT sync editor content here - it causes user data loss when charLimitOver is true
+    // The editor already contains the user's typed content, don't overwrite it with Redux Form value
     
     setIsFocused(true);
     if(source && event && source !== "silent"){
@@ -795,16 +801,14 @@ function RichTextEditor(props) {
   const setValue = (dbValue) => {
     if (editorRef?.current) {
       // CRITICAL: Don't overwrite editor if field has active network error
-      const wasNetworkErrorKey = `wasNetworkError_${inputProps.name}`;
-      let hasActiveNetworkError = false;
-      try {
-        hasActiveNetworkError = localStorage.getItem(wasNetworkErrorKey) === 'true';
-      } catch (e) {
-        // localStorage not available - assume no error to allow editing
+      if (hasActiveNetworkError(inputProps.name)) {
+        return; // Don't touch editor when network error warning is visible
       }
       
-      if (hasActiveNetworkError) {
-        return; // Don't touch editor when network error warning is visible
+      // CRITICAL: Don't overwrite editor if user is currently editing with char limit error
+      // User needs to see their typed content to be able to fix it
+      if (isFocused && (charLimitOver || maxSizeOver)) {
+        return;
       }
       
       let name = inputProps.name;
@@ -846,6 +850,10 @@ function RichTextEditor(props) {
   }
 
   const editRollingField = () => {
+    // Don't open field if other fields have errors (passivation active)
+    if (shouldDisableForErrors) {
+      return;
+    }
     setEditField(true)
     setTimeout(function(){
       editorRef?.current?.editor.focus()
@@ -899,6 +907,7 @@ function RichTextEditor(props) {
       phaseIsClosed={phaseIsClosed}
       maxSizeOver={maxSizeOver}
       attributeData={attributeData}
+      shouldDisableForErrors={shouldDisableForErrors}
     />
     :    
     <div
