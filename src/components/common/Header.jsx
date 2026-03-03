@@ -38,6 +38,7 @@ const Header = props => {
   const [phaseTitle,setPhaseTitle] = useState("")
   const [sectionTitle,setSectionTitle] = useState("")
   const [existingErrors,setExistingErrors] = useState([])
+  const [isPollingConnection, setIsPollingConnection] = useState(false)
 
   const history = useHistory();
   const spinnerRef = useRef(null);
@@ -102,10 +103,12 @@ const Header = props => {
     //doubles the time after each try
     if(lastSaved?.status === "error" && !lastSaved?.lock){
       setCount(count + count)
+      setIsPollingConnection(true)
       if(spinnerRef?.current?.style){
         spinnerRef.current.style.visibility = "visible"
         setTimeout(() => {
           spinnerRef.current.style.visibility = "hidden"
+          setIsPollingConnection(false)
         }, 5000)
       }
     }
@@ -457,13 +460,12 @@ const Header = props => {
               <span className="loading-spinner">{lastSaved?.status === "error" ? t('messages.connect-again') : ""}</span>
             </div>
             <div className='icons-container-flex'>
-              {updateTime?.status === t('header.latest-save') && !saving ? <IconCheck className='check-icon'/> : ""}
-              {
-              updateTime?.status === t('header.edit-menu-save-fail') ? 
-              <> <IconErrorFill className='error-icon'/> <p className="error">{updateTime?.status}</p> </> :
-              <p>{updateTime?.status}{updateTime?.time}</p>
+              {!saving && !isPollingConnection && updateTime?.status === t('header.latest-save') ? <IconCheck className='check-icon'/> : ""}
+              {!saving && !isPollingConnection && updateTime?.status === t('header.edit-menu-save-fail') ? 
+                <> <IconErrorFill className='error-icon'/> <p className="error">{updateTime?.status}</p> </> :
+                !isPollingConnection ? <p>{updateTime?.status}{updateTime?.time}</p> : ""
               }
-              {updateTime?.status === t('header.edit-menu-save-fail') && updateTime?.time ? <Tooltip placement="bottom" className='question-icon'>{t('header.latest-save')}{updateTime?.time}</Tooltip> : ""}
+              {!saving && !isPollingConnection && updateTime?.status === t('header.edit-menu-save-fail') && updateTime?.time ? <Tooltip placement="bottom" className='question-icon'>{t('header.latest-save')}{updateTime?.time}</Tooltip> : ""}
             </div>
           </div>
         </Navigation.Row>
