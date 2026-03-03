@@ -1,4 +1,5 @@
 import React, { useCallback, useRef, useEffect } from 'react'
+import PropTypes from 'prop-types'
 import { TextArea } from 'hds-react'
 import { useFieldPassivation } from '../../hooks/useFieldPassivation';
 
@@ -43,6 +44,21 @@ const CustomTextArea = ({ input, meta: { error }, ...custom }) => {
       />
     </div>
   )
+}
+
+CustomTextArea.propTypes = {
+  input: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    value: PropTypes.string,
+    onChange: PropTypes.func.isRequired
+  }).isRequired,
+  meta: PropTypes.shape({
+    error: PropTypes.string
+  }),
+  disabled: PropTypes.bool,
+  onFocus: PropTypes.func,
+  onBlur: PropTypes.func,
+  handleUnlockField: PropTypes.func
 }
 
 export default CustomTextArea

@@ -200,9 +200,8 @@ export default function NetworkErrorState({ fieldName }) {
                   textToCopy = currentValue;
                 } else if (currentValue) {
                   textToCopy = JSON.stringify(currentValue);
-                } else {
-                  textToCopy = '';
                 }
+                // If currentValue is falsy, textToCopy remains empty string
                 
                 navigator.clipboard.writeText(textToCopy);
               }}

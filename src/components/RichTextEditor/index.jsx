@@ -719,15 +719,13 @@ function RichTextEditor(props) {
             onBlur();
             oldValueRef.current = editor?.ops;
           }
-        } else {
-          if (placeholder) {
-            //If not modified in anyway and has the example text
-            const placeholderOps = { ops: [{ insert: placeholder + '\n' }] }; // Proper Quill Delta format
-            if(isEqual(placeholderOps?.ops, editor?.ops)){
-              //Empty placeholder text if it was not edited
-              editorRef.current.getEditor().deleteText(0, editorRef.current.getEditor().getLength());
-              showCounter.current = false;
-            }
+        } else if (placeholder) {
+          //If not modified in anyway and has the example text
+          const placeholderOps = { ops: [{ insert: placeholder + '\n' }] }; // Proper Quill Delta format
+          if(isEqual(placeholderOps?.ops, editor?.ops)){
+            //Empty placeholder text if it was not edited
+            editorRef.current.getEditor().deleteText(0, editorRef.current.getEditor().getLength());
+            showCounter.current = false;
           }
         }
       } else {
@@ -1048,7 +1046,7 @@ function RichTextEditor(props) {
                 // Check if focus has actually left the editor
                 // If activeElement is not inside the Quill editor, we should save
                 const quillEditor = editorRef.current?.editor?.root;
-                const focusStillInEditor = quillEditor && quillEditor.contains(document.activeElement);
+                const focusStillInEditor = quillEditor?.contains(document.activeElement);
                 
                 if (!fixRange || !focusStillInEditor) {
                   setIsFocused(false);

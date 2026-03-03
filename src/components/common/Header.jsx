@@ -463,10 +463,11 @@ const Header = props => {
             </div>
             <div className='icons-container-flex'>
               {!saving && !isPollingConnection && updateTime?.status === t('header.latest-save') ? <IconCheck className='check-icon'/> : ""}
-              {!saving && !isPollingConnection && updateTime?.status === t('header.edit-menu-save-fail') ? 
-                <> <IconErrorFill className='error-icon'/> <p className="error">{updateTime?.status}</p> </> :
-                !isPollingConnection ? <p>{updateTime?.status}{updateTime?.time}</p> : ""
-              }
+              {!saving && !isPollingConnection && updateTime?.status === t('header.edit-menu-save-fail') ? (
+                <> <IconErrorFill className='error-icon'/> <p className="error">{updateTime?.status}</p> </>
+              ) : (
+                !isPollingConnection && <p>{updateTime?.status}{updateTime?.time}</p>
+              )}
               {!saving && !isPollingConnection && updateTime?.status === t('header.edit-menu-save-fail') && lastSuccessfulSaveTime ? <Tooltip placement="bottom" className='question-icon'>{t('header.latest-save')}{lastSuccessfulSaveTime}</Tooltip> : ""}
             </div>
           </div>

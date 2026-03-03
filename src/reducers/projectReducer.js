@@ -804,13 +804,7 @@ export const reducer = (state = initialState, action) => {
     }
 
     case SAVE_PROJECT_SUCCESSFUL:
-    case SAVE_PROJECT_BASE_SUCCESSFUL: {
-      return {
-        ...state,
-        saving: false
-      }
-    }
-
+    case SAVE_PROJECT_BASE_SUCCESSFUL:
     case SAVE_PROJECT_FAILED: {
       return {
         ...state,

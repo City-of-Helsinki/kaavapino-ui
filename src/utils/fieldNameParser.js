@@ -34,7 +34,7 @@ export const parseFieldsetFieldName = (fieldName) => {
   const [, fieldsetName, index, fieldNamePart] = match;
   return {
     fieldsetName,
-    index: parseInt(index, 10),
+    index: Number.parseInt(index, 10),
     fieldName: fieldNamePart
   };
 };

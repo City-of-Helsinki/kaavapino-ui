@@ -865,6 +865,7 @@ CustomField.propTypes = {
   isCurrentPhase: PropTypes.bool,
   selectedPhase: PropTypes.number,
   phaseIsClosed: PropTypes.bool,
+  checking: PropTypes.bool,
   checkLocked: PropTypes.func,
   isTabActive: PropTypes.bool,
   disabledDates: PropTypes.array,

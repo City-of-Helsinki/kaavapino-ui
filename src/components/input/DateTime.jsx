@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import DateTime from 'react-datetime'
 import { useTranslation } from 'react-i18next';
 import { useFieldPassivation } from '../../hooks/useFieldPassivation';
@@ -31,6 +32,18 @@ const CustomDateTime = ({ input, placeholder, ...custom }) => {
       clearable
     />
   )
+}
+
+CustomDateTime.propTypes = {
+  input: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    value: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.instanceOf(Date)
+    ])
+  }).isRequired,
+  placeholder: PropTypes.string,
+  disabled: PropTypes.bool
 }
 
 export default CustomDateTime

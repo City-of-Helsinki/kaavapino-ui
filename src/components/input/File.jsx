@@ -292,7 +292,9 @@ File.propTypes = {
   rollingInfo: PropTypes.bool,
   rollingInfoText: PropTypes.string,
   saving: PropTypes.bool,
-  lastModified: PropTypes.string
+  lastModified: PropTypes.string,
+  formErrors: PropTypes.array,
+  connectionErrorFields: PropTypes.array
 }
 
 const mapStateToProps = state => ({

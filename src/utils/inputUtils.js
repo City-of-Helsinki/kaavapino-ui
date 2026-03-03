@@ -60,7 +60,7 @@ const renderUpdatedFieldInfo = ({ savingField, fieldName, updated, t, isFieldset
 }
 
 const renderTimeContainer = ({ updated, t }) => {
-	if (!updated || !updated.timestamp) return null
+	if (!updated?.timestamp) return null
 	
 	const relativeDate = timeUtil.formatRelativeDate(updated.timestamp, t)
 	const isToday = relativeDate === t('relativeDates.today')

@@ -133,7 +133,8 @@ RollingInfo.propTypes = {
   maxSizeOver: PropTypes.bool,
   attributeData: PropTypes.shape({
     milta_muilta_pyydetaan_lausunto_fieldset: PropTypes.array
-  })
+  }),
+  shouldDisableForErrors: PropTypes.bool
 }
 
 export default RollingInfo
