@@ -238,6 +238,7 @@
     "modify-project": "Muokkaa luontitietoja",
     "check-project-card": "Katso projektikortti",
     "last-edit": "Viimeisin muokkaus: {{fieldName}} {{date}} {{userName}}",
+    "last-modification": "Viimeisin muokkaus",
     "floor-area-title": "Kerrosalatiedot",
     "basic-information-title": "Perustiedot",
     "description-title": "Suunnittelualueen kuvaus",

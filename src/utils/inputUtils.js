@@ -36,16 +36,15 @@ const renderUpdatedFieldInfo = ({ savingField, fieldName, updated, t, isFieldset
 				</div>
 			) : (
 				updated && updated.timestamp && (
-					<Tooltip
-						placement="top"
-					>
-						<span className="input-history">
-							<span>{`${projectUtils.formatDate(
-								updated.timestamp
-							)} ${projectUtils.formatTime(updated.timestamp)} ${
-								updated.user_name
-							}`}</span>
-						</span>
+					<Tooltip placement="top">
+						<div className="input-history-tooltip">
+							<div className="input-history-title">
+								Viimeisin muokkaus
+							</div>
+							<div className="input-history-details">
+								{`${projectUtils.formatDate(updated.timestamp)}, ${projectUtils.formatTime(updated.timestamp)} - ${updated.user_name}`}
+							</div>
+						</div>
 					</Tooltip>
 				)
 			)}
@@ -54,9 +53,15 @@ const renderUpdatedFieldInfo = ({ savingField, fieldName, updated, t, isFieldset
 }
 
 const renderTimeContainer = ({ updated, t }) => {
-	return updated && updated.timestamp ? (
-		<div className='time-container'>{`${timeUtil.formatRelativeDate(updated.timestamp, t)} ${projectUtils.formatTime(updated.timestamp)}`}</div>
-	) : null
+	if (!updated || !updated.timestamp) return null
+	
+	const relativeDate = timeUtil.formatRelativeDate(updated.timestamp, t)
+	const isToday = relativeDate === t('relativeDates.today')
+	const timeString = isToday ? ` ${projectUtils.formatTime(updated.timestamp)}` : ''
+	
+	return (
+		<div className='time-container'>{`${relativeDate}${timeString}`}</div>
+	)
 }
 
 export default {

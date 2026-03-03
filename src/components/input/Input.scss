@@ -76,6 +76,28 @@
         margin: 2px 0 0 5px;
       }
     }
+    
+    .input-history-tooltip {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      
+      .input-history-title {
+        font-family: "Helsinki Grotesk", sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        line-height: 24px;
+        letter-spacing: 0%;
+      }
+      
+      .input-history-details {
+        font-family: "Helsinki Grotesk", sans-serif;
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 24px;
+        letter-spacing: 0%;
+      }
+    }
   }
   .selection{
     div{
