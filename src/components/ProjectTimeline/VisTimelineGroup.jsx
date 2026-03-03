@@ -696,7 +696,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   }
 
   const closeAddDialog = () => {
-    setToggleOpenAddDialog(prevState => !prevState)
+    setToggleOpenAddDialog(prevState => !prevState);
+    // Close TimelineModal if it's open
+    if (toggleTimelineModal.open) {
+      setToggleTimelineModal({ open: false, highlight: null, deadlinegroup: null });
+    }
   };
 
 
@@ -1524,7 +1528,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           updateTime: true,  // drag items horizontally
           updateGroup: false, // drag items from one group to another
           remove: false,       // delete an item by tapping the delete button top right
-          overrideItems: false  // allow these options to override item.editable
+          overrideItems: true  // allow individual items to override with editable property
         },
         itemsAlwaysDraggable: { // Dragging is disabled, allow in v1.2
             item:true, // change to true to allow dragging of items
@@ -1594,7 +1598,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           const event = window.event;
           const today = new Date();
           today.setHours(0, 0, 0, 0);
-                    // Check if trying to move an item from a phase that has already passed
+          
+          // Check if trying to move an item from a phase that has already passed
           if (item.phaseName && visValuesRef.current.kaavan_vaihe) {
             // Define the phase order
             const phaseOrder = [
@@ -1610,8 +1615,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             
             // Extract the phase name without numbering from kaavan_vaihe
             const currentPhaseFullName = visValuesRef.current.kaavan_vaihe;
-            const currentPhaseName = currentPhaseFullName.replace(/^\d+\.\s+/, '');
-              // Get the index of current phase and item's phase
+            // Remove both numeric prefixes (e.g., "2. ") and project size prefixes (e.g., "XL. ", "L. ", "M. ", "S. ")
+            const currentPhaseName = currentPhaseFullName.replace(/^(?:\d+\.|[A-Z]+\.)\s*/, '');
+            // Get the index of current phase and item's phase
             const currentPhaseIndex = phaseOrder.indexOf(currentPhaseName);
             const itemPhaseIndex = phaseOrder.indexOf(item.phaseName);
             // If item's phase is before the current project phase, prevent the move
@@ -2201,6 +2207,29 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           // Block hyväksyminen and voimaantulo dragging
           if(isBlockedLabel(props?.item)) return;
 
+          // Block past phase items from showing drag cursor
+          if (props?.item?.phaseName && visValuesRef.current?.kaavan_vaihe) {
+            const phaseOrder = [
+              "Käynnistys", 
+              "Periaatteet", 
+              "OAS", 
+              "Luonnos", 
+              "Ehdotus", 
+              "Tarkistettu ehdotus", 
+              "Hyväksyminen", 
+              "Voimaantulo"
+            ];
+            const currentPhaseFullName = visValuesRef.current.kaavan_vaihe;
+            const currentPhaseName = currentPhaseFullName.replace(/^(?:\d+\.|[A-Z]+\.)\s*/, '');
+            const currentPhaseIndex = phaseOrder.indexOf(currentPhaseName);
+            const itemPhaseIndex = phaseOrder.indexOf(props.item.phaseName);
+            
+            if (itemPhaseIndex < currentPhaseIndex && currentPhaseIndex !== -1 && itemPhaseIndex !== -1) {
+              // Item is from past phase, don't show drag cursor
+              return;
+            }
+          }
+
           // Reset the flag on new mouseDown
           modalClosedDuringDragRef.current = false;
 
@@ -2435,6 +2464,59 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       timelineInstanceRef.current.setItems(items);
       timelineInstanceRef.current.setGroups(groups);
       timelineInstanceRef.current.redraw();
+      
+      // Apply past-phase-item class to items from completed phases
+      // Use setTimeout to ensure DOM is updated after redraw
+      setTimeout(() => {
+        if (visValues?.kaavan_vaihe && timelineInstanceRef.current?.itemSet?.items) {
+          const phaseOrder = [
+            "Käynnistys", 
+            "Periaatteet", 
+            "OAS", 
+            "Luonnos", 
+            "Ehdotus", 
+            "Tarkistettu ehdotus", 
+            "Hyväksyminen", 
+            "Voimaantulo"
+          ];
+          const currentPhaseFullName = visValues.kaavan_vaihe;
+          const currentPhaseName = currentPhaseFullName.replace(/^(?:\d+\.|[A-Z]+\.)\s*/, '');
+          const currentPhaseIndex = phaseOrder.indexOf(currentPhaseName);
+          
+          console.log('[DEBUG] Applying past-phase classes. Current phase:', currentPhaseName, 'index:', currentPhaseIndex);
+          
+          if (currentPhaseIndex !== -1) {
+            // Access vis-timeline items directly from the timeline instance
+            const visItems = timelineInstanceRef.current.itemSet.items;
+            
+            Object.values(visItems).forEach(visItem => {
+              if (visItem.data?.phaseName && visItem.dom?.classList) {
+                const itemPhaseIndex = phaseOrder.indexOf(visItem.data.phaseName);
+                
+                if (itemPhaseIndex < currentPhaseIndex && itemPhaseIndex !== -1) {
+                  // This item is from a past phase - add class to its DOM element
+                  console.log('[DEBUG] Adding past-phase-item class to:', visItem.data.phaseName, 'id:', visItem.data.id, 'element:', visItem.dom);
+                  visItem.dom.classList.add('past-phase-item');
+                  
+                  // Also add to vis-item-overflow child if it exists
+                  const overflow = visItem.dom.querySelector('.vis-item-overflow');
+                  if (overflow) {
+                    console.log('[DEBUG] Also adding to vis-item-overflow');
+                    overflow.classList.add('past-phase-item');
+                  }
+                } else {
+                  // Remove class if no longer a past phase
+                  visItem.dom.classList.remove('past-phase-item');
+                  const overflow = visItem.dom.querySelector('.vis-item-overflow');
+                  if (overflow) {
+                    overflow.classList.remove('past-phase-item');
+                  }
+                }
+              }
+            });
+          }
+        }
+      }, 100); // Wait 100ms for DOM to update
     }
 
     // Restore highlight from localStorage
@@ -2446,7 +2528,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
     highlightMenuItem(menuHighlightClass, timelineRef);
 
-  }, [visValues]);
+  }, [visValues, items]);
 
   function getHighlightedElement(offset) {
     const raw = Number(offset); // 1 in date is 0 in dom elements so we need to subtract
