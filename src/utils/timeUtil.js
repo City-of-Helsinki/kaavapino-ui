@@ -1,4 +1,5 @@
 import objectUtil from "./objectUtil";
+import { getVisibilityBoolName } from "./projectVisibilityUtils";
 
   const isWeekend = (date) => {
       const day = new Date(date).getDay();
@@ -706,20 +707,62 @@ const getDisabledDatesForSizeXSXL = (name, formValues, matchingItem, dateTypes) 
   }
 };
 
-const getHighestLautakuntaDate = (formValues) => {
-  const lautakuntaKeys = Object.keys(formValues).filter(key => key.includes(`milloin_kaavaehdotus_lautakunnassa`));
-  const highestLautakuntaKey = lautakuntaKeys.reduce((highestNumber, currentKey) => {
-    const match = /_(\d+)$/.exec(currentKey);
-    const currentNumber = parseInt(match ? match[1] : 0, 10);
-    return currentNumber > highestNumber ? currentNumber : highestNumber;
-  }, 0);
-
-  if (highestLautakuntaKey > 1) {
-    return formValues[`milloin_kaavaehdotus_lautakunnassa_${highestLautakuntaKey}`];
-  }
-  else{
-    return formValues[`milloin_kaavaehdotus_lautakunnassa`];
-  }
+const getHighestLautakuntaDate = (formValues, phaseName) => {
+  // Only consider VISIBLE lautakunta dates for the given phase
+  // Uses vis_bool_group_map via getVisibilityBoolName for dynamic lookup
+  
+  // Map phaseName to deadline group phase prefix
+  const getDeadlineGroupPhase = (phase) => {
+    if (phase === 'periaatteet') return 'periaatteet';
+    if (phase === 'luonnos') return 'luonnos';
+    if (phase === 'ehdotus') return 'ehdotus';
+    if (phase === 'tarkistettu_ehdotus' || phase === 'tarkistettu ehdotus') return 'tarkistettu_ehdotus';
+    return 'ehdotus'; // fallback
+  };
+  
+  // Map phaseName to date field prefix (milloin_X_lautakunnassa)
+  const getFieldPrefix = (phase) => {
+    if (phase === 'periaatteet') return 'periaatteet';
+    if (phase === 'luonnos') return 'kaavaluonnos';
+    if (phase === 'ehdotus') return 'kaavaehdotus';
+    if (phase === 'tarkistettu_ehdotus' || phase === 'tarkistettu ehdotus') return 'tarkistettu_ehdotus';
+    return 'kaavaehdotus'; // fallback
+  };
+  
+  const deadlineGroupPhase = getDeadlineGroupPhase(phaseName);
+  const fieldPrefix = getFieldPrefix(phaseName);
+  const lautakuntaFieldPattern = `milloin_${fieldPrefix}_lautakunnassa`;
+  
+  // Convert date field to deadline group and use getVisibilityBoolName from vis_bool_group_map
+  const getVisibilityFlag = (fieldName) => {
+    const regex = new RegExp(`^milloin_${fieldPrefix}_lautakunnassa(_([0-9]+))?$`);
+    const match = fieldName.match(regex);
+    if (!match) return null;
+    const suffix = match[2] || '1';
+    // Build deadline group: e.g., 'ehdotus_lautakuntakerta_1'
+    const deadlineGroup = `${deadlineGroupPhase}_lautakuntakerta_${suffix}`;
+    // Use vis_bool_group_map lookup
+    return getVisibilityBoolName(deadlineGroup);
+  };
+  
+  const lautakuntaKeys = Object.keys(formValues).filter(key => key.startsWith(lautakuntaFieldPattern));
+  
+  // Filter to only visible lautakunta instances using vis_bool_group_map
+  const visibleKeys = lautakuntaKeys.filter(key => {
+    const visibilityFlag = getVisibilityFlag(key);
+    return visibilityFlag && formValues[visibilityFlag];
+  });
+  
+  // Find the latest date value among VISIBLE lautakunta instances only
+  let latestDate = null;
+  visibleKeys.forEach(key => {
+    const date = formValues[key];
+    if (date && (!latestDate || date > latestDate)) {
+      latestDate = date;
+    }
+  });
+  
+  return latestDate;
 };
 
 
@@ -740,7 +783,7 @@ const getDisabledDatesForNahtavillaolo = (name, formValues, phaseName, matchingI
         dateToComparePast = formValues[matchingItem?.previous_deadline];
       }
       else{
-        dateToComparePast = getHighestLautakuntaDate(formValues);
+        dateToComparePast = getHighestLautakuntaDate(formValues, phaseName);
       }
     }
     else{
@@ -752,6 +795,10 @@ const getDisabledDatesForNahtavillaolo = (name, formValues, phaseName, matchingI
     let newDisabledDates = dateTypes?.arkipäivät?.dates;
     const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToComparePast, miniumDaysPast);
     const lastPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompareFuture, -miniumDaysFuture);
+    // If first > last (impossible range due to cascade timing), only enforce minimum constraint
+    if (firstPossibleDateToSelect > lastPossibleDateToSelect) {
+      return newDisabledDates.filter(date => date >= firstPossibleDateToSelect);
+    }
     return newDisabledDates.filter(date => date >= firstPossibleDateToSelect && date <= lastPossibleDateToSelect);
   } else if (name.includes("_paattyy") || name.includes("viimeistaan_lausunnot")) {
     const miniumDaysPast = matchingItem?.distance_from_previous;
