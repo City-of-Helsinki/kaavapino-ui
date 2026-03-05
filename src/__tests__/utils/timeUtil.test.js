@@ -242,46 +242,19 @@ describe("timeUtils general utility function tests", () => {
         threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
         expect(timeUtil.formatRelativeDate(threeDaysAgo.toISOString(), mockTFn)).toBe('translated_relativeDates.days-ago_3');
     });
-    test("formatRelativeDate formats relative dates correctly", () => {});
 });
 
-describe ("addDays and subtractDays with disabled dates", () => {
-    test("addDays correctly adds days taking weekends into account", () => {
-        const type = "työpäivät"
-        const date = "2025-10-10"
-        const days = 10
-        const disabledDates = structuredClone(data.test_disabledDates.date_types.työpäivät.dates);
-        const excludeWeekends = true
-        const result = timeUtil.addDays(type, date, days, disabledDates, excludeWeekends);
-        expect(result).toBe("2025-10-24");
-    });
-    test("addDays correctly adds days without taking weekends into account", () => {
-        const type = "työpäivät"
-        const date = "2025-10-10"
-        const days = 10
-        const disabledDates = structuredClone(data.test_disabledDates.date_types.työpäivät.dates);
-        const excludeWeekends = false
-        const result = timeUtil.addDays(type, date, days, disabledDates, excludeWeekends);
-        expect(result).toBe("2025-10-20");
-    });
+describe("addDays and subtractDays with disabled dates", () => {
+    const disabledDates = () => structuredClone(data.test_disabledDates.date_types.työpäivät.dates);
 
-    test("subtractDays correctly subtracts days taking weekends into account", () => {
-        const type = "työpäivät"
-        const date = "2025-10-24"
-        const days = 10
-        const disabledDates = structuredClone(data.test_disabledDates.date_types.työpäivät.dates);
-        const excludeWeekends = true
-        const result = timeUtil.subtractDays(type, date, days, disabledDates, excludeWeekends);
-        expect(result).toBe("2025-10-10");
-    });
-    test("subtractDays correctly subtracts days without taking weekends into account", () => {
-        const type = "työpäivät"
-        const date = "2025-10-24"
-        const days = 10
-        const disabledDates = structuredClone(data.test_disabledDates.date_types.työpäivät.dates);
-        const excludeWeekends = false
-        const result = timeUtil.subtractDays(type, date, days, disabledDates, excludeWeekends);
-        expect(result).toBe("2025-10-14");
+    test.each([
+        { fn: "addDays", date: "2025-10-10", days: 10, excludeWeekends: true, expected: "2025-10-24", desc: "adds days with weekends excluded" },
+        { fn: "addDays", date: "2025-10-10", days: 10, excludeWeekends: false, expected: "2025-10-20", desc: "adds days without weekend exclusion" },
+        { fn: "subtractDays", date: "2025-10-24", days: 10, excludeWeekends: true, expected: "2025-10-10", desc: "subtracts days with weekends excluded" },
+        { fn: "subtractDays", date: "2025-10-24", days: 10, excludeWeekends: false, expected: "2025-10-14", desc: "subtracts days without weekend exclusion" },
+    ])("$fn $desc", ({ fn, date, days, excludeWeekends, expected }) => {
+        const result = timeUtil[fn]("työpäivät", date, days, disabledDates(), excludeWeekends);
+        expect(result).toBe(expected);
     });
 });
 
@@ -664,132 +637,39 @@ describe("compareAndUpdateDates function", () => {
         expect(test_data["ehdotusvaihe_paattyy_pvm"]).toBe(test_data["viimeistaan_lausunnot_ehdotuksesta_2"]);
         expect(test_data["tarkistettuehdotusvaihe_paattyy_pvm"]).toBe(test_data["milloin_tarkistettu_ehdotus_lautakunnassa_2"]);
     });
-    test.each([
-        {
-            phase: "periaatteet",
-            endKey: "periaatteetvaihe_paattyy_pvm",
-            lautakuntaPrefix: "periaatteet_lautakuntaan",
-            esillaoloPrefix: "jarjestetaan_periaatteet_esillaolo",
-            correctSrc: "viimeistaan_mielipiteet_periaatteista",
-            wrongSrc: "milloin_periaatteet_esillaolo_paattyy",
-        },
-        {
-            phase: "luonnos",
-            endKey: "luonnosvaihe_paattyy_pvm",
-            lautakuntaPrefix: "kaavaluonnos_lautakuntaan",
-            esillaoloPrefix: "jarjestetaan_luonnos_esillaolo",
-            correctSrc: "viimeistaan_mielipiteet_luonnos",
-            wrongSrc: "milloin_luonnos_esillaolo_paattyy",
-        },
-    ])("compareAndUpdateDates end dates, $phase with no lautakunta",
-        ({ endKey, lautakuntaPrefix, esillaoloPrefix, correctSrc, wrongSrc }) => {
-            // Set DISTINCT values to prove correct field is used (not coincidental match)
-            test_data[correctSrc] = "2099-12-15";  // Correct: viimeistaan_mielipiteet
-            test_data[wrongSrc] = "2099-06-01";    // Wrong: milloin_esillaolo_paattyy
-            test_data[endKey] = undefined;
-            for (let i = 1; i <= 4; i++) test_data[`${lautakuntaPrefix}_${i}`] = false;
-            test_data[`${esillaoloPrefix}_1`] = true;
-            test_data[`${esillaoloPrefix}_2`] = false;
-            test_data[`${esillaoloPrefix}_3`] = false;
-            timeUtil.compareAndUpdateDates(test_data);
-            // Must use viimeistaan_mielipiteet (2099-12-15), NOT milloin_esillaolo_paattyy (2099-06-01)
-            expect(test_data[endKey]).toBe("2099-12-15");
-        }
-    );
+    // Consolidated test for P8/L8 phase end rules (per database_deadline_rules.md)
+    // Tests: esillaolo_1 only, esillaolo_2 active, esillaolo_3 active, lautakunta priority
+    const phaseEndTestCases = [
+        // esillaolo_1 only, no lautakunta → viimeistaan_mielipiteet (P5/L5)
+        { phase: "periaatteet", scenario: "esillaolo_1 only", endKey: "periaatteetvaihe_paattyy_pvm", lautakuntaPrefix: "periaatteet_lautakuntaan", esillaoloPrefix: "jarjestetaan_periaatteet_esillaolo", correctSrc: "viimeistaan_mielipiteet_periaatteista", wrongSrc: "milloin_periaatteet_esillaolo_paattyy", esillaolo: [true, false, false], lautakunta: false, expectedDate: "2099-12-15" },
+        { phase: "luonnos", scenario: "esillaolo_1 only", endKey: "luonnosvaihe_paattyy_pvm", lautakuntaPrefix: "kaavaluonnos_lautakuntaan", esillaoloPrefix: "jarjestetaan_luonnos_esillaolo", correctSrc: "viimeistaan_mielipiteet_luonnos", wrongSrc: "milloin_luonnos_esillaolo_paattyy", esillaolo: [true, false, false], lautakunta: false, expectedDate: "2099-12-15" },
+        // esillaolo_2 active, no lautakunta → viimeistaan_mielipiteet_2 (P5.2/L5.2)
+        { phase: "periaatteet", scenario: "esillaolo_2 active", endKey: "periaatteetvaihe_paattyy_pvm", lautakuntaPrefix: "periaatteet_lautakuntaan", esillaoloPrefix: "jarjestetaan_periaatteet_esillaolo", correctSrc: "viimeistaan_mielipiteet_periaatteista_2", esillaolo: [true, true, false], lautakunta: false, expectedDate: "2099-10-25" },
+        { phase: "luonnos", scenario: "esillaolo_2 active", endKey: "luonnosvaihe_paattyy_pvm", lautakuntaPrefix: "kaavaluonnos_lautakuntaan", esillaoloPrefix: "jarjestetaan_luonnos_esillaolo", correctSrc: "viimeistaan_mielipiteet_luonnos_2", esillaolo: [true, true, false], lautakunta: false, expectedDate: "2099-10-25" },
+        // esillaolo_3 active, no lautakunta → viimeistaan_mielipiteet_3 (P5.3/L5.3)
+        { phase: "periaatteet", scenario: "esillaolo_3 active", endKey: "periaatteetvaihe_paattyy_pvm", lautakuntaPrefix: "periaatteet_lautakuntaan", esillaoloPrefix: "jarjestetaan_periaatteet_esillaolo", correctSrc: "viimeistaan_mielipiteet_periaatteista_3", esillaolo: [true, true, true], lautakunta: false, expectedDate: "2099-11-30" },
+        { phase: "luonnos", scenario: "esillaolo_3 active", endKey: "luonnosvaihe_paattyy_pvm", lautakuntaPrefix: "kaavaluonnos_lautakuntaan", esillaoloPrefix: "jarjestetaan_luonnos_esillaolo", correctSrc: "viimeistaan_mielipiteet_luonnos_3", esillaolo: [true, true, true], lautakunta: false, expectedDate: "2099-11-30" },
+        // lautakunta active → lautakunta wins over esillaolo
+        { phase: "periaatteet", scenario: "lautakunta wins", endKey: "periaatteetvaihe_paattyy_pvm", lautakuntaPrefix: "periaatteet_lautakuntaan", esillaoloPrefix: "jarjestetaan_periaatteet_esillaolo", correctSrc: "milloin_periaatteet_lautakunnassa", wrongSrc: "viimeistaan_mielipiteet_periaatteista", esillaolo: [true, false, false], lautakunta: true, expectedDate: "2099-09-15" },
+        { phase: "luonnos", scenario: "lautakunta wins", endKey: "luonnosvaihe_paattyy_pvm", lautakuntaPrefix: "kaavaluonnos_lautakuntaan", esillaoloPrefix: "jarjestetaan_luonnos_esillaolo", correctSrc: "milloin_kaavaluonnos_lautakunnassa", wrongSrc: "viimeistaan_mielipiteet_luonnos", esillaolo: [true, false, false], lautakunta: true, expectedDate: "2099-09-15" },
+    ];
 
-    // Per docs P8/L8: esillaolo_2 active (and !_3, !lautakunta) → P5.2/L5.2 (viimeistaan_mielipiteet_*_2)
-    test.each([
-        {
-            phase: "periaatteet",
-            endKey: "periaatteetvaihe_paattyy_pvm",
-            lautakuntaPrefix: "periaatteet_lautakuntaan",
-            esillaoloPrefix: "jarjestetaan_periaatteet_esillaolo",
-            correctSrc: "viimeistaan_mielipiteet_periaatteista_2",
-        },
-        {
-            phase: "luonnos",
-            endKey: "luonnosvaihe_paattyy_pvm",
-            lautakuntaPrefix: "kaavaluonnos_lautakuntaan",
-            esillaoloPrefix: "jarjestetaan_luonnos_esillaolo",
-            correctSrc: "viimeistaan_mielipiteet_luonnos_2",
-        },
-    ])("compareAndUpdateDates end dates, $phase with esillaolo_2 active, no lautakunta",
-        ({ endKey, lautakuntaPrefix, esillaoloPrefix, correctSrc }) => {
-            test_data[correctSrc] = "2099-10-25";  // Latest esillaolo_2 mielipiteet
+    test.each(phaseEndTestCases)(
+        "compareAndUpdateDates: $phase $scenario",
+        ({ endKey, lautakuntaPrefix, esillaoloPrefix, correctSrc, wrongSrc, esillaolo, lautakunta, expectedDate }) => {
+            // Set distinct values to prove correct field selection
+            test_data[correctSrc] = expectedDate;
+            if (wrongSrc) test_data[wrongSrc] = "2099-01-01";  // Wrong value to detect incorrect selection
             test_data[endKey] = undefined;
-            for (let i = 1; i <= 4; i++) test_data[`${lautakuntaPrefix}_${i}`] = false;
-            test_data[`${esillaoloPrefix}_1`] = true;
-            test_data[`${esillaoloPrefix}_2`] = true;  // esillaolo_2 active
-            test_data[`${esillaoloPrefix}_3`] = false;
+            // Set lautakunta flags
+            for (let i = 1; i <= 4; i++) test_data[`${lautakuntaPrefix}_${i}`] = (i === 1 && lautakunta);
+            // Set esillaolo flags
+            test_data[`${esillaoloPrefix}_1`] = esillaolo[0];
+            test_data[`${esillaoloPrefix}_2`] = esillaolo[1];
+            test_data[`${esillaoloPrefix}_3`] = esillaolo[2];
+            
             timeUtil.compareAndUpdateDates(test_data);
-            expect(test_data[endKey]).toBe("2099-10-25");
-        }
-    );
-
-    // Per docs P8/L8: esillaolo_3 active (and !lautakunta) → P5.3/L5.3 (viimeistaan_mielipiteet_*_3)
-    test.each([
-        {
-            phase: "periaatteet",
-            endKey: "periaatteetvaihe_paattyy_pvm",
-            lautakuntaPrefix: "periaatteet_lautakuntaan",
-            esillaoloPrefix: "jarjestetaan_periaatteet_esillaolo",
-            correctSrc: "viimeistaan_mielipiteet_periaatteista_3",
-        },
-        {
-            phase: "luonnos",
-            endKey: "luonnosvaihe_paattyy_pvm",
-            lautakuntaPrefix: "kaavaluonnos_lautakuntaan",
-            esillaoloPrefix: "jarjestetaan_luonnos_esillaolo",
-            correctSrc: "viimeistaan_mielipiteet_luonnos_3",
-        },
-    ])("compareAndUpdateDates end dates, $phase with esillaolo_3 active, no lautakunta",
-        ({ endKey, lautakuntaPrefix, esillaoloPrefix, correctSrc }) => {
-            test_data[correctSrc] = "2099-11-30";  // Latest esillaolo_3 mielipiteet
-            test_data[endKey] = undefined;
-            for (let i = 1; i <= 4; i++) test_data[`${lautakuntaPrefix}_${i}`] = false;
-            test_data[`${esillaoloPrefix}_1`] = true;
-            test_data[`${esillaoloPrefix}_2`] = true;
-            test_data[`${esillaoloPrefix}_3`] = true;  // esillaolo_3 active
-            timeUtil.compareAndUpdateDates(test_data);
-            expect(test_data[endKey]).toBe("2099-11-30");
-        }
-    );
-
-    // Per docs P8/L8: lautakunta takes priority over esillaolo
-    test.each([
-        {
-            phase: "periaatteet",
-            endKey: "periaatteetvaihe_paattyy_pvm",
-            lautakuntaPrefix: "periaatteet_lautakuntaan",
-            esillaoloPrefix: "jarjestetaan_periaatteet_esillaolo",
-            lautakuntaSrc: "milloin_periaatteet_lautakunnassa",
-            mielipiteetSrc: "viimeistaan_mielipiteet_periaatteista",
-        },
-        {
-            phase: "luonnos",
-            endKey: "luonnosvaihe_paattyy_pvm",
-            lautakuntaPrefix: "kaavaluonnos_lautakuntaan",
-            esillaoloPrefix: "jarjestetaan_luonnos_esillaolo",
-            lautakuntaSrc: "milloin_kaavaluonnos_lautakunnassa",
-            mielipiteetSrc: "viimeistaan_mielipiteet_luonnos",
-        },
-    ])("compareAndUpdateDates end dates, $phase lautakunta wins over esillaolo",
-        ({ endKey, lautakuntaPrefix, esillaoloPrefix, lautakuntaSrc, mielipiteetSrc }) => {
-            // Set DISTINCT values - lautakunta should win
-            test_data[lautakuntaSrc] = "2099-09-15";   // Lautakunta date (should be used)
-            test_data[mielipiteetSrc] = "2099-06-01"; // Mielipiteet date (should NOT be used)
-            test_data[endKey] = undefined;
-            // Both lautakunta AND esillaolo active - lautakunta takes priority
-            test_data[`${lautakuntaPrefix}_1`] = true;
-            test_data[`${lautakuntaPrefix}_2`] = false;
-            test_data[`${lautakuntaPrefix}_3`] = false;
-            test_data[`${lautakuntaPrefix}_4`] = false;
-            test_data[`${esillaoloPrefix}_1`] = true;
-            test_data[`${esillaoloPrefix}_2`] = false;
-            test_data[`${esillaoloPrefix}_3`] = false;
-            timeUtil.compareAndUpdateDates(test_data);
-            // Must use lautakunta (2099-09-15), NOT mielipiteet (2099-06-01)
-            expect(test_data[endKey]).toBe("2099-09-15");
+            expect(test_data[endKey]).toBe(expectedDate);
         }
     );
 
