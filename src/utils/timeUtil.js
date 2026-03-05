@@ -827,7 +827,12 @@ const compareAndUpdateDates = (data) => {
       // Esilläolo variants (example pattern) – extend if needed later
       milloin_periaatteet_esillaolo_paattyy: ["jarjestetaan_periaatteet_esillaolo"],
       milloin_luonnos_esillaolo_paattyy: ["jarjestetaan_luonnos_esillaolo"],
-      milloin_oas_esillaolo_paattyy: ["jarjestetaan_oas_esillaolo"]
+      milloin_oas_esillaolo_paattyy: ["jarjestetaan_oas_esillaolo"],
+      // Viimeistaan mielipiteet dates tied to esillaolo activation
+      viimeistaan_mielipiteet_periaatteista: ["jarjestetaan_periaatteet_esillaolo"],
+      viimeistaan_mielipiteet_luonnos: ["jarjestetaan_luonnos_esillaolo"],
+      // Viimeistaan lausunnot tied to nahtaville activation
+      viimeistaan_lausunnot_ehdotuksesta: ["kaavaehdotus_nahtaville", "kaavaehdotus_uudelleen_nahtaville"]
     };
 
     const activationPrefixes = activationMap[baseKey] || [];
@@ -863,7 +868,10 @@ const compareAndUpdateDates = (data) => {
 
   lausuntoPairs.forEach(([lausunto_date, paattyy_date]) => {
     const validPaattyyDate = validateAndNormalizeDate(data[paattyy_date]);
-    if (validPaattyyDate) {
+    const existingLausuntoDate = validateAndNormalizeDate(data[lausunto_date]);
+    // Per AT1.5.4: Planning secretary can move lausunnot date LATER than nähtävillä end
+    // Only sync from milloin if viimeistaan is not already set to a later date
+    if (validPaattyyDate && (!existingLausuntoDate || existingLausuntoDate <= validPaattyyDate)) {
       data[lausunto_date] = validPaattyyDate;
     }
   });
@@ -871,13 +879,14 @@ const compareAndUpdateDates = (data) => {
   const buildPhasePairs = (size) => {
     // Each entry: [dstField, primarySrcBase, fallbackSrcBase?]
     // Primary is tried first; if getLatestDateValue returns null, fallback is tried.
+    // Per database_deadline_rules.md: P8/L8 fallback to viimeistaan_mielipiteet when no lautakunta
+    // E9 uses viimeistaan_lausunnot_ehdotuksesta for all sizes
     return [
-      ["periaatteetvaihe_paattyy_pvm", "milloin_periaatteet_lautakunnassa", "milloin_periaatteet_esillaolo_paattyy"],
+      ["periaatteetvaihe_paattyy_pvm", "milloin_periaatteet_lautakunnassa", "viimeistaan_mielipiteet_periaatteista"],
       ["oasvaihe_paattyy_pvm", "milloin_oas_esillaolo_paattyy"],
-      ["luonnosvaihe_paattyy_pvm", "milloin_kaavaluonnos_lautakunnassa", "milloin_luonnos_esillaolo_paattyy"],
-      // All sizes use milloin_ehdotuksen_nahtavilla_paattyy for ehdotus end
-      // (milloin_ehdotus_esillaolo_paattyy does not exist in project data; alkaa differs by size but paattyy does not)
-      ["ehdotusvaihe_paattyy_pvm", "milloin_ehdotuksen_nahtavilla_paattyy"],
+      ["luonnosvaihe_paattyy_pvm", "milloin_kaavaluonnos_lautakunnassa", "viimeistaan_mielipiteet_luonnos"],
+      // E9: All sizes use viimeistaan_lausunnot_ehdotuksesta for ehdotus phase end
+      ["ehdotusvaihe_paattyy_pvm", "viimeistaan_lausunnot_ehdotuksesta"],
       ["tarkistettuehdotusvaihe_paattyy_pvm", "milloin_tarkistettu_ehdotus_lautakunnassa"],
       // hyvaksyminen & voimaantulo intentionally excluded (no paired controlling date specified)
     ];
@@ -911,12 +920,25 @@ const compareAndUpdateDates = (data) => {
   // Build filtered sequence of phases that actually exist (have either start or end present)
   const existingPhases = orderedPhases.filter(p => data[p.start] || data[p.end]);
 
+  // Forward adjacency: next phase start >= previous phase end
   for (let i = 1; i < existingPhases.length; i++) {
     const prev = existingPhases[i - 1];
     const cur = existingPhases[i];
     const prevEnd = validateAndNormalizeDate(data[prev.end]);
     const curStart = validateAndNormalizeDate(data[cur.start]);
     if (prevEnd && curStart && curStart < prevEnd) {
+      data[cur.start] = prevEnd;
+    }
+  }
+
+  // Backward cascade: when phase end moves earlier, move next phase start back to match
+  // This handles cases like removing Tarkistettu Ehdotus lautakunta elements
+  for (let i = 1; i < existingPhases.length; i++) {
+    const prev = existingPhases[i - 1];
+    const cur = existingPhases[i];
+    const prevEnd = validateAndNormalizeDate(data[prev.end]);
+    const curStart = validateAndNormalizeDate(data[cur.start]);
+    if (prevEnd && curStart && curStart > prevEnd) {
       data[cur.start] = prevEnd;
     }
   }

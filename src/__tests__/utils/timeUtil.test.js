@@ -670,44 +670,194 @@ describe("compareAndUpdateDates function", () => {
             endKey: "periaatteetvaihe_paattyy_pvm",
             lautakuntaPrefix: "periaatteet_lautakuntaan",
             esillaoloPrefix: "jarjestetaan_periaatteet_esillaolo",
-            expectedSrc: "milloin_periaatteet_esillaolo_paattyy",
+            correctSrc: "viimeistaan_mielipiteet_periaatteista",
+            wrongSrc: "milloin_periaatteet_esillaolo_paattyy",
         },
         {
             phase: "luonnos",
             endKey: "luonnosvaihe_paattyy_pvm",
             lautakuntaPrefix: "kaavaluonnos_lautakuntaan",
             esillaoloPrefix: "jarjestetaan_luonnos_esillaolo",
-            expectedSrc: "milloin_luonnos_esillaolo_paattyy",
+            correctSrc: "viimeistaan_mielipiteet_luonnos",
+            wrongSrc: "milloin_luonnos_esillaolo_paattyy",
         },
     ])("compareAndUpdateDates end dates, $phase with no lautakunta",
-        ({ endKey, lautakuntaPrefix, esillaoloPrefix, expectedSrc }) => {
+        ({ endKey, lautakuntaPrefix, esillaoloPrefix, correctSrc, wrongSrc }) => {
+            // Set DISTINCT values to prove correct field is used (not coincidental match)
+            test_data[correctSrc] = "2099-12-15";  // Correct: viimeistaan_mielipiteet
+            test_data[wrongSrc] = "2099-06-01";    // Wrong: milloin_esillaolo_paattyy
             test_data[endKey] = undefined;
             for (let i = 1; i <= 4; i++) test_data[`${lautakuntaPrefix}_${i}`] = false;
             test_data[`${esillaoloPrefix}_1`] = true;
             test_data[`${esillaoloPrefix}_2`] = false;
             test_data[`${esillaoloPrefix}_3`] = false;
             timeUtil.compareAndUpdateDates(test_data);
-            expect(test_data[endKey]).toBe(test_data[expectedSrc]);
+            // Must use viimeistaan_mielipiteet (2099-12-15), NOT milloin_esillaolo_paattyy (2099-06-01)
+            expect(test_data[endKey]).toBe("2099-12-15");
         }
     );
+
+    // Per docs P8/L8: esillaolo_2 active (and !_3, !lautakunta) → P5.2/L5.2 (viimeistaan_mielipiteet_*_2)
+    test.each([
+        {
+            phase: "periaatteet",
+            endKey: "periaatteetvaihe_paattyy_pvm",
+            lautakuntaPrefix: "periaatteet_lautakuntaan",
+            esillaoloPrefix: "jarjestetaan_periaatteet_esillaolo",
+            correctSrc: "viimeistaan_mielipiteet_periaatteista_2",
+        },
+        {
+            phase: "luonnos",
+            endKey: "luonnosvaihe_paattyy_pvm",
+            lautakuntaPrefix: "kaavaluonnos_lautakuntaan",
+            esillaoloPrefix: "jarjestetaan_luonnos_esillaolo",
+            correctSrc: "viimeistaan_mielipiteet_luonnos_2",
+        },
+    ])("compareAndUpdateDates end dates, $phase with esillaolo_2 active, no lautakunta",
+        ({ endKey, lautakuntaPrefix, esillaoloPrefix, correctSrc }) => {
+            test_data[correctSrc] = "2099-10-25";  // Latest esillaolo_2 mielipiteet
+            test_data[endKey] = undefined;
+            for (let i = 1; i <= 4; i++) test_data[`${lautakuntaPrefix}_${i}`] = false;
+            test_data[`${esillaoloPrefix}_1`] = true;
+            test_data[`${esillaoloPrefix}_2`] = true;  // esillaolo_2 active
+            test_data[`${esillaoloPrefix}_3`] = false;
+            timeUtil.compareAndUpdateDates(test_data);
+            expect(test_data[endKey]).toBe("2099-10-25");
+        }
+    );
+
+    // Per docs P8/L8: esillaolo_3 active (and !lautakunta) → P5.3/L5.3 (viimeistaan_mielipiteet_*_3)
+    test.each([
+        {
+            phase: "periaatteet",
+            endKey: "periaatteetvaihe_paattyy_pvm",
+            lautakuntaPrefix: "periaatteet_lautakuntaan",
+            esillaoloPrefix: "jarjestetaan_periaatteet_esillaolo",
+            correctSrc: "viimeistaan_mielipiteet_periaatteista_3",
+        },
+        {
+            phase: "luonnos",
+            endKey: "luonnosvaihe_paattyy_pvm",
+            lautakuntaPrefix: "kaavaluonnos_lautakuntaan",
+            esillaoloPrefix: "jarjestetaan_luonnos_esillaolo",
+            correctSrc: "viimeistaan_mielipiteet_luonnos_3",
+        },
+    ])("compareAndUpdateDates end dates, $phase with esillaolo_3 active, no lautakunta",
+        ({ endKey, lautakuntaPrefix, esillaoloPrefix, correctSrc }) => {
+            test_data[correctSrc] = "2099-11-30";  // Latest esillaolo_3 mielipiteet
+            test_data[endKey] = undefined;
+            for (let i = 1; i <= 4; i++) test_data[`${lautakuntaPrefix}_${i}`] = false;
+            test_data[`${esillaoloPrefix}_1`] = true;
+            test_data[`${esillaoloPrefix}_2`] = true;
+            test_data[`${esillaoloPrefix}_3`] = true;  // esillaolo_3 active
+            timeUtil.compareAndUpdateDates(test_data);
+            expect(test_data[endKey]).toBe("2099-11-30");
+        }
+    );
+
+    // Per docs P8/L8: lautakunta takes priority over esillaolo
+    test.each([
+        {
+            phase: "periaatteet",
+            endKey: "periaatteetvaihe_paattyy_pvm",
+            lautakuntaPrefix: "periaatteet_lautakuntaan",
+            esillaoloPrefix: "jarjestetaan_periaatteet_esillaolo",
+            lautakuntaSrc: "milloin_periaatteet_lautakunnassa",
+            mielipiteetSrc: "viimeistaan_mielipiteet_periaatteista",
+        },
+        {
+            phase: "luonnos",
+            endKey: "luonnosvaihe_paattyy_pvm",
+            lautakuntaPrefix: "kaavaluonnos_lautakuntaan",
+            esillaoloPrefix: "jarjestetaan_luonnos_esillaolo",
+            lautakuntaSrc: "milloin_kaavaluonnos_lautakunnassa",
+            mielipiteetSrc: "viimeistaan_mielipiteet_luonnos",
+        },
+    ])("compareAndUpdateDates end dates, $phase lautakunta wins over esillaolo",
+        ({ endKey, lautakuntaPrefix, esillaoloPrefix, lautakuntaSrc, mielipiteetSrc }) => {
+            // Set DISTINCT values - lautakunta should win
+            test_data[lautakuntaSrc] = "2099-09-15";   // Lautakunta date (should be used)
+            test_data[mielipiteetSrc] = "2099-06-01"; // Mielipiteet date (should NOT be used)
+            test_data[endKey] = undefined;
+            // Both lautakunta AND esillaolo active - lautakunta takes priority
+            test_data[`${lautakuntaPrefix}_1`] = true;
+            test_data[`${lautakuntaPrefix}_2`] = false;
+            test_data[`${lautakuntaPrefix}_3`] = false;
+            test_data[`${lautakuntaPrefix}_4`] = false;
+            test_data[`${esillaoloPrefix}_1`] = true;
+            test_data[`${esillaoloPrefix}_2`] = false;
+            test_data[`${esillaoloPrefix}_3`] = false;
+            timeUtil.compareAndUpdateDates(test_data);
+            // Must use lautakunta (2099-09-15), NOT mielipiteet (2099-06-01)
+            expect(test_data[endKey]).toBe("2099-09-15");
+        }
+    );
+
     test("compareAndUpdateDates end dates, ehdotus in XS size", () => {
+        // Set DISTINCT values to prove correct field is used
+        test_data["viimeistaan_lausunnot_ehdotuksesta"] = "2099-11-20";  // Correct per docs
+        test_data["milloin_ehdotuksen_nahtavilla_paattyy"] = "2099-05-10";  // Wrong (old code used this)
         test_data["ehdotusvaihe_paattyy_pvm"] = undefined;
         test_data["kaavaprosessin_kokoluokka"] = "XS";
         test_data["kaavaehdotus_lautakuntaan_1"] = false;
         test_data["kaavaehdotus_lautakuntaan_2"] = false;
         test_data["kaavaehdotus_lautakuntaan_3"] = false;
         test_data["kaavaehdotus_lautakuntaan_4"] = false;
-        test_data["kaavehdotus_nahtaville_1"] = true;
-        test_data["kaavehdotus_uudelleen_nahtaville_2"] = false;
-        test_data["kaavehdotus_uudelleen_nahtaville_3"] = false;
+        test_data["kaavaehdotus_nahtaville_1"] = true;
+        test_data["kaavaehdotus_uudelleen_nahtaville_2"] = false;
+        test_data["kaavaehdotus_uudelleen_nahtaville_3"] = false;
         timeUtil.compareAndUpdateDates(test_data);
-        expect(test_data["ehdotusvaihe_paattyy_pvm"]).toBe(test_data["milloin_ehdotuksen_nahtavilla_paattyy"]);
+        // Must use viimeistaan_lausunnot_ehdotuksesta (2099-11-20), NOT milloin_ehdotuksen_nahtavilla_paattyy
+        expect(test_data["ehdotusvaihe_paattyy_pvm"]).toBe("2099-11-20");
     });
     test("compareAndUpdateDates moves backwards start dates to match previous end dates", () => {
         test_data["periaatteetvaihe_alkaa_pvm"] = "2025-05-01";
         test_data["kaynnistys_paattyy_pvm"] = "2025-06-01";
         timeUtil.compareAndUpdateDates(test_data);
         expect(test_data["periaatteetvaihe_alkaa_pvm"]).toBe("2025-06-01");
+    });
+
+    test("compareAndUpdateDates backward cascade: removing lautakunta moves next phase back", () => {
+        // Simulate: Tarkistettu Ehdotus has lautakunta_1 only (not _2/_3/_4)
+        // hyväksymisvaihe_alkaa should move back to match new tarkistettuehdotusvaihe_paattyy
+        test_data["tarkistettu_ehdotus_lautakuntaan_1"] = true;
+        test_data["tarkistettu_ehdotus_lautakuntaan_2"] = false;
+        test_data["tarkistettu_ehdotus_lautakuntaan_3"] = false;
+        test_data["tarkistettu_ehdotus_lautakuntaan_4"] = false;
+        test_data["milloin_tarkistettu_ehdotus_lautakunnassa"] = "2028-03-01";
+        test_data["milloin_tarkistettu_ehdotus_lautakunnassa_2"] = "2028-05-23";
+        // Set hyväksymisvaihe_alkaa to a LATER date (simulating it was set when _2 was active)
+        test_data["hyvaksyminenvaihe_alkaa_pvm"] = "2028-06-01";
+        
+        timeUtil.compareAndUpdateDates(test_data);
+        
+        // tarkistettuehdotusvaihe_paattyy should now be 2028-03-01 (only _1 active)
+        expect(test_data["tarkistettuehdotusvaihe_paattyy_pvm"]).toBe("2028-03-01");
+        // hyväksymisvaihe_alkaa should move BACK to match phase end
+        expect(test_data["hyvaksyminenvaihe_alkaa_pvm"]).toBe("2028-03-01");
+    });
+
+    test("compareAndUpdateDates mielipiteet gap fix: manual edit updates phase end and next phase", () => {
+        // Simulate: user manually sets viimeistaan_mielipiteet to a later date
+        // Phase end should update, and next phase start should follow
+        test_data["periaatteet_lautakuntaan_1"] = false;
+        test_data["periaatteet_lautakuntaan_2"] = false;
+        test_data["periaatteet_lautakuntaan_3"] = false;
+        test_data["periaatteet_lautakuntaan_4"] = false;
+        test_data["jarjestetaan_periaatteet_esillaolo_1"] = true;
+        test_data["jarjestetaan_periaatteet_esillaolo_2"] = false;
+        test_data["jarjestetaan_periaatteet_esillaolo_3"] = false;
+        // User manually sets mielipiteet date later
+        test_data["viimeistaan_mielipiteet_periaatteista"] = "2026-09-15";
+        // OAS phase start is currently earlier
+        test_data["oasvaihe_alkaa_pvm"] = "2026-08-01";
+        
+        timeUtil.compareAndUpdateDates(test_data);
+        
+        // Phase end should match the new viimeistaan date
+        expect(test_data["periaatteetvaihe_paattyy_pvm"]).toBe("2026-09-15");
+        // Next phase start should move forward to match (no gap)
+        expect(test_data["oasvaihe_alkaa_pvm"]).toBe("2026-09-15");
     });
 
 });
