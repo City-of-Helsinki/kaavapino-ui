@@ -459,16 +459,22 @@ describe("getDisabledDates for various phases", () => {
     });
     test("getHighestLautakuntaDate returns correct date", () => {
         const formValues = {
-            "milloin_kaavaehdotus_lautakunnassa_1": "2025-05-01",
+            "milloin_kaavaehdotus_lautakunnassa": "2025-05-01",
             "milloin_kaavaehdotus_lautakunnassa_2": "2025-06-01",
             "milloin_kaavaehdotus_lautakunnassa_3":"2025-08-01",
-            "milloin_kaavaehdotus_lautakunnassa_4": "2025-09-01"
+            "milloin_kaavaehdotus_lautakunnassa_4": "2025-09-01",
+            // Visibility flags required for filtering
+            "kaavaehdotus_lautakuntaan_1": true,
+            "kaavaehdotus_lautakuntaan_2": true,
+            "kaavaehdotus_lautakuntaan_3": true,
+            "kaavaehdotus_lautakuntaan_4": true
         };
         const result = timeUtil.getHighestLautakuntaDate(formValues, "ehdotus");
         expect(result).toBe("2025-09-01");
         const formValues2 = {
             "milloin_kaavaehdotus_lautakunnassa": "2025-05-01",
-            "milloin_kaavaluonnos_lautakunnassa": "2026-01-01"
+            "milloin_kaavaluonnos_lautakunnassa": "2026-01-01",
+            "kaavaehdotus_lautakuntaan_1": true
         }
         expect(timeUtil.getHighestLautakuntaDate(formValues2, "ehdotus")).toBe("2025-05-01");
     });
@@ -479,6 +485,8 @@ describe("getDisabledDates for various phases", () => {
             "ehdotus_nahtaville_aineiston_maaraaika": "2025-03-20",
             "milloin_ehdotus_nahtavilla_alkaa": "2025-03-25",
             "milloin_ehdotus_nahtavilla_paattyy": "2025-05-09",
+            // Visibility flag required for getHighestLautakuntaDate
+            "kaavaehdotus_lautakuntaan_1": true
         }
         const maaraAikaItem = {
             name: "ehdotus_nahtaville_aineiston_maaraaika",
