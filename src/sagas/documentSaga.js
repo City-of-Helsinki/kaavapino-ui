@@ -34,7 +34,168 @@ function* fetchDocumentsSaga({ payload: projectId }) {
     yield put(error(e))
   }
 }
+
 function* downloadDocumentSaga({ payload }) {
+  let res
+  let isError = false
+  const modifiedUrl = payload.file + '?immediate=true'
+  yield put(downloadDocumentDone(false))
+  toastr.info(
+    payload.projectCard
+      ? i18next.t('document-loading.project-card-title')
+      : i18next.t('document-loading.wait-title'),
+    payload.projectCard
+      ? i18next.t('document-loading.project-card-content')
+      : i18next.t('document-loading.document-content'),
+  { closeOnToastrClick: false, timeOut:0, removeOnHover: false, removeOnHoverTimeOut: 0, icon: <IconInfoCircleFill /> }
+  )
+  try {
+    res = yield call(axios.get, modifiedUrl, { responseType: 'blob' })
+    if (res.status !== 200) {
+      toastr.removeByType('info')
+      toastr.error(
+        payload.projectCard
+          ? i18next.t('document-loading.project-card-title')
+          : i18next.t('document-loading.error-title'),
+        payload.projectCard
+          ? i18next.t('document-loading.project-card-error')
+          : i18next.t('document-loading.document-error'),
+        { icon: <IconErrorFill /> }
+      )
+
+      isError = true
+      yield put(downloadDocumentDone(true))
+    }
+  } catch (e) {
+    toastr.error(
+      payload.projectCard
+        ? i18next.t('document-loading.project-card-title')
+        : i18next.t('document-loading.error-title'),
+      payload.projectCard
+        ? i18next.t('document-loading.project-card-error')
+        : i18next.t('document-loading.document-error'),
+      { icon: <IconErrorFill /> }
+    )
+    isError = true
+    yield put(downloadDocumentDone(true))
+  }
+
+  toastr.removeByType('info')
+
+  if (!isError) {
+    const fileData = res.data
+
+    const contentDisposition = res.headers['content-disposition']
+    const fileName = contentDisposition && contentDisposition.split('filename=')[1]
+    if (fileData) {
+      FileSaver.saveAs(fileData, fileName)
+
+      toastr.success(
+        payload.projectCard
+          ? i18next.t('document-loading.project-card-title')
+          : i18next.t('document-loading.ready-title'),
+        payload.projectCard
+          ? i18next.t('document-loading.project-card-loaded')
+          : i18next.t('document-loading.document-loaded'),
+        { icon: <IconCheckCircleFill /> }
+      )
+      yield put(downloadDocumentDone(true))
+    } else {
+      toastr.error(
+        payload.projectCard
+          ? i18next.t('document-loading.project-card-title')
+          : i18next.t('document-loading.error-title'),
+        payload.projectCard
+          ? i18next.t('document-loading.project-card-error')
+          : i18next.t('document-loading.document-error'),
+        { icon: <IconErrorFill /> }
+      )
+      yield put(downloadDocumentDone(true))
+    }
+  }
+}
+
+function* downloadDocumentPreviewSaga({ payload }) {
+  let res
+  let isError = false
+  const modifiedUrl = payload.file + '?preview=true&immediate=true'
+  yield put(downloadDocumentDone(false))
+  toastr.info(
+    payload.projectCard
+      ? i18next.t('document-loading.project-card-title')
+      : i18next.t('document-loading.wait-title'),
+    payload.projectCard
+      ? i18next.t('document-loading.project-card-content')
+      : i18next.t('document-loading.document-content'),
+  { closeOnToastrClick: false, timeOut:0, removeOnHover: false, removeOnHoverTimeOut: 0, icon: <IconInfoCircleFill /> }
+  )
+  try {
+    res = yield call(axios.get, modifiedUrl, { responseType: 'blob' })
+    if (res.status !== 200) {
+      toastr.removeByType('info')
+      toastr.error(
+        payload.projectCard
+          ? i18next.t('document-loading.project-card-title')
+          : i18next.t('document-loading.error-title'),
+        payload.projectCard
+          ? i18next.t('document-loading.project-card-error')
+          : i18next.t('document-loading.document-error'),
+        { icon: <IconErrorFill /> }
+      )
+
+      isError = false
+      yield put(downloadDocumentDone(true))
+    }
+  } catch (e) {
+    toastr.error(
+      payload.projectCard
+        ? i18next.t('document-loading.project-card-title')
+        : i18next.t('document-loading.error-title'),
+      payload.projectCard
+        ? i18next.t('document-loading.project-card-error')
+        : i18next.t('document-loading.document-error'),
+      { icon: <IconErrorFill /> }
+    )
+    isError = true
+    yield put(downloadDocumentDone(true))
+  }
+
+  toastr.removeByType('info')
+
+  if (!isError) {
+    const fileData = res.data
+
+    const contentDisposition = res.headers['content-disposition']
+    const fileName = contentDisposition && contentDisposition.split('filename=')[1]
+    if (fileData) {
+      FileSaver.saveAs(fileData, fileName)
+
+      toastr.success(
+        payload.projectCard
+          ? i18next.t('document-loading.project-card-title')
+          : i18next.t('document-loading.ready-title'),
+        payload.projectCard
+          ? i18next.t('document-loading.project-card-loaded')
+          : i18next.t('document-loading.document-loaded'),
+        { icon: <IconCheckCircleFill /> }
+      )
+      yield put(downloadDocumentDone(true))
+    } else {
+      toastr.error(
+        payload.projectCard
+          ? i18next.t('document-loading.project-card-title')
+          : i18next.t('document-loading.error-title'),
+        payload.projectCard
+          ? i18next.t('document-loading.project-card-error')
+          : i18next.t('document-loading.document-error'),
+        { icon: <IconErrorFill /> }
+      )
+      yield put(downloadDocumentDone(true))
+    }
+  }
+}
+
+function* downloadDocumentSagaAsync({ payload }) {
   let res
   let currentTask
   let isError = false
@@ -159,7 +320,7 @@ function* downloadDocumentSaga({ payload }) {
   }
 }
 
-function* downloadDocumentPreviewSaga({ payload }) {
+function* downloadDocumentPreviewSagaAsync({ payload }) {
   let res
   let currentTask
   let isError = false
