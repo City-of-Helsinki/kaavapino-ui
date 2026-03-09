@@ -242,9 +242,10 @@ function RichTextEditor(props) {
         setCharLimitOver(false);
       }
       
-      // Only add to error list if field is NOT focused (user has left the field)
-      if(charLimitOver && !isFocused){
-        //Adds field to error list that don't trigger toastr right away (too many chars) and shows them when trying to save
+      // Add to error list immediately when character limit exceeded (for field passivation)
+      // This passivates other fields while keeping this field editable so user can fix the error
+      if(maxSizeOver){
+        //Adds field to error list - triggers passivation of other fields
         dispatch(formErrorList(true,inputProps.name))
       }
       else{
@@ -252,6 +253,12 @@ function RichTextEditor(props) {
         dispatch(formErrorList(false,inputProps.name))
       }
     }
+    
+    // NOTE: No cleanup function to remove from error list on unmount
+    // Character limit errors must persist across page navigation within same phase
+    // If user navigates to different page in same phase, other fields must remain passivated
+    // Error is only cleared when user fixes the character limit (maxSizeOver becomes false)
+    // or when phase changes (which resets all form data including error list)
   }, [charLimitOver, valueIsEmpty, isFocused, maxSizeOver])
 
   // Handle error list for rolling info fields (when field is closed but has errors)
@@ -355,6 +362,12 @@ function RichTextEditor(props) {
     }
     wasInErrorList.current = formErrors.includes(inputProps.name);
     
+    // CRITICAL: Preserve user data when character limit exceeded
+    // Don't overwrite editor content with backend value when user has unsaved changes due to error
+    if (maxSizeOver) {
+      return;
+    }
+    
     // Only update editor when field is not focused
     if (!editorRef.current || !value || isFocused) {
       return;
@@ -388,7 +401,7 @@ function RichTextEditor(props) {
 
     // Update status tracking
     prevLastSavedStatus.current = lastSaved?.status || '';
-  }, [value, isFocused, formErrors, errorJustCleared, network?.status, connectionErrorFields, lastSaved?.status]);
+  }, [value, isFocused, formErrors, errorJustCleared, network?.status, connectionErrorFields, lastSaved?.status, maxSizeOver]);
 
   useEffect(() => {
     // Checks on page load and on value change if the input value character count exceeds maxSize
@@ -408,7 +421,17 @@ function RichTextEditor(props) {
         valueCount = value.ops[0].insert.length - 1
       }
       // maxSizeOver true shows the max-chars-error
-      valueCount > maxSize ? setMaxSizeOver(true) : setMaxSizeOver(false)
+      const wasOver = maxSizeOver;
+      const nowOver = valueCount > maxSize;
+      
+      // CRITICAL: Don't reset maxSizeOver to false from backend value
+      // If maxSizeOver is true (user has error), keep it true until user fixes it in handleChange
+      // This prevents error state from being cleared when navigating between phases
+      if (nowOver && !wasOver) {
+        setMaxSizeOver(true);
+      } else if (wasOver && !nowOver) {
+        // Don't call setMaxSizeOver(false) here - let handleChange do it when user actually fixes the content
+      }
     }
   }, [value])
 
@@ -706,7 +729,8 @@ function RichTextEditor(props) {
     //Prevent saving if data has not changed or is empty and field is required
     // Exception: If previous save failed (field_error), retry even if data looks unchanged
     // This clears the error notification when user fixes validation issues
-    if ((dataChanged || hadPreviousError) && (!editorEmpty || !required) && !isOnlyPlaceholder) {
+    // CRITICAL: Prevent saving if character limit exceeded - data must stay in field until fixed
+    if ((dataChanged || hadPreviousError) && (!editorEmpty || !required) && !isOnlyPlaceholder && !maxSizeOver) {
       //prevent saving if locked
       if (!readonly) {
         //Sent call to save changes if it is modified by user and not updated by lock call
@@ -918,8 +942,10 @@ function RichTextEditor(props) {
     const maxSize = props.maxSize ? props.maxSize : 20000;
     let RichTextClassName = "rich-text-editor"
     
-    if (counter.current > maxSize) {
-      RichTextClassName += toolbarVisible ? ' toolbar-visible-error' : ''
+    // Add error class if character limit exceeded (regardless of focus)
+    // Use maxSizeOver state which properly tracks character count changes
+    if (maxSizeOver) {
+      RichTextClassName += toolbarVisible ? ' toolbar-visible-error' : ' has-error'
     } else {
       RichTextClassName += toolbarVisible ? ' toolbar-visible' : ''
     }
@@ -1096,7 +1122,7 @@ function RichTextEditor(props) {
         </p>
       ) : null}
     </div>
-      {counter.current > maxSize && charLimitOver || maxSizeOver ? <div className='max-chars-error'>{t('project.charsover')}</div> : ""}
+      {maxSizeOver ? <div className='max-chars-error'>{t('project.charsover')}</div> : ""}
       {checking && required && valueIsEmpty ? <div className='max-chars-error'>{t('project.required-field')}</div> : ""}
       <NetworkErrorState fieldName={inputProps.name} />
     </div>

@@ -1277,6 +1277,28 @@
 .select-input-wrapper {
   position: relative;
   width: 100%;
+  
+  // Disable tag interactions when Select is disabled
+  &.disabled {
+    .Tag-module_deleteButton__1diMR,
+    button[id*="delete-button"] {
+      pointer-events: none !important;
+      opacity: 0.5;
+      cursor: not-allowed !important;
+    }
+    
+    .Tag-module_tag__3bo5S,
+    [class*="tag_hds-tag"] {
+      cursor: not-allowed !important;
+      pointer-events: none !important;
+      color: #808080 !important;
+      
+      span {
+        color: #808080 !important;
+      }
+    }
+  }
+  
   .select-spinner-overlay {
     position: absolute;
     top: 50%;

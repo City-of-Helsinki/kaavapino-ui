@@ -306,7 +306,7 @@ const SelectInput = ({
         shouldDisableForErrors={shouldDisableForErrors}
       />
       :
-      <div className="select-input-wrapper">
+      <div className={`select-input-wrapper ${disabled || editDisabled || isThisFieldSaving || shouldDisableForErrors || (isProjectTimetableEdit && !timetable_editable) ? 'disabled' : ''}`}>
       {!multiple ? (
         <Select
           data-testid="select-single"

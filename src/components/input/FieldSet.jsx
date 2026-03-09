@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { connect, useDispatch } from 'react-redux'
+import { connect, useDispatch, useSelector } from 'react-redux'
 import { checkingSelector, savingSelector, formErrorListSelector, lastSavedSelector, updateFieldSelector} from '../../selectors/projectSelector'
 import CustomField from './CustomField.jsx'
 import NetworkErrorState from './NetworkErrorState.jsx'
@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { OutsideClick } from '../../hooks/OutsideClick'
 import {getAttributeData, formErrorList} from '../../actions/projectActions'
 import { useIsMount } from '../../hooks/IsMounted'
+import { useFieldPassivation } from '../../hooks/useFieldPassivation'
 import PropTypes from 'prop-types'
 import './Input.scss'
 
@@ -59,6 +60,12 @@ const FieldSet = ({
   const { t } = useTranslation()
   const isMount = useIsMount()
   const accordianRef = useRef(null)
+  
+  // Check if other fields have errors - passivate fieldset expand/delete buttons
+  const shouldDisableForErrors = useFieldPassivation(name)
+  
+  // Get error list to check if any child fields have errors
+  const formErrors = useSelector(formErrorListSelector)
 
   const nulledFields = fields && fields.map(field => {
     return { [field.name]: null, _deleted: true }
@@ -150,7 +157,7 @@ const FieldSet = ({
       else{
         // Opening fieldset - fetch data only if no validation errors in this fieldset
         // This preserves user's invalid input so they can fix it
-        const hasFieldsetErrors = visibleErrors.some(errorFieldName => 
+        const hasFieldsetErrors = formErrors && formErrors.some(errorFieldName => 
           errorFieldName.startsWith(`${set}.`)
         );
         
@@ -242,6 +249,17 @@ const FieldSet = ({
 
     return valueType || <span className='italic'>Tieto puuttuu</span>
   }
+  
+  // Check if ANY fieldset instance in this component has child fields with errors
+  // This is used to decide whether to disable Add button
+  const anyFieldsetHasChildError = formErrors && Array.isArray(sets) && sets.some(set => {
+    return formErrors.some(errorField => {
+      return fields.some(field => {
+        const fieldName = `${set}.${field.name}`;
+        return errorField === fieldName;
+      });
+    });
+  });
 
   return (
     <div className='fieldset-main-container' ref={accordianRef}>
@@ -254,11 +272,24 @@ const FieldSet = ({
         const automatically_added = get(formValues, set + '._automatically_added')
         const lockedElement = fieldsetDisabled ? <span className="input-locked"> Käyttäjä {lockStatus.lockStyle.lockData.attribute_lock.user_name} {lockStatus.lockStyle.lockData.attribute_lock.user_email} on muokkaamassa kenttää<IconLock></IconLock></span> : <></>
         const lockName = <><span className='accoardian-header-text'>{getValueName(setValues,fields)}</span> {lockedElement}</>
+        
+        // Check if THIS specific fieldset instance has any child fields with errors
+        const hasChildError = formErrors && formErrors.some(errorField => {
+          return fields.some(field => {
+            const fieldName = `${set}.${field.name}`;
+            return errorField === fieldName;
+          });
+        });
+        
+        // Only disable accordion if errors exist in OTHER fields (not this fieldset's children)
+        // If this fieldset has child errors, allow opening so user can fix them
+        const shouldDisableAccordion = shouldDisableForErrors && !hasChildError;
+        
         return (
           <React.Fragment key={`${name}-${i}`}>
             {!deleted && hiddenIndex !== i && (
               <div key={i} className="fieldset-container">
-                <button type="button" tabIndex={0} className={saving || hiding || adding ? "accordion-button-disabled" : expanded.includes(i) ? "accordion-button-open" : "accordion-button"} onClick={(e) => {if(!(saving || hiding || adding)){checkLocked(e,set,i)}}}>
+                <button type="button" tabIndex={0} className={saving || hiding || adding || shouldDisableAccordion ? "accordion-button-disabled" : expanded.includes(i) ? "accordion-button-open" : "accordion-button"} onClick={(e) => {if(!(saving || hiding || adding || shouldDisableAccordion)){checkLocked(e,set,i)}}}>
                   <div className='accordion-button-content'>
                     {lockName}
                   </div>
@@ -408,8 +439,8 @@ const FieldSet = ({
                 )}
                 {(!disable_fieldset_delete_add && !automatically_added && !disabled) && (
                   <Button
-                    className={`${fieldsetDisabled || saving ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'} ${hiding ? ' hidden' : ''}`}
-                    disabled={sets.length < 1 || disabled || fieldsetDisabled || saving}
+                    className={`${fieldsetDisabled || saving || shouldDisableAccordion ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'} ${hiding ? ' hidden' : ''}`}
+                    disabled={sets.length < 1 || disabled || fieldsetDisabled || saving || shouldDisableAccordion}
                     variant="secondary"
                     size='small'
                     iconLeft={<IconTrash/>}
@@ -447,7 +478,7 @@ const FieldSet = ({
           onClick={() => {
             refreshFieldset()
           }}
-          disabled={disabled || visibleErrors.length > 0 || saving}
+          disabled={disabled || visibleErrors.length > 0 || saving || (shouldDisableForErrors && !anyFieldsetHasChildError)}
           variant="supplementary"
           size='small'
           fullWidth={true}

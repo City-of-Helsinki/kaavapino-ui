@@ -102,17 +102,11 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
       <span>{rollingInfoText}</span>
     </div> :
     <div className='rolling-text'>
-    {value && !maxSizeOver && (
+    {value && (
       <>
         <img alt='' aria-hidden="true" src={infoBothDir} />
         <span>{rollingInfoText}</span>
       </>
-    )}
-    {maxSizeOver && (
-      <div className='max-chars-error'>
-        <IconAlertCircleFill color="#B01038" aria-hidden="true"/>
-         {t('project.charsover')}
-      </div>
     )}
     </div>
     }

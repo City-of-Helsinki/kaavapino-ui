@@ -102,7 +102,7 @@
       &.toolbar-visible-error{
         border: 2px solid $color-error !important;
         border-color: $color-error !important;
-        box-shadow: unset!important;
+        box-shadow: 0 0 0 3px $color-coat-of-arms !important;
         transform: translateZ(0) !important;
         transition: 85ms ease-out !important;
         transition-property: box-shadow,transform !important;
@@ -115,6 +115,10 @@
           border-top-left-radius: 0;
           border-top-right-radius: 0;
         }
+      }
+
+      &.has-error {
+        border: 2px solid $color-error !important;
       }
 
       &.large .quill .ql-editor {
@@ -142,9 +146,17 @@
     }
   }
   .rich-text-disabled {
-    pointer-events: none;
+    cursor: not-allowed;
+    user-select: none;
+    .rich-text-editor {
+      border: none !important;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
     .ql-editor{
       background-color: #E6E6E6;
+      color: #808080;
+      cursor: not-allowed;
     }
   }
   .quill-counter {
