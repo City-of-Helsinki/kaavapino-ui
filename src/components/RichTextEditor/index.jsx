@@ -297,7 +297,9 @@ function RichTextEditor(props) {
     try {
       return localStorage.getItem(wasNetworkErrorKey) === 'true';
     } catch (e) {
-      return false; // localStorage not available - assume no error to allow editing
+      // localStorage not available (e.g., private browsing, cookies disabled)
+      // Assume no error to allow editing - better UX than blocking unnecessarily
+      return false;
     }
   };
 
@@ -463,8 +465,8 @@ function RichTextEditor(props) {
       }
     };
     
-    window.addEventListener('forceEditorRefresh', handleForceRefresh);
-    return () => window.removeEventListener('forceEditorRefresh', handleForceRefresh);
+    globalThis.addEventListener('forceEditorRefresh', handleForceRefresh);
+    return () => globalThis.removeEventListener('forceEditorRefresh', handleForceRefresh);
   }, [inputProps.name, value, attributeData, charLimitOver, maxSizeOver]);
 
   useEffect(() => {
@@ -731,10 +733,12 @@ function RichTextEditor(props) {
     // This clears the error notification when user fixes validation issues
     // CRITICAL: Prevent saving if character limit exceeded - data must stay in field until fixed
     if ((dataChanged || hadPreviousError) && (!editorEmpty || !required) && !isOnlyPlaceholder && !maxSizeOver) {
-      //prevent saving if locked
-      if (!readonly) {
-        //Sent call to save changes if it is modified by user and not updated by lock call
-        if(!valueIsSet){
+      if (readonly) {
+        // Skip saving if field is readonly
+        return;
+      }
+      //Sent call to save changes if it is modified by user and not updated by lock call
+      if(!valueIsSet){
           if (typeof onBlur === 'function') {
             localStorage.setItem("changedValues", inputProps.name);
             if (editorEmpty) {

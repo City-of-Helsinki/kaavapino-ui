@@ -26,7 +26,8 @@ export const parseFieldsetFieldName = (fieldName) => {
     return null;
   }
 
-  const match = fieldName.match(/^(.+)\[(\d+)\]\.(.+)$/);
+  const regex = /^(.+)\[(\d+)\]\.(.+)$/;
+  const match = regex.exec(fieldName);
   if (!match) {
     return null;
   }
@@ -75,7 +76,8 @@ export const getFieldsetPrefix = (fieldName) => {
     return null;
   }
 
-  const match = fieldName.match(/^(.*\[\d+\])\./);
+  const regex = /^(.*\[\d+\])\./;
+  const match = regex.exec(fieldName);
   return match ? match[1] : null;
 };
 

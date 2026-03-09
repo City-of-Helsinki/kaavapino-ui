@@ -31,16 +31,14 @@ const extractFieldSetValues = (fieldsetArray) => {
   const valuesOnly = [];
   let index = 1;
 
-  for (let i = 0; i < fieldsetArray.length; i++) {
-    const fieldsetObject = fieldsetArray[i];
-    
+  for (const fieldsetObject of fieldsetArray) {
     // Skip non-object entries
     if (!fieldsetObject || typeof fieldsetObject !== 'object') {
       continue;
     }
 
     for (const fieldName in fieldsetObject) {
-      if (!Object.prototype.hasOwnProperty.call(fieldsetObject, fieldName)) {
+      if (!Object.hasOwn(fieldsetObject, fieldName)) {
         continue;
       }
 
@@ -48,11 +46,9 @@ const extractFieldSetValues = (fieldsetArray) => {
 
       // Handle Quill Delta format (rich text editor)
       if (fieldValue?.ops && Array.isArray(fieldValue.ops)) {
-        for (let j = 0; j < fieldValue.ops.length; j++) {
-          const op = fieldValue.ops[j];
+        for (const op of fieldValue.ops) {
           if (op.insert) {
-            arrayValues.push(`fieldset-${index}`);
-            arrayValues.push(`${fieldName}: ${op.insert}`);
+            arrayValues.push(`fieldset-${index}`, `${fieldName}: ${op.insert}`);
             valuesOnly.push(op.insert);
             index++;
           }
@@ -101,9 +97,9 @@ export const formatFieldValue = (fieldValue) => {
 
     // Case 1: Quill Delta format (rich text)
     if (firstItem?.ops && Array.isArray(firstItem.ops)) {
-      for (let i = 0; i < firstItem.ops.length; i++) {
-        if (firstItem.ops[i]?.insert) {
-          arrayValues.push(firstItem.ops[i].insert);
+      for (const op of firstItem.ops) {
+        if (op?.insert) {
+          arrayValues.push(op.insert);
         }
       }
       textValue = arrayValues.join('');

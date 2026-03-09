@@ -291,7 +291,7 @@ export default function NetworkErrorState({ fieldName }) {
                   
                   // Trigger editor to refresh - needed for BOTH validation and network errors
                   // The RichTextEditor will listen to this and reset validation states
-                  window.dispatchEvent(new CustomEvent('forceEditorRefresh', { 
+                  globalThis.dispatchEvent(new CustomEvent('forceEditorRefresh', { 
                     detail: { fieldName } 
                   }));
                   

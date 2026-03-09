@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { usersSelector } from '../../selectors/userSelector'
-import {IconPenLine,IconCheckCircle,IconAlertCircleFill,Button } from 'hds-react'
+import {IconPenLine,IconCheckCircle,Button } from 'hds-react'
 import projectUtils from '../../utils/projectUtils'
 import { useTranslation } from 'react-i18next'
 import ReactQuill from 'react-quill'
@@ -33,8 +33,6 @@ const processViranomaistahoData = (attributeData) => {
 }
 
 function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField,type,phaseIsClosed,factaInfo,maxSizeOver,attributeData,shouldDisableForErrors}) {
-  const { t } = useTranslation()
-
   const users = useSelector(state => usersSelector(state))
   let inputText = value
   let noInfoText = name === "voimassa_asemakaavat" || name === "voimassa_olevat_rakennuskiellot" ? "Ei ole" : "Ei"

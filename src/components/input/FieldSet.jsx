@@ -157,7 +157,7 @@ const FieldSet = ({
       else{
         // Opening fieldset - fetch data only if no validation errors in this fieldset
         // This preserves user's invalid input so they can fix it
-        const hasFieldsetErrors = formErrors && formErrors.some(errorFieldName => 
+        const hasFieldsetErrors = formErrors?.some(errorFieldName => 
           errorFieldName.startsWith(`${set}.`)
         );
         
@@ -252,8 +252,8 @@ const FieldSet = ({
   
   // Check if ANY fieldset instance in this component has child fields with errors
   // This is used to decide whether to disable Add button
-  const anyFieldsetHasChildError = formErrors && Array.isArray(sets) && sets.some(set => {
-    return formErrors.some(errorField => {
+  const anyFieldsetHasChildError = Array.isArray(sets) && formErrors?.some(errorField => {
+    return sets.some(set => {
       return fields.some(field => {
         const fieldName = `${set}.${field.name}`;
         return errorField === fieldName;
@@ -274,7 +274,7 @@ const FieldSet = ({
         const lockName = <><span className='accoardian-header-text'>{getValueName(setValues,fields)}</span> {lockedElement}</>
         
         // Check if THIS specific fieldset instance has any child fields with errors
-        const hasChildError = formErrors && formErrors.some(errorField => {
+        const hasChildError = formErrors?.some(errorField => {
           return fields.some(field => {
             const fieldName = `${set}.${field.name}`;
             return errorField === fieldName;
@@ -289,7 +289,11 @@ const FieldSet = ({
           <React.Fragment key={`${name}-${i}`}>
             {!deleted && hiddenIndex !== i && (
               <div key={i} className="fieldset-container">
-                <button type="button" tabIndex={0} className={saving || hiding || adding || shouldDisableAccordion ? "accordion-button-disabled" : expanded.includes(i) ? "accordion-button-open" : "accordion-button"} onClick={(e) => {if(!(saving || hiding || adding || shouldDisableAccordion)){checkLocked(e,set,i)}}}>
+                <button type="button" tabIndex={0} className={(() => {
+                  if (saving || hiding || adding || shouldDisableAccordion) return "accordion-button-disabled";
+                  if (expanded.includes(i)) return "accordion-button-open";
+                  return "accordion-button";
+                })()} onClick={(e) => {if(!(saving || hiding || adding || shouldDisableAccordion)){checkLocked(e,set,i)}}}>
                   <div className='accordion-button-content'>
                     {lockName}
                   </div>
@@ -538,6 +542,7 @@ const mapStateToProps = state => ({
 FieldSet.propTypes = {
   unlockAllFields:PropTypes.func,
   saving: PropTypes.bool,
+  sets: PropTypes.array,
   fields: PropTypes.array,
   lastSaved: PropTypes.object,
   updateField: PropTypes.bool,
