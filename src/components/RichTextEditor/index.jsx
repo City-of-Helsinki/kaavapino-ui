@@ -742,7 +742,7 @@ function RichTextEditor(props) {
           if (typeof onBlur === 'function') {
             localStorage.setItem("changedValues", inputProps.name);
             if (editorEmpty) {
-              editor = null
+              editor = null;
             }
             onBlur();
             oldValueRef.current = editor?.ops;
@@ -756,23 +756,17 @@ function RichTextEditor(props) {
             showCounter.current = false;
           }
         }
-      } else {
-        // Field is readonly, skip save
-      }
-    }
-    else if(editorEmpty && !isOnlyPlaceholder){
+    } else if (editorEmpty && !isOnlyPlaceholder) {
       localStorage.setItem("changedValues", inputProps.name);
       editorRef.current.getEditor().deleteText(0, editorRef.current.getEditor().getLength());
       showCounter.current = false;
-      setValueIsEmpty(false)
+      setValueIsEmpty(false);
       onBlur();
-    }
-    else if (isOnlyPlaceholder) {
+    } else if (isOnlyPlaceholder) {
       // Clear placeholder text if user didn't edit
       editorRef.current.getEditor().deleteText(0, editorRef.current.getEditor().getLength());
       showCounter.current = false;
-    }
-    else {
+    } else {
       // Data not changed, skip save
     }
     if(rollingInfo){
