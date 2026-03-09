@@ -504,7 +504,7 @@ class ProjectPage extends Component {
           ]}
         />
         <div className="project-page-content">
-          <LoadingSpinner className="loader-icon">{t('loading')}</LoadingSpinner>
+          <LoadingSpinner className="loader-icon" theme={{ '--spinner-color': '#0000BF' }}>{t('loading')}</LoadingSpinner>
         </div>
       </div>
     )

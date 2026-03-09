@@ -458,7 +458,7 @@ const Header = props => {
           </div>
           <div className={'edit-page-save ' + lastSaved?.status}>
             <div className='spinner-container' ref={spinnerRef}>
-              <LoadingSpinner className="loading-spinner" small></LoadingSpinner>
+              <LoadingSpinner className="loading-spinner" small theme={{ '--spinner-color': '#0000BF' }}></LoadingSpinner>
               <span className="loading-spinner">{lastSaved?.status === "error" ? t('messages.connect-again') : ""}</span>
             </div>
             <div className='icons-container-flex'>

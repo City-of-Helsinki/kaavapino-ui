@@ -100,7 +100,7 @@ function CustomMapMobile({ mapData, isPrivileged }) {
         <h3 className="mobile-header">{t('map-area.title')}</h3>
         {isEmpty(mapData) && (
           <span className="loading-info">
-            <LoadingSpinner small={true} className="loader-icon header-spinner" />
+            <LoadingSpinner small={true} className="loader-icon header-spinner" theme={{ '--spinner-color': '#0000BF' }} />
             {t('map-area.loading-data')}
           </span>
         )}

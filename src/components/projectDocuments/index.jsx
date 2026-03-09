@@ -79,7 +79,7 @@ function ProjectDocumentsPage(props) {
 
   const renderDocumentList = () => (
     <div className="documents-page-container">
-      {documentsLoading && <LoadingSpinner className="loader-icon" />}
+      {documentsLoading && <LoadingSpinner className="loader-icon" theme={{ '--spinner-color': '#0000BF' }} />}
       {!documentsLoading && Object.keys(groupedDocuments).length === 0 && (
         <p className="no-documents">{t('project.no-documents')}</p>
       )}

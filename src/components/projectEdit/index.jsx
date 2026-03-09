@@ -652,7 +652,7 @@ class ProjectEditPage extends Component {
     const { highlightGroup } = this.state
 
     if (!schema) {
-      return <LoadingSpinner className="loader-icon" />
+      return <LoadingSpinner className="loader-icon" theme={{ '--spinner-color': '#0000BF' }} />
     }
 
     const currentSchemaIndex = schema.phases.findIndex(
@@ -667,7 +667,7 @@ class ProjectEditPage extends Component {
     const notLastPhase = currentSchemaIndex + 1 < schema.phases.length
 
     if (currentSchemaIndex === -1) {
-      return <LoadingSpinner className="loader-icon" />
+      return <LoadingSpinner className="loader-icon" theme={{ '--spinner-color': '#0000BF' }} />
     }
 
     let color

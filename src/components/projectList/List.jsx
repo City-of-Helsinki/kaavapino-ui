@@ -226,7 +226,7 @@ class List extends Component {
                 handleSort(order,colKey)
             }}
           />
-          {loadingProjects && <LoadingSpinner className="loader-icon" style={{marginTop:'var(--spacing-l)'}} position="center" />}
+          {loadingProjects && <LoadingSpinner className="loader-icon" style={{marginTop:'var(--spacing-l)'}} position="center" theme={{ '--spinner-color': '#0000BF' }} />}
           {!loadingProjects && items.length === 0 && <span className="empty-list-info">Ei projekteja!</span>}
         </div>
         <div className="project-list-mobile">
@@ -242,7 +242,7 @@ class List extends Component {
             />
           )} 
           {projects.length !== 0 && projects} 
-          {loadingProjects && <LoadingSpinner className="loader-icon" style={{marginTop:'var(--spacing-l)'}} position="center" />}
+          {loadingProjects && <LoadingSpinner className="loader-icon" style={{marginTop:'var(--spacing-l)'}} position="center" theme={{ '--spinner-color': '#0000BF' }} />}
           {!loadingProjects && items.length === 0 && <span className="empty-list-info">Ei projekteja!</span>}
       </div>
     </>
