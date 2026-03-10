@@ -291,8 +291,41 @@ function* pollConnection() {
     )
     const dateVariable = new Date()
     const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    yield put(setPoll(true))
-    yield put(setLastSaved("connection_restored",time,[],[],false))
+    
+    // Check if there's a field that failed to save due to network error
+    const lastSaved = yield select(lastSavedSelector)
+    const hasUnsavedField = lastSaved?.status === 'error' && lastSaved?.fields?.length > 0
+    
+    if (hasUnsavedField) {
+      // Connection restored - show success banner and trigger auto-save
+      yield put(setPoll(true))
+      yield put({ type: 'Set network status', payload: { status: 'success', okMessage: 'Yhteys palautunut - tallennetaan...' } })
+      
+      // Get the field that needs to be saved
+      const fieldName = lastSaved.fields[0]
+      const fieldValue = lastSaved.values?.[0] // Use the value that originally failed to save
+      const projectId = yield select(currentProjectIdSelector)
+      
+      // If we don't have the saved value, fall back to current form value
+      const formValues = yield select(editFormSelector)
+      const valueToSave = fieldValue !== undefined ? fieldValue : formValues[fieldName]
+      
+      // Trigger save for the field
+      const attribute_data = { [fieldName]: valueToSave }
+      
+      // Call saveProject with the field data and fieldName so spinner activates
+      yield call(saveProject, { 
+        payload: { 
+          projectId, 
+          attribute_data,
+          fieldName  // CRITICAL: Include fieldName so setSavingField gets called
+        } 
+      })
+    } else {
+      // No unsaved fields - just update poll status
+      yield put(setPoll(true))
+      yield put(setLastSaved("connection_restored",time,[],[],false))
+    }
   } catch (e) {
     yield put(setPoll(false))
   }
@@ -1063,7 +1096,12 @@ function* lockProjectField(data) {
       const dateVariable = new Date()
       const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
       yield put(setLastSaved("error", time, [attribute_identifier], [""], true))
-      yield put(error(e))
+      
+      // Don't show toaster for network errors - user will see inline error banner
+      const isNetworkErr = e?.code === 'ERR_NETWORK'
+      if (!isNetworkErr) {
+        yield put(error(e))
+      }
     }
   }
 }
