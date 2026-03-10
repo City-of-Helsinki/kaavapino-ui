@@ -462,7 +462,9 @@ const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, mov
             //Make next or previous or previous and 1 after previous dates follow the moved date if needed
             if (arr[currentIndex]?.key?.includes("kylk_maaraaika") || arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") || arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika")) {
               //maaraika in lautakunta moving - forward cascade to lautakunnassa
-              const lautakuntaResult = timeUtil.findAllowedLautakuntaDate(movedDate, arr[i + 1].initial_distance, disabledDates?.date_types[arr[i + 1]?.date_type]?.dates, false, disabledDates?.date_types[arr[i]?.date_type]?.dates);
+              // Use initial_distance, fall back to distance_from_previous, then default 21 (P7/L7/E8/T3 standard gap)
+              const lautakuntaGap = arr[i + 1].initial_distance ?? arr[i + 1].distance_from_previous ?? 21;
+              const lautakuntaResult = timeUtil.findAllowedLautakuntaDate(movedDate, lautakuntaGap, disabledDates?.date_types[arr[i + 1]?.date_type]?.dates, false, disabledDates?.date_types[arr[i]?.date_type]?.dates);
               arr[i + 1].value = new Date(lautakuntaResult).toISOString().split('T')[0];
               indexToContinue = i + 1
               
@@ -536,7 +538,9 @@ const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, mov
               const oldStartISO = arr[i + 1]?.value;
               const oldEndISO = arr[i + 2]?.value;
               const endAllowed = disabledDates?.date_types[arr[i + 2]?.date_type]?.dates || [];
-              const alkaaResult = timeUtil.findAllowedDate(movedDate, arr[i + 1].initial_distance, disabledDates?.date_types[arr[i]?.date_type]?.dates, false);
+              // Use initial_distance, fall back to distance_from_previous, then default 14 (P3/L3/O3 standard gap)
+              const alkaaGap = arr[i + 1].initial_distance ?? arr[i + 1].distance_from_previous ?? 14;
+              const alkaaResult = timeUtil.findAllowedDate(movedDate, alkaaGap, disabledDates?.date_types[arr[i]?.date_type]?.dates, false);
               arr[i + 1].value = new Date(alkaaResult).toISOString().split('T')[0];
               indexToContinue = i + 1
               if (!arr[currentIndex]?.key?.includes("kylk_maaraaika") && !arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("lautakunnassa") && arr[currentIndex]?.key?.includes("maaraaika")) {
@@ -550,7 +554,8 @@ const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, mov
                 const val = endAllowed.findIndex(d => d >= arr[i + 1].value);
                 let kept = (val !== -1 && val + timespan < endAllowed.length) ? endAllowed[val + timespan] : null;
                 if (!kept) {
-                  kept = timeUtil.findAllowedDate(arr[i + 1].value, arr[i + 2].initial_distance, endAllowed, false);
+                  const paattyyGap = arr[i + 2].initial_distance ?? arr[i + 2].distance_from_previous ?? 14;
+                  kept = timeUtil.findAllowedDate(arr[i + 1].value, paattyyGap, endAllowed, false);
                 }
                 arr[i + 2].value = new Date(kept).toISOString().split('T')[0];
                 indexToContinue = i + 2
