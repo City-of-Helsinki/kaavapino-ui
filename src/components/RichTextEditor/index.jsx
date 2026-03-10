@@ -16,7 +16,7 @@ import {
 import {
   formErrorList
 } from '../../actions/projectActions'
-import { currentProjectIdSelector,savingSelector,lockedSelector, lastModifiedSelector, pollSelector,lastSavedSelector, projectNetworkSelector, formErrorListSelector, connectionErrorFieldsSelector, fieldsWithAnyErrorSelector } from '../../selectors/projectSelector'
+import { currentProjectIdSelector,savingSelector,lockedSelector, lastModifiedSelector, pollSelector,lastSavedSelector, projectNetworkSelector, formErrorListSelector, connectionErrorFieldsSelector, fieldsWithAnyErrorSelector, testingConnectionSelector } from '../../selectors/projectSelector'
 import commentIcon from '@/assets/icons/comment-icon.svg';
 import { useTranslation } from 'react-i18next'
 import RollingInfo from '../input/RollingInfo.jsx'
@@ -107,6 +107,7 @@ function RichTextEditor(props) {
   const formErrors = useSelector(formErrorListSelector) || []
   const connectionErrorFields = useSelector(connectionErrorFieldsSelector) || []
   const fieldsWithAnyError = useSelector(fieldsWithAnyErrorSelector) || []
+  const testingConnection = useSelector(testingConnectionSelector)
 
   const [showComments, setShowComments] = useState(false)
   const [toolbarVisible, setToolbarVisible] = useState(false)
@@ -131,6 +132,9 @@ function RichTextEditor(props) {
   
   // Check if other fields have validation errors OR connection errors (UX60.2.5 - passivate fields when error exists)
   const shouldDisableForErrors = useFieldPassivation(inputProps.name)
+  
+  // Check if THIS field is the one that failed to save due to network error
+  const isThisFieldNetworkError = lastSaved?.status === 'error' && lastSaved?.fields?.includes(inputProps.name)
 
   //Stringify the object for useEffect update check so it can be compared correctly
   //Normal object always different
@@ -230,7 +234,7 @@ function RichTextEditor(props) {
 
     removeTabBinding();
   }, [editorRef])
-
+  
   useEffect(() => {
     if(!isMount){
       //!ismount skips initial render
@@ -342,6 +346,9 @@ function RichTextEditor(props) {
     return (contentChanged && lengthMismatch) || errorWasJustCleared;
   };
 
+  // Spinner visibility is controlled by inputUtils.renderUpdatedFieldInfo
+  // which checks both saving state and testingConnection state
+
   // Force Quill to update when Redux Form value changes externally
   // This handles cases like user closing error notification which reverts the field
   useEffect(() => {
@@ -352,8 +359,8 @@ function RichTextEditor(props) {
     // Track error list membership
     wasInAnyErrorList.current = fieldsWithAnyError.includes(inputProps.name);
     
-    // Skip update if connection just recovered and user is still editing
-    if (connectionJustRecovered && isFocused) {
+    // Skip update if this field is currently being saved (preserve user data during save)
+    if (lastModified === inputProps.name && saving) {
       return;
     }
     
@@ -388,6 +395,26 @@ function RichTextEditor(props) {
 
     // Preserve user data if we just recovered from error
     if (isJustRecoveredFromError(prevLastSavedStatus.current, lastSaved?.status)) {
+      const currentEditorContent = editor.getText();
+      const reduxValue = value?.ops?.[0]?.insert || '';
+      
+      // CRITICAL: If editor is empty/whitespace but Redux has real data, RESTORE from Redux
+      if ((!currentEditorContent || currentEditorContent.trim().length <= 1) && 
+          reduxValue && reduxValue.trim().length > 1) {
+        updateEditorContent(editor, value);
+      } 
+      // If editor has user's content but Redux is empty, keep editor content
+      else if (currentEditorContent && currentEditorContent.trim().length > 1 && 
+          (!reduxValue || reduxValue.trim().length === 0)) {
+        // Keep the editor content as-is, don't overwrite
+      } 
+      // If both have different content, trust Redux (it was just saved successfully)
+      else if (currentEditorContent && reduxValue && currentEditorContent !== reduxValue) {
+        updateEditorContent(editor, value);
+      }
+      
+      // CRITICAL: Update prevLastSavedStatus NOW to prevent infinite loop
+      prevLastSavedStatus.current = lastSaved?.status || '';
       counter.current = editor.getLength() - 1;
       return;
     }
@@ -403,7 +430,7 @@ function RichTextEditor(props) {
 
     // Update status tracking
     prevLastSavedStatus.current = lastSaved?.status || '';
-  }, [value, isFocused, formErrors, errorJustCleared, network?.status, connectionErrorFields, lastSaved?.status, maxSizeOver]);
+  }, [value, isFocused, formErrors, errorJustCleared, network?.status, connectionErrorFields, lastSaved?.status, maxSizeOver, saving, lastModified]);
 
   useEffect(() => {
     // Checks on page load and on value change if the input value character count exceeds maxSize
@@ -976,7 +1003,7 @@ function RichTextEditor(props) {
     <input className='visually-hidden' ref={myRefname}/>
     <div
       role="textbox"
-      className={`rich-text-editor-wrapper ${fieldSetDisabled || disabled || fieldDisabled || lastModified === inputProps.name && saving || shouldDisableForErrors ? 'rich-text-disabled' : ''}`}
+      className={`rich-text-editor-wrapper ${fieldSetDisabled || disabled || fieldDisabled || lastModified === inputProps.name && saving || shouldDisableForErrors || isThisFieldNetworkError ? 'rich-text-disabled' : ''} ${isThisFieldNetworkError ? 'has-network-error' : ''} ${(lastModified === inputProps.name && saving) || (testingConnection?.isActive && testingConnection?.fieldName === inputProps.name) ? 'blurred' : ''}`}
       aria-label="tooltip"
       onFocus={checkLocked}
     >

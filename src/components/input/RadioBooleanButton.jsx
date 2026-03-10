@@ -3,7 +3,7 @@ import { RadioButton, Button, IconPlus } from 'hds-react'
 import RollingInfo from '../input/RollingInfo.jsx'
 import NetworkErrorState from './NetworkErrorState.jsx'
 import { useSelector } from 'react-redux'
-import { savingSelector,lastModifiedSelector } from '../../selectors/projectSelector'
+import { savingSelector, lastModifiedSelector, lastSavedSelector, pollingProjectsSelector } from '../../selectors/projectSelector'
 import { useTranslation } from 'react-i18next'
 import { useFieldPassivation } from '../../hooks/useFieldPassivation'
 import PropTypes from 'prop-types';
@@ -28,12 +28,19 @@ const RadioBooleanButton = ({
   const [radioValue, setRadioValue] = useState(null)
   const [editField,setEditField] = useState(false)
   const lastModified = useSelector(state => lastModifiedSelector(state))
+  const lastSaved = useSelector(state => lastSavedSelector(state))
   const [isThisFieldSaving, setIsThisFieldSaving] = useState(false)
   const saving =  useSelector(state => savingSelector(state))
+  const pollingProjects = useSelector(pollingProjectsSelector)
   
   // Check if other fields have validation errors (UX60.2.5 - passivate fields when error exists)
   // RadioBooleanButton only checks form errors, not connection errors
   const shouldDisableForErrors = useFieldPassivation(name, { includeConnectionErrors: false })
+  
+  // Check if THIS field is the one that failed to save due to network error
+  // Include 'connection_restored' status to keep showing spinner during recovery
+  const isThisFieldNetworkError = (lastSaved?.status === 'error' || lastSaved?.status === 'connection_restored') && 
+    lastSaved?.fields?.includes(name)
   
   useEffect(() => {
     // Reset isThisFieldSaving when saving is complete for this field
@@ -100,8 +107,9 @@ const RadioBooleanButton = ({
   }
   
   const getNormalElements = (nonEditable, rollingInfo, editField, name, readableValue, modifyText, rollingInfoText, editRollingField, phaseIsClosed, className, disabled, timeTableDisabled, error, handleOnChange, radioValue, double, showNoInformation) => {
-    const radioButtonClass = isThisFieldSaving ? 'radio-button-wrapper blurred' : `radio-button-wrapper ${className}`;
-    const isDisabled = disabled || timeTableDisabled || isThisFieldSaving || shouldDisableForErrors;
+    const isSpinning = isThisFieldSaving || (pollingProjects && isThisFieldNetworkError);
+    const radioButtonClass = isSpinning ? 'radio-button-wrapper blurred' : `radio-button-wrapper ${className} ${isThisFieldNetworkError || shouldDisableForErrors ? 'disabled' : ''} ${isThisFieldNetworkError ? 'has-network-error' : ''}`;
+    const isDisabled = disabled || timeTableDisabled || isThisFieldSaving || shouldDisableForErrors || isThisFieldNetworkError;
     return nonEditable || rollingInfo && !editField ?
       <RollingInfo 
         name={name} 

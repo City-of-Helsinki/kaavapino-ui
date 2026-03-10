@@ -158,6 +158,11 @@
       color: #808080;
       cursor: not-allowed;
     }
+    
+    // Show red border when field is disabled due to network error
+    &.has-network-error .ql-editor {
+      border: 2px solid #c4314b;
+    }
   }
   .quill-counter {
     font-family: "Helsinki Grotesk Bold", sans-serif;

@@ -4,7 +4,7 @@ import inputUtils from '../../utils/inputUtils'
 import { TextInput, NumberInput } from 'hds-react'
 import { useDispatch, useSelector } from 'react-redux'
 import {updateFloorValues,formErrorList} from '../../actions/projectActions'
-import {lockedSelector,lastModifiedSelector,pollSelector,lastSavedSelector,savingSelector } from '../../selectors/projectSelector'
+import {lockedSelector,lastModifiedSelector,pollSelector,lastSavedSelector,savingSelector,pollingProjectsSelector } from '../../selectors/projectSelector'
 import moment from 'moment'
 import { useTranslation } from 'react-i18next'
 import RollingInfo from '../input/RollingInfo.jsx'
@@ -49,7 +49,8 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
   const lockedStatus = useSelector(state => lockedSelector(state))
   const connection = useSelector(state => pollSelector(state))
   const lastSaved = useSelector(state => lastSavedSelector(state))
-  const saving =  useSelector(state => savingSelector(state))
+  const saving = useSelector(state => savingSelector(state))
+  const pollingProjects = useSelector(pollingProjectsSelector)
 
   const isMount = useIsMount();
   const [inputRef, setInputFocus] = useFocus()
@@ -475,10 +476,15 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
   // Renders the standard text input with error handling and loading spinner
   const renderTextInput = () => {
     const errorString = custom.customError || (custom.type === 'number' ? t('project.error-input-int') : t('project.error'));
-    const blurredClass = isThisFieldSaving ? ' blurred' : '';
+    // Check if THIS field has network error (include connection_restored to keep spinner during recovery)
+    const isThisFieldNetworkError = (lastSaved?.status === 'error' || lastSaved?.status === 'connection_restored') && 
+      lastSaved?.fields?.includes(input.name);
+    
+    const blurredClass = (isThisFieldSaving || (pollingProjects && isThisFieldNetworkError)) ? ' blurred' : '';
     const hasErrorClass = (inputUtils.hasError(error) || hasError) ? ' error' : '';
+    const networkErrorClass = isThisFieldNetworkError ? ' has-network-error' : '';
     return (
-      <div className={`text-input${custom.type === 'number' ? ' number-input' : ''}${blurredClass}${hasErrorClass}`}>
+      <div className={`text-input${custom.type === 'number' ? ' number-input' : ''}${blurredClass}${hasErrorClass}${networkErrorClass}`}>
         {custom.type === 'number' ? (
           <NumberInput
             ref={inputRef}

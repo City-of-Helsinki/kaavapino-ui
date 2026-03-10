@@ -47,7 +47,7 @@ $hds-gray-text: #2b2b2b;
 
     .hds-notification__label {
       font-weight: 700;
-      font-size: 1.25rem;
+      font-size: 16px;
       line-height: 1.2;
       margin: 0;
       display: flex;
@@ -65,9 +65,8 @@ $hds-gray-text: #2b2b2b;
       border: 1px solid var(--notification-border-color) !important;
       color: var(--notification-label-color);
       overflow: hidden; // keep corners clean after rail removal
-      font-family: 'Helsinki Grotesk', Arial, sans-serif; // primary + fallbacks
+      font-family: 'Helsinki Grotesk Bold', Arial, sans-serif; // primary + fallbacks
       font-weight: 700;
-      font-style: normal; // design spec says Bold; handled via font-weight
       font-size: 16px;
       line-height: 24px;
       letter-spacing: 0; // explicit for clarity
@@ -77,22 +76,55 @@ $hds-gray-text: #2b2b2b;
       }
       
     }
-    // ERROR variant (if you show it): light red bg + subtle border
+    
+    // ERROR variant (if you show it): light red bg + NO border
     &.nes-error {
       --notification-icon-color: #{$hds-red-dark};
+      --notification-background-color: #F6E2E6;
+      --notification-label-color: #1a1a1a;
 
       background-color: var(--notification-background-color) !important;
-      border: 1px solid var(--notification-border-color) !important;
+      border: none !important;
       color: var(--notification-label-color);
-      font-family: 'Helsinki Grotesk', Arial, sans-serif;
-      font-weight: 700;
-      font-style: normal; // Bold via weight
-      font-size: 16px;
-      line-height: 24px;
-      letter-spacing: 0;
-      vertical-align: middle;
+      
       svg {
         color: $hds-red-dark;
+        flex-shrink: 0;
+      }
+      
+      // Label (title) styling - FORCE with multiple selectors
+      .hds-notification__label,
+      & > div > .hds-notification__label,
+      div[class*='notification_hds-notification__label'] {
+        font-family: 'Helsinki Grotesk Bold', 'Helsinki Grotesk', Arial, sans-serif !important;
+        font-weight: 700 !important;
+        font-style: normal !important;
+        font-size: 16px !important;
+        line-height: 24px !important;
+        letter-spacing: 0 !important;
+        vertical-align: middle;
+        margin-bottom: 6px;
+        //margin: 0 !important;
+        //padding: 0;
+        display: flex;
+        align-items: center;
+      }
+      
+      // Show content (message) for error notifications - aligned with label text
+      .hds-notification__content,
+      div[class*='notification_hds-notification__content'] {
+        display: block !important;
+        
+        p {
+          font-family: 'Helsinki Grotesk', Arial, sans-serif;
+          font-weight: 400;
+          font-style: normal;
+          font-size: 14px;
+          line-height: 24px;
+          letter-spacing: 0;
+          color: #1a1a1a;
+          margin-left: 32px;
+        }
       }
     }
   }
