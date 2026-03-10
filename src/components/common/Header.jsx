@@ -14,8 +14,9 @@ import { withRouter, useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import ConfirmationModal from './ConfirmationModal.jsx'
 import 'hds-core'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { usersSelector } from '../../selectors/userSelector'
+import { setTestingConnection } from '../../actions/projectActions'
 import { authUserSelector } from '../../selectors/authSelector'
 import { lastSavedSelector,savingSelector,selectedPhaseSelector } from '../../selectors/projectSelector'
 import { schemaSelector } from '../../selectors/schemaSelector'
@@ -28,6 +29,7 @@ import PropTypes from 'prop-types'
 
 const Header = props => {
   const { t } = useTranslation()
+  const dispatch = useDispatch()
   const [showConfirm, setShowConfirm] = useState(false)
   const [updateTime, setUpdateTime] = useState({status: t('header.edit-menu-no-save'),time: ""})
   const [lastSuccessfulSaveTime, setLastSuccessfulSaveTime] = useState("") // Track last successful save time for tooltip
@@ -105,11 +107,15 @@ const Header = props => {
     if(lastSaved?.status === "error" && !lastSaved?.lock){
       setCount(count + count)
       setIsPollingConnection(true)
+      // Dispatch testingConnection state with the failed field name
+      const failedFieldName = lastSaved?.fields?.[0]
+      dispatch(setTestingConnection(true, failedFieldName))
       if(spinnerRef?.current?.style){
         spinnerRef.current.style.visibility = "visible"
         setTimeout(() => {
           spinnerRef.current.style.visibility = "hidden"
           setIsPollingConnection(false)
+          dispatch(setTestingConnection(false, null))
         }, 5000)
       }
     }

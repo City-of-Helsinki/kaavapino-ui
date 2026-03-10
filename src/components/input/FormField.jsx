@@ -66,6 +66,7 @@ const FormField = ({
 }) => {
   const [lockStatus, setLockStatus] = useState({})
   const savingField = useSelector(state => state.project.savingField)
+  const testingConnection = useSelector(state => state.project.testingConnection)
   const handleBlurSave = useCallback(() => {
     if (typeof handleSave === 'function') {
       handleSave(field.name)
@@ -308,7 +309,7 @@ const FormField = ({
             <div className="input-header-icons">
             {!isReadOnly && (
               <>
-                {inputUtils.renderUpdatedFieldInfo({ savingField, fieldName: field.name, updated, t })}
+                {inputUtils.renderUpdatedFieldInfo({ savingField, fieldName: field.name, updated, t, testingConnection })}
                 {inputUtils.renderTimeContainer({ updated, t })}
               </>
             )}

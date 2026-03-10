@@ -98,6 +98,7 @@ export const RESET_TIMETABLE_SAVE = "Reset timetable save"
 export const SET_LAST_SAVED = "setLastSaved"
 export const POLL_CONNECTION = "pollConnection"
 export const SET_POLL = "setPoll"
+export const SET_TESTING_CONNECTION = "setTestingConnection"
 export const SHOW_TIMETABLE = "showTimetable"
 export const SHOW_FLOOR_AREA = "showFloorArea"
 export const LAST_MODIFIED = "lastModified"
@@ -202,6 +203,10 @@ export const pollConnection = (connection) => ({
 export const setPoll = (connection) => ({
   type: SET_POLL,
   payload: {connection}
+})
+export const setTestingConnection = (isTesting, fieldName = null) => ({
+  type: SET_TESTING_CONNECTION,
+  payload: { isTesting, fieldName }
 })
 export const setLastSaved = (status,time,fields,values,lock) => ({
   type: SET_LAST_SAVED,

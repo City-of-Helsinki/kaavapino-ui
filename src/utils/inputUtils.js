@@ -13,8 +13,11 @@ const hasError = error => {
   return false
 }
 
-const renderUpdatedFieldInfo = ({ savingField, fieldName, updated, t, isFieldset, fieldsetFields }) => {
+const renderUpdatedFieldInfo = ({ savingField, fieldName, updated, t, isFieldset, fieldsetFields, testingConnection }) => {
 	let shouldShowSpinner = false;
+
+	// Check if testing connection for this specific field
+	const isTestingThisField = testingConnection?.isActive && testingConnection?.fieldName === fieldName;
 
 	if (isFieldset && fieldsetFields && savingField) {
 		// For fieldset components: show spinner if savingField matches any field within this fieldset
@@ -24,8 +27,8 @@ const renderUpdatedFieldInfo = ({ savingField, fieldName, updated, t, isFieldset
 		const fieldsetPrefix = fieldName.replace('_fieldset', '');
 		shouldShowSpinner = savingField.includes(fieldsetPrefix);
 	} else {
-		// For individual fields: show spinner only for exact match
-		shouldShowSpinner = savingField === fieldName;
+		// For individual fields: show spinner for exact match OR when testing connection for this field
+		shouldShowSpinner = savingField === fieldName || isTestingThisField;
 	}
 	
 	return (

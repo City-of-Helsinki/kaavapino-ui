@@ -52,6 +52,11 @@ export const pollingProjectsSelector = createSelector(
   ({ pollingProjects }) => pollingProjects
 )
 
+export const testingConnectionSelector = createSelector(
+  selectProject,
+  ({ testingConnection }) => testingConnection
+)
+
 export const loadingProjectsSelector = createSelector(
   selectProject,
   ({ loadingProjects }) => loadingProjects

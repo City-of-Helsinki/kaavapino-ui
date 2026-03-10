@@ -49,7 +49,8 @@ const FieldSet = ({
   isTabActive,
   highlightedInFieldset,
   highlightedTag,
-  savingField
+  savingField,
+  testingConnection
 }) => {
   const handleBlur = () => {
     setShowSaving(true)
@@ -391,7 +392,7 @@ const FieldSet = ({
                           <div className="input-header-icons">
                             {!isReadOnly && (
                               <>
-                                {inputUtils.renderUpdatedFieldInfo({ savingField, fieldName: field.name, updated: fieldSpecificUpdated, t, isFieldset: false })}
+                                {inputUtils.renderUpdatedFieldInfo({ savingField, fieldName: field.name, updated: fieldSpecificUpdated, t, isFieldset: false, testingConnection })}
                                 {inputUtils.renderTimeContainer({ updated: fieldSpecificUpdated, t })}
                               </>
                             )}
@@ -536,7 +537,8 @@ const mapStateToProps = state => ({
   visibleErrors:formErrorListSelector(state),
   lastSaved: lastSavedSelector(state),
   updateField: updateFieldSelector(state),
-  savingField: state.project.savingField
+  savingField: state.project.savingField,
+  testingConnection: state.project.testingConnection
 })
 
 FieldSet.propTypes = {

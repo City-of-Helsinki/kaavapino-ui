@@ -1,6 +1,7 @@
 import {
   LAST_MODIFIED,
   SET_POLL,
+  SET_TESTING_CONNECTION,
   SET_LAST_SAVED,
   SET_UNLOCK_STATUS,
   SET_LOCK_STATUS,
@@ -123,6 +124,7 @@ export const initialState = {
   hasErrors: false,
   checking: false,
   pollingProjects: false,
+  testingConnection: { isActive: false, fieldName: null },
   timelineProject: [],
   selectedPhase: 0,
   currentProjectExternalDocuments: null,
@@ -464,6 +466,16 @@ export const reducer = (state = initialState, action) => {
       return{
         ...state,
         connection:action.payload,
+      }
+    }
+
+    case SET_TESTING_CONNECTION: {
+      return{
+        ...state,
+        testingConnection: {
+          isActive: action.payload.isTesting,
+          fieldName: action.payload.fieldName
+        }
       }
     }
 
@@ -838,7 +850,11 @@ export const reducer = (state = initialState, action) => {
     case SET_SELECTED_PHASE_ID: {
       return {
         ...state,
-        selectedPhase: action.payload
+        selectedPhase: action.payload,
+        // Clear network error states when switching phases to avoid showing stale errors
+        lastSaved: {},
+        formErrorList: [],
+        testingConnection: { isActive: false, fieldName: null }
       }
     }
 
