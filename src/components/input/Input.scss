@@ -900,6 +900,7 @@
 
 .link-container {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: flex-start;
   padding-top: 4px;
@@ -931,7 +932,14 @@
   }
 
   .error-text {
-    margin-left: $size4;
+    width: 100%;
+    margin-top: $size8;
+    margin-left: 0;
+  }
+
+  // Add extra spacing when error is visible and link input is focused
+  &:has(.error-text) .link-input-wrapper:focus-within {
+    margin-bottom: 2px;
   }
 }
 
@@ -1197,6 +1205,18 @@
 }
 
 .text-input{
+  // Hide HDS error text element since we use NetworkErrorState for all error messages
+  div[class*="helperText"],
+  div[class*="errorText"],
+  div[class*="assistiveText"] {
+    display: none !important;
+  }
+  
+  // Add padding to input wrapper when field has validation error to maintain spacing with error notification
+  &.error div[class*="inputWrapper"] {
+    padding-bottom: 2px;
+  }
+  
   .input-spinner {
     position: absolute;
     top: 60%;

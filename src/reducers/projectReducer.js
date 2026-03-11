@@ -958,7 +958,7 @@ export const reducer = (state = initialState, action) => {
         ...state,
         overview: {
           ...state.overview,
-          filters: action.payload
+          filters: Array.isArray(action.payload) ? action.payload : []
         }
       }
     }

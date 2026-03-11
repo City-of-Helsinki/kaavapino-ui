@@ -125,6 +125,16 @@ $hds-gray-text: #2b2b2b;
         }
       }
     }
+    
+    // Validation error variant - use same styling as max-chars-error
+    &.nes-validation-error {
+      @include hds-error-notification;
+      
+      // Hide HDS Notification's default icon since mixin provides its own
+      svg {
+        display: none !important;
+      }
+    }
   }
 
   // =========================

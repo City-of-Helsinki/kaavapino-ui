@@ -308,7 +308,7 @@ function* pollConnection() {
       
       // If we don't have the saved value, fall back to current form value
       const formValues = yield select(editFormSelector)
-      const valueToSave = fieldValue === undefined ? formValues[fieldName] : fieldValue
+      const valueToSave = fieldValue === undefined ? formValues.values?.[fieldName] : fieldValue
       
       // Trigger save for the field
       const attribute_data = { [fieldName]: valueToSave }
@@ -1175,6 +1175,9 @@ function* saveProject(data) {
       yield put(lastModified(latestModifiedKey[0]))
     }
 
+    // Define attribute_data outside the if block so it's available in catch
+    let attribute_data = changedValues;
+
     if (!isEmpty(keys)) {
       if (fileOrimgSave && insideFieldset && fieldsetData && fieldsetPath) {
         //Data added for front when image inside fieldset is saved without other data
@@ -1201,21 +1204,19 @@ function* saveProject(data) {
           }
         }
       }
-      const attribute_data = changedValues
+      // Update attribute_data reference (already declared above)
+      attribute_data = changedValues
       
       // Check for client-side validation errors BEFORE attempting to save
-      // Check ALL fields - backend will reject if ANY field has validation errors
+      // Block save if client-side validation has failed (reduces unnecessary backend requests)
       const { fieldName: savedFieldName } = data.payload || {}
       const visibleErrors = yield select(formErrorListSelector)
       
-      // If ANY field has validation errors, block save to backend
-      // Backend will reject the entire save if any field is invalid
       if(visibleErrors.length > 0) {
-        // Get current field value for copy functionality
+        // Get current field value for error display
         const fieldValue = savedFieldName ? values[savedFieldName] : undefined
         
         yield put(setSavingField(null))
-        // Include field value so "copy content" button works correctly
         yield put(setLastSaved("field_error",time,[savedFieldName],fieldValue ? [fieldValue] : [],false))
         yield put(stopSubmit(EDIT_PROJECT_FORM, {}))
         yield put(saveProjectFailed())
@@ -1233,6 +1234,7 @@ function* saveProject(data) {
         // CRITICAL: Check if backend returned data matches current form values
         // If user continued typing after a failed save, don't overwrite their changes
         let hasUnsavedChanges = false;
+        const savedFieldName = fieldName; // Use fieldName from payload
         if (savedFieldName) {
           const backendValue = updatedProject.attribute_data[savedFieldName];
           const currentValue = values[savedFieldName];
@@ -1275,18 +1277,38 @@ function* saveProject(data) {
         yield put(setLastSaved("success", time, [], [], false))
 
       } catch (e) {
-        if (e.response && e.response.status === 400) {
-          yield put(setLastSaved("field_error", time, Object.keys(attribute_data), Object.values(attribute_data), false))
-          yield put(stopSubmit(EDIT_PROJECT_FORM, e.response.data))
-        } else {
-          yield put(setLastSaved("error", time, Object.keys(attribute_data), Object.values(attribute_data), false))
-        }
         // Clear saving field on error
         yield put(setSavingField(null))
+        
         const isNetworkErr = e?.code === 'ERR_NETWORK'
         const statusCode = e?.response?.status
-        if (isNetworkErr || !statusCode || statusCode >= 500) {
+        
+        // 400 errors are backend validation errors - show in NetworkErrorState but NOT as network errors
+        if (e.response && e.response.status === 400) {
+          // Extract actual error messages from backend response
+          // Backend returns: { fieldName: { fieldName: "error message" } } or { fieldName: "error message" }
+          const backendErrors = e.response.data || {};
+          const errorFields = Object.keys(backendErrors);
+          const errorMessages = errorFields.map(fieldName => {
+            const fieldError = backendErrors[fieldName];
+            // Handle nested structure: { diaarinumero: { diaarinumero: "message" } }
+            if (typeof fieldError === 'object' && fieldError !== null) {
+              return fieldError[fieldName] || Object.values(fieldError)[0] || 'Virhe';
+            }
+            // Handle simple structure: { diaarinumero: "message" }
+            return fieldError;
+          });
+          
+          yield put(setLastSaved("field_error", time, errorFields, errorMessages, false))
+          yield put(stopSubmit(EDIT_PROJECT_FORM, e.response.data))
+          // IMPORTANT: Don't set network.status = 'error' for 400 errors
+        } else if (isNetworkErr || !statusCode || statusCode >= 500) {
+          // Only real network/server errors trigger connection recovery flow
+          yield put(setLastSaved("error", time, Object.keys(attribute_data), Object.values(attribute_data), false))
           yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
+        } else {
+          // Other HTTP errors (401, 403, 404, etc.) - treat as general errors without network status change
+          yield put(setLastSaved("error", time, Object.keys(attribute_data), Object.values(attribute_data), false))
         }
       }
     }

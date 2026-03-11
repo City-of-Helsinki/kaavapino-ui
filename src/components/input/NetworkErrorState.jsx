@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { projectNetworkSelector, lastSavedSelector } from '../../selectors/projectSelector';
 import { Notification } from 'hds-react';
@@ -7,13 +7,16 @@ import { setLastSaved } from '../../actions/projectActions';
 import './NetworkErrorState.scss';
 import PropTypes from 'prop-types';
 
-export default function NetworkErrorState({ fieldName }) {
-  if (typeof window !== 'undefined' && !window.__clearedIsRelevantField) {
+export default function NetworkErrorState({ fieldName, validationError }) {
+  const clearedIsRelevantField = useRef(false);
+  
+  // Clear localStorage on first mount only
+  if (typeof window !== 'undefined' && !clearedIsRelevantField.current) {
       try {
           localStorage.removeItem('isRelevantField');
           localStorage.removeItem('warningManuallyClosed');
+          clearedIsRelevantField.current = true;
       } catch (e) {}
-      window.__clearedIsRelevantField = true;
   }
   const network = useSelector(projectNetworkSelector);
   const lastSaved = useSelector(state => lastSavedSelector(state))
@@ -24,37 +27,86 @@ export default function NetworkErrorState({ fieldName }) {
   
   const hasError = status === 'error' || lastSaved?.status === 'field_error';
   const isSuccess = status === 'success' || lastSaved?.status === 'connection_restored';
+  const hasValidationError = !!validationError;
 
-  const banner = useMemo(() => {
-    // IMPORTANT: Check isSuccess FIRST before hasError!
-    if (isSuccess) {
-      return {
-        type: 'success',
-        label: t('messages.network-connection-restored-label')
-      };
+  // Get saved fields early so we can use it in banner useMemo
+  const savedFields = Array.isArray(lastSaved?.fields) ? lastSaved.fields : [];
+
+  const banners = useMemo(() => {
+    const notifications = [];
+    
+    // Show validation error if present
+    if (hasValidationError) {
+      notifications.push({
+        type: 'error',
+        label: validationError,
+        key: 'validation'
+      });
     }
+    
+    // Show success message
+    if (isSuccess) {
+      notifications.push({
+        type: 'success',
+        label: t('messages.network-connection-restored-label'),
+        key: 'success'
+      });
+    }
+    
+    // Show network/save errors (including lock errors)
     if (hasError) {
-      // Differentiate between field validation error and network error
+      // Differentiate between field validation error and network/lock error
       const isFieldValidationError = lastSaved?.status === 'field_error';
+      const isLockError = lastSaved?.lock === true;
       
-      // For network errors, use custom two-line message
+      // For network/lock errors, use custom two-line message
       if (!isFieldValidationError) {
-        return {
+        const lockMessage = isLockError 
+          ? 'Kentän lukitus epäonnistui. Odota yhteyden palautumista.'
+          : 'Odota yhteyden palautumista.';
+        
+        notifications.push({
           type: 'error',
           label: 'Tallennus epäonnistui',
-          message: 'Odota yhteyden palautumista.'
-        };
+          message: lockMessage,
+          key: 'network'
+        });
       }
       
-      // For validation errors, use standard format
-      return {
-        type: 'error',
-        label: t('messages.network-save-failed-label'),
-        message: t('messages.field-validation-error') || 'Kentän arvo ei ole kelvollinen'
-      };
+      // For backend validation errors (400), show the actual backend error message
+      // Find this field's error message from lastSaved.values array
+      // Skip if client validation error is already shown to prevent duplicates
+      if (isFieldValidationError && fieldName && !hasValidationError) {
+        const fieldIndex = savedFields.indexOf(fieldName);
+        const backendErrorMessage = fieldIndex >= 0 && Array.isArray(lastSaved?.values) 
+          ? lastSaved.values[fieldIndex] 
+          : null;
+        
+        if (backendErrorMessage) {
+          // Backend provided a specific error message for this field
+          const errorText = Array.isArray(backendErrorMessage) 
+            ? backendErrorMessage[0] // Take first error if array
+            : backendErrorMessage;
+          
+          notifications.push({
+            type: 'error',
+            label: 'Tallennus epäonnistui',
+            message: errorText,
+            key: 'field_error'
+          });
+        }
+      } else if (isFieldValidationError) {
+        // Fallback for field_error without specific message
+        notifications.push({
+          type: 'error',
+          label: 'Tallennus epäonnistui',
+          key: 'field_error'
+        });
+      }
     }
-    return null;
-  }, [hasError, isSuccess, network.errorMessage, network.okMessage, lastSaved?.status, t]);
+    
+    return notifications;
+  }, [hasError, isSuccess, hasValidationError, validationError, lastSaved?.status, lastSaved?.lock, savedFields, fieldName, lastSaved?.values, t]);
 
   // Auto-hide "connection restored" banner after 5 seconds
   useEffect(() => {
@@ -62,13 +114,14 @@ export default function NetworkErrorState({ fieldName }) {
       const timer = setTimeout(() => {
         dispatch({ type: 'Reset network status' });
         dispatch(setLastSaved('', null, [], [], false));
+        localStorage.removeItem('isRelevantField');
       }, 5000);
       return () => clearTimeout(timer);
     }
   }, [isSuccess, dispatch]);
 
   // Limit visibility to fields present in lastSaved.fields when error/success
-  const savedFields = Array.isArray(lastSaved?.fields) ? lastSaved.fields : [];
+  // (savedFields already defined above for use in banner)
   const storedFieldName = localStorage.getItem('isRelevantField') || null;
   const isRelevantField = fieldName ? savedFields.includes(fieldName) : false;
   const storedRelevant = fieldName ? storedFieldName === fieldName : false;
@@ -81,8 +134,10 @@ export default function NetworkErrorState({ fieldName }) {
     }
   }, [hasError, storedFieldName, isRelevantField, fieldName]);
   
-  // Show red/blue banner for errors and success - NO yellow warning box anymore
-  const showBanner = (hasError || isSuccess) && (isRelevantField || storedRelevant);
+  // Show banner for:
+  // 1. Validation errors (always show for this field)
+  // 2. Network errors/success (only for relevant fields)
+  const showBanner = hasValidationError || ((hasError || isSuccess) && (isRelevantField || storedRelevant));
 
   if (!showBanner) {
       return null;
@@ -90,22 +145,31 @@ export default function NetworkErrorState({ fieldName }) {
 
   return (
     <div className="network-error-state" aria-live="polite" aria-atomic="true">
-      {banner && showBanner && (
-        <Notification
-          type={banner.type}
-          label={banner.label}
-          dismissible={false}
-          size={"medium"}
-          aria-label={banner.label}
-          className={`nes-notification nes-${banner.type}`}
-        >
-          {banner.message && <p>{banner.message}</p>}
-        </Notification>
-      )}
+      {showBanner && banners.map((banner, index) => {
+        const notificationClass = banner.key === 'validation'
+          ? 'nes-notification nes-validation-error'
+          : `nes-notification nes-${banner.type}`;
+        
+        return (
+          <Notification
+            key={banner.key || index}
+            type={banner.type}
+            label={banner.label}
+            dismissible={false}
+            size={"medium"}
+            aria-label={banner.label}
+            className={notificationClass}
+            style={index > 0 ? { marginTop: '8px' } : {}}
+          >
+            {banner.message && <p>{banner.message}</p>}
+          </Notification>
+        );
+      })}
     </div>
   );
 }
 
 NetworkErrorState.propTypes = {
-	fieldName: PropTypes.string
+	fieldName: PropTypes.string,
+	validationError: PropTypes.string
 }
