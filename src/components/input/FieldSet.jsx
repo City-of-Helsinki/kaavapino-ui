@@ -553,7 +553,12 @@ FieldSet.propTypes = {
   phaseIsClosed: PropTypes.bool,
   lockStatus: PropTypes.object,
   isTabActive: PropTypes.bool,
-  visibleErrors: PropTypes.arrayOf(PropTypes.string)
+  visibleErrors: PropTypes.arrayOf(PropTypes.string),
+  savingField: PropTypes.string,
+  testingConnection: PropTypes.shape({
+    isActive: PropTypes.bool,
+    fieldName: PropTypes.string
+  })
 }
 
 export default connect(mapStateToProps)(FieldSet)

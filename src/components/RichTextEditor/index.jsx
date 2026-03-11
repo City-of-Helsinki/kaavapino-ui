@@ -353,7 +353,6 @@ function RichTextEditor(props) {
   // This handles cases like user closing error notification which reverts the field
   useEffect(() => {
     // Track network status transitions
-    const connectionJustRecovered = prevNetworkStatus.current === 'error' && network?.status === 'success';
     prevNetworkStatus.current = network?.status || 'ok';
     
     // Track error list membership

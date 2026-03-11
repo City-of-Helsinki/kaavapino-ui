@@ -108,7 +108,21 @@ const RadioBooleanButton = ({
   
   const getNormalElements = (nonEditable, rollingInfo, editField, name, readableValue, modifyText, rollingInfoText, editRollingField, phaseIsClosed, className, disabled, timeTableDisabled, error, handleOnChange, radioValue, double, showNoInformation) => {
     const isSpinning = isThisFieldSaving || (pollingProjects && isThisFieldNetworkError);
-    const radioButtonClass = isSpinning ? 'radio-button-wrapper blurred' : `radio-button-wrapper ${className} ${isThisFieldNetworkError || shouldDisableForErrors ? 'disabled' : ''} ${isThisFieldNetworkError ? 'has-network-error' : ''}`;
+    
+    // Build class string step by step to avoid nested ternaries
+    let radioButtonClass = 'radio-button-wrapper';
+    if (isSpinning) {
+      radioButtonClass += ' blurred';
+    } else {
+      radioButtonClass += ` ${className}`;
+      if (isThisFieldNetworkError || shouldDisableForErrors) {
+        radioButtonClass += ' disabled';
+      }
+      if (isThisFieldNetworkError) {
+        radioButtonClass += ' has-network-error';
+      }
+    }
+    
     const isDisabled = disabled || timeTableDisabled || isThisFieldSaving || shouldDisableForErrors || isThisFieldNetworkError;
     return nonEditable || rollingInfo && !editField ?
       <RollingInfo 

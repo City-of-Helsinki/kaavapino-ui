@@ -308,7 +308,7 @@ function* pollConnection() {
       
       // If we don't have the saved value, fall back to current form value
       const formValues = yield select(editFormSelector)
-      const valueToSave = fieldValue !== undefined ? fieldValue : formValues[fieldName]
+      const valueToSave = fieldValue === undefined ? formValues[fieldName] : fieldValue
       
       // Trigger save for the field
       const attribute_data = { [fieldName]: valueToSave }
@@ -1212,7 +1212,7 @@ function* saveProject(data) {
       // Backend will reject the entire save if any field is invalid
       if(visibleErrors.length > 0) {
         // Get current field value for copy functionality
-        const fieldValue = savedFieldName && values ? values[savedFieldName] : undefined
+        const fieldValue = savedFieldName ? values[savedFieldName] : undefined
         
         yield put(setSavingField(null))
         // Include field value so "copy content" button works correctly
