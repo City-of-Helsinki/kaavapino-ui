@@ -230,14 +230,16 @@ class NewProjectFormModal extends Component {
                   field: {
                     name: CREATE_PRINCIPLES,
                     label: t('project-base.labels.principles'),
-                    type: 'toggle'
+                    type: 'toggle',
+                    editable: isEditable
                   }
                 })}
                 {this.getFormField({
                   field: {
                     name: CREATE_DRAFT,
                     label: t('project-base.labels.draft'),
-                    type: 'toggle'
+                    type: 'toggle',
+                    editable: isEditable
                   }
                 })}
               </>
