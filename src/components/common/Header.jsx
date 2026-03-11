@@ -361,22 +361,17 @@ const Header = props => {
    * Determines if an error toaster should be shown based on error type and field
    * 
    * Show toaster for:
-   * 1. Lock errors (always) - user needs to know they couldn't lock the field
-   * 2. Network errors in fieldsets (status='error', not 'field_error')
+   * 1. Network errors in fieldsets (status='error', not 'field_error')
    *    - because fieldset closes and user loses access to their data
    *    - "Copy value" button in toaster provides data recovery
    * 
    * Don't show toaster for:
+   * - Lock errors - shown inline via NetworkErrorState
    * - Regular validation errors (status='field_error') - shown inline via NetworkErrorState
    */
   const shouldShowErrorToaster = (lastSaved) => {
-    // Always show toaster for lock errors
-    if (lastSaved?.lock) {
-      return true;
-    }
-    
-    // For network errors (not validation errors), check if it's a fieldset
-    if (lastSaved?.status === "error" && lastSaved?.fields) {
+    // For network errors (not validation errors or lock errors), check if it's a fieldset
+    if (lastSaved?.status === "error" && !lastSaved?.lock && lastSaved?.fields) {
       const isFieldsetError = lastSaved.fields.some(field => 
         field.includes('[') || field.endsWith('_fieldset')
       );

@@ -1,7 +1,6 @@
 import React, { useMemo, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { projectNetworkSelector, lastSavedSelector } from '../../selectors/projectSelector';
-import { Notification } from 'hds-react';
 import { useTranslation } from 'react-i18next';
 import { setLastSaved } from '../../actions/projectActions';
 import './NetworkErrorState.scss';
@@ -145,26 +144,11 @@ export default function NetworkErrorState({ fieldName, validationError }) {
 
   return (
     <div className="network-error-state" aria-live="polite" aria-atomic="true">
-      {showBanner && banners.map((banner, index) => {
-        const notificationClass = banner.key === 'validation'
-          ? 'nes-notification nes-validation-error'
-          : `nes-notification nes-${banner.type}`;
-        
-        return (
-          <Notification
-            key={banner.key || index}
-            type={banner.type}
-            label={banner.label}
-            dismissible={false}
-            size={"medium"}
-            aria-label={banner.label}
-            className={notificationClass}
-            style={index > 0 ? { marginTop: '8px' } : {}}
-          >
-            {banner.message && <p>{banner.message}</p>}
-          </Notification>
-        );
-      })}
+      {showBanner && banners.map((banner, index) => (
+        <div key={banner.key || index} className="error-text" style={index > 0 ? { marginTop: '8px' } : {}}>
+          {banner.label}
+        </div>
+      ))}
     </div>
   );
 }
