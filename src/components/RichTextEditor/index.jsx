@@ -131,7 +131,7 @@ function RichTextEditor(props) {
   const prevLastSavedStatus = useRef(lastSaved?.status || '')
   
   // Check if other fields have validation errors OR connection errors (UX60.2.5 - passivate fields when error exists)
-  const shouldDisableForErrors = useFieldPassivation(inputProps.name)
+  const shouldDisableForErrors = useFieldPassivation(inputProps.name, { formName: meta.form })
   
   // Check if THIS field is the one that failed to save due to network error
   const isThisFieldNetworkError = lastSaved?.status === 'error' && lastSaved?.fields?.includes(inputProps.name)
@@ -1002,7 +1002,7 @@ function RichTextEditor(props) {
     <input className='visually-hidden' ref={myRefname}/>
     <div
       role="textbox"
-      className={`rich-text-editor-wrapper ${fieldSetDisabled || disabled || fieldDisabled || lastModified === inputProps.name && saving || shouldDisableForErrors || isThisFieldNetworkError ? 'rich-text-disabled' : ''} ${isThisFieldNetworkError ? 'has-network-error' : ''} ${(lastModified === inputProps.name && saving) || (testingConnection?.isActive && testingConnection?.fieldName === inputProps.name) ? 'blurred' : ''}`}
+      className={`rich-text-editor-wrapper ${fieldSetDisabled || disabled || fieldDisabled || lastModified === inputProps.name && saving || shouldDisableForErrors || isThisFieldNetworkError ? 'rich-text-disabled' : ''} ${isThisFieldNetworkError ? 'has-network-error' : ''} ${(lastModified === inputProps.name && saving) || (testingConnection?.isActive && testingConnection?.fieldName === inputProps.name) ? 'blurred' : ''} ${maxSizeOver ? 'has-error' : ''}`}
       aria-label="tooltip"
       onFocus={checkLocked}
     >
