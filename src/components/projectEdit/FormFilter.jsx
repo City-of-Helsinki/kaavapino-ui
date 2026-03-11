@@ -7,7 +7,8 @@ function FormFilter({schema,filterFields,isHighlightedTag,selectedPhase,allfield
 
 const openButtonRef = useRef(null);
 const modal = document.getElementById("myModal");
-const [tags, setTags] = useState({})
+const [tags, setTags] = useState({});
+const [prevTags, setPrevTags] = useState({});
 const [tagArray, setTagArray] = useState([])
 const [checkedItems, setCheckedItems] = useState({});
 const [selectedTag, setSelectedTag] = useState("")
@@ -34,16 +35,17 @@ useEffect(() => {
 
 useEffect(() => {
     const startOffForm = document.getElementById("accordion-title");
-    if (startOffForm) {
+    if (startOffForm && JSON.stringify(prevTags) !== JSON.stringify(tags)) {
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-                const y = startOffForm.getBoundingClientRect().top + window.pageYOffset - 250;
+                const y = startOffForm.getBoundingClientRect().top + window.pageYOffset - 300;
                 window.scrollTo({ top: y, behavior: "smooth" });
             });
         });
     }
+    setPrevTags(tags);
     prevTotalFilteredFields.current = totalFilteredFields;
-}, [totalFilteredFields]);
+}, [JSON.stringify(tags)]);
 
 useEffect(() => {
     calculateFields(allfields)

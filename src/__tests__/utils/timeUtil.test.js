@@ -590,20 +590,85 @@ describe("compareAndUpdateDates function", () => {
         test_data = structuredClone(test_attribute_data)
     });
 
-    test("compareAndUpdateDates viimeistaan_ dates correctly", () => {
-        const viimeistaan_items = {
-            "viimeistaan_lausunnot_ehdotuksesta": "milloin_ehdotuksen_nahtavilla_paattyy",
-            "viimeistaan_lausunnot_ehdotuksesta_2": "milloin_ehdotuksen_nahtavilla_paattyy_2",
-            "viimeistaan_lausunnot_ehdotuksesta_3": "milloin_ehdotuksen_nahtavilla_paattyy_3",
-            "viimeistaan_lausunnot_ehdotuksesta_4": "milloin_ehdotuksen_nahtavilla_paattyy_4"
-        }
-        for (let key in viimeistaan_items) {
-            test_data[key] = null;
-        }
+    // === LAUSUNNOT VIIMEISTÄÄN RULES ===
+    // Helper: set paattyy and lausunnot for a given suffix
+    const setLausuntoPair = (data, paattyy, lausunnot, suffix = "") => {
+        data[`milloin_ehdotuksen_nahtavilla_paattyy${suffix}`] = paattyy;
+        data[`viimeistaan_lausunnot_ehdotuksesta${suffix}`] = lausunnot;
+    };
+    const makeSnapshot = (values) => ({
+        milloin_ehdotuksen_nahtavilla_paattyy: values[0] ?? null,
+        milloin_ehdotuksen_nahtavilla_paattyy_2: values[1] ?? null,
+        milloin_ehdotuksen_nahtavilla_paattyy_3: values[2] ?? null,
+        milloin_ehdotuksen_nahtavilla_paattyy_4: values[3] ?? null,
+    });
+
+    // RULE 1: paattyy changed (any direction) → lausunnot MUST equal new paattyy
+    test.each([
+        { oldP: "2025-01-10", newP: "2025-01-15", oldL: "2025-01-10", desc: "forward, lausunnot was same as old paattyy" },
+        { oldP: "2025-06-15", newP: "2025-06-10", oldL: "2025-06-15", desc: "backward, lausunnot was same as old paattyy" },
+        { oldP: "2025-03-01", newP: "2025-04-01", oldL: "2025-05-01", desc: "forward, lausunnot was much later" },
+        { oldP: "2025-08-20", newP: "2025-07-01", oldL: "2025-12-31", desc: "backward, lausunnot was much later" },
+        { oldP: "2025-12-31", newP: "2026-01-02", oldL: "2025-12-31", desc: "across year boundary" },
+        { oldP: "2025-02-28", newP: "2025-03-01", oldL: "2025-02-28", desc: "across month boundary" },
+        { oldP: "2025-05-10", newP: "2025-05-09", oldL: "2025-05-10", desc: "one day backward" },
+        { oldP: "2025-05-10", newP: "2025-05-11", oldL: "2025-05-10", desc: "one day forward" },
+    ])("RULE: paattyy changed → lausunnot = new paattyy ($desc)", ({ oldP, newP, oldL }) => {
+        setLausuntoPair(test_data, newP, oldL);
+        timeUtil.compareAndUpdateDates(test_data, makeSnapshot([oldP]));
+        expect(test_data["viimeistaan_lausunnot_ehdotuksesta"]).toBe(newP);
+    });
+
+    // RULE 2: paattyy unchanged → lausunnot >= paattyy must be preserved
+    test.each([
+        { paattyy: "2025-03-15", lausunnot: "2025-03-15", desc: "equal to paattyy" },
+        { paattyy: "2025-03-15", lausunnot: "2025-03-16", desc: "one day later" },
+        { paattyy: "2025-03-15", lausunnot: "2025-06-01", desc: "months later" },
+        { paattyy: "2025-01-01", lausunnot: "2025-12-31", desc: "almost a year later" },
+    ])("RULE: paattyy unchanged → preserve lausunnot >= paattyy ($desc)", ({ paattyy, lausunnot }) => {
+        setLausuntoPair(test_data, paattyy, lausunnot);
+        timeUtil.compareAndUpdateDates(test_data, makeSnapshot([paattyy]));
+        expect(test_data["viimeistaan_lausunnot_ehdotuksesta"]).toBe(lausunnot);
+    });
+
+    // RULE 3: paattyy unchanged, lausunnot invalid/before paattyy → floor to paattyy
+    test.each([
+        { paattyy: "2025-06-15", lausunnot: "2025-06-14", desc: "one day before" },
+        { paattyy: "2025-06-15", lausunnot: "2025-01-01", desc: "months before" },
+        { paattyy: "2025-06-15", lausunnot: "", desc: "empty string" },
+        { paattyy: "2025-06-15", lausunnot: null, desc: "null" },
+    ])("RULE: paattyy unchanged, invalid lausunnot → floor to paattyy ($desc)", ({ paattyy, lausunnot }) => {
+        setLausuntoPair(test_data, paattyy, lausunnot);
+        timeUtil.compareAndUpdateDates(test_data, makeSnapshot([paattyy]));
+        expect(test_data["viimeistaan_lausunnot_ehdotuksesta"]).toBe(paattyy);
+    });
+
+    // RULE 4: no snapshot (EditProjectTimetableModal path) → only floor constraint
+    test.each([
+        { paattyy: "2025-04-01", lausunnot: "2025-09-01", expected: "2025-09-01", desc: "later → preserved" },
+        { paattyy: "2025-04-01", lausunnot: "2025-04-01", expected: "2025-04-01", desc: "equal → preserved" },
+        { paattyy: "2025-04-01", lausunnot: "2025-03-01", expected: "2025-04-01", desc: "before → floored" },
+        { paattyy: "2025-04-01", lausunnot: null, expected: "2025-04-01", desc: "null → floored" },
+        { paattyy: "2025-04-01", lausunnot: "", expected: "2025-04-01", desc: "empty → floored" },
+    ])("RULE: no snapshot → floor only ($desc)", ({ paattyy, lausunnot, expected }) => {
+        setLausuntoPair(test_data, paattyy, lausunnot);
         timeUtil.compareAndUpdateDates(test_data);
-        for (let key in viimeistaan_items) {
-            expect(test_data[key], `Key ${key} was not updated`).toBe(test_data[viimeistaan_items[key]]);
-        }
+        expect(test_data["viimeistaan_lausunnot_ehdotuksesta"]).toBe(expected);
+    });
+
+    // RULE 5: indexed fields are evaluated independently
+    test("RULE: each suffix syncs/preserves independently based on its own paattyy change", () => {
+        // _1: paattyy changed → sync
+        setLausuntoPair(test_data, "2025-05-20", "2025-08-01", "");
+        // _2: paattyy NOT changed → preserve
+        setLausuntoPair(test_data, "2025-07-15", "2025-09-01", "_2");
+        // _3: paattyy changed → sync
+        setLausuntoPair(test_data, "2025-12-01", "2025-11-15", "_3");
+        const snapshot = makeSnapshot(["2025-05-10", "2025-07-15", "2025-11-01"]);
+        timeUtil.compareAndUpdateDates(test_data, snapshot);
+        expect(test_data["viimeistaan_lausunnot_ehdotuksesta"]).toBe("2025-05-20");     // synced
+        expect(test_data["viimeistaan_lausunnot_ehdotuksesta_2"]).toBe("2025-09-01");   // preserved
+        expect(test_data["viimeistaan_lausunnot_ehdotuksesta_3"]).toBe("2025-12-01");   // synced
     });
     test("compareAndUpdateDates phase end dates correctly", () => {
         const end_keys = [

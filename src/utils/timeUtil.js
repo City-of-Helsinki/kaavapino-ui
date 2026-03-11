@@ -844,7 +844,7 @@ const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues
       : [];
 };
 
-const compareAndUpdateDates = (data) => {
+const compareAndUpdateDates = (data, previousPaattyyValues) => {
   // Static pairs: viimeistaan lausunnot -> ehdotuksen nähtävillä päättyy variants
   const lausuntoPairs = [
     ["viimeistaan_lausunnot_ehdotuksesta", "milloin_ehdotuksen_nahtavilla_paattyy"],
@@ -906,6 +906,9 @@ const compareAndUpdateDates = (data) => {
       }
       // If there were activation flags and none are active, skip this variant
       if (hasAtLeastOneActivation && !anyActive) continue;
+      // KAPI-202: Secondary slots (suffix > 1) without any activation bool should be skipped.
+      // If the bool key doesn't exist, the slot hasn't been added yet.
+      if (!hasAtLeastOneActivation && suffixNumber > 1) continue;
       validVariants.push(normalized);
     }
 
@@ -915,11 +918,24 @@ const compareAndUpdateDates = (data) => {
 
   lausuntoPairs.forEach(([lausunto_date, paattyy_date]) => {
     const validPaattyyDate = validateAndNormalizeDate(data[paattyy_date]);
-    const existingLausuntoDate = validateAndNormalizeDate(data[lausunto_date]);
-    // Per AT1.5.4: Planning secretary can move lausunnot date LATER than nähtävillä end
-    // Only sync from milloin if viimeistaan is not already set to a later date
-    if (validPaattyyDate && (!existingLausuntoDate || existingLausuntoDate <= validPaattyyDate)) {
-      data[lausunto_date] = validPaattyyDate;
+    if (validPaattyyDate) {
+      const currentLausuntoDate = validateAndNormalizeDate(data[lausunto_date]);
+      if (previousPaattyyValues) {
+        // Called from reducer with pre-cascade snapshot: sync lausunnot when paattyy changed
+        const prevPaattyy = validateAndNormalizeDate(previousPaattyyValues[paattyy_date]);
+        if (prevPaattyy !== validPaattyyDate) {
+          // Paattyy changed (any reason) -> force lausunnot to match new paattyy
+          data[lausunto_date] = validPaattyyDate;
+        } else if (!currentLausuntoDate || currentLausuntoDate < validPaattyyDate) {
+          // Paattyy did not change but lausunnot is empty or before paattyy -> floor constraint
+          data[lausunto_date] = validPaattyyDate;
+        }
+      } else {
+        // Called without snapshot (e.g. from EditProjectTimetableModal): apply floor constraint only
+        if (!currentLausuntoDate || currentLausuntoDate < validPaattyyDate) {
+          data[lausunto_date] = validPaattyyDate;
+        }
+      }
     }
   });
   //Check that phase end date line is moved to phases actual last date 
