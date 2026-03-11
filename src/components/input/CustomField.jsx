@@ -27,6 +27,7 @@ import CustomADUserCombobox from './CustomADUserCombobox.jsx'
 import CustomSearchCombobox from './CustomSearchCombobox.jsx'
 import CustomCard from './CustomCard.jsx'
 import PropTypes from 'prop-types'
+import i18n from '../../i18n'
 
 class CustomField extends Component {
   yearOptions = []
@@ -41,7 +42,7 @@ class CustomField extends Component {
     const field = this.props.field
     if (value && field && field.character_limit && field.character_limit > 0) {
       if (value.length > field.character_limit) {
-        return 'Kentässä liikaa merkkejä'
+        return i18n.t('project.charsover')
       }
     }
   }
@@ -78,6 +79,7 @@ class CustomField extends Component {
         isCurrentPhase={isCurrentPhase}
         selectedPhase={selectedPhase}
         regex={this.props?.field?.validation_regex}
+        characterLimit={this.props?.field?.character_limit}
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
         customError={this.props?.field?.error_text}
@@ -146,6 +148,7 @@ class CustomField extends Component {
         isCurrentPhase={isCurrentPhase}
         selectedPhase={selectedPhase}
         regex={this.props?.field?.validation_regex}
+        characterLimit={this.props?.field?.character_limit}
         label={this.props?.field?.label}
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
