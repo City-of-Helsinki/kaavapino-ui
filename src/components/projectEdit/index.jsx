@@ -244,9 +244,7 @@ class ProjectEditPage extends Component {
       return
     }
     if(this.props.syncErrors && !_.isEmpty(this.props.syncErrors)) {
-      const dateVariable = new Date()
-      const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      this.props.setLastSaved("field_error",time,[],[],false)
+      // Don't set error state - validation errors are already displayed inline
       return
     }
     this.props.saveProject(false, false, null, null, fieldName)
