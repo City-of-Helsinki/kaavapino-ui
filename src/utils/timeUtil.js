@@ -1,4 +1,5 @@
 import objectUtil from "./objectUtil";
+import { getVisibilityBoolName } from "./projectVisibilityUtils";
 
   const isWeekend = (date) => {
       const day = new Date(date).getDay();
@@ -706,20 +707,62 @@ const getDisabledDatesForSizeXSXL = (name, formValues, matchingItem, dateTypes) 
   }
 };
 
-const getHighestLautakuntaDate = (formValues) => {
-  const lautakuntaKeys = Object.keys(formValues).filter(key => key.includes(`milloin_kaavaehdotus_lautakunnassa`));
-  const highestLautakuntaKey = lautakuntaKeys.reduce((highestNumber, currentKey) => {
-    const match = /_(\d+)$/.exec(currentKey);
-    const currentNumber = parseInt(match ? match[1] : 0, 10);
-    return currentNumber > highestNumber ? currentNumber : highestNumber;
-  }, 0);
-
-  if (highestLautakuntaKey > 1) {
-    return formValues[`milloin_kaavaehdotus_lautakunnassa_${highestLautakuntaKey}`];
-  }
-  else{
-    return formValues[`milloin_kaavaehdotus_lautakunnassa`];
-  }
+const getHighestLautakuntaDate = (formValues, phaseName) => {
+  // Only consider VISIBLE lautakunta dates for the given phase
+  // Uses vis_bool_group_map via getVisibilityBoolName for dynamic lookup
+  
+  // Map phaseName to deadline group phase prefix
+  const getDeadlineGroupPhase = (phase) => {
+    if (phase === 'periaatteet') return 'periaatteet';
+    if (phase === 'luonnos') return 'luonnos';
+    if (phase === 'ehdotus') return 'ehdotus';
+    if (phase === 'tarkistettu_ehdotus' || phase === 'tarkistettu ehdotus') return 'tarkistettu_ehdotus';
+    return 'ehdotus'; // fallback
+  };
+  
+  // Map phaseName to date field prefix (milloin_X_lautakunnassa)
+  const getFieldPrefix = (phase) => {
+    if (phase === 'periaatteet') return 'periaatteet';
+    if (phase === 'luonnos') return 'kaavaluonnos';
+    if (phase === 'ehdotus') return 'kaavaehdotus';
+    if (phase === 'tarkistettu_ehdotus' || phase === 'tarkistettu ehdotus') return 'tarkistettu_ehdotus';
+    return 'kaavaehdotus'; // fallback
+  };
+  
+  const deadlineGroupPhase = getDeadlineGroupPhase(phaseName);
+  const fieldPrefix = getFieldPrefix(phaseName);
+  const lautakuntaFieldPattern = `milloin_${fieldPrefix}_lautakunnassa`;
+  
+  // Convert date field to deadline group and use getVisibilityBoolName from vis_bool_group_map
+  const getVisibilityFlag = (fieldName) => {
+    const regex = new RegExp(`^milloin_${fieldPrefix}_lautakunnassa(_([0-9]+))?$`);
+    const match = fieldName.match(regex);
+    if (!match) return null;
+    const suffix = match[2] || '1';
+    // Build deadline group: e.g., 'ehdotus_lautakuntakerta_1'
+    const deadlineGroup = `${deadlineGroupPhase}_lautakuntakerta_${suffix}`;
+    // Use vis_bool_group_map lookup
+    return getVisibilityBoolName(deadlineGroup);
+  };
+  
+  const lautakuntaKeys = Object.keys(formValues).filter(key => key.startsWith(lautakuntaFieldPattern));
+  
+  // Filter to only visible lautakunta instances using vis_bool_group_map
+  const visibleKeys = lautakuntaKeys.filter(key => {
+    const visibilityFlag = getVisibilityFlag(key);
+    return visibilityFlag && formValues[visibilityFlag];
+  });
+  
+  // Find the latest date value among VISIBLE lautakunta instances only
+  let latestDate = null;
+  visibleKeys.forEach(key => {
+    const date = formValues[key];
+    if (date && (!latestDate || date > latestDate)) {
+      latestDate = date;
+    }
+  });
+  
+  return latestDate;
 };
 
 
@@ -740,7 +783,7 @@ const getDisabledDatesForNahtavillaolo = (name, formValues, phaseName, matchingI
         dateToComparePast = formValues[matchingItem?.previous_deadline];
       }
       else{
-        dateToComparePast = getHighestLautakuntaDate(formValues);
+        dateToComparePast = getHighestLautakuntaDate(formValues, phaseName);
       }
     }
     else{
@@ -752,6 +795,10 @@ const getDisabledDatesForNahtavillaolo = (name, formValues, phaseName, matchingI
     let newDisabledDates = dateTypes?.arkipäivät?.dates;
     const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToComparePast, miniumDaysPast);
     const lastPossibleDateToSelect = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompareFuture, -miniumDaysFuture);
+    // If first > last (impossible range due to cascade timing), only enforce minimum constraint
+    if (firstPossibleDateToSelect > lastPossibleDateToSelect) {
+      return newDisabledDates.filter(date => date >= firstPossibleDateToSelect);
+    }
     return newDisabledDates.filter(date => date >= firstPossibleDateToSelect && date <= lastPossibleDateToSelect);
   } else if (name.includes("_paattyy") || name.includes("viimeistaan_lausunnot")) {
     const miniumDaysPast = matchingItem?.distance_from_previous;
@@ -827,7 +874,12 @@ const compareAndUpdateDates = (data, previousPaattyyValues) => {
       // Esilläolo variants (example pattern) – extend if needed later
       milloin_periaatteet_esillaolo_paattyy: ["jarjestetaan_periaatteet_esillaolo"],
       milloin_luonnos_esillaolo_paattyy: ["jarjestetaan_luonnos_esillaolo"],
-      milloin_oas_esillaolo_paattyy: ["jarjestetaan_oas_esillaolo"]
+      milloin_oas_esillaolo_paattyy: ["jarjestetaan_oas_esillaolo"],
+      // Viimeistaan mielipiteet dates tied to esillaolo activation
+      viimeistaan_mielipiteet_periaatteista: ["jarjestetaan_periaatteet_esillaolo"],
+      viimeistaan_mielipiteet_luonnos: ["jarjestetaan_luonnos_esillaolo"],
+      // Viimeistaan lausunnot tied to nahtaville activation
+      viimeistaan_lausunnot_ehdotuksesta: ["kaavaehdotus_nahtaville", "kaavaehdotus_uudelleen_nahtaville"]
     };
 
     const activationPrefixes = activationMap[baseKey] || [];
@@ -890,13 +942,14 @@ const compareAndUpdateDates = (data, previousPaattyyValues) => {
   const buildPhasePairs = (size) => {
     // Each entry: [dstField, primarySrcBase, fallbackSrcBase?]
     // Primary is tried first; if getLatestDateValue returns null, fallback is tried.
+    // Per database_deadline_rules.md: P8/L8 fallback to viimeistaan_mielipiteet when no lautakunta
+    // E9 uses viimeistaan_lausunnot_ehdotuksesta for all sizes
     return [
-      ["periaatteetvaihe_paattyy_pvm", "milloin_periaatteet_lautakunnassa", "milloin_periaatteet_esillaolo_paattyy"],
+      ["periaatteetvaihe_paattyy_pvm", "milloin_periaatteet_lautakunnassa", "viimeistaan_mielipiteet_periaatteista"],
       ["oasvaihe_paattyy_pvm", "milloin_oas_esillaolo_paattyy"],
-      ["luonnosvaihe_paattyy_pvm", "milloin_kaavaluonnos_lautakunnassa", "milloin_luonnos_esillaolo_paattyy"],
-      // All sizes use milloin_ehdotuksen_nahtavilla_paattyy for ehdotus end
-      // (milloin_ehdotus_esillaolo_paattyy does not exist in project data; alkaa differs by size but paattyy does not)
-      ["ehdotusvaihe_paattyy_pvm", "milloin_ehdotuksen_nahtavilla_paattyy"],
+      ["luonnosvaihe_paattyy_pvm", "milloin_kaavaluonnos_lautakunnassa", "viimeistaan_mielipiteet_luonnos"],
+      // E9: All sizes use viimeistaan_lausunnot_ehdotuksesta for ehdotus phase end
+      ["ehdotusvaihe_paattyy_pvm", "viimeistaan_lausunnot_ehdotuksesta"],
       ["tarkistettuehdotusvaihe_paattyy_pvm", "milloin_tarkistettu_ehdotus_lautakunnassa"],
       // hyvaksyminen & voimaantulo intentionally excluded (no paired controlling date specified)
     ];
@@ -930,12 +983,25 @@ const compareAndUpdateDates = (data, previousPaattyyValues) => {
   // Build filtered sequence of phases that actually exist (have either start or end present)
   const existingPhases = orderedPhases.filter(p => data[p.start] || data[p.end]);
 
+  // Forward adjacency: next phase start >= previous phase end
   for (let i = 1; i < existingPhases.length; i++) {
     const prev = existingPhases[i - 1];
     const cur = existingPhases[i];
     const prevEnd = validateAndNormalizeDate(data[prev.end]);
     const curStart = validateAndNormalizeDate(data[cur.start]);
     if (prevEnd && curStart && curStart < prevEnd) {
+      data[cur.start] = prevEnd;
+    }
+  }
+
+  // Backward cascade: when phase end moves earlier, move next phase start back to match
+  // This handles cases like removing Tarkistettu Ehdotus lautakunta elements
+  for (let i = 1; i < existingPhases.length; i++) {
+    const prev = existingPhases[i - 1];
+    const cur = existingPhases[i];
+    const prevEnd = validateAndNormalizeDate(data[prev.end]);
+    const curStart = validateAndNormalizeDate(data[cur.start]);
+    if (prevEnd && curStart && curStart > prevEnd) {
       data[cur.start] = prevEnd;
     }
   }
