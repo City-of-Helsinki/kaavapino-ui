@@ -3,9 +3,10 @@ import PropTypes from 'prop-types'
 import { TextArea } from 'hds-react'
 import { useFieldPassivation } from '../../hooks/useFieldPassivation';
 
-const CustomTextArea = ({ input, meta: { error }, ...custom }) => {
+const CustomTextArea = ({ input, meta, ...custom }) => {
+  const { error } = meta;
 
-  const shouldDisableForErrors = useFieldPassivation(input.name);
+  const shouldDisableForErrors = useFieldPassivation(input.name, { formName: meta.form });
   const oldValueRef = useRef('');
 
   useEffect(() => {

@@ -10,7 +10,7 @@ import PropTypes from 'prop-types';
 
 const RadioBooleanButton = ({
   input: { value, name, ...rest },
-  meta: { error },
+  meta,
   double,
   onRadioChange,
   disabled,
@@ -33,9 +33,11 @@ const RadioBooleanButton = ({
   const saving =  useSelector(state => savingSelector(state))
   const pollingProjects = useSelector(pollingProjectsSelector)
   
+  const { error } = meta;
+  
   // Check if other fields have validation errors (UX60.2.5 - passivate fields when error exists)
   // RadioBooleanButton only checks form errors, not connection errors
-  const shouldDisableForErrors = useFieldPassivation(name, { includeConnectionErrors: false })
+  const shouldDisableForErrors = useFieldPassivation(name, { includeConnectionErrors: false, formName: meta.form })
   
   // Check if THIS field is the one that failed to save due to network error
   // Include 'connection_restored' status to keep showing spinner during recovery

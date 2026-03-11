@@ -35,7 +35,7 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
   const deadlinesData = useSelector(state => deadlinesSelector(state));
   
   // Check if other fields have errors - passivate card edit buttons
-  const shouldDisableForErrors = useFieldPassivation(name)
+  const shouldDisableForErrors = useFieldPassivation(name, { formName: meta.form })
 
   useEffect(() => {
     setCardData({...cardData, ...infoFieldUtil.getInfoFieldData(props.placeholder,props.input?.name,attributeData,deadlinesData,selectedPhase)})

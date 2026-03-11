@@ -4,10 +4,10 @@ import DateTime from 'react-datetime'
 import { useTranslation } from 'react-i18next';
 import { useFieldPassivation } from '../../hooks/useFieldPassivation';
 
-const CustomDateTime = ({ input, placeholder, ...custom }) => {
+const CustomDateTime = ({ input, meta, placeholder, ...custom }) => {
 
   const {t} = useTranslation()
-  const shouldDisableForErrors = useFieldPassivation(input.name);
+  const shouldDisableForErrors = useFieldPassivation(input.name, { formName: meta.form });
   
   const formatDate = value => {
     if (!isNaN(new Date(value))) {

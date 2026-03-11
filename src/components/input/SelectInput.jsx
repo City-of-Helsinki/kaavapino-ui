@@ -49,7 +49,7 @@ const SelectInput = ({
 	const [isThisFieldSaving, setIsThisFieldSaving] = useState(false)
 	
 	// Check if other fields have validation errors OR connection errors (UX60.2.5 - passivate fields when error exists)
-	const shouldDisableForErrors = useFieldPassivation(input.name)
+	const shouldDisableForErrors = useFieldPassivation(input.name, { formName })
 
 	useEffect(() => {
     //Chekcs that locked status has more data then inital empty object

@@ -63,7 +63,7 @@ const FieldSet = ({
   const accordianRef = useRef(null)
   
   // Check if other fields have errors - passivate fieldset expand/delete buttons
-  const shouldDisableForErrors = useFieldPassivation(name)
+  const shouldDisableForErrors = useFieldPassivation(name, { formName })
   
   // Get error list to check if any child fields have errors
   const formErrors = useSelector(formErrorListSelector)

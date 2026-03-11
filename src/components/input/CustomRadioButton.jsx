@@ -5,12 +5,13 @@ import { useFieldPassivation } from '../../hooks/useFieldPassivation';
 
 const RadioButton = ({
   input: { value, name, ...rest },
-  meta: { error },
+  meta,
   options,
   disabled
 }) => {
+  const { error } = meta;
 
-  const shouldDisableForErrors = useFieldPassivation(name);
+  const shouldDisableForErrors = useFieldPassivation(name, { formName: meta.form });
   const [checked, setChecked] = useState(value ? value : false)
 
   return (

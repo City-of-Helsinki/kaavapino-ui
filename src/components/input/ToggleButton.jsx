@@ -4,10 +4,10 @@ import { useFieldPassivation } from '../../hooks/useFieldPassivation';
 
 const ToggleButton = ({
   input: { value, name, ...rest },
-  meta: { error },
+  meta: { error, form },
   ...custom
 }) => {
-  const shouldDisableForErrors = useFieldPassivation(name);
+  const shouldDisableForErrors = useFieldPassivation(name, { formName: form });
   const [checked, setChecked ] = useState(value ? true : false)
 
   const onChange = () => {

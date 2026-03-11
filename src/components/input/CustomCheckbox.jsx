@@ -24,7 +24,7 @@ const CustomCheckbox = ({
   isAdmin
 }) => {
   const { t } = useTranslation()
-  const shouldDisableForErrors = useFieldPassivation(name);
+  const shouldDisableForErrors = useFieldPassivation(name, { formName: meta.form });
   const formValues = useSelector(getFormValues(formName ? formName : EDIT_PROJECT_TIMETABLE_FORM))
   const notDisabledBoxes = name === "kaavaluonnos_lautakuntaan_1" || name === "periaatteet_lautakuntaan_1" 
   || name === "jarjestetaan_periaatteet_esillaolo_1" || name === "jarjestetaan_luonnos_esillaolo_1"

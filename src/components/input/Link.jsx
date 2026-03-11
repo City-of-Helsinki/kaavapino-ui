@@ -61,7 +61,7 @@ const Link = props => {
   
   // Check if other fields have validation errors (UX60.2.5 - passivate fields when error exists)
   // Link only checks form errors, not connection errors
-  const shouldDisableForErrors = useFieldPassivation(props.input.name, { includeConnectionErrors: false })
+  const shouldDisableForErrors = useFieldPassivation(props.input.name, { includeConnectionErrors: false, formName: props.meta.form })
 
   const multipleLinks = props.type === 'select-multiple'
   const isLinkValid = isValid(currentValue)
