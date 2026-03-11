@@ -12,6 +12,10 @@ vi.mock("react-i18next", () => ({
     Component.defaultProps = { ...Component.defaultProps, t: () => "" };
     return Component;
   },
+  initReactI18next: {
+    type: '3rdParty',
+    init: () => {}
+  }
 }));
 
 describe('<Field />', () => {

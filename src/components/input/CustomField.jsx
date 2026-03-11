@@ -27,7 +27,7 @@ import CustomADUserCombobox from './CustomADUserCombobox.jsx'
 import CustomSearchCombobox from './CustomSearchCombobox.jsx'
 import CustomCard from './CustomCard.jsx'
 import PropTypes from 'prop-types'
-import i18n from '../../i18n'
+import { withTranslation } from 'react-i18next'
 
 class CustomField extends Component {
   yearOptions = []
@@ -42,7 +42,7 @@ class CustomField extends Component {
     const field = this.props.field
     if (value && field && field.character_limit && field.character_limit > 0) {
       if (value.length > field.character_limit) {
-        return i18n.t('project.charsover')
+        return this.props.t('project.charsover')
       }
     }
   }
@@ -893,4 +893,4 @@ CustomField.propTypes = {
   sectionAttributes: PropTypes.array
 };
 
-export default CustomField
+export default withTranslation()(CustomField)
