@@ -325,6 +325,15 @@
   }
 }
 
+.hds-toggle-input-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  label {
+    margin-left: 8px;
+  }
+}
+
 .ui.search.selection.dropdown {
   border-radius: 2px;
   min-height: 56px;
