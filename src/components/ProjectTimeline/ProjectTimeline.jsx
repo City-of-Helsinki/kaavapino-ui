@@ -464,6 +464,7 @@ function ProjectTimeline(props) {
     setColumnCount(resolvedColumns)
     createDrawItems(deadlineArray.deadlines)
   }
+  const errorClass = drawItems.length === 0 ? 'timeline-error-no-items' : 'timeline-error';
   const containerClass =
     onhold || showError
       ? 'timeline-graph-container hide-background'
@@ -481,13 +482,13 @@ function ProjectTimeline(props) {
         </Notification>
       ) : null}
       <div
-        className={`timeline-item-container ${showError ? 'timeline-error' : ''}`}
+        className={`timeline-item-container ${showError ? errorClass : ''}`}
         style={{ gridTemplateColumns: `repeat(${Math.max(columnCount, 1)}, 1fr)` }}
       >
         {drawItems}
       </div>
       <div
-        className={`timeline-months ${showError ? 'timeline-error' : ''}`}
+        className={`timeline-months ${showError ? errorClass : ''}`}
         style={{ gridTemplateColumns: `repeat(${Math.max(columnCount, 1)}, 1fr)` }}
       >
         {drawMonths}
