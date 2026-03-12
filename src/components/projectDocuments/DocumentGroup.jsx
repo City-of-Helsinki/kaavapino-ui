@@ -24,19 +24,30 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
     return hasErrors
   }
 
-
+  /* 
+    Converts phaseIndex to actual array index in schema.phases.
+    phaseIndex is 1-based and assumes all XL phases are present,
+    schema.phases is 0-based and only includes present phases.
+  */
   const getCorrectPhaseIndex = () => {
-    //XL Luonnos -2 to starting index so document accordians are check correctly
-    //Other situations - periaatteet, luonnos + periaate, non xl projects -1
-    //compared to groupedDocuments[key] that has different indexes
-    let currentSchemaIndex = schema?.subtype_name === "XL" && attribute_data?.luonnos_luotu && !attribute_data?.periaatteet_luotu ? phase.phaseIndex - 2 : phase.phaseIndex - 1
-    if(schema?.subtype_name === "XL" && !attribute_data?.luonnos_luotu && attribute_data?.periaatteet_luotu && phase.phaseIndex === 5){
-      currentSchemaIndex = 3
+    // Non-XL projects are always in order. Käynnistys phase (phaseIndex 1) is always first.
+    if (schema?.subtype_name !== "XL" || phase.phaseIndex == 1) {
+      return phase.phaseIndex - 1;
     }
-    else if(schema?.subtype_name === "XL" && !attribute_data?.luonnos_luotu && attribute_data?.periaatteet_luotu && phase.phaseIndex === 6){
-      currentSchemaIndex = 4
-    } 
-    return currentSchemaIndex
+    if (attribute_data?.luonnos_luotu && attribute_data?.periaatteet_luotu) {
+      return phase.phaseIndex - 1;
+    }
+    if (attribute_data?.periaatteet_luotu && !attribute_data?.luonnos_luotu) {
+      return phase.phaseIndex > 3 ? phase.phaseIndex - 2 : phase.phaseIndex - 1;
+    }
+    if(attribute_data?.luonnos_luotu && !attribute_data?.periaatteet_luotu){
+      return phase.phaseIndex > 1 ? phase.phaseIndex - 2 : phase.phaseIndex - 1;
+    }
+    // Both missing is an illegal case, but handling it anyway for future
+    if (phase.phaseIndex == 3) {
+      return 0; // OAS
+    }
+    return phase.phaseIndex - 3;
   }
 
   const hideButtons = () => {

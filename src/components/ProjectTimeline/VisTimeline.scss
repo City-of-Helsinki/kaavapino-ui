@@ -605,6 +605,28 @@
         }
     }
 
+    // When kaynnistys_1 contains a past phase, disable all interaction
+    .kaynnistys_1:has(.past) {
+        pointer-events: none !important;
+        cursor: default !important;
+
+        .vis-item-overflow {
+            pointer-events: none !important;
+            cursor: default !important;
+
+            &::after {
+                pointer-events: none !important;
+                cursor: default !important;
+            }
+
+            &:hover::after,
+            &:active::after {
+                pointer-events: none !important;
+                cursor: default !important;
+            }
+        }
+    }
+
     .board.deadline {
         height: $size24 !important;
         width: $size24 !important;
@@ -1527,6 +1549,86 @@
             opacity: 0 !important;
         }
     }
+}
+
+// Prevent dragging cursor for items from past phases - needs high specificity to override !important rules
+.vis-item.past-phase-item,
+.vis-item.past-phase-item.vis-point,
+.vis-item.past-phase-item.vis-range,
+.vis-point.inner-end.past-phase-item,
+.board-date.past-phase-item {
+    cursor: default !important;
+    pointer-events: none !important;
+    
+    .vis-drag-left,
+    .vis-drag-right,
+    .vis-item-overflow,
+    .vis-point,
+    .board-date {
+        cursor: default !important;
+        pointer-events: none !important;
+    }
+    
+    // Override ::after pseudo-elements that have cursor set
+    .vis-item-overflow::after {
+        cursor: default !important;
+        pointer-events: none !important;
+    }
+    
+    &:hover,
+    &:active {
+        cursor: default !important;
+        
+        .vis-drag-left,
+        .vis-drag-right,
+        .vis-item-overflow,
+        .vis-point,
+        .board-date {
+            cursor: default !important;
+            pointer-events: none !important;
+        }
+        
+        .vis-item-overflow::after {
+            cursor: default !important;
+            pointer-events: none !important;
+        }
+        
+        &::after {
+            cursor: default !important;
+            pointer-events: none !important;
+        }
+    }
+    
+    &::after {
+        cursor: default !important;
+        pointer-events: none !important;
+    }
+}
+
+// Also target via parent group class for kaynnistys items - MUST be highly specific to override existing rules
+// Using body tag to increase specificity
+body .vis .kaynnistys_1 .vis-item-overflow.past-phase-item::after,
+body .vis .vis-group.kaynnistys_1 .vis-item-overflow.past-phase-item::after,
+body .vis-group.kaynnistys_1 .vis-item-overflow.past-phase-item::after {
+    cursor: default !important;
+    pointer-events: none !important;
+    background: none !important;
+}
+
+body .vis .cursor-moving-target.kaynnistys_1 .vis-item-overflow.past-phase-item::after,
+body .vis .vis-group.cursor-moving-target.kaynnistys_1 .vis-item-overflow.past-phase-item::after,
+body .vis-group.cursor-moving-target.kaynnistys_1 .vis-item-overflow.past-phase-item::after {
+    cursor: default !important;
+    pointer-events: none !important;
+    background: none !important;
+}
+
+// Generic selectors for all past phase items regardless of group - highest specificity
+body .vis .vis-item-overflow.past-phase-item::after,
+body .vis-item-overflow.past-phase-item::after {
+    cursor: default !important;
+    pointer-events: none !important;
+    background: none !important;
 }
 
 // Global cursor style applied while dragging/moving timeline items (now only sets the cursor)

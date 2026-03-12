@@ -90,7 +90,7 @@ class EditProjectTimeTableModal extends Component {
       let sectionAttributes = []
       this.extractAttributes(deadlineSections, attributeData, sectionAttributes, (attribute, attributeData) => {
         return (attribute.label !== "Lausunnot viimeistään" && attributeData[attribute.name]) || 
-        ["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauenut"].includes(attribute.name);
+        ["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauennut"].includes(attribute.name);
       });
       this.setState({sectionAttributes})
       
@@ -113,7 +113,7 @@ class EditProjectTimeTableModal extends Component {
     if (prevProps.attributeData && !isEqual(prevProps.attributeData, attributeData)) {
       let sectionAttributes = [];
       this.extractAttributes(deadlineSections, attributeData, sectionAttributes, (attribute, attributeData) =>
-        attribute.label !== "Lausunnot viimeistään" && attributeData[attribute.name]
+        attributeData[attribute.name]
       );
       this.setState({sectionAttributes})
       //when UPDATE_DATE_TIMELINE updates attribute values
