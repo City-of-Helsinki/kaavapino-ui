@@ -883,6 +883,9 @@
     height: 300px;
     z-index: 0;
   }
+  .geometry-input:focus-visible {
+    outline: 2px solid $color-coat-of-arms;
+  }
 
   .geometry-input-actions {
     margin-top: 10px;
