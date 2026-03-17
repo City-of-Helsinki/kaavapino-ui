@@ -61,3 +61,42 @@
   width: 100%;
   box-sizing: border-box;
 }
+
+// HDS-compliant success notification styling
+// Used for connection restored and other success messages
+// Blue background with green checkmark icon per design specifications
+@mixin hds-success-notification {
+  display: flex;
+  align-items: flex-start;
+  background-color: $color-info-light; // #E5EFF8 - light blue background
+  color: $color-black-90;
+  font-family: 'Helsinki Grotesk', Arial, sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 0;
+  margin-top: $size8;
+  transition: margin-top 0.16s 0.04s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: $size8;
+  white-space: pre-line;
+  width: 100%;
+  box-sizing: border-box;
+
+  // Success checkmark icon using HDS SVG (green checkmark with transparent center)
+  &::before {
+    content: "";
+    display: inline-block;
+    flex-shrink: 0;
+    width: $size24;
+    height: $size24;
+    margin-right: $size8;
+    background: $color-success; // Green checkmark
+    mask-image: url("data:image/svg+xml;charset=utf-8,%3Csvg role='img' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E %3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M12 2C6.477 2 2 6.477 2 12C2 17.523 6.477 22 12 22C17.523 22 22 17.523 22 12C22 6.477 17.523 2 12 2ZM16.207 9.793C16.598 10.184 16.598 10.816 16.207 11.207L11.207 16.207C10.816 16.598 10.184 16.598 9.793 16.207L7.293 13.707C6.902 13.316 6.902 12.684 7.293 12.293C7.684 11.902 8.316 11.902 8.707 12.293L10.5 14.086L14.793 9.793C15.184 9.402 15.816 9.402 16.207 9.793Z' fill='currentColor'%3E%3C/path%3E %3C/svg%3E");
+    -webkit-mask-image: url("data:image/svg+xml;charset=utf-8,%3Csvg role='img' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E %3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M12 2C6.477 2 2 6.477 2 12C2 17.523 6.477 22 12 22C17.523 22 22 17.523 22 12C22 6.477 17.523 2 12 2ZM16.207 9.793C16.598 10.184 16.598 10.816 16.207 11.207L11.207 16.207C10.816 16.598 10.184 16.598 9.793 16.207L7.293 13.707C6.902 13.316 6.902 12.684 7.293 12.293C7.684 11.902 8.316 11.902 8.707 12.293L10.5 14.086L14.793 9.793C15.184 9.402 15.816 9.402 16.207 9.793Z' fill='currentColor'%3E%3C/path%3E %3C/svg%3E");
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    pointer-events: none;
+  }
+}

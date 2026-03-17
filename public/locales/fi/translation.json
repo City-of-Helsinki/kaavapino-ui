@@ -146,6 +146,7 @@
   },
   "messages": {
     "network-save-failed-label": "Tallennus epäonnistui",
+    "network-save-failed-message": "Odota yhteyden palautumista.",
     "network-save-failed-connection": "Tallennus epäonnistui yhteysongelman vuoksi.",
     "field-validation-error": "Kentän arvo ei ole kelvollinen.",
     "network-connection-restored-label": "Yhteys palautunut",
@@ -293,7 +294,7 @@
     "download-old-data":"Lataa vanhoja projektitietoja",
     "modify-project-base":"Muokkaa projektin luontitietoja",
     "header-text":"Kentän tieto siirtyy seuraaviin paikkoihin: ",
-    "charsover":"Merkkimäärä on ylittynyt",
+    "charsover":"Merkkimäärä ylittyi. Lyhennä tekstiä – muuten muutoksia ei tallenneta.",
     "noempty":"Kenttä ei saa olla tyhjä",
     "error":"Virhe",
     "error-input-int": "Virhe: Syötä kokonaisluku.",

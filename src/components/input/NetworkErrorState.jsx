@@ -52,22 +52,17 @@ export default function NetworkErrorState({ fieldName, validationError }) {
       });
     }
     
-    // Show network/save errors (including lock errors)
+    // Show network/save errors
     if (hasError) {
-      // Differentiate between field validation error and network/lock error
+      // Differentiate between field validation error and network error
       const isFieldValidationError = lastSaved?.status === 'field_error';
-      const isLockError = lastSaved?.lock === true;
       
-      // For network/lock errors, use custom two-line message
+      // For network errors (including lock errors), show two-line message
       if (!isFieldValidationError) {
-        const lockMessage = isLockError 
-          ? 'Kentän lukitus epäonnistui. Odota yhteyden palautumista.'
-          : 'Odota yhteyden palautumista.';
-        
         notifications.push({
           type: 'error',
-          label: 'Tallennus epäonnistui',
-          message: lockMessage,
+          label: t('messages.network-save-failed-label'),
+          message: t('messages.network-save-failed-message'),
           key: 'network'
         });
       }
@@ -89,7 +84,7 @@ export default function NetworkErrorState({ fieldName, validationError }) {
           
           notifications.push({
             type: 'error',
-            label: 'Tallennus epäonnistui',
+            label: t('messages.network-save-failed-label'),
             message: errorText,
             key: 'field_error'
           });
@@ -98,7 +93,7 @@ export default function NetworkErrorState({ fieldName, validationError }) {
         // Fallback for field_error without specific message
         notifications.push({
           type: 'error',
-          label: 'Tallennus epäonnistui',
+          label: t('messages.network-save-failed-label'),
           key: 'field_error'
         });
       }
@@ -144,11 +139,22 @@ export default function NetworkErrorState({ fieldName, validationError }) {
 
   return (
     <div className="network-error-state" aria-live="polite" aria-atomic="true">
-      {showBanner && banners.map((banner, index) => (
-        <div key={banner.key || index} className="error-text" style={index > 0 ? { marginTop: '8px' } : {}}>
-          {banner.label}
-        </div>
-      ))}
+      {showBanner && banners.map((banner, index) => {
+        const className = banner.type === 'success' ? 'success-text' : 'error-text';
+        return (
+          <div key={banner.key || index} className={className} style={index > 0 ? { marginTop: '8px' } : {}}>
+            <div className="notification-content">
+              <span className="notification-label">{banner.label}</span>
+              {banner.message && (
+                <>
+                  <br />
+                  <span className="notification-message">{banner.message}</span>
+                </>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
