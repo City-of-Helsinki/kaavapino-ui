@@ -12,6 +12,7 @@ import DateTime from './DateTime.jsx'
 import { Field, FieldArray } from 'redux-form'
 import CustomRadioButton from './CustomRadioButton.jsx'
 import ToggleButton from './ToggleButton.jsx'
+import HDSToggleButton from './HDSToggleButton.jsx'
 import RichTextEditor from '../RichTextEditor'
 import OnHoldCheckbox from './OnholdCheckbox.jsx'
 import CustomCheckbox from './CustomCheckbox.jsx'
@@ -153,6 +154,7 @@ class CustomField extends Component {
         isTabActive={this.props.isTabActive}
         isProjectTimetableEdit={isProjectTimetableEdit}
         timetable_editable={timetable_editable}
+        hideLabel={this.props.hideLabel}
       />
     )
   }
@@ -396,7 +398,13 @@ class CustomField extends Component {
 
   renderToggle = props => {
     const { handleBlurSave } = this.props
+
     return <ToggleButton onBlur={handleBlurSave} {...props} />
+  }
+
+  renderHDSToggle = props => {
+    const { handleBlurSave } = this.props;
+    return <HDSToggleButton onBlur={handleBlurSave} {...props} />
   }
 
   renderLink = props => {
@@ -649,6 +657,8 @@ class CustomField extends Component {
         return this.renderBooleanRadio
       case 'toggle':
         return this.renderToggle
+      case 'hds-toggle':
+        return this.renderHDSToggle
       case 'string':
       case 'text':
       case 'uuid':
@@ -884,7 +894,8 @@ CustomField.propTypes = {
     PropTypes.number,
     PropTypes.bool,
   ]),
-  sectionAttributes: PropTypes.array
+  sectionAttributes: PropTypes.array,
+  hideLabel: PropTypes.bool,
 };
 
 export default CustomField

@@ -325,6 +325,15 @@
   }
 }
 
+.hds-toggle-input-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  label {
+    margin-left: 8px;
+  }
+}
+
 .ui.search.selection.dropdown {
   border-radius: 2px;
   min-height: 56px;
@@ -873,6 +882,9 @@
   .geometry-input {
     height: 300px;
     z-index: 0;
+  }
+  .geometry-input:focus-visible {
+    outline: 2px solid $color-coat-of-arms;
   }
 
   .geometry-input-actions {

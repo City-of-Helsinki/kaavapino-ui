@@ -467,6 +467,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
             onBlur={(event) => { handleBlur(event, readonly.read) }}
             onFocus={() => { handleFocus() }}
             readOnly={readonly.read || lastSaved?.status === "error"}
+            id={fieldData?.id}
           />
         )}
         <NetworkErrorState fieldName={input.name} />

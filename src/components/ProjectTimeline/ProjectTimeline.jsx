@@ -9,8 +9,8 @@ import { getProject, getProjectSuccessful } from '../../actions/projectActions'
 import { findWeek } from './helpers/helpers'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
-import { getVisibilityBoolName } from '../../utils/projectVisibilityUtils';
-import { attributeDataSelector } from '../../selectors/projectSelector';
+import timeUtil from '../../utils/timeUtil'
+import { shouldDeadlineBeVisible } from '../../utils/projectVisibilityUtils';
 
 function ProjectTimeline(props) {
   const { deadlines, projectView, onhold, attribute_data } = props
@@ -18,6 +18,7 @@ function ProjectTimeline(props) {
   const [showError, setShowError] = useState(false)
   const [drawMonths, setDrawMonths] = useState([])
   const [drawItems, setDrawItems] = useState([])
+  const [columnCount, setColumnCount] = useState(65)
   const monthNames = {
     0: t('deadlines.months.jan'),
     1: t('deadlines.months.feb'),
@@ -33,53 +34,93 @@ function ProjectTimeline(props) {
     11: t('deadlines.months.dec')
   }
   useEffect(() => {
-    const filteredDeadlines = filterVisibleDeadlines(deadlines, attribute_data)
+    if (!deadlines || !deadlines.length) {
+      setDrawItems([])
+      setDrawMonths([])
+      setColumnCount(0)
+      return
+    }
+    const mergedDeadlines = mergeDeadlinesWithAttributes(deadlines, attribute_data)
+    // Check for errors on ALL deadlines before filtering (errors may be on invisible deadlines)
+    const hasDeadlineErrors = mergedDeadlines.some(deadline => 
+      deadline?.is_under_min_distance_next ||
+      deadline?.is_under_min_distance_previous ||
+      deadline?.out_of_sync
+    )
+    const filteredDeadlines = filterVisibleDeadlines(mergedDeadlines, attribute_data)
+    if (!filteredDeadlines || !filteredDeadlines.length) {
+      setDrawItems([])
+      setDrawMonths([])
+      setColumnCount(0)
+      // Keep error state if we found errors above
+      setShowError(hasDeadlineErrors)
+      return
+    }
     if (!projectView) {
       const months = createMonths(filteredDeadlines)
-      createDrawMonths(months.months)
-    } else {
-      createTimelineItems(filteredDeadlines)
+      const columns = createDrawMonths(months.months)
+      setColumnCount(columns)
     }
-  }, []);
+    createTimelineItems(filteredDeadlines, hasDeadlineErrors)
+  }, [deadlines, attribute_data, projectView]);
 
-  useEffect(() => {
-    const filteredDeadlines = filterVisibleDeadlines(deadlines, attribute_data)
-    if (filteredDeadlines) {
-      createTimelineItems(filteredDeadlines)
-    }
-  }, [deadlines, attribute_data]);
-
-  function filterVisibleDeadlines(deadlineArray, attributeData) {
-    return deadlineArray.filter((deadline) => {
-      const group = deadline?.deadline?.deadlinegroup;
-      if (!group) {
-        // Phase start/end dates have no group; this is ok.
-        return true;
-      }
-      const visBool = getVisibilityBoolName(group);
-      if (!visBool) {
-        // deadlines with no visibility bool should be shown by default
-        return true;
-      }
-      // Special cases where bool is missing from attributeData
-      if (['oas_esillaolokerta_1','ehdotus_nahtavillaolokerta_1','tarkistettu_ehdotus_lautakuntakerta_1'].includes(group)){
-        return true;
-      }
-      return attributeData ? attributeData[visBool] : false;
-    });
+  function filterVisibleDeadlines(deadlineArray = [], attributeData) {
+    const data = attributeData || {};
+    const filtered = deadlineArray.filter(deadline =>
+      shouldDeadlineBeVisible(
+        deadline?.deadline?.attribute || deadline?.deadline?.name,
+        deadline?.deadline?.deadlinegroup,
+        data
+      )
+    );
+    return filtered;
   }
 
-  function createNowMarker(week) {
+  function mergeDeadlinesWithAttributes(deadlineArray = [], attributeData = {}) {
+    const sourceAttributes = attributeData || {}
+    if (!deadlineArray.length || !Object.keys(sourceAttributes).length) {
+      return deadlineArray
+    }
+    const overrides = []
+    const merged = deadlineArray.map((deadline, index) => {
+      const attributeKey = deadline?.deadline?.attribute || deadline?.deadline?.name
+      if (!attributeKey) {
+        return deadline
+      }
+      const attributeValue = sourceAttributes[attributeKey]
+      if (!attributeValue || typeof attributeValue !== 'string') {
+        return deadline
+      }
+      const normalizedValue = attributeValue.trim()
+      if (!timeUtil.isDate(normalizedValue) || normalizedValue === deadline?.date) {
+        return deadline
+      }
+      const updatedDeadline = {
+        ...deadline,
+        date: normalizedValue
+      }
+      overrides.push({
+        attribute: attributeKey,
+        newDate: normalizedValue,
+        originalDate: deadlineArray[index]?.date
+      })
+      return updatedDeadline
+    })
+    return merged
+  }
+
+  function createNowMarker(week, weeksInMonth) {
+    const totalWeeks = weeksInMonth || 5
+    const normalizedWeek = Math.min(Math.max(week, 1), totalWeeks)
     let nowMarker = []
-    for (let i = 1; i <= 5; i++) {
-      if (i === week) {
+    for (let i = 1; i <= totalWeeks; i++) {
+      if (i === normalizedWeek) {
         nowMarker.push(
           <div key={i} className="now-marker">
             <span>{t('deadlines.now')}</span>
           </div>
         )
       } else {
-     
         nowMarker.push(<div key={i} className="now-marker-filler" />)
       }
     }
@@ -87,96 +128,134 @@ function ProjectTimeline(props) {
   }
   
   function createDrawMonths(months) {
+    if (!months || !months.length) {
+      setDrawMonths([])
+      return 0
+    }
     const drawableMonths = []
     const nowDate = dayjs()
-     for (let i = 0; i < months.length; i++) {
-      const date = dayjs(months[i].date)
-      if (i === 1) {
-        drawableMonths.push(
-          <div key={i} className="timeline-month">
-            <div className="timeline-now-month">
-              {createNowMarker(findWeek(nowDate.date()))}
+    const nowKey = `${nowDate.year()}-${nowDate.month()}`
+    let totalColumns = 0
+    for (let i = 0; i < months.length; i++) {
+      const monthData = months[i]
+      const weeks = monthData?.weeks || 5
+      const date = dayjs()
+        .year(monthData.year)
+        .month(monthData.month)
+        .date(1)
+      totalColumns += weeks
+      const showNowMarker = monthData.date === nowKey
+      drawableMonths.push(
+        <div
+          key={`${monthData.date}-${i}`}
+          className="timeline-month"
+          style={{ gridColumn: `span ${weeks}` }}
+        >
+          {showNowMarker ? (
+            <div
+              className="timeline-now-month"
+              style={{ gridTemplateColumns: `repeat(${weeks}, 1fr)` }}
+            >
+              {createNowMarker(findWeek(nowDate), weeks)}
             </div>
-            <span>{`${monthNames[date.month()]} ${date.year()}`}</span>
-          </div>
-        )
-      } else {
-        drawableMonths.push(
-          <div key={i} className="timeline-month">
-            <span>{`${monthNames[date.month()]} ${date.year()}`}</span>
-          </div>
-        )
-      }
+          ) : null}
+          <span>{`${monthNames[date.month()]} ${date.year()}`}</span>
+        </div>
+      )
     }
     setDrawMonths([...drawableMonths])
+    return totalColumns
   }
   function checkDeadlineType(monthDates, property, propI, loopIndex) {
     switch (monthDates[loopIndex][property].deadline_type[0]) {
-      case 'phase_start':
+      case 'phase_start': {
+        const startItem = monthDates[loopIndex][property]
+        let startClass = 'timeline-item'
+        if (startItem.is_first && startItem.is_last) {
+          startClass = 'timeline-item first last'
+        } else if (startItem.is_first) {
+          startClass = 'timeline-item first'
+        } else if (startItem.is_last) {
+          startClass = 'timeline-item last'
+        } else {
+          // Fallback for phase_start (legacy behavior)
+          startClass = 'timeline-item first'
+        }
         return (
           <div
-            key={`${monthDates[loopIndex][property].abbreviation}-${loopIndex}`}
+            key={`${startItem.abbreviation}-${loopIndex}`}
             style={{
-              background: monthDates[loopIndex][property].color_code
+              background: startItem.color_code
             }}
-            className="timeline-item first"
+            className={startClass}
           >
             <span
               className={`deadline-name-${
-                monthDates[loopIndex][property].deadline_length > 4 ? 'over' : 'inside'
+                startItem.deadline_length > 4 ? 'over' : 'inside'
               }`}
             >
-              {monthDates[loopIndex][property].phase_name}
+              {startItem.phase_name}
             </span>
             {monthDates[loopIndex].milestone
               ? createMilestoneItem(loopIndex, propI, monthDates)
               : ''}
           </div>
         )
-      case 'mid_point':
+      }
+      case 'mid_point': {
+        const item = monthDates[loopIndex][property]
+        let midClass = 'timeline-item'
+        if (item.is_first && item.is_last) {
+          midClass = 'timeline-item first last'
+        } else if (item.is_first) {
+          midClass = 'timeline-item first'
+        } else if (item.is_last) {
+          midClass = 'timeline-item last'
+        }
         return (
           <div
-            key={`${monthDates[loopIndex][property].abbreviation}-${loopIndex}`}
+            key={`${item.abbreviation}-${loopIndex}`}
             style={{
-              background: monthDates[loopIndex][property].color_code
+              background: item.color_code
             }}
-            className="timeline-item"
+            className={midClass}
+          >
+            {item.is_first && item.phase_name ? (
+              <span className="deadline-name-over">{item.phase_name}</span>
+            ) : null}
+            {monthDates[loopIndex].milestone
+              ? createMilestoneItem(loopIndex, propI, monthDates)
+              : ''}
+          </div>
+        )
+      }
+      case 'phase_end': {
+        const endItem = monthDates[loopIndex][property]
+        let endClass = 'timeline-item'
+        if (endItem.is_first && endItem.is_last) {
+          endClass = 'timeline-item first last'
+        } else if (endItem.is_first) {
+          endClass = 'timeline-item first'
+        } else if (endItem.is_last) {
+          endClass = 'timeline-item last'
+        } else if (!endItem.not_last_end_point) {
+          // Fallback for phase_end that should have last (legacy behavior)
+          endClass = 'timeline-item last'
+        }
+        return (
+          <div
+            key={`${endItem.abbreviation}-${loopIndex}`}
+            style={{
+              background: endItem.color_code
+            }}
+            className={endClass}
           >
             {monthDates[loopIndex].milestone
               ? createMilestoneItem(loopIndex, propI, monthDates)
               : ''}
           </div>
         )
-      case 'phase_end':
-        if (monthDates[loopIndex][property].not_last_end_point) {
-          return (
-            <div
-              key={`${monthDates[loopIndex][property].abbreviation}-${loopIndex}`}
-              style={{
-                background: monthDates[loopIndex][property].color_code
-              }}
-              className="timeline-item"
-            >
-              {monthDates[loopIndex].milestone
-                ? createMilestoneItem(loopIndex, propI, monthDates)
-                : ''}
-            </div>
-          )
-        } else {
-          return (
-            <div
-              key={`${monthDates[loopIndex][property].abbreviation}-${loopIndex}`}
-              style={{
-                background: monthDates[loopIndex][property].color_code
-              }}
-              className="timeline-item last"
-            >
-              {monthDates[loopIndex].milestone
-                ? createMilestoneItem(loopIndex, propI, monthDates)
-                : ''}
-            </div>
-          )
-        }
+      }
       case 'start_end_point':
         return (
           <div
@@ -196,27 +275,37 @@ function ProjectTimeline(props) {
             {monthDates[loopIndex].milestone ? createMilestoneItem(loopIndex, propI) : ''}
           </div>
         )
-      case 'past_start_point':
+      case 'past_start_point': {
+        const pastItem = monthDates[loopIndex][property]
+        let pastClass = 'timeline-item'
+        if (pastItem.is_first && pastItem.is_last) {
+          pastClass = 'timeline-item first last'
+        } else if (pastItem.is_first) {
+          pastClass = 'timeline-item first'
+        } else if (pastItem.is_last) {
+          pastClass = 'timeline-item last'
+        }
         return (
           <div
-            key={`${monthDates[loopIndex][property].abbreviation}-${loopIndex}`}
+            key={`${pastItem.abbreviation}-${loopIndex}`}
             style={{
-              background: monthDates[loopIndex][property].color_code
+              background: pastItem.color_code
             }}
-            className="timeline-item"
+            className={pastClass}
           >
             <span
               className={`deadline-name-${
-                monthDates[loopIndex][property].deadline_length > 4 ? 'over' : 'inside'
+                pastItem.deadline_length > 4 ? 'over' : 'inside'
               }`}
             >
-              {monthDates[loopIndex][property].phase_name}
+              {pastItem.phase_name}
             </span>
             {monthDates[loopIndex].milestone
               ? createMilestoneItem(loopIndex, propI, monthDates)
               : ''}
           </div>
         )
+      }
       default:
         return null
     }
@@ -229,15 +318,23 @@ function ProjectTimeline(props) {
         // object has 2 keys by default (date, week), check if any additional keys have been added
         if (Object.keys(monthDates[i]).length > 2) {
           let propI = 0
+          let rendered = false
           for (const property in monthDates[i]) {
             if (has.call(monthDates[i], property)) {
               if (typeof monthDates[i][property] === 'object') {
                 if (Array.isArray(monthDates[i][property].deadline_type)) {
                   propI++
                   drawableItems.push(checkDeadlineType(monthDates, property, propI, i))
+                  rendered = true
+                  break
                 }
               }
             }
+          }
+          if (!rendered) {
+            drawableItems.push(
+              <div className="timeline-item" key={`space-${i}`} />
+            )
           }
         } else {
           drawableItems.push(
@@ -260,13 +357,11 @@ function ProjectTimeline(props) {
             switch (milestone_type) {
               case 'dashed_start':
                 if (monthDates[index].milestone_types.includes('milestone')) {
-
-                  const tempDate = date.add(1, 'month')
                   showMessage = (
                     <span className="milestone-message">
                       {t('deadlines.deadline-label', {
-                        date: tempDate.date(),
-                        month: tempDate.month() || 12 // December = 0
+                        date: date.date(),
+                        month: date.month() + 1
                       })}
                     </span>
                   )
@@ -284,8 +379,6 @@ function ProjectTimeline(props) {
                 break
               case 'dashed_end':
                 if (monthDates[index].milestone_types.includes('milestone')) {
-
-                  const tempDate = date.add(1, 'month')
                   showMessage = (
                     <span
                       className={`milestone-message ${
@@ -293,8 +386,8 @@ function ProjectTimeline(props) {
                       }`}
                     >
                       {t('deadlines.kylk-message', {
-                        date: tempDate.date(),
-                        month: tempDate.month() === 0 ? 12 : tempDate.month()
+                        date: date.date(),
+                        month: date.month() + 1
                       })}
                     </span>
                   )
@@ -357,15 +450,21 @@ function ProjectTimeline(props) {
     }
   }
 
-  function createTimelineItems(timelineDeadlines) {
+  function createTimelineItems(timelineDeadlines, hasPreCheckErrors = false) {
     const months = createMonths(timelineDeadlines)
-    const deadlineArray = createDeadlines(timelineDeadlines)
-    if (months.error || deadlineArray.error) {
+    const deadlineArray = createDeadlines(timelineDeadlines, months.months)
+    if (months.error || deadlineArray.error || hasPreCheckErrors) {
       setShowError(true)
+    } else {
+      setShowError(false)
     }
-    createDrawMonths(months.months)
+    const columnsFromMonths = createDrawMonths(months.months)
+    const columns = columnsFromMonths || months.totalWeeks
+    const resolvedColumns = columns || (deadlineArray.deadlines ? deadlineArray.deadlines.length : 0)
+    setColumnCount(resolvedColumns)
     createDrawItems(deadlineArray.deadlines)
   }
+  const errorClass = drawItems.length === 0 ? 'timeline-error-no-items' : 'timeline-error';
   const containerClass =
     onhold || showError
       ? 'timeline-graph-container hide-background'
@@ -383,12 +482,15 @@ function ProjectTimeline(props) {
         </Notification>
       ) : null}
       <div
-        className={`timeline-item-container ${showError ? 'timeline-error' : ''}`}
-        style={{ gridTemplateColumns: `repeat(${drawItems.length}, 1fr)` }}
+        className={`timeline-item-container ${showError ? errorClass : ''}`}
+        style={{ gridTemplateColumns: `repeat(${Math.max(columnCount, 1)}, 1fr)` }}
       >
         {drawItems}
       </div>
-      <div className={`timeline-months ${showError ? 'timeline-error' : ''}`}>
+      <div
+        className={`timeline-months ${showError ? errorClass : ''}`}
+        style={{ gridTemplateColumns: `repeat(${Math.max(columnCount, 1)}, 1fr)` }}
+      >
         {drawMonths}
       </div>
     </div>
