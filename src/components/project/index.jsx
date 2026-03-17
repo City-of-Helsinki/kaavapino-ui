@@ -391,14 +391,27 @@ class ProjectPage extends Component {
     this.togglePrintProjectDataModal(true)
   }
 
+  // HDS Select uses the label value as a key in list. Because our labels are components, they turn into [object Object].
+  // Replace this with simply using optionKeyField of Select component after HDS-React 2.16 update
+  getNavOptionLabel(element, keyText) {
+    return new Proxy(element, {
+      get(target, prop) {
+        if (prop === 'toString' || prop === Symbol.toPrimitive) {
+          return () => keyText
+        }
+        return target[prop]
+      }
+    })
+  }
+
   getEditNavActions = (isUserExpert, editViewLoading) => {
     const { t } = this.props
     const options = [
-      {value:1,label:<><i className="icons document-icon"></i>{t('project.create-documents')}</> },
-      {value:2,label:<><i className="icons calendar-icon"></i>{t('deadlines.title')}</>},
-      {value:3,label:<><i className="icons company-icon"></i>{t('floor-areas.title')}</>},
-      {value:4,label:<><i className="icons download-icon"></i>{t('project.download-old-data')}</>},
-      {value:5,label:<><i className="icons pen-icon"></i>{t('project.modify-project-base')}</>},
+      {value: 1, label: this.getNavOptionLabel(<><i className="icons document-icon"></i>{t('project.create-documents')}</>, t('project.create-documents'))},
+      {value: 2, label: this.getNavOptionLabel(<><i className="icons calendar-icon"></i>{t('deadlines.title')}</>, t('deadlines.title'))},
+      {value: 3, label: this.getNavOptionLabel(<><i className="icons company-icon"></i>{t('floor-areas.title')}</>, t('floor-areas.title'))},
+      {value: 4, label: this.getNavOptionLabel(<><i className="icons download-icon"></i>{t('project.download-old-data')}</>, t('project.download-old-data'))},
+      {value: 5, label: this.getNavOptionLabel(<><i className="icons pen-icon"></i>{t('project.modify-project-base')}</>, t('project.modify-project-base'))},
     ]
     //{value:6,label:<><i className="icons trash-icon"></i>{t('deadlines.reset-project-deadlines')}</>} removed for now, need will be reavaluated after 1.1.
     return (
