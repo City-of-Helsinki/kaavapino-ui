@@ -983,6 +983,39 @@
 
 .textarea-wrapper {
   position: relative;
+  
+  &.blurred {
+    textarea {
+      background-color: #E6E6E6 !important;
+    }
+  }
+  
+  // Override HDS default disabled styles
+  textarea:disabled {
+    background-color: #E6E6E6 !important;
+    color: #808080 !important;
+    border: none !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+  
+  &.has-network-error {
+    textarea {
+      border: 2px solid #c4314b !important;
+    }
+    
+    // Keep red border on hover
+    textarea:hover {
+      border: 2px solid #c4314b !important;
+    }
+    
+    // Keep red border even when disabled (network error overrides disabled state)
+    textarea:disabled {
+      border: 2px solid #c4314b !important;
+      background-color: #E6E6E6 !important;
+      color: #808080 !important;
+    }
+  }
 }
 .checkbox-container {
   .checkbox {
@@ -1280,12 +1313,39 @@
     }
   }
   
+  // Override HDS default disabled styles to match RichTextEditor behavior
+  input[type="text"]:disabled,
+  input[type="number"]:disabled,
+  input[type="date"]:disabled {
+    background-color: #E6E6E6 !important;
+    color: #808080 !important;
+    border: none !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+  
   // Show red border when field has network error
   &.has-network-error {
     input[type="text"],
     input[type="number"],
     input[type="date"] {
       border: 2px solid #c4314b !important;
+    }
+    
+    // Keep red border on hover (override HDS default hover styles)
+    input[type="text"]:hover,
+    input[type="number"]:hover,
+    input[type="date"]:hover {
+      border: 2px solid #c4314b !important;
+    }
+    
+    // Keep red border even when disabled (network error overrides disabled state)
+    input[type="text"]:disabled,
+    input[type="number"]:disabled,
+    input[type="date"]:disabled {
+      border: 2px solid #c4314b !important;
+      background-color: #E6E6E6 !important;
+      color: #808080 !important;
     }
   }
 }
@@ -1340,6 +1400,26 @@
     }
   }
   
+  // Show red border when field has network error
+  &.has-network-error {
+    div[class*="Select-module_root"],
+    div[class*="select_hds-select"] {
+      border: 2px solid #c4314b !important;
+      border-radius: 0 !important;
+      
+      // For input inside HDS Select
+      input {
+        border-color: #c4314b !important;
+      }
+    }
+    
+    // Keep red border on hover (override HDS default hover styles)
+    div[class*="Select-module_root"]:hover,
+    div[class*="select_hds-select"]:hover {
+      border: 2px solid #c4314b !important;
+    }
+  }
+  
   .select-spinner-overlay {
     position: absolute;
     top: 50%;
@@ -1359,7 +1439,8 @@
 }
 .radio-button-wrapper {
   position: relative;
-  display: inline-block;
+  display: block;
+  width: 100%;
 
   .radio-spinner-overlay {
     position: absolute;
@@ -1385,16 +1466,12 @@
       cursor: not-allowed;
       opacity: 0.7;
     }
-    
-    // Show red border when disabled due to network error
-    &.has-network-error label::before {
-      border: 2px solid #c4314b;
-    }
   }
 }
 
 .link-input-wrapper {
   position: relative;
+  
   .link-spinner-overlay {
     position: absolute;
     top: 50%;
@@ -1402,6 +1479,39 @@
     transform: translateY(-50%);
     z-index: 2;
     pointer-events: none;
+  }
+  
+  &.blurred {
+    input[type="text"] {
+      background-color: #E6E6E6 !important;
+    }
+  }
+  
+  // Override HDS default disabled styles
+  input[type="text"]:disabled {
+    background-color: #E6E6E6 !important;
+    color: #808080 !important;
+    border: none !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+  
+  &.has-network-error {
+    input[type="text"] {
+      border: 2px solid #c4314b !important;
+    }
+    
+    // Keep red border on hover
+    input[type="text"]:hover {
+      border: 2px solid #c4314b !important;
+    }
+    
+    // Keep red border even when disabled (network error overrides disabled state)
+    input[type="text"]:disabled {
+      border: 2px solid #c4314b !important;
+      background-color: #E6E6E6 !important;
+      color: #808080 !important;
+    }
   }
 }
 

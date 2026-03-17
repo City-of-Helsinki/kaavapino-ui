@@ -141,12 +141,19 @@ export default function NetworkErrorState({ fieldName, validationError }) {
     <div className="network-error-state" aria-live="polite" aria-atomic="true">
       {showBanner && banners.map((banner, index) => {
         const className = banner.type === 'success' ? 'success-text' : 'error-text';
+        // Single-line error notifications use notification-message class (14px regular)
+        // Two-line notifications use notification-label (16px bold) + notification-message (14px regular)
+        // Success notifications always use notification-label (16px bold) even if single-line
+        const isSingleLine = !banner.message;
+        const isSuccessNotification = banner.type === 'success';
         return (
           <div key={banner.key || index} className={className} style={index > 0 ? { marginTop: '8px' } : {}}>
             <div className="notification-content">
-              <span className="notification-label">{banner.label}</span>
-              {banner.message && (
+              {isSingleLine ? (
+                <span className={isSuccessNotification ? "notification-label" : "notification-message"}>{banner.label}</span>
+              ) : (
                 <>
+                  <span className="notification-label">{banner.label}</span>
                   <br />
                   <span className="notification-message">{banner.message}</span>
                 </>
