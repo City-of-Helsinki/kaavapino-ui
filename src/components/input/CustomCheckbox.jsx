@@ -10,7 +10,7 @@ import { useFieldPassivation } from '../../hooks/useFieldPassivation';
 
 const CustomCheckbox = ({
   input: { name, value, onChange },
-  meta: { error },
+  meta,
   autofillRule,
   label,
   className,
@@ -147,7 +147,7 @@ const CustomCheckbox = ({
         disabled={checkboxDisabled}
         label={label}
         updated={updated}
-        error={error}
+        error={meta.error}
         name={name}
         id={name}
         checked={checked}

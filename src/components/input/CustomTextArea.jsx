@@ -1,12 +1,20 @@
-import React, { useCallback, useRef, useEffect } from 'react'
+import React, { useCallback, useRef, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { TextArea } from 'hds-react'
+import { useSelector } from 'react-redux'
 import { useFieldPassivation } from '../../hooks/useFieldPassivation';
+import { lastSavedSelector, savingSelector, pollingProjectsSelector } from '../../selectors/projectSelector'
+import NetworkErrorState from './NetworkErrorState.jsx'
+import './Input.scss'
 
 const CustomTextArea = ({ input, meta, ...custom }) => {
   const { error } = meta;
 
   const shouldDisableForErrors = useFieldPassivation(input.name, { formName: meta.form });
+  const lastSaved = useSelector(state => lastSavedSelector(state))
+  const saving = useSelector(state => savingSelector(state))
+  const pollingProjects = useSelector(pollingProjectsSelector)
+  const [isThisFieldSaving, setIsThisFieldSaving] = useState(false)
   const oldValueRef = useRef('');
 
   useEffect(() => {
@@ -14,6 +22,14 @@ const CustomTextArea = ({ input, meta, ...custom }) => {
     return () => {
     };
   }, [])
+
+  useEffect(() => {
+    if (saving && saving === input.name) {
+      setIsThisFieldSaving(true)
+    } else if (!saving) {
+      setIsThisFieldSaving(false)
+    }
+  }, [saving, input.name])
 
   const handleInputChange = useCallback((event) => {
     input.onChange(event, input.name);
@@ -31,18 +47,27 @@ const CustomTextArea = ({ input, meta, ...custom }) => {
     }
   }
 
+  // Check if THIS field has network error (network down or lock error)
+  // DO NOT include field_error - those are backend validation errors and user must be able to fix them!
+  const isThisFieldNetworkError = (lastSaved?.status === 'error' || lastSaved?.status === 'connection_restored') && 
+    lastSaved?.fields?.includes(input.name);
+
+  const blurredClass = (isThisFieldSaving || isThisFieldNetworkError) ? ' blurred' : '';
+  const networkErrorClass = isThisFieldNetworkError ? ' has-network-error' : '';
+
   return (
-    <div className="textarea-wrapper">
+    <div className={`textarea-wrapper${blurredClass}${networkErrorClass}`}>
       <TextArea
         {...input}
         {...custom}
         error={error}
-        disabled={shouldDisableForErrors || custom.disabled}
+        disabled={shouldDisableForErrors || custom.disabled || isThisFieldSaving || isThisFieldNetworkError}
         onFocus={handleFocus}
         onChange={handleInputChange}
         onBlur={handleBlur}
         data-testid="text1"
       />
+      <NetworkErrorState fieldName={input.name} />
     </div>
   )
 }

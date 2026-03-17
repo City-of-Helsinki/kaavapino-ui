@@ -36,10 +36,11 @@ const RadioBooleanButton = ({
   const { error } = meta;
   
   // Check if other fields have validation errors (UX60.2.5 - passivate fields when error exists)
-  // RadioBooleanButton only checks form errors, not connection errors
-  const shouldDisableForErrors = useFieldPassivation(name, { includeConnectionErrors: false, formName: meta.form })
+  // Include connection errors so RadioButtons are disabled when ANY field has network error
+  const shouldDisableForErrors = useFieldPassivation(name, { formName: meta.form })
   
-  // Check if THIS field is the one that failed to save due to network error
+  // Check if THIS field is the one that failed to save due to network error (network down or lock error)
+  // DO NOT include field_error - those are backend validation errors and user must be able to fix them!
   // Include 'connection_restored' status to keep showing spinner during recovery
   const isThisFieldNetworkError = (lastSaved?.status === 'error' || lastSaved?.status === 'connection_restored') && 
     lastSaved?.fields?.includes(name)

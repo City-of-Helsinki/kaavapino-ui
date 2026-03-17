@@ -501,11 +501,12 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
     const errorString = custom.customError || 
       (exceedsMaxLength ? t('project.charsover') : 
         (custom.type === 'number' ? t('project.error-input-int') : t('project.error')));
-    // Check if THIS field has network error OR backend validation error (include connection_restored to keep spinner during recovery)
-    const isThisFieldNetworkError = (lastSaved?.status === 'error' || lastSaved?.status === 'field_error' || lastSaved?.status === 'connection_restored') && 
+    // Check if THIS field has network error (network down or lock error)
+    // DO NOT include field_error - those are backend validation errors and user must be able to fix them!
+    const isThisFieldNetworkError = (lastSaved?.status === 'error' || lastSaved?.status === 'connection_restored') && 
       lastSaved?.fields?.includes(input.name);
     
-    const blurredClass = (isThisFieldSaving || (pollingProjects && isThisFieldNetworkError)) ? ' blurred' : '';
+    const blurredClass = (isThisFieldSaving || isThisFieldNetworkError) ? ' blurred' : '';
     const hasErrorClass = (inputUtils.hasError(error) || hasError) ? ' error' : '';
     const networkErrorClass = isThisFieldNetworkError ? ' has-network-error' : '';
     
@@ -525,7 +526,7 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
             {...restCustom}
             min={custom.isFloorAreaForm ? 0 : undefined}
             step={custom.isFloorAreaForm ? null : 1}
-            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled || isThisFieldSaving || shouldDisableForErrors}
+            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled || isThisFieldSaving || shouldDisableForErrors || isThisFieldNetworkError}
             onChange={(event) => { handleInputChange(event, readonly.read) }}
             onBlur={(event) => { handleBlur(event, readonly.read) }}
             onFocus={() => { handleFocus() }}
@@ -542,7 +543,7 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
             fluid="true"
             {...input}
             {...restCustom}
-            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled || shouldDisableForErrors}
+            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled || isThisFieldSaving || shouldDisableForErrors || isThisFieldNetworkError}
             onChange={(event) => { handleInputChange(event, readonly.read) }}
             onBlur={(event) => { handleBlur(event, readonly.read) }}
             onFocus={() => { handleFocus() }}
