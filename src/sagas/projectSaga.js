@@ -1253,6 +1253,17 @@ function* saveProject(data) {
         // Even after connection error recovery, if data matches, it's safe to update
         if (!hasUnsavedChanges) {
           yield put(updateProject(updatedProject));
+        } else {
+          // Even if we have unsaved changes, update the _metadata to keep timestamps fresh
+          // This ensures field-level timestamp indicators stay accurate
+          const currentProject = yield select(currentProjectSelector);
+          if (currentProject && updatedProject._metadata) {
+            const updatedProjectWithMetadata = {
+              ...currentProject,
+              _metadata: updatedProject._metadata
+            };
+            yield put(updateProject(updatedProjectWithMetadata));
+          }
         }
         
         yield put(setSavingField(null))
@@ -1274,7 +1285,38 @@ function* saveProject(data) {
           // Ensure state remains clean 'ok' without success banner spam
           yield put({ type: 'Set network status', payload: { status: 'ok', okMessage: '', errorMessage: '' } })
         }
-        yield put(setLastSaved("success", time, [], [], false))
+        
+        // Use backend's timestamp from _metadata.updates for consistency with field-level timestamps
+        // This ensures Header and field timestamps always match
+        let backendTime = time; // fallback to frontend time
+        if (updatedProject?._metadata?.updates) {
+          // Get the actual field names that were saved (from attribute_data, not fieldName payload)
+          // This handles cases where fieldName is a fieldset name but actual saved fields are nested
+          const savedFieldNames = attribute_data ? Object.keys(attribute_data) : [];
+          
+          let fieldUpdate = null;
+          
+          // Try to find timestamp for any of the saved fields
+          for (const savedField of savedFieldNames) {
+            if (updatedProject._metadata.updates[savedField]?.timestamp) {
+              fieldUpdate = updatedProject._metadata.updates[savedField];
+              break;
+            }
+          }
+          
+          // If still not found and we have savedFieldName, try that
+          if (!fieldUpdate?.timestamp && savedFieldName && updatedProject._metadata.updates[savedFieldName]?.timestamp) {
+            fieldUpdate = updatedProject._metadata.updates[savedFieldName];
+          }
+          
+          if (fieldUpdate?.timestamp) {
+            // Extract time portion from backend's ISO timestamp
+            const backendDate = new Date(fieldUpdate.timestamp);
+            backendTime = backendDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+          }
+        }
+        
+        yield put(setLastSaved("success", backendTime, [], [], false))
 
       } catch (e) {
         // Clear saving field on error
@@ -1304,11 +1346,21 @@ function* saveProject(data) {
           // IMPORTANT: Don't set network.status = 'error' for 400 errors
         } else if (isNetworkErr || !statusCode || statusCode >= 500) {
           // Only real network/server errors trigger connection recovery flow
-          yield put(setLastSaved("error", time, Object.keys(attribute_data), Object.values(attribute_data), false))
+          // Use the specific field that was being saved, not all changed fields
+          const { fieldName: savedFieldName } = data.payload || {}
+          const errorFieldName = savedFieldName || Object.keys(attribute_data)[0] || 'unknown'
+          const errorFieldValue = savedFieldName ? attribute_data[savedFieldName] : Object.values(attribute_data)[0]
+          
+          yield put(setLastSaved("error", time, [errorFieldName], [errorFieldValue], false))
           yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
         } else {
           // Other HTTP errors (401, 403, 404, etc.) - treat as general errors without network status change
-          yield put(setLastSaved("error", time, Object.keys(attribute_data), Object.values(attribute_data), false))
+          // Use the specific field that was being saved, not all changed fields
+          const { fieldName: savedFieldName } = data.payload || {}
+          const errorFieldName = savedFieldName || Object.keys(attribute_data)[0] || 'unknown'
+          const errorFieldValue = savedFieldName ? attribute_data[savedFieldName] : Object.values(attribute_data)[0]
+          
+          yield put(setLastSaved("error", time, [errorFieldName], [errorFieldValue], false))
         }
       }
     }
@@ -1425,7 +1477,34 @@ function* projectFileUpload({
 
     // Clear saving field indicator
     yield put(setSavingField(null))
-    yield put(setLastSaved("success", time, [], [], false))
+    
+    // Use backend's timestamp from _metadata.updates for consistency
+    let backendTime = time; // fallback to frontend time
+    if (updatedProject?._metadata?.updates) {
+      // Try exact attribute match first, then find most recent update
+      let fieldUpdate = attribute ? updatedProject._metadata.updates[attribute] : null;
+      
+      if (!fieldUpdate?.timestamp) {
+        const updatedKeys = Object.keys(updatedProject._metadata.updates);
+        let mostRecentTimestamp = null;
+        for (const key of updatedKeys) {
+          const update = updatedProject._metadata.updates[key];
+          if (update?.timestamp) {
+            if (!mostRecentTimestamp || new Date(update.timestamp) > new Date(mostRecentTimestamp)) {
+              mostRecentTimestamp = update.timestamp;
+              fieldUpdate = update;
+            }
+          }
+        }
+      }
+      
+      if (fieldUpdate?.timestamp) {
+        const backendDate = new Date(fieldUpdate.timestamp);
+        backendTime = backendDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      }
+    }
+    
+    yield put(setLastSaved("success", backendTime, [], [], false))
   } catch (e) {
     // Clear saving field indicator on error
     yield put(setSavingField(null))
@@ -1470,7 +1549,34 @@ function* projectFileRemove({ payload }) {
 
     // Clear saving field indicator
     yield put(setSavingField(null))
-    yield put(setLastSaved("success", time, [], [], false))
+    
+    // Use backend's timestamp from _metadata.updates for consistency
+    let backendTime = time; // fallback to frontend time
+    if (updatedProject?._metadata?.updates) {
+      // Try exact payload match first, then find most recent update
+      let fieldUpdate = payload ? updatedProject._metadata.updates[payload] : null;
+      
+      if (!fieldUpdate?.timestamp) {
+        const updatedKeys = Object.keys(updatedProject._metadata.updates);
+        let mostRecentTimestamp = null;
+        for (const key of updatedKeys) {
+          const update = updatedProject._metadata.updates[key];
+          if (update?.timestamp) {
+            if (!mostRecentTimestamp || new Date(update.timestamp) > new Date(mostRecentTimestamp)) {
+              mostRecentTimestamp = update.timestamp;
+              fieldUpdate = update;
+            }
+          }
+        }
+      }
+      
+      if (fieldUpdate?.timestamp) {
+        const backendDate = new Date(fieldUpdate.timestamp);
+        backendTime = backendDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      }
+    }
+    
+    yield put(setLastSaved("success", backendTime, [], [], false))
   } catch (e) {
     // Clear saving field indicator on error
     yield put(setSavingField(null))
