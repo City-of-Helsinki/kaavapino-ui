@@ -57,6 +57,9 @@ export default defineConfig(({ mode }) => {
       'process.env.REACT_APP_OPENID_CONNECT_CLIENT_ID': JSON.stringify(env.REACT_APP_OPENID_CONNECT_CLIENT_ID || ''),
       'process.env.REACT_APP_OPENID_AUDIENCE': JSON.stringify(env.REACT_APP_OPENID_AUDIENCE || ''),
       'process.env.UNIT_TEST': JSON.stringify(env.UNIT_TEST === 'true'),
+      'process.env.REACT_APP_ENVIRONMENT': JSON.stringify(env.REACT_APP_ENVIRONMENT || ''),
+      'process.env.REACT_APP_MATOMO_URL': JSON.stringify(env.REACT_APP_MATOMO_URL || ''),
+      'process.env.REACT_APP_MATOMO_SITE_ID': JSON.stringify(env.REACT_APP_MATOMO_SITE_ID || ''),
     },
     server: {
       port: 3000,
