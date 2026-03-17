@@ -9,7 +9,7 @@ import infoFieldUtil from '../../utils/infoFieldUtil'
 import moment from 'moment'
 import { useFieldPassivation } from '../../hooks/useFieldPassivation'
 
-function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth}) {
+function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth, formName}) {
   const [cardData, setCardData] = useState(
     {
       startDate: "",
@@ -35,7 +35,7 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
   const deadlinesData = useSelector(state => deadlinesSelector(state));
   
   // Check if other fields have errors - passivate card edit buttons
-  const shouldDisableForErrors = useFieldPassivation(name, { formName: meta.form })
+  const shouldDisableForErrors = useFieldPassivation(name, { formName })
 
   useEffect(() => {
     setCardData({...cardData, ...infoFieldUtil.getInfoFieldData(props.placeholder,props.input?.name,attributeData,deadlinesData,selectedPhase)})
@@ -314,7 +314,10 @@ CustomCard.propTypes = {
   ]),
   placeholder: PropTypes.string,
   input: PropTypes.object,
-  fieldData: PropTypes.object
+  fieldData: PropTypes.object,
+  selectedPhase: PropTypes.number,
+  showBoth: PropTypes.bool,
+  formName: PropTypes.string
 }
 
 export default CustomCard

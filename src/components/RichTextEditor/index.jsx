@@ -1146,12 +1146,16 @@ function RichTextEditor(props) {
         </p>
       ) : null}
     </div>
-      {maxSizeOver ? <div className='max-chars-error'>{t('project.charsover')}</div> : ""}
-      {checking && required && valueIsEmpty ? <div className='max-chars-error'>{t('project.required-field')}</div> : ""}
-      <NetworkErrorState fieldName={inputProps.name} />
     </div>
     
-    return elements
+    return (
+      <>
+        {elements}
+        {maxSizeOver ? <div className='max-chars-error'>{t('project.charsover')}</div> : ""}
+        {checking && required && valueIsEmpty ? <div className='max-chars-error'>{t('project.required-field')}</div> : ""}
+        <NetworkErrorState fieldName={inputProps.name} />
+      </>
+    )
   }
 
   return (

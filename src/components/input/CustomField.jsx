@@ -606,6 +606,7 @@ class CustomField extends Component {
             deadlines={this.props.deadlines}
             selectedPhase={this.props.selectedPhase}
             showBoth={showBoth}
+            formName={this.props.formName}
           />
           <CustomCard
             props={props}
@@ -615,6 +616,7 @@ class CustomField extends Component {
             deadlines={this.props.deadlines}
             selectedPhase={this.props.selectedPhase}
             showBoth={showBoth}
+            formName={this.props.formName}
           />
         </div>
       )
@@ -629,6 +631,7 @@ class CustomField extends Component {
         deadlines={this.props.deadlines}
         selectedPhase={this.props.selectedPhase}
         showBoth={showBoth}
+        formName={this.props.formName}
       />
       )
     }
