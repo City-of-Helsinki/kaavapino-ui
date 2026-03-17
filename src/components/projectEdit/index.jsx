@@ -109,7 +109,9 @@ class ProjectEditPage extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    this.scroll()
+    if ((prevProps.location.search !== this.props.location.search ) || (prevState.urlField !== this.state.urlField) && this.state.urlField) {
+      this.scroll();
+    }
     this.headings = this.createHeadings()
     if(prevState.errorFields != this.state.errorFields){
       if(this.state.errorFields.length > 0){
@@ -198,20 +200,18 @@ class ProjectEditPage extends Component {
     const search = this.props.location.search
     const params = new URLSearchParams(search)
     const param = params.get('attribute')
-    const element = document.getElementById(param)
+    if (param) {
+      this.waitForElm(param).then(element => {
+        element.scrollIntoView({behavior: "smooth", block: "center", inline: "center"})
+        this.props.history.replace({ ...this.props.location, search: '' })
+      })
 
-    if (param && element) {
-      this.props.history.replace({ ...this.props.location, search: '' })
-    }
-    else if(element){
-      element?.scrollIntoView({block: "center", inline: "center"})
     }
     else if(this.state.urlField){
-      const urlElement = document.getElementById(this.state.urlField)
-      if (urlElement) {
-        urlElement?.scrollIntoView({block: "center", inline: "center"});
+      this.waitForElm(this.state.urlField).then(urlElement => {
+        urlElement.scrollIntoView({behavior: "smooth",   block: "center", inline: "center"});
         this.setState({urlField:null})
-      }
+      })
     }
   }
 

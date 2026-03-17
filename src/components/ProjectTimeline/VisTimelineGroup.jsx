@@ -1633,6 +1633,27 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                   return;
               }
           }
+          // Prevent cluster items (e.g. lautakunta maaraaika) from slipping into the past
+          const { snapshot: movingSnapshot } = clusterDragRef.current;
+          if (movingSnapshot?.items?.[String(item.id)]) {
+            const origSnap = movingSnapshot.items[String(item.id)];
+            const baseSnapStart = origSnap?.start ? origSnap.start.getTime() : null;
+            const curItemStart = item?.start ? new Date(item.start).getTime() : baseSnapStart;
+            if (baseSnapStart != null && curItemStart != null) {
+              const moveDelta = curItemStart - baseSnapStart;
+              for (const [snapId, snapTimes] of Object.entries(movingSnapshot.items)) {
+                if (snapId === String(item.id)) continue;
+                if (snapTimes?.start) {
+                  const projected = new Date(snapTimes.start.getTime() + moveDelta);
+                  projected.setHours(0, 0, 0, 0);
+                  if (projected < today) {
+                    callback(null);
+                    return;
+                  }
+                }
+              }
+            }
+          }
 
         // Check if trying to move before any earlier group's end date
         if (isMovingBeforeEarlierGroup(item, groups, items)) {
@@ -1723,12 +1744,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         let preventMove = false;
         // Determine which part of the item is being dragged
         const dragElement = dragHandleRef.current;
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        // Check if the item is confirmed or moving items to past dates and prevent moving
         const isConfirmed = dragElement?.includes("confirmed");
-        const isMovingToPast = (item.start && item.start < today) || (item.end && item.end < today);
-        //Prevent move
+        // Prevent move
         if (
           !allowedToEdit ||
           !dragElement || isConfirmed ||

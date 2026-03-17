@@ -1,4 +1,36 @@
 .form-modal {
+  fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-inline-size: 0;
+  }
+
+  legend {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+  }
+
+  .xl-project-options {
+    margin-top: 2.5rem;
+  }
+  .xl-project-options-legend {
+    font-family: 'Helsinki Grotesk Medium', sans-serif;
+    margin-bottom: 0.5rem;
+  }
+
+  .close-new-project-modal{
+    position: relative;
+    float: right;
+    margin-right: 1rem;
+    margin-top: 1rem;
+    color: #000;
+    cursor: pointer;
+    background: none;
+    border: none;
+  }
+
   .subtype-input-container .radio-input-container {
     display: flex;
     flex-direction: row;

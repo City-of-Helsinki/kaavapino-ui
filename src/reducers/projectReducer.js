@@ -230,6 +230,13 @@ export const reducer = (state = initialState, action) => {
       const projectSize = updatedAttributeData?.kaavaprosessin_kokoluokka
       //Remove all keys that are still hidden in vistimeline so they are not moved in data and later saved
       const filteredAttributeData = objectUtil.filterHiddenKeysUsingSections(updatedAttributeData, deadlineSections);
+      // Snapshot paattyy values before cascade to detect changes for lausunnot auto-sync
+      const previousPaattyyValues = {
+        milloin_ehdotuksen_nahtavilla_paattyy: filteredAttributeData.milloin_ehdotuksen_nahtavilla_paattyy,
+        milloin_ehdotuksen_nahtavilla_paattyy_2: filteredAttributeData.milloin_ehdotuksen_nahtavilla_paattyy_2,
+        milloin_ehdotuksen_nahtavilla_paattyy_3: filteredAttributeData.milloin_ehdotuksen_nahtavilla_paattyy_3,
+        milloin_ehdotuksen_nahtavilla_paattyy_4: filteredAttributeData.milloin_ehdotuksen_nahtavilla_paattyy_4,
+      };
       const moveToPast = filteredAttributeData[field] > newDate;
       //Save oldDate for comparison in checkforDecreasingValues
       const oldDate = filteredAttributeData[field];
@@ -269,8 +276,8 @@ export const reducer = (state = initialState, action) => {
       if (keepDuration && preservedEndValue && pairedEndKey) {
         filteredAttributeData[pairedEndKey] = preservedEndValue;
       }
-      //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
-      timeUtil.compareAndUpdateDates(filteredAttributeData)
+      //Updates viimeistaan lausunnot values to paattyy if paattyy date changed, or enforces floor constraint
+      timeUtil.compareAndUpdateDates(filteredAttributeData, previousPaattyyValues)
       
       // K1 = U1 sync: kaynnistysvaihe_alkaa_pvm always equals projektin_kaynnistys_pvm
       // Per timeline_requirements.md line 899: K1's "Generoitu ehdotus" = U1

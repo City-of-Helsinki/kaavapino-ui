@@ -7,25 +7,10 @@ import { useTranslation } from 'react-i18next';
 import LoggingComponent from './LoggingComponent.jsx'
 
 export const NavHeader = ({ routeItems, actions, title, infoOptions, attributes, projectSize, responsibleUser, pino, diaari, pwnumber, pwlink, location }) => {
-  const [isMobile, setIsMobile] = useState(false)
   const {t} = useTranslation()
   const pathToCheck = location?.pathname
   // create an event listener
-  useEffect(() => {
-    window.addEventListener('resize', handleResize)
-    if (window.innerWidth < 720) {
-      setIsMobile(true)
-    }
-  })
 
-  //choose the screen size
-  const handleResize = () => {
-    if (window.innerWidth < 720) {
-      setIsMobile(true)
-    } else {
-      setIsMobile(false)
-    }
-  }
 
   const getPW = () => {
     //TODO undesided how this goes and no pwlink comes from excel and backend yet
@@ -40,10 +25,6 @@ export const NavHeader = ({ routeItems, actions, title, infoOptions, attributes,
       pw = <td></td>
     }
     return pw
-  }
-
-  if (isMobile) {
-    return null
   }
 
   let navHeaderContentClass = ""

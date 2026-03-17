@@ -1,13 +1,11 @@
 import dayjs from 'dayjs'
 
 export function findInMonths(date, week, monthDates) {
-  date = dayjs(date)
-
-  const tempDate = date.add(1, 'month')
-  date = `${tempDate.year()}-${tempDate.month()}`
+  const parsedDate = dayjs(date)
+  const monthKey = `${parsedDate.year()}-${parsedDate.month()}`
   let monthIndex = null
   for (let i = 0; i < monthDates.length; i++) {
-    if (date === monthDates[i].date && week === monthDates[i].week) {
+    if (monthKey === monthDates[i].date && week === monthDates[i].week) {
       monthIndex = i
       break
     }
@@ -15,13 +13,17 @@ export function findInMonths(date, week, monthDates) {
   return monthIndex
 }
 export function findWeek(date) {
-  if (Math.round(date / 5) < 1) {
+  const parsedDate = dayjs(date)
+  const firstWeekday = parsedDate.startOf('month').day()
+  const dayOfMonth = parsedDate.date()
+  const calculatedWeek = Math.floor((firstWeekday + dayOfMonth - 1) / 7) + 1
+  if (calculatedWeek < 1) {
     return 1
-  } else if (Math.round(date / 5) > 5) {
-    return 5
-  } else {
-    return Math.round(date / 5)
   }
+  if (calculatedWeek > 6) {
+    return 6
+  }
+  return calculatedWeek
 }
 /**
  * @desc cleans deadline object

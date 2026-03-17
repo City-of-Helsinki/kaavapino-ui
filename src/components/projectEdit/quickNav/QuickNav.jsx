@@ -53,7 +53,7 @@ export default function QuickNav({
   const [selectedPhase,setSelectedPhase] = useState({currentPhase:[],phaseID:0})
   const [currentSection,setCurrentSection] = useState(0)
   const prevSelectedRef = useRef(false);
-  const firstRender = useRef(true);
+  const [pendingTitleScroll, setPendingTitleScroll] = useState(false);
 
   const { t } = useTranslation()
 
@@ -108,36 +108,11 @@ export default function QuickNav({
     if(section){
       index = documentIndex;
     }
-    handleSectionTitleClick(curPhase, index, id,sections)
+    switchSection(curPhase, index, id,sections)
     showSections(true)
    }
   }, [currentSchema,documentIndex])
 
-  useEffect(() => {
-    if (firstRender.current) {
-      firstRender.current = false;
-      return;
-    }
-
-    const formTitleElement = document.getElementById("title-"+currentSchema?.sections[selected]?.title)
-    const offset = 178
-    let formTitleElementBoundingRectTop = 0
-
-    if(formTitleElement) {
-      formTitleElementBoundingRectTop = formTitleElement.getBoundingClientRect().top
-    }
-    else {
-      console.log("Selected item don't match the title of the form area. Cannot determine the right scroll position.")
-    }
-
-    const bodyElementBoundingRectTop = document.body.getBoundingClientRect().top
-    const top = formTitleElementBoundingRectTop - bodyElementBoundingRectTop - offset
-
-    window.scrollTo({
-      behavior: 'smooth',
-      top: top,
-    })
-  }, [selected])
 
   useEffect(() => {
     if (!validationOk) {
@@ -169,6 +144,24 @@ export default function QuickNav({
     setOptions({optionsArray,curPhase})
   }, [])
 
+  useEffect(() => {
+    if (!pendingTitleScroll) {
+      return
+    }
+    const formTitleElement = document.getElementById("title-"+currentSchema?.sections[selected]?.title)
+    if(formTitleElement) {
+      setPendingTitleScroll(false);
+      const offset = 178;
+      let formTitleElementBoundingRectTop = 0;
+      formTitleElementBoundingRectTop = formTitleElement.getBoundingClientRect().top;
+      const bodyElementBoundingRectTop = document.body.getBoundingClientRect().top;
+      const top = formTitleElementBoundingRectTop - bodyElementBoundingRectTop - offset;
+      window.scrollTo({
+        behavior: 'smooth',
+        top: top,
+      });
+    }
+  }, [currentSchema, selected]);
 
   const renderButtons = () => {
     const canEndPhase = (phase && [1, 7, 13, 19, 25].includes(phase) && isTheResponsiblePerson) || isAdmin
@@ -298,6 +291,11 @@ export default function QuickNav({
   }
 
   const handleSectionTitleClick = (title, index, phaseID, fields) => {
+    switchSection(title, index, phaseID, fields);
+    setPendingTitleScroll(true);
+}
+
+  const switchSection = (title, index, phaseID, fields) => {
     let sectionIndex
     if (!locationSearch && phaseID !== activePhase) {
       setActivePhase(phaseID)
@@ -338,7 +336,7 @@ export default function QuickNav({
     }
 
     setSelectedPhase({currentPhase,phaseID});
-    handleSectionTitleClick(item.label, currentSection, phaseID,currentPhase)
+    switchSection(item.label, currentSection, phaseID, currentPhase)
     showSections(true)
   }
 
@@ -441,7 +439,7 @@ export default function QuickNav({
                     : ''
                 }`}
                 onClick={() =>
-                  handleSectionTitleClick(section.title, index, selectedPhase.phaseID,selectedPhase.currentPhase)
+                  handleSectionTitleClick(section.title, index, selectedPhase.phaseID, selectedPhase.currentPhase)
                 }
               >
               <div className='quicknav-item-title'>{section.title} </div>

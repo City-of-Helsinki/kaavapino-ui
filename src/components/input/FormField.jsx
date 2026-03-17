@@ -14,7 +14,7 @@ import { isArray } from 'lodash'
 import PropTypes from 'prop-types'
 import './Input.scss'
 
-const OneLineFields = ['toggle']
+const OneLineFields = ['toggle', 'hds-toggle']
 
 const FormField = ({
   field,
@@ -272,21 +272,21 @@ const FormField = ({
       return null;
     }
 
+    const LabelContainerAs = field.as === 'fieldset' ? 'legend' : 'div';
     return (
       <>
       <Form.Field
-        tabIndex="0"
         className={`input-container ${isOneLineField ? 'small-margin' : ''} ${
-          showError ? 'error' : ''
-        } ${highlightStyle}`}
+          showError ? 'error' : ''} ${highlightStyle}`}
+        as={field.as ? field.as : 'div'}
       >
         {highlightStyle === "yellow" ? <div className={highlightStyle + " highlight-flag"}>{highlightedTag}</div> : ''}
         {!isOneLineField && !timetableBoolean && (
-          <div className='input-header-container'>
+          <LabelContainerAs className='input-header-container'>
             <div className="input-header">
               <Label
-                tabIndex="0"
-                id={field.name}
+                as={field.as === "fieldset" ? "div" : "label"}
+                htmlFor={field.as === "fieldset" ? undefined : field.id}
                 className={`input-title${required ? ' highlight' : ''} ${field.type === "info_fieldset" ? ' hide' : ''}`}
               >
                 {title}
@@ -317,7 +317,7 @@ const FormField = ({
               <Info content={field.help_text} link={field.help_link} linked={field.linked_fields} help_img_link={field.help_img_link} />
             )}
           </div>
-        </div>
+        </LabelContainerAs>
         )}
         {renderField(null)}
         {showError && <div className="error-text">{showError}</div>}

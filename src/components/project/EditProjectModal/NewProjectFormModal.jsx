@@ -8,7 +8,7 @@ import { connect } from 'react-redux'
 import { NEW_PROJECT_FORM } from '../../../constants'
 import { newProjectSubtypeSelector } from '../../../selectors/formSelector'
 import FormField from '../../input/FormField.jsx'
-import { Button } from 'hds-react'
+import { Button, IconCross } from 'hds-react'
 import { withTranslation } from 'react-i18next'
 
 const PROJECT_NAME = 'name'
@@ -131,23 +131,39 @@ class NewProjectFormModal extends Component {
 
     const hideSave = hideSaveButton()
 
+    const closeIcon = (
+      <button
+      tabIndex={0}
+      aria-label={t('common.close')}
+      className="close-new-project-modal"
+      >
+      <IconCross aria-label={t('common.close')}  size="m"/>
+      </button>
+    )
+
     return (
       <Modal
         className="form-modal project-edit"
         size={'small'}
         onClose={this.props.handleClose}
         open={this.props.modalOpen}
-        closeIcon
+        onMount={() => {
+          const modalElement = document.querySelector('.form-modal.project-edit')
+          if (modalElement) {
+            modalElement.focus()
+          }
+        }}
+        closeIcon={closeIcon}
+        as="dialog"
       >
-        <Modal.Header>
+        <Modal.Header as="h2">
           {isEdit ? t('project-base.modify') : t('project-base.add')}
         </Modal.Header>
-        <Modal.Content>
+        <Modal.Content as="section">
           <Form>
-            <Form.Group widths="equal">
+            <Form.Group widths="equal" as="section">
               {this.getFormField({
                 className: 'ui fluid input',
-
                 field: {
                   name: TYPE,
                   label: t('project-base.labels.project-type'),
@@ -165,14 +181,16 @@ class NewProjectFormModal extends Component {
                 }
               })}
             </Form.Group>
-            <Form.Group widths="equal">
+            <Form.Group widths="equal" as="section">
               {this.getFormField({
                 field: {
+                  id : "new_project_" + PROJECT_NAME,
                   name: PROJECT_NAME,
                   label: t('project-base.labels.name'),
                   type: 'text',
                   editable: isEditable
-                }
+                },
+                hideLabel: true
               })}
               {this.getFormField({
                 className: 'ui fluid input user-selection',
@@ -190,7 +208,9 @@ class NewProjectFormModal extends Component {
                 name: PUBLIC,
                 label: t('project-base.labels.is-visible'),
                 type: 'boolean',
-                editable: isEditable
+                editable: isEditable,
+                as: "fieldset",
+                id : "new_project_" + PUBLIC
               },
               double: true
             })}
@@ -203,6 +223,7 @@ class NewProjectFormModal extends Component {
               {this.getFormField({
                 field: {
                   name: SUB_TYPE,
+                  id : "new_project_" + SUB_TYPE,
                   label: t('project-base.labels.process-size'),
                   type: 'radio',
                   editable: isEditable,
@@ -212,7 +233,8 @@ class NewProjectFormModal extends Component {
                     { value: 3, label: 'M' },
                     { value: 4, label: 'L' },
                     { value: 5, label: 'XL' }
-                  ]
+                  ],
+                  as: "fieldset"
                 }
               })}
             </div>
@@ -224,13 +246,14 @@ class NewProjectFormModal extends Component {
                 </div>
               )}
             {showXLProjectOptions && (
-              <>
-                <h4>{t('project-base.choose-title')}</h4>
+              <fieldset className="xl-project-options">
+                <legend className="xl-project-options-legend">{t('project-base.choose-title')}</legend>
                 {this.getFormField({
                   field: {
                     name: CREATE_PRINCIPLES,
                     label: t('project-base.labels.principles'),
-                    type: 'toggle',
+                    type: 'hds-toggle',
+                    id: "new_project_" + CREATE_PRINCIPLES,
                     editable: isEditable
                   }
                 })}
@@ -238,15 +261,16 @@ class NewProjectFormModal extends Component {
                   field: {
                     name: CREATE_DRAFT,
                     label: t('project-base.labels.draft'),
-                    type: 'toggle',
+                    type: 'hds-toggle',
+                    id: "new_project_" + CREATE_DRAFT,
                     editable: isEditable
                   }
                 })}
-              </>
+              </fieldset>
             )}
           </Form>
         </Modal.Content>
-        <Modal.Actions>
+        <Modal.Actions as="section">
           <div className="form-buttons">
             <Button variant="secondary" disabled={loading} onClick={this.handleClose}>
               {t('project.cancel')}

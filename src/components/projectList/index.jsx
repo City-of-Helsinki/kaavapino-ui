@@ -70,10 +70,12 @@ class ProjectListPage extends Component {
     fetchProjectSubtypes()
     getProjectsOverviewFilters()
     window.addEventListener('resize', this.handleWindowSizeChange)
+    document.addEventListener('keydown', this.handleKeyDown, true)
   }
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.handleWindowSizeChange)
+    document.removeEventListener('keydown', this.handleKeyDown, true)
     this.props.clearProjects()
   }
 
@@ -124,6 +126,22 @@ class ProjectListPage extends Component {
 
   handleWindowSizeChange = () => {
     this.setState({ screenWidth: window.innerWidth })
+  }
+
+  handleKeyDown = (event) => {
+    const element = document.activeElement;
+    if(event.key === " " && (element.role === "tab")){
+      event.preventDefault();
+    }
+    else if(event.key === "ArrowRight" && element.id === "tab-3-button"){
+      event.stopImmediatePropagation();
+      document.getElementById("tab-0-button").focus();
+    }
+    else if(event.key === "ArrowLeft" && element.id === "tab-0-button"){
+      event.stopImmediatePropagation();
+      document.getElementById("tab-3-button").focus();
+    }
+
   }
 
   toggleForm = opened => this.setState({ showBaseInformationForm: opened })
