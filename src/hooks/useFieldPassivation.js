@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux'
-import { formErrorListSelector, connectionErrorFieldsSelector } from '@/selectors/projectSelector'
+import { formErrorListSelector, connectionErrorFieldsSelector, fieldErrorFieldsSelector } from '@/selectors/projectSelector'
 import { networkSelector } from '@/selectors/networkSelector'
 
 /**
@@ -11,12 +11,13 @@ import { networkSelector } from '@/selectors/networkSelector'
  * 
  * @param {string} fieldName - The name of the field to check for passivation
  * @param {Array<string>} formErrors - List of field names with validation errors
- * @param {Array<string>} connectionErrorFields - List of field names with connection errors
+ * @param {Array<string>} connectionErrorFields - List of field names with connection errors (network/lock)
+ * @param {Array<string>} fieldErrorFields - List of field names with backend validation errors
  * @param {boolean} includeConnectionErrors - Whether to consider connection errors (default: true)
  * @param {boolean} hasNetworkError - Whether the network is currently down (passivates all fields)
  * @returns {boolean} - True if the field should be disabled due to errors in other fields
  */
-export const shouldPassivateField = (fieldName, formErrors = [], connectionErrorFields = [], includeConnectionErrors = true, hasNetworkError = false) => {
+export const shouldPassivateField = (fieldName, formErrors = [], connectionErrorFields = [], fieldErrorFields = [], includeConnectionErrors = true, hasNetworkError = false) => {
   // If network is down, passivate ALL fields to prevent editing
   if (hasNetworkError) {
     return true
@@ -32,7 +33,11 @@ export const shouldPassivateField = (fieldName, formErrors = [], connectionError
   // Check if other fields have connection errors (not this field)
   const hasOtherConnectionErrors = connectionErrorFields.length > 0 && !connectionErrorFields.includes(fieldName)
   
-  return hasOtherFieldErrors || hasOtherConnectionErrors
+  // Check if other fields have backend validation errors (not this field)
+  // Backend validation errors (field_error) passivate OTHER fields but not the field with the error itself
+  const hasOtherFieldValidationErrors = fieldErrorFields.length > 0 && !fieldErrorFields.includes(fieldName)
+  
+  return hasOtherFieldErrors || hasOtherConnectionErrors || hasOtherFieldValidationErrors
 }
 
 /**
@@ -63,11 +68,14 @@ export const useFieldPassivation = (fieldName, options = {}) => {
   const { includeConnectionErrors = true, formName } = options
   
   // Only apply passivation to the main project edit form
+  // DO NOT include editProjectTimetableForm - timetable editing should not have passivation
+  // DO NOT include other modal forms like newProjectForm
   const ALLOWED_FORMS = ['editProjectForm'];
   const isAllowedForm = formName && ALLOWED_FORMS.includes(formName);
   
   const formErrors = useSelector(formErrorListSelector) || []
   const connectionErrorFields = useSelector(connectionErrorFieldsSelector) || []
+  const fieldErrorFields = useSelector(fieldErrorFieldsSelector) || []
   const network = useSelector(networkSelector)
   
   // If not in an allowed form, never passivate
@@ -78,7 +86,7 @@ export const useFieldPassivation = (fieldName, options = {}) => {
   // Check if network is down (status='error' means network error, hasError is derived flag)
   const hasNetworkError = network?.status === 'error'
   
-  const shouldPassivate = shouldPassivateField(fieldName, formErrors, connectionErrorFields, includeConnectionErrors, hasNetworkError)
+  const shouldPassivate = shouldPassivateField(fieldName, formErrors, connectionErrorFields, fieldErrorFields, includeConnectionErrors, hasNetworkError)
   
   return shouldPassivate
 }

@@ -261,13 +261,27 @@ export const formErrorListSelector = createSelector(
 )
 
 // Selector for fields with connection/lock errors (status="error")
-// Returns array of field names that have connection errors
+// Returns array of field names that have connection errors (network down, lock error, etc.)
 export const connectionErrorFieldsSelector = createSelector(
   selectProject,
   project => {
     const lastSaved = project?.lastSaved;
     // If status is "error" (connection/lock error), return the fields that were being saved
     if (lastSaved?.status === 'error' && Array.isArray(lastSaved.fields)) {
+      return lastSaved.fields;
+    }
+    return [];
+  }
+)
+
+// Selector for fields with backend validation errors (status="field_error")
+// Returns array of field names that have backend validation errors (e.g., duplicate diaarinumero)
+export const fieldErrorFieldsSelector = createSelector(
+  selectProject,
+  project => {
+    const lastSaved = project?.lastSaved;
+    // If status is "field_error" (backend validation error), return the fields that were being saved
+    if (lastSaved?.status === 'field_error' && Array.isArray(lastSaved.fields)) {
       return lastSaved.fields;
     }
     return [];
