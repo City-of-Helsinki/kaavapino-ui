@@ -459,17 +459,35 @@
   border: 2px solid rgba(176, 16, 56, 1) !important;
   border-radius: 0;
 }
+// Override: Show gray background when field has error AND is disabled/passivated
+.ui.form .field.error input[type=text]:disabled,
+.ui.form .field.error.text-input.blurred input[type=text] {
+  background: #E6E6E6 !important;
+  color: #808080 !important;
+}
 .ui.form .field.error input[type=number] {
   background: white !important;
   color: $color-error !important;
   border: 2px solid rgba(176, 16, 56, 1) !important;
   border-radius: 0;
 }
+// Override: Show gray background when field has error AND is disabled/passivated
+.ui.form .field.error input[type=number]:disabled,
+.ui.form .field.error.text-input.blurred input[type=number] {
+  background: #E6E6E6 !important;
+  color: #808080 !important;
+}
 .ui.form .field.error input[type=date] {
   background: white !important;
   color: $color-error !important;
   border: 2px solid rgba(176, 16, 56, 1) !important;
   border-radius: 0;
+}
+// Override: Show gray background when field has error AND is disabled/passivated
+.ui.form .field.error input[type=date]:disabled,
+.ui.form .field.error.text-input.blurred input[type=date] {
+  background: #E6E6E6 !important;
+  color: #808080 !important;
 }
 
 .ui.form input:focus {

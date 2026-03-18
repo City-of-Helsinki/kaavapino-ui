@@ -9,6 +9,7 @@ import { showField } from '../../utils/projectVisibilityUtils'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { IconLock } from 'hds-react'
 import { useSelector } from 'react-redux'
+import { lastSavedSelector } from '../../selectors/projectSelector'
 import { withTranslation } from 'react-i18next'
 import { isArray } from 'lodash'
 import PropTypes from 'prop-types'
@@ -67,6 +68,7 @@ const FormField = ({
   const [lockStatus, setLockStatus] = useState({})
   const savingField = useSelector(state => state.project.savingField)
   const testingConnection = useSelector(state => state.project.testingConnection)
+  const lastSaved = useSelector(state => lastSavedSelector(state))
   const handleBlurSave = useCallback(() => {
     if (typeof handleSave === 'function') {
       handleSave(field.name)
@@ -320,7 +322,7 @@ const FormField = ({
         </LabelContainerAs>
         )}
         {renderField(null)}
-        {showError && <div className="error-text">{showError}</div>}
+        {showError && !shouldHideError && <div className="error-text">{showError}</div>}
         {assistiveText && <div className='assistive-text'>{assistiveText}.</div>}
       </Form.Field>
       </>
@@ -350,6 +352,12 @@ const FormField = ({
    * here to modify the input header accordingly. */
 
   const showError = required ? t('project.required-field') : error
+  
+  // NetworkErrorState handles errors for CustomInput and RichTextEditor fields
+  // Don't show duplicate error in FormField when NetworkErrorState is active
+  const usesNetworkErrorState = ['short_string', 'long_string', 'number', 'richtext-editor'].includes(field.type)
+  const networkStateIsActive = usesNetworkErrorState && ['error', 'connection_restored', 'field_error'].includes(lastSaved?.status)
+  const shouldHideError = networkStateIsActive
   if (!showField(field, formValues) || field.display === 'hidden') {
     return null
   } else {

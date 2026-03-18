@@ -374,6 +374,20 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
       return;
     }
     
+    // Preserve unsaved excess data when maxLength exceeded + network error
+    const maxLength = custom?.characterLimit;
+    const exceedsMaxLength = maxLength && maxLength > 0 && input.value?.length > maxLength;
+    // Include field_error - backend may return validation error after network recovery
+    const hasNetworkError = lastSaved?.status === 'error' || lastSaved?.status === 'connection_restored' || lastSaved?.status === 'field_error';
+    // Check if THIS field is the one with error (field-specific guard)
+    const isThisFieldError = lastSaved?.fields?.includes(input.name);
+    
+    // Prevent data loss: if user has excess characters AND this field has network/validation error,
+    // do NOT overwrite with backend value (even if backend sends last saved value)
+    if (exceedsMaxLength && hasNetworkError && isThisFieldError) {
+      return; // Don't overwrite user's data - preserve excess characters
+    }
+    
     let name = input.name;
     let originalData = custom?.attributeData[name]
     if(custom.insideFieldset && !custom.nonEditable || !custom.rollingInfo){
@@ -506,12 +520,15 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
     const isThisFieldNetworkError = (lastSaved?.status === 'error' || lastSaved?.status === 'connection_restored') && 
       lastSaved?.fields?.includes(input.name);
     
-    const blurredClass = (isThisFieldSaving || isThisFieldNetworkError) ? ' blurred' : '';
+    // Apply passivation (blurred, disabled) when network error + character limit exceeded
+    const shouldPassivate = isThisFieldNetworkError && exceedsMaxLength;
+    
+    const blurredClass = (isThisFieldSaving || isThisFieldNetworkError || shouldPassivate) ? ' blurred' : '';
     const hasErrorClass = (inputUtils.hasError(error) || hasError) ? ' error' : '';
     const networkErrorClass = isThisFieldNetworkError ? ' has-network-error' : '';
     
-    // Check if there's a validation error
-    const hasValidationError = inputUtils.hasError(error) || hasError;
+    // Check if there's a validation error (INCLUDING character limit exceeded)
+    const hasValidationError = exceedsMaxLength || inputUtils.hasError(error) || hasError;
     
     return (
       <div className={`text-input${custom.type === 'number' ? ' number-input' : ''}${blurredClass}${hasErrorClass}${networkErrorClass}`}>
@@ -526,11 +543,11 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
             {...restCustom}
             min={custom.isFloorAreaForm ? 0 : undefined}
             step={custom.isFloorAreaForm ? null : 1}
-            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled || isThisFieldSaving || shouldDisableForErrors || isThisFieldNetworkError}
+            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled || isThisFieldSaving || shouldDisableForErrors || isThisFieldNetworkError || shouldPassivate}
             onChange={(event) => { handleInputChange(event, readonly.read) }}
             onBlur={(event) => { handleBlur(event, readonly.read) }}
             onFocus={() => { handleFocus() }}
-            readOnly={readonly.read || lastSaved?.status === "error"}
+            readOnly={readonly.read || lastSaved?.status === "error" || shouldPassivate}
             minusStepButtonAriaLabel="Vähennä yhdellä"
             plusStepButtonAriaLabel="Lisää yhdellä"
           />
@@ -543,15 +560,20 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
             fluid="true"
             {...input}
             {...restCustom}
-            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled || isThisFieldSaving || shouldDisableForErrors || isThisFieldNetworkError}
+            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled || isThisFieldSaving || shouldDisableForErrors || isThisFieldNetworkError || shouldPassivate}
             onChange={(event) => { handleInputChange(event, readonly.read) }}
             onBlur={(event) => { handleBlur(event, readonly.read) }}
             onFocus={() => { handleFocus() }}
-            readOnly={readonly.read || lastSaved?.status === "error"}
+            readOnly={readonly.read || lastSaved?.status === "error" || shouldPassivate}
             id={fieldData?.id}
           />
         )}
-        <NetworkErrorState fieldName={input.name} validationError={hasValidationError ? errorString : null} />
+        <NetworkErrorState 
+          fieldName={input.name} 
+          validationError={hasValidationError && !isThisFieldNetworkError && !shouldPassivate ? errorString : null}
+          maxSizeOver={exceedsMaxLength}
+          readonly={readonly.read || shouldPassivate}
+        />
       </div>
     );
   };

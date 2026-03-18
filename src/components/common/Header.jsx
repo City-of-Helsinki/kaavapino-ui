@@ -104,7 +104,7 @@ const Header = props => {
   useInterval(() => {
     //polls connection to backend if there is error
     //doubles the time after each try
-    if(lastSaved?.status === "error" && !lastSaved?.lock){
+    if(lastSaved?.status === "error"){
       setCount(count + count)
       setIsPollingConnection(true)
       // Dispatch testingConnection state with the failed field name
@@ -120,7 +120,7 @@ const Header = props => {
       }
     }
     props.pollConnection()
-  }, lastSaved?.status === "error" || lastSaved?.status === "field_error" && !lastSaved?.lock ? 1000 * count * 10 : 0);
+  }, lastSaved?.status === "error" ? 1000 * count * 10 : 0);
 
   useEffect(() => {
     if(schema?.phases){

@@ -269,7 +269,7 @@ function RichTextEditor(props) {
   useEffect(() => {
     if (!isMount && rollingInfo && !editField) {
       // When rolling info field is closed and has errors (maxSizeOver or network error)
-      const hasError = maxSizeOver || hasActiveNetworkError(inputProps.name);
+      const hasError = maxSizeOver || hasActiveNetworkError();
       
       if (hasError) {
         dispatch(formErrorList(true, inputProps.name));
@@ -293,18 +293,29 @@ function RichTextEditor(props) {
     }
   }, [charLimitOver, counter.current, props.maxSize]);
 
+  // Track network status changes for recovery logic
+  useEffect(() => {
+    prevNetworkStatus.current = network?.status || 'ok';
+    prevLastSavedStatus.current = lastSaved?.status || '';
+  }, [network?.status, lastSaved?.status, maxSizeOver, inputProps.name]);
+
   /**
-   * Check if this field has an active network error stored in localStorage
+   * KAAV-3596: Handle dual error scenario (maxSizeOver + network error)
+   * When character limit prevents saving AND network is down:
+   * - Network error notification is shown (NetworkErrorState handles this via readonly prop)
+   * - Connection polling is triggered (Header handles this via useInterval when lastSaved.status === 'error')
+   * - Field spinner shows (CSS 'blurred' class via testingConnection state set by Header)
    */
-  const hasActiveNetworkError = (fieldName) => {
-    const wasNetworkErrorKey = `wasNetworkError_${fieldName}`;
-    try {
-      return localStorage.getItem(wasNetworkErrorKey) === 'true';
-    } catch (e) {
-      // localStorage not available (e.g., private browsing, cookies disabled)
-      // Assume no error to allow editing - better UX than blocking unnecessarily
-      return false;
-    }
+
+  /**
+   * Check if this field has an active network/save error
+   * Network error takes priority over character limit error in UI
+   */
+  const hasActiveNetworkError = () => {
+    // Check Redux state for active network or save errors
+    const networkError = network?.status === 'error';
+    const saveError = lastSaved?.status === 'error' || lastSaved?.status === 'field_error';
+    return networkError || saveError;
   };
 
   /**
@@ -387,7 +398,7 @@ function RichTextEditor(props) {
     }
 
     // Preserve user data if there's an active network error
-    if (hasActiveNetworkError(inputProps.name)) {
+    if (hasActiveNetworkError()) {
       counter.current = editor.getLength() - 1;
       return;
     }
@@ -847,7 +858,7 @@ function RichTextEditor(props) {
   // Helper: Check if editor value update should be blocked
   const shouldBlockEditorUpdate = () => {
     // CRITICAL: Don't overwrite editor if field has active network error
-    if (hasActiveNetworkError(inputProps.name)) {
+    if (hasActiveNetworkError()) {
       return true; // Don't touch editor when network error warning is visible
     }
     
@@ -923,6 +934,20 @@ function RichTextEditor(props) {
     const shouldUpdate = (dbValue?.ops && !isEqual(originalData, dbValue?.ops)) || connection.connection;
     
     if (shouldUpdate) {
+      // CRITICAL FIX (KAAV-3596): Preserve user data when character limit exceeded during network recovery
+      // Scenario: User types too many characters (maxSizeOver=true), then blur happens during network error.
+      // When network recovers, lock system attempts to restore old saved value from database.
+      // If editor has MORE content than dbValue, block the update to preserve user's unsaved work.
+      // User must reduce character count before saving, so this unsaved excess data takes priority.
+      const currentEditorLength = editorRef.current.editor.getLength() - 1;
+      const dbValueLength = dbValue?.ops ? dbValue.ops.map(op => op.insert).join('').length : 0;
+      const hasUnsavedExcessData = maxSizeOver && currentEditorLength > dbValueLength;
+      
+      if (hasUnsavedExcessData) {
+        // Don't update editor - preserve user's unsaved content
+        return;
+      }
+      
       updateEditorContents(dbValue);
       syncFieldsetValue(dbValue);
     } else if (!dbValue) {
@@ -1151,9 +1176,10 @@ function RichTextEditor(props) {
     return (
       <>
         {elements}
-        {maxSizeOver ? <div className='max-chars-error'>{t('project.charsover')}</div> : ""}
+        {/* Hide character limit error when network error is active - network error takes priority */}
+        {maxSizeOver && !hasActiveNetworkError() ? <div className='max-chars-error'>{t('project.charsover')}</div> : ""}
         {checking && required && valueIsEmpty ? <div className='max-chars-error'>{t('project.required-field')}</div> : ""}
-        <NetworkErrorState fieldName={inputProps.name} />
+        <NetworkErrorState fieldName={inputProps.name} maxSizeOver={maxSizeOver} readonly={readonly} />
       </>
     )
   }

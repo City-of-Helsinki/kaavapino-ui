@@ -6,7 +6,7 @@ import { setLastSaved } from '../../actions/projectActions';
 import './NetworkErrorState.scss';
 import PropTypes from 'prop-types';
 
-export default function NetworkErrorState({ fieldName, validationError }) {
+export default function NetworkErrorState({ fieldName, validationError, maxSizeOver, readonly }) {
   const clearedIsRelevantField = useRef(false);
   
   // Clear localStorage on first mount only
@@ -24,7 +24,10 @@ export default function NetworkErrorState({ fieldName, validationError }) {
 
   const status = network.status || 'ok';
   
-  const hasError = status === 'error' || lastSaved?.status === 'field_error';
+  // Check if field has ACTUAL network error (not just maxSizeOver passivation)
+  // Passivated fields (readonly && maxSizeOver) should not show network error banner
+  // unless there's an actual network/save error (lastSaved.status)
+  const hasError = lastSaved?.status === 'error' || lastSaved?.status === 'field_error';
   const isSuccess = status === 'success' || lastSaved?.status === 'connection_restored';
   const hasValidationError = !!validationError;
 
@@ -34,16 +37,37 @@ export default function NetworkErrorState({ fieldName, validationError }) {
   const banners = useMemo(() => {
     const notifications = [];
     
-    // Show validation error if present
-    if (hasValidationError) {
+    // PRIORITY 1: Network error (show network error, HIDE validation errors)
+    // Check lastSaved.status directly, not via hasError (which includes maxSizeOver)
+    const isNetworkError = lastSaved?.status === 'error';
+    
+    // PRIORITY 2: Backend field validation error (show backend error, HIDE client validation errors)
+    const isFieldError = lastSaved?.status === 'field_error' && savedFields.includes(fieldName);
+    
+    // PRIORITY 3: Connection restored (show success, HIDE validation errors)
+    const isConnectionRestored = isSuccess;
+    
+    // PRIORITY 4: Client validation error (show ONLY if no network/backend error or success)
+    const shouldShowValidationError = hasValidationError && !isNetworkError && !isConnectionRestored && !isFieldError;
+    
+    // Show validation error only if not overridden by network state
+    if (shouldShowValidationError) {
+      // Ensure validationError is a string (not Quill Delta object)
+      let errorMessage = validationError;
+      if (typeof errorMessage === 'object' && errorMessage !== null) {
+        // If it's an object (e.g., Quill Delta), use a generic message
+        errorMessage = t('project.charsover'); // fallback to generic validation error
+      }
+      
       notifications.push({
         type: 'error',
-        label: validationError,
+        label: errorMessage,
         key: 'validation'
       });
     }
     
-    // Show success message
+    // Show success message (connection restored)
+    // Always show when isSuccess is true (network has recovered)
     if (isSuccess) {
       notifications.push({
         type: 'success',
@@ -52,8 +76,9 @@ export default function NetworkErrorState({ fieldName, validationError }) {
       });
     }
     
-    // Show network/save errors
-    if (hasError) {
+    // Show network/save errors 
+    // Don't show if success is also active (prevents "both at once" dual notification)
+    if (hasError && !isSuccess) {
       // Differentiate between field validation error and network error
       const isFieldValidationError = lastSaved?.status === 'field_error';
       
@@ -78,9 +103,16 @@ export default function NetworkErrorState({ fieldName, validationError }) {
         
         if (backendErrorMessage) {
           // Backend provided a specific error message for this field
-          const errorText = Array.isArray(backendErrorMessage) 
+          let errorText = Array.isArray(backendErrorMessage) 
             ? backendErrorMessage[0] // Take first error if array
             : backendErrorMessage;
+          
+          // Backend may return Quill Delta object (with 'ops' property) instead of string
+          // React cannot render objects as children - must convert to string or use fallback
+          if (typeof errorText === 'object' && errorText !== null) {
+            // If it's a Quill Delta object or any other object, use fallback message
+            errorText = t('messages.network-save-failed-message');
+          }
           
           notifications.push({
             type: 'error',
@@ -100,7 +132,7 @@ export default function NetworkErrorState({ fieldName, validationError }) {
     }
     
     return notifications;
-  }, [hasError, isSuccess, hasValidationError, validationError, lastSaved?.status, lastSaved?.lock, savedFields, fieldName, lastSaved?.values, t]);
+  }, [hasError, isSuccess, hasValidationError, validationError, lastSaved?.status, lastSaved?.lock, savedFields, fieldName, lastSaved?.values, t, readonly, maxSizeOver]);
 
   // Auto-hide "connection restored" banner after 5 seconds
   useEffect(() => {
@@ -128,10 +160,23 @@ export default function NetworkErrorState({ fieldName, validationError }) {
     }
   }, [hasError, storedFieldName, isRelevantField, fieldName]);
   
+  // Global network/save error (lastSaved.status === 'error') affects ALL fields
+  // Unlike field_error (backend validation), 'error' means network/server failure
+  // This happens when API call fails (catch block in saga), not just DevTools offline
+  const isGlobalNetworkError = lastSaved?.status === 'error';
+  
   // Show banner for:
   // 1. Validation errors (always show for this field)
-  // 2. Network errors/success (only for relevant fields)
-  const showBanner = hasValidationError || ((hasError || isSuccess) && (isRelevantField || storedRelevant));
+  // 2. Network/save errors (show ONLY for the field that was being saved)
+  // 3. Field-specific validation errors / success (only for relevant fields)
+  // 4. Passivated fields with network error (readonly && maxSizeOver)
+  const showBanner = hasValidationError || 
+                      (isGlobalNetworkError && (isRelevantField || 
+                      storedRelevant)) || // Show only for the field that was saved
+                      ((lastSaved?.status === 'field_error' || 
+                      isSuccess) && (isRelevantField || 
+                      storedRelevant)) ||
+                      (readonly && maxSizeOver && hasError); // Passivated RichTextEditor fields
 
   if (!showBanner) {
       return null;
@@ -168,5 +213,7 @@ export default function NetworkErrorState({ fieldName, validationError }) {
 
 NetworkErrorState.propTypes = {
 	fieldName: PropTypes.string,
-	validationError: PropTypes.string
+	validationError: PropTypes.string,
+	maxSizeOver: PropTypes.bool,
+	readonly: PropTypes.bool
 }
