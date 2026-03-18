@@ -93,6 +93,7 @@ class ProjectPage extends Component {
     const { currentProject, changingPhase } = this.props
     if(prevProps.saving && !this.props.saving){
       this.setState(prevState => ({ ...prevState, showBaseInformationForm: false }))
+      document.getElementById('editNavSelect-toggle-button')?.focus();
     }
     if (
       (!prevProps.currentProject && currentProject) ||
@@ -453,8 +454,12 @@ class ProjectPage extends Component {
   }
   openProjectDataModal = () => this.togglePrintProjectDataModal(true)
 
-  toggleBaseInformationForm = opened =>
+  toggleBaseInformationForm = (opened) => {
+    if (!opened && this.state.showBaseInformationForm) {
+      document.getElementById('editNavSelect-toggle-button')?.focus();
+    }
     this.setState(prevState => ({ ...prevState, showBaseInformationForm: opened }))
+  }
 
   getAllChanges = () => {
     const { allEditFields, edit, creator, t } = this.props
@@ -507,8 +512,15 @@ class ProjectPage extends Component {
     return ordered
   }
 
-  togglePrintProjectDataModal = opened =>
-    this.setState({ showPrintProjectDataModal: opened })
+  togglePrintProjectDataModal = (opened) => {
+    if (!opened && this.state.showPrintProjectDataModal) {
+      const navButtons = document.getElementById('editNavSelect-toggle-button');
+      if (navButtons) {
+        navButtons.focus();
+      }
+    }
+    this.setState({ showPrintProjectDataModal: opened });
+  }
 
   renderLoading = () => {
     const { t } = this.props

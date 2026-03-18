@@ -8,8 +8,10 @@ import { connect } from 'react-redux'
 import { NEW_PROJECT_FORM } from '../../../constants'
 import { newProjectSubtypeSelector } from '../../../selectors/formSelector'
 import FormField from '../../input/FormField.jsx'
-import { Button, IconCross } from 'hds-react'
+import { Button } from 'hds-react';
 import { withTranslation } from 'react-i18next'
+import ModalCloseButton from '../ModalCloseButton/ModalCloseButton.jsx';
+import { focusTrapOnTabPressed } from '../projectModalUtils';
 
 const PROJECT_NAME = 'name'
 const USER = 'user'
@@ -51,7 +53,18 @@ class NewProjectFormModal extends Component {
     })
   }
 
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleKeyDown);
+  }
+
   componentDidUpdate(prevProps) {
+    if (prevProps.modalOpen && !this.props.modalOpen) {
+      document.removeEventListener('keydown', this.handleKeyDown)
+    }
+     if (!prevProps.modalOpen && this.props.modalOpen) {
+      document.addEventListener('keydown', this.handleKeyDown)
+    }
+
     if (prevProps.submitting && this.props.submitSucceeded) {
       this.handleClose()
     } else if (
@@ -62,6 +75,10 @@ class NewProjectFormModal extends Component {
     ) {
       this.setState({ loading: false })
     }
+  }
+
+  handleKeyDown = (event) => {
+    focusTrapOnTabPressed(event, 'new-project-form-modal')
   }
 
   formatUsers = () => {
@@ -131,29 +148,20 @@ class NewProjectFormModal extends Component {
 
     const hideSave = hideSaveButton()
 
-    const closeIcon = (
-      <button
-      tabIndex={0}
-      aria-label={t('common.close')}
-      className="close-new-project-modal"
-      >
-      <IconCross aria-label={t('common.close')}  size="m"/>
-      </button>
-    )
-
     return (
       <Modal
+        id="new-project-form-modal"
         className="form-modal project-edit"
         size={'small'}
-        onClose={this.props.handleClose}
+        onClose={this.handleClose}
         open={this.props.modalOpen}
         onMount={() => {
-          const modalElement = document.querySelector('.form-modal.project-edit')
+          const modalElement = document.querySelector("#close-new-project-modal-button")
           if (modalElement) {
             modalElement.focus()
           }
         }}
-        closeIcon={closeIcon}
+        closeIcon={<ModalCloseButton onClose={this.handleClose} id="close-new-project-modal-button" />}
         as="dialog"
       >
         <Modal.Header as="h2">
