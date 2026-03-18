@@ -55,6 +55,10 @@ const CustomTextArea = ({ input, meta, ...custom }) => {
   const blurredClass = (isThisFieldSaving || isThisFieldNetworkError) ? ' blurred' : '';
   const networkErrorClass = isThisFieldNetworkError ? ' has-network-error' : '';
 
+  // Prepare validation error string for NetworkErrorState
+  const errorString = typeof error === 'string' ? error : '';
+  const hasValidationError = !!error;
+
   return (
     <div className={`textarea-wrapper${blurredClass}${networkErrorClass}`}>
       <TextArea
@@ -67,7 +71,7 @@ const CustomTextArea = ({ input, meta, ...custom }) => {
         onBlur={handleBlur}
         data-testid="text1"
       />
-      <NetworkErrorState fieldName={input.name} />
+      <NetworkErrorState fieldName={input.name} validationError={hasValidationError ? errorString : null} />
     </div>
   )
 }

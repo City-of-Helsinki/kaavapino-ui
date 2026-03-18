@@ -294,6 +294,10 @@ const SelectInput = ({
     let readOnlyStyle = notSelectable ? 'selection readonly' : 'selection'
     let rollingInfoValue = getRollingInfoValue(multiple, currentValue, input, preparedOptions);
 
+    // Prepare validation error string for NetworkErrorState
+    const errorString = typeof error === 'string' ? error : '';
+    const hasValidationError = inputUtils.hasError(error);
+
     //Render rolling info field or normal edit field
     //If clicking rolling field button makes positive lock check then show normal editable field
     //Rolling field can be nonEditable
@@ -361,7 +365,7 @@ const SelectInput = ({
           }}
         />
         )}
-        <NetworkErrorState fieldName={input.name} />
+        <NetworkErrorState fieldName={input.name} validationError={hasValidationError ? errorString : null} />
       </div>
     return elements
   }
