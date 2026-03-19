@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal } from 'semantic-ui-react'
 import { Button, Tabs, IconCross } from 'hds-react'
@@ -10,6 +10,7 @@ import textUtil from '../../utils/textUtil'
 import objectUtil from '../../utils/objectUtil';
 import PropTypes from 'prop-types'
 import './VisTimeline.scss'
+import { getFocusableElements } from '../project/projectModalUtils';
 
 const TimelineModal = ({
   open,
@@ -32,10 +33,19 @@ const TimelineModal = ({
   items,
   sectionAttributes,
   isAdmin,
-  initialTab
+  initialTab,
+  returnFocusGroupId
 }) => {
 
   const { t } = useTranslation();
+
+  const [returnFocusId, setReturnFocusId] = React.useState(null);
+
+  useEffect(() => {
+    if (open && returnFocusGroupId) {
+      setReturnFocusId(`timeline-group-${returnFocusGroupId}`);
+    }
+  }, [open, returnFocusGroupId]);
 
   const getAttributeValues = (attributes) => {
     return Object.values(attributes).flatMap((v) => Object.values(v));
@@ -567,7 +577,17 @@ const TimelineModal = ({
   }
 
   return (
-    <Modal open={open} size={'large'} className='timeline-edit-right'>
+    <Modal
+      open={open} 
+      size={'large'} 
+      className='timeline-edit-right' 
+      id="timeline-edit-side-panel" 
+      onMount={() => getFocusableElements("timeline-edit-side-panel")[0]?.focus()}
+      onUnmount={() => {
+        console.log('Modal onUnmount, returnFocusId:', returnFocusId);
+        document.getElementById(returnFocusId)?.focus();
+      }}
+    >
       <div className="timeline-edit-container">
         {open && <div className="timeline-edit-shadow"></div>}
         <div className="timeline-edit-content">

@@ -5,20 +5,40 @@ import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { IconPlus,Button } from 'hds-react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
+import { getFocusableElements, focusTrapOnTabPressed } from '../project/projectModalUtils'
 
-const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAddDialog, allowedToEdit, timelineAddButton, phaseIsClosed}) => {
+const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAddDialog, allowedToEdit, timelineAddButton }) => {
   const {t} = useTranslation()
   const dispatch = useDispatch();
   
   const addNew = (addedKey) => {
     if(addedKey) {
       dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, addedKey, true));
-      closeAddDialog()
     }
-    else {
-      closeAddDialog()
-    }
+    closeAddDialog(true);
   }
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Tab') {
+        focusTrapOnTabPressed(event, "timeline-add-dialog")
+      } else if (event.key === 'Escape') {
+        closeAddDialog(false);
+      }
+      focusTrapOnTabPressed(event, "timeline-add-dialog")
+    }
+
+    if (toggleOpenAddDialog) {
+      document.addEventListener('keydown', handleKeyDown);
+      getFocusableElements("timeline-add-dialog")[0]?.focus();
+    } else {
+      document.removeEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [toggleOpenAddDialog]);
 
   useEffect(() => {
     if (timelineAddButton) {
@@ -31,10 +51,10 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
         });
       }
     }
-  }, [toggleOpenAddDialog])
+  }, [toggleOpenAddDialog]);
 
   return (
-    <div className={toggleOpenAddDialog ? "vis-add-dialog" : "vis-hide-dialog"} style={addDialogStyle}>
+    <div id="timeline-add-dialog" className={toggleOpenAddDialog ? "vis-add-dialog" : "vis-hide-dialog"} style={addDialogStyle}>
       {!addDialogData.hidePresence && (
         <>
           <Button
