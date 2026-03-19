@@ -105,41 +105,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       toggleTimelineModalRef.current = toggleTimelineModal;
     }, [toggleTimelineModal]);
 
-  const preventDefaultAndStopPropagation = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-
-  const updateGroupShowNested = (groups, groupId, showNested) => {
-    if (groupId) {
-      let group = groups.get(groupId);
-      if (group) {
-        group.showNested = showNested;
-        groups.update(group);
-      }
-    }
-  }
-
-  const timelineGroupClick = (properties, groups) => {
-    if (properties.group) {
-      let clickedElement = properties.event.target;
-
-      preventDefaultAndStopPropagation(properties.event);
-
-      if (clickedElement.classList.contains('timeline-add-button')) {
-        updateGroupShowNested(groups, properties.group, true);
-      } else {
-        let groupId = properties.group;
-        if (groupId) {
-          let group = groups.get(groupId);
-          if (group) {
-            updateGroupShowNested(groups, properties.group, !group.showNested);
-          }
-        }
-      }
-    }
-  }
-
   const trackExpanded = (event) => {
     trackExpandedGroups(event)
   }
@@ -2390,12 +2355,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           timeline.itemSet.groupHammer.on('tap', function (event) {
             let target = event.target;
             if (target.classList.contains('timeline-add-button')) {
-              if (target.classList.contains('button-disabled')) {
-                event.preventDefault();
-                event.stopPropagation();
-                return; // Do nothing if disabled
-              }
-              timelineGroupClick(timeline.itemSet.options, groups);
+                return; // Don't close menu when clicking add button
             } else {
               trackExpanded(event);
               timeline.itemSet._onGroupClick(event);
