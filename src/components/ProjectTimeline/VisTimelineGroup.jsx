@@ -615,7 +615,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     if (
       phase === "ehdotus" &&
       projectSize === "XL" &&
-      visValRef["kaavaehdotus_lautakuntaan_1"] === false
+      visValRef["kaavaehdotus_lautakuntaan_1"] === false &&
+      lautakuntaReason !== "nahtavillaolo vahvistettu."
     ) {
       canAddLautakunta = true;
       nextLautakuntaClean = "kaavaehdotus_lautakuntaan_1";
