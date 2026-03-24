@@ -69,25 +69,10 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
               ? t('project.add-new-review')
               : t('project.add-new-presence')}
           </Button>
-          {addDialogData.esillaoloReason && (
-            <span className='add-button-info'>
-              {(addDialogData.nextEsillaolo === "jarjestetaan_periaatteet_esillaolo_1" || addDialogData.nextEsillaolo === "jarjestetaan_luonnos_esillaolo_1") && addDialogData.nextLautakunta === false
-                ? ""
-                : (
-                  (addDialogData.esillaoloReason === "Vahvistusta ei voi perua, koska seuraava lautakunta on jo lisätty." ||
-                   addDialogData.esillaoloReason === "lautakuntaConfirmed")
-                  ? "Esilläoloa ei voi lisätä, koska seuraava lautakunta on jo vahvistettu."
-                  : addDialogData.group.id === "Ehdotus"
-                    ? (addDialogData.esillaoloReason === "noconfirmation"
-                        ? "Kaavoitussihteerin tulee vahvistaa aikaisempi nähtävilläolo, ennen uuden nähtävilläolon lisäämistä."
-                        : "Nähtävilläolojen enimmäismäärä on saavutettu.")
-                    : (addDialogData.esillaoloReason === "noconfirmation"
-                        ? "Kaavoitussihteerin tulee vahvistaa aikaisempi esilläolo, ennen uuden esilläolon lisäämistä."
-                        : "Esilläolojen enimmäismäärä on saavutettu."
-                      )
-                )
-              }
-            </span>
+          {addDialogData.esillaoloReason && !addDialogData.showPresence && (
+          <span className='add-button-info'>
+            {addDialogData.esillaoloReason}
+          </span>
           )}
         </>
       )}
@@ -106,14 +91,7 @@ const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAd
           </Button>
           {addDialogData.lautakuntaReason && !addDialogData.showBoard && (
             <span className='add-button-info'>
-              {addDialogData.lautakuntaReason === "Vahvistusta ei voi perua, koska seuraava nähtävilläolo on jo lisätty." || addDialogData.lautakuntaReason === "nahtavillaolo vahvistettu."
-                ? "Lautakuntaa ei voi lisätä, koska seuraava nähtävilläolo on jo vahvistettu."
-                : addDialogData.lautakuntaReason === "noconfirmation"
-                  ? "Kaavoitussihteerin tulee vahvistaa aikaisempi lautakunta, ennen uuden lautakunnan lisäämistä."
-                  : addDialogData.lautakuntaReason === "palautettu_tai_jai_poydalle"
-                    ? "Voit lisätä uuden lautakunnan vain, jos asia jäi pöydälle tai se palautettiin uudelleen valmisteltavaksi."
-                    : "Lautakuntien maksimimäärä on saavutettu."
-              }
+              {addDialogData.lautakuntaReason}
             </span>
           )}
         </>

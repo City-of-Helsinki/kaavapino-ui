@@ -202,11 +202,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   }
 
   const canEsillaoloBeAdded = (form_data, group_data, esillaoloKeys, lautakuntaKeys) => {
-    // 1. Check if max esillaolo count for this phase has been reached
     const phase = getPhaseKey(group_data);
-    if (esillaoloKeys.length === 0) {
-      return { canAdd: false, nextEsillaolo: null, reason: "max" }
-    }
+    const is_ehdotus = phase === "ehdotus";
+
+    // 1. Check if max esillaolo count for this phase has been reached
     let latestEsillaolo = null;
     let nextEsillaolo = null;
     for (let key of esillaoloKeys) {
@@ -217,39 +216,38 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
     }
     if (!nextEsillaolo) {
-      return { canAdd: false, nextEsillaolo: null, reason: "max"}
+      return { canAdd: false, nextEsillaolo: null, reason: t(`deadlines.${is_ehdotus ? "nahtavillaolo-max" : "esillaolo-max"}`) }
     }
     
     // 2. Check if previous esillaolo is confirmed (if not the first one)
     if (latestEsillaolo) {
       const confirmKey = getConfirmationKeyForEsillaoloKey(phase, latestEsillaolo);
       if (form_data[confirmKey] !== true) {
-        return { canAdd: false, nextEsillaolo, reason: "noconfirmation" }
+        return { 
+          canAdd: false,
+          nextEsillaolo,
+          reason: t(`deadlines.${is_ehdotus ? "nahtavillaolo-no-confirmation" : "esillaolo-no-confirmation"}`)
+        }
       }
     }
 
     // 3. Check if next element group is already confirmed (prevent add if so)
-    if (phase === "ehdotus") {
+    if (is_ehdotus) {
       // Special case: in ehdotus phase lautakunta comes before nahtavillaolo, so no checks needed here
       return { canAdd: true, nextEsillaolo, reason: "" };
     }
 
     if (lautakuntaKeys.some(key => {
-
       const confirmKey = getConfirmationKeyForLautakuntaKey(phase, key);
-      console.log("lautakunta", key, "confirmKey", confirmKey, "form_data[confirmKey]", form_data[confirmKey]);
       return form_data[confirmKey] === true
     })) {
-      return { canAdd: false, nextEsillaolo, reason: "lautakuntaConfirmed" };
+      return { canAdd: false, nextEsillaolo, reason: t("deadlines.esillaolo-next-confirmed") };
     }
     return { canAdd: true, nextEsillaolo, reason: "" };
   }
   const canLautakuntaBeAdded = (form_data, group_data, esillaoloKeys, lautakuntaKeys) => {
-    // 1. Check if max lautakunta count for this phase has been reached
     const phase = getPhaseKey(group_data);
-    if (lautakuntaKeys.length === 0) {
-      return { canAdd: false, nextLautakunta: null, reason: "max" }
-    }
+    // 1. Check if max lautakunta count for this phase has been reached
     let latestLautakunta = null;
     let nextLautakunta = null;
     // Keys must be in order (which they are in getVisBoolsByPhaseName)
@@ -261,14 +259,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
     }
     if (!nextLautakunta) {
-      return { canAdd: false, nextLautakunta: null, reason: "max"}
+      return { canAdd: false, nextLautakunta: null, reason: t("deadlines.lautakunta-max") }
     }
 
     // 2. Check if previous lautakunta is confirmed and has correct paatos value (if not the first one)
     if (latestLautakunta) {
       const confirmKey = getConfirmationKeyForLautakuntaKey(phase, latestLautakunta);
       if (form_data[confirmKey] !== true) {
-        return { canAdd: false, nextLautakunta, reason: "noconfirmation" }
+        return { canAdd: false, nextLautakunta, reason: t("deadlines.lautakunta-no-confirmation") }
       }
       const paatosBase= getLautakuntaAndPaatosBase(phase)[1];
       let latestIndex = Number(latestLautakunta.slice(latestLautakunta.lastIndexOf('_') + 1));
@@ -279,7 +277,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         : `${paatosBase}_${latestIndex}`;
       const paatos = form_data[paatosKey];
       if (paatos !== "palautettu_uudelleen_valmisteltavaksi" && paatos !== "asia_jai_poydalle") {
-        return { canAdd: false, nextLautakunta, reason: "palautettu_tai_jai_poydalle" }
+        return { canAdd: false, nextLautakunta, reason: t("deadlines.lautakunta-wrong-resolution") }
       }
     }
 
@@ -289,7 +287,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         const confirmKey = getConfirmationKeyForEsillaoloKey(phase, key);
         return form_data[confirmKey] === true;
       })) {
-        return { canAdd: false, nextLautakunta, reason: "nahtavillaolo vahvistettu." };
+        return { canAdd: false, nextLautakunta, reason: t("deadlines.lautakunta-next-confirmed") };
       }
     }
     return { canAdd: true, nextLautakunta, reason: "" };
@@ -297,7 +295,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
   const handleAddButtonClick = (visValRef, data, event) => {
     const { canAddEsillaolo, nextEsillaolo, canAddLautakunta, nextLautakunta, esillaoloReason, lautakuntaReason } = canGroupBeAdded(visValRef, data)
-    console.log("canAddEsillaolo", canAddEsillaolo, "nextEsillaolo", nextEsillaolo, "canAddLautakunta", canAddLautakunta, "nextLautakunta", nextLautakunta, "esillaoloReason", esillaoloReason, "lautakuntaReason", lautakuntaReason)
     const rect = event.target.getBoundingClientRect();
 
     if (event.target.classList.contains('timeline-add-button')) {
