@@ -105,41 +105,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       toggleTimelineModalRef.current = toggleTimelineModal;
     }, [toggleTimelineModal]);
 
-  const preventDefaultAndStopPropagation = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-
-  const updateGroupShowNested = (groups, groupId, showNested) => {
-    if (groupId) {
-      let group = groups.get(groupId);
-      if (group) {
-        group.showNested = showNested;
-        groups.update(group);
-      }
-    }
-  }
-
-  const timelineGroupClick = (properties, groups) => {
-    if (properties.group) {
-      let clickedElement = properties.event.target;
-
-      preventDefaultAndStopPropagation(properties.event);
-
-      if (clickedElement.classList.contains('timeline-add-button')) {
-        updateGroupShowNested(groups, properties.group, true);
-      } else {
-        let groupId = properties.group;
-        if (groupId) {
-          let group = groups.get(groupId);
-          if (group) {
-            updateGroupShowNested(groups, properties.group, !group.showNested);
-          }
-        }
-      }
-    }
-  }
-
   const trackExpanded = (event) => {
     trackExpandedGroups(event)
   }
@@ -631,7 +596,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     ];
   };
 
-  const openAddDialog = (visValRef, data, event) => {
+  const handleAddButtonClick = (visValRef, data, event) => {
     const [addEsillaolo, nextEsillaolo, addLautakunta, nextLautakunta, esillaoloReason, lautakuntaReason] = canGroupBeAdded(visValRef, data)
     const rect = event.target.getBoundingClientRect();
 
@@ -695,10 +660,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     setOpenConfirmModal(!openConfirmModal);
   }
 
-  const closeAddDialog = () => {
-    setToggleOpenAddDialog(prevState => !prevState);
-    // Close TimelineModal if it's open
-    if (toggleTimelineModal.open) {
+  const closeAddDialog = (added=false) => {
+    setToggleOpenAddDialog(false);
+    if (timelineAddButton) {
+      timelineAddButton.focus();
+    }
+    if (added && toggleTimelineModal.open) {
       setToggleTimelineModal({ open: false, highlight: null, deadlinegroup: null });
     }
   };
@@ -731,7 +698,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         addHighlights(timelineElement, data, container);
       }
 
-      setTimelineData({ group: data.nestedInGroup, content: data.content });
+      setTimelineData({ group: data.nestedInGroup, content: data.content, groupId: data.id });
       return {
         open: true,
         highlight: container,
@@ -1902,6 +1869,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           label.innerHTML = group.content + " ";
           container.insertAdjacentElement("afterBegin", label);
           let add = document.createElement("button");
+          add.id = `add-button-${group.id}`;
           add.classList.add("timeline-add-button");
           add.style.fontSize = "small";
 
@@ -1925,7 +1893,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               event.stopPropagation();
               return;
             }
-            openAddDialog(visValuesRef.current, group, event);
+            handleAddButtonClick(visValuesRef.current, group, event);
           });
 
           container.insertAdjacentElement("beforeEnd", add);
@@ -2382,35 +2350,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         }
       });
 
-        /* if (timeline?.itemSet) {
-          // remove the default internal hammer tap event listener
-          timeline.itemSet.groupHammer.off('tap');
-          // use my own fake internal hammer tap event listener
-          timeline.itemSet.groupHammer.on('tap', function (event) {
-            let target = event.target;
-            if (target.classList.contains('timeline-add-button')) {
-                //Custom function to add new item
-                timelineGroupClick(timeline.itemSet.options,groups)
-            } 
-            else {
-              trackExpanded(event)
-              // if not add button, forward the event to the vis event handler
-              timeline.itemSet._onGroupClick(event);
-            }
-          });
-          
-        } */
        if (timeline?.itemSet) {
           timeline.itemSet.groupHammer.off('tap');
           timeline.itemSet.groupHammer.on('tap', function (event) {
             let target = event.target;
             if (target.classList.contains('timeline-add-button')) {
-              if (target.classList.contains('button-disabled')) {
-                event.preventDefault();
-                event.stopPropagation();
-                return; // Do nothing if disabled
-              }
-              timelineGroupClick(timeline.itemSet.options, groups);
+                return; // Don't close menu when clicking add button
             } else {
               trackExpanded(event);
               timeline.itemSet._onGroupClick(event);
@@ -2696,6 +2641,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           sectionAttributes={sectionAttributes}
           isAdmin={isAdmin}
           initialTab={timelineInitialTab}
+          returnFocusGroupId={selectedGroupId}
         />
         <AddGroupModal
           toggleOpenAddDialog={toggleOpenAddDialog}
