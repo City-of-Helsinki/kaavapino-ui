@@ -11,6 +11,7 @@ import objectUtil from '../../utils/objectUtil';
 import PropTypes from 'prop-types'
 import './VisTimeline.scss'
 import { getFocusableElements } from '../project/projectModalUtils';
+import { init } from 'i18next';
 
 const TimelineModal = ({
   open,
@@ -633,7 +634,9 @@ TimelineModal.propTypes = {
   dateTypes: PropTypes.object,
   groups: PropTypes.array,
   items: PropTypes.array,
-  sectionAttributes: PropTypes.array
+  sectionAttributes: PropTypes.array,
+  initialTab: PropTypes.number,
+  returnFocusGroupId: PropTypes.string
 };
 
 export default TimelineModal

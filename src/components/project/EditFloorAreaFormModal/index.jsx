@@ -14,7 +14,6 @@ import { withTranslation } from 'react-i18next'
 import { Button } from 'hds-react'
 import ModalCloseButton from '../ModalCloseButton/ModalCloseButton.jsx'
 import { focusTrapOnTabPressed } from '../projectModalUtils';
-import './styles.scss'
 
 
 const FloorAreaTotals = ({ formValues, floorAreaSections, attributeData }) => {

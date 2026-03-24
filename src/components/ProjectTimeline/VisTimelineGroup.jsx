@@ -2445,7 +2445,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           const currentPhaseName = currentPhaseFullName.replace(/^(?:\d+\.|[A-Z]+\.)\s*/, '');
           const currentPhaseIndex = phaseOrder.indexOf(currentPhaseName);
           
-          //console.log('[DEBUG] Applying past-phase classes. Current phase:', currentPhaseName, 'index:', currentPhaseIndex);
+          console.log('[DEBUG] Applying past-phase classes. Current phase:', currentPhaseName, 'index:', currentPhaseIndex);
           
           if (currentPhaseIndex !== -1) {
             // Access vis-timeline items directly from the timeline instance

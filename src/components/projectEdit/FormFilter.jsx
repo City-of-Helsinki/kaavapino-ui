@@ -15,28 +15,28 @@ const [selectedTag, setSelectedTag] = useState("")
 const [options,setOptions] = useState([]);
 const [totalFilteredFields,setTotalFilteredFields] = useState(0)
 const [isVisible,setVisible] = useState(true);
-const [modalOpenState, setModalOpenState] = useState({isOpen: false, openedWithKeyboard: false});
+const [isOpen, setIsOpen] = useState(false);
 
 const prevTotalFilteredFields = useRef(totalFilteredFields);
 
 useEffect(() => {
-    window.addEventListener("scroll",listenToScroll);
+    globalThis.addEventListener("scroll",listenToScroll);
     return () => {
-        window.removeEventListener("scroll",listenToScroll);
+        globalThis.removeEventListener("scroll",listenToScroll);
     };
 }, []);
 
 useEffect(() => {
     const handleKeyDown = (event) => {
-        if ((event.key === 'Escape' || event.key === 'Esc') && modalOpenState.isOpen) {
-            setModalOpenState({isOpen: false, openedWithKeyboard: false});
+        if ((event.key === 'Escape' || event.key === 'Esc') && isOpen) {
+            setIsOpen(false);
         }
     }
-    if (modalOpenState.isOpen) {
-        window.addEventListener("keydown", handleKeyDown);
+    if (isOpen) {
+        globalThis.addEventListener("keydown", handleKeyDown);
     }
-    return () => window.removeEventListener("keydown", handleKeyDown);
-}, [modalOpenState.isOpen]);
+    return () => globalThis.removeEventListener("keydown", handleKeyDown);
+}, [isOpen]);
 
 useEffect(() => {
     let tagArray = []
@@ -160,17 +160,17 @@ const openModal = (isKeyboard=false, event=null) => {
         // Open modal on Enter or Space key press
         if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
-            setModalOpenState({isOpen: true, openedWithKeyboard: true});
+            setIsOpen(true);
         }
     } else {
-        setModalOpenState({isOpen: true, openedWithKeyboard: false});
+        setIsOpen(true);
     }
 }
 
 const closeModal = () => {
-    if (modalOpenState.isOpen) {
+    if (isOpen) {
         setCheckedItems(tags)
-        setModalOpenState({isOpen: false, openedWithKeyboard: false});
+        setIsOpen(false);
     }
 }
 
@@ -187,7 +187,7 @@ const saveSelections = () => {
     if(!checkedItems){
         isHighlightedTag("")
     }
-    setModalOpenState({isOpen: false, openedWithKeyboard: false});
+    setIsOpen(false);
     calculateFields(allfields)
 }
 
@@ -273,9 +273,9 @@ return (
                 Muokkaa suodattimia
             </Button>
         </div>
-        {modalOpenState.isOpen && (
+        {isOpen && (
             <div id="myModal" className="modal filterModal">
-                <DialogFocusTrap returnFocusRef={openButtonRef} wasOpenedWithKeyboard={modalOpenState.openedWithKeyboard}>
+                <DialogFocusTrap returnFocusRef={openButtonRef}>
                     <div className="modal-content">
                         <div className="modal-header">
                             <h2>Suodattimet</h2>

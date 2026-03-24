@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
 
 function getFocusableElements(container) {
     if (!container) return [];
@@ -11,7 +12,7 @@ function getFocusableElements(container) {
 
 
 // This component may be replaced by HDS Dialog when updated to a newer version.
-const DialogFocusTrap = ({ children, returnFocusRef, wasOpenedWithKeyboard }) => {
+const DialogFocusTrap = ({ children, returnFocusRef }) => {
     const trapRef = useRef(null);
     const previouslyFocusedElement = useRef(null);
 
@@ -19,7 +20,7 @@ const DialogFocusTrap = ({ children, returnFocusRef, wasOpenedWithKeyboard }) =>
         previouslyFocusedElement.current = document.activeElement;
 
         const focusableEls = getFocusableElements(trapRef.current);
-        if (focusableEls.length > 0 && wasOpenedWithKeyboard) {
+        if (focusableEls.length > 0) {
             focusableEls[0].focus();
         }
 
@@ -29,7 +30,7 @@ const DialogFocusTrap = ({ children, returnFocusRef, wasOpenedWithKeyboard }) =>
             if (focusableEls.length === 0) return;
 
             const firstEl = focusableEls[0];
-            const lastEl = focusableEls[focusableEls.length - 1];
+            const lastEl = focusableEls.at(-1);
 
             if (!e.shiftKey && document.activeElement === lastEl) {
                 e.preventDefault();
@@ -41,11 +42,11 @@ const DialogFocusTrap = ({ children, returnFocusRef, wasOpenedWithKeyboard }) =>
         }
 
         const node = trapRef.current;
-        node && node.addEventListener('keydown', handleKeyDown);
+        node?.addEventListener('keydown', handleKeyDown);
 
         return () => {
-            node && node.removeEventListener('keydown', handleKeyDown);
-            if (returnFocusRef && returnFocusRef.current) {
+            node?.removeEventListener('keydown', handleKeyDown);
+            if (returnFocusRef?.current) {
                 returnFocusRef.current.focus();
             } else if (previouslyFocusedElement.current) {
                 previouslyFocusedElement.current.focus();
@@ -58,6 +59,11 @@ const DialogFocusTrap = ({ children, returnFocusRef, wasOpenedWithKeyboard }) =>
             {children}
         </div>
     );
+};
+
+DialogFocusTrap.propTypes = {
+    children: PropTypes.node,
+    returnFocusRef: PropTypes.shape({ current: PropTypes.instanceOf(Element) }),
 };
 
 export default DialogFocusTrap;
