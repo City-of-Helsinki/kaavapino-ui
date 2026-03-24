@@ -11,7 +11,6 @@ import objectUtil from '../../utils/objectUtil';
 import PropTypes from 'prop-types'
 import './VisTimeline.scss'
 import { getFocusableElements } from '../project/projectModalUtils';
-import { init } from 'i18next';
 
 const TimelineModal = ({
   open,

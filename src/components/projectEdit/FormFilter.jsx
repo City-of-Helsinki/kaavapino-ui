@@ -155,16 +155,11 @@ const handleChange = (e) => {
     setCheckedItems({ ...checkedItems, [item]: isChecked });
 };
 
-const openModal = (isKeyboard=false, event=null) => {
-    if (isKeyboard && event) {
-        // Open modal on Enter or Space key press
-        if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            setIsOpen(true);
-        }
-    } else {
-        setIsOpen(true);
+const openModal = (event=null) => {
+    if (event?.key === 'Enter' || event?.key === ' ') {
+        event.preventDefault();
     }
+    setIsOpen(true);
 }
 
 const closeModal = () => {
@@ -225,7 +220,7 @@ if(tagArray.length > 0){
          role="button"
          key={`checkbox-${tag}-key`}
          id={`checkbox-${tag}`}
-         onClick={() => highlightTag(event,tag)}
+         onClick={(event) => highlightTag(event,tag)}
          aria-label={tag + ". Ota korostus käyttöön klikkaamalla painiketta."}
          >
          {tag}
@@ -269,7 +264,7 @@ return (
             {renderedTags}
         </div>
         <div className='right-container'>
-            <Button ref={openButtonRef} onMouseDown={() => openModal(false)} onKeyDown={(event) => openModal(true, event)} className="toggle-filters" variant="secondary" size="small" disabled={!showSection}>
+            <Button ref={openButtonRef} onMouseDown={() => openModal()} onKeyDown={(event) => openModal(event)} className="toggle-filters" variant="secondary" size="small" disabled={!showSection}>
                 Muokkaa suodattimia
             </Button>
         </div>

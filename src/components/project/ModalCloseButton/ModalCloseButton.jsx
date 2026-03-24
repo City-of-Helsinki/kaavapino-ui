@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { IconCross } from "hds-react";
+import { IconCross, Modal } from "hds-react";
 import './ModalCloseButton.scss';
+import PropTypes from 'prop-types';
 
 const ModalCloseButton = ({ onClose, id, className }) => {
     const { t } = useTranslation();
@@ -17,5 +18,11 @@ const ModalCloseButton = ({ onClose, id, className }) => {
         </button>
     );
 };
+
+ModalCloseButton.propTypes = {
+    onClose: PropTypes.func,
+    id: PropTypes.string,
+    className: PropTypes.string
+}
 
 export default ModalCloseButton;
