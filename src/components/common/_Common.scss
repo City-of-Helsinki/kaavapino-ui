@@ -949,7 +949,7 @@ header{
               color: $color-error;
             }
           }
-          li:hover{
+          li[class*="Select-module_highlighted"] {
             color: $color-white !important;
             background-color:$color-bus !important;
           }

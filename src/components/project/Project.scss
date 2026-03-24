@@ -36,7 +36,7 @@
         background-repeat: no-repeat;
         background-size: contain;
       }
-      li{
+      li:not([class*="Select-module_highlighted"]){
         .document-icon{
           background-image: url('../../assets/icons/document.svg');
         }
@@ -56,7 +56,7 @@
           background-image: url('../../assets/icons/trash-red.svg');
         }
       }
-      li:hover{
+      li:hover, li[class*="Select-module_highlighted"] {
         .document-icon{
           background-image: url('../../assets/icons/document-white.svg');
         }

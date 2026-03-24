@@ -22,6 +22,7 @@ import { updateDateTimeline,validateProjectTimetable,setValidatingTimetable } fr
 import { getVisibilityBoolName, vis_bool_group_map, getPhaseNameByVisBool, isDeadlineConfirmed } from '../../../utils/projectVisibilityUtils';
 import timeUtil from '../../../utils/timeUtil'
 import { shouldDispatchTimelineUpdate } from '../../../utils/timelineDispatchLogic'
+import { focusTrapOnTabPressed, getFocusableElements } from '../projectModalUtils';
 
 class EditProjectTimeTableModal extends Component {
   constructor(props) {
@@ -68,8 +69,18 @@ class EditProjectTimeTableModal extends Component {
     return all;
   };
 
+  handleKeyDown = (event) => {
+    if (document.getElementById("timeline-edit-side-panel")) {
+      focusTrapOnTabPressed(event, "timeline-edit-side-panel")
+    } else {
+      focusTrapOnTabPressed(event, 'edit-project-timetable-modal')
+    }
+  }
+
   componentDidMount() {
-    const { initialize, attributeData, deadlines, deadlineSections, disabledDates,lomapaivat } = this.props
+    const { initialize, attributeData, deadlines, deadlineSections, disabledDates,lomapaivat } = this.props;
+
+    document.addEventListener('keydown', this.handleKeyDown);
     initialize(attributeData)
    // Check if the key exists and its value is true
     if(attributeData && deadlines && deadlineSections && disabledDates && lomapaivat){
@@ -98,6 +109,10 @@ class EditProjectTimeTableModal extends Component {
       this.extractAttributes(deadlineSections, attributeData, unfilteredSectionAttributes);
       this.setState({unfilteredSectionAttributes})
     }
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleKeyDown);
   }
 
   componentDidUpdate(prevProps) {
@@ -1618,6 +1633,10 @@ class EditProjectTimeTableModal extends Component {
         closeOnDocumentClick={false}
         closeOnDimmerClick={false}
         className='modal-center-big'
+        id="edit-project-timetable-modal"
+        onMount={() => {
+          getFocusableElements("edit-project-timetable-modal")[0]?.focus();
+        }}
       >
         <Modal.Header><IconInfoCircle size="m" aria-hidden="true"/>
         <span className='header-title'>{t('deadlines.modify-timeline')}</span>
