@@ -503,8 +503,33 @@ export default function QuickNav({
 }
 
 QuickNav.propTypes = {
+  currentProject: PropTypes.object,
+  saveProjectBase: PropTypes.func,
+  handleCheck: PropTypes.func,
+  saving: PropTypes.bool,
+  isCurrentPhase: PropTypes.bool,
+  changePhase: PropTypes.func,
+  notLastPhase: PropTypes.bool,
+  phases: PropTypes.array,
+  switchDisplayedPhase: PropTypes.func,
+  saveProjectBasePayload: PropTypes.func,
+  setChecking: PropTypes.func,
+  hasMissingFields: PropTypes.bool,
+  isResponsible: PropTypes.bool,
+  isAdmin: PropTypes.bool,
   phase: PropTypes.number,
+  changeSection: PropTypes.func,
+  filterFieldsArray: PropTypes.array,
+  highlightedTag: PropTypes.string,
+  phasePrefix: PropTypes.string,
+  phaseTitle: PropTypes.string,
+  phaseStatus: PropTypes.string,
+  phaseColor: PropTypes.string,
+  showSections: PropTypes.func,
+  documents: PropTypes.array,
+  currentSchema: PropTypes.object,
   documentIndex: PropTypes.number,
   locationSearch: PropTypes.string,
-  currentSchema: PropTypes.object
+  isTheResponsiblePerson: PropTypes.bool,
+  showSection: PropTypes.bool
 }
