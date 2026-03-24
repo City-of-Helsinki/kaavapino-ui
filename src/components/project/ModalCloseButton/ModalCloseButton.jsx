@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { IconCross, Modal } from "hds-react";
+import { IconCross } from "hds-react";
 import './ModalCloseButton.scss';
 import PropTypes from 'prop-types';
 
