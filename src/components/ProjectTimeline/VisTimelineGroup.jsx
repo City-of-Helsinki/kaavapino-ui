@@ -158,8 +158,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const match = lautakuntaKey.match(/_(\d+)$/);
     const idx = match ? match[1] : "1";
     let normalizedPhase = phase;
-    if (normalizedPhase === "kaavaehdotus") normalizedPhase = "ehdotus";
-    if (normalizedPhase === "kaavaluonnos") normalizedPhase = "luonnos";
+    if (normalizedPhase === "ehdotus") normalizedPhase = "kaavaehdotus";
+    if (normalizedPhase === "luonnos") normalizedPhase = "kaavaluonnos";
     // periaatteet & tarkistettu_ehdotus stay as-is
     return idx === "1"
       ? `vahvista_${normalizedPhase}_lautakunnassa`
@@ -182,95 +182,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   }
 
   const canGroupBeAdded = (form_data, group_data) => {
-    const canEsillaoloBeAdded = (form_data, group_data, esillaoloKeys, lautakuntaKeys) => {
-      // 1. Check if max esillaolo count for this phase has been reached
-      const phase = getPhaseKey(group_data);
-      if (esillaoloKeys.length === 0) {
-        return { canAdd: false, nextEsillaolo: null, reason: "max" }
-      }
-      let latestEsillaolo = null;
-      let nextEsillaolo = null;
-      // Keys must be in order (which they are in getVisBoolsByPhaseName)
-      for (let key of esillaoloKeys) {
-        if (form_data[key]) {
-          latestEsillaolo = key;
-        } else if (!nextEsillaolo){
-          nextEsillaolo = key;
-        }
-      }
-      if (!nextEsillaolo) {
-        return { canAdd: false, nextEsillaolo: null, reason: "max"}
-      }
-      
-      // 2. Check if previous esillaolo is confirmed (if not the first one)
-      if (latestEsillaolo) {
-        const confirmKey = getConfirmationKeyForEsillaoloKey(phase, latestEsillaolo);
-        if (form_data[confirmKey] !== true) {
-          return { canAdd: false, nextEsillaolo, reason: "noconfirmation" }
-        }
-      }
-
-      // 3. Check if next element group is already confirmed (prevent add if so)
-      if (phase === "ehdotus") {
-        // Special case: in ehdotus phase lautakunta comes before nahtavillaolo, so no checks needed here
-        return { canAdd: true, nextEsillaolo, reason: "" };
-      }
-
-      if (lautakuntaKeys.some(key => {
-        const confirmKey = getConfirmationKeyForLautakuntaKey(phase, key);
-        return form_data[confirmKey] === true
-      })) {
-        return { canAdd: false, nextEsillaolo, reason: "lautakuntaConfirmed" };
-      }
-      return { canAdd: true, nextEsillaolo, reason: "" };
-    }
-    const canLautakuntaBeAdded = (form_data, group_data, esillaoloKeys, lautakuntaKeys) => {
-      // 1. Check if max lautakunta count for this phase has been reached
-      const phase = getPhaseKey(group_data);
-      if (lautakuntaKeys.length === 0) {
-        return { canAdd: false, nextLautakunta: null, reason: "max" }
-      }
-      let latestLautakunta = null;
-      let nextLautakunta = null;
-      // Keys must be in order (which they are in getVisBoolsByPhaseName)
-      for (let key of lautakuntaKeys) {
-        if (form_data[key]) {
-          latestLautakunta = key;
-        } else if (!nextLautakunta){
-          nextLautakunta = key;
-        }
-      }
-      if (!nextLautakunta) {
-        return { canAdd: false, nextLautakunta: null, reason: "max"}
-      }
-
-      // 2. Check if previous lautakunta is confirmed and has correct paatos value (if not the first one)
-      if (latestLautakunta) {
-        const confirmKey = getConfirmationKeyForLautakuntaKey(phase, latestLautakunta);
-        if (form_data[confirmKey] !== true) {
-          return { canAdd: false, nextLautakunta, reason: "noconfirmation" }
-        }
-        const paatosBase= getLautakuntaAndPaatosBase(phase)[1];
-        let latestIndex = Number(latestLautakunta.slice(latestLautakunta.lastIndexOf('_') + 1));
-        latestIndex = Number.isNaN(latestIndex) ? 1 : latestIndex;
-        // Build the päätös key for the latest lautakunta
-        const paatosKey = latestIndex === 1
-          ? paatosBase
-          : `${paatosBase}_${latestIndex}`;
-        const paatos = form_data[paatosKey];
-        if (paatos !== "palautettu_uudelleen_valmisteltavaksi" && paatos !== "asia_jai_poydalle") {
-          return { canAdd: false, nextLautakunta, reason: "palautettu_tai_jai_poydalle" }
-        }
-      }
-
-      // 3. Special case for ehdotus: Check if confirmed nahtavillaolo exists (prevent lautakunta add if so)
-      if (phase === "ehdotus") {
-        if (esillaoloKeys.some(key => form_data[key] === true)) {
-          return { canAdd: false, nextLautakunta, reason: "nahtavillaolo vahvistettu." };
-        }
-      }
-      return { canAdd: true, nextLautakunta, reason: "" };
-    }
     const phase = getPhaseKey(group_data);
     const attributeEsillaoloKeys = getVisBoolsByPhaseName(phase).filter(
       (bool_name) => bool_name.includes('esillaolo') || bool_name.includes('nahtaville')
@@ -290,7 +201,99 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     };
   }
 
+  const canEsillaoloBeAdded = (form_data, group_data, esillaoloKeys, lautakuntaKeys) => {
+    // 1. Check if max esillaolo count for this phase has been reached
+    const phase = getPhaseKey(group_data);
+    if (esillaoloKeys.length === 0) {
+      return { canAdd: false, nextEsillaolo: null, reason: "max" }
+    }
+    let latestEsillaolo = null;
+    let nextEsillaolo = null;
+    for (let key of esillaoloKeys) {
+      if (form_data[key]) {
+        latestEsillaolo = key;
+      } else if (!nextEsillaolo){
+        nextEsillaolo = key;
+      }
+    }
+    if (!nextEsillaolo) {
+      return { canAdd: false, nextEsillaolo: null, reason: "max"}
+    }
+    
+    // 2. Check if previous esillaolo is confirmed (if not the first one)
+    if (latestEsillaolo) {
+      const confirmKey = getConfirmationKeyForEsillaoloKey(phase, latestEsillaolo);
+      if (form_data[confirmKey] !== true) {
+        return { canAdd: false, nextEsillaolo, reason: "noconfirmation" }
+      }
+    }
 
+    // 3. Check if next element group is already confirmed (prevent add if so)
+    if (phase === "ehdotus") {
+      // Special case: in ehdotus phase lautakunta comes before nahtavillaolo, so no checks needed here
+      return { canAdd: true, nextEsillaolo, reason: "" };
+    }
+
+    if (lautakuntaKeys.some(key => {
+
+      const confirmKey = getConfirmationKeyForLautakuntaKey(phase, key);
+      console.log("lautakunta", key, "confirmKey", confirmKey, "form_data[confirmKey]", form_data[confirmKey]);
+      return form_data[confirmKey] === true
+    })) {
+      return { canAdd: false, nextEsillaolo, reason: "lautakuntaConfirmed" };
+    }
+    return { canAdd: true, nextEsillaolo, reason: "" };
+  }
+  const canLautakuntaBeAdded = (form_data, group_data, esillaoloKeys, lautakuntaKeys) => {
+    // 1. Check if max lautakunta count for this phase has been reached
+    const phase = getPhaseKey(group_data);
+    if (lautakuntaKeys.length === 0) {
+      return { canAdd: false, nextLautakunta: null, reason: "max" }
+    }
+    let latestLautakunta = null;
+    let nextLautakunta = null;
+    // Keys must be in order (which they are in getVisBoolsByPhaseName)
+    for (let key of lautakuntaKeys) {
+      if (form_data[key]) {
+        latestLautakunta = key;
+      } else if (!nextLautakunta){
+        nextLautakunta = key;
+      }
+    }
+    if (!nextLautakunta) {
+      return { canAdd: false, nextLautakunta: null, reason: "max"}
+    }
+
+    // 2. Check if previous lautakunta is confirmed and has correct paatos value (if not the first one)
+    if (latestLautakunta) {
+      const confirmKey = getConfirmationKeyForLautakuntaKey(phase, latestLautakunta);
+      if (form_data[confirmKey] !== true) {
+        return { canAdd: false, nextLautakunta, reason: "noconfirmation" }
+      }
+      const paatosBase= getLautakuntaAndPaatosBase(phase)[1];
+      let latestIndex = Number(latestLautakunta.slice(latestLautakunta.lastIndexOf('_') + 1));
+      latestIndex = Number.isNaN(latestIndex) ? 1 : latestIndex;
+      // Build the päätös key for the latest lautakunta
+      const paatosKey = latestIndex === 1
+        ? paatosBase
+        : `${paatosBase}_${latestIndex}`;
+      const paatos = form_data[paatosKey];
+      if (paatos !== "palautettu_uudelleen_valmisteltavaksi" && paatos !== "asia_jai_poydalle") {
+        return { canAdd: false, nextLautakunta, reason: "palautettu_tai_jai_poydalle" }
+      }
+    }
+
+    // 3. Special case for ehdotus: Check if confirmed nahtavillaolo exists (prevent lautakunta add if so)
+    if (phase === "ehdotus") {
+      if (esillaoloKeys.some(key => {
+        const confirmKey = getConfirmationKeyForEsillaoloKey(phase, key);
+        return form_data[confirmKey] === true;
+      })) {
+        return { canAdd: false, nextLautakunta, reason: "nahtavillaolo vahvistettu." };
+      }
+    }
+    return { canAdd: true, nextLautakunta, reason: "" };
+  }
 
   const handleAddButtonClick = (visValRef, data, event) => {
     const { canAddEsillaolo, nextEsillaolo, canAddLautakunta, nextLautakunta, esillaoloReason, lautakuntaReason } = canGroupBeAdded(visValRef, data)
