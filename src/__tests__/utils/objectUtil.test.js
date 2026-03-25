@@ -3,7 +3,7 @@ import objectUtil from '../../utils/objectUtil';
 import mockData from './checkForDecreasingValues_test_data.js';
 
 // Helpers to reduce duplication in checkForDecreasingValues tests
-const cloneTestArr = () => JSON.parse(JSON.stringify(mockData.decreasing_test_arr));
+const cloneTestArr = () => structuredClone(mockData.decreasing_test_arr);
 const setFieldValue = (arr, field, value) => {
     const index = arr.findIndex(item => item.key === field);
     if (index !== -1) arr[index].value = value;
