@@ -237,9 +237,16 @@ describe("Test ObjectUtil utility functions", () => {
             modified_test_arr[modified_test_arr.findIndex(item => item.key === field)].value = movedDate;
             // milloin_oas_esillaolo_paattyy is moved to 2027-02-05 (future)
             const original = JSON.parse(JSON.stringify(modified_test_arr));
-            const result = objectUtil.checkForDecreasingValues(
-                modified_test_arr, isAdd, field, mockData.test_disabledDates, oldDate, movedDate, moveToPast, projectSize
-            );
+            const result = objectUtil.checkForDecreasingValues({
+                arr: modified_test_arr,
+                isAdd,
+                field,
+                disabledDates: mockData.test_disabledDates,
+                oldDate,
+                movedDate,
+                moveToPast,
+                projectSize
+            });
             expect(result.length).toEqual(mockData.decreasing_test_arr.length);
 
             for (const item of result) {
@@ -283,9 +290,16 @@ describe("Test ObjectUtil utility functions", () => {
             const projectSize = "XL";
             modified_test_arr[modified_test_arr.findIndex(item => item.key === field)].value = movedDate;
             const original = JSON.parse(JSON.stringify(modified_test_arr));
-            const result = objectUtil.checkForDecreasingValues(
-                modified_test_arr, isAdd, field, mockData.test_disabledDates, oldDate, movedDate, moveToPast, projectSize
-            );
+            const result = objectUtil.checkForDecreasingValues({
+                arr: modified_test_arr,
+                isAdd,
+                field,
+                disabledDates: mockData.test_disabledDates,
+                oldDate,
+                movedDate,
+                moveToPast,
+                projectSize
+            });
             expect(result.length).toEqual(mockData.decreasing_test_arr.length);
             for (const item of result) {
                 if (item.order && item.order < originalField.order) {
@@ -322,9 +336,16 @@ describe("Test ObjectUtil utility functions", () => {
             const projectSize = "XL";
             modified_test_arr[modified_test_arr.findIndex(item => item.key === field)].value = movedDate;
             const original = JSON.parse(JSON.stringify(modified_test_arr));
-            const result = objectUtil.checkForDecreasingValues(
-                modified_test_arr, isAdd, field, mockData.test_disabledDates, oldDate, movedDate, moveToPast, projectSize
-            );
+            const result = objectUtil.checkForDecreasingValues({
+                arr: modified_test_arr,
+                isAdd,
+                field,
+                disabledDates: mockData.test_disabledDates,
+                oldDate,
+                movedDate,
+                moveToPast,
+                projectSize
+            });
             for (const item of result) {
                 if (item.order && item.order < originalField.order && item.key !== "ehdotus_kylk_aineiston_maaraaika") {
                     const originalItem = original.find(orig => orig.key === item.key);
@@ -366,9 +387,16 @@ describe("Test ObjectUtil utility functions", () => {
             const projectSize = "XL";
             modified_test_arr[modified_test_arr.findIndex(item => item.key === field)].value = movedDate;
             const original = JSON.parse(JSON.stringify(modified_test_arr));
-            const result = objectUtil.checkForDecreasingValues(
-                modified_test_arr, isAdd, field, mockData.test_disabledDates, oldDate, movedDate, moveToPast, projectSize
-            );
+            const result = objectUtil.checkForDecreasingValues({
+                arr: modified_test_arr,
+                isAdd,
+                field,
+                disabledDates: mockData.test_disabledDates,
+                oldDate,
+                movedDate,
+                moveToPast,
+                projectSize
+            });
             for (const item of result) {
                 if (item.order && item.order < originalField.order) {
                     const originalItem = original.find(orig => orig.key === item.key);
@@ -694,9 +722,16 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
             const movedDate = newDate;
             const projectSize = "XL";
 
-            const result = objectUtil.checkForDecreasingValues(
-                arr, isAdd, field, mockData.test_disabledDates, oldDate, movedDate, false, projectSize
-            );
+            const result = objectUtil.checkForDecreasingValues({
+                arr,
+                isAdd,
+                field,
+                disabledDates: mockData.test_disabledDates,
+                oldDate,
+                movedDate,
+                moveToPast: false,
+                projectSize
+            });
 
             // All items after the added group should have valid dates
             const resultMaaraaika = result.find(i => i.key === "periaatteet_esillaolo_aineiston_maaraaika_2");
@@ -731,9 +766,16 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
             const isAdd = true;
             const projectSize = "XL";
 
-            const result = objectUtil.checkForDecreasingValues(
-                arr, isAdd, field, mockData.test_disabledDates, oldMaaraaikaDate, newDate, false, projectSize
-            );
+            const result = objectUtil.checkForDecreasingValues({
+                arr,
+                isAdd,
+                field,
+                disabledDates: mockData.test_disabledDates,
+                oldDate: oldMaaraaikaDate,
+                movedDate: newDate,
+                moveToPast: false,
+                projectSize
+            });
 
             // Items before the re-added group should be untouched
             const kaynnistysItem = result.find(i => i.key === "projektin_kaynnistys_pvm");
@@ -768,9 +810,16 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
             const isAdd = true;
             const projectSize = "XL";
 
-            const result = objectUtil.checkForDecreasingValues(
-                arr, isAdd, field, mockData.test_disabledDates, null, newDate, false, projectSize
-            );
+            const result = objectUtil.checkForDecreasingValues({
+                arr,
+                isAdd,
+                field,
+                disabledDates: mockData.test_disabledDates,
+                oldDate: null,
+                movedDate: newDate,
+                moveToPast: false,
+                projectSize
+            });
 
             const resultLautakunta = result.find(i => i.key === "milloin_periaatteet_lautakunnassa");
 
@@ -795,10 +844,16 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
                 const newDate = "2028-01-11"; // A Tuesday
                 arr[lautakunta1Index].value = newDate;
 
-                const result = objectUtil.checkForDecreasingValues(
-                    arr, false, arr[lautakunta1Index].key, mockData.test_disabledDates,
-                    "2027-06-15", newDate, false, "XL"
-                );
+                const result = objectUtil.checkForDecreasingValues({
+                    arr,
+                    isAdd: false,
+                    field: arr[lautakunta1Index].key,
+                    disabledDates: mockData.test_disabledDates,
+                    oldDate: "2027-06-15",
+                    movedDate: newDate,
+                    moveToPast: false,
+                    projectSize: "XL"
+                });
 
                 const resultLautakunta2 = result.find(i => i.key.includes("lautakunnassa_2"));
                 if (resultLautakunta2?.value) {
@@ -828,10 +883,16 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
                 const newPeriaatteetPaattyy = "2027-12-01";
                 arr[periaatteetPaattyyIndex].value = newPeriaatteetPaattyy;
 
-                const result = objectUtil.checkForDecreasingValues(
-                    arr, false, "periaatteetvaihe_paattyy_pvm", mockData.test_disabledDates,
-                    "2026-08-01", newPeriaatteetPaattyy, false, "XL"
-                );
+                const result = objectUtil.checkForDecreasingValues({
+                    arr,
+                    isAdd: false,
+                    field: "periaatteetvaihe_paattyy_pvm",
+                    disabledDates: mockData.test_disabledDates,
+                    oldDate: "2026-08-01",
+                    movedDate: newPeriaatteetPaattyy,
+                    moveToPast: false,
+                    projectSize: "XL"
+                });
 
                 const resultOasAlkaa = result.find(i => i.key === "oasvaihe_alkaa_pvm");
 
@@ -853,9 +914,16 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
                 const newDate = "2027-10-01"; // Far in the future
                 arr[fieldIndex].value = newDate;
 
-                const result = objectUtil.checkForDecreasingValues(
-                    arr, true, field, mockData.test_disabledDates, null, newDate, false, "XL"
-                );
+                const result = objectUtil.checkForDecreasingValues({
+                    arr,
+                    isAdd: true,
+                    field,
+                    disabledDates: mockData.test_disabledDates,
+                    oldDate: null,
+                    movedDate: newDate,
+                    moveToPast: false,
+                    projectSize: "XL"
+                });
 
                 // Find luonnos phase start
                 const luonnosAlkaa = result.find(i => i.key === "luonnosvaihe_alkaa_pvm");
@@ -880,9 +948,16 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
             const addIndex = arr.findIndex(i => i.key === addField);
             if (addIndex !== -1) arr[addIndex].value = addDate;
 
-            const afterAdd = objectUtil.checkForDecreasingValues(
-                arr, true, addField, mockData.test_disabledDates, null, addDate, false, "XL"
-            );
+            const afterAdd = objectUtil.checkForDecreasingValues({
+                arr,
+                isAdd: true,
+                field: addField,
+                disabledDates: mockData.test_disabledDates,
+                oldDate: null,
+                movedDate: addDate,
+                moveToPast: false,
+                projectSize: "XL"
+            });
 
             // Then: Modify a date in the added group
             const modifyField = "milloin_periaatteet_esillaolo_paattyy_2";
@@ -895,9 +970,16 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
                 const newValueStr = newValue.toISOString().split('T')[0];
                 afterAdd[modifyIndex].value = newValueStr;
 
-                const afterModify = objectUtil.checkForDecreasingValues(
-                    afterAdd, false, modifyField, mockData.test_disabledDates, oldValue, newValueStr, false, "XL"
-                );
+                const afterModify = objectUtil.checkForDecreasingValues({
+                    arr: afterAdd,
+                    isAdd: false,
+                    field: modifyField,
+                    disabledDates: mockData.test_disabledDates,
+                    oldDate: oldValue,
+                    movedDate: newValueStr,
+                    moveToPast: false,
+                    projectSize: "XL"
+                });
 
                 // Find the modified field's order
                 const modifiedItem = afterModify.find(i => i.key === modifyField);
@@ -940,9 +1022,16 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
                 const oldDate = arr[phaseStartIndex].value;
                 arr[phaseStartIndex].value = newDate;
 
-                const result = objectUtil.checkForDecreasingValues(
-                    arr, false, phaseStartKey, mockData.test_disabledDates, oldDate, newDate, false, "XL"
-                );
+                const result = objectUtil.checkForDecreasingValues({
+                    arr,
+                    isAdd: false,
+                    field: phaseStartKey,
+                    disabledDates: mockData.test_disabledDates,
+                    oldDate,
+                    movedDate: newDate,
+                    moveToPast: false,
+                    projectSize: "XL"
+                });
 
                 expect(Array.isArray(result)).toBe(true);
                 expect(result.length).toBeGreaterThan(0);
@@ -972,16 +1061,16 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
             const kylkKey = "tarkistettu_ehdotus_kylk_maaraaika";
             const moveToPast = true;
             
-            const result = objectUtil.checkForDecreasingValues(
-                arr, 
-                false, // not adding
-                kylkKey, 
-                mockData.test_disabledDates, 
-                oldDate, 
-                newDate, 
-                moveToPast, 
-                "M"
-            );
+            const result = objectUtil.checkForDecreasingValues({
+                arr,
+                isAdd: false,
+                field: kylkKey,
+                disabledDates: mockData.test_disabledDates,
+                oldDate,
+                movedDate: newDate,
+                moveToPast,
+                projectSize: "M"
+            });
             
             const resultPhaseStart = result.find(i => i.key === "tarkistettuehdotusvaihe_alkaa_pvm");
             const resultMaaraaika = result.find(i => i.key === kylkKey);
@@ -1014,16 +1103,16 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
             const oldDate = "2026-06-09";
             const moveToPast = false;
             
-            const result = objectUtil.checkForDecreasingValues(
-                arr, 
-                false, 
-                kylkKey, 
-                mockData.test_disabledDates, 
-                oldDate, 
-                newDate, 
-                moveToPast, 
-                "M"
-            );
+            const result = objectUtil.checkForDecreasingValues({
+                arr,
+                isAdd: false,
+                field: kylkKey,
+                disabledDates: mockData.test_disabledDates,
+                oldDate,
+                movedDate: newDate,
+                moveToPast,
+                projectSize: "M"
+            });
             
             const resultPhaseStart = result.find(i => i.key === "tarkistettuehdotusvaihe_alkaa_pvm");
             

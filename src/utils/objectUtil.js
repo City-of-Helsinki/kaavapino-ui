@@ -317,7 +317,7 @@ const increasePhaseValues = (arr) => {
   return result
 }
 
-const checkForDecreasingValues = (arr, isAdd, field, disabledDates, oldDate, movedDate, moveToPast, projectSize, attributeData, deadlineObjects = []) => {
+const checkForDecreasingValues = ({ arr, isAdd, field, disabledDates, oldDate, movedDate, moveToPast, projectSize, attributeData, deadlineObjects = [] }) => {
 
 
   // Lock logic: do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags

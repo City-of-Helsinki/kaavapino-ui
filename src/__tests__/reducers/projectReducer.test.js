@@ -57,7 +57,7 @@ vi.mock('../../utils/objectUtil', () => ({
         .map(([key, value]) => ({ key, value }))
     ),
     compareAndUpdateArrays: vi.fn((orig, updated) => updated),
-    checkForDecreasingValues: vi.fn((arr) => arr),
+    checkForDecreasingValues: vi.fn(({ arr }) => arr),
     updateOriginalObject: vi.fn((obj, arr) => {
       arr.forEach(({ key, value }) => { obj[key] = value; });
     }),
