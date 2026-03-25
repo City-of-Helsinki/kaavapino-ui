@@ -366,8 +366,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
         input.onChange('', input.name);
         if (custom.isFloorAreaForm) {
           //Edit floor area model object data with current value and dispatch change for form total value recalculation
-          let newObject = custom.floorValue;
-          newObject[input.name] = '';
+          const newObject = { ...custom.floorValue, [input.name]: '' };
           dispatch(updateFloorValues(newObject));
         }
         return;
@@ -397,8 +396,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     if (custom.type === 'number' || isConnectedOrAllowEdits) {
       input.onChange(value, input.name);
       if (custom.isFloorAreaForm) {
-        let newObject = custom.floorValue;
-        newObject[input.name] = value === '' ? '' : Number(value);
+        const newObject = { ...custom.floorValue, [input.name]: value === '' ? '' : Number(value) };
         dispatch(updateFloorValues(newObject));
       }
     }
