@@ -28,7 +28,7 @@ const AutofillInputCalculations = ({
   const formValues = useSelector(getFormValues(formName))
   const editFormValues = useSelector(getFormValues(EDIT_PROJECT_FORM))
   const updateFloorValue = useSelector(state => updateFloorValuesSelector(state))
-  const value = (formValues && formValues[name]) || (editFormValues && editFormValues[name]) || null
+  const value = formValues?.[name] ?? editFormValues?.[name] ?? null
   const values = formValues ? formValues : editFormValues
   let calculatedTotal = 0
 
