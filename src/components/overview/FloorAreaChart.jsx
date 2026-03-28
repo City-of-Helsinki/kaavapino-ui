@@ -323,7 +323,7 @@ function FloorAreaChart({
       />
 
       <div>
-        {!currentChartData && <LoadingSpinner className="center" />}
+        {!currentChartData && <LoadingSpinner className="center" theme={{ '--spinner-color': '#0000BF' }} />}
         {currentChartData && (
           <div>
             <div className="total-floor-area">

@@ -38,7 +38,7 @@ function* handleErrorSaga({ payload }) {
       )
     } else {
       if (payload?.config?.url === "/v1/attributes/unlock/" || payload?.config?.url === "/v1/attributes/lock/") {
-        console.log("lock error")
+        // Lock errors are shown inline, not as toasters
       }
       else {
         yield put(

@@ -4,16 +4,19 @@ import inputUtils from '../../utils/inputUtils'
 import { TextInput, NumberInput } from 'hds-react'
 import { useDispatch, useSelector } from 'react-redux'
 import {updateFloorValues,formErrorList} from '../../actions/projectActions'
-import {lockedSelector,lastModifiedSelector,pollSelector,lastSavedSelector,savingSelector } from '../../selectors/projectSelector'
+import {lockedSelector,lastModifiedSelector,pollSelector,lastSavedSelector,savingSelector,pollingProjectsSelector } from '../../selectors/projectSelector'
 import moment from 'moment'
 import { useTranslation } from 'react-i18next'
 import RollingInfo from '../input/RollingInfo.jsx'
 import NetworkErrorState from './NetworkErrorState.jsx'
 import {useFocus} from '../../hooks/useRefFocus'
 import { useIsMount } from '../../hooks/IsMounted'
+import { useFieldPassivation } from '../../hooks/useFieldPassivation'
 import './Input.scss'
 
-const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
+const CustomInput = ({ fieldData, input, meta, ...custom }) => {
+
+  const { error } = meta;
 
   // destructure props to avoid spreading custom props onto the DOM element
   const {
@@ -46,13 +49,29 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
   const lockedStatus = useSelector(state => lockedSelector(state))
   const connection = useSelector(state => pollSelector(state))
   const lastSaved = useSelector(state => lastSavedSelector(state))
-  const saving =  useSelector(state => savingSelector(state))
+  const saving = useSelector(state => savingSelector(state))
+  const pollingProjects = useSelector(pollingProjectsSelector)
 
   const isMount = useIsMount();
   const [inputRef, setInputFocus] = useFocus()
   const oldValueRef = useRef('');
   const { t } = useTranslation()
   const dispatch = useDispatch()
+  
+  /**
+   * Check if this field has an active network error stored in localStorage
+   */
+  const hasActiveNetworkError = () => {
+    const wasNetworkErrorKey = `wasNetworkError_${input.name}`;
+    try {
+      return localStorage.getItem(wasNetworkErrorKey) === 'true';
+    } catch (e) {
+      return false;
+    }
+  };
+  
+  // Check if other fields have validation errors OR connection errors (UX60.2.5 - passivate fields when error exists)
+  const shouldDisableForErrors = useFieldPassivation(input.name, { formName: meta.form })
 
   // Needed for using lockedStatus as useEffect dependency
   const lockedStatusJsonString = JSON.stringify(lockedStatus);
@@ -82,15 +101,30 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     //!ismount skips initial render
     if(!isMount){
       //Adds field to error list that don't trigger toastr right away (too many chars,empty field etc) and shows them when trying to save
+      // Add to error list immediately when validation fails (enables field passivation)
       if(hasError){
         dispatch(formErrorList(true,input.name))
       }
-      //removes field from error list
-      else{
+      //removes field from error list (can remove even if not touched)
+      else if(!hasError){
         dispatch(formErrorList(false,input.name))
       }
     }
   }, [hasError])
+
+  // Handle error list for rolling info fields (when field is closed but has network errors)
+  useEffect(() => {
+    if(!isMount && custom.rollingInfo && !editField){
+      // When rolling info field is closed and has network error
+      const hasNetworkError = hasActiveNetworkError();
+      
+      if(hasNetworkError){
+        dispatch(formErrorList(true, input.name))
+      } else {
+        dispatch(formErrorList(false, input.name))
+      }
+    }
+  }, [custom.rollingInfo, editField, isMount]);
 
   useEffect(() => {
     if(lastSaved?.status === "error"){
@@ -101,10 +135,14 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
 
   useEffect(() => {
     // Reset isThisFieldSaving when saving is complete for this field
-    if (isThisFieldSaving && (!saving || lastModified !== input.name)) {
+    // Check both lastModified (old behavior) and lastSaved.status (new behavior for timing sync)
+    const savingComplete = !saving || lastModified !== input.name;
+    const savedSuccessfully = lastSaved?.status === "success";
+    
+    if (isThisFieldSaving && (savingComplete || savedSuccessfully)) {
       setIsThisFieldSaving(false);
     }
-  }, [saving, lastModified, input.name, isThisFieldSaving])
+  }, [saving, lastModified, input.name, isThisFieldSaving, lastSaved?.status])
 
   useEffect(() => {
     //Chekcs that locked status has more data then inital empty object
@@ -195,8 +233,9 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
       custom.onFocus(input.name);
     }
 
+    // Only prevent editing on network errors (not field validation errors)
     if(lastSaved?.status === "error"){
-      //Prevent focus and editing to field if not locked
+      //Prevent focus and editing to field if there's a network error
       document.activeElement.blur()
     }
   }
@@ -244,6 +283,7 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
       //Send identifier data to change styles from FormField.js
       custom.lockField(false,false,identifier)
     }
+    
     if (typeof custom.handleUnlockField === 'function' && !custom.insideFieldset && 
       lockedStatus.lockData.attribute_lock.owner) {
       //Sent a call to unlock field to backend
@@ -276,14 +316,15 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
             }
           }
           else{
-            localStorage.setItem("changedValues", input.name);
-            setIsThisFieldSaving(true);
-            custom.onBlur(input.name);
-            oldValueRef.current = event.target.value;
-            
-            // Check for validation errors first
+            // Check for validation errors BEFORE attempting to save
             let validationError = false;
-            if(custom.regex){
+            
+            // Check character limit first (like RichTextEditor)
+            const maxLength = custom?.characterLimit;
+            if(maxLength && maxLength > 0 && event.target.value.length > maxLength) {
+              validationError = true;
+              setHasError(true);
+            } else if(custom.regex){
               const regex = new RegExp(custom.regex);
               validationError = event.target.value !== "" && !regex.test(event.target.value);
               setHasError(validationError);
@@ -293,13 +334,21 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
               setHasError(validationError);
             }
             
-            // Only set readonly if there's no validation error
-            if(!custom.insideFieldset){
-              if(!validationError){
+            // Only proceed with save if there's no validation error
+            if(!validationError){
+              localStorage.setItem("changedValues", input.name);
+              setIsThisFieldSaving(true);
+              custom.onBlur(input.name);
+              oldValueRef.current = event.target.value;
+              
+              // Only set readonly if there's no validation error
+              if(!custom.insideFieldset){
                 const readOnlyValue = !custom?.isProjectTimetableEdit
                 setReadOnly({name:input.name,read:readOnlyValue})
-              } else {
-                // Keep field editable when there's a validation error
+              }
+            } else {
+              // Keep field editable when there's a validation error
+              if(!custom.insideFieldset){
                 setReadOnly({name:input.name,read:false})
               }
             }
@@ -323,6 +372,20 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
     // Don't overwrite if this field is currently saving or has focus
     if(isThisFieldSaving || document.activeElement === inputRef.current){
       return;
+    }
+    
+    // Preserve unsaved excess data when maxLength exceeded + network error
+    const maxLength = custom?.characterLimit;
+    const exceedsMaxLength = maxLength && maxLength > 0 && input.value?.length > maxLength;
+    // Include field_error - backend may return validation error after network recovery
+    const hasNetworkError = lastSaved?.status === 'error' || lastSaved?.status === 'connection_restored' || lastSaved?.status === 'field_error';
+    // Check if THIS field is the one with error (field-specific guard)
+    const isThisFieldError = lastSaved?.fields?.includes(input.name);
+    
+    // Prevent data loss: if user has excess characters AND this field has network/validation error,
+    // do NOT overwrite with backend value (even if backend sends last saved value)
+    if (exceedsMaxLength && hasNetworkError && isThisFieldError) {
+      return; // Don't overwrite user's data - preserve excess characters
     }
     
     let name = input.name;
@@ -388,8 +451,19 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
         setHasError(!isValid);
       }
     } else if(custom.type !== 'number' || custom.isFloorAreaForm) {
-      // For other types, only error if empty and required
-      setHasError(!value?.trim() && !!custom?.fieldData?.isRequired);
+      // Check max length during typing (enables immediate field passivation)
+      // Support character_limit for consistency with RichTextEditor
+      const maxLength = custom?.characterLimit;
+      const exceedsMaxLength = maxLength && maxLength > 0 && value.length > maxLength;
+      
+      if(exceedsMaxLength) {
+        setHasError(true);
+      } else if(!value?.trim() && !!custom?.fieldData?.isRequired) {
+        // For other types, error if empty and required
+        setHasError(true);
+      } else {
+        setHasError(false);
+      }
     }
     
     // Always update the value for number inputs to ensure UI is responsive
@@ -405,6 +479,10 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
 
 
   const editRollingField = () => {
+    // Don't open field if other fields have errors (passivation active)
+    if (shouldDisableForErrors) {
+      return;
+    }
     setEditField(true)
     setTimeout(function(){
       setInputFocus()
@@ -423,31 +501,51 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
       type={"input"}
       phaseIsClosed={custom.phaseIsClosed}
       factaInfo={custom?.fieldData?.assistive_text}
+      shouldDisableForErrors={shouldDisableForErrors}
     />
   );
 
   // Renders the standard text input with error handling and loading spinner
   const renderTextInput = () => {
-    const errorString = custom.customError || (custom.type === 'number' ? t('project.error-input-int') : t('project.error'));
-    const blurredClass = isThisFieldSaving ? ' blurred' : '';
+    // Determine appropriate error message
+    const maxLength = custom?.characterLimit;
+    const exceedsMaxLength = maxLength && maxLength > 0 && input.value && input.value.length > maxLength;
+    const errorString = custom.customError || 
+      (exceedsMaxLength ? t('project.charsover') : 
+        (custom.type === 'number' ? t('project.error-input-int') : t('project.error')));
+    // Check if THIS field has network error (network down or lock error)
+    // DO NOT include field_error - those are backend validation errors and user must be able to fix them!
+    const isThisFieldNetworkError = (lastSaved?.status === 'error' || lastSaved?.status === 'connection_restored') && 
+      lastSaved?.fields?.includes(input.name);
+    
+    // Apply passivation (blurred, disabled) when network error + character limit exceeded
+    const shouldPassivate = isThisFieldNetworkError && exceedsMaxLength;
+    
+    const blurredClass = (isThisFieldSaving || isThisFieldNetworkError || shouldPassivate) ? ' blurred' : '';
+    const hasErrorClass = (inputUtils.hasError(error) || hasError) ? ' error' : '';
+    const networkErrorClass = isThisFieldNetworkError ? ' has-network-error' : '';
+    
+    // Check if there's a validation error (INCLUDING character limit exceeded)
+    const hasValidationError = exceedsMaxLength || inputUtils.hasError(error) || hasError;
+    
     return (
-      <div className={`${custom.disabled || (!inputUtils.hasError(error) && !hasError) ? "text-input" : "text-input " + t('project.error')}${custom.type === 'number' ? ' number-input' : ''}${blurredClass}`}>
+      <div className={`text-input${custom.type === 'number' ? ' number-input' : ''}${blurredClass}${hasErrorClass}${networkErrorClass}`}>
         {custom.type === 'number' ? (
           <NumberInput
             ref={inputRef}
             aria-label={input.name}
-            error={inputUtils.hasError(error) || hasError}
-            errorText={custom.disabled || (!inputUtils.hasError(error) && !hasError) ? "" : errorString}
+            error={hasValidationError ? true : undefined}
+            errorText=""
             fluid="true"
             {...input}
             {...restCustom}
             min={custom.isFloorAreaForm ? 0 : undefined}
             step={custom.isFloorAreaForm ? null : 1}
-            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled || isThisFieldSaving}
+            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled || isThisFieldSaving || shouldDisableForErrors || isThisFieldNetworkError || shouldPassivate}
             onChange={(event) => { handleInputChange(event, readonly.read) }}
             onBlur={(event) => { handleBlur(event, readonly.read) }}
             onFocus={() => { handleFocus() }}
-            readOnly={readonly.read || lastSaved?.status === "error"}
+            readOnly={readonly.read || lastSaved?.status === "error" || shouldPassivate}
             minusStepButtonAriaLabel="Vähennä yhdellä"
             plusStepButtonAriaLabel="Lisää yhdellä"
           />
@@ -455,20 +553,25 @@ const CustomInput = ({ fieldData, input, meta: { error }, ...custom }) => {
           <TextInput
             ref={inputRef}
             aria-label={input.name}
-            error={inputUtils.hasError(error) || hasError}
-            errorText={custom.disabled || (!inputUtils.hasError(error) && !hasError) ? "" : errorString}
+            error={hasValidationError ? true : undefined}
+            errorText=""
             fluid="true"
             {...input}
             {...restCustom}
-            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled}
+            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled || isThisFieldSaving || shouldDisableForErrors || isThisFieldNetworkError || shouldPassivate}
             onChange={(event) => { handleInputChange(event, readonly.read) }}
             onBlur={(event) => { handleBlur(event, readonly.read) }}
             onFocus={() => { handleFocus() }}
-            readOnly={readonly.read || lastSaved?.status === "error"}
+            readOnly={readonly.read || lastSaved?.status === "error" || shouldPassivate}
             id={fieldData?.id}
           />
         )}
-        <NetworkErrorState fieldName={input.name} />
+        <NetworkErrorState 
+          fieldName={input.name} 
+          validationError={hasValidationError && !isThisFieldNetworkError && !shouldPassivate ? errorString : null}
+          maxSizeOver={exceedsMaxLength}
+          readonly={readonly.read || shouldPassivate}
+        />
       </div>
     );
   };

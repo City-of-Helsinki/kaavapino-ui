@@ -1,9 +1,8 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { usersSelector } from '../../selectors/userSelector'
-import {IconPenLine,IconCheckCircle,IconAlertCircleFill,Button } from 'hds-react'
+import {IconPenLine,IconCheckCircle,Button } from 'hds-react'
 import projectUtils from '../../utils/projectUtils'
-import { useTranslation } from 'react-i18next'
 import ReactQuill from 'react-quill'
 import infoBothDir from '../../assets/icons/Infobothdir.svg'
 import PropTypes from 'prop-types'
@@ -32,9 +31,7 @@ const processViranomaistahoData = (attributeData) => {
   }
 }
 
-function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField,type,phaseIsClosed,factaInfo,maxSizeOver,attributeData}) {
-  const { t } = useTranslation()
-
+function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField,type,phaseIsClosed,factaInfo,maxSizeOver,attributeData,shouldDisableForErrors}) {
   const users = useSelector(state => usersSelector(state))
   let inputText = value
   let noInfoText = name === "voimassa_asemakaavat" || name === "voimassa_olevat_rakennuskiellot" ? "Ei ole" : "Ei"
@@ -91,7 +88,7 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
         }
       </div>
       {!nonEditable && (
-      <Button disabled={phaseIsClosed} onClick={openEdit} size="small" variant="supplementary" iconLeft={<IconPenLine />}>
+      <Button disabled={phaseIsClosed || shouldDisableForErrors} onClick={openEdit} size="small" variant="supplementary" iconLeft={<IconPenLine />}>
         {modifyText}
       </Button>
       )}
@@ -102,17 +99,11 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
       <span>{rollingInfoText}</span>
     </div> :
     <div className='rolling-text'>
-    {value && !maxSizeOver && (
+    {value && (
       <>
         <img alt='' aria-hidden="true" src={infoBothDir} />
         <span>{rollingInfoText}</span>
       </>
-    )}
-    {maxSizeOver && (
-      <div className='max-chars-error'>
-        <IconAlertCircleFill color="#B01038" aria-hidden="true"/>
-         {t('project.charsover')}
-      </div>
     )}
     </div>
     }
@@ -133,7 +124,8 @@ RollingInfo.propTypes = {
   maxSizeOver: PropTypes.bool,
   attributeData: PropTypes.shape({
     milta_muilta_pyydetaan_lausunto_fieldset: PropTypes.array
-  })
+  }),
+  shouldDisableForErrors: PropTypes.bool
 }
 
 export default RollingInfo

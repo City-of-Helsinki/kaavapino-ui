@@ -9,6 +9,11 @@
   }
 
   .rich-text-editor-wrapper {
+    // Add padding when focused and has error (maintains spacing with error notification below)
+    &.has-error:focus-within {
+      padding-bottom: 3px;
+    }
+    
     .rich-text-editor.toolbar-visible .ql-container .ql-editor {
       padding-bottom: $size40;
     }
@@ -102,7 +107,7 @@
       &.toolbar-visible-error{
         border: 2px solid $color-error !important;
         border-color: $color-error !important;
-        box-shadow: unset!important;
+        box-shadow: 0 0 0 3px $color-coat-of-arms !important;
         transform: translateZ(0) !important;
         transition: 85ms ease-out !important;
         transition-property: box-shadow,transform !important;
@@ -115,6 +120,10 @@
           border-top-left-radius: 0;
           border-top-right-radius: 0;
         }
+      }
+
+      &.has-error {
+        border: 2px solid $color-error !important;
       }
 
       &.large .quill .ql-editor {
@@ -142,9 +151,22 @@
     }
   }
   .rich-text-disabled {
-    pointer-events: none;
+    cursor: not-allowed;
+    user-select: none;
+    .rich-text-editor {
+      border: none !important;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
     .ql-editor{
       background-color: #E6E6E6;
+      color: #808080;
+      cursor: not-allowed;
+    }
+    
+    // Show red border when field is disabled due to network error
+    &.has-network-error .ql-editor {
+      border: 2px solid #c4314b;
     }
   }
   .quill-counter {
@@ -152,7 +174,7 @@
     font-size: $size14;
     color: $color-black-90;
     position: relative;
-    top: -30px;
+    margin-top: -30px;
     right: 14px;
     text-align: right;
     padding-right: 4px;
@@ -168,11 +190,12 @@
     margin-top: 8px;
   }
   .max-chars-error{
-    display: flex;
-    font-family: "Helsinki Grotesk Regular", sans-serif;
-    font-size: $size16;
-    color: $color-error;
-    line-height: $size24;
+    @include hds-error-notification;
+    
+    // Hide any manually added SVG icons since mixin provides icon via ::before
+    svg {
+      display: none;
+    }
   }
   .quill-warning {
     color: $color-error;

@@ -46,7 +46,7 @@ class ProjectListPage extends Component {
       filter: ["","",[]],
       activeIndex: 1,
       screenWidth: window.innerWidth,
-      currentFilterData:this.props.filterData,
+      currentFilterData: Array.isArray(this.props.filterData) ? this.props.filterData : [],
       pageIndex:0,
       showGraph: false,
       pageLimit:20,
@@ -81,7 +81,7 @@ class ProjectListPage extends Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.filterData !== this.props.filterData) {
-      this.setState({currentFilterData:this.props.filterData})
+      this.setState({currentFilterData: Array.isArray(this.props.filterData) ? this.props.filterData : []})
     }
     if(prevProps.users !== this.props.users){
       const isExpert = authUtils.isExpert(this.props.currentUserId, this.props.users)

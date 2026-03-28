@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
 import { Button, Tag, IconArrowRight, IconArrowLeft } from 'hds-react'
 import OnHoldCheckbox from '../../input/OnholdCheckbox.jsx'
 import ConfirmModal from '../ConfirmModal.jsx'
@@ -7,6 +8,8 @@ import './styles.scss'
 import Status from '../../common/Status'
 import PropTypes from 'prop-types'
 import schemaUtils from '../../../utils/schemaUtils';
+import { shouldPassivateField } from '../../../hooks/useFieldPassivation'
+import { formErrorListSelector, connectionErrorFieldsSelector } from '../../../selectors/projectSelector'
 
 export default function QuickNav({
   currentProject,
@@ -53,6 +56,12 @@ export default function QuickNav({
   const [pendingTitleScroll, setPendingTitleScroll] = useState(false);
 
   const { t } = useTranslation()
+
+  // Check if QuickNav buttons should be passivated due to validation errors
+  const formErrors = useSelector(formErrorListSelector) || []
+  const connectionErrorFields = useSelector(connectionErrorFieldsSelector) || []
+  const hasAnyErrors = formErrors.length > 0 || connectionErrorFields.length > 0
+  const shouldPassivate = hasAnyErrors
 
   const onCheckPressed = () => {
     setAllowPhaseClose(false)
@@ -163,7 +172,7 @@ export default function QuickNav({
           fullWidth={true}
           onClick={onCheckPressed}
           help={t('quick-nav.check-help-text')}
-          disabled={currentProject.archived}
+          disabled={currentProject.archived || shouldPassivate}
           className={checkButtonPressed ? 'check-pressed' : ''}
           variant="secondary"
         >
@@ -181,7 +190,7 @@ export default function QuickNav({
             help={`${
               notLastPhase ? t('quick-nav.end-phase-help') : t('quick-nav.archive-help')
             }`}
-            disabled={!isCurrentPhase || currentProject?.archived}
+            disabled={!isCurrentPhase || currentProject?.archived || shouldPassivate}
             variant="secondary"
           >
             {`${notLastPhase ? t('quick-nav.end-phase') : t('quick-nav.archive')}`}
@@ -208,7 +217,7 @@ export default function QuickNav({
       projectOnhold={currentProject.onhold}
       saveProjectBase={onSaveProjectPhase}
       name="onhold"
-      disabled={saving || currentProject.archived}
+      disabled={saving || currentProject.archived || shouldPassivate}
       label={
         currentProject.onhold
           ? t('quick-nav.onhold-lable')

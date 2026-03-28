@@ -7,8 +7,9 @@ import {attributeDataSelector,deadlinesSelector} from '../../selectors/projectSe
 import { useTranslation } from 'react-i18next'
 import infoFieldUtil from '../../utils/infoFieldUtil'
 import moment from 'moment'
+import { useFieldPassivation } from '../../hooks/useFieldPassivation'
 
-function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth}) {
+function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth, formName}) {
   const [cardData, setCardData] = useState(
     {
       startDate: "",
@@ -32,7 +33,9 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
   const [matchedDeadline, setMatchedDeadline] = useState({});
   const attributeData = useSelector(state => attributeDataSelector(state));
   const deadlinesData = useSelector(state => deadlinesSelector(state));
-
+  
+  // Check if other fields have errors - passivate card edit buttons
+  const shouldDisableForErrors = useFieldPassivation(name, { formName })
 
   useEffect(() => {
     setCardData({...cardData, ...infoFieldUtil.getInfoFieldData(props.placeholder,props.input?.name,attributeData,deadlinesData,selectedPhase)})
@@ -220,7 +223,7 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
       <span>{t('custom-card.already-confirmed')}</span>
     </div>
     :     
-    <Button size='small' iconLeft={<IconPenLine />} onClick={() => dispatch(showTimetable(true,name,selectedPhase,matchedDeadline))} variant="supplementary" theme="black" role="link">{buttonText}</Button> 
+    <Button size='small' iconLeft={<IconPenLine />} onClick={() => dispatch(showTimetable(true,name,selectedPhase,matchedDeadline))} disabled={shouldDisableForErrors} variant="supplementary" theme="black" role="link">{buttonText}</Button> 
 
     boardFields = 
     <div className='custom-card-info-container'>
@@ -284,7 +287,7 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
       <div className='custom-card-floor-info'><span>{cardData.otherFloorArea} {unit}</span></div>
     </div>
     </>
-    editDataLink = <Button size='small' iconLeft={<IconPenLine />} onClick={() => dispatch(showFloorArea(true))} variant="supplementary" theme="black" role="link">{buttonText}</Button>
+    editDataLink = <Button size='small' iconLeft={<IconPenLine />} onClick={() => dispatch(showFloorArea(true))} disabled={shouldDisableForErrors} variant="supplementary" theme="black" role="link">{buttonText}</Button>
     container = 
     <div className='custom-card-container'>
       <div className='custom-card-item-container'>
@@ -311,7 +314,10 @@ CustomCard.propTypes = {
   ]),
   placeholder: PropTypes.string,
   input: PropTypes.object,
-  fieldData: PropTypes.object
+  fieldData: PropTypes.object,
+  selectedPhase: PropTypes.number,
+  showBoth: PropTypes.bool,
+  formName: PropTypes.string
 }
 
 export default CustomCard

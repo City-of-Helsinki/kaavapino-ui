@@ -46,14 +46,13 @@
     margin-left: 10px;
   }
   .field-error {
-    color: $color-error-text;
+    @include hds-error-notification;
   }
   .submit-error {
-    color: $color-error-text;
-    padding-top: 5px;
+    @include hds-error-notification;
   }
   .error {
-    color: $color-error-text;
+    @include hds-error-notification;
   }
 
   .collapse-content {
