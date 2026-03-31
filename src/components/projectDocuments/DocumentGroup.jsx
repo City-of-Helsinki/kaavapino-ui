@@ -9,6 +9,19 @@ import PropTypes from 'prop-types'
 const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserResponsible, schema, attribute_data, selectedPhase, search, project, disableDownloads, downloadingDocumentReady }) => {
   const {t} = useTranslation()
 
+  // Accessibility fixes, re-evaluate when HDS-react is updated
+  const handleAccordionKeyDown = (event) => {
+    if (event.key !== ' ' && event.key !== 'Spacebar') {
+      return
+    }
+    const target = event.target
+    const isAccordionControl = target?.closest?.('.document-accordion button, .document-accordion [role="button"]')
+    if (isAccordionControl) {
+      event.preventDefault()
+      target.click()
+    }
+  }
+
   const checkRequired = () => {
     const index = getCorrectPhaseIndex()
     let hasErrors
@@ -97,7 +110,7 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
   }
   else{
     return (
-      <div className="document-group">
+      <div className="document-group" onKeyDownCapture={handleAccordionKeyDown}>
         <Accordion heading={title} headingLevel={2} className="document-accordion" size="m">
           {schema ? getStatus() : ""}
           {documents.map(({ name, file, last_downloaded, image_template, id }, i) => (
