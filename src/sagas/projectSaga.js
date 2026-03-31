@@ -1293,9 +1293,7 @@ function* saveProject(data) {
           }
           
           if (fieldUpdate?.timestamp) {
-            // Extract time portion from backend's ISO timestamp
-            const backendDate = new Date(fieldUpdate.timestamp);
-            backendTime = backendDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            backendTime = projectUtils.formatTime(fieldUpdate.timestamp);
           }
         }
         
@@ -1482,8 +1480,7 @@ function* projectFileUpload({
       }
       
       if (fieldUpdate?.timestamp) {
-        const backendDate = new Date(fieldUpdate.timestamp);
-        backendTime = backendDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        backendTime = projectUtils.formatTime(fieldUpdate.timestamp);
       }
     }
     
@@ -1554,8 +1551,7 @@ function* projectFileRemove({ payload }) {
       }
       
       if (fieldUpdate?.timestamp) {
-        const backendDate = new Date(fieldUpdate.timestamp);
-        backendTime = backendDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        backendTime = projectUtils.formatTime(fieldUpdate.timestamp);
       }
     }
     
