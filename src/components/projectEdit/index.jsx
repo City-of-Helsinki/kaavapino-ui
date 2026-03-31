@@ -109,6 +109,14 @@ class ProjectEditPage extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+
+    if (
+      (prevProps.showFloorAreaForm && !this.props.showFloorAreaForm) ||
+      (prevProps.showTimetableForm?.showTimetable && !this.props.showTimetableForm?.showTimetable)
+    ) {
+      document.getElementById("editNavSelect-toggle-button")?.focus();
+    }
+
     if ((prevProps.location.search !== this.props.location.search ) || (prevState.urlField !== this.state.urlField) && this.state.urlField) {
       this.scroll();
     }

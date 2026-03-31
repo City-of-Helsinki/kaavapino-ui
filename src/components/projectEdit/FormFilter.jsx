@@ -1,12 +1,12 @@
 import React, { useRef, useState, useEffect }  from 'react'
 import { Button, Tag, IconTrash, Checkbox } from 'hds-react';
+import DialogFocusTrap from '../common/DialogFocusTrap.jsx';
 import { getOffset } from '../../hooks/getOffset';
 import './ProjectEdit.scss'
 
 function FormFilter({schema,filterFields,isHighlightedTag,selectedPhase,allfields,currentlyHighlighted,showSection}) {
 
 const openButtonRef = useRef(null);
-const modal = document.getElementById("myModal");
 const [tags, setTags] = useState({});
 const [prevTags, setPrevTags] = useState({});
 const [tagArray, setTagArray] = useState([])
@@ -15,13 +15,28 @@ const [selectedTag, setSelectedTag] = useState("")
 const [options,setOptions] = useState([]);
 const [totalFilteredFields,setTotalFilteredFields] = useState(0)
 const [isVisible,setVisible] = useState(true);
+const [isOpen, setIsOpen] = useState(false);
 
 const prevTotalFilteredFields = useRef(totalFilteredFields);
 
 useEffect(() => {
-    window.addEventListener("scroll",listenToScroll);
-    return () => window.removeEventListener("scroll",listenToScroll);
-}, [])
+    globalThis.addEventListener("scroll",listenToScroll);
+    return () => {
+        globalThis.removeEventListener("scroll",listenToScroll);
+    };
+}, []);
+
+useEffect(() => {
+    const handleKeyDown = (event) => {
+        if ((event.key === 'Escape' || event.key === 'Esc') && isOpen) {
+            setIsOpen(false);
+        }
+    }
+    if (isOpen) {
+        globalThis.addEventListener("keydown", handleKeyDown);
+    }
+    return () => globalThis.removeEventListener("keydown", handleKeyDown);
+}, [isOpen]);
 
 useEffect(() => {
     let tagArray = []
@@ -140,16 +155,18 @@ const handleChange = (e) => {
     setCheckedItems({ ...checkedItems, [item]: isChecked });
 };
 
-const openModal = () => {
-    if(modal){
-        modal.classList.add("filterModal");
-        modal.style.display = "block";
+const openModal = (event=null) => {
+    if (event?.key === 'Enter' || event?.key === ' ') {
+        event.preventDefault();
     }
+    setIsOpen(true);
 }
 
 const closeModal = () => {
-    setCheckedItems(tags);
-    modal.style.display = "none";
+    if (isOpen) {
+        setCheckedItems(tags)
+        setIsOpen(false);
+    }
 }
 
 const saveSelections = () => {
@@ -165,7 +182,7 @@ const saveSelections = () => {
     if(!checkedItems){
         isHighlightedTag("")
     }
-    modal.style.display = "none";
+    setIsOpen(false);
     calculateFields(allfields)
 }
 
@@ -203,7 +220,7 @@ if(tagArray.length > 0){
          role="button"
          key={`checkbox-${tag}-key`}
          id={`checkbox-${tag}`}
-         onClick={() => highlightTag(event,tag)}
+         onClick={(event) => highlightTag(event,tag)}
          aria-label={tag + ". Ota korostus käyttöön klikkaamalla painiketta."}
          >
          {tag}
@@ -247,16 +264,18 @@ return (
             {renderedTags}
         </div>
         <div className='right-container'>
-            <Button ref={openButtonRef} onClick={() => openModal()} className="toggle-filters" variant="secondary" size="small" disabled={!showSection}>
+            <Button ref={openButtonRef} onMouseDown={() => openModal()} onKeyDown={(event) => openModal(event)} className="toggle-filters" variant="secondary" size="small" disabled={!showSection}>
                 Muokkaa suodattimia
             </Button>
         </div>
-        <div id="myModal" className="modal">
-            <div className="modal-content">
-                <div className="modal-header">
-                    <h2>Suodattimet</h2>
-                </div>
-                <div className="modal-body">
+        {isOpen && (
+            <div id="myModal" className="modal filterModal">
+                <DialogFocusTrap returnFocusRef={openButtonRef}>
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h2>Suodattimet</h2>
+                        </div>
+                    <div className="modal-body">
                 <div className="filterModal__cols">
                     {options.map((opt, i) => (
                         <div className="filterModal__col" key={`col-${i}`}>
@@ -285,9 +304,10 @@ return (
                     <Button className="save" size="small" onClick={() => saveSelections()}>Tallenna</Button>
                     <Button className="close" size="small" variant="secondary" onClick={() => closeModal()}>Peruuta</Button>
                 </div>
-            </div>
+                </div>
+            </DialogFocusTrap>
         </div>
-
+        )}
         </div>
 )
 }

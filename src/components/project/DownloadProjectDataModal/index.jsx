@@ -16,9 +16,29 @@ import toPlaintext from 'quill-delta-to-plaintext'
 import { Button } from 'hds-react'
 import dayjs from 'dayjs'
 
+import ModalCloseButton from '../ModalCloseButton/ModalCloseButton.jsx';
+import { focusTrapOnTabPressed } from '../projectModalUtils';
 import './styles.scss'
 
 class DownloadProjectDataModal extends Component {
+
+  handleTabKeyDown = (event) => {
+    focusTrapOnTabPressed(event, 'download-project-data-modal')
+  }
+
+  componentWillUnmount () {
+    document.removeEventListener('keydown', this.handleTabKeyDown)
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.open && !this.props.open) {
+      document.removeEventListener('keydown', this.handleTabKeyDown)
+    }
+    if (!prevProps.open && this.props.open) {
+      document.addEventListener('keydown', this.handleTabKeyDown)
+    }
+  }
+
   getFormField = fieldProps => {
     return (
       <FormField
@@ -116,11 +136,18 @@ class DownloadProjectDataModal extends Component {
 
     return (
       <Modal
+        id="download-project-data-modal"
         className="form-modal download-project"
         size={'tiny'}
         onClose={this.handleClose}
         open={this.props.open}
-        closeIcon
+        onMount={() => {
+          const firstElement = document.querySelector('#close-download-project-data-modal-button')
+          if (firstElement) {
+            firstElement.focus();
+          }
+        }}
+        closeIcon={<ModalCloseButton onClose={this.handleClose} id="close-download-project-data-modal-button"/>}
       >
         <Modal.Header>{t('print-project-data.title')}</Modal.Header>
         <Modal.Content>
@@ -165,7 +192,7 @@ class DownloadProjectDataModal extends Component {
           </div>
         </Modal.Content>
         <Modal.Actions>
-          <Button variant="secondary" onClick={this.handleClose}>
+          <Button id="download-project-data-cancel-button" variant="secondary" onClick={this.handleClose}>
             {t('print-project-data.button-close')}
           </Button>
         </Modal.Actions>

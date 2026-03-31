@@ -12,6 +12,8 @@ import './styles.scss'
 import { floorAreaSectionsSelector } from '../../../selectors/schemaSelector'
 import { withTranslation } from 'react-i18next'
 import { Button } from 'hds-react'
+import ModalCloseButton from '../ModalCloseButton/ModalCloseButton.jsx'
+import { focusTrapOnTabPressed } from '../projectModalUtils';
 
 
 const FloorAreaTotals = ({ formValues, floorAreaSections, attributeData }) => {
@@ -58,11 +60,13 @@ class EditFloorAreaFormModal extends Component {
   componentDidMount () {
     const { initialize, attributeData } = this.props
     initialize(attributeData)
+    document.addEventListener('keydown', this.handleKeyDown)
   }
 
   componentWillUnmount() {
     clearTimeout(this.timeout)
     clearInterval(this.autoSave)
+    document.removeEventListener('keydown', this.handleKeyDown)
   }
 
   componentDidUpdate(prevProps) {
@@ -92,6 +96,10 @@ class EditFloorAreaFormModal extends Component {
   handleClose = () => {
     this.props.handleClose()
     this.setState({ loading: false })
+  }
+
+  handleKeyDown = (e) => {
+    focusTrapOnTabPressed(e, 'edit-floor-area-form-modal')
   }
 
   getFloorAreaTotalsComponent = () => {
@@ -125,11 +133,13 @@ class EditFloorAreaFormModal extends Component {
       return null
     }
     return (
-      <Collapse title={section.title} key={sectionIndex}>
-        {section.fields.map((field, fieldIndex) =>
-          this.getFormField({ field }, `${sectionIndex} - ${fieldIndex}`)
-        )}
-      </Collapse>
+      <section>
+        <Collapse title={section.title} key={sectionIndex}>
+          {section.fields.map((field, fieldIndex) =>
+            this.getFormField({ field }, `${sectionIndex} - ${fieldIndex}`)
+          )}
+        </Collapse>
+      </section>
     )
   }
 
@@ -139,11 +149,18 @@ class EditFloorAreaFormModal extends Component {
 
     return (
       <Modal
+        id="edit-floor-area-form-modal"
         className="form-modal edit-floor-area-form-modal"
         size={'small'}
         onClose={this.handleClose}
         open={this.props.open}
-        closeIcon
+        closeIcon={<ModalCloseButton onClose={this.handleClose} id="close-floor-area-modal-button"/>}
+        onMount={() => {
+          const firstElement = document.querySelector('#close-floor-area-modal-button')
+          if (firstElement) {
+            firstElement.focus()
+          }
+        }}
       >
         <Modal.Header>{t('floor-areas.title')}</Modal.Header>
         <Modal.Content>
@@ -167,6 +184,7 @@ class EditFloorAreaFormModal extends Component {
               isLoading={loading}
               type="submit"
               onClick={this.handleSubmit}
+              id="save-floor-area-modal-button"
             >
               {t('common.save')}
             </Button>
