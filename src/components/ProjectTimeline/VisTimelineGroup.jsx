@@ -1509,7 +1509,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               pendingGroupFocusIdRef.current = container.id;
               const focusAfterRender = () => {
                 const focusEl = timelineRef.current?.querySelector(`[id="${pendingGroupFocusIdRef.current}"]`);
-                console.log("Attempting to focus element with id " + pendingGroupFocusIdRef.current + ": ", focusEl);
                 if (focusEl) {
                   focusEl.focus();
                   pendingGroupFocusIdRef.current = null;

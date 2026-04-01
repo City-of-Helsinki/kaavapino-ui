@@ -37,6 +37,7 @@ const DeadLineInput = ({
   const formValues = useSelector(getFormValues(EDIT_PROJECT_TIMETABLE_FORM))
   const [currentValue, setCurrentValue] = useState("")
   const [disabledState, setDisabledState] = useState(true)
+  const [allowedDates, setAllowedDates] = useState([]);
 
 
   let currentError
@@ -112,6 +113,15 @@ const DeadLineInput = ({
   },[])
 
   useEffect(() => {
+    const ehdotusNahtavillaolo = currentDeadline?.deadline?.phase_name === "Ehdotus" && currentDeadline?.deadline?.deadlinegroup?.includes('nahtavillaolo')
+    const allowed = timeUtil.calculateAllowedDates(
+          ehdotusNahtavillaolo, attributeData?.kaavaprosessin_kokoluokka, dateTypes, input.name, formValues,
+          getFixedSectionAttributes(), currentDeadline
+        );
+    setAllowedDates(allowed);
+  }, [dateTypes, input.name, deadlineSections, sectionAttributes, currentDeadline]);
+
+  useEffect(() => {
     //Update calendar values when value has changed
     if(currentValue !== input.value){
       setCurrentValue(input.value); 
@@ -138,7 +148,7 @@ const DeadLineInput = ({
   const getFixedSectionAttributes = () => {
     // Absurd hack because "Lausunnot viimeistään" is not included in sectionAttributes for some reason
     // Remove this and just use sectionAttributes if this gets refactored in the future
-    if (!currentDeadline?.deadline?.attribute.includes("viimeistaan_lausunnot_ehdotuksesta")) {
+    if (!currentDeadline?.deadline?.attribute?.includes("viimeistaan_lausunnot_ehdotuksesta")) {
       return sectionAttributes;
     }
     const ehdotus_section = deadlineSections.find(section => section.title === "Ehdotus");
@@ -154,7 +164,7 @@ const DeadLineInput = ({
   }
 
   const isDisabledDate = (date) => {
-    if (currentDeadline === undefined) {
+    if (currentDeadline === undefined || !allowedDates) {
       return false;
     }
     //20 years is the calendars range to check work days, holidays etc from current date
@@ -162,15 +172,11 @@ const DeadLineInput = ({
     twentyYearsAgo.setFullYear(twentyYearsAgo.getFullYear() - 20);
     const twentyYearsLater = new Date();
     twentyYearsLater.setFullYear(twentyYearsLater.getFullYear() + 20);
-    const ehdotusNahtavillaolo = currentDeadline?.deadline?.phase_name === "Ehdotus" && currentDeadline?.deadline?.deadlinegroup?.includes('nahtavillaolo')
-    const datesToDisable = timeUtil.calculateDisabledDates(
-      ehdotusNahtavillaolo, attributeData?.kaavaprosessin_kokoluokka, dateTypes, input.name, formValues,
-      getFixedSectionAttributes(), currentDeadline
-    );
-    if (date < twentyYearsAgo || date > twentyYearsLater || !datesToDisable || datesToDisable.length === 0) {
+    if (date < twentyYearsAgo || date > twentyYearsLater) {
       return false;
     }
-    return !datesToDisable?.includes(formatDate(date));
+    const result = !allowedDates.includes(formatDate(date));
+    return result;
   }
 
   const formatDateToYYYYMMDD = (date) => {

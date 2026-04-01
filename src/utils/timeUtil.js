@@ -809,8 +809,7 @@ const getDisabledDatesForNahtavillaolo = (name, formValues, phaseName, matchingI
   }
 };
 
-// Note: despite the name, this function returns allowed dates, not disabled ones
-const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues, sectionAttributes, currentDeadline) => {
+const calculateAllowedDates = (nahtavillaolo, size, dateTypes, name, formValues, sectionAttributes, currentDeadline) => {
   const matchingItem = objectUtil.findMatchingName(sectionAttributes, name, "name");
   const previousItem = objectUtil.findItem(sectionAttributes, name, "name", -1);
   const nextItem = objectUtil.findItem(sectionAttributes, name, "name", 1);
@@ -1021,7 +1020,7 @@ const exported = {
     isDate,
     calculateWeekdayDifference,
     isHoliday,
-    calculateDisabledDates,
+    calculateAllowedDates,
     getHighestDate,
     findAllowedDate,
     findAllowedLautakuntaDate,
