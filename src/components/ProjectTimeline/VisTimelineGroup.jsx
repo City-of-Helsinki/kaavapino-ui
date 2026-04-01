@@ -1459,7 +1459,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
         let container = document.createElement("div");
         container.classList.add("timeline-buttons-container");
-        container.setAttribute("tabindex", "0");
+        container.setAttribute("tabindex", group?.nestedGroups !== undefined ? "0" : "-1");
         container.id = `timeline-group-${group.id}`;
 
         let words = group.deadlinegroup?.split("_") || [];
@@ -1486,7 +1486,17 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           container.classList.add("show-buttons");
         });
         container.addEventListener("mouseleave", function () {
-          container.classList.remove("show-buttons");
+          if (!container.contains(document.activeElement)) {
+            container.classList.remove("show-buttons");
+          }
+        });
+        container.addEventListener("focusin", function () {
+          container.classList.add("show-buttons");
+        });
+        container.addEventListener("focusout", function (event) {
+          if (!container.contains(event.relatedTarget)) {
+            container.classList.remove("show-buttons");
+          }
         });
 
         if (group?.nestedGroups !== undefined) {
