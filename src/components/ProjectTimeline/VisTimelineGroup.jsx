@@ -1568,6 +1568,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           container.insertAdjacentElement("afterBegin", label);
 
           let edit = document.createElement("button");
+          edit.id = `edit-button-${group.id}`;
           edit.classList.add("timeline-edit-button");
           edit.style.fontSize = "small";
 
@@ -1581,6 +1582,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             let labelRemove = document.createElement("span");
             container.insertAdjacentElement("afterBegin", labelRemove);
             let remove = document.createElement("button");
+            remove.id = `remove-button-${group.id}`;
             remove.classList.add("timeline-remove-button");
 
             // Tooltip for disabled remove button

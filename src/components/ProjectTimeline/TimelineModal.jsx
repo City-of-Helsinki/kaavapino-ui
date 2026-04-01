@@ -43,7 +43,7 @@ const TimelineModal = ({
 
   useEffect(() => {
     if (open && returnFocusGroupId) {
-      setReturnFocusId(`timeline-group-${returnFocusGroupId}`);
+      setReturnFocusId(`edit-button-${returnFocusGroupId}`);
     }
   }, [open, returnFocusGroupId]);
 
