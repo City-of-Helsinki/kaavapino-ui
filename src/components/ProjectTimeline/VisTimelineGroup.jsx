@@ -30,6 +30,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   const timelineInstanceRef = useRef(null);
   const visValuesRef = useRef(visValues);
   const itemsPhaseDatesOnlyRef = useRef(itemsPhaseDatesOnly);
+  const pendingGroupFocusIdRef = useRef(null);
 
     const [selectedGroupId, setSelectedGroupId] = useState(null);
     const selectedGroupIdRef = useRef(selectedGroupId);
@@ -1487,6 +1488,26 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         container.addEventListener("mouseleave", function () {
           container.classList.remove("show-buttons");
         });
+
+        if (group?.nestedGroups !== undefined) {
+          container.onkeydown = function (e) {
+            if ((e.key === "Enter" || e.key === " ") && !(document.activeElement.id.includes("add-button")) ) {
+              e.preventDefault();
+              const itemSet = timelineInstanceRef.current?.itemSet;
+              const itemSetGroup = itemSet.groups[group.id];
+              itemSet.toggleGroupShowNested(itemSetGroup);
+              pendingGroupFocusIdRef.current = container.id;
+              const focusAfterRender = () => {
+                const focusEl = timelineRef.current?.querySelector(`#${pendingGroupFocusIdRef.current}`);
+                if (focusEl) {
+                  focusEl.focus();
+                  pendingGroupFocusIdRef.current = null;
+                }
+              };
+              requestAnimationFrame(() => requestAnimationFrame(focusAfterRender));
+            }
+          }
+        }
 
         if (group?.nestedGroups !== undefined && allowedToEdit && !contentIncludesString) {
           let label = document.createElement("span");
