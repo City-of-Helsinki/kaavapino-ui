@@ -292,7 +292,7 @@ File.propTypes = {
   rollingInfo: PropTypes.bool,
   rollingInfoText: PropTypes.string,
   saving: PropTypes.bool,
-  lastModified: PropTypes.string,
+  lastModified: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   formErrors: PropTypes.array,
   connectionErrorFields: PropTypes.array
 }

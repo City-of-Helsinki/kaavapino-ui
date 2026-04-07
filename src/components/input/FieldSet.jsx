@@ -544,7 +544,7 @@ const mapStateToProps = state => ({
 FieldSet.propTypes = {
   unlockAllFields:PropTypes.func,
   saving: PropTypes.bool,
-  sets: PropTypes.array,
+  sets: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
   fields: PropTypes.array,
   lastSaved: PropTypes.object,
   updateField: PropTypes.bool,

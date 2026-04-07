@@ -36,6 +36,7 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
     isTabActive,
     isProjectTimetableEdit,
     timetable_editable,
+    characterLimit, // eslint-disable-line no-unused-vars
     ...restCustom
   } = custom;
 
@@ -91,7 +92,7 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
         setHadFocusBeforeTabOut(false)
       }
     }
-    else if (document.activeElement == inputRef.current){
+    else if (!custom.isTabActive && document.activeElement == inputRef.current){
       setHadFocusBeforeTabOut(true)
       inputRef.current.blur()
     }
@@ -565,7 +566,7 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
         <NetworkErrorState 
           fieldName={input.name} 
           validationError={hasValidationError && !isThisFieldNetworkError && !shouldPassivate ? errorString : null}
-          maxSizeOver={exceedsMaxLength}
+          maxSizeOver={!!exceedsMaxLength}
           readonly={readonly.read || shouldPassivate}
         />
       </div>

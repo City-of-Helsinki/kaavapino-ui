@@ -514,7 +514,7 @@ QuickNav.propTypes = {
   switchDisplayedPhase: PropTypes.func,
   saveProjectBasePayload: PropTypes.func,
   setChecking: PropTypes.func,
-  hasMissingFields: PropTypes.bool,
+  hasMissingFields: PropTypes.func,
   isResponsible: PropTypes.bool,
   isAdmin: PropTypes.bool,
   phase: PropTypes.number,

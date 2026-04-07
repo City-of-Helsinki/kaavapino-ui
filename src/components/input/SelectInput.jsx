@@ -218,7 +218,15 @@ const SelectInput = ({
       //Sent a call to unlock field to backend
       handleUnlockField(input.name)
     }
-    if (selectValues !== oldValueRef.current) {
+    // Normalize multiselect values to IDs for comparison.
+    // HDS Select onChange gives objects {key, label, value}, but oldValueRef stores IDs.
+    const normalizeVal = (val) => {
+      if (multiple && isArray(val) && val.length > 0 && typeof val[0] === 'object' && val[0] !== null) {
+        return val.map(item => item.value)
+      }
+      return val
+    }
+    if (!isEqual(normalizeVal(selectValues), normalizeVal(oldValueRef.current))) {
       //prevent saving if locked
       if (!readonly) {
         if (typeof onBlur === 'function') {
