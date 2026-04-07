@@ -296,6 +296,65 @@ const SelectInput = ({
     }
   }
 
+  const renderSelectElement = (preparedOptions, notSelectable, readOnlyStyle, hasValidationError, errorString) => {
+    const isFieldDisabled = disabled || editDisabled || isThisFieldSaving || shouldDisableForErrors || isThisFieldNetworkError || (isProjectTimetableEdit && !timetable_editable);
+    return (
+      <div className={`select-input-wrapper ${isFieldDisabled ? 'disabled' : ''} ${isThisFieldNetworkError ? 'has-network-error' : ''}`}>
+        {!multiple ? (
+          <Select
+            data-testid="select-single"
+            placeholder={placeholder}
+            className={`${readOnlyStyle}${isThisFieldNetworkError ? ' has-network-error' : ''}`}
+            id={input.name}
+            multiselect={false}
+            error={inputUtils.hasError(error) || isThisFieldNetworkError}
+            onBlur={handleBlur}
+            onFocus={handleFocus}
+            clearable={false}
+            disabled={isFieldDisabled}
+            options={preparedOptions}
+            value={currentSingleValue}
+            onChange={data => {
+              if(!notSelectable){
+                let returnValue = data ? data.value : null
+                if (returnValue === '') {
+                  returnValue = null
+                }
+                setSelectValues(returnValue)
+                handleInputChange(returnValue)
+              }
+            }}
+          />
+        ) : (
+          <Select
+            data-testid="select-multi"
+            placeholder={placeholder}
+            className={`${readOnlyStyle}${isThisFieldSaving ? ' blurred' : ''}${isThisFieldNetworkError ? ' has-network-error' : ''}`}
+            id={input.name}
+            name={input.name}
+            multiselect={multiple}
+            error={error || isThisFieldNetworkError}
+            onBlur={handleBlur}
+            onFocus={handleFocus}
+            clearable={true}
+            disabled={isFieldDisabled}
+            options={preparedOptions}
+            defaultValue={currentValue}
+            onChange={data => {
+              if(!notSelectable){
+                let uniqData = uniqBy(data, 'key');
+                let returnValue = uniqData && uniqData.map(currentValue => currentValue.value)
+                setSelectValues(uniqData)
+                handleInputChange(returnValue)
+              }
+            }}
+          />
+        )}
+        <NetworkErrorState fieldName={input.name} validationError={hasValidationError ? errorString : null} />
+      </div>
+    );
+  }
+
   const normalOrRollingElement = () => {
     let preparedOptions = !readonly ? getPreparedOptions(options) : options;
     let notSelectable = readonly === true && fieldName === input.name
@@ -322,59 +381,7 @@ const SelectInput = ({
         shouldDisableForErrors={shouldDisableForErrors}
       />
       :
-      <div className={`select-input-wrapper ${disabled || editDisabled || isThisFieldSaving || shouldDisableForErrors || isThisFieldNetworkError || (isProjectTimetableEdit && !timetable_editable) ? 'disabled' : ''} ${isThisFieldNetworkError ? 'has-network-error' : ''}`}>
-      {!multiple ? (
-        <Select
-          data-testid="select-single"
-          placeholder={placeholder}
-          className={`${readOnlyStyle}${isThisFieldNetworkError ? ' has-network-error' : ''}`}
-          id={input.name}
-          multiselect={false}
-          error={inputUtils.hasError(error) || isThisFieldNetworkError}
-          onBlur={handleBlur}
-          onFocus={handleFocus}
-          clearable={false}
-          disabled={disabled || editDisabled || isThisFieldSaving || shouldDisableForErrors || isThisFieldNetworkError || (isProjectTimetableEdit && !timetable_editable)}
-          options={preparedOptions}
-          value={currentSingleValue}
-          onChange={data => {
-            if(!notSelectable){
-              let returnValue = data ? data.value : null
-              if (returnValue === '') {
-                returnValue = null
-              }
-              setSelectValues(returnValue)
-              handleInputChange(returnValue)
-            }
-          }}
-        />
-        ) : (
-        <Select
-          data-testid="select-multi"
-          placeholder={placeholder}
-          className={`${readOnlyStyle}${isThisFieldSaving ? ' blurred' : ''}${isThisFieldNetworkError ? ' has-network-error' : ''}`}
-          id={input.name}
-          name={input.name}
-          multiselect={multiple}
-          error={error || isThisFieldNetworkError}
-          onBlur={handleBlur}
-          onFocus={handleFocus}
-          clearable={true}
-          disabled={disabled || editDisabled || isThisFieldSaving || shouldDisableForErrors || isThisFieldNetworkError || (isProjectTimetableEdit && !timetable_editable)}
-          options={preparedOptions}
-          defaultValue={currentValue}
-          onChange={data => {
-            if(!notSelectable){
-              let uniqData = uniqBy(data, 'key');
-              let returnValue = uniqData && uniqData.map(currentValue => currentValue.value)
-              setSelectValues(uniqData)
-              handleInputChange(returnValue)
-            }
-          }}
-        />
-        )}
-        <NetworkErrorState fieldName={input.name} validationError={hasValidationError ? errorString : null} />
-      </div>
+      renderSelectElement(preparedOptions, notSelectable, readOnlyStyle, hasValidationError, errorString)
     return elements
   }
 

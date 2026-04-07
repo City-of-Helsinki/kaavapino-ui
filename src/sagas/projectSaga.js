@@ -1216,9 +1216,11 @@ function* saveProject(data) {
         
         // CRITICAL: Check if backend returned data matches current form values
         // If user continued typing after a failed save, don't overwrite their changes
+        // Skip this check for fieldsets: backend adds id/_deleted metadata that causes false mismatch
         let hasUnsavedChanges = false;
         const savedFieldName = fieldName; // Use fieldName from payload
-        if (savedFieldName) {
+        const isFieldsetField = typeof savedFieldName === 'string' && savedFieldName.endsWith('_fieldset');
+        if (savedFieldName && !isFieldsetField) {
           const backendValue = updatedProject.attribute_data[savedFieldName];
           const currentValue = values[savedFieldName];
           
@@ -1234,9 +1236,7 @@ function* saveProject(data) {
         // Update project ONLY if form values match backend
         // This prevents overwriting user's unsaved changes
         // Even after connection error recovery, if data matches, it's safe to update
-        if (!hasUnsavedChanges) {
-          yield put(updateProject(updatedProject));
-        } else {
+        if (hasUnsavedChanges) {
           // Even if we have unsaved changes, update the _metadata to keep timestamps fresh
           // This ensures field-level timestamp indicators stay accurate
           const currentProject = yield select(currentProjectSelector);
@@ -1247,6 +1247,8 @@ function* saveProject(data) {
             };
             yield put(updateProject(updatedProjectWithMetadata));
           }
+        } else {
+          yield put(updateProject(updatedProject));
         }
         
         yield put(setSavingField(null))
@@ -1373,6 +1375,44 @@ function* changeProjectPhase({ payload: phase }) {
   }
 }
 
+const parseFieldsetPath = (attribute) => {
+  let fieldSetIndex = [];
+  let currentFieldName = attribute;
+  const lastIndex = attribute.lastIndexOf('.');
+  if (lastIndex !== -1) {
+    const splitted = attribute.split('.');
+    splitted.forEach(value => {
+      const firstBracket = value.indexOf('[');
+      const secondBracket = value.indexOf(']');
+      const fieldSet = attribute.substring(0, firstBracket);
+      const index = attribute.substring(firstBracket + 1, secondBracket);
+      currentFieldName = attribute.substring(lastIndex + 1, attribute.length);
+      if (fieldSet !== '' && index !== '') {
+        fieldSetIndex.push({ parent: fieldSet, index });
+      }
+    });
+  }
+  return { fieldSetIndex, currentFieldName };
+};
+
+const getBackendTimeFromMetadata = (updates, attribute, fallbackTime) => {
+  if (!updates) return fallbackTime;
+  let fieldUpdate = attribute ? updates[attribute] : null;
+  if (!fieldUpdate?.timestamp) {
+    let mostRecentTimestamp = null;
+    for (const key of Object.keys(updates)) {
+      const update = updates[key];
+      if (update?.timestamp) {
+        if (!mostRecentTimestamp || new Date(update.timestamp) > new Date(mostRecentTimestamp)) {
+          mostRecentTimestamp = update.timestamp;
+          fieldUpdate = update;
+        }
+      }
+    }
+  }
+  return fieldUpdate?.timestamp ? projectUtils.formatTime(fieldUpdate.timestamp) : fallbackTime;
+};
+
 function* projectFileUpload({
   payload: { attribute, file, description, callback, setCancelToken, insideFieldset }
 }) {
@@ -1390,24 +1430,7 @@ function* projectFileUpload({
 
     const lastIndex = attribute.lastIndexOf('.')
     if (lastIndex !== -1) {
-      const splitted = attribute.split('.')
-
-      splitted.forEach(value => {
-        const firstBracket = value.indexOf('[')
-        const secondBracket = value.indexOf(']')
-
-        const fieldSet = attribute.substring(0, firstBracket)
-        const index = attribute.substring(firstBracket + 1, secondBracket)
-        currentFieldName = attribute.substring(lastIndex + 1, attribute.length)
-
-        if (fieldSet !== '' && index !== '') {
-          const returnObject = {
-            parent: fieldSet,
-            index: index
-          }
-          fieldSetIndex.push(returnObject)
-        }
-      })
+      ;({ fieldSetIndex, currentFieldName } = parseFieldsetPath(attribute))
     }
 
     // Create formdata
@@ -1460,29 +1483,7 @@ function* projectFileUpload({
     yield put(setSavingField(null))
     
     // Use backend's timestamp from _metadata.updates for consistency
-    let backendTime = time; // fallback to frontend time
-    if (updatedProject?._metadata?.updates) {
-      // Try exact attribute match first, then find most recent update
-      let fieldUpdate = attribute ? updatedProject._metadata.updates[attribute] : null;
-      
-      if (!fieldUpdate?.timestamp) {
-        const updatedKeys = Object.keys(updatedProject._metadata.updates);
-        let mostRecentTimestamp = null;
-        for (const key of updatedKeys) {
-          const update = updatedProject._metadata.updates[key];
-          if (update?.timestamp) {
-            if (!mostRecentTimestamp || new Date(update.timestamp) > new Date(mostRecentTimestamp)) {
-              mostRecentTimestamp = update.timestamp;
-              fieldUpdate = update;
-            }
-          }
-        }
-      }
-      
-      if (fieldUpdate?.timestamp) {
-        backendTime = projectUtils.formatTime(fieldUpdate.timestamp);
-      }
-    }
+    const backendTime = getBackendTimeFromMetadata(updatedProject?._metadata?.updates, attribute, time)
     
     yield put(setLastSaved("success", backendTime, [], [], false))
   } catch (e) {
@@ -1531,30 +1532,8 @@ function* projectFileRemove({ payload }) {
     yield put(setSavingField(null))
     
     // Use backend's timestamp from _metadata.updates for consistency
-    let backendTime = time; // fallback to frontend time
-    if (updatedProject?._metadata?.updates) {
-      // Try exact payload match first, then find most recent update
-      let fieldUpdate = payload ? updatedProject._metadata.updates[payload] : null;
-      
-      if (!fieldUpdate?.timestamp) {
-        const updatedKeys = Object.keys(updatedProject._metadata.updates);
-        let mostRecentTimestamp = null;
-        for (const key of updatedKeys) {
-          const update = updatedProject._metadata.updates[key];
-          if (update?.timestamp) {
-            if (!mostRecentTimestamp || new Date(update.timestamp) > new Date(mostRecentTimestamp)) {
-              mostRecentTimestamp = update.timestamp;
-              fieldUpdate = update;
-            }
-          }
-        }
-      }
-      
-      if (fieldUpdate?.timestamp) {
-        backendTime = projectUtils.formatTime(fieldUpdate.timestamp);
-      }
-    }
-    
+    const backendTime = getBackendTimeFromMetadata(updatedProject?._metadata?.updates, payload, time)
+
     yield put(setLastSaved("success", backendTime, [], [], false))
   } catch (e) {
     // Clear saving field indicator on error

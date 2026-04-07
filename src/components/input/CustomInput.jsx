@@ -4,7 +4,7 @@ import inputUtils from '../../utils/inputUtils'
 import { TextInput, NumberInput } from 'hds-react'
 import { useDispatch, useSelector } from 'react-redux'
 import {updateFloorValues,formErrorList} from '../../actions/projectActions'
-import {lockedSelector,lastModifiedSelector,pollSelector,lastSavedSelector,savingSelector,pollingProjectsSelector } from '../../selectors/projectSelector'
+import {lockedSelector,lastModifiedSelector,pollSelector,lastSavedSelector,savingSelector} from '../../selectors/projectSelector'
 import moment from 'moment'
 import { useTranslation } from 'react-i18next'
 import RollingInfo from '../input/RollingInfo.jsx'
@@ -51,7 +51,6 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
   const connection = useSelector(state => pollSelector(state))
   const lastSaved = useSelector(state => lastSavedSelector(state))
   const saving = useSelector(state => savingSelector(state))
-  const pollingProjects = useSelector(pollingProjectsSelector)
 
   const isMount = useIsMount();
   const [inputRef, setInputFocus] = useFocus()
@@ -343,11 +342,9 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
                 const readOnlyValue = !custom?.isProjectTimetableEdit
                 setReadOnly({name:input.name,read:readOnlyValue})
               }
-            } else {
+            } else if(!custom.insideFieldset){
               // Keep field editable when there's a validation error
-              if(!custom.insideFieldset){
-                setReadOnly({name:input.name,read:false})
-              }
+              setReadOnly({name:input.name,read:false})
             }
           }
         }
@@ -507,9 +504,8 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
     // Determine appropriate error message
     const maxLength = custom?.characterLimit;
     const exceedsMaxLength = maxLength && maxLength > 0 && input.value && input.value.length > maxLength;
-    const errorString = custom.customError || 
-      (exceedsMaxLength ? t('project.charsover') : 
-        (custom.type === 'number' ? t('project.error-input-int') : t('project.error')));
+    const defaultError = custom.type === 'number' ? t('project.error-input-int') : t('project.error');
+    const errorString = exceedsMaxLength ? t('project.charsover') : (custom.customError || defaultError);
     // Check if THIS field has network error (network down or lock error)
     // DO NOT include field_error - those are backend validation errors and user must be able to fix them!
     const isThisFieldNetworkError = (lastSaved?.status === 'error' || lastSaved?.status === 'connection_restored') && 

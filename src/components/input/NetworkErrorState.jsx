@@ -6,11 +6,63 @@ import { setLastSaved } from '../../actions/projectActions';
 import './NetworkErrorState.scss';
 import PropTypes from 'prop-types';
 
+function normalizeValidationError(validationError, t) {
+  if (typeof validationError === 'object' && validationError !== null) {
+    return t('project.charsover');
+  }
+  return validationError;
+}
+
+function buildFieldErrorNotification(lastSaved, savedFields, fieldName, hasValidationError, t) {
+  const fieldIndex = savedFields.indexOf(fieldName);
+  const backendErrorMessage =
+    fieldIndex >= 0 && Array.isArray(lastSaved?.values) ? lastSaved.values[fieldIndex] : null;
+
+  if (!backendErrorMessage) {
+    return { type: 'error', label: t('messages.network-save-failed-label'), key: 'field_error' };
+  }
+
+  let errorText = Array.isArray(backendErrorMessage) ? backendErrorMessage[0] : backendErrorMessage;
+
+  if (typeof errorText === 'object' && errorText !== null) {
+    errorText = t('messages.network-save-failed-message');
+  }
+
+  return {
+    type: 'error',
+    label: t('messages.network-save-failed-label'),
+    message: errorText,
+    key: 'field_error'
+  };
+}
+
+function buildErrorNotifications(lastSaved, savedFields, fieldName, hasValidationError, t) {
+  const notifications = [];
+  const isFieldValidationError = lastSaved?.status === 'field_error';
+
+  if (!isFieldValidationError) {
+    notifications.push({
+      type: 'error',
+      label: t('messages.network-save-failed-label'),
+      message: t('messages.network-save-failed-message'),
+      key: 'network'
+    });
+  }
+
+  if (isFieldValidationError && fieldName && !hasValidationError) {
+    notifications.push(buildFieldErrorNotification(lastSaved, savedFields, fieldName, hasValidationError, t));
+  } else if (isFieldValidationError) {
+    notifications.push({ type: 'error', label: t('messages.network-save-failed-label'), key: 'field_error' });
+  }
+
+  return notifications;
+}
+
 export default function NetworkErrorState({ fieldName, validationError, maxSizeOver, readonly }) {
   const clearedIsRelevantField = useRef(false);
   
   // Clear localStorage on first mount only
-  if (typeof window !== 'undefined' && !clearedIsRelevantField.current) {
+  if (typeof globalThis.window !== 'undefined' && !clearedIsRelevantField.current) {
       try {
           localStorage.removeItem('isRelevantField');
           localStorage.removeItem('warningManuallyClosed');
@@ -36,38 +88,23 @@ export default function NetworkErrorState({ fieldName, validationError, maxSizeO
 
   const banners = useMemo(() => {
     const notifications = [];
-    
-    // PRIORITY 1: Network error (show network error, HIDE validation errors)
-    // Check lastSaved.status directly, not via hasError (which includes maxSizeOver)
+
+    // PRIORITY 1: Network error  — PRIORITY 2: Backend field error  — PRIORITY 3: Connection restored
     const isNetworkError = lastSaved?.status === 'error';
-    
-    // PRIORITY 2: Backend field validation error (show backend error, HIDE client validation errors)
-    const isFieldError = lastSaved?.status === 'field_error' && savedFields.includes(fieldName);
-    
-    // PRIORITY 3: Connection restored (show success, HIDE validation errors)
     const isConnectionRestored = isSuccess;
-    
-    // PRIORITY 4: Client validation error (show ONLY if no network/backend error or success)
-    const shouldShowValidationError = hasValidationError && !isNetworkError && !isConnectionRestored && !isFieldError;
-    
-    // Show validation error only if not overridden by network state
+
+    // Client validation error: always takes priority over backend field_error
+    // (user has modified the field — previous backend error is stale)
+    const shouldShowValidationError = hasValidationError && !isNetworkError && !isConnectionRestored;
+
     if (shouldShowValidationError) {
-      // Ensure validationError is a string (not Quill Delta object)
-      let errorMessage = validationError;
-      if (typeof errorMessage === 'object' && errorMessage !== null) {
-        // If it's an object (e.g., Quill Delta), use a generic message
-        errorMessage = t('project.charsover'); // fallback to generic validation error
-      }
-      
       notifications.push({
         type: 'error',
-        label: errorMessage,
+        label: normalizeValidationError(validationError, t),
         key: 'validation'
       });
     }
-    
-    // Show success message (connection restored)
-    // Always show when isSuccess is true (network has recovered)
+
     if (isSuccess) {
       notifications.push({
         type: 'success',
@@ -75,62 +112,11 @@ export default function NetworkErrorState({ fieldName, validationError, maxSizeO
         key: 'success'
       });
     }
-    
-    // Show network/save errors 
-    // Don't show if success is also active (prevents "both at once" dual notification)
-    if (hasError && !isSuccess) {
-      // Differentiate between field validation error and network error
-      const isFieldValidationError = lastSaved?.status === 'field_error';
-      
-      // For network errors (including lock errors), show two-line message
-      if (!isFieldValidationError) {
-        notifications.push({
-          type: 'error',
-          label: t('messages.network-save-failed-label'),
-          message: t('messages.network-save-failed-message'),
-          key: 'network'
-        });
-      }
-      
-      // For backend validation errors (400), show the actual backend error message
-      // Find this field's error message from lastSaved.values array
-      // Skip if client validation error is already shown to prevent duplicates
-      if (isFieldValidationError && fieldName && !hasValidationError) {
-        const fieldIndex = savedFields.indexOf(fieldName);
-        const backendErrorMessage = fieldIndex >= 0 && Array.isArray(lastSaved?.values) 
-          ? lastSaved.values[fieldIndex] 
-          : null;
-        
-        if (backendErrorMessage) {
-          // Backend provided a specific error message for this field
-          let errorText = Array.isArray(backendErrorMessage) 
-            ? backendErrorMessage[0] // Take first error if array
-            : backendErrorMessage;
-          
-          // Backend may return Quill Delta object (with 'ops' property) instead of string
-          // React cannot render objects as children - must convert to string or use fallback
-          if (typeof errorText === 'object' && errorText !== null) {
-            // If it's a Quill Delta object or any other object, use fallback message
-            errorText = t('messages.network-save-failed-message');
-          }
-          
-          notifications.push({
-            type: 'error',
-            label: t('messages.network-save-failed-label'),
-            message: errorText,
-            key: 'field_error'
-          });
-        }
-      } else if (isFieldValidationError) {
-        // Fallback for field_error without specific message
-        notifications.push({
-          type: 'error',
-          label: t('messages.network-save-failed-label'),
-          key: 'field_error'
-        });
-      }
+
+    if (hasError && !isSuccess && !hasValidationError) {
+      notifications.push(...buildErrorNotifications(lastSaved, savedFields, fieldName, hasValidationError, t));
     }
-    
+
     return notifications;
   }, [hasError, isSuccess, hasValidationError, validationError, lastSaved?.status, lastSaved?.lock, savedFields, fieldName, lastSaved?.values, t, readonly, maxSizeOver]);
 
@@ -197,7 +183,8 @@ export default function NetworkErrorState({ fieldName, validationError, maxSizeO
   return (
     <div className="network-error-state" aria-live="polite" aria-atomic="true">
       {showBanner && banners.map((banner, index) => {
-        const className = banner.type === 'success' ? `success-text${isFadingOut ? ' fade-out' : ' fade-in'}` : 'error-text';
+        const fadeClass = isFadingOut ? ' fade-out' : ' fade-in';
+        const className = banner.type === 'success' ? `success-text${fadeClass}` : 'error-text';
         // Single-line error notifications use notification-message class (14px regular)
         // Two-line notifications use notification-label (16px bold) + notification-message (14px regular)
         // Success notifications always use notification-label (16px bold) even if single-line
