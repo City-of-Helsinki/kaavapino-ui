@@ -127,6 +127,7 @@ const RadioBooleanButton = ({
     }
     
     const isDisabled = disabled || timeTableDisabled || isThisFieldSaving || shouldDisableForErrors || isThisFieldNetworkError;
+    const disabledClass = isDisabled ? 'radio-button-disabled' : '';
     return nonEditable || rollingInfo && !editField ?
       <RollingInfo 
         name={name} 
@@ -140,9 +141,9 @@ const RadioBooleanButton = ({
       />
       : 
       <div className={radioButtonClass}>
-        {getRadioButton("radio1", "Kyllä", `${name}-true`, `${name}-true`, isDisabled, `radio-button radio-button-true ${isDisabled ? 'radio-button-disabled' : ''}`, "Kyllä", error, name, () => handleOnChange(true), radioValue === true)}
-        {getRadioButton("radio2", "Ei", `${name}-false`, `${name}-false`, isDisabled, `radio-button radio-button-false ${isDisabled ? 'radio-button-disabled' : ''}`, "Ei", error, name, () => handleOnChange(false), radioValue === false)}
-        {!double && showNoInformation && getRadioButton("radio3", "Tieto puuttuu", `${name}-null`, `${name}-null`, isDisabled, `radio-button radio-button-null ${isDisabled ? 'radio-button-disabled' : ''}`, "", error, name, () => handleOnChange(null), radioValue !== false && radioValue !== true)}
+        {getRadioButton("radio1", "Kyllä", `${name}-true`, `${name}-true`, isDisabled, `radio-button radio-button-true ${disabledClass}`, "Kyllä", error, name, () => handleOnChange(true), radioValue === true)}
+        {getRadioButton("radio2", "Ei", `${name}-false`, `${name}-false`, isDisabled, `radio-button radio-button-false ${disabledClass}`, "Ei", error, name, () => handleOnChange(false), radioValue === false)}
+        {!double && showNoInformation && getRadioButton("radio3", "Tieto puuttuu", `${name}-null`, `${name}-null`, isDisabled, `radio-button radio-button-null ${disabledClass}`, "", error, name, () => handleOnChange(null), radioValue !== false && radioValue !== true)}
         <NetworkErrorState fieldName={name} />
       </div>
   }

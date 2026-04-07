@@ -42,6 +42,9 @@ CustomDateTime.propTypes = {
       PropTypes.instanceOf(Date)
     ])
   }).isRequired,
+  meta: PropTypes.shape({
+    form: PropTypes.string
+  }),
   placeholder: PropTypes.string,
   disabled: PropTypes.bool
 }

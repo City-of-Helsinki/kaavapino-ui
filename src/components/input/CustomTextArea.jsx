@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { TextArea } from 'hds-react'
 import { useSelector } from 'react-redux'
 import { useFieldPassivation } from '../../hooks/useFieldPassivation';
-import { lastSavedSelector, savingSelector, pollingProjectsSelector } from '../../selectors/projectSelector'
+import { lastSavedSelector, savingSelector } from '../../selectors/projectSelector'
 import NetworkErrorState from './NetworkErrorState.jsx'
 import './Input.scss'
 
@@ -13,7 +13,6 @@ const CustomTextArea = ({ input, meta, ...custom }) => {
   const shouldDisableForErrors = useFieldPassivation(input.name, { formName: meta.form });
   const lastSaved = useSelector(state => lastSavedSelector(state))
   const saving = useSelector(state => savingSelector(state))
-  const pollingProjects = useSelector(pollingProjectsSelector)
   const [isThisFieldSaving, setIsThisFieldSaving] = useState(false)
   const oldValueRef = useRef('');
 
@@ -83,7 +82,8 @@ CustomTextArea.propTypes = {
     onChange: PropTypes.func.isRequired
   }).isRequired,
   meta: PropTypes.shape({
-    error: PropTypes.string
+    error: PropTypes.string,
+    form: PropTypes.string
   }),
   disabled: PropTypes.bool,
   onFocus: PropTypes.func,

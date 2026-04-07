@@ -360,34 +360,43 @@ function RichTextEditor(props) {
   // Spinner visibility is controlled by inputUtils.renderUpdatedFieldInfo
   // which checks both saving state and testingConnection state
 
+  const handleErrorRecovery = (editor, value) => {
+    const currentEditorContent = editor.getText();
+    const reduxValue = value?.ops?.[0]?.insert || '';
+    const editorEmpty = !currentEditorContent || currentEditorContent.trim().length <= 1;
+    const reduxEmpty = !reduxValue || reduxValue.trim().length === 0;
+
+    if (editorEmpty && !reduxEmpty) {
+      updateEditorContent(editor, value);
+    } else if (!editorEmpty && reduxEmpty) {
+      // Keep editor content as-is
+    } else if (currentEditorContent && reduxValue && currentEditorContent !== reduxValue) {
+      updateEditorContent(editor, value);
+    }
+    prevLastSavedStatus.current = lastSaved?.status || '';
+    counter.current = editor.getLength() - 1;
+  };
+
   // Force Quill to update when Redux Form value changes externally
   // This handles cases like user closing error notification which reverts the field
   useEffect(() => {
-    // Track network status transitions
     prevNetworkStatus.current = network?.status || 'ok';
-    
-    // Track error list membership
     wasInAnyErrorList.current = fieldsWithAnyError.includes(inputProps.name);
-    
-    // Skip update if this field is currently being saved (preserve user data during save)
+
     if (lastModified === inputProps.name && saving) {
       return;
     }
-    
-    // Track if field was just removed from error list
+
     const wasJustCleared = wasInErrorList.current && !formErrors.includes(inputProps.name);
     if (wasJustCleared) {
       setErrorJustCleared(true);
     }
     wasInErrorList.current = formErrors.includes(inputProps.name);
-    
-    // CRITICAL: Preserve user data when character limit exceeded
-    // Don't overwrite editor content with backend value when user has unsaved changes due to error
+
     if (maxSizeOver) {
       return;
     }
-    
-    // Only update editor when field is not focused
+
     if (!editorRef.current || !value || isFocused) {
       return;
     }
@@ -397,48 +406,23 @@ function RichTextEditor(props) {
       return;
     }
 
-    // Preserve user data if there's an active network error
     if (hasActiveNetworkError()) {
       counter.current = editor.getLength() - 1;
       return;
     }
 
-    // Preserve user data if we just recovered from error
     if (isJustRecoveredFromError(prevLastSavedStatus.current, lastSaved?.status)) {
-      const currentEditorContent = editor.getText();
-      const reduxValue = value?.ops?.[0]?.insert || '';
-      
-      // CRITICAL: If editor is empty/whitespace but Redux has real data, RESTORE from Redux
-      if ((!currentEditorContent || currentEditorContent.trim().length <= 1) && 
-          reduxValue && reduxValue.trim().length > 1) {
-        updateEditorContent(editor, value);
-      } 
-      // If editor has user's content but Redux is empty, keep editor content
-      else if (currentEditorContent && currentEditorContent.trim().length > 1 && 
-          (!reduxValue || reduxValue.trim().length === 0)) {
-        // Keep the editor content as-is, don't overwrite
-      } 
-      // If both have different content, trust Redux (it was just saved successfully)
-      else if (currentEditorContent && reduxValue && currentEditorContent !== reduxValue) {
-        updateEditorContent(editor, value);
-      }
-      
-      // CRITICAL: Update prevLastSavedStatus NOW to prevent infinite loop
-      prevLastSavedStatus.current = lastSaved?.status || '';
-      counter.current = editor.getLength() - 1;
+      handleErrorRecovery(editor, value);
       return;
     }
 
-    // Update editor content if needed
     if (shouldUpdateEditorContent(editor, value, errorJustCleared)) {
       updateEditorContent(editor, value);
-      
       if (errorJustCleared) {
         setErrorJustCleared(false);
       }
     }
 
-    // Update status tracking
     prevLastSavedStatus.current = lastSaved?.status || '';
   }, [value, isFocused, formErrors, errorJustCleared, network?.status, connectionErrorFields, lastSaved?.status, maxSizeOver, saving, lastModified]);
 

@@ -69,15 +69,17 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
     }</>
   }
 
+  const quillValue = name === 'viranomaistahon_nimi_ehdotus_readonly'
+    ? (inputText || noValue)
+    : (value === "" ? noValue : value);
+
   return (
     <>
     <div className='rolling-info-container'>
       <div className={value === "" ? "text-input-italic" : "text-input"}>
         {type === "richtext" ? (
           <ReactQuill
-            value={name === 'viranomaistahon_nimi_ehdotus_readonly'
-              ? (inputText || noValue)
-              : (value === "" ? noValue : value)}
+            value={quillValue}
             tabIndex="0"
             theme="snow"
             readOnly={true}

@@ -166,6 +166,7 @@ CustomCheckbox.propTypes = {
   }),
   meta: PropTypes.shape({
     error: PropTypes.string,
+    form: PropTypes.string,
   }),
   autofillRule: PropTypes.string,
   label: PropTypes.string,

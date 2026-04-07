@@ -872,6 +872,7 @@ CustomField.propTypes = {
   meta: PropTypes.object,
   unlockAllFields: PropTypes.func,
   setRef: PropTypes.func,
+  t: PropTypes.func,
   value: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.number,

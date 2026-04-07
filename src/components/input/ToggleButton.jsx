@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Radio } from 'semantic-ui-react'
 import { useFieldPassivation } from '../../hooks/useFieldPassivation';
+import PropTypes from 'prop-types';
 
 const ToggleButton = ({
   input: { value, name, ...rest },
@@ -29,6 +30,17 @@ const ToggleButton = ({
       />
     </div>
   )
+}
+
+ToggleButton.propTypes = {
+  input: PropTypes.shape({
+    value: PropTypes.any,
+    name: PropTypes.string
+  }),
+  meta: PropTypes.shape({
+    error: PropTypes.string,
+    form: PropTypes.string
+  })
 }
 
 export default ToggleButton

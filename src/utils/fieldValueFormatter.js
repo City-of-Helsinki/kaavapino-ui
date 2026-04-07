@@ -22,6 +22,27 @@
  * 
  * @private
  */
+const extractFieldsetObjectEntries = (fieldsetObject, startIndex) => {
+  const withLabels = [];
+  const valuesOnly = [];
+  let index = startIndex;
+
+  for (const fieldName in fieldsetObject) {
+    if (!Object.hasOwn(fieldsetObject, fieldName)) continue;
+    const fieldValue = fieldsetObject[fieldName];
+    if (!fieldValue?.ops || !Array.isArray(fieldValue.ops)) continue;
+    for (const op of fieldValue.ops) {
+      if (op.insert) {
+        withLabels.push(`fieldset-${index}`, `${fieldName}: ${op.insert}`);
+        valuesOnly.push(op.insert);
+        index++;
+      }
+    }
+  }
+
+  return { withLabels, valuesOnly, index };
+};
+
 const extractFieldSetValues = (fieldsetArray) => {
   if (!Array.isArray(fieldsetArray)) {
     return { withLabels: [], valuesOnly: [] };
@@ -32,29 +53,11 @@ const extractFieldSetValues = (fieldsetArray) => {
   let index = 1;
 
   for (const fieldsetObject of fieldsetArray) {
-    // Skip non-object entries
-    if (!fieldsetObject || typeof fieldsetObject !== 'object') {
-      continue;
-    }
-
-    for (const fieldName in fieldsetObject) {
-      if (!Object.hasOwn(fieldsetObject, fieldName)) {
-        continue;
-      }
-
-      const fieldValue = fieldsetObject[fieldName];
-
-      // Handle Quill Delta format (rich text editor)
-      if (fieldValue?.ops && Array.isArray(fieldValue.ops)) {
-        for (const op of fieldValue.ops) {
-          if (op.insert) {
-            arrayValues.push(`fieldset-${index}`, `${fieldName}: ${op.insert}`);
-            valuesOnly.push(op.insert);
-            index++;
-          }
-        }
-      }
-    }
+    if (!fieldsetObject || typeof fieldsetObject !== 'object') continue;
+    const result = extractFieldsetObjectEntries(fieldsetObject, index);
+    arrayValues.push(...result.withLabels);
+    valuesOnly.push(...result.valuesOnly);
+    index = result.index;
   }
 
   return { withLabels: arrayValues, valuesOnly };
@@ -82,60 +85,47 @@ const extractFieldSetValues = (fieldsetArray) => {
  * formatFieldValue([{ name: { ops: [{ insert: "John" }] } }])
  * // Returns: { text: "fieldset-1 name: John", copyText: "John" }
  */
-export const formatFieldValue = (fieldValue) => {
-  let arrayValues = [];
-  let textValue = '';
-  let copyText = '';
+const formatArrayValue = (fieldValue) => {
+  const firstItem = fieldValue[0];
+  if (firstItem?.ops && Array.isArray(firstItem.ops)) {
+    const text = firstItem.ops.filter(op => op?.insert).map(op => op.insert).join('');
+    return { text, copyText: text };
+  }
+  if (typeof firstItem === 'object' && firstItem !== null) {
+    const { withLabels, valuesOnly } = extractFieldSetValues(fieldValue);
+    return { text: withLabels.join(' '), copyText: valuesOnly.join('\n') };
+  }
+  const text = fieldValue.join(', ');
+  return { text, copyText: text };
+};
 
+const normalizeBooleanAndEmpty = (text, copyText) => {
+  if (text === 'true' || text === 'false') {
+    const normalized = text === 'true' ? 'Kyllä' : 'Ei';
+    return { text: normalized, copyText: normalized };
+  }
+  if (text === '' || text === 'undefined' || text === 'null') {
+    return { text: 'Tieto puuttuu', copyText: '' };
+  }
+  return { text, copyText };
+};
+
+export const formatFieldValue = (fieldValue) => {
   if (!fieldValue) {
     return { text: 'Tieto puuttuu', copyText: '' };
   }
 
-  // Handle array values
+  let text = '';
+  let copyText = '';
+
   if (Array.isArray(fieldValue) && fieldValue.length > 0) {
-    const firstItem = fieldValue[0];
-
-    // Case 1: Quill Delta format (rich text)
-    if (firstItem?.ops && Array.isArray(firstItem.ops)) {
-      for (const op of firstItem.ops) {
-        if (op?.insert) {
-          arrayValues.push(op.insert);
-        }
-      }
-      textValue = arrayValues.join('');
-      copyText = textValue;
-    }
-    // Case 2: Fieldset format (nested objects)
-    else if (typeof firstItem === 'object' && firstItem !== null) {
-      const { withLabels, valuesOnly } = extractFieldSetValues(fieldValue);
-      textValue = withLabels.join(' ');
-      copyText = valuesOnly.join('\n'); // Copy only the actual values, not labels
-    }
-    // Case 3: Simple array
-    else {
-      textValue = fieldValue.join(', ');
-      copyText = textValue;
-    }
-  }
-  // Handle primitive values
-  else {
-    textValue = String(fieldValue);
-    copyText = textValue;
+    ({ text, copyText } = formatArrayValue(fieldValue));
+  } else {
+    text = String(fieldValue);
+    copyText = text;
   }
 
-  // Handle boolean values
-  if (textValue.includes('true') || textValue.includes('false')) {
-    textValue = textValue === 'true' ? 'Kyllä' : 'Ei';
-    copyText = textValue;
-  }
-
-  // Handle empty values
-  if (textValue === '' || textValue === 'undefined' || textValue === 'null') {
-    textValue = 'Tieto puuttuu';
-    copyText = '';
-  }
-
-  return { text: textValue, copyText };
+  return normalizeBooleanAndEmpty(text, copyText);
 };
 
 // Legacy exports for backward compatibility (if needed)

@@ -4,7 +4,7 @@ import isUrl from 'is-url'
 import ipRegex from 'ip-regex'
 import { IconCross, IconCheck, Button, IconLink } from 'hds-react'
 import { useSelector,useDispatch } from 'react-redux'
-import { savingSelector, lastModifiedSelector, lastSavedSelector, pollingProjectsSelector } from '../../selectors/projectSelector'
+import { savingSelector, lastModifiedSelector, lastSavedSelector } from '../../selectors/projectSelector'
 import { useTranslation } from 'react-i18next';
 import RollingInfo from '../input/RollingInfo.jsx'
 import NetworkErrorState from './NetworkErrorState.jsx'
@@ -57,7 +57,6 @@ const Link = props => {
   const saving =  useSelector(state => savingSelector(state))
   const lastModified = useSelector(state => lastModifiedSelector(state))
   const lastSaved = useSelector(state => lastSavedSelector(state))
-  const pollingProjects = useSelector(pollingProjectsSelector)
   const [isThisFieldSaving, setIsThisFieldSaving] = useState(false)
   const isValid = value => isUrl(value) || ipRegex({ exact: true }).test(value) || value === ""
   
