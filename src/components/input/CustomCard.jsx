@@ -23,15 +23,14 @@ const buildBoardFieldsJSX = (type, cardData, startsText, t) => {
     || type === "Merkitse voimaantuloa koskevat päivämäärät";
   const isMuutoksenHakuType = type === "Merkitse muutoksenhakua koskevat päivämäärät"
     || type === "Merkitse voimaantuloa koskevat päivämäärät";
-  const boardInfoText = isMuutoksenHakuType
-    ? startsText
-    : (cardData.boardText ? t(cardData.boardText) : "");
+  const boardTextValue = cardData.boardText ? t(cardData.boardText) : "";
+  const boardInfoText = isMuutoksenHakuType ? startsText : boardTextValue;
   const dateDisplay = invalidDate
     ? <span className='italic'>{cardData.boardDate}</span>
     : moment(cardData.boardDate).format('DD.MM.YYYY');
   const statusDisplay = isSpecialApprovalType
     ? <>{invalidDate ? "" : <><span className='divider'>-</span><span className='status'> {t('custom-card.modified')}</span></>}</>
-    : <><span className='divider'>-</span><span className='status'> {!cardData.boardConfirmed ? modifiedText : t('custom-card.confirmed')}</span></>;
+    : <><span className='divider'>-</span><span className='status'> {cardData.boardConfirmed ? t('custom-card.confirmed') : modifiedText}</span></>;
   return (
     <div className='custom-card-info-container'>
       <div className='custom-card-info'>{boardInfoText}</div>
@@ -288,19 +287,16 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
   const dispatch = useDispatch()
   const { t } = useTranslation()
 
-  let buttonText
   let heading
-  let fields
   let editDataLink
-  let boardFields = ""
   let container
   let container2
   
   if(type === "Tarkasta esilläolopäivät" || type === "Merkitse hyväksymispäivä" || type === "Merkitse muutoksenhakua koskevat päivämäärät" || type === "Merkitse voimaantuloa koskevat päivämäärät"){
-    ({buttonText, heading, fields, editDataLink, boardFields, container, container2} = buildDateCardContent({type, cardData, props, showBoth, t, dispatch, matchedDeadline, name, selectedPhase, shouldDisableForErrors}));
+    ({heading, editDataLink, container, container2} = buildDateCardContent({type, cardData, props, showBoth, t, dispatch, matchedDeadline, name, selectedPhase, shouldDisableForErrors}));
   }
   if(type === "Tarkasta kerrosalatiedot"){
-    ({buttonText, heading, fields, editDataLink, container} = buildFloorAreaContent({cardData, t, dispatch, shouldDisableForErrors}));
+    ({heading, editDataLink, container} = buildFloorAreaContent({cardData, t, dispatch, shouldDisableForErrors}));
   }
   //Order is reverse in ehdotus phase
   return (
