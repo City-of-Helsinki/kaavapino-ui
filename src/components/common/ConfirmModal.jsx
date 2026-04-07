@@ -2,17 +2,35 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal } from 'semantic-ui-react';
 import { Button,IconAlertCircle } from 'hds-react';
-
+import { focusTrapOnTabPressed } from '../project/projectModalUtils';
+import { useEffect } from 'react';
 function ConfirmModal({ openConfirmModal,headerText, contentText, button1Text, button2Text, onButtonPress1, onButtonPress2, style, buttonStyle1, buttonStyle2 }) {
+  
+  useEffect(() => {
+    const handleKeyDown = (event) => focusTrapOnTabPressed(event, 'confirm-modal');
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  });
+
   return (
-    <Modal open={openConfirmModal} className={style}>
+    <Modal
+      id="confirm-modal"
+      open={openConfirmModal}
+      className={style}
+      onMount={() => {
+          const firstElement = document.querySelector('#confirm-modal-cancel-button')
+          if (firstElement) {
+            firstElement.focus();
+          }
+      }}
+      >
       <Modal.Header><IconAlertCircle className='header-icon' size="s" aria-hidden="true"/><span className='header-text'>{headerText}</span></Modal.Header>
       <Modal.Content>
         {contentText}
       </Modal.Content>
       <Modal.Actions>
-        <Button onClick={onButtonPress1} className={`button-${buttonStyle1}`} variant={buttonStyle1}>{button1Text}</Button>
-        <Button onClick={onButtonPress2} variant={buttonStyle2}>{button2Text}</Button>
+        <Button id="confirm-modal-cancel-button" onClick={onButtonPress1} className={`button-${buttonStyle1}`} variant={buttonStyle1}>{button1Text}</Button>
+        <Button id="confirm-modal-confirm-button" onClick={onButtonPress2} variant={buttonStyle2}>{button2Text}</Button>
       </Modal.Actions>
     </Modal>
   );

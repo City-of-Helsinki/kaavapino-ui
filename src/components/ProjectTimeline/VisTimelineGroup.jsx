@@ -321,8 +321,26 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     setDataToRemove(data)
   }
 
+  const returnFocusOnConfirmModalClose = () => {
+    const containerId = `timeline-group-${dataToRemove.id}`;
+    const deleteButtonId = `remove-button-${dataToRemove.id}`;
+    const container = document.querySelector(`#${containerId}`);
+    if (container && !container.classList.contains('show-buttons')) {
+      container.classList.add('show-buttons');
+    }
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+      const element = document.querySelector(`#${deleteButtonId}`) || document.querySelector(`#timeline-group-${dataToRemove.nestedInGroup}`);
+      if (element) {
+        element.focus();
+      }
+    });
+  });
+}
+
   const handleCancelRemove = () => {
-    setOpenConfirmModal(!openConfirmModal)
+    setOpenConfirmModal(!openConfirmModal);
+    returnFocusOnConfirmModalClose();
   }
 
   const handleRemoveGroup = () => {
@@ -354,8 +372,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     subsequentGroups.forEach(groupName => {
       removeGroupByName(groupName);
     });
-
     setOpenConfirmModal(!openConfirmModal);
+    returnFocusOnConfirmModalClose(containerId);
   }
 
   const closeAddDialog = (added=false) => {

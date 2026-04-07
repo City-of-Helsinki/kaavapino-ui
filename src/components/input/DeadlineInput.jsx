@@ -122,7 +122,7 @@ const DeadLineInput = ({
       setAllowedDates(allowed);
     } catch (error) {
       // Will catch if an element group was just deleted (Not a problem as this component will be unmounted), but log it just in case
-      console.warning(`Error calculating allowed dates for ${input.name}:`, error);
+      console.warn(`Error calculating allowed dates for ${input.name}:`, error);
       setAllowedDates([]);
     }
   }, [dateTypes, input.name, deadlineSections, sectionAttributes, currentDeadline, JSON.stringify(formValues)]);
