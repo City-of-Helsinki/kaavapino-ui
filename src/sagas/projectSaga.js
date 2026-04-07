@@ -1233,6 +1233,38 @@ function* saveProject(data) {
           }
         }
         
+        // Use backend's timestamp from _metadata.updates for consistency with field-level timestamps
+        // This ensures Header and field timestamps always match
+        let backendTime = time; // fallback to frontend time
+        if (updatedProject?._metadata?.updates) {
+          // Get the actual field names that were saved (from attribute_data, not fieldName payload)
+          // This handles cases where fieldName is a fieldset name but actual saved fields are nested
+          const savedFieldNames = attribute_data ? Object.keys(attribute_data) : [];
+          
+          let fieldUpdate = null;
+          
+          // Try to find timestamp for any of the saved fields
+          for (const savedField of savedFieldNames) {
+            if (updatedProject._metadata.updates[savedField]?.timestamp) {
+              fieldUpdate = updatedProject._metadata.updates[savedField];
+              break;
+            }
+          }
+          
+          // If still not found and we have savedFieldName, try that
+          if (!fieldUpdate?.timestamp && savedFieldName && updatedProject._metadata.updates[savedFieldName]?.timestamp) {
+            fieldUpdate = updatedProject._metadata.updates[savedFieldName];
+          }
+          
+          if (fieldUpdate?.timestamp) {
+            backendTime = projectUtils.formatTime(fieldUpdate.timestamp);
+          }
+        }
+
+        // Dispatch success state BEFORE updateProject so error state clears
+        // before field timestamps become visible (avoids brief "disabled + timestamp" flash)
+        yield put(setLastSaved("success", backendTime, [], [], false))
+
         // Update project ONLY if form values match backend
         // This prevents overwriting user's unsaved changes
         // Even after connection error recovery, if data matches, it's safe to update
@@ -1270,36 +1302,6 @@ function* saveProject(data) {
           // Ensure state remains clean 'ok' without success banner spam
           yield put({ type: 'Set network status', payload: { status: 'ok', okMessage: '', errorMessage: '' } })
         }
-        
-        // Use backend's timestamp from _metadata.updates for consistency with field-level timestamps
-        // This ensures Header and field timestamps always match
-        let backendTime = time; // fallback to frontend time
-        if (updatedProject?._metadata?.updates) {
-          // Get the actual field names that were saved (from attribute_data, not fieldName payload)
-          // This handles cases where fieldName is a fieldset name but actual saved fields are nested
-          const savedFieldNames = attribute_data ? Object.keys(attribute_data) : [];
-          
-          let fieldUpdate = null;
-          
-          // Try to find timestamp for any of the saved fields
-          for (const savedField of savedFieldNames) {
-            if (updatedProject._metadata.updates[savedField]?.timestamp) {
-              fieldUpdate = updatedProject._metadata.updates[savedField];
-              break;
-            }
-          }
-          
-          // If still not found and we have savedFieldName, try that
-          if (!fieldUpdate?.timestamp && savedFieldName && updatedProject._metadata.updates[savedFieldName]?.timestamp) {
-            fieldUpdate = updatedProject._metadata.updates[savedFieldName];
-          }
-          
-          if (fieldUpdate?.timestamp) {
-            backendTime = projectUtils.formatTime(fieldUpdate.timestamp);
-          }
-        }
-        
-        yield put(setLastSaved("success", backendTime, [], [], false))
 
       } catch (e) {
         // Clear saving field on error
@@ -1350,6 +1352,10 @@ function* saveProject(data) {
     else if (fileOrimgSave) {
       yield put(setAllEditFields())
       yield put(setPoll(false))
+    }
+    else {
+      // No changed values — clear spinner that was set before the isEmpty check
+      yield put(setSavingField(null))
     }
   }
   yield put(saveProjectSuccessful())
