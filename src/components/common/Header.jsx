@@ -19,6 +19,7 @@ import { usersSelector } from '../../selectors/userSelector'
 import { setTestingConnection } from '../../actions/projectActions'
 import { authUserSelector } from '../../selectors/authSelector'
 import { lastSavedSelector,savingSelector,selectedPhaseSelector } from '../../selectors/projectSelector'
+import { networkSelector } from '../../selectors/networkSelector'
 import { schemaSelector } from '../../selectors/schemaSelector'
 import schemaUtils from '../../utils/schemaUtils'
 import {useInterval} from '../../hooks/connectionPoller'
@@ -52,6 +53,8 @@ const Header = props => {
   const saving =  useSelector(state => savingSelector(state))
   const schema = useSelector(state => schemaSelector(state))
   const selectedPhase = useSelector(state => selectedPhaseSelector(state))
+  const network = useSelector(state => networkSelector(state))
+  const isConnectionRestored = network?.status === 'success' || lastSaved?.status === 'connection_restored'
 
   const currentUser = users.find(
     item => user && user.profile && item.id === user.profile.sub
@@ -315,12 +318,25 @@ const Header = props => {
           latestUpdate = {status:t('header.latest-save'),time:lastSaved.time}
           setLastSuccessfulSaveTime(lastSaved.time) // Save for error tooltip
         }
-        else if(lastSaved?.status === ""){
-          // Error notification was closed and field reverted to saved value
-          // Show "no unsaved data" message
+        else if(lastSaved?.status === "connection_restored"){
+          // Connection was restored - clear error state from header
           setCount(1)
           setExistingErrors([])
-          latestUpdate = {status:t('header.edit-menu-no-save'),time:""}
+          latestUpdate = {status:t('header.latest-save'),time:lastSaved.time}
+          if (lastSaved.time) {
+            setLastSuccessfulSaveTime(lastSaved.time)
+          }
+        }
+        else if(lastSaved?.status === ""){
+          // Error notification was closed and field reverted to saved value
+          // If something was saved this session, show last save time; otherwise show "no unsaved data"
+          setCount(1)
+          setExistingErrors([])
+          if (lastSuccessfulSaveTime) {
+            latestUpdate = {status:t('header.latest-save'),time:lastSuccessfulSaveTime}
+          } else {
+            latestUpdate = {status:t('header.edit-menu-no-save'),time:""}
+          }
         }
       if (latestUpdate) {
         setUpdateTime(latestUpdate)
@@ -464,7 +480,7 @@ const Header = props => {
             </div>
             <div className='icons-container-flex'>
               {!saving && !isPollingConnection && updateTime?.status === t('header.latest-save') ? <IconCheck className='check-icon'/> : ""}
-              {!saving && !isPollingConnection && updateTime?.status === t('header.edit-menu-save-fail') ? (
+              {!saving && !isPollingConnection && updateTime?.status === t('header.edit-menu-save-fail') && !isConnectionRestored ? (
                 <> <IconErrorFill className='error-icon'/> <p className="error">{updateTime?.status}</p> </>
               ) : (
                 !isPollingConnection && <p>{updateTime?.status}{updateTime?.time}</p>

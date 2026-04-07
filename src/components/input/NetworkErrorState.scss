@@ -2,6 +2,16 @@
 // Wrapper for inline error and success notifications
 @use "../common/mixins" as *;
 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
 .network-error-state {
   width: 100%;
   margin-top: 0.5rem;
@@ -32,7 +42,15 @@
   .success-text {
     @include hds-success-notification;
     margin-top: 8px;
-    border-left: none; // Override border for success notifications
+    border-left: none;
+
+    &.fade-in {
+      animation: fadeIn 350ms ease forwards;
+    }
+
+    &.fade-out {
+      animation: fadeOut 300ms ease forwards;
+    }
 
     // Wrapper for text content (to work with flexbox layout)
     .notification-content {

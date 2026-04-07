@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useRef } from 'react';
+import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { projectNetworkSelector, lastSavedSelector } from '../../selectors/projectSelector';
 import { useTranslation } from 'react-i18next';
@@ -135,14 +135,22 @@ export default function NetworkErrorState({ fieldName, validationError, maxSizeO
   }, [hasError, isSuccess, hasValidationError, validationError, lastSaved?.status, lastSaved?.lock, savedFields, fieldName, lastSaved?.values, t, readonly, maxSizeOver]);
 
   // Auto-hide "connection restored" banner after 5 seconds
+  const [isFadingOut, setIsFadingOut] = useState(false)
   useEffect(() => {
     if (isSuccess) {
-      const timer = setTimeout(() => {
+      setIsFadingOut(false)
+      const fadeTimer = setTimeout(() => {
+        setIsFadingOut(true)
+      }, 8000 - 300);
+      const hideTimer = setTimeout(() => {
         dispatch({ type: 'Reset network status' });
         dispatch(setLastSaved('', null, [], [], false));
         localStorage.removeItem('isRelevantField');
-      }, 5000);
-      return () => clearTimeout(timer);
+      }, 8000);
+      return () => {
+        clearTimeout(fadeTimer);
+        clearTimeout(hideTimer);
+      };
     }
   }, [isSuccess, dispatch]);
 
@@ -153,10 +161,14 @@ export default function NetworkErrorState({ fieldName, validationError, maxSizeO
   const storedRelevant = fieldName ? storedFieldName === fieldName : false;
 
   useEffect(() => {
-    if (hasError && !storedFieldName && isRelevantField) {
+    if (hasError && isRelevantField) {
+      // Always update localStorage to the current error field, even if another field's
+      // value was still stored (e.g. from a previous error that wasn't cleared yet)
+      if (storedFieldName !== fieldName) {
         try {
           localStorage.setItem('isRelevantField', fieldName);
         } catch (e) {}
+      }
     }
   }, [hasError, storedFieldName, isRelevantField, fieldName]);
   
@@ -185,7 +197,7 @@ export default function NetworkErrorState({ fieldName, validationError, maxSizeO
   return (
     <div className="network-error-state" aria-live="polite" aria-atomic="true">
       {showBanner && banners.map((banner, index) => {
-        const className = banner.type === 'success' ? 'success-text' : 'error-text';
+        const className = banner.type === 'success' ? `success-text${isFadingOut ? ' fade-out' : ' fade-in'}` : 'error-text';
         // Single-line error notifications use notification-message class (14px regular)
         // Two-line notifications use notification-label (16px bold) + notification-message (14px regular)
         // Success notifications always use notification-label (16px bold) even if single-line
