@@ -69,9 +69,10 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
     }</>
   }
 
+  const fallbackValue = value === "" ? noValue : value;
   const quillValue = name === 'viranomaistahon_nimi_ehdotus_readonly'
     ? (inputText || noValue)
-    : (value === "" ? noValue : value);
+    : fallbackValue;
 
   return (
     <>

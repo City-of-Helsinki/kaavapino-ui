@@ -62,7 +62,7 @@ export default function NetworkErrorState({ fieldName, validationError, maxSizeO
   const clearedIsRelevantField = useRef(false);
   
   // Clear localStorage on first mount only
-  if (typeof globalThis.window !== 'undefined' && !clearedIsRelevantField.current) {
+  if (globalThis.window !== undefined && !clearedIsRelevantField.current) {
       try {
           localStorage.removeItem('isRelevantField');
           localStorage.removeItem('warningManuallyClosed');
