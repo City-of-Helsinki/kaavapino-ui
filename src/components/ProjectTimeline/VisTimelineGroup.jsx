@@ -1743,7 +1743,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       /**
        * Handle item hover state changes
        */
-      const handleItemHover = (event, result, mouseX, mouseY) => {
+      const handleItemHover = (event, result) => {
         if (!result) {
           // No item under cursor
           if (lastItemId !== null) {
@@ -1797,7 +1797,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           }
 
           const result = getTopmostTimelineItem(mouseX, mouseY, timelineInstanceRef);
-          handleItemHover(event, result, mouseX, mouseY);
+          handleItemHover(event, result);
         });
       };
 
@@ -1837,6 +1837,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               // Item is from past phase, don't show drag cursor
               return;
             }
+          }
+
+          // Block confirmed items from showing drag cursor
+          const mouseDownItemEl = props?.event?.target?.closest?.('.vis-item');
+          if (mouseDownItemEl?.classList?.contains('confirmed')) {
+            return;
           }
 
           // Reset the flag on new mouseDown

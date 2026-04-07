@@ -558,6 +558,28 @@
                 background: $color-gray;
             }
         }
+
+        // Disable drag handle and cursor for past-phase and confirmed element sets
+        .only-inner-end.past-phase-item,
+        .only-inner-end.confirmed {
+            cursor: default !important;
+            pointer-events: none !important;
+            .vis-item-overflow {
+                cursor: default !important;
+                pointer-events: none !important;
+                &::after {
+                    opacity: 0 !important;
+                }
+            }
+        }
+
+        .vis-point.inner-end.past-phase-item,
+        .vis-point.inner-end.confirmed {
+            cursor: default !important;
+            &::after {
+                opacity: 0 !important;
+            }
+        }
     }
 
     .kaynnistys_1{
@@ -826,6 +848,11 @@
                 opacity: 1;
             }
         }
+    }
+
+    // Confirmed vis-point items (e.g. board/lautakunta deadlines) should not show drag cursor
+    .vis-point.confirmed {
+        cursor: default !important;
     }
 
     .vis-dot.board-only{
