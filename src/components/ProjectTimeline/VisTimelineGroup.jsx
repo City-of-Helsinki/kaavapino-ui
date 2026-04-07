@@ -2213,7 +2213,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   const timelineInitialTab = getTimelineInitialTab(showTimetableForm);
 
   return (
-    !deadlines ? <LoadingSpinner />
+    !deadlines ? <LoadingSpinner theme={{ '--spinner-color': '#0000BF' }} />
       :
       <>
         <div className='vis years' ref={timelineRef}>

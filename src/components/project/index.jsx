@@ -93,7 +93,6 @@ class ProjectPage extends Component {
     const { currentProject, changingPhase } = this.props
     if(prevProps.saving && !this.props.saving){
       this.setState(prevState => ({ ...prevState, showBaseInformationForm: false }))
-      document.getElementById('editNavSelect-toggle-button')?.focus();
     }
     if (
       (!prevProps.currentProject && currentProject) ||
@@ -454,12 +453,8 @@ class ProjectPage extends Component {
   }
   openProjectDataModal = () => this.togglePrintProjectDataModal(true)
 
-  toggleBaseInformationForm = (opened) => {
-    if (!opened && this.state.showBaseInformationForm) {
-      document.getElementById('editNavSelect-toggle-button')?.focus();
-    }
+  toggleBaseInformationForm = opened =>
     this.setState(prevState => ({ ...prevState, showBaseInformationForm: opened }))
-  }
 
   getAllChanges = () => {
     const { allEditFields, edit, creator, t } = this.props
@@ -512,15 +507,8 @@ class ProjectPage extends Component {
     return ordered
   }
 
-  togglePrintProjectDataModal = (opened) => {
-    if (!opened && this.state.showPrintProjectDataModal) {
-      const navButtons = document.getElementById('editNavSelect-toggle-button');
-      if (navButtons) {
-        navButtons.focus();
-      }
-    }
-    this.setState({ showPrintProjectDataModal: opened });
-  }
+  togglePrintProjectDataModal = opened =>
+    this.setState({ showPrintProjectDataModal: opened })
 
   renderLoading = () => {
     const { t } = this.props
@@ -533,7 +521,7 @@ class ProjectPage extends Component {
           ]}
         />
         <div className="project-page-content">
-          <LoadingSpinner className="loader-icon">{t('loading')}</LoadingSpinner>
+          <LoadingSpinner className="loader-icon" theme={{ '--spinner-color': '#0000BF' }}>{t('loading')}</LoadingSpinner>
         </div>
       </div>
     )

@@ -52,7 +52,7 @@ function FloorAreaMobile({
     <div className="floor-area">
       <div className="chart-area-header-mobile">
         <h3>{t('floor-area.mobile-title')}</h3>
-        {!isChartDataLoaded() && <LoadingSpinner className="center" />}
+        {!isChartDataLoaded() && <LoadingSpinner className="center" theme={{ '--spinner-color': '#0000BF' }} />}
         {isChartDataLoaded() && (
           <div className="current-number">
             {t('floor-area.current-number', { current })}

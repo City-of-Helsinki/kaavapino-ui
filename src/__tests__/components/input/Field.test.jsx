@@ -12,6 +12,10 @@ vi.mock("react-i18next", () => ({
     Component.defaultProps = { ...Component.defaultProps, t: () => "" };
     return Component;
   },
+  initReactI18next: {
+    type: '3rdParty',
+    init: () => {}
+  }
 }));
 
 describe('<Field />', () => {
@@ -30,7 +34,12 @@ describe('<Field />', () => {
       comment: {
         fieldComments: {}
       },
-      project: { checking: true,  connection: true }
+      project: { 
+        checking: true,  
+        connection: true,
+        formErrorList: [],
+        lastSaved: { status: '', fields: [] }
+      }
     }
     store = mockStore(initialState)
 

@@ -10,6 +10,8 @@ const mockStore = configureStore();
 const store = mockStore({
   project: {
     saving: false,
+    formErrorList: [],
+    lastSaved: { status: '', fields: [] }
   }
 });
 

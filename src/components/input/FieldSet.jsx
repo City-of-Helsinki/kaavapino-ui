@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { connect, useDispatch } from 'react-redux'
+import { connect, useDispatch, useSelector } from 'react-redux'
 import { checkingSelector, savingSelector, formErrorListSelector, lastSavedSelector, updateFieldSelector} from '../../selectors/projectSelector'
 import CustomField from './CustomField.jsx'
+import NetworkErrorState from './NetworkErrorState.jsx'
 import { Form, Label } from 'semantic-ui-react'
 import projectUtils from '../../utils/projectUtils'
 import inputUtils from '../../utils/inputUtils'
@@ -12,8 +13,9 @@ import { Button, IconLock, IconPlus, IconTrash, IconAngleDown, IconAngleUp, Load
 import { change } from 'redux-form'
 import { useTranslation } from 'react-i18next';
 import { OutsideClick } from '../../hooks/OutsideClick'
-import {getAttributeData} from '../../actions/projectActions'
+import {getAttributeData, formErrorList} from '../../actions/projectActions'
 import { useIsMount } from '../../hooks/IsMounted'
+import { useFieldPassivation } from '../../hooks/useFieldPassivation'
 import PropTypes from 'prop-types'
 import './Input.scss'
 
@@ -47,7 +49,8 @@ const FieldSet = ({
   isTabActive,
   highlightedInFieldset,
   highlightedTag,
-  savingField
+  savingField,
+  testingConnection
 }) => {
   const handleBlur = () => {
     setShowSaving(true)
@@ -58,6 +61,12 @@ const FieldSet = ({
   const { t } = useTranslation()
   const isMount = useIsMount()
   const accordianRef = useRef(null)
+  
+  // Check if other fields have errors - passivate fieldset expand/delete buttons
+  const shouldDisableForErrors = useFieldPassivation(name, { formName })
+  
+  // Get error list to check if any child fields have errors
+  const formErrors = useSelector(formErrorListSelector)
 
   const nulledFields = fields && fields.map(field => {
     return { [field.name]: null, _deleted: true }
@@ -81,6 +90,14 @@ const FieldSet = ({
 
   const hideFieldset = (formName, set, nulledFields,i) => {
     setHiding(true)
+    
+    // Remove all fields in this fieldset from error list to prevent UI from getting stuck
+    // When a fieldset is deleted, any errors in its fields should be cleared
+    fields.forEach(field => {
+      const fieldName = `${set}.${field.name}`;
+      dispatch(formErrorList(false, fieldName));
+    });
+    
     dispatch(getAttributeData(attributeData?.projektin_nimi,name,formName, set, nulledFields,i))
   }
 
@@ -123,9 +140,6 @@ const FieldSet = ({
   }, [saving])
 
   const checkLocked = (e,set,i) => {
-    //Fetch fieldset data from backend and see if there is new sub fieldset or data changes
-    dispatch(getAttributeData(attributeData?.projektin_nimi,name,formName, set, nulledFields,i))
-
     let expand = false
     //Change expanded styles if close button or accordian heading element is clicked
     const substrings = ["fieldset-accordian-close","accordion-button"];
@@ -142,6 +156,16 @@ const FieldSet = ({
         handleUnlockField(set)
       }
       else{
+        // Opening fieldset - fetch data only if no validation errors in this fieldset
+        // This preserves user's invalid input so they can fix it
+        const hasFieldsetErrors = formErrors?.some(errorFieldName => 
+          errorFieldName.startsWith(`${set}.`)
+        );
+        
+        if (!hasFieldsetErrors) {
+          dispatch(getAttributeData(attributeData?.projektin_nimi,name,formName, set, nulledFields,i))
+        }
+        
         //Close other accordians and open latest
         expandedArray = [i];
         //check is someone else editing the fieldset or lock it to this user
@@ -226,6 +250,17 @@ const FieldSet = ({
 
     return valueType || <span className='italic'>Tieto puuttuu</span>
   }
+  
+  // Check if ANY fieldset instance in this component has child fields with errors
+  // This is used to decide whether to disable Add button
+  const anyFieldsetHasChildError = Array.isArray(sets) && formErrors?.some(errorField => {
+    return sets.some(set => {
+      return fields.some(field => {
+        const fieldName = `${set}.${field.name}`;
+        return errorField === fieldName;
+      });
+    });
+  });
 
   return (
     <div className='fieldset-main-container' ref={accordianRef}>
@@ -238,11 +273,28 @@ const FieldSet = ({
         const automatically_added = get(formValues, set + '._automatically_added')
         const lockedElement = fieldsetDisabled ? <span className="input-locked"> Käyttäjä {lockStatus.lockStyle.lockData.attribute_lock.user_name} {lockStatus.lockStyle.lockData.attribute_lock.user_email} on muokkaamassa kenttää<IconLock></IconLock></span> : <></>
         const lockName = <><span className='accoardian-header-text'>{getValueName(setValues,fields)}</span> {lockedElement}</>
+        
+        // Check if THIS specific fieldset instance has any child fields with errors
+        const hasChildError = formErrors?.some(errorField => {
+          return fields.some(field => {
+            const fieldName = `${set}.${field.name}`;
+            return errorField === fieldName;
+          });
+        });
+        
+        // Only disable accordion if errors exist in OTHER fields (not this fieldset's children)
+        // If this fieldset has child errors, allow opening so user can fix them
+        const shouldDisableAccordion = shouldDisableForErrors && !hasChildError;
+        
         return (
           <React.Fragment key={`${name}-${i}`}>
             {!deleted && hiddenIndex !== i && (
               <div key={i} className="fieldset-container">
-                <button type="button" tabIndex={0} className={saving || hiding || adding ? "accordion-button-disabled" : expanded.includes(i) ? "accordion-button-open" : "accordion-button"} onClick={(e) => {if(!(saving || hiding || adding)){checkLocked(e,set,i)}}}>
+                <button type="button" tabIndex={0} className={(() => {
+                  if (saving || hiding || adding || shouldDisableAccordion) return "accordion-button-disabled";
+                  if (expanded.includes(i)) return "accordion-button-open";
+                  return "accordion-button";
+                })()} onClick={(e) => {if(!(saving || hiding || adding || shouldDisableAccordion)){checkLocked(e,set,i)}}}>
                   <div className='accordion-button-content'>
                     {lockName}
                   </div>
@@ -340,7 +392,7 @@ const FieldSet = ({
                           <div className="input-header-icons">
                             {!isReadOnly && (
                               <>
-                                {inputUtils.renderUpdatedFieldInfo({ savingField, fieldName: field.name, updated: fieldSpecificUpdated, t, isFieldset: false })}
+                                {inputUtils.renderUpdatedFieldInfo({ savingField, fieldName: field.name, updated: fieldSpecificUpdated, t, isFieldset: false, testingConnection })}
                                 {inputUtils.renderTimeContainer({ updated: fieldSpecificUpdated, t })}
                               </>
                             )}
@@ -386,10 +438,14 @@ const FieldSet = ({
                     </div>
                   )
                 })}
+                {/* Show NetworkErrorState for connection errors in fieldset */}
+                {expanded.includes(i) && (
+                  <NetworkErrorState fieldName={`${set}.${fields[0]?.name}`} />
+                )}
                 {(!disable_fieldset_delete_add && !automatically_added && !disabled) && (
                   <Button
-                    className={`${fieldsetDisabled || saving ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'} ${hiding ? ' hidden' : ''}`}
-                    disabled={sets.length < 1 || disabled || fieldsetDisabled || saving}
+                    className={`${fieldsetDisabled || saving || shouldDisableAccordion ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'} ${hiding ? ' hidden' : ''}`}
+                    disabled={sets.length < 1 || disabled || fieldsetDisabled || saving || shouldDisableAccordion}
                     variant="secondary"
                     size='small'
                     iconLeft={<IconTrash/>}
@@ -400,7 +456,13 @@ const FieldSet = ({
                 )}
                 {hiding && (
                 <div className="fieldset-spinner-remove">
-                  <LoadingSpinner className="loading-spinner" />
+                  <LoadingSpinner 
+                    className="loading-spinner" 
+                    theme={{
+                      '--spinner-color': '#0000BF',
+                      '--spinner-thickness': '2px'
+                    }}
+                  />
                   {t('project.deleting')}
                 </div>
                 )}
@@ -421,14 +483,20 @@ const FieldSet = ({
           onClick={() => {
             refreshFieldset()
           }}
-          disabled={disabled || visibleErrors.length > 0 || saving}
+          disabled={disabled || visibleErrors.length > 0 || saving || (shouldDisableForErrors && !anyFieldsetHasChildError)}
           variant="supplementary"
           size='small'
           fullWidth={true}
           iconLeft={
           (currentFieldset === name) && adding ? (
             <div className="fieldset-spinner-button">
-              <LoadingSpinner className="loading-spinner" />
+              <LoadingSpinner 
+                className="loading-spinner" 
+                theme={{
+                  '--spinner-color': '#0000BF',
+                  '--spinner-thickness': '2px'
+                }}
+              />
             </div>
           ) : (
             <IconPlus />
@@ -439,11 +507,17 @@ const FieldSet = ({
           ? t('project.adding')
           : t('project.add')}
         </Button>
-        {((updateField?.fieldName === name) && showSaving) || (savingField && fields.some(field => field.name === savingField))
+        {(((updateField?.fieldName === name) && showSaving) || (savingField && fields.some(field => field.name === savingField))) && visibleErrors?.length === 0
          ? (
            <div className='fieldset-saving-notification'>
              <div className="fieldset-spinner">
-               <LoadingSpinner className="loading-spinner" />
+               <LoadingSpinner 
+                 className="loading-spinner" 
+                 theme={{
+                   '--spinner-color': '#0000BF',
+                   '--spinner-thickness': '2px'
+                 }}
+               />
              </div>
              {t('project.saving')}
            </div>
@@ -463,12 +537,14 @@ const mapStateToProps = state => ({
   visibleErrors:formErrorListSelector(state),
   lastSaved: lastSavedSelector(state),
   updateField: updateFieldSelector(state),
-  savingField: state.project.savingField
+  savingField: state.project.savingField,
+  testingConnection: state.project.testingConnection
 })
 
 FieldSet.propTypes = {
   unlockAllFields:PropTypes.func,
   saving: PropTypes.bool,
+  sets: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
   fields: PropTypes.array,
   lastSaved: PropTypes.object,
   updateField: PropTypes.bool,
@@ -476,7 +552,13 @@ FieldSet.propTypes = {
   updated: PropTypes.object,
   phaseIsClosed: PropTypes.bool,
   lockStatus: PropTypes.object,
-  isTabActive: PropTypes.bool
+  isTabActive: PropTypes.bool,
+  visibleErrors: PropTypes.arrayOf(PropTypes.string),
+  savingField: PropTypes.string,
+  testingConnection: PropTypes.shape({
+    isActive: PropTypes.bool,
+    fieldName: PropTypes.string
+  })
 }
 
 export default connect(mapStateToProps)(FieldSet)

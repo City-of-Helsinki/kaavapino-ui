@@ -35,6 +35,7 @@ import authUtils from '../../utils/authUtils'
 import OwnProjectFilters from './OwnProjectFilters.jsx'
 import { ToggleButton } from 'hds-react';
 import { isEqual } from 'lodash'
+import PropTypes from 'prop-types'
 import './ProjectList.scss'
 
 class ProjectListPage extends Component {
@@ -46,7 +47,7 @@ class ProjectListPage extends Component {
       filter: ["","",[]],
       activeIndex: 1,
       screenWidth: window.innerWidth,
-      currentFilterData:this.props.filterData,
+      currentFilterData: Array.isArray(this.props.filterData) ? this.props.filterData : [],
       pageIndex:0,
       showGraph: false,
       pageLimit:20,
@@ -81,7 +82,7 @@ class ProjectListPage extends Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.filterData !== this.props.filterData) {
-      this.setState({currentFilterData:this.props.filterData})
+      this.setState({currentFilterData: Array.isArray(this.props.filterData) ? this.props.filterData : []})
     }
     if(prevProps.users !== this.props.users){
       const isExpert = authUtils.isExpert(this.props.currentUserId, this.props.users)
@@ -580,6 +581,10 @@ const mapDispatchToProps = {
   clearProjects,
   fetchArchivedProjects,
   fetchOnholdProjects
+}
+
+ProjectListPage.propTypes = {
+  filterData: PropTypes.array
 }
 
 export default withRouter(

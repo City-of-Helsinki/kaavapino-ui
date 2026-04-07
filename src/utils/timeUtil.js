@@ -36,12 +36,21 @@ import { getVisibilityBoolName } from "./projectVisibilityUtils";
 		}
 		const updatedDate = new Date(timestamp)
 		const now = new Date()
+		
+		// Reset time parts to compare only dates (not times)
+		const updatedDateOnly = new Date(updatedDate.getFullYear(), updatedDate.getMonth(), updatedDate.getDate())
+		const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+		
 		const oneDayMs = 24 * 60 * 60 * 1000
-		const diffMs = now.getTime() - updatedDate.getTime()
-    if (diffMs < 0 || diffMs < oneDayMs) {
+		const diffMs = nowDateOnly.getTime() - updatedDateOnly.getTime()
+		const days = Math.floor(diffMs / oneDayMs)
+		
+    if (days < 0) {
       return tFn ? tFn('relativeDates.today') : 'Today'
 		}
-		const days = Math.floor(diffMs / oneDayMs)
+    if (days === 0) {
+      return tFn ? tFn('relativeDates.today') : 'Today'
+		}
     if (days === 1) {
       return tFn ? tFn('relativeDates.yesterday') : 'Yesterday'
 		}

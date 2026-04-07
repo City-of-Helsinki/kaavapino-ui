@@ -7,8 +7,148 @@ import {attributeDataSelector,deadlinesSelector} from '../../selectors/projectSe
 import { useTranslation } from 'react-i18next'
 import infoFieldUtil from '../../utils/infoFieldUtil'
 import moment from 'moment'
+import { useFieldPassivation } from '../../hooks/useFieldPassivation'
 
-function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth}) {
+const getDateStatus = (confirmed, modified, t) => {
+  if (confirmed) return t('custom-card.confirmed');
+  if (modified) return t('custom-card.modified');
+  return t('custom-card.evaluation');
+};
+
+const buildBoardFieldsJSX = (type, cardData, startsText, t) => {
+  const modifiedText = cardData.boardModified ? t('custom-card.modified') : t('custom-card.evaluation');
+  const invalidDate = moment(cardData.boardDate).format('DD.MM.YYYY') === "Invalid date";
+  const isSpecialApprovalType = type === "Merkitse hyväksymispäivä"
+    || type === "Merkitse muutoksenhakua koskevat päivämäärät"
+    || type === "Merkitse voimaantuloa koskevat päivämäärät";
+  const isMuutoksenHakuType = type === "Merkitse muutoksenhakua koskevat päivämäärät"
+    || type === "Merkitse voimaantuloa koskevat päivämäärät";
+  const boardTextValue = cardData.boardText ? t(cardData.boardText) : "";
+  const boardInfoText = isMuutoksenHakuType ? startsText : boardTextValue;
+  const dateDisplay = invalidDate
+    ? <span className='italic'>{cardData.boardDate}</span>
+    : moment(cardData.boardDate).format('DD.MM.YYYY');
+  const statusDisplay = isSpecialApprovalType
+    ? <>{invalidDate ? "" : <><span className='divider'>-</span><span className='status'> {t('custom-card.modified')}</span></>}</>
+    : <><span className='divider'>-</span><span className='status'> {cardData.boardConfirmed ? t('custom-card.confirmed') : modifiedText}</span></>;
+  return (
+    <div className='custom-card-info-container'>
+      <div className='custom-card-info'>{boardInfoText}</div>
+      <div className='custom-card-date'>
+        <span className='date'>{dateDisplay}</span>{statusDisplay}
+      </div>
+    </div>
+  );
+};
+
+const buildDateContainers = (cardData, boardFields, fields, t) => {
+  let container = cardData.boardDate
+    ? <div className='custom-card-container'><div className='custom-card-item-container'>{boardFields}</div></div>
+    : "";
+  let container2 = (cardData.startDate || cardData.endDate)
+    ? <div className='custom-card-container'><div className='custom-card-item-container'>{fields}</div></div>
+    : "";
+  if (!container && !container2) {
+    container = (
+      <div className='custom-card-container'>
+        <div className='custom-card-item-container'>
+          <div className='custom-card-info-container'>
+            <div className='custom-card-info'>
+              {t('custom-card.no-dates-set')}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return { container, container2 };
+};
+
+const buildDateCardContent = ({ type, cardData, props, showBoth, t, dispatch, matchedDeadline, name, selectedPhase, shouldDisableForErrors }) => {
+  let startsText = props?.fieldData?.fieldset_attributes[0]?.label || "";
+  let endsText = props?.fieldData?.fieldset_attributes[1]?.label || "";
+  const buttonText = t('custom-card.modify-date');
+  const heading = type === "Merkitse hyväksymispäivä" || type === "Merkitse muutoksenhakua koskevat päivämäärät" || type === "Merkitse voimaantuloa koskevat päivämäärät"
+    ? props?.fieldData?.label
+    : t('custom-card.check-date');
+  if (showBoth) {
+    startsText = cardData.startText ? t(cardData.startText) : "";
+    endsText = cardData.endText ? t(cardData.endText) : "";
+  }
+  const startStatus = getDateStatus(cardData.confirmed, cardData.startModified, t);
+  const endStatus = getDateStatus(cardData.confirmed, cardData.endModified, t);
+  const fields = <>
+    {cardData.startDate &&
+      <div className='custom-card-info-container'>
+        <div className='custom-card-info'>{startsText}</div>
+        <div className='custom-card-date'>
+          <span className='date'>{moment(cardData.startDate).format('DD.MM.YYYY')}</span>
+          <span className='divider'>-</span>
+          <span className='status'>{startStatus}</span>
+        </div>
+      </div>
+    }
+    {cardData.endDate &&
+      <div className='custom-card-info-container'>
+        <div className='custom-card-info'>{endsText}</div>
+        <div className='custom-card-date'>
+          <span className='date'>{moment(cardData.endDate).format('DD.MM.YYYY')}</span>
+          <span className='divider'>-</span>
+          <span className='status'>{endStatus}</span>
+        </div>
+      </div>
+    }
+  </>;
+  let allConfirmed = !(
+    (cardData.acceptanceDate) ||
+    (cardData.startDate && !cardData.confirmed) ||
+    (cardData.boardDate && !cardData.boardConfirmed)
+  );
+  if (!cardData.startDate && !cardData.endDate && !cardData.boardDate) {
+    allConfirmed = false;
+  }
+  const editDataLink = allConfirmed
+    ? <div className='rolling-text'><IconCheckCircle aria-hidden="true" /><span>{t('custom-card.already-confirmed')}</span></div>
+    : <Button size='small' iconLeft={<IconPenLine />} onClick={() => dispatch(showTimetable(true, name, selectedPhase, matchedDeadline))} disabled={shouldDisableForErrors} variant="supplementary" theme="black" role="link">{buttonText}</Button>;
+  const boardFields = buildBoardFieldsJSX(type, cardData, startsText, t);
+  const { container, container2 } = buildDateContainers(cardData, boardFields, fields, t);
+  return { buttonText, heading, fields, editDataLink, boardFields, container, container2 };
+};
+
+const buildFloorAreaContent = ({ cardData, t, dispatch, shouldDisableForErrors }) => {
+  const buttonText = t('custom-card.modify-floor-area');
+  const heading = t('custom-card.check-floor-area');
+  const unit = "k-m²";
+  const fields = <>
+    <div className='custom-card-info-container'>
+      <div className='custom-card-info'>{t('custom-card.living')}</div>
+      <div className='custom-card-floor-info'><span>{cardData.livingFloorArea} {unit}</span></div>
+    </div>
+    <div className='custom-card-info-container'>
+      <div className='custom-card-info'>{t('custom-card.office')}</div>
+      <div className='custom-card-floor-info'><span>{cardData.officeFloorArea} {unit}</span></div>
+    </div>
+    <div className='custom-card-info-container'>
+      <div className='custom-card-info'>{t('custom-card.public')}</div>
+      <div className='custom-card-floor-info'><span>{cardData.generalFloorArea} {unit}</span></div>
+    </div>
+    <div className='custom-card-info-container'>
+      <div className='custom-card-info'>{t('custom-card.other')}</div>
+      <div className='custom-card-floor-info'><span>{cardData.otherFloorArea} {unit}</span></div>
+    </div>
+  </>;
+  const editDataLink = <Button size='small' iconLeft={<IconPenLine />} onClick={() => dispatch(showFloorArea(true))} disabled={shouldDisableForErrors} variant="supplementary" theme="black" role="link">{buttonText}</Button>;
+  const container = (
+    <div className='custom-card-container'>
+      <div className='custom-card-item-container'>
+        {fields}
+      </div>
+    </div>
+  );
+  return { buttonText, heading, fields, editDataLink, container };
+};
+
+function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth, formName}) {
   const [cardData, setCardData] = useState(
     {
       startDate: "",
@@ -32,7 +172,9 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
   const [matchedDeadline, setMatchedDeadline] = useState({});
   const attributeData = useSelector(state => attributeDataSelector(state));
   const deadlinesData = useSelector(state => deadlinesSelector(state));
-
+  
+  // Check if other fields have errors - passivate card edit buttons
+  const shouldDisableForErrors = useFieldPassivation(name, { formName })
 
   useEffect(() => {
     setCardData({...cardData, ...infoFieldUtil.getInfoFieldData(props.placeholder,props.input?.name,attributeData,deadlinesData,selectedPhase)})
@@ -145,159 +287,21 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
   const dispatch = useDispatch()
   const { t } = useTranslation()
 
-  let buttonText
   let heading
-  let fields
   let editDataLink
-  let boardFields = ""
   let container
   let container2
-  let modifiedText = cardData.boardModified ? t('custom-card.modified') : t('custom-card.evaluation')
-  const unit = "k-m²"
   
   if(type === "Tarkasta esilläolopäivät" || type === "Merkitse hyväksymispäivä" || type === "Merkitse muutoksenhakua koskevat päivämäärät" || type === "Merkitse voimaantuloa koskevat päivämäärät"){
-    let startsText = props?.fieldData?.fieldset_attributes[0]?.label || ""
-    let endsText = props?.fieldData?.fieldset_attributes[1]?.label || ""
-    buttonText = t('custom-card.modify-date')
-    heading = type === "Merkitse hyväksymispäivä" || type === "Merkitse muutoksenhakua koskevat päivämäärät" || type === "Merkitse voimaantuloa koskevat päivämäärät" ? props?.fieldData?.label : t('custom-card.check-date')
-    if(showBoth){
-      startsText = cardData.startText ? t(cardData.startText) : ""
-      endsText = cardData.endText ? t(cardData.endText) : ""
-    }
-
-    const startStatus = cardData.confirmed
-      ? t('custom-card.confirmed')
-      : cardData.startModified
-        ? t('custom-card.modified')
-        : t('custom-card.evaluation');
-
-    const endStatus = cardData.confirmed
-      ? t('custom-card.confirmed')
-      : cardData.endModified
-        ? t('custom-card.modified')
-        : t('custom-card.evaluation');
-
-    fields = <>  
-      {cardData.startDate &&
-        <div className='custom-card-info-container'>
-          <div className='custom-card-info'>{startsText}</div>
-          <div className='custom-card-date'>
-            <span className='date'>{moment(cardData.startDate).format('DD.MM.YYYY')}</span>
-            <span className='divider'>-</span>
-            <span className='status'>{startStatus}</span>
-          </div>
-        </div>
-      }
-      {cardData.endDate &&
-        <div className='custom-card-info-container'>
-          <div className='custom-card-info'>{endsText}</div>
-          <div className='custom-card-date'>
-            <span className='date'>{moment(cardData.endDate).format('DD.MM.YYYY')}</span>
-            <span className='divider'>-</span>
-            <span className='status'>{endStatus}</span>
-          </div>
-        </div>
-      }
-    </>
-
-    let allConfirmed = !(
-      (cardData.acceptanceDate) ||
-      (cardData.startDate && !cardData.confirmed) ||
-      (cardData.boardDate && !cardData.boardConfirmed)
-    );
-
-    if (!cardData.startDate && !cardData.endDate && !cardData.boardDate) {
-      allConfirmed = false;
-    }
-
-    const invalidDate = moment(cardData.boardDate).format('DD.MM.YYYY') === "Invalid date"
-
-    editDataLink = 
-    allConfirmed
-    ? 
-    <div className='rolling-text'>
-      <IconCheckCircle aria-hidden="true" />
-      <span>{t('custom-card.already-confirmed')}</span>
-    </div>
-    :     
-    <Button size='small' iconLeft={<IconPenLine />} onClick={() => dispatch(showTimetable(true,name,selectedPhase,matchedDeadline))} variant="supplementary" theme="black" role="link">{buttonText}</Button> 
-
-    boardFields = 
-    <div className='custom-card-info-container'>
-      <div className='custom-card-info'>{type === "Merkitse muutoksenhakua koskevat päivämäärät" || type === "Merkitse voimaantuloa koskevat päivämäärät" ? startsText : cardData.boardText ? t(cardData.boardText) : ""}</div>
-      <div className='custom-card-date'>
-        <span className='date'>{invalidDate ? <span className='italic'>{cardData.boardDate}</span> : moment(cardData.boardDate).format('DD.MM.YYYY')}</span>{type === "Merkitse hyväksymispäivä" || type === "Merkitse muutoksenhakua koskevat päivämäärät" || type === "Merkitse voimaantuloa koskevat päivämäärät" ? <>{invalidDate ? "" :<><span className='divider'>-</span><span className='status'> {t('custom-card.modified')}</span></>}</> : <><span className='divider'>-</span><span className='status'> {!cardData.boardConfirmed ? modifiedText : t('custom-card.confirmed')}</span></>}
-      </div>
-    </div>
-
-    container =       
-    cardData.boardDate ?
-      <div className='custom-card-container'>
-        <div className='custom-card-item-container'>
-          {boardFields}
-        </div>
-      </div>
-      :
-      ""
-
-    container2 = 
-    cardData.startDate || cardData.endDate ?
-      <div className='custom-card-container'>
-        <div className='custom-card-item-container'>
-          {fields}
-        </div>
-      </div>
-      :
-      ""
-
-    if (!container && !container2) {
-      container =
-      <div className='custom-card-container'>
-        <div className='custom-card-item-container'>
-          <div className='custom-card-info-container'>
-            <div className='custom-card-info'>
-              {t('custom-card.no-dates-set')}
-            </div>
-          </div>
-        </div>
-    </div>
-    }
+    ({heading, editDataLink, container, container2} = buildDateCardContent({type, cardData, props, showBoth, t, dispatch, matchedDeadline, name, selectedPhase, shouldDisableForErrors}));
   }
   if(type === "Tarkasta kerrosalatiedot"){
-    buttonText = t('custom-card.modify-floor-area')
-    heading = t('custom-card.check-floor-area')
-    fields = <>  
-    <div className='custom-card-info-container'>
-      <div className='custom-card-info'>{t('custom-card.living')}</div>
-      <div className='custom-card-floor-info'><span>{cardData.livingFloorArea} {unit}</span></div>
-    </div>
-    <div className='custom-card-info-container'>
-      <div className='custom-card-info'>{t('custom-card.office')}</div>
-      <div className='custom-card-floor-info'><span>{cardData.officeFloorArea} {unit}</span></div>
-    </div>
-    <div className='custom-card-info-container'>
-      <div className='custom-card-info'>{t('custom-card.public')}</div>
-      <div className='custom-card-floor-info'><span>{cardData.generalFloorArea} {unit}</span></div>
-    </div>
-    <div className='custom-card-info-container'>
-      <div className='custom-card-info'>{t('custom-card.other')}</div>
-      <div className='custom-card-floor-info'><span>{cardData.otherFloorArea} {unit}</span></div>
-    </div>
-    </>
-    editDataLink = <Button size='small' iconLeft={<IconPenLine />} onClick={() => dispatch(showFloorArea(true))} variant="supplementary" theme="black" role="link">{buttonText}</Button>
-    container = 
-    <div className='custom-card-container'>
-      <div className='custom-card-item-container'>
-        {fields}
-      </div>
-    </div> 
+    ({heading, editDataLink, container} = buildFloorAreaContent({cardData, t, dispatch, shouldDisableForErrors}));
   }
   //Order is reverse in ehdotus phase
   return (
     getFieldsInOrder(cardData.isSuggestionPhase,heading,container,container2,editDataLink)
   )
-  
-
 }
 
 CustomCard.propTypes = {
@@ -311,7 +315,10 @@ CustomCard.propTypes = {
   ]),
   placeholder: PropTypes.string,
   input: PropTypes.object,
-  fieldData: PropTypes.object
+  fieldData: PropTypes.object,
+  selectedPhase: PropTypes.number,
+  showBoth: PropTypes.bool,
+  formName: PropTypes.string
 }
 
 export default CustomCard
