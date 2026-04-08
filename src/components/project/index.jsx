@@ -92,8 +92,10 @@ class ProjectPage extends Component {
   componentDidUpdate(prevProps) {
     const { currentProject, changingPhase } = this.props
     if(prevProps.saving && !this.props.saving){
-      this.setState(prevState => ({ ...prevState, showBaseInformationForm: false }))
-      document.getElementById('editNavSelect-toggle-button')?.focus();
+      if (this.state.showBaseInformationForm) {
+        this.setState(prevState => ({ ...prevState, showBaseInformationForm: false }))
+        document.getElementById('editNavSelect-toggle-button')?.focus();
+      }
     }
     if (
       (!prevProps.currentProject && currentProject) ||
