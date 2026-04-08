@@ -2,8 +2,10 @@ import React, { useState, useRef } from 'react'
 import {Button,IconAngleLeft,IconAngleRight,IconQuestionCircle} from 'hds-react'
 import PropTypes from 'prop-types';
 import TimelineMenuTooltip from './TimelineMenuTooltip';
+import { useTranslation } from 'react-i18next';
 
 function VisTimelineMenu({goToToday,moveLeft,moveRight,showYears,showMonths,show6Months,show3Months,show2Years}) {
+  const { t } = useTranslation();
   const [selectedButton, setSelectedButton] = useState('showYears');
   const [showElementTooltip, setShowElementTooltip] = useState(false);
 
@@ -16,27 +18,23 @@ function VisTimelineMenu({goToToday,moveLeft,moveRight,showYears,showMonths,show
     <div className="timeline-menu-container">
         <div className="timeline-menu">
           <div className='time-menu'>
-            <Button size="small" variant="secondary" onClick={() => {moveLeft()}}><IconAngleLeft /></Button>
-            <Button size="small" variant="secondary" onClick={() => {moveRight()}}><IconAngleRight /></Button>
-            {/*<Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {showWeeks()}}>Weeks</Button>
-             <Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {showDays()}}>Days</Button> 
-             <Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {zoomIn()}}>Zoom in</Button>
-             <Button size="small" variant="supplementary" iconLeft={<IconZoomOut />} onClick={() => {zoomOut()}}>Zoom out</Button> 
-             <Button size="small" variant="supplementary" iconLeft={<IconDrag />} id="toggleRollingMode" value="toggleRollingMode" onClick={() => {toggleRollingMode()}}>toggleRollingMode</Button>
-             */}
+            <Button size="small" variant="secondary" onClick={() => {moveLeft()}} aria-label={t('deadlines.aria.move-timeline-backward')}><IconAngleLeft /></Button>
+            <Button size="small" variant="secondary" onClick={() => {moveRight()}} aria-label={t('deadlines.aria.move-timeline-forward')}><IconAngleRight /></Button>
           </div>
           <div className='today-menu'>
-            <Button size="small" variant="secondary" onClick={() => {goToToday()}}>Tänään</Button>
+            <Button size="small" variant="secondary" onClick={() => {goToToday()}} aria-label={t('deadlines.aria.move-timeline-today')}>Tänään</Button>
           </div>
           <div className='zoom-menu'>
-            <Button size="small" variant="secondary" className={selectedButton === 'showMonths' ? 'selected' : ''}  onClick={() => {showMonths(); handleClick('showMonths');}}>1 kuukausi</Button>
-            <Button size="small" variant="secondary" className={selectedButton === 'show3Months' ? 'selected' : ''} onClick={() => {show3Months(); handleClick('show3Months');}}>3 kuukautta</Button>
-            <Button size="small" variant="secondary" className={selectedButton === 'show6Months' ? 'selected' : ''} onClick={() => {show6Months(); handleClick('show6Months');}}>6 kuukautta</Button>
-            <Button size="small" variant="secondary" className={selectedButton === 'showYears' ? 'selected' : ''}  onClick={() => {showYears(); handleClick('showYears');}}>1 vuosi</Button>
-            <Button size="small" variant="secondary" className={selectedButton === 'show2Years' ? 'selected' : ''} onClick={() => {show2Years(); handleClick('show2Years');}}>2 vuotta</Button>
-             {/*<Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {show5Yers()}}>5 Vuotta</Button>
-            <Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {showWeeks()}}>Weeks</Button>
-            <Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {showDays()}}>Days</Button> */}
+            <Button size="small" variant="secondary" className={selectedButton === 'showMonths' ? 'selected' : ''}
+              onClick={() => {showMonths(); handleClick('showMonths');}} aria-label={t('deadlines.aria.zoom-timeline-1-month')}>1 kuukausi</Button>
+            <Button size="small" variant="secondary" className={selectedButton === 'show3Months' ? 'selected' : ''}
+              onClick={() => {show3Months(); handleClick('show3Months');}} aria-label={t('deadlines.aria.zoom-timeline-3-months')}>3 kuukautta</Button>
+            <Button size="small" variant="secondary" className={selectedButton === 'show6Months' ? 'selected' : ''}
+              onClick={() => {show6Months(); handleClick('show6Months');}} aria-label={t('deadlines.aria.zoom-timeline-6-months')}>6 kuukautta</Button>
+            <Button size="small" variant="secondary" className={selectedButton === 'showYears' ? 'selected' : ''} 
+              onClick={() => {showYears(); handleClick('showYears');}} aria-label={t('deadlines.aria.zoom-timeline-1-year')}>1 vuosi</Button>
+            <Button size="small" variant="secondary" className={selectedButton === 'show2Years' ? 'selected' : ''}
+              onClick={() => {show2Years(); handleClick('show2Years');}} aria-label={t('deadlines.aria.zoom-timeline-2-years')}>2 vuotta</Button>
           </div>
           <div className="element-menu" style={{ position: 'relative' }}>
             <Button
@@ -44,6 +42,7 @@ function VisTimelineMenu({goToToday,moveLeft,moveRight,showYears,showMonths,show
               size="small"
               variant="supplementary"
               className={showElementTooltip ? 'element-tooltip-open' : ''}
+              aria-label={t('deadlines.aria.timeline-element-info')}
               onClick={() => {
                 setShowElementTooltip(v => {
                   if (v && elementButtonRef.current) {
@@ -69,7 +68,10 @@ VisTimelineMenu.propTypes = {
   moveLeft: PropTypes.func,
   moveRight: PropTypes.func,
   showYears: PropTypes.func,
-  showMonths: PropTypes.func
+  showMonths: PropTypes.func,
+  show6Months: PropTypes.func,
+  show3Months: PropTypes.func,
+  show2Years: PropTypes.func,
 };
 
 export default VisTimelineMenu

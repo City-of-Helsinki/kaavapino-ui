@@ -305,11 +305,11 @@ import { getVisibilityBoolName } from "./projectVisibilityUtils";
       while (calculate) {
         if (excludeWeekends && (originalDate.getDay() === 0 || originalDate.getDay() === 6)) {
           originalDate.setDate(originalDate.getDate() + 1);
-        } else if (!checkArrayForValue(workdays, originalDate)) {
-          originalDate.setDate(originalDate.getDate() + 1);
-        } else {
+        } else if (checkArrayForValue(workdays, originalDate)) {
           originalDate.setDate(originalDate.getDate() + 1);
           actualDifference++;
+        } else {
+          originalDate.setDate(originalDate.getDate() + 1);
         }
         calculate = originalDate <= tempDate
       }
@@ -351,16 +351,13 @@ import { getVisibilityBoolName } from "./projectVisibilityUtils";
     if (type === "lautakunta_määräaika") {
       const resultPastDate = getPastDate(originalDate, initialDistance, isInFilter, filter);
       finalDateStr = formatDate(resultPastDate);
+    } else if (addDays) {
+      adjustNewDate(newDate, days);
+      finalDateStr = formatDate(newDate);
+      finalDateStr = findNextValidDateAdd(newDate, finalDateStr, filter, isInFilter);
     } else {
-      if (addDays) {
-        adjustNewDate(newDate, days);
-        finalDateStr = formatDate(newDate);
-        finalDateStr = findNextValidDateAdd(newDate, finalDateStr, filter, isInFilter);
-      } else {
-        finalDateStr = date;
-      }
+      finalDateStr = date;
     }
-
     return finalDateStr;
   };
 
@@ -386,11 +383,11 @@ import { getVisibilityBoolName } from "./projectVisibilityUtils";
       while (calculate) {
         if (excludeWeekends && (tempDate.getDay() === 0 || tempDate.getDay() === 6)) {
           tempDate.setDate(tempDate.getDate() - 1);
-        } else if (!checkArrayForValue(workdays, tempDate)) {
-          tempDate.setDate(tempDate.getDate() - 1);
-        } else {
+        } else if (checkArrayForValue(workdays, tempDate)) {
           tempDate.setDate(tempDate.getDate() - 1);
           actualDifference++;
+        } else {
+          tempDate.setDate(tempDate.getDate() - 1);
         }
         calculate = tempDate >= originalDate
       }
@@ -432,14 +429,12 @@ import { getVisibilityBoolName } from "./projectVisibilityUtils";
     if (type === "lautakunta_määräaika") {
       const resultPastDate = getPastDate(originalDate, initialDistance, isInFilter, filter);
       finalDateStr = formatDate(resultPastDate);
+    } else if (subtractDays) {
+      adjustNewDate(newDate, days);
+      finalDateStr = formatDate(newDate);
+      finalDateStr = findNextValidDateSubstract(newDate, finalDateStr, filter, isInFilter);
     } else {
-      if (subtractDays) {
-        adjustNewDate(newDate, days);
-        finalDateStr = formatDate(newDate);
-        finalDateStr = findNextValidDateSubstract(newDate, finalDateStr, filter, isInFilter);
-      } else {
-        finalDateStr = date;
-      }
+      finalDateStr = date;
     }
     return finalDateStr;
   };
@@ -530,7 +525,7 @@ const sortObjectByDate = (obj) => {
 //Finds next possible date from from array if the value does not exist in it
 const findNextPossibleValue = (array, value, addedDays) => {
   if (!Array.isArray(array) || typeof value !== 'string') {
-    throw new Error('Invalid input. Provide an array of strings and a value as a string.');
+    throw new TypeError('Invalid input. Provide an array of strings and a value as a string.');
   }
   let index = 0;
   // Directly find the given value or the next possible value
@@ -561,7 +556,7 @@ const findNextPossibleValue = (array, value, addedDays) => {
 
 const findNextPossibleBoardDate = (array, value) => {
   if (!Array.isArray(array) || typeof value !== 'string') {
-    throw new Error('Invalid input. Provide an array of strings and a value as a string.');
+    throw new TypeError('Invalid input. Provide an array of strings and a value as a string.');
   }
 
   let closestIndex = -1;
@@ -809,8 +804,7 @@ const getDisabledDatesForNahtavillaolo = (name, formValues, phaseName, matchingI
   }
 };
 
-// Note: despite the name, this function returns allowed dates, not disabled ones
-const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues, sectionAttributes, currentDeadline) => {
+const calculateAllowedDates = (nahtavillaolo, size, dateTypes, name, formValues, sectionAttributes, currentDeadline) => {
   const matchingItem = objectUtil.findMatchingName(sectionAttributes, name, "name");
   const previousItem = objectUtil.findItem(sectionAttributes, name, "name", -1);
   const nextItem = objectUtil.findItem(sectionAttributes, name, "name", 1);
@@ -825,10 +819,10 @@ const calculateDisabledDates = (nahtavillaolo, size, dateTypes, name, formValues
       allowedDates = dateTypes?.arkipäivät?.dates;
   } else if (currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')) {
       allowedDates = getDisabledDatesForLautakunta(name, formValues, phaseName, matchingItem, previousItem, dateTypes);
-  } else if (!nahtavillaolo) {
-      allowedDates = getDisabledDatesForSizeXSXL(name, formValues, matchingItem, dateTypes);
-  } else {
+  } else if (nahtavillaolo) {
       allowedDates = getDisabledDatesForNahtavillaolo(name, formValues, phaseName, matchingItem, dateTypes, size);
+  } else {
+      allowedDates = getDisabledDatesForSizeXSXL(name, formValues, matchingItem, dateTypes);
   }
   // Filter out past dates (before today)
   const todayStr = (() => {
@@ -1021,7 +1015,7 @@ const exported = {
     isDate,
     calculateWeekdayDifference,
     isHoliday,
-    calculateDisabledDates,
+    calculateAllowedDates,
     getHighestDate,
     findAllowedDate,
     findAllowedLautakuntaDate,
