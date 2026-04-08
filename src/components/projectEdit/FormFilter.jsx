@@ -160,6 +160,9 @@ const openModal = (event=null) => {
         event.preventDefault();
         setIsOpen(true);
     }
+    if (event === null) {
+        setIsOpen(true);
+    }
 }
 
 const closeModal = () => {
