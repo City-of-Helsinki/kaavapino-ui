@@ -300,6 +300,20 @@ class EditProjectTimeTableModal extends Component {
     return currentIdx !== -1 && itemIdx !== -1 && itemIdx < currentIdx;
   }
 
+  buildInnerStyle = (baseStyle, date, currentDate, formValues, deadlineGroup, phaseName) => {
+    let style = baseStyle;
+    if (date < currentDate) {
+      style += " past";
+    }
+    if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
+      style += " confirmed";
+    }
+    if (this.isPhaseInPast(phaseName, formValues)) {
+      style += " no-drag";
+    }
+    return style;
+  }
+
   addOneDay = (dateString) => {
     // Parse the input string into a Date object
     const date = new Date(dateString);
@@ -792,16 +806,7 @@ class EditProjectTimeTableModal extends Component {
             innerEnd.setHours(12, 0, 0, 0);
           }
 
-          innerStyle = "inner-end"
-          if (innerEnd < currentDate) {
-            innerStyle += " past";
-          }
-          if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
-            innerStyle += " confirmed";
-          }
-          if (this.isPhaseInPast(deadline.phase_name, formValues)) {
-            innerStyle += " no-drag";
-          }
+          innerStyle = this.buildInnerStyle("inner-end", innerEnd, currentDate, formValues, deadlineGroup, deadline.phase_name)
         }
       }
       else if(deadlines[i]?.deadline?.attribute?.includes("nahtavilla") || deadlines[i]?.deadline?.deadlinegroup?.includes("nahtavillaolokerta") || deadlines[i]?.deadline?.attribute?.includes("ehdotus_nahtaville_aineiston_maaraaika")){
@@ -846,17 +851,7 @@ class EditProjectTimeTableModal extends Component {
             innerEnd.setHours(12, 0, 0, 0);
           }
 
-          innerStyle = "inner-end"
-          if (innerEnd < currentDate) {
-            innerStyle += " past";
-          }
-
-          if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
-            innerStyle += " confirmed";
-          }
-          if (this.isPhaseInPast(deadline.phase_name, formValues)) {
-            innerStyle += " no-drag";
-          }
+          innerStyle = this.buildInnerStyle("inner-end", innerEnd, currentDate, formValues, deadlineGroup, deadline.phase_name)
         }
       }
       else if(deadlines[i]?.deadline?.attribute?.includes("lautakunta") || deadlines[i]?.deadline?.attribute?.includes("lautakunnassa") || 
@@ -884,17 +879,7 @@ class EditProjectTimeTableModal extends Component {
             innerEnd.setHours(12, 0, 0, 0);
           }
 
-          innerStyle = "board"
-          if (innerEnd < currentDate) {
-            innerStyle += " past";
-          }
-
-          if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
-            innerStyle += " confirmed";
-          }
-          if (this.isPhaseInPast(deadline.phase_name, formValues)) {
-            innerStyle += " no-drag";
-          }
+          innerStyle = this.buildInnerStyle("board", innerEnd, currentDate, formValues, deadlineGroup, deadline.phase_name)
         }
         else if(deadline.deadline_types.includes('inner_start')){
           innerStart = formValues && formValues[deadline.attribute]
