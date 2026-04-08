@@ -1,16 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Modal } from 'semantic-ui-react';
 import { Button,IconAlertCircle } from 'hds-react';
 import { focusTrapOnTabPressed } from '../project/projectModalUtils';
-import { useEffect } from 'react';
 function ConfirmModal({ openConfirmModal,headerText, contentText, button1Text, button2Text, onButtonPress1, onButtonPress2, style, buttonStyle1, buttonStyle2 }) {
   
   useEffect(() => {
     const handleKeyDown = (event) => focusTrapOnTabPressed(event, 'confirm-modal');
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  });
+  }, []);
 
   return (
     <Modal

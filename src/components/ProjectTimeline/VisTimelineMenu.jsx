@@ -20,12 +20,6 @@ function VisTimelineMenu({goToToday,moveLeft,moveRight,showYears,showMonths,show
           <div className='time-menu'>
             <Button size="small" variant="secondary" onClick={() => {moveLeft()}} aria-label={t('deadlines.aria.move-timeline-backward')}><IconAngleLeft /></Button>
             <Button size="small" variant="secondary" onClick={() => {moveRight()}} aria-label={t('deadlines.aria.move-timeline-forward')}><IconAngleRight /></Button>
-            {/*<Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {showWeeks()}}>Weeks</Button>
-             <Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {showDays()}}>Days</Button> 
-             <Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {zoomIn()}}>Zoom in</Button>
-             <Button size="small" variant="supplementary" iconLeft={<IconZoomOut />} onClick={() => {zoomOut()}}>Zoom out</Button> 
-             <Button size="small" variant="supplementary" iconLeft={<IconDrag />} id="toggleRollingMode" value="toggleRollingMode" onClick={() => {toggleRollingMode()}}>toggleRollingMode</Button>
-             */}
           </div>
           <div className='today-menu'>
             <Button size="small" variant="secondary" onClick={() => {goToToday()}} aria-label={t('deadlines.aria.move-timeline-today')}>Tänään</Button>
@@ -41,9 +35,6 @@ function VisTimelineMenu({goToToday,moveLeft,moveRight,showYears,showMonths,show
               onClick={() => {showYears(); handleClick('showYears');}} aria-label={t('deadlines.aria.zoom-timeline-1-year')}>1 vuosi</Button>
             <Button size="small" variant="secondary" className={selectedButton === 'show2Years' ? 'selected' : ''}
               onClick={() => {show2Years(); handleClick('show2Years');}} aria-label={t('deadlines.aria.zoom-timeline-2-years')}>2 vuotta</Button>
-             {/*<Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {show5Yers()}}>5 Vuotta</Button>
-            <Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {showWeeks()}}>Weeks</Button>
-            <Button size="small" variant="supplementary" iconLeft={<IconZoomIn />} onClick={() => {showDays()}}>Days</Button> */}
           </div>
           <div className="element-menu" style={{ position: 'relative' }}>
             <Button
@@ -77,7 +68,10 @@ VisTimelineMenu.propTypes = {
   moveLeft: PropTypes.func,
   moveRight: PropTypes.func,
   showYears: PropTypes.func,
-  showMonths: PropTypes.func
+  showMonths: PropTypes.func,
+  show6Months: PropTypes.func,
+  show3Months: PropTypes.func,
+  show2Years: PropTypes.func,
 };
 
 export default VisTimelineMenu

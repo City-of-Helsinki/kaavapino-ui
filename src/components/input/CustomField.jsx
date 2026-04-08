@@ -32,15 +32,12 @@ import PropTypes from 'prop-types'
 class CustomField extends Component {
   yearOptions = []
   shouldComponentUpdate(prevProps) {
-    if (!isEqual(this.props, prevProps)) {
-      return true
-    }
-    return false
+    return !isEqual(this.props, prevProps);
   }
 
   validateFieldSize = value => {
     const field = this.props.field
-    if (value && field && field.character_limit && field.character_limit > 0) {
+    if (value && field?.character_limit && field.character_limit > 0) {
       if (value.length > field.character_limit) {
         return 'Kentässä liikaa merkkejä'
       }
@@ -242,7 +239,7 @@ class CustomField extends Component {
     }
 
     //temp fix because data is not added in backend to deadlines
-    if(typeof current === "undefined"){
+    if(current === undefined){
       if(props.input.name === "viimeistaan_lausunnot_ehdotuksesta"){
         current = deadlines.find(
           deadline => deadline.deadline.abbreviation === "E9"

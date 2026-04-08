@@ -47,42 +47,6 @@ const TimelineModal = ({
     }
   }, [open, returnFocusGroupId]);
 
-  const getAttributeValues = (attributes) => {
-    return Object.values(attributes).flatMap((v) => Object.values(v));
-  };
-
-  const findLabel = (fieldName, attributeValues) => {
-    const field = attributeValues.find((value) => value?.name === fieldName);
-    return field ? field.label : null;
-  };
-
-  const getErrorLabel = (fieldName) => {
-    const attributeValues = deadlineSections.flatMap((deadline_section) =>
-      deadline_section.sections.flatMap((section) => getAttributeValues(section.attributes))
-    );
-    const label = findLabel(fieldName, attributeValues);
-    return <span>{label}: </span>;
-  };
-
-  const renderSubmitErrors = () => {
-    const keys = formSubmitErrors ? Object.keys(formSubmitErrors) : []
-    return keys.map(key => {
-      const errors = formSubmitErrors[key]
-      if (Array.isArray(errors)) {
-        return (
-          <div key={key} className="submit-error">
-            {getErrorLabel(key)}
-            {errors?.map(error => (
-              <span key={error}>{error} </span>
-            ))}
-          </div>
-        )
-      }
-    })
-  }
-
-  let currentSubmitErrors = Object.keys(formSubmitErrors).length > 0
-
   const getFormField = (fieldProps, key, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title, confirmedValue, type, tooltip, lautakuntaInPast) => {
     if (!showField(fieldProps.field, visValues)) {
       return null
@@ -96,10 +60,10 @@ const TimelineModal = ({
     const error = formSubmitErrors?.[fieldProps?.field?.name];
     let className = '';
 
-    if (error !== undefined) {
-      className = 'modal-field error-border'
-    } else {
+    if (error === undefined) {
       className = 'modal-field'
+    } else {
+      className = 'modal-field error-border'
     }
     // Special case since label is used.
     if (fieldProps.field.display === 'checkbox') {
@@ -209,14 +173,14 @@ const TimelineModal = ({
       phaseKey = 'kaavaluonnos';
     } else {
       // fallback, use group as lowercased and underscored
-      phaseKey = group.toLowerCase().replace(/\s+/g, '_');
+      phaseKey = group.toLowerCase().replaceAll(/\s+/g, '_');
     }
 
     // Try to extract index from title, e.g. "Lautakunta-2"
     const LAUTAKUNTA_INDEX_RE = /lautakunta[-\s]*(\d+)/i;
     const safeTitle = typeof title === 'string' ? title.slice(0, 200) : '';
     const match = LAUTAKUNTA_INDEX_RE.exec(safeTitle);
-    if (match && match[1]) {
+    if (match?.[1]) {
         // omit suffix for "1" to keep existing key logic
         lautakuntaIndex = match[1] === '1' ? '' : `_${match[1]}`;
     }
@@ -243,9 +207,9 @@ const TimelineModal = ({
 
   const _normalize = s =>
     s?.toLowerCase()
-      .replace(/[äå]/gi, 'a')
-      .replace(/ö/gi, 'o')
-      .replace(/\s+/g, '');
+      .replaceAll(/[äå]/gi, 'a')
+      .replaceAll(/ö/gi, 'o')
+      .replaceAll(/\s+/g, '');
 
   const _lastByPrefixes = (groups, group, prefixes) => {
     const list = groups
@@ -283,7 +247,7 @@ const TimelineModal = ({
       confirmedValue = textUtil.replaceScandics(confirmedValue);
     }
 
-    return confirmedValue.replace(/\s+/g, '');
+    return confirmedValue.replaceAll(/\s+/g, '');
   };
 
   // build Esilläolo date key
@@ -333,7 +297,7 @@ const TimelineModal = ({
     const match = lowerTitle.match(/esilläolo\s*-\s*(\d+)/) || lowerTitle.match(/esillaolo\s*-\s*(\d+)/) ||
                   lowerTitle.match(/nähtävilläolo\s*-\s*(\d+)/) || lowerTitle.match(/nahtavillaolo\s*-\s*(\d+)/);
     if (match) {
-      index = match[1] !== "1" ? `_${match[1]}` : '';
+      index = match[1] === "1" ? '' : `_${match[1]}`;
     }
 
     if (lowerTitle.includes('esilläolo') || lowerTitle.includes('esillaolo')) {
@@ -491,28 +455,30 @@ const TimelineModal = ({
     // Unify past-date lock for lautakunta and esilläolo/nähtävilläolo; keep prop name for downstream component
     const anyPast = lautakuntaInPast || esillaoloNahtavillaInPast;
 
-    const tooltip =
-      phaseClosed
-        ? confirmed
-          ? t('deadlines.tooltip.phaseClosedConfirmed')
-          : t('deadlines.tooltip.phaseClosed')
-        : !phaseIsActive
-          ? confirmed
-            ? t('deadlines.tooltip.notActiveConfirmed')
-            : t('deadlines.tooltip.notActive')
-        : esillaoloNotConfirmedBeforeLautakunta
-          ? t('deadlines.tooltip.lautakuntaNeedsEsillaolo')
-        : esillaoloLockedByLautakunta
-          ? t('deadlines.tooltip.esillaoloLockedByLautakunta')
-        : anyNahtavillaoloLockedByLautakunta
-          ? t('deadlines.tooltip.nahtavillaoloNeedsLautakunta')
-        : lautakuntaInPast
-          ? t('deadlines.tooltip.lautakuntaInPast')
-        : anyPast 
-          ? t('deadlines.tooltip.anyPastConfirmed')
-        : disableConfirmButton
-          ? t('deadlines.tooltip.disableConfirmButton', { nextGroupWord })
-        : null;
+    let tooltip;
+    if (phaseClosed) {
+      tooltip = confirmed
+        ? t('deadlines.tooltip.phaseClosedConfirmed')
+        : t('deadlines.tooltip.phaseClosed');
+    } else if (phaseIsActive === false) {
+      tooltip = confirmed
+        ? t('deadlines.tooltip.notActiveConfirmed')
+        : t('deadlines.tooltip.notActive');
+    } else if (esillaoloNotConfirmedBeforeLautakunta) {
+      tooltip = t('deadlines.tooltip.lautakuntaNeedsEsillaolo');
+    } else if (esillaoloLockedByLautakunta) {
+      tooltip = t('deadlines.tooltip.esillaoloLockedByLautakunta');
+    } else if (anyNahtavillaoloLockedByLautakunta) {
+      tooltip = t('deadlines.tooltip.nahtavillaoloNeedsLautakunta');
+    } else if (lautakuntaInPast) {
+      tooltip = t('deadlines.tooltip.lautakuntaInPast');
+    } else if (anyPast) {
+      tooltip = t('deadlines.tooltip.anyPastConfirmed');
+    } else if (disableConfirmButton) {
+      tooltip = t('deadlines.tooltip.disableConfirmButton', { nextGroupWord });
+    } else {
+      tooltip = null;
+    }
 
     return { lautakuntaInPast: anyPast, tooltip, disabled };
   };
@@ -593,8 +559,8 @@ const TimelineModal = ({
         <div className="timeline-edit-content">
           <Modal.Header>
             <ul className="breadcrumb">
-              <li><a href="#" role="button">{group}</a></li>
-              <li><a href="#" role="button">{content}</a></li>
+              <li>{group}</li>
+              <li>{content}</li>
               <Button variant="supplementary" onClick={onClose}><IconCross /></Button>
             </ul>
           </Modal.Header>
@@ -635,7 +601,8 @@ TimelineModal.propTypes = {
   items: PropTypes.array,
   sectionAttributes: PropTypes.array,
   initialTab: PropTypes.number,
-  returnFocusGroupId: PropTypes.string
+  returnFocusGroupId: PropTypes.string,
+  isAdmin: PropTypes.bool
 };
 
 export default TimelineModal

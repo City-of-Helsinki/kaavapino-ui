@@ -27,7 +27,6 @@ const DeadLineInput = ({
   deadlineSections,
   confirmedValue,
   sectionAttributes,
-  allowedToEdit,
   timetable_editable
 }) => {
 
@@ -41,24 +40,21 @@ const DeadLineInput = ({
 
 
   let currentError
-  const generated = currentDeadline && currentDeadline.generated
+  const generated = currentDeadline?.generated
 
   const [valueGenerated, setValueGenerated] = useState(generated)
 
-  if (currentDeadline && currentDeadline.is_under_min_distance_previous) {
+  if (currentDeadline?.is_under_min_distance_previous) {
     currentError = t('messages.min-distance')
 
-    if (
-      currentDeadline.deadline &&
-      currentDeadline.deadline.error_min_distance_previous
-    ) {
+    if ( currentDeadline.deadline?.error_min_distance_previous ) {
       currentError = currentDeadline.deadline.error_min_distance_previous
     }
   }
-  if (currentDeadline && currentDeadline.is_under_min_distance_next) {
+  if (currentDeadline?.is_under_min_distance_next) {
     currentError = t('messages.max-distance')
 
-    if (currentDeadline.deadline && currentDeadline.warning_min_distance_next) {
+    if (currentDeadline.deadline?.warning_min_distance_next) {
       currentError = currentDeadline.warning_min_distance_next
     }
   }
@@ -76,16 +72,13 @@ const DeadLineInput = ({
 
   useEffect(() => {
     let inputValue = input.value
-    if (autofillRule) {
-      
-      if (autofillRule && autofillRule.length > 0) {
-        inputValue = getFieldAutofillValue(
-          autofillRule,
-          formValues,
-          input.name,
-          EDIT_PROJECT_TIMETABLE_FORM
-        )
-      }
+    if (autofillRule?.length > 0) {
+      inputValue = getFieldAutofillValue(
+        autofillRule,
+        formValues,
+        input.name,
+        EDIT_PROJECT_TIMETABLE_FORM
+      )
     }
 
     if ( inputValue === null ) {
@@ -109,7 +102,7 @@ const DeadLineInput = ({
     }
 
     setCurrentValue(currentDeadline ? currentDeadlineDate : inputValue )
-    setDisabledState(typeof timeTableDisabled !== "undefined" ? timeTableDisabled : disabled)
+    setDisabledState(timeTableDisabled === undefined ? disabled : timeTableDisabled)
   },[])
 
   useEffect(() => {
@@ -164,7 +157,7 @@ const DeadLineInput = ({
     if (!lausunnot_attr_section) {
       return sectionAttributes;
     }
-    const result = JSON.parse(JSON.stringify(sectionAttributes));
+    const result = structuredClone(sectionAttributes);
     result.push(lausunnot_attr_section);
     return result;
   }
@@ -219,51 +212,54 @@ const DeadLineInput = ({
       console.error('Validation error:', error);
     }
   };
+
+  const renderDateInput = (validated) => {
+    console.log("validated is", validated)
+    return (
+      validated ? "Ladataan..." :
+      <DateInput
+        readOnly
+        language='fi'
+        initialMonth={getInitialMonth(currentValue || input.value)}
+        isDateDisabledBy={isDisabledDate}
+        value={formatDateToDMYYYY(currentValue || input.value)}
+        name={input.name}
+        type='text' // type='date' works poorly with hds-DateInput
+        disabled={!timetable_editable || disabledState ||
+          (!attributeData?.kaavan_vaihe.includes("Käynnistys") &&
+            (input?.name?.includes("projektin_kaynnistys_pvm") || input?.name?.includes("kaynnistys_paattyy_pvm")))
+        }
+        error={error}
+        aria-label={input.name}
+        onChange={(event) => {
+          let formattedDate;
+          const dateString = event;
+          if (dateString.includes('.')) {
+            formattedDate = formatDateToYYYYMMDD(dateString);
+          } else {
+            formattedDate = dateString;
+          }
+          handleDateChange(formattedDate);
+        }}
+        className={currentClassName}
+        onBlur={() => {
+          setValueGenerated(input.value === input.defaultValue);
+        }}
+      />
+    );
+  }
   
   return (
     <>
       <div className='deadline-input'>
         {type === 'date' ?
-        !validated ?
-        <DateInput
-          readOnly
-          language='fi'
-          initialMonth={getInitialMonth(currentValue ? currentValue : input.value)}
-          isDateDisabledBy={isDisabledDate}
-          value={formatDateToDMYYYY(currentValue ? currentValue : input.value)}
-          name={input.name}
-          type='text' // type='date' works poorly with hds-DateInput
-          disabled={!timetable_editable || disabledState || 
-            (!attributeData?.kaavan_vaihe.includes("Käynnistys") &&
-              (input?.name?.includes("projektin_kaynnistys_pvm") || input?.name?.includes("kaynnistys_paattyy_pvm")))
-          }
-          error={error}
-          aria-label={input.name}
-          onChange={(event) => {
-            let formattedDate
-            const dateString = event;
-            if (dateString.includes('.')) {
-              formattedDate = formatDateToYYYYMMDD(dateString);
-            } else {
-              formattedDate = dateString;
-            }
-            handleDateChange(formattedDate);
-          }}
-          className={currentClassName}
-          onBlur={() => {
-            if (input.value !== input.defaultValue) {
-              setValueGenerated(false)
-            } else {
-              setValueGenerated(true)
-            }
-          }}
-        /> : "Ladataan..."
+          renderDateInput(validated)
         :
           <TextInput
             value={currentValue}
             name={input.name}
             type={type}
-            disabled={typeof timeTableDisabled !== "undefined" ? timeTableDisabled : disabled}
+            disabled={timeTableDisabled === undefined ? disabled : timeTableDisabled}
             placeholder={placeholder}
             error={error}
             aria-label={input.name}
@@ -274,11 +270,7 @@ const DeadLineInput = ({
             }}
             className={currentClassName}
             onBlur={() => {
-              if (input.value !== input.defaultValue) {
-                setValueGenerated(false)
-              } else {
-                setValueGenerated(true)
-              }
+              setValueGenerated(input.value === input.defaultValue)
             }}
           />
         }
@@ -293,11 +285,6 @@ const DeadLineInput = ({
           <IconAlertCircle size="xs" /> {currentError}{' '}
         </div>
       )}
-{/*       {warning.warning && (
-        <Notification label={warning.response.reason} type="alert" style={{marginTop: 'var(--spacing-s)'}}>
-        Seuraavien päivämäärien siirtäminen ei ole mahdollista, koska minimietäisyys viereisiin etappeihin on täyttynyt.
-        {warning.response.conflicting_deadline}. Asetettu seuraava kelvollinen päivä {warning.response.suggested_date}</Notification>
-      )} */}
     </>
   )
 }
@@ -330,7 +317,8 @@ DeadLineInput.propTypes = {
     PropTypes.number,
     PropTypes.bool,
   ]),
-  sectionAttributes: PropTypes.array
+  sectionAttributes: PropTypes.array,
+  timetable_editable: PropTypes.bool
 }
 
 export default DeadLineInput
