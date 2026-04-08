@@ -659,7 +659,7 @@ const getDisabledDatesForLautakunta = (name, formValues, phaseName, matchingItem
         const highestEsillaoloKey = esillaoloKeys.reduce((highestNumber, currentKey) => {
           const match = /_(\d+)$/.exec(currentKey);
           const currentNumber = parseInt(match ? match[1] : 0, 10);
-          return Math.max(currentNumber, highestNumber);
+          return currentNumber > highestNumber ? currentNumber : highestNumber;
         }, 0);
         if (highestEsillaoloKey !== 1) {
           dateToComparePast = formValues[`milloin_${phaseName}_esillaolo_paattyy_${highestEsillaoloKey}`];
@@ -907,7 +907,7 @@ const compareAndUpdateDates = (data, previousPaattyyValues) => {
     }
 
     if (!validVariants.length) return null;
-    return validVariants.reduce((a, b) => (Math.max(b, a)), validVariants[0]);
+    return validVariants.reduce((a, b) => (b > a ? b : a), validVariants[0]);
   };
 
   lausuntoPairs.forEach(([lausunto_date, paattyy_date]) => {
