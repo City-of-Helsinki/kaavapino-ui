@@ -292,6 +292,14 @@ class EditProjectTimeTableModal extends Component {
     return phase.trim();
   } 
 
+  isPhaseInPast = (phaseName, formValues) => {
+    const phaseOrder = ["Käynnistys","Periaatteet","OAS","Luonnos","Ehdotus","Tarkistettu ehdotus","Hyväksyminen","Voimaantulo"];
+    const currentPhase = this.trimPhase(formValues?.kaavan_vaihe || '');
+    const currentIdx = phaseOrder.indexOf(currentPhase);
+    const itemIdx = phaseOrder.indexOf(phaseName);
+    return currentIdx !== -1 && itemIdx !== -1 && itemIdx < currentIdx;
+  }
+
   addOneDay = (dateString) => {
     // Parse the input string into a Date object
     const date = new Date(dateString);
@@ -791,6 +799,9 @@ class EditProjectTimeTableModal extends Component {
           if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
             innerStyle += " confirmed";
           }
+          if (this.isPhaseInPast(deadline.phase_name, formValues)) {
+            innerStyle += " no-drag";
+          }
         }
       }
       else if(deadlines[i]?.deadline?.attribute?.includes("nahtavilla") || deadlines[i]?.deadline?.deadlinegroup?.includes("nahtavillaolokerta") || deadlines[i]?.deadline?.attribute?.includes("ehdotus_nahtaville_aineiston_maaraaika")){
@@ -843,6 +854,9 @@ class EditProjectTimeTableModal extends Component {
           if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
             innerStyle += " confirmed";
           }
+          if (this.isPhaseInPast(deadline.phase_name, formValues)) {
+            innerStyle += " no-drag";
+          }
         }
       }
       else if(deadlines[i]?.deadline?.attribute?.includes("lautakunta") || deadlines[i]?.deadline?.attribute?.includes("lautakunnassa") || 
@@ -877,6 +891,9 @@ class EditProjectTimeTableModal extends Component {
 
           if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
             innerStyle += " confirmed";
+          }
+          if (this.isPhaseInPast(deadline.phase_name, formValues)) {
+            innerStyle += " no-drag";
           }
         }
         else if(deadline.deadline_types.includes('inner_start')){

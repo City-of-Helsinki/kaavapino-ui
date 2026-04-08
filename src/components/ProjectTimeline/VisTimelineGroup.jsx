@@ -1816,32 +1816,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           // Block hyväksyminen and voimaantulo dragging
           if(isBlockedLabel(props?.item)) return;
 
-          // Block past phase items from showing drag cursor
-          if (props?.item?.phaseName && visValuesRef.current?.kaavan_vaihe) {
-            const phaseOrder = [
-              "Käynnistys", 
-              "Periaatteet", 
-              "OAS", 
-              "Luonnos", 
-              "Ehdotus", 
-              "Tarkistettu ehdotus", 
-              "Hyväksyminen", 
-              "Voimaantulo"
-            ];
-            const currentPhaseFullName = visValuesRef.current.kaavan_vaihe;
-            const currentPhaseName = currentPhaseFullName.replace(/^(?:\d+\.|[A-Z]+\.)\s*/, '');
-            const currentPhaseIndex = phaseOrder.indexOf(currentPhaseName);
-            const itemPhaseIndex = phaseOrder.indexOf(props.item.phaseName);
-            
-            if (itemPhaseIndex < currentPhaseIndex && currentPhaseIndex !== -1 && itemPhaseIndex !== -1) {
-              // Item is from past phase, don't show drag cursor
-              return;
-            }
-          }
-
-          // Block confirmed items from showing drag cursor
+          // Block non-draggable items (past phase or confirmed) from showing drag cursor
           const mouseDownItemEl = props?.event?.target?.closest?.('.vis-item');
-          if (mouseDownItemEl?.classList?.contains('confirmed')) {
+          if (mouseDownItemEl?.classList?.contains('no-drag') || mouseDownItemEl?.classList?.contains('confirmed')) {
             return;
           }
 
