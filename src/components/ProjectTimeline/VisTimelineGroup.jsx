@@ -1518,6 +1518,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         });
 
         if (group?.nestedGroups !== undefined) {
+          container.ariaLabel = t('deadlines.aria.toggle-phase-rows', { phase: group.content });
           container.onkeydown = function (e) {
             if ((e.key === "Enter" || e.key === " ") && !(document.activeElement.id.includes("add-button")) ) {
               e.preventDefault();
@@ -1538,8 +1539,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         }
 
         if (group?.nestedGroups !== undefined && allowedToEdit && !contentIncludesString) {
-          let label = document.createElement("span");
+          let label = document.createElement("label");
           label.innerHTML = group.content + " ";
+          label.htmlFor = container.id;
           container.insertAdjacentElement("afterBegin", label);
           let add = document.createElement("button");
           add.id = `add-button-${group.id}`;
@@ -1576,7 +1578,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           return container;
         } else if (group?.nestedInGroup) {
           // Get, format and add labels
-          let label = document.createElement("span");
+          let label = document.createElement("label");
           let content = group.content;
           label.classList.add("timeline-button-label");
 
@@ -1587,8 +1589,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
           let edit = document.createElement("button");
           edit.id = `edit-button-${group.id}`;
+          label.htmlFor = edit.id;
           edit.classList.add("timeline-edit-button");
           edit.style.fontSize = "small";
+          edit.ariaLabel = t('deadlines.aria.toggle-group-form', { group: group.content });
 
           edit.addEventListener("click", function () {
             openDialog(group, container);
@@ -1596,9 +1600,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           container.insertAdjacentElement("beforeEnd", edit);
 
           if (allowedToEdit && !contentIncludesString) {
-
-            let labelRemove = document.createElement("span");
-            container.insertAdjacentElement("afterBegin", labelRemove);
             let remove = document.createElement("button");
             remove.id = `remove-button-${group.id}`;
             remove.classList.add("timeline-remove-button");
@@ -1762,7 +1763,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           }
           return container;
         } else {
-          let label = document.createElement("span");
+          let label = document.createElement("label");
+          label.htmlFor = container.id;
           label.classList.add("timeline-phase-label");
           label.innerHTML = group?.content + " ";
           container.insertAdjacentElement("afterBegin", label);
