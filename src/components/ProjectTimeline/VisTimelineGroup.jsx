@@ -1812,12 +1812,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         // Track currently styled dragged group so we can remove styling on mouseUp
         const draggingGroupRef = { current: null };
 
-        timeline.on('mouseDown', (props) => {
+        timeline.on('mouseDown', (mouseDownEvent) => {
           // Block hyväksyminen and voimaantulo dragging
-          if(isBlockedLabel(props?.item)) return;
+          if(isBlockedLabel(mouseDownEvent?.item)) return;
 
           // Block non-draggable items (past phase or confirmed) from showing drag cursor
-          const mouseDownItemEl = props?.event?.target?.closest?.('.vis-item');
+          const mouseDownItemEl = mouseDownEvent?.event?.target?.closest?.('.vis-item');
           if (mouseDownItemEl?.classList?.contains('no-drag') || mouseDownItemEl?.classList?.contains('confirmed')) {
             return;
           }
@@ -1825,9 +1825,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           // Reset the flag on new mouseDown
           modalClosedDuringDragRef.current = false;
 
-          if (allowedToEdit && props?.item) {
+          if (allowedToEdit && mouseDownEvent?.item) {
             document.body.classList.add('cursor-moving');
-            const targetEl = props?.event?.target;
+            const targetEl = mouseDownEvent?.event?.target;
             const groupEl = targetEl?.closest?.('.vis-group');
             if (groupEl && groupEl !== draggingGroupRef.current) {
               if (draggingGroupRef.current) {
@@ -1839,8 +1839,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           }
 
         // determine which handle/part was grabbed
-        if (props.item) {
-          const element = props.event.target;
+        if (mouseDownEvent.item) {
+          const element = mouseDownEvent.event.target;
           const parent = element.parentElement;
           const isConfirmed = parent?.classList?.contains('confirmed') || element?.classList?.contains('confirmed') ? " confirmed" : "";
           const isBoardRight = element.classList.contains('board-right') || parent?.classList?.contains('board-right');
@@ -1866,26 +1866,26 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             dragHandleRef.current = "" + isConfirmed;
           }
         } else {
-          const isConfirmed = props?.event?.target?.parentElement?.classList?.contains('confirmed') ? " confirmed" : "";
+          const isConfirmed = mouseDownEvent?.event?.target?.parentElement?.classList?.contains('confirmed') ? " confirmed" : "";
           dragHandleRef.current = "" + isConfirmed;
         }
 
         //build a snapshot of items we will move together
         clusterDragRef.current = { isPoint: false, clusterKey: null, snapshot: null, movingId: null };
 
-        if (!allowedToEdit || props?.item == null) return;
+        if (!allowedToEdit || mouseDownEvent?.item == null) return;
 
         // find the dataset item (handles numeric/string ids)
         const baseItem =
-          items.get(props.item) ||
-          items.get(String(props.item)) ||
-          items.get(Number(props.item)) ||
-          items.get().find(it => String(it.id) === String(props.item));
+          items.get(mouseDownEvent.item) ||
+          items.get(String(mouseDownEvent.item)) ||
+          items.get(Number(mouseDownEvent.item)) ||
+          items.get().find(it => String(it.id) === String(mouseDownEvent.item));
 
         if (!baseItem || baseItem.group == null) return;
 
         // read classes from the actual DOM item to extract the cluster token (e.g., "27_26")
-        const itemEl = props?.event?.target?.closest?.('.vis-item');
+        const itemEl = mouseDownEvent?.event?.target?.closest?.('.vis-item');
         const classTokens = (itemEl?.className || '').split(/\s+/);
         const clusterKey = classTokens.find(t => /^\d+_\d+$/.test(t)) || null;
         const isPoint = !!(itemEl && (itemEl.classList.contains('vis-point') || itemEl.querySelector('.vis-point')));
