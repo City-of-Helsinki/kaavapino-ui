@@ -762,7 +762,6 @@ const getHighestLautakuntaDate = (formValues, phaseName) => {
 
 
 const getDisabledDatesForNahtavillaolo = (name, formValues, phaseName, matchingItem, dateTypes, projectSize) => {
-
   if (name.includes("_maaraaika")) {
     const miniumDaysBetween = matchingItem?.distance_from_previous;
     const dateToCompare = formValues[matchingItem?.previous_deadline];
@@ -779,6 +778,10 @@ const getDisabledDatesForNahtavillaolo = (name, formValues, phaseName, matchingI
       }
       else{
         dateToComparePast = getHighestLautakuntaDate(formValues, phaseName);
+        if (!dateToComparePast && phaseName === "ehdotus") {
+          // First lk deleted (XL)
+          dateToComparePast = formValues["ehdotusvaihe_alkaa_pvm"];
+        }
       }
     }
     else{
