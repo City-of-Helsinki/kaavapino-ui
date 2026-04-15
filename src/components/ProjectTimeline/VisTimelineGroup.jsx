@@ -23,7 +23,6 @@ Moment.locale('fi');
 const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, phaseList, currentPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes, showTimetableForm, itemsPhaseDatesOnly }, ref) => {
   const dispatch = useDispatch();
   const moment = extendMoment(Moment);
-  console.log(currentPhaseIndex)
   const { t } = useTranslation()
   const timelineRef = useRef(null);
   const observerRef = useRef(null); // Store the MutationObserver
