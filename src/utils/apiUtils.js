@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 let token = null
-let isApiTokenRenewing = false
+let apiTokenRenewalPromise = null
 
 const initAxios = () => {
   let baseURL = ''
@@ -27,11 +27,22 @@ const setToken = newToken => (token = newToken)
 
 const getToken = () => token
 
-const delay_if_token_renewing = async () => {
-  if (isApiTokenRenewing){
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    isApiTokenRenewing=false
+export const waitForApiTokenRenewal = async () => {
+  if (apiTokenRenewalPromise) {
+    await apiTokenRenewalPromise
   }
+}
+
+const trackApiTokenRenewal = promise => {
+  const renewalPromise = promise.finally(() => {
+    if (apiTokenRenewalPromise === renewalPromise) {
+      apiTokenRenewalPromise = null
+    }
+  })
+
+  apiTokenRenewalPromise = renewalPromise
+
+  return renewalPromise
 }
 
 export const get = async (
@@ -41,7 +52,7 @@ export const get = async (
   pages = false,
   force = true,
 ) => {
-  await delay_if_token_renewing()
+  await waitForApiTokenRenewal()
   let retVal = null
   let res = await axios.get(apiUrl, { ...config })
   if (all) retVal = res
@@ -63,27 +74,37 @@ export const get = async (
 }
 
 export const post = async (apiUrl, body = {}, headers = {}, renewingApiToken=false) => {
-  await delay_if_token_renewing()
-  if (renewingApiToken) { isApiTokenRenewing = true}
-  const { data } = await axios.post(apiUrl, body, { headers })
-  if (renewingApiToken) { isApiTokenRenewing = false}
-  return data
+  if (renewingApiToken && apiTokenRenewalPromise) {
+    return await apiTokenRenewalPromise
+  }
+
+  if (renewingApiToken) {
+    const requestPromise = axios.post(apiUrl, body, { headers }).then(({ data }) => data)
+
+    return await trackApiTokenRenewal(requestPromise)
+  }
+
+  await waitForApiTokenRenewal()
+
+  const requestPromise = axios.post(apiUrl, body, { headers }).then(({ data }) => data)
+
+  return await requestPromise
 }
 
 export const patch = async (apiUrl, body = {}, headers = {}) => {
-  await delay_if_token_renewing()
+  await waitForApiTokenRenewal()
   const { data } = await axios.patch(apiUrl, body, { headers })
   return data
 }
 
 export const put = async (apiUrl, body = {}, config = {}) => {
-  await delay_if_token_renewing()
+  await waitForApiTokenRenewal()
   const { data } = await axios.put(apiUrl, body, { ...config })
   return data
 }
 
 export const del = async (apiUrl, body = {}, config = {}) => {
-  await delay_if_token_renewing()
+  await waitForApiTokenRenewal()
   const { data } = await axios.delete(apiUrl, body, { ...config })
   return data
 }

@@ -6,6 +6,7 @@ import {
   ERROR,
   error,
   LOAD_API_TOKEN,
+  loadApiToken,
   tokenLoaded,
   INIT_API_REQUEST,
   initApiRequestSuccessful,
@@ -13,6 +14,7 @@ import {
 } from '../actions/apiActions'
 import { loginSuccessful } from '../actions/authActions'
 import apiUtils from '../utils/apiUtils'
+import userManager from '../utils/userManager'
 
 export default function* apiSaga() {
   yield all([
@@ -23,11 +25,41 @@ export default function* apiSaga() {
   ])
 }
 
+function* recoverFromUnauthorizedSaga(forceSilentRenew = false) {
+  try {
+    const user = yield call([userManager, userManager.getUser])
+
+    if (!forceSilentRenew && user && !user.expired) {
+      yield put(loadApiToken(user.access_token))
+      return true
+    }
+
+    const renewedUser = yield call([userManager, userManager.signinSilent])
+
+    if (renewedUser?.access_token) {
+      yield put(loadApiToken(renewedUser.access_token))
+      return true
+    }
+  } catch (renewalError) {
+    console.error('Unable to recover from unauthorized response', renewalError)
+  }
+
+  return false
+}
+
 function* handleErrorSaga({ payload }) {
   if (payload.response) {
     const { status } = payload.response
     if (status === 401) {
-      yield put(push('/logout'))
+      if (process.env.DEBUG === 'true') {
+        globalThis.alert('Unauthorized response received, attempting to recover silently...')
+      }
+      const forceSilentRenew = payload?.config?.url?.includes('/protocol/openid-connect/token')
+      const recovered = yield call(recoverFromUnauthorizedSaga, forceSilentRenew)
+
+      if (!recovered) {
+        yield put(push('/logout'))
+      }
     } else if (status === 403) {
       yield put(
         toastrActions.add({
