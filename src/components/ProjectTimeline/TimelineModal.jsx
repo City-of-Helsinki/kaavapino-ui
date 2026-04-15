@@ -550,7 +550,6 @@ const TimelineModal = ({
       id="timeline-edit-side-panel" 
       onMount={() => getFocusableElements("timeline-edit-side-panel")[0]?.focus()}
       onUnmount={() => {
-        console.log('Modal onUnmount, returnFocusId:', returnFocusId);
         document.getElementById(returnFocusId)?.focus();
       }}
     >

@@ -51,9 +51,6 @@ function* handleErrorSaga({ payload }) {
   if (payload.response) {
     const { status } = payload.response
     if (status === 401) {
-      if (process.env.DEBUG === 'true') {
-        globalThis.alert('Unauthorized response received, attempting to recover silently...')
-      }
       const forceSilentRenew = payload?.config?.url?.includes('/protocol/openid-connect/token')
       const recovered = yield call(recoverFromUnauthorizedSaga, forceSilentRenew)
 
