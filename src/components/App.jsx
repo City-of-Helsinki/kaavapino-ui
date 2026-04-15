@@ -201,7 +201,13 @@ class App extends Component {
 
 App.propTypes = {
   loadingToken: PropTypes.bool,
-  apiInitialized: PropTypes.bool
+  apiInitialized: PropTypes.bool,
+  apiToken: PropTypes.string,
+  logout: PropTypes.func,
+  fetchPhases: PropTypes.func,
+  fetchProjectTypes: PropTypes.func,
+  initApiRequest: PropTypes.func,
+  t: PropTypes.func
 }
 
 const mapDispatchToProps = {
