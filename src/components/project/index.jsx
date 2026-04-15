@@ -73,7 +73,7 @@ class ProjectPage extends Component {
   }
   
   componentDidMount() {
-    const { currentProjectLoaded, users, getAttributes, currentProject } = this.props
+    const { currentProjectLoaded, users, getAttributes, currentProject, documents } = this.props
 
     getAttributes()
     if (
@@ -83,6 +83,9 @@ class ProjectPage extends Component {
     ) {
       this.props.initializeProject(this.props.id)
     }
+    if (documents) {
+      this.props.getExternalDocuments(this.props.id)
+    }
     if (!users || users.length === 0) {
       this.props.fetchUsers()
     }
@@ -90,7 +93,7 @@ class ProjectPage extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { currentProject, changingPhase } = this.props
+    const { currentProject, changingPhase, getExternalDocuments } = this.props
     if(prevProps.saving && !this.props.saving){
       if (this.state.showBaseInformationForm) {
         this.setState(prevState => ({ ...prevState, showBaseInformationForm: false }))
@@ -118,9 +121,15 @@ class ProjectPage extends Component {
       }
       document.title = currentProject.name
     }
-    //s if (prevProps.edit && !edit) this.props.setSelectedPhaseId(currentProject.phase)
-
-    getExternalDocuments(this.props.id)
+    if (
+      this.props.documents &&
+      (
+        prevProps.id !== this.props.id ||
+        (!prevProps.documents && this.props.documents)
+      )
+    ) {
+      getExternalDocuments(this.props.id)
+    }
   }
 
   pollConnection = () => {

@@ -54,6 +54,14 @@ class App extends Component {
       })();
     }
 
+    if (this.props.apiToken && !this.props.apiInitialized) {
+      this.props.initApiRequest()
+    }
+
+    if (this.props.apiInitialized) {
+      this.fetchBootstrapData()
+    }
+
     // Start the refresh timeout when loading
     this.startLoadingTimeout();
   }
@@ -77,10 +85,14 @@ class App extends Component {
     }
   }
 
+  fetchBootstrapData() {
+    this.props.fetchPhases()
+    this.props.fetchProjectTypes()
+  }
+
   componentDidUpdate(prevProps) {
     if (!prevProps.apiInitialized && this.props.apiInitialized) {
-      this.props.fetchPhases()
-      this.props.fetchProjectTypes()
+      this.fetchBootstrapData()
     } else if (!prevProps.apiToken && this.props.apiToken) {
       // One request needs to be done before anything else because
       // of a bug in a backend library that causes a race condition
