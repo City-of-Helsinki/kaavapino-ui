@@ -21,9 +21,9 @@ const HDSToggleButton = ({
         name={name}
         onChange={onChange}
         checked={checked}
-        id={custom.fieldData.id}
+        id={custom.fieldData.name}
       />
-      <label htmlFor={custom.fieldData.id}>{custom.fieldData.label}</label>
+      <label htmlFor={custom.fieldData.name}>{custom.fieldData.label}</label>
     </span>
   )
 }
