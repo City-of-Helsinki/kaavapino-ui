@@ -5,6 +5,10 @@ import {vi, describe, test, it, expect, beforeEach} from 'vitest';
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: key => key }),
+  initReactI18next: {
+    type: '3rdParty',
+    init: () => {}
+  }
 }));
 
 

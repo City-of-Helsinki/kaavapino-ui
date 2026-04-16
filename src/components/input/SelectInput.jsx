@@ -4,10 +4,11 @@ import inputUtils from '../../utils/inputUtils'
 import { Select } from 'hds-react'
 import { isArray, isEqual, uniq, uniqBy } from 'lodash'
 import { useSelector } from 'react-redux'
-import {lockedSelector,savingSelector,lastModifiedSelector } from '../../selectors/projectSelector'
+import {lockedSelector,savingSelector,lastModifiedSelector,lastSavedSelector } from '../../selectors/projectSelector'
 import RollingInfo from '../input/RollingInfo.jsx'
 import NetworkErrorState from './NetworkErrorState.jsx'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
+import { useFieldPassivation } from '../../hooks/useFieldPassivation'
 
 // Label when there are more than one same option. To avoid key errors.
 const MORE_LABEL = ' (2)'
@@ -42,10 +43,17 @@ const SelectInput = ({
 	const lockedStatusJsonString = JSON.stringify(lockedStatus);
 	const saving = useSelector(state => savingSelector(state))
 	const lastModified = useSelector(state => lastModifiedSelector(state))
+	const lastSaved = useSelector(state => lastSavedSelector(state))
 	const [readonly, setReadOnly] = useState(false)
 	const [fieldName, setFieldName] = useState("")
 	const [editField,setEditField] = useState(false)
 	const [isThisFieldSaving, setIsThisFieldSaving] = useState(false)
+	
+	// Check if other fields have validation errors OR connection errors (UX60.2.5 - passivate fields when error exists)
+	const shouldDisableForErrors = useFieldPassivation(input.name, { formName })
+	
+	// Check if THIS field is the one that failed to save due to network error
+	const isThisFieldNetworkError = lastSaved?.status === 'error' && lastSaved?.fields?.includes(input.name)
 
 	useEffect(() => {
     //Chekcs that locked status has more data then inital empty object
@@ -210,7 +218,15 @@ const SelectInput = ({
       //Sent a call to unlock field to backend
       handleUnlockField(input.name)
     }
-    if (selectValues !== oldValueRef.current) {
+    // Normalize multiselect values to IDs for comparison.
+    // HDS Select onChange gives objects {key, label, value}, but oldValueRef stores IDs.
+    const normalizeVal = (val) => {
+      if (multiple && isArray(val) && val.length > 0 && typeof val[0] === 'object' && val[0] !== null) {
+        return val.map(item => item.value)
+      }
+      return val
+    }
+    if (!isEqual(normalizeVal(selectValues), normalizeVal(oldValueRef.current))) {
       //prevent saving if locked
       if (!readonly) {
         if (typeof onBlur === 'function') {
@@ -241,6 +257,10 @@ const SelectInput = ({
   }, [input.name, input.value]);
 
   const editRollingField = () => {
+    // Don't open field if other fields have errors (passivation active)
+    if (shouldDisableForErrors) {
+      return;
+    }
     setEditField(true)
   }
 
@@ -276,11 +296,74 @@ const SelectInput = ({
     }
   }
 
+  const renderSelectElement = (preparedOptions, notSelectable, readOnlyStyle, hasValidationError, errorString) => {
+    const isFieldDisabled = disabled || editDisabled || isThisFieldSaving || shouldDisableForErrors || isThisFieldNetworkError || (isProjectTimetableEdit && !timetable_editable);
+    return (
+      <div className={`select-input-wrapper ${isFieldDisabled ? 'disabled' : ''} ${isThisFieldNetworkError ? 'has-network-error' : ''}`}>
+        {!multiple ? (
+          <Select
+            data-testid="select-single"
+            placeholder={placeholder}
+            className={`${readOnlyStyle}${isThisFieldNetworkError ? ' has-network-error' : ''}`}
+            id={input.name}
+            multiselect={false}
+            error={inputUtils.hasError(error) || isThisFieldNetworkError}
+            onBlur={handleBlur}
+            onFocus={handleFocus}
+            clearable={false}
+            disabled={isFieldDisabled}
+            options={preparedOptions}
+            value={currentSingleValue}
+            onChange={data => {
+              if(!notSelectable){
+                let returnValue = data ? data.value : null
+                if (returnValue === '') {
+                  returnValue = null
+                }
+                setSelectValues(returnValue)
+                handleInputChange(returnValue)
+              }
+            }}
+          />
+        ) : (
+          <Select
+            data-testid="select-multi"
+            placeholder={placeholder}
+            className={`${readOnlyStyle}${isThisFieldSaving ? ' blurred' : ''}${isThisFieldNetworkError ? ' has-network-error' : ''}`}
+            id={input.name}
+            name={input.name}
+            multiselect={multiple}
+            error={error || isThisFieldNetworkError}
+            onBlur={handleBlur}
+            onFocus={handleFocus}
+            clearable={true}
+            disabled={isFieldDisabled}
+            options={preparedOptions}
+            defaultValue={currentValue}
+            onChange={data => {
+              if(!notSelectable){
+                let uniqData = uniqBy(data, 'key');
+                let returnValue = uniqData && uniqData.map(currentValue => currentValue.value)
+                setSelectValues(uniqData)
+                handleInputChange(returnValue)
+              }
+            }}
+          />
+        )}
+        <NetworkErrorState fieldName={input.name} validationError={hasValidationError ? errorString : null} />
+      </div>
+    );
+  }
+
   const normalOrRollingElement = () => {
     let preparedOptions = !readonly ? getPreparedOptions(options) : options;
     let notSelectable = readonly === true && fieldName === input.name
     let readOnlyStyle = notSelectable ? 'selection readonly' : 'selection'
     let rollingInfoValue = getRollingInfoValue(multiple, currentValue, input, preparedOptions);
+
+    // Prepare validation error string for NetworkErrorState
+    const errorString = typeof error === 'string' ? error : '';
+    const hasValidationError = inputUtils.hasError(error);
 
     //Render rolling info field or normal edit field
     //If clicking rolling field button makes positive lock check then show normal editable field
@@ -295,61 +378,10 @@ const SelectInput = ({
         editRollingField={editRollingField}
         type={"select"}
         phaseIsClosed={phaseIsClosed}
+        shouldDisableForErrors={shouldDisableForErrors}
       />
       :
-      <div className="select-input-wrapper">
-      {!multiple ? (
-        <Select
-          data-testid="select-single"
-          placeholder={placeholder}
-          className={readOnlyStyle}
-          id={input.name}
-          multiselect={false}
-          error={inputUtils.hasError(error)}
-          onBlur={handleBlur}
-          onFocus={handleFocus}
-          clearable={false}
-          disabled={disabled || editDisabled || isThisFieldSaving || (isProjectTimetableEdit && !timetable_editable)}
-          options={preparedOptions}
-          value={currentSingleValue}
-          onChange={data => {
-            if(!notSelectable){
-              let returnValue = data ? data.value : null
-              if (returnValue === '') {
-                returnValue = null
-              }
-              setSelectValues(returnValue)
-              handleInputChange(returnValue)
-            }
-          }}
-        />
-        ) : (
-        <Select
-          data-testid="select-multi"
-          placeholder={placeholder}
-          className={`${readOnlyStyle}${isThisFieldSaving ? ' blurred' : ''}`}
-          id={input.name}
-          name={input.name}
-          multiselect={multiple}
-          error={error}
-          onBlur={handleBlur}
-          onFocus={handleFocus}
-          clearable={true}
-          disabled={disabled || editDisabled || isThisFieldSaving || (isProjectTimetableEdit && !timetable_editable)}
-          options={preparedOptions}
-          defaultValue={currentValue}
-          onChange={data => {
-            if(!notSelectable){
-              let uniqData = uniqBy(data, 'key');
-              let returnValue = uniqData && uniqData.map(currentValue => currentValue.value)
-              setSelectValues(uniqData)
-              handleInputChange(returnValue)
-            }
-          }}
-        />
-        )}
-        <NetworkErrorState fieldName={input.name} />
-      </div>
+      renderSelectElement(preparedOptions, notSelectable, readOnlyStyle, hasValidationError, errorString)
     return elements
   }
 

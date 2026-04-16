@@ -92,10 +92,7 @@ class ProjectPage extends Component {
   componentDidUpdate(prevProps) {
     const { currentProject, changingPhase, getExternalDocuments } = this.props
     if(prevProps.saving && !this.props.saving){
-      if (this.state.showBaseInformationForm) {
-        this.setState(prevState => ({ ...prevState, showBaseInformationForm: false }))
-        document.getElementById('editNavSelect-toggle-button')?.focus();
-      }
+      this.setState(prevState => ({ ...prevState, showBaseInformationForm: false }))
     }
     if (
       (!prevProps.currentProject && currentProject) ||
@@ -454,12 +451,8 @@ class ProjectPage extends Component {
     history.push(`/projects/${id}/documents`)
   }
 
-  toggleBaseInformationForm = (opened) => {
-    if (!opened && this.state.showBaseInformationForm) {
-      document.getElementById('editNavSelect-toggle-button')?.focus();
-    }
+  toggleBaseInformationForm = opened =>
     this.setState(prevState => ({ ...prevState, showBaseInformationForm: opened }))
-  }
 
   getAllChanges = () => {
     const { allEditFields, edit, creator, t } = this.props
@@ -512,15 +505,8 @@ class ProjectPage extends Component {
     return ordered
   }
 
-  togglePrintProjectDataModal = (opened) => {
-    if (!opened && this.state.showPrintProjectDataModal) {
-      const navButtons = document.getElementById('editNavSelect-toggle-button');
-      if (navButtons) {
-        navButtons.focus();
-      }
-    }
-    this.setState({ showPrintProjectDataModal: opened });
-  }
+  togglePrintProjectDataModal = opened =>
+    this.setState({ showPrintProjectDataModal: opened })
 
   renderLoading = () => {
     const { t } = this.props
@@ -533,7 +519,7 @@ class ProjectPage extends Component {
           ]}
         />
         <div className="project-page-content">
-          <LoadingSpinner className="loader-icon">{t('loading')}</LoadingSpinner>
+          <LoadingSpinner className="loader-icon" theme={{ '--spinner-color': '#0000BF' }}>{t('loading')}</LoadingSpinner>
         </div>
       </div>
     )
@@ -647,6 +633,7 @@ const mapStateToProps = state => {
 ProjectPage.propTypes = {
   t: PropTypes.func,
   currentProject: PropTypes.object,
+  currentProjectLoaded: PropTypes.bool,
   downloadDocument: PropTypes.func,
   users: PropTypes.array,
   allEditFields: PropTypes.object,
@@ -655,24 +642,27 @@ ProjectPage.propTypes = {
   getAttributes: PropTypes.func,
   initializeProject: PropTypes.func,
   getExternalDocuments: PropTypes.func,
-  resetProjectDeadlines: PropTypes.func,
   fetchUsers: PropTypes.func,
-  currentProjectLoaded: PropTypes.bool,
-  documents: PropTypes.bool,
-  id: PropTypes.string,
-  changingPhase: PropTypes.bool,
-  saving: PropTypes.bool,
+  documents: PropTypes.array,
   pollConnection: PropTypes.func,
+  edit: PropTypes.bool,
+  phases: PropTypes.array,
+  saving: PropTypes.bool,
+  changingPhase: PropTypes.bool,
+  id: PropTypes.string,
+  location: PropTypes.shape({
+    search: PropTypes.string
+  }),
+  history: PropTypes.shape({
+    replace: PropTypes.func
+  }),
+  resetProjectDeadlines: PropTypes.func,
   showTimetable: PropTypes.func,
   showFloorArea: PropTypes.func,
-  edit: PropTypes.bool,
-  location: PropTypes.object,
-  phases: PropTypes.array,
   projectSubtypes: PropTypes.array,
   currentUserId: PropTypes.string,
   saveProjectBase: PropTypes.func,
   externalDocuments: PropTypes.object,
-  history: PropTypes.object,
   creator: PropTypes.object,
   resettingDeadlines: PropTypes.bool
 }

@@ -52,6 +52,11 @@ export const pollingProjectsSelector = createSelector(
   ({ pollingProjects }) => pollingProjects
 )
 
+export const testingConnectionSelector = createSelector(
+  selectProject,
+  ({ testingConnection }) => testingConnection
+)
+
 export const loadingProjectsSelector = createSelector(
   selectProject,
   ({ loadingProjects }) => loadingProjects
@@ -253,6 +258,48 @@ export const updateFloorValuesSelector = createSelector(
 export const formErrorListSelector = createSelector(
   selectProject, 
   project => project?.formErrorList
+)
+
+// Selector for fields with connection/lock errors (status="error")
+// Returns array of field names that have connection errors (network down, lock error, etc.)
+export const connectionErrorFieldsSelector = createSelector(
+  selectProject,
+  project => {
+    const lastSaved = project?.lastSaved;
+    // If status is "error" (connection/lock error), return the fields that were being saved
+    if (lastSaved?.status === 'error' && Array.isArray(lastSaved.fields)) {
+      return lastSaved.fields;
+    }
+    return [];
+  }
+)
+
+// Selector for fields with backend validation errors (status="field_error")
+// Returns array of field names that have backend validation errors (e.g., duplicate diaarinumero)
+export const fieldErrorFieldsSelector = createSelector(
+  selectProject,
+  project => {
+    const lastSaved = project?.lastSaved;
+    // If status is "field_error" (backend validation error), return the fields that were being saved
+    if (lastSaved?.status === 'field_error' && Array.isArray(lastSaved.fields)) {
+      return lastSaved.fields;
+    }
+    return [];
+  }
+)
+
+// Selector for ALL fields that have ANY error visible (connection, lock, validation etc.)
+// This is used to prevent editor content from disappearing during recovery
+export const fieldsWithAnyErrorSelector = createSelector(
+  selectProject,
+  project => {
+    const lastSaved = project?.lastSaved;
+    // If status is "error" OR "field_error", return the fields that have errors
+    if ((lastSaved?.status === 'error' || lastSaved?.status === 'field_error') && Array.isArray(lastSaved.fields)) {
+      return lastSaved.fields;
+    }
+    return [];
+  }
 )
 
 export const updateFieldSelector = createSelector(
