@@ -65,15 +65,13 @@ function* handleErrorSaga({ payload }) {
           message: 'Ei tarvittavia oikeuksia tähän toimintoon!'
         })
       )
+    } else if (payload?.config?.url === "/v1/attributes/unlock/" || payload?.config?.url === "/v1/attributes/lock/") {
+      // Lock errors are shown inline, not as toasters
     } else {
-      if (payload?.config?.url === "/v1/attributes/unlock/" || payload?.config?.url === "/v1/attributes/lock/") {
-        // Lock errors are shown inline, not as toasters
-      }
-      else {
-        yield put(
-          toastrActions.add({ type: 'error', title: 'Virhe', message: status })
-        )
-      }
+      yield put(
+        toastrActions.add({ type: 'error', title: 'Virhe', message: status })
+      )
+    }
   } else if (payload.custom) {
     yield put(
       toastrActions.add({ type: 'error', title: 'Virhe', message: payload.message })

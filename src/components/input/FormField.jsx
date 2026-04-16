@@ -9,7 +9,6 @@ import { showField } from '../../utils/projectVisibilityUtils'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { IconLock } from 'hds-react'
 import { useSelector } from 'react-redux'
-import { lastSavedSelector } from '../../selectors/projectSelector'
 import { withTranslation } from 'react-i18next'
 import { isArray } from 'lodash'
 import PropTypes from 'prop-types'
@@ -68,7 +67,6 @@ const FormField = ({
   const [lockStatus, setLockStatus] = useState({})
   const savingField = useSelector(state => state.project.savingField)
   const testingConnection = useSelector(state => state.project.testingConnection)
-  const lastSaved = useSelector(state => lastSavedSelector(state))
   const handleBlurSave = useCallback(() => {
     if (typeof handleSave === 'function') {
       handleSave(field.name)

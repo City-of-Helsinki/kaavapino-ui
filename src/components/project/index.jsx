@@ -633,6 +633,7 @@ const mapStateToProps = state => {
 ProjectPage.propTypes = {
   t: PropTypes.func,
   currentProject: PropTypes.object,
+  currentProjectLoaded: PropTypes.bool,
   downloadDocument: PropTypes.func,
   users: PropTypes.array,
   allEditFields: PropTypes.object,
@@ -641,24 +642,29 @@ ProjectPage.propTypes = {
   getAttributes: PropTypes.func,
   initializeProject: PropTypes.func,
   getExternalDocuments: PropTypes.func,
-  resetProjectDeadlines: PropTypes.func,
   fetchUsers: PropTypes.func,
   currentProjectLoaded: PropTypes.bool,
-  documents: PropTypes.bool,
-  id: PropTypes.string,
-  changingPhase: PropTypes.bool,
-  saving: PropTypes.bool,
+  documents: PropTypes.array,
   pollConnection: PropTypes.func,
+  edit: PropTypes.bool,
+  phases: PropTypes.array,
+  saving: PropTypes.bool,
+  changingPhase: PropTypes.bool,
+  id: PropTypes.string,
+  location: PropTypes.shape({
+    search: PropTypes.string
+  }),
+  history: PropTypes.shape({
+    replace: PropTypes.func
+  }),
+  t: PropTypes.func,
+  resetProjectDeadlines: PropTypes.func,
   showTimetable: PropTypes.func,
   showFloorArea: PropTypes.func,
-  edit: PropTypes.bool,
-  location: PropTypes.object,
-  phases: PropTypes.array,
   projectSubtypes: PropTypes.array,
   currentUserId: PropTypes.string,
   saveProjectBase: PropTypes.func,
   externalDocuments: PropTypes.object,
-  history: PropTypes.object,
   creator: PropTypes.object,
   resettingDeadlines: PropTypes.bool
 }

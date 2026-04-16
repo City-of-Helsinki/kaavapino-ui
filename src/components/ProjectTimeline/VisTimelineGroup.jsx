@@ -2199,8 +2199,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   const timelineInitialTab = getTimelineInitialTab(showTimetableForm);
 
   return (
-    !deadlines ? <LoadingSpinner theme={{ '--spinner-color': '#0000BF' }} />
-      :
+    deadlines ? 
       <>
         <div className='vis years' ref={timelineRef}>
           <VisTimelineMenu
@@ -2266,6 +2265,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           buttonStyle2={"danger"}
         />
       </>
+      : <LoadingSpinner theme={{ '--spinner-color': '#0000BF' }} />
   )
 });
 VisTimelineGroup.displayName = 'VisTimelineGroup';
