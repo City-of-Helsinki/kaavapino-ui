@@ -1,5 +1,4 @@
 import { WebStorageStateStore, InMemoryWebStorage, Log, UserManager } from 'oidc-client-ts'
-import { logout } from '../actions/authActions'
 
 Log.setLogger(console);
 Log.setLevel(Log.DEBUG);
@@ -34,8 +33,8 @@ if (process.env.NODE_ENV === 'test') {
 
 const userManager = new UserManager(userManagerConfig)
 
-userManager.events.addSilentRenewError( () => {
-  logout()
+userManager.events.addSilentRenewError((error) => {
+  console.error('Silent renew failed', error)
 })
 
 export default userManager

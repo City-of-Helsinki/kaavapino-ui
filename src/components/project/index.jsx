@@ -47,7 +47,6 @@ import { getFormValues } from 'redux-form'
 import { userIdSelector } from '../../selectors/authSelector'
 import { IconPen, LoadingSpinner, Button, Select, IconDownload } from 'hds-react'
 import { withRouter } from 'react-router-dom'
-import dayjs from 'dayjs'
 import Header from '../common/Header.jsx'
 import { downloadDocument } from '../../actions/documentActions'
 import authUtils from '../../utils/authUtils'
@@ -73,15 +72,16 @@ class ProjectPage extends Component {
   }
   
   componentDidMount() {
-    const { currentProjectLoaded, users, getAttributes, currentProject } = this.props
-
+    const { currentProjectLoaded, users, getAttributes, currentProject, documents } = this.props
     getAttributes()
     if (
       !currentProjectLoaded ||
-      !currentProject ||
-      currentProject.id !== +this.props.id
+      currentProject?.id !== +this.props.id
     ) {
       this.props.initializeProject(this.props.id)
+    }
+    if (documents) {
+      this.props.getExternalDocuments(this.props.id)
     }
     if (!users || users.length === 0) {
       this.props.fetchUsers()
@@ -90,7 +90,7 @@ class ProjectPage extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { currentProject, changingPhase } = this.props
+    const { currentProject, changingPhase, getExternalDocuments } = this.props
     if(prevProps.saving && !this.props.saving){
       this.setState(prevState => ({ ...prevState, showBaseInformationForm: false }))
     }
@@ -115,9 +115,15 @@ class ProjectPage extends Component {
       }
       document.title = currentProject.name
     }
-    //s if (prevProps.edit && !edit) this.props.setSelectedPhaseId(currentProject.phase)
-
-    getExternalDocuments(this.props.id)
+    if (
+      this.props.documents &&
+      (
+        prevProps.id !== this.props.id ||
+        (!prevProps.documents && this.props.documents)
+      )
+    ) {
+      getExternalDocuments(this.props.id)
+    }
   }
 
   pollConnection = () => {
@@ -173,7 +179,6 @@ class ProjectPage extends Component {
     const { currentProject, users, projectSubtypes, selectedPhase, allEditFields } = this.props
     const user = projectUtils.formatUsersName(users.find(u => u.id === currentProject.user))
     const currentPhases = this.getCurrentPhases()
-    
     return (
       <div key="edit">
         <NavHeader
@@ -224,7 +229,6 @@ class ProjectPage extends Component {
   }
   getProjectDocumentsContent = (isResponsible) => {
     const { currentProject, users, projectSubtypes, currentUserId, selectedPhase } = this.props
-
     return (
       <div key="documents">
         <NavHeader
@@ -432,11 +436,6 @@ class ProjectPage extends Component {
     )
   }
 
-  getNavActions = () => {
-    const { edit } = this.props
-    return !edit ? this.getProjectCardButtons() : this.getEditButtons()
-  }
-
   modifyContent = () => {
     const {
       currentProject: { id },
@@ -451,7 +450,6 @@ class ProjectPage extends Component {
     } = this.props
     history.push(`/projects/${id}/documents`)
   }
-  openProjectDataModal = () => this.togglePrintProjectDataModal(true)
 
   toggleBaseInformationForm = opened =>
     this.setState(prevState => ({ ...prevState, showBaseInformationForm: opened }))
@@ -486,7 +484,7 @@ class ProjectPage extends Component {
       }
     })
 
-    const ordered = returnValues.sort(
+    const ordered = returnValues.toSorted(
       (u1, u2) => new Date(u2.timestamp).getTime() - new Date(u1.timestamp).getTime()
     )
 
@@ -525,15 +523,6 @@ class ProjectPage extends Component {
         </div>
       </div>
     )
-  }
-
-  downloadProjectData = async () => {
-    const { currentProject, getProjectSnapshot, formValues } = this.props
-
-    const phase = formValues['phase']
-    const date = formValues['date']
-
-    getProjectSnapshot(currentProject.id, dayjs(date).format(), phase)
   }
 
   onResetProjectDeadlines = () => {
@@ -642,11 +631,36 @@ const mapStateToProps = state => {
 }
 
 ProjectPage.propTypes = {
+  t: PropTypes.func,
   currentProject: PropTypes.object,
   downloadDocument: PropTypes.func,
   users: PropTypes.array,
   allEditFields: PropTypes.object,
-  selectedPhase: PropTypes.number
+  selectedPhase: PropTypes.number,
+  setSelectedPhaseId: PropTypes.func,
+  getAttributes: PropTypes.func,
+  initializeProject: PropTypes.func,
+  getExternalDocuments: PropTypes.func,
+  resetProjectDeadlines: PropTypes.func,
+  fetchUsers: PropTypes.func,
+  currentProjectLoaded: PropTypes.bool,
+  documents: PropTypes.bool,
+  id: PropTypes.string,
+  changingPhase: PropTypes.bool,
+  saving: PropTypes.bool,
+  pollConnection: PropTypes.func,
+  showTimetable: PropTypes.func,
+  showFloorArea: PropTypes.func,
+  edit: PropTypes.bool,
+  location: PropTypes.object,
+  phases: PropTypes.array,
+  projectSubtypes: PropTypes.array,
+  currentUserId: PropTypes.string,
+  saveProjectBase: PropTypes.func,
+  externalDocuments: PropTypes.object,
+  history: PropTypes.object,
+  creator: PropTypes.object,
+  resettingDeadlines: PropTypes.bool
 }
 
 export default withRouter(
