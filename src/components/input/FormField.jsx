@@ -353,11 +353,10 @@ const FormField = ({
 
   const showError = required ? t('project.required-field') : error
   
-  // NetworkErrorState handles errors for CustomInput and RichTextEditor fields
-  // Don't show duplicate error in FormField when NetworkErrorState is active
+  // NetworkErrorState handles all error display for CustomInput and RichTextEditor fields
+  // Always hide FormField's error-text for these types to prevent duplicate messages
   const usesNetworkErrorState = ['short_string', 'long_string', 'number', 'richtext-editor'].includes(field.type)
-  const networkStateIsActive = usesNetworkErrorState && ['error', 'connection_restored', 'field_error'].includes(lastSaved?.status)
-  const shouldHideError = networkStateIsActive
+  const shouldHideError = usesNetworkErrorState
   if (!showField(field, formValues) || field.display === 'hidden') {
     return null
   } else {

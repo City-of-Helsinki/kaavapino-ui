@@ -330,7 +330,7 @@ function RichTextEditor(props) {
   };
 
   /**
-   * Update editor content and related states
+   * Update editor content and related states (called from value useEffect)
    */
   const updateEditorContent = (editor, newValue) => {
     editor.setContents(newValue);
@@ -366,11 +366,9 @@ function RichTextEditor(props) {
     const editorEmpty = !currentEditorContent || currentEditorContent.trim().length <= 1;
     const reduxEmpty = !reduxValue || reduxValue.trim().length === 0;
 
+    // Only update editor if it's empty but Redux has content (edge case: editor cleared during error)
+    // Do NOT overwrite editor with Redux value — editor already has the correct saved content
     if (editorEmpty && !reduxEmpty) {
-      updateEditorContent(editor, value);
-    } else if (!editorEmpty && reduxEmpty) {
-      // Keep editor content as-is
-    } else if (currentEditorContent && reduxValue && currentEditorContent !== reduxValue) {
       updateEditorContent(editor, value);
     }
     prevLastSavedStatus.current = lastSaved?.status || '';
@@ -527,7 +525,12 @@ function RichTextEditor(props) {
 
       if (!shouldBeReadOnly) {
         // if the field is not locked, set the value from the lock data
-        setValue(fieldData)
+        // BUT skip if we just saved successfully or connection was restored - editor already has the correct content
+        // and fieldData is the old pre-edit value from when the lock was acquired
+        const skipSetValue = lastSaved?.status === 'success' || lastSaved?.status === 'connection_restored';
+        if (!skipSetValue) {
+          setValue(fieldData)
+        }
       }
 
       if (!shouldBeReadOnly || isLocked && !isOwner) {
@@ -914,8 +917,7 @@ function RichTextEditor(props) {
     }
     
     //set editor value from db value updated with focus and lock call if data has changed on db
-    // or set it when recovering from no connection to backend
-    const shouldUpdate = (dbValue?.ops && !isEqual(originalData, dbValue?.ops)) || connection.connection;
+    const shouldUpdate = dbValue?.ops && !isEqual(originalData, dbValue?.ops);
     
     if (shouldUpdate) {
       // CRITICAL FIX (KAAV-3596): Preserve user data when character limit exceeded during network recovery

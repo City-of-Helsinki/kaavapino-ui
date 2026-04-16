@@ -397,7 +397,7 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
       }
     }
     //set editor value from db value updated with focus and lock call if data has changed on db
-    if(dbValue && originalData !== dbValue || connection.connection){
+    if(dbValue && originalData !== dbValue){
       input.onChange(dbValue, input.name)
     }
   }
@@ -527,7 +527,6 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
           <NumberInput
             ref={inputRef}
             aria-label={input.name}
-            error={hasValidationError ? true : undefined}
             errorText=""
             fluid="true"
             {...input}
@@ -546,7 +545,6 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
           <TextInput
             ref={inputRef}
             aria-label={input.name}
-            error={hasValidationError ? true : undefined}
             errorText=""
             fluid="true"
             {...input}
