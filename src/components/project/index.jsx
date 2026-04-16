@@ -643,7 +643,6 @@ ProjectPage.propTypes = {
   initializeProject: PropTypes.func,
   getExternalDocuments: PropTypes.func,
   fetchUsers: PropTypes.func,
-  currentProjectLoaded: PropTypes.bool,
   documents: PropTypes.array,
   pollConnection: PropTypes.func,
   edit: PropTypes.bool,
@@ -657,7 +656,6 @@ ProjectPage.propTypes = {
   history: PropTypes.shape({
     replace: PropTypes.func
   }),
-  t: PropTypes.func,
   resetProjectDeadlines: PropTypes.func,
   showTimetable: PropTypes.func,
   showFloorArea: PropTypes.func,
