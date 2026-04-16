@@ -61,6 +61,7 @@ const FieldSet = ({
   const { t } = useTranslation()
   const isMount = useIsMount()
   const accordianRef = useRef(null)
+  const autoOpenScrollPending = useRef(false)
   
   // Check if other fields have errors - passivate fieldset expand/delete buttons
   const shouldDisableForErrors = useFieldPassivation(name, { formName })
@@ -79,6 +80,7 @@ const FieldSet = ({
 
   const [hiding,setHiding] = useState(false)
   const [currentFieldset,setCurrentFieldset] = useState(false)
+  const [pendingAutoOpen, setPendingAutoOpen] = useState(false)
 
   const refreshFieldset = () => {
     //Fetch fieldset data from backend and see if there is new sub fieldset or data changes before adding new sub fieldset
@@ -117,6 +119,7 @@ const FieldSet = ({
         handleBlur()
         handleOutsideClick()
         setAdding(false)
+        setPendingAutoOpen(true)
       }
       else if(updateField?.fieldName === name && hiding){
         //Hide fieldset after fetching latest fieldset data
@@ -133,7 +136,34 @@ const FieldSet = ({
   }, [updateField?.fieldName,updateField?.data]) 
 
   useEffect(() => {
+    if (autoOpenScrollPending.current && expanded.length > 0) {
+      autoOpenScrollPending.current = false
+      requestAnimationFrame(() => {
+        const containers = accordianRef.current?.querySelectorAll('.fieldset-container')
+        const lastContainer = containers?.[containers.length - 1]
+        if (lastContainer) {
+          lastContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        }
+      })
+    }
+  }, [expanded])
+
+  useEffect(() => {
     if (!saving) {
+      if (pendingAutoOpen && lastSaved?.status !== 'error') {
+        const formFieldValues = sets
+        const newIndex = formFieldValues.reduce((lastActive, _, idx) => {
+          const del = get(formValues, `${name}[${idx}]._deleted`)
+          return del ? lastActive : idx
+        }, -1)
+        if (newIndex !== -1) {
+          const newSet = `${name}[${newIndex}]`
+          autoOpenScrollPending.current = true
+          setExpanded([newIndex])
+          handleLockField(newSet)
+        }
+        setPendingAutoOpen(false)
+      }
       setCurrentFieldset(false)
       setShowSaving(false)
     }

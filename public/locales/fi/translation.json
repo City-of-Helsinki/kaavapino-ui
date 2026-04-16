@@ -140,6 +140,19 @@
       "anyPastConfirmed": "Vahvistusta ei voi perua, koska päivämäärä on menneisyydessä.",
       "anyPast": "Päivämäärää ei voi vahvistaa, koska se sijaitsee menneisyydessä.",
       "disableConfirmButton": "Vahvistusta ei voi perua, koska seuraava {{nextGroupWord}} on jo lisätty."
+    },
+    "aria": {
+      "move-timeline-forward": "Siirry aikajanalla eteenpäin",
+      "move-timeline-backward": "Siirry aikajanalla taaksepäin",
+      "move-timeline-today": "Siirry aikajanalla nykyhetkeen",
+      "zoom-timeline-1-month": "Näytä aikajana 1 kuukauden aikavälillä",
+      "zoom-timeline-3-months": "Näytä aikajana 3 kuukauden aikavälillä",
+      "zoom-timeline-6-months": "Näytä aikajana 6 kuukauden aikavälillä",
+      "zoom-timeline-1-year": "Näytä aikajana 1 vuoden aikavälillä",
+      "zoom-timeline-2-years": "Näytä aikajana 2 vuoden aikavälillä",
+      "timeline-element-info": "Näytä aikajanan elementtien selitykset",
+      "toggle-phase-rows": "Näytä vaiheen {{phase}} elementtirivit",
+      "toggle-group-form": "Muokkaa elementtirivin {{group}} aikataulutietoja"
     }
   },
   "common": {

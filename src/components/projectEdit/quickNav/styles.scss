@@ -143,7 +143,7 @@
           }
 
           .project-status-text{
-            font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+            font-family: "Helsinki Grotesk Regular", sans-serif;
             font-style: italic;
             font-weight: 400;
             padding-right: $size8;
@@ -152,7 +152,7 @@
         div{
           .filter-tag{
             background-color: $color-black-20;
-            font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+            font-family: "Helsinki Grotesk Medium", sans-serif;
             font-size: $size12;
             float: right;
             padding: 0;
@@ -205,7 +205,7 @@
     }
 
     .quicknav-item.active {
-      font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+      font-family: "Helsinki Grotesk Bold", sans-serif;
       font-weight: 700;
       border-left: $size4 solid;
       background-color: $color-black-5;
@@ -326,7 +326,7 @@
     width: 100%;
 
     button {
-      font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+      font-family: "Helsinki Grotesk Regular", sans-serif;
       margin-top: 10px;
       font-weight: bolder;
     }

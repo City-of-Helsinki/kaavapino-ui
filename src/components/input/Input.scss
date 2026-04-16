@@ -25,7 +25,7 @@
       display: none;
     }
     .input-locked{
-      font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+      font-family: 'Helsinki Grotesk Medium', sans-serif;
       font-size: $size14;
       height: 18px;
       display:inline-flex;
@@ -114,7 +114,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+    font-family: "Helsinki Grotesk Medium", sans-serif;
     font-size: $size16;
     line-height: $size24;
     color: $color-black-90;
@@ -127,7 +127,7 @@
       padding-left: $size16;
 
       .content{
-        font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+        font-family: "Helsinki Grotesk Regular", sans-serif;
         font-size: $size16;
         opacity: 1 !important;
         border: none !important;
@@ -144,12 +144,12 @@
         }
         .ql-container{
           border:none;
-          font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+          font-family: "Helsinki Grotesk Regular", sans-serif;
           font-size: $size16;
           .ql-editor{
             padding: 0;
             p{
-              font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+              font-family: "Helsinki Grotesk Regular", sans-serif;
               font-size: $size16;
               opacity: 1 !important;
               border: none !important;
@@ -176,7 +176,7 @@
       width: 80%;
       padding-left: $size14;
       .content{
-        font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+        font-family: "Helsinki Grotesk Regular", sans-serif;
         font-size: $size14;
         opacity: 1 !important;
         border: none !important;
@@ -193,12 +193,12 @@
         }
         .ql-container{
           border:none;
-          font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+          font-family: "Helsinki Grotesk Regular", sans-serif;
           font-size: $size14;
           .ql-editor{
             padding: 0;
             p{
-              font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+              font-family: "Helsinki Grotesk Regular", sans-serif;
               font-size: $size14;
               opacity: 1 !important;
               border: none !important;
@@ -218,7 +218,7 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+    font-family: "Helsinki Grotesk Medium", sans-serif;
     font-size: $size14;
     color: $color_rolling_info;
     padding-left: $size12;
@@ -390,7 +390,7 @@
 }
 
 .ui.label {
-  font-family: "HelsinkiGroteskPro", Arial, sans-serif !important;
+  font-family: "Helsinki Grotesk Medium", sans-serif !important;
   background-color: transparent !important; 
   color: $black1 !important;
   font-size: $size16 !important;
@@ -551,7 +551,7 @@
   border: 3px solid $color-error-border !important;
 }
 .fieldset-info{
-  font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+  font-family: "Helsinki Grotesk Regular", sans-serif;
   font-style: italic;
   font-size: $size14;
   color: $dropdown-text-color;
@@ -578,7 +578,7 @@
     justify-content: space-between;
     align-items: flex-start;
     background-color: $color-white;
-    font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+    font-family: "Helsinki Grotesk Medium", sans-serif;
     font-size: $size14;
     color: $black1;
     font-weight: 500;
@@ -604,7 +604,7 @@
       .accoardian-header-text{
         pointer-events: none;
         .italic{
-          font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+          font-family: "Helsinki Grotesk Regular", sans-serif;
           font-style: italic;
           color:$max-markings-color;
         }
@@ -622,7 +622,7 @@
     justify-content: space-between;
     align-items: flex-start;
     background-color: $color-fog-light;
-    font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+    font-family: "Helsinki Grotesk Medium", sans-serif;
     font-size: $size14;
     color: $black1;
     font-weight: 500;
@@ -647,7 +647,7 @@
       .accoardian-header-text{
         pointer-events: none;
         .italic{
-          font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+          font-family: "Helsinki Grotesk Regular", sans-serif;
           font-style: italic;
           color: $max-markings-color;
         }
@@ -665,7 +665,7 @@
     justify-content: space-between;
     align-items: flex-start;
     background-color: $color-white;
-    font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+    font-family: "Helsinki Grotesk Medium", sans-serif;
     font-size: $size14;
     color: $color-black-40;
     font-weight: 500;
@@ -691,7 +691,7 @@
       .accoardian-header-text{
         pointer-events: none;
         .italic{
-          font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+          font-family: "Helsinki Grotesk Regular", sans-serif;
           font-style: italic;
           color: $max-markings-color;
         }
@@ -792,7 +792,7 @@
       justify-content: flex-end;
       align-items: center;
       button{
-        font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+        font-family: "Helsinki Grotesk Medium", sans-serif;
         font-size: $size12;
         color: $black1;
         display: flex;
@@ -811,7 +811,7 @@
   }
 
   .input-locked{
-    font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+    font-family: "Helsinki Grotesk Medium", sans-serif;
     font-size: $size12;
     color: $color-info-dark;
     display: flex;
@@ -838,7 +838,7 @@
     padding: $size12;
     height: $size48;
     font-size: $size16;
-    font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+    font-family: "Helsinki Grotesk Bold", sans-serif;
     font-weight: 700;
     .fieldset-spinner{
       margin: 0;
@@ -878,7 +878,7 @@
 }
 
 .fieldset-accordian-close{
-  font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+  font-family: "Helsinki Grotesk Medium", sans-serif;
   font-size: $size12;
   background-color: $color-fog-light;
   display: flex;
@@ -974,13 +974,13 @@
 }
 
 .linked-fields{
-  font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+  font-family: 'Helsinki Grotesk Regular', sans-serif;
   font-size: $size14;
   line-height: $size24;
   color: $black1;
   padding-top: 20px;
   .linked-header{
-    font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+    font-family: 'Helsinki Grotesk Bold', sans-serif;
     font-size: $size14;
     line-height: $size24;
     color: $black1;
@@ -1170,7 +1170,7 @@
   background-color: $color-bus-light;
 
   .heading {
-    font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+    font-family: 'Helsinki Grotesk Bold', sans-serif;
     font-weight: 700;
     font-size: $size16;
     padding-bottom: $size28;
@@ -1193,7 +1193,7 @@
       flex-direction: column;
 
       .custom-card-info {
-        font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+        font-family: 'Helsinki Grotesk Medium', sans-serif;
         font-weight: 500;
         font-size: $size14;
         padding-bottom: $size8;
@@ -1204,11 +1204,11 @@
 
         .date {
           display: inline-flex;
-          font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+          font-family: 'Helsinki Grotesk Bold', sans-serif;
           font-weight: 700;
           .italic{
             font-style: italic;
-            font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+            font-family: "Helsinki Grotesk Regular", sans-serif;
             font-weight: 400;
           }
         }
@@ -1231,7 +1231,7 @@
   }
 
   button {
-    font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+    font-family: 'Helsinki Grotesk Medium', sans-serif;
     font-size: $size16;
     line-height: $size24;
     color: $color-bus;
@@ -1250,7 +1250,7 @@
   }
 
   .rolling-text{
-    font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+    font-family: 'Helsinki Grotesk Medium', sans-serif;
     font-size: $size14;
     margin-top: 0;
     margin-left: -($size4);

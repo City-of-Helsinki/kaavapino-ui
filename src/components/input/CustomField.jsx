@@ -33,15 +33,12 @@ import { withTranslation } from 'react-i18next'
 class CustomField extends Component {
   yearOptions = []
   shouldComponentUpdate(prevProps) {
-    if (!isEqual(this.props, prevProps)) {
-      return true
-    }
-    return false
+    return !isEqual(this.props, prevProps);
   }
 
   validateFieldSize = value => {
     const field = this.props.field
-    if (value && field && field.character_limit && field.character_limit > 0) {
+    if (value && field?.character_limit && field.character_limit > 0) {
       if (value.length > field.character_limit) {
         return this.props.t('project.charsover')
       }
@@ -49,7 +46,7 @@ class CustomField extends Component {
   }
 
   formatOptions = options => {
-    return options.map(option => {
+    return options.filter(option => option.index != null).map(option => {
       return {
         key: option.value,
         value: option.value,
@@ -247,7 +244,7 @@ class CustomField extends Component {
     }
 
     //temp fix because data is not added in backend to deadlines
-    if(typeof current === "undefined"){
+    if(current === undefined){
       if(props.input.name === "viimeistaan_lausunnot_ehdotuksesta"){
         current = deadlines.find(
           deadline => deadline.deadline.abbreviation === "E9"

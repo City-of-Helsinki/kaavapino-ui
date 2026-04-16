@@ -158,8 +158,11 @@ const handleChange = (e) => {
 const openModal = (event=null) => {
     if (event?.key === 'Enter' || event?.key === ' ') {
         event.preventDefault();
+        setIsOpen(true);
     }
-    setIsOpen(true);
+    if (event === null) {
+        setIsOpen(true);
+    }
 }
 
 const closeModal = () => {

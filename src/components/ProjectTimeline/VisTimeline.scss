@@ -114,7 +114,7 @@
             button {
                 --min-size: $size32; //hds syntax
                 height: $size44;
-                font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+                font-family: 'Helsinki Grotesk Medium', sans-serif;
                 color: $color-bus;
                 padding: 0;
                 box-sizing: border-box;
@@ -148,7 +148,7 @@
         .zoom-menu{
             margin-left: 65px;
             button{
-                font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+                font-family: "Helsinki Grotesk Medium", sans-serif;
                 font-size: $size14;
                 line-height: $size24;
                 font-weight: 500;
@@ -198,7 +198,7 @@
                 outline: 3px solid $color-coat-of-arms;
             }
             span {
-                font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+                font-family: 'Helsinki Grotesk Medium', sans-serif;
                 font-weight: 500;
                 font-size: $size14;
                 line-height: $size24;
@@ -252,7 +252,7 @@
                     pointer-events: none;
                 }
                  .tooltip-header {
-                    font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+                    font-family: 'Helsinki Grotesk Bold', sans-serif;
                     font-weight: 700;
                     font-style: Bold;
                     font-size: $size18;
@@ -283,14 +283,14 @@
                         display: flex;
                         align-items: center;
                         height: 24px;
-                        font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+                        font-family: 'Helsinki Grotesk Regular', sans-serif;
                         font-weight: 400;
                         font-size: 16px;
                         line-height: 24px;
                         margin-bottom: 22px;
 
                         span {
-                            font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+                            font-family: 'Helsinki Grotesk Bold', sans-serif;
                             font-weight: 700;
                         }
                     }
@@ -556,6 +556,28 @@
             }
             &.past .vis-item-overflow {
                 background: $color-gray;
+            }
+        }
+
+        // Disable drag handle and cursor for past-phase and confirmed element sets
+        .only-inner-end.past-phase-item,
+        .only-inner-end.confirmed {
+            cursor: default !important;
+            pointer-events: none !important;
+            .vis-item-overflow {
+                cursor: default !important;
+                pointer-events: none !important;
+                &::after {
+                    opacity: 0 !important;
+                }
+            }
+        }
+
+        .vis-point.inner-end.past-phase-item,
+        .vis-point.inner-end.confirmed {
+            cursor: default !important;
+            &::after {
+                opacity: 0 !important;
             }
         }
     }
@@ -825,6 +847,30 @@
                 transform: translate(-50%, -50%) scale(1);
                 opacity: 1;
             }
+        }
+    }
+
+    // Confirmed vis-point items (e.g. board/lautakunta deadlines) should not show drag cursor
+    .vis-point.confirmed {
+        cursor: default !important;
+    }
+
+    // Items from past phases — no drag cursor, no pointer interaction
+    // Dot hiding is handled below with body-prefixed high-specificity rules
+    .vis-point.inner-end.no-drag,
+    .only-inner-end.no-drag,
+    .no-drag {
+        cursor: default !important;
+        pointer-events: none !important;
+    }
+
+    [class*="ehdotus_nahtavillaolokerta"],
+    [class*="nahtavillaolokerta"],
+    [class*="esillaolokerta"] {
+        .vis-point.inner-end.no-drag,
+        .only-inner-end.no-drag {
+            cursor: default !important;
+            pointer-events: none !important;
         }
     }
 
@@ -1116,7 +1162,7 @@
         align-items: center;
         padding-left: $size32;
         .vis-inner{
-            font-family: "HelsinkiGroteskPro", Arial, sans-serif !important;
+            font-family: 'Helsinki Grotesk Bold', sans-serif !important;
             font-weight: 700;
             font-size: $size16;
             line-height: $size24;
@@ -1197,7 +1243,7 @@
              .timeline-buttons-container:hover > .timeline-add-text {
                 display: block;
                 position: absolute;
-                font-family: 'HelsinkiGroteskPro', sans-serif;
+                font-family: 'Helsinki Grotesk', sans-serif;
             }
         }
     }
@@ -1631,6 +1677,25 @@ body .vis-item-overflow.past-phase-item::after {
     background: none !important;
 }
 
+// no-drag and confirmed: hide drag handle dot on all non-draggable vis-point items
+// board-date is excluded because its ::after is the confirmed checkmark icon
+// Covers: inner-end, only-inner-end, board.deadline, and any other vis-point type
+body .vis .vis-point.no-drag:not(.board-date)::after,
+body .vis .vis-point.no-drag:not(.board-date):hover::after,
+body .vis .vis-point.no-drag:not(.board-date):active::after,
+body .vis .vis-point.confirmed:not(.board-date)::after,
+body .vis .vis-point.confirmed:not(.board-date):hover::after,
+body .vis .vis-point.confirmed:not(.board-date):active::after {
+    opacity: 0 !important;
+}
+// For only-inner-end and inner-end in ehdotus/nahtavilla/esillaolo context: dot is on .vis-item-overflow::after
+body .vis .only-inner-end.no-drag .vis-item-overflow::after,
+body .vis .vis-point.inner-end.no-drag .vis-item-overflow::after,
+body .vis .only-inner-end.confirmed .vis-item-overflow::after,
+body .vis .vis-point.inner-end.confirmed .vis-item-overflow::after {
+    opacity: 0 !important;
+}
+
 // Global cursor style applied while dragging/moving timeline items (now only sets the cursor)
 body.cursor-moving {
     cursor: url('../../assets/icons/arrow4dir.svg') 8 8, move !important;
@@ -1892,14 +1957,14 @@ body.cursor-moving {
 .vis.years{
     .vis-minor,
     .vis-major > div {
-        font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+        font-family: 'Helsinki Grotesk Medium', sans-serif;
         font-weight: 500;
         font-size: $size14;
         color: $black1;
     }
     .vis-minor {
         border-color: $color-black-20 !important;
-        font-family: 'HelsinkiGroteskPro', sans-serif;
+        font-family: 'Helsinki Grotesk', sans-serif;
         font-weight: 700;
     }
     .vis-minor::first-letter {
@@ -1981,20 +2046,20 @@ body.cursor-moving {
         background-color: $white !important;
     }
     .vis-major > div {
-        font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+        font-family: 'Helsinki Grotesk Medium', sans-serif;
         font-weight: 500;
         font-size: $size14;
         color: $black1;
     }
     .vis-minor {
-        font-family: 'HelsinkiGroteskPro', sans-serif;
+        font-family: 'Helsinki Grotesk', sans-serif;
         font-weight: 400;
         border-color: $color-black-20 !important;
         color:$black;
         text-transform: capitalize;
         line-height: 24px;
         &::first-line {
-            font-family: 'HelsinkiGroteskPro', sans-serif;
+            font-family: 'Helsinki Grotesk', sans-serif;
             font-weight: 700;
             text-transform: none;
         }
@@ -2020,7 +2085,7 @@ body.cursor-moving {
     z-index: 2000 !important;
     border: none !important;
     .tooltip-header {
-        font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+        font-family: 'Helsinki Grotesk Bold', sans-serif;
         font-weight: 700;
         font-style: Bold;
         font-size: 16px;
@@ -2037,7 +2102,7 @@ body.cursor-moving {
     color: $black1 !important;
     padding: 5px 8px !important;
     border-radius: 4px !important;
-    font-family: 'HelsinkiGroteskPro', sans-serif !important;
+    font-family: 'Helsinki Grotesk', sans-serif !important;
     font-weight: 900 !important;
     font-size: 14px !important;
     line-height: 14px !important;
@@ -2092,7 +2157,7 @@ body.cursor-moving {
     border-radius: 2px;
     padding: 8px 12px;
     font-size: $size14;
-    font-family: "HelsinkiGroteskPro", Arial, sans-serif;
+    font-family: 'Helsinki Grotesk Regular', sans-serif;
     font-weight: 400;
     letter-spacing: 2%;
     line-height: 100%;
