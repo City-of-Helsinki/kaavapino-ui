@@ -45,7 +45,7 @@ class CustomField extends Component {
   }
 
   formatOptions = options => {
-    return options.map(option => {
+    return options.filter(option => option.index != null).map(option => {
       return {
         key: option.value,
         value: option.value,
