@@ -677,7 +677,7 @@ function RichTextEditor(props) {
         }
         localStorage.setItem("previousElementId",editorRef.current.props.id);
       }
-      if(lastSaved?.status === "error"){
+      if(network?.status === "error"){
         //Prevent focus and editing to field if not locked
         editorRef.current.editor.blur()
       }

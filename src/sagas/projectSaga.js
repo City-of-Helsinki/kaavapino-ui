@@ -127,7 +127,8 @@ import {
   VALIDATE_DATE,
   setDateValidationResult,
   VALIDATE_PROJECT_TIMETABLE,
-  setValidatingTimetable
+  setValidatingTimetable,
+  resetFormErrors
 } from '../actions/projectActions'
 import { startSubmit, stopSubmit, setSubmitSucceeded, change } from 'redux-form'
 import { error } from '../actions/apiActions'
@@ -279,7 +280,12 @@ function* getAttributeData(data) {
       )
       yield put(setAttributeData(attribute_identifier, getAttributeData, formName, set, nulledFields, i))
     } catch (e) {
-      yield put(error(e))
+      // Network errors (no response) should not show a global toaster - show inline error instead
+      if (!e.response) {
+        yield put(setLastSaved('error', null, [], [], false))
+      } else {
+        yield put(error(e))
+      }
     }
   }
 }
@@ -303,6 +309,8 @@ function* pollConnection() {
       // Clear error state immediately so passivation and header update right away
       // saveProject will set status to 'success' when done (or back to 'error' if it fails again)
       yield put(setLastSaved("connection_restored", time, [], [], false))
+      // Clear form error list so "Virhe lomakkeella estää lisäyksen" disappears
+      yield put(resetFormErrors())
       
       // Get the field that needs to be saved
       const fieldName = lastSaved.fields[0]
@@ -329,6 +337,8 @@ function* pollConnection() {
       yield put(setPoll(true))
       yield put({ type: 'Set network status', payload: { status: 'ok', okMessage: '', errorMessage: '' } })
       yield put(setLastSaved("connection_restored",time,[],[],false))
+      // Clear form error list so "Virhe lomakkeella estää lisäyksen" disappears
+      yield put(resetFormErrors())
     }
   } catch (e) {
     yield put(setPoll(false))

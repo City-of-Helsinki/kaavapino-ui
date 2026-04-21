@@ -390,15 +390,8 @@ const Header = props => {
    * - Regular validation errors (status='field_error') - shown inline via NetworkErrorState
    */
   const shouldShowErrorToaster = (lastSaved) => {
-    // For network errors (not validation errors or lock errors), check if it's a fieldset
-    if (lastSaved?.status === "error" && !lastSaved?.lock && lastSaved?.fields) {
-      const isFieldsetError = lastSaved.fields.some(field => 
-        field.includes('[') || field.endsWith('_fieldset')
-      );
-      return isFieldsetError;
-    }
-    
-    // All other cases: don't show toaster (inline notification handles it)
+    // Inline NetworkErrorState handles all error notifications
+    // Toaster is not shown for any field errors (including fieldsets)
     return false;
   }
 

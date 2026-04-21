@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { connect, useDispatch, useSelector } from 'react-redux'
-import { checkingSelector, savingSelector, formErrorListSelector, lastSavedSelector, updateFieldSelector} from '../../selectors/projectSelector'
+import { checkingSelector, savingSelector, formErrorListSelector, lastSavedSelector, updateFieldSelector, pollSelector} from '../../selectors/projectSelector'
 import CustomField from './CustomField.jsx'
 import NetworkErrorState from './NetworkErrorState.jsx'
 import { Form, Label } from 'semantic-ui-react'
@@ -13,7 +13,7 @@ import { Button, IconLock, IconPlus, IconTrash, IconAngleDown, IconAngleUp, Load
 import { change } from 'redux-form'
 import { useTranslation } from 'react-i18next';
 import { OutsideClick } from '../../hooks/OutsideClick'
-import {getAttributeData, formErrorList} from '../../actions/projectActions'
+import {getAttributeData, formErrorList, setLastSaved} from '../../actions/projectActions'
 import { useIsMount } from '../../hooks/IsMounted'
 import { useFieldPassivation } from '../../hooks/useFieldPassivation'
 import PropTypes from 'prop-types'
@@ -68,6 +68,7 @@ const FieldSet = ({
   
   // Get error list to check if any child fields have errors
   const formErrors = useSelector(formErrorListSelector)
+  const connection = useSelector(pollSelector)
 
   const nulledFields = fields && fields.map(field => {
     return { [field.name]: null, _deleted: true }
@@ -83,6 +84,13 @@ const FieldSet = ({
   const [pendingAutoOpen, setPendingAutoOpen] = useState(false)
 
   const refreshFieldset = () => {
+    // Check network connection before attempting to add - if offline, show error immediately
+    // instead of letting the API call fail and leaving the fieldset in a broken state.
+    // Pass empty fields array so the recovery saga doesn't try to save a fieldset name as a field.
+    if (connection?.connection === false) {
+      dispatch(setLastSaved('error', null, [], [], false))
+      return
+    }
     //Fetch fieldset data from backend and see if there is new sub fieldset or data changes before adding new sub fieldset
     //After completed fetch useEffect adds new sub fieldset to updated last fieldset index and saves
     setAdding(true)
@@ -107,6 +115,9 @@ const FieldSet = ({
     if(lastSaved?.status === "error"){
       //Unable to lock fields and connection backend not working so prevent editing
       setExpanded([])
+      // Reset adding state so the button doesn't stay stuck in spinner
+      setAdding(false)
+      setCurrentFieldset(false)
     }
   }, [lastSaved?.status === "error"])
  
@@ -312,9 +323,10 @@ const FieldSet = ({
           });
         });
         
-        // Only disable accordion if errors exist in OTHER fields (not this fieldset's children)
-        // If this fieldset has child errors, allow opening so user can fix them
-        const shouldDisableAccordion = shouldDisableForErrors && !hasChildError;
+        // Only disable accordion for actual network errors - during validation errors
+        // (character limit exceeded etc.) fieldsets should still be openable so users
+        // can view data in other fieldsets, while fields inside remain passivated
+        const shouldDisableAccordion = lastSaved?.status === 'error';
         
         return (
           <React.Fragment key={`${name}-${i}`}>
@@ -513,7 +525,7 @@ const FieldSet = ({
           onClick={() => {
             refreshFieldset()
           }}
-          disabled={disabled || visibleErrors.length > 0 || saving || (shouldDisableForErrors && !anyFieldsetHasChildError)}
+          disabled={disabled || visibleErrors.length > 0 || saving || lastSaved?.status === 'error' || (shouldDisableForErrors && !anyFieldsetHasChildError)}
           variant="supplementary"
           size='small'
           fullWidth={true}
@@ -553,7 +565,20 @@ const FieldSet = ({
            </div>
          )
          : <></>}
-        {visibleErrors?.length > 0 ? <div className="error-text add-error">{t('project.error-prevent-add')}</div> : ""}
+        {lastSaved?.status === 'error'
+          ? <div className="network-error-state" aria-live="polite" aria-atomic="true">
+              <div className="error-text">
+                <div className="notification-content">
+                  <span className="notification-label">{t('messages.network-save-failed-label')}</span>
+                  <br />
+                  <span className="notification-message">{t('messages.network-save-failed-message')}</span>
+                </div>
+              </div>
+            </div>
+          : visibleErrors?.length > 0
+            ? <div className="error-text add-error">{t('project.error-prevent-add')}</div>
+            : ""
+        }
       </>
       )}
     </React.Fragment>
