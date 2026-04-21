@@ -300,6 +300,9 @@ function* pollConnection() {
       // Connection restored - show success banner and trigger auto-save
       yield put(setPoll(true))
       yield put({ type: 'Set network status', payload: { status: 'success', okMessage: 'Yhteys palautunut - tallennetaan...' } })
+      // Clear error state immediately so passivation and header update right away
+      // saveProject will set status to 'success' when done (or back to 'error' if it fails again)
+      yield put(setLastSaved("connection_restored", time, [], [], false))
       
       // Get the field that needs to be saved
       const fieldName = lastSaved.fields[0]
@@ -324,6 +327,7 @@ function* pollConnection() {
     } else {
       // No unsaved fields - just update poll status
       yield put(setPoll(true))
+      yield put({ type: 'Set network status', payload: { status: 'ok', okMessage: '', errorMessage: '' } })
       yield put(setLastSaved("connection_restored",time,[],[],false))
     }
   } catch (e) {

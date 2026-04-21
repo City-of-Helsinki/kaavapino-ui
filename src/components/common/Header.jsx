@@ -322,9 +322,13 @@ const Header = props => {
           // Connection was restored - clear error state from header
           setCount(1)
           setExistingErrors([])
-          latestUpdate = {status:t('header.latest-save'),time:lastSaved.time}
           if (lastSaved.time) {
             setLastSuccessfulSaveTime(lastSaved.time)
+            latestUpdate = {status:t('header.latest-save'),time:lastSaved.time}
+          } else if (lastSuccessfulSaveTime) {
+            latestUpdate = {status:t('header.latest-save'),time:lastSuccessfulSaveTime}
+          } else {
+            latestUpdate = {status:t('header.edit-menu-no-save'),time:""}
           }
         }
         else if(lastSaved?.status === ""){

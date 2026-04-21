@@ -663,7 +663,7 @@ ProjectPage.propTypes = {
   currentUserId: PropTypes.string,
   saveProjectBase: PropTypes.func,
   externalDocuments: PropTypes.object,
-  creator: PropTypes.object,
+  creator: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
   resettingDeadlines: PropTypes.bool
 }
 
