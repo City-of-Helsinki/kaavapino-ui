@@ -554,7 +554,7 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
             onBlur={(event) => { handleBlur(event, readonly.read) }}
             onFocus={() => { handleFocus() }}
             readOnly={readonly.read || lastSaved?.status === "error" || shouldPassivate}
-            id={fieldData?.id}
+            id={fieldData?.name}
           />
         )}
         <NetworkErrorState 

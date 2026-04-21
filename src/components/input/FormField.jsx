@@ -276,6 +276,7 @@ const FormField = ({
     return (
       <>
       <Form.Field
+        id={field.name}
         className={`input-container ${isOneLineField ? 'small-margin' : ''} ${
           showError ? 'error' : ''} ${highlightStyle}`}
         as={field.as ? field.as : 'div'}
@@ -286,7 +287,7 @@ const FormField = ({
             <div className="input-header">
               <Label
                 as={field.as === "fieldset" ? "div" : "label"}
-                htmlFor={field.as === "fieldset" ? undefined : field.id}
+                htmlFor={field.as === "fieldset" ? undefined : field.name}
                 className={`input-title${required ? ' highlight' : ''} ${field.type === "info_fieldset" ? ' hide' : ''}`}
               >
                 {title}
