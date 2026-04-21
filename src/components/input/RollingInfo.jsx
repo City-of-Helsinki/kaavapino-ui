@@ -122,7 +122,7 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
 
 RollingInfo.propTypes = {
   name:PropTypes.string,
-  value:PropTypes.string,
+  value:PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   nonEditable: PropTypes.bool,
   modifyText: PropTypes.string,
   rollingInfoText: PropTypes.string,
