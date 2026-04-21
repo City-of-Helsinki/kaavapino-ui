@@ -611,9 +611,6 @@ function RichTextEditor(props) {
   }
 
   const normalOrRollingElement = () => {
-    const val = Array.isArray(value?.ops)
-      ? value.ops.map(op => op.insert).join('')
-      : (value?.ops || "")
     
     let filteredComments = []
     
@@ -648,7 +645,7 @@ function RichTextEditor(props) {
     const elements = nonEditable || rollingInfo && !editField && !showComments ?
     <RollingInfo 
       name={inputProps.name} 
-      value={val || ""}
+      value={value || ""}
       nonEditable={nonEditable}
       modifyText={modifyText}
       rollingInfoText={rollingInfoText}
