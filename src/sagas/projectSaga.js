@@ -1386,101 +1386,95 @@ function* projectSetDeadlinesSaga() {
     }
   }
 }
-function* getProjectsOverviewFloorArea({ payload }) {
-  let query = {}
 
-  const keys = Object.keys(payload)
-  keys.forEach(key => {
+const KAAVAPROSESSI_TO_SUBTYPE_ID = { XS: 1, xs: 1, S: 2, s: 2, M: 3, m: 3, L: 4, l: 4, XL: 5, xl: 5 }
+
+const getOverviewYearRangeQuery = value => {
+  let startDate
+  let endDate
+
+  if (isArray(value)) {
+    startDate = dayjs(new Date(value[0].value, 0, 1)).format('YYYY-MM-DD')
+    endDate = dayjs(new Date(value[value.length - 1].value, 11, 31)).format('YYYY-MM-DD')
+  } else {
+    startDate = dayjs(new Date(value, 0, 1)).format('YYYY-MM-DD')
+    endDate = dayjs(new Date(value, 11, 31)).format('YYYY-MM-DD')
+  }
+
+  return {
+    start_date: startDate,
+    end_date: endDate
+  }
+}
+
+const getOverviewQueryValue = value => {
+  const queryValue = []
+
+  if (isArray(value)) {
+    value.forEach(current => queryValue.push(current))
+  } else {
+    queryValue.push(value)
+  }
+
+  return queryValue.length > 0 ? queryValue.toString() : null
+}
+
+const getOverviewPersonQueryValue = value => {
+  const currentPersonIds = []
+  value.forEach(current => currentPersonIds.push(current.id))
+  return currentPersonIds.length > 0 ? currentPersonIds.toString() : null
+}
+
+const buildOverviewQuery = (payload, customHandlers = {}) => {
+  const query = {}
+
+  Object.keys(payload).forEach(key => {
+    if (customHandlers[key]) {
+      const customQuery = customHandlers[key](payload[key])
+      if (customQuery) {
+        Object.assign(query, customQuery)
+      }
+      return
+    }
+
     if (key === 'vuosi') {
-      const value = payload[key]
-      let startDate
-      let endDate
-      if (isArray(value)) {
-        startDate = dayjs(new Date(value[0].value, 0, 1)).format('YYYY-MM-DD')
-        endDate = dayjs(new Date(value[value.length - 1].value, 11, 31)).format(
-          'YYYY-MM-DD'
-        )
-      } else {
-        startDate = dayjs(new Date(value, 0, 1)).format('YYYY-MM-DD')
-        endDate = dayjs(new Date(value, 11, 31)).format('YYYY-MM-DD')
-      }
-      query = {
-        ...query,
-        start_date: startDate,
-        end_date: endDate
-      }
-    } else if (key === 'henkilo') {
-      const currentPersonIds = []
-
-      const currentPayload = payload[key]
-
-      currentPayload.forEach(current => currentPersonIds.push(current.id))
-
-      if (currentPersonIds) {
-        query = {
-          ...query,
-          [key]: currentPersonIds.toString()
-        }
-      }
+      Object.assign(query, getOverviewYearRangeQuery(payload[key]))
+      return
     }
-    else if (key === 'kaavaprosessi') {
-      const queryValue = []
-      const current = payload[key]
 
-      //Change attributedata kaavaprosessin nimi strings to int subtype_id for nicer comparison in backend
-      const getSubtypeID = id => modifiedValuePairs[id];
-      const modifiedValuePairs = {
-        XS: 1, xs: 1, S: 2, s: 2, M: 3, m: 3, L: 4, l: 4, XL: 5, xl: 5
-      };
-
-      if (isArray(current)) {
-        for (const element of current) {
-          queryValue.push(getSubtypeID(element))
-        }
+    if (key === 'henkilo') {
+      const personIds = getOverviewPersonQueryValue(payload[key])
+      if (personIds) {
+        query[key] = personIds
       }
-      if (queryValue.length > 0) {
-        query = {
-          ...query,
-          ["subtype_id"]: queryValue.toString()
-        }
-      }
+      return
     }
-    else if (key === "yksikko_tai_tiimi") {
-      const queryValue = []
 
-      const current = payload[key]
-      if (isArray(current)) {
-        for (const element of current) {
-          queryValue.push(element)
-        }
-      }
-      if (queryValue.length > 0) {
-        query = {
-          ...query,
-          ["vastuuyksikko"]: queryValue.toString()
-        }
-      }
-    }
-    else {
-      const queryValue = []
-
-      const current = payload[key]
-
-      if (isArray(current)) {
-        current.forEach(value => queryValue.push(value))
-      } else {
-        queryValue.push(payload[key])
-      }
-
-      if (queryValue.length > 0) {
-        query = {
-          ...query,
-          [key]: queryValue.toString()
-        }
-      }
+    const queryValue = getOverviewQueryValue(payload[key])
+    if (queryValue) {
+      query[key] = queryValue
     }
   })
 
+  return query
+}
+
+const buildFloorAreaOverviewQuery = payload => buildOverviewQuery(payload, {
+  kaavaprosessi: value => {
+    const subtypeIds = isArray(value)
+      ? value.map(current => KAAVAPROSESSI_TO_SUBTYPE_ID[current]).filter(Boolean)
+      : []
+
+    return subtypeIds.length > 0 ? { subtype_id: subtypeIds.toString() } : null
+  },
+  yksikko_tai_tiimi: value => {
+    const queryValue = getOverviewQueryValue(value)
+    return queryValue ? { vastuuyksikko: queryValue } : null
+  }
+})
+
+function* getProjectsOverviewFloorArea({ payload }) {
+  const query = buildFloorAreaOverviewQuery(payload)
   try {
     const floorArea = yield call(overviewFloorAreaApi.get, { query: query })
     yield put(getProjectsOverviewFloorAreaSuccessful(floorArea))
@@ -1489,61 +1483,7 @@ function* getProjectsOverviewFloorArea({ payload }) {
   }
 }
 function* getProjectsOverviewBySubtype({ payload }) {
-  let query = {}
-
-  const keys = Object.keys(payload)
-
-  keys.forEach(key => {
-    if (key === 'vuosi') {
-      const value = payload[key]
-
-      let startDate
-      let endDate
-      if (isArray(value)) {
-        startDate = dayjs(new Date(value[0].value, 0, 1)).format('YYYY-MM-DD')
-        endDate = dayjs(new Date(value[value.length - 1].value, 11, 31)).format(
-          'YYYY-MM-DD'
-        )
-      } else {
-        startDate = dayjs(new Date(value, 0, 1)).format('YYYY-MM-DD')
-        endDate = dayjs(new Date(value, 11, 31)).format('YYYY-MM-DD')
-      }
-
-      query = {
-        ...query,
-        start_date: startDate,
-        end_date: endDate
-      }
-    } else if (key === 'henkilo') {
-      const currentPersonIds = []
-
-      const currentPayload = payload[key]
-
-      currentPayload.forEach(current => currentPersonIds.push(current.id))
-
-      query = {
-        ...query,
-        [key]: currentPersonIds.toString()
-      }
-    } else {
-      const queryValue = []
-
-      const current = payload[key]
-
-      if (isArray(current)) {
-        current.forEach(value => queryValue.push(value))
-      } else {
-        queryValue.push(payload[key])
-      }
-
-      if (queryValue.length > 0) {
-        query = {
-          ...query,
-          [key]: queryValue.toString()
-        }
-      }
-    }
-  })
+  const query = buildOverviewQuery(payload)
   try {
     const bySubtype = yield call(overviewBySubtypeApi.get, { query: query })
     yield put(getProjectsOverviewBySubtypeSuccessful(bySubtype))
@@ -1569,61 +1509,8 @@ function* getExternalDocumentsSaga({ payload: projectId }) {
 }
 
 function* getProjectOverviewMapDataSaga({ payload }) {
-  let query = {}
+  const query = buildOverviewQuery(payload)
 
-  const keys = Object.keys(payload)
-
-  keys.forEach(key => {
-    if (key === 'vuosi') {
-      const value = payload[key]
-
-      let startDate
-      let endDate
-      if (isArray(value)) {
-        startDate = dayjs(new Date(value[0].value, 0, 1)).format('YYYY-MM-DD')
-        endDate = dayjs(new Date(value[value.length - 1].value, 11, 31)).format(
-          'YYYY-MM-DD'
-        )
-      } else {
-        startDate = dayjs(new Date(value, 0, 1)).format('YYYY-MM-DD')
-        endDate = dayjs(new Date(value, 11, 31)).format('YYYY-MM-DD')
-      }
-
-      query = {
-        ...query,
-        start_date: startDate,
-        end_date: endDate
-      }
-    } else if (key === 'henkilo') {
-      const currentPersonIds = []
-
-      const currentPayload = payload[key]
-
-      currentPayload.forEach(current => currentPersonIds.push(current.id))
-
-      query = {
-        ...query,
-        [key]: currentPersonIds.toString()
-      }
-    } else {
-      const queryValue = []
-
-      const current = payload[key]
-
-      if (isArray(current)) {
-        current.forEach(value => queryValue.push(value))
-      } else {
-        queryValue.push(payload[key])
-      }
-
-      if (queryValue.length > 0) {
-        query = {
-          ...query,
-          [key]: queryValue.toString()
-        }
-      }
-    }
-  })
   try {
     const mapData = yield call(overviewMapApi.get, { query: query })
     yield put(getProjectsOverviewMapDataSuccessful(mapData))
