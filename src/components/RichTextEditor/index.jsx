@@ -793,7 +793,7 @@ function RichTextEditor(props) {
     } else {
       // Data not changed, skip save
     }
-    if(rollingInfo){
+    if(rollingInfo && !maxSizeOver){
       setEditField(false)
     }
   }

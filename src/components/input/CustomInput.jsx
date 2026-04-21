@@ -356,7 +356,14 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
     }
 
     if(custom.rollingInfo){
-      setEditField(false)
+      // Don't close if field has a validation error (hasError state) OR if the current
+      // value already exceeds the character limit (hasError may not be set yet if
+      // no onChange has fired since the field was opened)
+      const maxLength = custom?.characterLimit;
+      const valueExceedsLimit = maxLength && maxLength > 0 && event?.target?.value?.length > maxLength;
+      if(!hasError && !valueExceedsLimit){
+        setEditField(false)
+      }
     }
   }
 
@@ -477,6 +484,8 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
     if (shouldDisableForErrors) {
       return;
     }
+    // Reset readonly so field is editable when reopened after a previous save
+    setReadOnly({name: input.name, read: false})
     setEditField(true)
     setTimeout(function(){
       setInputFocus()
