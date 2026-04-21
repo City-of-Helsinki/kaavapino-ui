@@ -616,7 +616,6 @@ const adjustDeadlineData = (attributeData, allAttributeData) => {
 const getChangedAttributeData = (values, initial) => {
   let attribute_data = {}
   let errorValues = false
-  const wSpaceRegex = /^(\s+|\s+)$/g
 
   // KAAV-3517: Track esillaolo/lautakunta boolean fields that were true in initial
   // but are now false/undefined in values - these need to be explicitly sent as false
@@ -638,15 +637,20 @@ const getChangedAttributeData = (values, initial) => {
   }
 
   Object.keys(values).forEach(key => {
+    if (key == "suunnittelualueen_kuvaus")
+      console.log("checking key", key, "with value", values[key], "and initial value", initial?.[key])
     if (key.includes("_readonly")) {
       return
     }
-    if (initial && initial[key] !== undefined && isEqual(values[key], initial[key])) {
+    if (initial?.[key] !== undefined && isEqual(values[key], initial[key])) {
+      if (key == "suunnittelualueen_kuvaus")
+        console.log(`skipping unchanged field ${key} with value`, values[key])
       return
     }
-    if (values[key] === '' || values[key]?.ops && values[key]?.ops[0] && values[key]?.ops[0]?.insert.replace(wSpaceRegex, '').length === 0) {
+    if (values[key] === '' || (values[key]?.ops && isRichTextEmpty(values[key]))) {
       //empty text values saved as null
       attribute_data[key] = null
+      console.log("setting empty value to null for key", key)
     }
     else if (values[key] === null) {
       attribute_data[key] = null
@@ -660,7 +664,7 @@ const getChangedAttributeData = (values, initial) => {
       attribute_data[key] = values[key].map((fieldsetEntry) => {
         Object.keys(fieldsetEntry).forEach((entryKey) => {
           const entryValue = fieldsetEntry[entryKey]
-          if (entryValue === '' || entryValue?.ops && entryValue.ops[0]?.insert.replace(wSpaceRegex, '').length === 0) {
+          if (entryValue === '' || (entryValue?.ops && isRichTextEmpty(entryValue))) {
             fieldsetEntry[entryKey] = null
           }
         })
@@ -673,6 +677,20 @@ const getChangedAttributeData = (values, initial) => {
   })
   return errorValues ? false : attribute_data
 }
+
+const isRichTextEmpty = (value) => {
+  if (!Array.isArray(value?.ops) || value.ops.length === 0) {
+    return true;
+  }
+  return value.ops.every(op => {
+    if (typeof op?.insert !== 'string') {
+      return true;
+    }
+    console.log("checking if op is empty", op.insert, op.insert.trim().length === 0);
+    return op.insert.trim().length === 0;
+  });
+}
+
 function* saveProjectPayload({ payload }) {
   const currentProjectId = yield select(currentProjectIdSelector)
   try {
@@ -1085,12 +1103,12 @@ function* saveProject(data) {
       keys = Object.keys(changedValues)
     }
     // Set saving state with field name from action payload
-    if (fieldName) {
+    if (fieldName && keys.length > 0) {
       let actualFieldName = fieldName;
       // Check if fieldName corresponds to a fieldset in changedValues
       if (typeof fieldName === 'string' && fieldName.endsWith('_fieldset') && changedValues[fieldName]) {
         const fieldsetArray = changedValues[fieldName];
-        const initialFieldsetArray = initial && initial[fieldName];
+        const initialFieldsetArray = initial?.[fieldName];
         if (Array.isArray(fieldsetArray) && fieldsetArray.length > 0) {
           const currentItem = fieldsetArray[0];
           const initialItem = Array.isArray(initialFieldsetArray) && initialFieldsetArray.length > 0 ? initialFieldsetArray[0] : {};
