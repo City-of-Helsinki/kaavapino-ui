@@ -108,7 +108,7 @@ const Header = props => {
     //polls connection to backend if there is error
     //doubles the time after each try
     if(lastSaved?.status === "error"){
-      setCount(count + count)
+      setCount(Math.min(count + count, 6))
       setIsPollingConnection(true)
       // Dispatch testingConnection state with the failed field name
       const failedFieldName = lastSaved?.fields?.[0]
