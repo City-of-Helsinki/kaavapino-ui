@@ -1203,16 +1203,27 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               return;
             }
           }
-          //Item is not allowed to be dragged to past dates       
+          //Item is not allowed to be dragged to past dates, unless it's already there (current phase items
+          // can be moved freely to allow correcting mistakes — past phase items are already blocked above)
           if (item.start && today) {
               if (new Date(item.start).setHours(0,0,0,0) < today.getTime()) {
-                  callback(null);
-                  return;
+                  // Allow if the original snapshot start was also in the past (correcting an existing past item)
+                  const origSnap = clusterDragRef.current?.snapshot?.items?.[String(item.id)];
+                  const origStart = origSnap?.start ? new Date(origSnap.start).setHours(0,0,0,0) : null;
+                  const wasAlreadyPast = origStart != null && origStart < today.getTime();
+                  if (!wasAlreadyPast) {
+                      callback(null);
+                      return;
+                  }
               }
           }
-          // Prevent cluster items (e.g. lautakunta maaraaika) from slipping into the past
+          // Prevent cluster items (e.g. lautakunta maaraaika) from slipping into the past,
+          // unless the dragged item was already in the past (user correcting a past date)
           const { snapshot: movingSnapshot } = clusterDragRef.current;
-          if (movingSnapshot?.items?.[String(item.id)]) {
+          const draggedOrigSnap = movingSnapshot?.items?.[String(item.id)];
+          const draggedOrigStart = draggedOrigSnap?.start ? new Date(draggedOrigSnap.start).setHours(0,0,0,0) : null;
+          const draggedWasAlreadyPast = draggedOrigStart != null && draggedOrigStart < today.getTime();
+          if (!draggedWasAlreadyPast && movingSnapshot?.items?.[String(item.id)]) {
             const origSnap = movingSnapshot.items[String(item.id)];
             const baseSnapStart = origSnap?.start ? origSnap.start.getTime() : null;
             const curItemStart = item?.start ? new Date(item.start).getTime() : baseSnapStart;

@@ -627,8 +627,9 @@
         }
     }
 
-    // When kaynnistys_1 contains a past phase, disable all interaction
-    .kaynnistys_1:has(.past) {
+    // When kaynnistys_1 is in a past phase (no-drag), disable all interaction.
+    // Note: .past only means the date is in the past, not the phase itself — so we use .no-drag here.
+    .kaynnistys_1:has(.no-drag) {
         pointer-events: none !important;
         cursor: default !important;
 
