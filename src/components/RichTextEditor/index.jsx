@@ -372,7 +372,7 @@ function RichTextEditor(props) {
         const actualDeltaValue = editorRef.current.editor.getContents()
 
         // Hack to remove /n  values
-        const actualDeltaText = editorRef.current.editor.getText().replace(/\n/g, '')
+        const actualDeltaText = editorRef.current.editor.getText().replaceAll('\n', '')
 
         setCurrentTimeout(() =>
           setTimeout(
@@ -439,7 +439,7 @@ function RichTextEditor(props) {
     fieldsetName = name.split('[')[0]
     index = name.split('[').pop().split(']')[0];
     fieldName = name.split('.')[1]
-    if(attributeData[fieldsetName] && attributeData[fieldsetName][index] && attributeData[fieldsetName][index][fieldName]?.ops){
+    if(attributeData[fieldsetName]?.[index]?.[fieldName]?.ops){
       data = attributeData[fieldsetName][index][fieldName]?.ops
     }
     return data
@@ -709,7 +709,7 @@ function RichTextEditor(props) {
               className="show-comments-button"
               aria-label="Näytä kommentit"
               onClick={() => setShowComments(!showComments)}
-              disabled={!filteredComments || !filteredComments.length}
+              disabled={!filteredComments?.length}
             >
               {showComments ? 'Piilota' : 'Näytä'} kommentit (
               {filteredComments ? filteredComments.length : 0})
@@ -735,7 +735,7 @@ function RichTextEditor(props) {
               if (!fixRange) {
                 setToolbarVisible(false)
                 showCounter.current = false;
-                if (onBlur && counter.current <= maxSize || onBlur && typeof counter.current === "undefined") {
+                if (onBlur && counter.current <= maxSize || onBlur && counter.current === undefined) {
                   handleBlur(readonly)
                 }
                 else{
@@ -769,7 +769,7 @@ function RichTextEditor(props) {
           ))}
         </div>
       )}
-      {showCounter.current && typeof counter.current !== "undefined" && maxSize ? (
+      {showCounter.current && counter.current !== undefined && maxSize ? (
         <p
           className={
             counter.current > maxSize ? 'quill-counter quill-warning' : 'quill-counter'
