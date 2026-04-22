@@ -26,6 +26,7 @@ export const SAVE_PROJECT_TIMETABLE = 'Save project timetable'
 export const SAVE_PROJECT_TIMETABLE_SUCCESSFUL = 'Save project timetable successful'
 export const SAVE_PROJECT = 'Save project'
 export const SAVE_PROJECT_SUCCESSFUL = 'Save project successful'
+export const SAVE_PROJECT_FAILED = 'Save project failed'
 export const SET_SAVING_FIELD = 'Set saving field'
 export const VALIDATE_PROJECT_FIELDS = 'Validate project fields'
 export const VALIDATE_PROJECT_FIELDS_SUCCESSFUL = 'Validate project fields successful'
@@ -97,6 +98,7 @@ export const RESET_TIMETABLE_SAVE = "Reset timetable save"
 export const SET_LAST_SAVED = "setLastSaved"
 export const POLL_CONNECTION = "pollConnection"
 export const SET_POLL = "setPoll"
+export const SET_TESTING_CONNECTION = "setTestingConnection"
 export const SHOW_TIMETABLE = "showTimetable"
 export const SHOW_FLOOR_AREA = "showFloorArea"
 export const LAST_MODIFIED = "lastModified"
@@ -177,7 +179,7 @@ export const resetFormErrors = () => ({
 export const formErrorList = (addOrRemove,name) => ({
   type: FORM_ERROR_LIST,
   payload:{addOrRemove,name}
-})
+});
 export const updateFloorValues = (updatedFloorValues) => ({
   type: UPDATE_FLOOR_VALUES,
   payload:updatedFloorValues
@@ -201,6 +203,10 @@ export const pollConnection = (connection) => ({
 export const setPoll = (connection) => ({
   type: SET_POLL,
   payload: {connection}
+})
+export const setTestingConnection = (isTesting, fieldName = null) => ({
+  type: SET_TESTING_CONNECTION,
+  payload: { isTesting, fieldName }
 })
 export const setLastSaved = (status,time,fields,values,lock) => ({
   type: SET_LAST_SAVED,
@@ -374,6 +380,7 @@ export const saveProject = (fileOrimgSave,insideFieldset,fieldsetData,fieldsetPa
 
 export const setSavingField = (fieldName) => ({ type: SET_SAVING_FIELD, payload: fieldName })
 export const saveProjectSuccessful = () => ({ type: SAVE_PROJECT_SUCCESSFUL })
+export const saveProjectFailed = () => ({ type: SAVE_PROJECT_FAILED })
 
 export const validateProjectFields = formValues => ({
   type: VALIDATE_PROJECT_FIELDS,

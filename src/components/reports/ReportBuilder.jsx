@@ -178,7 +178,7 @@ function ReportBuilder(props) {
   const content = getContent()
 
   if (!props.reports) {
-    return <LoadingSpinner />
+    return <LoadingSpinner theme={{ '--spinner-color': '#0000BF' }} />
   }
 
   const noData = !headers || headers.length === 0 || !content || content.length === 0

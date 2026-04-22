@@ -261,7 +261,8 @@ class NewProjectFormModal extends Component {
                     name: CREATE_PRINCIPLES,
                     label: t('project-base.labels.principles'),
                     type: 'hds-toggle',
-                    id: "new_project_" + CREATE_PRINCIPLES
+                    id: "new_project_" + CREATE_PRINCIPLES,
+                    editable: isEditable
                   }
                 })}
                 {this.getFormField({
@@ -269,7 +270,8 @@ class NewProjectFormModal extends Component {
                     name: CREATE_DRAFT,
                     label: t('project-base.labels.draft'),
                     type: 'hds-toggle',
-                    id: "new_project_" + CREATE_DRAFT
+                    id: "new_project_" + CREATE_DRAFT,
+                    editable: isEditable
                   }
                 })}
               </fieldset>

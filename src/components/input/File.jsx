@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { projectFileUpload, projectFileRemove } from '../../actions/projectActions'
-import { savingSelector,lastModifiedSelector } from '../../selectors/projectSelector'
+import { savingSelector,lastModifiedSelector,formErrorListSelector,connectionErrorFieldsSelector } from '../../selectors/projectSelector'
 import { downloadFile } from '../../actions/apiActions'
 import { Progress } from 'semantic-ui-react'
 import 'core-js/features/array/at';
@@ -12,6 +12,7 @@ import { Button, IconDownload, IconCrossCircle, IconUpload } from 'hds-react'
 import infoBothDir from '../../assets/icons/Infobothdir.svg'
 import PropTypes from 'prop-types'
 import NetworkErrorState from './NetworkErrorState.jsx'
+import { shouldPassivateField } from '../../hooks/useFieldPassivation'
 
 class File extends Component {
   constructor(props) {
@@ -161,8 +162,13 @@ class File extends Component {
 
   render() {
     const { current, uploading, percentCompleted } = this.state
-    const { field, image, formValues, t, rollingInfoText, rollingInfo } = this.props
+    const { field, image, formValues, t, rollingInfoText, rollingInfo, formErrors, connectionErrorFields } = this.props
     const disabled = field.disabled
+    
+    // Check if other fields have validation errors OR connection errors (UX60.2.5 - passivate fields when error exists)
+    const shouldDisableForErrors = shouldPassivateField(field.name, formErrors, connectionErrorFields)
+    const isDisabled = disabled || shouldDisableForErrors
+    
     if (!showField(field, formValues)) {
       return null
     }
@@ -202,7 +208,7 @@ class File extends Component {
       <div>
         <div className="file-input-container">
           <Button
-            disabled={uploading || disabled || this.state.isThisFieldSaving}
+            disabled={uploading || isDisabled || this.state.isThisFieldSaving}
             iconLeft={<IconUpload />}
             variant="secondary"
             onClick={this.handleClick}
@@ -218,7 +224,7 @@ class File extends Component {
               <Button
                 iconLeft={<IconDownload />}
                 onClick={this.download}
-                disabled={disabled || this.state.isThisFieldSaving}
+                disabled={isDisabled || this.state.isThisFieldSaving}
                 variant="secondary"
                 className="download-button"
               >{t('file.preview')} </Button>
@@ -228,7 +234,7 @@ class File extends Component {
                 iconLeft={<IconCrossCircle />}
                 variant="secondary"
                 className="remove-button remove"
-                disabled={disabled || this.state.isThisFieldSaving}
+                disabled={isDisabled || this.state.isThisFieldSaving}
                 onClick={this.reset}
               >{t('file.remove')} </Button>
             )}
@@ -249,7 +255,7 @@ class File extends Component {
           multiple
           type="file"
           onChange={this.onChangeFile}
-          disabled={disabled || this.props.saving}
+          disabled={isDisabled || this.props.saving}
         />
         {uploading && <Progress percent={percentCompleted} progress indicating />}
         {filePreview}
@@ -286,12 +292,16 @@ File.propTypes = {
   rollingInfo: PropTypes.bool,
   rollingInfoText: PropTypes.string,
   saving: PropTypes.bool,
-  lastModified: PropTypes.string
+  lastModified: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
+  formErrors: PropTypes.array,
+  connectionErrorFields: PropTypes.array
 }
 
 const mapStateToProps = state => ({
 	saving: savingSelector(state),
-	lastModified: lastModifiedSelector(state)
+	lastModified: lastModifiedSelector(state),
+	formErrors: formErrorListSelector(state) || [],
+	connectionErrorFields: connectionErrorFieldsSelector(state) || []
 })
 
 const mapDispatchToProps = {

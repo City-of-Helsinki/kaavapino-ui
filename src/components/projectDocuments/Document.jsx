@@ -18,6 +18,7 @@ function Document({
   downloadDocumentPreview,
   phaseEnded,
   isUserResponsible,
+  isThePersonResponsible,
   hideButtons,
   schema,
   phaseIndex,
@@ -111,7 +112,7 @@ function Document({
             >
               {t('project.load-preview')}
             </Button>
-            {isUserResponsible && (
+            {isThePersonResponsible && (
               <Button
                 size='small'
                 variant="primary"

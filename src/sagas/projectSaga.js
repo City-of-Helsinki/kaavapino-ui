@@ -74,6 +74,7 @@ import {
   saveProjectTimetableFailed,
   SAVE_PROJECT,
   saveProjectSuccessful,
+  saveProjectFailed,
   setSavingField,
   CHANGE_PROJECT_PHASE,
   changeProjectPhaseSuccessful,
@@ -126,7 +127,8 @@ import {
   VALIDATE_DATE,
   setDateValidationResult,
   VALIDATE_PROJECT_TIMETABLE,
-  setValidatingTimetable
+  setValidatingTimetable,
+  resetFormErrors
 } from '../actions/projectActions'
 import { startSubmit, stopSubmit, setSubmitSucceeded, change } from 'redux-form'
 import { error } from '../actions/apiActions'
@@ -272,13 +274,23 @@ function* getAttributeData(data) {
       attribute_identifier: attribute_identifier
     }
     try {
-      const getAttributeData = yield call(
-        getAttributeDataApi.get,
-        { query },
-      )
-      yield put(setAttributeData(attribute_identifier, getAttributeData, formName, set, nulledFields, i))
+      const { result, timeout } = yield race({
+        result: call(getAttributeDataApi.get, { query }),
+        timeout: delay(15000)
+      })
+      if (timeout) {
+        yield put(setLastSaved('error', null, [], [], false))
+        return
+      }
+      yield put(setAttributeData(attribute_identifier, result, formName, set, nulledFields, i))
     } catch (e) {
-      yield put(error(e))
+      const statusCode = e?.response?.status
+      // Network errors and 5xx server errors should show inline error, not toaster
+      if (!e.response || !statusCode || statusCode >= 500) {
+        yield put(setLastSaved('error', null, [], [], false))
+      } else {
+        yield put(error(e))
+      }
     }
   }
 }
@@ -290,8 +302,48 @@ function* pollConnection() {
     )
     const dateVariable = new Date()
     const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    yield put(setPoll(true))
-    yield put(setLastSaved("connection_restored",time,[],[],false))
+    // Check if there's a field that failed to save due to network error
+    const lastSaved = yield select(lastSavedSelector)
+    const hasUnsavedField = lastSaved?.status === 'error' && lastSaved?.fields?.length > 0
+    
+    if (hasUnsavedField) {
+      // Connection restored - show success banner and trigger auto-save
+      yield put(setPoll(true))
+      yield put({ type: 'Set network status', payload: { status: 'success', okMessage: 'Yhteys palautunut - tallennetaan...' } })
+      // Clear error state immediately so passivation and header update right away
+      // saveProject will set status to 'success' when done (or back to 'error' if it fails again)
+      yield put(setLastSaved("connection_restored", time, [], [], false))
+      // Clear form error list so "Virhe lomakkeella estää lisäyksen" disappears
+      yield put(resetFormErrors())
+      
+      // Get the field that needs to be saved
+      const fieldName = lastSaved.fields[0]
+      const fieldValue = lastSaved.values?.[0] // Use the value that originally failed to save
+      const projectId = yield select(currentProjectIdSelector)
+      
+      // If we don't have the saved value, fall back to current form value
+      const formValues = yield select(editFormSelector)
+      const valueToSave = fieldValue === undefined ? formValues.values?.[fieldName] : fieldValue
+      
+      // Trigger save for the field
+      const attribute_data = { [fieldName]: valueToSave }
+      
+      // Call saveProject with the field data and fieldName so spinner activates
+      yield call(saveProject, { 
+        payload: { 
+          projectId, 
+          attribute_data,
+          fieldName  // CRITICAL: Include fieldName so setSavingField gets called
+        } 
+      })
+    } else {
+      // No unsaved fields - just update poll status
+      yield put(setPoll(true))
+      yield put({ type: 'Set network status', payload: { status: 'ok', okMessage: '', errorMessage: '' } })
+      yield put(setLastSaved("connection_restored",time,[],[],false))
+      // Clear form error list so "Virhe lomakkeella estää lisäyksen" disappears
+      yield put(resetFormErrors())
+    }
   } catch {
     yield put(setPoll(false))
   }
@@ -1043,7 +1095,12 @@ function* lockProjectField(data) {
       const dateVariable = new Date()
       const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
       yield put(setLastSaved("error", time, [attribute_identifier], [""], true))
-      yield put(error(e))
+      
+      // Don't show toaster for network errors - user will see inline error banner
+      const isNetworkErr = e?.code === 'ERR_NETWORK'
+      if (!isNetworkErr) {
+        yield put(error(e))
+      }
     }
   }
 }
@@ -1068,7 +1125,6 @@ function* saveProject(data) {
   const { fileOrimgSave, insideFieldset, fieldsetData, fieldsetPath, fieldName } = data.payload
   const currentProjectId = yield select(currentProjectIdSelector)
   const editForm = yield select(editFormSelector) || {}
-  const visibleErrors = yield select(formErrorListSelector)
 
   const { initial, values } = editForm
 
@@ -1078,10 +1134,10 @@ function* saveProject(data) {
   if (values) {
     let keys = {}
     let changedValues = {}
-    if (visibleErrors.length === 0) {
-      changedValues = getChangedAttributeData(values, initial)
-      keys = Object.keys(changedValues)
-    }
+    // Always get changed values, even with validation errors
+    // This allows save attempt which will properly trigger error state
+    changedValues = getChangedAttributeData(values, initial)
+    keys = Object.keys(changedValues)
     // Set saving state with field name from action payload
     if (fieldName && keys.length > 0) {
       let actualFieldName = fieldName;
@@ -1118,6 +1174,9 @@ function* saveProject(data) {
       yield put(lastModified(latestModifiedKey[0]))
     }
 
+    // Define attribute_data outside the if block so it's available in catch
+    let attribute_data = changedValues;
+
     if (!isEmpty(keys)) {
       if (fileOrimgSave && insideFieldset && fieldsetData && fieldsetPath) {
         //Data added for front when image inside fieldset is saved without other data
@@ -1144,7 +1203,25 @@ function* saveProject(data) {
           }
         }
       }
-      const attribute_data = changedValues
+      // Update attribute_data reference (already declared above)
+      attribute_data = changedValues
+      
+      // Check for client-side validation errors BEFORE attempting to save
+      // Block save if client-side validation has failed (reduces unnecessary backend requests)
+      const { fieldName: savedFieldName } = data.payload || {}
+      const visibleErrors = yield select(formErrorListSelector)
+      
+      if(visibleErrors.length > 0) {
+        // Get current field value for error display
+        const fieldValue = savedFieldName ? values[savedFieldName] : undefined
+        
+        yield put(setSavingField(null))
+        yield put(setLastSaved("field_error",time,[savedFieldName],fieldValue ? [fieldValue] : [],false))
+        yield put(stopSubmit(EDIT_PROJECT_FORM, {}))
+        yield put(saveProjectFailed())
+        return
+      }
+      
       try {
         const updatedProject = yield call(
           projectApi.patch,
@@ -1152,7 +1229,76 @@ function* saveProject(data) {
           { path: { id: currentProjectId } },
           ':id/'
         )
-        yield put(updateProject(updatedProject))
+        
+        // CRITICAL: Check if backend returned data matches current form values
+        // If user continued typing after a failed save, don't overwrite their changes
+        // Skip this check for fieldsets: backend adds id/_deleted metadata that causes false mismatch
+        let hasUnsavedChanges = false;
+        const savedFieldName = fieldName; // Use fieldName from payload
+        const isFieldsetField = typeof savedFieldName === 'string' && savedFieldName.endsWith('_fieldset');
+        if (savedFieldName && !isFieldsetField) {
+          const backendValue = updatedProject.attribute_data[savedFieldName];
+          const currentValue = values[savedFieldName];
+          
+          // Deep comparison for objects (like RichTextEditor Delta)
+          const backendStr = typeof backendValue === 'object' ? JSON.stringify(backendValue) : String(backendValue || '');
+          const currentStr = typeof currentValue === 'object' ? JSON.stringify(currentValue) : String(currentValue || '');
+          
+          if (backendStr !== currentStr) {
+            hasUnsavedChanges = true;
+          }
+        }
+        
+        // Use backend's timestamp from _metadata.updates for consistency with field-level timestamps
+        // This ensures Header and field timestamps always match
+        let backendTime = time; // fallback to frontend time
+        if (updatedProject?._metadata?.updates) {
+          // Get the actual field names that were saved (from attribute_data, not fieldName payload)
+          // This handles cases where fieldName is a fieldset name but actual saved fields are nested
+          const savedFieldNames = attribute_data ? Object.keys(attribute_data) : [];
+          
+          let fieldUpdate = null;
+          
+          // Try to find timestamp for any of the saved fields
+          for (const savedField of savedFieldNames) {
+            if (updatedProject._metadata.updates[savedField]?.timestamp) {
+              fieldUpdate = updatedProject._metadata.updates[savedField];
+              break;
+            }
+          }
+          
+          // If still not found and we have savedFieldName, try that
+          if (!fieldUpdate?.timestamp && savedFieldName && updatedProject._metadata.updates[savedFieldName]?.timestamp) {
+            fieldUpdate = updatedProject._metadata.updates[savedFieldName];
+          }
+          
+          if (fieldUpdate?.timestamp) {
+            backendTime = projectUtils.formatTime(fieldUpdate.timestamp);
+          }
+        }
+
+        // Dispatch success state BEFORE updateProject so error state clears
+        // before field timestamps become visible (avoids brief "disabled + timestamp" flash)
+        yield put(setLastSaved("success", backendTime, [], [], false))
+
+        // Update project ONLY if form values match backend
+        // This prevents overwriting user's unsaved changes
+        // Even after connection error recovery, if data matches, it's safe to update
+        if (hasUnsavedChanges) {
+          // Even if we have unsaved changes, update the _metadata to keep timestamps fresh
+          // This ensures field-level timestamp indicators stay accurate
+          const currentProject = yield select(currentProjectSelector);
+          if (currentProject && updatedProject._metadata) {
+            const updatedProjectWithMetadata = {
+              ...currentProject,
+              _metadata: updatedProject._metadata
+            };
+            yield put(updateProject(updatedProjectWithMetadata));
+          }
+        } else {
+          yield put(updateProject(updatedProject));
+        }
+        
         yield put(setSavingField(null))
         yield put(setAllEditFields())
 
@@ -1160,8 +1306,6 @@ function* saveProject(data) {
         const lastSaved = yield select(lastSavedSelector)
         if (lastSaved?.status === "error" || lastSaved?.status === "field_error") {
           yield put(setPoll(true))
-        } else {
-          yield put(setPoll(false))
         }
         // Network status: only show transient success if recovering from an error
         const net = yield select(projectNetworkSelector)
@@ -1172,30 +1316,59 @@ function* saveProject(data) {
           // Ensure state remains clean 'ok' without success banner spam
           yield put({ type: 'Set network status', payload: { status: 'ok', okMessage: '', errorMessage: '' } })
         }
-        yield put(setLastSaved("success", time, [], [], false))
 
       } catch (e) {
-        if (e?.response?.status === 400) {
-          yield put(setLastSaved("field_error", time, Object.keys(attribute_data), Object.values(attribute_data), false))
-          yield put(stopSubmit(EDIT_PROJECT_FORM, e?.response?.data))
-        } else {
-          yield put(setLastSaved("error", time, Object.keys(attribute_data), Object.values(attribute_data), false))
-        }
         // Clear saving field on error
         yield put(setSavingField(null))
+        
         const isNetworkErr = e?.code === 'ERR_NETWORK'
         const statusCode = e?.response?.status
-        if (isNetworkErr || !statusCode || statusCode >= 500) {
+        
+        // 400 errors are backend validation errors - show in NetworkErrorState but NOT as network errors
+        if (e.response?.status === 400) {
+          // Extract actual error messages from backend response
+          // Backend returns: { fieldName: { fieldName: "error message" } } or { fieldName: "error message" }
+          const backendErrors = e.response.data || {};
+          const errorFields = Object.keys(backendErrors);
+          const errorMessages = errorFields.map(fieldName => {
+            const fieldError = backendErrors[fieldName];
+            // Handle nested structure: { diaarinumero: { diaarinumero: "message" } }
+            if (typeof fieldError === 'object' && fieldError !== null) {
+              return fieldError[fieldName] || Object.values(fieldError)[0] || 'Virhe';
+            }
+            // Handle simple structure: { diaarinumero: "message" }
+            return fieldError;
+          });
+          
+          yield put(setLastSaved("field_error", time, errorFields, errorMessages, false))
+          yield put(stopSubmit(EDIT_PROJECT_FORM, e.response.data))
+          // IMPORTANT: Don't set network.status = 'error' for 400 errors
+        } else if (isNetworkErr || !statusCode || statusCode >= 500) {
+          // Only real network/server errors trigger connection recovery flow
+          // Use the specific field that was being saved, not all changed fields
+          const { fieldName: savedFieldName } = data.payload || {}
+          const errorFieldName = savedFieldName || Object.keys(attribute_data)[0] || 'unknown'
+          const errorFieldValue = savedFieldName ? attribute_data[savedFieldName] : Object.values(attribute_data)[0]
+          
+          yield put(setLastSaved("error", time, [errorFieldName], [errorFieldValue], false))
           yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
+        } else {
+          // Other HTTP errors (401, 403, 404, etc.) - treat as general errors without network status change
+          // Use the specific field that was being saved, not all changed fields
+          const { fieldName: savedFieldName } = data.payload || {}
+          const errorFieldName = savedFieldName || Object.keys(attribute_data)[0] || 'unknown'
+          const errorFieldValue = savedFieldName ? attribute_data[savedFieldName] : Object.values(attribute_data)[0]
+          
+          yield put(setLastSaved("error", time, [errorFieldName], [errorFieldValue], false))
         }
       }
     }
     else if (fileOrimgSave) {
       yield put(setAllEditFields())
-      yield put(setPoll(false))
     }
-    else if (visibleErrors.length > 0) {
-      yield put(setLastSaved("field_error", time, visibleErrors, [], false))
+    else {
+      // No changed values — clear spinner that was set before the isEmpty check
+      yield put(setSavingField(null))
     }
   }
   yield put(saveProjectSuccessful())
@@ -1221,6 +1394,44 @@ function* changeProjectPhase({ payload: phase }) {
   }
 }
 
+const parseFieldsetPath = (attribute) => {
+  let fieldSetIndex = [];
+  let currentFieldName = attribute;
+  const lastIndex = attribute.lastIndexOf('.');
+  if (lastIndex !== -1) {
+    const splitted = attribute.split('.');
+    splitted.forEach(value => {
+      const firstBracket = value.indexOf('[');
+      const secondBracket = value.indexOf(']');
+      const fieldSet = attribute.substring(0, firstBracket);
+      const index = attribute.substring(firstBracket + 1, secondBracket);
+      currentFieldName = attribute.substring(lastIndex + 1, attribute.length);
+      if (fieldSet !== '' && index !== '') {
+        fieldSetIndex.push({ parent: fieldSet, index });
+      }
+    });
+  }
+  return { fieldSetIndex, currentFieldName };
+};
+
+const getBackendTimeFromMetadata = (updates, attribute, fallbackTime) => {
+  if (!updates) return fallbackTime;
+  let fieldUpdate = attribute ? updates[attribute] : null;
+  if (!fieldUpdate?.timestamp) {
+    let mostRecentTimestamp = null;
+    for (const key of Object.keys(updates)) {
+      const update = updates[key];
+      if (update?.timestamp) {
+        if (!mostRecentTimestamp || new Date(update.timestamp) > new Date(mostRecentTimestamp)) {
+          mostRecentTimestamp = update.timestamp;
+          fieldUpdate = update;
+        }
+      }
+    }
+  }
+  return fieldUpdate?.timestamp ? projectUtils.formatTime(fieldUpdate.timestamp) : fallbackTime;
+};
+
 function* projectFileUpload({
   payload: { attribute, file, description, callback, setCancelToken, insideFieldset }
 }) {
@@ -1238,24 +1449,7 @@ function* projectFileUpload({
 
     const lastIndex = attribute.lastIndexOf('.')
     if (lastIndex !== -1) {
-      const splitted = attribute.split('.')
-
-      splitted.forEach(value => {
-        const firstBracket = value.indexOf('[')
-        const secondBracket = value.indexOf(']')
-
-        const fieldSet = attribute.substring(0, firstBracket)
-        const index = attribute.substring(firstBracket + 1, secondBracket)
-        currentFieldName = attribute.substring(lastIndex + 1, attribute.length)
-
-        if (fieldSet !== '' && index !== '') {
-          const returnObject = {
-            parent: fieldSet,
-            index: index
-          }
-          fieldSetIndex.push(returnObject)
-        }
-      })
+      ;({ fieldSetIndex, currentFieldName } = parseFieldsetPath(attribute))
     }
 
     // Create formdata
@@ -1306,7 +1500,11 @@ function* projectFileUpload({
 
     // Clear saving field indicator
     yield put(setSavingField(null))
-    yield put(setLastSaved("success", time, [], [], false))
+    
+    // Use backend's timestamp from _metadata.updates for consistency
+    const backendTime = getBackendTimeFromMetadata(updatedProject?._metadata?.updates, attribute, time)
+    
+    yield put(setLastSaved("success", backendTime, [], [], false))
   } catch (e) {
     // Clear saving field indicator on error
     yield put(setSavingField(null))
@@ -1351,7 +1549,11 @@ function* projectFileRemove({ payload }) {
 
     // Clear saving field indicator
     yield put(setSavingField(null))
-    yield put(setLastSaved("success", time, [], [], false))
+    
+    // Use backend's timestamp from _metadata.updates for consistency
+    const backendTime = getBackendTimeFromMetadata(updatedProject?._metadata?.updates, payload, time)
+
+    yield put(setLastSaved("success", backendTime, [], [], false))
   } catch (e) {
     // Clear saving field indicator on error
     yield put(setSavingField(null))

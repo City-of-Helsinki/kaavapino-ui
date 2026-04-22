@@ -92,7 +92,7 @@ function FloorAreaMeetings({ chartData }) {
     <div className="floor-area">
       <div className="chart-area-header-mobile">
         <h3>{t('floor-area.meetings-title')}</h3>
-        {!isChartDataLoaded() && <LoadingSpinner className="center" />}
+        {!isChartDataLoaded() && <LoadingSpinner className="center" theme={{ '--spinner-color': '#0000BF' }} />}
         {isChartDataLoaded() && <div>{renderMeetings()}</div>}
       </div>
     </div>

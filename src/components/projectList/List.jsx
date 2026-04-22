@@ -175,6 +175,7 @@ class List extends Component {
         for (const [key, val] of Object.entries(rowObject)) {
           rowObject[key] = {index: rows.length, value: val}
         }
+        rowObject.id = String(listItem.id)
         rows.push(rowObject)
         let rowObject2 = {}
         
@@ -192,6 +193,7 @@ class List extends Component {
             rowObject2[key] = {index: rows.length, value: null}
           }
         }
+        rowObject2.id = `${listItem.id}-graph`
         rows.push(rowObject2)
       }
     )
@@ -215,8 +217,8 @@ class List extends Component {
             ariaLabelSortButtonUnset="Not sorted"
             ariaLabelSortButtonAscending="Sorted in ascending order"
             ariaLabelSortButtonDescending="Sorted in descending order"
-            indexKey="pino_number.value"
-            renderIndexCol={true}
+            indexKey="id"
+            renderIndexCol={false}
             cols={this.headerItems}
             rows={rows}
             initialSortingColumnKey={this.props.t('projects.table.modified')}
@@ -226,7 +228,7 @@ class List extends Component {
                 handleSort(order,colKey)
             }}
           />
-          {loadingProjects && <LoadingSpinner className="loader-icon" style={{marginTop:'var(--spacing-l)'}} position="center" />}
+          {loadingProjects && <LoadingSpinner className="loader-icon" style={{marginTop:'var(--spacing-l)'}} position="center" theme={{ '--spinner-color': '#0000BF' }} />}
           {!loadingProjects && items.length === 0 && <span className="empty-list-info">Ei projekteja!</span>}
         </div>
         <div className="project-list-mobile">
@@ -242,7 +244,7 @@ class List extends Component {
             />
           )} 
           {projects.length !== 0 && projects} 
-          {loadingProjects && <LoadingSpinner className="loader-icon" style={{marginTop:'var(--spacing-l)'}} position="center" />}
+          {loadingProjects && <LoadingSpinner className="loader-icon" style={{marginTop:'var(--spacing-l)'}} position="center" theme={{ '--spinner-color': '#0000BF' }} />}
           {!loadingProjects && items.length === 0 && <span className="empty-list-info">Ei projekteja!</span>}
       </div>
     </>

@@ -66,13 +66,12 @@ function* handleErrorSaga({ payload }) {
         })
       )
     } else if (payload?.config?.url === "/v1/attributes/unlock/" || payload?.config?.url === "/v1/attributes/lock/") {
-        console.log("lock error")
-      }
-      else {
-        yield put(
-          toastrActions.add({ type: 'error', title: 'Virhe', message: status })
-        )
-      }
+      // Lock errors are shown inline, not as toasters
+    } else {
+      yield put(
+        toastrActions.add({ type: 'error', title: 'Virhe', message: status })
+      )
+    }
   } else if (payload.custom) {
     yield put(
       toastrActions.add({ type: 'error', title: 'Virhe', message: payload.message })

@@ -1,3 +1,4 @@
 // Imported to all scss files by Vite config (design tokens only - no emitted selectors or font-face)
 @forward "@/components/common/colors.scss";
+@forward "@/components/common/mixins.scss";
 // Fonts removed here to avoid duplicating @font-face in every module; imported once in main.scss

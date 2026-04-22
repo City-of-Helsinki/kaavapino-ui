@@ -1,10 +1,14 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import DateTime from 'react-datetime'
 import { useTranslation } from 'react-i18next';
+import { useFieldPassivation } from '../../hooks/useFieldPassivation';
 
-const CustomDateTime = ({ input, placeholder, ...custom }) => {
+const CustomDateTime = ({ input, meta, placeholder, ...custom }) => {
 
   const {t} = useTranslation()
+  const shouldDisableForErrors = useFieldPassivation(input.name, { formName: meta.form });
+  
   const formatDate = value => {
     if (!isNaN(new Date(value))) {
       return new Date(value)
@@ -21,10 +25,28 @@ const CustomDateTime = ({ input, placeholder, ...custom }) => {
       {...custom}
       locale="fi"
       closeOnSelect={true}
-      inputProps={{ placeholder }}
+      inputProps={{ 
+        placeholder,
+        disabled: shouldDisableForErrors || custom.disabled 
+      }}
       clearable
     />
   )
+}
+
+CustomDateTime.propTypes = {
+  input: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    value: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.instanceOf(Date)
+    ])
+  }).isRequired,
+  meta: PropTypes.shape({
+    form: PropTypes.string
+  }),
+  placeholder: PropTypes.string,
+  disabled: PropTypes.bool
 }
 
 export default CustomDateTime
