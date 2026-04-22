@@ -10,7 +10,13 @@ describe('<SelectInput />', () => {
   const mockStore = configureStore();
   let store;
   test('is initialized correctly', () => {
-    const initialState = { output: false};
+    const initialState = { 
+      output: false,
+      project: {
+        formErrorList: [],
+        lastSaved: { status: '', fields: [] }
+      }
+    };
     store = mockStore(initialState);
     const options = ['a', 'b', 'c']
     let change

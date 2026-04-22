@@ -3,13 +3,14 @@ import { RadioButton, Button, IconPlus } from 'hds-react'
 import RollingInfo from '../input/RollingInfo.jsx'
 import NetworkErrorState from './NetworkErrorState.jsx'
 import { useSelector } from 'react-redux'
-import { savingSelector,lastModifiedSelector } from '../../selectors/projectSelector'
+import { savingSelector, lastModifiedSelector, lastSavedSelector, pollingProjectsSelector } from '../../selectors/projectSelector'
 import { useTranslation } from 'react-i18next'
+import { useFieldPassivation } from '../../hooks/useFieldPassivation'
 import PropTypes from 'prop-types';
 
 const RadioBooleanButton = ({
   input: { value, name, ...rest },
-  meta: { error },
+  meta,
   double,
   onRadioChange,
   disabled,
@@ -27,8 +28,23 @@ const RadioBooleanButton = ({
   const [radioValue, setRadioValue] = useState(null)
   const [editField,setEditField] = useState(false)
   const lastModified = useSelector(state => lastModifiedSelector(state))
+  const lastSaved = useSelector(state => lastSavedSelector(state))
   const [isThisFieldSaving, setIsThisFieldSaving] = useState(false)
   const saving =  useSelector(state => savingSelector(state))
+  const pollingProjects = useSelector(pollingProjectsSelector)
+  
+  const { error } = meta;
+  
+  // Check if other fields have validation errors (UX60.2.5 - passivate fields when error exists)
+  // Include connection errors so RadioButtons are disabled when ANY field has network error
+  const shouldDisableForErrors = useFieldPassivation(name, { formName: meta.form })
+  
+  // Check if THIS field is the one that failed to save due to network error (network down or lock error)
+  // DO NOT include field_error - those are backend validation errors and user must be able to fix them!
+  // Include 'connection_restored' status to keep showing spinner during recovery
+  const isThisFieldNetworkError = (lastSaved?.status === 'error' || lastSaved?.status === 'connection_restored') && 
+    lastSaved?.fields?.includes(name)
+  
   useEffect(() => {
     // Reset isThisFieldSaving when saving is complete for this field
     if (!saving) {
@@ -94,8 +110,24 @@ const RadioBooleanButton = ({
   }
   
   const getNormalElements = (nonEditable, rollingInfo, editField, name, readableValue, modifyText, rollingInfoText, editRollingField, phaseIsClosed, className, disabled, timeTableDisabled, error, handleOnChange, radioValue, double, showNoInformation) => {
-    const radioButtonClass = isThisFieldSaving ? 'radio-button-wrapper blurred' : `radio-button-wrapper ${className}`;
-    const isDisabled = disabled || timeTableDisabled || isThisFieldSaving;
+    const isSpinning = isThisFieldSaving || (pollingProjects && isThisFieldNetworkError);
+    
+    // Build class string step by step to avoid nested ternaries
+    let radioButtonClass = 'radio-button-wrapper';
+    if (isSpinning) {
+      radioButtonClass += ' blurred';
+    } else {
+      radioButtonClass += ` ${className}`;
+      if (isThisFieldNetworkError || shouldDisableForErrors) {
+        radioButtonClass += ' disabled';
+      }
+      if (isThisFieldNetworkError) {
+        radioButtonClass += ' has-network-error';
+      }
+    }
+    
+    const isDisabled = disabled || timeTableDisabled || isThisFieldSaving || shouldDisableForErrors || isThisFieldNetworkError;
+    const disabledClass = isDisabled ? 'radio-button-disabled' : '';
     return nonEditable || rollingInfo && !editField ?
       <RollingInfo 
         name={name} 
@@ -109,9 +141,9 @@ const RadioBooleanButton = ({
       />
       : 
       <div className={radioButtonClass}>
-        {getRadioButton("radio1", "Kyllä", `${name}-true`, `${name}-true`, isDisabled, `radio-button radio-button-true ${isDisabled ? 'radio-button-disabled' : ''}`, "Kyllä", error, name, () => handleOnChange(true), radioValue === true)}
-        {getRadioButton("radio2", "Ei", `${name}-false`, `${name}-false`, isDisabled, `radio-button radio-button-false ${isDisabled ? 'radio-button-disabled' : ''}`, "Ei", error, name, () => handleOnChange(false), radioValue === false)}
-        {!double && showNoInformation && getRadioButton("radio3", "Tieto puuttuu", `${name}-null`, `${name}-null`, isDisabled, `radio-button radio-button-null ${isDisabled ? 'radio-button-disabled' : ''}`, "", error, name, () => handleOnChange(null), radioValue !== false && radioValue !== true)}
+        {getRadioButton("radio1", "Kyllä", `${name}-true`, `${name}-true`, isDisabled, `radio-button radio-button-true ${disabledClass}`, "Kyllä", error, name, () => handleOnChange(true), radioValue === true)}
+        {getRadioButton("radio2", "Ei", `${name}-false`, `${name}-false`, isDisabled, `radio-button radio-button-false ${disabledClass}`, "Ei", error, name, () => handleOnChange(false), radioValue === false)}
+        {!double && showNoInformation && getRadioButton("radio3", "Tieto puuttuu", `${name}-null`, `${name}-null`, isDisabled, `radio-button radio-button-null ${disabledClass}`, "", error, name, () => handleOnChange(null), radioValue !== false && radioValue !== true)}
         <NetworkErrorState fieldName={name} />
       </div>
   }
