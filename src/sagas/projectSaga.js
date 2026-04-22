@@ -274,17 +274,22 @@ function* getAttributeData(data) {
       attribute_identifier: attribute_identifier
     }
     try {
-      const getAttributeData = yield call(
-        getAttributeDataApi.get,
-        { query },
-      )
-      yield put(setAttributeData(attribute_identifier, getAttributeData, formName, set, nulledFields, i))
-    } catch (e) {
-      // Network errors (no response) should not show a global toaster - show inline error instead
-      if (e.response) {
-        yield put(error(e))
-      } else {
+      const { result, timeout } = yield race({
+        result: call(getAttributeDataApi.get, { query }),
+        timeout: delay(15000)
+      })
+      if (timeout) {
         yield put(setLastSaved('error', null, [], [], false))
+        return
+      }
+      yield put(setAttributeData(attribute_identifier, result, formName, set, nulledFields, i))
+    } catch (e) {
+      const statusCode = e?.response?.status
+      // Network errors and 5xx server errors should show inline error, not toaster
+      if (!e.response || !statusCode || statusCode >= 500) {
+        yield put(setLastSaved('error', null, [], [], false))
+      } else {
+        yield put(error(e))
       }
     }
   }
@@ -1301,8 +1306,6 @@ function* saveProject(data) {
         const lastSaved = yield select(lastSavedSelector)
         if (lastSaved?.status === "error" || lastSaved?.status === "field_error") {
           yield put(setPoll(true))
-        } else {
-          yield put(setPoll(false))
         }
         // Network status: only show transient success if recovering from an error
         const net = yield select(projectNetworkSelector)
@@ -1362,7 +1365,6 @@ function* saveProject(data) {
     }
     else if (fileOrimgSave) {
       yield put(setAllEditFields())
-      yield put(setPoll(false))
     }
     else {
       // No changed values — clear spinner that was set before the isEmpty check

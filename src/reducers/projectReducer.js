@@ -142,7 +142,7 @@ export const initialState = {
   floorAreaSaved:false,
   timetableSaved:false,
   lastSaved:{},
-  connection:{"connection":false},
+  connection:{"connection":true},
   showEditFloorAreaForm:false,
   showEditProjectTimetableForm:{showTimetable:false,timetableTarget:"",selectedPhase:"",matchedDeadline:{},subGroup:""},
   lastModified:false,

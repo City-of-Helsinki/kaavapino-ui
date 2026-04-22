@@ -99,6 +99,10 @@ const FieldSet = ({
   }
 
   const hideFieldset = (formName, set, nulledFields,i) => {
+    if (connection?.connection === false) {
+      dispatch(setLastSaved('error', null, [], [], false))
+      return
+    }
     setHiding(true)
     
     // Remove all fields in this fieldset from error list to prevent UI from getting stuck
@@ -115,9 +119,10 @@ const FieldSet = ({
     if(lastSaved?.status === "error"){
       //Unable to lock fields and connection backend not working so prevent editing
       setExpanded([])
-      // Reset adding state so the button doesn't stay stuck in spinner
+      // Reset adding/hiding state so the buttons don't stay stuck in spinner
       setAdding(false)
       setCurrentFieldset(false)
+      setHiding(false)
     }
   }, [lastSaved?.status === "error"])
  
