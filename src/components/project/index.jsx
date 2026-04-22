@@ -654,7 +654,8 @@ ProjectPage.propTypes = {
     search: PropTypes.string
   }),
   history: PropTypes.shape({
-    replace: PropTypes.func
+    replace: PropTypes.func,
+    push: PropTypes.func
   }),
   resetProjectDeadlines: PropTypes.func,
   showTimetable: PropTypes.func,

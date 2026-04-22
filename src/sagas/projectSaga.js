@@ -339,7 +339,7 @@ function* pollConnection() {
       // Clear form error list so "Virhe lomakkeella estää lisäyksen" disappears
       yield put(resetFormErrors())
     }
-  } catch (e) {
+  } catch {
     yield put(setPoll(false))
   }
 }
@@ -1322,7 +1322,7 @@ function* saveProject(data) {
         const statusCode = e?.response?.status
         
         // 400 errors are backend validation errors - show in NetworkErrorState but NOT as network errors
-        if (e.response && e.response.status === 400) {
+        if (e.response?.status === 400) {
           // Extract actual error messages from backend response
           // Backend returns: { fieldName: { fieldName: "error message" } } or { fieldName: "error message" }
           const backendErrors = e.response.data || {};
