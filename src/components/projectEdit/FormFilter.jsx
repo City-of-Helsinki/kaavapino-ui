@@ -3,6 +3,7 @@ import { Button, Tag, IconTrash, Checkbox } from 'hds-react';
 import DialogFocusTrap from '../common/DialogFocusTrap.jsx';
 import { getOffset } from '../../hooks/getOffset';
 import './ProjectEdit.scss'
+import PropTypes from 'prop-types';
 
 function FormFilter({schema,filterFields,isHighlightedTag,selectedPhase,allfields,currentlyHighlighted,showSection}) {
 
@@ -70,20 +71,20 @@ useEffect(() => {
     let optionsArray = [{header:"Asiantuntija",roles:[]},{header:"Pääkäyttäjä",roles:[]},{header:"Vastuuhenkilö",roles:[]}]
     if(schema){
         let roles = schema.filters.subroles
-        for (let x = 0; x < roles.length; x++) {
-            if(roles[x] === "Projektin vastuuhenkilö" || roles[x] === "Rakennussuojelu" || roles[x] === "Suunnitteluavustaja"){
-                optionsArray[2].roles.push(roles[x]);
+        for (const role of roles) {
+            if(role === "Projektin vastuuhenkilö" || role === "Rakennussuojelu" || role === "Suunnitteluavustaja"){
+                optionsArray[2].roles.push(role);
             }
-            else if(roles[x] === "Kaavoitussihteeri" || roles[x] === "Kanslian pääkäyttäjä" ||
-            roles[x] === "Suunnitteluassistentti" || roles[x] === "Tontit-yksikön pääkäyttäjä" || roles[x] === "Kaavamaksut ja seuranta"){
-                optionsArray[1].roles.push(roles[x]);
+            else if(role === "Kaavoitussihteeri" || role === "Kanslian pääkäyttäjä" ||
+            role === "Suunnitteluassistentti" || role === "Tontit-yksikön pääkäyttäjä" || role === "Kaavamaksut ja seuranta"){
+                optionsArray[1].roles.push(role);
             }
             else{
-                optionsArray[0].roles.push(roles[x]);
+                optionsArray[0].roles.push(role);
             }
         }
-        for (let i = 0; i < optionsArray.length; i++) {
-            optionsArray[i].roles.sort((a, b) => a.localeCompare(b));
+        for (const option of optionsArray) {
+            option.roles.sort((a, b) => a.localeCompare(b));
         }
         setOptions(optionsArray)
     }
@@ -104,39 +105,39 @@ const listenToScroll = () => {
     }
 }
 
-const calculateFields = (all) => {
-   let fields = []
+const calculateFields = (fieldSections) => {
+   let filteredFields = []
    if(typeof filterFields === 'function'){
        //Get only field keys from checboxes not the true / false value for filtering fields
-       fields = Object.keys(checkedItems).filter(k=>checkedItems[k]===true)
+       filteredFields = Object.keys(checkedItems).filter(k=>checkedItems[k]===true)
 
-       if(fields.length === 0){
+       if(filteredFields.length === 0){
            isHighlightedTag("")
        }
        
-       filterFields(fields)
+       filterFields(filteredFields)
    }
-   
+
    let totalFilteredFields = 0;
-   for (let i = 0; i < all.length; i++) {
-       let field = all[i].fields
-       for (let x = 0; x < field.length; x++) {
+   for (const section of fieldSections) {
+       const fields = section.fields;
+       for (const field of fields) {
            // Count direct field match
-           if(fields.includes(field[x].field_subroles)){
-				totalFilteredFields = totalFilteredFields + 1
+           if(fields.includes(field.field_subroles)){
+				totalFilteredFields = totalFilteredFields + 1;
 				continue;
 			}
            // Also allow fieldsets to match if ANY of their attributes has matching subrole
            if(
-           	field[x].categorization === 'fieldset' &&
-           	Array.isArray(field[x].fieldset_attributes) &&
-           	field[x].fieldset_attributes.some(attr => attr?.field_subroles && fields.includes(attr.field_subroles))
+           	field.categorization === 'fieldset' &&
+           	Array.isArray(field.fieldset_attributes) &&
+           	field.fieldset_attributes.some(attr => attr?.field_subroles && fields.includes(attr.field_subroles))
            ){
-           	totalFilteredFields = totalFilteredFields + 1
+           	totalFilteredFields = totalFilteredFields + 1;
            }
        }
    }
-   setTotalFilteredFields(totalFilteredFields)
+   setTotalFilteredFields(totalFilteredFields);
 }
 
 const handleChange = (e) => {
@@ -215,8 +216,8 @@ let renderedTags;
 let tagInfo;
 
 if(tagArray.length > 0){
-    renderedTags = <>
-     <div className={"filter-tag-container"}>
+    renderedTags = (
+    <div className={"filter-tag-container"}>
      {tagArray.map((tag) => (
          <Tag
          className='filter-tag'
@@ -225,22 +226,23 @@ if(tagArray.length > 0){
          id={`checkbox-${tag}`}
          onClick={(event) => highlightTag(event,tag)}
          aria-label={tag + ". Ota korostus käyttöön klikkaamalla painiketta."}
+         tabindex="0"
          >
          {tag}
          </Tag>
      ))}
-     </div>
-     </>
+    </div>
+    );
  }
  else{
     renderedTags = <div className={"message"}>Yhtään suodatinta ei ole valittu.</div>
  }
 
  if(tagArray.length > 0 && selectedTag === ""){
-    tagInfo = <><div tabIndex="0" className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä.</p> <span> | </span> <p>Näytetään {totalFilteredFields} kenttää.</p></div></>
+    tagInfo = <div className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä.</p> <span> | </span> <p>Näytetään {totalFilteredFields} kenttää.</p></div>
  }
  else if(tagArray.length > 0 && selectedTag !== ""){
-    tagInfo = <><div tabIndex="0" className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä.</p> <span> | </span> <p>Näytetään {totalFilteredFields} kenttää.</p> <span> | </span> <p><b>Korostus päällä: </b> {selectedTag}.</p></div></>
+    tagInfo = <div className='filter-tag-info'><p>{tagArray.length} suodatinta käytössä.</p> <span> | </span> <p>Näytetään {totalFilteredFields} kenttää.</p> <span> | </span> <p><b>Korostus päällä: </b> {selectedTag}.</p></div>
  }
 
  let stickyClass = "";
@@ -258,7 +260,7 @@ let containerClasses = "project-edit-form-filter" + stickyClass + noFiltersClass
 return (
     <div className={containerClasses}>
         <div className='left-container'>
-            <div className={isVisible ? "filter-title": "filter-title hidden"} tabIndex="0">Suodattimet</div>
+            <div className={isVisible ? "filter-title": "filter-title hidden"}>Suodattimet</div>
 
             {isVisible && (
                 tagInfo
@@ -280,8 +282,8 @@ return (
                         </div>
                     <div className="modal-body">
                 <div className="filterModal__cols">
-                    {options.map((opt, i) => (
-                        <div className="filterModal__col" key={`col-${i}`}>
+                    {options.map((opt) => (
+                        <div className="filterModal__col" key={`col-${opt.header}`}>
                             <h3>{opt.header}</h3>
                             <div className="filterModal__list">
                             {opt.roles.map((role) => (
@@ -315,4 +317,24 @@ return (
 )
 }
 
-export default FormFilter
+FormFilter.propTypes = {
+    schema: PropTypes.shape({
+        deadline_sections: PropTypes.array,
+        filters: PropTypes.shape({
+            roles: PropTypes.array,
+            subroles: PropTypes.array
+        }),
+        floor_area_secions: PropTypes.array,
+        phases: PropTypes.array,
+        subtype: PropTypes.number,
+        subtype_name: PropTypes.string
+    }),
+    filterFields: PropTypes.func,
+    isHighlightedTag: PropTypes.func,
+    selectedPhase: PropTypes.string,
+    allfields: PropTypes.array,
+    currentlyHighlighted: PropTypes.string,
+    showSection: PropTypes.bool
+}
+
+export default FormFilter;

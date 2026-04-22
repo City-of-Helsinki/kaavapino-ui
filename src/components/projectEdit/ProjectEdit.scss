@@ -241,8 +241,12 @@
       margin: $size4 $size8;
     }
 
-    .filter-tag:focus{
+    .filter-tag:focus {
       --tag-focus-outline-color: transparent;
+    }
+
+    .filter-tag:focus-visible{
+      --tag-focus-outline-color: var(--color-coat-of-arms) !important;
     }
   
     .yellow{
@@ -252,6 +256,10 @@
 
     .yellow:focus{
       --tag-focus-outline-color: transparent;
+    }
+
+    .yellow:focus-visible{
+      --tag-focus-outline-color: var(--color-coat-of-arms) !important;
     }
   
     .filter-tag-info {
