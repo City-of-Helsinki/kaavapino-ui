@@ -65,7 +65,7 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
     const wasNetworkErrorKey = `wasNetworkError_${input.name}`;
     try {
       return localStorage.getItem(wasNetworkErrorKey) === 'true';
-    } catch (e) {
+    } catch {
       return false;
     }
   };

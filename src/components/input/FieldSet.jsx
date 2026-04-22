@@ -303,6 +303,25 @@ const FieldSet = ({
     });
   });
 
+  let addButtonMessage
+  if (lastSaved?.status === 'error') {
+    addButtonMessage = (
+      <div className="network-error-state" aria-live="polite" aria-atomic="true">
+        <div className="error-text">
+          <div className="notification-content">
+            <span className="notification-label">{t('messages.network-save-failed-label')}</span>
+            <br />
+            <span className="notification-message">{t('messages.network-save-failed-message')}</span>
+          </div>
+        </div>
+      </div>
+    )
+  } else if (visibleErrors?.length > 0) {
+    addButtonMessage = <div className="error-text add-error">{t('project.error-prevent-add')}</div>
+  } else {
+    addButtonMessage = null
+  }
+
   return (
     <div className='fieldset-main-container' ref={accordianRef}>
     <React.Fragment>
@@ -314,14 +333,6 @@ const FieldSet = ({
         const automatically_added = get(formValues, set + '._automatically_added')
         const lockedElement = fieldsetDisabled ? <span className="input-locked"> Käyttäjä {lockStatus.lockStyle.lockData.attribute_lock.user_name} {lockStatus.lockStyle.lockData.attribute_lock.user_email} on muokkaamassa kenttää<IconLock></IconLock></span> : <></>
         const lockName = <><span className='accoardian-header-text'>{getValueName(setValues,fields)}</span> {lockedElement}</>
-        
-        // Check if THIS specific fieldset instance has any child fields with errors
-        const hasChildError = formErrors?.some(errorField => {
-          return fields.some(field => {
-            const fieldName = `${set}.${field.name}`;
-            return errorField === fieldName;
-          });
-        });
         
         // Only disable accordion for actual network errors - during validation errors
         // (character limit exceeded etc.) fieldsets should still be openable so users
@@ -565,20 +576,7 @@ const FieldSet = ({
            </div>
          )
          : <></>}
-        {lastSaved?.status === 'error'
-          ? <div className="network-error-state" aria-live="polite" aria-atomic="true">
-              <div className="error-text">
-                <div className="notification-content">
-                  <span className="notification-label">{t('messages.network-save-failed-label')}</span>
-                  <br />
-                  <span className="notification-message">{t('messages.network-save-failed-message')}</span>
-                </div>
-              </div>
-            </div>
-          : visibleErrors?.length > 0
-            ? <div className="error-text add-error">{t('project.error-prevent-add')}</div>
-            : ""
-        }
+        {addButtonMessage}
       </>
       )}
     </React.Fragment>

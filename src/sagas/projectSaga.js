@@ -281,10 +281,10 @@ function* getAttributeData(data) {
       yield put(setAttributeData(attribute_identifier, getAttributeData, formName, set, nulledFields, i))
     } catch (e) {
       // Network errors (no response) should not show a global toaster - show inline error instead
-      if (!e.response) {
-        yield put(setLastSaved('error', null, [], [], false))
-      } else {
+      if (e.response) {
         yield put(error(e))
+      } else {
+        yield put(setLastSaved('error', null, [], [], false))
       }
     }
   }
