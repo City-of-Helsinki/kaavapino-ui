@@ -24,9 +24,9 @@ import {
   archivedProjectsSelector,
   savingSelector,
   formErrorListSelector,
-  lastSavedSelector
+  lastSavedSelector,
+  projectNetworkSelector
 } from '../selectors/projectSelector'
-import { projectNetworkSelector } from '../selectors/projectSelector'
 import { userIdSelector } from '../selectors/authSelector'
 import { phasesSelector } from '../selectors/phaseSelector'
 import {
@@ -242,7 +242,7 @@ function* validateDate({ payload }) {
       date: payload.date,
     };
     const result = yield call(projectDateValidateApi.get, { query });
-    const valid = result.conflicting_deadline === null && result.error_reason === null && result.suggested_date === null ? true : false;
+    const valid = !!(result.conflicting_deadline === null && result.error_reason === null && result.suggested_date === null);
     yield put(setDateValidationResult(valid, result))
   } catch (e) {
     yield put(error(e))
@@ -297,7 +297,6 @@ function* pollConnection() {
     )
     const dateVariable = new Date()
     const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    
     // Check if there's a field that failed to save due to network error
     const lastSaved = yield select(lastSavedSelector)
     const hasUnsavedField = lastSaved?.status === 'error' && lastSaved?.fields?.length > 0
@@ -379,7 +378,7 @@ function getQueryValues(page_size, page, searchQuery, sortField, sortDir, status
     page: page + 1,
     ordering: sortDir === 1 ? sortField : '-' + sortField,
     status: status,
-    page_size: page_size ? page_size : 10
+    page_size: page_size || 10
   };
 
   if (searchQuery.length > 0) {
@@ -507,9 +506,7 @@ function* increaseAmountOfProjectsToShowSaga(action, howMany = null) {
     const totalOwnProjects = yield select(totalOwnProjectsSelector)
     const totalProjects = yield select(totalProjectsSelector)
     const amountOfProjectsToShow = yield select(amountOfProjectsToShowSelector)
-    const amountOfProjectsToIncrease = howMany
-      ? howMany
-      : yield select(amountOfProjectsToIncreaseSelector)
+    const amountOfProjectsToIncrease = howMany || (yield select(amountOfProjectsToIncreaseSelector))
     const fetchOwn = amountOfProjectsToShow < totalOwnProjects
     const fetchAll = amountOfProjectsToShow < totalProjects
 
@@ -664,7 +661,6 @@ const adjustDeadlineData = (attributeData, allAttributeData) => {
 const getChangedAttributeData = (values, initial) => {
   let attribute_data = {}
   let errorValues = false
-  const wSpaceRegex = /^(\s+|\s+)$/g
 
   // KAAV-3517: Track esillaolo/lautakunta boolean fields that were true in initial
   // but are now false/undefined in values - these need to be explicitly sent as false
@@ -686,15 +682,20 @@ const getChangedAttributeData = (values, initial) => {
   }
 
   Object.keys(values).forEach(key => {
+    if (key == "suunnittelualueen_kuvaus")
+      console.log("checking key", key, "with value", values[key], "and initial value", initial?.[key])
     if (key.includes("_readonly")) {
       return
     }
-    if (initial && initial[key] !== undefined && isEqual(values[key], initial[key])) {
+    if (initial?.[key] !== undefined && isEqual(values[key], initial[key])) {
+      if (key == "suunnittelualueen_kuvaus")
+        console.log(`skipping unchanged field ${key} with value`, values[key])
       return
     }
-    if (values[key] === '' || values[key]?.ops && values[key]?.ops[0] && values[key]?.ops[0]?.insert.replace(wSpaceRegex, '').length === 0) {
+    if (values[key] === '' || (values[key]?.ops && isRichTextEmpty(values[key]))) {
       //empty text values saved as null
       attribute_data[key] = null
+      console.log("setting empty value to null for key", key)
     }
     else if (values[key] === null) {
       attribute_data[key] = null
@@ -708,7 +709,7 @@ const getChangedAttributeData = (values, initial) => {
       attribute_data[key] = values[key].map((fieldsetEntry) => {
         Object.keys(fieldsetEntry).forEach((entryKey) => {
           const entryValue = fieldsetEntry[entryKey]
-          if (entryValue === '' || entryValue?.ops && entryValue.ops[0]?.insert.replace(wSpaceRegex, '').length === 0) {
+          if (entryValue === '' || (entryValue?.ops && isRichTextEmpty(entryValue))) {
             fieldsetEntry[entryKey] = null
           }
         })
@@ -721,6 +722,20 @@ const getChangedAttributeData = (values, initial) => {
   })
   return errorValues ? false : attribute_data
 }
+
+const isRichTextEmpty = (value) => {
+  if (!Array.isArray(value?.ops) || value.ops.length === 0) {
+    return true;
+  }
+  return value.ops.every(op => {
+    if (typeof op?.insert !== 'string') {
+      return true;
+    }
+    console.log("checking if op is empty", op.insert, op.insert.trim().length === 0);
+    return op.insert.trim().length === 0;
+  });
+}
+
 function* saveProjectPayload({ payload }) {
   const currentProjectId = yield select(currentProjectIdSelector)
   try {
@@ -753,7 +768,7 @@ function* saveProjectBase({ payload }) {
   yield put(startSubmit(NEW_PROJECT_FORM))
   const { values } = yield select(newProjectFormSelector)
   const currentProjectId = yield select(currentProjectIdSelector)
-  if (payload && payload.archived) {
+  if (payload?.archived) {
     values.archived = payload.archived
     window.scrollTo(0, 0); // Scroll to top of the page so user can see it is archiving
   }
@@ -825,7 +840,7 @@ function* saveProjectFloorArea() {
         })
         yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
       }
-      yield put(stopSubmit(EDIT_FLOOR_AREA_FORM, e.response && e.response.data))
+      yield put(stopSubmit(EDIT_FLOOR_AREA_FORM, e?.response?.data))
       const statusCode = e?.response?.status
       if (!statusCode || statusCode >= 500) {
         yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
@@ -833,24 +848,6 @@ function* saveProjectFloorArea() {
     }
   }
 }
-
-// Selectively update redux-form initial values for timetable form without overwriting current edits.
-/* function* reinitializeTimetableFormIfNeeded(responseData) {
-    const formState = yield select(editProjectTimetableFormSelector)
-    if (!responseData?.attribute_data || !formState?.values) return
-    const resp = responseData.attribute_data
-    const initial = formState.initial || {}
-    let changed = false
-    for (const k in resp) {
-        if (!isEqual(initial[k], resp[k])) {
-            changed = true
-            break
-        }
-    }
-    if (!changed) return
-    const nextInitial = { ...initial, ...resp }
-    yield put(initialize(EDIT_PROJECT_TIMETABLE_FORM, nextInitial))
-} */
 
 function* validateProjectTimetable({ payload }) {
   // Use passed attributeData if available (contains cascaded values from frontend)
@@ -1137,12 +1134,12 @@ function* saveProject(data) {
     changedValues = getChangedAttributeData(values, initial)
     keys = Object.keys(changedValues)
     // Set saving state with field name from action payload
-    if (fieldName) {
+    if (fieldName && keys.length > 0) {
       let actualFieldName = fieldName;
       // Check if fieldName corresponds to a fieldset in changedValues
       if (typeof fieldName === 'string' && fieldName.endsWith('_fieldset') && changedValues[fieldName]) {
         const fieldsetArray = changedValues[fieldName];
-        const initialFieldsetArray = initial && initial[fieldName];
+        const initialFieldsetArray = initial?.[fieldName];
         if (Array.isArray(fieldsetArray) && fieldsetArray.length > 0) {
           const currentItem = fieldsetArray[0];
           const initialItem = Array.isArray(initialFieldsetArray) && initialFieldsetArray.length > 0 ? initialFieldsetArray[0] : {};
@@ -1581,7 +1578,7 @@ function* projectSetDeadlinesSaga() {
     yield put(projectSetDeadlinesSuccessful(res.deadlines))
     yield put(setSubmitSucceeded('deadlineModal'))
   } catch (e) {
-    if (e.response && e.response.status === 400) {
+    if (e.response?.status === 400) {
       yield put(stopSubmit('deadlineModal', e.response.data))
       yield put(error({ custom: true, message: 'Tarkista päivämäärät!' }))
     } else {
@@ -1589,101 +1586,95 @@ function* projectSetDeadlinesSaga() {
     }
   }
 }
-function* getProjectsOverviewFloorArea({ payload }) {
-  let query = {}
 
-  const keys = Object.keys(payload)
-  keys.forEach(key => {
+const KAAVAPROSESSI_TO_SUBTYPE_ID = { XS: 1, xs: 1, S: 2, s: 2, M: 3, m: 3, L: 4, l: 4, XL: 5, xl: 5 }
+
+const getOverviewYearRangeQuery = value => {
+  let startDate
+  let endDate
+
+  if (isArray(value)) {
+    startDate = dayjs(new Date(value[0].value, 0, 1)).format('YYYY-MM-DD')
+    endDate = dayjs(new Date(value[value.length - 1].value, 11, 31)).format('YYYY-MM-DD')
+  } else {
+    startDate = dayjs(new Date(value, 0, 1)).format('YYYY-MM-DD')
+    endDate = dayjs(new Date(value, 11, 31)).format('YYYY-MM-DD')
+  }
+
+  return {
+    start_date: startDate,
+    end_date: endDate
+  }
+}
+
+const getOverviewQueryValue = value => {
+  const queryValue = []
+
+  if (isArray(value)) {
+    value.forEach(current => queryValue.push(current))
+  } else {
+    queryValue.push(value)
+  }
+
+  return queryValue.length > 0 ? queryValue.toString() : null
+}
+
+const getOverviewPersonQueryValue = value => {
+  const currentPersonIds = []
+  value.forEach(current => currentPersonIds.push(current.id))
+  return currentPersonIds.length > 0 ? currentPersonIds.toString() : null
+}
+
+const buildOverviewQuery = (payload, customHandlers = {}) => {
+  const query = {}
+
+  Object.keys(payload).forEach(key => {
+    if (customHandlers[key]) {
+      const customQuery = customHandlers[key](payload[key])
+      if (customQuery) {
+        Object.assign(query, customQuery)
+      }
+      return
+    }
+
     if (key === 'vuosi') {
-      const value = payload[key]
-      let startDate
-      let endDate
-      if (!isArray(value)) {
-        startDate = dayjs(new Date(value, 0, 1)).format('YYYY-MM-DD')
-        endDate = dayjs(new Date(value, 11, 31)).format('YYYY-MM-DD')
-      } else {
-        startDate = dayjs(new Date(value[0].value, 0, 1)).format('YYYY-MM-DD')
-        endDate = dayjs(new Date(value[value.length - 1].value, 11, 31)).format(
-          'YYYY-MM-DD'
-        )
-      }
-      query = {
-        ...query,
-        start_date: startDate,
-        end_date: endDate
-      }
-    } else if (key === 'henkilo') {
-      const currentPersonIds = []
-
-      const currentPayload = payload[key]
-
-      currentPayload.forEach(current => currentPersonIds.push(current.id))
-
-      if (currentPersonIds) {
-        query = {
-          ...query,
-          [key]: currentPersonIds.toString()
-        }
-      }
+      Object.assign(query, getOverviewYearRangeQuery(payload[key]))
+      return
     }
-    else if (key === 'kaavaprosessi') {
-      const queryValue = []
-      const current = payload[key]
 
-      //Change attributedata kaavaprosessin nimi strings to int subtype_id for nicer comparison in backend
-      const getSubtypeID = id => modifiedValuePairs[id];
-      const modifiedValuePairs = {
-        XS: 1, xs: 1, S: 2, s: 2, M: 3, m: 3, L: 4, l: 4, XL: 5, xl: 5
-      };
-
-      if (isArray(current)) {
-        for (let i = 0; i < current.length; i++) {
-          queryValue.push(getSubtypeID(current[i]))
-        }
+    if (key === 'henkilo') {
+      const personIds = getOverviewPersonQueryValue(payload[key])
+      if (personIds) {
+        query[key] = personIds
       }
-      if (queryValue.length > 0) {
-        query = {
-          ...query,
-          ["subtype_id"]: queryValue.toString()
-        }
-      }
+      return
     }
-    else if (key === "yksikko_tai_tiimi") {
-      const queryValue = []
 
-      const current = payload[key]
-      if (isArray(current)) {
-        for (let i = 0; i < current.length; i++) {
-          queryValue.push(current[i])
-        }
-      }
-      if (queryValue.length > 0) {
-        query = {
-          ...query,
-          ["vastuuyksikko"]: queryValue.toString()
-        }
-      }
-    }
-    else {
-      const queryValue = []
-
-      const current = payload[key]
-
-      if (isArray(current)) {
-        current.forEach(value => queryValue.push(value))
-      } else {
-        queryValue.push(payload[key])
-      }
-
-      if (queryValue.length > 0) {
-        query = {
-          ...query,
-          [key]: queryValue.toString()
-        }
-      }
+    const queryValue = getOverviewQueryValue(payload[key])
+    if (queryValue) {
+      query[key] = queryValue
     }
   })
 
+  return query
+}
+
+const buildFloorAreaOverviewQuery = payload => buildOverviewQuery(payload, {
+  kaavaprosessi: value => {
+    const subtypeIds = isArray(value)
+      ? value.map(current => KAAVAPROSESSI_TO_SUBTYPE_ID[current]).filter(Boolean)
+      : []
+
+    return subtypeIds.length > 0 ? { subtype_id: subtypeIds.toString() } : null
+  },
+  yksikko_tai_tiimi: value => {
+    const queryValue = getOverviewQueryValue(value)
+    return queryValue ? { vastuuyksikko: queryValue } : null
+  }
+})
+
+function* getProjectsOverviewFloorArea({ payload }) {
+  const query = buildFloorAreaOverviewQuery(payload)
   try {
     const floorArea = yield call(overviewFloorAreaApi.get, { query: query })
     yield put(getProjectsOverviewFloorAreaSuccessful(floorArea))
@@ -1692,61 +1683,7 @@ function* getProjectsOverviewFloorArea({ payload }) {
   }
 }
 function* getProjectsOverviewBySubtype({ payload }) {
-  let query = {}
-
-  const keys = Object.keys(payload)
-
-  keys.forEach(key => {
-    if (key === 'vuosi') {
-      const value = payload[key]
-
-      let startDate
-      let endDate
-      if (!isArray(value)) {
-        startDate = dayjs(new Date(value, 0, 1)).format('YYYY-MM-DD')
-        endDate = dayjs(new Date(value, 11, 31)).format('YYYY-MM-DD')
-      } else {
-        startDate = dayjs(new Date(value[0].value, 0, 1)).format('YYYY-MM-DD')
-        endDate = dayjs(new Date(value[value.length - 1].value, 11, 31)).format(
-          'YYYY-MM-DD'
-        )
-      }
-
-      query = {
-        ...query,
-        start_date: startDate,
-        end_date: endDate
-      }
-    } else if (key === 'henkilo') {
-      const currentPersonIds = []
-
-      const currentPayload = payload[key]
-
-      currentPayload.forEach(current => currentPersonIds.push(current.id))
-
-      query = {
-        ...query,
-        [key]: currentPersonIds.toString()
-      }
-    } else {
-      const queryValue = []
-
-      const current = payload[key]
-
-      if (isArray(current)) {
-        current.forEach(value => queryValue.push(value))
-      } else {
-        queryValue.push(payload[key])
-      }
-
-      if (queryValue.length > 0) {
-        query = {
-          ...query,
-          [key]: queryValue.toString()
-        }
-      }
-    }
-  })
+  const query = buildOverviewQuery(payload)
   try {
     const bySubtype = yield call(overviewBySubtypeApi.get, { query: query })
     yield put(getProjectsOverviewBySubtypeSuccessful(bySubtype))
@@ -1772,61 +1709,8 @@ function* getExternalDocumentsSaga({ payload: projectId }) {
 }
 
 function* getProjectOverviewMapDataSaga({ payload }) {
-  let query = {}
+  const query = buildOverviewQuery(payload)
 
-  const keys = Object.keys(payload)
-
-  keys.forEach(key => {
-    if (key === 'vuosi') {
-      const value = payload[key]
-
-      let startDate
-      let endDate
-      if (!isArray(value)) {
-        startDate = dayjs(new Date(value, 0, 1)).format('YYYY-MM-DD')
-        endDate = dayjs(new Date(value, 11, 31)).format('YYYY-MM-DD')
-      } else {
-        startDate = dayjs(new Date(value[0].value, 0, 1)).format('YYYY-MM-DD')
-        endDate = dayjs(new Date(value[value.length - 1].value, 11, 31)).format(
-          'YYYY-MM-DD'
-        )
-      }
-
-      query = {
-        ...query,
-        start_date: startDate,
-        end_date: endDate
-      }
-    } else if (key === 'henkilo') {
-      const currentPersonIds = []
-
-      const currentPayload = payload[key]
-
-      currentPayload.forEach(current => currentPersonIds.push(current.id))
-
-      query = {
-        ...query,
-        [key]: currentPersonIds.toString()
-      }
-    } else {
-      const queryValue = []
-
-      const current = payload[key]
-
-      if (isArray(current)) {
-        current.forEach(value => queryValue.push(value))
-      } else {
-        queryValue.push(payload[key])
-      }
-
-      if (queryValue.length > 0) {
-        query = {
-          ...query,
-          [key]: queryValue.toString()
-        }
-      }
-    }
-  })
   try {
     const mapData = yield call(overviewMapApi.get, { query: query })
     yield put(getProjectsOverviewMapDataSuccessful(mapData))

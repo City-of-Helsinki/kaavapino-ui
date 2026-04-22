@@ -6,7 +6,7 @@ import { isCurrentPhaseConfirmed } from '../../utils/projectVisibilityUtils'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 
-const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserResponsible, schema, attribute_data, selectedPhase, search, project, disableDownloads, downloadingDocumentReady }) => {
+const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserResponsible, isThePersonResponsible, schema, attribute_data, selectedPhase, search, project, disableDownloads, downloadingDocumentReady }) => {
   const {t} = useTranslation()
 
   // Accessibility fixes, re-evaluate when HDS-react is updated
@@ -126,6 +126,7 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
               key={i}
               phaseIndex={phase.phaseIndex}
               isUserResponsible={isUserResponsible}
+              isThePersonResponsible={isThePersonResponsible}
               schema={schema}
               attribute_data={attribute_data}
               selectedPhase={selectedPhase}

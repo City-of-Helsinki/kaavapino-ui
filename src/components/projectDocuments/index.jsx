@@ -36,6 +36,7 @@ function ProjectDocumentsPage(props) {
   const {t} = useTranslation()
 
   const isUserResponsible = authUtils.isResponsible(currentUserId, users)
+  const isThePersonResponsible = authUtils.isThePersonResponsiple(currentUserId, users, project.attribute_data)
 
   const disableDownloads = () => {
     setDownloadingDocumentReady(false)
@@ -92,6 +93,7 @@ function ProjectDocumentsPage(props) {
           projectId={currentProjectId}
           phase={groupedDocuments[key]}
           isUserResponsible={isUserResponsible}
+          isThePersonResponsible={isThePersonResponsible}
           schema={schema}
           attribute_data={project.attribute_data}
           selectedPhase={selectedPhase}

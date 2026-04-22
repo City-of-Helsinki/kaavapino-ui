@@ -142,18 +142,18 @@ function RichTextEditor(props) {
 
   const inputValue = useRef('')
   const myRefname= useRef(null);
-  const fieldFormName = formName ? formName : EDIT_PROJECT_FORM
+  const fieldFormName = formName || EDIT_PROJECT_FORM
 
   const getFieldComments = () => {
     const fieldName = inputProps.name
-    const lastIndex = fieldName && fieldName.lastIndexOf('.')
+    const lastIndex = fieldName?.lastIndexOf('.')
 
-    if (lastIndex !== -1) {
+    if (lastIndex === -1) {
+      return fieldComments[fieldName]
+    } else {
       // TODO: Temporary fix to avoid crashing
       const currentFieldName = fieldName.substring(lastIndex + 1, fieldName.length)
       return fieldComments[currentFieldName]
-    } else {
-      return fieldComments[fieldName]
     }
   }
 
@@ -428,7 +428,7 @@ function RichTextEditor(props) {
     // Checks on page load and on value change if the input value character count exceeds maxSize
     const maxSize = props.maxSize || 20000
    //Get the maxSize from backend or use default
-    if (value && value.ops) {
+    if (value?.ops) {
       let valueCount = 0;
       // In some occasions value.ops returns array that has multiple objects
       if (value.ops.length > 1) {
@@ -561,15 +561,15 @@ function RichTextEditor(props) {
     // Check if the field is locked and if the lock data is available
     if (lockedStatus && Object.keys(lockedStatus).length > 0) {
       if (lockedStatus.lock === false) {
-        if (!insideFieldset) {
-          let identifier = getIdentifier()
-          const isLocked = inputProps.name === identifier
-          updateFieldAccess(isLocked, identifier);
-        } else {
+        if (insideFieldset) {
           let identifier = getIdentifier()
           let name = inputProps.name?.split('.')[0];
           const isLocked = name === identifier
           updateFieldsetFieldAccess(isLocked, identifier);
+        } else {
+          let identifier = getIdentifier()
+          const isLocked = inputProps.name === identifier
+          updateFieldAccess(isLocked, identifier);
         }
       }
     }
@@ -626,7 +626,7 @@ function RichTextEditor(props) {
         const actualDeltaValue = editorRef.current.editor.getContents()
 
         // Hack to remove /n  values
-        const actualDeltaText = editorRef.current.editor.getText().replace(/\n/g, '')
+        const actualDeltaText = editorRef.current.editor.getText().replaceAll('\n', '')
 
         setCurrentTimeout(() =>
           setTimeout(
@@ -643,7 +643,7 @@ function RichTextEditor(props) {
 
         counter.current = actualDeltaValue.length() - 1;
         showCounter.current = true;
-        const editorEmpty = actualDeltaText.trim().length === 0 ? true : false
+        const editorEmpty = actualDeltaText.trim().length === 0
         setValueIsEmpty(editorEmpty)
         //maxsize from backend or default
         const maxSize = props.maxSize || 20000
@@ -700,7 +700,7 @@ function RichTextEditor(props) {
     fieldsetName = name.split('[')[0]
     index = name.split('[').pop().split(']')[0];
     fieldName = name.split('.')[1]
-    if(attributeData[fieldsetName] && attributeData[fieldsetName][index] && attributeData[fieldsetName][index][fieldName]?.ops){
+    if(attributeData[fieldsetName]?.[index]?.[fieldName]?.ops){
       data = attributeData[fieldsetName][index][fieldName]?.ops
     }
     return data
@@ -736,7 +736,7 @@ function RichTextEditor(props) {
     let editorEmpty
     if(editorRef.current && editorRef?.current !== ""){
       editor = editorRef?.current?.getEditor().getContents()
-      editorEmpty = editorRef?.current?.getEditor().getText().trim().length === 0 ? true : false
+      editorEmpty = editorRef?.current?.getEditor().getText().trim().length === 0
     }
 
     let name = inputProps.name;
@@ -1051,7 +1051,7 @@ function RichTextEditor(props) {
               className="show-comments-button"
               aria-label="Näytä kommentit"
               onClick={() => setShowComments(!showComments)}
-              disabled={!filteredComments || !filteredComments.length}
+              disabled={!filteredComments?.length}
             >
               {showComments ? 'Piilota' : 'Näytä'} kommentit (
               {filteredComments ? filteredComments.length : 0})
@@ -1144,7 +1144,7 @@ function RichTextEditor(props) {
           ))}
         </div>
       )}
-      {showCounter.current && typeof counter.current !== "undefined" && maxSize ? (
+      {showCounter.current && counter.current !== undefined && maxSize ? (
         <p
           className={
             counter.current > maxSize ? 'quill-counter quill-warning' : 'quill-counter'
