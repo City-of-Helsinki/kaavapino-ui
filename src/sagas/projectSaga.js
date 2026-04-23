@@ -13,6 +13,7 @@ import {
 import {
   currentProjectSelector,
   currentProjectIdSelector,
+  deadlinesSelector,
   amountOfProjectsToShowSelector,
   totalOwnProjectsSelector,
   totalProjectsSelector,
@@ -23,9 +24,9 @@ import {
   archivedProjectsSelector,
   savingSelector,
   formErrorListSelector,
-  lastSavedSelector
+  lastSavedSelector,
+  projectNetworkSelector
 } from '../selectors/projectSelector'
-import { projectNetworkSelector } from '../selectors/projectSelector'
 import { userIdSelector } from '../selectors/authSelector'
 import { phasesSelector } from '../selectors/phaseSelector'
 import {
@@ -73,6 +74,7 @@ import {
   saveProjectTimetableFailed,
   SAVE_PROJECT,
   saveProjectSuccessful,
+  saveProjectFailed,
   setSavingField,
   CHANGE_PROJECT_PHASE,
   changeProjectPhaseSuccessful,
@@ -125,7 +127,8 @@ import {
   VALIDATE_DATE,
   setDateValidationResult,
   VALIDATE_PROJECT_TIMETABLE,
-  setValidatingTimetable
+  setValidatingTimetable,
+  resetFormErrors
 } from '../actions/projectActions'
 import { startSubmit, stopSubmit, setSubmitSucceeded, change } from 'redux-form'
 import { error } from '../actions/apiActions'
@@ -160,9 +163,8 @@ import {
 import i18 from 'i18next'
 import dayjs from 'dayjs'
 import { toastr } from 'react-redux-toastr'
-import { confirmationAttributeNames } from '../utils/constants';
 import { generateConfirmedFields } from '../utils/generateConfirmedFields';
-import { IconInfoCircleFill, IconCheckCircleFill, IconErrorFill, IconAlertCircleFill } from 'hds-react'
+import { IconInfoCircleFill, IconCheckCircleFill, IconErrorFill } from 'hds-react'
 
 export default function* projectSaga() {
   yield all([
@@ -240,7 +242,7 @@ function* validateDate({ payload }) {
       date: payload.date,
     };
     const result = yield call(projectDateValidateApi.get, { query });
-    const valid = result.conflicting_deadline === null && result.error_reason === null && result.suggested_date === null ? true : false;
+    const valid = !!(result.conflicting_deadline === null && result.error_reason === null && result.suggested_date === null);
     yield put(setDateValidationResult(valid, result))
   } catch (e) {
     yield put(error(e))
@@ -272,13 +274,23 @@ function* getAttributeData(data) {
       attribute_identifier: attribute_identifier
     }
     try {
-      const getAttributeData = yield call(
-        getAttributeDataApi.get,
-        { query },
-      )
-      yield put(setAttributeData(attribute_identifier, getAttributeData, formName, set, nulledFields, i))
+      const { result, timeout } = yield race({
+        result: call(getAttributeDataApi.get, { query }),
+        timeout: delay(15000)
+      })
+      if (timeout) {
+        yield put(setLastSaved('error', null, [], [], false))
+        return
+      }
+      yield put(setAttributeData(attribute_identifier, result, formName, set, nulledFields, i))
     } catch (e) {
-      yield put(error(e))
+      const statusCode = e?.response?.status
+      // Network errors and 5xx server errors should show inline error, not toaster
+      if (!e.response || !statusCode || statusCode >= 500) {
+        yield put(setLastSaved('error', null, [], [], false))
+      } else {
+        yield put(error(e))
+      }
     }
   }
 }
@@ -290,9 +302,49 @@ function* pollConnection() {
     )
     const dateVariable = new Date()
     const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    yield put(setPoll(true))
-    yield put(setLastSaved("connection_restored",time,[],[],false))
-  } catch (e) {
+    // Check if there's a field that failed to save due to network error
+    const lastSaved = yield select(lastSavedSelector)
+    const hasUnsavedField = lastSaved?.status === 'error' && lastSaved?.fields?.length > 0
+    
+    if (hasUnsavedField) {
+      // Connection restored - show success banner and trigger auto-save
+      yield put(setPoll(true))
+      yield put({ type: 'Set network status', payload: { status: 'success', okMessage: 'Yhteys palautunut - tallennetaan...' } })
+      // Clear error state immediately so passivation and header update right away
+      // saveProject will set status to 'success' when done (or back to 'error' if it fails again)
+      yield put(setLastSaved("connection_restored", time, [], [], false))
+      // Clear form error list so "Virhe lomakkeella estää lisäyksen" disappears
+      yield put(resetFormErrors())
+      
+      // Get the field that needs to be saved
+      const fieldName = lastSaved.fields[0]
+      const fieldValue = lastSaved.values?.[0] // Use the value that originally failed to save
+      const projectId = yield select(currentProjectIdSelector)
+      
+      // If we don't have the saved value, fall back to current form value
+      const formValues = yield select(editFormSelector)
+      const valueToSave = fieldValue === undefined ? formValues.values?.[fieldName] : fieldValue
+      
+      // Trigger save for the field
+      const attribute_data = { [fieldName]: valueToSave }
+      
+      // Call saveProject with the field data and fieldName so spinner activates
+      yield call(saveProject, { 
+        payload: { 
+          projectId, 
+          attribute_data,
+          fieldName  // CRITICAL: Include fieldName so setSavingField gets called
+        } 
+      })
+    } else {
+      // No unsaved fields - just update poll status
+      yield put(setPoll(true))
+      yield put({ type: 'Set network status', payload: { status: 'ok', okMessage: '', errorMessage: '' } })
+      yield put(setLastSaved("connection_restored",time,[],[],false))
+      // Clear form error list so "Virhe lomakkeella estää lisäyksen" disappears
+      yield put(resetFormErrors())
+    }
+  } catch {
     yield put(setPoll(false))
   }
 }
@@ -331,7 +383,7 @@ function getQueryValues(page_size, page, searchQuery, sortField, sortDir, status
     page: page + 1,
     ordering: sortDir === 1 ? sortField : '-' + sortField,
     status: status,
-    page_size: page_size ? page_size : 10
+    page_size: page_size || 10
   };
 
   if (searchQuery.length > 0) {
@@ -459,9 +511,7 @@ function* increaseAmountOfProjectsToShowSaga(action, howMany = null) {
     const totalOwnProjects = yield select(totalOwnProjectsSelector)
     const totalProjects = yield select(totalProjectsSelector)
     const amountOfProjectsToShow = yield select(amountOfProjectsToShowSelector)
-    const amountOfProjectsToIncrease = howMany
-      ? howMany
-      : yield select(amountOfProjectsToIncreaseSelector)
+    const amountOfProjectsToIncrease = howMany || (yield select(amountOfProjectsToIncreaseSelector))
     const fetchOwn = amountOfProjectsToShow < totalOwnProjects
     const fetchAll = amountOfProjectsToShow < totalProjects
 
@@ -616,7 +666,6 @@ const adjustDeadlineData = (attributeData, allAttributeData) => {
 const getChangedAttributeData = (values, initial) => {
   let attribute_data = {}
   let errorValues = false
-  const wSpaceRegex = /^(\s+|\s+)$/g
 
   // KAAV-3517: Track esillaolo/lautakunta boolean fields that were true in initial
   // but are now false/undefined in values - these need to be explicitly sent as false
@@ -638,15 +687,20 @@ const getChangedAttributeData = (values, initial) => {
   }
 
   Object.keys(values).forEach(key => {
+    if (key == "suunnittelualueen_kuvaus")
+      console.log("checking key", key, "with value", values[key], "and initial value", initial?.[key])
     if (key.includes("_readonly")) {
       return
     }
-    if (initial && initial[key] !== undefined && isEqual(values[key], initial[key])) {
+    if (initial?.[key] !== undefined && isEqual(values[key], initial[key])) {
+      if (key == "suunnittelualueen_kuvaus")
+        console.log(`skipping unchanged field ${key} with value`, values[key])
       return
     }
-    if (values[key] === '' || values[key]?.ops && values[key]?.ops[0] && values[key]?.ops[0]?.insert.replace(wSpaceRegex, '').length === 0) {
+    if (values[key] === '' || (values[key]?.ops && isRichTextEmpty(values[key]))) {
       //empty text values saved as null
       attribute_data[key] = null
+      console.log("setting empty value to null for key", key)
     }
     else if (values[key] === null) {
       attribute_data[key] = null
@@ -660,7 +714,7 @@ const getChangedAttributeData = (values, initial) => {
       attribute_data[key] = values[key].map((fieldsetEntry) => {
         Object.keys(fieldsetEntry).forEach((entryKey) => {
           const entryValue = fieldsetEntry[entryKey]
-          if (entryValue === '' || entryValue?.ops && entryValue.ops[0]?.insert.replace(wSpaceRegex, '').length === 0) {
+          if (entryValue === '' || (entryValue?.ops && isRichTextEmpty(entryValue))) {
             fieldsetEntry[entryKey] = null
           }
         })
@@ -673,6 +727,20 @@ const getChangedAttributeData = (values, initial) => {
   })
   return errorValues ? false : attribute_data
 }
+
+const isRichTextEmpty = (value) => {
+  if (!Array.isArray(value?.ops) || value.ops.length === 0) {
+    return true;
+  }
+  return value.ops.every(op => {
+    if (typeof op?.insert !== 'string') {
+      return true;
+    }
+    console.log("checking if op is empty", op.insert, op.insert.trim().length === 0);
+    return op.insert.trim().length === 0;
+  });
+}
+
 function* saveProjectPayload({ payload }) {
   const currentProjectId = yield select(currentProjectIdSelector)
   try {
@@ -705,7 +773,7 @@ function* saveProjectBase({ payload }) {
   yield put(startSubmit(NEW_PROJECT_FORM))
   const { values } = yield select(newProjectFormSelector)
   const currentProjectId = yield select(currentProjectIdSelector)
-  if (payload && payload.archived) {
+  if (payload?.archived) {
     values.archived = payload.archived
     window.scrollTo(0, 0); // Scroll to top of the page so user can see it is archiving
   }
@@ -777,7 +845,7 @@ function* saveProjectFloorArea() {
         })
         yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
       }
-      yield put(stopSubmit(EDIT_FLOOR_AREA_FORM, e.response && e.response.data))
+      yield put(stopSubmit(EDIT_FLOOR_AREA_FORM, e?.response?.data))
       const statusCode = e?.response?.status
       if (!statusCode || statusCode >= 500) {
         yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
@@ -785,24 +853,6 @@ function* saveProjectFloorArea() {
     }
   }
 }
-
-// Selectively update redux-form initial values for timetable form without overwriting current edits.
-/* function* reinitializeTimetableFormIfNeeded(responseData) {
-    const formState = yield select(editProjectTimetableFormSelector)
-    if (!responseData?.attribute_data || !formState?.values) return
-    const resp = responseData.attribute_data
-    const initial = formState.initial || {}
-    let changed = false
-    for (const k in resp) {
-        if (!isEqual(initial[k], resp[k])) {
-            changed = true
-            break
-        }
-    }
-    if (!changed) return
-    const nextInitial = { ...initial, ...resp }
-    yield put(initialize(EDIT_PROJECT_TIMETABLE_FORM, nextInitial))
-} */
 
 function* validateProjectTimetable({ payload }) {
   // Use passed attributeData if available (contains cascaded values from frontend)
@@ -838,19 +888,11 @@ function* validateProjectTimetable({ payload }) {
     let attribute_data = adjustDeadlineData(changedAttributeData, sourceValues);
 
     // Add confirmed field locking from vahvista_* flags
-    // leave 'kaynnistys','hyvaksyminen','voimaantulo' out because no vahvista flags there
-    const phaseNames = [
-      'periaatteet',
-      'oas',
-      'luonnos',
-      'ehdotus',
-      'tarkistettu_ehdotus'
-    ];
-    //Find confirmed fields from attribute_data so backend knows not to edit them
+    // Find confirmed fields from attribute_data so backend knows not to edit them
+    const deadlines = yield select(deadlinesSelector);
     const confirmed_fields = generateConfirmedFields(
       attribute_data,
-      confirmationAttributeNames,
-      phaseNames
+      deadlines
     );
 
     try {
@@ -929,20 +971,11 @@ function* saveProjectTimetable(action, retryCount = 0) {
     let attribute_data = adjustDeadlineData(changedAttributeData, values)
 
     // Add confirmed field locking from vahvista_* flags
-    // leave 'kaynnistys','hyvaksyminen','voimaantulo' out because no vahvista flags there
-    const phaseNames = [
-      'periaatteet',
-      'oas',
-      'luonnos',
-      'ehdotus',
-      'tarkistettu_ehdotus'
-    ];
-
-    //Find confirmed fields from attribute_data so backend knows not to edit them
+    // Find confirmed fields from attribute_data so backend knows not to edit them
+    const deadlines = yield select(deadlinesSelector);
     const confirmed_fields = generateConfirmedFields(
       attribute_data,
-      confirmationAttributeNames,
-      phaseNames
+      deadlines
     );
 
     const maxRetries = 5;
@@ -1062,7 +1095,12 @@ function* lockProjectField(data) {
       const dateVariable = new Date()
       const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
       yield put(setLastSaved("error", time, [attribute_identifier], [""], true))
-      yield put(error(e))
+      
+      // Don't show toaster for network errors - user will see inline error banner
+      const isNetworkErr = e?.code === 'ERR_NETWORK'
+      if (!isNetworkErr) {
+        yield put(error(e))
+      }
     }
   }
 }
@@ -1087,7 +1125,6 @@ function* saveProject(data) {
   const { fileOrimgSave, insideFieldset, fieldsetData, fieldsetPath, fieldName } = data.payload
   const currentProjectId = yield select(currentProjectIdSelector)
   const editForm = yield select(editFormSelector) || {}
-  const visibleErrors = yield select(formErrorListSelector)
 
   const { initial, values } = editForm
 
@@ -1097,17 +1134,17 @@ function* saveProject(data) {
   if (values) {
     let keys = {}
     let changedValues = {}
-    if (visibleErrors.length === 0) {
-      changedValues = getChangedAttributeData(values, initial)
-      keys = Object.keys(changedValues)
-    }
+    // Always get changed values, even with validation errors
+    // This allows save attempt which will properly trigger error state
+    changedValues = getChangedAttributeData(values, initial)
+    keys = Object.keys(changedValues)
     // Set saving state with field name from action payload
-    if (fieldName) {
+    if (fieldName && keys.length > 0) {
       let actualFieldName = fieldName;
       // Check if fieldName corresponds to a fieldset in changedValues
       if (typeof fieldName === 'string' && fieldName.endsWith('_fieldset') && changedValues[fieldName]) {
         const fieldsetArray = changedValues[fieldName];
-        const initialFieldsetArray = initial && initial[fieldName];
+        const initialFieldsetArray = initial?.[fieldName];
         if (Array.isArray(fieldsetArray) && fieldsetArray.length > 0) {
           const currentItem = fieldsetArray[0];
           const initialItem = Array.isArray(initialFieldsetArray) && initialFieldsetArray.length > 0 ? initialFieldsetArray[0] : {};
@@ -1137,6 +1174,9 @@ function* saveProject(data) {
       yield put(lastModified(latestModifiedKey[0]))
     }
 
+    // Define attribute_data outside the if block so it's available in catch
+    let attribute_data = changedValues;
+
     if (!isEmpty(keys)) {
       if (fileOrimgSave && insideFieldset && fieldsetData && fieldsetPath) {
         //Data added for front when image inside fieldset is saved without other data
@@ -1163,7 +1203,25 @@ function* saveProject(data) {
           }
         }
       }
-      const attribute_data = changedValues
+      // Update attribute_data reference (already declared above)
+      attribute_data = changedValues
+      
+      // Check for client-side validation errors BEFORE attempting to save
+      // Block save if client-side validation has failed (reduces unnecessary backend requests)
+      const { fieldName: savedFieldName } = data.payload || {}
+      const visibleErrors = yield select(formErrorListSelector)
+      
+      if(visibleErrors.length > 0) {
+        // Get current field value for error display
+        const fieldValue = savedFieldName ? values[savedFieldName] : undefined
+        
+        yield put(setSavingField(null))
+        yield put(setLastSaved("field_error",time,[savedFieldName],fieldValue ? [fieldValue] : [],false))
+        yield put(stopSubmit(EDIT_PROJECT_FORM, {}))
+        yield put(saveProjectFailed())
+        return
+      }
+      
       try {
         const updatedProject = yield call(
           projectApi.patch,
@@ -1171,7 +1229,76 @@ function* saveProject(data) {
           { path: { id: currentProjectId } },
           ':id/'
         )
-        yield put(updateProject(updatedProject))
+        
+        // CRITICAL: Check if backend returned data matches current form values
+        // If user continued typing after a failed save, don't overwrite their changes
+        // Skip this check for fieldsets: backend adds id/_deleted metadata that causes false mismatch
+        let hasUnsavedChanges = false;
+        const savedFieldName = fieldName; // Use fieldName from payload
+        const isFieldsetField = typeof savedFieldName === 'string' && savedFieldName.endsWith('_fieldset');
+        if (savedFieldName && !isFieldsetField) {
+          const backendValue = updatedProject.attribute_data[savedFieldName];
+          const currentValue = values[savedFieldName];
+          
+          // Deep comparison for objects (like RichTextEditor Delta)
+          const backendStr = typeof backendValue === 'object' ? JSON.stringify(backendValue) : String(backendValue || '');
+          const currentStr = typeof currentValue === 'object' ? JSON.stringify(currentValue) : String(currentValue || '');
+          
+          if (backendStr !== currentStr) {
+            hasUnsavedChanges = true;
+          }
+        }
+        
+        // Use backend's timestamp from _metadata.updates for consistency with field-level timestamps
+        // This ensures Header and field timestamps always match
+        let backendTime = time; // fallback to frontend time
+        if (updatedProject?._metadata?.updates) {
+          // Get the actual field names that were saved (from attribute_data, not fieldName payload)
+          // This handles cases where fieldName is a fieldset name but actual saved fields are nested
+          const savedFieldNames = attribute_data ? Object.keys(attribute_data) : [];
+          
+          let fieldUpdate = null;
+          
+          // Try to find timestamp for any of the saved fields
+          for (const savedField of savedFieldNames) {
+            if (updatedProject._metadata.updates[savedField]?.timestamp) {
+              fieldUpdate = updatedProject._metadata.updates[savedField];
+              break;
+            }
+          }
+          
+          // If still not found and we have savedFieldName, try that
+          if (!fieldUpdate?.timestamp && savedFieldName && updatedProject._metadata.updates[savedFieldName]?.timestamp) {
+            fieldUpdate = updatedProject._metadata.updates[savedFieldName];
+          }
+          
+          if (fieldUpdate?.timestamp) {
+            backendTime = projectUtils.formatTime(fieldUpdate.timestamp);
+          }
+        }
+
+        // Dispatch success state BEFORE updateProject so error state clears
+        // before field timestamps become visible (avoids brief "disabled + timestamp" flash)
+        yield put(setLastSaved("success", backendTime, [], [], false))
+
+        // Update project ONLY if form values match backend
+        // This prevents overwriting user's unsaved changes
+        // Even after connection error recovery, if data matches, it's safe to update
+        if (hasUnsavedChanges) {
+          // Even if we have unsaved changes, update the _metadata to keep timestamps fresh
+          // This ensures field-level timestamp indicators stay accurate
+          const currentProject = yield select(currentProjectSelector);
+          if (currentProject && updatedProject._metadata) {
+            const updatedProjectWithMetadata = {
+              ...currentProject,
+              _metadata: updatedProject._metadata
+            };
+            yield put(updateProject(updatedProjectWithMetadata));
+          }
+        } else {
+          yield put(updateProject(updatedProject));
+        }
+        
         yield put(setSavingField(null))
         yield put(setAllEditFields())
 
@@ -1179,8 +1306,6 @@ function* saveProject(data) {
         const lastSaved = yield select(lastSavedSelector)
         if (lastSaved?.status === "error" || lastSaved?.status === "field_error") {
           yield put(setPoll(true))
-        } else {
-          yield put(setPoll(false))
         }
         // Network status: only show transient success if recovering from an error
         const net = yield select(projectNetworkSelector)
@@ -1191,30 +1316,59 @@ function* saveProject(data) {
           // Ensure state remains clean 'ok' without success banner spam
           yield put({ type: 'Set network status', payload: { status: 'ok', okMessage: '', errorMessage: '' } })
         }
-        yield put(setLastSaved("success", time, [], [], false))
 
       } catch (e) {
-        if (e.response && e.response.status === 400) {
-          yield put(setLastSaved("field_error", time, Object.keys(attribute_data), Object.values(attribute_data), false))
-          yield put(stopSubmit(EDIT_PROJECT_FORM, e.response.data))
-        } else {
-          yield put(setLastSaved("error", time, Object.keys(attribute_data), Object.values(attribute_data), false))
-        }
         // Clear saving field on error
         yield put(setSavingField(null))
+        
         const isNetworkErr = e?.code === 'ERR_NETWORK'
         const statusCode = e?.response?.status
-        if (isNetworkErr || !statusCode || statusCode >= 500) {
+        
+        // 400 errors are backend validation errors - show in NetworkErrorState but NOT as network errors
+        if (e.response?.status === 400) {
+          // Extract actual error messages from backend response
+          // Backend returns: { fieldName: { fieldName: "error message" } } or { fieldName: "error message" }
+          const backendErrors = e.response.data || {};
+          const errorFields = Object.keys(backendErrors);
+          const errorMessages = errorFields.map(fieldName => {
+            const fieldError = backendErrors[fieldName];
+            // Handle nested structure: { diaarinumero: { diaarinumero: "message" } }
+            if (typeof fieldError === 'object' && fieldError !== null) {
+              return fieldError[fieldName] || Object.values(fieldError)[0] || 'Virhe';
+            }
+            // Handle simple structure: { diaarinumero: "message" }
+            return fieldError;
+          });
+          
+          yield put(setLastSaved("field_error", time, errorFields, errorMessages, false))
+          yield put(stopSubmit(EDIT_PROJECT_FORM, e.response.data))
+          // IMPORTANT: Don't set network.status = 'error' for 400 errors
+        } else if (isNetworkErr || !statusCode || statusCode >= 500) {
+          // Only real network/server errors trigger connection recovery flow
+          // Use the specific field that was being saved, not all changed fields
+          const { fieldName: savedFieldName } = data.payload || {}
+          const errorFieldName = savedFieldName || Object.keys(attribute_data)[0] || 'unknown'
+          const errorFieldValue = savedFieldName ? attribute_data[savedFieldName] : Object.values(attribute_data)[0]
+          
+          yield put(setLastSaved("error", time, [errorFieldName], [errorFieldValue], false))
           yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
+        } else {
+          // Other HTTP errors (401, 403, 404, etc.) - treat as general errors without network status change
+          // Use the specific field that was being saved, not all changed fields
+          const { fieldName: savedFieldName } = data.payload || {}
+          const errorFieldName = savedFieldName || Object.keys(attribute_data)[0] || 'unknown'
+          const errorFieldValue = savedFieldName ? attribute_data[savedFieldName] : Object.values(attribute_data)[0]
+          
+          yield put(setLastSaved("error", time, [errorFieldName], [errorFieldValue], false))
         }
       }
     }
     else if (fileOrimgSave) {
       yield put(setAllEditFields())
-      yield put(setPoll(false))
     }
-    else if (visibleErrors.length > 0) {
-      yield put(setLastSaved("field_error", time, visibleErrors, [], false))
+    else {
+      // No changed values — clear spinner that was set before the isEmpty check
+      yield put(setSavingField(null))
     }
   }
   yield put(saveProjectSuccessful())
@@ -1240,6 +1394,44 @@ function* changeProjectPhase({ payload: phase }) {
   }
 }
 
+const parseFieldsetPath = (attribute) => {
+  let fieldSetIndex = [];
+  let currentFieldName = attribute;
+  const lastIndex = attribute.lastIndexOf('.');
+  if (lastIndex !== -1) {
+    const splitted = attribute.split('.');
+    splitted.forEach(value => {
+      const firstBracket = value.indexOf('[');
+      const secondBracket = value.indexOf(']');
+      const fieldSet = attribute.substring(0, firstBracket);
+      const index = attribute.substring(firstBracket + 1, secondBracket);
+      currentFieldName = attribute.substring(lastIndex + 1, attribute.length);
+      if (fieldSet !== '' && index !== '') {
+        fieldSetIndex.push({ parent: fieldSet, index });
+      }
+    });
+  }
+  return { fieldSetIndex, currentFieldName };
+};
+
+const getBackendTimeFromMetadata = (updates, attribute, fallbackTime) => {
+  if (!updates) return fallbackTime;
+  let fieldUpdate = attribute ? updates[attribute] : null;
+  if (!fieldUpdate?.timestamp) {
+    let mostRecentTimestamp = null;
+    for (const key of Object.keys(updates)) {
+      const update = updates[key];
+      if (update?.timestamp) {
+        if (!mostRecentTimestamp || new Date(update.timestamp) > new Date(mostRecentTimestamp)) {
+          mostRecentTimestamp = update.timestamp;
+          fieldUpdate = update;
+        }
+      }
+    }
+  }
+  return fieldUpdate?.timestamp ? projectUtils.formatTime(fieldUpdate.timestamp) : fallbackTime;
+};
+
 function* projectFileUpload({
   payload: { attribute, file, description, callback, setCancelToken, insideFieldset }
 }) {
@@ -1257,24 +1449,7 @@ function* projectFileUpload({
 
     const lastIndex = attribute.lastIndexOf('.')
     if (lastIndex !== -1) {
-      const splitted = attribute.split('.')
-
-      splitted.forEach(value => {
-        const firstBracket = value.indexOf('[')
-        const secondBracket = value.indexOf(']')
-
-        const fieldSet = attribute.substring(0, firstBracket)
-        const index = attribute.substring(firstBracket + 1, secondBracket)
-        currentFieldName = attribute.substring(lastIndex + 1, attribute.length)
-
-        if (fieldSet !== '' && index !== '') {
-          const returnObject = {
-            parent: fieldSet,
-            index: index
-          }
-          fieldSetIndex.push(returnObject)
-        }
-      })
+      ;({ fieldSetIndex, currentFieldName } = parseFieldsetPath(attribute))
     }
 
     // Create formdata
@@ -1325,7 +1500,11 @@ function* projectFileUpload({
 
     // Clear saving field indicator
     yield put(setSavingField(null))
-    yield put(setLastSaved("success", time, [], [], false))
+    
+    // Use backend's timestamp from _metadata.updates for consistency
+    const backendTime = getBackendTimeFromMetadata(updatedProject?._metadata?.updates, attribute, time)
+    
+    yield put(setLastSaved("success", backendTime, [], [], false))
   } catch (e) {
     // Clear saving field indicator on error
     yield put(setSavingField(null))
@@ -1370,7 +1549,11 @@ function* projectFileRemove({ payload }) {
 
     // Clear saving field indicator
     yield put(setSavingField(null))
-    yield put(setLastSaved("success", time, [], [], false))
+    
+    // Use backend's timestamp from _metadata.updates for consistency
+    const backendTime = getBackendTimeFromMetadata(updatedProject?._metadata?.updates, payload, time)
+
+    yield put(setLastSaved("success", backendTime, [], [], false))
   } catch (e) {
     // Clear saving field indicator on error
     yield put(setSavingField(null))
@@ -1397,7 +1580,7 @@ function* projectSetDeadlinesSaga() {
     yield put(projectSetDeadlinesSuccessful(res.deadlines))
     yield put(setSubmitSucceeded('deadlineModal'))
   } catch (e) {
-    if (e.response && e.response.status === 400) {
+    if (e.response?.status === 400) {
       yield put(stopSubmit('deadlineModal', e.response.data))
       yield put(error({ custom: true, message: 'Tarkista päivämäärät!' }))
     } else {
@@ -1405,101 +1588,95 @@ function* projectSetDeadlinesSaga() {
     }
   }
 }
-function* getProjectsOverviewFloorArea({ payload }) {
-  let query = {}
 
-  const keys = Object.keys(payload)
-  keys.forEach(key => {
+const KAAVAPROSESSI_TO_SUBTYPE_ID = { XS: 1, xs: 1, S: 2, s: 2, M: 3, m: 3, L: 4, l: 4, XL: 5, xl: 5 }
+
+const getOverviewYearRangeQuery = value => {
+  let startDate
+  let endDate
+
+  if (isArray(value)) {
+    startDate = dayjs(new Date(value[0].value, 0, 1)).format('YYYY-MM-DD')
+    endDate = dayjs(new Date(value[value.length - 1].value, 11, 31)).format('YYYY-MM-DD')
+  } else {
+    startDate = dayjs(new Date(value, 0, 1)).format('YYYY-MM-DD')
+    endDate = dayjs(new Date(value, 11, 31)).format('YYYY-MM-DD')
+  }
+
+  return {
+    start_date: startDate,
+    end_date: endDate
+  }
+}
+
+const getOverviewQueryValue = value => {
+  const queryValue = []
+
+  if (isArray(value)) {
+    value.forEach(current => queryValue.push(current))
+  } else {
+    queryValue.push(value)
+  }
+
+  return queryValue.length > 0 ? queryValue.toString() : null
+}
+
+const getOverviewPersonQueryValue = value => {
+  const currentPersonIds = []
+  value.forEach(current => currentPersonIds.push(current.id))
+  return currentPersonIds.length > 0 ? currentPersonIds.toString() : null
+}
+
+const buildOverviewQuery = (payload, customHandlers = {}) => {
+  const query = {}
+
+  Object.keys(payload).forEach(key => {
+    if (customHandlers[key]) {
+      const customQuery = customHandlers[key](payload[key])
+      if (customQuery) {
+        Object.assign(query, customQuery)
+      }
+      return
+    }
+
     if (key === 'vuosi') {
-      const value = payload[key]
-      let startDate
-      let endDate
-      if (!isArray(value)) {
-        startDate = dayjs(new Date(value, 0, 1)).format('YYYY-MM-DD')
-        endDate = dayjs(new Date(value, 11, 31)).format('YYYY-MM-DD')
-      } else {
-        startDate = dayjs(new Date(value[0].value, 0, 1)).format('YYYY-MM-DD')
-        endDate = dayjs(new Date(value[value.length - 1].value, 11, 31)).format(
-          'YYYY-MM-DD'
-        )
-      }
-      query = {
-        ...query,
-        start_date: startDate,
-        end_date: endDate
-      }
-    } else if (key === 'henkilo') {
-      const currentPersonIds = []
-
-      const currentPayload = payload[key]
-
-      currentPayload.forEach(current => currentPersonIds.push(current.id))
-
-      if (currentPersonIds) {
-        query = {
-          ...query,
-          [key]: currentPersonIds.toString()
-        }
-      }
+      Object.assign(query, getOverviewYearRangeQuery(payload[key]))
+      return
     }
-    else if (key === 'kaavaprosessi') {
-      const queryValue = []
-      const current = payload[key]
 
-      //Change attributedata kaavaprosessin nimi strings to int subtype_id for nicer comparison in backend
-      const getSubtypeID = id => modifiedValuePairs[id];
-      const modifiedValuePairs = {
-        XS: 1, xs: 1, S: 2, s: 2, M: 3, m: 3, L: 4, l: 4, XL: 5, xl: 5
-      };
-
-      if (isArray(current)) {
-        for (let i = 0; i < current.length; i++) {
-          queryValue.push(getSubtypeID(current[i]))
-        }
+    if (key === 'henkilo') {
+      const personIds = getOverviewPersonQueryValue(payload[key])
+      if (personIds) {
+        query[key] = personIds
       }
-      if (queryValue.length > 0) {
-        query = {
-          ...query,
-          ["subtype_id"]: queryValue.toString()
-        }
-      }
+      return
     }
-    else if (key === "yksikko_tai_tiimi") {
-      const queryValue = []
 
-      const current = payload[key]
-      if (isArray(current)) {
-        for (let i = 0; i < current.length; i++) {
-          queryValue.push(current[i])
-        }
-      }
-      if (queryValue.length > 0) {
-        query = {
-          ...query,
-          ["vastuuyksikko"]: queryValue.toString()
-        }
-      }
-    }
-    else {
-      const queryValue = []
-
-      const current = payload[key]
-
-      if (isArray(current)) {
-        current.forEach(value => queryValue.push(value))
-      } else {
-        queryValue.push(payload[key])
-      }
-
-      if (queryValue.length > 0) {
-        query = {
-          ...query,
-          [key]: queryValue.toString()
-        }
-      }
+    const queryValue = getOverviewQueryValue(payload[key])
+    if (queryValue) {
+      query[key] = queryValue
     }
   })
 
+  return query
+}
+
+const buildFloorAreaOverviewQuery = payload => buildOverviewQuery(payload, {
+  kaavaprosessi: value => {
+    const subtypeIds = isArray(value)
+      ? value.map(current => KAAVAPROSESSI_TO_SUBTYPE_ID[current]).filter(Boolean)
+      : []
+
+    return subtypeIds.length > 0 ? { subtype_id: subtypeIds.toString() } : null
+  },
+  yksikko_tai_tiimi: value => {
+    const queryValue = getOverviewQueryValue(value)
+    return queryValue ? { vastuuyksikko: queryValue } : null
+  }
+})
+
+function* getProjectsOverviewFloorArea({ payload }) {
+  const query = buildFloorAreaOverviewQuery(payload)
   try {
     const floorArea = yield call(overviewFloorAreaApi.get, { query: query })
     yield put(getProjectsOverviewFloorAreaSuccessful(floorArea))
@@ -1508,61 +1685,7 @@ function* getProjectsOverviewFloorArea({ payload }) {
   }
 }
 function* getProjectsOverviewBySubtype({ payload }) {
-  let query = {}
-
-  const keys = Object.keys(payload)
-
-  keys.forEach(key => {
-    if (key === 'vuosi') {
-      const value = payload[key]
-
-      let startDate
-      let endDate
-      if (!isArray(value)) {
-        startDate = dayjs(new Date(value, 0, 1)).format('YYYY-MM-DD')
-        endDate = dayjs(new Date(value, 11, 31)).format('YYYY-MM-DD')
-      } else {
-        startDate = dayjs(new Date(value[0].value, 0, 1)).format('YYYY-MM-DD')
-        endDate = dayjs(new Date(value[value.length - 1].value, 11, 31)).format(
-          'YYYY-MM-DD'
-        )
-      }
-
-      query = {
-        ...query,
-        start_date: startDate,
-        end_date: endDate
-      }
-    } else if (key === 'henkilo') {
-      const currentPersonIds = []
-
-      const currentPayload = payload[key]
-
-      currentPayload.forEach(current => currentPersonIds.push(current.id))
-
-      query = {
-        ...query,
-        [key]: currentPersonIds.toString()
-      }
-    } else {
-      const queryValue = []
-
-      const current = payload[key]
-
-      if (isArray(current)) {
-        current.forEach(value => queryValue.push(value))
-      } else {
-        queryValue.push(payload[key])
-      }
-
-      if (queryValue.length > 0) {
-        query = {
-          ...query,
-          [key]: queryValue.toString()
-        }
-      }
-    }
-  })
+  const query = buildOverviewQuery(payload)
   try {
     const bySubtype = yield call(overviewBySubtypeApi.get, { query: query })
     yield put(getProjectsOverviewBySubtypeSuccessful(bySubtype))
@@ -1588,61 +1711,8 @@ function* getExternalDocumentsSaga({ payload: projectId }) {
 }
 
 function* getProjectOverviewMapDataSaga({ payload }) {
-  let query = {}
+  const query = buildOverviewQuery(payload)
 
-  const keys = Object.keys(payload)
-
-  keys.forEach(key => {
-    if (key === 'vuosi') {
-      const value = payload[key]
-
-      let startDate
-      let endDate
-      if (!isArray(value)) {
-        startDate = dayjs(new Date(value, 0, 1)).format('YYYY-MM-DD')
-        endDate = dayjs(new Date(value, 11, 31)).format('YYYY-MM-DD')
-      } else {
-        startDate = dayjs(new Date(value[0].value, 0, 1)).format('YYYY-MM-DD')
-        endDate = dayjs(new Date(value[value.length - 1].value, 11, 31)).format(
-          'YYYY-MM-DD'
-        )
-      }
-
-      query = {
-        ...query,
-        start_date: startDate,
-        end_date: endDate
-      }
-    } else if (key === 'henkilo') {
-      const currentPersonIds = []
-
-      const currentPayload = payload[key]
-
-      currentPayload.forEach(current => currentPersonIds.push(current.id))
-
-      query = {
-        ...query,
-        [key]: currentPersonIds.toString()
-      }
-    } else {
-      const queryValue = []
-
-      const current = payload[key]
-
-      if (isArray(current)) {
-        current.forEach(value => queryValue.push(value))
-      } else {
-        queryValue.push(payload[key])
-      }
-
-      if (queryValue.length > 0) {
-        query = {
-          ...query,
-          [key]: queryValue.toString()
-        }
-      }
-    }
-  })
   try {
     const mapData = yield call(overviewMapApi.get, { query: query })
     yield put(getProjectsOverviewMapDataSuccessful(mapData))

@@ -47,7 +47,6 @@ import { getFormValues } from 'redux-form'
 import { userIdSelector } from '../../selectors/authSelector'
 import { IconPen, LoadingSpinner, Button, Select, IconDownload } from 'hds-react'
 import { withRouter } from 'react-router-dom'
-import dayjs from 'dayjs'
 import Header from '../common/Header.jsx'
 import { downloadDocument } from '../../actions/documentActions'
 import authUtils from '../../utils/authUtils'
@@ -73,15 +72,16 @@ class ProjectPage extends Component {
   }
   
   componentDidMount() {
-    const { currentProjectLoaded, users, getAttributes, currentProject } = this.props
-
+    const { currentProjectLoaded, users, getAttributes, currentProject, documents } = this.props
     getAttributes()
     if (
       !currentProjectLoaded ||
-      !currentProject ||
-      currentProject.id !== +this.props.id
+      currentProject?.id !== +this.props.id
     ) {
       this.props.initializeProject(this.props.id)
+    }
+    if (documents) {
+      this.props.getExternalDocuments(this.props.id)
     }
     if (!users || users.length === 0) {
       this.props.fetchUsers()
@@ -90,7 +90,7 @@ class ProjectPage extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { currentProject, changingPhase } = this.props
+    const { currentProject, changingPhase, getExternalDocuments } = this.props
     if(prevProps.saving && !this.props.saving){
       this.setState(prevState => ({ ...prevState, showBaseInformationForm: false }))
     }
@@ -115,9 +115,15 @@ class ProjectPage extends Component {
       }
       document.title = currentProject.name
     }
-    //s if (prevProps.edit && !edit) this.props.setSelectedPhaseId(currentProject.phase)
-
-    getExternalDocuments(this.props.id)
+    if (
+      this.props.documents &&
+      (
+        prevProps.id !== this.props.id ||
+        (!prevProps.documents && this.props.documents)
+      )
+    ) {
+      getExternalDocuments(this.props.id)
+    }
   }
 
   pollConnection = () => {
@@ -173,7 +179,6 @@ class ProjectPage extends Component {
     const { currentProject, users, projectSubtypes, selectedPhase, allEditFields } = this.props
     const user = projectUtils.formatUsersName(users.find(u => u.id === currentProject.user))
     const currentPhases = this.getCurrentPhases()
-    
     return (
       <div key="edit">
         <NavHeader
@@ -224,7 +229,6 @@ class ProjectPage extends Component {
   }
   getProjectDocumentsContent = (isResponsible) => {
     const { currentProject, users, projectSubtypes, currentUserId, selectedPhase } = this.props
-
     return (
       <div key="documents">
         <NavHeader
@@ -391,10 +395,27 @@ class ProjectPage extends Component {
     this.togglePrintProjectDataModal(true)
   }
 
+  // HDS Select uses the label value as a key in list. Because our labels are components, they turn into [object Object].
+  // Replace this with simply using optionKeyField of Select component after HDS-React 2.16 update
+  getNavOptionLabel(element, keyText) {
+    return new Proxy(element, {
+      get(target, prop) {
+        if (prop === 'toString' || prop === Symbol.toPrimitive) {
+          return () => keyText
+        }
+        return target[prop]
+      }
+    })
+  }
+
   getEditNavActions = (isUserExpert, editViewLoading) => {
     const { t } = this.props
-    const options = [{value:1,label:<><i className="icons document-icon"></i>{t('project.create-documents')}</> },{value:2,label:<><i className="icons calendar-icon"></i>{t('deadlines.title')}</>},{value:3,label:<><i className="icons company-icon"></i>{t('floor-areas.title')}</>},
-    {value:4,label:<><i className="icons download-icon"></i>{t('project.download-old-data')}</>},{value:5,label:<><i className="icons pen-icon"></i>{t('project.modify-project-base')}</>},
+    const options = [
+      {value: 1, label: this.getNavOptionLabel(<><i className="icons document-icon"></i>{t('project.create-documents')}</>, t('project.create-documents'))},
+      {value: 2, label: this.getNavOptionLabel(<><i className="icons calendar-icon"></i>{t('deadlines.title')}</>, t('deadlines.title'))},
+      {value: 3, label: this.getNavOptionLabel(<><i className="icons company-icon"></i>{t('floor-areas.title')}</>, t('floor-areas.title'))},
+      {value: 4, label: this.getNavOptionLabel(<><i className="icons download-icon"></i>{t('project.download-old-data')}</>, t('project.download-old-data'))},
+      {value: 5, label: this.getNavOptionLabel(<><i className="icons pen-icon"></i>{t('project.modify-project-base')}</>, t('project.modify-project-base'))},
     ]
     //{value:6,label:<><i className="icons trash-icon"></i>{t('deadlines.reset-project-deadlines')}</>} removed for now, need will be reavaluated after 1.1.
     return (
@@ -415,11 +436,6 @@ class ProjectPage extends Component {
     )
   }
 
-  getNavActions = () => {
-    const { edit } = this.props
-    return !edit ? this.getProjectCardButtons() : this.getEditButtons()
-  }
-
   modifyContent = () => {
     const {
       currentProject: { id },
@@ -434,7 +450,6 @@ class ProjectPage extends Component {
     } = this.props
     history.push(`/projects/${id}/documents`)
   }
-  openProjectDataModal = () => this.togglePrintProjectDataModal(true)
 
   toggleBaseInformationForm = opened =>
     this.setState(prevState => ({ ...prevState, showBaseInformationForm: opened }))
@@ -469,7 +484,7 @@ class ProjectPage extends Component {
       }
     })
 
-    const ordered = returnValues.sort(
+    const ordered = returnValues.toSorted(
       (u1, u2) => new Date(u2.timestamp).getTime() - new Date(u1.timestamp).getTime()
     )
 
@@ -504,19 +519,10 @@ class ProjectPage extends Component {
           ]}
         />
         <div className="project-page-content">
-          <LoadingSpinner className="loader-icon">{t('loading')}</LoadingSpinner>
+          <LoadingSpinner className="loader-icon" theme={{ '--spinner-color': '#0000BF' }}>{t('loading')}</LoadingSpinner>
         </div>
       </div>
     )
-  }
-
-  downloadProjectData = async () => {
-    const { currentProject, getProjectSnapshot, formValues } = this.props
-
-    const phase = formValues['phase']
-    const date = formValues['date']
-
-    getProjectSnapshot(currentProject.id, dayjs(date).format(), phase)
   }
 
   onResetProjectDeadlines = () => {
@@ -625,11 +631,41 @@ const mapStateToProps = state => {
 }
 
 ProjectPage.propTypes = {
+  t: PropTypes.func,
   currentProject: PropTypes.object,
+  currentProjectLoaded: PropTypes.bool,
   downloadDocument: PropTypes.func,
   users: PropTypes.array,
   allEditFields: PropTypes.object,
-  selectedPhase: PropTypes.number
+  selectedPhase: PropTypes.number,
+  setSelectedPhaseId: PropTypes.func,
+  getAttributes: PropTypes.func,
+  initializeProject: PropTypes.func,
+  getExternalDocuments: PropTypes.func,
+  fetchUsers: PropTypes.func,
+  documents: PropTypes.array,
+  pollConnection: PropTypes.func,
+  edit: PropTypes.bool,
+  phases: PropTypes.array,
+  saving: PropTypes.bool,
+  changingPhase: PropTypes.bool,
+  id: PropTypes.string,
+  location: PropTypes.shape({
+    search: PropTypes.string
+  }),
+  history: PropTypes.shape({
+    replace: PropTypes.func,
+    push: PropTypes.func
+  }),
+  resetProjectDeadlines: PropTypes.func,
+  showTimetable: PropTypes.func,
+  showFloorArea: PropTypes.func,
+  projectSubtypes: PropTypes.array,
+  currentUserId: PropTypes.string,
+  saveProjectBase: PropTypes.func,
+  externalDocuments: PropTypes.object,
+  creator: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
+  resettingDeadlines: PropTypes.bool
 }
 
 export default withRouter(

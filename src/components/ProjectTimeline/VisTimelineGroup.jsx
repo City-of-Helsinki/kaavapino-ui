@@ -23,13 +23,13 @@ Moment.locale('fi');
 const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, phaseList, currentPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes, showTimetableForm, itemsPhaseDatesOnly }, ref) => {
   const dispatch = useDispatch();
   const moment = extendMoment(Moment);
-
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const timelineRef = useRef(null);
   const observerRef = useRef(null); // Store the MutationObserver
   const timelineInstanceRef = useRef(null);
   const visValuesRef = useRef(visValues);
   const itemsPhaseDatesOnlyRef = useRef(itemsPhaseDatesOnly);
+  const pendingGroupFocusIdRef = useRef(null);
 
     const [selectedGroupId, setSelectedGroupId] = useState(null);
     const selectedGroupIdRef = useRef(selectedGroupId);
@@ -49,8 +49,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const [timeline, setTimeline] = useState(false);
     const [addDialogStyle, setAddDialogStyle] = useState({ left: 0, top: 0 });
     const [addDialogData, setAddDialogData] = useState({group:false,deadlineSections:false,showPresence:false,showBoard:false,nextEsillaolo:false,nextLautakunta:false,esillaoloReason:"",lautakuntaReason:"",hidePresence:false,hideBoard:false});
-    const [toggleOpenAddDialog, setToggleOpenAddDialog] = useState(false)
-    const [currentFormat, setCurrentFormat] = useState("showYears");
+    const [toggleOpenAddDialog, setToggleOpenAddDialog] = useState(false);
     const currentFormatRef = useRef("showYears");
     const weekAxisListenerRef = useRef(null);
     // Week range floating tooltip
@@ -80,8 +79,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
     const ld = Moment.localeData('fi');
     // Patch if missing OR still lowercase (Moment fi default uses lowercase) OR not capitalized as requested
-    const needsPatch = !ld ||
-      !ld.monthsShort ||
+    const needsPatch = !ld?.monthsShort ||
       (ld.monthsShort() && (ld.monthsShort()[0] !== 'Tammi' || ld.monthsShort()[4] === 'touko')) ||
       (ld.weekdays && ld.weekdays()[0] !== 'Sunnuntai');
     if (needsPatch) {
@@ -105,164 +103,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       toggleTimelineModalRef.current = toggleTimelineModal;
     }, [toggleTimelineModal]);
 
-  const preventDefaultAndStopPropagation = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-
-  const updateGroupShowNested = (groups, groupId, showNested) => {
-    if (groupId) {
-      let group = groups.get(groupId);
-      if (group) {
-        group.showNested = showNested;
-        groups.update(group);
-      }
-    }
-  }
-
-  const timelineGroupClick = (properties, groups) => {
-    if (properties.group) {
-      let clickedElement = properties.event.target;
-
-      preventDefaultAndStopPropagation(properties.event);
-
-      if (clickedElement.classList.contains('timeline-add-button')) {
-        updateGroupShowNested(groups, properties.group, true);
-      } else {
-        let groupId = properties.group;
-        if (groupId) {
-          let group = groups.get(groupId);
-          if (group) {
-            updateGroupShowNested(groups, properties.group, !group.showNested);
-          }
-        }
-      }
-    }
-  }
-
   const trackExpanded = (event) => {
     trackExpandedGroups(event)
   }
-
-  const getLargestIndex = (keys, visValRef) => {
-    let largestIndex = 1;
-    keys.forEach(key => {
-      const match = /_(\d+)$/.exec(key);
-      if (match) {
-        const number = parseInt(match[1], 10);
-        if (number > largestIndex && visValRef[key]) {
-          largestIndex = number;
-        } else if (number === 1 && visValRef[key] === false) {
-          // If first element group explicitly set to false, it has been deleted
-          // By default it may just be undefined (even if present)
-          largestIndex = 0;
-        }
-      }
-    });
-    return largestIndex;
-  }
-
-  const getNextGroupString = (confirmed, count, maxCount, keys) => {
-    if (confirmed) {
-      const canAdd = count <= maxCount;
-      return canAdd ? keys[count - 1] : false;
-    }
-    return false;
-  }
-
-  function getGroupStatus({
-    confirmed,
-    phase,
-    largestIndex,
-    count,
-    deadlineCount,
-    attributeKeys,
-    canAdd,
-    specialPhases,
-    specialKeyFn,
-    reasonLabel
-  }) {
-    let reason = !confirmed ? "noconfirmation" : "";
-    let nextStr = getNextGroupString(confirmed, count, deadlineCount, attributeKeys);
-
-    if (count - 1 === deadlineCount) {
-      reason = "max";
-    }
-
-    if (!confirmed && specialPhases.includes(phase) && largestIndex === 0) {
-      canAdd = true;
-      nextStr = specialKeyFn ? specialKeyFn(phase, attributeKeys) : (attributeKeys[0] || false);
-      reason = "";
-    } else {
-      canAdd = confirmed ? count <= deadlineCount : canAdd;
-    }
-
-    return [canAdd, nextStr, reason];
-  }
-
-  const checkConfirmedGroups = (
-    esillaoloConfirmed,
-    lautakuntaConfirmed,
-    visValRef,
-    phase,
-    canAddEsillaolo,
-    canAddLautakunta,
-    data
-  ) => {
-    // Esilläolo
-    const deadlineEsillaolokertaKeys = data.maxEsillaolo;
-    const attributeEsillaoloKeys = getVisBoolsByPhaseName(phase).filter(
-      (bool_name) => bool_name.includes('esillaolo') || bool_name.includes('nahtaville')
-    );
-    const largestIndex = getLargestIndex(attributeEsillaoloKeys, visValRef);
-    const esillaoloCount = largestIndex + 1;
-
-    const [canAddEsillaoloRes, nextEsillaoloStr, esillaoloReason] = getGroupStatus({
-      confirmed: esillaoloConfirmed,
-      phase,
-      largestIndex,
-      count: esillaoloCount,
-      deadlineCount: deadlineEsillaolokertaKeys,
-      attributeKeys: attributeEsillaoloKeys,
-      canAdd: canAddEsillaolo,
-      specialPhases: ["luonnos", "periaatteet"],
-      specialKeyFn: null,
-      reasonLabel: "esillaolo"
-    });
-
-    // Lautakunta
-    const deadlineLautakuntakertaKeys = data.maxLautakunta;
-    const attributeLautakuntaanKeys = getVisBoolsByPhaseName(phase).filter((bool_name) =>
-      bool_name.includes("lautakunta")
-    );
-    const largestIndexLautakunta = getLargestIndex(attributeLautakuntaanKeys, visValRef);
-    const lautakuntaCount = largestIndexLautakunta + 1;
-
-    const [canAddLautakuntaRes, nextLautakuntaStr, lautakuntaReason] = getGroupStatus({
-      confirmed: lautakuntaConfirmed,
-      phase,
-      largestIndex: largestIndexLautakunta,
-      count: lautakuntaCount,
-      deadlineCount: deadlineLautakuntakertaKeys,
-      attributeKeys: attributeLautakuntaanKeys,
-      canAdd: canAddLautakunta,
-      specialPhases: ["luonnos", "periaatteet", "ehdotus"],
-      specialKeyFn: (phase, attributeKeys) =>
-        phase === "luonnos" || phase === "ehdotus"
-          ? `kaava${phase}_lautakuntaan_1`
-          : `${phase}_lautakuntaan_1`,
-      reasonLabel: "lautakunta"
-    });
-
-    return [
-      canAddEsillaoloRes,
-      nextEsillaoloStr,
-      canAddLautakuntaRes,
-      nextLautakuntaStr,
-      esillaoloReason,
-      lautakuntaReason,
-    ];
-  };
 
   const hideSelection = (phase, data) => {
     //hide add options for certain phases
@@ -280,25 +123,17 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   }
 
   const getPhaseKey = (data) => {
-    return data.content.toLowerCase().replace(/\s+/g, '_');
+    return data.content.toLowerCase().replaceAll(/\s+/g, '_');
   }
 
-  const getLautakuntaCount = (groups, data) => {
-    const matchingGroups = groups.get().filter(group => data.nestedGroups.includes(group.id));
-    return matchingGroups.filter(group => group.content.includes('Lautakunta')).length;
-  }
-
-  function getConfirmationKeyForEsillaoloKey(phase, esillaoloKey) {
-    const match = esillaoloKey.match(/_(\d+)$/);
+  const getConfirmationKeyForEsillaoloKey = (phase, esillaoloGroupKey) => {
+    const match = esillaoloGroupKey.match(/_(\d+)$/);
     const idx = match ? match[1] : "1";
 
     // Normalize phase name for key
     let normalizedPhase = phase;
     if (normalizedPhase === "kaavaehdotus") normalizedPhase = "ehdotus";
     if (normalizedPhase === "kaavaluonnos") normalizedPhase = "luonnos";
-    if (normalizedPhase === "tarkistettu_ehdotus") normalizedPhase = "tarkistettu_ehdotus";
-    if (normalizedPhase === "periaatteet") normalizedPhase = "periaatteet";
-    if (normalizedPhase === "oas") normalizedPhase = "oas";
 
     // Special case for ehdotus-phase: no _alkaa in the key!
     if (normalizedPhase === "ehdotus") {
@@ -317,322 +152,147 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
   }
 
-  function getConfirmationKeyForLautakuntaKey(phase, lautakuntaKey) {
+  const getConfirmationKeyForLautakuntaKey = (phase, lautakuntaKey) => {
     const match = lautakuntaKey.match(/_(\d+)$/);
     const idx = match ? match[1] : "1";
     let normalizedPhase = phase;
-    if (normalizedPhase === "kaavaehdotus") normalizedPhase = "ehdotus";
-    if (normalizedPhase === "kaavaluonnos") normalizedPhase = "luonnos";
+    if (normalizedPhase === "ehdotus") normalizedPhase = "kaavaehdotus";
+    if (normalizedPhase === "luonnos") normalizedPhase = "kaavaluonnos";
     // periaatteet & tarkistettu_ehdotus stay as-is
     return idx === "1"
       ? `vahvista_${normalizedPhase}_lautakunnassa`
       : `vahvista_${normalizedPhase}_lautakunnassa_${idx}`;
   }
 
-  const getEsillaoloConfirmed = (visValRef, phase, attributeEsillaoloKeys, nextIndex, hasFirstLautakunta) => {
-    // Prevent adding if first lautakunta already added
-    if (hasFirstLautakunta) return false;
-    // Allow adding first occurrence
-    if (nextIndex <= 1) return true;
-
-    const prevKey = attributeEsillaoloKeys[nextIndex - 2];
-    if (!prevKey) return false;
-
-    // Legacy auto‑allow when first luonnos/periaatteet key not present at all
-    if ((phase === 'luonnos' || phase === 'periaatteet') &&
-      !("jarjestetaan_" + phase + "_esillaolo_1" in visValRef)) {
-      return true;
-    }
-
-    const confirmKey = getConfirmationKeyForEsillaoloKey(phase, prevKey);
-    if (Array.isArray(confirmKey)) {
-      return visValRef[prevKey] === true && confirmKey.some(k => visValRef[k] === true);
-    }
-    return visValRef[prevKey] === true && visValRef[confirmKey] === true;
-  };
-
-  const getLautakuntaConfirmed = (visValRef, phase, lautakuntaCount) => {
-    const projectSize = visValRef?.kaavaprosessin_kokoluokka;
-    //L AND XL has phase order reversed on ehdotus phase and it is not allowed for lautakunta to be added after nahtavillaolo
-    if (
-      phase === "ehdotus" &&
-      (projectSize === "XL" || projectSize === "L") &&
-      visValRef?.vahvista_ehdotus_esillaolo === true
-    ) {
-      return false;
-    }
-
-    if (phase === "luonnos") {
-      if (visValRef["luonnos_luotu"] === true && visValRef["kaavaluonnos_lautakuntaan_1"] === false) {
-        //Luonnos and periaatteet phase can be deleted or added later
-        return true
-      }
-      return lautakuntaCount === 1
-        ? visValRef["vahvista_kaavaluonnos_lautakunnassa"] === true
-        : visValRef[`vahvista_kaavaluonnos_lautakunnassa_${lautakuntaCount}`] === true;
-    } else if (phase === "ehdotus") {
-      return lautakuntaCount === 1
-        ? visValRef["vahvista_kaavaehdotus_lautakunnassa"] === true
-        : visValRef[`vahvista_kaavaehdotus_lautakunnassa_${lautakuntaCount}`] === true;
-    } else if (phase === "periaatteet") {
-      if (visValRef["periaatteet_luotu"] === true && visValRef["periaatteet_lautakuntaan_1"] === false) {
-        //Luonnos and periaatteet phase can be deleted or added later
-        return true
-      }
-      return lautakuntaCount === 1
-        ? visValRef["vahvista_periaatteet_lautakunnassa"] === true
-        : visValRef[`vahvista_periaatteet_lautakunnassa_${lautakuntaCount}`] === true;
-    } else if (phase === "tarkistettu_ehdotus") {
-      return lautakuntaCount === 1
-        ? visValRef["vahvista_tarkistettu_ehdotus_lautakunnassa"] === true
-        : visValRef[`vahvista_tarkistettu_ehdotus_lautakunnassa_${lautakuntaCount}`] === true;
-    }
-    return false;
-  };
-
   const getLautakuntaAndPaatosBase = (phase) => {
-    return {
-      lautakuntaBase:
-        phase === "luonnos"
-          ? "kaavaluonnos_lautakuntaan"
-          : phase === "ehdotus"
-            ? "kaavaehdotus_lautakuntaan"
-            : phase === "periaatteet"
-              ? "periaatteet_lautakuntaan"
-              : phase === "tarkistettu_ehdotus"
-                ? "tarkistettu_ehdotus_lautakuntaan"
-                : null,
-      paatosBase:
-        phase === "luonnos"
-          ? "lautakunta_paatti_luonnos"
-          : phase === "ehdotus"
-            ? "lautakunta_paatti_ehdotus"
-            : phase === "periaatteet"
-              ? "lautakunta_paatti_periaatteet"
-              : phase === "tarkistettu_ehdotus"
-                ? "lautakunta_paatti_tarkistettu_ehdotus"
-                : null
-    };
-  }
-
-  const getLatestLautakuntaIndex = (visValRef, lautakuntaBase, lautakuntaCount) => {
-    let latestIndex = 1;
-    for (let i = 1; i <= lautakuntaCount + 2; i++) {
-      if (visValRef[`${lautakuntaBase}_${i}`] === true) {
-        latestIndex = i;
-      }
+    switch (phase) {
+      case "luonnos":
+        return ["kaavaluonnos_lautakuntaan", "lautakunta_paatti_luonnos"];
+      case "ehdotus":
+        return ["kaavaehdotus_lautakuntaan", "lautakunta_paatti_ehdotus"];
+      case "periaatteet":
+        return ["periaatteet_lautakuntaan", "lautakunta_paatti_periaatteet"];
+      case "tarkistettu_ehdotus":
+        return ["tarkistettu_ehdotus_lautakuntaan", "lautakunta_paatti_tarkistettu_ehdotus"];
+      default:
+        return [null, null];
     }
-    return latestIndex;
   }
 
-  const canGroupBeAdded = (visValRef, data) => {
-    const phase = getPhaseKey(data);
-    const lautakuntaCount = getLautakuntaCount(groups, data);
-    // Prevent adding esillaolo/nahtavillaolo if lautakunta has been added and confirmed
-    // Exception for XL/L ehdotus phase where lautakunta comes before esillaolo
-    const firstLautakuntaKey =
-      phase === 'ehdotus'
-        ? 'kaavaehdotus_lautakuntaan_1'
-        : `${phase}_lautakuntaan_1`;
-    const projectSize = visValRef?.kaavaprosessin_kokoluokka;
-    const skipFirstCheck = phase === 'ehdotus' && (projectSize === 'XL' || projectSize === 'L') ? true : false;
-    const hasFirstLautakunta = skipFirstCheck ? false : phase === 'ehdotus' ? visValRef[firstLautakuntaKey] === true : false;
-    // Esilläolo confirmation
+  const canGroupBeAdded = (form_data, group_data) => {
+    const phase = getPhaseKey(group_data);
     const attributeEsillaoloKeys = getVisBoolsByPhaseName(phase).filter(
       (bool_name) => bool_name.includes('esillaolo') || bool_name.includes('nahtaville')
     );
-    // Lautakunta confirmation
     const attributeLautakuntaKeys = getVisBoolsByPhaseName(phase).filter(
       (bool_name) => bool_name.includes('lautakunta')
     );
+    const esillaoloResult = canEsillaoloBeAdded(form_data, group_data, attributeEsillaoloKeys, attributeLautakuntaKeys);
+    const lautakuntaResult = canLautakuntaBeAdded(form_data, group_data, attributeEsillaoloKeys, attributeLautakuntaKeys);
+    return {
+      canAddEsillaolo: esillaoloResult.canAdd,
+      nextEsillaolo: esillaoloResult.nextEsillaolo,
+      esillaoloReason: esillaoloResult.reason,
+      canAddLautakunta: lautakuntaResult.canAdd,
+      nextLautakunta: lautakuntaResult.nextLautakunta,
+      lautakuntaReason: lautakuntaResult.reason
+    };
+  }
 
-    const esillaoloCount = attributeEsillaoloKeys.filter(key => visValRef[key] === true).length;
-    const nextEsillaoloIndex = esillaoloCount + 1;
+  const canEsillaoloBeAdded = (form_data, group_data, esillaoloKeys, lautakuntaKeys) => {
+    const phase = getPhaseKey(group_data);
+    const is_ehdotus = phase === "ehdotus";
 
-    const esillaoloConfirmed = getEsillaoloConfirmed(visValRef, phase, attributeEsillaoloKeys, nextEsillaoloIndex, hasFirstLautakunta);
-    // Lautakunta confirmation
-
-    const lautakuntaConfirmed = getLautakuntaConfirmed(visValRef, phase, lautakuntaCount);
-
-    // Use helper to get addability and reasons
-    let canAddEsillaolo = false,
-      nextEsillaoloClean = false,
-      canAddLautakunta = false,
-      nextLautakuntaClean = false,
-      esillaoloReason = "",
-      lautakuntaReason = "";
-
-    [
-      canAddEsillaolo,
-      nextEsillaoloClean,
-      canAddLautakunta,
-      nextLautakuntaClean,
-      esillaoloReason,
-      lautakuntaReason
-    ] = checkConfirmedGroups(
-      esillaoloConfirmed,
-      lautakuntaConfirmed,
-      visValRef,
-      phase,
-      canAddEsillaolo,
-      canAddLautakunta,
-      data
-    );
-
-    // Force-disable esilläolo add if lautakunta is confirmed in this phase
-    if (lautakuntaConfirmed &&
-      !["XL. Ehdotus", "L. Ehdotus"].includes(visValRef.kaavan_vaihe)) {
-      //Exception if first elements are deleted in luonnos/periaatteet phase
-      const exceptionApplies =
-        (visValRef.kaavan_vaihe === "XL. Luonnos" && visValRef["kaavaluonnos_lautakuntaan_1"] === false) ||
-        (visValRef.kaavan_vaihe === "XL. Periaatteet" && visValRef["periaatteet_lautakuntaan_1"] === false);
-      if (!exceptionApplies) {
-        canAddEsillaolo = false;
-        if (!esillaoloReason) esillaoloReason = "lautakuntaConfirmed";
+    // 1. Check if max esillaolo count for this phase has been reached
+    let latestEsillaolo = null;
+    let nextEsillaolo = null;
+    for (let key of esillaoloKeys) {
+      if (form_data[key]) {
+        latestEsillaolo = key;
+      } else if (!nextEsillaolo){
+        nextEsillaolo = key;
       }
     }
-
-    if (phase === "ehdotus" && (projectSize === "XL" || projectSize === "L")) {
-      const anyEsillaoloConfirmed = attributeEsillaoloKeys.some(key => {
-        if (visValRef[key] === true) {
-          const confirmKey = getConfirmationKeyForEsillaoloKey(phase, key);
-          if (Array.isArray(confirmKey)) {
-            return confirmKey.some(k => visValRef[k] === true);
-          }
-          return visValRef[confirmKey] === true;
+    if (!nextEsillaolo) {
+      return { canAdd: false, nextEsillaolo: null, reason: t(`deadlines.${is_ehdotus ? "nahtavillaolo-max" : "esillaolo-max"}`) }
+    }
+    
+    // 2. Check if previous esillaolo is confirmed (if not the first one)
+    if (latestEsillaolo) {
+      const confirmKey = getConfirmationKeyForEsillaoloKey(phase, latestEsillaolo);
+      if (form_data[confirmKey] !== true) {
+        return { 
+          canAdd: false,
+          nextEsillaolo,
+          reason: t(`deadlines.${is_ehdotus ? "nahtavillaolo-no-confirmation" : "esillaolo-no-confirmation"}`)
         }
-        return false;
-      });
-      if (anyEsillaoloConfirmed) {
-        lautakuntaReason = "nahtavillaolo vahvistettu.";
       }
     }
 
-    if ((phase === "luonnos" || phase === "periaatteet") && (projectSize === "XL" || projectSize === "L")) {
-      const anyLautakuntaConfirmed = attributeLautakuntaKeys.some(key => {
-        if (visValRef[key] === true) {
-          const confirmKey = getConfirmationKeyForLautakuntaKey(phase, key);
-          if (Array.isArray(confirmKey)) {
-            return confirmKey.some(k => visValRef[k] === true);
-          }
-          return visValRef[confirmKey] === true;
-        }
-        return false;
-      });
-      if (anyLautakuntaConfirmed) {
-        esillaoloReason = "lautakuntaConfirmed";
-        canAddEsillaolo = false;
+    // 3. Check if next element group is already confirmed (prevent add if so)
+    if (is_ehdotus) {
+      // Special case: in ehdotus phase lautakunta comes before nahtavillaolo, so no checks needed here
+      return { canAdd: true, nextEsillaolo, reason: "" };
+    }
+
+    if (lautakuntaKeys.some(key => {
+      const confirmKey = getConfirmationKeyForLautakuntaKey(phase, key);
+      return form_data[confirmKey] === true
+    })) {
+      return { canAdd: false, nextEsillaolo, reason: t("deadlines.esillaolo-next-confirmed") };
+    }
+    return { canAdd: true, nextEsillaolo, reason: "" };
+  }
+  const canLautakuntaBeAdded = (form_data, group_data, esillaoloKeys, lautakuntaKeys) => {
+    const phase = getPhaseKey(group_data);
+    // 1. Check if max lautakunta count for this phase has been reached
+    let latestLautakunta = null;
+    let nextLautakunta = null;
+    // Keys must be in order (which they are in getVisBoolsByPhaseName)
+    for (let key of lautakuntaKeys) {
+      if (form_data[key]) {
+        latestLautakunta = key;
+      } else if (!nextLautakunta){
+        nextLautakunta = key;
+      }
+    }
+    if (!nextLautakunta) {
+      return { canAdd: false, nextLautakunta: null, reason: t("deadlines.lautakunta-max") }
+    }
+
+    // 2. Check if previous lautakunta is confirmed and has correct paatos value (if not the first one)
+    if (latestLautakunta) {
+      const confirmKey = getConfirmationKeyForLautakuntaKey(phase, latestLautakunta);
+      if (form_data[confirmKey] !== true) {
+        return { canAdd: false, nextLautakunta, reason: t("deadlines.lautakunta-no-confirmation") }
+      }
+      const paatosBase= getLautakuntaAndPaatosBase(phase)[1];
+      let latestIndex = Number(latestLautakunta.slice(latestLautakunta.lastIndexOf('_') + 1));
+      latestIndex = Number.isNaN(latestIndex) ? 1 : latestIndex;
+      // Build the päätös key for the latest lautakunta
+      const paatosKey = latestIndex === 1
+        ? paatosBase
+        : `${paatosBase}_${latestIndex}`;
+      const paatos = form_data[paatosKey];
+      if (paatos !== "palautettu_uudelleen_valmisteltavaksi" && paatos !== "asia_jai_poydalle") {
+        return { canAdd: false, nextLautakunta, reason: t("deadlines.lautakunta-wrong-resolution") }
       }
     }
 
-    // Check max lautakunta limit
-    const maxLautakunta = data.group?.maxLautakunta || data.maxLautakunta;
-    if (lautakuntaCount >= maxLautakunta) {
-      canAddLautakunta = false;
-      lautakuntaReason = "max";
-      return [
-        canAddEsillaolo,
-        nextEsillaoloClean,
-        canAddLautakunta,
-        nextLautakuntaClean,
-        esillaoloReason,
-        lautakuntaReason
-      ];
-    }
-
-    // Lautakunta/paatos keys
-    const { lautakuntaBase, paatosBase } = getLautakuntaAndPaatosBase(phase);
-
-    // Find the latest lautakunta index for this phase
-    const latestIndex = getLatestLautakuntaIndex(visValRef, lautakuntaBase, lautakuntaCount);
-
-    // Build the päätös key for the latest lautakunta
-    const paatosKey = latestIndex === 1
-      ? paatosBase
-      : `${paatosBase}_${latestIndex}`;
-
-    const paatos = visValRef[paatosKey];
-
-    // Check if the next lautakunta slot is false
-    const nextLautakuntaKey = `${lautakuntaBase}_${latestIndex + 1}`;
-    const canAddNextLautakunta = !visValRef[nextLautakuntaKey]
-
-    if (!lautakuntaConfirmed) {
-      canAddLautakunta = false;
-
-      if (lautakuntaReason === "") {
-        lautakuntaReason = "noconfirmation";
+    // 3. Special case for ehdotus: Check if confirmed nahtavillaolo exists (prevent lautakunta add if so)
+    if (phase === "ehdotus") {
+      if (esillaoloKeys.some(key => {
+        const confirmKey = getConfirmationKeyForEsillaoloKey(phase, key);
+        return form_data[confirmKey] === true;
+      })) {
+        return { canAdd: false, nextLautakunta, reason: t("deadlines.lautakunta-next-confirmed") };
       }
     }
-    else if (
-      paatos === "palautettu_uudelleen_valmisteltavaksi" ||
-      paatos === "asia_jai_poydalle"
-    ) {
-      if (canAddNextLautakunta) {
-        canAddLautakunta = true;
-        lautakuntaReason = "";
-      } else {
-        canAddLautakunta = false;
-        lautakuntaReason = "max";
-      }
-    }
-    else {
-      canAddLautakunta = false;
-      lautakuntaReason = "palautettu_tai_jai_poydalle";
-    }
+    return { canAdd: true, nextLautakunta, reason: "" };
+  }
 
-    if (phase === "periaatteet" && visValRef["periaatteet_luotu"] === true && visValRef["periaatteet_lautakuntaan_1"] === false ||
-      phase === "luonnos" && visValRef["luonnos_luotu"] === true && visValRef["kaavaluonnos_lautakuntaan_1"] === false) {
-      //Luonnos and periaatteet phase can be deleted or added later
-      canAddLautakunta = true;
-      lautakuntaReason = "";
-    }
-    // Check if first esillaolo is deleted (for exception handling below)
-    const firstEsillaoloDeleted =
-      (phase === "periaatteet" && visValRef["jarjestetaan_periaatteet_esillaolo_1"] === false) ||
-      (phase === "luonnos" && visValRef["jarjestetaan_luonnos_esillaolo_1"] === false);
-
-    if (phase === "periaatteet" && visValRef["periaatteet_luotu"] === true && visValRef["jarjestetaan_periaatteet_esillaolo_1"] === false ||
-      phase === "luonnos" && visValRef["luonnos_luotu"] === true && visValRef["jarjestetaan_luonnos_esillaolo_1"] === false) {
-      //Luonnos and periaatteet phase can be deleted or added later
-      canAddEsillaolo = true;
-      esillaoloReason = "";
-    }
-
-    // First lautakunta confirmation key check for current phase
-    // Map phase name exceptions: luonnos -> kaavaluonnos, ehdotus -> kaavaehdotus, others use phase as-is
-    const phaseMapped = phase === 'luonnos' ? 'kaavaluonnos' : (phase === 'ehdotus' ? 'kaavaehdotus' : phase);
-    const firstLautakuntaConfirmKey = `vahvista_${phaseMapped}_lautakunnassa`;
-    const preventEsillaoloAdd = visValRef[firstLautakuntaConfirmKey] === true;
-    // Apply prevention except for XL/L ehdotus where lautakunta precedes esillaolo
-    // AND except when first esillaolo is deleted (allow re-add)
-    if (!(phase === 'ehdotus' && (projectSize === 'XL' || projectSize === 'L')) && preventEsillaoloAdd && !firstEsillaoloDeleted) {
-      canAddEsillaolo = false;
-      nextEsillaoloClean = false;
-      esillaoloReason = "Vahvistusta ei voi perua, koska seuraava lautakunta on jo lisätty.";
-    }
-    // Allow re-adding first deleted Lautakunta for Ehdotus XL
-    if (
-      phase === "ehdotus" &&
-      projectSize === "XL" &&
-      visValRef["kaavaehdotus_lautakuntaan_1"] === false
-    ) {
-      canAddLautakunta = true;
-      nextLautakuntaClean = "kaavaehdotus_lautakuntaan_1";
-      lautakuntaReason = "";
-    }
-    return [
-      canAddEsillaolo,
-      nextEsillaoloClean,
-      canAddLautakunta,
-      nextLautakuntaClean,
-      esillaoloReason,
-      lautakuntaReason
-    ];
-  };
-
-  const openAddDialog = (visValRef, data, event) => {
-    const [addEsillaolo, nextEsillaolo, addLautakunta, nextLautakunta, esillaoloReason, lautakuntaReason] = canGroupBeAdded(visValRef, data)
+  const handleAddButtonClick = (visValRef, data, event) => {
+    const { canAddEsillaolo, nextEsillaolo, canAddLautakunta, nextLautakunta, esillaoloReason, lautakuntaReason } = canGroupBeAdded(visValRef, data)
     const rect = event.target.getBoundingClientRect();
 
     if (event.target.classList.contains('timeline-add-button')) {
@@ -646,7 +306,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
     const [hidePresence, hideBoard] = hideSelection(data.content, visValRef)
     setAddDialogData({
-      group: data, deadlineSections: deadlineSections, showPresence: addEsillaolo, showBoard: addLautakunta,
+      group: data, deadlineSections: deadlineSections, showPresence: canAddEsillaolo, showBoard: canAddLautakunta,
       nextEsillaolo: nextEsillaolo, nextLautakunta: nextLautakunta, esillaoloReason: esillaoloReason, lautakuntaReason: lautakuntaReason,
       hidePresence: hidePresence, hideBoard: hideBoard
     })
@@ -658,8 +318,26 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     setDataToRemove(data)
   }
 
+  const returnFocusOnConfirmModalClose = () => {
+    const containerId = `timeline-group-${dataToRemove.id}`;
+    const deleteButtonId = `remove-button-${dataToRemove.id}`;
+    const container = document.querySelector(`#${containerId}`);
+    if (container && !container.classList.contains('show-buttons')) {
+      container.classList.add('show-buttons');
+    }
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+      const element = document.querySelector(`#${deleteButtonId}`) || document.querySelector(`#timeline-group-${dataToRemove.nestedInGroup}`);
+      if (element) {
+        element.focus();
+      }
+    });
+  });
+}
+
   const handleCancelRemove = () => {
-    setOpenConfirmModal(!openConfirmModal)
+    setOpenConfirmModal(!openConfirmModal);
+    returnFocusOnConfirmModalClose();
   }
 
   const handleRemoveGroup = () => {
@@ -691,14 +369,16 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     subsequentGroups.forEach(groupName => {
       removeGroupByName(groupName);
     });
-
     setOpenConfirmModal(!openConfirmModal);
+    returnFocusOnConfirmModalClose();
   }
 
-  const closeAddDialog = () => {
-    setToggleOpenAddDialog(prevState => !prevState);
-    // Close TimelineModal if it's open
-    if (toggleTimelineModal.open) {
+  const closeAddDialog = (added=false) => {
+    setToggleOpenAddDialog(false);
+    if (timelineAddButton) {
+      timelineAddButton.focus();
+    }
+    if (added && toggleTimelineModal.open) {
       setToggleTimelineModal({ open: false, highlight: null, deadlinegroup: null });
     }
   };
@@ -731,7 +411,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         addHighlights(timelineElement, data, container);
       }
 
-      setTimelineData({ group: data.nestedInGroup, content: data.content });
+      setTimelineData({ group: data.nestedInGroup, content: data.content, groupId: data.id });
       return {
         open: true,
         highlight: container,
@@ -798,51 +478,19 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const timeline = timelineRef?.current?.getTimelineInstance();
     if (timeline) {
       let timeData = i
-      if (!subtract) {
+      if (subtract) {
+        timeData.end = item.start
+      }
+      else {
         let originalDiff = moment.duration(moment(timeData.end).diff(moment(timeData.start)))
         let originalTimeFrame = originalDiff.asDays()
         timeData.start = item.end
         timeData.end = moment(timeData.start).add(originalTimeFrame, 'days').toDate()
       }
-      else {
-        timeData.end = item.start
-      }
       timeline.itemSet.items[i.id].setData(timeData)
       timeline.itemSet.items[i.id].repositionX()
     }
   }
-  //For vis timeline dragging 1.2v
-  /*const onRangeChanged = ({ start, end }) => {
-      console.log(start, end)
-      const Min = 1000 * 60 * 60 * 24; // one day in milliseconds
-      const Max = 31556952000; // 1000 * 60 * 60 * 24 * 365.25 one year in milliseconds
-      let a0 = 10;
-      let a100 = moment.duration(moment(Max).diff(moment(Min))).asMilliseconds();
-      let  distance = (a100 - a0)/ 100;
-      let startTime = moment(start);
-      let endTime = moment(end);
-      const duration = moment.duration(endTime.diff(startTime));
-      const mins = duration.asMilliseconds();
-        // Arithmatic progression variables
-      if (mins !== 0) {
-        const x = (mins - a0) / distance; // Arithmatic progression formula
-        console.log(x)
-        if(x > 50){
-          console.log("smaller then 50")
-          document.querySelectorAll('.inner, .inner-end').forEach(el => el.classList.add('hiddenTimes'));
-        }
-        else if(x < 50 && document.querySelectorAll('.hiddenTimes')){
-          console.log("bigger then 50")
-          document.querySelectorAll('.inner, .inner-end').forEach(el => el.classList.remove('hiddenTimes'));
-        }
-      } else {
-        if(!document.querySelectorAll('.hiddenTimes')){
-          console.log("100")
-          document.querySelectorAll('.inner, .inner-end').forEach(el => el.classList.add('hiddenTimes'));
-        }
-      }
-      
-    } */
 
   /**
  * Move the timeline a given percentage to left or right
@@ -885,19 +533,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
     const rangeDuration = 1000 * 60 * 60 * 24 * 30; // about 1 month
     restoreNormalMonths(moment);
-    timelineRef.current.classList.remove("years");
-    timelineRef.current.classList.remove("hide-lines");
-    timelineRef.current.classList.remove("months6");
-    timelineRef.current.classList.remove("years2");
-    timelineRef.current.classList.remove("year1")
-    timelineRef.current.classList.add("months");
-    timelineRef.current.classList.add("month1");
+    timelineRef.current.classList.remove("years", "hide-lines", "months6", "years2", "month1", "year1");
+    timelineRef.current.classList.add("months", "month1");
     timeline.setOptions({ timeAxis: { scale: 'weekday' } });
     //Keep view centered on where user is
     const newStart = new Date(center.getTime() - rangeDuration / 2);
     const newEnd = new Date(center.getTime() + rangeDuration / 2);
     timeline.setWindow(newStart, newEnd);
-    setCurrentFormat("showMonths");
     highlightJanuaryFirst()
   }
 
@@ -906,13 +548,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
     const rangeDuration = 1000 * 60 * 60 * 24 * 30 * 3; // approx 3 months
     restoreNormalMonths(moment);
-    timelineRef.current.classList.remove("years");
-    timelineRef.current.classList.remove("months6");
-    timelineRef.current.classList.remove("years2");
-    timelineRef.current.classList.remove("month1");
-    timelineRef.current.classList.remove("year1")
-    timelineRef.current.classList.add("months");
-    timelineRef.current.classList.add("hide-lines");
+    timelineRef.current.classList.remove("years", "months6", "years2", "month1", "year1");
+    timelineRef.current.classList.add("months", "hide-lines");
     timeline.setOptions({
       timeAxis: { scale: 'week' },
       format: {
@@ -924,7 +561,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const newStart = new Date(center.getTime() - rangeDuration / 2);
     const newEnd = new Date(center.getTime() + rangeDuration / 2);
     timeline.setWindow(newStart, newEnd);
-    setCurrentFormat("show3Months");
     currentFormatRef.current = 'show3Months';
     attachWeekAxisHover();
     applyWeekendShift();
@@ -938,19 +574,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const rangeDuration = 1000 * 60 * 60 * 24 * 30 * 6; // approx 6 months
     restoreNormalMonths(moment);
     restoreStandardLabelFormat();
-    timelineRef.current.classList.remove("hide-lines");
-    timelineRef.current.classList.remove("months");
-    timelineRef.current.classList.remove("years2");
-    timelineRef.current.classList.remove("month1");
-    timelineRef.current.classList.remove("year1")
-    timelineRef.current.classList.add("years");
-    timelineRef.current.classList.add("months6");
+    timelineRef.current.classList.remove("hide-lines", "months", "years2", "month1", "year1");
+    timelineRef.current.classList.add("years", "months6");
     timeline.setOptions({ timeAxis: { scale: 'month' } });
 
     const newStart = new Date(center.getTime() - rangeDuration / 2);
     const newEnd = new Date(center.getTime() + rangeDuration / 2);
     timeline.setWindow(newStart, newEnd);
-    setCurrentFormat("show6Months");
     currentFormatRef.current = 'show6Months';
     highlightJanuaryFirst();
   }
@@ -962,19 +592,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const rangeDuration = 1000 * 60 * 60 * 24 * 365; // about 1 year
     restoreNormalMonths(moment); // also restores after quarter view
     restoreStandardLabelFormat();
-    timelineRef.current.classList.remove("months")
-    timelineRef.current.classList.remove("hide-lines");
-    timelineRef.current.classList.remove("months6");
-    timelineRef.current.classList.remove("years2");
-    timelineRef.current.classList.remove("month1");
-    timelineRef.current.classList.add("years")
-    timelineRef.current.classList.add("year1")
+    timelineRef.current.classList.remove("months", "hide-lines", "months6", "years2", "month1");
+    timelineRef.current.classList.add("years", "year1");
     timeline.setOptions({ timeAxis: { scale: 'month' } });
     //Keep view centered on where user is
     const newStart = new Date(center.getTime() - rangeDuration / 2);
     const newEnd = new Date(center.getTime() + rangeDuration / 2);
     timeline.setWindow(newStart, newEnd);
-    setCurrentFormat("showYears");
     currentFormatRef.current = 'showYears';
     highlightJanuaryFirst()
   }
@@ -1019,13 +643,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const rangeDuration = 1000 * 60 * 60 * 24 * 365 * 2; // ~2 years
     restoreQuarterRangeLabels(); // ensure clean before applying
     applyQuarterRangeLabels();
-    timelineRef.current.classList.remove('months');
-    timelineRef.current.classList.remove("hide-lines");
-    timelineRef.current.classList.remove("months6");
-    timelineRef.current.classList.remove("month1");
-    timelineRef.current.classList.remove("year1")
-    timelineRef.current.classList.add('years');
-    timelineRef.current.classList.add("years2");
+    timelineRef.current.classList.remove('months', 'hide-lines', 'months6', 'years2', 'month1', 'year1');
+    timelineRef.current.classList.add('years', "years2");
     timeline.setOptions({
       timeAxis: { scale: 'month', step: 3 },
       format: {
@@ -1037,7 +656,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const newEnd = new Date(center.getTime() + rangeDuration / 2);
     timeline.setWindow(newStart, newEnd);
     timeline.redraw();
-    setCurrentFormat('show2Years');
     currentFormatRef.current = 'show2Years';
     highlightJanuaryFirst();
   };
@@ -1051,7 +669,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     restoreStandardLabelFormat();
     timeline.setOptions({ timeAxis: { scale: 'month' } });
     timeline.setWindow(startOf5Years, endOf5Years);
-    setCurrentFormat('show5Years');
     currentFormatRef.current = 'show5Years';
   }
 
@@ -1072,7 +689,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const idx = siblings.indexOf(labelEl);
     for (let i = idx; i >= 0; i--) {
       const sib = siblings[i];
-      if (sib.classList && sib.classList.contains('vis-major')) {
+      if (sib?.classList?.contains('vis-major')) {
         const txt = sib.textContent || '';
         const m = txt.match(/(\d{4})/);
         if (m) return parseInt(m[1], 10);
@@ -1124,7 +741,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   const weekAxisPointerMove = (e) => {
     if (currentFormatRef.current !== 'show3Months') return;
     const target = e.target;
-    if (!target || !target.classList || !target.classList.contains('vis-text') || !target.classList.contains('vis-minor')) { hideWeekTooltip(); return; }
+    if (!target?.classList?.contains('vis-text') || !target.classList.contains('vis-minor')) { hideWeekTooltip(); return; }
     let weekNum = null;
     target.classList.forEach(cls => { const m = cls.match(/^vis-week(\d{1,2})$/); if (m) weekNum = parseInt(m[1], 10); });
     if (!weekNum) { hideWeekTooltip(); return; }
@@ -1133,11 +750,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const startStr = start.format('D.M');
     const endStr = end.format('D.M.YYYY');
     const rangeStr = `${startStr} - ${endStr}`;
-    if (!weekTooltipActiveRef.current) {
-      showWeekTooltip(rangeStr, e.clientX, e.clientY);
-    } else {
+    if (weekTooltipActiveRef.current) {
       moveWeekTooltip(e.clientX, e.clientY);
       if (weekTooltipRef.current) weekTooltipRef.current.textContent = rangeStr;
+    } else {
+      showWeekTooltip(rangeStr, e.clientX, e.clientY);
     }
   };
 
@@ -1227,7 +844,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     // If months are Q1/Q2/... put real month names back using Intl
-    if (current && current[0] === 'Q1') {
+    if (current?.[0] === 'Q1') {
       const lang = 'fi';
       const longFmt = new Intl.DateTimeFormat(lang, { month: 'long' });
       const shortFmt = new Intl.DateTimeFormat(lang, { month: 'short' });
@@ -1421,47 +1038,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     return idx > -1 && idx < currentPhaseIndex;
   };
 
-  // Helper to find item in itemsPhaseDatesOnlyRef by id
-  const findGroupMaaraaika = (group, refArr) => {
-    const targetId = group + " maaraaika";
-    return refArr.find(refItem => refItem?.id === targetId);
-  };
-
-  // Helper to compare days moved between attributeDate and original date from visValuesRef.current
-  const getDaysMoved = (attributeToUpdate, attributeDate) => {
-    const originalDateStr = visValuesRef.current?.[attributeToUpdate];
-    if (originalDateStr) {
-      const originalDate = moment(originalDateStr);
-      const newDate = moment(attributeDate);
-
-      const totalDays = newDate.diff(originalDate, 'days');
-      if (totalDays === 0) {
-        return -1;
-      }
-      if (Math.abs(totalDays) === 1) {
-        return totalDays;
-      }
-
-      let count = 0;
-      const step = totalDays > 0 ? 1 : -1;
-      const current = originalDate.clone();
-      const isMovingForward = step > 0;
-      for (; ;) {
-        const shouldContinue = isMovingForward
-          ? current.isBefore(newDate, 'day')
-          : current.isAfter(newDate, 'day');
-        if (!shouldContinue) break;
-        current.add(step, 'days');
-        const dayOfWeek = current.day();
-        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-          count += step;
-        }
-      }
-      return count;
-    }
-    return null;
-  };
-
   const isBlockedLabel = (id) =>
     typeof id === "string" &&
     (id.includes("Hyväksyminen") || id.includes("Voimaantulo"));
@@ -1516,7 +1092,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         horizontalScroll:true,
         groupHeightMode:"fixed",
         start: new Date(),
-        end: new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 365.25),
+        end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365.25),
         zoomMin: 1000 * 60 * 60 * 24, // one day in milliseconds
         zoomMax: 157784760000, // 1000 * 60 * 60 * 24 * 5 * 365.25 5 year in milliseconds
         margin: {
@@ -1626,16 +1202,27 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               return;
             }
           }
-          //Item is not allowed to be dragged to past dates       
+          //Item is not allowed to be dragged to past dates, unless it's already there (current phase items
+          // can be moved freely to allow correcting mistakes — past phase items are already blocked above)
           if (item.start && today) {
               if (new Date(item.start).setHours(0,0,0,0) < today.getTime()) {
-                  callback(null);
-                  return;
+                  // Allow if the original snapshot start was also in the past (correcting an existing past item)
+                  const origSnap = clusterDragRef.current?.snapshot?.items?.[String(item.id)];
+                  const origStart = origSnap?.start ? new Date(origSnap.start).setHours(0,0,0,0) : null;
+                  const wasAlreadyPast = origStart != null && origStart < today.getTime();
+                  if (!wasAlreadyPast) {
+                      callback(null);
+                      return;
+                  }
               }
           }
-          // Prevent cluster items (e.g. lautakunta maaraaika) from slipping into the past
+          // Prevent cluster items (e.g. lautakunta maaraaika) from slipping into the past,
+          // unless the dragged item was already in the past (user correcting a past date)
           const { snapshot: movingSnapshot } = clusterDragRef.current;
-          if (movingSnapshot?.items?.[String(item.id)]) {
+          const draggedOrigSnap = movingSnapshot?.items?.[String(item.id)];
+          const draggedOrigStart = draggedOrigSnap?.start ? new Date(draggedOrigSnap.start).setHours(0,0,0,0) : null;
+          const draggedWasAlreadyPast = draggedOrigStart != null && draggedOrigStart < today.getTime();
+          if (!draggedWasAlreadyPast && movingSnapshot?.items?.[String(item.id)]) {
             const origSnap = movingSnapshot.items[String(item.id)];
             const baseSnapStart = origSnap?.start ? origSnap.start.getTime() : null;
             const curItemStart = item?.start ? new Date(item.start).getTime() : baseSnapStart;
@@ -1867,23 +1454,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
         let container = document.createElement("div");
         container.classList.add("timeline-buttons-container");
-        container.setAttribute("tabindex", "0");
+        container.setAttribute("tabindex", group?.nestedGroups === undefined ? "-1" : "0");
         container.id = `timeline-group-${group.id}`;
-
-        let words = group.deadlinegroup?.split("_") || [];
-        let words2 = group.content?.split("-") || [];
-        let normalizedString = words2[0]
-          .replace(/[äå]/gi, 'a')
-          .replace(/ö/gi, 'o')
-          .toLowerCase();
-
-        let wordsToCheck = ["vahvista_", words[0], normalizedString, words[2] === "1" ? "" : words[2]];
-        const keys = Object.entries(visValuesRef?.current);
-
-        const deletableGroup = keys.some(([key, value]) => {
-          const allWordsInKey = wordsToCheck.every(word => key.includes(word));
-          return allWordsInKey && value;
-        });
 
         //Don't show buttons in these groups
         const stringsToCheck = ["Käynnistys", "Hyväksyminen", "Voimaantulo", "Vaiheen kesto"];
@@ -1894,17 +1466,49 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           container.classList.add("show-buttons");
         });
         container.addEventListener("mouseleave", function () {
-          container.classList.remove("show-buttons");
+          if (!container.contains(document.activeElement)) {
+            container.classList.remove("show-buttons");
+          }
+        });
+        container.addEventListener("focusin", function () {
+          container.classList.add("show-buttons");
+        });
+        container.addEventListener("focusout", function (event) {
+          if (!container.contains(event.relatedTarget)) {
+            container.classList.remove("show-buttons");
+          }
         });
 
+        if (group?.nestedGroups !== undefined) {
+          container.ariaLabel = t('deadlines.aria.toggle-phase-rows', { phase: group.content });
+          container.onkeydown = function (e) {
+            if ((e.key === "Enter" || e.key === " ") && !(document.activeElement.id.includes("add-button")) ) {
+              e.preventDefault();
+              const itemSet = timelineInstanceRef.current?.itemSet;
+              const itemSetGroup = itemSet.groups[group.id];
+              itemSet.toggleGroupShowNested(itemSetGroup);
+              pendingGroupFocusIdRef.current = container.id;
+              const focusAfterRender = () => {
+                const focusEl = timelineRef.current?.querySelector(`[id="${pendingGroupFocusIdRef.current}"]`);
+                if (focusEl) {
+                  focusEl.focus();
+                  pendingGroupFocusIdRef.current = null;
+                }
+              };
+              requestAnimationFrame(() => requestAnimationFrame(focusAfterRender));
+            }
+          }
+        }
+
         if (group?.nestedGroups !== undefined && allowedToEdit && !contentIncludesString) {
-          let label = document.createElement("span");
+          let label = document.createElement("label");
           label.innerHTML = group.content + " ";
+          label.htmlFor = container.id;
           container.insertAdjacentElement("afterBegin", label);
           let add = document.createElement("button");
+          add.id = `add-button-${group.id}`;
           add.classList.add("timeline-add-button");
           add.style.fontSize = "small";
-
           // Use phaseList and currentPhaseIndex from props
           const labelPhase = label.innerHTML.trim();
           const hoveredIndex = phaseList.indexOf(labelPhase);
@@ -1925,7 +1529,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               event.stopPropagation();
               return;
             }
-            openAddDialog(visValuesRef.current, group, event);
+            handleAddButtonClick(visValuesRef.current, group, event);
           });
 
           container.insertAdjacentElement("beforeEnd", add);
@@ -1935,7 +1539,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           return container;
         } else if (group?.nestedInGroup) {
           // Get, format and add labels
-          let label = document.createElement("span");
+          let label = document.createElement("label");
           let content = group.content;
           label.classList.add("timeline-button-label");
 
@@ -1945,8 +1549,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           container.insertAdjacentElement("afterBegin", label);
 
           let edit = document.createElement("button");
+          edit.id = `edit-button-${group.id}`;
+          label.htmlFor = edit.id;
           edit.classList.add("timeline-edit-button");
           edit.style.fontSize = "small";
+          edit.ariaLabel = t('deadlines.aria.toggle-group-form', { group: group.content });
 
           edit.addEventListener("click", function () {
             openDialog(group, container);
@@ -1954,10 +1561,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           container.insertAdjacentElement("beforeEnd", edit);
 
           if (allowedToEdit && !contentIncludesString) {
-
-            let labelRemove = document.createElement("span");
-            container.insertAdjacentElement("afterBegin", labelRemove);
             let remove = document.createElement("button");
+            remove.id = `remove-button-${group.id}`;
             remove.classList.add("timeline-remove-button");
 
             // Tooltip for disabled remove button
@@ -2010,7 +1615,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                   key.startsWith(phaseKey) &&
                   key.includes("esillaolo") &&
                   visValuesRef.current[key] !== false &&
-                  typeof visValuesRef.current[key] !== "undefined"
+                  visValuesRef.current[key] !== undefined
               );
               const allNums = allKeys.map(getNum).sort((a, b) => a - b);
               // If this is group 1, always treat as first
@@ -2046,7 +1651,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                   key.startsWith(phaseKey) &&
                   key.includes("lautakuntaan") &&
                   visValuesRef.current[key] !== false &&
-                  typeof visValuesRef.current[key] !== "undefined"
+                  visValuesRef.current[key] !== undefined
               );
               const allNums = allKeys.map(getNum).sort((a, b) => a - b);
               isFirst = allNums.length > 0 && groupNum === allNums[0];
@@ -2119,7 +1724,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           }
           return container;
         } else {
-          let label = document.createElement("span");
+          let label = document.createElement("label");
+          label.htmlFor = container.id;
           label.classList.add("timeline-phase-label");
           label.innerHTML = group?.content + " ";
           container.insertAdjacentElement("afterBegin", label);
@@ -2151,7 +1757,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       /**
        * Handle item hover state changes
        */
-      const handleItemHover = (event, result, mouseX, mouseY) => {
+      const handleItemHover = (event, result) => {
         if (!result) {
           // No item under cursor
           if (lastItemId !== null) {
@@ -2205,7 +1811,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           }
 
           const result = getTopmostTimelineItem(mouseX, mouseY, timelineInstanceRef);
-          handleItemHover(event, result, mouseX, mouseY);
+          handleItemHover(event, result);
         });
       };
 
@@ -2220,39 +1826,22 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         // Track currently styled dragged group so we can remove styling on mouseUp
         const draggingGroupRef = { current: null };
 
-        timeline.on('mouseDown', (props) => {
+        timeline.on('mouseDown', (mouseDownEvent) => {
           // Block hyväksyminen and voimaantulo dragging
-          if(isBlockedLabel(props?.item)) return;
+          if(isBlockedLabel(mouseDownEvent?.item)) return;
 
-          // Block past phase items from showing drag cursor
-          if (props?.item?.phaseName && visValuesRef.current?.kaavan_vaihe) {
-            const phaseOrder = [
-              "Käynnistys", 
-              "Periaatteet", 
-              "OAS", 
-              "Luonnos", 
-              "Ehdotus", 
-              "Tarkistettu ehdotus", 
-              "Hyväksyminen", 
-              "Voimaantulo"
-            ];
-            const currentPhaseFullName = visValuesRef.current.kaavan_vaihe;
-            const currentPhaseName = currentPhaseFullName.replace(/^(?:\d+\.|[A-Z]+\.)\s*/, '');
-            const currentPhaseIndex = phaseOrder.indexOf(currentPhaseName);
-            const itemPhaseIndex = phaseOrder.indexOf(props.item.phaseName);
-            
-            if (itemPhaseIndex < currentPhaseIndex && currentPhaseIndex !== -1 && itemPhaseIndex !== -1) {
-              // Item is from past phase, don't show drag cursor
-              return;
-            }
+          // Block non-draggable items (past phase or confirmed) from showing drag cursor
+          const mouseDownItemEl = mouseDownEvent?.event?.target?.closest?.('.vis-item');
+          if (mouseDownItemEl?.classList?.contains('no-drag') || mouseDownItemEl?.classList?.contains('confirmed')) {
+            return;
           }
 
           // Reset the flag on new mouseDown
           modalClosedDuringDragRef.current = false;
 
-          if (allowedToEdit && props?.item) {
+          if (allowedToEdit && mouseDownEvent?.item) {
             document.body.classList.add('cursor-moving');
-            const targetEl = props?.event?.target;
+            const targetEl = mouseDownEvent?.event?.target;
             const groupEl = targetEl?.closest?.('.vis-group');
             if (groupEl && groupEl !== draggingGroupRef.current) {
               if (draggingGroupRef.current) {
@@ -2264,8 +1853,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           }
 
         // determine which handle/part was grabbed
-        if (props.item) {
-          const element = props.event.target;
+        if (mouseDownEvent.item) {
+          const element = mouseDownEvent.event.target;
           const parent = element.parentElement;
           const isConfirmed = parent?.classList?.contains('confirmed') || element?.classList?.contains('confirmed') ? " confirmed" : "";
           const isBoardRight = element.classList.contains('board-right') || parent?.classList?.contains('board-right');
@@ -2291,26 +1880,26 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             dragHandleRef.current = "" + isConfirmed;
           }
         } else {
-          const isConfirmed = props?.event?.target?.parentElement?.classList?.contains('confirmed') ? " confirmed" : "";
+          const isConfirmed = mouseDownEvent?.event?.target?.parentElement?.classList?.contains('confirmed') ? " confirmed" : "";
           dragHandleRef.current = "" + isConfirmed;
         }
 
         //build a snapshot of items we will move together
         clusterDragRef.current = { isPoint: false, clusterKey: null, snapshot: null, movingId: null };
 
-        if (!allowedToEdit || props?.item == null) return;
+        if (!allowedToEdit || mouseDownEvent?.item == null) return;
 
         // find the dataset item (handles numeric/string ids)
         const baseItem =
-          items.get(props.item) ||
-          items.get(String(props.item)) ||
-          items.get(Number(props.item)) ||
-          items.get().find(it => String(it.id) === String(props.item));
+          items.get(mouseDownEvent.item) ||
+          items.get(String(mouseDownEvent.item)) ||
+          items.get(Number(mouseDownEvent.item)) ||
+          items.get().find(it => String(it.id) === String(mouseDownEvent.item));
 
         if (!baseItem || baseItem.group == null) return;
 
         // read classes from the actual DOM item to extract the cluster token (e.g., "27_26")
-        const itemEl = props?.event?.target?.closest?.('.vis-item');
+        const itemEl = mouseDownEvent?.event?.target?.closest?.('.vis-item');
         const classTokens = (itemEl?.className || '').split(/\s+/);
         const clusterKey = classTokens.find(t => /^\d+_\d+$/.test(t)) || null;
         const isPoint = !!(itemEl && (itemEl.classList.contains('vis-point') || itemEl.querySelector('.vis-point')));
@@ -2382,35 +1971,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         }
       });
 
-        /* if (timeline?.itemSet) {
-          // remove the default internal hammer tap event listener
-          timeline.itemSet.groupHammer.off('tap');
-          // use my own fake internal hammer tap event listener
-          timeline.itemSet.groupHammer.on('tap', function (event) {
-            let target = event.target;
-            if (target.classList.contains('timeline-add-button')) {
-                //Custom function to add new item
-                timelineGroupClick(timeline.itemSet.options,groups)
-            } 
-            else {
-              trackExpanded(event)
-              // if not add button, forward the event to the vis event handler
-              timeline.itemSet._onGroupClick(event);
-            }
-          });
-          
-        } */
        if (timeline?.itemSet) {
           timeline.itemSet.groupHammer.off('tap');
           timeline.itemSet.groupHammer.on('tap', function (event) {
             let target = event.target;
             if (target.classList.contains('timeline-add-button')) {
-              if (target.classList.contains('button-disabled')) {
-                event.preventDefault();
-                event.stopPropagation();
-                return; // Do nothing if disabled
-              }
-              timelineGroupClick(timeline.itemSet.options, groups);
+                return; // Don't close menu when clicking add button
             } else {
               trackExpanded(event);
               timeline.itemSet._onGroupClick(event);
@@ -2547,15 +2113,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
   }, [visValues, items]);
 
-  function getHighlightedElement(offset) {
-    const raw = Number(offset); // 1 in date is 0 in dom elements so we need to subtract
-    const adjusted = !isNaN(raw) && raw > 0 ? raw - 1 : 0; // subtract 1 when > 0, never below 0
-    const container = document.querySelector('.vis-labelset');
-    if (!container) return null;
-    const all = Array.from(container.querySelectorAll('.vis-nested-group'));
-    return all[adjusted] || null;
-  }
-
   // Function to highlight elements based on phase name and suffix when redirected from the form to the timeline
   const highlightTimelineElements = (deadlineGroup) => {
     if (!deadlineGroup || !timelineRef.current) return;
@@ -2564,8 +2121,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     if (!container) return;
     // Normalize: vis.js may replace ä/ö/å with a/o/a and lowercase
     const normalize = str => str
-      .replace(/[äå]/gi, 'a')
-      .replace(/ö/gi, 'o')
+      .replaceAll(/[äå]/gi, 'a')
+      .replaceAll(/ö/gi, 'o')
       .toLowerCase();
     const normalizedGroup = normalize(deadlineGroup);
     const all = Array.from(container.querySelectorAll('.vis-nested-group'));
@@ -2653,8 +2210,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   const timelineInitialTab = getTimelineInitialTab(showTimetableForm);
 
   return (
-    !deadlines ? <LoadingSpinner />
-      :
+    deadlines ? 
       <>
         <div className='vis years' ref={timelineRef}>
           <VisTimelineMenu
@@ -2696,6 +2252,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           sectionAttributes={sectionAttributes}
           isAdmin={isAdmin}
           initialTab={timelineInitialTab}
+          returnFocusGroupId={selectedGroupId}
         />
         <AddGroupModal
           toggleOpenAddDialog={toggleOpenAddDialog}
@@ -2719,6 +2276,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           buttonStyle2={"danger"}
         />
       </>
+      : <LoadingSpinner theme={{ '--spinner-color': '#0000BF' }} />
   )
 });
 VisTimelineGroup.displayName = 'VisTimelineGroup';
@@ -2740,6 +2298,8 @@ VisTimelineGroup.propTypes = {
   lomapaivat: PropTypes.array,
   dateTypes: PropTypes.object,
   trackExpandedGroups: PropTypes.func,
-  sectionAttributes: PropTypes.array
+  sectionAttributes: PropTypes.array,
+  phaseList: PropTypes.array,
+  currentPhaseIndex: PropTypes.number,
 };
 export default VisTimelineGroup

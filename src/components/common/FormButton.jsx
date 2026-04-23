@@ -20,7 +20,7 @@ const FormButton = ({
       className="form-button"
       onClick={handleClick}
       fullWidth={fullWidth}
-      iconLeft={loading ? <LoadingSpinner className="loading-spinner" small /> : null}
+      iconLeft={loading ? <LoadingSpinner className="loading-spinner" small theme={{ '--spinner-color': '#0000BF' }} /> : null}
       {...rest}
     >
       {!loading && icon}

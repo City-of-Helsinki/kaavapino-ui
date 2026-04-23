@@ -166,7 +166,7 @@ function ProjectsChart({
           defaultYear={currentYear}
         />
       </div>
-      {!currentChartData && <LoadingSpinner className="center" />}
+      {!currentChartData && <LoadingSpinner className="center" theme={{ '--spinner-color': '#0000BF' }} />}
 
       {currentChartData && (
         <ResponsiveContainer width="100%" height={350}>

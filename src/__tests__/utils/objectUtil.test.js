@@ -2,6 +2,24 @@ import { describe, test, expect } from 'vitest';
 import objectUtil from '../../utils/objectUtil';
 import mockData from './checkForDecreasingValues_test_data.js';
 
+// Helpers to reduce duplication in checkForDecreasingValues tests
+const cloneTestArr = () => structuredClone(mockData.decreasing_test_arr);
+const setFieldValue = (arr, field, value) => {
+    const index = arr.findIndex(item => item.key === field);
+    if (index !== -1) arr[index].value = value;
+};
+const checkParams = (overrides = {}) => ({
+    arr: mockData.decreasing_test_arr,
+    isAdd: false,
+    field: '',
+    disabledDates: mockData.test_disabledDates,
+    oldDate: null,
+    movedDate: null,
+    moveToPast: false,
+    projectSize: 'L',
+    ...overrides
+});
+
 const test_objects = [
     { "content": "Käynnistys", "attributegroup": "kaynnistys_1", "name": "kaynnistys_alkaa_pvm" },
     { "content": "Esilläolo-2", "attributegroup": "oas_esillaolokerta_2", "name": "milloin_oas_esillaolo_alkaa_2" },
@@ -224,151 +242,25 @@ describe("Test ObjectUtil utility functions", () => {
         expect(objectUtil.reverseIterateArray(test_arr, 10, "nonexistent_key")).toBeNull();
     });
 
-    // SKIPPED: Test had incorrect assumption - cascade only happens when there's actual overlap, 
-    // not for all items after the moved date
-    test.skip("checkForDecreasingValues adjusts future values when moving a esillaolo_maaraaika", () => {
-        const test_esillaolo_date_adjustment = (movedDate, moveToPast) => {
-            const modified_test_arr = JSON.parse(JSON.stringify(mockData.decreasing_test_arr));
-            const isAdd = false;
-            const field = "oas_esillaolo_aineiston_maaraaika";
-            const originalField = modified_test_arr.find(item => item.key === field);
-            const oldDate = "2026-10-29";
-            const projectSize = "XL";
-            modified_test_arr[modified_test_arr.findIndex(item => item.key === field)].value = movedDate;
-            // milloin_oas_esillaolo_paattyy is moved to 2027-02-05 (future)
-            const original = JSON.parse(JSON.stringify(modified_test_arr));
-            const result = objectUtil.checkForDecreasingValues(
-                modified_test_arr, isAdd, field, mockData.test_disabledDates, oldDate, movedDate, moveToPast, projectSize
-            );
-            expect(result.length).toEqual(mockData.decreasing_test_arr.length);
-
-            for (const item of result) {
-                if (item.order && item.order < originalField.order) {
-                    const originalItem = original.find(orig => orig.key === item.key);
-                    expect(item.value, 'items before the changed date should be untouched').toBe(originalItem.value);
-                }
-                if (item.order && item.order > originalField.order) {
-                    expect(new Date(item.value) >= new Date(movedDate),
-                        'items after the changed date should be adjusted to be after the moved date').toBe(true);
-                }
-                if (item.key === "milloin_oas_esillaolo_alkaa") {
-                    const expectedDate = new Date(movedDate);
-                    expectedDate.setDate(expectedDate.getDate() + 14);
-                    expect(new Date(item.value) >= expectedDate,
-                        "oas esillaolo dates should be at least 14 days after the previous one").toBe(true);
-                    expect(new Date(item.value).getDay(), "oas esillaolo should fall on a weekend").not.toBeOneOf([6, 0]);
-                }
-                if (item.key === "milloin_oas_esillaolo_paattyy") {
-                    const expectedDate = new Date(result.find(i => i.key === "milloin_oas_esillaolo_alkaa").value);
-                    expectedDate.setDate(expectedDate.getDate() + 14);
-                    expect(new Date(item.value) >= expectedDate,
-                        "oas esillaolo dates should be at least 14 days after the previous one").toBe(true);
-                }
-            }
-        };
-        test_esillaolo_date_adjustment("2027-02-05", false);
-        test_esillaolo_date_adjustment("2027-06-20", false);
-        test_esillaolo_date_adjustment("2026-09-15", true);
-        test_esillaolo_date_adjustment("2026-05-30", true);
-    });
-
-    // SKIPPED: Test had incorrect assumption about cascade behavior
-    test.skip("checkForDecreasingValues behaves correctly when adjusting kylk date", () => {
-        const test_kylk_date = (movedDate, moveToPast) => {
-            const modified_test_arr = JSON.parse(JSON.stringify(mockData.decreasing_test_arr));
-            const isAdd = false;
-            const field = "kaavaluonnos_kylk_aineiston_maaraaika";
-            const originalField = modified_test_arr.find(item => item.key === field);
-            const oldDate = "2027-05-10";
-            const projectSize = "XL";
-            modified_test_arr[modified_test_arr.findIndex(item => item.key === field)].value = movedDate;
-            const original = JSON.parse(JSON.stringify(modified_test_arr));
-            const result = objectUtil.checkForDecreasingValues(
-                modified_test_arr, isAdd, field, mockData.test_disabledDates, oldDate, movedDate, moveToPast, projectSize
-            );
-            expect(result.length).toEqual(mockData.decreasing_test_arr.length);
-            for (const item of result) {
-                if (item.order && item.order < originalField.order) {
-                    const originalItem = original.find(orig => orig.key === item.key);
-                    expect(item.value, 'items before the changed date should be untouched').toBe(originalItem.value);
-                }
-                if (item.order && item.order > originalField.order) {
-                    expect(new Date(item.value) >= new Date(movedDate),
-                        'items after the changed date should be adjusted to be after the movedDate').toBe(true);
-                }
-                if (item.key === "milloin_kaavaluonnos_lautakunnassa") {
-                    const expectedDate = new Date(movedDate);
-                    expectedDate.setDate(expectedDate.getDate() + 27);
-                    expect(new Date(item.value) >= expectedDate,
-                        "milloin_kaavaluonnos_lautakunnassa should be at least 27 days after kaavaluonnos_kylk_aineiston_maaraaika").toBe(true);
-                    expect(new Date(item.value).getDay(), "milloin_kaavaluonnos_lautakunnassa should fall on a tuesday").toBe(2);
-                }
-            }
-        }
-        test_kylk_date("2027-06-05", false);
-        test_kylk_date("2028-04-21", false);
-        test_kylk_date("2027-03-15", true);
-        test_kylk_date("2026-11-30", true);
-    });
-
-    // SKIPPED: Test had incorrect assumption about cascade behavior
-    test.skip("checkForDecreasingValues behaves correctly when adjusting milloin_lautakunnassa date", () => {
-        const test_lautakunta_date = (movedDate, moveToPast) => {
-            const modified_test_arr = JSON.parse(JSON.stringify(mockData.decreasing_test_arr));
-            const isAdd = false;
-            const field = "milloin_kaavaehdotus_lautakunnassa";
-            const originalField = modified_test_arr.find(item => item.key === field);
-            const oldDate = "2028-05-16";
-            const projectSize = "XL";
-            modified_test_arr[modified_test_arr.findIndex(item => item.key === field)].value = movedDate;
-            const original = JSON.parse(JSON.stringify(modified_test_arr));
-            const result = objectUtil.checkForDecreasingValues(
-                modified_test_arr, isAdd, field, mockData.test_disabledDates, oldDate, movedDate, moveToPast, projectSize
-            );
-            for (const item of result) {
-                if (item.order && item.order < originalField.order && item.key !== "ehdotus_kylk_aineiston_maaraaika") {
-                    const originalItem = original.find(orig => orig.key === item.key);
-                    expect(item.value, `items before the changed date should be untouched ${item.key}`).toBe(originalItem.value);
-                }
-                if (item.key === "ehdotus_kylk_aineiston_maaraaika") {
-                    const expectedDate = new Date(movedDate);
-                    expectedDate.setDate(expectedDate.getDate() - 14);
-                    expect(new Date(item.value) <= expectedDate,
-                        "ehdotus_kylk_aineiston_maaraaika should be at least 14 days before movedDate").toBe(true);
-                    expect(new Date(item.value).getDay(), "ehdotus_kylk_aineiston_maaraaika not fall on a weekend").not.toBeOneOf([6, 0]);
-                }
-                if (item.order && item.order > originalField.order) {
-                    expect(new Date(item.value) >= new Date(movedDate),
-                        'items after the changed date should be adjusted to be after the movedDate').toBe(true);
-                }
-                if (item.key === "milloin_ehdotuksen_nahtavilla_alkaa_iso") {
-                    const expectedDate = new Date(movedDate);
-                    expectedDate.setDate(expectedDate.getDate() + 1);
-                    expect(new Date(item.value) >= expectedDate,
-                        "milloin_ehdotuksen_nahtavilla_alkaa_iso should be at least 1 day after movedDate").toBe(true);
-                    expect(new Date(item.value).getDay(), "milloin_ehdotuksen_nahtavilla_alkaa_iso not fall on a weekend").not.toBeOneOf([6, 0]);
-                }
-            }
-        }
-        test_lautakunta_date("2028-05-23", false);
-        test_lautakunta_date("2028-12-19", false);
-        test_lautakunta_date("2027-09-15", true);
-        test_lautakunta_date("2026-12-30", true);
-    });
-
     test("checkForDecreasingValues behaves correctly when adding new element group", () => {
         const test_add_date = (movedDate, moveToPast) => {
-            const modified_test_arr = JSON.parse(JSON.stringify(mockData.decreasing_test_arr));
+            const modified_test_arr = cloneTestArr();
             const isAdd = true;
             const field = "periaatteet_esillaolo_aineiston_maaraaika_2";
             const originalField = modified_test_arr.find(item => item.key === field);
             const oldDate = "2026-04-15";
             const projectSize = "XL";
-            modified_test_arr[modified_test_arr.findIndex(item => item.key === field)].value = movedDate;
+            setFieldValue(modified_test_arr, field, movedDate);
             const original = JSON.parse(JSON.stringify(modified_test_arr));
-            const result = objectUtil.checkForDecreasingValues(
-                modified_test_arr, isAdd, field, mockData.test_disabledDates, oldDate, movedDate, moveToPast, projectSize
-            );
+            const result = objectUtil.checkForDecreasingValues(checkParams({
+                arr: modified_test_arr,
+                isAdd,
+                field,
+                oldDate,
+                movedDate,
+                moveToPast,
+                projectSize
+            }));
             for (const item of result) {
                 if (item.order && item.order < originalField.order) {
                     const originalItem = original.find(orig => orig.key === item.key);
@@ -673,7 +565,7 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
         test("enforces distances when re-adding group with null date values", () => {
             // Simulate: User deleted periaatteet_esillaolo_2, saved, then adds it back
             // Date values are null because they were cleared on save
-            const arr = JSON.parse(JSON.stringify(mockData.decreasing_test_arr));
+            const arr = cloneTestArr();
 
             // Simulate null dates for re-added group (as they would be after save)
             const maaraaikaIndex = arr.findIndex(item => item.key === "periaatteet_esillaolo_aineiston_maaraaika_2");
@@ -694,9 +586,15 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
             const movedDate = newDate;
             const projectSize = "XL";
 
-            const result = objectUtil.checkForDecreasingValues(
-                arr, isAdd, field, mockData.test_disabledDates, oldDate, movedDate, false, projectSize
-            );
+            const result = objectUtil.checkForDecreasingValues(checkParams({
+                arr,
+                isAdd,
+                field,
+                oldDate,
+                movedDate,
+                moveToPast: false,
+                projectSize
+            }));
 
             // All items after the added group should have valid dates
             const resultMaaraaika = result.find(i => i.key === "periaatteet_esillaolo_aineiston_maaraaika_2");
@@ -717,7 +615,7 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
 
         test("enforces distances when re-adding with stale date values", () => {
             // Simulate: User deleted group but didn't save, dates are stale from before deletion
-            const arr = JSON.parse(JSON.stringify(mockData.decreasing_test_arr));
+            const arr = cloneTestArr();
 
             // Previous dates (stale - from before deletion)
             const oldMaaraaikaDate = "2026-04-15";
@@ -731,9 +629,15 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
             const isAdd = true;
             const projectSize = "XL";
 
-            const result = objectUtil.checkForDecreasingValues(
-                arr, isAdd, field, mockData.test_disabledDates, oldMaaraaikaDate, newDate, false, projectSize
-            );
+            const result = objectUtil.checkForDecreasingValues(checkParams({
+                arr,
+                isAdd,
+                field,
+                oldDate: oldMaaraaikaDate,
+                movedDate: newDate,
+                moveToPast: false,
+                projectSize
+            }));
 
             // Items before the re-added group should be untouched
             const kaynnistysItem = result.find(i => i.key === "projektin_kaynnistys_pvm");
@@ -753,7 +657,7 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
         test("lautakunta should MOVE not GROW when adding esillaolo before it", () => {
             // Issue: When adding esillaolo, lautakunta should move forward maintaining its duration
             // Bug: Lautakunta was growing (end date moving more than start date)
-            const arr = JSON.parse(JSON.stringify(mockData.decreasing_test_arr));
+            const arr = cloneTestArr();
 
             // Get original lautakunta positions
             const lautakuntaItem = arr.find(i => i.key === "milloin_periaatteet_lautakunnassa");
@@ -768,9 +672,15 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
             const isAdd = true;
             const projectSize = "XL";
 
-            const result = objectUtil.checkForDecreasingValues(
-                arr, isAdd, field, mockData.test_disabledDates, null, newDate, false, projectSize
-            );
+            const result = objectUtil.checkForDecreasingValues(checkParams({
+                arr,
+                isAdd,
+                field,
+                oldDate: null,
+                movedDate: newDate,
+                moveToPast: false,
+                projectSize
+            }));
 
             const resultLautakunta = result.find(i => i.key === "milloin_periaatteet_lautakunnassa");
 
@@ -784,7 +694,7 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
 
         test("lautakunta_2 respects distance from lautakunta_1", () => {
             // When lautakunta_1 moves, lautakunta_2 should maintain minimum distance
-            const arr = JSON.parse(JSON.stringify(mockData.decreasing_test_arr));
+            const arr = cloneTestArr();
 
             // Find lautakunta items (if they exist in test data)
             const lautakunta1Index = arr.findIndex(i => i.key.includes("lautakunnassa") && !i.key.includes("_2"));
@@ -795,10 +705,15 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
                 const newDate = "2028-01-11"; // A Tuesday
                 arr[lautakunta1Index].value = newDate;
 
-                const result = objectUtil.checkForDecreasingValues(
-                    arr, false, arr[lautakunta1Index].key, mockData.test_disabledDates,
-                    "2027-06-15", newDate, false, "XL"
-                );
+                const result = objectUtil.checkForDecreasingValues(checkParams({
+                    arr,
+                    isAdd: false,
+                    field: arr[lautakunta1Index].key,
+                    oldDate: "2027-06-15",
+                    movedDate: newDate,
+                    moveToPast: false,
+                    projectSize: "XL"
+                }));
 
                 const resultLautakunta2 = result.find(i => i.key.includes("lautakunnassa_2"));
                 if (resultLautakunta2?.value) {
@@ -817,7 +732,7 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
     describe("Cross-phase cascade enforcement", () => {
 
         test("changes in periaatteet should cascade to OAS phase", () => {
-            const arr = JSON.parse(JSON.stringify(mockData.decreasing_test_arr));
+            const arr = cloneTestArr();
 
             // Move periaatteet phase end date forward significantly
             const periaatteetPaattyyIndex = arr.findIndex(i => i.key === "periaatteetvaihe_paattyy_pvm");
@@ -828,10 +743,15 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
                 const newPeriaatteetPaattyy = "2027-12-01";
                 arr[periaatteetPaattyyIndex].value = newPeriaatteetPaattyy;
 
-                const result = objectUtil.checkForDecreasingValues(
-                    arr, false, "periaatteetvaihe_paattyy_pvm", mockData.test_disabledDates,
-                    "2026-08-01", newPeriaatteetPaattyy, false, "XL"
-                );
+                const result = objectUtil.checkForDecreasingValues(checkParams({
+                    arr,
+                    isAdd: false,
+                    field: "periaatteetvaihe_paattyy_pvm",
+                    oldDate: "2026-08-01",
+                    movedDate: newPeriaatteetPaattyy,
+                    moveToPast: false,
+                    projectSize: "XL"
+                }));
 
                 const resultOasAlkaa = result.find(i => i.key === "oasvaihe_alkaa_pvm");
 
@@ -843,7 +763,7 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
         });
 
         test("adding esillaolo in OAS should cascade to luonnos phase", () => {
-            const arr = JSON.parse(JSON.stringify(mockData.decreasing_test_arr));
+            const arr = cloneTestArr();
 
             // Add a new esillaolo that pushes OAS phase end forward
             const field = "oas_esillaolo_aineiston_maaraaika_2";
@@ -853,9 +773,15 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
                 const newDate = "2027-10-01"; // Far in the future
                 arr[fieldIndex].value = newDate;
 
-                const result = objectUtil.checkForDecreasingValues(
-                    arr, true, field, mockData.test_disabledDates, null, newDate, false, "XL"
-                );
+                const result = objectUtil.checkForDecreasingValues(checkParams({
+                    arr,
+                    isAdd: true,
+                    field,
+                    oldDate: null,
+                    movedDate: newDate,
+                    moveToPast: false,
+                    projectSize: "XL"
+                }));
 
                 // Find luonnos phase start
                 const luonnosAlkaa = result.find(i => i.key === "luonnosvaihe_alkaa_pvm");
@@ -872,7 +798,7 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
     describe("Consistency across all operations", () => {
 
         test("add then modify maintains distances", () => {
-            const arr = JSON.parse(JSON.stringify(mockData.decreasing_test_arr));
+            const arr = cloneTestArr();
 
             // First: Add a new group
             const addField = "periaatteet_esillaolo_aineiston_maaraaika_2";
@@ -880,9 +806,15 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
             const addIndex = arr.findIndex(i => i.key === addField);
             if (addIndex !== -1) arr[addIndex].value = addDate;
 
-            const afterAdd = objectUtil.checkForDecreasingValues(
-                arr, true, addField, mockData.test_disabledDates, null, addDate, false, "XL"
-            );
+            const afterAdd = objectUtil.checkForDecreasingValues(checkParams({
+                arr,
+                isAdd: true,
+                field: addField,
+                oldDate: null,
+                movedDate: addDate,
+                moveToPast: false,
+                projectSize: "XL"
+            }));
 
             // Then: Modify a date in the added group
             const modifyField = "milloin_periaatteet_esillaolo_paattyy_2";
@@ -895,9 +827,15 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
                 const newValueStr = newValue.toISOString().split('T')[0];
                 afterAdd[modifyIndex].value = newValueStr;
 
-                const afterModify = objectUtil.checkForDecreasingValues(
-                    afterAdd, false, modifyField, mockData.test_disabledDates, oldValue, newValueStr, false, "XL"
-                );
+                const afterModify = objectUtil.checkForDecreasingValues(checkParams({
+                    arr: afterAdd,
+                    isAdd: false,
+                    field: modifyField,
+                    oldDate: oldValue,
+                    movedDate: newValueStr,
+                    moveToPast: false,
+                    projectSize: "XL"
+                }));
 
                 // Find the modified field's order
                 const modifiedItem = afterModify.find(i => i.key === modifyField);
@@ -930,7 +868,7 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
             // SKIPPED: This test reveals edge case where phase start dates don't have 
             // proper date_type or distance_from_previous, causing findAllowedDate to fail.
             // This is a real bug that needs to be fixed in the objectUtil code.
-            const arr = JSON.parse(JSON.stringify(mockData.decreasing_test_arr));
+            const arr = cloneTestArr();
 
             const phaseStartKey = 'periaatteetvaihe_alkaa_pvm';
             const phaseStartIndex = arr.findIndex(i => i.key === phaseStartKey);
@@ -940,9 +878,15 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
                 const oldDate = arr[phaseStartIndex].value;
                 arr[phaseStartIndex].value = newDate;
 
-                const result = objectUtil.checkForDecreasingValues(
-                    arr, false, phaseStartKey, mockData.test_disabledDates, oldDate, newDate, false, "XL"
-                );
+                const result = objectUtil.checkForDecreasingValues(checkParams({
+                    arr,
+                    isAdd: false,
+                    field: phaseStartKey,
+                    oldDate,
+                    movedDate: newDate,
+                    moveToPast: false,
+                    projectSize: "XL"
+                }));
 
                 expect(Array.isArray(result)).toBe(true);
                 expect(result.length).toBeGreaterThan(0);
@@ -972,16 +916,15 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
             const kylkKey = "tarkistettu_ehdotus_kylk_maaraaika";
             const moveToPast = true;
             
-            const result = objectUtil.checkForDecreasingValues(
-                arr, 
-                false, // not adding
-                kylkKey, 
-                mockData.test_disabledDates, 
-                oldDate, 
-                newDate, 
-                moveToPast, 
-                "M"
-            );
+            const result = objectUtil.checkForDecreasingValues(checkParams({
+                arr,
+                isAdd: false,
+                field: kylkKey,
+                oldDate,
+                movedDate: newDate,
+                moveToPast,
+                projectSize: "M"
+            }));
             
             const resultPhaseStart = result.find(i => i.key === "tarkistettuehdotusvaihe_alkaa_pvm");
             const resultMaaraaika = result.find(i => i.key === kylkKey);
@@ -1014,16 +957,15 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
             const oldDate = "2026-06-09";
             const moveToPast = false;
             
-            const result = objectUtil.checkForDecreasingValues(
-                arr, 
-                false, 
-                kylkKey, 
-                mockData.test_disabledDates, 
-                oldDate, 
-                newDate, 
-                moveToPast, 
-                "M"
-            );
+            const result = objectUtil.checkForDecreasingValues(checkParams({
+                arr,
+                isAdd: false,
+                field: kylkKey,
+                oldDate,
+                movedDate: newDate,
+                moveToPast,
+                projectSize: "M"
+            }));
             
             const resultPhaseStart = result.find(i => i.key === "tarkistettuehdotusvaihe_alkaa_pvm");
             

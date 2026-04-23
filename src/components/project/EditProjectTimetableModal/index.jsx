@@ -22,6 +22,7 @@ import { updateDateTimeline,validateProjectTimetable,setValidatingTimetable } fr
 import { getVisibilityBoolName, vis_bool_group_map, getPhaseNameByVisBool, isDeadlineConfirmed } from '../../../utils/projectVisibilityUtils';
 import timeUtil from '../../../utils/timeUtil'
 import { shouldDispatchTimelineUpdate } from '../../../utils/timelineDispatchLogic'
+import { focusTrapOnTabPressed, getFocusableElements } from '../projectModalUtils';
 
 class EditProjectTimeTableModal extends Component {
   constructor(props) {
@@ -68,8 +69,18 @@ class EditProjectTimeTableModal extends Component {
     return all;
   };
 
+  handleKeyDown = (event) => {
+    if (document.getElementById("timeline-edit-side-panel")) {
+      focusTrapOnTabPressed(event, "timeline-edit-side-panel")
+    } else {
+      focusTrapOnTabPressed(event, 'edit-project-timetable-modal')
+    }
+  }
+
   componentDidMount() {
-    const { initialize, attributeData, deadlines, deadlineSections, disabledDates,lomapaivat } = this.props
+    const { initialize, attributeData, deadlines, deadlineSections, disabledDates,lomapaivat } = this.props;
+
+    document.addEventListener('keydown', this.handleKeyDown);
     initialize(attributeData)
    // Check if the key exists and its value is true
     if(attributeData && deadlines && deadlineSections && disabledDates && lomapaivat){
@@ -98,6 +109,10 @@ class EditProjectTimeTableModal extends Component {
       this.extractAttributes(deadlineSections, attributeData, unfilteredSectionAttributes);
       this.setState({unfilteredSectionAttributes})
     }
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleKeyDown);
   }
 
   componentDidUpdate(prevProps) {
@@ -276,6 +291,28 @@ class EditProjectTimeTableModal extends Component {
     // Otherwise if previously logic would have returned an array, still just return trimmed original phase
     return phase.trim();
   } 
+
+  isPhaseInPast = (phaseName, formValues) => {
+    const phaseOrder = ["Käynnistys","Periaatteet","OAS","Luonnos","Ehdotus","Tarkistettu ehdotus","Hyväksyminen","Voimaantulo"];
+    const currentPhase = this.trimPhase(formValues?.kaavan_vaihe || '');
+    const currentIdx = phaseOrder.indexOf(currentPhase);
+    const itemIdx = phaseOrder.indexOf(phaseName);
+    return currentIdx !== -1 && itemIdx !== -1 && itemIdx < currentIdx;
+  }
+
+  buildInnerStyle = (baseStyle, date, currentDate, formValues, deadlineGroup, phaseName) => {
+    let style = baseStyle;
+    if (date < currentDate) {
+      style += " past";
+    }
+    if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
+      style += " confirmed";
+    }
+    if (this.isPhaseInPast(phaseName, formValues)) {
+      style += " no-drag";
+    }
+    return style;
+  }
 
   addOneDay = (dateString) => {
     // Parse the input string into a Date object
@@ -769,13 +806,7 @@ class EditProjectTimeTableModal extends Component {
             innerEnd.setHours(12, 0, 0, 0);
           }
 
-          innerStyle = "inner-end"
-          if (innerEnd < currentDate) {
-            innerStyle += " past";
-          }
-          if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
-            innerStyle += " confirmed";
-          }
+          innerStyle = this.buildInnerStyle("inner-end", innerEnd, currentDate, formValues, deadlineGroup, deadline.phase_name)
         }
       }
       else if(deadlines[i]?.deadline?.attribute?.includes("nahtavilla") || deadlines[i]?.deadline?.deadlinegroup?.includes("nahtavillaolokerta") || deadlines[i]?.deadline?.attribute?.includes("ehdotus_nahtaville_aineiston_maaraaika")){
@@ -820,14 +851,7 @@ class EditProjectTimeTableModal extends Component {
             innerEnd.setHours(12, 0, 0, 0);
           }
 
-          innerStyle = "inner-end"
-          if (innerEnd < currentDate) {
-            innerStyle += " past";
-          }
-
-          if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
-            innerStyle += " confirmed";
-          }
+          innerStyle = this.buildInnerStyle("inner-end", innerEnd, currentDate, formValues, deadlineGroup, deadline.phase_name)
         }
       }
       else if(deadlines[i]?.deadline?.attribute?.includes("lautakunta") || deadlines[i]?.deadline?.attribute?.includes("lautakunnassa") || 
@@ -855,14 +879,7 @@ class EditProjectTimeTableModal extends Component {
             innerEnd.setHours(12, 0, 0, 0);
           }
 
-          innerStyle = "board"
-          if (innerEnd < currentDate) {
-            innerStyle += " past";
-          }
-
-          if (isDeadlineConfirmed(formValues, deadlineGroup, false, false)) {
-            innerStyle += " confirmed";
-          }
+          innerStyle = this.buildInnerStyle("board", innerEnd, currentDate, formValues, deadlineGroup, deadline.phase_name)
         }
         else if(deadline.deadline_types.includes('inner_start')){
           innerStart = formValues && formValues[deadline.attribute]
@@ -1618,6 +1635,10 @@ class EditProjectTimeTableModal extends Component {
         closeOnDocumentClick={false}
         closeOnDimmerClick={false}
         className='modal-center-big'
+        id="edit-project-timetable-modal"
+        onMount={() => {
+          getFocusableElements("edit-project-timetable-modal")[0]?.focus();
+        }}
       >
         <Modal.Header><IconInfoCircle size="m" aria-hidden="true"/>
         <span className='header-title'>{t('deadlines.modify-timeline')}</span>

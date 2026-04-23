@@ -558,6 +558,28 @@
                 background: $color-gray;
             }
         }
+
+        // Disable drag handle and cursor for past-phase and confirmed element sets
+        .only-inner-end.past-phase-item,
+        .only-inner-end.confirmed {
+            cursor: default !important;
+            pointer-events: none !important;
+            .vis-item-overflow {
+                cursor: default !important;
+                pointer-events: none !important;
+                &::after {
+                    opacity: 0 !important;
+                }
+            }
+        }
+
+        .vis-point.inner-end.past-phase-item,
+        .vis-point.inner-end.confirmed {
+            cursor: default !important;
+            &::after {
+                opacity: 0 !important;
+            }
+        }
     }
 
     .kaynnistys_1{
@@ -605,8 +627,9 @@
         }
     }
 
-    // When kaynnistys_1 contains a past phase, disable all interaction
-    .kaynnistys_1:has(.past) {
+    // When kaynnistys_1 is in a past phase (no-drag), disable all interaction.
+    // Note: .past only means the date is in the past, not the phase itself — so we use .no-drag here.
+    .kaynnistys_1:has(.no-drag) {
         pointer-events: none !important;
         cursor: default !important;
 
@@ -825,6 +848,30 @@
                 transform: translate(-50%, -50%) scale(1);
                 opacity: 1;
             }
+        }
+    }
+
+    // Confirmed vis-point items (e.g. board/lautakunta deadlines) should not show drag cursor
+    .vis-point.confirmed {
+        cursor: default !important;
+    }
+
+    // Items from past phases — no drag cursor, no pointer interaction
+    // Dot hiding is handled below with body-prefixed high-specificity rules
+    .vis-point.inner-end.no-drag,
+    .only-inner-end.no-drag,
+    .no-drag {
+        cursor: default !important;
+        pointer-events: none !important;
+    }
+
+    [class*="ehdotus_nahtavillaolokerta"],
+    [class*="nahtavillaolokerta"],
+    [class*="esillaolokerta"] {
+        .vis-point.inner-end.no-drag,
+        .only-inner-end.no-drag {
+            cursor: default !important;
+            pointer-events: none !important;
         }
     }
 
@@ -1629,6 +1676,25 @@ body .vis-item-overflow.past-phase-item::after {
     cursor: default !important;
     pointer-events: none !important;
     background: none !important;
+}
+
+// no-drag and confirmed: hide drag handle dot on all non-draggable vis-point items
+// board-date is excluded because its ::after is the confirmed checkmark icon
+// Covers: inner-end, only-inner-end, board.deadline, and any other vis-point type
+body .vis .vis-point.no-drag:not(.board-date)::after,
+body .vis .vis-point.no-drag:not(.board-date):hover::after,
+body .vis .vis-point.no-drag:not(.board-date):active::after,
+body .vis .vis-point.confirmed:not(.board-date)::after,
+body .vis .vis-point.confirmed:not(.board-date):hover::after,
+body .vis .vis-point.confirmed:not(.board-date):active::after {
+    opacity: 0 !important;
+}
+// For only-inner-end and inner-end in ehdotus/nahtavilla/esillaolo context: dot is on .vis-item-overflow::after
+body .vis .only-inner-end.no-drag .vis-item-overflow::after,
+body .vis .vis-point.inner-end.no-drag .vis-item-overflow::after,
+body .vis .only-inner-end.confirmed .vis-item-overflow::after,
+body .vis .vis-point.inner-end.confirmed .vis-item-overflow::after {
+    opacity: 0 !important;
 }
 
 // Global cursor style applied while dragging/moving timeline items (now only sets the cursor)

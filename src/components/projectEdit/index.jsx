@@ -109,6 +109,14 @@ class ProjectEditPage extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+
+    if (
+      (prevProps.showFloorAreaForm && !this.props.showFloorAreaForm) ||
+      (prevProps.showTimetableForm?.showTimetable && !this.props.showTimetableForm?.showTimetable)
+    ) {
+      document.getElementById("editNavSelect-toggle-button")?.focus();
+    }
+
     if ((prevProps.location.search !== this.props.location.search ) || (prevState.urlField !== this.state.urlField) && this.state.urlField) {
       this.scroll();
     }
@@ -244,9 +252,7 @@ class ProjectEditPage extends Component {
       return
     }
     if(this.props.syncErrors && !_.isEmpty(this.props.syncErrors)) {
-      const dateVariable = new Date()
-      const time = dateVariable.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      this.props.setLastSaved("field_error",time,[],[],false)
+      // Don't set error state - validation errors are already displayed inline
       return
     }
     this.props.saveProject(false, false, null, null, fieldName)
@@ -458,7 +464,9 @@ class ProjectEditPage extends Component {
   changeSection = (index,title,fields) => {
     //Show fields only from selected navigation link, not the whole phase
     this.setState({ sectionIndex: index, phaseTitle:title, fields:fields })
-    this.props.resetFormErrors()
+    // Don't reset form errors when changing sections - errors should persist across sections
+    // so that field passivation works project-wide
+    // this.props.resetFormErrors()
     //Index to Header component for section title
     if(typeof this.props.getCurrentSection !== "undefined"){
       this.props.getCurrentSection(index)
@@ -650,7 +658,7 @@ class ProjectEditPage extends Component {
     const { highlightGroup } = this.state
 
     if (!schema) {
-      return <LoadingSpinner className="loader-icon" />
+      return <LoadingSpinner className="loader-icon" theme={{ '--spinner-color': '#0000BF' }} />
     }
 
     const currentSchemaIndex = schema.phases.findIndex(
@@ -665,7 +673,7 @@ class ProjectEditPage extends Component {
     const notLastPhase = currentSchemaIndex + 1 < schema.phases.length
 
     if (currentSchemaIndex === -1) {
-      return <LoadingSpinner className="loader-icon" />
+      return <LoadingSpinner className="loader-icon" theme={{ '--spinner-color': '#0000BF' }} />
     }
 
     let color
@@ -875,7 +883,6 @@ ProjectEditPage.propTypes = {
   currentProject: PropTypes.object,
   project: PropTypes.object,
   schema: PropTypes.object,
-  resetFormErrors: PropTypes.func,
   unlockAllFields: PropTypes.func,
   location: PropTypes.object,
   switchDisplayedPhase: PropTypes.func,

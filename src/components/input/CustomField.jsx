@@ -28,21 +28,19 @@ import CustomADUserCombobox from './CustomADUserCombobox.jsx'
 import CustomSearchCombobox from './CustomSearchCombobox.jsx'
 import CustomCard from './CustomCard.jsx'
 import PropTypes from 'prop-types'
+import { withTranslation } from 'react-i18next'
 
 class CustomField extends Component {
   yearOptions = []
   shouldComponentUpdate(prevProps) {
-    if (!isEqual(this.props, prevProps)) {
-      return true
-    }
-    return false
+    return !isEqual(this.props, prevProps);
   }
 
   validateFieldSize = value => {
     const field = this.props.field
-    if (value && field && field.character_limit && field.character_limit > 0) {
+    if (value && field?.character_limit && field.character_limit > 0) {
       if (value.length > field.character_limit) {
-        return 'Kentässä liikaa merkkejä'
+        return this.props.t('project.charsover')
       }
     }
   }
@@ -79,6 +77,7 @@ class CustomField extends Component {
         isCurrentPhase={isCurrentPhase}
         selectedPhase={selectedPhase}
         regex={this.props?.field?.validation_regex}
+        characterLimit={this.props?.field?.character_limit}
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
         customError={this.props?.field?.error_text}
@@ -147,6 +146,7 @@ class CustomField extends Component {
         isCurrentPhase={isCurrentPhase}
         selectedPhase={selectedPhase}
         regex={this.props?.field?.validation_regex}
+        characterLimit={this.props?.field?.character_limit}
         label={this.props?.field?.label}
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
@@ -166,7 +166,7 @@ class CustomField extends Component {
 
   renderRichText = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, checkLocked, meta, formName, lockField, unlockAllFields, fieldSetDisabled,
-      insideFieldset,nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, attributeData, phaseIsClosed } = this.props
+      insideFieldset,nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, attributeData, phaseIsClosed, checking } = this.props
     return (
       <RichTextEditor
         lockField={lockField}
@@ -193,13 +193,14 @@ class CustomField extends Component {
         phaseIsClosed={phaseIsClosed}
         isTabActive={this.props.isTabActive}
         fieldDisabled={this.props.disabled}
+        checking={checking}
       />
     )
   }
 
   renderRichTextShort = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, checkLocked, meta, setRef, lockField,unlockAllFields,fieldSetDisabled,
-      insideFieldset, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, attributeData, phaseIsClosed } = this.props
+      insideFieldset, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, attributeData, phaseIsClosed, checking } = this.props
     return (
       <RichTextEditor 
         lockField={lockField} 
@@ -224,6 +225,7 @@ class CustomField extends Component {
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
         fieldDisabled={this.props.disabled}
+        checking={checking}
       />
     )
   }
@@ -242,7 +244,7 @@ class CustomField extends Component {
     }
 
     //temp fix because data is not added in backend to deadlines
-    if(typeof current === "undefined"){
+    if(current === undefined){
       if(props.input.name === "viimeistaan_lausunnot_ehdotuksesta"){
         current = deadlines.find(
           deadline => deadline.deadline.abbreviation === "E9"
@@ -601,6 +603,7 @@ class CustomField extends Component {
             deadlines={this.props.deadlines}
             selectedPhase={this.props.selectedPhase}
             showBoth={showBoth}
+            formName={this.props.formName}
           />
           <CustomCard
             props={props}
@@ -610,6 +613,7 @@ class CustomField extends Component {
             deadlines={this.props.deadlines}
             selectedPhase={this.props.selectedPhase}
             showBoth={showBoth}
+            formName={this.props.formName}
           />
         </div>
       )
@@ -624,6 +628,7 @@ class CustomField extends Component {
         deadlines={this.props.deadlines}
         selectedPhase={this.props.selectedPhase}
         showBoth={showBoth}
+        formName={this.props.formName}
       />
       )
     }
@@ -864,6 +869,7 @@ CustomField.propTypes = {
   meta: PropTypes.object,
   unlockAllFields: PropTypes.func,
   setRef: PropTypes.func,
+  t: PropTypes.func,
   value: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.number,
@@ -873,6 +879,7 @@ CustomField.propTypes = {
   isCurrentPhase: PropTypes.bool,
   selectedPhase: PropTypes.number,
   phaseIsClosed: PropTypes.bool,
+  checking: PropTypes.bool,
   checkLocked: PropTypes.func,
   isTabActive: PropTypes.bool,
   disabledDates: PropTypes.array,
@@ -898,4 +905,4 @@ CustomField.propTypes = {
   hideLabel: PropTypes.bool,
 };
 
-export default CustomField
+export default withTranslation()(CustomField)

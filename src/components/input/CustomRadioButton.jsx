@@ -1,14 +1,17 @@
 import React, { useState } from 'react'
 import { Checkbox } from 'hds-react'
 import PropTypes from 'prop-types'
+import { useFieldPassivation } from '../../hooks/useFieldPassivation';
 
 const RadioButton = ({
   input: { value, name, ...rest },
-  meta: { error },
+  meta,
   options,
   disabled
 }) => {
+  const { error } = meta;
 
+  const shouldDisableForErrors = useFieldPassivation(name, { formName: meta.form });
   const [checked, setChecked] = useState(value ? value : false)
 
   return (
@@ -26,7 +29,7 @@ const RadioButton = ({
           }}
           checked={option.value === checked}
           className="checkbox-item"
-          disabled={disabled}
+          disabled={shouldDisableForErrors || disabled}
         ></Checkbox>
       ))}
     </span>

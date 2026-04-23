@@ -1,6 +1,7 @@
 import {
   LAST_MODIFIED,
   SET_POLL,
+  SET_TESTING_CONNECTION,
   SET_LAST_SAVED,
   SET_UNLOCK_STATUS,
   SET_LOCK_STATUS,
@@ -27,6 +28,7 @@ import {
   SAVE_PROJECT,
   SAVE_PROJECT_BASE,
   SAVE_PROJECT_SUCCESSFUL,
+  SAVE_PROJECT_FAILED,
   SAVE_PROJECT_BASE_SUCCESSFUL,
   VALIDATE_PROJECT_FIELDS,
   VALIDATE_PROJECT_FIELDS_SUCCESSFUL,
@@ -122,6 +124,7 @@ export const initialState = {
   hasErrors: false,
   checking: false,
   pollingProjects: false,
+  testingConnection: { isActive: false, fieldName: null },
   timelineProject: [],
   selectedPhase: 0,
   currentProjectExternalDocuments: null,
@@ -139,7 +142,7 @@ export const initialState = {
   floorAreaSaved:false,
   timetableSaved:false,
   lastSaved:{},
-  connection:{"connection":false},
+  connection:{"connection":true},
   showEditFloorAreaForm:false,
   showEditProjectTimetableForm:{showTimetable:false,timetableTarget:"",selectedPhase:"",matchedDeadline:{},subGroup:""},
   lastModified:false,
@@ -266,7 +269,18 @@ export const reducer = (state = initialState, action) => {
       //Compare for changes with dates in order sorted array
       const changes = objectUtil.compareAndUpdateArrays(origSortedData,updateAttributeArray,deadlineSections)
       //Find out is next date below minium and add difference of those days to all values after and move them forward 
-      const decreasingValues = objectUtil.checkForDecreasingValues(changes,isAdd,field,state.disabledDates,oldDate,newDate,moveToPast,projectSize,filteredAttributeData);
+      const decreasingValues = objectUtil.checkForDecreasingValues({
+        arr: changes,
+        isAdd,
+        field,
+        disabledDates: state.disabledDates,
+        oldDate,
+        movedDate: newDate,
+        moveToPast,
+        projectSize,
+        attributeData: filteredAttributeData,
+        deadlineObjects: state.currentProject.deadlines
+      });
       //Add new values from array to updatedAttributeData object
       objectUtil.updateOriginalObject(filteredAttributeData,decreasingValues)
       // Restore preserved end after adjustments if any logic changed it
@@ -473,9 +487,23 @@ export const reducer = (state = initialState, action) => {
       }
     }
 
+    case SET_TESTING_CONNECTION: {
+      return{
+        ...state,
+        testingConnection: {
+          isActive: action.payload.isTesting,
+          fieldName: action.payload.fieldName
+        }
+      }
+    }
+
     case SET_LAST_SAVED: {
-      if (action.payload.status !== "success") {
+      // Only preserve old time if status is not success AND old time exists
+      // For first save attempt (no previous time), clear the time on error
+      if (action.payload.status !== "success" && state.lastSaved?.time) {
         action.payload.time = state.lastSaved.time
+      } else if (action.payload.status !== "success" && !state.lastSaved?.time) {
+        action.payload.time = ""
       }
       return{
         ...state,
@@ -806,7 +834,8 @@ export const reducer = (state = initialState, action) => {
     }
 
     case SAVE_PROJECT_SUCCESSFUL:
-    case SAVE_PROJECT_BASE_SUCCESSFUL: {
+    case SAVE_PROJECT_BASE_SUCCESSFUL:
+    case SAVE_PROJECT_FAILED: {
       return {
         ...state,
         saving: false
@@ -839,7 +868,11 @@ export const reducer = (state = initialState, action) => {
     case SET_SELECTED_PHASE_ID: {
       return {
         ...state,
-        selectedPhase: action.payload
+        selectedPhase: action.payload,
+        // Clear network error states when switching phases to avoid showing stale errors
+        lastSaved: {},
+        formErrorList: [],
+        testingConnection: { isActive: false, fieldName: null }
       }
     }
 
@@ -943,7 +976,7 @@ export const reducer = (state = initialState, action) => {
         ...state,
         overview: {
           ...state.overview,
-          filters: action.payload
+          filters: Array.isArray(action.payload) ? action.payload : []
         }
       }
     }
