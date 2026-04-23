@@ -97,7 +97,7 @@ class EditForm extends Component {
     return (
       <>
         {showSection ?
-        <Form className="form-container" autoComplete="off" aria-live="polite" aria-atomic="true" id="accordion-title" tabIndex="0">
+        <Form className="form-container" autoComplete="off" aria-live="polite" aria-atomic="true" id="accordion-title">
           <div className="edit-form-buttons" aria-hidden="true">
             {/*<Shoutbox project={projectId} />*/}
           </div>

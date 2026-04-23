@@ -809,7 +809,7 @@ class ProjectEditPage extends Component {
           <div id={`title-${title}`} className='project-input-right'>
             {this.state?.showSection &&
             <div className='sticky-title'>
-              <h2 tabIndex='0' className='section-title'>
+              <h2 className='section-title'>
                 {title}
               </h2>
               <div className='section-ingress'>

@@ -17,7 +17,7 @@ import {
   formErrorList
 } from '../../actions/projectActions'
 import { currentProjectIdSelector,savingSelector,lockedSelector, lastModifiedSelector, pollSelector,lastSavedSelector, projectNetworkSelector, formErrorListSelector, connectionErrorFieldsSelector, fieldsWithAnyErrorSelector, testingConnectionSelector } from '../../selectors/projectSelector'
-import commentIcon from '@/assets/icons/comment-icon.svg';
+import CommentIcon from '@/assets/icons/comment-icon.svg?react'
 import { useTranslation } from 'react-i18next'
 import RollingInfo from '../input/RollingInfo.jsx'
 import NetworkErrorState from '../input/NetworkErrorState.jsx'
@@ -141,7 +141,6 @@ function RichTextEditor(props) {
   const lockedStatusJsonString = JSON.stringify(lockedStatus);
 
   const inputValue = useRef('')
-  const myRefname= useRef(null);
   const fieldFormName = formName || EDIT_PROJECT_FORM
 
   const getFieldComments = () => {
@@ -162,6 +161,19 @@ function RichTextEditor(props) {
   const { t } = useTranslation()
 
   const oldValueRef = useRef('');
+
+
+  useEffect(() => {
+    // Temp debug active element listener
+    const onKeyDown = (e) => {
+      console.log(document.activeElement);
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+    }
+
+  })
 
   useEffect(() => {
     if(isFloorAreaForm){
@@ -665,6 +677,7 @@ function RichTextEditor(props) {
   }, [inputProps.name, value, dispatch, props.maxSize])
 
   const handleFocus = (event,source) => {
+    console.log("handleFocus called with event:", event, "source:", source);
     // DO NOT sync editor content here - it causes user data loss when charLimitOver is true
     // The editor already contains the user's typed content, don't overwrite it with Redux Form value
     
@@ -1003,11 +1016,8 @@ function RichTextEditor(props) {
     :    
     <div
     onContextMenu={(e)=> {if(readonly){e.preventDefault()}}}
-    tabIndex="0"
-    onKeyDown={onKeyDown}
     className='richtext-container'
     >
-    <input className='visually-hidden' ref={myRefname}/>
     <div
       role="textbox"
       className={`rich-text-editor-wrapper ${fieldSetDisabled || disabled || fieldDisabled || lastModified === inputProps.name && saving || shouldDisableForErrors || isThisFieldNetworkError ? 'rich-text-disabled' : ''} ${isThisFieldNetworkError ? 'has-network-error' : ''} ${(lastModified === inputProps.name && saving) || (testingConnection?.isActive && testingConnection?.fieldName === inputProps.name) ? 'blurred' : ''} ${maxSizeOver ? 'has-error' : ''}`}
@@ -1045,7 +1055,7 @@ function RichTextEditor(props) {
               className="quill-toolbar-comment-button"
               onClick={addComment}
             >
-              <img src={commentIcon} alt="comment icon" className="comment-icon" />
+              <CommentIcon className="comment-icon" aria-hidden="true" focusable="false" />
             </button>
             <button
               className="show-comments-button"
@@ -1072,6 +1082,7 @@ function RichTextEditor(props) {
           onFocus={(event, source) => {handleFocus(event,source)}}
           onKeyDown={(e) => {
             if (e.key === 'Tab' && !e.shiftKey && e.target.className === 'ql-editor') {
+              console.log("Tab keydown in editor detected, preventing default and blurring editor");
               handleBlur(readonly);
             }
           }}
