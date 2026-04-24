@@ -10,7 +10,7 @@ trigger:
     - '*release-please*'
     - '*.md'
     - '.github/'
-    - 'pipelines/kaavapino-ui-dev.yml'
+    - 'pipelines/kaavapino-ui-devtest.yml'
     - 'pipelines/kaavapino-ui-review.yml'
     - '*compose*'
 
