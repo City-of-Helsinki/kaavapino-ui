@@ -52,7 +52,6 @@ const formats = [
   'strike',
   'color',
   'background',
-  // KAPI-98: Temporarily disabled lists in rte
   'list', 
   'ordered',
   'bullet',
@@ -151,7 +150,6 @@ function RichTextEditor(props) {
     if (lastIndex === -1) {
       return fieldComments[fieldName]
     } else {
-      // TODO: Temporary fix to avoid crashing
       const currentFieldName = fieldName.substring(lastIndex + 1, fieldName.length)
       return fieldComments[currentFieldName]
     }
@@ -201,14 +199,6 @@ function RichTextEditor(props) {
     }
   }, [lastSaved?.status === "error"])
 
-  // REMOVED: This useEffect was causing user data to be overwritten with old saved data
-  // when connection recovered. The editor already has the user's current data, so we
-  // don't need to sync it. The skipUpdateAfterRecovery logic in the main value useEffect
-  // handles preventing flickering without losing user data.
-  
-  // NOTE: prevLastSavedStatus ref is now updated at the END of the main value useEffect
-  // to ensure we detect the status transition BEFORE updating the ref.
-
   useEffect(() => {
     if (readonly && !saving) {
       setShowComments(false)
@@ -240,29 +230,18 @@ function RichTextEditor(props) {
       //!ismount skips initial render
       // Sync charLimitOver with maxSizeOver when field is NOT focused
       // This prevents showing error notification while user is still typing/pasting
-      if(!isFocused && maxSizeOver){
-        setCharLimitOver(true);
-      } else if (!maxSizeOver) {
-        setCharLimitOver(false);
+
+      if (!isFocused){
+        setCharLimitOver(maxSizeOver);
       }
       
-      // Add to error list immediately when character limit exceeded (for field passivation)
+      // Update error list immediately when character limit exceeded or recovered (for field passivation)
       // This passivates other fields while keeping this field editable so user can fix the error
-      if(maxSizeOver){
-        //Adds field to error list - triggers passivation of other fields
-        dispatch(formErrorList(true,inputProps.name))
-      }
-      else{
-        //removes field from error list
-        dispatch(formErrorList(false,inputProps.name))
-      }
+      dispatch(formErrorList(maxSizeOver, inputProps.name));
     }
     
     // NOTE: No cleanup function to remove from error list on unmount
     // Character limit errors must persist across page navigation within same phase
-    // If user navigates to different page in same phase, other fields must remain passivated
-    // Error is only cleared when user fixes the character limit (maxSizeOver becomes false)
-    // or when phase changes (which resets all form data including error list)
   }, [charLimitOver, valueIsEmpty, isFocused, maxSizeOver])
 
   // Handle error list for rolling info fields (when field is closed but has errors)
@@ -270,20 +249,9 @@ function RichTextEditor(props) {
     if (!isMount && rollingInfo && !editField) {
       // When rolling info field is closed and has errors (maxSizeOver or network error)
       const hasError = maxSizeOver || hasActiveNetworkError();
-      
-      if (hasError) {
-        dispatch(formErrorList(true, inputProps.name));
-      } else {
-        dispatch(formErrorList(false, inputProps.name));
-      }
+      dispatch(formErrorList(hasError, inputProps.name));
     }
   }, [rollingInfo, editField, maxSizeOver, isMount]);
-
-  // NOTE: Removed automatic charLimitOver reset when field removed from error list
-  // The charLimitOver state should only be controlled by:
-  // 1. handleChange when user types and counter.current changes
-  // 2. value useEffect when editor content is updated from Redux Form
-  // This ensures charLimitOver accurately reflects the actual character count
 
   // Reset charLimitOver when user fixes the character count issue
   useEffect(() => {
@@ -299,28 +267,12 @@ function RichTextEditor(props) {
     prevLastSavedStatus.current = lastSaved?.status || '';
   }, [network?.status, lastSaved?.status, maxSizeOver, inputProps.name]);
 
-  /**
-   * KAAV-3596: Handle dual error scenario (maxSizeOver + network error)
-   * When character limit prevents saving AND network is down:
-   * - Network error notification is shown (NetworkErrorState handles this via readonly prop)
-   * - Connection polling is triggered (Header handles this via useInterval when lastSaved.status === 'error')
-   * - Field spinner shows (CSS 'blurred' class via testingConnection state set by Header)
-   */
-
-  /**
-   * Check if this field has an active network/save error
-   * Network error takes priority over character limit error in UI
-   */
   const hasActiveNetworkError = () => {
-    // Check Redux state for active network or save errors
     const networkError = network?.status === 'error';
     const saveError = lastSaved?.status === 'error' || lastSaved?.status === 'field_error';
     return networkError || saveError;
   };
 
-  /**
-   * Check if we just recovered from a network error
-   */
   const isJustRecoveredFromError = (prevStatus, currentStatus) => {
     return (prevStatus === 'error' || prevStatus === 'connection_restored') && 
            (currentStatus === 'success' || 
@@ -329,24 +281,14 @@ function RichTextEditor(props) {
             !currentStatus);
   };
 
-  /**
-   * Update editor content and related states (called from value useEffect)
-   */
   const updateEditorContent = (editor, newValue) => {
     editor.setContents(newValue);
     counter.current = editor.getLength() - 1;
     
     const maxSize = props.maxSize || 20000;
-    if (counter.current > maxSize) {
-      setCharLimitOver(true);
-    } else {
-      setCharLimitOver(false);
-    }
+    setCharLimitOver(counter.current > maxSize);
   };
 
-  /**
-   * Determine if editor content should be updated
-   */
   const shouldUpdateEditorContent = (editor, value, errorWasJustCleared) => {
     const currentContents = editor.getContents();
     const currentLength = editor.getLength() - 1;
@@ -356,9 +298,6 @@ function RichTextEditor(props) {
     
     return (contentChanged && lengthMismatch) || errorWasJustCleared;
   };
-
-  // Spinner visibility is controlled by inputUtils.renderUpdatedFieldInfo
-  // which checks both saving state and testingConnection state
 
   const handleErrorRecovery = (editor, value) => {
     const currentEditorContent = editor.getText();
@@ -391,11 +330,7 @@ function RichTextEditor(props) {
     }
     wasInErrorList.current = formErrors.includes(inputProps.name);
 
-    if (maxSizeOver) {
-      return;
-    }
-
-    if (!editorRef.current || !value || isFocused) {
+    if (maxSizeOver || !editorRef.current || !value || isFocused) {
       return;
     }
 
@@ -426,8 +361,7 @@ function RichTextEditor(props) {
 
   useEffect(() => {
     // Checks on page load and on value change if the input value character count exceeds maxSize
-    const maxSize = props.maxSize || 20000
-   //Get the maxSize from backend or use default
+    const maxSize = props.maxSize || 20000;
     if (value?.ops) {
       let valueCount = 0;
       // In some occasions value.ops returns array that has multiple objects
@@ -456,38 +390,6 @@ function RichTextEditor(props) {
     }
   }, [value])
 
-  // Listen for force refresh event from NetworkErrorState when user closes notification
-  useEffect(() => {
-    const handleForceRefresh = (event) => {
-      if (event.detail.fieldName === inputProps.name && editorRef.current) {
-        const savedValue = attributeData?.[inputProps.name];
-        
-        if (savedValue && editorRef.current) {
-          // Restore saved value
-          const editor = editorRef.current.getEditor();
-          editor.setContents(savedValue);
-          counter.current = editor.getLength() - 1;
-        } else {
-          // Field is being restored to empty - reset ALL validation states
-          
-          // Clear the editor content visually
-          if (editorRef.current) {
-            const editor = editorRef.current.getEditor();
-            editor.setText('');  // Clear editor content immediately
-          }
-          
-          setCharLimitOver(false);
-          setValueIsEmpty(true);
-          setMaxSizeOver(false);  // CRITICAL: Also reset maxSizeOver
-          counter.current = 0;
-        }
-      }
-    };
-    
-    globalThis.addEventListener('forceEditorRefresh', handleForceRefresh);
-    return () => globalThis.removeEventListener('forceEditorRefresh', handleForceRefresh);
-  }, [inputProps.name, value, attributeData, charLimitOver, maxSizeOver]);
-
   useEffect(() => {
     if (props.isTabActive){
       if (!saving && hadFocusBeforeTabOut) {
@@ -501,7 +403,7 @@ function RichTextEditor(props) {
     }
     else if (toolbarVisible){
       setHadFocusBeforeTabOut(true);
-      editorRef.current.editor.blur();
+      editorRef?.current?.editor.blur();
     }
   }, [props.isTabActive, saving])
 
@@ -662,7 +564,7 @@ function RichTextEditor(props) {
       }
       inputValue.current = _val;
     }
-  }, [inputProps.name, value, dispatch, props.maxSize])
+  }, [inputProps.name, value, props.maxSize])
 
   const handleFocus = (event,source) => {
     // DO NOT sync editor content here - it causes user data loss when charLimitOver is true
@@ -679,27 +581,24 @@ function RichTextEditor(props) {
       }
       if(network?.status === "error"){
         //Prevent focus and editing to field if not locked
-        editorRef.current.editor.blur()
+        editorRef?.current?.editor.blur()
       }
       else{
         setToolbarVisible(true)
       }
     }
     
-    let length = editorRef.current.getEditor().getLength();
+    const length = editorRef?.current?.getEditor().getLength();
     counter.current = length -1;
     showCounter.current = true;
   }
 
   const getOriginalData = (name,originalData) => {
-    let fieldsetName
-    let fieldName
-    let index
-    let data = originalData
     //Get fieldset name, index and field of fieldset
-    fieldsetName = name.split('[')[0]
-    index = name.split('[').pop().split(']')[0];
-    fieldName = name.split('.')[1]
+    const fieldsetName = name.split('[')[0];
+    const fieldName = name.split('.')[1];
+    const index = name.split('[').pop().split(']')[0];
+    let data = originalData;
     if(attributeData[fieldsetName]?.[index]?.[fieldName]?.ops){
       data = attributeData[fieldsetName][index][fieldName]?.ops
     }
@@ -707,6 +606,9 @@ function RichTextEditor(props) {
   }
 
   const handleBlur = (readonly) => {
+    if (readonly) {
+      return;
+    }
     // Remove focus state and hide toolbar
     setIsFocused(false);
     setToolbarVisible(false);
@@ -757,10 +659,6 @@ function RichTextEditor(props) {
     // This clears the error notification when user fixes validation issues
     // CRITICAL: Prevent saving if character limit exceeded - data must stay in field until fixed
     if ((dataChanged || hadPreviousError) && (!editorEmpty || !required) && !isOnlyPlaceholder && !maxSizeOver) {
-      if (readonly) {
-        // Skip saving if field is readonly
-        return;
-      }
       //Sent call to save changes if it is modified by user and not updated by lock call
       if(!valueIsSet){
           if (typeof onBlur === 'function') {
@@ -842,75 +740,52 @@ function RichTextEditor(props) {
     }
   }
 
-  // Helper: Check if editor value update should be blocked
   const shouldBlockEditorUpdate = () => {
-    // CRITICAL: Don't overwrite editor if field has active network error
     if (hasActiveNetworkError()) {
       return true; // Don't touch editor when network error warning is visible
     }
-    
-    // CRITICAL: Don't overwrite editor if user is currently editing with char limit error
+    // Don't overwrite editor if user is currently editing with char limit error
     // User needs to see their typed content to be able to fix it
     if (isFocused && (charLimitOver || maxSizeOver)) {
       return true;
     }
-    
     return false;
   }
 
-  // Helper: Update editor contents and sync cursor position
   const updateEditorContents = (dbValue) => {
-    const cursorPosition = editorRef.current.getEditor().getSelection()
+    const cursorPosition = editorRef.current.getEditor().getSelection();
     editorRef.current.getEditor().setContents(dbValue);
     editorRef.current.getEditor().setSelection(cursorPosition?.index);
-    counter.current = editorRef.current.getEditor().getLength() -1
-    setValueIsEmpty(false)
+    counter.current = editorRef.current.getEditor().getLength() -1;
+    setValueIsEmpty(false);
   }
 
-  // Helper: Sync fieldset value to Redux Form
   const syncFieldsetValue = (dbValue) => {
     const shouldSync = insideFieldset && (!nonEditable || !rollingInfo);
     const contentsMatch = isEqual(editorRef?.current?.getEditor()?.getContents()?.ops, dbValue?.ops);
     
     if (shouldSync && !contentsMatch) {
       //Set onchange to redux form so values don't get offsync on fieldsets
-      setCurrentTimeout(() =>
-        setTimeout(
-          () =>
-            dispatch(
-              change(
-                fieldFormName,
-                inputProps.name,
-                dbValue
-              )
-            ),
-          1
-        ))
+      setCurrentTimeout(setTimeout(() => {
+        dispatch(change(fieldFormName, inputProps.name, dbValue))
+      }, 1))
     }
   }
 
-  // Helper: Set placeholder when field is empty
   const setPlaceholderIfEmpty = () => {
     if (!placeholder || value) {
       return;
     }
-    
-    // Only set placeholder if field is truly empty (no Redux Form value)
-    // Don't overwrite existing content or content during error states
-    const placeholderOps = { ops: [{ insert: placeholder + '\n' }] }; // Proper Quill Delta format
+    const placeholderOps = { ops: [{ insert: placeholder + '\n' }] };
     editorRef.current.getEditor().setContents(placeholderOps);
   }
 
   const setValue = (dbValue) => {
-    if (!editorRef?.current) {
+    if (!editorRef?.current || shouldBlockEditorUpdate()) {
       return;
     }
 
-    if (shouldBlockEditorUpdate()) {
-      return;
-    }
-    
-    let name = inputProps.name;
+    const name = inputProps.name;
     let originalData = attributeData[name]?.ops
     if(insideFieldset && !nonEditable || !rollingInfo){
       originalData = getOriginalData(name,originalData)
@@ -920,17 +795,13 @@ function RichTextEditor(props) {
     const shouldUpdate = dbValue?.ops && !isEqual(originalData, dbValue?.ops);
     
     if (shouldUpdate) {
-      // CRITICAL FIX (KAAV-3596): Preserve user data when character limit exceeded during network recovery
-      // Scenario: User types too many characters (maxSizeOver=true), then blur happens during network error.
-      // When network recovers, lock system attempts to restore old saved value from database.
-      // If editor has MORE content than dbValue, block the update to preserve user's unsaved work.
-      // User must reduce character count before saving, so this unsaved excess data takes priority.
+      // Preserve unsaved content when over character limit during network error
+      // If editor has more content than dbValue, don't overwrite with db value
       const currentEditorLength = editorRef.current.editor.getLength() - 1;
       const dbValueLength = dbValue?.ops ? dbValue.ops.map(op => op.insert).join('').length : 0;
       const hasUnsavedExcessData = maxSizeOver && currentEditorLength > dbValueLength;
       
       if (hasUnsavedExcessData) {
-        // Don't update editor - preserve user's unsaved content
         return;
       }
       
@@ -973,9 +844,7 @@ function RichTextEditor(props) {
     //Default maxsize 20000
     const maxSize = props.maxSize ? props.maxSize : 20000;
     let RichTextClassName = "rich-text-editor"
-    
-    // Add error class if character limit exceeded (regardless of focus)
-    // Use maxSizeOver state which properly tracks character count changes
+
     if (maxSizeOver) {
       RichTextClassName += toolbarVisible ? ' toolbar-visible-error' : ' has-error'
     } else {
@@ -983,6 +852,8 @@ function RichTextEditor(props) {
     }
     RichTextClassName += largeField ? ' large' : ''
 
+    const isRichTextDisabled = fieldSetDisabled || disabled || fieldDisabled || lastModified === inputProps.name && saving || shouldDisableForErrors || isThisFieldNetworkError;
+    const isBlurred = (lastModified === inputProps.name && saving) || (testingConnection?.isActive && testingConnection?.fieldName === inputProps.name);
     //Render rolling info field or normal edit field
     //If clicking rolling field button makes positive lock check then show normal editable field
     //Rolling field can be nonEditable
@@ -1010,7 +881,7 @@ function RichTextEditor(props) {
     <input className='visually-hidden' ref={myRefname}/>
     <div
       role="textbox"
-      className={`rich-text-editor-wrapper ${fieldSetDisabled || disabled || fieldDisabled || lastModified === inputProps.name && saving || shouldDisableForErrors || isThisFieldNetworkError ? 'rich-text-disabled' : ''} ${isThisFieldNetworkError ? 'has-network-error' : ''} ${(lastModified === inputProps.name && saving) || (testingConnection?.isActive && testingConnection?.fieldName === inputProps.name) ? 'blurred' : ''} ${maxSizeOver ? 'has-error' : ''}`}
+      className={`rich-text-editor-wrapper ${isRichTextDisabled ? 'rich-text-disabled' : ''} ${isThisFieldNetworkError ? 'has-network-error' : ''} ${isBlurred ? 'blurred' : ''} ${maxSizeOver ? 'has-error' : ''}`}
       aria-label="tooltip"
       onFocus={checkLocked}
     >
@@ -1082,7 +953,6 @@ function RichTextEditor(props) {
             const isOverLimit = editorLength > maxSize;
             
             if (isOverLimit) {
-              // Character limit exceeded - handle immediately without delay
               setIsFocused(false);
               setToolbarVisible(false);
               showCounter.current = false;
