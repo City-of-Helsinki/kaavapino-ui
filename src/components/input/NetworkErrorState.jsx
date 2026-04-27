@@ -76,9 +76,7 @@ export default function NetworkErrorState({ fieldName, validationError, maxSizeO
 
   const status = network.status || 'ok';
   
-  // Check if field has ACTUAL network error (not just maxSizeOver passivation)
-  // Passivated fields (readonly && maxSizeOver) should not show network error banner
-  // unless there's an actual network/save error (lastSaved.status)
+  // Check if field has network error (not just maxSizeOver passivation)
   const hasError = lastSaved?.status === 'error' || lastSaved?.status === 'field_error';
   const isSuccess = status === 'success' || lastSaved?.status === 'connection_restored';
   const hasValidationError = !!validationError;
