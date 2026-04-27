@@ -33,7 +33,7 @@ const Header = props => {
   const dispatch = useDispatch()
   const [showConfirm, setShowConfirm] = useState(false)
   const [updateTime, setUpdateTime] = useState({status: t('header.edit-menu-no-save'),time: ""})
-  const [lastSuccessfulSaveTime, setLastSuccessfulSaveTime] = useState("") // Track last successful save time for tooltip
+  const [lastSuccessfulSaveTime, setLastSuccessfulSaveTime] = useState("")
   const [count, setCount] = useState(1)
   const [latestErrorField,setLatestErrorField] = useState()
   const [errorFields,setErrorFields] = useState([])
@@ -57,7 +57,7 @@ const Header = props => {
   const isConnectionRestored = network?.status === 'success' || lastSaved?.status === 'connection_restored'
 
   const currentUser = users.find(
-    item => user && user.profile && item.id === user.profile.sub
+    item => user?.profile && item.id === user.profile.sub
   )
 
   const currentEnv = process.env.REACT_APP_ENVIRONMENT
@@ -267,47 +267,6 @@ const Header = props => {
         if(lastSaved?.status === "error" || lastSaved?.status === "field_error"){
           // Don't include time with error status - time will be shown in tooltip only if it exists
           latestUpdate = {status:t('header.edit-menu-save-fail'),time:""}
-          
-          const allErrorsAlreadyShown = lastSaved?.fields.every(r=> existingErrors.includes(r))
-          
-          // Skip toaster if all errors have already been shown to user
-          if (allErrorsAlreadyShown) {
-            // Continue to update latestUpdate below
-          } else {
-            // Determine if we should show a toaster notification
-            const shouldShowToaster = shouldShowErrorToaster(lastSaved);
-            
-            if(shouldShowToaster){
-              // show new toastr error
-              const errors = errorCount
-              toast.error(elements, {
-                toastId:errorCount,
-                className: "saveFailToastr",
-                position: "top-right",
-                autoClose: false,
-                hideProgressBar: false,
-                closeOnClick: false,
-                pauseOnHover: false,
-                draggable: false,
-                progress: undefined,
-                theme: "light",
-                closeButton: <Button className='close-button' size="small" variant='supplementary' onClick={() => dismiss(errorCount)}><IconCross size="s" /></Button>
-              });
-              //Add error toast count, used as an toastid needed to close correct toast
-              setErrorCount(errors + 1)
-              setErrorFields(lastSaved?.fields)
-              setErrorValues(lastSaved?.values)
-              setLatestErrorField(newErrorField)
-              const newError = lastSaved?.fields[lastSaved?.fields.length - 1]
-              //Push to state if not existing in it
-              if(!existingErrors.includes(newError)){
-                let errorList = existingErrors
-                errorList.push(newError)
-                //this state controls error toastr pop up
-                setExistingErrors(errorList)
-              }
-            }
-          }
         }
         else if(lastSaved?.status === "success"){
           // Connection restored or field validation error corrected
@@ -375,24 +334,6 @@ const Header = props => {
 
   const dismiss = (toastId) =>  {
     toast.dismiss(toastId);
-  }
-
-  /**
-   * Determines if an error toaster should be shown based on error type and field
-   * 
-   * Show toaster for:
-   * 1. Network errors in fieldsets (status='error', not 'field_error')
-   *    - because fieldset closes and user loses access to their data
-   *    - "Copy value" button in toaster provides data recovery
-   * 
-   * Don't show toaster for:
-   * - Lock errors - shown inline via NetworkErrorState
-   * - Regular validation errors (status='field_error') - shown inline via NetworkErrorState
-   */
-  const shouldShowErrorToaster = (lastSaved) => {
-    // Inline NetworkErrorState handles all error notifications
-    // Toaster is not shown for any field errors (including fieldsets)
-    return false;
   }
 
   const navigateToProjects = () => {
@@ -482,7 +423,9 @@ const Header = props => {
               ) : (
                 !isPollingConnection && <p>{updateTime?.status}{updateTime?.time}</p>
               )}
-              {!saving && !isPollingConnection && updateTime?.status === t('header.edit-menu-save-fail') && lastSuccessfulSaveTime ? <Tooltip placement="bottom" className='question-icon'>{t('header.latest-save')}{lastSuccessfulSaveTime}</Tooltip> : ""}
+              {!saving && !isPollingConnection && updateTime?.status === t('header.edit-menu-save-fail') && lastSuccessfulSaveTime ? 
+                <Tooltip placement="bottom" className='question-icon'>{t('header.latest-save')}{lastSuccessfulSaveTime}</Tooltip> : ""
+              }
             </div>
           </div>
         </Navigation.Row>
