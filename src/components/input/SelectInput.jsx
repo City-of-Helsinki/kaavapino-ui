@@ -359,7 +359,6 @@ const SelectInput = ({
     let readOnlyStyle = notSelectable ? 'selection readonly' : 'selection'
     let rollingInfoValue = getRollingInfoValue(multiple, currentValue, input, preparedOptions);
 
-    // Prepare validation error string for NetworkErrorState
     const errorString = typeof error === 'string' ? error : '';
     const hasValidationError = inputUtils.hasError(error);
 
