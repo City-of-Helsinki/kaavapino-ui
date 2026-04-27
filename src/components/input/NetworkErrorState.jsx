@@ -2,7 +2,7 @@ import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { projectNetworkSelector, lastSavedSelector } from '../../selectors/projectSelector';
 import { useTranslation } from 'react-i18next';
-import { setLastSaved } from '../../actions/projectActions';
+import { setLastSaved, RESET_NETWORK_STATUS } from '../../actions/projectActions';
 import './NetworkErrorState.scss';
 import PropTypes from 'prop-types';
 
@@ -127,7 +127,7 @@ export default function NetworkErrorState({ fieldName, validationError, maxSizeO
         setIsFadingOut(true)
       }, 8000 - 300);
       const hideTimer = setTimeout(() => {
-        dispatch({ type: 'Reset network status' });
+        dispatch({ type: RESET_NETWORK_STATUS });
         dispatch(setLastSaved('', null, [], [], false));
         localStorage.removeItem('isRelevantField');
       }, 8000);
