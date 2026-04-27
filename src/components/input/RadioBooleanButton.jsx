@@ -35,22 +35,15 @@ const RadioBooleanButton = ({
   
   const { error } = meta;
   
-  // Check if other fields have validation errors (UX60.2.5 - passivate fields when error exists)
-  // Include connection errors so RadioButtons are disabled when ANY field has network error
   const shouldDisableForErrors = useFieldPassivation(name, { formName: meta.form })
-  
-  // Check if THIS field is the one that failed to save due to network error (network down or lock error)
-  // DO NOT include field_error - those are backend validation errors and user must be able to fix them!
-  // Include 'connection_restored' status to keep showing spinner during recovery
   const isThisFieldNetworkError = (lastSaved?.status === 'error' || lastSaved?.status === 'connection_restored') && 
     lastSaved?.fields?.includes(name)
   
   useEffect(() => {
-    // Reset isThisFieldSaving when saving is complete for this field
     if (!saving) {
       setIsThisFieldSaving(false);
     }
-  }, [saving, lastModified, name, isThisFieldSaving])
+  }, [saving]);
   
   const handleOnChange = (value) => {
     setRadioValue(value)
@@ -68,8 +61,6 @@ const RadioBooleanButton = ({
     setRadioValue(value)
   }, [value])
 
-
-
   const editRollingField = () => {
     setEditField(true)
   }
@@ -85,10 +76,10 @@ const RadioBooleanButton = ({
   }
   
   const getProjectTimetableEditElements = (value, handleOnChange, t) => {
-    return !value ? 
-      <Button variant="supplementary" className='add-content' iconLeft={<IconPlus />} onClick={() => handleOnChange(true)}>{t('deadlines.new-esillaolo')}</Button> 
+    return value ?
+      <Button size='small' variant="danger" className='remove-content' onClick={() => handleOnChange(false)}>{t('deadlines.delete-esillaolo')}</Button> 
       : 
-      <Button size='small' variant="danger" className='remove-content' onClick={() => handleOnChange(false)}>{t('deadlines.delete-esillaolo')}</Button>
+      <Button variant="supplementary" className='add-content' iconLeft={<IconPlus />} onClick={() => handleOnChange(true)}>{t('deadlines.new-esillaolo')}</Button>
   }
   
   const getRadioButton = (testId, label, id, key, disabled, className, value, error, name, onChange, checked) => {

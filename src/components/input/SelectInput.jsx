@@ -49,14 +49,12 @@ const SelectInput = ({
 	const [editField,setEditField] = useState(false)
 	const [isThisFieldSaving, setIsThisFieldSaving] = useState(false)
 	
-	// Check if other fields have validation errors OR connection errors (UX60.2.5 - passivate fields when error exists)
+
 	const shouldDisableForErrors = useFieldPassivation(input.name, { formName })
-	
-	// Check if THIS field is the one that failed to save due to network error
 	const isThisFieldNetworkError = lastSaved?.status === 'error' && lastSaved?.fields?.includes(input.name)
 
 	useEffect(() => {
-    //Chekcs that locked status has more data then inital empty object
+    //Checks that locked status has more data then inital empty object
     if(lockedStatus && Object.keys(lockedStatus).length > 0){
       if(lockedStatus.lock === false){
         let identifier;
@@ -300,7 +298,31 @@ const SelectInput = ({
     const isFieldDisabled = disabled || editDisabled || isThisFieldSaving || shouldDisableForErrors || isThisFieldNetworkError || (isProjectTimetableEdit && !timetable_editable);
     return (
       <div className={`select-input-wrapper ${isFieldDisabled ? 'disabled' : ''} ${isThisFieldNetworkError ? 'has-network-error' : ''}`}>
-        {!multiple ? (
+        {multiple ? (
+          <Select
+            data-testid="select-multi"
+            placeholder={placeholder}
+            className={`${readOnlyStyle}${isThisFieldSaving ? ' blurred' : ''}${isThisFieldNetworkError ? ' has-network-error' : ''}`}
+            id={input.name}
+            name={input.name}
+            multiselect={multiple}
+            error={error || isThisFieldNetworkError}
+            onBlur={handleBlur}
+            onFocus={handleFocus}
+            clearable={true}
+            disabled={isFieldDisabled}
+            options={preparedOptions}
+            defaultValue={currentValue}
+            onChange={data => {
+              if(!notSelectable){
+                let uniqData = uniqBy(data, 'key');
+                let returnValue = uniqData?.map(currentValue => currentValue.value)
+                setSelectValues(uniqData)
+                handleInputChange(returnValue)
+              }
+            }}
+          />
+        ) : (
           <Select
             data-testid="select-single"
             placeholder={placeholder}
@@ -325,30 +347,6 @@ const SelectInput = ({
               }
             }}
           />
-        ) : (
-          <Select
-            data-testid="select-multi"
-            placeholder={placeholder}
-            className={`${readOnlyStyle}${isThisFieldSaving ? ' blurred' : ''}${isThisFieldNetworkError ? ' has-network-error' : ''}`}
-            id={input.name}
-            name={input.name}
-            multiselect={multiple}
-            error={error || isThisFieldNetworkError}
-            onBlur={handleBlur}
-            onFocus={handleFocus}
-            clearable={true}
-            disabled={isFieldDisabled}
-            options={preparedOptions}
-            defaultValue={currentValue}
-            onChange={data => {
-              if(!notSelectable){
-                let uniqData = uniqBy(data, 'key');
-                let returnValue = uniqData && uniqData.map(currentValue => currentValue.value)
-                setSelectValues(uniqData)
-                handleInputChange(returnValue)
-              }
-            }}
-          />
         )}
         <NetworkErrorState fieldName={input.name} validationError={hasValidationError ? errorString : null} />
       </div>
@@ -356,7 +354,7 @@ const SelectInput = ({
   }
 
   const normalOrRollingElement = () => {
-    let preparedOptions = !readonly ? getPreparedOptions(options) : options;
+    let preparedOptions = readonly ? options : getPreparedOptions(options);
     let notSelectable = readonly === true && fieldName === input.name
     let readOnlyStyle = notSelectable ? 'selection readonly' : 'selection'
     let rollingInfoValue = getRollingInfoValue(multiple, currentValue, input, preparedOptions);
