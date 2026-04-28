@@ -128,14 +128,7 @@ export const formatFieldValue = (fieldValue) => {
   return normalizeBooleanAndEmpty(text, copyText);
 };
 
-// Legacy exports for backward compatibility (if needed)
-export const getFieldSetValues = extractFieldSetValues;
-export const formatErrorValue = formatFieldValue;
-
 export default {
   formatFieldValue,
   extractFieldSetValues,
-  // Legacy names (deprecated)
-  getFieldSetValues: extractFieldSetValues,
-  formatErrorValue: formatFieldValue
 };
