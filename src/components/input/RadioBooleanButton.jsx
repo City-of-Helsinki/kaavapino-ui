@@ -3,7 +3,7 @@ import { RadioButton, Button, IconPlus } from 'hds-react'
 import RollingInfo from '../input/RollingInfo.jsx'
 import NetworkErrorState from './NetworkErrorState.jsx'
 import { useSelector } from 'react-redux'
-import { savingSelector, lastModifiedSelector, lastSavedSelector, pollingProjectsSelector } from '../../selectors/projectSelector'
+import { savingSelector, lastSavedSelector, pollingProjectsSelector } from '../../selectors/projectSelector'
 import { useTranslation } from 'react-i18next'
 import { useFieldPassivation } from '../../hooks/useFieldPassivation'
 import PropTypes from 'prop-types';
@@ -27,7 +27,6 @@ const RadioBooleanButton = ({
   const { t } = useTranslation()
   const [radioValue, setRadioValue] = useState(null)
   const [editField,setEditField] = useState(false)
-  const lastModified = useSelector(state => lastModifiedSelector(state))
   const lastSaved = useSelector(state => lastSavedSelector(state))
   const [isThisFieldSaving, setIsThisFieldSaving] = useState(false)
   const saving =  useSelector(state => savingSelector(state))
