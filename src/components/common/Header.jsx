@@ -4,7 +4,6 @@ import {
   Button,
   IconSignout,
   IconAngleLeft,
-  IconCross,
   IconCheck,
   IconErrorFill,
   LoadingSpinner,
@@ -23,9 +22,6 @@ import { networkSelector } from '../../selectors/networkSelector'
 import { schemaSelector } from '../../selectors/schemaSelector'
 import schemaUtils from '../../utils/schemaUtils'
 import {useInterval} from '../../hooks/connectionPoller'
-import { formatFieldValue } from '../../utils/fieldValueFormatter'
-import { toast } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.min.css'
 import PropTypes from 'prop-types'
 
 const Header = props => {
@@ -35,13 +31,8 @@ const Header = props => {
   const [updateTime, setUpdateTime] = useState({status: t('header.edit-menu-no-save'),time: ""})
   const [lastSuccessfulSaveTime, setLastSuccessfulSaveTime] = useState("")
   const [count, setCount] = useState(1)
-  const [latestErrorField,setLatestErrorField] = useState()
-  const [errorFields,setErrorFields] = useState([])
-  const [errorValues,setErrorValues] = useState([])
-  const [errorCount,setErrorCount] = useState(1)
   const [phaseTitle,setPhaseTitle] = useState("")
   const [sectionTitle,setSectionTitle] = useState("")
-  const [existingErrors,setExistingErrors] = useState([])
   const [isPollingConnection, setIsPollingConnection] = useState(false)
 
   const history = useHistory();
@@ -153,117 +144,8 @@ const Header = props => {
 
   useEffect(() => {
     let latestUpdate
-    let newErrorField
 
     if(lastSaved !== undefined && lastSaved !== null){
-        let elements = ""
-        if(lastSaved?.fields){
-          //Get the latest field and value from error fields and set the values for this toast
-          newErrorField = lastSaved?.fields.filter(x => !errorFields.includes(x));
-          if(newErrorField.length === 0){
-            newErrorField=latestErrorField
-          }
-          let newErrorValue = lastSaved?.values.filter(x => !errorValues.includes(x));
-          
-          // For fieldset errors, the value is an array containing the fieldset data
-          // Extract the actual fieldset data from the array wrapper
-          const valueToFormat = newErrorValue.length > 0 ? newErrorValue[0] : newErrorValue;
-          
-          // Use utility function to format field value for display
-          const { text: errorTextValue, copyText: copyFieldsetValues } = formatFieldValue(valueToFormat);
-          
-          // Check if the error value is a fieldset array (for UI display logic)
-          const isFieldsetArray = Array.isArray(newErrorValue) && newErrorValue.length > 0 && typeof newErrorValue[0] === 'object';
-          const fieldsetItemCount = isFieldsetArray ? newErrorValue.length : 0;
-          
-          const connectionOrLockErrorHeader = lastSaved.lock ? t('messages.could-not-lock-header') : t('messages.could-not-save-header')
-          const connectionOrLockErrorText = lastSaved.lock ?       
-            <p>
-            {t('messages.could-not-lock-text')}
-            </p>
-            : 
-            <>
-            <p>
-            {t('messages.could-not-save-fields-text')}
-            </p>
-            <p>
-            {t('messages.could-not-save-fields-text2')}
-            </p>
-          </>
-          const fieldErrorHeader = t('messages.field-error-prevent-save-header')
-          const fieldErrorText = t('messages.field-error-prevent-save-text')
-          const errorHeader = lastSaved?.status === "error" ? connectionOrLockErrorHeader : fieldErrorHeader
-          const errorTexts = lastSaved?.status === "error" ? connectionOrLockErrorText : fieldErrorText
-          //Errors that do not trigger error toastr right away(empty, too many chars etc)
-          const visibleErrorFields = lastSaved?.fields ? lastSaved.fields : []
-          const errorContent = lastSaved?.status === "error" && !lastSaved.lock ?
-          <> 
-            <p className='font-bold'>{t('messages.value')}:</p> 
-            <p>{errorTextValue}</p>
-          </>
-          :
-          <>
-          </>
-          elements =
-          <div>
-            <div>
-              <h3>{errorHeader}
-                <span className='icon-container'><IconCross size="s" /></span>
-              </h3>
-            </div>
-            <div className='middle-container'>
-              {errorTexts}
-
-              <div className='error-fields-container'>
-                <div className='error-field'>
-                {lastSaved?.status === "error" ?
-                  <>
-                    <p className='font-bold'>{fieldsetItemCount > 0 ? t('messages.fieldset') :t('messages.field')}:</p> 
-                    <a className='link-underlined' type="button" onKeyDown={(event) => {if (event.key == 'Enter' || event.key === "Space"){scrollToAnchor("id",newErrorField)}}} onClick={() => scrollToAnchor("id",newErrorField)}>{document.getElementById(newErrorField)?.textContent}</a>
-                  </>
-                  :
-                  <>
-                  <div className='visible-errors'>
-                    <p className='font-bold'>{t('messages.fields-multiple')}:</p>
-                    {visibleErrorFields.map((item,i) => (
-                      <p key={item[i]} className='font-bold'>{item}</p>
-                      ))
-                    }
-                  </div>
-                  <a className='link-underlined' type="button" onKeyDown={(event) => {if (event.key == 'Enter' || event.key === "Space"){scrollToAnchor("class",".max-chars-error,.Virhe,.error-text")}}} onClick={() => scrollToAnchor("class",".max-chars-error,.Virhe,.error-text")}>{t('messages.show-errors')}</a>
-                  </>
-                }
-                </div>
-                <div className='error-value'>
-                  {errorTextValue.includes("[object Object]") 
-                  ? 
-                    <p className='font-bold'>{t('messages.addfield')}</p>  
-                  : 
-                  <>
-                  {fieldsetItemCount > 0 
-                  ? 
-                    <p className='fieldset-info'>{t('messages.total')} {fieldsetItemCount} {t('messages.fields')}</p>
-                  :
-                    errorContent
-                  }
-                  </>
-                  }
-                </div>
-                <div className='error-button-container'>
-                  {lastSaved?.status === "error" && !lastSaved.lock ? 
-                  <Button size="small" onClick={() => {
-                    const textToCopy = copyFieldsetValues || errorTextValue;
-                    navigator.clipboard.writeText(textToCopy);
-                  }}>{t('messages.copy-value')}</Button>
-                  : 
-                  <></>
-                  }
-                </div>
-              </div>
-            </div>
-          </div>
-        }
-
         if(lastSaved?.status === "error" || lastSaved?.status === "field_error"){
           // Don't include time with error status - time will be shown in tooltip only if it exists
           latestUpdate = {status:t('header.edit-menu-save-fail'),time:""}
@@ -273,14 +155,12 @@ const Header = props => {
           // NetworkErrorState component handles "connection restored" inline notification
           // So we just update save time here, no toaster needed
           setCount(1)
-          setExistingErrors([])
           latestUpdate = {status:t('header.latest-save'),time:lastSaved.time}
-          setLastSuccessfulSaveTime(lastSaved.time) // Save for error tooltip
+          setLastSuccessfulSaveTime(lastSaved.time)
         }
         else if(lastSaved?.status === "connection_restored"){
           // Connection was restored - clear error state from header
           setCount(1)
-          setExistingErrors([])
           if (lastSaved.time) {
             setLastSuccessfulSaveTime(lastSaved.time)
             latestUpdate = {status:t('header.latest-save'),time:lastSaved.time}
@@ -294,7 +174,6 @@ const Header = props => {
           // Error notification was closed and field reverted to saved value
           // If something was saved this session, show last save time; otherwise show "no unsaved data"
           setCount(1)
-          setExistingErrors([])
           if (lastSuccessfulSaveTime) {
             latestUpdate = {status:t('header.latest-save'),time:lastSuccessfulSaveTime}
           } else {
@@ -306,35 +185,6 @@ const Header = props => {
       }
     }
   }, [lastSaved]);
-
-  const scrollToAnchor = (type,anchor) => {
-    const anchorElement = type === "id" ? document.getElementById(anchor) : document.querySelectorAll(anchor)[0]
-
-    if(anchorElement){
-      const isFieldSet = anchorElement.closest(".fieldset-container");
-      let highlighContainer 
-      if(isFieldSet){
-        //Focus to fieldset main container
-        isFieldSet.scrollIntoView({ block: "start" });
-        highlighContainer = isFieldSet.closest(".input-container")
-      }
-      else{
-        //Focus to normal field
-        anchorElement.scrollIntoView({ block: "start" });
-        highlighContainer = anchorElement.closest(".input-container")
-      }
-      //Set offset so field is not hidden under sticky filter menu
-      window.scrollBy(0, -200);
-      highlighContainer.classList.add("highligh-error");
-      setTimeout(() => {
-        highlighContainer.classList.remove("highligh-error");
-      }, 2000)
-    }
-  }
-
-  const dismiss = (toastId) =>  {
-    toast.dismiss(toastId);
-  }
 
   const navigateToProjects = () => {
     props.history.push('/projects')
