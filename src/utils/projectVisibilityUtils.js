@@ -403,11 +403,10 @@ export const isDeadlineConfirmed = (formValues, deadlineGroup, returnField, brea
       return firstToken === phase;
     });
 
-    if (groupKeys.length === 0) {
-      return false; // No groups -> block
-    }
-
     const visibleGroups = groupKeys.filter(g => shouldDeadlineBeVisible(null, g, attribute_data));
+    if (visibleGroups.length === 0) {
+      return true; // No deadlines to confirm, so consider phase confirmed
+    }
     for (const g of visibleGroups) {
       if (isDeadlineConfirmed(attribute_data, g, false, true)) {
         return true;
