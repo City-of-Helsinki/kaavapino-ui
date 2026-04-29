@@ -45,10 +45,7 @@ import { getVisibilityBoolName } from "./projectVisibilityUtils";
 		const diffMs = nowDateOnly.getTime() - updatedDateOnly.getTime()
 		const days = Math.floor(diffMs / oneDayMs)
 		
-    if (days < 0) {
-      return tFn ? tFn('relativeDates.today') : 'Today'
-		}
-    if (days === 0) {
+    if (days <= 0) {
       return tFn ? tFn('relativeDates.today') : 'Today'
 		}
     if (days === 1) {

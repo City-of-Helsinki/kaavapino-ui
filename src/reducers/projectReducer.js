@@ -96,7 +96,9 @@ import {
   UPDATE_ATTRIBUTE,
   SAVE_PROJECT_TIMETABLE_FAILED,
   VALIDATING_TIMETABLE,
-  SET_SAVING_FIELD
+  SET_SAVING_FIELD,
+  SET_NETWORK_STATUS,
+  RESET_NETWORK_STATUS
 } from '../actions/projectActions'
 
 import timeUtil from '../utils/timeUtil'
@@ -162,11 +164,7 @@ export const initialState = {
 export const reducer = (state = initialState, action) => {
 
   switch (action.type) {
-    // ---- Network status (human readable string action types added only here) ----
-    // We keep network state inside project slice to avoid creating new top-level reducer.
-    // NetworkErrorState component currently reads state.network; it will need to be updated
-    // to use project slice (e.g. state.project.network) or selector. For now we expose via selector.
-    case 'Set network status': {
+    case SET_NETWORK_STATUS: {
     	const { status, errorMessage, okMessage, tempFieldContents } = action.payload || {}
     	return {
     		...state,
@@ -179,7 +177,7 @@ export const reducer = (state = initialState, action) => {
     		}
     	}
     }
-    case 'Reset network status': {
+    case RESET_NETWORK_STATUS: {
     	if (!state.network) return state
     	return {
     		...state,
@@ -498,12 +496,8 @@ export const reducer = (state = initialState, action) => {
     }
 
     case SET_LAST_SAVED: {
-      // Only preserve old time if status is not success AND old time exists
-      // For first save attempt (no previous time), clear the time on error
-      if (action.payload.status !== "success" && state.lastSaved?.time) {
-        action.payload.time = state.lastSaved.time
-      } else if (action.payload.status !== "success" && !state.lastSaved?.time) {
-        action.payload.time = ""
+      if (action.payload.status !== "success") {
+          action.payload.time = state.lastSaved?.time || "";
       }
       return{
         ...state,
