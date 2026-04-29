@@ -55,6 +55,10 @@ class CustomField extends Component {
     })
   }
 
+  formatDropdownOptions = options => {
+    return this.formatOptions(options.filter(option => option.index == null));
+  }
+
   renderNumber = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, lockField, fieldSetDisabled, insideFieldset,
       nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, attributeData, phaseIsClosed } = this.props
@@ -321,7 +325,7 @@ class CustomField extends Component {
         {...props}
         lockField={lockField}
         multiple={multiple_choice}
-        options={this.formatOptions(choices)}
+        options={this.formatDropdownOptions(choices)}
         onBlur={handleBlurSave}
         placeholder={placeholder_text}
         formName={formName}
