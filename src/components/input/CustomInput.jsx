@@ -116,18 +116,9 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
   useEffect(() => {
     if(!isMount && custom.rollingInfo && !editField){
       // When rolling info field is closed and has network error
-      const hasNetworkError = hasActiveNetworkError();
-      
-      if(hasNetworkError){
-        dispatch(formErrorList(true, input.name))
-      } else {
-        dispatch(formErrorList(false, input.name))
-      }
+      dispatch(formErrorList(hasActiveNetworkError(), input.name))
     }
   }, [custom.rollingInfo, editField, isMount]);
-
-  useEffect(() => {
-  }, [lastSaved?.status === "error"])
 
   useEffect(() => {
     // Reset isThisFieldSaving when saving is complete for this field
@@ -141,7 +132,7 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
   }, [saving, lastModified, input.name, isThisFieldSaving, lastSaved?.status])
 
   useEffect(() => {
-    //Chekcs that locked status has more data then inital empty object
+    //Checks that locked status has more data then initial empty object
     if(lockedStatus && Object.keys(lockedStatus).length > 0){
       if(lockedStatus.lock === false){
         let identifier;
@@ -529,7 +520,10 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
     
     // Check if there's a validation error (INCLUDING character limit exceeded)
     const hasValidationError = exceedsMaxLength || inputUtils.hasError(error) || hasError;
-    
+    const isDisabled = (custom?.isProjectTimetableEdit ? 
+      !custom?.timetable_editable : 
+      custom.disabled || isThisFieldSaving || shouldDisableForErrors || isThisFieldNetworkError || shouldPassivate
+    );
     return (
       <div className={`text-input${custom.type === 'number' ? ' number-input' : ''}${blurredClass}${hasErrorClass}${networkErrorClass}`}>
         {custom.type === 'number' ? (
@@ -542,7 +536,7 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
             {...restCustom}
             min={custom.isFloorAreaForm ? 0 : undefined}
             step={custom.isFloorAreaForm ? null : 1}
-            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled || isThisFieldSaving || shouldDisableForErrors || isThisFieldNetworkError || shouldPassivate}
+            disabled={isDisabled}
             onChange={(event) => { handleInputChange(event, readonly.read) }}
             onBlur={(event) => { handleBlur(event, readonly.read) }}
             onFocus={() => { handleFocus() }}
@@ -558,7 +552,7 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
             fluid="true"
             {...input}
             {...restCustom}
-            disabled={custom?.isProjectTimetableEdit ? !custom?.timetable_editable : custom.disabled || isThisFieldSaving || shouldDisableForErrors || isThisFieldNetworkError || shouldPassivate}
+            disabled={isDisabled}
             onChange={(event) => { handleInputChange(event, readonly.read) }}
             onBlur={(event) => { handleBlur(event, readonly.read) }}
             onFocus={() => { handleFocus() }}

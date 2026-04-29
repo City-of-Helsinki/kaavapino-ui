@@ -451,8 +451,14 @@ class ProjectPage extends Component {
     history.push(`/projects/${id}/documents`)
   }
 
-  toggleBaseInformationForm = opened =>
+  toggleBaseInformationForm = (opened) => {
+    if (!opened && this.state.showBaseInformationForm) {
+      // Return focus to edit button when closing the form
+      document.getElementById('editNavSelect-toggle-button')?.focus();
+    }
+
     this.setState(prevState => ({ ...prevState, showBaseInformationForm: opened }))
+  }
 
   getAllChanges = () => {
     const { allEditFields, edit, creator, t } = this.props
@@ -505,8 +511,15 @@ class ProjectPage extends Component {
     return ordered
   }
 
-  togglePrintProjectDataModal = opened =>
+  togglePrintProjectDataModal = (opened) => {
+    if (!opened && this.state.showPrintProjectDataModal) {
+      const navButtons = document.getElementById('editNavSelect-toggle-button');
+      if (navButtons) {
+        navButtons.focus();
+      }
+    }
     this.setState({ showPrintProjectDataModal: opened })
+  }
 
   renderLoading = () => {
     const { t } = this.props
