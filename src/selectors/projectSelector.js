@@ -121,19 +121,19 @@ export const updatesSelector = createSelector(
 export const usersSelector = createSelector(
   currentProjectSelector,
   (currentProject = {}) =>
-    currentProject && currentProject._metadata ? currentProject._metadata.users : []
+    currentProject?._metadata ? currentProject._metadata.users : []
 )
 
 export const personnelSelector = createSelector(
   currentProjectSelector,
   (currentProject = {}) =>
-    currentProject && currentProject._metadata ? currentProject._metadata.personnel : []
+    currentProject?._metadata ? currentProject._metadata.personnel : []
 )
 
 export const creatorSelector = createSelector(
   currentProjectSelector,
   (currentProject = {}) =>
-    currentProject && currentProject._metadata ? currentProject._metadata.created : []
+    currentProject?._metadata ? currentProject._metadata.created : []
 )
 
 export const deadlinesSelector = createSelector(
@@ -326,7 +326,7 @@ export const cancelTimetableSaveSelector = createSelector(
   selectProject,
   project => project?.cancelTimetableSave
 )
-// Network status selector (component should switch to use state.project.network via this selector)
+
 export const projectNetworkSelector = createSelector(
   selectProject,
   project => project?.network || { status: 'ok' }

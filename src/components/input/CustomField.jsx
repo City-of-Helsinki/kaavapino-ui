@@ -46,13 +46,17 @@ class CustomField extends Component {
   }
 
   formatOptions = options => {
-    return options.filter(option => option.index != null).map(option => {
+    return options.map(option => {
       return {
         key: option.value,
         value: option.value,
         label: option.label
       }
     })
+  }
+
+  formatDropdownOptions = options => {
+    return this.formatOptions(options.filter(option => option.index == null));
   }
 
   renderNumber = props => {
@@ -321,7 +325,7 @@ class CustomField extends Component {
         {...props}
         lockField={lockField}
         multiple={multiple_choice}
-        options={this.formatOptions(choices)}
+        options={this.formatDropdownOptions(choices)}
         onBlur={handleBlurSave}
         placeholder={placeholder_text}
         formName={formName}

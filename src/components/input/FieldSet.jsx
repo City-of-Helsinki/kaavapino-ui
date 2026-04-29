@@ -70,7 +70,7 @@ const FieldSet = ({
   const formErrors = useSelector(formErrorListSelector)
   const connection = useSelector(pollSelector)
 
-  const nulledFields = fields && fields.map(field => {
+  const nulledFields = fields?.map(field => {
     return { [field.name]: null, _deleted: true }
   })
 
@@ -329,11 +329,10 @@ const FieldSet = ({
 
   return (
     <div className='fieldset-main-container' ref={accordianRef}>
-    <React.Fragment>
-      <div className='fieldset-info'>{fieldsetTotal ? getNumberOfFieldsets(fieldsetTotal) : ""}</div>
+    <div className='fieldset-info'>{fieldsetTotal ? getNumberOfFieldsets(fieldsetTotal) : ""}</div>
       {sets.map((set, i) => {
         const setValues = get(formValues, set)
-        const fieldsetDisabled = lockStatus?.lockStyle && !lockStatus?.owner && lockStatus?.fieldIdentifier === set ? true : false;
+        const fieldsetDisabled = !!(lockStatus?.lockStyle && !lockStatus?.owner && lockStatus?.fieldIdentifier === set);
         const deleted = get(formValues, set + '._deleted')
         const automatically_added = get(formValues, set + '._automatically_added')
         const lockedElement = fieldsetDisabled ? <span className="input-locked"> Käyttäjä {lockStatus.lockStyle.lockData.attribute_lock.user_name} {lockStatus.lockStyle.lockData.attribute_lock.user_email} on muokkaamassa kenttää<IconLock></IconLock></span> : <></>
@@ -370,10 +369,9 @@ const FieldSet = ({
 
                   let required = false
 
-                  const isReadOnly = field && field.autofill_readonly
-                  if (checking && !(!attributeData[name] || !attributeData[name][i])) {
+                  const isReadOnly = field?.autofill_readonly
+                  if (checking && !(!attributeData[name]?.[i])) {
                     if (
-                      checking &&
                       projectUtils.isFieldMissing(
                         field.name,
                         field.required,
@@ -584,7 +582,6 @@ const FieldSet = ({
         {addButtonMessage}
       </>
       )}
-    </React.Fragment>
     </div>
   )
 }

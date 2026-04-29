@@ -164,8 +164,6 @@ class File extends Component {
     const { current, uploading, percentCompleted } = this.state
     const { field, image, formValues, t, rollingInfoText, rollingInfo, formErrors, connectionErrorFields } = this.props
     const disabled = field.disabled
-    
-    // Check if other fields have validation errors OR connection errors (UX60.2.5 - passivate fields when error exists)
     const shouldDisableForErrors = shouldPassivateField(field.name, formErrors, connectionErrorFields)
     const isDisabled = disabled || shouldDisableForErrors
     
