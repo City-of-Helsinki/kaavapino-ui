@@ -64,7 +64,6 @@ import InfoComponent from '../common/InfoComponent.jsx'
 import { withTranslation } from 'react-i18next'
 import authUtils from '../../utils/authUtils'
 import schemaUtils from '../../utils/schemaUtils'
-import { isEqual } from 'lodash'
 import FormFilter from './FormFilter.jsx'
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
@@ -90,10 +89,7 @@ class ProjectEditPage extends Component {
     urlField:null
   }
 
-  currentSectionIndex = 0
-
   headings = []
-
   constructor(props) {
     super(props)
     const { project } = this.props
@@ -102,10 +98,7 @@ class ProjectEditPage extends Component {
   }
 
   shouldComponentUpdate(prevProps, prevState) {
-    if (isEqual(prevProps, this.props) && isEqual(prevState, this.state)) {
-      return false
-    }
-    return true
+    return !(_.isEqual(prevProps, this.props) && _.isEqual(prevState, this.state));
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -273,11 +266,6 @@ class ProjectEditPage extends Component {
     this.props.unlockProjectField(projectName,inputname)
   }
 
-  unlockAllFields = () => {
-    //const projectName = this.props.currentProject.name;
-    //this.props.unlockAllFields(projectName)
-  }
-
   handleTimetableClose = () => {
     //Close timetable and reset data to initial
     this.props.showTimetable(false,"","",{})
@@ -409,7 +397,7 @@ class ProjectEditPage extends Component {
     }
     const grouped = errorFields.reduce((acc,err) => { const group = err.title || 'Muut'; if(!acc[group]) acc[group] = []; acc[group].push(err); return acc; }, {})
     return (
-      <div tabIndex="0" ref={this.errorField} className='required-fields-container'>
+      <div ref={this.errorField} className='required-fields-container'>
         <Notification id='required-fields-notification' label='Lomakkeelta puuttuu pakollisia tietoja' type="error" style={{marginTop: 'var(--spacing-s)'}}>
           {Object.entries(grouped).map(([groupTitle, errors]) => (
             <div key={groupTitle} className='error-group'>
@@ -463,7 +451,7 @@ class ProjectEditPage extends Component {
 
   changeSection = (index,title,fields) => {
     this.setState({ sectionIndex: index, phaseTitle:title, fields:fields })
-    if(typeof this.props.getCurrentSection !== "undefined"){
+    if(this.props.getCurrentSection !== undefined){
       this.props.getCurrentSection(index)
     }
     this.unlockFields()
@@ -507,7 +495,7 @@ class ProjectEditPage extends Component {
     const currentSchemaIndex = schema.phases.findIndex(s => s.id === schemaUtils.getSelectedPhase(this.props.location.search,this.props.selectedPhase))
     const currentSchema = schema.phases[currentSchemaIndex]
     const currentDeadlineSchema = schema.deadline_sections[currentSchemaIndex]
-    const closephase = origin === "closephase" ? true : false
+    const closephase = origin === "closephase"
     const errorFields = projectUtils.getErrorFields(false,attribute_data,currentSchema,phase,origin,currentDeadlineSchema,closephase)
     this.setState({errorFields:errorFields})
     if(errorFields?.length === 0 && !documentsDownloaded){

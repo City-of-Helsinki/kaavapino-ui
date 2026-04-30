@@ -226,7 +226,7 @@ if(tagArray.length > 0){
          id={`checkbox-${tag}`}
          onClick={(event) => highlightTag(event,tag)}
          aria-label={tag + ". Ota korostus käyttöön klikkaamalla painiketta."}
-         tabindex="0"
+         tabIndex="0"
          >
          {tag}
          </Tag>

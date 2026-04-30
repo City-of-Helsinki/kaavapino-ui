@@ -944,11 +944,13 @@ function RichTextEditor(props) {
       attributeData={attributeData}
       shouldDisableForErrors={shouldDisableForErrors}
     />
-    :    
+    :
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
     onContextMenu={(e)=> {if(readonly){e.preventDefault()}}}
     className='richtext-container'
     >
+    {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
     <div
       ref={wrapperRef}
       className={`rich-text-editor-wrapper ${isRichTextDisabled ? 'rich-text-disabled' : ''} ${isThisFieldNetworkError ? 'has-network-error' : ''} ${isBlurred ? 'blurred' : ''} ${maxSizeOver ? 'has-error' : ''}`}
