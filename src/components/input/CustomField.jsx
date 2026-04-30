@@ -56,7 +56,7 @@ class CustomField extends Component {
   }
 
   formatDropdownOptions = options => {
-    return this.formatOptions(options.filter(option => option.index == null));
+    return this.formatOptions(options.filter(option => option.index != null));
   }
 
   renderNumber = props => {
