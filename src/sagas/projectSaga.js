@@ -689,20 +689,15 @@ const getChangedAttributeData = (values, initial) => {
   }
 
   Object.keys(values).forEach(key => {
-    if (key == "suunnittelualueen_kuvaus")
-      console.log("checking key", key, "with value", values[key], "and initial value", initial?.[key])
     if (key.includes("_readonly")) {
       return
     }
     if (initial?.[key] !== undefined && isEqual(values[key], initial[key])) {
-      if (key == "suunnittelualueen_kuvaus")
-        console.log(`skipping unchanged field ${key} with value`, values[key])
       return
     }
     if (values[key] === '' || (values[key]?.ops && isRichTextEmpty(values[key]))) {
       //empty text values saved as null
       attribute_data[key] = null
-      console.log("setting empty value to null for key", key)
     }
     else if (values[key] === null) {
       attribute_data[key] = null
@@ -738,7 +733,6 @@ const isRichTextEmpty = (value) => {
     if (typeof op?.insert !== 'string') {
       return true;
     }
-    console.log("checking if op is empty", op.insert, op.insert.trim().length === 0);
     return op.insert.trim().length === 0;
   });
 }
