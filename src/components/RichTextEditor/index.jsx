@@ -240,7 +240,7 @@ function RichTextEditor(props) {
     };
 
     removeTabBinding();
-  }, [editorRef])
+  }, [editorRef, editField])
   
   useEffect(() => {
     if(!isMount){
@@ -749,6 +749,17 @@ function RichTextEditor(props) {
   }
 
   const handleWrapperKeyDown = (e) => {
+    if (e.key === 'Escape' && rollingInfo && editField) {
+      editorRef.current?.getEditor()?.blur();
+      handleBlur(readonly);
+      setEditField(false);
+      requestAnimationFrame(() => {
+        const editButton = document.getElementById('edit-' + inputProps.name + '-button');
+        console.log(editButton)
+        editButton?.focus();
+      });
+      return;
+    }
     if (e.key !== 'Tab') return;
     const target = e.target;
     const isEditor = target.classList?.contains('ql-editor');
