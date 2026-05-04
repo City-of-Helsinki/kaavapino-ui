@@ -69,7 +69,7 @@ function RollingInfo(
       return value === "" ? noValue : input
     }
     return <>{
-      input.filter(str => str).map((str) => 
+      input.filter(Boolean).map((str) => 
       <p key={str}>{str.charAt(0).toUpperCase() + str.slice(1)}</p>)
     }</>
   }

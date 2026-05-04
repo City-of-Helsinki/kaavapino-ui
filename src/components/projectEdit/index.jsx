@@ -15,7 +15,6 @@ import {
   saveProjectBase,
   fetchProjectDeadlines,
   initializeProject,
-  getProjectSnapshot,
   saveProjectBasePayload,
   unlockAllFields,
   resetFloorAreaSave,
@@ -121,7 +120,7 @@ class ProjectEditPage extends Component {
     }
     if(prevProps.changingPhase === true && this.props.changingPhase === false){
       //get updated project data when moving to next phase
-      window.location.reload(true);
+      globalThis.location.reload(true);
     }
     if(prevProps.schema != this.props.schema){
       if(this.props.schema?.phases){
@@ -390,11 +389,20 @@ class ProjectEditPage extends Component {
     this.setState({ filterFieldsArray: fields })
   }
 
+  handleErrorFieldClick = (groupTitle, error) => {
+    if (groupTitle === 'Aikataulun muokkausnäkymä') {
+      this.showTimelineErrorField(error)
+    } else {
+      this.showErrorField(error.errorSection, error.fieldAnchorKey);
+    }
+  }
+
   renderErrorNotifications = () => {
     const { errorFields } = this.state
     if(!errorFields || errorFields.length === 0){
       return ''
     }
+
     const grouped = errorFields.reduce((acc,err) => { const group = err.title || 'Muut'; if(!acc[group]) acc[group] = []; acc[group].push(err); return acc; }, {})
     return (
       <div ref={this.errorField} className='required-fields-container'>
@@ -405,36 +413,11 @@ class ProjectEditPage extends Component {
               <ul>
                 {errors.map((error,index) => (
                   <li key={error.errorSection + error.errorField}>
-                    Virhe {index + 1}: <a
-                      href='#0'
-                      role="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (groupTitle === 'Aikataulun muokkausnäkymä') {
-                          const currentPhaseId = this.props.currentProject?.phase;
-                          let matchedDeadline = (this.props.currentProject?.deadlines || []).find(d => d?.deadline?.phase_id === currentPhaseId);
-                          //Extract suffix from error.fieldAnchorKey if there is one to variable
-                          const fieldSuffix = (error.fieldAnchorKey && error.fieldAnchorKey.match(/(_\d+)$/) || [])[0] || '';
-                          // Extract 'esillaolo/nahtavillaolo' from fieldAnchorKey
-                          const nahtavillaoresilla = matchedDeadline?.deadline?.phase_name === "Ehdotus" ? 'nahtavillaolokerta' : 'esillaolokerta';
-                          //Voimaantulo and Hyväksyminen phases are bit different and need own extra check
-                          const specialPhases = matchedDeadline?.deadline?.phase_name === "Hyväksyminen" ? 'hyvaksyminen_1' : matchedDeadline?.deadline?.phase_name === "Voimaantulo" ? 'voimaantulo_1' : false;
-                          const esillaoloOrLautakunta = error.fieldAnchorKey?.includes('esillaolo') ? nahtavillaoresilla : specialPhases ? specialPhases : 'lautakuntakerta';
-                          const anchorKeyWithSuffix = esillaoloOrLautakunta + fieldSuffix;
-                          //Special case for Voimaantulo phase where some of 4 fields needs to be filled and are not marked required on Excel level
-                          const subGroup = error?.errorSection === "Voimaantulo" && error?.title === "Aikataulun muokkausnäkymä" ? "Lopputulos" : error?.attr?.attributesubgroup
-                          if(matchedDeadline?.deadline?.attribute?.includes("alkaa_pvm")){
-                            matchedDeadline = (this.props.currentProject?.deadlines || []).find(
-                              d => d?.deadline?.phase_id === currentPhaseId && d?.deadline?.deadlinegroup?.includes(anchorKeyWithSuffix)
-                            );
-                          }
-                          this.props.showTimetable(true, error.fieldAnchorKey, currentPhaseId, matchedDeadline?.deadline || {}, subGroup);
-                        } else {
-                          this.showErrorField(error.errorSection, error.fieldAnchorKey);
-                        }
-                      }}
-                      className='required-fields-notification-link'
-                    >{error.errorSection} - {error.errorField}</a>
+                    Virhe {index + 1}: {' '}
+                    <button
+                      className="required-fields-notification-link"
+                      onClick={() => this.handleErrorFieldClick(groupTitle, error)}
+                    >{error.errorSection} - {error.errorField}</button>
                   </li>
                 ))}
               </ul>
@@ -595,6 +578,27 @@ class ProjectEditPage extends Component {
     }
   }
 
+  showTimelineErrorField = (error) => {
+    const currentPhaseId = this.props.currentProject?.phase;
+    let matchedDeadline = (this.props.currentProject?.deadlines || []).find(d => d?.deadline?.phase_id === currentPhaseId);
+    //Extract suffix from error.fieldAnchorKey if there is one to variable
+    const fieldSuffix = (error.fieldAnchorKey?.match(/(_\d+)$/) || [])[0] || '';
+    // Extract 'esillaolo/nahtavillaolo' from fieldAnchorKey
+    const nahtavillaoresilla = matchedDeadline?.deadline?.phase_name === "Ehdotus" ? 'nahtavillaolokerta' : 'esillaolokerta';
+    //Voimaantulo and Hyväksyminen phases are bit different and need own extra check
+    const specialPhases = matchedDeadline?.deadline?.phase_name === "Hyväksyminen" ? 'hyvaksyminen_1' : matchedDeadline?.deadline?.phase_name === "Voimaantulo" ? 'voimaantulo_1' : false;
+    const esillaoloOrLautakunta = error.fieldAnchorKey?.includes('esillaolo') ? nahtavillaoresilla : specialPhases || 'lautakuntakerta';
+    const anchorKeyWithSuffix = esillaoloOrLautakunta + fieldSuffix;
+    //Special case for Voimaantulo phase where some of 4 fields needs to be filled and are not marked required on Excel level
+    const subGroup = error?.errorSection === "Voimaantulo" && error?.title === "Aikataulun muokkausnäkymä" ? "Lopputulos" : error?.attr?.attributesubgroup
+    if(matchedDeadline?.deadline?.attribute?.includes("alkaa_pvm")){
+      matchedDeadline = (this.props.currentProject?.deadlines || []).find(
+        d => d?.deadline?.phase_id === currentPhaseId && d?.deadline?.deadlinegroup?.includes(anchorKeyWithSuffix)
+      );
+    }
+    this.props.showTimetable(true, error.fieldAnchorKey, currentPhaseId, matchedDeadline?.deadline || {}, subGroup);
+  }
+
   waitForElm = (selector) => {
     return new Promise(resolve => {
         if (document.getElementById(selector)) {
@@ -688,17 +692,10 @@ class ProjectEditPage extends Component {
     return (
       <div className='project-page-container'>
         {!this.state.isMobile && (
-          <div
+          <button
+            type="button"
             className="timeline"
-            role="button"
-            tabIndex="0"
             onClick={() => this.showTimelineModal(true)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                this.showTimelineModal(true);
-                e.preventDefault();
-              }
-            }}
           >
             <ProjectTimeline
               deadlines={currentProject.deadlines}
@@ -706,14 +703,14 @@ class ProjectEditPage extends Component {
               onhold={currentProject.onhold}
               attribute_data={attribute_data}
             />
-          </div>
+          </button>
         )}
         {currentProject.phase_documents_creation_started === true &&
           currentProject.phase_documents_created === false && (
             <InfoComponent>
               {t('project.documents-created', {
                 email:
-                  currentProject && currentProject.attribute_data
+                  currentProject?.attribute_data
                     ? currentProject.attribute_data.vastuuhenkilo_sahkoposti
                     : t('project.default-email')
               })}
@@ -885,6 +882,39 @@ ProjectEditPage.propTypes = {
   }),
   attribute_data: PropTypes.object,
   saveProjectFloorArea: PropTypes.func,
+  fetchSchemas: PropTypes.func,
+  fetchDocuments: PropTypes.func,
+  changingPhase: PropTypes.bool,
+  selectedPhase: PropTypes.number,
+  showTimetable: PropTypes.func,
+  history: PropTypes.object,
+  showFloorArea: PropTypes.func,
+  users: PropTypes.array,
+  currentUserId: PropTypes.string,
+  t: PropTypes.func,
+  clearSchemas: PropTypes.func,
+  changeProjectPhase: PropTypes.func,
+  saveProject: PropTypes.func,
+  showEditFloorAreaForm: PropTypes.bool,
+  showEditProjectTimetableForm: PropTypes.bool,
+  resetTimetableSave: PropTypes.func,
+  resetFloorAreaSave: PropTypes.func,
+  syncErrors: PropTypes.object,
+  lockProjectField: PropTypes.func,
+  unlockProjectField: PropTypes.func,
+  validating: PropTypes.bool,
+  saving: PropTypes.bool,
+  saveProjectTimetable: PropTypes.func,
+  getCurrentSection: PropTypes.func,
+  projectSetChecking: PropTypes.func,
+  checking: PropTypes.bool,
+  hasErrors: PropTypes.bool,
+  isDirty: PropTypes.bool,
+  initializeProject: PropTypes.func,
+  saveProjectBase: PropTypes.func,
+  submitErrors: PropTypes.object,
+  saveProjectBasePayload: PropTypes.func,
+  currentPhases: PropTypes.array,
 }
 
 const mapStateToProps = state => {
@@ -928,7 +958,6 @@ const mapDispatchToProps = {
   fetchProjectDeadlines,
   setAllEditFields,
   initializeProject,
-  getProjectSnapshot,
   clearSchemas,
   saveProjectBasePayload,
   resetFloorAreaSave,
