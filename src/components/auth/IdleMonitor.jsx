@@ -14,6 +14,7 @@ import 'react-toastify/dist/ReactToastify.min.css';
 const IDLE_WARNING_TIMEOUT = 1000 * 50 * 60;
 const IDLE_LOGOUT_TIMEOUT = 1000 * 60 * 60;
 const ACTIVITY_SYNC_INTERVAL = 5000;
+const STALE_TIMER_THRESHOLD = 1000 * 60;
 const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'focus'];
 
 const createActiveState = (lastActivityAt = Date.now(), action = 'activity') => ({
@@ -63,9 +64,28 @@ function IdleMonitor() {
     history.push('/logout');
   };
 
+  const refreshActivityFromStaleState = () => {
+    const refreshedState = createActiveState();
+    sharedStateRef.current = refreshedState;
+    lastSyncedActivityRef.current = refreshedState.lastActivityAt;
+    broadcastSharedIdleState(refreshedState);
+    enterState(refreshedState);
+  };
+
   const scheduleWarning = (state) => {
+    const scheduledAt = Date.now();
+    const delay = Math.max(IDLE_WARNING_TIMEOUT - (scheduledAt - state.lastActivityAt), 0);
+    const expectedFireAt = scheduledAt + delay;
+
     const onWarningTimeout = () => {
       const latestState = getSharedIdleState() ?? sharedStateRef.current;
+    
+      // Refresh state if the logout timer expired while the window was closed
+      const firedLateBy = Date.now() - expectedFireAt;
+      if (firedLateBy > STALE_TIMER_THRESHOLD) {
+        refreshActivityFromStaleState();
+        return;
+      }
 
       if (latestState.phase === 'warning') {
         enterState(latestState);
@@ -81,15 +101,23 @@ function IdleMonitor() {
 
       enterState(latestState);
     };
-    warningTimeoutRef.current = setTimeout(
-      onWarningTimeout,
-      Math.max(IDLE_WARNING_TIMEOUT - (Date.now() - state.lastActivityAt), 0)
-    );
+    warningTimeoutRef.current = setTimeout(onWarningTimeout, delay);
   };
 
   const scheduleLogout = (state) => {
-    const onLogoutTimeout = (state) => {
-      const latestState = getSharedIdleState() ?? state;
+    const scheduledAt = Date.now();
+    const delay = Math.max(state.logoutAt - scheduledAt, 0);
+    const expectedFireAt = scheduledAt + delay;
+
+    const onLogoutTimeout = (scheduledState) => {
+      const latestState = getSharedIdleState() ?? scheduledState;
+
+      // Refresh state if the logout timer expired while the window was closed
+      const firedLateBy = Date.now() - expectedFireAt;
+      if (firedLateBy > STALE_TIMER_THRESHOLD) {
+        refreshActivityFromStaleState();
+        return;
+      }
 
       if (latestState.phase === 'active') {
         enterState(latestState);
@@ -103,7 +131,7 @@ function IdleMonitor() {
       enterState(latestState);
     };
     logoutTimeoutRef.current = setTimeout(
-      () => onLogoutTimeout(state), Math.max(state.logoutAt - Date.now(), 0)
+      () => onLogoutTimeout(state), delay
     );
   };
 
@@ -191,12 +219,7 @@ function IdleMonitor() {
     if (sharedStateRef.current.phase === 'warning' && sharedStateRef.current.logoutAt > Date.now()) {
       enterState(sharedStateRef.current);
     } else {
-      if (sharedStateRef.current.phase !== 'active') {
-        sharedStateRef.current = createActiveState();
-      }
-
-      broadcastSharedIdleState(sharedStateRef.current);
-      enterState(sharedStateRef.current);
+      refreshActivityFromStaleState();
     }
 
     return () => {
