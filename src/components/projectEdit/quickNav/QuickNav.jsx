@@ -64,6 +64,18 @@ export default function QuickNav({
   }
 
   useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && document.activeElement.className.includes('quicknav-item')) {
+        document.getElementById("quicknav-header-button")?.focus();
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  useEffect(() => {
     const optionsArray = [];
     let curPhase = ""
 
@@ -390,7 +402,7 @@ export default function QuickNav({
         {selectedPhase?.phaseID === 0 ? (
           <div className='quicknav-header-container'>
             <div className='quicknav-header'>
-              <Button variant="supplementary" className='quicknav-allphases' aria-label="Kaikki vaiheet. Valitse vaihe alla olevasta navigaatiosta tai palaa takaisin aikaisempaan vaiheeseen" disabled={!prevSelectedRef.current} onClick={() => switchPhase(prevSelectedRef.current)} iconRight={<IconArrowRight className='right-icon' />}>
+              <Button id="quicknav-header-button" variant="supplementary" className='quicknav-allphases' aria-label="Kaikki vaiheet. Valitse vaihe alla olevasta navigaatiosta tai palaa takaisin aikaisempaan vaiheeseen" disabled={!prevSelectedRef.current} onClick={() => switchPhase(prevSelectedRef.current)} iconRight={<IconArrowRight className='right-icon' />}>
                 Kaikki vaiheet
               </Button>
             </div>
@@ -399,7 +411,7 @@ export default function QuickNav({
         ) : (
           <div className='quicknav-header-container'>
             <div className='quicknav-header'>
-                <Button variant="supplementary" aria-label='Palaa takaisin vaiheiden etusivulle' onClick={() => hideSections()} iconLeft={<IconArrowLeft className='left-icon' />}>
+                <Button id="quicknav-header-button" variant="supplementary" aria-label='Palaa takaisin vaiheiden etusivulle' onClick={() => hideSections()} iconLeft={<IconArrowLeft className='left-icon' />}>
                   {phaseTitle}
                 </Button>
             </div>
