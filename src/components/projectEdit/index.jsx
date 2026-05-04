@@ -10,10 +10,8 @@ import {
   saveProjectFloorArea,
   saveProjectTimetable,
   changeProjectPhase,
-  validateProjectFields,
   projectSetChecking,
   saveProjectBase,
-  fetchProjectDeadlines,
   initializeProject,
   saveProjectBasePayload,
   unlockAllFields,
@@ -21,12 +19,10 @@ import {
   resetTimetableSave,
   showTimetable,
   showFloorArea,
-  setLastSaved,
-  resetFormErrors,
   fetchDisabledDatesStart,
   resetAttributeData
 } from '../../actions/projectActions'
-import { fetchSchemas, setAllEditFields, clearSchemas } from '../../actions/schemaActions'
+import { fetchSchemas, clearSchemas } from '../../actions/schemaActions'
 import { fetchDocuments } from '../../actions/documentActions'
 import {
   savingSelector,
@@ -35,8 +31,6 @@ import {
   hasErrorsSelector,
   checkingSelector,
   currentProjectSelector,
-  floorAreaSavedSelector,
-  timetableSavedSelector,
   showFloorAreaSelector,
   showTimetableSelector,
   selectDisabledDates
@@ -44,9 +38,7 @@ import {
 import {
   documentsSelector
 } from '../../selectors/documentSelector'
-import { schemaSelector, allEditFieldsSelector } from '../../selectors/schemaSelector'
-import NavigationPrompt from 'react-router-navigation-prompt'
-import Prompt from '../common/Prompt.jsx'
+import { schemaSelector } from '../../selectors/schemaSelector'
 import EditForm from './EditForm.jsx'
 import QuickNav from './quickNav/QuickNav.jsx'
 import EditFloorAreaFormModal from '../project/EditFloorAreaFormModal'
@@ -73,10 +65,7 @@ class ProjectEditPage extends Component {
   state = {
     highlightGroup: '',
     refs: [],
-    selectedRefName: null,
-    currentRef: null,
     formInitialized: false,
-    currentEmail: "",
     sectionIndex:0,
     phaseTitle:0,
     filterFieldsArray: [],
@@ -177,16 +166,6 @@ class ProjectEditPage extends Component {
       this.setState(prevState => ({ ...prevState }))
       this.props.history.replace({ ...this.props.location, search: '' })
     }
-
-    if(this.props.users && this.props.currentUserId){
-      const userData = this.props.users.find(x => x.id === this.props.currentUserId)
-      
-      if(userData && 'email' in userData){
-        const currentEmail = userData.email
-        this.setState({currentEmail});
-      }
-    }
-
     this.props.fetchDocuments(this.props.project.id)
   }
 
@@ -757,7 +736,6 @@ class ProjectEditPage extends Component {
               changeSection={this.changeSection}
               filterFieldsArray={this.state.filterFieldsArray}
               highlightedTag={this.state.highlightedTag}
-              setFilterAmount={this.setFilterAmount}
               phasePrefix={currentSchema.list_prefix}
               phaseTitle={currentSchema.title}
               phaseStatus={phaseText}
@@ -770,21 +748,6 @@ class ProjectEditPage extends Component {
               isTheResponsiblePerson={isTheResponsiblePerson}
               showSection={this.state.showSection}
             />
-            <NavigationPrompt
-              when={
-                this.props.isDirty &&
-                this.props.allFields &&
-                this.props.allFields.length > 0
-              }
-            >
-              {({ onConfirm, onCancel }) => (
-                <Prompt
-                  onCancel={onCancel}
-                  onConfirm={onConfirm}
-                  message={t('project.save-warning')}
-                />
-              )}
-            </NavigationPrompt>
           </div>
           <div id={`title-${title}`} className='project-input-right'>
             {this.state?.showSection &&
@@ -929,12 +892,9 @@ const mapStateToProps = state => {
     syncErrors: getFormSyncErrors(EDIT_PROJECT_FORM)(state),
     submitErrors: getFormSubmitErrors(EDIT_PROJECT_FORM)(state),
     formValues: getFormValues(EDIT_PROJECT_FORM)(state),
-    allEditFields: allEditFieldsSelector(state),
     users: usersSelector(state),
     currentUserId: userIdSelector(state),
     currentProject: currentProjectSelector(state),
-    floorAreaSavedSelector: floorAreaSavedSelector(state),
-    timetableSavedSelector: timetableSavedSelector(state),
     documents: documentsSelector(state),
     showTimetableForm:showTimetableSelector(state),
     showFloorAreaForm:showFloorAreaSelector(state),
@@ -952,11 +912,8 @@ const mapDispatchToProps = {
   saveProjectFloorArea,
   saveProjectTimetable,
   changeProjectPhase,
-  validateProjectFields,
   projectSetChecking,
   saveProjectBase,
-  fetchProjectDeadlines,
-  setAllEditFields,
   initializeProject,
   clearSchemas,
   saveProjectBasePayload,
@@ -965,8 +922,6 @@ const mapDispatchToProps = {
   fetchDocuments,
   showTimetable,
   showFloorArea,
-  setLastSaved,
-  resetFormErrors,
   fetchDisabledDatesStart,
   reset,
   resetAttributeData
