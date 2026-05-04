@@ -755,7 +755,6 @@ function RichTextEditor(props) {
       setEditField(false);
       requestAnimationFrame(() => {
         const editButton = document.getElementById('edit-' + inputProps.name + '-button');
-        console.log(editButton)
         editButton?.focus();
       });
       return;

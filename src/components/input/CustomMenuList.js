@@ -21,7 +21,6 @@ const CustomMenuList = (props) => {
 
         if (hasMore && typeof loadMoreOptions === 'function') {
           const nextPage = page + 1;
-          console.log("Triggering loadMoreOptions from MenuList (page:", nextPage, ")");
           loadMoreOptions(nextPage);
         }
       }

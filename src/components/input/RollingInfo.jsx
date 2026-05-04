@@ -31,7 +31,12 @@ const processViranomaistahoData = (attributeData) => {
   }
 }
 
-function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField,type,phaseIsClosed,factaInfo,maxSizeOver,attributeData,shouldDisableForErrors}) {
+function RollingInfo(
+  {
+    name,value,nonEditable,modifyText,rollingInfoText,editRollingField,
+    type,phaseIsClosed,factaInfo,maxSizeOver,attributeData,shouldDisableForErrors
+    }
+  ) {
   const users = useSelector(state => usersSelector(state))
   let inputText = value
   let noInfoText = name === "voimassa_asemakaavat" || name === "voimassa_olevat_rakennuskiellot" ? "Ei ole" : "Ei"
@@ -73,7 +78,6 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
   const quillValue = name === 'viranomaistahon_nimi_ehdotus_readonly'
     ? (inputText || noValue)
     : fallbackValue;
-
   return (
     <>
     <div className='rolling-info-container'>
@@ -81,7 +85,7 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
         {type === "richtext" ? (
           <ReactQuill
             value={quillValue}
-            tabIndex="0"
+            tabIndex="-1"
             theme="snow"
             readOnly={true}
             className="rolling-richtext"
@@ -91,8 +95,14 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
         }
       </div>
       {!nonEditable && (
-      <Button disabled={phaseIsClosed || shouldDisableForErrors} onClick={openEdit} size="small" variant="supplementary" iconLeft={<IconPenLine />}>
-        {modifyText}
+      <Button 
+        disabled={phaseIsClosed || shouldDisableForErrors} 
+        onClick={openEdit} size="small" 
+        variant="supplementary" 
+        iconLeft={<IconPenLine />}
+        id = {`edit-${name}-button`}
+      >
+          {modifyText}
       </Button>
       )}
     </div>
