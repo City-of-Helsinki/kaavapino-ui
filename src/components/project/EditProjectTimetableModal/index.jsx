@@ -482,7 +482,7 @@ class EditProjectTimeTableModal extends Component {
     return formValues && formValues[deadline.attribute] ? formValues[deadline.attribute] : deadline.date;
   }
 
-  addMainGroup = (deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines, disabled) => {
+  addMainGroup = (deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines, disabled, formValues) => {
     const currentDateString = new Date().toJSON().slice(0, 10);
     const currentDate = new Date(currentDateString);
     phaseData.push({
@@ -528,7 +528,7 @@ class EditProjectTimeTableModal extends Component {
         locked: false,
         undeletable: true,
         phaseID: deadlines[i].deadline.phase_id,
-        className: `${deadlines[i].deadline.deadlinegroup}`
+        className: `${deadlines[i].deadline.deadlinegroup}${this.isPhaseInPast(deadlines[i].deadline.phase_name, formValues) ? ' no-drag' : ''}`
       });
     }
   
@@ -929,7 +929,7 @@ class EditProjectTimeTableModal extends Component {
 
       if(startDate && endDate){
         //Main group items not movable(Käynnistys, Periaatteet, OAS etc)
-        let mainGroup = this.addMainGroup(deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines, disabled);
+        let mainGroup = this.addMainGroup(deadlines, i, numberOfPhases, startDate, endDate, style, phaseData, deadLineGroups, nestedDeadlines, disabled, formValues);
         [phaseData, deadLineGroups, nestedDeadlines] = mainGroup;
         startDate = false
         endDate = false
