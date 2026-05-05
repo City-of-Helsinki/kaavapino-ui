@@ -80,10 +80,9 @@ const TimelineModal = ({
     }
 
     return (
-      <>
+      <React.Fragment key={key}>
         <FormField
           {...fieldProps}
-          key={key}
           formName={EDIT_PROJECT_TIMETABLE_FORM}
           deadlines={deadlines}
           error={modifiedError}
@@ -96,7 +95,7 @@ const TimelineModal = ({
           lautakuntaInPast={lautakuntaInPast}
           tooltip={tooltip}
           attributeData={visValues}
-          disabledDates={disabledDates && type === 'date'}
+          disabledDates={type === 'date' ? disabledDates : undefined}
           lomapaivat={lomapaivat}
           dateTypes={dateTypes}
           deadlineSection={deadlineSection}
@@ -112,7 +111,7 @@ const TimelineModal = ({
           timetable_editable={fieldProps?.field?.timetable_editable}
         />
         {modifiedError && <div className="field-error">{modifiedError}</div>}
-      </>
+      </React.Fragment>
     )
   }
 
@@ -567,7 +566,7 @@ const TimelineModal = ({
             <div className='date-content'>
               {deadlineSections.map((section, i) => {
                 if (section.title === group) {
-                  return renderSection(section, i, content);
+                  return <React.Fragment key={section.title}>{renderSection(section, i, content)}</React.Fragment>;
                 }
                 return null;
               })}
