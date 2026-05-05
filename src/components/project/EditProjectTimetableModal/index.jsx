@@ -482,7 +482,8 @@ class EditProjectTimeTableModal extends Component {
     return formValues && formValues[deadline.attribute] ? formValues[deadline.attribute] : deadline.date;
   }
 
-  addMainGroup = (deadlines, i, numberOfPhases, startDate, endDate, style, { phaseData, deadLineGroups, nestedDeadlines, disabled, formValues }) => {
+  addMainGroup = (deadlines, i, numberOfPhases, startDate, endDate, style, options) => {
+    const { phaseData, deadLineGroups, nestedDeadlines, disabled, formValues } = options;
     const currentDateString = new Date().toJSON().slice(0, 10);
     const currentDate = new Date(currentDateString);
     phaseData.push({
