@@ -27,8 +27,6 @@ import { getProjectCardFields } from '../../actions/schemaActions'
 import { projectCardFieldsSelector } from '../../selectors/schemaSelector'
 import { Accordion } from 'hds-react'
 import { useTranslation } from 'react-i18next'
-import { unreadCommentsCountSelector } from '../../selectors/commentSelector'
-import CommentsMobile from '../shoutbox/comments/CommentsMobile'
 import './projectCard.scss'
 
 export const PROJECT_PICTURE = 'projektikortin_kuva'
@@ -51,10 +49,9 @@ function ProjectCardPage({
   currentProject,
   initializeProject,
   clearExternalDocuments,
-  unreadCommentsCount,
   personnel
 }) {
-  const [descriptionFields, setDescriptionDFields] = useState([])
+  const [descriptionFields, setDescriptionFields] = useState([])
   const [basicInformationFields, setBasicInformationFields] = useState([])
   const [contactsFields, setContactsFields] = useState([])
   const [photoField, setPhotoField] = useState(null)
@@ -64,7 +61,7 @@ function ProjectCardPage({
   const [contractFields, setContractFields] = useState([])
   const [planningRestriction, setPlanningRestriction] = useState(null)
   const [currentProjectId, setCurrentProjectId] = useState(projectId)
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 720)
 
   const { t } = useTranslation()
 
@@ -82,7 +79,7 @@ function ProjectCardPage({
   }, [projectId])
 
   useEffect(() => {
-    if (currentProject.id.toString() !== projectId.toString()) {
+    if (currentProject?.id?.toString() !== projectId?.toString()) {
       initializeProject(currentProjectId)
     }
   }, [currentProjectId])
@@ -91,22 +88,17 @@ function ProjectCardPage({
     window.scrollTo({ top: 0, behavior: 'auto' })
   }, [])
 
-  // create an event listener
   useEffect(() => {
     window.addEventListener('resize', handleResize)
-    if (window.innerWidth < 720) {
-      setIsMobile(true)
+    return () => {
+      window.removeEventListener('resize', handleResize)
     }
-  })
+  }, [])
 
-  //choose the screen size
   const handleResize = () => {
-    if (window.innerWidth < 720) {
-      setIsMobile(true)
-    } else {
-      setIsMobile(false)
-    }
+    setIsMobile(window.innerWidth < 720)
   }
+
   useEffect(() => {
     return () => {
       clearExternalDocuments()
@@ -124,12 +116,11 @@ function ProjectCardPage({
     const currentContractFields = []
     let currentPlanningRestriction = null
 
-    const projectData = Object.assign(
-      currentProject && currentProject.attribute_data,
-      projectUtils.getMissingGeoData(currentProject?.attribute_data,currentProject?.geoserver_data)
-    )
-    projectCardFields &&
-      projectCardFields.forEach(field => {
+    const projectData = { 
+      ...currentProject?.attribute_data, 
+      ...projectUtils.getMissingGeoData(currentProject?.attribute_data, currentProject?.geoserver_data) 
+    }
+    projectCardFields?.forEach(field => {
         let value;
         const returnValues = [];
         projectUtils.findValuesFromObject(projectData, field.name, returnValues);
@@ -142,42 +133,43 @@ function ProjectCardPage({
           ...field,
           value: value === undefined ? null : value
         }
-        if (field.section_key === PROJECT_PICTURE) {
-          newField = {
-            ...field,
-            link: value === undefined ? null : value.link,
-            description: value === undefined ? null : value.description
-          }
-          currentPhotoField = newField
-        }
-        if (field.section_key === PROJECT_BASIC) {
-          currentBasicInformationFields.push(newField)
-        }
-        if (field.section_key === PROJECT_DESCRIPTION) {
-          currentDescriptionFields.push(newField)
-        }
-        if (field.section_key === PROJECT_STRATEGY) {
-          currentStrategyConnectionFields.push(newField)
-        }
-        if (field.section_key === PROJECT_CONTRACT) {
-          currentContractFields.push(newField)
-        }
-        if (field.section_key === PROJECT_FLOOR_AREA) {
-          currentFloorAreaFields.push(newField)
-        }
-        if (field.section_key === PROJECT_TIMETABLE) {
-          currentTimeTableFields.push(newField)
-        }
-        if (field.section_key === PROJECT_CONTACT) {
-          currentContactsFields.push(newField)
-        }
-
-        if (field.section_key === PROJECT_BORDER) {
-          currentPlanningRestriction = newField
+        switch (field.section_key) {
+          case PROJECT_PICTURE:
+            newField = {
+              ...field,
+              link: value === undefined ? null : value.link,
+              description: value === undefined ? null : value.description
+            }
+            currentPhotoField = newField
+            break
+          case PROJECT_BASIC:
+            currentBasicInformationFields.push(newField)
+            break
+          case PROJECT_DESCRIPTION:
+            currentDescriptionFields.push(newField)
+            break
+          case PROJECT_STRATEGY:
+            currentStrategyConnectionFields.push(newField)
+            break
+          case PROJECT_CONTRACT:
+            currentContractFields.push(newField)
+            break
+          case PROJECT_FLOOR_AREA:
+            currentFloorAreaFields.push(newField)
+            break
+          case PROJECT_TIMETABLE:
+            currentTimeTableFields.push(newField)
+            break
+          case PROJECT_CONTACT:
+            currentContactsFields.push(newField)
+            break
+          case PROJECT_BORDER:
+            currentPlanningRestriction = newField
+            break
         }
       })
 
-    setDescriptionDFields(currentDescriptionFields)
+    setDescriptionFields(currentDescriptionFields)
     setBasicInformationFields(currentBasicInformationFields)
     setContactsFields(currentContactsFields)
     setPhotoField(currentPhotoField)
@@ -208,10 +200,10 @@ function ProjectCardPage({
         <Grid.Column>
           <Segment>
             <ProjectTimeline
-              deadlines={currentProject && currentProject.deadlines}
+              deadlines={currentProject?.deadlines}
               projectView={true}
-              onhold={currentProject && currentProject.onhold}
-              attribute_data={currentProject && currentProject.attribute_data}
+              onhold={currentProject?.onhold}
+              attribute_data={currentProject?.attribute_data}
             />
           </Segment>
         </Grid.Column>
@@ -296,12 +288,6 @@ function ProjectCardPage({
         <Accordion className="mobile-accordion" heading={t('project.documents-title')}>
           <Documents hideTitle={true} documentFields={externalDocuments} />
         </Accordion>
-        <Accordion
-          className="mobile-accordion"
-          heading={`Viestit ${unreadCommentsCount > 0 ? unreadCommentsCount : ''}`}
-        >
-          <CommentsMobile projectId={projectId} />
-        </Accordion>
         <div className="mobile-accordion">
           <GeometryInformation hideTitle={true} field={planningRestriction} />
         </div>
@@ -337,7 +323,6 @@ const mapStateToProps = state => {
     externalDocuments: externalDocumentsSelector(state),
     projectCardFields: projectCardFieldsSelector(state),
     currentProject: currentProjectSelector(state),
-    unreadCommentsCount: unreadCommentsCountSelector(state),
     personnel: personnelSelector(state)
   }
 }
