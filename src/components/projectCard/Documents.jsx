@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link } from 'hds-react';
 
 function Documents({ documentFields, hideTitle, mapLink }) {
   const { t } = useTranslation()
@@ -38,13 +38,12 @@ function Documents({ documentFields, hideTitle, mapLink }) {
       <div>
         {mapLink &&
         <div>
-          <Link key={mapLink} to={{ pathname: mapLink }} target="_blank">
+          <Link href={mapLink} external={true} openInNewTab={true}>
             {t('project.link-to-map')}
           </Link>
         </div>
         }
-        {documentFields && documentFields.sections &&
-          documentFields.sections.map(section => {
+        {documentFields?.sections?.map(section => {
             return renderSection(section)
           })
         }
@@ -64,7 +63,8 @@ function Documents({ documentFields, hideTitle, mapLink }) {
 
 Documents.propTypes = {
   documentFields: PropTypes.object,
-  mapLink: PropTypes.string
+  mapLink: PropTypes.string,
+  hideTitle: PropTypes.bool
 }
 
 export default Documents
