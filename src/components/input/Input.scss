@@ -580,19 +580,33 @@
     background-color: $color-white;
     font-family: "Helsinki Grotesk Medium", sans-serif;
     font-size: $size14;
+    line-height: 150%;
+    letter-spacing: 0;
     color: $black1;
     font-weight: 500;
     pointer-events: all;
     cursor: pointer;
-    width: 100%;
+    width: calc(100% + 24px);
+    margin-left: -12px;
+    margin-right: -12px;
     text-align: left;
     border:none;
     outline: none;
+    position: relative;
     transition: 0.1s;
     padding-top: 11.2px;
     padding-bottom: 10.8px;
-    padding-left: 0;
-    border-bottom: 0.7px solid $color-black-60;
+    padding-left: 12px;
+    padding-right: 12px;
+    &::after {
+      content: '';
+      display: block;
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 0;
+      border-bottom: 0.7px solid $color-black-60;
+    }
     .accordion-button-content{
       display: flex;
       justify-content: flex-start;
@@ -617,6 +631,11 @@
     }
   }
 
+  .accordion-button-error {
+    outline: 2px solid $color-error;
+    outline-offset: -2px;
+  }
+
   .accordion-button-open{
     display: flex;
     justify-content: space-between;
@@ -624,18 +643,23 @@
     background-color: $color-fog-light;
     font-family: "Helsinki Grotesk Medium", sans-serif;
     font-size: $size14;
+    line-height: 150%;
+    letter-spacing: 0;
     color: $black1;
     font-weight: 500;
     pointer-events: all;
     cursor: pointer;
-    width: 100%;
+    width: calc(100% + 24px);
+    margin-left: -12px;
+    margin-right: -12px;
     text-align: left;
     border: none;
     outline: none;
     transition: 0.1s;
     padding-top: 11.2px;
     padding-bottom: 10.8px;
-    padding-left: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
     .accordion-button-content{
       display: flex;
       justify-content: flex-start;
@@ -744,23 +768,46 @@
       }
     }
     .input-title{
-      font-size: $size13;
+      font-family: "Helsinki Grotesk Medium", sans-serif !important;
+      font-size: $size14 !important;
+      font-weight: 500 !important;
+      line-height: 19.75px !important;
+      letter-spacing: 0 !important;
       padding-left: 0;
       pointer-events: none;
     }
   }
 
   .fieldset-accordian-open{
-    padding-left: 16px;
-    padding-right: 16px;
+    margin-left: -12px;
+    margin-right: -12px;
+    padding-left: 12px;
+    padding-right: 12px;
     padding-top: 16px;
     background-color: $color-fog-light;
     display: block;
     overflow: visible;
-    border-bottom: 0.7px solid $color-black-60;
+    position: relative;
+    &::after {
+      content: '';
+      display: block;
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 0;
+      border-bottom: 0.7px solid $color-black-60;
+    }
     .input-container {
       background-color: $color-fog-light;
-      padding-bottom: 27.5px;
+      padding-bottom: 24px;
+      padding-left: 0;
+      padding-right: 0;
+      .field {
+        border-left: none !important;
+        margin-left: 0 !important;
+        padding-left: 0;
+        padding-right: 0;
+      }
       .field{
         .text-input:not(.rolling-info-container .text-input),.selection,.ad-combobox{
           max-width: 256px;
@@ -783,7 +830,11 @@
       }
     }
     .input-title{
-      font-size: $size13;
+      font-family: "Helsinki Grotesk Medium", sans-serif !important;
+      font-size: $size14 !important;
+      font-weight: 500 !important;
+      line-height: 19.75px !important;
+      letter-spacing: 0 !important;
       padding-left: 0;
       pointer-events: none;
     }
@@ -829,28 +880,12 @@
   .fieldset-button-add{
     justify-content: flex-start;
     width: auto;
-  }
-  .fieldset-saving-notification{
-    background-color: $color-info-light;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    padding: $size12;
-    height: $size48;
+    font-family: "Helsinki Grotesk Medium", sans-serif;
+    font-weight: 500;
     font-size: $size16;
-    font-family: "Helsinki Grotesk Bold", sans-serif;
-    font-weight: 700;
-    .fieldset-spinner{
-      margin: 0;
-      padding: 0;
-      margin-right: $size12;
-      .loading-spinner{
-        --spinner-size: 1.5rem;
-        --spinner-thickness: 0.2rem;
-        --spinner-color: #0000bf;
-      }
-
-    }
+    line-height: 24px;
+    text-align: center;
+    opacity: 1 !important;
   }
 }
 
@@ -867,7 +902,7 @@
 .fieldset-button-remove:not(:disabled) {
  color: $color-error;
  border-color: $color-error !important;
- margin-top: 20px;
+ background-color: $color-white;
  margin-bottom: 3.4px;
 }
 
@@ -1550,6 +1585,11 @@
   align-items: center;
   margin-left: 0.5rem;
   margin-top: 2rem;
+  font-family: "Helsinki Grotesk Medium", sans-serif;
+  font-weight: 500;
+  font-size: $size16;
+  line-height: 24px;
+  text-align: center;
   .loading-spinner {
     --spinner-size: 1.5rem;
     --spinner-thickness: 0.2rem;
