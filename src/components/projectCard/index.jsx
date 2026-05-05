@@ -289,7 +289,7 @@ function ProjectCardPage({
           <Documents hideTitle={true} documentFields={externalDocuments} />
         </Accordion>
         <div className="mobile-accordion">
-          <GeometryInformation hideTitle={true} field={planningRestriction} />
+          <GeometryInformation hideTitle={false} field={planningRestriction} />
         </div>
       </div>
     )
