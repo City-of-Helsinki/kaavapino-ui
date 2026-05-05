@@ -9,7 +9,7 @@ import inputUtils from '../../utils/inputUtils'
 import Info from './Info.jsx'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { has, get, startCase } from 'lodash'
-import { Button, IconLock, IconPlus, IconTrash, IconAngleDown, IconAngleUp, LoadingSpinner, Tooltip } from 'hds-react'
+import { Button, IconLock, IconPlus, IconTrash, IconAngleDown, IconAngleUp, LoadingSpinner } from 'hds-react'
 import { change } from 'redux-form'
 import { useTranslation } from 'react-i18next';
 import { OutsideClick } from '../../hooks/OutsideClick'
@@ -53,7 +53,6 @@ const FieldSet = ({
   testingConnection
 }) => {
   const handleBlur = () => {
-    setShowSaving(true)
     onBlur()
   }
 
@@ -77,7 +76,6 @@ const FieldSet = ({
   const [hiddenIndex, setHiddenIndex] = useState(-1)
   const [expanded, setExpanded] = useState([])
   const [adding,setAdding] = useState(false)
-  const [showSaving,setShowSaving] = useState(false)
 
   const [hiding,setHiding] = useState(false)
   const [currentFieldset,setCurrentFieldset] = useState(false)
@@ -181,7 +179,6 @@ const FieldSet = ({
         setPendingAutoOpen(false)
       }
       setCurrentFieldset(false)
-      setShowSaving(false)
     }
   }, [saving])
 
@@ -232,11 +229,14 @@ const FieldSet = ({
   }
 
   const getNumberOfFieldsets = (fieldsetTotal) => {
-   let fieldText = fieldsetTotal
    const fieldName = get(formValues, name)
-   let fieldsLength = fieldName?.filter( i => i?._deleted !== true );
-   fieldText = fieldText.replace("{{kpl}}", fieldsLength?.length || 0)
-   return fieldText 
+   const fieldsLength = fieldName?.filter( i => i?._deleted !== true );
+   const count = fieldsLength?.length || 0
+   if (count === 0) {
+     const label = fieldsetTotal?.split(/\s+/)[0]?.toLowerCase() || ''
+     return t('project.fieldset-empty', { label })
+   }
+   return fieldsetTotal.replace('{{kpl}}', count)
   }
 
   OutsideClick(accordianRef, handleOutsideClick)
@@ -294,22 +294,18 @@ const FieldSet = ({
       valueType = getCorrectValueType(values,valueNameKey)
     }
 
-    return valueType || <span className='italic'>Tieto puuttuu</span>
+    return valueType || <span className='italic'>{t('project.fieldset-missing-value')}</span>
   }
   
-  // Check if ANY fieldset instance in this component has child fields with errors
-  // This is used to decide whether to disable Add button
-  const anyFieldsetHasChildError = Array.isArray(sets) && formErrors?.some(errorField => {
-    return sets.some(set => {
-      return fields.some(field => {
-        const fieldName = `${set}.${field.name}`;
-        return errorField === fieldName;
-      });
-    });
-  });
+  const anyFieldsetHasChildError = !!formErrors?.some(ef => ef.startsWith(`${name}[`));
+
+  const savedFields = Array.isArray(lastSaved?.fields) ? lastSaved.fields : []
+  const isThisFieldsetNetworkError = lastSaved?.status === 'error' && savedFields.some(f =>
+    typeof f === 'string' && f.startsWith(`${name}`)
+  )
 
   let addButtonMessage
-  if (lastSaved?.status === 'error') {
+  if (isThisFieldsetNetworkError) {
     addButtonMessage = (
       <div className="network-error-state" aria-live="polite" aria-atomic="true">
         <div className="error-text">
@@ -321,13 +317,14 @@ const FieldSet = ({
         </div>
       </div>
     )
-  } else if (visibleErrors?.length > 0) {
+  } else if (anyFieldsetHasChildError) {
     addButtonMessage = <div className="error-text add-error">{t('project.error-prevent-add')}</div>
   } else {
     addButtonMessage = null
   }
 
   return (
+    <>
     <div className='fieldset-main-container' ref={accordianRef}>
     <div className='fieldset-info'>{fieldsetTotal ? getNumberOfFieldsets(fieldsetTotal) : ""}</div>
       {sets.map((set, i) => {
@@ -342,6 +339,7 @@ const FieldSet = ({
         // (character limit exceeded etc.) fieldsets should still be openable so users
         // can view data in other fieldsets, while fields inside remain passivated
         const shouldDisableAccordion = lastSaved?.status === 'error';
+        const thisRowHasError = formErrors?.some(ef => ef.startsWith(`${set}.`))
         
         return (
           <React.Fragment key={`${name}-${i}`}>
@@ -350,6 +348,7 @@ const FieldSet = ({
                 <button type="button" tabIndex={0} className={(() => {
                   if (saving || hiding || adding || shouldDisableAccordion) return "accordion-button-disabled";
                   if (expanded.includes(i)) return "accordion-button-open";
+                  if (thisRowHasError) return "accordion-button accordion-button-error";
                   return "accordion-button";
                 })()} onClick={(e) => {if(!(saving || hiding || adding || shouldDisableAccordion)){checkLocked(e,set,i)}}}>
                   <div className='accordion-button-content'>
@@ -397,17 +396,15 @@ const FieldSet = ({
                    * here to modify the input header accordingly. */
                   const showError = required ? t('project.required-field') : error
                   const fieldUpdated = updated?.new_value && has(updated?.new_value[0], field.name)
-                  const fieldSpecificUpdated = fieldUpdated ? updated : (updated?.timestamp ? updated : undefined)
-                  let fieldRollingInfo
+                  let fieldSpecificUpdated
+                  if (fieldUpdated) {
+                    fieldSpecificUpdated = updated
+                  } else {
+                    fieldSpecificUpdated = updated?.timestamp ? updated : undefined
+                  }
+                  const fieldRollingInfo = field?.categorization.includes("katsottava tieto") || field?.categorization.includes("päivitettävä tieto")
                   let rollingInfoText = "Tieto siirtyy vaiheiden välillä ja sitä voi täydentää"
                   let nonEditable = false
-
-                  if(field?.categorization.includes("katsottava tieto") || field?.categorization.includes("päivitettävä tieto")){
-                    fieldRollingInfo = true
-                  }
-                  else{
-                    fieldRollingInfo = false
-                  }
 
                   if(isReadOnly || field?.display === 'readonly_checkbox'){
                     rollingInfoText = "Tieto on automaattisesti muodostettu"
@@ -448,7 +445,7 @@ const FieldSet = ({
                           <div className="input-header-icons">
                             {!isReadOnly && (
                               <>
-                                {inputUtils.renderUpdatedFieldInfo({ savingField, fieldName: field.name, updated: fieldSpecificUpdated, t, isFieldset: false, testingConnection })}
+                                {inputUtils.renderUpdatedFieldInfo({ savingField, fieldName: currentName, updated: fieldSpecificUpdated, t, isFieldset: false, testingConnection })}
                                 {inputUtils.renderTimeContainer({ updated: fieldSpecificUpdated, t })}
                               </>
                             )}
@@ -500,8 +497,8 @@ const FieldSet = ({
                 )}
                 {(!disable_fieldset_delete_add && !automatically_added && !disabled) && (
                   <Button
-                    className={`${fieldsetDisabled || saving || shouldDisableAccordion ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'} ${hiding ? ' hidden' : ''}`}
-                    disabled={sets.length < 1 || disabled || fieldsetDisabled || saving || shouldDisableAccordion}
+                    className={`${fieldsetDisabled || saving || shouldDisableAccordion || (visibleErrors.length > 0 && !thisRowHasError) ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'} ${hiding ? ' hidden' : ''}`}
+                    disabled={sets.length < 1 || disabled || fieldsetDisabled || saving || shouldDisableAccordion || (visibleErrors.length > 0 && !thisRowHasError)}
                     variant="secondary"
                     size='small'
                     iconLeft={<IconTrash/>}
@@ -532,7 +529,6 @@ const FieldSet = ({
         )
       })}
       {!disable_fieldset_delete_add && (
-      <>
         <Button
           className={`fieldset-button-add ${checking && projectUtils.hasFieldsetErrors(name, fields, attributeData) ? 'fieldset-internal-error' : null
             }`}
@@ -563,26 +559,10 @@ const FieldSet = ({
           ? t('project.adding')
           : t('project.add')}
         </Button>
-        {(((updateField?.fieldName === name) && showSaving) || (savingField && fields.some(field => field.name === savingField))) && visibleErrors?.length === 0
-         ? (
-           <div className='fieldset-saving-notification'>
-             <div className="fieldset-spinner">
-               <LoadingSpinner 
-                 className="loading-spinner" 
-                 theme={{
-                   '--spinner-color': '#0000BF',
-                   '--spinner-thickness': '2px'
-                 }}
-               />
-             </div>
-             {t('project.saving')}
-           </div>
-         )
-         : <></>}
-        {addButtonMessage}
-      </>
       )}
     </div>
+    {addButtonMessage}
+    </>
   )
 }
 
@@ -602,7 +582,14 @@ FieldSet.propTypes = {
   sets: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
   fields: PropTypes.array,
   lastSaved: PropTypes.object,
-  updateField: PropTypes.bool,
+  updateField: PropTypes.shape({
+    fieldName: PropTypes.string,
+    formName: PropTypes.string,
+    set: PropTypes.string,
+    nulledFields: PropTypes.arrayOf(PropTypes.object),
+    i: PropTypes.number,
+    data: PropTypes.any
+  }),
   attributeData: PropTypes.object,
   updated: PropTypes.object,
   phaseIsClosed: PropTypes.bool,
@@ -610,6 +597,9 @@ FieldSet.propTypes = {
   isTabActive: PropTypes.bool,
   visibleErrors: PropTypes.arrayOf(PropTypes.string),
   savingField: PropTypes.string,
+  highlightedInFieldset: PropTypes.string,
+  highlightedTag: PropTypes.string,
+  fieldsetTotal: PropTypes.string,
   testingConnection: PropTypes.shape({
     isActive: PropTypes.bool,
     fieldName: PropTypes.string
