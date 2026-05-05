@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { MapContainer, TileLayer } from 'react-leaflet'
 import { useTranslation } from 'react-i18next'
+import MapZoomControl from '../common/MapZoomControl'
 import FilterList from './Filters/FilterList'
 import { formatGeoJSONToPositions, helsinkiCenter } from '../../utils/mapUtils'
 import {
@@ -168,9 +169,11 @@ function CustomMap({
       ]}
       doubleClickZoom={true}
       crs={crs}
+      zoomControl={false}
     >
       {getPolygonArea()}
       <TileLayer attribution={t('map.attribution')} url={t('map.url')} />
+      <MapZoomControl />
     </MapContainer>
   )
 
