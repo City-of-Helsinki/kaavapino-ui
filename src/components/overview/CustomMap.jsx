@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { MapContainer, TileLayer } from 'react-leaflet'
 import { useTranslation } from 'react-i18next'
-import MapZoomControl from '../common/MapZoomControl'
 import FilterList from './Filters/FilterList'
-import { formatGeoJSONToPositions, helsinkiCenter } from '../../utils/mapUtils'
 import {
   projectOverviewMapDataSelector,
   projectOverviewMapFiltersSelector
@@ -19,9 +16,8 @@ import {
 
 import { LoadingSpinner } from 'hds-react'
 import { isEqual, isEmpty } from 'lodash'
-import { EPSG3879 } from '../../utils/mapUtils'
-import CustomMapPolygon from './CustomMapPolygon'
 import Legends from './Legends'
+import OverviewMapCanvas from './OverviewMapCanvas'
 
 function CustomMap({
   filters,
@@ -33,67 +29,21 @@ function CustomMap({
   isPrivileged,
   isMobile
 }) {
-  const crs = EPSG3879()
-
-  const [currentMapData, setCurrentMapData] = useState(null)
   const [filter, setFilter] = useState({})
 
   useEffect(() => {
-    getProjectsOverviewMapData(filter)
-    setCurrentMapData(mapData)
-  }, [])
-
-  useEffect(() => {
-    getProjectsOverviewMapData(filter)
-    setCurrentMapData(mapData)
-  }, [filter])
-
-  useEffect(() => {
-    if (!storedFilter || !isEqual(storedFilter, filter)) {
+    if (!isEqual(storedFilter, filter)) {
       clearProjectsOverviewMapData()
-      setCurrentMapData(null)
-      getProjectsOverviewMapData(filter)
       setProjectsOverviewMapFilter(filter)
-      setCurrentMapData(mapData)
     }
+    getProjectsOverviewMapData(filter)
   }, [filter])
-
-  useEffect(() => {
-    setCurrentMapData(mapData)
-  }, [mapData])
-
-  const getCoordinates = geoserver_data => {
-    if (!geoserver_data || !geoserver_data.suunnittelualueen_rajaus) {
-      return null
-    }
-    if (!geoserver_data.suunnittelualueen_rajaus) {
-      return null
-    }
-    return geoserver_data.suunnittelualueen_rajaus[0].geometry.coordinates
-  }
-  const currentCoordinates = []
-
-  currentMapData &&
-    currentMapData.projects &&
-    currentMapData.projects.forEach(value => {
-      const coordinates = getCoordinates(value.geoserver_data)
-      coordinates &&
-        currentCoordinates.push({
-          project: value,
-          color: value.phase_color,
-          coordinates: [coordinates]
-        })
-    })
-
-  const [current] = useState(helsinkiCenter)
 
   const onFilterChange = (values, currentParameter) => {
     if (!values || values.length === 0) {
-      const newFilter = Object.assign({}, filter)
+      const newFilter = { ...filter }
       delete newFilter[currentParameter]
-      setFilter({
-        ...newFilter
-      })
+      setFilter(newFilter)
       return
     }
     const valueArray = []
@@ -111,11 +61,9 @@ function CustomMap({
   }
   const onUserFilterChange = (values, currentParameter) => {
     if (!values || values.length === 0) {
-      const newFilter = Object.assign({}, filter)
+      const newFilter = { ...filter }
       delete newFilter[currentParameter]
-      setFilter({
-        ...newFilter
-      })
+      setFilter(newFilter)
       return
     }
     setFilter({
@@ -130,51 +78,12 @@ function CustomMap({
 
   const { t } = useTranslation()
 
-  const getPolygonArea = () => {
-    return (
-      currentCoordinates &&
-      currentCoordinates.map((current, index) => {
-        return (
-          <div key={index}>
-            <CustomMapPolygon
-              project={current.project}
-              color={current.color}
-              key={index}
-              positions={formatGeoJSONToPositions(current.coordinates)}
-              isPrivileged={isPrivileged}
-            />
-          </div>
-        )
-      })
-    )
-  }
-
   const renderMap = () => (
-    <MapContainer
+    <OverviewMapCanvas
+      mapData={mapData}
+      isPrivileged={isPrivileged}
       className={isMobile ? 'geometry-input-mobile' : 'geometry-input'}
-      center={current}
-      scrollWheelZoom={true}
-      zoom={9}
-      minZoom={8}
-      maxZoom={16}
-      clusterPopupVisibility={11}
-      unitZoom={12}
-      mobileZoom={8}
-      detailZoom={14}
-      mapBounds={[
-        [60.402200415095926, 25.271114398151653],
-        [60.402200415095926, 24.49246149510767],
-        [60.00855312110063, 24.49246149510767],
-        [60.00855312110063, 25.271114398151653]
-      ]}
-      doubleClickZoom={true}
-      crs={crs}
-      zoomControl={false}
-    >
-      {getPolygonArea()}
-      <TileLayer attribution={t('map.attribution')} url={t('map.url')} />
-      <MapZoomControl />
-    </MapContainer>
+    />
   )
 
   const renderNormalView = () => (

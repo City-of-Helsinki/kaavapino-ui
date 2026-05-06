@@ -4,6 +4,7 @@ import { EPSG3879, formatGeoJSONToPositions, helsinkiCenter } from '../../utils/
 import { useTranslation } from 'react-i18next'
 import MapZoomControl from '../common/MapZoomControl'
 import './Input.scss'
+import PropTypes from 'prop-types'
 
 const MULTIPOLYGON = 'MultiPolygon'
 
@@ -47,6 +48,10 @@ function Geometry(props) {
     map.setView(center, zoom)
     return null
   }
+  ChangeView.propTypes = {
+    center: PropTypes.array,
+    zoom: PropTypes.number
+  }
 
   return (
     <div className="geometry-input-container">
@@ -80,6 +85,22 @@ function Geometry(props) {
       </MapContainer>
     </div>
   )
+}
+
+Geometry.propTypes = {
+  input: PropTypes.shape({
+    value: PropTypes.arrayOf(
+      PropTypes.shape({
+        geometry: PropTypes.shape({
+          type: PropTypes.string,
+          coordinates: PropTypes.array
+        }),
+        properties: PropTypes.object,
+        type: PropTypes.string
+      })
+    )
+  }),
+  value: PropTypes.object
 }
 
 export default Geometry
