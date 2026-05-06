@@ -87,27 +87,21 @@ export default function NetworkErrorState({ fieldName, validationError, maxSizeO
   const banners = useMemo(() => {
     const notifications = [];
 
-    // PRIORITY 1: Network error  — PRIORITY 2: Backend field error  — PRIORITY 3: Connection restored
     const isNetworkError = lastSaved?.status === 'error';
-    const isConnectionRestored = isSuccess;
-
-    // Client validation error: always takes priority over backend field_error
-    // (user has modified the field — previous backend error is stale)
-    const shouldShowValidationError = hasValidationError && !isNetworkError && !isConnectionRestored;
-
-    if (shouldShowValidationError) {
-      notifications.push({
-        type: 'error',
-        label: normalizeValidationError(validationError, t),
-        key: 'validation'
-      });
-    }
 
     if (isSuccess) {
       notifications.push({
         type: 'success',
         label: t('messages.network-connection-restored-label'),
         key: 'success'
+      });
+    }
+
+    if (hasValidationError && !isNetworkError) {
+      notifications.push({
+        type: 'error',
+        label: normalizeValidationError(validationError, t),
+        key: 'validation'
       });
     }
 

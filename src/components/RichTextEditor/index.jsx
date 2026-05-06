@@ -1029,8 +1029,7 @@ function RichTextEditor(props) {
     return (
       <>
         {elements}
-        {/* Hide character limit error when network error is active - network error takes priority */}
-        {maxSizeOver && !hasActiveNetworkError() ? <div className='max-chars-error'>{t('project.charsover')}</div> : ""}
+        {maxSizeOver && network?.status !== 'error' && lastSaved?.status !== 'error' ? <div className='max-chars-error'>{t('project.charsover')}</div> : ""}
         {checking && required && valueIsEmpty ? <div className='max-chars-error'>{t('project.required-field')}</div> : ""}
         <NetworkErrorState fieldName={inputProps.name} maxSizeOver={maxSizeOver} readonly={readonly} />
       </>
