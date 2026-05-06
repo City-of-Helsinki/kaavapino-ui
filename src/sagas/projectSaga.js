@@ -128,7 +128,9 @@ import {
   setDateValidationResult,
   VALIDATE_PROJECT_TIMETABLE,
   setValidatingTimetable,
-  resetFormErrors
+  resetFormErrors,
+  SET_NETWORK_STATUS,
+  RESET_NETWORK_STATUS
 } from '../actions/projectActions'
 import { startSubmit, stopSubmit, setSubmitSucceeded, change } from 'redux-form'
 import { error } from '../actions/apiActions'
@@ -309,7 +311,7 @@ function* pollConnection() {
     if (hasUnsavedField) {
       // Connection restored - show success banner and trigger auto-save
       yield put(setPoll(true))
-      yield put({ type: 'Set network status', payload: { status: 'success', okMessage: 'Yhteys palautunut - tallennetaan...' } })
+      yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: 'Yhteys palautunut - tallennetaan...' } })
       // Clear error state immediately so passivation and header update right away
       // saveProject will set status to 'success' when done (or back to 'error' if it fails again)
       yield put(setLastSaved("connection_restored", time, [], [], false))
@@ -339,7 +341,7 @@ function* pollConnection() {
     } else {
       // No unsaved fields - just update poll status
       yield put(setPoll(true))
-      yield put({ type: 'Set network status', payload: { status: 'ok', okMessage: '', errorMessage: '' } })
+      yield put({ type: SET_NETWORK_STATUS, payload: { status: 'ok', okMessage: '', errorMessage: '' } })
       yield put(setLastSaved("connection_restored",time,[],[],false))
       // Clear form error list so "Virhe lomakkeella estää lisäyksen" disappears
       yield put(resetFormErrors())
@@ -755,16 +757,16 @@ function* saveProjectPayload({ payload }) {
     // Network success transition if recovering from previous error
     const net = yield select(projectNetworkSelector)
     if (net?.status === 'error') {
-      yield put({ type: 'Set network status', payload: { status: 'success', okMessage: i18.t('messages.deadlines-successfully-saved') } })
+      yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: i18.t('messages.deadlines-successfully-saved') } })
       yield delay(5000)
-      yield put({ type: 'Reset network status' })
+      yield put({ type: RESET_NETWORK_STATUS })
     }
   } catch (e) {
     yield put(error(e))
     const isNetworkErr = e?.code === 'ERR_NETWORK'
     const statusCode = e?.response?.status
     if (isNetworkErr || !statusCode || statusCode >= 500) {
-      yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
+      yield put({ type: SET_NETWORK_STATUS, payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
     }
   }
 }
@@ -791,9 +793,9 @@ function* saveProjectBase({ payload }) {
       yield put(initializeProjectAction(currentProjectId))
       const net = yield select(projectNetworkSelector)
       if (net?.status === 'error') {
-        yield put({ type: 'Set network status', payload: { status: 'success', okMessage: i18.t('messages.deadlines-successfully-saved') } })
+        yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: i18.t('messages.deadlines-successfully-saved') } })
         yield delay(5000)
-        yield put({ type: 'Reset network status' })
+        yield put({ type: RESET_NETWORK_STATUS })
       }
     } catch (e) {
       if (e.response.status === 400) {
@@ -803,7 +805,7 @@ function* saveProjectBase({ payload }) {
         const isNetworkErr = e?.code === 'ERR_NETWORK'
         const statusCode = e?.response?.status
         if (isNetworkErr || !statusCode || statusCode >= 500) {
-          yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
+          yield put({ type: SET_NETWORK_STATUS, payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
         }
       }
     }
@@ -834,21 +836,21 @@ function* saveProjectFloorArea() {
       })
       const net = yield select(projectNetworkSelector)
       if (net?.status === 'error') {
-        yield put({ type: 'Set network status', payload: { status: 'success', okMessage: i18.t('messages.timelines-successfully-saved') } })
+        yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: i18.t('messages.timelines-successfully-saved') } })
         yield delay(5000)
-        yield put({ type: 'Reset network status' })
+        yield put({ type: RESET_NETWORK_STATUS })
       }
     } catch (e) {
       if (e?.code === "ERR_NETWORK") {
         toastr.error(i18.t('messages.general-save-error'), '', {
           icon: <IconErrorFill />
         })
-        yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
+        yield put({ type: SET_NETWORK_STATUS, payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
       }
       yield put(stopSubmit(EDIT_FLOOR_AREA_FORM, e?.response?.data))
       const statusCode = e?.response?.status
       if (!statusCode || statusCode >= 500) {
-        yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
+        yield put({ type: SET_NETWORK_STATUS, payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
       }
     }
   }
@@ -994,13 +996,13 @@ function* saveProjectTimetable(action, retryCount = 0) {
       yield put(saveProjectTimetableSuccessful(true))
       yield put(setAllEditFields())
       // If we previously had an error, mark success transiently
-      yield put({ type: 'Set network status', payload: { status: 'success', okMessage: i18.t('messages.deadlines-successfully-saved') } })
+      yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: i18.t('messages.deadlines-successfully-saved') } })
       toastr.success(i18.t('messages.deadlines-successfully-saved'), '', {
         icon: <IconCheckCircleFill />
       })
       // Auto reset network status back to ok after 5s
       yield delay(5000)
-      yield put({ type: 'Reset network status' })
+      yield put({ type: RESET_NETWORK_STATUS })
     }
     catch (e) {
       if (e?.code === "ERR_NETWORK" && retryCount <= maxRetries) {
@@ -1008,7 +1010,7 @@ function* saveProjectTimetable(action, retryCount = 0) {
           icon: <IconErrorFill />
         })
         // Set network status to error on connectivity issue
-        yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.error-connection') } })
+        yield put({ type: SET_NETWORK_STATUS, payload: { status: 'error', errorMessage: i18.t('messages.error-connection') } })
         yield race({
           online: take(onlineChannel), // Wait for the online event
           timeout: delay(5000) // Wait for 5 seconds before retrying
@@ -1029,7 +1031,7 @@ function* saveProjectTimetable(action, retryCount = 0) {
           icon: <IconErrorFill />
         });
         // Generic failure => set network status error
-        yield put({ type: 'Set network status', payload: { status: 'error', errorMessage } })
+        yield put({ type: SET_NETWORK_STATUS, payload: { status: 'error', errorMessage } })
         yield put(saveProjectTimetableFailed(false))
       }
     }
@@ -1134,8 +1136,6 @@ function* saveProject(data) {
   if (values) {
     let keys = {}
     let changedValues = {}
-    // Always get changed values, even with validation errors
-    // This allows save attempt which will properly trigger error state
     changedValues = getChangedAttributeData(values, initial)
     keys = Object.keys(changedValues)
     // Set saving state with field name from action payload
@@ -1174,9 +1174,6 @@ function* saveProject(data) {
       yield put(lastModified(latestModifiedKey[0]))
     }
 
-    // Define attribute_data outside the if block so it's available in catch
-    let attribute_data = changedValues;
-
     if (!isEmpty(keys)) {
       if (fileOrimgSave && insideFieldset && fieldsetData && fieldsetPath) {
         //Data added for front when image inside fieldset is saved without other data
@@ -1203,8 +1200,7 @@ function* saveProject(data) {
           }
         }
       }
-      // Update attribute_data reference (already declared above)
-      attribute_data = changedValues
+      const attribute_data = changedValues
       
       // Check for client-side validation errors BEFORE attempting to save
       // Block save if client-side validation has failed (reduces unnecessary backend requests)
@@ -1276,17 +1272,11 @@ function* saveProject(data) {
             backendTime = projectUtils.formatTime(fieldUpdate.timestamp);
           }
         }
-
-        // Dispatch success state BEFORE updateProject so error state clears
-        // before field timestamps become visible (avoids brief "disabled + timestamp" flash)
+  
         yield put(setLastSaved("success", backendTime, [], [], false))
 
-        // Update project ONLY if form values match backend
-        // This prevents overwriting user's unsaved changes
-        // Even after connection error recovery, if data matches, it's safe to update
+        // Update only project metadata if we have unsaved changes to avoid ovewriting user's current values
         if (hasUnsavedChanges) {
-          // Even if we have unsaved changes, update the _metadata to keep timestamps fresh
-          // This ensures field-level timestamp indicators stay accurate
           const currentProject = yield select(currentProjectSelector);
           if (currentProject && updatedProject._metadata) {
             const updatedProjectWithMetadata = {
@@ -1302,19 +1292,15 @@ function* saveProject(data) {
         yield put(setSavingField(null))
         yield put(setAllEditFields())
 
-        // Set connection poll status to true after recovering from error
-        const lastSaved = yield select(lastSavedSelector)
-        if (lastSaved?.status === "error" || lastSaved?.status === "field_error") {
-          yield put(setPoll(true))
-        }
+
         // Network status: only show transient success if recovering from an error
         const net = yield select(projectNetworkSelector)
         if (net?.status === 'error') {
-          yield put({ type: 'Set network status', payload: { status: 'success', okMessage: i18.t('messages.deadlines-successfully-saved') } })
+          yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: i18.t('messages.deadlines-successfully-saved') } })
         }
         else {
           // Ensure state remains clean 'ok' without success banner spam
-          yield put({ type: 'Set network status', payload: { status: 'ok', okMessage: '', errorMessage: '' } })
+          yield put({ type: SET_NETWORK_STATUS, payload: { status: 'ok', okMessage: '', errorMessage: '' } })
         }
 
       } catch (e) {
@@ -1351,7 +1337,7 @@ function* saveProject(data) {
           const errorFieldValue = savedFieldName ? attribute_data[savedFieldName] : Object.values(attribute_data)[0]
           
           yield put(setLastSaved("error", time, [errorFieldName], [errorFieldValue], false))
-          yield put({ type: 'Set network status', payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
+          yield put({ type: SET_NETWORK_STATUS, payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
         } else {
           // Other HTTP errors (401, 403, 404, etc.) - treat as general errors without network status change
           // Use the specific field that was being saved, not all changed fields

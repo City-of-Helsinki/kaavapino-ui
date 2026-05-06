@@ -120,6 +120,8 @@ export const UPDATE_PROJECT_FAILURE = 'updateProjectFailure';
 export const UPDATE_ATTRIBUTE = 'updateAttribute';
 export const SAVE_PROJECT_TIMETABLE_FAILED = "saveProjectTimetableFailed";
 export const VALIDATING_TIMETABLE = "validatingTimetable"
+export const SET_NETWORK_STATUS = 'Set network status'
+export const RESET_NETWORK_STATUS = 'Reset network status'
 
 export const updateAttribute = (field,value) => ({
   type: UPDATE_ATTRIBUTE,

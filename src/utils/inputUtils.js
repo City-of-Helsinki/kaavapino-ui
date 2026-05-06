@@ -4,13 +4,7 @@ import projectUtils from './projectUtils'
 import timeUtil from './timeUtil'
 
 const hasError = error => {
-  if (!error) {
-    return false
-  } else if (error.length > 0) {
-    return true
-  }
-
-  return false
+	return !!error?.length;
 }
 
 const renderUpdatedFieldInfo = ({ savingField, fieldName, updated, t, isFieldset, fieldsetFields, testingConnection }) => {
@@ -22,7 +16,7 @@ const renderUpdatedFieldInfo = ({ savingField, fieldName, updated, t, isFieldset
 	if (isFieldset && fieldsetFields && savingField) {
 		// For fieldset components: show spinner if savingField matches any field within this fieldset
 		shouldShowSpinner = fieldsetFields.some(field => field.name === savingField);
-	} else if (fieldName && fieldName.endsWith('_fieldset') && savingField) {
+	} else if (fieldName?.endsWith('_fieldset') && savingField) {
 		// For fieldset containers: show spinner if savingField could belong to this fieldset
 		const fieldsetPrefix = fieldName.replace('_fieldset', '');
 		shouldShowSpinner = savingField.includes(fieldsetPrefix);
@@ -45,7 +39,7 @@ const renderUpdatedFieldInfo = ({ savingField, fieldName, updated, t, isFieldset
 					/>
 				</div>
 			) : (
-				updated && updated.timestamp && (
+				updated?.timestamp && (
 					<Tooltip placement="top">
 						<div className="input-history-tooltip">
 							<div className="input-history-title">

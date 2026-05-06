@@ -23,11 +23,7 @@ const CustomTextArea = ({ input, meta, ...custom }) => {
   }, [])
 
   useEffect(() => {
-    if (saving && saving === input.name) {
-      setIsThisFieldSaving(true)
-    } else if (!saving) {
-      setIsThisFieldSaving(false)
-    }
+    setIsThisFieldSaving(saving && saving === input.name);
   }, [saving, input.name])
 
   const handleInputChange = useCallback((event) => {
