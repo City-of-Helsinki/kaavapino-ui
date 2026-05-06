@@ -315,7 +315,7 @@ function* pollConnection() {
       const formErrors = yield select(formErrorListSelector)
       if (formErrors.includes(fieldName)) {
         yield put(setPoll(true))
-        yield put({ type: SET_NETWORK_STATUS, payload: { status: 'ok', okMessage: '', errorMessage: '' } })
+        yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: 'Yhteys palautunut' } })
         yield put(setSavingField(null))
         yield put(setLastSaved("field_error", time, [fieldName], lastSaved.values || [], false))
         return

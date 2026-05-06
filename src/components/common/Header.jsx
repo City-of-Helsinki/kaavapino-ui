@@ -17,8 +17,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { usersSelector } from '../../selectors/userSelector'
 import { setTestingConnection } from '../../actions/projectActions'
 import { authUserSelector } from '../../selectors/authSelector'
-import { lastSavedSelector,savingSelector,selectedPhaseSelector } from '../../selectors/projectSelector'
-import { networkSelector } from '../../selectors/networkSelector'
+import { lastSavedSelector,savingSelector,selectedPhaseSelector,projectNetworkSelector } from '../../selectors/projectSelector'
 import { schemaSelector } from '../../selectors/schemaSelector'
 import schemaUtils from '../../utils/schemaUtils'
 import {useInterval} from '../../hooks/connectionPoller'
@@ -44,8 +43,8 @@ const Header = props => {
   const saving =  useSelector(state => savingSelector(state))
   const schema = useSelector(state => schemaSelector(state))
   const selectedPhase = useSelector(state => selectedPhaseSelector(state))
-  const network = useSelector(state => networkSelector(state))
-  const isConnectionRestored = network?.status === 'success' || lastSaved?.status === 'connection_restored'
+  const projectNetwork = useSelector(state => projectNetworkSelector(state))
+  const isConnectionRestored = projectNetwork?.status === 'success' || lastSaved?.status === 'connection_restored'
 
   const currentUser = users.find(
     item => user?.profile && item.id === user.profile.sub
@@ -245,6 +244,10 @@ const Header = props => {
 
   const pathToCheck = props.location.pathname
 
+  const saveStatusText = isConnectionRestored && updateTime?.status === t('header.edit-menu-save-fail')
+    ? ''
+    : `${updateTime?.status}${updateTime?.time}`
+
   if(pathToCheck.includes('edit')) {
     return (
       <div className={'edit-page-header' + ((!currentEnv || currentEnv === 'production') ? '' : ' edit-header-dev')}>
@@ -271,7 +274,7 @@ const Header = props => {
               {!saving && !isPollingConnection && updateTime?.status === t('header.edit-menu-save-fail') && !isConnectionRestored ? (
                 <> <IconErrorFill className='error-icon'/> <p className="error">{updateTime?.status}</p> </>
               ) : (
-                !isPollingConnection && <p>{updateTime?.status}{updateTime?.time}</p>
+                !isPollingConnection && <p>{saveStatusText}</p>
               )}
               {!saving && !isPollingConnection && updateTime?.status === t('header.edit-menu-save-fail') && lastSuccessfulSaveTime ? 
                 <Tooltip placement="bottom" className='question-icon'>{t('header.latest-save')}{lastSuccessfulSaveTime}</Tooltip> : ""
