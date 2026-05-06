@@ -309,41 +309,41 @@ function* pollConnection() {
     const hasUnsavedField = lastSaved?.status === 'error' && lastSaved?.fields?.length > 0
     
     if (hasUnsavedField) {
-      // Connection restored - show success banner and trigger auto-save
+      const fieldName = lastSaved.fields[0]
+
+      const formErrors = yield select(formErrorListSelector)
+      if (formErrors.includes(fieldName)) {
+        yield put(setPoll(true))
+        yield put({ type: SET_NETWORK_STATUS, payload: { status: 'ok', okMessage: '', errorMessage: '' } })
+        yield put(setSavingField(null))
+        yield put(setLastSaved("field_error", time, [fieldName], lastSaved.values || [], false))
+        return
+      }
+
       yield put(setPoll(true))
       yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: 'Yhteys palautunut - tallennetaan...' } })
-      // Clear error state immediately so passivation and header update right away
-      // saveProject will set status to 'success' when done (or back to 'error' if it fails again)
+      // Dispatch connection_restored immediately so passivation and header update before saveProject completes.
+      // saveProject will set status to 'success' on success or back to 'error' on failure.
       yield put(setLastSaved("connection_restored", time, [], [], false))
-      // Clear form error list so "Virhe lomakkeella estää lisäyksen" disappears
       yield put(resetFormErrors())
       
-      // Get the field that needs to be saved
-      const fieldName = lastSaved.fields[0]
-      const fieldValue = lastSaved.values?.[0] // Use the value that originally failed to save
+      const fieldValue = lastSaved.values?.[0]
       const projectId = yield select(currentProjectIdSelector)
-      
-      // If we don't have the saved value, fall back to current form value
       const formValues = yield select(editFormSelector)
       const valueToSave = fieldValue === undefined ? formValues.values?.[fieldName] : fieldValue
-      
-      // Trigger save for the field
       const attribute_data = { [fieldName]: valueToSave }
       
-      // Call saveProject with the field data and fieldName so spinner activates
       yield call(saveProject, { 
         payload: { 
           projectId, 
           attribute_data,
-          fieldName  // CRITICAL: Include fieldName so setSavingField gets called
+          fieldName  // triggers setSavingField in saveProject, activating the field spinner
         } 
       })
     } else {
-      // No unsaved fields - just update poll status
       yield put(setPoll(true))
       yield put({ type: SET_NETWORK_STATUS, payload: { status: 'ok', okMessage: '', errorMessage: '' } })
       yield put(setLastSaved("connection_restored",time,[],[],false))
-      // Clear form error list so "Virhe lomakkeella estää lisäyksen" disappears
       yield put(resetFormErrors())
     }
   } catch {
@@ -689,20 +689,14 @@ const getChangedAttributeData = (values, initial) => {
   }
 
   Object.keys(values).forEach(key => {
-    if (key == "suunnittelualueen_kuvaus")
-      console.log("checking key", key, "with value", values[key], "and initial value", initial?.[key])
     if (key.includes("_readonly")) {
       return
     }
     if (initial?.[key] !== undefined && isEqual(values[key], initial[key])) {
-      if (key == "suunnittelualueen_kuvaus")
-        console.log(`skipping unchanged field ${key} with value`, values[key])
       return
     }
     if (values[key] === '' || (values[key]?.ops && isRichTextEmpty(values[key]))) {
-      //empty text values saved as null
-      attribute_data[key] = null
-      console.log("setting empty value to null for key", key)
+      attribute_data[key] = null // empty text saved as null
     }
     else if (values[key] === null) {
       attribute_data[key] = null
@@ -738,7 +732,6 @@ const isRichTextEmpty = (value) => {
     if (typeof op?.insert !== 'string') {
       return true;
     }
-    console.log("checking if op is empty", op.insert, op.insert.trim().length === 0);
     return op.insert.trim().length === 0;
   });
 }
