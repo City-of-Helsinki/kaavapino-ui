@@ -245,7 +245,9 @@
   },
   "map": {
     "attribution": "Leaflet | © Helsingin, Espoon, Vantaan ja Kauniaisen kaupungit, karttasarja",
-    "url": "https://kartta.hel.fi/ws/geoserver/avoindata/gwc/service/wmts?layer=avoindata:Karttasarja_harmaa&tilematrixset=ETRS-GK25&Service=WMTS&Request=GetTile&Version=1.0.0&TileMatrix=ETRS-GK25:{z}&TileCol={x}&TileRow={y}&Format=image%2Fpng"
+    "url": "https://kartta.hel.fi/ws/geoserver/avoindata/gwc/service/wmts?layer=avoindata:Karttasarja_harmaa&tilematrixset=ETRS-GK25&Service=WMTS&Request=GetTile&Version=1.0.0&TileMatrix=ETRS-GK25:{z}&TileCol={x}&TileRow={y}&Format=image%2Fpng",
+    "zoom-in": "Lähennä",
+    "zoom-out": "Loitonna"
   },
   "project": {
     "modify": "Muokkaa",
@@ -309,7 +311,7 @@
     "download_confirmation_header": "Vahvistus dokumentin lataukselle",
     "download_confirmation_content": "Lataamisen jälkeen saat kaikista muutoksista automaattisia viestejä. Oletko varma, että haluat ladata dokumentin?",
     "missing-data": "Tietoja ei ole vielä syötetty",
-    "documents-not-ready": "Dokumentteja ei ole vielä valmiina",
+    "documents-not-ready": "Projektin linkkiä ei ole lisätty Karttapalveluun.",
     "searchterms-found":"Hakuehdoilla löytyi",
     "total":"Yhteensä",
     "found-projects":"projektia.",
@@ -323,7 +325,7 @@
     "error-prevent-add":"Virhe lomakkeella estää lisäyksen",
     "fieldset-info":"Yhteensä {{fieldAmount}} tietuetta.",
     "no-fields":"Suodatinvalinnalla ei löytynyt tämän otsikon alta suodatettavia kenttiä.",
-    "link-to-map":"Linkki projektin karttapalveluun.",
+    "link-to-map":"Siirry Karttapalveluun projektin tietoihin",
     "add-new-board":"Lisää lautakunta",
     "add-new-presence":"Lisää esilläolo",
     "add-new-review": "Lisää nähtävilläolo",

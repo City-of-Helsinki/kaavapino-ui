@@ -4,6 +4,7 @@ import { Grid } from 'semantic-ui-react'
 import { Button } from 'hds-react'
 import { useTranslation } from 'react-i18next'
 import { withRouter } from 'react-router-dom'
+import PropTypes from 'prop-types'
 
 const CustomMapPolygon = ({
   positions,
@@ -42,16 +43,16 @@ const CustomMapPolygon = ({
           <Grid.Column>{t('floor-area.tooltip.phase')}</Grid.Column>
           <Grid.Column textAlign="right">
             <span
-              style={{ backgroundColor: project.phase && project.phase.color_code }}
+              style={{ backgroundColor: project.phase?.color_code }}
               className="dot"
             ></span>
-            <span className="value">{project.phase && project.phase.name}</span>
+            <span className="value">{project.phase?.name}</span>
           </Grid.Column>
         </Grid.Row>
         <Grid.Row>
           <Grid.Column>{t('floor-area.tooltip.process-size')}</Grid.Column>
           <Grid.Column className="value" textAlign="right">
-            {project.subtype && project.subtype.name}
+            {project.subtype?.name}
           </Grid.Column>
         </Grid.Row>
         <Grid.Row>
@@ -92,6 +93,15 @@ const CustomMapPolygon = ({
       <Popup closeButton={false}>{renderPopupValue()}</Popup>
     </Polygon>
   )
+}
+
+CustomMapPolygon.propTypes = {
+  positions: PropTypes.array.isRequired,
+  children: PropTypes.node,
+  project: PropTypes.object,
+  isPrivileged: PropTypes.bool,
+  history: PropTypes.object,
+  color: PropTypes.string
 }
 
 export default withRouter(CustomMapPolygon)

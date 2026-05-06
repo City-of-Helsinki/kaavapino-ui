@@ -80,7 +80,7 @@
   }
   .missing-data,
   .documents-not-ready {
-    color: rgba(0, 0, 0, 0.5)
+    color: $color-black-60;
   }
 
   @media only screen and (min-width: 501px) {
