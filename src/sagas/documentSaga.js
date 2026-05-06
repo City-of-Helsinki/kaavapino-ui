@@ -47,7 +47,7 @@ function* downloadDocumentSaga({ payload }) {
     payload.projectCard
       ? i18next.t('document-loading.project-card-content')
       : i18next.t('document-loading.document-content'),
-  { closeOnToastrClick: false, timeOut:0, removeOnHover: false, removeOnHoverTimeOut: 0, icon: <IconInfoCircleFill /> }
+  { disableCloseButtonFocus: true, closeOnToastrClick: false, timeOut:0, removeOnHover: false, removeOnHoverTimeOut: 0, icon: <IconInfoCircleFill /> }
   )
   try {
     res = yield call(axios.get, modifiedUrl, { responseType: 'blob' })
@@ -66,7 +66,7 @@ function* downloadDocumentSaga({ payload }) {
       isError = true
       yield put(downloadDocumentDone(true))
     }
-  } catch (e) {
+  } catch {
     toastr.error(
       payload.projectCard
         ? i18next.t('document-loading.project-card-title')
@@ -127,7 +127,7 @@ function* downloadDocumentPreviewSaga({ payload }) {
     payload.projectCard
       ? i18next.t('document-loading.project-card-content')
       : i18next.t('document-loading.document-content'),
-  { closeOnToastrClick: false, timeOut:0, removeOnHover: false, removeOnHoverTimeOut: 0, icon: <IconInfoCircleFill /> }
+  { disableCloseButtonFocus: true, closeOnToastrClick: false, timeOut:0, removeOnHover: false, removeOnHoverTimeOut: 0, icon: <IconInfoCircleFill /> }
   )
   try {
     res = yield call(axios.get, modifiedUrl, { responseType: 'blob' })
@@ -210,7 +210,7 @@ function* downloadDocumentSagaAsync({ payload }) {
     payload.projectCard
       ? i18next.t('document-loading.project-card-content')
       : i18next.t('document-loading.document-content'),
-  { closeOnToastrClick: false, timeOut:0, removeOnHover: false, removeOnHoverTimeOut: 0, icon: <IconInfoCircleFill /> }
+  { disableCloseButtonFocus: true, closeOnToastrClick: false, timeOut:0, removeOnHover: false, removeOnHoverTimeOut: 0, icon: <IconInfoCircleFill /> }
   )
   try {
     res = yield call(axios.get, modifiedUrl)
