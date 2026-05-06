@@ -1,3 +1,4 @@
+import React from 'react'
 import axios from 'axios'
 import { eventChannel } from 'redux-saga';
 import { take, takeLatest, put, all, call, select, takeEvery, delay, race } from 'redux-saga/effects'
@@ -1428,7 +1429,7 @@ function* projectFileUpload({
 
     const lastIndex = attribute.lastIndexOf('.')
     if (lastIndex !== -1) {
-      ;({ fieldSetIndex, currentFieldName } = parseFieldsetPath(attribute))
+      ({ fieldSetIndex, currentFieldName } = parseFieldsetPath(attribute))
     }
 
     // Create formdata
