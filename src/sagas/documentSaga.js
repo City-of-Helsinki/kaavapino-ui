@@ -86,7 +86,7 @@ function* downloadDocumentSaga({ payload }) {
     const fileData = res.data
 
     const contentDisposition = res.headers['content-disposition']
-    const fileName = contentDisposition && contentDisposition.split('filename=')[1]
+    const fileName = contentDisposition?.split('filename=')[1]
     if (fileData) {
       FileSaver.saveAs(fileData, fileName)
 
@@ -142,11 +142,9 @@ function* downloadDocumentPreviewSaga({ payload }) {
           : i18next.t('document-loading.document-error'),
         { icon: <IconErrorFill /> }
       )
-
-      isError = false
       yield put(downloadDocumentDone(true))
     }
-  } catch (e) {
+  } catch {
     toastr.error(
       payload.projectCard
         ? i18next.t('document-loading.project-card-title')
@@ -166,7 +164,7 @@ function* downloadDocumentPreviewSaga({ payload }) {
     const fileData = res.data
 
     const contentDisposition = res.headers['content-disposition']
-    const fileName = contentDisposition && contentDisposition.split('filename=')[1]
+    const fileName = contentDisposition?.split('filename=')[1]
     if (fileData) {
       FileSaver.saveAs(fileData, fileName)
 
@@ -215,7 +213,7 @@ function* downloadDocumentSagaAsync({ payload }) {
   try {
     res = yield call(axios.get, modifiedUrl)
 
-    currentTask = res && res.data ? res.data.detail : null
+    currentTask = res?.data ? res.data.detail : null
 
     if (!currentTask && res.status !== 200) {
       toastr.removeByType('info')
@@ -233,7 +231,7 @@ function* downloadDocumentSagaAsync({ payload }) {
       yield put(downloadDocumentDone(true))
     } else {
       while ((!res || res.status === 202) && !isError && counter < MAX_COUNT) {
-        if (res && res.status === 500) {
+        if (res?.status === 500) {
           isError = true
           toastr.removeByType('info')
           toastr.error(
@@ -258,7 +256,7 @@ function* downloadDocumentSagaAsync({ payload }) {
         yield delay(INTERVAL_MILLISECONDS)
       }
     }
-  } catch (e) {
+  } catch {
     toastr.error(
       payload.projectCard
         ? i18next.t('document-loading.project-card-title')
@@ -291,7 +289,7 @@ function* downloadDocumentSagaAsync({ payload }) {
     const fileData = res.data
 
     const contentDisposition = res.headers['content-disposition']
-    const fileName = contentDisposition && contentDisposition.split('filename=')[1]
+    const fileName = contentDisposition?.split('filename=')[1]
     if (fileData) {
       FileSaver.saveAs(fileData, fileName)
 
@@ -336,7 +334,7 @@ function* downloadDocumentPreviewSagaAsync({ payload }) {
 
   try {
     res = yield call(axios.get, modifiedUrl)
-    currentTask = res && res.data ? res.data.detail : null
+    currentTask = res?.data ? res.data.detail : null
 
     if (!currentTask && res.status !== 200) {
       toastr.removeByType('info')
@@ -350,7 +348,7 @@ function* downloadDocumentPreviewSagaAsync({ payload }) {
       yield put(downloadDocumentDone(true))
     } else {
       while ((!res || res.status === 202) && !isError && counter < MAX_COUNT) {
-        if (res && res.status === 500) {
+        if (res?.status === 500) {
           toastr.removeByType('info')
           toastr.error(
             i18next.t('document-loading.error-title'),
@@ -370,7 +368,7 @@ function* downloadDocumentPreviewSagaAsync({ payload }) {
         yield delay(INTERVAL_MILLISECONDS)
       }
     }
-  } catch (e) {
+  } catch {
     toastr.error(
       i18next.t('document-loading.error-title'),
   i18next.t('document-loading.document-preview-error'),
@@ -395,7 +393,7 @@ function* downloadDocumentPreviewSagaAsync({ payload }) {
     const fileData = res.data
 
     const contentDisposition = res.headers['content-disposition']
-    const fileName = contentDisposition && contentDisposition.split('filename=')[1]
+    const fileName = contentDisposition?.split('filename=')[1]
     if (fileData) {
       FileSaver.saveAs(fileData, fileName)
 
