@@ -282,7 +282,7 @@ function* getAttributeData(data) {
         timeout: delay(15000)
       })
       if (timeout) {
-        yield put(setLastSaved('error', null, [], [], false))
+        yield put(setLastSaved('error', null, [attribute_identifier], [], false))
         return
       }
       yield put(setAttributeData(attribute_identifier, result, formName, set, nulledFields, i))
@@ -290,7 +290,7 @@ function* getAttributeData(data) {
       const statusCode = e?.response?.status
       // Network errors and 5xx server errors should show inline error, not toaster
       if (!e.response || !statusCode || statusCode >= 500) {
-        yield put(setLastSaved('error', null, [], [], false))
+        yield put(setLastSaved('error', null, [attribute_identifier], [], false))
       } else {
         yield put(error(e))
       }
@@ -311,6 +311,14 @@ function* pollConnection() {
     
     if (hasUnsavedField) {
       const fieldName = lastSaved.fields[0]
+
+      if (fieldName?.endsWith('_fieldset')) {
+        // Fieldset add/remove has no value to auto-retry — prompt the user to try again manually
+        yield put(setPoll(true))
+        yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: 'Yhteys palautunut' } })
+        yield put(setLastSaved("connection_restored", time, [fieldName], [], false))
+        return
+      }
 
       const formErrors = yield select(formErrorListSelector)
       if (formErrors.includes(fieldName)) {

@@ -328,6 +328,8 @@
     "error-prevent-add":"Virhe lomakkeella",
     "fieldset-info":"Yhteensä {{fieldAmount}} tietuetta.",
     "fieldset-empty":"Ei lisättyjä {{label}}.",
+    "fieldset-connection-restored-label":"Yhteys on palautunut",
+    "fieldset-connection-restored-message":"Yritä uudelleen.",
     "fieldset-missing-value":"Tieto puuttuu",
     "no-fields":"Suodatinvalinnalla ei löytynyt tämän otsikon alta suodatettavia kenttiä.",
     "link-to-map":"Siirry Karttapalveluun projektin tietoihin",

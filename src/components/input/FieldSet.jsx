@@ -82,11 +82,8 @@ const FieldSet = ({
   const [pendingAutoOpen, setPendingAutoOpen] = useState(false)
 
   const refreshFieldset = () => {
-    // Check network connection before attempting to add - if offline, show error immediately
-    // instead of letting the API call fail and leaving the fieldset in a broken state.
-    // Pass empty fields array so the recovery saga doesn't try to save a fieldset name as a field.
     if (connection?.connection === false) {
-      dispatch(setLastSaved('error', null, [], [], false))
+      dispatch(setLastSaved('error', null, [name], [], false))
       return
     }
     //Fetch fieldset data from backend and see if there is new sub fieldset or data changes before adding new sub fieldset
@@ -98,7 +95,7 @@ const FieldSet = ({
 
   const hideFieldset = (formName, set, nulledFields,i) => {
     if (connection?.connection === false) {
-      dispatch(setLastSaved('error', null, [], [], false))
+      dispatch(setLastSaved('error', null, [name], [], false))
       return
     }
     setHiding(true)
@@ -303,6 +300,9 @@ const FieldSet = ({
   const isThisFieldsetNetworkError = lastSaved?.status === 'error' && savedFields.some(f =>
     typeof f === 'string' && f.startsWith(`${name}`)
   )
+  const isThisFieldsetConnectionRestored = lastSaved?.status === 'connection_restored' && savedFields.some(f =>
+    typeof f === 'string' && f.startsWith(`${name}`)
+  )
 
   let addButtonMessage
   if (isThisFieldsetNetworkError) {
@@ -313,6 +313,18 @@ const FieldSet = ({
             <span className="notification-label">{t('messages.network-save-failed-label')}</span>
             <br />
             <span className="notification-message">{t('messages.network-save-failed-message')}</span>
+          </div>
+        </div>
+      </div>
+    )
+  } else if (isThisFieldsetConnectionRestored) {
+    addButtonMessage = (
+      <div className="network-error-state" aria-live="polite" aria-atomic="true">
+        <div className="success-text fade-in">
+          <div className="notification-content">
+            <span className="notification-label">{t('project.fieldset-connection-restored-label')}</span>
+            <br />
+            <span className="notification-message">{t('project.fieldset-connection-restored-message')}</span>
           </div>
         </div>
       </div>
