@@ -274,7 +274,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         ? paatosBase
         : `${paatosBase}_${latestIndex}`;
       const paatos = form_data[paatosKey];
-      if (paatos !== "palautettu_uudelleen_valmisteltavaksi" && paatos !== "asia_jai_poydalle") {
+      if (!(paatos?.includes("asia_jai_poydalle") || paatos?.includes("palautettu_uudelleen_valmisteltavaksi"))) {
         return { canAdd: false, nextLautakunta, reason: t("deadlines.lautakunta-wrong-resolution") }
       }
     }

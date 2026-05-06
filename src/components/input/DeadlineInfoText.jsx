@@ -184,6 +184,8 @@ DeadlineInfoText.propTypes = {
       PropTypes.string,
       PropTypes.number,
       PropTypes.bool,
+      PropTypes.array,
+      PropTypes.object,
     ]),
     name: PropTypes.string,
   }),

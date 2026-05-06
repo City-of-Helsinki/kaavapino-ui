@@ -627,9 +627,9 @@
         }
     }
 
-    // When kaynnistys_1 is in a past phase (no-drag), disable all interaction.
-    // Note: .past only means the date is in the past, not the phase itself — so we use .no-drag here.
-    .kaynnistys_1:has(.no-drag) {
+    // When kaynnistys_1 item is in a past phase (no-drag), disable all interaction and hide drag dot.
+    // .no-drag is added to the item itself by buildInnerStyle when the phase is past.
+    .kaynnistys_1.no-drag {
         pointer-events: none !important;
         cursor: default !important;
 
@@ -638,12 +638,14 @@
             cursor: default !important;
 
             &::after {
+                opacity: 0 !important;
                 pointer-events: none !important;
                 cursor: default !important;
             }
 
             &:hover::after,
             &:active::after {
+                opacity: 0 !important;
                 pointer-events: none !important;
                 cursor: default !important;
             }
