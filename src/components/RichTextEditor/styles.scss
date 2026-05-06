@@ -33,22 +33,19 @@
         z-index: 1;
 
         .quill-toolbar-comment-button {
+          color: $color-black-90;
+
           .comment-icon {
             width: 16px;
             height: 16px;
+            display: block;
 
             path {
-              fill: $color-black-90 !important;
+              fill: currentColor;
             }
           }
-          &:focus {
-            outline: none;
-          }
-          &:hover .comment-icon {
-            path {
-              // same as others in quill. Keep this way or change all in quill
-              fill: #06c !important;
-            }
+          &:hover {
+            color: #06c;
           }
         }
       }

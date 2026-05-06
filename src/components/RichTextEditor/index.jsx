@@ -17,13 +17,15 @@ import {
   formErrorList
 } from '../../actions/projectActions'
 import { currentProjectIdSelector,savingSelector,lockedSelector, lastModifiedSelector, pollSelector,lastSavedSelector, projectNetworkSelector, formErrorListSelector, connectionErrorFieldsSelector, fieldsWithAnyErrorSelector, testingConnectionSelector } from '../../selectors/projectSelector'
-import commentIcon from '@/assets/icons/comment-icon.svg';
+import CommentIcon from '@/assets/icons/comment-icon.svg?react'
 import { useTranslation } from 'react-i18next'
 import RollingInfo from '../input/RollingInfo.jsx'
 import NetworkErrorState from '../input/NetworkErrorState.jsx'
 import { useIsMount } from '../../hooks/IsMounted'
 import { useFieldPassivation } from '../../hooks/useFieldPassivation'
 import { isEqual } from 'lodash'
+import { getFocusableElements } from '../project/projectModalUtils.js';
+
 
 /* This component defines a react-quill rich text editor field to be used in redux form.
  * We are saving these rich text inputs as quill deltas - a form of JSON that
@@ -112,7 +114,7 @@ function RichTextEditor(props) {
   const [toolbarVisible, setToolbarVisible] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
   const [currentTimeout, setCurrentTimeout] = useState(0)
-  const [readonly, setReadOnly] = useState(false)
+  const [readonly, setReadonly] = useState(false)
   const [valueIsSet, setValueIsSet] = useState(false)
   const [valueIsEmpty,setValueIsEmpty] = useState(false)
   const [charLimitOver,setCharLimitOver] = useState(false)
@@ -122,6 +124,9 @@ function RichTextEditor(props) {
   const [errorJustCleared, setErrorJustCleared] = useState(false)
 
   const editorRef = useRef("")
+  const wrapperRef = useRef(null)
+  const skipRedirectRef = useRef(false)
+  const tabbedRecentlyRef = useRef(false)
   const counter = useRef(props.currentSize)
   const showCounter = useRef(false)
   const wasInErrorList = useRef(false)
@@ -140,7 +145,6 @@ function RichTextEditor(props) {
   const lockedStatusJsonString = JSON.stringify(lockedStatus);
 
   const inputValue = useRef('')
-  const myRefname= useRef(null);
   const fieldFormName = formName || EDIT_PROJECT_FORM
 
   const getFieldComments = () => {
@@ -160,6 +164,19 @@ function RichTextEditor(props) {
   const { t } = useTranslation()
 
   const oldValueRef = useRef('');
+
+
+  // Track tab presses to differenciate between kb navigation and clicks
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === 'Tab') {
+        tabbedRecentlyRef.current = true;
+        setTimeout(() => { tabbedRecentlyRef.current = false; }, 0);
+      }
+    };
+    document.addEventListener('keydown', onKeyDown, true);
+    return () => document.removeEventListener('keydown', onKeyDown, true);
+  }, []);
 
   useEffect(() => {
     if(isFloorAreaForm){
@@ -223,7 +240,7 @@ function RichTextEditor(props) {
     };
 
     removeTabBinding();
-  }, [editorRef])
+  }, [editorRef, editField])
   
   useEffect(() => {
     if(!isMount){
@@ -421,9 +438,8 @@ function RichTextEditor(props) {
       const isSaving = lockedStatus?.saving
       const fieldData = lockedStatus?.lockData.attribute_lock.field_data
 
-      // determine readOnly status
       const shouldBeReadOnly = !isLocked || !isOwner || (lastModified === inputProps.name && isSaving)
-      setReadOnly(shouldBeReadOnly)
+      setReadonly(shouldBeReadOnly)
 
       if (!shouldBeReadOnly) {
         // if the field is not locked, set the value from the lock data
@@ -457,7 +473,7 @@ function RichTextEditor(props) {
         setValue(fieldData)
       }
       lockField(lockedStatus, isOwner, identifier);
-      setReadOnly(false);
+      setReadonly(false);
     }
 
     // Check if the field is locked and if the lock data is available
@@ -725,20 +741,87 @@ function RichTextEditor(props) {
   }
 
   const onKeyDown = (e) => {
-
     if(readonly){
       //prevent typing text if locked
       editorRef.current.editor.enable(false)
       editorRef.current.editor.blur()
     }
-
-    if (e.key === "Tab") {
-      //Set focus to editor when tab press detected at container
-     if(e.target.className === "richtext-container"){
-        handleFocus("api",true)
-      }
-    }
   }
+
+  const handleWrapperKeyDown = (e) => {
+    if (e.key === 'Escape' && rollingInfo && editField) {
+      editorRef.current?.getEditor()?.blur();
+      handleBlur(readonly);
+      setEditField(false);
+      requestAnimationFrame(() => {
+        const editButton = document.getElementById('edit-' + inputProps.name + '-button');
+        editButton?.focus();
+      });
+      return;
+    }
+    if (e.key !== 'Tab') return;
+    const target = e.target;
+    const isEditor = target.classList?.contains('ql-editor');
+    const buttons = getFocusableElements(toolbarName);
+    const isFirstBtn = buttons.length > 0 && target === buttons[0];
+    const isLastBtn = buttons.length > 0 && target === buttons.at(-1);
+
+    if (!e.shiftKey && isLastBtn) {
+      e.preventDefault();
+      const editor = editorRef.current?.getEditor();
+      if (editor) {
+        editor.focus();
+        editor.setSelection(editor.getLength(), 0);
+      }
+      return;
+    }
+
+    if (e.shiftKey && isEditor && buttons.length > 0) {
+      e.preventDefault();
+      buttons.at(-1).focus();
+      return;
+    }
+
+    const exitForward = !e.shiftKey && isEditor;
+    const exitBackward = e.shiftKey && isFirstBtn;
+    if (exitForward || exitBackward) {
+      // Mark that any imminent .ql-editor focus event is internal cleanup,
+      // not a real entry, so the focus handler won't redirect back to the toolbar.
+      skipRedirectRef.current = true;
+      handleBlur(readonly);
+      // Reset the flag on the next tick once focus has settled.
+      setTimeout(() => { skipRedirectRef.current = false; }, 0);
+    }
+  };
+
+  const handleWrapperFocus = (e) => {
+    if (typeof checkLocked === 'function') checkLocked(e);
+    if (!e.target.classList?.contains('ql-editor')) return;
+    if (skipRedirectRef.current) return;
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+    // Hijack focus when tabbing (not clicking) into the editor
+    const fromInside = e.relatedTarget && wrapper.contains(e.relatedTarget);
+    if (fromInside) return;
+    if (!tabbedRecentlyRef.current) return;
+    setIsFocused(true);
+    setToolbarVisible(true);
+    if (typeof onFocus === 'function' && !insideFieldset) {
+      onFocus(inputProps.name);
+    }
+
+    // If shift-tabbing backwards to the editor, focus the editor instead of manually focusing toolbar
+    const fromAfter = e.relatedTarget && (wrapper.compareDocumentPosition(e.relatedTarget) & Node.DOCUMENT_POSITION_FOLLOWING);
+    if (fromAfter) return;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const buttons = getFocusableElements(toolbarName);
+        if (buttons.length === 0) return;
+        buttons[0].focus();
+      });
+    });
+  };
 
   const shouldBlockEditorUpdate = () => {
     if (hasActiveNetworkError()) {
@@ -871,19 +954,19 @@ function RichTextEditor(props) {
       attributeData={attributeData}
       shouldDisableForErrors={shouldDisableForErrors}
     />
-    :    
+    :
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
     onContextMenu={(e)=> {if(readonly){e.preventDefault()}}}
-    tabIndex="0"
-    onKeyDown={onKeyDown}
     className='richtext-container'
     >
-    <input className='visually-hidden' ref={myRefname}/>
+    {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
     <div
-      role="textbox"
+      ref={wrapperRef}
       className={`rich-text-editor-wrapper ${isRichTextDisabled ? 'rich-text-disabled' : ''} ${isThisFieldNetworkError ? 'has-network-error' : ''} ${isBlurred ? 'blurred' : ''} ${maxSizeOver ? 'has-error' : ''}`}
-      aria-label="tooltip"
-      onFocus={checkLocked}
+      onFocus={handleWrapperFocus}
+      onKeyDown={handleWrapperKeyDown}
+      id={"rte-wrapper-" + inputProps.name}
     >
       <div className={RichTextClassName}>
         <div
@@ -916,7 +999,7 @@ function RichTextEditor(props) {
               className="quill-toolbar-comment-button"
               onClick={addComment}
             >
-              <img src={commentIcon} alt="comment icon" className="comment-icon" />
+              <CommentIcon className="comment-icon" aria-hidden="true" focusable="false" />
             </button>
             <button
               className="show-comments-button"
@@ -941,11 +1024,7 @@ function RichTextEditor(props) {
           // Do not explicitly set value. see comments at top of this file.
           onChange={(_val, _delta, source) =>{handleChange(_val, _delta, source, readonly)}}
           onFocus={(event, source) => {handleFocus(event,source)}}
-          onKeyDown={(e) => {
-            if (e.key === 'Tab' && !e.shiftKey && e.target.className === 'ql-editor') {
-              handleBlur(readonly);
-            }
-          }}
+          onKeyDown={onKeyDown}
           onBlur={(_range, _source, quill) => {
             // Calculate character count directly from editor to ensure accuracy
             // Don't rely on counter.current which might be stale
@@ -971,12 +1050,9 @@ function RichTextEditor(props) {
                 // Hack. Prevent blurring when copy-paste data
                 let fixRange = quill.getSelection()
                 
-                // Check if focus has actually left the editor
-                // If activeElement is not inside the Quill editor, we should save
-                const quillEditor = editorRef.current?.editor?.root;
-                const focusStillInEditor = quillEditor?.contains(document.activeElement);
-                
-                if (!fixRange || !focusStillInEditor) {
+                const focusStillInWrapper = wrapperRef.current?.contains(document.activeElement);
+
+                if (!fixRange || !focusStillInWrapper) {
                   setIsFocused(false);
                   setToolbarVisible(false)
                   showCounter.current = false;

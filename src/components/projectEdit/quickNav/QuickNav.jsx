@@ -64,6 +64,18 @@ export default function QuickNav({
   }
 
   useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && document.activeElement.className.includes('quicknav-item')) {
+        document.getElementById("quicknav-header-button")?.focus();
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  useEffect(() => {
     const optionsArray = [];
     let curPhase = ""
 
@@ -109,12 +121,12 @@ export default function QuickNav({
     if (!validationOk) {
       return
     }
-    if (!hasErrors) {
-      setChecking(false)
-      setVerifying(true)
+    if (hasErrors) {
+      setChecking(true)
       setValidationOk(false)
     } else {
-      setChecking(true)
+      setChecking(false)
+      setVerifying(true)
       setValidationOk(false)
     }
   }, [validationOk])
@@ -220,7 +232,7 @@ export default function QuickNav({
   const changeCurrentPhase = () => {
     let prefix
 
-    if(isNaN(phasePrefix)){
+    if(Number.isNaN(phasePrefix)){
       if(phasePrefix + phaseTitle === "XLPeriaatteet"){
         prefix = 2
       }
@@ -229,7 +241,7 @@ export default function QuickNav({
       }
     }
     else{
-      prefix = parseInt(phasePrefix)
+      prefix = Number.parseInt(phasePrefix)
       //5 = XL projects
       if(currentProject.subtype === 5){
 
@@ -245,20 +257,12 @@ export default function QuickNav({
       }
     }
 
-    let documentsDownloaded = false
-    if(documents){
-      for (let i = 0; i < documents.length; i++) {
-        //Check if document has not been downloaded
-        const documentPhases = documents[i].phases
-        //Check if it is ongoing phase
-        if (documentPhases.some(e => e.phase_index === prefix && e.last_downloaded === null)) {
-          //Prevent phase ending because documents have not been downloaded
-          documentsDownloaded = false
-          break;
-        }
-        else{
-          documentsDownloaded = true
-        }
+    let documentsDownloaded = true
+    for (const doc of documents ?? []) {
+      const documentPhases = doc.phases
+      if (documentPhases.some(e => e.phase_index === prefix && e.last_downloaded === null)) {
+        documentsDownloaded = false
+        break;
       }
     }
 
@@ -331,51 +335,42 @@ export default function QuickNav({
     showSections(true)
   }
 
-  const calculateFilterNumber = (fields,highlighted) => {
+  const calculateFilterNumber = (fields, highlighted) => {
     let filterNumber = 0
     let highlightNumber = 0
     let highlight = false
 
-    for (let x = 0; x < fields.length; x++) {
-      if(fields[x].field_subroles === highlighted){
+    const hasFilteredAttribute = (attrs) => attrs.some(
+      attr => attr?.field_subroles && filterFieldsArray.includes(attr.field_subroles)
+    )
+
+    for (const field of fields) {
+      if(field.field_subroles === highlighted){
         highlight = true
-        if(filterFieldsArray.includes(fields[x].field_subroles)){
-          highlightNumber = highlightNumber + 1
+        if(filterFieldsArray.includes(field.field_subroles)){
+          highlightNumber++
         }
       }
-      else if(fields[x].categorization === 'fieldset' && Array.isArray(fields[x].fieldset_attributes)){
-        // Check if fieldset itself matches highlighted
-        const hasHighlightedAttribute = fields[x].fieldset_attributes.some(
+      else if(field.categorization === 'fieldset' && Array.isArray(field.fieldset_attributes)){
+        const hasHighlightedAttribute = field.fieldset_attributes.some(
           attr => attr?.field_subroles === highlighted
         )
         
         if(hasHighlightedAttribute){
           highlight = true
-          // Check if any attribute is in filter (to count the fieldset once)
-          const hasFilteredAttribute = fields[x].fieldset_attributes.some(
-            attr => attr?.field_subroles && filterFieldsArray.includes(attr.field_subroles)
-          )
-          if(hasFilteredAttribute){
-            highlightNumber = highlightNumber + 1
+          if(hasFilteredAttribute(field.fieldset_attributes)){
+            highlightNumber++
           }
         }
-        else{
-          // Check if any attribute matches filter (not highlighted)
-          const hasFilteredAttribute = fields[x].fieldset_attributes.some(
-            attr => attr?.field_subroles && filterFieldsArray.includes(attr.field_subroles)
-          )
-          if(hasFilteredAttribute){
-            filterNumber = filterNumber + 1
-          }
+        else if(hasFilteredAttribute(field.fieldset_attributes)){
+          filterNumber++
         }
       }
-      else{
-        if(filterFieldsArray.includes(fields[x].field_subroles)){
-          filterNumber = filterNumber + 1
-        }
+      else if(filterFieldsArray.includes(field.field_subroles)){
+          filterNumber++
       }
     }
-    return [filterNumber,highlightNumber,highlight]
+    return [filterNumber, highlightNumber, highlight]
   }
 
   const hideSections = () => {
@@ -390,7 +385,7 @@ export default function QuickNav({
         {selectedPhase?.phaseID === 0 ? (
           <div className='quicknav-header-container'>
             <div className='quicknav-header'>
-              <Button variant="supplementary" className='quicknav-allphases' aria-label="Kaikki vaiheet. Valitse vaihe alla olevasta navigaatiosta tai palaa takaisin aikaisempaan vaiheeseen" disabled={!prevSelectedRef.current} onClick={() => switchPhase(prevSelectedRef.current)} iconRight={<IconArrowRight className='right-icon' />}>
+              <Button id="quicknav-header-button" variant="supplementary" className='quicknav-allphases' aria-label="Kaikki vaiheet. Valitse vaihe alla olevasta navigaatiosta tai palaa takaisin aikaisempaan vaiheeseen" disabled={!prevSelectedRef.current} onClick={() => switchPhase(prevSelectedRef.current)} iconRight={<IconArrowRight className='right-icon' />}>
                 Kaikki vaiheet
               </Button>
             </div>
@@ -399,7 +394,7 @@ export default function QuickNav({
         ) : (
           <div className='quicknav-header-container'>
             <div className='quicknav-header'>
-                <Button variant="supplementary" aria-label='Palaa takaisin vaiheiden etusivulle' onClick={() => hideSections()} iconLeft={<IconArrowLeft className='left-icon' />}>
+                <Button id="quicknav-header-button" variant="supplementary" aria-label='Palaa takaisin vaiheiden etusivulle' onClick={() => hideSections()} iconLeft={<IconArrowLeft className='left-icon' />}>
                   {phaseTitle}
                 </Button>
             </div>

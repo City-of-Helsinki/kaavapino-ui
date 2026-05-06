@@ -30,10 +30,7 @@ class EditForm extends Component {
   }
 
   shouldComponentUpdate(prevProps, prevState) {
-    if (isEqual(prevProps, this.props) && isEqual(prevState, this.state)) {
-      return false
-    }
-    return true
+    return !(isEqual(prevProps, this.props) && isEqual(prevState, this.state));
   }
 
   componentDidUpdate(prevProps) {
@@ -97,7 +94,7 @@ class EditForm extends Component {
     return (
       <>
         {showSection ?
-        <Form className="form-container" autoComplete="off" aria-live="polite" aria-atomic="true" id="accordion-title" tabIndex="0">
+        <Form className="form-container" autoComplete="off" aria-live="polite" aria-atomic="true" id="accordion-title">
           <div className="edit-form-buttons" aria-hidden="true">
             {/*<Shoutbox project={projectId} />*/}
           </div>
@@ -141,6 +138,28 @@ class EditForm extends Component {
 }
 
 EditForm.propTypes = {
+  projectId: PropTypes.number,
+  initialize: PropTypes.func,
+  attributeData: PropTypes.object,
+  geoServerData: PropTypes.object,
+  saving: PropTypes.bool,
+  submitErrors: PropTypes.object,
+  initialized: PropTypes.bool,
+  setFormInitialized: PropTypes.func,
+  disabled: PropTypes.bool,
+  sections: PropTypes.array,
+  sectionIndex: PropTypes.number,
+  syncronousErrors: PropTypes.object,
+  t: PropTypes.func,
+  filterFieldsArray: PropTypes.array,
+  highlightedTag: PropTypes.string,
+  fieldCount: PropTypes.number,
+  showSection: PropTypes.bool,
+  handleSave: PropTypes.func,
+  handleLockField: PropTypes.func,
+  handleUnlockField: PropTypes.func,
+  setRef: PropTypes.func,
+  unlockAllFields: PropTypes.func,
   deadlines:PropTypes.array,
   isCurrentPhase:PropTypes.bool,
   selectedPhase: PropTypes.number,

@@ -214,7 +214,6 @@ const DeadLineInput = ({
   };
 
   const renderDateInput = (validated) => {
-    console.log("validated is", validated)
     return (
       validated ? "Ladataan..." :
       <DateInput

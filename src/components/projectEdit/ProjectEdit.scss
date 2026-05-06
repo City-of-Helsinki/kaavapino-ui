@@ -176,6 +176,11 @@
 }
 
 .timeline {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  text-align: inherit;
   cursor: pointer;
   padding-bottom: 20px;
 }
@@ -241,8 +246,12 @@
       margin: $size4 $size8;
     }
 
-    .filter-tag:focus{
+    .filter-tag:focus {
       --tag-focus-outline-color: transparent;
+    }
+
+    .filter-tag:focus-visible{
+      --tag-focus-outline-color: var(--color-coat-of-arms) !important;
     }
   
     .yellow{
@@ -252,6 +261,10 @@
 
     .yellow:focus{
       --tag-focus-outline-color: transparent;
+    }
+
+    .yellow:focus-visible{
+      --tag-focus-outline-color: var(--color-coat-of-arms) !important;
     }
   
     .filter-tag-info {
@@ -298,7 +311,13 @@
         font-size: $size14;
         line-height: $size24;
         letter-spacing: 0;
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
       }
+      .required-fields-notification-link:hover { text-decoration: none; }
+      .required-fields-notification-link:focus-visible { outline: 2px solid var(--color-coat-of-arms, #0072c6); }
     }
   }
   // Style the main notification label
