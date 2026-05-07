@@ -14,7 +14,6 @@ import { toastr } from 'react-redux-toastr'
 import i18next from 'i18next'
 import FileSaver from 'file-saver'
 import {IconInfoCircleFill,IconCheckCircleFill,IconErrorFill} from 'hds-react'
-
 const MAX_COUNT = 100
 const INTERVAL_MILLISECONDS = 2000
 
@@ -96,6 +95,17 @@ const showErrorToast = (isProjectCard, isPreview) => {
   );
 }
 
+const saveFileFromResponse = (res) => {
+  const fileData = res.data
+  const contentDisposition = res.headers['content-disposition']
+  const fileName = contentDisposition?.split('filename=')[1]
+  if (fileData) {
+    FileSaver.saveAs(fileData, fileName)
+    return true;
+  }
+  return false;
+}
+
 function* fetchDocumentsSaga({ payload: projectId }) {
   try {
     const documents = yield call(documentsApi.get, { path: { id: projectId } })
@@ -122,31 +132,20 @@ function* downloadDocumentSaga(payload, isPreview) {
   try {
     res = yield call(axios.get, modifiedUrl, { responseType: 'blob' })
     if (res.status !== 200) {
-      toastr.removeByType('info')
-      showErrorToast(payload.projectCard, isPreview)
       isError = true
-      yield put(downloadDocumentDone(true))
     }
   } catch {
-    showErrorToast(payload.projectCard, isPreview)
     isError = true
-    yield put(downloadDocumentDone(true))
   }
 
   toastr.removeByType('info')
 
-  if (!isError) {
-    const fileData = res.data
-    const contentDisposition = res.headers['content-disposition']
-    const fileName = contentDisposition?.split('filename=')[1]
-    if (fileData) {
-      FileSaver.saveAs(fileData, fileName)
-      showSuccessToast(payload.projectCard, isPreview)
-    } else {
-      showErrorToast(payload.projectCard, isPreview)
-    }
-    yield put(downloadDocumentDone(true))
+  if (isError) {
+    showErrorToast(payload.projectCard, isPreview)
+  } else {
+    saveFileFromResponse(res) ? showSuccessToast(payload.projectCard, isPreview) : showErrorToast(payload.projectCard, isPreview);
   }
+  yield put(downloadDocumentDone(true))
 }
 
 function* downloadDocumentOfficialSagaAsync({ payload }) {
@@ -164,57 +163,35 @@ function* downloadDocumentSagaAsync(payload, isPreview) {
 
   let counter = 0
   const modifiedUrl = payload.file + '?immediate=false' + (isPreview ? '&preview=true' : '')
-  yield put(downloadDocumentDone(false))
-  showInfoToast(payload.projectCard, isPreview)
+  yield put(downloadDocumentDone(false));
+  showInfoToast(payload.projectCard, isPreview);
   try {
-    res = yield call(axios.get, modifiedUrl)
-    currentTask = res?.data ? res.data.detail : null
+    res = yield call(axios.get, modifiedUrl);
+    currentTask = res?.data ? res.data.detail : null;
 
     if (!currentTask && res.status !== 200) {
-      toastr.removeByType('info')
-      showErrorToast(payload.projectCard, isPreview)
-      isError = true
-      yield put(downloadDocumentDone(true))
-    } else {
-      while ((!res || res.status === 202) && !isError && counter < MAX_COUNT) {
-        if (res?.status === 500) {
-          isError = true
-          toastr.removeByType('info')
-          showErrorToast(payload.projectCard, isPreview)
-          yield put(downloadDocumentDone(true))
-          break
-        }
-
-        const includeTaskUrl = payload.file + `?task=${currentTask}`
-        res = yield call(axios.get, includeTaskUrl, { responseType: 'blob' })
-        counter++
-        yield delay(INTERVAL_MILLISECONDS)
+      isError = true;
+    }
+    while ((!res || res.status === 202) && !isError && counter < MAX_COUNT) {
+      if (res?.status === 500) {
+        isError = true;
+        break;
       }
+      const includeTaskUrl = payload.file + `?task=${currentTask}`;
+      res = yield call(axios.get, includeTaskUrl, { responseType: 'blob' });
+      counter++;
+      yield delay(INTERVAL_MILLISECONDS);
     }
   } catch {
-    showErrorToast(payload.projectCard, isPreview)
-    isError = true
-    yield put(downloadDocumentDone(true))
+    isError = true;
   }
 
   toastr.removeByType('info')
 
-  if (counter === MAX_COUNT) {
+  if (isError || counter === MAX_COUNT) {
     showErrorToast(payload.projectCard, isPreview)
-    yield put(downloadDocumentDone(true))
+  } else {
+    saveFileFromResponse(res) ? showSuccessToast(payload.projectCard, isPreview) : showErrorToast(payload.projectCard, isPreview);
   }
-
-  if (!isError && counter !== MAX_COUNT) {
-    const fileData = res.data
-    const contentDisposition = res.headers['content-disposition']
-    const fileName = contentDisposition?.split('filename=')[1]
-    if (fileData) {
-      FileSaver.saveAs(fileData, fileName)
-      showSuccessToast(payload.projectCard, isPreview)
-      yield put(downloadDocumentDone(true))
-    } else {
-      showErrorToast(payload.projectCard, isPreview)
-      yield put(downloadDocumentDone(true))
-    }
-  }
+  yield put(downloadDocumentDone(true))
 }
