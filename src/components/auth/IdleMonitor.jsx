@@ -181,7 +181,7 @@ function IdleMonitor() {
     if (toastState === 'warning') {
       dismissToast(successToastIdRef);
       warningToastIdRef.current = toast.warning(
-        <InactiveMessage idleModal={true} extendSession={extendSession} />,
+        <InactiveMessage idleModal={true} extendSession={extendSession} durationMs={sharedStateRef?.current.logoutAt - Date.now()} />,
         { autoClose: 600000, pauseOnHover: false, position: toast.POSITION.BOTTOM_LEFT }
       );
     } else if (toastState === 'success') {
