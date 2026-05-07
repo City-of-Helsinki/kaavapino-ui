@@ -35,6 +35,11 @@ function InactiveMessage({ idleModal, extendSession, durationMs = 600000 }) {
     }, []);
 
     useEffect(() => {
+        if (!idleModal) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+            return;
+        }
         const deadline = Date.now() + durationMs;
         const tick = () => {
             const remaining = deadline - Date.now();
