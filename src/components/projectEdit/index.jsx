@@ -60,6 +60,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
 import PropTypes from 'prop-types'
 import './ProjectEdit.scss'
+import useToastKeyboardNav from '../../hooks/useToastKeyboardNav'
 
 class ProjectEditPage extends Component {
   state = {
@@ -461,19 +462,17 @@ class ProjectEditPage extends Component {
     const errorFields = projectUtils.getErrorFields(false,attribute_data,currentSchema,phase,origin,currentDeadlineSchema,closephase)
     this.setState({errorFields:errorFields})
     if(errorFields?.length === 0 && !documentsDownloaded){
-      const elements = <div>
-      <div>
-        <h3>{t('messages.required-documents-header')}
-          <span className='icon-container'><IconCross size="s" /></span>
-        </h3>
-      </div>
-      <div>
-        <p>{t('messages.required-documents-text')}
-        </p>
-      </div>
-    </div>
     //show toastr message
-    toast.error(elements, {
+    toast.error(
+      ({ closeToast }) => (
+        <ReqToastElements
+          header={t('messages.required-documents-header')}
+          text={t('messages.required-documents-text')}
+          triggerId={'quicknav-end-phase-button'}
+          closeButtonId={'errorsToastrClose'}
+          closeToast={closeToast}
+        />
+      ), {
       toastId:"errorsToastr",
       position: "top-right",
       autoClose: false,
@@ -486,18 +485,18 @@ class ProjectEditPage extends Component {
       });
     }
     else if(errorFields?.length === 0 && documentsDownloaded && origin === "checkphase"){
-      const elements = <div>
-        <div>
-          <h3>{t('messages.required-fields-filled-header')}
-            <span className='icon-container'><IconCross size="s" /></span>
-          </h3>
-        </div>
-        <div>
-          <p>{this.getReqFieldsSuccessText(currentSchema.title)}</p>
-        </div>
-      </div>
+      const closeButtonId = 'noErrorsToastrClose'
       //show toastr message
-      toast.success(elements, {
+      toast.success(
+        ({ closeToast }) => (
+          <ReqToastElements
+            header={t('messages.required-fields-filled-header')}
+            text={this.getReqFieldsSuccessText(currentSchema.title)}
+            triggerId={'quicknav-check-button'}
+            closeButtonId={closeButtonId}
+            closeToast={closeToast}
+          />
+        ), {
         toastId:"noErrorsToastr",
         position: "top-right",
         autoClose: false,
@@ -821,6 +820,46 @@ class ProjectEditPage extends Component {
     )
   }
 }
+
+const ReqToastElements = ({ header, text, triggerId, closeButtonId, closeToast }) => {
+  useToastKeyboardNav(triggerId, closeButtonId);
+
+  const handleClick = () => {
+    document.getElementById(triggerId)?.focus();
+    closeToast();
+  }
+
+  return (
+    <div>
+      <div>
+        <h3>
+          {header}
+          <button
+            type="button"
+            id={closeButtonId}
+            onClick={handleClick}
+            aria-label="Close"
+            className="icon-container"
+            style={{ background: 'none', border: 'none', padding: 0, margin: 0, cursor: 'pointer', font: 'inherit', color: 'inherit' }}
+          >
+            <IconCross size="s" />
+          </button>
+        </h3>
+      </div>
+      <div>
+        <p>{text}</p>
+      </div>
+    </div>
+  );
+};
+
+ReqToastElements.propTypes = {
+  header: PropTypes.node,
+  text: PropTypes.node,
+  triggerId: PropTypes.string,
+  closeButtonId: PropTypes.string,
+  closeToast: PropTypes.func
+};
 
 ProjectEditPage.propTypes = {
   currentProject: PropTypes.object,
