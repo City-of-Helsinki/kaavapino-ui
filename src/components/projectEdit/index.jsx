@@ -485,15 +485,13 @@ class ProjectEditPage extends Component {
       });
     }
     else if(errorFields?.length === 0 && documentsDownloaded && origin === "checkphase"){
-      const closeButtonId = 'noErrorsToastrClose'
-      //show toastr message
       toast.success(
         ({ closeToast }) => (
           <ReqToastElements
             header={t('messages.required-fields-filled-header')}
             text={this.getReqFieldsSuccessText(currentSchema.title)}
             triggerId={'quicknav-check-button'}
-            closeButtonId={closeButtonId}
+            closeButtonId={'noErrorsToastrClose'}
             closeToast={closeToast}
           />
         ), {

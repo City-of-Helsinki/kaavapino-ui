@@ -24,6 +24,11 @@ import {
 const MAX_COUNT = 100
 const INTERVAL_MILLISECONDS = 4000
 
+const statusToastProps = {
+  showCloseButton: false,
+  closeOnToastrClick: true
+}
+
 export default function* reportSaga() {
   yield all([
     takeLatest(FETCH_REPORTS, fetchReportsSaga),
@@ -36,14 +41,14 @@ export default function* reportSaga() {
 function* cancelReportLoading() {
   toastr.warning(
     i18next.t('reports.report-cancel-title'),
-    i18next.t('reports.report-cancel'))
+    i18next.t('reports.report-cancel'), statusToastProps)
 
   yield put(downloadReportSuccessful(null))
 }
 function* cancelReportPreviewLoading() {
   toastr.warning(
     i18next.t('reports.report-preview-cancel-title'),
-    i18next.t('reports.report-preview-cancel'))
+    i18next.t('reports.report-preview-cancel'), statusToastProps)
 
   yield put(downloadReportReviewSuccessful(null))
 }
@@ -76,11 +81,9 @@ function* downloadReportPreviewSaga({ payload }) {
       if (value.length > 0) {
         filteredParams[key] = value
       }
-    } else {
-      if (value) {
+    } else if (value) {
         filteredParams[key] = value
       }
-    }
   })
 
   filteredParams = {
@@ -92,21 +95,16 @@ function* downloadReportPreviewSaga({ payload }) {
     // At first API is called to get taskID
     res = yield call(
       reportApi.get,
-      { path: { id: payload && payload.selectedReport }, query: { ...filteredParams } },
+      { path: { id: payload?.selectedReport }, query: { ...filteredParams } },
       ':id/',
       { responseType: 'json' },
       true
     )
-    currentTask = res && res.data ? res.data.detail : null
+    currentTask = res?.data ? res.data.detail : null
 
     toastr.info(i18next.t('reports.wait-title'), i18next.t('reports.preview-content'))
 
-    if (!currentTask) {
-      toastr.removeByType('info')
-      toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-preview'))
-      yield put(downloadReportReviewSuccessful(null))
-      isError = true
-    } else {
+    if (currentTask) {
       // Polling starts here.
       while (
         (!res || res.status === 202) &&
@@ -118,7 +116,7 @@ function* downloadReportPreviewSaga({ payload }) {
         // Check if report preview is still loading and not cancelled by user.
         reportPreviewLoading = yield select(reportPreviewLoadingSelector)
 
-        if (res && res.status === 500) {
+        if (res?.status === 500) {
           isError = true
           break
         }
@@ -134,16 +132,21 @@ function* downloadReportPreviewSaga({ payload }) {
 
         yield delay(INTERVAL_MILLISECONDS)
       }
+    } else {
+      toastr.removeByType('info')
+      toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-preview'), statusToastProps)
+      yield put(downloadReportReviewSuccessful(null))
+      isError = true
     }
-  } catch (e) {
+  } catch {
     isError = true
-    toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-preview'))
+    toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-preview'), statusToastProps)
     yield put(downloadReportReviewSuccessful(null))
   }
 
   // If tried enough but still no correct response. Failure.
   if (counter === MAX_COUNT) {
-    toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-preview'))
+    toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-preview'), statusToastProps)
     yield put(downloadReportReviewSuccessful(null))
   }
 
@@ -154,7 +157,8 @@ function* downloadReportPreviewSaga({ payload }) {
     if (reportPreviewLoading) {
       toastr.success(
         i18next.t('reports.finished-title'),
-        i18next.t('reports.report-preview-loaded')
+        i18next.t('reports.report-preview-loaded'),
+        statusToastProps
       )
       yield put(downloadReportReviewSuccessful(res.data))
     }
@@ -184,14 +188,12 @@ function* downloadReportSaga({ payload }) {
       if (value.length > 0) {
         filteredParams[key] = value
       }
-    } else {
-      if (value) {
+    } else if (value) {
         filteredParams[key] = value
       }
-    }
   })
 
-  toastr.info(i18next.t('reports.wait-title'), i18next.t('reports.content'))
+  toastr.info(i18next.t('reports.wait-title'), i18next.t('reports.content'), statusToastProps)
 
   // At first API is called to get taskID
   try {
@@ -202,14 +204,9 @@ function* downloadReportSaga({ payload }) {
       { responseType: 'json' },
       true
     )
-    currentTask = res && res.data ? res.data.detail : null
+    currentTask = res?.data ? res.data.detail : null
 
-    if (!currentTask) {
-      toastr.removeByType('info')
-      toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-report'))
-      isError = true
-      yield put(downloadReportSuccessful())
-    } else {
+    if (currentTask) {
       // Looping starts here. Waiting for correct response.
       while (
         (!res || res.status === 202) &&
@@ -220,7 +217,7 @@ function* downloadReportSaga({ payload }) {
         // Check if report is still loading and not cancelled by user.
         reportLoading = yield select(reportLoadingSelector)
 
-        if (res && res.status === 500) {
+        if (res?.status === 500) {
           isError = true
           break
         }
@@ -236,9 +233,14 @@ function* downloadReportSaga({ payload }) {
 
         yield delay(INTERVAL_MILLISECONDS)
       }
+    } else {
+      toastr.removeByType('info')
+      toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-report'), statusToastProps)
+      isError = true
+      yield put(downloadReportSuccessful())
     }
-  } catch (e) {
-    toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-report'))
+  } catch {
+    toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-report'), statusToastProps)
     isError = true
     yield put(downloadReportSuccessful())
   }
@@ -247,7 +249,7 @@ function* downloadReportSaga({ payload }) {
 
   // Maximum amount is tried and still no correct response. Failure.
   if (counter === MAX_COUNT) {
-    toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-report'))
+    toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-report'), statusToastProps)
     yield put(downloadReportSuccessful())
   }
 
@@ -260,7 +262,7 @@ function* downloadReportSaga({ payload }) {
       const fileData = res.data
 
       const contentDisposition = res.headers['content-disposition']
-      const fileName = contentDisposition && contentDisposition.split('filename=')[1]
+      const fileName = contentDisposition?.split('filename=')[1]
 
       // File data is found from response. Success.
       if (fileData) {
@@ -268,12 +270,13 @@ function* downloadReportSaga({ payload }) {
 
         toastr.success(
           i18next.t('reports.finished-title'),
-          i18next.t('reports.report-loaded')
+          i18next.t('reports.report-loaded'),
+          statusToastProps
         )
         yield put(downloadReportSuccessful())
       } else {
         // FileData is not found. Failure.
-        toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-report'))
+        toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-report'), statusToastProps)
         yield put(downloadReportSuccessful())
       }
     }

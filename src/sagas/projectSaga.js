@@ -228,9 +228,9 @@ function createOnlineChannel() {
     const onlineHandler = () => {
       emitter(true);
     };
-    window.addEventListener('online', onlineHandler);
+    globalThis.addEventListener('online', onlineHandler);
     return () => {
-      window.removeEventListener('online', onlineHandler);
+      globalThis.removeEventListener('online', onlineHandler);
     };
   });
 }
@@ -826,6 +826,8 @@ function* saveProjectFloorArea() {
       yield put(setAllEditFields())
 
       toastr.success(i18.t('messages.timelines-successfully-saved'), '', {
+          showCloseButton: false,
+          closeOnToastrClick: true,
         icon: <IconCheckCircleFill />
       })
       const net = yield select(projectNetworkSelector)
@@ -837,6 +839,8 @@ function* saveProjectFloorArea() {
     } catch (e) {
       if (e?.code === "ERR_NETWORK") {
         toastr.error(i18.t('messages.general-save-error'), '', {
+          showCloseButton: false,
+          closeOnToastrClick: true,
           icon: <IconErrorFill />
         })
         yield put({ type: SET_NETWORK_STATUS, payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
@@ -851,17 +855,12 @@ function* saveProjectFloorArea() {
 }
 
 function* validateProjectTimetable({ payload }) {
-  // Use passed attributeData if available (contains cascaded values from frontend)
-  const passedAttributeData = payload?.attributeData;
-
-  // Remove success toastr before showing info
-  toastr.removeByType('success');
-  toastr.clean(); // Clear existing toastr notifications
-  // Show a loading icon at the start of the saga
+  toastr.clean();
   toastr.info(i18.t('messages.checking-dates'), {
-    timeOut: 0, // Keep it showing until manually removed
+    timeOut: 0,
     removeOnHover: false,
-    showCloseButton: true,
+    showCloseButton: false,
+    closeOnToastrClick: true,
     icon: <IconInfoCircleFill />
   });
   yield put(startSubmit(EDIT_PROJECT_TIMETABLE_FORM));
@@ -870,12 +869,11 @@ function* validateProjectTimetable({ payload }) {
   const { initial, values } = yield select(editProjectTimetableFormSelector);
   const currentProjectId = yield select(currentProjectIdSelector);
 
-  // Use passed data if available, otherwise fall back to form values
-  const sourceValues = passedAttributeData || values;
+  const sourceValues = payload?.attributeData || values;
 
   if (sourceValues) {
     // Always compute changed attributes vs initial to only send what's different
-    let changedAttributeData = getChangedAttributeData(sourceValues, initial);
+    const changedAttributeData = getChangedAttributeData(sourceValues, initial);
 
     if (changedAttributeData.oikaisukehoituksen_alainen_readonly) {
       delete changedAttributeData.oikaisukehoituksen_alainen_readonly;
@@ -907,7 +905,8 @@ function* validateProjectTimetable({ payload }) {
       toastr.success(i18.t('messages.dates-confirmed'), {
         timeOut: 10000,
         removeOnHover: false,
-        showCloseButton: true,
+        showCloseButton: false,
+        closeOnToastrClick: true,
         icon: <IconCheckCircleFill />
       });
 
@@ -941,6 +940,8 @@ function* validateProjectTimetable({ payload }) {
       // Remove loading icon on error
       toastr.removeByType('info');
       toastr.error(i18.t('messages.validation-error'), '', {
+        showCloseButton: false,
+        closeOnToastrClick: true,
         icon: <IconErrorFill />
       });
 
@@ -992,6 +993,8 @@ function* saveProjectTimetable(action, retryCount = 0) {
       // If we previously had an error, mark success transiently
       yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: i18.t('messages.deadlines-successfully-saved') } })
       toastr.success(i18.t('messages.deadlines-successfully-saved'), '', {
+        showCloseButton: false,
+        closeOnToastrClick: true,
         icon: <IconCheckCircleFill />
       })
       // Auto reset network status back to ok after 5s
@@ -1001,6 +1004,8 @@ function* saveProjectTimetable(action, retryCount = 0) {
     catch (e) {
       if (e?.code === "ERR_NETWORK" && retryCount <= maxRetries) {
         toastr.error(i18.t('messages.error-connection'), '', {
+          showCloseButton: false,
+          closeOnToastrClick: true,
           icon: <IconErrorFill />
         })
         // Set network status to error on connectivity issue
@@ -1021,6 +1026,7 @@ function* saveProjectTimetable(action, retryCount = 0) {
           timeOut: 0,
           removeOnHover: false,
           showCloseButton: true,
+          closeOnToastrClick: true,
           className: 'rrt-error',
           icon: <IconErrorFill />
         });
