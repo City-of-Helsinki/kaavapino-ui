@@ -19,6 +19,37 @@ import { useFieldPassivation } from '../../hooks/useFieldPassivation'
 import PropTypes from 'prop-types'
 import './Input.scss'
 
+function buildAddButtonMessage({ isNetworkError, isConnectionRestored, hasChildError, isCollapsed, t }) {
+  if (isNetworkError && isCollapsed) {
+    return (
+      <div className="network-error-state" aria-live="polite" aria-atomic="true">
+        <div className="error-text">
+          <div className="notification-content">
+            <span className="notification-label">{t('messages.network-save-failed-label')}</span>
+            <br />
+            <span className="notification-message">{t('messages.network-save-failed-message-brief')}</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+  if (isConnectionRestored && isCollapsed) {
+    return (
+      <div className="network-error-state" aria-live="polite" aria-atomic="true">
+        <div className="success-text fade-in">
+          <div className="notification-content">
+            <span className="notification-label">{t('project.fieldset-connection-restored-label')}</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+  if (hasChildError) {
+    return <div className="error-text add-error">{t('project.error-prevent-add')}</div>
+  }
+  return null
+}
+
 const FieldSet = ({
   sets,
   fields,
@@ -306,36 +337,13 @@ const FieldSet = ({
     typeof f === 'string' && f.startsWith(`${name}`)
   )
 
-  let addButtonMessage
-  if (isThisFieldsetNetworkError && expanded.length === 0) {
-    addButtonMessage = (
-      <div className="network-error-state" aria-live="polite" aria-atomic="true">
-        <div className="error-text">
-          <div className="notification-content">
-            <span className="notification-label">{t('messages.network-save-failed-label')}</span>
-            <br />
-            <span className="notification-message">{t('messages.network-save-failed-message')}</span>
-          </div>
-        </div>
-      </div>
-    )
-  } else if (isThisFieldsetConnectionRestored && expanded.length === 0) {
-    addButtonMessage = (
-      <div className="network-error-state" aria-live="polite" aria-atomic="true">
-        <div className="success-text fade-in">
-          <div className="notification-content">
-            <span className="notification-label">{t('project.fieldset-connection-restored-label')}</span>
-            <br />
-            <span className="notification-message">{t('project.fieldset-connection-restored-message')}</span>
-          </div>
-        </div>
-      </div>
-    )
-  } else if (anyFieldsetHasChildError) {
-    addButtonMessage = <div className="error-text add-error">{t('project.error-prevent-add')}</div>
-  } else {
-    addButtonMessage = null
-  }
+  const addButtonMessage = buildAddButtonMessage({
+    isNetworkError: isThisFieldsetNetworkError,
+    isConnectionRestored: isThisFieldsetConnectionRestored,
+    hasChildError: anyFieldsetHasChildError,
+    isCollapsed: expanded.length === 0,
+    t
+  })
 
   return (
     <>
