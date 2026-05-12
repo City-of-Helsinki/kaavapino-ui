@@ -537,6 +537,7 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
             min={custom.isFloorAreaForm ? 0 : undefined}
             step={custom.isFloorAreaForm ? null : 1}
             disabled={isDisabled}
+            tabIndex={isDisabled ? -1 : undefined}
             onChange={(event) => { handleInputChange(event, readonly.read) }}
             onBlur={(event) => { handleBlur(event, readonly.read) }}
             onFocus={() => { handleFocus() }}
@@ -553,6 +554,7 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
             {...input}
             {...restCustom}
             disabled={isDisabled}
+            tabIndex={isDisabled ? -1 : undefined}
             onChange={(event) => { handleInputChange(event, readonly.read) }}
             onBlur={(event) => { handleBlur(event, readonly.read) }}
             onFocus={() => { handleFocus() }}

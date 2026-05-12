@@ -134,7 +134,6 @@ RollingInfo.propTypes = {
   type:PropTypes.string,
   phaseIsClosed: PropTypes.bool,
   factaInfo: PropTypes.string,
-  maxSizeOver: PropTypes.bool,
   attributeData: PropTypes.shape({
     milta_muilta_pyydetaan_lausunto_fieldset: PropTypes.array
   }),
