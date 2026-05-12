@@ -171,6 +171,7 @@ export default function QuickNav({
     return (
       <>
         <Button
+          id="quicknav-check-button"
           size="small"
           fullWidth={true}
           onClick={onCheckPressed}
@@ -184,6 +185,7 @@ export default function QuickNav({
 
         {canEndPhase && (
           <Button
+            id="quicknav-end-phase-button"
             size="small"
             onClick={changeCurrentPhase}
             fullWidth={true}

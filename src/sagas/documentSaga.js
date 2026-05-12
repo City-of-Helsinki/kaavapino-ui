@@ -14,16 +14,96 @@ import { toastr } from 'react-redux-toastr'
 import i18next from 'i18next'
 import FileSaver from 'file-saver'
 import {IconInfoCircleFill,IconCheckCircleFill,IconErrorFill} from 'hds-react'
-
 const MAX_COUNT = 100
 const INTERVAL_MILLISECONDS = 2000
 
 export default function* documentSaga() {
   yield all([
     takeLatest(FETCH_DOCUMENTS, fetchDocumentsSaga),
-    takeLatest(DOWNLOAD_DOCUMENT, downloadDocumentSaga),
+    takeLatest(DOWNLOAD_DOCUMENT, downloadDocumentOfficialSaga),
     takeLatest(DOWNLOAD_DOCUMENT_PREVIEW, downloadDocumentPreviewSaga)
   ])
+}
+
+const showSuccessToast = (isProjectCard, isPreview) => {
+  let title, content;
+  if (isProjectCard) {
+    title = i18next.t('document-loading.project-card-title');
+    content = i18next.t('document-loading.project-card-loaded');
+  } else {
+    title = i18next.t('document-loading.ready-title');
+    content = i18next.t(isPreview ? 'document-loading.document-preview-loaded' : 'document-loading.document-loaded');
+  }
+  toastr.success(
+    title,
+    content,
+    { 
+      showCloseButton:false, 
+      closeOnToastrClick: false, 
+      timeOut:5000,
+      progressBar: true,
+      removeOnHoverTimeOut: 0,
+      removeOnHover: false,
+      icon: <IconCheckCircleFill /> 
+    }
+  )
+}
+
+const showInfoToast = (isProjectCard, isPreview) => {
+  let title, content;
+  if (isProjectCard) {
+    title = i18next.t('document-loading.project-card-title');
+    content = i18next.t('document-loading.project-card-content');
+  } else {
+    title = i18next.t('document-loading.wait-title');
+    content = i18next.t(isPreview ? 'document-loading.document-preview-content' : 'document-loading.document-content');
+  }
+  toastr.info(
+    title,
+    content,
+    { showCloseButton: false,
+      closeOnToastrClick: true,
+      timeOut: 0,
+      removeOnHover: false,
+      removeOnHoverTimeOut: 0,
+      icon: <IconInfoCircleFill />
+    }
+  )
+}
+
+const showErrorToast = (isProjectCard, isPreview) => {
+  let title, content;
+  if (isProjectCard) {
+    title = i18next.t('document-loading.project-card-title');
+    content = i18next.t('document-loading.project-card-error');
+  } else {
+    title = i18next.t('document-loading.error-title');
+    content = i18next.t(isPreview ? 'document-loading.document-preview-error' : 'document-loading.document-error');
+  }
+  toastr.error(
+    title,
+    content,
+    { 
+      showCloseButton:false, 
+      closeOnToastrClick: false, 
+      timeOut:5000,
+      progressBar: true,
+      removeOnHoverTimeOut: 0,
+      removeOnHover: false,
+      icon: <IconErrorFill />
+    }
+  );
+}
+
+const saveFileFromResponse = (res) => {
+  const fileData = res.data
+  const contentDisposition = res.headers['content-disposition']
+  const fileName = contentDisposition?.split('filename=')[1]
+  if (fileData) {
+    FileSaver.saveAs(fileData, fileName)
+    return true;
+  }
+  return false;
 }
 
 function* fetchDocumentsSaga({ payload: projectId }) {
@@ -35,381 +115,83 @@ function* fetchDocumentsSaga({ payload: projectId }) {
   }
 }
 
-function* downloadDocumentSaga({ payload }) {
-  let res
-  let isError = false
-  const modifiedUrl = payload.file + '?immediate=true'
-  yield put(downloadDocumentDone(false))
-  toastr.info(
-    payload.projectCard
-      ? i18next.t('document-loading.project-card-title')
-      : i18next.t('document-loading.wait-title'),
-    payload.projectCard
-      ? i18next.t('document-loading.project-card-content')
-      : i18next.t('document-loading.document-content'),
-  { disableCloseButtonFocus: true, closeOnToastrClick: false, timeOut:0, removeOnHover: false, removeOnHoverTimeOut: 0, icon: <IconInfoCircleFill /> }
-  )
-  try {
-    res = yield call(axios.get, modifiedUrl, { responseType: 'blob' })
-    if (res.status !== 200) {
-      toastr.removeByType('info')
-      toastr.error(
-        payload.projectCard
-          ? i18next.t('document-loading.project-card-title')
-          : i18next.t('document-loading.error-title'),
-        payload.projectCard
-          ? i18next.t('document-loading.project-card-error')
-          : i18next.t('document-loading.document-error'),
-        { icon: <IconErrorFill /> }
-      )
-
-      isError = true
-      yield put(downloadDocumentDone(true))
-    }
-  } catch {
-    toastr.error(
-      payload.projectCard
-        ? i18next.t('document-loading.project-card-title')
-        : i18next.t('document-loading.error-title'),
-      payload.projectCard
-        ? i18next.t('document-loading.project-card-error')
-        : i18next.t('document-loading.document-error'),
-      { icon: <IconErrorFill /> }
-    )
-    isError = true
-    yield put(downloadDocumentDone(true))
-  }
-
-  toastr.removeByType('info')
-
-  if (!isError) {
-    const fileData = res.data
-
-    const contentDisposition = res.headers['content-disposition']
-    const fileName = contentDisposition?.split('filename=')[1]
-    if (fileData) {
-      FileSaver.saveAs(fileData, fileName)
-
-      toastr.success(
-        payload.projectCard
-          ? i18next.t('document-loading.project-card-title')
-          : i18next.t('document-loading.ready-title'),
-        payload.projectCard
-          ? i18next.t('document-loading.project-card-loaded')
-          : i18next.t('document-loading.document-loaded'),
-        { icon: <IconCheckCircleFill /> }
-      )
-      yield put(downloadDocumentDone(true))
-    } else {
-      toastr.error(
-        payload.projectCard
-          ? i18next.t('document-loading.project-card-title')
-          : i18next.t('document-loading.error-title'),
-        payload.projectCard
-          ? i18next.t('document-loading.project-card-error')
-          : i18next.t('document-loading.document-error'),
-        { icon: <IconErrorFill /> }
-      )
-      yield put(downloadDocumentDone(true))
-    }
-  }
+function* downloadDocumentOfficialSaga({ payload }) {
+  yield call(downloadDocumentSaga, payload, false);
 }
 
 function* downloadDocumentPreviewSaga({ payload }) {
+  yield call(downloadDocumentSaga, payload, true);
+}
+
+function* downloadDocumentSaga(payload, isPreview) {
   let res
   let isError = false
-  const modifiedUrl = payload.file + '?preview=true&immediate=true'
+  const modifiedUrl = payload.file + '?immediate=true' + (isPreview ? '&preview=true' : '')
   yield put(downloadDocumentDone(false))
-  toastr.info(
-    payload.projectCard
-      ? i18next.t('document-loading.project-card-title')
-      : i18next.t('document-loading.wait-title'),
-    payload.projectCard
-      ? i18next.t('document-loading.project-card-content')
-      : i18next.t('document-loading.document-content'),
-  { disableCloseButtonFocus: true, closeOnToastrClick: false, timeOut:0, removeOnHover: false, removeOnHoverTimeOut: 0, icon: <IconInfoCircleFill /> }
-  )
+  showInfoToast(payload.projectCard, isPreview)
   try {
     res = yield call(axios.get, modifiedUrl, { responseType: 'blob' })
     if (res.status !== 200) {
-      toastr.removeByType('info')
-      toastr.error(
-        payload.projectCard
-          ? i18next.t('document-loading.project-card-title')
-          : i18next.t('document-loading.error-title'),
-        payload.projectCard
-          ? i18next.t('document-loading.project-card-error')
-          : i18next.t('document-loading.document-error'),
-        { icon: <IconErrorFill /> }
-      )
-      yield put(downloadDocumentDone(true))
+      isError = true
     }
   } catch {
-    toastr.error(
-      payload.projectCard
-        ? i18next.t('document-loading.project-card-title')
-        : i18next.t('document-loading.error-title'),
-      payload.projectCard
-        ? i18next.t('document-loading.project-card-error')
-        : i18next.t('document-loading.document-error'),
-      { icon: <IconErrorFill /> }
-    )
     isError = true
-    yield put(downloadDocumentDone(true))
   }
 
   toastr.removeByType('info')
 
-  if (!isError) {
-    const fileData = res.data
-
-    const contentDisposition = res.headers['content-disposition']
-    const fileName = contentDisposition?.split('filename=')[1]
-    if (fileData) {
-      FileSaver.saveAs(fileData, fileName)
-
-      toastr.success(
-        payload.projectCard
-          ? i18next.t('document-loading.project-card-title')
-          : i18next.t('document-loading.ready-title'),
-        payload.projectCard
-          ? i18next.t('document-loading.project-card-loaded')
-          : i18next.t('document-loading.document-loaded'),
-        { icon: <IconCheckCircleFill /> }
-      )
-      yield put(downloadDocumentDone(true))
-    } else {
-      toastr.error(
-        payload.projectCard
-          ? i18next.t('document-loading.project-card-title')
-          : i18next.t('document-loading.error-title'),
-        payload.projectCard
-          ? i18next.t('document-loading.project-card-error')
-          : i18next.t('document-loading.document-error'),
-        { icon: <IconErrorFill /> }
-      )
-      yield put(downloadDocumentDone(true))
-    }
+  if (isError) {
+    showErrorToast(payload.projectCard, isPreview)
+  } else {
+    saveFileFromResponse(res) ? showSuccessToast(payload.projectCard, isPreview) : showErrorToast(payload.projectCard, isPreview);
   }
+  yield put(downloadDocumentDone(true))
 }
 
-function* downloadDocumentSagaAsync({ payload }) {
-  let res
-  let currentTask
-  let isError = false
-
-  let counter = 0
-  const modifiedUrl = payload.file + '?immediate=false'
-  yield put(downloadDocumentDone(false))
-  toastr.info(
-    payload.projectCard
-      ? i18next.t('document-loading.project-card-title')
-      : i18next.t('document-loading.wait-title'),
-    payload.projectCard
-      ? i18next.t('document-loading.project-card-content')
-      : i18next.t('document-loading.document-content'),
-  { disableCloseButtonFocus: true, closeOnToastrClick: false, timeOut:0, removeOnHover: false, removeOnHoverTimeOut: 0, icon: <IconInfoCircleFill /> }
-  )
-  try {
-    res = yield call(axios.get, modifiedUrl)
-
-    currentTask = res?.data ? res.data.detail : null
-
-    if (!currentTask && res.status !== 200) {
-      toastr.removeByType('info')
-      toastr.error(
-        payload.projectCard
-          ? i18next.t('document-loading.project-card-title')
-          : i18next.t('document-loading.error-title'),
-        payload.projectCard
-          ? i18next.t('document-loading.project-card-error')
-          : i18next.t('document-loading.document-error'),
-        { icon: <IconErrorFill /> }
-      )
-
-      isError = true
-      yield put(downloadDocumentDone(true))
-    } else {
-      while ((!res || res.status === 202) && !isError && counter < MAX_COUNT) {
-        if (res?.status === 500) {
-          isError = true
-          toastr.removeByType('info')
-          toastr.error(
-            payload.projectCard
-              ? i18next.t('document-loading.project-card-title')
-              : i18next.t('document-loading.error-title'),
-            payload.projectCard
-              ? i18next.t('document-loading.project-card-error')
-              : i18next.t('document-loading.document-error'),
-            { icon: <IconErrorFill /> }
-          )
-          yield put(downloadDocumentDone(true))
-          break
-        }
-
-        const includeTaskUrl = payload.file + `?task=${currentTask}`
-
-        res = yield call(axios.get, includeTaskUrl, { responseType: 'blob' })
-
-        counter++
-
-        yield delay(INTERVAL_MILLISECONDS)
-      }
-    }
-  } catch {
-    toastr.error(
-      payload.projectCard
-        ? i18next.t('document-loading.project-card-title')
-        : i18next.t('document-loading.error-title'),
-      payload.projectCard
-        ? i18next.t('document-loading.project-card-error')
-        : i18next.t('document-loading.document-error'),
-      { icon: <IconErrorFill /> }
-    )
-    isError = true
-    yield put(downloadDocumentDone(true))
-  }
-
-  toastr.removeByType('info')
-
-  if (counter === MAX_COUNT) {
-    toastr.error(
-      payload.projectCard
-        ? i18next.t('document-loading.project-card-title')
-        : i18next.t('document-loading.error-title'),
-      payload.projectCard
-        ? i18next.t('document-loading.project-card-error')
-        : i18next.t('document-loading.document-error'),
-      { icon: <IconErrorFill /> }
-    )
-    yield put(downloadDocumentDone(true))
-  }
-
-  if (!isError && counter !== MAX_COUNT) {
-    const fileData = res.data
-
-    const contentDisposition = res.headers['content-disposition']
-    const fileName = contentDisposition?.split('filename=')[1]
-    if (fileData) {
-      FileSaver.saveAs(fileData, fileName)
-
-      toastr.success(
-        payload.projectCard
-          ? i18next.t('document-loading.project-card-title')
-          : i18next.t('document-loading.ready-title'),
-        payload.projectCard
-          ? i18next.t('document-loading.project-card-loaded')
-          : i18next.t('document-loading.document-loaded'),
-        { icon: <IconCheckCircleFill /> }
-      )
-      yield put(downloadDocumentDone(true))
-    } else {
-      toastr.error(
-        payload.projectCard
-          ? i18next.t('document-loading.project-card-title')
-          : i18next.t('document-loading.error-title'),
-        payload.projectCard
-          ? i18next.t('document-loading.project-card-error')
-          : i18next.t('document-loading.document-error'),
-        { icon: <IconErrorFill /> }
-      )
-      yield put(downloadDocumentDone(true))
-    }
-  }
+function* downloadDocumentOfficialSagaAsync({ payload }) {
+  yield call(downloadDocumentSaga, payload, false);
 }
 
 function* downloadDocumentPreviewSagaAsync({ payload }) {
+  yield call(downloadDocumentSaga, payload, true);
+}
+
+function* downloadDocumentSagaAsync(payload, isPreview) {
   let res
   let currentTask
   let isError = false
 
   let counter = 0
-  const modifiedUrl = payload.file + '?preview=true&immediate=false'
-  yield put(downloadDocumentDone(false))
-  toastr.info(
-    i18next.t('document-loading.wait-title'),
-    i18next.t('document-loading.document-preview-content'),
-    { closeOnToastrClick: false, timeOut:0, removeOnHover: false, removeOnHoverTimeOut: 0, icon: <IconInfoCircleFill /> }
-  )
-
+  const modifiedUrl = payload.file + '?immediate=false' + (isPreview ? '&preview=true' : '')
+  yield put(downloadDocumentDone(false));
+  showInfoToast(payload.projectCard, isPreview);
   try {
-    res = yield call(axios.get, modifiedUrl)
-    currentTask = res?.data ? res.data.detail : null
+    res = yield call(axios.get, modifiedUrl);
+    currentTask = res?.data ? res.data.detail : null;
 
     if (!currentTask && res.status !== 200) {
-      toastr.removeByType('info')
-      toastr.error(
-        i18next.t('document-loading.error-title'),
-        i18next.t('document-loading.document-preview-error'),
-        {icon: <IconErrorFill />}
-      )
-
-      isError = true
-      yield put(downloadDocumentDone(true))
-    } else {
-      while ((!res || res.status === 202) && !isError && counter < MAX_COUNT) {
-        if (res?.status === 500) {
-          toastr.removeByType('info')
-          toastr.error(
-            i18next.t('document-loading.error-title'),
-            i18next.t('document-loading.document-preview-error'),
-            { icon: <IconErrorFill /> }
-          )
-          isError = true
-          yield put(downloadDocumentDone(true))
-          break
-        }
-
-        const includeTaskUrl = modifiedUrl + `&task=${currentTask}`
-        res = yield call(axios.get, includeTaskUrl, { responseType: 'blob' })
-
-        counter++
-
-        yield delay(INTERVAL_MILLISECONDS)
+      isError = true;
+    }
+    while ((!res || res.status === 202) && !isError && counter < MAX_COUNT) {
+      if (res?.status === 500) {
+        isError = true;
+        break;
       }
+      const includeTaskUrl = payload.file + `?task=${currentTask}`;
+      res = yield call(axios.get, includeTaskUrl, { responseType: 'blob' });
+      counter++;
+      yield delay(INTERVAL_MILLISECONDS);
     }
   } catch {
-    toastr.error(
-      i18next.t('document-loading.error-title'),
-  i18next.t('document-loading.document-preview-error'),
-  { icon: <IconErrorFill /> }
-    )
-    isError = true
-    yield put(downloadDocumentDone(true))
+    isError = true;
   }
 
   toastr.removeByType('info')
 
-  if (counter === MAX_COUNT) {
-    toastr.error(
-      i18next.t('document-loading.error-title'),
-  i18next.t('document-loading.document-preview-error'),
-  { icon: <IconErrorFill /> }
-    )
-    yield put(downloadDocumentDone(true))
+  if (isError || counter === MAX_COUNT) {
+    showErrorToast(payload.projectCard, isPreview)
+  } else {
+    saveFileFromResponse(res) ? showSuccessToast(payload.projectCard, isPreview) : showErrorToast(payload.projectCard, isPreview);
   }
-
-  if (!isError && counter !== MAX_COUNT) {
-    const fileData = res.data
-
-    const contentDisposition = res.headers['content-disposition']
-    const fileName = contentDisposition?.split('filename=')[1]
-    if (fileData) {
-      FileSaver.saveAs(fileData, fileName)
-
-      toastr.success(
-        i18next.t('document-loading.ready-title'),
-  i18next.t('document-loading.document-preview-loaded'),
-  { icon: <IconCheckCircleFill /> }
-      )
-      yield put(downloadDocumentDone(true))
-    } else {
-      toastr.error(
-        i18next.t('document-loading.error-title'),
-  i18next.t('document-loading.document-preview-error'),
-  { icon: <IconErrorFill /> }
-      )
-      yield put(downloadDocumentDone(true))
-    }
-  }
+  yield put(downloadDocumentDone(true))
 }

@@ -24,6 +24,11 @@ import {
 const MAX_COUNT = 100
 const INTERVAL_MILLISECONDS = 4000
 
+const statusToastProps = {
+  showCloseButton: false,
+  closeOnToastrClick: true
+}
+
 export default function* reportSaga() {
   yield all([
     takeLatest(FETCH_REPORTS, fetchReportsSaga),
@@ -36,14 +41,14 @@ export default function* reportSaga() {
 function* cancelReportLoading() {
   toastr.warning(
     i18next.t('reports.report-cancel-title'),
-    i18next.t('reports.report-cancel'))
+    i18next.t('reports.report-cancel'), statusToastProps)
 
   yield put(downloadReportSuccessful(null))
 }
 function* cancelReportPreviewLoading() {
   toastr.warning(
     i18next.t('reports.report-preview-cancel-title'),
-    i18next.t('reports.report-preview-cancel'))
+    i18next.t('reports.report-preview-cancel'), statusToastProps)
 
   yield put(downloadReportReviewSuccessful(null))
 }
@@ -56,226 +61,130 @@ function* fetchReportsSaga() {
   }
 }
 function* downloadReportPreviewSaga({ payload }) {
-  let res
-  let currentTask
-  let isError = false
-  let counter = 0
-  let reportPreviewLoading = true
-
-  const form = yield select(reportFormSelector)
-
-  let rest = form ? form.values : {}
-  let filteredParams = {}
-
-  const keys = rest ? Object.keys(rest) : []
-
-  keys.forEach(key => {
-    const value = rest[key]
-
-    if (isArray(value)) {
-      if (value.length > 0) {
-        filteredParams[key] = value
-      }
-    } else {
-      if (value) {
-        filteredParams[key] = value
-      }
-    }
-  })
-
-  filteredParams = {
-    ...filteredParams,
-    preview: true
-  }
-  try {
-
-    // At first API is called to get taskID
-    res = yield call(
-      reportApi.get,
-      { path: { id: payload && payload.selectedReport }, query: { ...filteredParams } },
-      ':id/',
-      { responseType: 'json' },
-      true
-    )
-    currentTask = res && res.data ? res.data.detail : null
-
-    toastr.info(i18next.t('reports.wait-title'), i18next.t('reports.preview-content'))
-
-    if (!currentTask) {
-      toastr.removeByType('info')
-      toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-preview'))
-      yield put(downloadReportReviewSuccessful(null))
-      isError = true
-    } else {
-      // Polling starts here.
-      while (
-        (!res || res.status === 202) &&
-        !isError &&
-        counter < MAX_COUNT &&
-        reportPreviewLoading
-      ) {
-
-        // Check if report preview is still loading and not cancelled by user.
-        reportPreviewLoading = yield select(reportPreviewLoadingSelector)
-
-        if (res && res.status === 500) {
-          isError = true
-          break
-        }
-
-        res = yield call(
-          reportApi.get,
-          { path: { id: payload.selectedReport, task: currentTask } },
-          ':id/?preview=true&task=:task',
-          { responseType: 'json' },
-          true
-        )
-        counter++
-
-        yield delay(INTERVAL_MILLISECONDS)
-      }
-    }
-  } catch (e) {
-    isError = true
-    toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-preview'))
-    yield put(downloadReportReviewSuccessful(null))
-  }
-
-  // If tried enough but still no correct response. Failure.
-  if (counter === MAX_COUNT) {
-    toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-preview'))
-    yield put(downloadReportReviewSuccessful(null))
-  }
-
-  // No error and maximum amount of trying is not yet complete. Success.
-  if (!isError && counter !== MAX_COUNT) {
-
-    // Not cancelled
-    if (reportPreviewLoading) {
-      toastr.success(
-        i18next.t('reports.finished-title'),
-        i18next.t('reports.report-preview-loaded')
-      )
-      yield put(downloadReportReviewSuccessful(res.data))
-    }
-  }
+  yield call(downloadReportSagaImpl, payload, true)
 }
 
 function* downloadReportSaga({ payload }) {
-  let res
-  let currentTask
-  let isError = false
+  yield call(downloadReportSagaImpl, payload, false)
+}
 
-  let counter = 0
-  let reportLoading = true
+function* downloadReportSagaImpl(payload, isPreview) {
+  const infoToastContent = isPreview ? i18next.t('reports.preview-content') : i18next.t('reports.content')
+  const errorToastContent = isPreview ? i18next.t('reports.error-preview') : i18next.t('reports.error-report')
+  const successToastContent = isPreview ? i18next.t('reports.report-preview-loaded') : i18next.t('reports.report-loaded')
 
-  const form = yield select(reportFormSelector)
+  const filteredParams = yield call(getReportQueryParams, isPreview)
 
-  let filteredParams = {}
+  toastr.info(i18next.t('reports.wait-title'), infoToastContent, statusToastProps)
 
-  const rest = form ? form.values : {}
+  let pollResult = { res: undefined, isError: false, counter: 0, reportLoading: true }
 
-  const keys = rest ? Object.keys(rest) : []
-
-  keys.forEach(key => {
-    const value = rest[key]
-
-    if (isArray(value)) {
-      if (value.length > 0) {
-        filteredParams[key] = value
-      }
-    } else {
-      if (value) {
-        filteredParams[key] = value
-      }
-    }
-  })
-
-  toastr.info(i18next.t('reports.wait-title'), i18next.t('reports.content'))
-
-  // At first API is called to get taskID
   try {
-    res = yield call(
+    const res = yield call(
       reportApi.get,
-      { path: { id: payload.selectedReport }, query: { ...filteredParams } },
+      { path: { id: payload?.selectedReport }, query: { ...filteredParams } },
       ':id/',
       { responseType: 'json' },
       true
     )
-    currentTask = res && res.data ? res.data.detail : null
+    const currentTask = res?.data?.detail ?? null
 
     if (!currentTask) {
-      toastr.removeByType('info')
-      toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-report'))
-      isError = true
-      yield put(downloadReportSuccessful())
-    } else {
-      // Looping starts here. Waiting for correct response.
-      while (
-        (!res || res.status === 202) &&
-        !isError &&
-        counter < MAX_COUNT &&
-        reportLoading
-      ) {
-        // Check if report is still loading and not cancelled by user.
-        reportLoading = yield select(reportLoadingSelector)
-
-        if (res && res.status === 500) {
-          isError = true
-          break
-        }
-
-        res = yield call(
-          reportApi.get,
-          { path: { id: payload.selectedReport, task: currentTask } },
-          ':id/?task=:task',
-          { responseType: 'blob' },
-          true
-        )
-        counter++
-
-        yield delay(INTERVAL_MILLISECONDS)
-      }
+      throw new Error('No task ID received')
     }
-  } catch (e) {
-    toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-report'))
-    isError = true
-    yield put(downloadReportSuccessful())
+
+    pollResult = yield call(pollForReport, payload, currentTask, isPreview)
+  } catch {
+    pollResult.isError = true
   }
 
   toastr.removeByType('info')
 
-  // Maximum amount is tried and still no correct response. Failure.
-  if (counter === MAX_COUNT) {
-    toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-report'))
-    yield put(downloadReportSuccessful())
+  const { res, isError, counter, reportLoading } = pollResult
+
+  if (isError || counter === MAX_COUNT || !res?.data) {
+    toastr.error(i18next.t('reports.error-title'), errorToastContent, statusToastProps)
+    yield put(isPreview ? downloadReportReviewSuccessful(null) : downloadReportSuccessful())
+    return
   }
 
-  // No errors and not yet tried max amount. Success.
-  if (!isError && counter !== MAX_COUNT) {
+  // Not cancelled
+  if (reportLoading) {
+    yield call(handleReportSuccess, res, isPreview, successToastContent)
+  }
+}
 
-    // Not cancelled
-    if (reportLoading) {
-     
-      const fileData = res.data
+function* getReportQueryParams(isPreview) {
+  const form = yield select(reportFormSelector)
+  const rest = form ? form.values : {}
+  const keys = rest ? Object.keys(rest) : []
+  
+  let filteredParams = {}
 
-      const contentDisposition = res.headers['content-disposition']
-      const fileName = contentDisposition && contentDisposition.split('filename=')[1]
-
-      // File data is found from response. Success.
-      if (fileData) {
-        FileSaver.saveAs(fileData, fileName)
-
-        toastr.success(
-          i18next.t('reports.finished-title'),
-          i18next.t('reports.report-loaded')
-        )
-        yield put(downloadReportSuccessful())
-      } else {
-        // FileData is not found. Failure.
-        toastr.error(i18next.t('reports.error-title'), i18next.t('reports.error-report'))
-        yield put(downloadReportSuccessful())
-      }
+  keys.forEach(key => {
+    const value = rest[key]
+    if (isArray(value) && value.length > 0 || (!isArray(value) && value)) {
+      filteredParams[key] = value
     }
+  })
+
+  if (isPreview) {
+    filteredParams["preview"] = true
+  }
+
+  return filteredParams
+}
+
+function* pollForReport(payload, currentTask, isPreview) {
+  const poll_url = `:id/?task=:task${isPreview ? '&preview=true' : ''}`
+  const responseType = isPreview ? 'json' : 'blob'
+  const loadingSelector = isPreview ? reportPreviewLoadingSelector : reportLoadingSelector
+
+  let res
+  let isError = false
+  let counter = 0
+  let reportLoading = true
+
+  while (
+    (!res || res.status === 202) &&
+    !isError &&
+    counter < MAX_COUNT &&
+    reportLoading
+  ) {
+    reportLoading = yield select(loadingSelector)
+
+    if (res?.status === 500) {
+      isError = true
+      break
+    }
+
+    res = yield call(
+      reportApi.get,
+      { path: { id: payload.selectedReport, task: currentTask } },
+      poll_url,
+      { responseType },
+      true
+    )
+    counter++
+
+    yield delay(INTERVAL_MILLISECONDS)
+  }
+
+  return { res, isError, counter, reportLoading }
+}
+
+function* handleReportSuccess(res, isPreview, successToastContent) {
+  toastr.success(
+    i18next.t('reports.finished-title'),
+    successToastContent,
+    statusToastProps
+  )
+  if (isPreview) {
+    yield put(downloadReportReviewSuccessful(res.data))
+  } else {
+    const contentDisposition = res.headers['content-disposition']
+    const fileName = contentDisposition?.split('filename=')[1]
+    FileSaver.saveAs(res.data, fileName)
+    yield put(downloadReportSuccessful())
   }
 }
