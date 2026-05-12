@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { Combobox } from 'hds-react'
 import PropTypes from 'prop-types'
 import axios from 'axios'
+import { useFieldPassivation } from '../../hooks/useFieldPassivation'
 
 class CustomADUserCombobox extends Component {
   constructor() {
@@ -14,7 +15,6 @@ class CustomADUserCombobox extends Component {
       page: 1,
       hasMore: true,
       loadingInitial: true,
-      loadingMore: false,
     };
     this.timer = null;
     this.containerRef = React.createRef();
@@ -28,19 +28,13 @@ class CustomADUserCombobox extends Component {
   // HDS-react combobox sometimes traps focus inside the menu when open. This is a workaround to allow tabbing out of the menu.
   handleTabKeyDown = (event) => {
     const active = document.activeElement;
-    if (event.key === 'Tab' && active && this.containerRef.current && this.containerRef.current.contains(active)) {
+    if (event.key === 'Tab' && active && this.containerRef.current?.contains(active)) {
       document.activeElement.blur();
     }
   }
 
   componentWillUnmount() {
     document.removeEventListener('keydown', this.handleTabKeyDown);
-  }
-
-  getModifiedOption = ({ name, id, email, title }) => {
-    const option = name || email;
-    const label = name && title ? `${name} (${title})` : option;
-    return { label, value: id, email };
   }
 
   modifyOptions = (options) => {
@@ -150,38 +144,6 @@ class CustomADUserCombobox extends Component {
     }
   };
 
-  loadMoreOptions = async (nextPage) => {
-    if (this.state.loadingMore) return;
-
-    this.setState({ loadingMore: true });
-
-    const { currentQuery } = this.state;
-    const limit = 100;
-    const offset = (nextPage - 1) * limit;
-
-    try {
-      const url =
-        currentQuery && currentQuery !== "*"
-          ? `/v1/personnel/?search=${encodeURIComponent(currentQuery)}&limit=${limit}&offset=${offset}`
-          : `/v1/personnel/?limit=${limit}&offset=${offset}`;
-
-      const response = await axios.get(url);
-      const result = response.data;
-      const modifiedResults = this.modifyOptions(result);
-      const hasMore = result.length === limit;
-
-      this.setState(prev => ({
-        options: [...prev.options, ...modifiedResults],
-        page: nextPage,
-        hasMore,
-        loadingMore: false
-      }));
-    } catch (err) {
-      console.error("loadMoreOptions failed:", err);
-      this.setState({ loadingMore: false });
-    }
-  };
-
   handleChange = (value) => {
     if (value === undefined || Object.is(value, this.loadingPlaceholder))
       return;
@@ -249,6 +211,24 @@ CustomADUserCombobox.propTypes = {
   placeholder: PropTypes.string,
   disabled: PropTypes.bool,
   name: PropTypes.string,
+  input: PropTypes.shape({ name: PropTypes.string, value: PropTypes.any, onChange: PropTypes.func }),
+}
+
+export function CustomADUserComboboxField({ formName, disabled, input, ...rest }) {
+  const shouldPassivate = useFieldPassivation(input?.name, { formName })
+  return (
+    <CustomADUserCombobox
+      disabled={disabled || shouldPassivate}
+      input={input}
+      {...rest}
+    />
+  )
+}
+
+CustomADUserComboboxField.propTypes = {
+  formName: PropTypes.string,
+  disabled: PropTypes.bool,
+  input: PropTypes.shape({ name: PropTypes.string, value: PropTypes.any, onChange: PropTypes.func }),
 }
 
 export default CustomADUserCombobox;

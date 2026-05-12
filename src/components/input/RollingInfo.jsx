@@ -34,7 +34,7 @@ const processViranomaistahoData = (attributeData) => {
 function RollingInfo(
   {
     name,value,nonEditable,modifyText,rollingInfoText,editRollingField,
-    type,phaseIsClosed,factaInfo,maxSizeOver,attributeData,shouldDisableForErrors
+    type,phaseIsClosed,factaInfo,attributeData,shouldDisableForErrors
     }
   ) {
   const users = useSelector(state => usersSelector(state))
@@ -134,7 +134,6 @@ RollingInfo.propTypes = {
   type:PropTypes.string,
   phaseIsClosed: PropTypes.bool,
   factaInfo: PropTypes.string,
-  maxSizeOver: PropTypes.bool,
   attributeData: PropTypes.shape({
     milta_muilta_pyydetaan_lausunto_fieldset: PropTypes.array
   }),

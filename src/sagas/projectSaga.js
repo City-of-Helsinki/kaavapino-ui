@@ -282,7 +282,7 @@ function* getAttributeData(data) {
         timeout: delay(15000)
       })
       if (timeout) {
-        yield put(setLastSaved('error', null, [], [], false))
+        yield put(setLastSaved('error', null, [attribute_identifier], [], false))
         return
       }
       yield put(setAttributeData(attribute_identifier, result, formName, set, nulledFields, i))
@@ -290,7 +290,7 @@ function* getAttributeData(data) {
       const statusCode = e?.response?.status
       // Network errors and 5xx server errors should show inline error, not toaster
       if (!e.response || !statusCode || statusCode >= 500) {
-        yield put(setLastSaved('error', null, [], [], false))
+        yield put(setLastSaved('error', null, [attribute_identifier], [], false))
       } else {
         yield put(error(e))
       }
@@ -312,6 +312,14 @@ function* pollConnection() {
     if (hasUnsavedField) {
       const fieldName = lastSaved.fields[0]
 
+      if (fieldName?.endsWith('_fieldset') && !lastSaved.values?.[0]) {
+        // Fieldset add/remove has no value to auto-retry — prompt the user to try again manually
+        yield put(setPoll(true))
+        yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: 'Yhteys palautunut' } })
+        yield put(setLastSaved("connection_restored", time, [fieldName], [], false))
+        return
+      }
+
       const formErrors = yield select(formErrorListSelector)
       if (formErrors.includes(fieldName)) {
         yield put(setPoll(true))
@@ -325,7 +333,9 @@ function* pollConnection() {
       yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: 'Yhteys palautunut - tallennetaan...' } })
       // Dispatch connection_restored immediately so passivation and header update before saveProject completes.
       // saveProject will set status to 'success' on success or back to 'error' on failure.
-      yield put(setLastSaved("connection_restored", time, [], [], false))
+      // For fieldset fields, preserve fieldName so FieldSet.jsx can show the connection restored banner.
+      const restoredFields = fieldName?.endsWith('_fieldset') ? [fieldName] : []
+      yield put(setLastSaved("connection_restored", time, restoredFields, [], false))
       yield put(resetFormErrors())
       
       const fieldValue = lastSaved.values?.[0]
@@ -1138,34 +1148,8 @@ function* saveProject(data) {
     let changedValues = {}
     changedValues = getChangedAttributeData(values, initial)
     keys = Object.keys(changedValues)
-    // Set saving state with field name from action payload
     if (fieldName && keys.length > 0) {
-      let actualFieldName = fieldName;
-      // Check if fieldName corresponds to a fieldset in changedValues
-      if (typeof fieldName === 'string' && fieldName.endsWith('_fieldset') && changedValues[fieldName]) {
-        const fieldsetArray = changedValues[fieldName];
-        const initialFieldsetArray = initial?.[fieldName];
-        if (Array.isArray(fieldsetArray) && fieldsetArray.length > 0) {
-          const currentItem = fieldsetArray[0];
-          const initialItem = Array.isArray(initialFieldsetArray) && initialFieldsetArray.length > 0 ? initialFieldsetArray[0] : {};
-          if (typeof currentItem === 'object' && currentItem !== null) {
-            // Get all keys from current item (excluding _deleted and other metadata)
-            const itemKeys = Object.keys(currentItem).filter(key => !key.startsWith('_'));
-            // Compare each field with initial to find the changed one
-            for (const key of itemKeys) {
-              if (!isEqual(currentItem[key], initialItem[key])) {
-                actualFieldName = key; // Found the field that actually changed
-                break;
-              }
-            }
-            // If no specific change found, use first field as fallback
-            if (actualFieldName === fieldName && itemKeys.length > 0) {
-              actualFieldName = itemKeys[0];
-            }
-          }
-        }
-      }
-      yield put(setSavingField(actualFieldName));
+      yield put(setSavingField(fieldName));
     }
     //Get latest modified field and send it to components to prevent new modification for that field until saved. 
     //Prevents only user that was editing and saving. Richtext and custominput.

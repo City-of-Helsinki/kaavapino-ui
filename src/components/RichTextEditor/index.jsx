@@ -217,6 +217,21 @@ function RichTextEditor(props) {
   }, [lastSaved?.status === "error"])
 
   useEffect(() => {
+    if (!editorRef.current) return
+    const root = editorRef.current.getEditor().root
+    if (shouldDisableForErrors) {
+      editorRef.current.editor.enable(false)
+      if (document.activeElement === root) {
+        editorRef.current.editor.blur()
+      }
+      root.tabIndex = -1
+    } else if (!readonly) {
+      editorRef.current.editor.enable(true)
+      root.tabIndex = 0
+    }
+  }, [shouldDisableForErrors])
+
+  useEffect(() => {
     if (readonly && !saving) {
       setShowComments(false)
     }
@@ -733,14 +748,14 @@ function RichTextEditor(props) {
   if (lastIndex !== -1) {
     reducedName = inputProps.name.substring(lastIndex + 1, inputProps.name.length)
     const match = inputProps.name.match(/\[(\d+)\]/);
-    number = match ? parseInt(match[1], 10) : 0;
+    number = match ? Number.parseInt(match[1], 10) : 0;
   }
   const toolbarName = `toolbar-${reducedName || ''}-${number}`
   const modules = {
     toolbar: `#${toolbarName}`
   }
 
-  const onKeyDown = (e) => {
+  const onKeyDown = () => {
     if(readonly){
       //prevent typing text if locked
       editorRef.current.editor.enable(false)
@@ -955,18 +970,20 @@ function RichTextEditor(props) {
       shouldDisableForErrors={shouldDisableForErrors}
     />
     :
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
     onContextMenu={(e)=> {if(readonly){e.preventDefault()}}}
     className='richtext-container'
     >
-    {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
     <div
       ref={wrapperRef}
+      role="textbox"
+      aria-multiline="true"
+      aria-label={inputProps.name}
       className={`rich-text-editor-wrapper ${isRichTextDisabled ? 'rich-text-disabled' : ''} ${isThisFieldNetworkError ? 'has-network-error' : ''} ${isBlurred ? 'blurred' : ''} ${maxSizeOver ? 'has-error' : ''}`}
       onFocus={handleWrapperFocus}
       onKeyDown={handleWrapperKeyDown}
       id={"rte-wrapper-" + inputProps.name}
+      tabIndex={-1}
     >
       <div className={RichTextClassName}>
         <div
@@ -1013,7 +1030,7 @@ function RichTextEditor(props) {
           </span>
         </div>
         <ReactQuill
-          tabIndex="0"
+          tabIndex={isRichTextDisabled ? -1 : 0}
           id={toolbarName + "input"}
           ref={editorRef}
           modules={modules}

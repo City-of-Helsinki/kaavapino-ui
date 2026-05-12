@@ -191,11 +191,7 @@ ul {
 
 .input-container {
   position: relative;
-  
-  // Add extra margin when focused to maintain consistent spacing with error-text
-  &:focus-within {
-    margin-bottom: 2px;
-  }
+  margin-bottom: 2px;
   
   .input-header-icons{
     justify-content: center;
