@@ -34,7 +34,7 @@ const processViranomaistahoData = (attributeData) => {
 function RollingInfo(
   {
     name,value,nonEditable,modifyText,rollingInfoText,editRollingField,
-    type,phaseIsClosed,factaInfo,maxSizeOver,attributeData,shouldDisableForErrors
+    type,phaseIsClosed,factaInfo,attributeData,shouldDisableForErrors
     }
   ) {
   const users = useSelector(state => usersSelector(state))

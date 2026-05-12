@@ -755,7 +755,7 @@ function RichTextEditor(props) {
     toolbar: `#${toolbarName}`
   }
 
-  const onKeyDown = (e) => {
+  const onKeyDown = () => {
     if(readonly){
       //prevent typing text if locked
       editorRef.current.editor.enable(false)
@@ -970,19 +970,20 @@ function RichTextEditor(props) {
       shouldDisableForErrors={shouldDisableForErrors}
     />
     :
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
     onContextMenu={(e)=> {if(readonly){e.preventDefault()}}}
     className='richtext-container'
     >
-    {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
     <div
       ref={wrapperRef}
+      role="textbox"
+      aria-multiline="true"
+      aria-label={inputProps.name}
       className={`rich-text-editor-wrapper ${isRichTextDisabled ? 'rich-text-disabled' : ''} ${isThisFieldNetworkError ? 'has-network-error' : ''} ${isBlurred ? 'blurred' : ''} ${maxSizeOver ? 'has-error' : ''}`}
-      role="group"
       onFocus={handleWrapperFocus}
       onKeyDown={handleWrapperKeyDown}
       id={"rte-wrapper-" + inputProps.name}
+      tabIndex={-1}
     >
       <div className={RichTextClassName}>
         <div
