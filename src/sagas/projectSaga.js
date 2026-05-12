@@ -312,7 +312,7 @@ function* pollConnection() {
     if (hasUnsavedField) {
       const fieldName = lastSaved.fields[0]
 
-      if (fieldName?.endsWith('_fieldset')) {
+      if (fieldName?.endsWith('_fieldset') && !lastSaved.values?.[0]) {
         // Fieldset add/remove has no value to auto-retry — prompt the user to try again manually
         yield put(setPoll(true))
         yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: 'Yhteys palautunut' } })
@@ -333,7 +333,9 @@ function* pollConnection() {
       yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: 'Yhteys palautunut - tallennetaan...' } })
       // Dispatch connection_restored immediately so passivation and header update before saveProject completes.
       // saveProject will set status to 'success' on success or back to 'error' on failure.
-      yield put(setLastSaved("connection_restored", time, [], [], false))
+      // For fieldset fields, preserve fieldName so FieldSet.jsx can show the connection restored banner.
+      const restoredFields = fieldName?.endsWith('_fieldset') ? [fieldName] : []
+      yield put(setLastSaved("connection_restored", time, restoredFields, [], false))
       yield put(resetFormErrors())
       
       const fieldValue = lastSaved.values?.[0]

@@ -69,6 +69,11 @@ const FieldSet = ({
   const formErrors = useSelector(formErrorListSelector)
   const connection = useSelector(pollSelector)
 
+  const savedFields = Array.isArray(lastSaved?.fields) ? lastSaved.fields : []
+  const isThisFieldsetNetworkError = lastSaved?.status === 'error' && savedFields.some(f =>
+    typeof f === 'string' && f.startsWith(`${name}`)
+  )
+
   const nulledFields = fields?.map(field => {
     return { [field.name]: null, _deleted: true }
   })
@@ -76,6 +81,7 @@ const FieldSet = ({
   const [hiddenIndex, setHiddenIndex] = useState(-1)
   const [expanded, setExpanded] = useState([])
   const [adding,setAdding] = useState(false)
+  const [lastSavedChildField, setLastSavedChildField] = useState(null)
 
   const [hiding,setHiding] = useState(false)
   const [currentFieldset,setCurrentFieldset] = useState(false)
@@ -112,9 +118,9 @@ const FieldSet = ({
 
   useEffect(() => {
     if(lastSaved?.status === "error"){
-      //Unable to lock fields and connection backend not working so prevent editing
-      setExpanded([])
-      // Reset adding/hiding state so the buttons don't stay stuck in spinner
+      if (!isThisFieldsetNetworkError) {
+        setExpanded([])
+      }
       setAdding(false)
       setCurrentFieldset(false)
       setHiding(false)
@@ -187,29 +193,29 @@ const FieldSet = ({
         expand = true
     }
     
-    if(expand && lastSaved?.status !== "error"){
+    if(expand){
+      const isOffline = lastSaved?.status === 'error'
       //Expand or close element that was clicked inside fieldset array of elements
       //Prevent focus and editing to field if not locked
       let expandedArray = expanded.slice();
       if(expandedArray.includes(i)){
         expandedArray.splice(expandedArray.indexOf(i), 1);
-        handleUnlockField(set)
+        if (!isOffline) handleUnlockField(set)
       }
       else{
-        // Opening fieldset - fetch data only if no validation errors in this fieldset
-        // This preserves user's invalid input so they can fix it
-        const hasFieldsetErrors = formErrors?.some(errorFieldName => 
-          errorFieldName.startsWith(`${set}.`)
-        );
-        
-        if (!hasFieldsetErrors) {
-          dispatch(getAttributeData(attributeData?.projektin_nimi,name,formName, set, nulledFields,i))
+        if (!isOffline) {
+          // Opening fieldset - fetch data only if no validation errors in this fieldset
+          // This preserves user's invalid input so they can fix it
+          const hasFieldsetErrors = formErrors?.some(errorFieldName => 
+            errorFieldName.startsWith(`${set}.`)
+          );
+          if (!hasFieldsetErrors) {
+            dispatch(getAttributeData(attributeData?.projektin_nimi,name,formName, set, nulledFields,i))
+          }
+          handleLockField(set)
         }
-        
         //Close other accordians and open latest
         expandedArray = [i];
-        //check is someone else editing the fieldset or lock it to this user
-        handleLockField(set)
       }
       setExpanded(expandedArray);
     }
@@ -296,16 +302,12 @@ const FieldSet = ({
   
   const anyFieldsetHasChildError = !!formErrors?.some(ef => ef.startsWith(`${name}[`));
 
-  const savedFields = Array.isArray(lastSaved?.fields) ? lastSaved.fields : []
-  const isThisFieldsetNetworkError = lastSaved?.status === 'error' && savedFields.some(f =>
-    typeof f === 'string' && f.startsWith(`${name}`)
-  )
   const isThisFieldsetConnectionRestored = lastSaved?.status === 'connection_restored' && savedFields.some(f =>
     typeof f === 'string' && f.startsWith(`${name}`)
   )
 
   let addButtonMessage
-  if (isThisFieldsetNetworkError) {
+  if (isThisFieldsetNetworkError && expanded.length === 0) {
     addButtonMessage = (
       <div className="network-error-state" aria-live="polite" aria-atomic="true">
         <div className="error-text">
@@ -317,7 +319,7 @@ const FieldSet = ({
         </div>
       </div>
     )
-  } else if (isThisFieldsetConnectionRestored) {
+  } else if (isThisFieldsetConnectionRestored && expanded.length === 0) {
     addButtonMessage = (
       <div className="network-error-state" aria-live="polite" aria-atomic="true">
         <div className="success-text fade-in">
@@ -347,11 +349,9 @@ const FieldSet = ({
         const lockedElement = fieldsetDisabled ? <span className="input-locked"> Käyttäjä {lockStatus.lockStyle.lockData.attribute_lock.user_name} {lockStatus.lockStyle.lockData.attribute_lock.user_email} on muokkaamassa kenttää<IconLock></IconLock></span> : <></>
         const lockName = <><span className='accoardian-header-text'>{getValueName(setValues,fields)}</span> {lockedElement}</>
         
-        // Only disable accordion for actual network errors - during validation errors
-        // (character limit exceeded etc.) fieldsets should still be openable so users
-        // can view data in other fieldsets, while fields inside remain passivated
-        const shouldDisableAccordion = lastSaved?.status === 'error';
+        const shouldDisableAccordion = false;
         const thisRowHasError = formErrors?.some(ef => ef.startsWith(`${set}.`))
+        const thisRowHasNetworkError = isThisFieldsetNetworkError && !expanded.includes(i) && !!lastSavedChildField?.startsWith(set)
         
         return (
           <React.Fragment key={`${name}-${i}`}>
@@ -360,7 +360,7 @@ const FieldSet = ({
                 <button type="button" tabIndex={0} className={(() => {
                   if (saving || hiding || adding || shouldDisableAccordion) return "accordion-button-disabled";
                   if (expanded.includes(i)) return "accordion-button-open";
-                  if (thisRowHasError) return "accordion-button accordion-button-error";
+                  if (thisRowHasError || thisRowHasNetworkError) return "accordion-button accordion-button-error";
                   return "accordion-button";
                 })()} onClick={(e) => {if(!(saving || hiding || adding || shouldDisableAccordion)){checkLocked(e,set,i)}}}>
                   <div className='accordion-button-content'>
@@ -424,9 +424,10 @@ const FieldSet = ({
                   }
 
                   const assistiveText = field.assistive_text
+                  const isNetworkErrorField = isThisFieldsetNetworkError && lastSavedChildField === currentName
                   return (
                     <div
-                      className={`input-container ${showError ? 'error' : ''} ${fieldsetDisabled ? 'disabled-fieldset' : ''}`}
+                      className={`input-container ${showError || isNetworkErrorField ? 'error' : ''} ${fieldsetDisabled ? 'disabled-fieldset' : ''}`}
                       key={j}
                     >
                       <Form.Field required={required} className={field?.field_subroles === highlightedTag && highlightedInFieldset === "yellow" ? "yellow-fieldset" : ""}>
@@ -478,6 +479,7 @@ const FieldSet = ({
                           handleUnlockField={handleUnlockField}
                           onRadioChange={onRadioChange}
                           handleBlurSave={() => {
+                            setLastSavedChildField(currentName)
                             if (onBlur) {
                               handleBlur()
                             }
@@ -498,19 +500,22 @@ const FieldSet = ({
                           highlightedTag={highlightedTag}
                         />
                         {showError && <div className="error-text">{showError}</div>}
+                        {(isThisFieldsetNetworkError || isThisFieldsetConnectionRestored) && lastSavedChildField === currentName && (
+                          <NetworkErrorState fieldName={name} />
+                        )}
                         {assistiveText && <div className='assistive-text'>{assistiveText}.</div>}
                       </Form.Field>
                     </div>
                   )
                 })}
-                {/* Show NetworkErrorState for connection errors in fieldset */}
-                {expanded.includes(i) && (
-                  <NetworkErrorState fieldName={`${set}.${fields[0]?.name}`} />
+                {/* Show NetworkErrorState for connection errors in fieldset — fallback if no specific field tracked */}
+                {(isThisFieldsetNetworkError || isThisFieldsetConnectionRestored) && expanded.includes(i) && !lastSavedChildField && (
+                  <NetworkErrorState fieldName={name} />
                 )}
                 {(!disable_fieldset_delete_add && !automatically_added && !disabled) && (
                   <Button
                     className={`${fieldsetDisabled || saving || shouldDisableAccordion || (visibleErrors.length > 0 && !thisRowHasError) ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'} ${hiding ? ' hidden' : ''}`}
-                    disabled={sets.length < 1 || disabled || fieldsetDisabled || saving || shouldDisableAccordion || (visibleErrors.length > 0 && !thisRowHasError)}
+                    disabled={sets.length < 1 || disabled || fieldsetDisabled || saving || lastSaved?.status === 'error' || (visibleErrors.length > 0 && !thisRowHasError)}
                     variant="secondary"
                     size='small'
                     iconLeft={<IconTrash/>}
