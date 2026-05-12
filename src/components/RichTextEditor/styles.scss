@@ -159,6 +159,10 @@
       background-color: #E6E6E6;
       color: #808080; // NOSONAR - WCAG 1.4.3 exempts disabled/inactive UI components from contrast requirements
       cursor: not-allowed;
+      outline: none;
+      &.ql-blank::before {
+        color: #808080; // NOSONAR
+      }
     }
     
     // Show red border when field is disabled due to network error

@@ -217,6 +217,21 @@ function RichTextEditor(props) {
   }, [lastSaved?.status === "error"])
 
   useEffect(() => {
+    if (!editorRef.current) return
+    const root = editorRef.current.getEditor().root
+    if (shouldDisableForErrors) {
+      editorRef.current.editor.enable(false)
+      if (document.activeElement === root) {
+        editorRef.current.editor.blur()
+      }
+      root.tabIndex = -1
+    } else if (!readonly) {
+      editorRef.current.editor.enable(true)
+      root.tabIndex = 0
+    }
+  }, [shouldDisableForErrors])
+
+  useEffect(() => {
     if (readonly && !saving) {
       setShowComments(false)
     }
@@ -1013,7 +1028,7 @@ function RichTextEditor(props) {
           </span>
         </div>
         <ReactQuill
-          tabIndex="0"
+          tabIndex={isRichTextDisabled ? -1 : 0}
           id={toolbarName + "input"}
           ref={editorRef}
           modules={modules}
