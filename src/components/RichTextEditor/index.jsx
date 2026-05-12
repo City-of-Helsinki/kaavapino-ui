@@ -748,7 +748,7 @@ function RichTextEditor(props) {
   if (lastIndex !== -1) {
     reducedName = inputProps.name.substring(lastIndex + 1, inputProps.name.length)
     const match = inputProps.name.match(/\[(\d+)\]/);
-    number = match ? parseInt(match[1], 10) : 0;
+    number = match ? Number.parseInt(match[1], 10) : 0;
   }
   const toolbarName = `toolbar-${reducedName || ''}-${number}`
   const modules = {
@@ -979,6 +979,7 @@ function RichTextEditor(props) {
     <div
       ref={wrapperRef}
       className={`rich-text-editor-wrapper ${isRichTextDisabled ? 'rich-text-disabled' : ''} ${isThisFieldNetworkError ? 'has-network-error' : ''} ${isBlurred ? 'blurred' : ''} ${maxSizeOver ? 'has-error' : ''}`}
+      role="group"
       onFocus={handleWrapperFocus}
       onKeyDown={handleWrapperKeyDown}
       id={"rte-wrapper-" + inputProps.name}
