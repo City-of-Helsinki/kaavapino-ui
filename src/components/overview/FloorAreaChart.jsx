@@ -59,6 +59,7 @@ function FloorAreaChart({
 
   const [current, setCurrent] = useState(0)
   const [total, setTotal] = useState(0)
+  const [viewPortWidth, setViewPortWidth] = useState(window.innerWidth)
 
   const [currentChartData, setCurrentChartData] = useState(null)
 
@@ -66,6 +67,15 @@ function FloorAreaChart({
     getProjectsOverviewFloorArea(filter)
     setCurrentChartData(getFloorAreaChartData(chartData))
     getProjectsOverviewFloorAreaTargets()
+
+    const handleResize = () => {
+      setViewPortWidth(window.innerWidth)
+    }
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
   }, [])
 
   useEffect(() => {
@@ -309,7 +319,6 @@ function FloorAreaChart({
   }
 
   const currentYear = dayjs(chartData.date).year()
-
   return (
     <div className="floor-area">
       <h2>{t('floor-area.title', { date: getFormattedHeaderDate(chartData.date) })}</h2>
@@ -330,7 +339,7 @@ function FloorAreaChart({
               <span className="current-number">
                 {t('floor-area.current-number', { current })}
               </span>
-              <span>{t('floor-area.total-number', { total: total ? total : '' })}</span>
+              <span>{t('floor-area.total-number', { total: total || '' })}</span>
             </div>
             <ResponsiveContainer width="100%" height={350}>
               <ComposedChart data={currentChartData.floorAreas}>
@@ -343,7 +352,7 @@ function FloorAreaChart({
                 />
 
                 <XAxis
-                  interval={0}
+                  interval={viewPortWidth > 1024 ? 0 : 'preserveStartEnd'}
                   scale="time"
                   height={65}
                   tickCount={100}
@@ -392,7 +401,7 @@ function FloorAreaChart({
                   isAnimationActive={false}
                   legendType="plainline"
                   name={t('floor-area.living-area')}
-                  type="monotone"s
+                  type="monotone"
                   dataKey={LIVING}
                   stroke="#0000BF"
                   strokeWidth="2px"

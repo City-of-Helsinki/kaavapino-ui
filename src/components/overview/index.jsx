@@ -35,6 +35,10 @@ const Overview = ({
   useEffect(() => {
     getProjectsOverviewFilters()
     fetchUsers()
+    document.title = "Kaavapino - " + t('overview.title')
+    return () => {
+      document.title = "Kaavapino"
+    }
   }, [])
 
   useEffect(() => {
