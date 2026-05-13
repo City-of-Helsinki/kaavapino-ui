@@ -35,6 +35,10 @@ const Overview = ({
   useEffect(() => {
     getProjectsOverviewFilters()
     fetchUsers()
+    document.title = "Kaavapino - " + t('overview.title')
+    return () => {
+      document.title = "Kaavapino"
+    }
   }, [])
 
   useEffect(() => {
@@ -101,7 +105,7 @@ const Overview = ({
     <>
       <Header/>
 
-      <div className="overview">
+      <main id="main" className="overview">
         <NavHeader
           routeItems={[{ value: t('overview.title'), path: '/' }]}
           title={t('overview.title')}
@@ -134,7 +138,7 @@ const Overview = ({
             </Segment>
           </Grid.Column>
         </Grid>
-      </div>
+      </main>
     </>
   )
 }
