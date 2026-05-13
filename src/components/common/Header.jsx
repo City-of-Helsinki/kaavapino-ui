@@ -201,9 +201,9 @@ const Header = props => {
     props.history.push('/Logout')
   }
 
-  const label = currentUser && currentUser.privilege_name
-    ? `${user && user.profile.name} (${currentUser.privilege_name})`
-    : user && user.profile.name
+  const label = currentUser?.privilege_name
+    ? `${user?.profile.name} (${currentUser.privilege_name})`
+    : user?.profile.name
 
   const renderConfirmationDialog = () => {
     return <ConfirmationModal callback={callback} open={showConfirm} />
@@ -223,11 +223,7 @@ const Header = props => {
     if ( currentEnv === 'production' ) {
       return t('title')
     }
-    if ( !currentEnv ) {
-      return t('title')
-    } else {
-      return t('title') + ' (' + currentEnv + ')'
-    }
+    return currentEnv ? `${t('title')} (${currentEnv})` : t('title')
   } 
 
   const navigateBack = () => {
@@ -309,7 +305,8 @@ const Header = props => {
           logoLanguage="fi"
           menuToggleAriaLabel={t('header.choices-label')}
           title={getTitle()}
-          
+          skipTo="#main"
+          skipToContentLabel={t('header.skip-to-content')}
           titleAriaLabel={t('title')}
           titleUrl="./"
           className="header"

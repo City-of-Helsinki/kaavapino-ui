@@ -101,7 +101,7 @@ const Overview = ({
     <>
       <Header/>
 
-      <div className="overview">
+      <main id="main" className="overview">
         <NavHeader
           routeItems={[{ value: t('overview.title'), path: '/' }]}
           title={t('overview.title')}
@@ -134,7 +134,7 @@ const Overview = ({
             </Segment>
           </Grid.Column>
         </Grid>
-      </div>
+      </main>
     </>
   )
 }
