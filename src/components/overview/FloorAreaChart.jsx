@@ -89,26 +89,26 @@ function FloorAreaChart({
 
   useEffect(() => {
     setCurrentChartData(getFloorAreaChartData(chartData))
-    const currentValue = filter && filter['vuosi'] ? filter['vuosi'] : currentYear
+    const currentValue = filter?.['vuosi'] ? filter['vuosi'] : currentYear
 
     setTotal(floorAreaTargets[currentValue] ? floorAreaTargets[currentValue] : 0)
   }, [chartData])
 
   useEffect(() => {
     const graphData = getFloorAreaChartData(chartData)
-    const livingOverall = graphData && graphData[LIVING_OVERALL]
-    setCurrent(livingOverall ? livingOverall : 0)
+    const livingOverall = graphData?.[LIVING_OVERALL]
+    setCurrent(livingOverall || 0)
   }, [chartData])
 
   useEffect(() => {
-    const currentValue = filter && filter['year'] ? filter['year'] : currentYear
+    const currentValue = filter?.['year'] ? filter['year'] : currentYear
 
     setTotal(floorAreaTargets[currentValue])
   }, [floorAreaTargets])
 
   const onFilterChange = (values, currentParameter) => {
     if (!values || values.length === 0) {
-      const newFilter = Object.assign({}, filter)
+      const newFilter = { ...filter}
       delete newFilter[currentParameter]
       setFilter({
         ...newFilter
@@ -137,7 +137,7 @@ function FloorAreaChart({
   }
   const onUserFilterChange = (values, currentParameter) => {
     if (!values || values.length === 0) {
-      const newFilter = Object.assign({}, filter)
+      const newFilter = { ...filter}
       delete newFilter[currentParameter]
       setFilter({
         ...newFilter
@@ -206,33 +206,32 @@ function FloorAreaChart({
       return rects
     }
     const getProjectInformation = index => {
-      const dailyStats = chartData && chartData.daily_stats
+      const dailyStats = chartData?.daily_stats
 
       const current = getFormattedDataToOriginal(props.payload.date)
-      const currentDate = dailyStats && dailyStats.find && dailyStats.find(stats => {
+      const currentDate = dailyStats?.find?.(stats => {
         if (stats.date === current) return stats
       })
 
-      return currentDate && currentDate.projects && currentDate.projects[index - 1]
+      return currentDate?.projects?.[index - 1]
     }
 
     const getProjectColour = index => {
       if (!chartData) {
         return
       }
-      const dailyStats = chartData && chartData.daily_stats
+      const dailyStats = chartData?.daily_stats
 
       const current = getFormattedDataToOriginal(props.payload.date)
       const currentDate =
-        dailyStats && dailyStats.find &&
-        dailyStats.find(stats => {
+        dailyStats?.find?.(stats => {
           if (stats.date === current) return stats
         })
 
       const project =
-        currentDate && currentDate.projects && currentDate.projects[index - 1]
+        currentDate?.projects?.[index - 1]
 
-      return project && project.phase.color_code
+      return project?.phase.color_code
     }
 
     const renderPopupValue = index => {
@@ -347,7 +346,7 @@ function FloorAreaChart({
                   label={t('floor-area.now')}
                   yAxisId="left"
                   type="number"
-                  x={new Date().getTime()}
+                  x={Date.now()}
                   stroke="red"
                 />
 
@@ -478,7 +477,15 @@ function FloorAreaChart({
 
 FloorAreaChart.propTypes = {
   chartData: PropTypes.object.isRequired,
-  filters: PropTypes.array.isRequired
+  filters: PropTypes.array.isRequired,
+  getProjectsOverviewFloorArea: PropTypes.func.isRequired,
+  isPrivileged: PropTypes.bool.isRequired,
+  clearProjectsOverviewFloorArea: PropTypes.func.isRequired,
+  setProjectsOverviewFloorAreaFilter: PropTypes.func.isRequired,
+  getProjectsOverviewFloorAreaTargets: PropTypes.func.isRequired,
+  storedFilter: PropTypes.object,
+  floorAreaTargets: PropTypes.object,
+  history: PropTypes.object
 }
 
 const mapDispatchToProps = {
