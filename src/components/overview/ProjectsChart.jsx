@@ -157,7 +157,7 @@ function ProjectsChart({
   return (
     <div className="projects-size">
       <div className="header">
-        <h3>{t('project-types.title')}</h3>
+        <h2>{t('project-types.title')}</h2>
         <FilterList
           currentFilter={filter}
           onChange={onFilterChange}

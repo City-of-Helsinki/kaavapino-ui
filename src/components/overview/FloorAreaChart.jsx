@@ -312,7 +312,7 @@ function FloorAreaChart({
 
   return (
     <div className="floor-area">
-      <h3>{t('floor-area.title', { date: getFormattedHeaderDate(chartData.date) })}</h3>
+      <h2>{t('floor-area.title', { date: getFormattedHeaderDate(chartData.date) })}</h2>
       <FilterList
         currentFilter={filter}
         onChange={onFilterChange}
