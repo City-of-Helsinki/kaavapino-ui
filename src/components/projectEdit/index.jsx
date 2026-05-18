@@ -668,18 +668,20 @@ class ProjectEditPage extends Component {
     return (
       <div className='project-page-container'>
         {!this.state.isMobile && (
-          <button
-            type="button"
-            className="timeline"
-            onClick={() => this.showTimelineModal(true)}
-          >
-            <ProjectTimeline
-              deadlines={currentProject.deadlines}
-              projectView={true}
-              onhold={currentProject.onhold}
-              attribute_data={attribute_data}
-            />
-          </button>
+          <section aria-label={t('project.timeline')}>
+            <button
+              type="button"
+              className="timeline"
+              onClick={() => this.showTimelineModal(true)}
+            >
+              <ProjectTimeline
+                deadlines={currentProject.deadlines}
+                projectView={true}
+                onhold={currentProject.onhold}
+                attribute_data={attribute_data}
+              />
+            </button>
+          </section>
         )}
         {currentProject.phase_documents_creation_started === true &&
           currentProject.phase_documents_created === false && (
@@ -704,7 +706,7 @@ class ProjectEditPage extends Component {
         {this.renderErrorNotifications()}
         <div aria-hidden="true" className="block-div"></div>
         <div className={`project-input-container ${highlightGroup}`}>
-          <div className="project-input-left">
+          <nav className="project-input-left">
             <QuickNav
               changingPhase={changingPhase}
               currentPhases={currentPhases}
@@ -745,11 +747,11 @@ class ProjectEditPage extends Component {
               isTheResponsiblePerson={isTheResponsiblePerson}
               showSection={this.state.showSection}
             />
-          </div>
-          <div id={`title-${title}`} className='project-input-right'>
+          </nav>
+          <form id={`title-${title}`} className='project-input-right' aria-labelledby='edit-form-section-title'>
             {this.state?.showSection &&
             <div className='sticky-title'>
-              <h2 className='section-title'>
+              <h2 id="edit-form-section-title" className='section-title'>
                 {title}
               </h2>
               <div className='section-ingress'>
@@ -812,7 +814,7 @@ class ProjectEditPage extends Component {
                 showTimetableForm={this.props.showTimetableForm}
               />
             )}
-          </div>
+          </form>
         </div>
       </div>
     )

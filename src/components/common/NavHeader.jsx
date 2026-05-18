@@ -17,8 +17,12 @@ export const NavHeader = ({ actions, title, infoOptions, projectSize, responsibl
   }
 
   let navHeaderContentClass = "nav-header-content"
+  let menuActionButtons = <div className='nav-select-container'> {actions} </div>
   if(pathToCheck?.endsWith('/edit')) {
     navHeaderContentClass += " edit"
+    menuActionButtons = (
+      <nav className='nav-select-container' aria-label={t('project.edit-tools')}>{actions}</nav>
+    )
   }
   else if(pathToCheck?.endsWith('/documents')) {
     navHeaderContentClass += " documents"
@@ -33,9 +37,7 @@ export const NavHeader = ({ actions, title, infoOptions, projectSize, responsibl
               <h1 className="nav-header-title">{pathToCheck?.endsWith('/documents') ? t('project.documents') : title}</h1>
               <div className='nav-menu-buttons'>
                 <LoggingComponent infoOptions={infoOptions} />
-                <div className='nav-select-container'>
-                  {actions}
-                </div>
+                {menuActionButtons}
               </div>
             </div>
           </div>

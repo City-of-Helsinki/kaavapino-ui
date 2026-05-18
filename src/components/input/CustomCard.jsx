@@ -265,7 +265,7 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
     if(suggestionPhase){
       return (
         <div className='custom-card' >
-        <div className='heading'>{heading}</div>
+        <h3 className='heading'>{heading}</h3>
         {container}
         {container2}
         {editDataLink}
@@ -275,7 +275,7 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
     else{
       return (
         <div className='custom-card' >
-          <div className='heading'>{heading}</div>
+          <h3 className='heading'>{heading}</h3>
           {container2}
           {container}
           {editDataLink}

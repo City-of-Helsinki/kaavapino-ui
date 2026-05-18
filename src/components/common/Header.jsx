@@ -260,12 +260,12 @@ const Header = props => {
   if(pathToCheck.includes('edit')) {
     return (
       <div className={'edit-page-header' + ((!currentEnv || currentEnv === 'production') ? '' : ' edit-header-dev')}>
-      <Navigation 
+      <Navigation
         label="navigation"
         skipTo='#main'
         skipToContentLabel={t('header.skip-to-content')}
       >
-        <Navigation.Row variant="inline">
+        <Navigation.Row variant="inline" ariaLabel={t('header.edit-menu-back')}>
           <Button onClick={() => navigateBack()} role="link" variant="supplementary" size="small" iconLeft={<IconAngleLeft />}>{t('header.edit-menu-back')}</Button>
           <div className='edit-page-title'>
             <div><p>{props?.title}</p></div>

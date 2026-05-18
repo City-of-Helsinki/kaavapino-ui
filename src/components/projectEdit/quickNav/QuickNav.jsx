@@ -405,7 +405,7 @@ export default function QuickNav({
         )
         }
 
-        <nav className="quicknav-content">
+        <nav className="quicknav-content" aria-labelledby='quicknav-header-button'>
         {selectedPhase?.phaseID === 0 && options?.optionsArray.map((option,index) =>{
           return (
             <Button

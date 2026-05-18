@@ -405,8 +405,8 @@ class ProjectPage extends Component {
           size="small"
           className='edit-view-select'
           id="editNavSelect"
-          placeholder='Projektin työkalut'
-          value='Projektin työkalut'
+          placeholder={t('project.edit-tools')}
+          value={t('project.edit-tools')}
           options={options}
           onChange={this.changeOptions}
           disabled={editViewLoading}
@@ -557,11 +557,6 @@ class ProjectPage extends Component {
       <>
         <Header
           title={currentProject?.name}
-          modifyProject={true}
-          showPrintProjectData={true}
-          resetDeadlines={true}
-          openModifyProject={this.showModifyProject}
-          openPrintProjectData={this.showProjectData}
           resetProjectDeadlines={this.onResetProjectDeadlines}
           pollConnection={this.pollConnection}
           currentSection={this.state.sectionIndex}
