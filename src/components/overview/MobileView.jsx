@@ -75,7 +75,7 @@ function MobileView({
         }}
       />
       <div className="overview">
-        <h3 className="mobile-header">{t('overview.title')}</h3>
+        <h2 className="mobile-header">{t('overview.title')}</h2>
         <Button
           className="overview-filter-button"
           variant="secondary"
