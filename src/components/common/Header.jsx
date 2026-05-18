@@ -52,41 +52,52 @@ const Header = props => {
 
   const currentEnv = process.env.REACT_APP_ENVIRONMENT
 
+
+  // Manual accessibility implementations for user menu, reconsider when HDS is updated
+  const focusVisibleMenuItem = () => {
+    // HDS creates multiple elements with the same id (mobile and desktop), focus only the visible one
+    document.querySelectorAll("#nav-user-menu-logout").forEach(item => {
+      if (item.offsetParent !== null) {
+        item.focus();
+      }
+    });
+  }
+
+  const handleMenuOpenedKeyDown = (event) => {
+    if (event.key === "Escape" || (event.key === "Tab" && event.shiftKey)) {
+      document.dispatchEvent(new Event('click')); // Closes menu
+    }
+    else if (event.key === "ArrowDown") {
+      event.preventDefault();
+      focusVisibleMenuItem();
+    }
+  }
+
+  const handleMenuClosedKeyDown = (event, element) => {
+    if (["Enter", " ", "ArrowDown"].includes(event.key)) {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        element.click();
+      }
+      // Timeout needed as menu items are not in DOM immediately after click
+      setTimeout(() => {
+        focusVisibleMenuItem();
+      }, 10);
+    }
+  }
+
   useEffect(() => {
-    // Manual accessibility implementations for user menu, reconsider when HDS is updated
     const handleKeyDown = (event) => {
       const element = document.activeElement;
-      if ((element.id === "nav-user-menu-button" && element.ariaExpanded === "true")) {
-        if (event.key === "Escape" || (event.key === "Tab" && event.shiftKey)) {
-          document.dispatchEvent(new Event('click')); // Closes menu
-        }
-        else if (event.key === "ArrowDown") {
-          event.preventDefault();
-          document.querySelectorAll("#nav-user-menu-logout").forEach(item => {
-            // HDS creates multiple elements with the same id (mobile and desktop), focus only the visible one
-            if (item.offsetParent !== null) {
-              item.focus();
-            }
-          });
-        }
+      if (element?.id !== "nav-user-menu-button") {
+        return;
       }
-      else if (element.id === "nav-user-menu-button" && element.ariaExpanded === "false") {
-        if (["Enter", " ", "ArrowDown"].includes(event.key)) {
-          if (event.key === "ArrowDown") {
-            event.preventDefault();
-            element.click();
-          }
-          // Timeout needed as menu items are not in DOM immediately after click
-          setTimeout(() => {
-          document.querySelectorAll("#nav-user-menu-logout").forEach(item => {
-            if (item.offsetParent !== null) {
-              item.focus(); // Focus the first item in the menu after opening it
-            }
-          });
-          }, 10);
-        }
+      if ((element.ariaExpanded === "true")) {
+        handleMenuOpenedKeyDown(event);
       }
-
+      else if (element.ariaExpanded === "false") {
+        handleMenuClosedKeyDown(event, element);
+      }
     }
     document.addEventListener('keydown', handleKeyDown);
     return () => {
@@ -142,46 +153,48 @@ const Header = props => {
   }, [saving])
 
   useEffect(() => {
+    if (!lastSaved) {
+      return
+    }
+
     let latestUpdate
 
-    if(lastSaved !== undefined && lastSaved !== null){
-        if(lastSaved?.status === "error" || lastSaved?.status === "field_error"){
-          // Don't include time with error status - time will be shown in tooltip only if it exists
-          latestUpdate = {status:t('header.edit-menu-save-fail'),time:""}
-        }
-        else if(lastSaved?.status === "success"){
-          // Connection restored or field validation error corrected
-          // NetworkErrorState component handles "connection restored" inline notification
-          // So we just update save time here, no toaster needed
-          setCount(1)
-          latestUpdate = {status:t('header.latest-save'),time:lastSaved.time}
-          setLastSuccessfulSaveTime(lastSaved.time)
-        }
-        else if(lastSaved?.status === "connection_restored"){
-          // Connection was restored - clear error state from header
-          setCount(1)
-          if (lastSaved.time) {
-            setLastSuccessfulSaveTime(lastSaved.time)
-            latestUpdate = {status:t('header.latest-save'),time:lastSaved.time}
-          } else if (lastSuccessfulSaveTime) {
-            latestUpdate = {status:t('header.latest-save'),time:lastSuccessfulSaveTime}
-          } else {
-            latestUpdate = {status:t('header.edit-menu-no-save'),time:""}
-          }
-        }
-        else if(lastSaved?.status === ""){
-          // Error notification was closed and field reverted to saved value
-          // If something was saved this session, show last save time; otherwise show "no unsaved data"
-          setCount(1)
-          if (lastSuccessfulSaveTime) {
-            latestUpdate = {status:t('header.latest-save'),time:lastSuccessfulSaveTime}
-          } else {
-            latestUpdate = {status:t('header.edit-menu-no-save'),time:""}
-          }
-        }
-      if (latestUpdate) {
-        setUpdateTime(latestUpdate)
+    if(lastSaved?.status === "error" || lastSaved?.status === "field_error"){
+      // Don't include time with error status - time will be shown in tooltip only if it exists
+      latestUpdate = {status:t('header.edit-menu-save-fail'),time:""}
+    }
+    else if(lastSaved?.status === "success"){
+      // Connection restored or field validation error corrected
+      // NetworkErrorState component handles "connection restored" inline notification
+      // So we just update save time here, no toaster needed
+      setCount(1)
+      latestUpdate = {status:t('header.latest-save'),time:lastSaved.time}
+      setLastSuccessfulSaveTime(lastSaved.time)
+    }
+    else if(lastSaved?.status === "connection_restored"){
+      // Connection was restored - clear error state from header
+      setCount(1)
+      if (lastSaved.time) {
+        setLastSuccessfulSaveTime(lastSaved.time)
+        latestUpdate = {status:t('header.latest-save'),time:lastSaved.time}
+      } else if (lastSuccessfulSaveTime) {
+        latestUpdate = {status:t('header.latest-save'),time:lastSuccessfulSaveTime}
+      } else {
+        latestUpdate = {status:t('header.edit-menu-no-save'),time:""}
       }
+    }
+    else if(lastSaved?.status === ""){
+      // Error notification was closed and field reverted to saved value
+      // If something was saved this session, show last save time; otherwise show "no unsaved data"
+      setCount(1)
+      if (lastSuccessfulSaveTime) {
+        latestUpdate = {status:t('header.latest-save'),time:lastSuccessfulSaveTime}
+      } else {
+        latestUpdate = {status:t('header.edit-menu-no-save'),time:""}
+      }
+    }
+    if (latestUpdate) {
+      setUpdateTime(latestUpdate)
     }
   }, [lastSaved]);
 
@@ -201,9 +214,9 @@ const Header = props => {
     props.history.push('/Logout')
   }
 
-  const label = currentUser && currentUser.privilege_name
-    ? `${user && user.profile.name} (${currentUser.privilege_name})`
-    : user && user.profile.name
+  const label = currentUser?.privilege_name
+    ? `${user?.profile.name} (${currentUser.privilege_name})`
+    : user?.profile.name
 
   const renderConfirmationDialog = () => {
     return <ConfirmationModal callback={callback} open={showConfirm} />
@@ -223,11 +236,7 @@ const Header = props => {
     if ( currentEnv === 'production' ) {
       return t('title')
     }
-    if ( !currentEnv ) {
-      return t('title')
-    } else {
-      return t('title') + ' (' + currentEnv + ')'
-    }
+    return currentEnv ? `${t('title')} (${currentEnv})` : t('title')
   } 
 
   const navigateBack = () => {
@@ -309,7 +318,8 @@ const Header = props => {
           logoLanguage="fi"
           menuToggleAriaLabel={t('header.choices-label')}
           title={getTitle()}
-          
+          skipTo="#main"
+          skipToContentLabel={t('header.skip-to-content')}
           titleAriaLabel={t('title')}
           titleUrl="./"
           className="header"
@@ -334,9 +344,7 @@ const Header = props => {
               ? "header-nav-item active"
               : "header-nav-item " 
             }
-              active={(props.location.pathname === "/")
-              ? true
-              : false 
+              active={(props.location.pathname === "/") 
               }
             />
             <Navigation.Item
@@ -347,9 +355,7 @@ const Header = props => {
               ? "header-nav-item active"
               : "header-nav-item " 
             }
-              active={(props.location.pathname.startsWith("/projects"))
-              ? true
-              : false 
+              active={!!(props.location.pathname.startsWith("/projects")) 
               }
             />
             <Navigation.Item
@@ -360,10 +366,7 @@ const Header = props => {
                 ? "header-nav-item active"
                 : "header-nav-item " 
               }
-              active={(props.location.pathname === "/reports")
-                ? true
-                : false 
-              }
+              active={props.location.pathname === "/reports"}
             />
           </Navigation.Row>
           <Navigation.Actions>
@@ -400,7 +403,12 @@ const Header = props => {
 }
 
 Header.propTypes = {
-  location:PropTypes.object
+  location:PropTypes.object,
+  history:PropTypes.object,
+  resetProjectDeadlines:PropTypes.func,
+  pollConnection:PropTypes.func,
+  title:PropTypes.string,
+  currentSection:PropTypes.number
 }
 
 export default withRouter(Header)
