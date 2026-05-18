@@ -508,7 +508,6 @@ class ProjectListPage extends Component {
 
         <div className="project-list-page">
           <NavHeader
-            routeItems={[{ value: t('projects.title'), path: '/' }]}
             title={t('projects.title')}
             actions={this.getDocumentsNavActions(isResponsible)}
           />

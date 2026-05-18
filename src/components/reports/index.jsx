@@ -12,13 +12,7 @@ function Reports() {
     <>
       <Header />
       <div className="reports-page">
-        <NavHeader
-          routeItems={[
-            { value: t('projects.title'), path: '/projects' },
-            { value: t('reports.title'), path: '/reports' }
-          ]}
-          title={t('reports.title')}
-        />
+        <NavHeader title={t('reports.title')} />
         <ReportBuilder />
       </div>
     </>

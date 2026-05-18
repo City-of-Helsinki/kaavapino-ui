@@ -845,30 +845,6 @@ header{
     flex-direction: column;
     justify-content: space-around;
 
-    .nav-header-route {
-      display: none;
-      color: black;
-
-      .nav-header-route-items {
-        font-weight: 100;
-
-        span a {
-          color: black;
-        }
-
-        span:not(:last-of-type)::after {
-          content: '>>';
-          margin-left: 8px;
-          margin-right: 8px;
-        }
-      }
-      @media screen and (max-width: 600px) {
-        display: none;
-      }
-    }
-    
-
-
     .nav-header-content {
       margin-top: 120px;
       margin-bottom: 32px;

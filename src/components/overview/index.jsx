@@ -81,7 +81,6 @@ const Overview = ({
       <Header/>
       <main id="main" className="overview">
         <NavHeader
-          routeItems={[{ value: t('overview.title'), path: '/' }]}
           title={t('overview.title')}
         />
         <Grid stackable columns="equal">
