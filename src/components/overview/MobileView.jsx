@@ -13,7 +13,7 @@ import {
   clearProjectsOverview
 } from '../../actions/projectActions'
 import Header from '../common/Header'
-
+import PropTypes from 'prop-types'
 
 function MobileView({
   isExpert,
@@ -33,9 +33,7 @@ function MobileView({
   }
 
   useEffect(() => {
-
     clearProjectsOverview()
-
     getProjectsOverviewMapData(filter)
     getProjectsOverviewFloorArea(filter)
   }, [filter])
@@ -75,7 +73,7 @@ function MobileView({
         }}
       />
       <div className="overview">
-        <h3 className="mobile-header">{t('overview.title')}</h3>
+        <h2 className="mobile-header">{t('overview.title')}</h2>
         <Button
           className="overview-filter-button"
           variant="secondary"
@@ -113,6 +111,14 @@ const mapDispatchToProps = {
   getProjectsOverviewMapData,
   getProjectsOverviewFloorArea,
   clearProjectsOverview
+}
+
+MobileView.propTypes = {
+  isExpert: PropTypes.bool.isRequired,
+  filterList: PropTypes.array.isRequired,
+  getProjectsOverviewMapData: PropTypes.func.isRequired,
+  getProjectsOverviewFloorArea: PropTypes.func.isRequired,
+  clearProjectsOverview: PropTypes.func.isRequired,
 }
 
 export default connect(null, mapDispatchToProps)(MobileView)

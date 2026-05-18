@@ -16,10 +16,7 @@ function FloorAreaMeetings({ chartData }) {
     return dayjs(date).format(t('dateformat'))
   }
   const renderMeetings = () => {
-    const items =
-      chartData &&
-      chartData.daily_stats &&
-      chartData.daily_stats.map(item => renderItem(item))
+    const items = chartData?.daily_stats?.map(item => renderItem(item))
 
     const realMeetings = []
 
@@ -83,15 +80,12 @@ function FloorAreaMeetings({ chartData }) {
   }
 
   const isChartDataLoaded = () => {
-    if (!chartData || Object.entries(chartData).length === 0) {
-      return false
-    }
-    return true
+    return !(!chartData || Object.entries(chartData).length === 0);
   }
   return (
     <div className="floor-area">
       <div className="chart-area-header-mobile">
-        <h3>{t('floor-area.meetings-title')}</h3>
+        <h2>{t('floor-area.meetings-title')}</h2>
         {!isChartDataLoaded() && <LoadingSpinner className="center" theme={{ '--spinner-color': '#0000BF' }} />}
         {isChartDataLoaded() && <div>{renderMeetings()}</div>}
       </div>
