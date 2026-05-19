@@ -139,6 +139,7 @@ class ProjectEditPage extends Component {
     }
   }
   componentDidMount() {
+    document.title = "Kaavapino - " + this.props.project.name;
     this.props.switchDisplayedPhase(this.props.currentProject.phase)
     localStorage.removeItem("changedValues")
     window.addEventListener('resize', this.handleResize)
@@ -174,6 +175,9 @@ class ProjectEditPage extends Component {
     this.unlockFields()
     this.props.clearSchemas()
     window.removeEventListener('resize', this.handleResize)
+    if (document.title === "Kaavapino - " + this.props.project.name) {
+      document.title = "Kaavapino";
+    }
   }
 
   scroll() {
