@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Tag, IconArrowRight, IconArrowLeft } from 'hds-react'
 import OnHoldCheckbox from '../../input/OnholdCheckbox.jsx'
-import ConfirmModal from '../ConfirmModal.jsx'
+import PhaseChangeConfirmModal from '../PhaseChangeConfirmModal.jsx'
 import './styles.scss'
 import Status from '../../common/Status'
 import PropTypes from 'prop-types'
@@ -482,14 +482,14 @@ export default function QuickNav({
       {showSection && <div className="quicknav-buttons">{renderButtons()}</div>}
       {isResponsible && showSection && <div className="quicknav-onhold">{renderCheckBox()}</div>}
       {isResponsible && notLastPhase && allowPhaseClose && (
-        <ConfirmModal
+        <PhaseChangeConfirmModal
           callback={phaseCallback}
           open={verifying}
           notLastPhase={notLastPhase}
         />
       )}
       {isAdmin && !notLastPhase && allowPhaseClose && (
-        <ConfirmModal
+        <PhaseChangeConfirmModal
           callback={phaseCallback}
           open={verifying}
           notLastPhase={notLastPhase}
