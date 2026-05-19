@@ -218,8 +218,8 @@ function LoggingComponent(props) {
           {t('nav-header.latest-changes')}
         </Button>
       )}
-      <Card border aria-label="Loki" className="log-card" {...contentProps}>
-        <Grid stackable columns="equal">
+      <Card role={undefined} border aria-label="Loki" className="log-card" {...contentProps}>
+        <Grid stackable columns="equal" as="ul">
           {infoOptions?.map((option, index) => {
             const listKey = option.key || option.text;
             if (option.type === "fieldset") {
@@ -228,7 +228,7 @@ function LoggingComponent(props) {
               filterFieldsetValues(option.newValue, option.oldValue);
             }
             return (
-              <Grid.Row key={listKey}>
+              <Grid.Row key={listKey} as="li">
                 <Grid.Column width={14}>
                   <div className="show-value">{option.text}</div>
                 </Grid.Column>
