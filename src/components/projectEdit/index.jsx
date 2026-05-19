@@ -389,7 +389,7 @@ class ProjectEditPage extends Component {
         <Notification id='required-fields-notification' label='Lomakkeelta puuttuu pakollisia tietoja' type="error" style={{marginTop: 'var(--spacing-s)'}}>
           {Object.entries(grouped).map(([groupTitle, errors]) => (
             <div key={groupTitle} className='error-group'>
-              <div className='error-group-header' role="heading" aria-level="3">{groupTitle}</div>
+              <div className='error-group-header'>{groupTitle}</div>
               <ul>
                 {errors.map((error,index) => (
                   <li key={error.errorSection + error.errorField}>
