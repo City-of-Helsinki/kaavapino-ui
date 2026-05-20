@@ -1,4 +1,4 @@
-import { findInMonths, findWeek, cleanDeadlines, checkDeadlines } from './helpers'
+import { findInMonths, findWeek, cleanDeadlines, deadlinesHaveErrors } from './helpers'
 import dayjs from 'dayjs'
 
 
@@ -10,7 +10,7 @@ import dayjs from 'dayjs'
  */
 export function createDeadlines(deadlines, monthsMeta = []) {
   // check deadline errors
-  if (checkDeadlines(deadlines)) {
+  if (deadlinesHaveErrors(deadlines)) {
     return { deadlines: null, error: true }
   }
   const monthDatesArray = buildMonthDatesArray(monthsMeta)

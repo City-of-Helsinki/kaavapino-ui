@@ -77,56 +77,26 @@ export function cleanDeadlines(deadlines) {
   return cleanedDeadlines
 }
 /**
- * @desc checks deadlines for errors
+ * @desc checks if deadlines have errors (missing dates, wrong order, min distance)
  * @param deadlines - deadlines from api
- * @return boolean
+ * @return true if errors, false if no errors
  */
-export function checkDeadlines(deadlines) {
-  if (!deadlines) {
+export function deadlinesHaveErrors(deadlines) {
+  if (!deadlines?.[0]?.date) {
     return true
   }
-  if (!deadlines[0]) {
-    return true
-  }
-  if (!deadlines[0].date) {
-    return true
-  }
-  const has = Object.prototype.hasOwnProperty
-  let deadlineAbbreviation = null
-  let deadlineError = false
-  deadlines.forEach(deadline => {
-    if (deadline.deadline) {
-      if (deadline.deadline.deadline_types) {
-        for (const prop in deadline.deadline.deadline_types) {
-          if (has.call(deadline.deadline.deadline_types, prop)) {
-            if (deadline.deadline.deadline_types[prop] === 'phase_start') {
-              deadlineAbbreviation = deadline.deadline.abbreviation.charAt(0)
-            }
-            if (deadlineAbbreviation) {
-              if (deadlineAbbreviation !== deadline.deadline.abbreviation.charAt(0)) {
-                deadlineError = true
-              }
-            }
-          }
-        }
-      }
+  let currDeadlineAbbreviation = null
+  for (const deadline of deadlines) {
+    const abbrChar = deadline.deadline?.abbreviation?.charAt(0)
+    if (deadline?.deadline?.deadline_types?.includes('phase_start')) {
+      currDeadlineAbbreviation = abbrChar
     }
-    if (deadline) {
-      if (deadline.is_under_min_distance_next) {
-        deadlineError = true
-      }
-      if (deadline.is_under_min_distance_previous) {
-        deadlineError = true
-      }
-      if (deadline.out_of_sync) {
-        deadlineError = true
-      }
-    } else {
-      deadlineError = true
+    if (currDeadlineAbbreviation && currDeadlineAbbreviation !== abbrChar) {
+      return true
     }
-  })
-  if (deadlineError) {
-    return true
+    if (deadline?.is_under_min_distance_next || deadline?.is_under_min_distance_previous || deadline?.out_of_sync) {
+      return true
+    }
   }
   return false
 }
