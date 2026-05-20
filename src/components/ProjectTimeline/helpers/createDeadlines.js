@@ -18,7 +18,7 @@ export function createDeadlines(deadlines, monthsMeta = []) {
 }
 
 const buildMonthDatesArray = monthsMeta => {
-  if (!monthsMeta || !monthsMeta.length) {
+  if (!monthsMeta?.length) {
     return buildDefaultMonthDatesArray()
   }
   const monthDatesArray = []
@@ -174,104 +174,73 @@ function createStartAndEndPoints(inputMonths, deadlines) {
     }
   }
 
-  let monthDates = inputMonths
-  let firstDeadline = false
-
   // Only process deadlines for phases that actually overlap with visible range
-  deadlines.forEach(deadline => {
-    if (deadline.deadline) {
-      const phaseId = deadline.deadline.phase_id
-      // Skip if this phase doesn't overlap with visible range
-      if (!overlappingPhases[phaseId]) {
-        return
-      }
-
-      if (
-        deadline.deadline.deadline_types[0] === 'phase_start' ||
-        deadline.deadline.deadline_types[0] === 'phase_end'
-      ) {
-        const date = dayjs(deadline.date)
-        
-        // Skip if this specific date is outside visible range
-        if (date.isBefore(visibleStart, 'day') || date.isAfter(visibleEnd, 'day')) {
-          return
-        }
-
-        const week = findWeek(date)
-        const monthIndex = findInMonths(date, week, monthDates)
-        if (monthIndex !== null && monthIndex !== undefined) {
-          if (monthDates[monthIndex][deadline.deadline.abbreviation]) {
-            if (
-              monthDates[monthIndex][deadline.deadline.abbreviation].deadline_type[0] ===
-              'phase_start'
-            ) {
-              if (deadline.deadline.deadline_types[0] === 'phase_end') {
-                if (!firstDeadline) {
-                  if (deadline.deadline.deadline_types[0] === 'phase_end') {
-                    monthDates[0][deadline.deadline.abbreviation] = {
-                      abbreviation: deadline.deadline.abbreviation,
-                      deadline_type: ['past_start_point'],
-                      phase_id: deadline.deadline.phase_id,
-                      color_code: deadline.deadline.phase_color_code,
-                      phase_name: deadline.deadline.phase_name,
-                      deadline_length: 2
-                    }
-                  }
-                  firstDeadline = true
-                }
-                monthDates[monthIndex][deadline.deadline.abbreviation] = {
-                  abbreviation: deadline.deadline.abbreviation,
-                  deadline_type: ['start_end_point'],
-                  phase_id: deadline.deadline.phase_id,
-                  color_code: deadline.deadline.phase_color_code,
-                  phase_name: deadline.deadline.phase_name,
-                  deadline_length: 2
-                }
-              }
-            }
-          } else {
-            if (!firstDeadline) {
-              if (deadline.deadline.deadline_types[0] === 'phase_end') {
-                monthDates[0][deadline.deadline.abbreviation] = {
-                  abbreviation: deadline.deadline.abbreviation,
-                  deadline_type: ['past_start_point'],
-                  phase_id: deadline.deadline.phase_id,
-                  color_code: deadline.deadline.phase_color_code,
-                  phase_name: deadline.deadline.phase_name,
-                  deadline_length: 2
-                }
-              }
-              firstDeadline = true
-            }
-            if (deadline.deadline.deadline_types.length > 1) {
-              if (deadline.deadline.deadline_types[0] === 'phase_start' && deadline.deadline.deadline_types[1] === 'phase_end') {
-                monthDates[monthIndex][deadline.deadline.abbreviation] = {
-                  abbreviation: deadline.deadline.abbreviation,
-                  deadline_type: ['start_end_point'],
-                  phase_id: deadline.deadline.phase_id,
-                  color_code: deadline.deadline.phase_color_code,
-                  phase_name: deadline.deadline.phase_name,
-                  deadline_length: 1
-                }
-              }
-            } else {
-            monthDates[monthIndex][deadline.deadline.abbreviation] = {
-              abbreviation: deadline.deadline.abbreviation,
-              deadline_type: deadline.deadline.deadline_types,
-              phase_id: deadline.deadline.phase_id,
-              color_code: deadline.deadline.phase_color_code,
-              phase_name: deadline.deadline.phase_name,
-              not_last_end_point: deadline.not_last_end_point,
-              deadline_length: 2
-            }
-            }
-          }
-        }
-      }
-    }
-  })
+  const monthDates = processOverlappingDeadlines(deadlines, overlappingPhases, inputMonths, visibleStart, visibleEnd)
   return fillGaps(monthDates, deadlines)
 }
+
+function processOverlappingDeadlines(deadlines, overlappingPhases, inputMonths, visibleStart, visibleEnd) {
+
+  const buildMonthDateObject = (deadline, deadline_types, deadline_length, not_last_end_point) => ({
+    abbreviation: deadline.abbreviation,
+    deadline_type: deadline_types,
+    phase_id: deadline.phase_id,
+    color_code: deadline.phase_color_code,
+    phase_name: deadline.phase_name,
+    deadline_length: deadline_length,
+    ...(not_last_end_point !== undefined && { not_last_end_point }),
+  });
+
+  const addStartEndMarkers = (monthDates, monthIndex, deadline, deadline_types, not_last_end_point) => {
+    const existingMarker = monthDates[monthIndex][deadline.abbreviation];
+    const isStartEndCollision = existingMarker?.deadline_type[0] === 'phase_start' && deadline_types[0] === 'phase_end';
+    if (isStartEndCollision) {
+      // Upgrade existing start to start_end_point
+      monthDates[monthIndex][deadline.abbreviation] = buildMonthDateObject(deadline, ['start_end_point'], 2);
+    } else if (!existingMarker) {
+      if (deadline_types.includes('phase_start') && deadline_types.includes('phase_end')) {
+        monthDates[monthIndex][deadline.abbreviation] = buildMonthDateObject(deadline, ['start_end_point'], 1);
+      } else {
+        monthDates[monthIndex][deadline.abbreviation] = buildMonthDateObject(deadline, deadline_types, 2, not_last_end_point);
+      }
+    }
+  }
+
+  const monthDates = structuredClone(inputMonths);
+  let firstDeadlineProcessed = false;
+  for (const deadlineObject of deadlines) {
+    const deadline = deadlineObject.deadline;
+    const deadline_types = deadline?.deadline_types || [];
+
+    if (
+      !deadline || !overlappingPhases[deadline.phase_id] ||
+      (!deadline_types.includes('phase_start') && !deadline_types.includes('phase_end'))
+    ) {
+      continue;
+    }
+
+    const date = dayjs(deadlineObject.date);
+
+    // Skip if this specific date is outside visible range
+    if (date.isBefore(visibleStart, 'day') || date.isAfter(visibleEnd, 'day')) {
+      continue;
+    }
+
+    const week = findWeek(date);
+    const monthIndex = findInMonths(date, week, monthDates);
+    if (monthIndex === null || monthIndex === undefined) {
+      continue;
+    }
+    if (!firstDeadlineProcessed && deadline_types[0] === 'phase_end' && monthIndex !== 0) {
+      // Mark the phase as starting before the visible range and ending within it
+      monthDates[0][deadline.abbreviation] = buildMonthDateObject(deadline, ['past_start_point'], 2);
+    }
+    firstDeadlineProcessed = true;
+    addStartEndMarkers(monthDates, monthIndex, deadline, deadline_types, deadlineObject.not_last_end_point);
+  }
+  return monthDates;
+}
+
 /**
  * @desc fills gaps between start and end points with mid points with the same key
  * @param inputMonths - array that contains months
