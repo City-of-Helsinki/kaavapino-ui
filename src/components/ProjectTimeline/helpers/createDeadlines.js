@@ -396,28 +396,28 @@ function fillMilestoneGaps(inputMonths) {
   let milestoneType = null
   let milestoneDate = null
   let milestoneSpace = 0
-  for (let i = 0; i < monthDates.length; i++) {
-    if (monthDates[i].milestone) {
-      for (let milestone_type in monthDates[i].milestone_types) {
-        switch (monthDates[i].milestone_types[milestone_type]) {
+  for (const monthDate of monthDates) {
+    if (monthDate.milestone) {
+      for (let milestone_type in monthDate.milestone_types) {
+        switch (monthDate.milestone_types[milestone_type]) {
           case 'dashed_start':
             milestoneType = 'dashed_mid'
-            milestoneDate = monthDates[i].milestoneDate
+            milestoneDate = monthDate.milestoneDate
             milestoneSpace = 1
             break
           case 'dashed_end':
-            monthDates[i].milestone_space = milestoneSpace
+            monthDate.milestone_space = milestoneSpace
             milestoneType = null
             milestoneDate = null
             milestoneSpace = 0
             break
           case 'inner_start':
             milestoneType = 'inner_mid'
-            milestoneDate = monthDates[i].milestoneDate
+            milestoneDate = monthDate.milestoneDate
             milestoneSpace = 1
             break
           case 'inner_end':
-            monthDates[i].milestone_space = milestoneSpace
+            monthDate.milestone_space = milestoneSpace
             milestoneType = null
             milestoneDate = null
             milestoneSpace = 0
@@ -427,9 +427,9 @@ function fillMilestoneGaps(inputMonths) {
         }
       }
     } else if (milestoneType !== null) {
-      monthDates[i].milestone = true
-      monthDates[i].milestoneDate = milestoneDate
-      monthDates[i].milestone_types = [milestoneType]
+      monthDate.milestone = true
+      monthDate.milestoneDate = milestoneDate
+      monthDate.milestone_types = [milestoneType]
     }
     if (milestoneSpace > 0) {
       milestoneSpace++
