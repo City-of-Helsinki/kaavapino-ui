@@ -85,6 +85,7 @@ class CustomField extends Component {
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
         customError={this.props?.field?.error_text}
+        required={this.props?.field?.required}
       />
     )
   }
@@ -123,6 +124,7 @@ class CustomField extends Component {
         phaseIsClosed={phaseIsClosed}
         isProjectTimetableEdit={isProjectTimetableEdit}
         timetable_editable={timetable_editable}
+        required={this.props?.field?.required}
       />
     )
   }
@@ -133,7 +135,7 @@ class CustomField extends Component {
       isProjectTimetableEdit, timetable_editable } = this.props
 
     return( 
-      <CustomInput 
+      <CustomInput
         lockField={lockField} 
         onBlur={handleBlurSave} 
         onChange={props.change} 
@@ -159,6 +161,7 @@ class CustomField extends Component {
         isProjectTimetableEdit={isProjectTimetableEdit}
         timetable_editable={timetable_editable}
         hideLabel={this.props.hideLabel}
+        required={this.props?.field?.required}
       />
     )
   }
@@ -306,6 +309,7 @@ class CustomField extends Component {
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
         customError={this.props?.field?.error_text}
+        required={this.props?.field?.required}
       />
     )
   }
@@ -346,6 +350,7 @@ class CustomField extends Component {
         formValues={formValues}
         isProjectTimetableEdit={isProjectTimetableEdit}
         timetable_editable={timetable_editable}
+        required={this.props?.field?.required}
       />
     )
   }
@@ -404,7 +409,6 @@ class CustomField extends Component {
 
   renderToggle = props => {
     const { handleBlurSave } = this.props
-
     return <ToggleButton onBlur={handleBlurSave} {...props} />
   }
 
@@ -415,7 +419,7 @@ class CustomField extends Component {
 
   renderLink = props => {
     const { handleBlurSave, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, phaseIsClosed } = this.props
-    const { placeholder_text } = this.props.field
+    const { placeholder_text, required } = this.props.field
 
     return (
       <Link 
@@ -429,6 +433,7 @@ class CustomField extends Component {
         isCurrentPhase={isCurrentPhase}
         selectedPhase={selectedPhase}
         phaseIsClosed={phaseIsClosed}
+        required={required}
         {...props} 
       />
     )
@@ -530,6 +535,7 @@ class CustomField extends Component {
         attributeData={attributeData}
         phaseIsClosed={phaseIsClosed}
         customError={this.props?.field?.error_text}
+        required={this.props?.field?.required}
       />
     )
   }

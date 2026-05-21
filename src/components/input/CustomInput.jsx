@@ -36,7 +36,8 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
     isTabActive,
     isProjectTimetableEdit,
     timetable_editable,
-    characterLimit, // eslint-disable-line no-unused-vars
+    characterLimit,
+    required,
     ...restCustom
   } = custom;
 
@@ -232,8 +233,7 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
     if (
       custom.type === 'number' &&
       !custom.isFloorAreaForm &&
-      event &&
-      event.relatedTarget
+      event?.relatedTarget
     ) {
       const currentContainer = inputRef.current
         ? inputRef.current.closest('.NumberInput-module_numberInputContainer__hKNPp')
@@ -543,6 +543,7 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
             readOnly={readonly.read || lastSaved?.status === "error" || shouldPassivate}
             minusStepButtonAriaLabel="Vähennä yhdellä"
             plusStepButtonAriaLabel="Lisää yhdellä"
+            required={required}
           />
         ) : (
           <TextInput
@@ -558,6 +559,8 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
             onFocus={() => { handleFocus() }}
             readOnly={readonly.read || lastSaved?.status === "error" || shouldPassivate}
             id={fieldData?.name}
+            required={required}
+            hideLabel={true}
           />
         )}
         <NetworkErrorState 
@@ -587,7 +590,8 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
 
 CustomInput.propTypes = {
   input: PropTypes.object.isRequired,
-  isTabActive: PropTypes.bool
+  isTabActive: PropTypes.bool,
+  required: PropTypes.bool
 }
 
 export default CustomInput

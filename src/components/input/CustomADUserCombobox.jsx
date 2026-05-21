@@ -28,7 +28,7 @@ class CustomADUserCombobox extends Component {
   // HDS-react combobox sometimes traps focus inside the menu when open. This is a workaround to allow tabbing out of the menu.
   handleTabKeyDown = (event) => {
     const active = document.activeElement;
-    if (event.key === 'Tab' && active && this.containerRef.current && this.containerRef.current.contains(active)) {
+    if (event.key === 'Tab' && active && this.containerRef.current?.contains(active)) {
       document.activeElement.blur();
     }
   }
@@ -216,7 +216,7 @@ class CustomADUserCombobox extends Component {
 
   render() {
     return (
-      <div id="test" className={`ad-combobox${this.state.loadingInitial ? ' loading' : ''}`} ref={this.containerRef}>
+      <div className={`ad-combobox${this.state.loadingInitial ? ' loading' : ''}`} ref={this.containerRef}>
         <Combobox
           options={this.state.options}
           multiselect={this.props.multiselect}
@@ -238,6 +238,7 @@ class CustomADUserCombobox extends Component {
           clearButtonAriaLabel="Tyhjennä valinta"
           selectedItemRemoveButtonAriaLabel="Poista valinta {value}"
           toggleButtonAriaLabel="Avaa valikko"
+          required={this.props.required}
         />
       </div>
     );
@@ -249,6 +250,7 @@ CustomADUserCombobox.propTypes = {
   placeholder: PropTypes.string,
   disabled: PropTypes.bool,
   name: PropTypes.string,
+  required: PropTypes.bool,
 }
 
 export default CustomADUserCombobox;
