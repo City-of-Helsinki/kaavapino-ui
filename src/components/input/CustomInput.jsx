@@ -228,31 +228,22 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
     }
   }
 
-  const handleBlur = (event,readonly) => {
-    // Ignore blur only when moving focus to the +/- buttons of the *same* NumberInput
-    if (
-      custom.type === 'number' &&
-      !custom.isFloorAreaForm &&
-      event?.relatedTarget
-    ) {
-      const currentContainer = inputRef.current
-        ? inputRef.current.closest('.NumberInput-module_numberInputContainer__hKNPp')
-        : null;
-      const nextContainer = event.relatedTarget.closest(
-        '.NumberInput-module_numberInputContainer__hKNPp'
-      );
-
-      if (currentContainer && nextContainer && currentContainer === nextContainer) {
-        // Moving from input to its +/- button: keep it as one control.
-        // Refocus the input so that the *next* click outside will blur it and trigger onBlur normally.
-        setTimeout(() => {
-          if (inputRef.current && typeof inputRef.current.focus === 'function') {
-            inputRef.current.focus();
-          }
-        }, 0);
-        return;
-      }
+  const handleNumberWrapperBlur = (event) => {
+    if (event.currentTarget.contains(event.relatedTarget)) {
+      return;
     }
+    // only handle blur when focus leaves the wrapper, not when it moves between the step buttons
+    handleBlur(
+      {
+        ...event,
+        target: { value: input.value },
+        relatedTarget: event.relatedTarget,
+      },
+      readonly.read
+    );
+  };
+
+  const handleBlur = (event,readonly) => {
     let identifier;
     //Chekcs that locked status has more data then inital empty object
     if(lockedStatus && Object.keys(lockedStatus).length > 0){
@@ -527,24 +518,25 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
     return (
       <div className={`text-input${custom.type === 'number' ? ' number-input' : ''}${blurredClass}${hasErrorClass}${networkErrorClass}`}>
         {custom.type === 'number' ? (
-          <NumberInput
-            ref={inputRef}
-            aria-label={input.name}
-            errorText=""
-            fluid="true"
-            {...input}
-            {...restCustom}
-            min={custom.isFloorAreaForm ? 0 : undefined}
-            step={custom.isFloorAreaForm ? null : 1}
-            disabled={isDisabled}
-            onChange={(event) => { handleInputChange(event, readonly.read) }}
-            onBlur={(event) => { handleBlur(event, readonly.read) }}
-            onFocus={() => { handleFocus() }}
-            readOnly={readonly.read || lastSaved?.status === "error" || shouldPassivate}
-            minusStepButtonAriaLabel="Vähennä yhdellä"
-            plusStepButtonAriaLabel="Lisää yhdellä"
-            required={required}
-          />
+          <div onBlur={handleNumberWrapperBlur}>{/* NOSONAR */}
+            <NumberInput
+              ref={inputRef}
+              aria-label={input.name}
+              errorText=""
+              fluid="true"
+              {...input}
+              {...restCustom}
+              min={custom.isFloorAreaForm ? 0 : undefined}
+              step={custom.isFloorAreaForm ? null : 1}
+              disabled={isDisabled}
+              onChange={(event) => { handleInputChange(event, readonly.read) }}
+              onFocus={() => { handleFocus() }}
+              readOnly={readonly.read || lastSaved?.status === "error" || shouldPassivate}
+              minusStepButtonAriaLabel="Vähennä yhdellä"
+              plusStepButtonAriaLabel="Lisää yhdellä"
+              required={required}
+            />
+          </div>
         ) : (
           <TextInput
             ref={inputRef}
