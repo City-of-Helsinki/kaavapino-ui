@@ -762,7 +762,7 @@ class ProjectEditPage extends Component {
               showSection={this.state.showSection}
             />
           </nav>
-          <div id={`title-${title}`} className='project-input-right'>
+          <form id={`title-${title}`} className='project-input-right'>
             {this.state?.showSection &&
             <div className='sticky-title'>
               <h2 id="edit-form-section-title" className='section-title'>
@@ -828,7 +828,7 @@ class ProjectEditPage extends Component {
                 showTimetableForm={this.props.showTimetableForm}
               />
             )}
-          </div>
+          </form>
         </div>
       </div>
     )
