@@ -13,8 +13,13 @@ export function createDeadlines(deadlines, monthsMeta = []) {
   if (deadlinesHaveErrors(deadlines)) {
     return { deadlines: null, error: true }
   }
-  const monthDatesArray = buildMonthDatesArray(monthsMeta)
-  return createStartAndEndPoints(monthDatesArray, cleanDeadlines(deadlines))
+  const cleanedDeadlines = cleanDeadlines(deadlines)
+  let monthDatesArray = buildMonthDatesArray(monthsMeta)
+  monthDatesArray = createStartAndEndPoints(monthDatesArray, cleanedDeadlines)
+  monthDatesArray = fillGaps(monthDatesArray, cleanedDeadlines)
+  monthDatesArray = createMilestones(monthDatesArray, cleanedDeadlines)
+  monthDatesArray = fillMilestoneGaps(monthDatesArray)
+  return markColorTransitions(monthDatesArray)
 }
 
 const buildMonthDatesArray = monthsMeta => {
@@ -175,10 +180,10 @@ function createStartAndEndPoints(inputMonths, deadlines) {
   }
 
   // Only process deadlines for phases that actually overlap with visible range
-  const monthDates = processOverlappingDeadlines(deadlines, overlappingPhases, inputMonths, visibleStart, visibleEnd)
-  return fillGaps(monthDates, deadlines)
+  return processOverlappingDeadlines(deadlines, overlappingPhases, inputMonths, visibleStart, visibleEnd)
 }
 
+// Helper function to process deadlines for overlapping phases and add start/end markers to monthDates
 function processOverlappingDeadlines(deadlines, overlappingPhases, inputMonths, visibleStart, visibleEnd) {
 
   const buildMonthDateObject = (deadline, deadline_types, deadline_length, not_last_end_point) => ({
@@ -241,114 +246,86 @@ function processOverlappingDeadlines(deadlines, overlappingPhases, inputMonths, 
   return monthDates;
 }
 
+
 /**
- * @desc fills gaps between start and end points with mid points with the same key
+ * @desc Fills in gaps between start and end points of phases
  * @param inputMonths - array that contains months
  * @param deadlines - deadlines returned from api
- * @return function
+ * @return modified month array with gaps filled
  */
 function fillGaps(inputMonths, deadlines) {
   if (!inputMonths || !deadlines) {
     return { deadlines: null, error: true }
   }
-  let monthDates = inputMonths
-  let deadlineAbbreviation = null
-  let color_code = null
-  let phase_name = null
-  let deadlineLength = 2
-  let deadlinePropAbbreviation = null
-  let monthDateIndex = null
-  const has = Object.prototype.hasOwnProperty
-  let has_endpoint_in_range = false;
-  for (let i = 0; i < monthDates.length; i++) {
-    for (const prop in monthDates[i]) {
-      if (has.call(monthDates[i], prop)) {
-        if (Object.keys(monthDates[i]).length < 4) {
-          if (Array.isArray(monthDates[i][prop].deadline_type)) {
-            has_endpoint_in_range = true;
-            if (monthDates[i][prop].deadline_type[0] === 'phase_start' || monthDates[i][prop].deadline_type[0] === 'past_start_point') {
-              deadlineAbbreviation = monthDates[i][prop].abbreviation
-              color_code = monthDates[i][prop].color_code
-              phase_name = monthDates[i][prop].phase_name
-              deadlinePropAbbreviation = prop
-              monthDateIndex = i
-            } else if (monthDates[i][prop].deadline_type[0] === 'phase_end') {
-              if (monthDates[monthDateIndex]) {
-                monthDates[monthDateIndex][
-                  deadlinePropAbbreviation
-                ].deadline_length = deadlineLength
-              }
-              deadlineAbbreviation = null
-              color_code = null
-              phase_name = null
-              deadlineLength = 2
-              monthDateIndex = null
-            }
-          } else if (deadlineAbbreviation && Object.keys(monthDates[i]).length < 3) {
-            deadlineLength++
-            monthDates[i].midpoint = {
-              abbreviation: deadlineAbbreviation,
-              deadline_type: ['mid_point'],
-              color_code: color_code,
-              phase_name: phase_name
-            }
-          }
-        } else {
-          if (Array.isArray(monthDates[i][prop].deadline_type)) {
-            has_endpoint_in_range = true;
-            if (monthDates[i][prop].deadline_type[0] === 'phase_start' || monthDates[i][prop].deadline_type[0] === 'past_start_point') {
-              deadlineAbbreviation = monthDates[i][prop].abbreviation
-              color_code = monthDates[i][prop].color_code
-              phase_name = monthDates[i][prop].phase_name
-              deadlinePropAbbreviation = prop
-              monthDateIndex = i
-            } else {
-              if (monthDates[monthDateIndex]) {
-                monthDates[monthDateIndex][
-                  deadlinePropAbbreviation
-                ].deadline_length = deadlineLength
-              }
-              deadlineAbbreviation = null
-              color_code = null
-              phase_name = null
-              monthDateIndex = null
-              deadlineLength = 2
-            }
-          }
-        }
-        // Dont round out last milestone item
-        if (i === monthDates.length - 1) {
-          if (monthDates[monthDateIndex]) {
-            monthDates[monthDateIndex][
-              deadlinePropAbbreviation
-            ].deadline_length = deadlineLength
-          }
-        }
-      }
+  let monthDates = structuredClone(inputMonths)
+  const currentPhase = { abbreviation: null, color_code: null, phase_name: null, startIndex: null }
+  const resetCurrentPhase = () => 
+    Object.assign(currentPhase, { abbreviation: null, color_code: null, phase_name: null, startIndex: null })
+  const commitPhaseLength = (monthDates) => {
+    if (monthDates[currentPhase.startIndex]) {
+      monthDates[currentPhase.startIndex][currentPhase.abbreviation].deadline_length = deadlineLength
     }
   }
+  let deadlineLength = 2
+  let has_endpoint_in_range = false;
+  for (let i = 0; i < monthDates.length; i++) {
+    const monthDate = monthDates[i];
+    const phaseEndPoints = Object.values(monthDate).filter(value => value?.deadline_type);
+    
+    if (!phaseEndPoints.length && currentPhase.abbreviation) {
+      deadlineLength++;
+      monthDate.midpoint = {
+        abbreviation: currentPhase.abbreviation,
+        deadline_type: ['mid_point'],
+        color_code: currentPhase.color_code,
+        phase_name: currentPhase.phase_name
+      };
+      continue;
+    }
+
+    for (const phaseEndPoint of phaseEndPoints) {
+      has_endpoint_in_range = true;
+      if (phaseEndPoint.deadline_type.includes('phase_start') || phaseEndPoint.deadline_type.includes('past_start_point')) {
+        currentPhase.abbreviation = phaseEndPoint.abbreviation;
+        currentPhase.color_code = phaseEndPoint.color_code;
+        currentPhase.phase_name = phaseEndPoint.phase_name;
+        currentPhase.startIndex = i;
+        continue;
+      }
+      // Reached an phase ending endpoint
+      commitPhaseLength(monthDates);
+      resetCurrentPhase();
+      deadlineLength = 2;
+    }
+  }
+  // Set length for any phase that continues till the end of visible range
+  commitPhaseLength(monthDates);
 
   // Special case: no phase start/endpoints are in visible range
   if (!has_endpoint_in_range) {
-    // Use buildPhaseTimeline and findActivePhaseAtDate to get the correct active phase
-    const phases = buildPhaseTimeline(deadlines)
-    const visibleStart = getSlotDate(monthDates[0])
-    const activePhase = findActivePhaseAtDate(phases, visibleStart)
-    
-    if (activePhase) {
-      for (let i = 0; i < monthDates.length; i++) {
-        monthDates[i].midpoint = {
-          abbreviation: activePhase.startDeadline?.deadline?.abbreviation,
-          deadline_type: ['mid_point'],
-          color_code: activePhase.color_code,
-          phase_name: activePhase.phase_name
-        }
+    fillGapsForWithNoEndpoints(inputMonths, deadlines)
+  }
+  return monthDates
+}
+
+// Helper function to fill gaps when there are no start/end points in the visible range (e.g. very long phases)
+function fillGapsForWithNoEndpoints(inputMonths, deadlines) {
+  const phases = buildPhaseTimeline(deadlines)
+  const visibleStart = getSlotDate(inputMonths[0])
+  const activePhase = findActivePhaseAtDate(phases, visibleStart)
+  
+  if (activePhase) {
+    for (const element of inputMonths) {
+      element.midpoint = {
+        abbreviation: activePhase.startDeadline?.deadline?.abbreviation,
+        deadline_type: ['mid_point'],
+        color_code: activePhase.color_code,
+        phase_name: activePhase.phase_name
       }
     }
   }
-
-  return createMilestones(monthDates, deadlines)
 }
+
 /**
  * @desc checks for milestones in deadlines adds them to the month object
  * @param inputMonths - array that contains months
@@ -381,7 +358,7 @@ function createMilestones(inputMonths, deadlines) {
       }
     }
   })
-  return fillMilestoneGaps(monthDates)
+  return monthDates
 }
 /**
  * @desc fills gaps between different types of milestones
@@ -435,7 +412,7 @@ function fillMilestoneGaps(inputMonths) {
       milestoneSpace++
     }
   }
-  return markColorTransitions(monthDates)
+  return monthDates
 }
 
 /**
