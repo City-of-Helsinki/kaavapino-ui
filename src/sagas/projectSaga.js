@@ -824,15 +824,16 @@ function* saveProjectFloorArea() {
       yield put(setSubmitSucceeded(EDIT_FLOOR_AREA_FORM))
       yield put(saveProjectFloorAreaSuccessful(true))
       yield put(setAllEditFields())
-
-      toastr.success(i18.t('messages.timelines-successfully-saved'), '', {
+      toastr.success(i18.t('messages.floorarea-successfully-saved'), '', {
           showCloseButton: false,
-          closeOnToastrClick: true,
+          closeOnToastrClick: false,
+          removeOnHover: false,
+          timeOut: 5000,
         icon: <IconCheckCircleFill />
       })
       const net = yield select(projectNetworkSelector)
       if (net?.status === 'error') {
-        yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: i18.t('messages.timelines-successfully-saved') } })
+        yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: i18.t('messages.floorarea-successfully-saved') } })
         yield delay(5000)
         yield put({ type: RESET_NETWORK_STATUS })
       }

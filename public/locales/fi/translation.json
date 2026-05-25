@@ -187,7 +187,7 @@
     "min-distance": "Valitse myöhempi päivä, koska tämä on liian lähellä edellistä etappia.",
     "max-distance": "Valitse aikaisempi päivä, koska tämä on liian lähellä seuraavaa etappia.",
     "check-timetable": "Tekemäsi aikataulumuutos vaikuttaa myöhempiin vaiheisiin. Siirrä myöhempiä vaiheita eteenpäin, jotta saat koko aikataulun ajantasalle.",
-    "timelines-successfully-saved": "Kerrosalatiedot tallennettu onnistuneesti",
+    "floorarea-successfully-saved": "Kerrosalatiedot tallennettu onnistuneesti",
     "required-fields-filled-header":"Pakolliset kentät täytetty",
     "starting-phase-required-fields-filled-text":"Täytä muutkin projektissasi tarvittavat kentät ja merkitse aikatauluun käynnistysvaiheen päivämäärät. Sen jälkeen voit lopettaa vaiheen.",
     "middle-phase-required-fields-filled-text":"Täytä muutkin projektissasi tarvittavat kentät ja pyydä sitten kaavoitussihteeriä vahvistamaan vaiheen aikataulu. Sen jälkeen voit siirtyä lataamaan dokumentteja.",
