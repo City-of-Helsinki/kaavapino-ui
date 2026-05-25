@@ -91,7 +91,6 @@ class ProjectEditPage extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-
     if (
       (prevProps.showFloorAreaForm && !this.props.showFloorAreaForm) ||
       (prevProps.showTimetableForm?.showTimetable && !this.props.showTimetableForm?.showTimetable)
@@ -103,7 +102,7 @@ class ProjectEditPage extends Component {
       this.scroll();
     }
     this.headings = this.createHeadings()
-    if(prevState.errorFields != this.state.errorFields){
+    if(prevState.errorFields !== this.state.errorFields){
       if(this.state.errorFields.length > 0){
         this.errorField.current?.focus();
       }
@@ -112,33 +111,20 @@ class ProjectEditPage extends Component {
       //get updated project data when moving to next phase
       globalThis.location.reload(true);
     }
-    if(prevProps.schema != this.props.schema){
-      if(this.props.schema?.phases){
-        const currentSchemaIndex = this.props.schema?.phases.findIndex(s => s.id === schemaUtils.getSelectedPhase(this.props.location.search,this.props.selectedPhase))
-        const currentSchema = this.props.schema?.phases[currentSchemaIndex]
-        const field = schemaUtils.getDocumentUrlField(this.props.location.search)
-        const section = schemaUtils.getDocumentUrlSection(this.props.location.search)
-        //Get number of fields for filter component
-        if(currentSchema?.sections){
-          this.setState({fields:currentSchema.sections})
-          if(field && section){
-            const index = currentSchema.sections.findIndex(sect => sect.title === section);
-            this.setState({documentIndex:index})
-            this.setState({urlField:field})
-          }
-        }
-      }
+    if(prevProps.schema !== this.props.schema){
+      this.onSchemaChange(this.props.schema)
     }
-    if(prevProps.formValues != this.props.formValues){
-      if(prevProps.formValues?.projektin_kaynnistys_pvm != this.props.formValues?.projektin_kaynnistys_pvm){
-        // Only fetch disabled dates if not already loaded (large response)
-        if (!this.props.disabledDates || Object.keys(this.props.disabledDates).length === 0) {
-          this.fetchDisabledDates(this.props.formValues?.projektin_kaynnistys_pvm,this.props.formValues?.projektin_kaynnistys_pvm)
-        }
+    if(prevProps.formValues !== this.props.formValues &&
+      prevProps.formValues?.projektin_kaynnistys_pvm !== this.props.formValues?.projektin_kaynnistys_pvm
+    ){
+      // Only fetch disabled dates if not already loaded (large response)
+      if (!this.props.disabledDates || Object.keys(this.props.disabledDates).length === 0) {
+        this.fetchDisabledDates(this.props.formValues?.projektin_kaynnistys_pvm)
       }
     }
   }
   componentDidMount() {
+    document.title = "Kaavapino - " + this.props.project.name;
     this.props.switchDisplayedPhase(this.props.currentProject.phase)
     localStorage.removeItem("changedValues")
     window.addEventListener('resize', this.handleResize)
@@ -174,6 +160,29 @@ class ProjectEditPage extends Component {
     this.unlockFields()
     this.props.clearSchemas()
     window.removeEventListener('resize', this.handleResize)
+    if (document.title === "Kaavapino - " + this.props.project.name) {
+      document.title = "Kaavapino";
+    }
+  }
+
+  onSchemaChange = (newSchema) => {
+    if (!newSchema?.phases) {
+      return
+    }
+    const currentSchemaIndex = newSchema.phases.findIndex(
+      s => s.id === schemaUtils.getSelectedPhase(this.props.location.search,this.props.selectedPhase)
+    )
+    const currentSchema = newSchema.phases[currentSchemaIndex]
+    const field = schemaUtils.getDocumentUrlField(this.props.location.search)
+    const section = schemaUtils.getDocumentUrlSection(this.props.location.search)
+    //Get number of fields for filter component
+    if(currentSchema?.sections){
+      this.setState({fields:currentSchema.sections})
+      if(field && section){
+        const index = currentSchema.sections.findIndex(sect => sect.title === section);
+        this.setState({documentIndex:index, urlField:field})
+      }
+    }
   }
 
   scroll() {
@@ -195,8 +204,8 @@ class ProjectEditPage extends Component {
     }
   }
 
-  fetchDisabledDates = (startDate,endDate) => {
-    const endDateObj = new Date(endDate);
+  fetchDisabledDates = (startDate) => {
+    const endDateObj = new Date(startDate);
     endDateObj.setFullYear(endDateObj.getFullYear() + 20);
     const newEndDate = endDateObj.toISOString().split('T')[0];
 
@@ -383,13 +392,18 @@ class ProjectEditPage extends Component {
       return ''
     }
 
-    const grouped = errorFields.reduce((acc,err) => { const group = err.title || 'Muut'; if(!acc[group]) acc[group] = []; acc[group].push(err); return acc; }, {})
+    const grouped = errorFields.reduce((acc,err) => {
+      const group = err.title || 'Muut';
+      acc[group] = acc[group] || [];
+      acc[group].push(err);
+      return acc;
+    }, {})
     return (
       <div ref={this.errorField} className='required-fields-container'>
         <Notification id='required-fields-notification' label='Lomakkeelta puuttuu pakollisia tietoja' type="error" style={{marginTop: 'var(--spacing-s)'}}>
           {Object.entries(grouped).map(([groupTitle, errors]) => (
             <div key={groupTitle} className='error-group'>
-              <div className='error-group-header' role="heading" aria-level="3">{groupTitle}</div>
+              <div className='error-group-header'>{groupTitle}</div>
               <ul>
                 {errors.map((error,index) => (
                   <li key={error.errorSection + error.errorField}>
@@ -562,7 +576,7 @@ class ProjectEditPage extends Component {
     // Extract 'esillaolo/nahtavillaolo' from fieldAnchorKey
     const nahtavillaoresilla = matchedDeadline?.deadline?.phase_name === "Ehdotus" ? 'nahtavillaolokerta' : 'esillaolokerta';
     //Voimaantulo and Hyväksyminen phases are bit different and need own extra check
-    const specialPhases = matchedDeadline?.deadline?.phase_name === "Hyväksyminen" ? 'hyvaksyminen_1' : matchedDeadline?.deadline?.phase_name === "Voimaantulo" ? 'voimaantulo_1' : false;
+    const specialPhases = {"Hyväksyminen": "hyvaksyminen_1", "Voimaantulo": "voimaantulo_1"}[matchedDeadline?.deadline?.phase_name] || false;
     const esillaoloOrLautakunta = error.fieldAnchorKey?.includes('esillaolo') ? nahtavillaoresilla : specialPhases || 'lautakuntakerta';
     const anchorKeyWithSuffix = esillaoloOrLautakunta + fieldSuffix;
     //Special case for Voimaantulo phase where some of 4 fields needs to be filled and are not marked required on Excel level
@@ -668,18 +682,20 @@ class ProjectEditPage extends Component {
     return (
       <div className='project-page-container'>
         {!this.state.isMobile && (
-          <button
-            type="button"
-            className="timeline"
-            onClick={() => this.showTimelineModal(true)}
-          >
-            <ProjectTimeline
-              deadlines={currentProject.deadlines}
-              projectView={true}
-              onhold={currentProject.onhold}
-              attribute_data={attribute_data}
-            />
-          </button>
+          <section aria-label={t('project.timeline')}>
+            <button
+              type="button"
+              className="timeline"
+              onClick={() => this.showTimelineModal(true)}
+            >
+              <ProjectTimeline
+                deadlines={currentProject.deadlines}
+                projectView={true}
+                onhold={currentProject.onhold}
+                attribute_data={attribute_data}
+              />
+            </button>
+          </section>
         )}
         {currentProject.phase_documents_creation_started === true &&
           currentProject.phase_documents_created === false && (
@@ -704,7 +720,7 @@ class ProjectEditPage extends Component {
         {this.renderErrorNotifications()}
         <div aria-hidden="true" className="block-div"></div>
         <div className={`project-input-container ${highlightGroup}`}>
-          <div className="project-input-left">
+          <nav className="project-input-left">
             <QuickNav
               changingPhase={changingPhase}
               currentPhases={currentPhases}
@@ -745,11 +761,11 @@ class ProjectEditPage extends Component {
               isTheResponsiblePerson={isTheResponsiblePerson}
               showSection={this.state.showSection}
             />
-          </div>
+          </nav>
           <div id={`title-${title}`} className='project-input-right'>
             {this.state?.showSection &&
             <div className='sticky-title'>
-              <h2 className='section-title'>
+              <h2 id="edit-form-section-title" className='section-title'>
                 {title}
               </h2>
               <div className='section-ingress'>

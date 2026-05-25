@@ -34,7 +34,7 @@ function ProjectTimeline(props) {
     11: t('deadlines.months.dec')
   }
   useEffect(() => {
-    if (!deadlines || !deadlines.length) {
+    if (!deadlines?.length) {
       setDrawItems([])
       setDrawMonths([])
       setColumnCount(0)
@@ -42,14 +42,14 @@ function ProjectTimeline(props) {
     }
     const mergedDeadlines = mergeDeadlinesWithAttributes(deadlines, attribute_data)
     const filteredDeadlines = filterVisibleDeadlines(mergedDeadlines, attribute_data)
-    if (!filteredDeadlines || !filteredDeadlines.length) {
+    if (!filteredDeadlines?.length) {
       setDrawItems([])
       setDrawMonths([])
       setColumnCount(0)
       return
     }
     if (!projectView) {
-      const months = createMonths(filteredDeadlines)
+      const months = createMonths()
       const columns = createDrawMonths(months.months)
       setColumnCount(columns)
     }
@@ -73,7 +73,6 @@ function ProjectTimeline(props) {
     if (!deadlineArray.length || !Object.keys(sourceAttributes).length) {
       return deadlineArray
     }
-    const overrides = []
     const merged = deadlineArray.map((deadline, index) => {
       const attributeKey = deadline?.deadline?.attribute || deadline?.deadline?.name
       if (!attributeKey) {
@@ -91,21 +90,15 @@ function ProjectTimeline(props) {
         ...deadline,
         date: normalizedValue
       }
-      overrides.push({
-        attribute: attributeKey,
-        newDate: normalizedValue,
-        originalDate: deadlineArray[index]?.date
-      })
       return updatedDeadline
     })
     return merged
   }
 
-  function createNowMarker(week, weeksInMonth) {
-    const totalWeeks = weeksInMonth || 5
-    const normalizedWeek = Math.min(Math.max(week, 1), totalWeeks)
+  function createNowMarker(week, weeksInMonth = 5) {
+    const normalizedWeek = Math.min(Math.max(week, 1), weeksInMonth)
     let nowMarker = []
-    for (let i = 1; i <= totalWeeks; i++) {
+    for (let i = 1; i <= weeksInMonth; i++) {
       if (i === normalizedWeek) {
         nowMarker.push(
           <div key={i} className="now-marker">
@@ -120,7 +113,7 @@ function ProjectTimeline(props) {
   }
   
   function createDrawMonths(months) {
-    if (!months || !months.length) {
+    if (!months?.length) {
       setDrawMonths([])
       return 0
     }
@@ -128,8 +121,7 @@ function ProjectTimeline(props) {
     const nowDate = dayjs()
     const nowKey = `${nowDate.year()}-${nowDate.month()}`
     let totalColumns = 0
-    for (let i = 0; i < months.length; i++) {
-      const monthData = months[i]
+    for (const monthData of months) {
       const weeks = monthData?.weeks || 5
       const date = dayjs()
         .year(monthData.year)
@@ -139,7 +131,7 @@ function ProjectTimeline(props) {
       const showNowMarker = monthData.date === nowKey
       drawableMonths.push(
         <div
-          key={`${monthData.date}-${i}`}
+          key={`${monthData.date}-month`}
           className="timeline-month"
           style={{ gridColumn: `span ${weeks}` }}
         >
@@ -208,7 +200,8 @@ function ProjectTimeline(props) {
           <div
             key={`${item.abbreviation}-${loopIndex}`}
             style={{
-              background: item.color_code
+              background: item.color_code,
+              borderTop: '1px solid $color-black-90'
             }}
             className={midClass}
           >
@@ -325,12 +318,12 @@ function ProjectTimeline(props) {
           }
           if (!rendered) {
             drawableItems.push(
-              <div className="timeline-item" key={`space-${i}`} />
+              <div className="timeline-item" key={`space-${i}`} style={{ border: "none" }}/>
             )
           }
         } else {
           drawableItems.push(
-            <div className="timeline-item" key={`${monthDates[i].abbreviation}-${i}`} /> // space
+            <div className="timeline-item" key={`${monthDates[i].abbreviation}-${i}`} style={{ border: "none" }} /> // space
           )
         }
       }
@@ -345,6 +338,7 @@ function ProjectTimeline(props) {
     if (monthDates) {
       if (propertyIndex <= 1) {
         if (monthDates[index]) {
+          const square_color = monthDates[index].midpoint?.phase_name === "Tarkistettu ehdotus" ? "white" : "black";
           monthDates[index].milestone_types.forEach(milestone_type => {
             switch (milestone_type) {
               case 'dashed_start':
@@ -359,14 +353,13 @@ function ProjectTimeline(props) {
                   )
                 }
                 milestoneType.push(
-                  <div key={listKey++} className="milestone-icon square white" />,
-                  <div key={listKey++} className="milestone-icon square second white" />
+                  <div key={listKey++} className={`milestone-icon square ${square_color}`} />,
+                  <div key={listKey++} className={`milestone-icon square second ${square_color}`} />
                 )
                 break
               case 'dashed_mid':
                 milestoneType.push(
-                  <div key={listKey++} className="milestone-icon square white" />,
-                  <div key={listKey++} className="milestone-icon square second white" />
+                  <div key={listKey++} className={`milestone-icon square ${square_color}`} />,
                 )
                 break
               case 'dashed_end':
@@ -443,15 +436,12 @@ function ProjectTimeline(props) {
   }
 
   function createTimelineItems(timelineDeadlines) {
-    const months = createMonths(timelineDeadlines)
-    const deadlineArray = createDeadlines(timelineDeadlines, months.months)
-    if (months.error) {
-      console.warn('Error in timeline months:', {
-        monthsError: months.error,
-      });
+    if (!timelineDeadlines?.[0]?.date) {
       setShowError(true);
     }
-    else if (deadlineArray.error) {
+    const months = createMonths()
+    const deadlineArray = createDeadlines(timelineDeadlines, months.months)
+    if (deadlineArray.error) {
       for (let dl of timelineDeadlines) {
         if (dl?.is_under_min_distance_next || dl?.is_under_min_distance_previous || dl?.out_of_sync) {
           console.warn("Deadline error:",dl);

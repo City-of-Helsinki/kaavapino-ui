@@ -335,7 +335,11 @@
     "add-new-review": "Lisää nähtävilläolo",
     "adding":"Lisätään",
     "saving":"Tietoja tallennetaan",
-    "deleting":"Poistetaan"
+    "deleting":"Poistetaan",
+    "edit-tools": "Projektin työkalut",
+    "filters": "Suodattimet",
+    "edit-filters": "Muokkaa suodattimia",
+    "remove-filters": "Poista kaikki valinnat"
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}",

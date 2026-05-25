@@ -138,23 +138,6 @@ class ProjectPage extends Component {
     }
   }
 
-  getRouteItems = () => {
-    const { currentProject, edit, documents, t } = this.props
-    const path = [
-      { value: t('project.projects'), path: '/projects' },
-      { value: `${currentProject.name}`, path: `/projects/${currentProject.id}` }
-    ]
-    if (edit) {
-      path.push({ value: t('project.modify'), path: `/projects/${currentProject.id}/edit` })
-    } else if (documents) {
-      path.push({
-        value: t('project.documents'),
-        path: `/projects/${currentProject.id}/documents`
-      })
-    }
-    return path
-  }
-
   getCurrentPhases() {
     let { currentProject, phases } = this.props
     const { type, subtype } = currentProject
@@ -182,7 +165,6 @@ class ProjectPage extends Component {
     return (
       <div key="edit">
         <NavHeader
-          routeItems={this.getRouteItems()}
           title={currentProject.name}
           projectSize={currentProject.attribute_data.kaavaprosessin_kokoluokka}
           responsibleUser={user}
@@ -232,7 +214,6 @@ class ProjectPage extends Component {
     return (
       <div key="documents">
         <NavHeader
-          routeItems={this.getRouteItems()}
           title={currentProject.name}
           infoOptions={this.getAllChanges()}
           location={this.props.location}
@@ -277,7 +258,6 @@ class ProjectPage extends Component {
     return (
       <div key="project-card">
         <NavHeader
-          routeItems={this.getRouteItems()}
           title={currentProject.name}
           actions={this.getProjectCardNavActions(isUserExpert)}
           infoOptions={this.getAllChanges()}
@@ -425,8 +405,8 @@ class ProjectPage extends Component {
           size="small"
           className='edit-view-select'
           id="editNavSelect"
-          placeholder='Projektin työkalut'
-          value='Projektin työkalut'
+          placeholder={t('project.edit-tools')}
+          value={t('project.edit-tools')}
           options={options}
           onChange={this.changeOptions}
           disabled={editViewLoading}
@@ -525,12 +505,7 @@ class ProjectPage extends Component {
     const { t } = this.props
     return (
       <div className="project-container">
-        <NavHeader
-          routeItems={[
-            { value: 'Kaavaprojektit', path: '/projects' },
-            { value: '', path: '/' }
-          ]}
-        />
+        <NavHeader/>
         <div className="project-page-content">
           <LoadingSpinner className="loader-icon" theme={{ '--spinner-color': '#0000BF' }}>{t('loading')}</LoadingSpinner>
         </div>
@@ -582,11 +557,6 @@ class ProjectPage extends Component {
       <>
         <Header
           title={currentProject?.name}
-          modifyProject={true}
-          showPrintProjectData={true}
-          resetDeadlines={true}
-          openModifyProject={this.showModifyProject}
-          openPrintProjectData={this.showProjectData}
           resetProjectDeadlines={this.onResetProjectDeadlines}
           pollConnection={this.pollConnection}
           currentSection={this.state.sectionIndex}
@@ -595,9 +565,9 @@ class ProjectPage extends Component {
         {(loading || resettingDeadlines) && this.renderLoading()}
         {!loading && !resettingDeadlines && (
           <div className="project-container">
-            <div className="project-page-content">
+            <main className="project-page-content" id="main">
               {this.getProjectPageContent(userIsExpert,isResponsible,isTheResponsiblePerson, editViewLoading)}
-            </div>
+            </main>
           </div>
         )}
       </>
