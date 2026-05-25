@@ -11,7 +11,7 @@ const generateMockArkipäivät = () => {
             const date = String(currentDate.getDate()).padStart(2, '0');
             dates.push(`${year}-${month}-${date}`);
         }
-        currentDate.setDate(currentDate.getDate() + 1);
+        currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1);
     }
     return dates;
 }
@@ -31,7 +31,7 @@ const generateMockTyöpäivät = () => {
             const year = currentDate.getFullYear();
             dates.push(`${year}-${month}-${date}`);
         }
-        currentDate.setDate(currentDate.getDate() + 1);
+        currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1);
     }
     return dates;
 }
@@ -49,7 +49,7 @@ const generateMockLautakuntapäivät = () => {
             const date = String(currentDate.getDate()).padStart(2, '0');
             dates.push(`${year}-${month}-${date}`);
         }
-        currentDate.setDate(currentDate.getDate() + 1);
+        currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1);
     }
     return dates;
 }
