@@ -90,10 +90,10 @@ function CustomMap({
     <div className="map-area">
       <div className="geometry-input-container">
         <Grid columns="equal" className="full-width">
-          <Grid.Column width={6}>
+          <Grid.Column width={4}>
             <h2>{t('map-area.title')}</h2>
           </Grid.Column>
-          <Grid.Column width={4}>
+          <Grid.Column width={6}>
             {isEmpty(mapData) && (
               <span className="loading-info">
                 <LoadingSpinner

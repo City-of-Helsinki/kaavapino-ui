@@ -187,6 +187,9 @@ ul {
   border-radius: 0;
   padding: $size16 $size24 $size24 $size24;
   margin-top: 0;
+  h2 {
+    font-size: $size18 !important;
+  }
 }
 
 .input-container {
