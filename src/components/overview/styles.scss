@@ -1,8 +1,11 @@
 .overview {
-  margin: 0 auto;
+  margin: 120px auto 20px auto;
   max-width: 1200px;
   width: calc(100% - 32px);
-  margin-bottom: 20px;
+  
+  .nav-header-content {
+    margin-top: 0px !important;
+  }
 
   .projects-size {
     min-height: 300px;
