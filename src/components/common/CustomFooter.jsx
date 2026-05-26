@@ -14,27 +14,31 @@ class CustomFooter extends Component {
 
   renderHeader = header => {
      return (
-        <div className="align-left">
+      <>
         <Footer.Item
           as="span"
           onClick={function noRefCheck() {}}
         />
         {this.renderFooterLinks(header.links)}
-      </div>
+      </>
     )
   }
   renderFooterLinks = links => {
     const returnValue = []
     links.forEach( link => {
       if(link.link_text !== "Anna palautetta"){
+        // Each item is in its own group to include HDS-hard-coded h3 tag
+        // Refactor when upgrading to newer HDS version
         returnValue.push(
-          <Footer.Item
-            as="a"
-            href={link.url}
-            label={link.link_text}
-            onClick={function noRefCheck() {}}
-            key={link.url}
-          />
+          <Footer.ItemGroup>
+            <Footer.Item
+              as="a"
+              href={link.url}
+              label={link.link_text}
+              onClick={function noRefCheck() {}}
+              key={link.url}
+            />
+          </Footer.ItemGroup>
         )
       }
     })
@@ -64,9 +68,9 @@ class CustomFooter extends Component {
     if ( !this.props.footerData || !isArray( this.props.footerData )) {
         return null
     }
-   this.props.footerData.forEach(current => {
+    this.props.footerData.forEach(current => {
       returnValue.push(
-          <Footer.ItemGroup key={current.title}>{this.renderHeader(current)}</Footer.ItemGroup>
+          <div key={current.title} className="align-left">{this.renderHeader(current)}</div>
       )
     })
 
@@ -79,11 +83,11 @@ class CustomFooter extends Component {
     if ( !this.props.footerData || !isArray( this.props.footerData )) {
         return null
     }
-   this.props.footerData.forEach(current => {
+    this.props.footerData.forEach(current => {
       returnValue.push(this.renderFeedbackLink(current.links))
     })
     return returnValue
-    }
+  }
 
   renderTitle = () => {
     const {t} = this.props
