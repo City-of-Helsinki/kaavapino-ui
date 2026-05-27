@@ -362,6 +362,7 @@
     "save-help": "Tallentaa projektin",
     "end-phase": "Lopeta vaihe",
     "end-phase-help": "Yrittää lopettaa vaiheen",
+    "end-or-pause-phase": "Vaiheen päättäminen tai keskeyttäminen",
     "archive": "Arkistoi projekti",
     "archive-help": "Yrittää arkistoida projektin",
     "onhold-lable": "Projekti on toistaiseksi keskeytynyt",
