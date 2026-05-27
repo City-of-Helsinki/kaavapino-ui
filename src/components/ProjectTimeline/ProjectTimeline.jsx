@@ -173,11 +173,7 @@ function ProjectTimeline(props) {
             }}
             className={startClass}
           >
-            <span
-              className={`deadline-name-${
-                startItem.deadline_length > 4 ? 'over' : 'inside'
-              }`}
-            >
+            <span className="deadline-name-over">
               {startItem.phase_name}
             </span>
             {monthDates[loopIndex].milestone
@@ -250,11 +246,7 @@ function ProjectTimeline(props) {
             }}
             className="timeline-item first last"
           >
-            <span
-              className={`deadline-name-${
-                monthDates[loopIndex][property].deadline_length > 4 ? 'inside' : 'over'
-              }`}
-            >
+            <span className="deadline-name-over">
               {monthDates[loopIndex][property].phase_name}
             </span>
             {monthDates[loopIndex].milestone ? createMilestoneItem(loopIndex, propI) : ''}
@@ -278,11 +270,7 @@ function ProjectTimeline(props) {
             }}
             className={pastClass}
           >
-            <span
-              className={`deadline-name-${
-                pastItem.deadline_length > 4 ? 'over' : 'inside'
-              }`}
-            >
+            <span className="deadline-name-over">
               {pastItem.phase_name}
             </span>
             {monthDates[loopIndex].milestone

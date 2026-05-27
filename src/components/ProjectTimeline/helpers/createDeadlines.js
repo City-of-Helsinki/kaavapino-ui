@@ -186,13 +186,12 @@ function createStartAndEndPoints(inputMonths, deadlines) {
 // Helper function to process deadlines for overlapping phases and add start/end markers to monthDates
 function processOverlappingDeadlines(deadlines, overlappingPhases, inputMonths, visibleStart, visibleEnd) {
 
-  const buildMonthDateObject = (deadline, deadline_types, deadline_length, not_last_end_point) => ({
+  const buildMonthDateObject = (deadline, deadline_types, not_last_end_point) => ({
     abbreviation: deadline.abbreviation,
     deadline_type: deadline_types,
     phase_id: deadline.phase_id,
     color_code: deadline.phase_color_code,
     phase_name: deadline.phase_name,
-    deadline_length: deadline_length,
     ...(not_last_end_point !== undefined && { not_last_end_point }),
   });
 
@@ -201,12 +200,12 @@ function processOverlappingDeadlines(deadlines, overlappingPhases, inputMonths, 
     const isStartEndCollision = existingMarker?.deadline_type[0] === 'phase_start' && deadline_types[0] === 'phase_end';
     if (isStartEndCollision) {
       // Upgrade existing start to start_end_point
-      monthDates[monthIndex][deadline.abbreviation] = buildMonthDateObject(deadline, ['start_end_point'], 2);
+      monthDates[monthIndex][deadline.abbreviation] = buildMonthDateObject(deadline, ['start_end_point']);
     } else if (!existingMarker) {
       if (deadline_types.includes('phase_start') && deadline_types.includes('phase_end')) {
-        monthDates[monthIndex][deadline.abbreviation] = buildMonthDateObject(deadline, ['start_end_point'], 1);
+        monthDates[monthIndex][deadline.abbreviation] = buildMonthDateObject(deadline, ['start_end_point']);
       } else {
-        monthDates[monthIndex][deadline.abbreviation] = buildMonthDateObject(deadline, deadline_types, 2, not_last_end_point);
+        monthDates[monthIndex][deadline.abbreviation] = buildMonthDateObject(deadline, deadline_types, not_last_end_point);
       }
     }
   }
@@ -238,7 +237,7 @@ function processOverlappingDeadlines(deadlines, overlappingPhases, inputMonths, 
     }
     if (!firstDeadlineProcessed && deadline_types[0] === 'phase_end' && monthIndex !== 0) {
       // Mark the phase as starting before the visible range and ending within it
-      monthDates[0][deadline.abbreviation] = buildMonthDateObject(deadline, ['past_start_point'], 2);
+      monthDates[0][deadline.abbreviation] = buildMonthDateObject(deadline, ['past_start_point']);
     }
     firstDeadlineProcessed = true;
     addStartEndMarkers(monthDates, monthIndex, deadline, deadline_types, deadlineObject.not_last_end_point);
@@ -257,23 +256,15 @@ function fillGaps(inputMonths, deadlines) {
   if (!inputMonths || !deadlines) {
     return { deadlines: null, error: true }
   }
-  let monthDates = structuredClone(inputMonths)
-  const currentPhase = { abbreviation: null, color_code: null, phase_name: null, startIndex: null }
+  const monthDates = structuredClone(inputMonths)
+  const currentPhase = { abbreviation: null, color_code: null, phase_name: null }
   const resetCurrentPhase = () => 
-    Object.assign(currentPhase, { abbreviation: null, color_code: null, phase_name: null, startIndex: null })
-  const commitPhaseLength = (monthDates) => {
-    if (monthDates[currentPhase.startIndex]) {
-      monthDates[currentPhase.startIndex][currentPhase.abbreviation].deadline_length = deadlineLength
-    }
-  }
-  let deadlineLength = 2
+    Object.assign(currentPhase, { abbreviation: null, color_code: null, phase_name: null })
   let has_endpoint_in_range = false;
-  for (let i = 0; i < monthDates.length; i++) {
-    const monthDate = monthDates[i];
+  for (const monthDate of monthDates) {
     const phaseEndPoints = Object.values(monthDate).filter(value => value?.deadline_type);
     
     if (!phaseEndPoints.length && currentPhase.abbreviation) {
-      deadlineLength++;
       monthDate.midpoint = {
         abbreviation: currentPhase.abbreviation,
         deadline_type: ['mid_point'],
@@ -289,17 +280,12 @@ function fillGaps(inputMonths, deadlines) {
         currentPhase.abbreviation = phaseEndPoint.abbreviation;
         currentPhase.color_code = phaseEndPoint.color_code;
         currentPhase.phase_name = phaseEndPoint.phase_name;
-        currentPhase.startIndex = i;
         continue;
       }
       // Reached an phase ending endpoint
-      commitPhaseLength(monthDates);
       resetCurrentPhase();
-      deadlineLength = 2;
     }
   }
-  // Set length for any phase that continues till the end of visible range
-  commitPhaseLength(monthDates);
 
   // Special case: no phase start/endpoints are in visible range
   if (!has_endpoint_in_range) {
