@@ -368,17 +368,12 @@ function fillMilestoneGaps(inputMonths) {
             milestoneDate = monthDate.milestoneDate
             milestoneSpace = 1
             break
-          case 'dashed_end':
-            monthDate.milestone_space = milestoneSpace
-            milestoneType = null
-            milestoneDate = null
-            milestoneSpace = 0
-            break
           case 'inner_start':
             milestoneType = 'inner_mid'
             milestoneDate = monthDate.milestoneDate
             milestoneSpace = 1
             break
+          case 'dashed_end':
           case 'inner_end':
             monthDate.milestone_space = milestoneSpace
             milestoneType = null
@@ -447,10 +442,10 @@ function markColorTransitions(inputMonths) {
     // - It's a phase_start (actual start of phase)
     // - OR there's a real color transition (prevColor exists AND is different)
     // But NOT for past_start_point (continuation from before visible range)
-    if (deadlineType === 'phase_start' || deadlineType === 'start_end_point') {
-      currentItem.is_first = true
-    } else if (deadlineType !== 'past_start_point' && currentColor && prevColor && currentColor !== prevColor) {
-      // Real color transition: previous slot had different color
+    if (
+      (deadlineType === 'phase_start' || deadlineType === 'start_end_point') ||
+      (deadlineType !== 'past_start_point' && currentColor && prevColor && currentColor !== prevColor)
+    ) {
       currentItem.is_first = true
     }
     
@@ -458,10 +453,10 @@ function markColorTransitions(inputMonths) {
     // - It's a phase_end or start_end_point (actual end of phase)
     // - OR there's a real color transition (nextColor exists AND is different)
     // But NOT when phase continues beyond visible range (nextColor is null)
-    if (deadlineType === 'phase_end' || deadlineType === 'start_end_point') {
-      currentItem.is_last = true
-    } else if (currentColor && nextColor && currentColor !== nextColor) {
-      // Real color transition: next slot has different color (not just empty/null)
+    if (
+      (deadlineType === 'phase_end' || deadlineType === 'start_end_point') ||
+      (currentColor && nextColor && currentColor !== nextColor)
+    ) {
       currentItem.is_last = true
     }
   }
