@@ -147,6 +147,7 @@ const Link = props => {
         editRollingField={editRollingField}
         type={"link"}
         phaseIsClosed={props.phaseIsClosed}
+        required={props.required}
       />
       :    
       <>

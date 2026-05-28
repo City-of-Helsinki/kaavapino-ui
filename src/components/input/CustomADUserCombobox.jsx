@@ -37,12 +37,6 @@ class CustomADUserCombobox extends Component {
     document.removeEventListener('keydown', this.handleTabKeyDown);
   }
 
-  getModifiedOption = ({ name, id, email, title }) => {
-    const option = name || email;
-    const label = name && title ? `${name} (${title})` : option;
-    return { label, value: id, email };
-  }
-
   modifyOptions = (options) => {
     const modifiedOptions = [];
 
@@ -150,38 +144,6 @@ class CustomADUserCombobox extends Component {
     }
   };
 
-  loadMoreOptions = async (nextPage) => {
-    if (this.state.loadingMore) return;
-
-    this.setState({ loadingMore: true });
-
-    const { currentQuery } = this.state;
-    const limit = 100;
-    const offset = (nextPage - 1) * limit;
-
-    try {
-      const url =
-        currentQuery && currentQuery !== "*"
-          ? `/v1/personnel/?search=${encodeURIComponent(currentQuery)}&limit=${limit}&offset=${offset}`
-          : `/v1/personnel/?limit=${limit}&offset=${offset}`;
-
-      const response = await axios.get(url);
-      const result = response.data;
-      const modifiedResults = this.modifyOptions(result);
-      const hasMore = result.length === limit;
-
-      this.setState(prev => ({
-        options: [...prev.options, ...modifiedResults],
-        page: nextPage,
-        hasMore,
-        loadingMore: false
-      }));
-    } catch (err) {
-      console.error("loadMoreOptions failed:", err);
-      this.setState({ loadingMore: false });
-    }
-  };
-
   handleChange = (value) => {
     if (value === undefined || Object.is(value, this.loadingPlaceholder))
       return;
@@ -251,6 +213,11 @@ CustomADUserCombobox.propTypes = {
   disabled: PropTypes.bool,
   name: PropTypes.string,
   required: PropTypes.bool,
+  onBlur: PropTypes.func,
+  input: PropTypes.shape({
+    value: PropTypes.any,
+    onChange: PropTypes.func.isRequired
+  }).isRequired
 }
 
 export default CustomADUserCombobox;
