@@ -12,6 +12,9 @@
       .quicknav-header{
         display: flex;
         justify-content: flex-start;
+        #quicknav-header-button:hover, #quicknav-header-button:active{
+          background-color: #ccf;
+        }
         button{
           padding: 0;
           div{
@@ -176,6 +179,12 @@
           padding-bottom: 0;
         }
       }
+
+      span[class*="Button-module_label"] {
+        min-height: 52px;
+        min-width: 95%;
+        padding-left: 4px;
+      }
     }
 
     .quicknav-item::after{
@@ -204,11 +213,37 @@
       border-left-color: transparent;
     }
 
+    .quicknav-item:focus-visible{
+      span[class*="Button-module_label"] {
+        min-height: 52px;
+        min-width: 95%;
+        border: 2px solid $color-coat-of-arms;
+        padding-left: 2px;
+      }
+    }
+    .quicknav-item:focus-visible::after {
+      display: none;
+    }
+
     .quicknav-item.active {
       font-family: "Helsinki Grotesk Bold", sans-serif;
       font-weight: 700;
       border-left: $size4 solid;
       background-color: $color-black-5;
+    }
+
+    .quicknav-item:active {
+        span[class*="Button-module_label"] {
+        min-height: 52px;
+        min-width: 95%;
+        border: 2px solid $color-coat-of-arms;
+        padding-left: 2px;
+      }
+      background-color: $color-black-5;
+    }
+
+    .quicknav-item:active::after {
+      display: none;
     }
 
     .quicknav-item.active:hover {
