@@ -402,6 +402,7 @@ class CustomField extends Component {
         selectedPhase={selectedPhase}
         phaseIsClosed={phaseIsClosed}
         isProjectTimetableEdit={isProjectTimetableEdit}
+        required={this.props?.field?.required}
         {...props}
       />
     )

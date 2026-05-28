@@ -382,8 +382,7 @@ export default function QuickNav({
 
   return (
     <div className="quicknav-container">
-      <div className="quicknav-navigation-section">
-
+      <nav className="quicknav-navigation-section">
         {selectedPhase?.phaseID === 0 ? (
           <div className='quicknav-header-container'>
             <div className='quicknav-header'>
@@ -396,7 +395,7 @@ export default function QuickNav({
         ) : (
           <div className='quicknav-header-container'>
             <div className='quicknav-header'>
-                <Button id="quicknav-header-button" variant="supplementary" aria-label='Palaa takaisin vaiheiden etusivulle' onClick={() => hideSections()} iconLeft={<IconArrowLeft className='left-icon' />}>
+                <Button id="quicknav-header-button" variant="supplementary" aria-label='Vaiheiden aliotsikot' onClick={() => hideSections()} iconLeft={<IconArrowLeft className='left-icon' />}>
                   {phaseTitle}
                 </Button>
             </div>
@@ -405,7 +404,7 @@ export default function QuickNav({
         )
         }
 
-        <nav className="quicknav-content" aria-labelledby='quicknav-header-button'>
+        <div className="quicknav-content" aria-labelledby='quicknav-header-button'>
         {selectedPhase?.phaseID === 0 && options?.optionsArray.map((option,index) =>{
           return (
             <Button
@@ -476,11 +475,13 @@ export default function QuickNav({
               </Button>
             )
             })}
-        </nav>
-      </div>
+        </div>
+      </nav>
 
-      {showSection && <div className="quicknav-buttons">{renderButtons()}</div>}
-      {isResponsible && showSection && <div className="quicknav-onhold">{renderCheckBox()}</div>}
+      <section aria-label={t('quick-nav.end-or-pause-phase')}>
+        {showSection && <div className="quicknav-buttons">{renderButtons()}</div>}
+        {isResponsible && showSection && <div className="quicknav-onhold">{renderCheckBox()}</div>}
+      </section>
       {isResponsible && notLastPhase && allowPhaseClose && (
         <PhaseChangeConfirmModal
           callback={phaseCallback}

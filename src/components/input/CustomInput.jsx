@@ -487,6 +487,7 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
       phaseIsClosed={custom.phaseIsClosed}
       factaInfo={custom?.fieldData?.assistive_text}
       shouldDisableForErrors={shouldDisableForErrors}
+      required={required}
     />
   );
 

@@ -720,7 +720,7 @@ class ProjectEditPage extends Component {
         {this.renderErrorNotifications()}
         <div aria-hidden="true" className="block-div"></div>
         <div className={`project-input-container ${highlightGroup}`}>
-          <nav className="project-input-left">
+          <div className="project-input-left">
             <QuickNav
               changingPhase={changingPhase}
               currentPhases={currentPhases}
@@ -761,8 +761,8 @@ class ProjectEditPage extends Component {
               isTheResponsiblePerson={isTheResponsiblePerson}
               showSection={this.state.showSection}
             />
-          </nav>
-          <form id={`title-${title}`} className='project-input-right'>
+          </div>
+          <form id={`title-${title}`} className='project-input-right' aria-label={title}>
             {this.state?.showSection &&
             <div className='sticky-title'>
               <h2 id="edit-form-section-title" className='section-title'>

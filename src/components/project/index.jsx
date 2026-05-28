@@ -415,12 +415,21 @@ class ProjectPage extends Component {
       </span>
     )
   }
+  
+  // Manually resets tab order to beginning of the document when navigating between views
+  // (Skips header otherwise for some reason)
+  resetFocusToDocumentStart = () => {
+    document.body?.setAttribute('tabindex', '-1')
+    document.body?.focus({ preventScroll: true })
+    document.body?.removeAttribute('tabindex')
+  }
 
   modifyContent = () => {
     const {
       currentProject: { id },
       history
     } = this.props
+    this.resetFocusToDocumentStart()
     history.push(`/projects/${id}/edit`)
   }
   createDocuments = () => {
@@ -428,6 +437,7 @@ class ProjectPage extends Component {
       currentProject: { id },
       history
     } = this.props
+    this.resetFocusToDocumentStart()
     history.push(`/projects/${id}/documents`)
   }
 
