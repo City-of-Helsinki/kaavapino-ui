@@ -382,7 +382,7 @@ export default function QuickNav({
 
   return (
     <div className="quicknav-container">
-      <nav className="quicknav-navigation-section">
+      <nav className="quicknav-navigation-section" aria-label={t(`quick-nav.navigation-${selectedPhase?.phaseID === 0 ? 'choose-phase' : 'phase-sections'}`)}>
         {selectedPhase?.phaseID === 0 ? (
           <div className='quicknav-header-container'>
             <div className='quicknav-header'>
@@ -395,7 +395,7 @@ export default function QuickNav({
         ) : (
           <div className='quicknav-header-container'>
             <div className='quicknav-header'>
-                <Button id="quicknav-header-button" variant="supplementary" aria-label='Vaiheiden aliotsikot' onClick={() => hideSections()} iconLeft={<IconArrowLeft className='left-icon' />}>
+                <Button id="quicknav-header-button" variant="supplementary" aria-label='Palaa takaisin vaiheiden etusivulle' onClick={() => hideSections()} iconLeft={<IconArrowLeft className='left-icon' />}>
                   {phaseTitle}
                 </Button>
             </div>
