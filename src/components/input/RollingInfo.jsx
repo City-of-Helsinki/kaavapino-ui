@@ -91,7 +91,9 @@ function RollingInfo(
             className="rolling-richtext"
           />
         ) :
-        <div className='content' readOnly aria-required={required} value={formatInputText(inputText)} />
+        <div className='content' readOnly aria-required={required}>
+          {formatInputText(inputText)}
+        </div>
         }
       </div>
       {!nonEditable && (
