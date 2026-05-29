@@ -14,7 +14,9 @@ import {
   createFieldComment
 } from '../../actions/commentActions'
 import {
-  formErrorList
+  formErrorList,
+  setLastSaved,
+  SET_NETWORK_STATUS
 } from '../../actions/projectActions'
 import { currentProjectIdSelector,savingSelector,lockedSelector, lastModifiedSelector, pollSelector,lastSavedSelector, projectNetworkSelector, formErrorListSelector, connectionErrorFieldsSelector, fieldsWithAnyErrorSelector, testingConnectionSelector } from '../../selectors/projectSelector'
 import CommentIcon from '@/assets/icons/comment-icon.svg?react'
@@ -724,6 +726,17 @@ function RichTextEditor(props) {
     }
     if(rollingInfo && !maxSizeOver){
       setEditField(false)
+    }
+
+    // maxSizeOver blocks the normal save path, but if the network is also down,
+    // dispatch the error immediately so the UI detects it without requiring
+    // the accordion to be closed and reopened.
+    // Use fieldset name (not child field name) to match saveProject saga convention,
+    // preventing double notifications from both FieldSet and child field NetworkErrorState.
+    if (maxSizeOver && !globalThis.navigator?.onLine) {
+      const fieldsetName = inputProps.name.includes('[') ? inputProps.name.split('[')[0] : inputProps.name
+      dispatch(setLastSaved('error', null, [fieldsetName], [], false))
+      dispatch({ type: SET_NETWORK_STATUS, payload: { status: 'error', errorMessage: t('messages.general-save-error') } })
     }
   }
 

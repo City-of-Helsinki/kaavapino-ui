@@ -282,7 +282,7 @@ function* getAttributeData(data) {
         timeout: delay(15000)
       })
       if (timeout) {
-        yield put(setLastSaved('error', null, [attribute_identifier], [], false))
+        yield put(setLastSaved('error', null, [], [], false))
         return
       }
       yield put(setAttributeData(attribute_identifier, result, formName, set, nulledFields, i))
@@ -290,7 +290,7 @@ function* getAttributeData(data) {
       const statusCode = e?.response?.status
       // Network errors and 5xx server errors should show inline error, not toaster
       if (!e.response || !statusCode || statusCode >= 500) {
-        yield put(setLastSaved('error', null, [attribute_identifier], [], false))
+        yield put(setLastSaved('error', null, [], [], false))
       } else {
         yield put(error(e))
       }
@@ -311,21 +311,28 @@ function* pollConnection() {
     
     if (hasUnsavedField) {
       const fieldName = lastSaved.fields[0]
-
-      if (fieldName?.endsWith('_fieldset') && !lastSaved.values?.[0]) {
-        // Fieldset add/remove has no value to auto-retry — prompt the user to try again manually
-        yield put(setPoll(true))
-        yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: 'Yhteys palautunut' } })
-        yield put(setLastSaved("connection_restored", time, [fieldName], [], false))
-        return
-      }
+      // fieldName may be a fieldset child (e.g. 'hanke[0].field') — extract the top-level key
+      const fieldsetName = fieldName.includes('[') ? fieldName.split('[')[0] : fieldName
 
       const formErrors = yield select(formErrorListSelector)
-      if (formErrors.includes(fieldName)) {
+      const editForm = yield select(editFormSelector)
+      const formSyncErrors = editForm?.syncErrors
+      // Check all errors belonging to the same fieldset, regardless of which child field
+      // triggered the original save. formErrorList may also be empty if resetFormErrors()
+      // cleared it while hasError in CustomInput stayed true (no state transition to re-fire).
+      const hasChildFormError = formErrors.some(ef => typeof ef === 'string' && (
+        ef === fieldsetName || ef.startsWith(`${fieldsetName}[`)
+      )) || !!(formSyncErrors?.[fieldsetName])
+      const hasFormError = formErrors.includes(fieldName) || hasChildFormError
+      if (hasFormError) {
         yield put(setPoll(true))
         yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: 'Yhteys palautunut' } })
         yield put(setSavingField(null))
-        yield put(setLastSaved("field_error", time, [fieldName], lastSaved.values || [], false))
+        yield put(setLastSaved("connection_restored", time, [fieldName], [], false))
+        yield delay(5000)
+        // Use empty fields to avoid passivating the char-limit field via fieldErrorFieldsSelector.
+        // Passivation is handled correctly by formErrors (the char-limit field stays editable).
+        yield put(setLastSaved("field_error", time, [], [], false))
         return
       }
 
@@ -333,9 +340,7 @@ function* pollConnection() {
       yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: 'Yhteys palautunut - tallennetaan...' } })
       // Dispatch connection_restored immediately so passivation and header update before saveProject completes.
       // saveProject will set status to 'success' on success or back to 'error' on failure.
-      // For fieldset fields, preserve fieldName so FieldSet.jsx can show the connection restored banner.
-      const restoredFields = fieldName?.endsWith('_fieldset') ? [fieldName] : []
-      yield put(setLastSaved("connection_restored", time, restoredFields, [], false))
+      yield put(setLastSaved("connection_restored", time, [fieldName], [], false))
       yield put(resetFormErrors())
       
       const fieldValue = lastSaved.values?.[0]
@@ -1196,9 +1201,17 @@ function* saveProject(data) {
         const fieldValue = savedFieldName ? values[savedFieldName] : undefined
         
         yield put(setSavingField(null))
-        yield put(setLastSaved("field_error",time,[savedFieldName],fieldValue ? [fieldValue] : [],false))
-        yield put(stopSubmit(EDIT_PROJECT_FORM, {}))
         yield put(saveProjectFailed())
+
+        if (globalThis.navigator?.onLine) {
+          yield put(setLastSaved("field_error", time, [savedFieldName], fieldValue ? [fieldValue] : [], false))
+          yield put(stopSubmit(EDIT_PROJECT_FORM, {}))
+        } else {
+          // Network is down: show connection error instead of validation error
+          // Same behaviour as other field types that make an API call on blur
+          yield put(setLastSaved("error", time, [savedFieldName], fieldValue ? [fieldValue] : [], false))
+          yield put({ type: SET_NETWORK_STATUS, payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
+        }
         return
       }
       

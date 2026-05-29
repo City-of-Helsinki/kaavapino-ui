@@ -19,8 +19,8 @@ import { useFieldPassivation } from '../../hooks/useFieldPassivation'
 import PropTypes from 'prop-types'
 import './Input.scss'
 
-function buildAddButtonMessage({ isNetworkError, isConnectionRestored, hasChildError, isCollapsed, t }) {
-  if (isNetworkError && isCollapsed) {
+function buildAddButtonMessage({ isNetworkError, isConnectionRestored, hasChildError, t }) {
+  if (isNetworkError) {
     return (
       <div className="network-error-state" aria-live="polite" aria-atomic="true">
         <div className="error-text">
@@ -33,7 +33,7 @@ function buildAddButtonMessage({ isNetworkError, isConnectionRestored, hasChildE
       </div>
     )
   }
-  if (isConnectionRestored && isCollapsed) {
+  if (isConnectionRestored) {
     return (
       <div className="network-error-state" aria-live="polite" aria-atomic="true">
         <div className="success-text fade-in">
@@ -102,7 +102,7 @@ const FieldSet = ({
 
   const savedFields = Array.isArray(lastSaved?.fields) ? lastSaved.fields : []
   const isThisFieldsetNetworkError = lastSaved?.status === 'error' && savedFields.some(f =>
-    typeof f === 'string' && f.startsWith(`${name}`)
+    typeof f === 'string' && (f === name || f.startsWith(`${name}[`))
   )
 
   const nulledFields = fields?.map(field => {
@@ -157,6 +157,12 @@ const FieldSet = ({
       setHiding(false)
     }
   }, [lastSaved?.status === "error"])
+
+  useEffect(() => {
+    if (lastSaved?.status === 'ok' || lastSaved?.status === 'success') {
+      setLastSavedChildField(null)
+    }
+  }, [lastSaved?.status])
  
   useEffect(() => {
     if(!isMount){
@@ -334,14 +340,13 @@ const FieldSet = ({
   const anyFieldsetHasChildError = !!formErrors?.some(ef => ef.startsWith(`${name}[`));
 
   const isThisFieldsetConnectionRestored = lastSaved?.status === 'connection_restored' && savedFields.some(f =>
-    typeof f === 'string' && f.startsWith(`${name}`)
+    typeof f === 'string' && (f === name || f.startsWith(`${name}[`))
   )
 
   const addButtonMessage = buildAddButtonMessage({
     isNetworkError: isThisFieldsetNetworkError,
     isConnectionRestored: isThisFieldsetConnectionRestored,
     hasChildError: anyFieldsetHasChildError,
-    isCollapsed: expanded.length === 0,
     t
   })
 
@@ -432,7 +437,8 @@ const FieldSet = ({
                   }
 
                   const assistiveText = field.assistive_text
-                  const isNetworkErrorField = isThisFieldsetNetworkError && lastSavedChildField === currentName
+                  const isNetworkErrorField = isThisFieldsetNetworkError &&
+                    (lastSavedChildField === currentName || (!lastSavedChildField && formErrors.includes(currentName)))
                   return (
                     <div
                       className={`input-container ${showError || isNetworkErrorField ? 'error' : ''} ${fieldsetDisabled ? 'disabled-fieldset' : ''}`}
@@ -508,16 +514,17 @@ const FieldSet = ({
                           highlightedTag={highlightedTag}
                         />
                         {showError && <div className="error-text">{showError}</div>}
-                        {(isThisFieldsetNetworkError || isThisFieldsetConnectionRestored) && lastSavedChildField === currentName && (
+                        {(isThisFieldsetNetworkError || isThisFieldsetConnectionRestored) &&
+                          (lastSavedChildField === currentName || (!lastSavedChildField && formErrors.includes(currentName))) && (
                           <NetworkErrorState fieldName={name} />
                         )}
                         {assistiveText && <div className='assistive-text'>{assistiveText}.</div>}
                       </Form.Field>
                     </div>
                   )
-                })}
-                {/* Show NetworkErrorState for connection errors in fieldset — fallback if no specific field tracked */}
-                {(isThisFieldsetNetworkError || isThisFieldsetConnectionRestored) && expanded.includes(i) && !lastSavedChildField && (
+                })}                {/* Show NetworkErrorState for connection errors in fieldset — fallback if no specific field tracked */}
+                {(isThisFieldsetNetworkError || isThisFieldsetConnectionRestored) && expanded.includes(i) && !lastSavedChildField &&
+                  !formErrors.some(ef => typeof ef === 'string' && ef.startsWith(`${set}.`)) && (
                   <NetworkErrorState fieldName={name} />
                 )}
                 {(!disable_fieldset_delete_add && !automatically_added && !disabled) && (

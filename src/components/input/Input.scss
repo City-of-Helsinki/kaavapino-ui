@@ -429,7 +429,7 @@
   }
 }
 
-.error .rich-text-editor-wrapper {
+.error .rich-text-editor-wrapper:not(.has-error) {
   border: 2px solid rgba(176, 16, 56, 1);
 
   .rich-text-editor .ql-container {
@@ -635,6 +635,9 @@
   .accordion-button-error {
     outline: 2px solid $color-error;
     outline-offset: -2px;
+    &::after {
+      border-bottom: none;
+    }
   }
 
   .accordion-button-open{
