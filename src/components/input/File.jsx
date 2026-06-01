@@ -4,8 +4,6 @@ import { projectFileUpload, projectFileRemove } from '../../actions/projectActio
 import { savingSelector,lastModifiedSelector,formErrorListSelector,connectionErrorFieldsSelector } from '../../selectors/projectSelector'
 import { downloadFile } from '../../actions/apiActions'
 import { Progress } from 'semantic-ui-react'
-import 'core-js/features/array/at';
-//import { Document, Page, pdfjs } from 'react-pdf'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { withTranslation } from 'react-i18next'
 import { Button, IconDownload, IconCrossCircle, IconUpload } from 'hds-react'
@@ -66,9 +64,6 @@ class File extends Component {
 
   componentDidMount() {
     const { src, image } = this.props
-    //PDF preview is currently not supported. If fixed in the future, update pdf.worker.js file
-    //pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js'
-
     if (src && image) {
       this.imageRef.current.src = src
     }
@@ -88,7 +83,7 @@ class File extends Component {
     const { current } = this.state
 
     const confirmText = t('file.remove-question', { current: current })
-    const confirm = window.confirm(confirmText)
+    const confirm = globalThis.confirm(confirmText)
     if (confirm) {
       this.setState({ isThisFieldSaving: true })
       localStorage.setItem("changedValues", name)
@@ -146,7 +141,7 @@ class File extends Component {
           }
         }
         reader.readAsDataURL(file)
-      } catch (e) {
+      } catch {
         return
       }
     }
@@ -180,27 +175,9 @@ class File extends Component {
         className="image-preview"
         ref={this.imageRef}
         aria-label="image"
-        alt={current ? current : ''}
+        alt={current || ''}
       />
     )
-
-    // Disabled as pdf preview is not currently supported
-    /*
-    if (current?.includes('.pdf') && src) {
-      filePreview = (
-        <Document
-          style={{
-            display: `${current && image ? 'block' : 'none'}`,
-            marginBottom: '10px'
-          }}
-          className="image-preview"
-          file={src}
-          alt={current ? current : ''}
-        >
-          <Page pageNumber={1} />
-        </Document>
-      )
-    }*/
 
     return (
       <div>
@@ -258,9 +235,7 @@ class File extends Component {
         {uploading && <Progress percent={percentCompleted} progress indicating />}
         {filePreview}
         {current && (
-          <>
           <div><b>{t('file.file-name')} </b>{this.state.current}</div>
-          </>
         )}
         <div className='rolling-text no-padding-left'>
         {rollingInfo ?
@@ -292,7 +267,10 @@ File.propTypes = {
   saving: PropTypes.bool,
   lastModified: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   formErrors: PropTypes.array,
-  connectionErrorFields: PropTypes.array
+  connectionErrorFields: PropTypes.array,
+  uploading: PropTypes.bool,
+  downloadFile: PropTypes.func,
+  projectFileRemove: PropTypes.func
 }
 
 const mapStateToProps = state => ({
