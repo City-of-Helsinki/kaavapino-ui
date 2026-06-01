@@ -985,18 +985,16 @@
           border:2px solid $border-gray2;
           &:has(:disabled) {
             background-color: #e6e6e6;
-            border-color: RGBA(0,0,0,0);
-            border-style: none;
+            border-color: #e6e6e6;
             input {
-              color: #808080;
+              color: #999;
               -webkit-text-fill-color: #999;
             }
             button {
-              color: 999;
+              color: #999;
             }
           }
           input{
-            //text-indent: 16px;
             width: 85%;
             white-space: nowrap;
             overflow: hidden;
