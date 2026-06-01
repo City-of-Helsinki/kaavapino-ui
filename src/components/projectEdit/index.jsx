@@ -2,7 +2,6 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { getFormSyncErrors, getFormSubmitErrors, getFormValues, reset } from 'redux-form'
 import { LoadingSpinner, Notification, IconCross } from 'hds-react'
-import { isDirty } from 'redux-form/immutable'
 import {
   unlockProjectField,
   lockProjectField,
@@ -925,7 +924,6 @@ ProjectEditPage.propTypes = {
   projectSetChecking: PropTypes.func,
   checking: PropTypes.bool,
   hasErrors: PropTypes.bool,
-  isDirty: PropTypes.bool,
   initializeProject: PropTypes.func,
   saveProjectBase: PropTypes.func,
   submitErrors: PropTypes.object,
@@ -941,7 +939,6 @@ const mapStateToProps = state => {
     validating: validatingSelector(state),
     hasErrors: hasErrorsSelector(state),
     checking: checkingSelector(state),
-    isDirty: isDirty(EDIT_PROJECT_FORM)(state),
     syncErrors: getFormSyncErrors(EDIT_PROJECT_FORM)(state),
     submitErrors: getFormSubmitErrors(EDIT_PROJECT_FORM)(state),
     formValues: getFormValues(EDIT_PROJECT_FORM)(state),
