@@ -1641,12 +1641,13 @@ class EditProjectTimeTableModal extends Component {
           getFocusableElements("edit-project-timetable-modal")[0]?.focus();
         }}
       >
-        <Modal.Header><IconInfoCircle size="m" aria-hidden="true"/>
-        <span className='header-title'>{t('deadlines.modify-timeline')}</span>
+        <Modal.Header>
+          <IconInfoCircle size="m" aria-hidden="true"/>
+          <h2 className='header-title'>{t('deadlines.modify-timeline')}</h2>
         </Modal.Header>
         <Modal.Content>
             <div className='timeline-group-header'>
-              <span className='timeline-group-title'>{t('deadlines.timeline-group-header')}</span>
+              <h3 className='timeline-group-title'>{t('deadlines.timeline-group-header')}</h3>
             </div>
             <VisTimelineGroup
               timelineRef={this.timelineRef}
