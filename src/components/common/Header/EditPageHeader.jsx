@@ -80,9 +80,6 @@ const EditPageHeader = ({ title, pollConnection, currentSectionIndex, location }
       latestUpdate = { status: t('header.edit-menu-save-fail'), time: "" };
     }
     else if (lastSaved?.status === "success") {
-      // Connection restored or field validation error corrected
-      // NetworkErrorState component handles "connection restored" inline notification
-      // So we just update save time here, no toaster needed
       setPollCount(1);
       latestUpdate = { status: t('header.latest-save'), time: lastSaved.time };
       setLastSuccessfulSaveTime(lastSaved.time);
@@ -100,8 +97,6 @@ const EditPageHeader = ({ title, pollConnection, currentSectionIndex, location }
       }
     }
     else if (lastSaved?.status === "") {
-      // Error notification was closed and field reverted to saved value
-      // If something was saved this session, show last save time; otherwise show "no unsaved data"
       setPollCount(1);
       if (lastSuccessfulSaveTime) {
         latestUpdate = { status: t('header.latest-save'), time: lastSuccessfulSaveTime };

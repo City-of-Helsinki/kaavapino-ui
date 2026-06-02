@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { Navigation, IconSignout } from 'hds-react'
-import { withRouter, useHistory } from 'react-router-dom'
+import { withRouter } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import DocumentsPageHeader from './DocumentsPageHeader.jsx'
 import EditPageHeader from './EditPageHeader.jsx'
@@ -13,8 +13,6 @@ import PropTypes from 'prop-types'
 
 const Header = props => {
   const { t } = useTranslation()
-
-  const history = useHistory();
   const users = useSelector(state => usersSelector(state))
   const user = useSelector(state => authUserSelector(state))
 
