@@ -584,7 +584,6 @@
 
     .kaynnistys_1{
         pointer-events: auto !important;
-        cursor: default !important;
         .vis-item-overflow{
             position: relative;
             border: 2px solid $black1;
@@ -629,7 +628,7 @@
 
     // When kaynnistys_1 item is in a past phase (no-drag), disable all interaction and hide drag dot.
     // .no-drag is added to the item itself by buildInnerStyle when the phase is past.
-    .kaynnistys_1.no-drag {
+    .kaynnistys_1.no-drag:not(.vis-nested-group) {
         pointer-events: none !important;
         cursor: default !important;
 
@@ -874,6 +873,16 @@
         .only-inner-end.no-drag {
             cursor: default !important;
             pointer-events: none !important;
+        }
+    }
+
+    .vis-inner {
+        .timeline-buttons-container {
+            cursor: auto !important;
+            pointer-events: auto !important;
+            label{
+                cursor: pointer !important;
+            }
         }
     }
 
@@ -1211,6 +1220,9 @@
                         outline: 2px solid #0072c6;
                         outline-offset: 2px;
                     }
+                    &:disabled {
+                        cursor: default !important;
+                    }
                 }
                 .timeline-add-button.button-disabled {
                     pointer-events: auto;
@@ -1226,6 +1238,7 @@
                     background-position-y: center;
                     background-size: $size24;
                     border: none;
+                    cursor: default !important;
                 }
                 .timeline-add-text {
                     color: $color-black-90;
