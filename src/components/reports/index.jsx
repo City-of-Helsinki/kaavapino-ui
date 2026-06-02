@@ -2,7 +2,7 @@ import React from 'react'
 import { NavHeader } from '../common/NavHeader'
 import ReportBuilder from './ReportBuilder'
 import { useTranslation } from 'react-i18next'
-import Header from '../common/Header'
+import Header from '../common/Header/Header'
 import './Reports.scss'
 import 'semantic-ui-css/semantic.min.css'
 function Reports() {

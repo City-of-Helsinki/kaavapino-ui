@@ -30,7 +30,7 @@ import { withTranslation } from 'react-i18next'
 import { userIdSelector } from '../../selectors/authSelector'
 import { withRouter } from 'react-router-dom'
 import { Tabs, Pagination, Button, IconPlus } from 'hds-react'
-import Header from '../common/Header.jsx'
+import Header from '../common/Header/Header.jsx'
 import authUtils from '../../utils/authUtils'
 import OwnProjectFilters from './OwnProjectFilters.jsx'
 import { ToggleButton } from 'hds-react';

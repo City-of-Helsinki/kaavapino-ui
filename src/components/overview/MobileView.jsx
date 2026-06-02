@@ -12,7 +12,7 @@ import {
   getProjectsOverviewFloorArea,
   clearProjectsOverview
 } from '../../actions/projectActions'
-import Header from '../common/Header'
+import Header from '../common/Header/Header'
 import PropTypes from 'prop-types'
 
 function MobileView({
