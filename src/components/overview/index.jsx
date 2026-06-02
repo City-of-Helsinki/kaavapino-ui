@@ -17,7 +17,7 @@ import { usersSelector } from '../../selectors/userSelector'
 import { userIdSelector } from '../../selectors/authSelector'
 import authUtils from '../../utils/authUtils'
 import MobileView from './MobileView'
-import Header from '../common/Header'
+import Header from '../common/Header/Header'
 import PropTypes from 'prop-types'
 
 const Overview = ({
