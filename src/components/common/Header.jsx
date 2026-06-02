@@ -23,6 +23,36 @@ import schemaUtils from '../../utils/schemaUtils'
 import {useInterval} from '../../hooks/connectionPoller'
 import PropTypes from 'prop-types'
 
+const DocumentsPageHeader = () => {
+  const { t } = useTranslation()
+  const history = useHistory();
+
+  useEffect(() => {
+    document.getElementById('document-page-header-nav').setAttribute('role', 'none')
+  });
+
+  const navigateBackToEdit = () => {
+    let path = history.location.pathname
+    path = path.replace('documents','edit');
+    history.push(path)
+  }
+  return (
+    <div className='document-page-header'>
+      <Navigation
+          id="document-page-header-nav"
+          label="navigation"
+          skipTo='#main'
+          skipToContentLabel={t('header.skip-to-content')}
+      >
+        <Navigation.Row variant="inline">
+          <Button onClick={() => navigateBackToEdit()} role="link" variant="supplementary" size="small" iconLeft={<IconAngleLeft />}>{t('header.documents-menu-back')}</Button>
+        </Navigation.Row>
+      </Navigation>
+    </div>
+)
+}
+
+
 const Header = props => {
   const { t } = useTranslation()
   const dispatch = useDispatch()
@@ -298,17 +328,7 @@ const Header = props => {
     )
   }
   else if (pathToCheck.endsWith('/documents')) {
-    return (
-        <div className='document-page-header'>
-          <Navigation
-              label="navigation"
-          >
-            <Navigation.Row variant="inline">
-              <Button onClick={() => navigateBackToEdit()} role="link" variant="supplementary" size="small" iconLeft={<IconAngleLeft />}>{t('header.documents-menu-back')}</Button>
-            </Navigation.Row>
-          </Navigation>
-        </div>
-    )
+    return <DocumentsPageHeader navigateBackToEdit={navigateBackToEdit} />
   }
   else{
     return (

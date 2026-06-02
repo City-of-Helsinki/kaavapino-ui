@@ -25,6 +25,11 @@ function ProjectDocumentsPage(props) {
   useEffect(() => {
       fetchDocuments(currentProjectId)
       fetchSchemas(project.id, project.subtype)
+      const pageTitle = `Dokumentit: ${project.name}`
+      document.title= pageTitle
+      return () => {
+        document.title = (document.title === pageTitle) ? 'Kaavapino' : document.title
+      }
   }, [])
 
   useEffect(() => {
@@ -66,18 +71,6 @@ function ProjectDocumentsPage(props) {
   }
   
   const groupedDocuments = groupDocuments(documents)
-  const getTitle = key => {
-    const current = groupedDocuments[key]
-
-    return (
-      <>
-        <span>
-          {current.title}
-        </span>
-      </>
-    )
-  }
-
   const renderDocumentList = () => (
     <div className="documents-page-container">
       {documentsLoading && <LoadingSpinner className="loader-icon" theme={{ '--spinner-color': '#0000BF' }} />}
@@ -87,7 +80,7 @@ function ProjectDocumentsPage(props) {
       {Object.keys(groupedDocuments).map(key => (
         <DocumentGroup
           key={key}
-          title={getTitle(key)}
+          title={<span>{groupedDocuments[key]?.title}</span>}
           phaseEnded={groupedDocuments[key].phaseEnded}
           documents={groupedDocuments[key].documents}
           projectId={currentProjectId}
