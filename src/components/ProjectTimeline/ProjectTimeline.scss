@@ -1,7 +1,7 @@
 .timeline-graph-container {
   font-family: 'Helsinki Grotesk Medium', sans-serif;
   padding: 2.5rem 0rem 1.25rem 0rem;
-  height: 9.125rem;
+  height: 11.125rem;
   margin-top: 1.25rem;
   overflow: hidden;
   position: relative;
@@ -75,7 +75,7 @@
     .timeline-item {
       box-sizing: content-box;
       position: relative;
-      margin-bottom: 2.5rem;
+      margin-bottom: 3.5rem;
       height: 1.5rem;
       border: 1px solid $color-black-90;
       border-right: none;
@@ -97,8 +97,7 @@
         position: absolute;
         bottom: 1.75rem;
         font-size: $size14;
-        width: 118px;
-        font-weight: 544;
+        width: 8rem;
         color: $color-black-90;
       }
       .deadline-milestone {
@@ -191,15 +190,17 @@
         display: grid;
         grid-template-columns: repeat(5, 1fr);
         .now-marker {
-          width: 1px;
-          height: 60px;
-          border: 1px solid blue;
-          margin-top: -50px;
+          width: 2px;
+          height: 4rem;
+          border: 1px solid $color-metro;
+          margin-top: -56px;
           span {
-            left: 1rem;
+            left: 0.25rem;
             top: 1rem;
             color: $color-black-90;
             margin-top: -34px;
+            font-weight: 700;
+            font-size: $size14;
           }
         }
       }

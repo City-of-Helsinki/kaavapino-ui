@@ -96,7 +96,7 @@
       "nov": "Marras",
       "dec": "Joulu"
     },
-    "now": "Nyt",
+    "now": "Tänään",
     "deadline-label": "{{date}}.{{month}} määräa. ",
     "kylk-message": "{{date}}.{{month}} Kylk",
     "shown": "nähtävillä",
