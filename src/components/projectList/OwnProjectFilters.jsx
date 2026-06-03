@@ -4,6 +4,7 @@ import DropdownFilter from '../overview/Filters/DropdownFilter.jsx'
 import CustomADUserCombobox from '../input/CustomADUserCombobox.jsx'
 import { SearchInput } from 'hds-react'
 import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 
 function OwnProjectFilters({ filters, ...props }) {
     const { t } = useTranslation()
@@ -34,14 +35,11 @@ function OwnProjectFilters({ filters, ...props }) {
             setFilter(val)
             buttonAction(val)
         }
-        else{
-            //clear button pressed if null, when undefined do nothing
-            if(values === null && oldValueRef.current != ""){
-                val[1] = ""
-                oldValueRef.current = "";
-                setFilter(val)
-                buttonAction(val)
-            }
+        else if (values === null && oldValueRef.current != ""){
+            val[1] = ""
+            oldValueRef.current = "";
+            setFilter(val)
+            buttonAction(val)
         }
     }
    
@@ -49,8 +47,8 @@ function OwnProjectFilters({ filters, ...props }) {
         let filterArray = filter
         let valueArray = []
 
-        for (let index = 0; index < values.length; index++) {
-            valueArray.push(values[index].id)
+        for (const value of values) {
+            valueArray.push(value.id)
         }
         filterArray[2] = valueArray
         setFilter(filterArray)
@@ -76,7 +74,7 @@ function OwnProjectFilters({ filters, ...props }) {
     }
 
     return (
-        <div className="filters-list projects-filters">
+        <search className="filters-list projects-filters">
             <Grid stackable columns="equal">
                 <Grid.Column key="own1">
                     <label htmlFor="person_combo">{t('common.person')}</label>
@@ -124,8 +122,13 @@ function OwnProjectFilters({ filters, ...props }) {
                     />
                 </Grid.Column>
             </Grid>
-        </div>
+        </search>
     )
+}
+
+OwnProjectFilters.propTypes = {
+    filters: PropTypes.array,
+    buttonAction: PropTypes.func
 }
 
 export default OwnProjectFilters

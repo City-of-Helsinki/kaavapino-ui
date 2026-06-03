@@ -493,7 +493,7 @@ class ProjectListPage extends Component {
           openCreateProject={this.openCreateProject}
         />
 
-        <div className="project-list-page">
+        <main id="main" className="project-list-page">
           <NavHeader
             title={t('projects.title')}
             actions={this.getDocumentsNavActions(isResponsible)}
@@ -513,27 +513,29 @@ class ProjectListPage extends Component {
             buttonAction={this.fetchFilteredItems}
             users={users}
           />
-          <div className='project-list-result'>
-            <span className='project-list-result-number'>{this.getResults()}</span>
-            <div className="timeline-header-item  project-timeline-toggle">
-              <ToggleButton id="timeline-toggle" label={t('project.show-timelines')} variant="inline" checked={this.state.showGraph} onChange={() => this.toggleGraph()} />
+          <section aria-label={t('project.projects-list')}>
+            <div className='project-list-result'>
+              <span className='project-list-result-number'>{this.getResults()}</span>
+              <div className="timeline-header-item  project-timeline-toggle">
+                <ToggleButton id="timeline-toggle" label={t('project.show-timelines')} variant="inline" checked={this.state.showGraph} onChange={() => this.toggleGraph()} />
+              </div>
             </div>
-          </div>
-          <div className="project-list-container">{this.createTabPanes()}</div>
-          <div className='project-list-pagination'>
-          <Pagination
-            language="fi"
-            onChange={(event, index) => {
-              event.preventDefault();
-              this.setPageIndex(index);
-            }}
-            pageCount={this.state.projectsTotal[this.state.activeIndex -1]}
-            pageHref={() => '#'}
-            pageIndex={this.state.pageIndex}
-            paginationAriaLabel="Projektit sivutus"
-          />
-          </div>
-        </div>
+            <div className="project-list-container">{this.createTabPanes()}</div>
+            <div className='project-list-pagination'>
+            <Pagination
+              language="fi"
+              onChange={(event, index) => {
+                event.preventDefault();
+                this.setPageIndex(index);
+              }}
+              pageCount={this.state.projectsTotal[this.state.activeIndex -1]}
+              pageHref={() => '#'}
+              pageIndex={this.state.pageIndex}
+              paginationAriaLabel="Projektit sivutus"
+            />
+            </div>
+          </section>
+        </main>
       </>
     )
   }
