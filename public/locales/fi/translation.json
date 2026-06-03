@@ -65,8 +65,7 @@
       "phase": "Vaihe",
       "size": "Koko",
       "modified": "Muokattu",
-      "responsible": "Vastuuhenkilö",
-      "priority":"Prioriteetti"
+      "responsible": "Vastuuhenkilö"
     }
     
   },

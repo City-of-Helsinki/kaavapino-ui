@@ -4,13 +4,15 @@ import {
   fetchProjects,
   fetchOwnProjects,
   fetchOnholdProjects,
-  fetchArchivedProjects
+  fetchArchivedProjects,
+  createProject,
+  clearProjects,
+  getProjectsOverviewFilters
 } from '../../actions/projectActions'
 import { fetchProjectSubtypes } from '../../actions/projectTypeActions'
 import { fetchUsers } from '../../actions/userActions'
 import { projectSubtypesSelector } from '../../selectors/projectTypeSelector'
 import { usersSelector } from '../../selectors/userSelector'
-import { createProject, clearProjects, getProjectsOverviewFilters } from '../../actions/projectActions'
 import {
   ownProjectsSelector,
   projectsSelector,
@@ -29,11 +31,10 @@ import List from './List.jsx'
 import { withTranslation } from 'react-i18next'
 import { userIdSelector } from '../../selectors/authSelector'
 import { withRouter } from 'react-router-dom'
-import { Tabs, Pagination, Button, IconPlus } from 'hds-react'
+import { Tabs, Pagination, Button, IconPlus, ToggleButton } from 'hds-react'
 import Header from '../common/Header/Header.jsx'
 import authUtils from '../../utils/authUtils'
 import OwnProjectFilters from './OwnProjectFilters.jsx'
-import { ToggleButton } from 'hds-react';
 import { isEqual } from 'lodash'
 import PropTypes from 'prop-types'
 import './ProjectList.scss'
@@ -156,14 +157,7 @@ class ProjectListPage extends Component {
   }
 
   fetchFilteredItems = (values) => {
-    let pageIndex
-    //Set page index to 0 when filtering with new search
-    if(!isEqual(values, this.state.filter)){
-      pageIndex = 0
-    }
-    else{
-      pageIndex = this.state.pageIndex
-    }
+    const pageIndex = isEqual(values, this.state.filter) ? this.state.pageIndex : 0;
     this.setState({ filter: values }, () => {
       this.props.clearProjects()
       this.fetchProjectsByTabIndex(this.state.activeIndex,pageIndex,this.state.tabName,this.state.tabDir)
@@ -173,11 +167,6 @@ class ProjectListPage extends Component {
   handleTabChange = (activeIndex) => {
     this.fetchProjectsByTabIndex(activeIndex,0,this.state.tabName,this.state.tabDir)
     this.setState({ activeIndex, pageIndex:0 })
-  }
-
-  createReports = () => {
-    const { history } = this.props
-    history.push('/reports')
   }
 
   sortField = (name,dir) => {
@@ -312,35 +301,34 @@ class ProjectListPage extends Component {
     } = this.props
 
     const isExpert = authUtils.isExpert(currentUserId, users)
-    const index = this.state.activeIndex;
-    let tabPanel;
-    {
-      switch(index) {
-        case 1:
-          tabPanel = <Tabs.TabPanel>{this.getOwnProjectsPanel()}</Tabs.TabPanel>
-          break;
-        case 2:
-          tabPanel = <Tabs.TabPanel>{this.getTotalProjectsPanel()}</Tabs.TabPanel>
-          break;
-        case 3:
-          tabPanel = <Tabs.TabPanel>{this.getOnholdProjectsPanel()}</Tabs.TabPanel>
-          break;
-        case 4:
-          tabPanel = <Tabs.TabPanel>{this.getArchivedProjectsPanel()}</Tabs.TabPanel>
-          break;
-        default:
-          tabPanel = <Tabs.TabPanel>{this.getTotalProjectsPanel()}</Tabs.TabPanel>
-      }
-    }
-    return isExpert ? (
-      <Tabs>
-        {tabPanel}
-      </Tabs>
-    ) : (
+
+    if (!isExpert) {
+      return (
       <Tabs>
         <Tabs.TabPanel>{this.getTotalProjectsPanel()}</Tabs.TabPanel>
       </Tabs>
-    )
+      );
+    }
+
+    let tabPanel;
+    switch(this.state.activeIndex) {
+      case 1:
+        tabPanel = <Tabs.TabPanel>{this.getOwnProjectsPanel()}</Tabs.TabPanel>
+        break;
+      case 2:
+        tabPanel = <Tabs.TabPanel>{this.getTotalProjectsPanel()}</Tabs.TabPanel>
+        break;
+      case 3:
+        tabPanel = <Tabs.TabPanel>{this.getOnholdProjectsPanel()}</Tabs.TabPanel>
+        break;
+      case 4:
+        tabPanel = <Tabs.TabPanel>{this.getArchivedProjectsPanel()}</Tabs.TabPanel>
+        break;
+      default:
+        tabPanel = <Tabs.TabPanel>{this.getTotalProjectsPanel()}</Tabs.TabPanel>
+    }
+    
+    return <Tabs> {tabPanel} </Tabs>
   }
 
   createTabList = () => {
@@ -416,8 +404,7 @@ class ProjectListPage extends Component {
   getFilters = key => {
     const filters = []
 
-    this.state.currentFilterData &&
-      this.state.currentFilterData.forEach(filter => {
+    this.state.currentFilterData?.forEach(filter => {
         if (filter[key]) {
           filters.push(filter)
         }
@@ -583,7 +570,29 @@ const mapDispatchToProps = {
 }
 
 ProjectListPage.propTypes = {
-  filterData: PropTypes.array
+  filterData: PropTypes.array,
+  t: PropTypes.func,
+  fetchUsers: PropTypes.func,
+  fetchProjectSubtypes: PropTypes.func,
+  getProjectsOverviewFilters: PropTypes.func,
+  clearProjects: PropTypes.func,
+  users: PropTypes.array,
+  currentUserId: PropTypes.string,
+  ownProjects: PropTypes.array,
+  totalOwnProjects: PropTypes.number,
+  totalProjects: PropTypes.number,
+  totalOnholdProjects: PropTypes.number,
+  totalArchivedProjects: PropTypes.number,
+  projectSubtypes: PropTypes.array,
+  allProjects: PropTypes.array,
+  onholdProjects: PropTypes.array,
+  archivedProjects: PropTypes.array,
+  fetchProjects: PropTypes.func,
+  fetchOwnProjects: PropTypes.func,
+  fetchOnholdProjects: PropTypes.func,
+  fetchArchivedProjects: PropTypes.func,
+  createProject: PropTypes.func,
+  history: PropTypes.object
 }
 
 export default withRouter(
