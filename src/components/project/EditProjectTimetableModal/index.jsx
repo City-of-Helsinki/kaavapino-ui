@@ -1,6 +1,5 @@
-/* This file includes implementation of editing floor area, but currently only with mock data */
-
 import React, { Component, createRef } from 'react'
+import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
 import { Modal } from 'semantic-ui-react'
 import { reduxForm, getFormSubmitErrors, getFormValues, change } from 'redux-form'
@@ -81,6 +80,11 @@ class EditProjectTimeTableModal extends Component {
     const { initialize, attributeData, deadlines, deadlineSections, disabledDates,lomapaivat } = this.props;
 
     document.addEventListener('keydown', this.handleKeyDown);
+
+    if (this.props.open) {
+      this.setBackgroundInert(true);
+    }
+
     initialize(attributeData)
    // Check if the key exists and its value is true
     if(attributeData && deadlines && deadlineSections && disabledDates && lomapaivat){
@@ -113,7 +117,14 @@ class EditProjectTimeTableModal extends Component {
 
   componentWillUnmount() {
     document.removeEventListener('keydown', this.handleKeyDown);
+    this.setBackgroundInert(false);
   }
+
+  setBackgroundInert = (isInert) => {
+    const appRoot = document.getElementById('root');
+    if (!appRoot) return;
+    appRoot.inert = !!isInert;
+  };
 
   componentDidUpdate(prevProps) {
     const {
@@ -125,6 +136,9 @@ class EditProjectTimeTableModal extends Component {
       deadlines,
       deadlineSections
     } = this.props
+    if (prevProps.open !== this.props.open) {
+      this.setBackgroundInert(this.props.open);
+    }
     if (prevProps.attributeData && !isEqual(prevProps.attributeData, attributeData)) {
       let sectionAttributes = [];
       this.extractAttributes(deadlineSections, attributeData, sectionAttributes, (attribute, attributeData) =>
@@ -1629,6 +1643,11 @@ class EditProjectTimeTableModal extends Component {
     const currentPhaseIndex = phaseList.indexOf(ongoingPhase);
     
     return (
+      <>
+      {open && ReactDOM.createPortal(
+        <div className="edit-project-timetable-backdrop" aria-hidden="true" />,
+        document.body
+      )}
       <Modal
         size="large"
         open={open}
@@ -1713,6 +1732,7 @@ class EditProjectTimeTableModal extends Component {
         )}
         </Modal.Actions>
       </Modal>
+      </>
     )
   }
 }
