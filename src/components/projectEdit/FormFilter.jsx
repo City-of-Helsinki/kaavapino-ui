@@ -328,7 +328,7 @@ FormFilter.propTypes = {
     }),
     filterFields: PropTypes.func,
     isHighlightedTag: PropTypes.func,
-    selectedPhase: PropTypes.string,
+    selectedPhase: PropTypes.number,
     allfields: PropTypes.array,
     currentlyHighlighted: PropTypes.string,
     showSection: PropTypes.bool

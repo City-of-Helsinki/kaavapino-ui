@@ -212,7 +212,6 @@ CustomADUserCombobox.propTypes = {
   multiselect: PropTypes.bool,
   placeholder: PropTypes.string,
   disabled: PropTypes.bool,
-  name: PropTypes.string,
   required: PropTypes.bool,
   onBlur: PropTypes.func,
   input: PropTypes.shape({

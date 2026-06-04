@@ -67,7 +67,7 @@ class ProjectListPage extends Component {
       getProjectsOverviewFilters,
     } = this.props
 
-    document.title = t('title')
+    document.title = "Kaavapino - " + t('projects.title')
     fetchUsers()
     fetchProjectSubtypes()
     getProjectsOverviewFilters()
@@ -76,6 +76,10 @@ class ProjectListPage extends Component {
   }
 
   componentWillUnmount() {
+    if (document.title === "Kaavapino - " + this.props.t('projects.title')) {
+      document.title = "Kaavapino"
+    }
+    
     window.removeEventListener('resize', this.handleWindowSizeChange)
     document.removeEventListener('keydown', this.handleKeyDown, true)
     this.props.clearProjects()

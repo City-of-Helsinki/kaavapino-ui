@@ -141,7 +141,7 @@ class CustomFooter extends Component {
 
 CustomFooter.propTypes = {
   fetchFooter: PropTypes.func.isRequired,
-  footerData: PropTypes.array,
+  footerData: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
   t: PropTypes.func.isRequired
 }
 
