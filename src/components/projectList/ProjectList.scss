@@ -68,6 +68,11 @@
       padding: 0px 0px;
       border-top: none;
 
+      // Fix this syntax
+      [class^="Table-module_container"]{
+        scroll-margin-top: 7.5rem;
+      }
+
       .project-status-container{
         display: flex;
         align-items: center;
@@ -191,12 +196,7 @@
             overflow: hidden;
           }
         }
-        .project-list-header{
-          gap: 10px;
-        }
-        .project-list-item{
-          flex-flow: column;
-        }
+
         .list-amount {
           display: flex;
           justify-content: center;
@@ -249,6 +249,7 @@
           font-size: $size16;
           position: relative;
           flex-grow: 1;
+          flex-flow: column;
   
           &:hover,
           &:focus,
@@ -299,6 +300,7 @@
           align-items: center;
           min-height: 56px;
           position: relative;
+          gap: 10px;
   
           .project-timeline-toggle {
             cursor: pointer;
@@ -344,7 +346,6 @@
             text-decoration-thickness: 2px;
             text-decoration-color: $color-black-30;
             color: $color-bus-light;
-            overflow: hidden;
             flex-grow: 1;
             margin: 0;
             padding: 0;

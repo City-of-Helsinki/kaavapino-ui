@@ -192,6 +192,7 @@ class List extends Component {
       <>
         <div className={showGraphStyle}>
           <Table
+            style={ {container: {scrollMarginTop: '100px'}} }
             ariaLabelSortButtonUnset="Not sorted"
             ariaLabelSortButtonAscending="Sorted in ascending order"
             ariaLabelSortButtonDescending="Sorted in descending order"
