@@ -162,7 +162,11 @@ h4 {
 input[class^="Combobox-module"] {
   border: 0 !important;
 }
-//
+
+input[class^="Combobox-module"]::placeholder {
+    color: #595959;
+}
+
 
 // HDS fixes.
 div[class^="Combobox-module_wrapper"] {

@@ -4,6 +4,7 @@ import DropdownFilter from '../overview/Filters/DropdownFilter.jsx'
 import CustomADUserCombobox from '../input/CustomADUserCombobox.jsx'
 import { SearchInput } from 'hds-react'
 import { useTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
 
 function OwnProjectFilters({ filters, ...props }) {
     const { t } = useTranslation()
@@ -34,14 +35,11 @@ function OwnProjectFilters({ filters, ...props }) {
             setFilter(val)
             buttonAction(val)
         }
-        else{
-            //clear button pressed if null, when undefined do nothing
-            if(values === null && oldValueRef.current != ""){
-                val[1] = ""
-                oldValueRef.current = "";
-                setFilter(val)
-                buttonAction(val)
-            }
+        else if (values === null && oldValueRef.current != ""){
+            val[1] = ""
+            oldValueRef.current = "";
+            setFilter(val)
+            buttonAction(val)
         }
     }
    
@@ -49,8 +47,8 @@ function OwnProjectFilters({ filters, ...props }) {
         let filterArray = filter
         let valueArray = []
 
-        for (let index = 0; index < values.length; index++) {
-            valueArray.push(values[index].id)
+        for (const value of values) {
+            valueArray.push(value.id)
         }
         filterArray[2] = valueArray
         setFilter(filterArray)
@@ -76,10 +74,10 @@ function OwnProjectFilters({ filters, ...props }) {
     }
 
     return (
-        <div className="filters-list projects-filters">
+        <search className="filters-list projects-filters">
             <Grid stackable columns="equal">
                 <Grid.Column key="own1">
-                    <label htmlFor="person_combo">{t('common.person')}</label>
+                    <label id="person_combo-label" htmlFor="person_combo-input">{t('common.person')}</label>
                     <CustomADUserCombobox
                         id="person_combo"
                         label={t('common.person')}
@@ -94,7 +92,7 @@ function OwnProjectFilters({ filters, ...props }) {
                     />
                 </Grid.Column>
                 <Grid.Column key="own2">
-                    <label htmlFor="unit_combo">{t('common.unit')}</label>
+                    <label id="unit_combo-label" htmlFor="unit_combo-toggle-button">{t('common.unit')}</label>
                     <DropdownFilter
                         id="unit_combo"
                         key={t('common.unit')}
@@ -102,20 +100,15 @@ function OwnProjectFilters({ filters, ...props }) {
                         defaultValue={null}
                         options={filterData}
                         placeholder={t('common.unit')}
-                        onChange={
-                            value => {
-                                onFilterChange(value)
-                            }
-                        }
-                        type="choice"
+                        onChange={ value => onFilterChange(value) }
                         multiSelect={false}
                         yearSelect={false}
                     />
                 </Grid.Column>
                 <Grid.Column key="own3">
-                    <label htmlFor="search_input">{t('common.keyword')}</label>
+                    {/* Fix the id's and htmlfor after HDS update */}
+                    <label id="downshift-1-label" htmlFor="downshift-0-input">{t('common.keyword')}</label>
                     <SearchInput
-                        id="search_input"
                         clearButtonAriaLabel="Clear"
                         onSubmit={value => onSubmit(value)}
                         aria-label="Tyhjennä"
@@ -124,8 +117,13 @@ function OwnProjectFilters({ filters, ...props }) {
                     />
                 </Grid.Column>
             </Grid>
-        </div>
+        </search>
     )
+}
+
+OwnProjectFilters.propTypes = {
+    filters: PropTypes.array,
+    buttonAction: PropTypes.func
 }
 
 export default OwnProjectFilters

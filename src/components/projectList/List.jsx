@@ -21,6 +21,7 @@ import { Link } from 'react-router-dom'
 import { Popup } from 'semantic-ui-react'
 import ProjectTimeline from '../ProjectTimeline/ProjectTimeline'
 import Status from '../common/Status'
+import PropTypes from 'prop-types'
 
 class List extends Component {
   constructor(props) {
@@ -36,23 +37,9 @@ class List extends Component {
   }
 
   setSort = (type,name) => {
-    const { sort, dir } = this.state
-    let newSort = sort,
-      newDir = dir
-    if (type === sort) {
-      if (dir === 0) {
-        newDir = 1
-      } else {
-        newDir = 0
-      }
-    } else {
-      newSort = type
-      if (dir === 0) {
-        newDir = 1
-      } else {
-        newDir = 0
-      }
-    }
+    const { dir } = this.state
+    const newSort = type
+    const newDir = dir === 0 ? 1 : 0
     this.setState(prevState => ({
       ...prevState,
       sort: newSort,
@@ -75,7 +62,7 @@ class List extends Component {
       return null
     }
   }
-  //{key:this.props.t('projects.table.priority'),headerName:this.props.t('projects.table.priority'),isSortable: true},
+
   headerItems = [
     {key:this.props.t('projects.table.name'),headerName:this.props.t('projects.table.name'),isSortable: true},
     {key:this.props.t('projects.table.project'),headerName:this.props.t('projects.table.project'),isSortable: true},
@@ -85,7 +72,6 @@ class List extends Component {
     {key:this.props.t('projects.table.phase'),headerName:this.props.t('projects.table.phase'),isSortable: true},
     {key:this.props.t('projects.table.modified'),headerName:this.props.t('projects.table.modified'),isSortable: true,sortIconType: 'other'}
   ]
-    //this.props.t('projects.table.priority'),
   headerItemsMobile = [
     this.props.t('projects.table.name'),
     this.props.t('projects.table.project'),
@@ -112,22 +98,14 @@ class List extends Component {
 
     const items = this.props.items
 
-    let projects = []
-    let rows = []
+    const projects = []
+    const rows = []
 
     items.forEach(
       (
-        { attribute_data, name, id, user, subtype, phase, pino_number, deadlines, onhold, priority, modified_at }
+        { attribute_data, name, id, user, subtype, phase, pino_number, deadlines, onhold, modified_at }
       ) => {
-        let prio
-        if(priority){
-          prio = priority.name
-        }
-        else{
-          prio = ""
-        }
         const listItem = {
-          prio,
           name,
           projectId: attribute_data['hankenumero'] || '-',
           id,
@@ -161,7 +139,7 @@ class List extends Component {
         const phaseField = this.props.t('projects.table.phase');
         const modifiedField = this.props.t('projects.table.modified');
 
-        let rowObject = {}
+        const rowObject = {}
         rowObject[nameField] = <Link to={`/projects/${listItem.id}`}>{truncate(listItem.name, { length: 30 })}</Link>
         rowObject[projecField] = listItem.projectId
         rowObject[pinoField] = listItem.pino_number
@@ -177,7 +155,7 @@ class List extends Component {
         }
         rowObject.id = String(listItem.id)
         rows.push(rowObject)
-        let rowObject2 = {}
+        const rowObject2 = {}
         
         rowObject2[nameField] = this.props.showGraph && (
           <span className="project-list-item-graph"> 
@@ -264,5 +242,22 @@ const mapStateToProps = state => ({
   pollingProjects: pollingProjectsSelector(state),
   amountOfProjectsToIncrease: amountOfProjectsToIncreaseSelector(state)
 })
+
+List.propTypes = {
+  sortField: PropTypes.func,
+  sortProjects: PropTypes.func,
+  modifyProject: PropTypes.func,
+  showGraph: PropTypes.bool,
+  items: PropTypes.array,
+  users: PropTypes.array,
+  projectSubtypes: PropTypes.array,
+  isExpert: PropTypes.bool,
+  t: PropTypes.func,
+  newProjectTab: PropTypes.string,
+  loadingProjects: PropTypes.bool,
+  phases: PropTypes.array,
+  searchOpen: PropTypes.bool,
+  toggleSearch: PropTypes.func
+}
 
 export default connect(mapStateToProps, mapDispatchToProps)(withTranslation()(List))

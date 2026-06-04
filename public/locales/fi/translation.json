@@ -65,8 +65,7 @@
       "phase": "Vaihe",
       "size": "Koko",
       "modified": "Muokattu",
-      "responsible": "Vastuuhenkilö",
-      "priority":"Prioriteetti"
+      "responsible": "Vastuuhenkilö"
     }
     
   },
@@ -255,6 +254,7 @@
     "zoom-out": "Loitonna"
   },
   "project": {
+    "projects-list": "Projektiluettelo",
     "modify": "Muokkaa",
     "remove": "Poista",
     "add": "Lisää",

@@ -4,6 +4,7 @@ import { Select } from 'hds-react'
 import './styles.scss'
 
 function DropdownFilter({
+  id,
   name,
   defaultValue,
   options,
@@ -17,33 +18,28 @@ function DropdownFilter({
   const [currentParameter, setCurrentParameter] = useState()
 
   useEffect(() => {
-    const current = []
+    const current = [];
 
-    options &&
-      options.forEach(option => {
-        setCurrentParameter(option.parameter)
-
-        if (multiSelect) {
-          defaultValue &&
-            defaultValue.forEach(value => {
-              if (option.value === value) {
-                current.push(option)
-                setCurrentValue(current)
-              }
-            })
-        } else {
-          if (option.value === defaultValue) {
-            setCurrentValue(option)
+    options?.forEach(option => {
+      setCurrentParameter(option.parameter);
+      if (multiSelect) {
+        defaultValue?.forEach(value => {
+          if (option.value === value) {
+            current.push(option);
+            setCurrentValue(current);
           }
-        }
-      })
-  }, [defaultValue])
+        });
+      } else if (option.value === defaultValue) {
+        setCurrentValue(option);
+      }
+    });
+  }, [defaultValue, options, multiSelect]);
 
   return (
     <Select
       name={name}
       clearable={true}
-      id={name}
+      id={id}
       multiselect={multiSelect}
       options={options}
       onBlur={() => {
@@ -51,7 +47,6 @@ function DropdownFilter({
       }}
       onChange={data => {
         setCurrentValue(data)
-
         if (!multiSelect) {
           onChange(data, currentParameter)
         }
@@ -64,6 +59,7 @@ function DropdownFilter({
 }
 
 DropdownFilter.propTypes = {
+  id: PropTypes.string,
   name: PropTypes.string.isRequired,
   placeholder: PropTypes.string,
   defaultValue: PropTypes.oneOfType([
@@ -72,7 +68,10 @@ DropdownFilter.propTypes = {
     PropTypes.array
   ]),
   options: PropTypes.array.isRequired,
-  noResultsMessage: PropTypes.string
+  onChange: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
+  multiSelect: PropTypes.bool,
+  yearSelect: PropTypes.bool
 }
 
 export default DropdownFilter

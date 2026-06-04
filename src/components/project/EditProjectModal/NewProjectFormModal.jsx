@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
 import { Modal, Form } from 'semantic-ui-react'
 import { reduxForm, getFormSubmitErrors, getFormValues } from 'redux-form'
@@ -20,8 +21,6 @@ const PUBLIC = 'public'
 const SUB_TYPE = 'subtype'
 const CREATE_PRINCIPLES = 'create_principles'
 const CREATE_DRAFT = 'create_draft'
-
-// TODO: Change when attbitute_data returns correct project type
 const PROJECT_TYPE_DEFAULT = 'asemakaava'
 
 class NewProjectFormModal extends Component {
@@ -34,6 +33,10 @@ class NewProjectFormModal extends Component {
   }
   componentDidMount() {
     const { initialize, currentProject } = this.props
+
+    if (this.props.modalOpen) {
+      this.setBackgroundInert(true);
+    }
 
     if (!currentProject) {
       initialize({
@@ -55,9 +58,20 @@ class NewProjectFormModal extends Component {
 
   componentWillUnmount() {
     document.removeEventListener('keydown', this.handleKeyDown);
+    this.setBackgroundInert(false);
   }
 
+  // Toggle `inert` on the main app root so background content cannot be focused
+  setBackgroundInert = (isInert) => {
+    const appRoot = document.getElementById('root');
+    if (!appRoot) return;
+    appRoot.inert = !!isInert;
+  };
+
   componentDidUpdate(prevProps) {
+    if (prevProps.modalOpen !== this.props.modalOpen) {
+      this.setBackgroundInert(this.props.modalOpen);
+    }
     if (prevProps.modalOpen && !this.props.modalOpen) {
       document.removeEventListener('keydown', this.handleKeyDown)
     }
@@ -100,16 +114,6 @@ class NewProjectFormModal extends Component {
     this.props.handleClose()
     this.setState({ loading: false })
   }
-  getError = (error, fieldName) => {
-    // In case that there are field related errors, show errors.
-    // Required field error is handled differently
-    if (error) {
-      if (fieldName === USER) {
-        return error.user
-      }
-    }
-    return error
-  }
 
   getFormField = fieldProps => {
     const { formSubmitErrors, formValues } = this.props
@@ -149,6 +153,11 @@ class NewProjectFormModal extends Component {
     const hideSave = hideSaveButton()
 
     return (
+      <>
+      {this.props.modalOpen && ReactDOM.createPortal(
+        <div className="new-project-form-modal-backdrop" aria-hidden="true" />,
+        document.body
+      )}
       <Modal
         id="new-project-form-modal"
         className="form-modal project-edit"
@@ -222,7 +231,7 @@ class NewProjectFormModal extends Component {
               },
               double: true
             })}
-            {formValues && formValues.public && !initialValues.public && (
+            {formValues?.public && !initialValues?.public && (
               <div className="warning-box">
                 {t('project-base.warning-visibility-change')}
               </div>
@@ -246,9 +255,7 @@ class NewProjectFormModal extends Component {
                 }
               })}
             </div>
-            {formValues &&
-              initialValues.subtype &&
-              formValues.subtype !== initialValues.subtype && (
+            {formValues?.subtype && initialValues?.subtype && formValues.subtype !== initialValues.subtype && (
                 <div className="warning-box">
                   {t('project-base.warning-process-change')}
                 </div>
@@ -296,13 +303,29 @@ class NewProjectFormModal extends Component {
           </div>
         </Modal.Actions>
       </Modal>
+      </>
     )
   }
 }
 
 NewProjectFormModal.propTypes = {
   modalOpen: PropTypes.bool.isRequired,
-  handleClose: PropTypes.func.isRequired
+  handleClose: PropTypes.func.isRequired,
+  initialize: PropTypes.func.isRequired,
+  currentProject: PropTypes.object,
+  users: PropTypes.array,
+  projectSubtypes: PropTypes.array,
+  handleSubmit: PropTypes.func.isRequired,
+  reset: PropTypes.func,
+  selectedSubType: PropTypes.number,
+  formSubmitErrors: PropTypes.object,
+  formValues: PropTypes.object,
+  t: PropTypes.func.isRequired,
+  isEditable: PropTypes.bool.isRequired,
+  submitting: PropTypes.bool,
+  submitSucceeded: PropTypes.bool,
+  submitFailed: PropTypes.bool,
+  initialValues: PropTypes.object
 }
 
 const mapStateToProps = state => ({
