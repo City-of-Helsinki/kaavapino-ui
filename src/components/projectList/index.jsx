@@ -68,7 +68,11 @@ class ProjectListPage extends Component {
     } = this.props
 
     document.title = "Kaavapino - " + t('projects.title')
-    fetchUsers()
+    if (!this.props.users || this.props.users.length === 0) {
+      fetchUsers()
+    } else {
+      this.handleUsersListUpdate()
+    }
     fetchProjectSubtypes()
     getProjectsOverviewFilters()
     window.addEventListener('resize', this.handleWindowSizeChange)
@@ -90,16 +94,7 @@ class ProjectListPage extends Component {
       this.setState({currentFilterData: Array.isArray(this.props.filterData) ? this.props.filterData : []})
     }
     if(prevProps.users !== this.props.users){
-      const isExpert = authUtils.isExpert(this.props.currentUserId, this.props.users)
-
-      if(isExpert){
-        this.fetchProjectsByTabIndex(1,0,"modified_at",0)
-        this.setState({activeIndex:1})
-      }
-      else{
-        this.fetchProjectsByTabIndex(2,0,"modified_at",0)
-        this.setState({activeIndex:2})
-      }
+      this.handleUsersListUpdate()
     }
     
     let pageCount = 0;
@@ -127,6 +122,18 @@ class ProjectListPage extends Component {
       projectsTotalArray[3] = pageCount
       this.setState({projectsTotal:projectsTotalArray})
       this.setState({resultsFound:[this.props.totalOwnProjects,this.props.totalProjects,this.props.totalOnholdProjects,this.props.totalArchivedProjects]})
+    }
+  }
+
+  handleUsersListUpdate() {
+    const isExpert = authUtils.isExpert(this.props.currentUserId, this.props.users)
+    if(isExpert){
+      this.fetchProjectsByTabIndex(1,0,"modified_at",0)
+      this.setState({activeIndex:1})
+    }
+    else{
+      this.fetchProjectsByTabIndex(2,0,"modified_at",0)
+      this.setState({activeIndex:2})
     }
   }
 
@@ -160,10 +167,8 @@ class ProjectListPage extends Component {
   toggleForm = opened => this.setState({ showBaseInformationForm: opened })
 
   toggleSearch = opened => {
-    if (!opened) {
-      if(this.state.activeIndex){
-        this.fetchProjectsByTabIndex(this.state.activeIndex,this.state.pageIndex,this.state.tabName,this.state.tabDir)
-      }
+    if (!opened && this.state.activeIndex) {
+      this.fetchProjectsByTabIndex(this.state.activeIndex,this.state.pageIndex,this.state.tabName,this.state.tabDir)
     }
   }
 
