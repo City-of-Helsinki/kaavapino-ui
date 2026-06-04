@@ -443,8 +443,9 @@ class ProjectPage extends Component {
 
   toggleBaseInformationForm = (opened) => {
     if (!opened && this.state.showBaseInformationForm) {
-      // Return focus to edit button when closing the form
-      document.getElementById('editNavSelect-toggle-button')?.focus();
+      requestAnimationFrame(() => {
+        document.getElementById('editNavSelect-toggle-button')?.focus();
+      })
     }
 
     this.setState(prevState => ({ ...prevState, showBaseInformationForm: opened }))
@@ -503,10 +504,9 @@ class ProjectPage extends Component {
 
   togglePrintProjectDataModal = (opened) => {
     if (!opened && this.state.showPrintProjectDataModal) {
-      const navButtons = document.getElementById('editNavSelect-toggle-button');
-      if (navButtons) {
-        navButtons.focus();
-      }
+      requestAnimationFrame(() => {
+        document.getElementById('editNavSelect-toggle-button')?.focus();
+      })
     }
     this.setState({ showPrintProjectDataModal: opened })
   }

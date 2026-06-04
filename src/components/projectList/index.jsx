@@ -150,6 +150,13 @@ class ProjectListPage extends Component {
 
   }
 
+  handleNewProjectModalClose = () => {
+    this.toggleForm(false)
+    requestAnimationFrame(() => {
+      document.getElementById('add-new-project-button')?.focus();
+    });
+  }
+
   toggleForm = opened => this.setState({ showBaseInformationForm: opened })
 
   toggleSearch = opened => {
@@ -462,6 +469,7 @@ class ProjectListPage extends Component {
       <span className="header-buttons">
         {hasEditRights && (
           <Button
+            id="add-new-project-button"
             size="small"
             variant="secondary"
             className="header-button"
@@ -505,7 +513,7 @@ class ProjectListPage extends Component {
           <NewProjectFormModal
             modalOpen={showBaseInformationForm}
             handleSubmit={createProject}
-            handleClose={() => this.toggleForm(false)}
+            handleClose={this.handleNewProjectModalClose}
             users={users}
             projectSubtypes={projectSubtypes}
             isEditable={isResponsible}
