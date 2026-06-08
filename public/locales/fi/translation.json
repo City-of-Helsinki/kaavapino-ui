@@ -310,7 +310,7 @@
     "expert": "Asiantuntija",
     "admin": "Pääkäyttäjä",
     "sort": "Lajittele",
-    "timeline": "Aikajana",
+    "timeline": "Projektin aikajana",
     "show-timelines": "Näytä aikajanat",
     "char-limit": "Max {{amount}} merkkiä",
     "download_confirmation_header": "Vahvistus dokumentin lataukselle",

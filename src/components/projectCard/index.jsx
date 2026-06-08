@@ -193,6 +193,7 @@ function ProjectCardPage({
     return (
       <div className='project-card-timeline-row'>
         <div className="card-segment">
+          <h2>{t('project.timeline')}</h2>
           <ProjectTimeline
             deadlines={currentProject?.deadlines}
             projectView={true}
