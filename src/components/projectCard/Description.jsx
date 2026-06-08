@@ -33,9 +33,8 @@ function Description({ fields, hideTitle }) {
     missingData = true
     return (
       <div>
-        {!hideTitle && <h3>{t('project.description-title')}</h3>}
-        {fields &&
-          fields.map((field, index) => {
+        {!hideTitle && <h2>{t('project.description-title')}</h2>}
+        {fields?.map((field, index) => {
             return renderField(field, index)
           })
         }
@@ -49,7 +48,8 @@ function Description({ fields, hideTitle }) {
 }
 
 Description.propTypes = {
-  fields: PropTypes.array
+  fields: PropTypes.array,
+  hideTitle: PropTypes.bool
 }
 
 export default Description
