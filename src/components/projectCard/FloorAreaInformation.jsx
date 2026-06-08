@@ -32,10 +32,9 @@ function FloorAreaInformation({ fields, hideTitle }) {
   const renderFields = () => {
     return (
       <div>
-        {!hideTitle && <h3>{t('project.floor-area-title')}</h3>}
+        {!hideTitle && <h2>{t('project.floor-area-title')}</h2>}
         <Grid stackable columns="equal">
-          {fields &&
-            fields.map((field, index) => {
+          {fields?.map((field, index) => {
               return renderField(field, index)
             })}
         </Grid>
@@ -48,7 +47,8 @@ function FloorAreaInformation({ fields, hideTitle }) {
 }
 
 FloorAreaInformation.propTypes = {
-  fields: PropTypes.array
+  fields: PropTypes.array,
+  hideTitle: PropTypes.bool
 }
 
 export default FloorAreaInformation

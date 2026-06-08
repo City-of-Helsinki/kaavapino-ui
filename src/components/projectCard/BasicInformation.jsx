@@ -23,9 +23,8 @@ function BasicInformation({ fields, hideTitle }) {
   const renderFields = () => {
     return (
       <div key="basic-information">
-        {!hideTitle && <h3>{t('project.basic-information-title')}</h3>}
-        {fields &&
-          fields.map((field, index) => {
+        {!hideTitle && <h2>{t('project.basic-information-title')}</h2>}
+        {fields?.map((field, index) => {
             return renderField(field, index)
           })}
       </div>
@@ -37,7 +36,8 @@ function BasicInformation({ fields, hideTitle }) {
 }
 
 BasicInformation.propTypes = {
-  fields: PropTypes.array
+  fields: PropTypes.array,
+  hideTitle: PropTypes.bool
 }
 
 export default BasicInformation

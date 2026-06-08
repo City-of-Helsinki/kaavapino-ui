@@ -229,7 +229,7 @@ function ProjectCardPage({
           <FloorAreaInformation fields={floorAreaFields} />
         </div>
          <div className="card-segment">
-        <BasicInformation fields={basicInformationFields} />
+          <BasicInformation fields={basicInformationFields} />
         </div>
         <div className="card-segment">
           <Contract fields={contractFields} />

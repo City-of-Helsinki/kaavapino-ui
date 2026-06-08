@@ -23,15 +23,12 @@ function TimeTable({ fields, hideTitle }) {
         }
       })
       value = completeValue
-    } else {
-      if (field.choices) {
-        const foundValue =
-          field.choices && field.choices.find(current => current.value === field.value)
-        value = foundValue.label
+    } else if (field.choices) {
+        const foundValue = field.choices?.find(current => current.value === field.value)
+        value = foundValue?.label
       } else {
         value = dayjs(field.value).format('DD.MM.YYYY')
       }
-    }
 
     return <div key={field.label + index}>{renderFieldValue(field, index, value)}</div>
   }
@@ -56,8 +53,7 @@ function TimeTable({ fields, hideTitle }) {
     missingData = true
     return (
       <div>
-        {fields &&
-          fields.map((field, fieldIndex) => {
+        {fields?.map((field, fieldIndex) => {
             return renderField(field, fieldIndex)
           })
         }
@@ -69,14 +65,15 @@ function TimeTable({ fields, hideTitle }) {
 
   return (
     <div className="timetable">
-      {!hideTitle && <h3>{t('project.timetable-title')}</h3>}
+      {!hideTitle && <h2>{t('project.timetable-title')}</h2>}
       {fieldsComponent}
     </div>
   )
 }
 
 TimeTable.propTypes = {
-  fields: PropTypes.array
+  fields: PropTypes.array,
+  hideTitle: PropTypes.bool
 }
 
 export default TimeTable
