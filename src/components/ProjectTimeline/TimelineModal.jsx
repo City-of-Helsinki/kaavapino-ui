@@ -601,7 +601,7 @@ TimelineModal.propTypes = {
   items: PropTypes.array,
   sectionAttributes: PropTypes.array,
   initialTab: PropTypes.number,
-  returnFocusGroupId: PropTypes.string,
+  returnFocusGroupId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   isAdmin: PropTypes.bool
 };
 

@@ -385,7 +385,7 @@ FormField.propTypes = {
     PropTypes.object,
     PropTypes.string
   ]),
-  maxDateToMove: PropTypes.string,
+  maxDateToMove: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   groupName: PropTypes.string,
   visGroups: PropTypes.array,
   visItems: PropTypes.array,

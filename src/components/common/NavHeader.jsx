@@ -84,6 +84,6 @@ NavHeader.propTypes = {
   pino: PropTypes.string,
   diaari: PropTypes.string,
   pwnumber: PropTypes.string,
-  pwlink: PropTypes.string,
+  pwlink: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   location: PropTypes.object,
 }

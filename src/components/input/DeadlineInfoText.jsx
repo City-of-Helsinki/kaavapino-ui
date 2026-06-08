@@ -47,7 +47,7 @@ const DeadlineInfoText = props => {
           autofill(
             EDIT_PROJECT_TIMETABLE_FORM,
             props.input.name,
-            readonlyValue !== undefined ? readonlyValue : undefined
+            readonlyValue === undefined ? undefined : readonlyValue
           )
         )
       }
@@ -85,12 +85,12 @@ const DeadlineInfoText = props => {
       const index = match ? "_"+match[1] : "";
       let start;
       const kokoluokka = formValues?.["kaavaprosessin_kokoluokka"];
-      if (!kokoluokka) {
-        start = formValues["milloin_ehdotuksen_nahtavilla_alkaa_iso"+index] ?? formValues["milloin_ehdotuksen_nahtavilla_alkaa_pieni"+index]
-      } else {
+      if (kokoluokka) {
         start = ["XS", "S", "M"].includes(kokoluokka) ? 
           formValues["milloin_ehdotuksen_nahtavilla_alkaa_pieni"+index] : 
           formValues["milloin_ehdotuksen_nahtavilla_alkaa_iso"+index];
+      } else {
+        start = formValues["milloin_ehdotuksen_nahtavilla_alkaa_iso"+index] ?? formValues["milloin_ehdotuksen_nahtavilla_alkaa_pieni"+index]
       }
       let end = formValues["milloin_ehdotuksen_nahtavilla_paattyy"+index]
       return calculateDaysBetweenDates(start, end)
@@ -142,7 +142,7 @@ const DeadlineInfoText = props => {
   const phase = phaseMap[phaseKey];
   //Check if event is set to be organized in formValues
   const eventKey = phase === "Luonnos" ? `jarjestetaan_${phase?.toLowerCase()}vaiheessa_tilaisuus` : `jarjestetaan_${phase?.toLowerCase()}_tilaisuus`
-  const shouldShowNotification = phase && formValues && formValues[eventKey];
+  const shouldShowNotification = phase && formValues?.[eventKey];
 
   // Extract the event date if it exists and shouldShowNotification is true
   let eventDate = "";
@@ -163,13 +163,14 @@ const DeadlineInfoText = props => {
           className="event-info-notification"
           size="small"
           label={`${phase}${phase === "Luonnos" ? "" : "-"}vaiheen tilaisuus: ${eventDate}`}
+          headingLevel={3}
         >
           {`${phase}${phase === "Luonnos" ? "" : "-"}vaiheen tilaisuus: ${eventDate}`}
         </Notification>
       )}
       {props.input.name.includes("nahtavillaolopaivien_lukumaara") ?
         <p className="deadline-info-readonlytext">{props.label}: {value} pv </p>
-        : <Notification className='deadline-info-notification' size="small" label={props.input.name}>{props.label + ': '}{value}</Notification>
+        : <Notification className='deadline-info-notification' size="small" label={props.input.name} headingLevel={3}>{props.label + ': '}{value}</Notification>
       }
     </>
   );
@@ -190,6 +191,7 @@ DeadlineInfoText.propTypes = {
     name: PropTypes.string,
   }),
   label: PropTypes.string,
+  autofillRule: PropTypes.array,
 }
 
 export default DeadlineInfoText

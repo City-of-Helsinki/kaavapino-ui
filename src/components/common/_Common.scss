@@ -167,6 +167,10 @@ input[class^="Combobox-module"]::placeholder {
     color: #595959;
 }
 
+input[class^="Select-module_button"] {
+  color: #595959;
+}
+
 
 // HDS fixes.
 div[class^="Combobox-module_wrapper"] {
