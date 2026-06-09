@@ -51,7 +51,7 @@
     box-shadow: none;
 
     @media screen and (min-width: 600px) {
-      padding: 16px 24px 24px 24px;
+      padding: $size24;
     }
   }
 
@@ -59,11 +59,15 @@
     display:flex;
     flex-wrap: wrap;
     flex-direction: row;
+    height: 400px;
     margin-top: 1rem;
+    margin-left: $size4;
+    margin-right: $size4;
     .card-segment {
-      width: calc(50% - 2rem);
-      margin-left: 1rem;
-      margin-right: 1rem;
+      width: calc(50% - $size24);
+      margin-left: $size12;
+      margin-right: $size12;
+      height: calc(100%);
     }
     .project-image-container {
       text-align: center;
@@ -71,11 +75,12 @@
   }
 
   .project-card-timeline-row {
-    margin-top: 1rem;
+    margin-top: $size24;
     .card-segment {
       width: calc(100% - 2rem);
       margin-left: 1rem;
       margin-right: 1rem;
+      padding-bottom: $size12;
     }
   }
 
@@ -83,7 +88,7 @@
     display:flex;
     flex-wrap: wrap;
     flex-direction: row;
-    margin-top: 1rem;
+    margin-top: $size24;
     .card-segment {
       margin-bottom: $size24;
     }
@@ -92,15 +97,15 @@
   .project-card-left {
     display: flex;
     flex-direction: column;
-    width: calc(40% - 2rem);
+    width: calc(40% - 1rem - $size12);
     margin-left: 1rem;
-    margin-right: 1rem;
+    margin-right: $size12;
   }
   .project-card-right {
     display: flex;
     flex-direction: column;
-    width: calc(60% - 2rem);
-    margin-left: 1rem;
+    width: calc(60% - 1rem - $size12);
+    margin-left: $size12;
     margin-right: 1rem;
   }
 
@@ -112,9 +117,7 @@
     min-height: 250px;
     overflow: auto;
   }
-  .description {
-    min-height: 400px;
-  }
+
   .floor-area-information {
     min-height: 120px;
     overflow: auto;
@@ -150,7 +153,6 @@
 
   @media only screen and (min-width: 501px) {
     .photo {
-      height: 400px;
       display: flex;
       flex-direction: column;
     }
