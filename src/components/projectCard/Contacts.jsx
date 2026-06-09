@@ -15,6 +15,7 @@ function Contacts({ fields, hideTitle, personnel }) {
 
     if (isArray(field.value)) {
       field.value.forEach(current => {
+        if (!current) return;
         if (field.choices) {
           const choiceValue = field.choices?.find(choice => choice.value === current)
           completeValue.push(choiceValue?.label || current)
@@ -43,7 +44,7 @@ function Contacts({ fields, hideTitle, personnel }) {
   }
 
   return (
-    <div>
+    <div className="contacts">
       {!hideTitle && <h2>{t('project.contact-title')}</h2>}
       <dl>
         {fields?.map((field, index) => {

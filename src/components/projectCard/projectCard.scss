@@ -129,6 +129,16 @@
   .strategy-connection {
     min-height: 200px;
     overflow: auto;
+    ul {
+      padding-left: $size20;
+    }
+    li{
+      font-size: $size16;
+      font-family: 'Helsinki Grotesk Regular', sans-serif;
+      line-height: 1.5rem;
+      font-weight: 400;
+      margin-bottom: $size12;
+    }
   }
   .documents {
     min-height: 200px;
@@ -145,6 +155,24 @@
   .contacts {
     min-height: 200px;
     overflow: auto;
+    .project-card-field {
+      display: flex;
+      flex-direction: row;
+      gap: 1rem;
+      line-height: 1.5rem;
+      margin-bottom: 0.25rem;
+      dt {
+        width: calc(60% - 0.5rem);
+        font-family: 'Helsinki Grotesk Medium', sans-serif;
+        font-weight: 500;
+      }
+      dd {
+        width: calc(40% - 0.5rem);
+        margin-inline-start: 0px;
+        font-family: 'Helsinki Grotesk Regular', sans-serif;
+        font-weight: 400;
+      }
+    }
   }
   .missing-data,
   .documents-not-ready {
@@ -254,21 +282,4 @@
     padding-bottom: 10px;
   }
 }
-.project-card-field {
-  display: flex;
-  flex-direction: row;
-  gap: 1rem;
-  line-height: 1.5rem;
-  margin-bottom: 0.25rem;
-  dt {
-    width: calc(60% - 0.5rem);
-    font-family: 'Helsinki Grotesk Medium', sans-serif;
-    font-weight: 500;
-  }
-  dd {
-    width: calc(40% - 0.5rem);
-    margin-inline-start: 0px;
-    font-family: 'Helsinki Grotesk Regular', sans-serif;
-    font-weight: 400;
-  }
-}
+
