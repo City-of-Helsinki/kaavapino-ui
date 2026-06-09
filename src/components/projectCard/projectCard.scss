@@ -255,5 +255,21 @@
   }
 }
 .project-card-field {
-  padding-bottom: 5px;
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  line-height: 1.5rem;
+  margin-bottom: 0.25rem;
+  dt {
+    width: calc(60% - 0.5rem);
+    font-family: 'Helsinki Grotesk Medium', sans-serif;
+    word-break: break-all;
+    font-weight: 500;
+  }
+  dd {
+    width: calc(40% - 0.5rem);
+    margin-inline-start: 0px;
+    font-family: 'Helsinki Grotesk Regular', sans-serif;
+    font-weight: 400;
+  }
 }

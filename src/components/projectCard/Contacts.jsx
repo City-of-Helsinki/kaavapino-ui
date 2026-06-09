@@ -36,21 +36,20 @@ function Contacts({ fields, hideTitle, personnel }) {
     }
     return (
       <div className="project-card-field" key={field.label + index}>
-        <div>{field.label}</div>
-        <div>
-          <b>{value}</b>
-        </div>
+        <dt>{field.label}</dt>
+        <dd>{value}</dd>
       </div>
     )
   }
 
-
   return (
     <div>
       {!hideTitle && <h2>{t('project.contact-title')}</h2>}
-      {fields?.map((field, index) => {
-        return renderField(field, index);
-      })}
+      <dl>
+        {fields?.map((field, index) => {
+          return renderField(field, index);
+        })}
+      </dl>
     </div>
   )
 }
