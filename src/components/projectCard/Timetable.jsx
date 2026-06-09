@@ -47,7 +47,7 @@ function TimeTable({ fields, hideTitle }) {
             return renderField(field, fieldIndex)
           })
         }
-        {missingData && <label className="missing-data">{t('project.missing-data')}</label>}
+        {missingData && <div className="missing-data">{t('project.missing-data')}</div>}
       </div>
     )
   }

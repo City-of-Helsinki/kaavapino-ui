@@ -47,7 +47,7 @@ function Documents({ documentFields, hideTitle, mapLink }) {
             return renderSection(section)
           })
         }
-        {documentsNotReady && !mapLink && <label className="documents-not-ready">{t('project.documents-not-ready')}</label>}
+        {documentsNotReady && !mapLink && <div className="documents-not-ready">{t('project.documents-not-ready')}</div>}
       </div>
     )
   }

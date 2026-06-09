@@ -16,23 +16,20 @@ function BasicInformation({ fields, hideTitle }) {
     }
     return (
       <div className="project-card-field" key={field.label + index}>
-        {field.label}: <b>{value}</b>{' '}
+        <dt>{field.label}:</dt>
+        <dd>{value}</dd>
       </div>
     )
   }
-  const renderFields = () => {
-    return (
-      <div key="basic-information">
-        {!hideTitle && <h2>{t('project.basic-information-title')}</h2>}
-        {fields?.map((field, index) => {
-            return renderField(field, index)
-          })}
-      </div>
-    )
-  }
-  const fieldsComponent = renderFields()
 
-  return <div className="basic-information">{fieldsComponent}</div>
+  return (
+    <div className="basic-information">
+      {!hideTitle && <h2>{t('project.basic-information-title')}</h2>}
+      <dl>
+        {fields?.map((field, index) => renderField(field, index))}
+      </dl>
+    </div>
+  )
 }
 
 BasicInformation.propTypes = {

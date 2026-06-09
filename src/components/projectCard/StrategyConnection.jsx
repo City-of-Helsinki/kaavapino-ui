@@ -24,7 +24,7 @@ function StrategyConnection({ fields, hideTitle }) {
         }
       }
       if (missingData) missingData = (value == null || value.length == 0);
-      return value && <li className="project-card-field" key={value + index} >{value}</li>;
+      return value && <li className="project-card-listitem" key={value + index} >{value}</li>;
     });
 
     return (
@@ -45,7 +45,7 @@ function StrategyConnection({ fields, hideTitle }) {
           })
           }
         </ul>
-        {missingData && <label className="missing-data">{t('project.missing-data')}</label>}
+        {missingData && <div className="missing-data">{t('project.missing-data')}</div>}
       </div>
     );
   };

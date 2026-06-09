@@ -7,7 +7,7 @@ function GeometryInformation(props) {
   const { t } = useTranslation()
 
   return (
-    <div>
+    <div className="geometry-information">
       {!props.hideTitle && <h2>{t('project.planning-area-constraints')}</h2>}
       <div className="geometry-input-container">
         <Geometry

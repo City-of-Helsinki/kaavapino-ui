@@ -34,27 +34,18 @@ function Contract({ fields, hideTitle }) {
     }
     return (
       <div className="project-card-field" key={field.label + index}>
-        <div>{field.label}</div>
-        <div><b>{value}</b></div>
+        <dt>{field.label}</dt>
+        <dd>{value}</dd>
       </div>
     );
   };
-  const renderFields = () => {
-    return (
-      <div>
-        {!hideTitle && <h2>{t('project.contract-title')}</h2>}
-        {fields?.map((field, index) => {
-          return renderField(field, index);
-        })
-        }
-      </div>
-    );
-  };
-  const fieldsComponent = renderFields();
 
   return (
     <div className="contract">
-      {fieldsComponent}
+      {!hideTitle && <h2>{t('project.contract-title')}</h2>}
+      <dl>
+        {fields?.map((field, index) => {return renderField(field, index)})}
+      </dl>
     </div>
   );
 }

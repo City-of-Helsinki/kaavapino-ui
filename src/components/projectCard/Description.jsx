@@ -38,7 +38,7 @@ function Description({ fields, hideTitle }) {
             return renderField(field, index)
           })
         }
-        {missingData && <label className="missing-data">{t('project.missing-data')}</label>}
+        {missingData && <div className="missing-data">{t('project.missing-data')}</div>}
       </div>
     )
   }
