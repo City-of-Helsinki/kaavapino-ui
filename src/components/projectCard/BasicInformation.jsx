@@ -1,9 +1,13 @@
 import React from 'react'
+import { Link } from 'hds-react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 
 function BasicInformation({ fields, hideTitle }) {
   const { t } = useTranslation()
+
+  const isUrl = (val) =>
+    typeof val === 'string' && val.includes('://')
 
   const renderField = (field, index) => {
     let value = field.value
@@ -17,7 +21,10 @@ function BasicInformation({ fields, hideTitle }) {
     return (
       <div className="project-card-field" key={field.label + index}>
         <dt>{field.label}:</dt>
-        <dd>{value}</dd>
+        <dd>{isUrl(value) ? 
+          <Link href={value} target="_blank" rel="noreferrer" external openInNewTab> {value} </Link> 
+          : value}
+        </dd>
       </div>
     )
   }

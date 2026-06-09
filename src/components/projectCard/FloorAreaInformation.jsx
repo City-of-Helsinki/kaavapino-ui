@@ -21,9 +21,9 @@ function FloorAreaInformation({ fields, hideTitle }) {
         <Grid.Column key={field.label + index}>
           <div className="floor-area-field">
             <div>{field.label}</div>
-            <div className="floor-area-value">
+            <data className="floor-area-value" value={field.value}>
               {field.value} {field.unit}
-            </div>
+            </data>
           </div>
         </Grid.Column>
       )

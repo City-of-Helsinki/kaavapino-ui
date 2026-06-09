@@ -34,7 +34,7 @@ function TimeTable({ fields, hideTitle }) {
     return (
       <div className="timetable-field" key={labelContent + index}>
         <dt>{labelContent}</dt>
-        <dd>{value}</dd>
+        <dd><time dateTime={field.value}>{value}</time></dd>
       </div>
     )
   }
