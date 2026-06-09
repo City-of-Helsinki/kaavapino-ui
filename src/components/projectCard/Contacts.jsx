@@ -17,10 +17,10 @@ function Contacts({ fields, hideTitle, personnel }) {
       field.value.forEach(current => {
         if (field.choices) {
           const choiceValue = field.choices?.find(choice => choice.value === current)
-          completeValue.push(choiceValue.label)
+          completeValue.push(choiceValue?.label || current)
         } else {
           const currentPerson = personnel?.find(person => (person.id === current))
-          completeValue.push(currentPerson.name || current)
+          completeValue.push(currentPerson?.name || current)
         }
       })
       value = completeValue.map(value => <div key={value}>{value}</div>)
