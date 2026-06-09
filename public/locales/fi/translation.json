@@ -255,6 +255,7 @@
   },
   "project": {
     "projects-list": "Projektiluettelo",
+    "project-card": "Projektikortti",
     "modify": "Muokkaa",
     "remove": "Poista",
     "add": "Lisää",

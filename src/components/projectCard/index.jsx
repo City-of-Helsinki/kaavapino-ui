@@ -67,6 +67,12 @@ function ProjectCardPage({
   useEffect(() => {
     getProjectCardFields(projectId)
     getExternalDocuments(projectId)
+    window.scrollTo({ top: 0, behavior: 'auto' })
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      clearExternalDocuments()
+    }
   }, [])
 
   useEffect(() => {
@@ -84,25 +90,18 @@ function ProjectCardPage({
   }, [currentProjectId])
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'auto' })
-  }, [])
-
-  useEffect(() => {
-    window.addEventListener('resize', handleResize)
+    document.title = currentProject?.name ? `${t('project.project-card')}: ${currentProject.name}` :
+      t('project.project-card');
     return () => {
-      window.removeEventListener('resize', handleResize)
-    }
-  }, [])
+      if (document.title.includes(t('project.project-card'))) {
+        document.title = "Kaavapino";
+      }
+    };
+  }, [currentProject?.name]);
 
   const handleResize = () => {
     setIsMobile(window.innerWidth < 720)
   }
-
-  useEffect(() => {
-    return () => {
-      clearExternalDocuments()
-    }
-  }, [])
 
   const buildPage = () => {
     const currentDescriptionFields = []

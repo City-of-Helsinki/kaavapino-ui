@@ -113,7 +113,6 @@ class ProjectPage extends Component {
       } else {
         this.props.setSelectedPhaseId(currentProject.phase)
       }
-      document.title = currentProject.name
     }
     if (
       this.props.documents &&
@@ -258,7 +257,7 @@ class ProjectPage extends Component {
     return (
       <div key="project-card">
         <NavHeader
-          title={currentProject.name}
+          title={`${this.props.t('project.project-card')}: ${currentProject.name}`}
           actions={this.getProjectCardNavActions(isUserExpert)}
           infoOptions={this.getAllChanges()}
         />
