@@ -113,7 +113,6 @@ class ProjectPage extends Component {
       } else {
         this.props.setSelectedPhaseId(currentProject.phase)
       }
-      document.title = currentProject.name
     }
     if (
       this.props.documents &&
@@ -258,7 +257,7 @@ class ProjectPage extends Component {
     return (
       <div key="project-card">
         <NavHeader
-          title={currentProject.name}
+          title={`${this.props.t('project.project-card')}: ${currentProject.name}`}
           actions={this.getProjectCardNavActions(isUserExpert)}
           infoOptions={this.getAllChanges()}
         />
@@ -351,7 +350,7 @@ class ProjectPage extends Component {
           </Button>
           <Button
             variant="secondary"
-            className="header-button"
+            className="header-button download-project-card"
             size="small"
             onClick={() => downloadDocument({
               ...currentProject.project_card_document,
