@@ -30,21 +30,11 @@ function TimeTable({ fields, hideTitle }) {
         value = dayjs(field.value).format('DD.MM.YYYY')
       }
 
-    return <div key={field.label + index}>{renderFieldValue(field, index, value)}</div>
-  }
-  const renderFieldValue = (field, index, value) => {
-    return field.date_format ? (
-      <div key={field.label + index}>
-        {field.date_format} <b>{value}</b>
-      </div>
-    ) : (
-      <div key={field.label + index}>
-        <div>{field.label}</div>
-        <div>
-          <b>
-            {field.date_format} {value}
-          </b>
-        </div>
+    const labelContent = field.date_format  || field.label;
+    return (
+      <div className="timetable-field" key={labelContent + index}>
+        <dt>{labelContent}</dt>
+        <dd>{value}</dd>
       </div>
     )
   }
@@ -52,7 +42,7 @@ function TimeTable({ fields, hideTitle }) {
   const renderFields = () => {
     missingData = true
     return (
-      <div>
+      <div className="timetable-fields">
         {fields?.map((field, fieldIndex) => {
             return renderField(field, fieldIndex)
           })

@@ -37,8 +37,6 @@
 }
 
 .project-card {
-  margin: -($size16);
-
   .card-segment {
     h2 {
       font-size: $size18 !important;
@@ -47,12 +45,7 @@
     background-color: $color-black-5;
     border: 0;
     border-radius: 0;
-    padding: 8px 16px 16px 16px;
     box-shadow: none;
-
-    @media screen and (min-width: 600px) {
-      padding: $size24;
-    }
   }
 
   .project-card-first-row {
@@ -61,13 +54,21 @@
     flex-direction: row;
     height: 400px;
     margin-top: 1rem;
-    margin-left: $size4;
-    margin-right: $size4;
     .card-segment {
-      width: calc(50% - $size24);
-      margin-left: $size12;
+      width: calc(50% - $size12);
+      height: 100%;
+      .description {
+        margin: $size24;
+      }
+      .photo {
+        margin: $size24;
+      }
+    }
+    .card-segment:first-child {
       margin-right: $size12;
-      height: calc(100%);
+    }
+    .card-segment:last-child {
+      margin-left: $size12;
     }
     .project-image-container {
       text-align: center;
@@ -77,10 +78,12 @@
   .project-card-timeline-row {
     margin-top: $size24;
     .card-segment {
-      width: calc(100% - 2rem);
-      margin-left: 1rem;
-      margin-right: 1rem;
-      padding-bottom: $size12;
+      width: calc(100%);
+      padding-top: $size24;
+      .project-card-timeline {
+        margin: $size24;
+        margin-top: 0;
+      }
     }
   }
 
@@ -97,16 +100,14 @@
   .project-card-left {
     display: flex;
     flex-direction: column;
-    width: calc(40% - 1rem - $size12);
-    margin-left: 1rem;
+    width: calc(40% - $size12);
     margin-right: $size12;
   }
   .project-card-right {
     display: flex;
     flex-direction: column;
-    width: calc(60% - 1rem - $size12);
+    width: calc(60% - $size12);
     margin-left: $size12;
-    margin-right: 1rem;
   }
 
   .basic-information {
@@ -129,6 +130,7 @@
   .strategy-connection {
     min-height: 200px;
     overflow: auto;
+    margin: $size24;
     ul {
       padding-left: $size20;
     }
@@ -143,6 +145,7 @@
   .documents {
     min-height: 200px;
     overflow: auto;
+    margin: $size24;
 
     .section {
       margin-bottom: 10px;
@@ -151,10 +154,31 @@
   .timetable {
     min-height: 200px;
     overflow: auto;
+    margin: $size24;
+    .timetable-field {
+      overflow: hidden;
+      display: flex;
+      flex-direction: row;
+      gap: 1rem;
+      line-height: 1.5rem;
+      margin-bottom: 0.25rem;
+      dt {
+        width: calc(79.5% - 0.5rem);
+        font-family: 'Helsinki Grotesk Medium', sans-serif;
+        font-weight: 500;
+      }
+      dd {
+        width: calc(20% - 0.5rem);
+        margin-inline-start: 0px;
+        font-family: 'Helsinki Grotesk Regular', sans-serif;
+        font-weight: 400;
+      }
+    }
   }
   .contacts {
     min-height: 200px;
     overflow: auto;
+    margin: $size24;
     .project-card-field {
       display: flex;
       flex-direction: row;

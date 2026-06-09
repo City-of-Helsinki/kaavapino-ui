@@ -351,7 +351,7 @@ class ProjectPage extends Component {
           </Button>
           <Button
             variant="secondary"
-            className="header-button"
+            className="header-button download-project-card"
             size="small"
             onClick={() => downloadDocument({
               ...currentProject.project_card_document,
