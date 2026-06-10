@@ -90,8 +90,8 @@ function ProjectCardPage({
   }, [currentProjectId])
 
   useEffect(() => {
-    document.title = currentProject?.name ? `${t('project.project-card')}: ${currentProject.name}` :
-      t('project.project-card');
+    document.title = currentProject?.name ? `Kaavapino - ${t('project.project-card')}: ${currentProject.name}` :
+      `Kaavapino - ${t('project.project-card')}`;
     return () => {
       if (document.title.includes(t('project.project-card'))) {
         document.title = "Kaavapino";
