@@ -72,7 +72,7 @@ ListItem.propTypes = {
     phaseName: PropTypes.string,
     phaseColor: PropTypes.string,
     name: PropTypes.string,
-    id: PropTypes.string,
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     subtype: PropTypes.string,
     modified_at: PropTypes.string,
     user: PropTypes.string,
