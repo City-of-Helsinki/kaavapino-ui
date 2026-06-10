@@ -24,122 +24,99 @@ const CustomCheckbox = ({
   isAdmin
 }) => {
   const { t } = useTranslation()
-  const shouldDisableForErrors = useFieldPassivation(name, { formName: meta.form });
-  const formValues = useSelector(getFormValues(formName ? formName : EDIT_PROJECT_TIMETABLE_FORM))
-  const notDisabledBoxes = name === "kaavaluonnos_lautakuntaan_1" || name === "periaatteet_lautakuntaan_1" 
-  || name === "jarjestetaan_periaatteet_esillaolo_1" || name === "jarjestetaan_luonnos_esillaolo_1"
-  let checkboxDisabled
-
-  if(notDisabledBoxes){
-    checkboxDisabled = disabled || shouldDisableForErrors
-  }
-  else{
-    checkboxDisabled = autofillRule || disabled || shouldDisableForErrors
-  }
+  const shouldDisableForErrors = useFieldPassivation(name, { formName: meta.form })
+  const formValues = useSelector(getFormValues(formName || EDIT_PROJECT_TIMETABLE_FORM))
+  const checkboxDisabled = autofillRule || disabled || shouldDisableForErrors
   const [checked, setChecked] = useState()
 
   useEffect(() => {
-
-    let inputValue = value
-    if(notDisabledBoxes){
+    if(value === ""){
       //If project is just created the value is empty string, set to autofill value which is either true or false
-      //Otherwise don't do nothing
-      if(inputValue === ""){
-        inputValue = getFieldAutofillValue(autofillRule, formValues, name)
-        onChange( inputValue )
-        setChecked( inputValue )
-      }
+      const inputValue = getFieldAutofillValue(autofillRule, formValues, name)
+      onChange( inputValue )
+      setChecked( inputValue )
     }
-  },[]) 
+  },[])
+
 
   useEffect(() => {
-
     let inputValue = value
-
-    if (!notDisabledBoxes && autofillRule) {
+    if (autofillRule) {
       inputValue = getFieldAutofillValue(autofillRule, formValues, name)
       if ( display === 'readonly_checkbox') {
         onChange( inputValue )
       }
     }
-
     setChecked( inputValue )
   }, [value])
  
-  const onChangeSave = () => {
-    setChecked( !checked )
+  const toggleCheckbox = () => {
+    setChecked(!checked)
     onChange(!checked)
   }
 
+  const getConfirmationNotification = () => {
+    return checked ? (
+      <div className='deadlines-col'>
+        <Notification
+          className='deadlines-confirmed-notification'
+          size="small"
+          label={t('deadlines.dates-confirmed-title')}
+          notificationAriaLabel={t('deadlines.dates-confirmed-title')}
+          type="success"
+          headingLevel={3}
+        >
+          {t('deadlines.dates-confirmed')}
+        </Notification>
+      </div>
+    ) : (
+      <Notification
+        className='deadlines-preliminary-notification'
+        size="small"
+        label={t('deadlines.dates-are-preliminary-title')}
+        notificationAriaLabel={t('deadlines.dates-are-preliminary-title')}
+        type="info"
+        headingLevel={3}
+      >
+        {t('deadlines.dates-are-preliminary')}
+      </Notification>
+    );
+  }
+
+  const getConfirmationButton = () => {
+    const className = checked ? 'deadlines-cancel-button' : 'deadlines-confirm-button';
+    const variant = checked ? "danger" : "primary";
+    const buttonText = checked ? t('deadlines.cancel-confirmation') : t('deadlines.confirm-dates');
+    const isDisabled = checked ? (checkboxDisabled || lautakuntaInPast) : checkboxDisabled;
+    const buttonStyle = isDisabled ? { opacity: 1, pointerEvents: 'auto', cursor: 'pointer' } : {};
+    return (
+      <div className='deadlines-col' style={{ position: 'relative', display: 'inline-block' }}>
+        <Button
+          className={className}
+          size='small'
+          variant={variant}
+          onClick={toggleCheckbox}
+          disabled={isDisabled}
+          style={buttonStyle}
+          aria-disabled={isDisabled}
+          tabIndex={isDisabled ? -1 : 0}
+        >
+          {buttonText}
+        </Button>
+        {isDisabled && tooltip && (
+          <div className="custom-tooltip">{tooltip}</div>
+        )}
+      </div>
+    );
+  }
+
  if (isProjectTimetableEdit) {
-    if (isAdmin) {
-      return (
-        <>
-          {checked ? (
-            <>
-              <div className='deadlines-col'>
-                <Notification
-                  className='deadlines-confirmed-notification'
-                  size="small"
-                  label="Päivämäärä vahvistettu"
-                  type="success"
-                >
-                  {t('deadlines.dates-confirmed')}
-                </Notification>
-              </div>
-              {display !== 'readonly_checkbox' && (
-                <div className='deadlines-col' style={{ position: 'relative', display: 'inline-block' }}>
-                  <Button
-                    className='deadlines-cancel-button'
-                    size='small'
-                    variant="danger"
-                    onClick={onChangeSave}
-                    disabled={checkboxDisabled || lautakuntaInPast}
-                    style={checkboxDisabled || lautakuntaInPast ? { opacity: 1, pointerEvents: 'auto', cursor: 'pointer' } : {}}
-                    aria-disabled={checkboxDisabled || lautakuntaInPast}
-                    tabIndex={checkboxDisabled || lautakuntaInPast ? -1 : 0}
-                  >
-                    {t('deadlines.cancel-confirmation')}
-                  </Button>
-                  {(checkboxDisabled || lautakuntaInPast) && tooltip && (
-                    <div className="custom-tooltip">{tooltip}</div>
-                  )}
-                </div>
-              )}
-            </>
-          ) : (
-            <>
-              <Notification
-                className='deadlines-preliminary-notification'
-                size="small"
-                label="Aikataulutiedot ovat alustavia"
-                type="info"
-              >
-                {t('deadlines.dates-are-preliminary')}
-              </Notification>
-              {display !== 'readonly_checkbox' && (
-                <div className='deadlines-col' style={{ position: 'relative', display: 'inline-block' }}>
-                  <Button
-                    className='deadlines-confirm-button'
-                    size='small'
-                    onClick={onChangeSave}
-                    disabled={checkboxDisabled}
-                    style={checkboxDisabled ? { opacity: 1, pointerEvents: 'auto', cursor: 'pointer' } : {}}
-                    aria-disabled={checkboxDisabled}
-                    tabIndex={checkboxDisabled ? -1 : 0}
-                  >
-                    {t('deadlines.confirm-dates')}
-                  </Button>
-                  {checkboxDisabled && tooltip && (
-                    <div className="custom-tooltip">{tooltip}</div>
-                  )}
-                </div>
-              )}
-            </>
-          )}
-        </>
-      );
-    }
+    return (
+      <>
+        { getConfirmationNotification() }
+        {isAdmin && display !== 'readonly_checkbox' && getConfirmationButton()}
+      </>
+    );
   } else{
     return (
       <Checkbox
@@ -152,7 +129,7 @@ const CustomCheckbox = ({
         id={name}
         checked={checked}
         className={className}
-        onChange={onChangeSave}
+        onChange={toggleCheckbox}
       />
     )
   }
@@ -168,14 +145,17 @@ CustomCheckbox.propTypes = {
     error: PropTypes.string,
     form: PropTypes.string,
   }),
-  autofillRule: PropTypes.string,
+  autofillRule: PropTypes.array,
   label: PropTypes.string,
   className: PropTypes.string,
   disabled: PropTypes.bool,
   updated: PropTypes.object,
   formName: PropTypes.string,
   display: PropTypes.string,
-  isProjectTimetableEdit: PropTypes.bool
+  isProjectTimetableEdit: PropTypes.bool,
+  lautakuntaInPast: PropTypes.bool,
+  tooltip: PropTypes.string,
+  isAdmin: PropTypes.bool,
 };
 
 export default CustomCheckbox

@@ -61,7 +61,7 @@ function CustomSearchCombobox({ options, disabled, input, onBlur, name, formName
   currentOptions = currentOptions.sort((a, b) => (a.label > b.label ? 1 : -1))
 
   return (
-    <div id="test" className="ad-combobox">
+    <div className="ad-combobox">
       <Combobox
         options={currentOptions}
         multiselect={false}

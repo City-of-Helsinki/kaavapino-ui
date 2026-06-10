@@ -15,15 +15,9 @@ const getWeeksInMonth = monthStart => {
 
 /**
  * @desc creates array of months that should be rendered, from first date of deadline
- * @param deadlines - deadlines from api
- * @return object - with months array, error flag and total week count
+ * @return object - with months array and total week count
  */
-export function createMonths(deadlines) {
-  let error = false
-  if (!deadlines || !deadlines.length || !deadlines[0]?.date) {
-    error = true
-  }
-
+export function createMonths() {
   const monthArray = []
   const start = dayjs().startOf('month').subtract(1, 'month')
 
@@ -39,6 +33,5 @@ export function createMonths(deadlines) {
   }
 
   const totalWeeks = monthArray.reduce((sum, month) => sum + month.weeks, 0)
-
-  return { months: monthArray, totalWeeks, error }
+  return { months: monthArray, totalWeeks }
 }

@@ -1102,13 +1102,7 @@
   background-color: $yellow;
   width: 80%;
 }
-.deadline-estimated {
-  color: $color-info !important;
 
-  input {
-    color: $color-info !important;
-  }
-}
 .invisible{
   visibility: hidden;
 }
@@ -1486,6 +1480,7 @@
   position: relative;
   display: block;
   width: 100%;
+  border: none;
 
   .radio-spinner-overlay {
     position: absolute;

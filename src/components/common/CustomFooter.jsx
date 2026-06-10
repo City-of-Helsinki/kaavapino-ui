@@ -1,11 +1,12 @@
 import React, { Component } from 'react'
-import {
-  Footer} from 'hds-react'
+import { Footer } from 'hds-react'
 import { connect } from 'react-redux'
 import { fetchFooter } from '../../actions/footerActions'
 import { footerSelector } from '../../selectors/footerSelector'
 import { isArray } from 'lodash'
 import { withTranslation } from 'react-i18next'
+import PropTypes from 'prop-types'
+
 class CustomFooter extends Component {
   componentDidMount() {
     this.props.fetchFooter()
@@ -13,27 +14,31 @@ class CustomFooter extends Component {
 
   renderHeader = header => {
      return (
-        <div className="align-left">
+      <>
         <Footer.Item
           as="span"
           onClick={function noRefCheck() {}}
         />
         {this.renderFooterLinks(header.links)}
-      </div>
+      </>
     )
   }
   renderFooterLinks = links => {
     const returnValue = []
     links.forEach( link => {
       if(link.link_text !== "Anna palautetta"){
+        // Each item is in its own group to include HDS-hard-coded h3 tag
+        // Refactor when upgrading to newer HDS version
         returnValue.push(
-          <Footer.Item
-            as="a"
-            href={link.url}
-            label={link.link_text}
-            onClick={function noRefCheck() {}}
-            key={link.url}
-          />
+          <Footer.ItemGroup>
+            <Footer.Item
+              as="a"
+              href={link.url}
+              label={link.link_text}
+              onClick={function noRefCheck() {}}
+              key={link.url}
+            />
+          </Footer.ItemGroup>
         )
       }
     })
@@ -60,13 +65,12 @@ class CustomFooter extends Component {
 
   renderAllNavigation = () => {
     const returnValue = []
-
     if ( !this.props.footerData || !isArray( this.props.footerData )) {
         return null
     }
-   this.props.footerData.forEach(current => {
+    this.props.footerData.forEach(current => {
       returnValue.push(
-          <Footer.ItemGroup key={current.title}>{this.renderHeader(current)}</Footer.ItemGroup>
+          <div key={current.title} className="align-left">{this.renderHeader(current)}</div>
       )
     })
 
@@ -79,11 +83,11 @@ class CustomFooter extends Component {
     if ( !this.props.footerData || !isArray( this.props.footerData )) {
         return null
     }
-   this.props.footerData.forEach(current => {
+    this.props.footerData.forEach(current => {
       returnValue.push(this.renderFeedbackLink(current.links))
     })
     return returnValue
-    }
+  }
 
   renderTitle = () => {
     const {t} = this.props
@@ -100,48 +104,45 @@ class CustomFooter extends Component {
     const {t} = this.props
     const pathToCheck = location?.pathname
     
-    if(pathToCheck?.endsWith('/edit')){
-      return(
-        <></>
-      )
+    if(pathToCheck?.endsWith('/edit') || pathToCheck?.endsWith('/documents')){
+      return <></>
     }
-    else if(pathToCheck?.endsWith('/documents')) {
-        return(
-          <></>
-        )
-    }
-    else{
-      return (
-        <Footer
-          footerProps={{
-            lang: 'fi'
-          }}
-          korosType="basic"
-          logoLanguage="fi"
-          title={this.renderTitle()}
+    return (
+      <Footer
+        footerProps={{
+          lang: 'fi'
+        }}
+        korosType="basic"
+        logoLanguage="fi"
+        title={this.renderTitle()}
+      >
+        <div className="align-left">
+        <Footer.Navigation
+          navigationAriaLabel="Footer navigation items"
+          variant="minimal"
         >
-          <div className="align-left">
-          <Footer.Navigation
-            navigationAriaLabel="Footer navigation items"
-            variant="minimal"
-          >
-            {this.renderAllNavigation()}
-          </Footer.Navigation>
-          </div>
-          <div className="align-right">
-            <Footer.Utilities backToTopLabel={t('footer.to-start')}>
-              {this.renderFeedback()}
-            </Footer.Utilities>
-          </div>
-            
-          <Footer.Base
-            copyrightHolder={t('footer.copyright-holder')}
-            copyrightText={t('footer.copyright-text')}
-          />
-        </Footer>
-      )
-    }
+          {this.renderAllNavigation()}
+        </Footer.Navigation>
+        </div>
+        <div className="align-right">
+          <Footer.Utilities backToTopLabel={t('footer.to-start')}>
+            {this.renderFeedback()}
+          </Footer.Utilities>
+        </div>
+          
+        <Footer.Base
+          copyrightHolder={t('footer.copyright-holder')}
+          copyrightText={t('footer.copyright-text')}
+        />
+      </Footer>
+    )
   }
+}
+
+CustomFooter.propTypes = {
+  fetchFooter: PropTypes.func.isRequired,
+  footerData: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
+  t: PropTypes.func.isRequired
 }
 
 const mapDispatchToProps = {

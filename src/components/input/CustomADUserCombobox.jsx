@@ -178,8 +178,9 @@ class CustomADUserCombobox extends Component {
 
   render() {
     return (
-      <div id="test" className={`ad-combobox${this.state.loadingInitial ? ' loading' : ''}`} ref={this.containerRef}>
+      <div className={`ad-combobox${this.state.loadingInitial ? ' loading' : ''}`} ref={this.containerRef}>
         <Combobox
+          id={this.props.id}
           options={this.state.options}
           multiselect={this.props.multiselect}
           placeholder={this.props.placeholder}
@@ -196,10 +197,10 @@ class CustomADUserCombobox extends Component {
           }}
           value={this.state.currentValue}
           onBlur={this.props.onBlur}
-          aria-label={this.props.name}
           clearButtonAriaLabel="Tyhjennä valinta"
           selectedItemRemoveButtonAriaLabel="Poista valinta {value}"
           toggleButtonAriaLabel="Avaa valikko"
+          required={this.props.required}
         />
       </div>
     );
@@ -207,6 +208,7 @@ class CustomADUserCombobox extends Component {
 }
 
 CustomADUserCombobox.propTypes = {
+  id: PropTypes.string,
   multiselect: PropTypes.bool,
   placeholder: PropTypes.string,
   disabled: PropTypes.bool,

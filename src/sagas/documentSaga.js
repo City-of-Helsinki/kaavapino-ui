@@ -41,7 +41,7 @@ const showSuccessToast = (isProjectCard, isPreview) => {
       showCloseButton:false, 
       closeOnToastrClick: false, 
       timeOut:5000,
-      progressBar: true,
+      progressBar: false,
       removeOnHoverTimeOut: 0,
       removeOnHover: false,
       icon: <IconCheckCircleFill /> 
@@ -87,7 +87,7 @@ const showErrorToast = (isProjectCard, isPreview) => {
       showCloseButton:false, 
       closeOnToastrClick: false, 
       timeOut:5000,
-      progressBar: true,
+      progressBar: false,
       removeOnHoverTimeOut: 0,
       removeOnHover: false,
       icon: <IconErrorFill />

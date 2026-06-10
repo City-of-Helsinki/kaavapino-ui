@@ -7,8 +7,8 @@ function GeometryInformation(props) {
   const { t } = useTranslation()
 
   return (
-    <div>
-      {!props.hideTitle && <h3>{t('project.planning-area-constraints')}</h3>}
+    <div className="geometry-information">
+      {!props.hideTitle && <h2>{t('project.planning-area-constraints')}</h2>}
       <div className="geometry-input-container">
         <Geometry
           input={{ value: props.field?.value }}

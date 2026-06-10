@@ -21,7 +21,8 @@
     "edit-menu-no-save":"Ei tallentamattomia tietoja",
     "edit-menu-saved":"Tallennettu: ",
     "edit-menu-save-fail":"Tallennus epäonnistui",
-    "latest-save":"Viimeisin tallennus: "
+    "latest-save":"Viimeisin tallennus: ",
+    "skip-to-content": "Siirry sisältöön"
   },
   "document-loading": {
     "wait-title": "Odota",
@@ -64,8 +65,7 @@
       "phase": "Vaihe",
       "size": "Koko",
       "modified": "Muokattu",
-      "responsible": "Vastuuhenkilö",
-      "priority":"Prioriteetti"
+      "responsible": "Vastuuhenkilö"
     }
     
   },
@@ -95,17 +95,22 @@
       "nov": "Marras",
       "dec": "Joulu"
     },
-    "now": "Nyt",
+    "now": "Tänään",
     "deadline-label": "{{date}}.{{month}} määräa. ",
     "kylk-message": "{{date}}.{{month}} Kylk",
     "shown": "nähtävillä",
     "reset-project-deadlines": "Tyhjennä aikataulut",
     "reset-confirm-dialog-title": "Aikataulujen uudelleen luominen",
     "reset-confirm-dialog-question": "Oletko varma, että haluat luoda aikataulut uudestaan? Tapahtumaa ei voi perua.",
+    "dates-are-preliminary-title": "Alustavat aikataulutiedot",
     "dates-are-preliminary": "Aikataulutiedot ovat alustavia, kunnes ne on vahvistettu.",
     "cancel-confirmation":"Peruuta päivämäärien vahvistus",
     "confirm-dates":"Vahvista päivämäärät",
+    "dates-confirmed-title":"Vahvistetut aikataulutiedot",
     "dates-confirmed":"Aikataulutiedot on vahvistettu.",
+    "event-date-title": "{{phase}}-vaiheen tilaisuuden päivämäärä",
+    "project-start-meeting-title": "Projektin aloituskokous",
+    "project-opinions-latest-title": "{{phase}}-vaiheen aineiston mielipiteiden määräaika",
     "phase-closed":"Uusia rivejä ei voi lisätä, koska vaihe on lopetettu.",
     "phase-locked":"Uusia rivejä ei voi lisätä, koska vaihe on lukittu.",
     "new-esillaolo":"Lisää uusi esilläolo",
@@ -128,6 +133,7 @@
     "delete-first-nahtavillaolo":"Riviä ei voi poistaa, koska vaiheen ensimmäinen nähtävilläolo on pakollinen.",
     "timeline-group-header": "Vaiheiden etapit",
     "modify-timeline":"Muokkaa aikataulua",
+    "edit-deadline-section": "Muokkaa aikataulutietoja",
     "tooltip": {
       "phaseClosedConfirmed": "Vahvistusta ei voi perua, koska vaihe on lopetettu.",
       "phaseClosed": "Vahvistusta ei voi tehdä, koska vaihe on lopetettu.",
@@ -187,7 +193,7 @@
     "min-distance": "Valitse myöhempi päivä, koska tämä on liian lähellä edellistä etappia.",
     "max-distance": "Valitse aikaisempi päivä, koska tämä on liian lähellä seuraavaa etappia.",
     "check-timetable": "Tekemäsi aikataulumuutos vaikuttaa myöhempiin vaiheisiin. Siirrä myöhempiä vaiheita eteenpäin, jotta saat koko aikataulun ajantasalle.",
-    "timelines-successfully-saved": "Kerrosalatiedot tallennettu onnistuneesti",
+    "floorarea-successfully-saved": "Kerrosalatiedot tallennettu onnistuneesti",
     "required-fields-filled-header":"Pakolliset kentät täytetty",
     "starting-phase-required-fields-filled-text":"Täytä muutkin projektissasi tarvittavat kentät ja merkitse aikatauluun käynnistysvaiheen päivämäärät. Sen jälkeen voit lopettaa vaiheen.",
     "middle-phase-required-fields-filled-text":"Täytä muutkin projektissasi tarvittavat kentät ja pyydä sitten kaavoitussihteeriä vahvistamaan vaiheen aikataulu. Sen jälkeen voit siirtyä lataamaan dokumentteja.",
@@ -254,6 +260,8 @@
     "zoom-out": "Loitonna"
   },
   "project": {
+    "projects-list": "Projektiluettelo",
+    "project-card": "Projektikortti",
     "modify": "Muokkaa",
     "remove": "Poista",
     "add": "Lisää",
@@ -271,7 +279,7 @@
     "floor-area-title": "Kerrosalatiedot",
     "basic-information-title": "Perustiedot",
     "description-title": "Suunnittelualueen kuvaus",
-    "photo-title": "Kuva",
+    "photo-title": "Projektikortin kuva",
     "contract-title": "Maanomistus ja maankäyttösopimus",
     "strategy-connection-title": "Strategiakytkentä",
     "timetable-title": "Aikataulu",
@@ -309,7 +317,7 @@
     "expert": "Asiantuntija",
     "admin": "Pääkäyttäjä",
     "sort": "Lajittele",
-    "timeline": "Aikajana",
+    "timeline": "Projektin aikajana",
     "show-timelines": "Näytä aikajanat",
     "char-limit": "Max {{amount}} merkkiä",
     "download_confirmation_header": "Vahvistus dokumentin lataukselle",
@@ -338,7 +346,11 @@
     "add-new-review": "Lisää nähtävilläolo",
     "adding":"Lisätään",
     "saving":"Tietoja tallennetaan",
-    "deleting":"Poistetaan"
+    "deleting":"Poistetaan",
+    "edit-tools": "Projektin työkalut",
+    "filters": "Suodattimet",
+    "edit-filters": "Muokkaa suodattimia",
+    "remove-filters": "Poista kaikki valinnat"
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}",
@@ -361,6 +373,7 @@
     "save-help": "Tallentaa projektin",
     "end-phase": "Lopeta vaihe",
     "end-phase-help": "Yrittää lopettaa vaiheen",
+    "end-or-pause-phase": "Vaiheen päättäminen tai keskeyttäminen",
     "archive": "Arkistoi projekti",
     "archive-help": "Yrittää arkistoida projektin",
     "onhold-lable": "Projekti on toistaiseksi keskeytynyt",
@@ -368,6 +381,8 @@
     "change-phase-error": "Vaihetta ei voida vielä lopettaa",
     "change-phase-error-message": "Täytä puuttuvat kentät",
     "title": "Kaavan vaiheet",
+    "navigation-phase-sections": "Vaiheen aliotsikot",
+    "navigation-choose-phase": "Vaiheen vaihtaminen",
     "confirm-dialog": {
       "end-phase": "Lopeta vaihe",
       "archive-phase": "Arkistoi vaihe",

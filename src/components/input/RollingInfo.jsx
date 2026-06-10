@@ -34,7 +34,7 @@ const processViranomaistahoData = (attributeData) => {
 function RollingInfo(
   {
     name,value,nonEditable,modifyText,rollingInfoText,editRollingField,
-    type,phaseIsClosed,factaInfo,attributeData,shouldDisableForErrors
+    type,phaseIsClosed,factaInfo,maxSizeOver,attributeData,shouldDisableForErrors,required
     }
   ) {
   const users = useSelector(state => usersSelector(state))
@@ -91,7 +91,9 @@ function RollingInfo(
             className="rolling-richtext"
           />
         ) :
-        <div className='content'>{formatInputText(inputText)}</div>
+        <div className='content' readOnly aria-required={required}>
+          {formatInputText(inputText)}
+        </div>
         }
       </div>
       {!nonEditable && (
@@ -137,7 +139,8 @@ RollingInfo.propTypes = {
   attributeData: PropTypes.shape({
     milta_muilta_pyydetaan_lausunto_fieldset: PropTypes.array
   }),
-  shouldDisableForErrors: PropTypes.bool
+  shouldDisableForErrors: PropTypes.bool,
+  required: PropTypes.bool
 }
 
 export default RollingInfo

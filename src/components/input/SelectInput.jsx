@@ -34,7 +34,8 @@ const SelectInput = ({
   formValues,
   formName,
   isProjectTimetableEdit,
-  timetable_editable
+  timetable_editable,
+  required
 }) => {
   const currentValue = []
 	const oldValueRef = useRef('');
@@ -311,6 +312,7 @@ const SelectInput = ({
             onFocus={handleFocus}
             clearable={true}
             disabled={isFieldDisabled}
+            required={required}
             options={preparedOptions}
             defaultValue={currentValue}
             onChange={data => {
@@ -334,6 +336,7 @@ const SelectInput = ({
             onFocus={handleFocus}
             clearable={false}
             disabled={isFieldDisabled}
+            required={required}
             options={preparedOptions}
             value={currentSingleValue}
             onChange={data => {

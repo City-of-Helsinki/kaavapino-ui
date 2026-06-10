@@ -3,10 +3,11 @@ import { Button, Tag, IconTrash, Checkbox } from 'hds-react';
 import DialogFocusTrap from '../common/DialogFocusTrap.jsx';
 import { getOffset } from '../../hooks/getOffset';
 import './ProjectEdit.scss'
+import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 
 function FormFilter({schema,filterFields,isHighlightedTag,selectedPhase,allfields,currentlyHighlighted,showSection}) {
-
+const { t } = useTranslation();
 const openButtonRef = useRef(null);
 const [tags, setTags] = useState({});
 const [prevTags, setPrevTags] = useState({});
@@ -255,22 +256,18 @@ if(tagArray.length > 0){
      noFiltersClass = " no-filters-selected"
  }
 
-let containerClasses = "project-edit-form-filter" + stickyClass + noFiltersClass;
+const containerClasses = "project-edit-form-filter" + stickyClass + noFiltersClass;
 
 return (
-    <div className={containerClasses}>
+    <section className={containerClasses} aria-labelledby='filter-title'>
         <div className='left-container'>
-            <div className={isVisible ? "filter-title": "filter-title hidden"}>Suodattimet</div>
-
-            {isVisible && (
-                tagInfo
-            )
-            }
+            <div id="filter-title" className={isVisible ? "filter-title": "filter-title hidden"}>{t('project.filters')}</div>
+            {isVisible && tagInfo}
             {renderedTags}
         </div>
         <div className='right-container'>
             <Button ref={openButtonRef} onMouseDown={() => openModal()} onKeyDown={(event) => openModal(event)} className="toggle-filters" variant="secondary" size="small" disabled={!showSection}>
-                Muokkaa suodattimia
+                {t('project.edit-filters')}
             </Button>
         </div>
         {isOpen && (
@@ -278,7 +275,7 @@ return (
                 <DialogFocusTrap returnFocusRef={openButtonRef}>
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h2>Suodattimet</h2>
+                            <h2>{t('project.filters')}</h2>
                         </div>
                     <div className="modal-body">
                 <div className="filterModal__cols">
@@ -302,18 +299,18 @@ return (
                 </div>
 
                 <Button onClick={removeFilters} className="remove-filters" variant="supplementary" iconLeft={<IconTrash />}>
-                    Poista kaikki valinnat
+                    {t('project.remove-filters')}
                 </Button>
                 </div>
                 <div className="modal-footer">
-                    <Button className="save" size="small" onClick={() => saveSelections()}>Tallenna</Button>
-                    <Button className="close" size="small" variant="secondary" onClick={() => closeModal()}>Peruuta</Button>
+                    <Button className="save" size="small" onClick={() => saveSelections()}>{t('project.save')}</Button>
+                    <Button className="close" size="small" variant="secondary" onClick={() => closeModal()}>{t('project.cancel')}</Button>
                 </div>
                 </div>
             </DialogFocusTrap>
         </div>
         )}
-        </div>
+    </section>
 )
 }
 
@@ -331,7 +328,7 @@ FormFilter.propTypes = {
     }),
     filterFields: PropTypes.func,
     isHighlightedTag: PropTypes.func,
-    selectedPhase: PropTypes.string,
+    selectedPhase: PropTypes.number,
     allfields: PropTypes.array,
     currentlyHighlighted: PropTypes.string,
     showSection: PropTypes.bool
