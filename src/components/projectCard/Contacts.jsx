@@ -38,7 +38,7 @@ function Contacts({ fields, hideTitle, personnel }) {
     return (
       <div className="project-card-field" key={field.label + index}>
         <dt>{field.label}</dt>
-        <dd>{value}</dd>
+        <dd lang="fi">{value}</dd>
       </div>
     )
   }

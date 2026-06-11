@@ -38,7 +38,7 @@
     display:flex;
     flex-wrap: wrap;
     flex-direction: row;
-    height: 400px;
+    min-height: 400px;
     .card-segment {
       width: calc(50% - $size12);
       height: 100%;
@@ -168,10 +168,10 @@
     margin: $size24;
     .timetable-field {
       dt {
-        width: calc(79.5% - 0.5rem);
+        width: stretch;
       }
       dd {
-        width: calc(20% - 0.5rem);
+        width:fit-content;
       }
     }
   }
@@ -195,6 +195,8 @@
         margin-inline-start: 0px;
         font-family: 'Helsinki Grotesk Regular', sans-serif;
         font-weight: 400;
+        word-break: break-word;
+        hyphens: auto;
       }
     }
   }
