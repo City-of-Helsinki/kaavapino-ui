@@ -2,7 +2,9 @@ import React from 'react'
 import { MapContainer, TileLayer, Polygon, useMap } from 'react-leaflet'
 import { EPSG3879, formatGeoJSONToPositions, helsinkiCenter } from '../../utils/mapUtils'
 import { useTranslation } from 'react-i18next'
+import MapZoomControl from '../common/MapZoomControl'
 import './Input.scss'
+import PropTypes from 'prop-types'
 
 const MULTIPOLYGON = 'MultiPolygon'
 
@@ -22,7 +24,7 @@ function Geometry(props) {
 
       return []
     }
-    const coordinates = value[0] && value[0].geometry && value[0].geometry.coordinates
+    const coordinates = value[0]?.geometry?.coordinates
 
     return coordinates || []
   }
@@ -46,6 +48,10 @@ function Geometry(props) {
     map.setView(center, zoom)
     return null
   }
+  ChangeView.propTypes = {
+    center: PropTypes.array,
+    zoom: PropTypes.number
+  }
 
   return (
     <div className="geometry-input-container">
@@ -55,10 +61,10 @@ function Geometry(props) {
         doubleClickZoom={true}
         scrollWheelZoom={true}
         maxZoom={16}
-        zoomControl={!disabled}
+        zoomControl={false}
         dragging={!disabled}
         crs={crs}
-        style={!disabled ? { cursor: 'pointer' } : {}}
+        style={disabled ? {} : { cursor: 'pointer' }}
         zoom={9}
         minZoom={9}
         clusterPopupVisibility={11}
@@ -75,9 +81,26 @@ function Geometry(props) {
         <ChangeView center={getCenterCoordinates()} />
         <TileLayer attribution={t('map.attribution')} url={t('map.url')} />
         <Polygon positions={formatGeoJSONToPositions(getCoordinates())} />
+        {!disabled && <MapZoomControl />}
       </MapContainer>
     </div>
   )
+}
+
+Geometry.propTypes = {
+  input: PropTypes.shape({
+    value: PropTypes.arrayOf(
+      PropTypes.shape({
+        geometry: PropTypes.shape({
+          type: PropTypes.string,
+          coordinates: PropTypes.array
+        }),
+        properties: PropTypes.object,
+        type: PropTypes.string
+      })
+    )
+  }),
+  value: PropTypes.object
 }
 
 export default Geometry

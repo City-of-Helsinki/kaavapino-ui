@@ -1,3 +1,4 @@
+import React from 'react'
 import axios from 'axios'
 import { eventChannel } from 'redux-saga';
 import { take, takeLatest, put, all, call, select, takeEvery, delay, race } from 'redux-saga/effects'
@@ -227,9 +228,9 @@ function createOnlineChannel() {
     const onlineHandler = () => {
       emitter(true);
     };
-    window.addEventListener('online', onlineHandler);
+    globalThis.addEventListener('online', onlineHandler);
     return () => {
-      window.removeEventListener('online', onlineHandler);
+      globalThis.removeEventListener('online', onlineHandler);
     };
   });
 }
@@ -309,41 +310,41 @@ function* pollConnection() {
     const hasUnsavedField = lastSaved?.status === 'error' && lastSaved?.fields?.length > 0
     
     if (hasUnsavedField) {
-      // Connection restored - show success banner and trigger auto-save
+      const fieldName = lastSaved.fields[0]
+
+      const formErrors = yield select(formErrorListSelector)
+      if (formErrors.includes(fieldName)) {
+        yield put(setPoll(true))
+        yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: 'Yhteys palautunut' } })
+        yield put(setSavingField(null))
+        yield put(setLastSaved("field_error", time, [fieldName], lastSaved.values || [], false))
+        return
+      }
+
       yield put(setPoll(true))
       yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: 'Yhteys palautunut - tallennetaan...' } })
-      // Clear error state immediately so passivation and header update right away
-      // saveProject will set status to 'success' when done (or back to 'error' if it fails again)
+      // Dispatch connection_restored immediately so passivation and header update before saveProject completes.
+      // saveProject will set status to 'success' on success or back to 'error' on failure.
       yield put(setLastSaved("connection_restored", time, [], [], false))
-      // Clear form error list so "Virhe lomakkeella estää lisäyksen" disappears
       yield put(resetFormErrors())
       
-      // Get the field that needs to be saved
-      const fieldName = lastSaved.fields[0]
-      const fieldValue = lastSaved.values?.[0] // Use the value that originally failed to save
+      const fieldValue = lastSaved.values?.[0]
       const projectId = yield select(currentProjectIdSelector)
-      
-      // If we don't have the saved value, fall back to current form value
       const formValues = yield select(editFormSelector)
       const valueToSave = fieldValue === undefined ? formValues.values?.[fieldName] : fieldValue
-      
-      // Trigger save for the field
       const attribute_data = { [fieldName]: valueToSave }
       
-      // Call saveProject with the field data and fieldName so spinner activates
       yield call(saveProject, { 
         payload: { 
           projectId, 
           attribute_data,
-          fieldName  // CRITICAL: Include fieldName so setSavingField gets called
+          fieldName  // triggers setSavingField in saveProject, activating the field spinner
         } 
       })
     } else {
-      // No unsaved fields - just update poll status
       yield put(setPoll(true))
       yield put({ type: SET_NETWORK_STATUS, payload: { status: 'ok', okMessage: '', errorMessage: '' } })
       yield put(setLastSaved("connection_restored",time,[],[],false))
-      // Clear form error list so "Virhe lomakkeella estää lisäyksen" disappears
       yield put(resetFormErrors())
     }
   } catch {
@@ -689,20 +690,14 @@ const getChangedAttributeData = (values, initial) => {
   }
 
   Object.keys(values).forEach(key => {
-    if (key == "suunnittelualueen_kuvaus")
-      console.log("checking key", key, "with value", values[key], "and initial value", initial?.[key])
     if (key.includes("_readonly")) {
       return
     }
     if (initial?.[key] !== undefined && isEqual(values[key], initial[key])) {
-      if (key == "suunnittelualueen_kuvaus")
-        console.log(`skipping unchanged field ${key} with value`, values[key])
       return
     }
     if (values[key] === '' || (values[key]?.ops && isRichTextEmpty(values[key]))) {
-      //empty text values saved as null
-      attribute_data[key] = null
-      console.log("setting empty value to null for key", key)
+      attribute_data[key] = null // empty text saved as null
     }
     else if (values[key] === null) {
       attribute_data[key] = null
@@ -738,7 +733,6 @@ const isRichTextEmpty = (value) => {
     if (typeof op?.insert !== 'string') {
       return true;
     }
-    console.log("checking if op is empty", op.insert, op.insert.trim().length === 0);
     return op.insert.trim().length === 0;
   });
 }
@@ -830,19 +824,24 @@ function* saveProjectFloorArea() {
       yield put(setSubmitSucceeded(EDIT_FLOOR_AREA_FORM))
       yield put(saveProjectFloorAreaSuccessful(true))
       yield put(setAllEditFields())
-
-      toastr.success(i18.t('messages.timelines-successfully-saved'), '', {
+      toastr.success(i18.t('messages.floorarea-successfully-saved'), '', {
+          showCloseButton: false,
+          closeOnToastrClick: false,
+          removeOnHover: false,
+          timeOut: 5000,
         icon: <IconCheckCircleFill />
       })
       const net = yield select(projectNetworkSelector)
       if (net?.status === 'error') {
-        yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: i18.t('messages.timelines-successfully-saved') } })
+        yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: i18.t('messages.floorarea-successfully-saved') } })
         yield delay(5000)
         yield put({ type: RESET_NETWORK_STATUS })
       }
     } catch (e) {
       if (e?.code === "ERR_NETWORK") {
         toastr.error(i18.t('messages.general-save-error'), '', {
+          showCloseButton: false,
+          closeOnToastrClick: true,
           icon: <IconErrorFill />
         })
         yield put({ type: SET_NETWORK_STATUS, payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
@@ -857,17 +856,12 @@ function* saveProjectFloorArea() {
 }
 
 function* validateProjectTimetable({ payload }) {
-  // Use passed attributeData if available (contains cascaded values from frontend)
-  const passedAttributeData = payload?.attributeData;
-
-  // Remove success toastr before showing info
-  toastr.removeByType('success');
-  toastr.clean(); // Clear existing toastr notifications
-  // Show a loading icon at the start of the saga
+  toastr.clean();
   toastr.info(i18.t('messages.checking-dates'), {
-    timeOut: 0, // Keep it showing until manually removed
+    timeOut: 0,
     removeOnHover: false,
-    showCloseButton: true,
+    showCloseButton: false,
+    closeOnToastrClick: true,
     icon: <IconInfoCircleFill />
   });
   yield put(startSubmit(EDIT_PROJECT_TIMETABLE_FORM));
@@ -876,12 +870,11 @@ function* validateProjectTimetable({ payload }) {
   const { initial, values } = yield select(editProjectTimetableFormSelector);
   const currentProjectId = yield select(currentProjectIdSelector);
 
-  // Use passed data if available, otherwise fall back to form values
-  const sourceValues = passedAttributeData || values;
+  const sourceValues = payload?.attributeData || values;
 
   if (sourceValues) {
     // Always compute changed attributes vs initial to only send what's different
-    let changedAttributeData = getChangedAttributeData(sourceValues, initial);
+    const changedAttributeData = getChangedAttributeData(sourceValues, initial);
 
     if (changedAttributeData.oikaisukehoituksen_alainen_readonly) {
       delete changedAttributeData.oikaisukehoituksen_alainen_readonly;
@@ -913,7 +906,8 @@ function* validateProjectTimetable({ payload }) {
       toastr.success(i18.t('messages.dates-confirmed'), {
         timeOut: 10000,
         removeOnHover: false,
-        showCloseButton: true,
+        showCloseButton: false,
+        closeOnToastrClick: true,
         icon: <IconCheckCircleFill />
       });
 
@@ -947,6 +941,8 @@ function* validateProjectTimetable({ payload }) {
       // Remove loading icon on error
       toastr.removeByType('info');
       toastr.error(i18.t('messages.validation-error'), '', {
+        showCloseButton: false,
+        closeOnToastrClick: true,
         icon: <IconErrorFill />
       });
 
@@ -998,6 +994,8 @@ function* saveProjectTimetable(action, retryCount = 0) {
       // If we previously had an error, mark success transiently
       yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: i18.t('messages.deadlines-successfully-saved') } })
       toastr.success(i18.t('messages.deadlines-successfully-saved'), '', {
+        showCloseButton: false,
+        closeOnToastrClick: true,
         icon: <IconCheckCircleFill />
       })
       // Auto reset network status back to ok after 5s
@@ -1007,6 +1005,8 @@ function* saveProjectTimetable(action, retryCount = 0) {
     catch (e) {
       if (e?.code === "ERR_NETWORK" && retryCount <= maxRetries) {
         toastr.error(i18.t('messages.error-connection'), '', {
+          showCloseButton: false,
+          closeOnToastrClick: true,
           icon: <IconErrorFill />
         })
         // Set network status to error on connectivity issue
@@ -1027,6 +1027,7 @@ function* saveProjectTimetable(action, retryCount = 0) {
           timeOut: 0,
           removeOnHover: false,
           showCloseButton: true,
+          closeOnToastrClick: true,
           className: 'rrt-error',
           icon: <IconErrorFill />
         });
@@ -1435,7 +1436,7 @@ function* projectFileUpload({
 
     const lastIndex = attribute.lastIndexOf('.')
     if (lastIndex !== -1) {
-      ;({ fieldSetIndex, currentFieldName } = parseFieldsetPath(attribute))
+      ({ fieldSetIndex, currentFieldName } = parseFieldsetPath(attribute))
     }
 
     // Create formdata

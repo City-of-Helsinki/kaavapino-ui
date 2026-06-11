@@ -34,8 +34,8 @@ function FloorAreaMobile({
 
   useEffect(() => {
     const graphData = getFloorAreaChartData(chartData)
-    const livingOverall = graphData && graphData[LIVING_OVERALL]
-    setCurrent(livingOverall ? livingOverall : 0)
+    const livingOverall = graphData?.[LIVING_OVERALL]
+    setCurrent(livingOverall || 0)
   }, [chartData])
 
   useEffect(() => {
@@ -43,20 +43,17 @@ function FloorAreaMobile({
   }, [floorAreaTargets])
 
   const isChartDataLoaded = () => {
-    if (!chartData || Object.entries(chartData).length === 0) {
-      return false
-    }
-    return true
+    return !(!chartData || Object.entries(chartData).length === 0);
   }
   return (
     <div className="floor-area">
       <div className="chart-area-header-mobile">
-        <h3>{t('floor-area.mobile-title')}</h3>
+        <h2>{t('floor-area.mobile-title')}</h2>
         {!isChartDataLoaded() && <LoadingSpinner className="center" theme={{ '--spinner-color': '#0000BF' }} />}
         {isChartDataLoaded() && (
           <div className="current-number">
             {t('floor-area.current-number', { current })}
-            {t('floor-area.total-number', { total: total ? total : '' })}
+            {t('floor-area.total-number', { total: total || '' })}
           </div>
         )}
       </div>
@@ -65,7 +62,9 @@ function FloorAreaMobile({
 }
 
 FloorAreaMobile.propTypes = {
-  chartData: PropTypes.object.isRequired
+  chartData: PropTypes.object.isRequired,
+  getProjectsOverviewFloorAreaTargets: PropTypes.func.isRequired,
+  floorAreaTargets: PropTypes.object.isRequired
 }
 
 const mapDispatchToProps = {

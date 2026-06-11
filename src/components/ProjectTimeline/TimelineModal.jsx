@@ -547,6 +547,8 @@ const TimelineModal = ({
       size={'large'} 
       className='timeline-edit-right' 
       id="timeline-edit-side-panel" 
+      role="region"
+      aria-label={(group && content) ? `${group} - ${content}` : t('deadlines.edit-deadline-section')}
       onMount={() => getFocusableElements("timeline-edit-side-panel")[0]?.focus()}
       onUnmount={() => {
         document.getElementById(returnFocusId)?.focus();
@@ -599,7 +601,7 @@ TimelineModal.propTypes = {
   items: PropTypes.array,
   sectionAttributes: PropTypes.array,
   initialTab: PropTypes.number,
-  returnFocusGroupId: PropTypes.string,
+  returnFocusGroupId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   isAdmin: PropTypes.bool
 };
 

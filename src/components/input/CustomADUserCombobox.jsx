@@ -28,19 +28,13 @@ class CustomADUserCombobox extends Component {
   // HDS-react combobox sometimes traps focus inside the menu when open. This is a workaround to allow tabbing out of the menu.
   handleTabKeyDown = (event) => {
     const active = document.activeElement;
-    if (event.key === 'Tab' && active && this.containerRef.current && this.containerRef.current.contains(active)) {
+    if (event.key === 'Tab' && active && this.containerRef.current?.contains(active)) {
       document.activeElement.blur();
     }
   }
 
   componentWillUnmount() {
     document.removeEventListener('keydown', this.handleTabKeyDown);
-  }
-
-  getModifiedOption = ({ name, id, email, title }) => {
-    const option = name || email;
-    const label = name && title ? `${name} (${title})` : option;
-    return { label, value: id, email };
   }
 
   modifyOptions = (options) => {
@@ -150,38 +144,6 @@ class CustomADUserCombobox extends Component {
     }
   };
 
-  loadMoreOptions = async (nextPage) => {
-    if (this.state.loadingMore) return;
-
-    this.setState({ loadingMore: true });
-
-    const { currentQuery } = this.state;
-    const limit = 100;
-    const offset = (nextPage - 1) * limit;
-
-    try {
-      const url =
-        currentQuery && currentQuery !== "*"
-          ? `/v1/personnel/?search=${encodeURIComponent(currentQuery)}&limit=${limit}&offset=${offset}`
-          : `/v1/personnel/?limit=${limit}&offset=${offset}`;
-
-      const response = await axios.get(url);
-      const result = response.data;
-      const modifiedResults = this.modifyOptions(result);
-      const hasMore = result.length === limit;
-
-      this.setState(prev => ({
-        options: [...prev.options, ...modifiedResults],
-        page: nextPage,
-        hasMore,
-        loadingMore: false
-      }));
-    } catch (err) {
-      console.error("loadMoreOptions failed:", err);
-      this.setState({ loadingMore: false });
-    }
-  };
-
   handleChange = (value) => {
     if (value === undefined || Object.is(value, this.loadingPlaceholder))
       return;
@@ -216,8 +178,9 @@ class CustomADUserCombobox extends Component {
 
   render() {
     return (
-      <div id="test" className={`ad-combobox${this.state.loadingInitial ? ' loading' : ''}`} ref={this.containerRef}>
+      <div className={`ad-combobox${this.state.loadingInitial ? ' loading' : ''}`} ref={this.containerRef}>
         <Combobox
+          id={this.props.id}
           options={this.state.options}
           multiselect={this.props.multiselect}
           placeholder={this.props.placeholder}
@@ -234,10 +197,10 @@ class CustomADUserCombobox extends Component {
           }}
           value={this.state.currentValue}
           onBlur={this.props.onBlur}
-          aria-label={this.props.name}
           clearButtonAriaLabel="Tyhjennä valinta"
           selectedItemRemoveButtonAriaLabel="Poista valinta {value}"
           toggleButtonAriaLabel="Avaa valikko"
+          required={this.props.required}
         />
       </div>
     );
@@ -245,10 +208,16 @@ class CustomADUserCombobox extends Component {
 }
 
 CustomADUserCombobox.propTypes = {
+  id: PropTypes.string,
   multiselect: PropTypes.bool,
   placeholder: PropTypes.string,
   disabled: PropTypes.bool,
-  name: PropTypes.string,
+  required: PropTypes.bool,
+  onBlur: PropTypes.func,
+  input: PropTypes.shape({
+    value: PropTypes.any,
+    onChange: PropTypes.func.isRequired
+  }).isRequired
 }
 
 export default CustomADUserCombobox;

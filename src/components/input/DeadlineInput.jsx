@@ -214,11 +214,9 @@ const DeadLineInput = ({
   };
 
   const renderDateInput = (validated) => {
-    console.log("validated is", validated)
     return (
       validated ? "Ladataan..." :
       <DateInput
-        readOnly
         language='fi'
         initialMonth={getInitialMonth(currentValue || input.value)}
         isDateDisabledBy={isDisabledDate}
@@ -245,6 +243,10 @@ const DeadLineInput = ({
         onBlur={() => {
           setValueGenerated(input.value === input.defaultValue);
         }}
+        // Block keyboard input
+        onBeforeInput={(e) => e.preventDefault()}
+        onPaste={(e) => e.preventDefault()}
+        onDrop={(e) => e.preventDefault()}
       />
     );
   }
@@ -302,15 +304,6 @@ DeadLineInput.propTypes = {
   autofillRule: PropTypes.array,
   timeTableDisabled: PropTypes.bool,
   dateTypes: PropTypes.object,
-  deadlineSection: PropTypes.object,
-  maxMoveGroup: PropTypes.oneOfType([
-    PropTypes.object,
-    PropTypes.string
-  ]),
-  maxDateToMove: PropTypes.string,
-  groupName: PropTypes.string,
-  visGroups: PropTypes.array,
-  visItems: PropTypes.array,
   deadlineSections: PropTypes.array,
   confirmedValue: PropTypes.oneOfType([
     PropTypes.string,

@@ -4,6 +4,7 @@ import { Popup } from 'semantic-ui-react'
 import ProjectTimeline from '../ProjectTimeline/ProjectTimeline'
 import { truncate } from 'lodash'
 import Status from '../common/Status'
+import PropTypes from 'prop-types'
 
 const MAX_PROJECT_NAME_LENGTH = 30
 
@@ -20,17 +21,13 @@ const ListItem = ({
     modified_at,
     user,
     projectId,
-    pino_number,
-    prio
+    pino_number
   },
   attribute_data
 }) => {
   return (
     <div className="project-list-item-container">
       <div className="project-list-item">
-        <span className="project-list-item-name field-ellipsis left">
-            {prio}
-        </span>
         <span className="project-list-item-name left field-ellipsis">
           <Popup
             trigger={
@@ -64,6 +61,24 @@ const ListItem = ({
       )}
     </div>
   )
+}
+
+ListItem.propTypes = {
+  showGraph : PropTypes.bool,
+  deadlines: PropTypes.array,
+  onhold: PropTypes.bool,
+  attribute_data: PropTypes.object,
+  item: PropTypes.shape({
+    phaseName: PropTypes.string,
+    phaseColor: PropTypes.string,
+    name: PropTypes.string,
+    id: PropTypes.string,
+    subtype: PropTypes.string,
+    modified_at: PropTypes.string,
+    user: PropTypes.string,
+    projectId: PropTypes.string,
+    pino_number: PropTypes.string
+  })
 }
 
 export default ListItem

@@ -1,68 +1,43 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
-import { Link } from 'react-router-dom'
 import { IconLinkExternal } from 'hds-react'
 import "hds-core";
 import { useTranslation } from 'react-i18next';
 import LoggingComponent from './LoggingComponent.jsx'
 
-export const NavHeader = ({ routeItems, actions, title, infoOptions, attributes, projectSize, responsibleUser, pino, diaari, pwnumber, pwlink, location }) => {
+export const NavHeader = ({ actions, title, infoOptions, projectSize, responsibleUser, pino, diaari, pwnumber, pwlink, location }) => {
   const {t} = useTranslation()
   const pathToCheck = location?.pathname
-  // create an event listener
-
 
   const getPW = () => {
-    //TODO undesided how this goes and no pwlink comes from excel and backend yet
-    let pw
-    if(pwlink?.new_value && pwnumber){
-      pw = <td><a className='link-underlined' href={pwlink?.new_value} target="_blank" rel="noreferrer">{pwnumber} <IconLinkExternal size="xs" aria-hidden="true" /></a></td>
+    if (pwlink?.new_value && pwnumber){
+      return <td><a className='link-underlined' href={pwlink?.new_value} target="_blank" rel="noreferrer">{pwnumber} <IconLinkExternal size="xs" aria-hidden="true" /></a></td>
     }
-    else if(pwnumber){
-      pw = <td>{pwnumber}</td>
-    }
-    else{
-      pw = <td></td>
-    }
-    return pw
+    return <td>{pwnumber || ''}</td>
   }
 
-  let navHeaderContentClass = ""
+  let navHeaderContentClass = "nav-header-content"
+  let menuActionButtons = <div className='nav-select-container'> {actions} </div>
   if(pathToCheck?.endsWith('/edit')) {
-    navHeaderContentClass = "nav-header-content edit"
+    navHeaderContentClass += " edit"
+    menuActionButtons = (
+      <nav className='nav-select-container' aria-label={t('project.edit-tools')}>{actions}</nav>
+    )
   }
   else if(pathToCheck?.endsWith('/documents')) {
-    navHeaderContentClass = "nav-header-content documents"
-  }
-  else {
-    navHeaderContentClass = "nav-header-content"
+    navHeaderContentClass += " documents"
   }
 
   return (
     <div className="nav-header-container">
       <div className="nav-header-inner-container">
-        <div className="nav-header-route">
-          <div className="nav-header-route-items">
-            {routeItems.map((item, i) => {
-              return (
-                <span key={i}>
-                  <Link to={item.path}>{item.value}</Link>
-                </span>
-              )
-            })}
-          </div>
-        </div>
         <div className={navHeaderContentClass}>
           <div className="nav-header-titles">
             <div className="nav-menu-container">
-              <div>
-                <h1 className="nav-header-title">{pathToCheck?.endsWith('/documents') ? t('project.documents') : title}</h1>
-              </div>
+              <h1 className="nav-header-title">{pathToCheck?.endsWith('/documents') ? t('project.documents') : title}</h1>
               <div className='nav-menu-buttons'>
-                <LoggingComponent infoOptions={infoOptions} attributes={attributes} />
-                <div className='nav-select-container'>
-                  {actions}
-                </div>
+                <LoggingComponent infoOptions={infoOptions} />
+                {menuActionButtons}
               </div>
             </div>
           </div>
@@ -101,8 +76,14 @@ export const NavHeader = ({ routeItems, actions, title, infoOptions, attributes,
 }
 
 NavHeader.propTypes = {
-  routeItems: PropTypes.array,
   actions: PropTypes.object,
-  large: PropTypes.bool,
-  title: PropTypes.string
+  title: PropTypes.string,
+  infoOptions: PropTypes.array,
+  projectSize: PropTypes.string,
+  responsibleUser: PropTypes.string,
+  pino: PropTypes.string,
+  diaari: PropTypes.string,
+  pwnumber: PropTypes.string,
+  pwlink: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+  location: PropTypes.object,
 }

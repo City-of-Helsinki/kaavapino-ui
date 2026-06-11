@@ -1,3 +1,10 @@
+.edit-project-timetable-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1199;
+}
+
 .edit-project-timetable-form-modal {
   font-size: $size12;
   .collapse .collapse-header {

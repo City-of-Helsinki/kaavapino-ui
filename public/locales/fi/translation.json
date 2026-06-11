@@ -21,7 +21,8 @@
     "edit-menu-no-save":"Ei tallentamattomia tietoja",
     "edit-menu-saved":"Tallennettu: ",
     "edit-menu-save-fail":"Tallennus epäonnistui",
-    "latest-save":"Viimeisin tallennus: "
+    "latest-save":"Viimeisin tallennus: ",
+    "skip-to-content": "Siirry sisältöön"
   },
   "document-loading": {
     "wait-title": "Odota",
@@ -64,8 +65,7 @@
       "phase": "Vaihe",
       "size": "Koko",
       "modified": "Muokattu",
-      "responsible": "Vastuuhenkilö",
-      "priority":"Prioriteetti"
+      "responsible": "Vastuuhenkilö"
     }
     
   },
@@ -95,7 +95,7 @@
       "nov": "Marras",
       "dec": "Joulu"
     },
-    "now": "Nyt",
+    "now": "Tänään",
     "deadline-label": "{{date}}.{{month}} määräa. ",
     "kylk-message": "{{date}}.{{month}} Kylk",
     "shown": "nähtävillä",
@@ -128,6 +128,7 @@
     "delete-first-nahtavillaolo":"Riviä ei voi poistaa, koska vaiheen ensimmäinen nähtävilläolo on pakollinen.",
     "timeline-group-header": "Vaiheiden etapit",
     "modify-timeline":"Muokkaa aikataulua",
+    "edit-deadline-section": "Muokkaa aikataulutietoja",
     "tooltip": {
       "phaseClosedConfirmed": "Vahvistusta ei voi perua, koska vaihe on lopetettu.",
       "phaseClosed": "Vahvistusta ei voi tehdä, koska vaihe on lopetettu.",
@@ -186,7 +187,7 @@
     "min-distance": "Valitse myöhempi päivä, koska tämä on liian lähellä edellistä etappia.",
     "max-distance": "Valitse aikaisempi päivä, koska tämä on liian lähellä seuraavaa etappia.",
     "check-timetable": "Tekemäsi aikataulumuutos vaikuttaa myöhempiin vaiheisiin. Siirrä myöhempiä vaiheita eteenpäin, jotta saat koko aikataulun ajantasalle.",
-    "timelines-successfully-saved": "Kerrosalatiedot tallennettu onnistuneesti",
+    "floorarea-successfully-saved": "Kerrosalatiedot tallennettu onnistuneesti",
     "required-fields-filled-header":"Pakolliset kentät täytetty",
     "starting-phase-required-fields-filled-text":"Täytä muutkin projektissasi tarvittavat kentät ja merkitse aikatauluun käynnistysvaiheen päivämäärät. Sen jälkeen voit lopettaa vaiheen.",
     "middle-phase-required-fields-filled-text":"Täytä muutkin projektissasi tarvittavat kentät ja pyydä sitten kaavoitussihteeriä vahvistamaan vaiheen aikataulu. Sen jälkeen voit siirtyä lataamaan dokumentteja.",
@@ -225,7 +226,10 @@
     "dates-confirmed":"Päivämäärät validoitu",
     "error-connection":"Tallennus epäonnistui yhteysongelmia takia. Yritetään uudelleen 10 sekunnin kuluttua.",
     "error-connection-fail":"Tallennus keskeytyi yhteysongelmia takia.",
-    "validation-error":"Päivämäärien tarkistus epäonnistui"
+    "validation-error":"Päivämäärien tarkistus epäonnistui",
+    "session-expiring": "Istuntosi vanhenee {{timer}} kuluttua.",
+    "extend-session": "Jatka istuntoa",
+    "session-extended": "Istuntoa jatkettu"
   },
   "floor-areas": {
     "title": "Päivitä kerrosalatiedot",
@@ -245,9 +249,12 @@
   },
   "map": {
     "attribution": "Leaflet | © Helsingin, Espoon, Vantaan ja Kauniaisen kaupungit, karttasarja",
-    "url": "https://kartta.hel.fi/ws/geoserver/avoindata/gwc/service/wmts?layer=avoindata:Karttasarja_harmaa&tilematrixset=ETRS-GK25&Service=WMTS&Request=GetTile&Version=1.0.0&TileMatrix=ETRS-GK25:{z}&TileCol={x}&TileRow={y}&Format=image%2Fpng"
+    "url": "https://kartta.hel.fi/ws/geoserver/avoindata/gwc/service/wmts?layer=avoindata:Karttasarja_harmaa&tilematrixset=ETRS-GK25&Service=WMTS&Request=GetTile&Version=1.0.0&TileMatrix=ETRS-GK25:{z}&TileCol={x}&TileRow={y}&Format=image%2Fpng",
+    "zoom-in": "Lähennä",
+    "zoom-out": "Loitonna"
   },
   "project": {
+    "projects-list": "Projektiluettelo",
     "modify": "Muokkaa",
     "remove": "Poista",
     "add": "Lisää",
@@ -309,7 +316,7 @@
     "download_confirmation_header": "Vahvistus dokumentin lataukselle",
     "download_confirmation_content": "Lataamisen jälkeen saat kaikista muutoksista automaattisia viestejä. Oletko varma, että haluat ladata dokumentin?",
     "missing-data": "Tietoja ei ole vielä syötetty",
-    "documents-not-ready": "Dokumentteja ei ole vielä valmiina",
+    "documents-not-ready": "Projektin linkkiä ei ole lisätty Karttapalveluun.",
     "searchterms-found":"Hakuehdoilla löytyi",
     "total":"Yhteensä",
     "found-projects":"projektia.",
@@ -323,13 +330,17 @@
     "error-prevent-add":"Virhe lomakkeella estää lisäyksen",
     "fieldset-info":"Yhteensä {{fieldAmount}} tietuetta.",
     "no-fields":"Suodatinvalinnalla ei löytynyt tämän otsikon alta suodatettavia kenttiä.",
-    "link-to-map":"Linkki projektin karttapalveluun.",
+    "link-to-map":"Siirry Karttapalveluun projektin tietoihin",
     "add-new-board":"Lisää lautakunta",
     "add-new-presence":"Lisää esilläolo",
     "add-new-review": "Lisää nähtävilläolo",
     "adding":"Lisätään",
     "saving":"Tietoja tallennetaan",
-    "deleting":"Poistetaan"
+    "deleting":"Poistetaan",
+    "edit-tools": "Projektin työkalut",
+    "filters": "Suodattimet",
+    "edit-filters": "Muokkaa suodattimia",
+    "remove-filters": "Poista kaikki valinnat"
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}",
@@ -352,6 +363,7 @@
     "save-help": "Tallentaa projektin",
     "end-phase": "Lopeta vaihe",
     "end-phase-help": "Yrittää lopettaa vaiheen",
+    "end-or-pause-phase": "Vaiheen päättäminen tai keskeyttäminen",
     "archive": "Arkistoi projekti",
     "archive-help": "Yrittää arkistoida projektin",
     "onhold-lable": "Projekti on toistaiseksi keskeytynyt",
@@ -359,6 +371,8 @@
     "change-phase-error": "Vaihetta ei voida vielä lopettaa",
     "change-phase-error-message": "Täytä puuttuvat kentät",
     "title": "Kaavan vaiheet",
+    "navigation-phase-sections": "Vaiheen aliotsikot",
+    "navigation-choose-phase": "Vaiheen vaihtaminen",
     "confirm-dialog": {
       "end-phase": "Lopeta vaihe",
       "archive-phase": "Arkistoi vaihe",

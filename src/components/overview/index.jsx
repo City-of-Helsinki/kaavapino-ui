@@ -17,7 +17,8 @@ import { usersSelector } from '../../selectors/userSelector'
 import { userIdSelector } from '../../selectors/authSelector'
 import authUtils from '../../utils/authUtils'
 import MobileView from './MobileView'
-import Header from '../common/Header'
+import Header from '../common/Header/Header'
+import PropTypes from 'prop-types'
 
 const Overview = ({
   getProjectsOverviewFilters,
@@ -26,44 +27,25 @@ const Overview = ({
   currentUserId,
   users,
   clearProjectsOverview,
-  user,
-  userRole
 }) => {
   const { t } = useTranslation()
-  const [currentFilterData, setCurrentFilterData] = useState(filterData)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 720)
 
   useEffect(() => {
-    getProjectsOverviewFilters()
-    fetchUsers()
-  }, [])
-
-  useEffect(() => {
-    setCurrentFilterData(filterData)
-  }, [filterData])
-
-  const [isMobile, setIsMobile] = useState(false)
-
-  //choose the screen size
-  const handleResize = () => {
-    if (window.innerWidth < 720) {
-      setIsMobile(true)
-    } else {
-      setIsMobile(false)
-    }
-  }
-  // create an event listener
-  useEffect(() => {
-    window.addEventListener('resize', handleResize)
-    if (window.innerWidth < 720) {
-      setIsMobile(true)
-    } else {
-      setIsMobile(false)
-    }
-  })
-  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 720);
+    };
+    window.addEventListener('resize', handleResize);
+    getProjectsOverviewFilters();
+    fetchUsers();
+    document.title = "Kaavapino - " + t('overview.title');
     return () => {
-      clearProjectsOverview()
-    }
+      if (document.title === "Kaavapino - " + t('overview.title')) {
+        document.title = "Kaavapino";
+      }
+      clearProjectsOverview();
+      window.removeEventListener('resize', handleResize);
+    };
   }, [])
 
   useEffect(() => {
@@ -73,8 +55,7 @@ const Overview = ({
   const getFilters = key => {
     const filters = []
 
-    currentFilterData &&
-      currentFilterData.forEach(filter => {
+    filterData?.forEach(filter => {
         if (filter[key]) {
           filters.push(filter)
         }
@@ -91,8 +72,6 @@ const Overview = ({
         filterList={filterData}
         isExpert={isExpert}
         isResponsible={isResponsible}
-        user={user}
-        userRole={userRole}
       />
     )
   }
@@ -100,10 +79,8 @@ const Overview = ({
   return (
     <>
       <Header/>
-
-      <div className="overview">
+      <main id="main" className="overview">
         <NavHeader
-          routeItems={[{ value: t('overview.title'), path: '/' }]}
           title={t('overview.title')}
         />
         <Grid stackable columns="equal">
@@ -134,7 +111,7 @@ const Overview = ({
             </Segment>
           </Grid.Column>
         </Grid>
-      </div>
+      </main>
     </>
   )
 }
@@ -150,6 +127,15 @@ const mapStateToProps = state => {
     users: usersSelector(state),
     currentUserId: userIdSelector(state)
   }
+}
+
+Overview.propTypes = {
+  getProjectsOverviewFilters: PropTypes.func.isRequired,
+  filterData: PropTypes.array.isRequired,
+  fetchUsers: PropTypes.func.isRequired,
+  currentUserId: PropTypes.string.isRequired,
+  users: PropTypes.array.isRequired,
+  clearProjectsOverview: PropTypes.func.isRequired,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Overview)

@@ -189,13 +189,14 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
         setMatchedDeadline(matchedDeadline);
       }
       else{
-        for (let x = 0; x < deadlinesData.length; x++) {
-          if (props.fieldData.fieldset_attributes[0].related_fields.some(field => deadlinesData[x]?.deadline?.attribute === field)) {
-            setMatchedDeadline(deadlinesData[x]?.deadline);
-            break;
-          }
-          else if((props?.fieldData?.name === "merkitse_voimaantulo_paivamaarat_fieldset" || props?.fieldData?.name === "merkitse_muutoksenhaku_paivamaarat_fieldset") && deadlinesData[x]?.deadline?.attribute === "voimaantulo_pvm"){
-            setMatchedDeadline(deadlinesData[x]?.deadline);
+        for (const deadlineObject of deadlinesData) {
+          const isFieldsetRelatedToDeadline = props.fieldData.fieldset_attributes[0].related_fields.includes(deadlineObject?.deadline?.attribute);
+          const isVoimaantuloOrMuutoksenhaku =
+            (props?.fieldData?.name === "merkitse_voimaantulo_paivamaarat_fieldset" ||
+              props?.fieldData?.name === "merkitse_muutoksenhaku_paivamaarat_fieldset") &&
+            deadlineObject?.deadline?.attribute === "voimaantulo_pvm";
+          if (isFieldsetRelatedToDeadline || isVoimaantuloOrMuutoksenhaku) {
+            setMatchedDeadline(deadlineObject?.deadline);
             break;
           }
         }
@@ -265,7 +266,7 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
     if(suggestionPhase){
       return (
         <div className='custom-card' >
-        <div className='heading'>{heading}</div>
+        <h3 className='heading'>{heading}</h3>
         {container}
         {container2}
         {editDataLink}
@@ -275,7 +276,7 @@ function CustomCard({type, props, name, data, deadlines, selectedPhase, showBoth
     else{
       return (
         <div className='custom-card' >
-          <div className='heading'>{heading}</div>
+          <h3 className='heading'>{heading}</h3>
           {container2}
           {container}
           {editDataLink}

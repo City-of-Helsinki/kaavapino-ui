@@ -68,6 +68,9 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  .timeline-graph-container {
+    background-color: transparent;
+  }
 }
 
 .project-input-container {
@@ -176,8 +179,14 @@
 }
 
 .timeline {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  text-align: inherit;
   cursor: pointer;
   padding-bottom: 20px;
+  width: 100%;
 }
 
 .project-edit-form-filter.sticky.no-filters-selected {
@@ -241,8 +250,12 @@
       margin: $size4 $size8;
     }
 
-    .filter-tag:focus{
+    .filter-tag:focus {
       --tag-focus-outline-color: transparent;
+    }
+
+    .filter-tag:focus-visible{
+      --tag-focus-outline-color: var(--color-coat-of-arms) !important;
     }
   
     .yellow{
@@ -252,6 +265,10 @@
 
     .yellow:focus{
       --tag-focus-outline-color: transparent;
+    }
+
+    .yellow:focus-visible{
+      --tag-focus-outline-color: var(--color-coat-of-arms) !important;
     }
   
     .filter-tag-info {
@@ -298,7 +315,13 @@
         font-size: $size14;
         line-height: $size24;
         letter-spacing: 0;
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
       }
+      .required-fields-notification-link:hover { text-decoration: none; }
+      .required-fields-notification-link:focus-visible { outline: 2px solid var(--color-coat-of-arms, #0072c6); }
     }
   }
   // Style the main notification label
@@ -345,6 +368,7 @@
 
   h3{
     margin-left: 30px;
+    padding-top: 0.5rem;
     .icon-container{
       position: absolute;
       top: 15px;
@@ -356,6 +380,15 @@
     color: $color-black-90;
     padding-top: 10px;
     line-height: $size18;
+  }
+
+  button {
+    background:none;
+    border:none;
+    padding:0;
+    margin:0;
+    font: inherit;
+    color: inherit;
   }
 
   .Toastify__toast-body {
@@ -597,7 +630,9 @@
       color: $black1;
     }
     .header-title {
-      font-size: 1.125rem;
+      font-size: 1.125rem !important;
+      line-height: 23px !important;
+      margin: 0px;
       letter-spacing: 0.004em;
       padding-left: 8px;
       color: $black1;
@@ -641,14 +676,15 @@
       width: 291px;
       border-right: 1px solid #CCCCCC;
       border-bottom: 1px solid #CCCCCC;
-      span {
-        font-family: 'Helsinki Grotesk Bold', sans-serif;
+      .timeline-group-title{
+        font-family: 'Helsinki Grotesk Bold', sans-serif !important;
+        font-size: $size16 !important;
+        font-weight: 700 !important;
+        line-height: $size24 !important;
+        margin:0px;
         position: relative;
         top: 31px;
         left: 40px;
-        font-size: $size16;
-        font-weight: 700;
-        line-height: $size24;
       }
     }
 
@@ -949,22 +985,21 @@
           border:2px solid $border-gray2;
           &:has(:disabled) {
             background-color: #e6e6e6;
-            border-color: RGBA(0,0,0,0);
-            border-style: none;
+            border-color: #e6e6e6;
             input {
-              color: #808080;
+              color: #999;
               -webkit-text-fill-color: #999;
             }
             button {
-              color: 999;
+              color: #999;
             }
           }
           input{
-            text-indent: 16px;
             width: 85%;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            border: none;
             &:focus {
               outline: 2px solid #1A1A1A !important;
               outline-offset: -2px;
@@ -992,7 +1027,7 @@
         flex-flow: column;
         justify-content: flex-start;
         margin-top: $size32;
-        margin-bottom: $size48;
+        margin-bottom: $size32;
         .checkbox{
           display: flex;
           flex-flow: column;

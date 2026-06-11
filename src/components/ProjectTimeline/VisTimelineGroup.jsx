@@ -1817,12 +1817,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
     // Attach the mousemove event to the container, not the items themselves
     timelineRef.current.addEventListener('mousemove', handleMouseMove);
-
     if (items && options && groups) {
       const timeline = timelineRef.current &&
         new vis.Timeline(timelineRef.current, items, options, groups);
         timelineInstanceRef.current = timeline
         setTimeline(timeline)
+        addAriaHiddenToTimelineElements(timelineRef);
         // Track currently styled dragged group so we can remove styling on mouseUp
         const draggingGroupRef = { current: null };
 
@@ -2002,6 +2002,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         }
       }
     }, [])
+
+  const addAriaHiddenToTimelineElements = (containerRef) => {
+    const hiddenElementClasses = ["vis-vertical", "vis-top", "vis-center"];
+    hiddenElementClasses.forEach(cls => {
+      const elements = containerRef?.current?.querySelectorAll(`.${cls}`);
+      elements?.forEach(el => el.setAttribute("aria-hidden", "true"));
+    });
+  }
 
   // Helper: Highlight timeline item if needed
   function highlightTimelineItem(timelineElement, savedHighlightId) {

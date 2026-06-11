@@ -1,95 +1,87 @@
-import React, {useRef,useState,useEffect} from 'react'
+import React, { useEffect, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
+import { t } from 'i18next';
+import './InactiveMessage.scss';
 
-function InactiveMessage(props) {
-    const { idleModal } = props;
-    const buttonStyle = {display : 'block', textDecoration:'underline'}
-    const sessionExtend = () => {
-        props.extendSession()
-    }
+const pad = value => String(value).padStart(2, '0');
 
-     // We need ref in this, because we are dealing
-    // with JS setInterval to keep track of it and
-    // stop it when needed
-    const Ref = useRef(null);
-  
-    // The state for our timer
-    const [timer, setTimer] = useState('00:00:00');
-  
-    const getTimeRemaining = (e) => {
-        const total = Date.parse(e) - Date.parse(new Date());
-        const seconds = Math.floor((total / 1000) % 60);
-        const minutes = Math.floor((total / 1000 / 60) % 60);
-        //Hours not needed here but if needed somewhere else lets leave it
-        //const hours = Math.floor((total / 1000 / 60 / 60) % 24);
-        return {
-            //hours
-            total, minutes, seconds
-        };
-    }
-  
-    const startTimer = (e) => {
-        //hours
-        let { total, minutes, seconds } 
-                    = getTimeRemaining(e);
-        if (total >= 0) {
-            // update the timer
-            // check if less than 10 then we need to 
-            // add '0' at the beginning of the variable
-            setTimer(
-               // (hours > 9 ? hours : '0' + hours) + ':' +
-                (minutes > 9 ? minutes : '0' + minutes) + ':'
-                + (seconds > 9 ? seconds : '0' + seconds)
-            )
-        }
-    }
-  
-    const clearTimer = (e) => {
-        // If you adjust it you should also need to
-        // adjust the Endtime formula we are about
-        // to code next    
-        setTimer('00:10:00');
-  
-        // If you try to remove this line the 
-        // updating of timer Variable will be
-        // after 1000ms or 1sec
-        if (Ref.current) clearInterval(Ref.current);
-        const id = setInterval(() => {
-            startTimer(e);
-        }, 1000)
-        Ref.current = id;
-    }
-  
-    const getDeadTime = () => {
-        let deadline = new Date();
-        // This is where you need to adjust if 
-        // you entend to add more time
-        //600 === 10minutes
-        deadline.setSeconds(deadline.getSeconds() + 600);
-        return deadline;
-    }
-  
-    // Start timer on componentDidMount
+const formatRemaining = ms => {
+    const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+    const minutes = Math.floor(totalSeconds / 60) % 60;
+    const seconds = totalSeconds % 60;
+    return `${pad(minutes)}:${pad(seconds)}`;
+};
+
+function InactiveMessage({ idleModal, extendSession, durationMs = 600000 }) {
+    const intervalRef = useRef(null);
+    const extendButtonRef = useRef(null);
+    const [timer, setTimer] = useState(() => formatRemaining(durationMs));
+
     useEffect(() => {
-        clearTimer(getDeadTime());
+        extendButtonRef.current?.focus();
+        const handleKeyDown = event => {
+            if (event.key === 'Tab') {
+                event.preventDefault();
+                event.stopPropagation();
+                extendButtonRef.current?.focus();
+            } else if (event.key === 'Escape') {
+                extendSession();
+            }
+        };
+        globalThis.addEventListener('keydown', handleKeyDown);
         return () => {
+            globalThis.removeEventListener('keydown', handleKeyDown);
         }
     }, []);
-    //Show text and elements based on idleModal prop from IdleMonitor
-    if (idleModal) {
-        return (
+
+    useEffect(() => {
+        if (!idleModal) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+            return;
+        }
+        const deadline = Date.now() + durationMs;
+        const tick = () => {
+            const remaining = deadline - Date.now();
+            setTimer(formatRemaining(remaining));
+            if (remaining <= 0 && intervalRef.current) {
+                clearInterval(intervalRef.current);
+                intervalRef.current = null;
+            }
+        };
+
+        tick();
+        intervalRef.current = setInterval(tick, 1000);
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+                intervalRef.current = null;
+            }
+        };
+    }, [durationMs]);
+
+    if (!idleModal) {
+        return <div>{t('messages.session-extended')}</div>;
+    }
+
+    return (
         <div>
-            Istuntosi vanhenee {timer} kuluttua.
-            <a style={buttonStyle}  onClick={() => sessionExtend()} onKeyDown={() => sessionExtend()}> Jatka istuntoa</a>
+            {t('messages.session-expiring', { timer })}
+            <button
+                className="extend-session-button"
+                onClick={extendSession}
+                ref={extendButtonRef}
+            >
+                {t('messages.extend-session')}
+            </button>
         </div>
-        )
-    }
-    else {
-        return (
-            <div>
-                Istuntoa jatkettu
-            </div>
-        )
-    }
+    );
 }
+
+InactiveMessage.propTypes = {
+    extendSession: PropTypes.func,
+    idleModal: PropTypes.bool.isRequired,
+    durationMs: PropTypes.number
+};
 
 export default InactiveMessage;

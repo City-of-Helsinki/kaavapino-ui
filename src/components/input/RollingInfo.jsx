@@ -31,7 +31,12 @@ const processViranomaistahoData = (attributeData) => {
   }
 }
 
-function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRollingField,type,phaseIsClosed,factaInfo,maxSizeOver,attributeData,shouldDisableForErrors}) {
+function RollingInfo(
+  {
+    name,value,nonEditable,modifyText,rollingInfoText,editRollingField,
+    type,phaseIsClosed,factaInfo,maxSizeOver,attributeData,shouldDisableForErrors,required
+    }
+  ) {
   const users = useSelector(state => usersSelector(state))
   let inputText = value
   let noInfoText = name === "voimassa_asemakaavat" || name === "voimassa_olevat_rakennuskiellot" ? "Ei ole" : "Ei"
@@ -64,7 +69,7 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
       return value === "" ? noValue : input
     }
     return <>{
-      input.filter(str => str).map((str) => 
+      input.filter(Boolean).map((str) => 
       <p key={str}>{str.charAt(0).toUpperCase() + str.slice(1)}</p>)
     }</>
   }
@@ -73,7 +78,6 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
   const quillValue = name === 'viranomaistahon_nimi_ehdotus_readonly'
     ? (inputText || noValue)
     : fallbackValue;
-
   return (
     <>
     <div className='rolling-info-container'>
@@ -81,18 +85,26 @@ function RollingInfo({name,value,nonEditable,modifyText,rollingInfoText,editRoll
         {type === "richtext" ? (
           <ReactQuill
             value={quillValue}
-            tabIndex="0"
+            tabIndex="-1"
             theme="snow"
             readOnly={true}
             className="rolling-richtext"
           />
         ) :
-        <div className='content'>{formatInputText(inputText)}</div>
+        <div className='content' readOnly aria-required={required}>
+          {formatInputText(inputText)}
+        </div>
         }
       </div>
       {!nonEditable && (
-      <Button disabled={phaseIsClosed || shouldDisableForErrors} onClick={openEdit} size="small" variant="supplementary" iconLeft={<IconPenLine />}>
-        {modifyText}
+      <Button 
+        disabled={phaseIsClosed || shouldDisableForErrors} 
+        onClick={openEdit} size="small" 
+        variant="supplementary" 
+        iconLeft={<IconPenLine />}
+        id = {`edit-${name}-button`}
+      >
+          {modifyText}
       </Button>
       )}
     </div>
@@ -128,7 +140,8 @@ RollingInfo.propTypes = {
   attributeData: PropTypes.shape({
     milta_muilta_pyydetaan_lausunto_fieldset: PropTypes.array
   }),
-  shouldDisableForErrors: PropTypes.bool
+  shouldDisableForErrors: PropTypes.bool,
+  required: PropTypes.bool
 }
 
 export default RollingInfo

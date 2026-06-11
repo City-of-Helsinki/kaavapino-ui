@@ -162,7 +162,15 @@ h4 {
 input[class^="Combobox-module"] {
   border: 0 !important;
 }
-//
+
+input[class^="Combobox-module"]::placeholder {
+    color: #595959;
+}
+
+input[class^="Select-module_button"] {
+  color: #595959;
+}
+
 
 // HDS fixes.
 div[class^="Combobox-module_wrapper"] {
@@ -187,6 +195,9 @@ ul {
   border-radius: 0;
   padding: $size16 $size24 $size24 $size24;
   margin-top: 0;
+  h2 {
+    font-size: $size18 !important;
+  }
 }
 
 .input-container {
@@ -844,30 +855,6 @@ header{
     display: flex;
     flex-direction: column;
     justify-content: space-around;
-
-    .nav-header-route {
-      display: none;
-      color: black;
-
-      .nav-header-route-items {
-        font-weight: 100;
-
-        span a {
-          color: black;
-        }
-
-        span:not(:last-of-type)::after {
-          content: '>>';
-          margin-left: 8px;
-          margin-right: 8px;
-        }
-      }
-      @media screen and (max-width: 600px) {
-        display: none;
-      }
-    }
-    
-
 
     .nav-header-content {
       margin-top: 120px;

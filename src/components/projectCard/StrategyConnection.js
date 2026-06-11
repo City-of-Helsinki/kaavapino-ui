@@ -41,7 +41,7 @@ function StrategyConnection({ fields, hideTitle }) {
         return (
             <div>
                 {!hideTitle && <h3>{t('project.strategy-connection-title')}</h3>}
-                {fields && fields.map( field => {
+                {fields?.map( field => {
                     return renderField(field )
                 })
                 }
@@ -59,7 +59,8 @@ function StrategyConnection({ fields, hideTitle }) {
 }
 
 StrategyConnection.propTypes = {
-    fields: PropTypes.array
+    fields: PropTypes.array,
+    hideTitle: PropTypes.bool
 }
 
 export default StrategyConnection

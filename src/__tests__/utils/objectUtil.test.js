@@ -1,4 +1,9 @@
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, beforeAll, afterAll, vi } from 'vitest';
+
+// Pin "today" to a fixed date so that past-date locking in checkForDecreasingValues
+// does not freeze test data items as "in the past" as real time advances.
+beforeAll(() => { vi.useFakeTimers(); vi.setSystemTime(new Date('2025-01-01')); });
+afterAll(() => { vi.useRealTimers(); });
 import objectUtil from '../../utils/objectUtil';
 import mockData from './checkForDecreasingValues_test_data.js';
 
