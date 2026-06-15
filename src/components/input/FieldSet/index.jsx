@@ -1,54 +1,25 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { connect, useDispatch, useSelector } from 'react-redux'
-import { checkingSelector, savingSelector, formErrorListSelector, lastSavedSelector, updateFieldSelector, pollSelector} from '../../selectors/projectSelector'
-import CustomField from './CustomField.jsx'
-import NetworkErrorState from './NetworkErrorState.jsx'
+import { connect, useDispatch } from 'react-redux'
+import { checkingSelector, savingSelector, formErrorListSelector, lastSavedSelector, updateFieldSelector, pollSelector} from '../../../selectors/projectSelector.js'
+import CustomField from '../CustomField.jsx'
+import NetworkErrorState from '../NetworkErrorState.jsx'
 import { Form, Label } from 'semantic-ui-react'
-import projectUtils from '../../utils/projectUtils'
-import inputUtils from '../../utils/inputUtils'
-import Info from './Info.jsx'
-import { showField } from '../../utils/projectVisibilityUtils'
-import { has, get, startCase } from 'lodash'
+import projectUtils from '../../../utils/projectUtils.js'
+import inputUtils from '../../../utils/inputUtils.js'
+import Info from '../Info.jsx'
+import { showField } from '../../../utils/projectVisibilityUtils.js'
+import { has, get } from 'lodash'
 import { Button, IconLock, IconPlus, IconTrash, IconAngleDown, IconAngleUp, LoadingSpinner } from 'hds-react'
 import { change } from 'redux-form'
 import { useTranslation } from 'react-i18next';
-import { OutsideClick } from '../../hooks/OutsideClick'
-import {getAttributeData, formErrorList, setLastSaved} from '../../actions/projectActions'
-import { useIsMount } from '../../hooks/IsMounted'
-import { useFieldPassivation } from '../../hooks/useFieldPassivation'
+import { OutsideClick } from '../../../hooks/OutsideClick.js'
+import {getAttributeData, formErrorList, setLastSaved} from '../../../actions/projectActions.js'
+import { useIsMount } from '../../../hooks/IsMounted.js'
+import { useFieldPassivation } from '../../../hooks/useFieldPassivation.js'
+import { buildAddButtonMessage, getValueName, getNumberOfFieldsets, getAccordionButtonClassName } from './helpers.js'
 import PropTypes from 'prop-types'
-import './Input.scss'
+import '../Input.scss'
 
-function buildAddButtonMessage({ isNetworkError, isConnectionRestored, hasChildError, t }) {
-  if (isNetworkError) {
-    return (
-      <div className="network-error-state" aria-live="polite" aria-atomic="true">
-        <div className="error-text">
-          <div className="notification-content">
-            <span className="notification-label">{t('messages.network-save-failed-label')}</span>
-            <br />
-            <span className="notification-message">{t('messages.network-save-failed-message-brief')}</span>
-          </div>
-        </div>
-      </div>
-    )
-  }
-  if (isConnectionRestored) {
-    return (
-      <div className="network-error-state" aria-live="polite" aria-atomic="true">
-        <div className="success-text fade-in">
-          <div className="notification-content">
-            <span className="notification-label">{t('project.fieldset-connection-restored-label')}</span>
-          </div>
-        </div>
-      </div>
-    )
-  }
-  if (hasChildError) {
-    return <div className="error-text add-error">{t('project.error-prevent-add')}</div>
-  }
-  return null
-}
 
 const FieldSet = ({
   sets,
@@ -72,7 +43,7 @@ const FieldSet = ({
   lockStatus,
   unlockAllFields,
   saving,
-  visibleErrors,
+  formErrors,
   lastSaved,
   updateField,
   phaseIsClosed,
@@ -81,7 +52,8 @@ const FieldSet = ({
   highlightedInFieldset,
   highlightedTag,
   savingField,
-  testingConnection
+  testingConnection,
+  connection
 }) => {
   const handleBlur = () => {
     onBlur()
@@ -95,10 +67,6 @@ const FieldSet = ({
   
   // Check if other fields have errors - passivate fieldset expand/delete buttons
   const shouldDisableForErrors = useFieldPassivation(name, { formName })
-  
-  // Get error list to check if any child fields have errors
-  const formErrors = useSelector(formErrorListSelector)
-  const connection = useSelector(pollSelector)
 
   const savedFields = Array.isArray(lastSaved?.fields) ? lastSaved.fields : []
   const isThisFieldsetNetworkError = lastSaved?.status === 'error' && savedFields.some(f =>
@@ -148,19 +116,17 @@ const FieldSet = ({
   }
 
   useEffect(() => {
-    if(lastSaved?.status === "error"){
+    if (lastSaved?.status === 'ok' || lastSaved?.status === 'success') {
+      setLastSavedChildField(null)
+    }
+
+    if(lastSaved?.status === "error") {
       if (!isThisFieldsetNetworkError) {
         setExpanded([])
       }
       setAdding(false)
       setCurrentFieldset(false)
       setHiding(false)
-    }
-  }, [lastSaved?.status === "error"])
-
-  useEffect(() => {
-    if (lastSaved?.status === 'ok' || lastSaved?.status === 'success') {
-      setLastSavedChildField(null)
     }
   }, [lastSaved?.status])
  
@@ -268,74 +234,7 @@ const FieldSet = ({
     }
   }
 
-  const getNumberOfFieldsets = (fieldsetTotal) => {
-   const fieldName = get(formValues, name)
-   const fieldsLength = fieldName?.filter( i => i?._deleted !== true );
-   const count = fieldsLength?.length || 0
-   if (count === 0) {
-     const label = fieldsetTotal?.split(/\s+/)[0]?.toLowerCase() || ''
-     return t('project.fieldset-empty', { label })
-   }
-   return fieldsetTotal.replace('{{kpl}}', count)
-  }
-
   OutsideClick(accordianRef, handleOutsideClick)
-
-  const getCorrectValueType = (values,valueNameKey) => {
-    for (const [key, value] of Object.entries(values)) {
-      if(key === valueNameKey){
-        const regex = /^[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+$/;
-        if(regex.test(value)){
-          for (const [k, v] of Object.entries(values)) {
-            if(k.includes("_sahkoposti")){
-              //Extract name from email in data
-              //Name info in data is ID value for api
-              let fieldsetHeader = v?.split('@')[0]
-              fieldsetHeader = fieldsetHeader?.split('.')?.join(" ")
-              fieldsetHeader = startCase(fieldsetHeader)
-              return fieldsetHeader
-            }
-          }
-        }
-        if(value?.ops){
-          let richText = []
-          let val = value?.ops
-          if(Array.isArray(val)){
-            for (let i = 0; i < val.length; i++) {
-              richText.push(val[i].insert);
-            }
-          }
-          return richText.toString()
-        }
-        else if (value?.description){
-          return value.description
-        }
-        else if(value?.name){
-          return value.name.toString()
-        }
-        else {
-          return (Object.prototype.toString.call(value) === "[object Object]") ? null : value
-        }
-      }
-    }
-  }
-
-  const getValueName = (values,fields) => {
-    //Name for fieldset is always the first value, should be set that way in Excel for fieldsets
-    let valueNameKey
-    let valueType
-    if(values){
-      fields.some((field) => {
-        if (field.fieldset_index !== null) {
-          valueNameKey = field.name?.toString()
-          return true;
-        }
-      })
-      valueType = getCorrectValueType(values,valueNameKey)
-    }
-
-    return valueType || <span className='italic'>{t('project.fieldset-missing-value')}</span>
-  }
   
   const anyFieldsetHasChildError = !!formErrors?.some(ef => ef.startsWith(`${name}[`));
 
@@ -353,29 +252,27 @@ const FieldSet = ({
   return (
     <>
     <div className='fieldset-main-container' ref={accordianRef}>
-    <div className='fieldset-info'>{fieldsetTotal ? getNumberOfFieldsets(fieldsetTotal) : ""}</div>
+    <div className='fieldset-info'>{fieldsetTotal ? getNumberOfFieldsets(fieldsetTotal, formValues, name, t) : ""}</div>
       {sets.map((set, i) => {
         const setValues = get(formValues, set)
         const fieldsetDisabled = !!(lockStatus?.lockStyle && !lockStatus?.owner && lockStatus?.fieldIdentifier === set);
         const deleted = get(formValues, set + '._deleted')
         const automatically_added = get(formValues, set + '._automatically_added')
         const lockedElement = fieldsetDisabled ? <span className="input-locked"> Käyttäjä {lockStatus.lockStyle.lockData.attribute_lock.user_name} {lockStatus.lockStyle.lockData.attribute_lock.user_email} on muokkaamassa kenttää<IconLock></IconLock></span> : <></>
-        const lockName = <><span className='accoardian-header-text'>{getValueName(setValues,fields)}</span> {lockedElement}</>
+        const lockName = <><span className='accoardian-header-text'>{getValueName(setValues,fields, t)}</span> {lockedElement}</>
         
-        const shouldDisableAccordion = false;
+        const shouldDisableAccordion = saving || hiding || adding;
         const thisRowHasError = formErrors?.some(ef => ef.startsWith(`${set}.`))
         const thisRowHasNetworkError = isThisFieldsetNetworkError && !expanded.includes(i) && !!lastSavedChildField?.startsWith(set)
-        
+
         return (
           <React.Fragment key={`${name}-${i}`}>
             {!deleted && hiddenIndex !== i && (
-              <div key={i} className="fieldset-container">
-                <button type="button" tabIndex={0} className={(() => {
-                  if (saving || hiding || adding || shouldDisableAccordion) return "accordion-button-disabled";
-                  if (expanded.includes(i)) return "accordion-button-open";
-                  if (thisRowHasError || thisRowHasNetworkError) return "accordion-button accordion-button-error";
-                  return "accordion-button";
-                })()} onClick={(e) => {if(!(saving || hiding || adding || shouldDisableAccordion)){checkLocked(e,set,i)}}}>
+              <div className="fieldset-container">
+                <button type="button" tabIndex={0} 
+                  className={getAccordionButtonClassName(shouldDisableAccordion, expanded.includes(i), thisRowHasError || thisRowHasNetworkError)}
+                  onClick={(e) => {if(!shouldDisableAccordion){checkLocked(e,set,i)}}}
+                >
                   <div className='accordion-button-content'>
                     {lockName}
                   </div>
@@ -412,7 +309,7 @@ const FieldSet = ({
                     ? t('project.fieldset-title', { label: field.label, max: field.character_limit })
                     : field.label
                   title += field?.required ? '*' : ''
-                  const error = syncronousErrors && syncronousErrors[field.name]
+                  const error = syncronousErrors?.[field.name]
 
                   /* Two ways to bring errors to FormField component:
                    * 1) the missing attribute data of required fields is checked automatically.
@@ -442,7 +339,7 @@ const FieldSet = ({
                   return (
                     <div
                       className={`input-container ${showError || isNetworkErrorField ? 'error' : ''} ${fieldsetDisabled ? 'disabled-fieldset' : ''}`}
-                      key={j}
+                      key={name + field.name + j}
                     >
                       <Form.Field required={required} className={field?.field_subroles === highlightedTag && highlightedInFieldset === "yellow" ? "yellow-fieldset" : ""}>
                         {field?.field_subroles === highlightedTag && highlightedInFieldset === "yellow" ? <div className={"yellow-fieldset" + " highlight-flag"}>{highlightedTag}</div> : ''}
@@ -452,22 +349,12 @@ const FieldSet = ({
                               }`}
                           >
                             {title} 
-                            {lockStatus &&(
-                              lockStatus.lockStyle && !lockStatus.owner && (
-                                  lockStatus.fieldIdentifier && lockStatus.fieldIdentifier === set + "." + field.name &&(
+                            {lockStatus?.lockStyle && !lockStatus?.owner && (
+                                  lockStatus?.fieldIdentifier && lockStatus.fieldIdentifier === set + "." + field.name &&(
                                   <span className="input-locked"> Käyttäjä {lockStatus.lockStyle.lockData.attribute_lock.user_name} {lockStatus.lockStyle.lockData.attribute_lock.user_email} on muokkaamassa kenttää <IconLock></IconLock></span>
                                   )
                                 )
-                              )
                             }
-                            {/* Temp commented out incase it is decided that this was a good info {lockStatus &&(
-                              lockStatus.lockStyle && lockStatus.owner && (
-                                  lockStatus.fieldIdentifier && lockStatus.fieldIdentifier === set + "." + field.name &&(
-                                  <span className="input-editable">Kenttä on lukittu sinulle <IconLock></IconLock></span>
-                                  )
-                                )
-                              )
-                            } */}
                           </Label>
                           <div className="input-header-icons">
                             {!isReadOnly && (
@@ -529,8 +416,8 @@ const FieldSet = ({
                 )}
                 {(!disable_fieldset_delete_add && !automatically_added && !disabled) && (
                   <Button
-                    className={`${fieldsetDisabled || saving || shouldDisableAccordion || (visibleErrors.length > 0 && !thisRowHasError) ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'} ${hiding ? ' hidden' : ''}`}
-                    disabled={sets.length < 1 || disabled || fieldsetDisabled || saving || lastSaved?.status === 'error' || (visibleErrors.length > 0 && !thisRowHasError)}
+                    className={`${fieldsetDisabled || saving || shouldDisableAccordion || (formErrors.length > 0 && !thisRowHasError) ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'} ${hiding ? ' hidden' : ''}`}
+                    disabled={sets.length < 1 || disabled || fieldsetDisabled || saving || lastSaved?.status === 'error' || (formErrors.length > 0 && !thisRowHasError)}
                     variant="secondary"
                     size='small'
                     iconLeft={<IconTrash/>}
@@ -567,7 +454,7 @@ const FieldSet = ({
           onClick={() => {
             refreshFieldset()
           }}
-          disabled={disabled || visibleErrors.length > 0 || saving || lastSaved?.status === 'error' || (shouldDisableForErrors && !anyFieldsetHasChildError)}
+          disabled={disabled || formErrors.length > 0 || saving || lastSaved?.status === 'error' || (shouldDisableForErrors && !anyFieldsetHasChildError)}
           variant="supplementary"
           size='small'
           fullWidth={true}
@@ -601,11 +488,12 @@ const FieldSet = ({
 const mapStateToProps = state => ({
   checking: checkingSelector(state),
   saving: savingSelector(state),
-  visibleErrors:formErrorListSelector(state),
   lastSaved: lastSavedSelector(state),
   updateField: updateFieldSelector(state),
+  formErrors: formErrorListSelector(state),
+  connection: pollSelector(state),
   savingField: state.project.savingField,
-  testingConnection: state.project.testingConnection
+  testingConnection: state.project.testingConnection,
 })
 
 FieldSet.propTypes = {
@@ -627,7 +515,6 @@ FieldSet.propTypes = {
   phaseIsClosed: PropTypes.bool,
   lockStatus: PropTypes.object,
   isTabActive: PropTypes.bool,
-  visibleErrors: PropTypes.arrayOf(PropTypes.string),
   savingField: PropTypes.string,
   highlightedInFieldset: PropTypes.string,
   highlightedTag: PropTypes.string,
@@ -635,7 +522,26 @@ FieldSet.propTypes = {
   testingConnection: PropTypes.shape({
     isActive: PropTypes.bool,
     fieldName: PropTypes.string
+  }),
+  checking: PropTypes.bool,
+  formErrors: PropTypes.arrayOf(PropTypes.string),
+  name: PropTypes.string.isRequired,
+  formName: PropTypes.string.isRequired,
+  formValues: PropTypes.object.isRequired,
+  handleSave: PropTypes.func.isRequired,
+  onRadioChange: PropTypes.func.isRequired,
+  onBlur: PropTypes.func.isRequired,
+  handleLockField: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
+  handleUnlockField: PropTypes.func.isRequired,
+  field: PropTypes.shape({disable_fieldset_delete_add: PropTypes.bool}).isRequired,
+  validate: PropTypes.func.isRequired,
+  syncronousErrors: PropTypes.object,
+  lockField: PropTypes.func,
+  connection: PropTypes.shape({
+    connection: PropTypes.bool
   })
+  
 }
 
 export default connect(mapStateToProps)(FieldSet)
