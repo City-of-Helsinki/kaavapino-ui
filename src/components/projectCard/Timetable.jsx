@@ -42,13 +42,13 @@ function TimeTable({ fields, hideTitle }) {
   const renderFields = () => {
     missingData = true
     return (
-      <div className="timetable-fields">
+      <dl className="timetable-fields">
         {fields?.map((field, fieldIndex) => {
             return renderField(field, fieldIndex)
           })
         }
         {missingData && <div className="missing-data">{t('project.missing-data')}</div>}
-      </div>
+      </dl>
     )
   }
   const fieldsComponent = renderFields()

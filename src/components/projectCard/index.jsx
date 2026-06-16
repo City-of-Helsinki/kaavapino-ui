@@ -294,15 +294,15 @@ function ProjectCardPage({
 
     return (
       <div className="project-card">
-        <section aria-label="Projektin yleiskuva">
+        <section aria-label="Suunnitelualueen kuvaus ja projektin aikataulu">
           {firstRow}
           {timelineRow}
         </section>
         <div className="project-card-second-row">
-          <section className="project-card-left" aria-label="Projektin lisätiedot - 1">
+          <section className="project-card-left" aria-label="Yhteyshenkilöt, strategiakytkentä, päivämäärät, dokumentit">
             {renderLeftSection()}
           </section>
-          <section className="project-card-right" aria-label="Projektin lisätiedot - 2">
+          <section className="project-card-right" aria-label="Kerrosala ja projektin perustiedot">
             {renderRightSection()}
           </section>
         </div>
