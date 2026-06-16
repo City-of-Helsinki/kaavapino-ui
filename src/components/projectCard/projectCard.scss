@@ -41,6 +41,7 @@
     min-height: 400px;
     .card-segment {
       width: calc(50% - $size12);
+      min-height: 400px;
       height: 100%;
       .description {
         margin: $size24;
