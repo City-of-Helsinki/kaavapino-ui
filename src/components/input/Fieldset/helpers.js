@@ -32,42 +32,37 @@ const buildAddButtonMessage = ({ isNetworkError, isConnectionRestored, hasChildE
 }
 
 const getCorrectValueType = (values, valueNameKey) => {
-  for (const [key, value] of Object.entries(values)) {
-    if (key === valueNameKey) {
-      const regex = /^[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+$/;
-      if (regex.test(value)) {
-        for (const [k, v] of Object.entries(values)) {
-          if (k.includes("_sahkoposti")) {
-            //Extract name from email in data
-            //Name info in data is ID value for api
-            let fieldsetHeader = v?.split('@')[0];
-            fieldsetHeader = fieldsetHeader?.split('.')?.join(" ");
-            fieldsetHeader = startCase(fieldsetHeader);
-            return fieldsetHeader;
-          }
-        }
-      }
-      if (value?.ops) {
-        let richText = [];
-        let val = value?.ops;
-        if (Array.isArray(val)) {
-          for (const element of val) {
-            richText.push(element.insert);
-          }
-        }
-        return richText.toString();
-      }
-      else if (value?.description) {
-        return value.description;
-      }
-      else if (value?.name) {
-        return value.name.toString();
-      }
-      else {
-        return (Object.prototype.toString.call(value) === "[object Object]") ? null : value;
+  const entry = Object.entries(values).find(([key, value]) => key === valueNameKey);
+  if (!entry) {
+    return null;
+  }
+  const value = entry[1];
+  const UUIDregex = /^[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+$/;
+  if (UUIDregex.test(value)) {
+    const emailValue = Object.entries(values).find(([key, val]) => key.includes("_sahkoposti"))?.[1];
+    //Extract name from email in data
+    let userName = emailValue?.split('@')[0];
+    userName = userName?.split('.')?.join(" ");
+    userName = startCase(userName);
+    return userName;
+  }
+  if (value?.ops) {
+    let richText = [];
+    let val = value?.ops;
+    if (Array.isArray(val)) {
+      for (const element of val) {
+        richText.push(element.insert);
       }
     }
+    return richText.toString();
   }
+  if (value?.description) {
+    return value.description;
+  }
+  if (value?.name) {
+    return value.name.toString();
+  }
+  return (Object.prototype.toString.call(value) === "[object Object]") ? null : value;
 };
 
 const getValueName = (values, fields, t) => {

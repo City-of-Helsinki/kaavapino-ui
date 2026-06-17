@@ -2,7 +2,6 @@ import React from 'react'
 import { get } from 'lodash'
 import {
   Button,
-  IconLock,
   IconTrash,
   IconAngleDown,
   IconAngleUp,
@@ -13,6 +12,7 @@ import PropTypes from 'prop-types'
 
 import NetworkErrorState from '../NetworkErrorState.jsx'
 import FieldsetField from './FieldsetField.jsx'
+import InputLockedMessage from '../InputLockedMessage.jsx'
 import { getValueName, getAccordionButtonClassName } from './helpers.js'
 
 const FieldsetRow = ({
@@ -38,8 +38,8 @@ const FieldsetRow = ({
   isThisFieldsetNetworkError,
   isThisFieldsetConnectionRestored,
   nulledFields,
-  // Forwarded to FieldsetField
   syncronousErrors,
+  // Forwarded to FieldsetField
   highlightedTag,
   highlightedInFieldset,
   phaseIsClosed,
@@ -67,7 +67,7 @@ const FieldsetRow = ({
     return null
   }
 
-  const lockedElement = fieldsetDisabled ? <span className="input-locked"> Käyttäjä {lockStatus.lockStyle.lockData.attribute_lock.user_name} {lockStatus.lockStyle.lockData.attribute_lock.user_email} on muokkaamassa kenttää<IconLock></IconLock></span> : <></>
+  const lockedElement = fieldsetDisabled ? <InputLockedMessage t={t} lockStatus={lockStatus} /> : <></>;
   const lockName = <><span className='accoardian-header-text'>{getValueName(setValues, fields, t)}</span> {lockedElement}</>
 
   const shouldDisableAccordion = saving || hiding || adding

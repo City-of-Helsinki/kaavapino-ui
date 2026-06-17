@@ -7,7 +7,7 @@ import projectUtils from '../../utils/projectUtils'
 import inputUtils from '../../utils/inputUtils'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
-import { IconLock } from 'hds-react'
+import InputLockedMessage from './InputLockedMessage.jsx'
 import { useSelector } from 'react-redux'
 import { withTranslation } from 'react-i18next'
 import { isArray } from 'lodash'
@@ -274,7 +274,7 @@ const FormField = ({
 
     const LabelContainerAs = field.as === 'fieldset' ? 'legend' : 'div';
     return (
-      <>
+
       <Form.Field
         id={field.name}
         className={`input-container ${isOneLineField ? 'small-margin' : ''} ${
@@ -293,7 +293,7 @@ const FormField = ({
                 {title}
                 {status.lockStyle && !status.owner && (
                   !status.fieldIdentifier && status.identifier && status.identifier === field.name &&(
-                  <span className="input-locked"> Käyttäjä {status.lockStyle.lockData.attribute_lock.user_name} ({status.lockStyle.lockData.attribute_lock.user_email}) on muokkaamassa kenttää <IconLock></IconLock></span>
+                    <InputLockedMessage t={t} lockStatus={status} />
                   )
                   )
                 }
@@ -324,7 +324,6 @@ const FormField = ({
         {showError && !shouldHideError && <div className="error-text">{showError}</div>}
         {assistiveText && <div className='assistive-text'>{assistiveText}.</div>}
       </Form.Field>
-      </>
     )
   }
   const renderComponent = () => {

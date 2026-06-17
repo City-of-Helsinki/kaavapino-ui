@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Form, Label } from 'semantic-ui-react';
-import { IconLock } from 'hds-react';
+import InputLockedMessage from '../InputLockedMessage.jsx';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { checkingSelector, formErrorListSelector } from '../../../selectors/projectSelector.js';
@@ -76,13 +76,7 @@ const FieldsetField = ({
 
   const getLockedFieldComponent = () => {
     if (lockStatus?.lockStyle && !lockStatus?.owner && lockStatus?.fieldIdentifier === currentName) {
-      const userName = lockStatus.lockStyle.lockData.attribute_lock.user_name;
-      const userEmail = lockStatus.lockStyle.lockData.attribute_lock.user_email;
-      return (
-        <span className="input-locked">
-          {t('project.field-locked-by-user', { userName, userEmail })} <IconLock />
-        </span>
-      );
+      return ( <InputLockedMessage t={t} lockStatus={lockStatus} /> );
     }
     return null;
   };
