@@ -39,11 +39,7 @@ const FieldsetRow = ({
   isThisFieldsetConnectionRestored,
   nulledFields,
   // Forwarded to FieldsetField
-  checking,
   syncronousErrors,
-  updated,
-  savingField,
-  testingConnection,
   highlightedTag,
   highlightedInFieldset,
   phaseIsClosed,
@@ -95,29 +91,20 @@ const FieldsetRow = ({
             key={name + field.name + j}
             field={field}
             set={set}
-            i={i}
-            j={j}
+            attribute={attributeData[name]?.[i]}
             name={name}
             formName={formName}
             formValues={formValues}
             attributeData={attributeData}
-            disabled={disabled}
-            checking={checking}
-            syncronousErrors={syncronousErrors}
-            updated={updated}
-            savingField={savingField}
-            testingConnection={testingConnection}
+            disabled={disabled || hiding || saving || adding }
+            syncError={syncronousErrors?.[field.name]}
             highlightedTag={highlightedTag}
             highlightedInFieldset={highlightedInFieldset}
             phaseIsClosed={phaseIsClosed}
             isTabActive={isTabActive}
             fieldsetDisabled={fieldsetDisabled}
-            hiding={hiding}
-            saving={saving}
-            adding={adding}
             automatically_added={automatically_added}
             lastSavedChildField={lastSavedChildField}
-            formErrors={formErrors}
             isThisFieldsetNetworkError={isThisFieldsetNetworkError}
             isThisFieldsetConnectionRestored={isThisFieldsetConnectionRestored}
             lockStatus={lockStatus}
@@ -162,7 +149,9 @@ const FieldsetRow = ({
           </div>
         )}
         <div className='close-accordion-button'>
-          <button className={expanded.includes(i) ? "accordion-button-open" : "accordion-button"} onClick={(e) => { onCheckLocked(e, set, i) }}><span>Sulje</span><IconAngleUp onClick={(e) => { onCheckLocked(e, set, i) }} size='s'/></button>
+          <button className={expanded.includes(i) ? "accordion-button-open" : "accordion-button"} onClick={(e) => { onCheckLocked(e, set, i) }}>
+            <span>Sulje</span><IconAngleUp onClick={(e) => { onCheckLocked(e, set, i) }} size='s'/>
+          </button>
         </div>
       </div>
     </div>
@@ -192,11 +181,7 @@ FieldsetRow.propTypes = {
   isThisFieldsetNetworkError: PropTypes.bool,
   isThisFieldsetConnectionRestored: PropTypes.bool,
   nulledFields: PropTypes.array,
-  checking: PropTypes.bool,
   syncronousErrors: PropTypes.object,
-  updated: PropTypes.object,
-  savingField: PropTypes.string,
-  testingConnection: PropTypes.object,
   highlightedTag: PropTypes.string,
   highlightedInFieldset: PropTypes.string,
   phaseIsClosed: PropTypes.bool,
