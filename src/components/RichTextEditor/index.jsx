@@ -1025,6 +1025,7 @@ function RichTextEditor(props) {
           </span>
           <span className="ql-formats">
             <button
+              type="button"
               aria-label="Lisää kommentti"
               className="quill-toolbar-comment-button"
               onClick={addComment}
@@ -1032,6 +1033,7 @@ function RichTextEditor(props) {
               <CommentIcon className="comment-icon" aria-hidden="true" focusable="false" />
             </button>
             <button
+              type="button"
               className="show-comments-button"
               aria-label="Näytä kommentit"
               onClick={() => setShowComments(!showComments)}

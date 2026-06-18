@@ -7,14 +7,14 @@ import projectUtils from '../../utils/projectUtils'
 import inputUtils from '../../utils/inputUtils'
 import { showField } from '../../utils/projectVisibilityUtils'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
-import { IconLock } from 'hds-react'
+import InputLockedMessage from './InputLockedMessage.jsx'
 import { useSelector } from 'react-redux'
 import { withTranslation } from 'react-i18next'
 import { isArray } from 'lodash'
 import PropTypes from 'prop-types'
 import './Input.scss'
 
-const OneLineFields = ['toggle', 'hds-toggle']
+const OneLineFields = new Set(['toggle', 'hds-toggle'])
 
 const FormField = ({
   field,
@@ -75,7 +75,7 @@ const FormField = ({
   const lockField = (lockStyle,owner,identifier) => {
     let fieldName = identifier;
     let fieldSetId = "";
-    if(lockStyle && lockStyle.lockData.attribute_lock.fieldset_attribute_identifier){
+    if(lockStyle?.lockData.attribute_lock.fieldset_attribute_identifier){
       fieldName = lockStyle.lockData.attribute_lock.fieldset_attribute_identifier;
       fieldSetId = lockStyle.lockData.attribute_lock.field_identifier;
     }
@@ -100,12 +100,11 @@ const FormField = ({
     if (newProps) {
       newField = newProps
     }
-    switch (newField.type) {
-      case 'matrix':
-        return (
-          <Matrix
-            field={newField}
-            isFloorCalculation={isFloorCalculation}
+    if (newField.type === 'matrix') {
+      return (
+        <Matrix
+          field={newField}
+          isFloorCalculation={isFloorCalculation}
             attributeData={attributeData}
             formValues={formValues}
             formName={formName}
@@ -113,64 +112,63 @@ const FormField = ({
             hasEditRights={hasEditRights}
           />
         )
-      default:
-        return (
-          <CustomField
-            {...rest}
-            disabled={typeof newField.disabled === "undefined" ? disabled : newField.disabled}
-            lautakuntaInPast={lautakuntaInPast}
-            tooltip={tooltip}
-            field={newField}
-            attributeData={attributeData}
-            className={className}
-            fieldset={newField.type === 'fieldset'}
-            formName={formName}
-            formValues={formValues}
-            handleBlurSave={handleBlurSave}
-            handleLockField={handleLockField}
-            handleUnlockField={handleUnlockField}
-            syncronousErrors={syncronousErrors}
-            lockField={lockField}
-            lockStatus={lockStatus}
-            unlockAllFields={unlockAllFields}
-            insideFieldset={insideFieldset}
-            deadlines={deadlines}
-            isProjectTimetableEdit={isProjectTimetableEdit}
-            rollingInfo={rollingInfo}
-            modifyText={t('project.modify')}
-            rollingInfoText={rollingInfoText}
-            nonEditable={nonEditable}
-            isCurrentPhase={isCurrentPhase}
-            selectedPhase={selectedPhase}
-            phaseIsClosed={phaseIsClosed}
-            isTabActive={isTabActive}
-            disabledDates={disabledDates}
-            lomapaivat={lomapaivat}
-            dateTypes={dateTypes}
-            deadlineSection={deadlineSection}
-            maxMoveGroup={maxMoveGroup}
-            maxDateToMove={maxDateToMove}
-            groupName={groupName}
-            visGroups={visGroups}
-            visItems={visItems}
-            deadlineSections={deadlineSections}
-            confirmedValue={confirmedValue}
-            sectionAttributes={sectionAttributes}
-            allowedToEdit={allowedToEdit}
-            isAdmin={isAdmin}
-            timetable_editable={timetable_editable}
-            highlightedInFieldset={highlightedInFieldset}
-            highlightedTag={highlightedTag}
-            checking={checking}
-          />
-        )
     }
+    return (
+      <CustomField
+        {...rest}
+        disabled={newField.disabled === undefined ? disabled : newField.disabled}
+        lautakuntaInPast={lautakuntaInPast}
+        tooltip={tooltip}
+        field={newField}
+        attributeData={attributeData}
+        className={className}
+        fieldset={newField.type === 'fieldset'}
+        formName={formName}
+        formValues={formValues}
+        handleBlurSave={handleBlurSave}
+        handleLockField={handleLockField}
+        handleUnlockField={handleUnlockField}
+        syncronousErrors={syncronousErrors}
+        lockField={lockField}
+        lockStatus={lockStatus}
+        unlockAllFields={unlockAllFields}
+        insideFieldset={insideFieldset}
+        deadlines={deadlines}
+        isProjectTimetableEdit={isProjectTimetableEdit}
+        rollingInfo={rollingInfo}
+        modifyText={t('project.modify')}
+        rollingInfoText={rollingInfoText}
+        nonEditable={nonEditable}
+        isCurrentPhase={isCurrentPhase}
+        selectedPhase={selectedPhase}
+        phaseIsClosed={phaseIsClosed}
+        isTabActive={isTabActive}
+        disabledDates={disabledDates}
+        lomapaivat={lomapaivat}
+        dateTypes={dateTypes}
+        deadlineSection={deadlineSection}
+        maxMoveGroup={maxMoveGroup}
+        maxDateToMove={maxDateToMove}
+        groupName={groupName}
+        visGroups={visGroups}
+        visItems={visItems}
+        deadlineSections={deadlineSections}
+        confirmedValue={confirmedValue}
+        sectionAttributes={sectionAttributes}
+        allowedToEdit={allowedToEdit}
+        isAdmin={isAdmin}
+        timetable_editable={timetable_editable}
+        highlightedInFieldset={highlightedInFieldset}
+        highlightedTag={highlightedTag}
+        checking={checking}
+      />
+    )
   }
 
   const required =
     checking && projectUtils.isFieldMissing(field.name, field.required, attributeData)
 
-  const isOneLineField = OneLineFields.indexOf(field.type) > -1
+  const isOneLineField = OneLineFields.has(field.type)
 
   const isReadOnly =
     field && (field.autofill_readonly || field.display === 'readonly_checkbox')
@@ -178,12 +176,12 @@ const FormField = ({
   const isCheckBox =
     field && (field.display === 'checkbox' || field.display === 'readonly_checkbox')
 
-  const isDeadlineInfo = field && field.display === 'readonly' && field.type !== 'choice'
+  const isDeadlineInfo = field?.display === 'readonly' && field?.type !== 'choice'
 
-  const syncError = syncronousErrors && syncronousErrors[field.name]
+  const syncError = syncronousErrors?.[field.name]
 
   let submitErrorText = ''
-  if (submitErrors && submitErrors[field.name]) {
+  if (submitErrors?.[field.name]) {
     const submitErrorObject = submitErrors[field.name]
 
     if (isArray(submitErrorObject)) {
@@ -202,7 +200,7 @@ const FormField = ({
     }
   }
 
-  const error = submitErrorText ? submitErrorText : syncError
+  const error = submitErrorText || syncError
 
   const renderCheckBox = () => {
     const newProps = {
@@ -274,7 +272,7 @@ const FormField = ({
 
     const LabelContainerAs = field.as === 'fieldset' ? 'legend' : 'div';
     return (
-      <>
+
       <Form.Field
         id={field.name}
         className={`input-container ${isOneLineField ? 'small-margin' : ''} ${
@@ -293,18 +291,10 @@ const FormField = ({
                 {title}
                 {status.lockStyle && !status.owner && (
                   !status.fieldIdentifier && status.identifier && status.identifier === field.name &&(
-                  <span className="input-locked"> Käyttäjä {status.lockStyle.lockData.attribute_lock.user_name} ({status.lockStyle.lockData.attribute_lock.user_email}) on muokkaamassa kenttää <IconLock></IconLock></span>
+                    <InputLockedMessage t={t} lockStatus={status} />
                   )
                   )
                 }
-                {/* Commented out for now because uncertainty that should this be used
-              {status.lockStyle && status.owner && (
-                  !status.fieldIdentifier && status.identifier && status.identifier === field.name &&(
-                  <span className="input-editable">Kenttä on lukittu sinulle <IconLock></IconLock></span>
-                  )
-                  )
-                } 
-                */}
               </Label>
             </div>
             <div className="input-header-icons">
@@ -324,7 +314,6 @@ const FormField = ({
         {showError && !shouldHideError && <div className="error-text">{showError}</div>}
         {assistiveText && <div className='assistive-text'>{assistiveText}.</div>}
       </Form.Field>
-      </>
     )
   }
   const renderComponent = () => {
@@ -395,7 +384,30 @@ FormField.propTypes = {
     PropTypes.number,
     PropTypes.bool,
   ]),
-  sectionAttributes: PropTypes.array
+  sectionAttributes: PropTypes.array,
+  attributeData: PropTypes.object,
+  checking: PropTypes.bool,
+  formValues: PropTypes.object,
+  syncronousErrors: PropTypes.object,
+  submitErrors: PropTypes.object,
+  formName: PropTypes.string,
+  isFloorCalculation: PropTypes.bool,
+  t: PropTypes.func,
+  className: PropTypes.string,
+  handleSave: PropTypes.func,
+  handleLockField: PropTypes.func,
+  handleUnlockField: PropTypes.func,
+  unlockAllFields: PropTypes.func,
+  highlightedTag: PropTypes.string,
+  highlightStyle: PropTypes.string,
+  highlightedInFieldset: PropTypes.string,
+  insideFieldset: PropTypes.bool,
+  lautakuntaInPast: PropTypes.bool,
+  tooltip: PropTypes.string,
+  hasEditRights: PropTypes.bool,
+  isAdmin: PropTypes.bool,
+  timetable_editable: PropTypes.bool,
+  allowedToEdit: PropTypes.bool,
 }
 
 export default withTranslation()(FormField)
