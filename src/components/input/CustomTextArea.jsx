@@ -61,6 +61,7 @@ const CustomTextArea = ({ input, meta, ...custom }) => {
         {...custom}
         error={error}
         disabled={shouldDisableForErrors || custom.disabled || isThisFieldSaving || isThisFieldNetworkError}
+        tabIndex={shouldDisableForErrors || custom.disabled || isThisFieldSaving || isThisFieldNetworkError ? -1 : undefined}
         onFocus={handleFocus}
         onChange={handleInputChange}
         onBlur={handleBlur}

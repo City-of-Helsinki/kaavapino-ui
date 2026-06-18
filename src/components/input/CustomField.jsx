@@ -5,7 +5,7 @@ import SelectInput from './SelectInput.jsx'
 import RadioBooleanButton from './RadioBooleanButton.jsx'
 import CustomTextArea from './CustomTextArea.jsx'
 import File from './File.jsx'
-import FieldSet from './FieldSet.jsx'
+import FieldSet from './FieldSet/index.jsx'
 import Geometry from './Geometry.jsx'
 import Link from './Link.jsx'
 import DateTime from './DateTime.jsx'
@@ -24,7 +24,7 @@ import projectUtils from '../../utils/projectUtils'
 import AutofillInput from './AutofillInput/AutofillInput.jsx'
 import DeadlineInfoText from './DeadlineInfoText.jsx'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
-import CustomADUserCombobox from './CustomADUserCombobox.jsx'
+import { CustomADUserComboboxField } from './CustomADUserCombobox.jsx'
 import CustomSearchCombobox from './CustomSearchCombobox.jsx'
 import CustomCard from './CustomCard.jsx'
 import PropTypes from 'prop-types'
@@ -583,16 +583,17 @@ class CustomField extends Component {
     )
   }
   renderADUserSelection = props => {
-    const { field, handleBlurSave, handleLockField, handleUnlockField } = this.props
+    const { field, handleBlurSave, handleLockField, handleUnlockField, formName } = this.props
 
     return (
-      <CustomADUserCombobox
+      <CustomADUserComboboxField
         label={field.label}
         multiselect={false}
         onBlur={handleBlurSave}
         onFocus={handleLockField}
         handleUnlockField={handleUnlockField}
         name={field.label}
+        formName={formName}
         {...props}
       />
     )
@@ -914,6 +915,13 @@ CustomField.propTypes = {
   ]),
   sectionAttributes: PropTypes.array,
   hideLabel: PropTypes.bool,
+  timetable_editable: PropTypes.bool,
+  allowedToEdit: PropTypes.bool,
+  highlightedInFieldset: PropTypes.string,
+  highlightedTag: PropTypes.string,
+  isAdmin: PropTypes.bool,
+  lautakuntaInPast: PropTypes.bool,
+  tooltip: PropTypes.string,
 };
 
 export default withTranslation()(CustomField)

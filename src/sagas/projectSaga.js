@@ -311,13 +311,28 @@ function* pollConnection() {
     
     if (hasUnsavedField) {
       const fieldName = lastSaved.fields[0]
+      // fieldName may be a fieldset child (e.g. 'hanke[0].field') — extract the top-level key
+      const fieldsetName = fieldName.includes('[') ? fieldName.split('[')[0] : fieldName
 
       const formErrors = yield select(formErrorListSelector)
-      if (formErrors.includes(fieldName)) {
+      const editForm = yield select(editFormSelector)
+      const formSyncErrors = editForm?.syncErrors
+      // Check all errors belonging to the same fieldset, regardless of which child field
+      // triggered the original save. formErrorList may also be empty if resetFormErrors()
+      // cleared it while hasError in CustomInput stayed true (no state transition to re-fire).
+      const hasChildFormError = formErrors.some(ef => typeof ef === 'string' && (
+        ef === fieldsetName || ef.startsWith(`${fieldsetName}[`)
+      )) || !!(formSyncErrors?.[fieldsetName])
+      const hasFormError = formErrors.includes(fieldName) || hasChildFormError
+      if (hasFormError) {
         yield put(setPoll(true))
         yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: 'Yhteys palautunut' } })
         yield put(setSavingField(null))
-        yield put(setLastSaved("field_error", time, [fieldName], lastSaved.values || [], false))
+        yield put(setLastSaved("connection_restored", time, [fieldName], [], false))
+        yield delay(5000)
+        // Use empty fields to avoid passivating the char-limit field via fieldErrorFieldsSelector.
+        // Passivation is handled correctly by formErrors (the char-limit field stays editable).
+        yield put(setLastSaved("field_error", time, [], [], false))
         return
       }
 
@@ -325,7 +340,7 @@ function* pollConnection() {
       yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: 'Yhteys palautunut - tallennetaan...' } })
       // Dispatch connection_restored immediately so passivation and header update before saveProject completes.
       // saveProject will set status to 'success' on success or back to 'error' on failure.
-      yield put(setLastSaved("connection_restored", time, [], [], false))
+      yield put(setLastSaved("connection_restored", time, [fieldName], [], false))
       yield put(resetFormErrors())
       
       const fieldValue = lastSaved.values?.[0]
@@ -1139,34 +1154,8 @@ function* saveProject(data) {
     let changedValues = {}
     changedValues = getChangedAttributeData(values, initial)
     keys = Object.keys(changedValues)
-    // Set saving state with field name from action payload
     if (fieldName && keys.length > 0) {
-      let actualFieldName = fieldName;
-      // Check if fieldName corresponds to a fieldset in changedValues
-      if (typeof fieldName === 'string' && fieldName.endsWith('_fieldset') && changedValues[fieldName]) {
-        const fieldsetArray = changedValues[fieldName];
-        const initialFieldsetArray = initial?.[fieldName];
-        if (Array.isArray(fieldsetArray) && fieldsetArray.length > 0) {
-          const currentItem = fieldsetArray[0];
-          const initialItem = Array.isArray(initialFieldsetArray) && initialFieldsetArray.length > 0 ? initialFieldsetArray[0] : {};
-          if (typeof currentItem === 'object' && currentItem !== null) {
-            // Get all keys from current item (excluding _deleted and other metadata)
-            const itemKeys = Object.keys(currentItem).filter(key => !key.startsWith('_'));
-            // Compare each field with initial to find the changed one
-            for (const key of itemKeys) {
-              if (!isEqual(currentItem[key], initialItem[key])) {
-                actualFieldName = key; // Found the field that actually changed
-                break;
-              }
-            }
-            // If no specific change found, use first field as fallback
-            if (actualFieldName === fieldName && itemKeys.length > 0) {
-              actualFieldName = itemKeys[0];
-            }
-          }
-        }
-      }
-      yield put(setSavingField(actualFieldName));
+      yield put(setSavingField(fieldName));
     }
     //Get latest modified field and send it to components to prevent new modification for that field until saved. 
     //Prevents only user that was editing and saving. Richtext and custominput.
@@ -1213,9 +1202,17 @@ function* saveProject(data) {
         const fieldValue = savedFieldName ? values[savedFieldName] : undefined
         
         yield put(setSavingField(null))
-        yield put(setLastSaved("field_error",time,[savedFieldName],fieldValue ? [fieldValue] : [],false))
-        yield put(stopSubmit(EDIT_PROJECT_FORM, {}))
         yield put(saveProjectFailed())
+
+        if (globalThis.navigator?.onLine) {
+          yield put(setLastSaved("field_error", time, [savedFieldName], fieldValue ? [fieldValue] : [], false))
+          yield put(stopSubmit(EDIT_PROJECT_FORM, {}))
+        } else {
+          // Network is down: show connection error instead of validation error
+          // Same behaviour as other field types that make an API call on blur
+          yield put(setLastSaved("error", time, [savedFieldName], fieldValue ? [fieldValue] : [], false))
+          yield put({ type: SET_NETWORK_STATUS, payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
+        }
         return
       }
       

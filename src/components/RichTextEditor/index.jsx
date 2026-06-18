@@ -14,7 +14,9 @@ import {
   createFieldComment
 } from '../../actions/commentActions'
 import {
-  formErrorList
+  formErrorList,
+  setLastSaved,
+  SET_NETWORK_STATUS
 } from '../../actions/projectActions'
 import { currentProjectIdSelector,savingSelector,lockedSelector, lastModifiedSelector, pollSelector,lastSavedSelector, projectNetworkSelector, formErrorListSelector, connectionErrorFieldsSelector, fieldsWithAnyErrorSelector, testingConnectionSelector } from '../../selectors/projectSelector'
 import CommentIcon from '@/assets/icons/comment-icon.svg?react'
@@ -215,6 +217,21 @@ function RichTextEditor(props) {
       editorRef.current.editor.blur()
     }
   }, [lastSaved?.status === "error"])
+
+  useEffect(() => {
+    if (!editorRef.current) return
+    const root = editorRef.current.getEditor().root
+    if (shouldDisableForErrors) {
+      editorRef.current.editor.enable(false)
+      if (document.activeElement === root) {
+        editorRef.current.editor.blur()
+      }
+      root.tabIndex = -1
+    } else if (!readonly) {
+      editorRef.current.editor.enable(true)
+      root.tabIndex = 0
+    }
+  }, [shouldDisableForErrors])
 
   useEffect(() => {
     if (readonly && !saving) {
@@ -710,6 +727,17 @@ function RichTextEditor(props) {
     if(rollingInfo && !maxSizeOver){
       setEditField(false)
     }
+
+    // maxSizeOver blocks the normal save path, but if the network is also down,
+    // dispatch the error immediately so the UI detects it without requiring
+    // the accordion to be closed and reopened.
+    // Use fieldset name (not child field name) to match saveProject saga convention,
+    // preventing double notifications from both FieldSet and child field NetworkErrorState.
+    if (maxSizeOver && !globalThis.navigator?.onLine) {
+      const fieldsetName = inputProps.name.includes('[') ? inputProps.name.split('[')[0] : inputProps.name
+      dispatch(setLastSaved('error', null, [fieldsetName], [], false))
+      dispatch({ type: SET_NETWORK_STATUS, payload: { status: 'error', errorMessage: t('messages.general-save-error') } })
+    }
   }
 
   const addComment = () => {
@@ -733,14 +761,14 @@ function RichTextEditor(props) {
   if (lastIndex !== -1) {
     reducedName = inputProps.name.substring(lastIndex + 1, inputProps.name.length)
     const match = inputProps.name.match(/\[(\d+)\]/);
-    number = match ? parseInt(match[1], 10) : 0;
+    number = match ? Number.parseInt(match[1], 10) : 0;
   }
   const toolbarName = `toolbar-${reducedName || ''}-${number}`
   const modules = {
     toolbar: `#${toolbarName}`
   }
 
-  const onKeyDown = (e) => {
+  const onKeyDown = () => {
     if(readonly){
       //prevent typing text if locked
       editorRef.current.editor.enable(false)
@@ -955,18 +983,20 @@ function RichTextEditor(props) {
       shouldDisableForErrors={shouldDisableForErrors}
     />
     :
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
     onContextMenu={(e)=> {if(readonly){e.preventDefault()}}}
     className='richtext-container'
     >
-    {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
     <div
       ref={wrapperRef}
+      role="textbox"
+      aria-multiline="true"
+      aria-label={inputProps.name}
       className={`rich-text-editor-wrapper ${isRichTextDisabled ? 'rich-text-disabled' : ''} ${isThisFieldNetworkError ? 'has-network-error' : ''} ${isBlurred ? 'blurred' : ''} ${maxSizeOver ? 'has-error' : ''}`}
       onFocus={handleWrapperFocus}
       onKeyDown={handleWrapperKeyDown}
       id={"rte-wrapper-" + inputProps.name}
+      tabIndex={-1}
     >
       <div className={RichTextClassName}>
         <div
@@ -995,6 +1025,7 @@ function RichTextEditor(props) {
           </span>
           <span className="ql-formats">
             <button
+              type="button"
               aria-label="Lisää kommentti"
               className="quill-toolbar-comment-button"
               onClick={addComment}
@@ -1002,6 +1033,7 @@ function RichTextEditor(props) {
               <CommentIcon className="comment-icon" aria-hidden="true" focusable="false" />
             </button>
             <button
+              type="button"
               className="show-comments-button"
               aria-label="Näytä kommentit"
               onClick={() => setShowComments(!showComments)}
@@ -1013,7 +1045,7 @@ function RichTextEditor(props) {
           </span>
         </div>
         <ReactQuill
-          tabIndex="0"
+          tabIndex={isRichTextDisabled ? -1 : 0}
           id={toolbarName + "input"}
           ref={editorRef}
           modules={modules}

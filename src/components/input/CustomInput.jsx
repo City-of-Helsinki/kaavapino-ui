@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import inputUtils from '../../utils/inputUtils'
 import { TextInput, NumberInput } from 'hds-react'
 import { useDispatch, useSelector } from 'react-redux'
-import {updateFloorValues,formErrorList} from '../../actions/projectActions'
+import {updateFloorValues, formErrorList, setLastSaved, SET_NETWORK_STATUS} from '../../actions/projectActions'
 import {lockedSelector,lastModifiedSelector,pollSelector,lastSavedSelector,savingSelector} from '../../selectors/projectSelector'
 import moment from 'moment'
 import { useTranslation } from 'react-i18next'
@@ -324,6 +324,14 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
                 const readOnlyValue = !custom?.isProjectTimetableEdit
                 setReadOnly({name:input.name,read:readOnlyValue})
               }
+            } else if(custom.insideFieldset && !globalThis.navigator?.onLine) {
+              // Validation error blocks save, but network is also down.
+              // Dispatch network error so it's detected immediately on blur inside fieldset.
+              // Use fieldset name (not child field name) to match saveProject saga convention,
+              // preventing double notifications from both FieldSet and child field NetworkErrorState.
+              const fieldsetName = input.name.includes('[') ? input.name.split('[')[0] : input.name
+              dispatch(setLastSaved('error', null, [fieldsetName], [], false))
+              dispatch({ type: SET_NETWORK_STATUS, payload: { status: 'error', errorMessage: t('messages.general-save-error') } })
             } else if(!custom.insideFieldset){
               // Keep field editable when there's a validation error
               setReadOnly({name:input.name,read:false})
@@ -547,6 +555,7 @@ const CustomInput = ({ fieldData, input, meta, ...custom }) => {
             {...input}
             {...restCustom}
             disabled={isDisabled}
+            tabIndex={isDisabled ? -1 : undefined}
             onChange={(event) => { handleInputChange(event, readonly.read) }}
             onBlur={(event) => { handleBlur(event, readonly.read) }}
             onFocus={() => { handleFocus() }}

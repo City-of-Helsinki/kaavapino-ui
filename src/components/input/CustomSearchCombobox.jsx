@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { Combobox } from 'hds-react'
 import { toLower } from 'lodash'
+import PropTypes from 'prop-types'
+import { useFieldPassivation } from '../../hooks/useFieldPassivation'
 
-function CustomSearchCombobox({ options, disabled, input, onBlur, name }) {
+function CustomSearchCombobox({ options, disabled, input, onBlur, name, formName }) {
+  const shouldPassivate = useFieldPassivation(input?.name, { formName })
   const [currentValue, setCurrentValue] = useState(null)
 
   useEffect(() => {
@@ -63,7 +66,7 @@ function CustomSearchCombobox({ options, disabled, input, onBlur, name }) {
         options={currentOptions}
         multiselect={false}
         filter={handleFilter}
-        disabled={disabled}
+        disabled={disabled || shouldPassivate}
         clearable={true}
         onChange={value => {
           input.onChange(value ? value.value : null)
@@ -75,6 +78,15 @@ function CustomSearchCombobox({ options, disabled, input, onBlur, name }) {
       />
     </div>
   )
+}
+
+CustomSearchCombobox.propTypes = {
+  options: PropTypes.array,
+  disabled: PropTypes.bool,
+  input: PropTypes.shape({ name: PropTypes.string, value: PropTypes.any, onChange: PropTypes.func }),
+  onBlur: PropTypes.func,
+  name: PropTypes.string,
+  formName: PropTypes.string
 }
 
 export default CustomSearchCombobox
