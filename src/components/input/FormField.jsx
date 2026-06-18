@@ -75,7 +75,7 @@ const FormField = ({
   const lockField = (lockStyle,owner,identifier) => {
     let fieldName = identifier;
     let fieldSetId = "";
-    if(lockStyle?.lockData.attribute_lock.fieldset_attribute_identifier){
+    if(lockStyle?.lockData?.attribute_lock?.fieldset_attribute_identifier){
       fieldName = lockStyle.lockData.attribute_lock.fieldset_attribute_identifier;
       fieldSetId = lockStyle.lockData.attribute_lock.field_identifier;
     }
