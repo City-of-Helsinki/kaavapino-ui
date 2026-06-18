@@ -48,6 +48,7 @@ const EditPageHeader = ({ title, pollConnection, currentSectionIndex, location }
       setPollCount(Math.min(pollCount + pollCount, 6));
       setIsPollingConnection(true);
       const failedFieldName = lastSaved?.fields?.[0];
+      pollConnection();
       dispatch(setTestingConnection(true, failedFieldName));
       if (spinnerRef?.current?.style) {
         spinnerRef.current.style.visibility = "visible";

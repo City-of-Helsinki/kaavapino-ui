@@ -192,7 +192,7 @@ FieldsetRow.propTypes = {
   onRadioChange: PropTypes.func.isRequired,
   lockField: PropTypes.func,
   unlockAllFields: PropTypes.func,
-  validate: PropTypes.func.isRequired,
+  validate: PropTypes.array,
   onChildBlurSave: PropTypes.func.isRequired,
   onCheckLocked: PropTypes.func.isRequired,
   onHide: PropTypes.func.isRequired,

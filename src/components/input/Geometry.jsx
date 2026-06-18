@@ -89,7 +89,7 @@ function Geometry(props) {
 
 Geometry.propTypes = {
   input: PropTypes.shape({
-    value: PropTypes.arrayOf(
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(
       PropTypes.shape({
         geometry: PropTypes.shape({
           type: PropTypes.string,
@@ -98,7 +98,7 @@ Geometry.propTypes = {
         properties: PropTypes.object,
         type: PropTypes.string
       })
-    )
+    )])
   }),
   value: PropTypes.object
 }

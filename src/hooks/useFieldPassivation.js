@@ -66,10 +66,6 @@ export const shouldPassivateField = (fieldName, formErrors = [], connectionError
  */
 export const useFieldPassivation = (fieldName, options = {}) => {
   const { includeConnectionErrors = true, formName } = options
-  
-  // Only apply passivation to the main project edit form
-  // DO NOT include editProjectTimetableForm - timetable editing should not have passivation
-  // DO NOT include other modal forms like newProjectForm
   const ALLOWED_FORMS = ['editProjectForm'];
   const isAllowedForm = formName && ALLOWED_FORMS.includes(formName);
   
@@ -77,8 +73,7 @@ export const useFieldPassivation = (fieldName, options = {}) => {
   const connectionErrorFields = useSelector(connectionErrorFieldsSelector) || []
   const fieldErrorFields = useSelector(fieldErrorFieldsSelector) || []
   const network = useSelector(networkSelector)
-  
-  // If not in an allowed form, never passivate
+
   if (!isAllowedForm) {
     return false;
   }
@@ -87,6 +82,5 @@ export const useFieldPassivation = (fieldName, options = {}) => {
   const hasNetworkError = network?.status === 'error'
   
   const shouldPassivate = shouldPassivateField(fieldName, formErrors, connectionErrorFields, fieldErrorFields, includeConnectionErrors, hasNetworkError)
-  
   return shouldPassivate
 }

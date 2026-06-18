@@ -352,14 +352,14 @@ FieldSet.propTypes = {
   sets: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
   fields: PropTypes.array,
   lastSaved: PropTypes.object,
-  updateField: PropTypes.shape({
+  updateField: PropTypes.oneOfType([PropTypes.bool, PropTypes.shape({
     fieldName: PropTypes.string,
     formName: PropTypes.string,
     set: PropTypes.string,
     nulledFields: PropTypes.arrayOf(PropTypes.object),
     i: PropTypes.number,
     data: PropTypes.any
-  }),
+  })]),
   attributeData: PropTypes.object,
   updated: PropTypes.object,
   phaseIsClosed: PropTypes.bool,
@@ -385,7 +385,7 @@ FieldSet.propTypes = {
   disabled: PropTypes.bool,
   handleUnlockField: PropTypes.func.isRequired,
   field: PropTypes.shape({disable_fieldset_delete_add: PropTypes.bool}).isRequired,
-  validate: PropTypes.func.isRequired,
+  validate: PropTypes.array,
   syncronousErrors: PropTypes.object,
   lockField: PropTypes.func,
   connection: PropTypes.shape({
