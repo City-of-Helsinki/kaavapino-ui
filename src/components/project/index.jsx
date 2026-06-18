@@ -209,7 +209,7 @@ class ProjectPage extends Component {
     )
   }
   getProjectDocumentsContent = (isResponsible) => {
-    const { currentProject, users, projectSubtypes, currentUserId, selectedPhase } = this.props
+    const { currentProject, users, projectSubtypes, currentUserId, selectedPhase} = this.props
     return (
       <div key="documents">
         <NavHeader
@@ -241,11 +241,10 @@ class ProjectPage extends Component {
           handleClose={() => this.togglePrintProjectDataModal(false)}
         />
         <ProjectDocumentsPage 
-        users={users} 
-        currentUserId={currentUserId} 
-        project={currentProject} 
-        selectedPhase={selectedPhase}
-        search={this.props.location.search}
+          users={users} 
+          currentUserId={currentUserId} 
+          project={currentProject} 
+          selectedPhase={selectedPhase}
         />
       </div>
     )

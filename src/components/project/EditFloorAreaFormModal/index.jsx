@@ -1,5 +1,3 @@
-/* This file includes inmplementation of editing floor area, but currently only with mock data */
-
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Modal, Form } from 'semantic-ui-react'
@@ -15,16 +13,9 @@ import { Button } from 'hds-react'
 import ModalCloseButton from '../ModalCloseButton/ModalCloseButton.jsx'
 import { focusTrapOnTabPressed } from '../projectModalUtils';
 
-
 const FloorAreaTotals = ({ formValues, floorAreaSections, attributeData }) => {
   //formValues can return empty at initiation, attributeData always has the correct structure
-  let values
-  if(!formValues){
-    values = attributeData
-  }
-  else{
-    values = formValues
-  }
+  const values = formValues || attributeData
   // Would love a more rubust check than string includes if one becomes available
   const totalSection = floorAreaSections.find(section =>
     section.title.includes('yhteensä')
@@ -47,6 +38,12 @@ const FloorAreaTotals = ({ formValues, floorAreaSections, attributeData }) => {
       </div>
     </div>
   )
+}
+
+FloorAreaTotals.propTypes = {
+  formValues: PropTypes.object,
+  floorAreaSections: PropTypes.array,
+  attributeData: PropTypes.object
 }
 
 class EditFloorAreaFormModal extends Component {
@@ -166,8 +163,7 @@ class EditFloorAreaFormModal extends Component {
         <Modal.Content>
           {this.getFloorAreaTotalsComponent()}
           <Form>
-            {floorAreaSections &&
-              floorAreaSections.map((section, sectionIndex) =>
+            {floorAreaSections?.map((section, sectionIndex) =>
                 this.renderSection(section, sectionIndex)
               )}
           </Form>
@@ -197,7 +193,19 @@ class EditFloorAreaFormModal extends Component {
 
 EditFloorAreaFormModal.propTypes = {
   open: PropTypes.bool.isRequired,
-  handleClose: PropTypes.func.isRequired
+  handleClose: PropTypes.func.isRequired,
+  initialize: PropTypes.func.isRequired,
+  attributeData: PropTypes.object,
+  submitting: PropTypes.bool,
+  submitFailed: PropTypes.bool,
+  submitSucceeded: PropTypes.bool,
+  saving: PropTypes.bool,
+  formSubmitErrors: PropTypes.object,
+  formValues: PropTypes.object,
+  floorAreaSections: PropTypes.array,
+  allowedToEdit: PropTypes.bool,
+  t: PropTypes.func.isRequired,
+  saveProjectFloorArea: PropTypes.func
 }
 
 const mapStateToProps = state => ({

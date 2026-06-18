@@ -18,7 +18,7 @@ import './ProjectDocuments.scss'
 
 
 function ProjectDocumentsPage(props) {
-  const {currentProjectId, currentUserId, users, fetchDocuments, documents, documentsLoading,project,fetchSchemas,schema,selectedPhase, search, documentDownloaded} = props
+  const {currentProjectId, currentUserId, users, fetchDocuments, documents, documentsLoading,project,fetchSchemas,schema, documentDownloaded} = props
 
   const [downloadingDocumentReady, setDownloadingDocumentReady] = useState(true)
 
@@ -40,7 +40,6 @@ function ProjectDocumentsPage(props) {
 
   const {t} = useTranslation()
 
-  const isUserResponsible = authUtils.isResponsible(currentUserId, users)
   const isThePersonResponsible = authUtils.isThePersonResponsiple(currentUserId, users, project.attribute_data)
 
   const disableDownloads = () => {
@@ -83,14 +82,10 @@ function ProjectDocumentsPage(props) {
           title={<span>{groupedDocuments[key]?.title}</span>}
           phaseEnded={groupedDocuments[key].phaseEnded}
           documents={groupedDocuments[key].documents}
-          projectId={currentProjectId}
           phase={groupedDocuments[key]}
-          isUserResponsible={isUserResponsible}
           isThePersonResponsible={isThePersonResponsible}
           schema={schema}
           attribute_data={project.attribute_data}
-          selectedPhase={selectedPhase}
-          search={search}
           project={project}
           disableDownloads={() => disableDownloads()}
           downloadingDocumentReady={downloadingDocumentReady}
