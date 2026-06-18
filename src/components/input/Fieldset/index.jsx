@@ -188,7 +188,7 @@ const FieldSet = ({
     //Change expanded styles if close button or accordian heading element is clicked
     const substrings = ["fieldset-accordian-close","accordion-button"];
     if (substrings.some(v => e?.target?.className?.includes(v))) {
-        expand = true
+      expand = true
     }
     
     if(expand){

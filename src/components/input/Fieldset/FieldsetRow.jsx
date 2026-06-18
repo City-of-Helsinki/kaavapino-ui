@@ -149,8 +149,8 @@ const FieldsetRow = ({
           </div>
         )}
         <div className='close-accordion-button'>
-          <button className={expanded.includes(i) ? "accordion-button-open" : "accordion-button"} onClick={(e) => { onCheckLocked(e, set, i) }}>
-            <span>Sulje</span><IconAngleUp onClick={(e) => { onCheckLocked(e, set, i) }} size='s'/>
+          <button type="button" className={expanded.includes(i) ? "accordion-button-open" : "accordion-button"} onClick={(e) => { onCheckLocked(e, set, i) }}>
+            <span>Sulje</span><IconAngleUp size='s'/>
           </button>
         </div>
       </div>
