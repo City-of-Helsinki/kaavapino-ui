@@ -2,7 +2,7 @@ import React from 'react'
 import axios from 'axios'
 import { eventChannel } from 'redux-saga';
 import { take, takeLatest, put, all, call, select, takeEvery, delay, race } from 'redux-saga/effects'
-import { isEqual, isEmpty, isArray } from 'lodash'
+import { isEqual, isEmpty } from 'lodash'
 import { push } from 'connected-react-router'
 import {
   editFormSelector,
@@ -1130,10 +1130,10 @@ function addListingInfo(deltaOps) {
   for (let i = 0; i < enriched.length; i++) {
     const op = enriched[i]
     if (op?.attributes?.list === 'ordered' && i > 0 && !enriched[i - 1].attributes?.isOrderList) {
-      enriched[i - 1].attributes = { ...(enriched[i - 1].attributes || {}), isOrderList: true }
+      enriched[i - 1].attributes = { ...(enriched[i - 1].attributes), isOrderList: true }
     }
     if (op?.attributes?.list === 'bullet' && i > 0 && !enriched[i - 1].attributes?.isBulleted) {
-      enriched[i - 1].attributes = { ...(enriched[i - 1].attributes || {}), isBulleted: true }
+      enriched[i - 1].attributes = { ...(enriched[i - 1].attributes), isBulleted: true }
     }
   }
   return enriched
@@ -1174,14 +1174,20 @@ function* saveProject(data) {
       for (const key in changedValues) {
         const value = changedValues[key]
         if (Array.isArray(value)) {
-          changedValues[key] = value.map(item => {
-            if (item && Array.isArray(item.ops)) {
-              return {
-                ...item,
-                ops: addListingInfo(item.ops)
+          // Fieldset
+          changedValues[key] = value.map(fieldsetObject => {
+            if (fieldsetObject && !fieldsetObject._deleted) {
+              for (const fieldsetKey in fieldsetObject) {
+                const fieldsetValue = fieldsetObject[fieldsetKey]
+                if (fieldsetValue && Array.isArray(fieldsetValue.ops)) {
+                  fieldsetObject[fieldsetKey] = {
+                    ...fieldsetValue,
+                    ops: addListingInfo(fieldsetValue.ops)
+                  }
+                }
               }
             }
-            return item
+            return fieldsetObject
           })
         } else if (value && Array.isArray(value.ops)) {
           changedValues[key] = {
@@ -1579,9 +1585,9 @@ const getOverviewYearRangeQuery = value => {
   let startDate
   let endDate
 
-  if (isArray(value)) {
+  if (Array.isArray(value)) {
     startDate = dayjs(new Date(value[0].value, 0, 1)).format('YYYY-MM-DD')
-    endDate = dayjs(new Date(value[value.length - 1].value, 11, 31)).format('YYYY-MM-DD')
+    endDate = dayjs(new Date(value.at(-1).value, 11, 31)).format('YYYY-MM-DD')
   } else {
     startDate = dayjs(new Date(value, 0, 1)).format('YYYY-MM-DD')
     endDate = dayjs(new Date(value, 11, 31)).format('YYYY-MM-DD')
@@ -1596,7 +1602,7 @@ const getOverviewYearRangeQuery = value => {
 const getOverviewQueryValue = value => {
   const queryValue = []
 
-  if (isArray(value)) {
+  if (Array.isArray(value)) {
     value.forEach(current => queryValue.push(current))
   } else {
     queryValue.push(value)
@@ -1647,7 +1653,7 @@ const buildOverviewQuery = (payload, customHandlers = {}) => {
 
 const buildFloorAreaOverviewQuery = payload => buildOverviewQuery(payload, {
   kaavaprosessi: value => {
-    const subtypeIds = isArray(value)
+    const subtypeIds = Array.isArray(value)
       ? value.map(current => KAAVAPROSESSI_TO_SUBTYPE_ID[current]).filter(Boolean)
       : []
 
