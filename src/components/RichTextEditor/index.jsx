@@ -258,7 +258,67 @@ function RichTextEditor(props) {
 
     removeTabBinding();
   }, [editorRef, editField])
-  
+
+  useEffect(() => {
+    // Workaround for a bug in quill
+    // Prevents the editor from scrolling to the top of the editor when pasting large amounts of text
+    const root = editorRef?.current?.getEditor?.()?.root;
+    if (!root) return
+
+    const handlePaste = () => {
+      const savedScrollX = window.scrollX
+      const savedScrollY = window.scrollY
+
+      // scroll to caret (end of pasted content)
+      const followCaret = () => {
+        const sel = window.getSelection()
+        if (!sel || sel.rangeCount === 0 || !root.contains(sel.focusNode)) {
+          window.scrollTo(savedScrollX, savedScrollY)
+          return
+        }
+
+        const range = sel.getRangeAt(0).cloneRange()
+        range.collapse(false)
+        let rect = range.getBoundingClientRect()
+        // Collapsed ranges on an empty text node can report a zero rect; fall
+        // back to the containing element's rect in that case.
+        if (rect.top === 0 && rect.bottom === 0) {
+          const endNode = range.endContainer
+          const el = endNode.nodeType === Node.TEXT_NODE ? endNode.parentElement : endNode
+          if (el && typeof el.getBoundingClientRect === 'function') {
+            rect = el.getBoundingClientRect()
+          }
+        }
+        if (!rect || (rect.top === 0 && rect.bottom === 0)) {
+          window.scrollTo(savedScrollX, savedScrollY)
+          return
+        }
+
+        const caretAbsY = rect.bottom + window.scrollY
+        const viewportHeight = window.innerHeight
+        const margin = 32 // matches typing feel: caret stays a bit off the edge
+
+        // Where the caret would appear on-screen if we kept the pre-paste scroll.
+        const caretViewportY = caretAbsY - savedScrollY
+        const caretAlreadyVisible =
+          caretViewportY >= margin && caretViewportY <= viewportHeight - margin
+
+        const targetY = caretAlreadyVisible
+          ? savedScrollY
+          : caretAbsY - viewportHeight + margin // Move to show caret
+
+        window.scrollTo(savedScrollX, Math.max(0, targetY))
+      }
+
+      // Run after Quill's setTimeout(1) + focus() so we override the browser's
+      // focus-induced scroll to the top of the editor.
+      setTimeout(() => requestAnimationFrame(followCaret), 5)
+    }
+
+    root.addEventListener('paste', handlePaste, true)
+    return () => root.removeEventListener('paste', handlePaste, true)
+  }, [editorRef, editField])
+
   useEffect(() => {
     if(!isMount){
       //!ismount skips initial render
