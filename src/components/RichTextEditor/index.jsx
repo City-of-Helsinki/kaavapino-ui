@@ -522,7 +522,7 @@ function RichTextEditor(props) {
         // if the field is not locked, set the value from the lock data
         // BUT skip if we just saved successfully or connection was restored - editor already has the correct content
         // and fieldData is the old pre-edit value from when the lock was acquired
-        const skipSetValue = lastSaved?.status === 'success' || lastSaved?.status === 'connection_restored';
+        const skipSetValue = lastModified === inputProps.name && (lastSaved?.status === 'success' || lastSaved?.status === 'connection_restored');
         if (!skipSetValue) {
           setValue(fieldData)
         }
