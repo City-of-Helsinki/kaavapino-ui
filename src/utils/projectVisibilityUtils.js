@@ -326,6 +326,10 @@ export const shouldDeadlineBeVisible = (deadlineName, deadlineGroup, attributeDa
 
 // Helper function to check if dates are confirmed
 export const isDeadlineConfirmed = (formValues, deadlineGroup, returnField, breakAtFirst) => {
+  if (!deadlineGroup || !formValues) {
+    return false;
+  }
+
     // ReturnField true is used when deleting phase and making sure confirmation is deleted too.
     // Extract the number from deadlineGroup if it exists
     const extractDigitsFromEnd = (str) => {
