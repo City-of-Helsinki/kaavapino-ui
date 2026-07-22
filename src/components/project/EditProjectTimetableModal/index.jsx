@@ -169,7 +169,7 @@ class EditProjectTimeTableModal extends Component {
           // avoiding race condition where change() hasn't updated Redux yet
           const calculatedValues = this.addGroup(changedValues)
           // Deep clone to prevent mutation by response handlers
-          const attributeDataWithNewValues = JSON.parse(JSON.stringify({ ...formValues, ...calculatedValues }));
+          const attributeDataWithNewValues = structuredClone({ ...formValues, ...calculatedValues });
           // Use calculated values for timeline rendering to prevent visual jump
           timelineSourceData = attributeDataWithNewValues;
           this.setState({visValues: attributeDataWithNewValues})
@@ -248,21 +248,16 @@ class EditProjectTimeTableModal extends Component {
   }
 
   shouldComponentUpdate(prevProps, prevState) {
-    if (isEqual(prevProps, this.props) && isEqual(prevState, this.state)) {
-      return false
-    }
-    return true
+    return !(isEqual(prevProps, this.props) && isEqual(prevState, this.state));
   }
 
   extractAttributes(deadlineSections, attributeData, targetArray, additionalConditions = () => true) {
-    for (let index = 0; index < deadlineSections.length; index++) {
-      const phaseSection = deadlineSections[index].sections;
-      for (let x = 0; x < phaseSection.length; x++) {
-        const attributes = phaseSection[x].attributes;
-        for (let y = 0; y < attributes.length; y++) {
-          if (attributes[y].type === "date" && attributes[y].display !== "readonly" && additionalConditions(attributes[y], attributeData)) {
+    for (const phase of deadlineSections) {
+      for (const section of phase.sections) {
+        for (const attribute of section.attributes) {
+          if (attribute.type === "date" && attribute.display !== "readonly" && additionalConditions(attribute, attributeData)) {
             // Create section attributes which are always in correct order to check dates in timeline
-            targetArray.push(attributes[y]);
+            targetArray.push(attribute);
           }
         }
       }
@@ -273,10 +268,10 @@ class EditProjectTimeTableModal extends Component {
     let field;
     let formattedDate;
 
-    for (let i = 0; i < newObjectArray.length; i++) {
-      if (this.isMatchingKey(newObjectArray[i], "paattyy") || this.isMatchingKey(newObjectArray[i], "lautakunnassa")) {
-        field = newObjectArray[i]?.key;
-        formattedDate = newObjectArray[i]?.obj2;
+    for (const element of newObjectArray) {
+      if (this.isMatchingKey(element, "paattyy") || this.isMatchingKey(element, "lautakunnassa")) {
+        field = element?.key;
+        formattedDate = element?.obj2;
         break;
       }
     }
@@ -322,22 +317,6 @@ class EditProjectTimeTableModal extends Component {
       style += " no-drag";
     }
     return style;
-  }
-
-  addOneDay = (dateString) => {
-    // Parse the input string into a Date object
-    const date = new Date(dateString);
-    
-    // Add one day (24 hours * 60 minutes * 60 seconds * 1000 milliseconds)
-    date.setTime(date.getTime() + (24 * 60 * 60 * 1000));
-    
-    // Format the new date back into "YYYY-MM-DD" format
-    const year = date.getFullYear();
-    // getMonth() returns 0-11; adding 1 to get 1-12 for months
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    
-    return `${year}-${month}-${day}`;
   }
 
   findConsecutivePeriods = (dates, items, holidays) => {
@@ -486,10 +465,6 @@ class EditProjectTimeTableModal extends Component {
     }
 
     return deadLineGroups;
-  }
-
-  getValueOrDefault = (deadline, formValues) => {
-    return formValues && formValues[deadline.attribute] ? formValues[deadline.attribute] : deadline.date;
   }
 
   addMainGroup = (deadlines, i, numberOfPhases, startDate, endDate, style, options) => {
@@ -641,8 +616,7 @@ class EditProjectTimeTableModal extends Component {
         groupInfo: "Esilläolo"
       });
     }
-    else{
-      if (dashedStyle.includes("board") && dashStart && dashEnd) {
+    else if (dashedStyle.includes("board") && dashStart && dashEnd) {
         phaseData.push({
           start: dashStart,
           id: numberOfPhases + " maaraaika",
@@ -685,28 +659,28 @@ class EditProjectTimeTableModal extends Component {
           phaseName: deadlines[i].deadline.phase_name,
           groupInfo: "Lautakunta"
         });
-      } else {
-        phaseData.push({
-          start: dashStart,
-          end: dashEnd,
-          id: numberOfPhases,
-          content: "",
-          className: dashedStyle + " " + highlightID + allowEditStyle + " only-inner-end",
-          title: deadlines[i - 1].deadline.attribute +"-"+ deadlines[i].deadline.attribute,
-          phaseID: deadlines[i].deadline.phase_id,
-          phase: false,
-          group: numberOfPhases,
-          locked: false,
-          phaseName: deadlines[i].deadline.phase_name,
-          groupInfo: "Nähtävilläolo"
-        });
-      }
+    } 
+    else {
+      phaseData.push({
+        start: dashStart,
+        end: dashEnd,
+        id: numberOfPhases,
+        content: "",
+        className: dashedStyle + " " + highlightID + allowEditStyle + " only-inner-end",
+        title: deadlines[i - 1].deadline.attribute +"-"+ deadlines[i].deadline.attribute,
+        phaseID: deadlines[i].deadline.phase_id,
+        phase: false,
+        group: numberOfPhases,
+        locked: false,
+        phaseName: deadlines[i].deadline.phase_name,
+        groupInfo: "Nähtävilläolo"
+      });
     }
 
     let dlIndex = deadLineGroups.findIndex(group => group.content.toLowerCase() === deadlines[i].deadline.phase_name.toLowerCase());
     deadLineGroups?.at(dlIndex)?.nestedGroups.push(numberOfPhases);
     const lastChar = deadlines[i]?.deadline?.deadlinegroup?.charAt(deadlines[i].deadline.deadlinegroup.length - 1); // Get the last character of the string
-    const isLastCharNumber = !isNaN(lastChar) && lastChar !== ""; // Check if the last character is a number
+    const isLastCharNumber = !Number.isNaN(lastChar) && lastChar !== ""; // Check if the last character is a number
     let indexString = "";
     if(isLastCharNumber){
       indexString = "-" + lastChar;
@@ -766,22 +740,22 @@ class EditProjectTimeTableModal extends Component {
       if(deadline.deadline_types.includes('phase_start')){
         //Special case for project start date
         if(deadline.attribute === null && deadlines[i].abbreviation === "K1"){
-          startDate = formValues && formValues["projektin_kaynnistys_pvm"]
+          startDate = formValues?.["projektin_kaynnistys_pvm"]
             ? new Date(formValues["projektin_kaynnistys_pvm"])
             : new Date(deadlines[i].date);
           startDate.setHours(12, 0, 0, 0);
-          disabled = !formValues?.kaavan_vaihe.includes("Käynnistys") ? true : false;
+          disabled = !formValues?.kaavan_vaihe.includes("Käynnistys");
         }
         else if(deadline.attribute === "voimaantulovaihe_alkaa_pvm"){
-          const phaseStart = formValues && formValues["voimaantulovaihe_alkaa_pvm"] ? new Date(formValues["voimaantulovaihe_alkaa_pvm"]) : deadlines[i].date;
-          startDate = formValues && formValues["hyvaksymispaatos_pvm"] 
+          const phaseStart = formValues?.["voimaantulovaihe_alkaa_pvm"] ? new Date(formValues["voimaantulovaihe_alkaa_pvm"]) : deadlines[i].date;
+          startDate = formValues?.["hyvaksymispaatos_pvm"] 
           ? new Date(formValues["hyvaksymispaatos_pvm"]) 
           : phaseStart
           startDate.setHours(12, 0, 0, 0);
         }
         else{
           //If formValues has deadline.attribute use that values, it if not then use deadline[i].date in startDate.
-          startDate = formValues && formValues[deadline.attribute]
+          startDate = formValues?.[deadline.attribute]
             ? new Date(formValues[deadline.attribute])
             : new Date(deadlines[i].date);
           startDate.setHours(12, 0, 0, 0);
@@ -791,29 +765,29 @@ class EditProjectTimeTableModal extends Component {
       }
       else if(deadlines[i]?.deadline?.attribute?.includes("esillaolo") || deadlines[i]?.deadline?.attribute?.includes("luonnosaineiston_maaraaika")){
         if(deadline.deadline_types.includes('milestone') && deadline.deadline_types.includes('dashed_start')){
-          milestone = formValues && formValues[deadline.attribute]
+          milestone = formValues?.[deadline.attribute]
             ? new Date(formValues[deadline.attribute])
             : deadlines[i].date;
 
-            if (milestone instanceof Date && !isNaN(milestone.getTime())) {
+            if (milestone instanceof Date && !Number.isNaN(milestone.getTime())) {
               milestone.setHours(12, 0, 0, 0);
             }
         }
         else if (deadline.deadline_types.includes('inner_start')) {
-          innerStart = formValues && formValues[deadline.attribute]
+          innerStart = formValues?.[deadline.attribute]
             ? new Date(formValues[deadline.attribute])
             : deadlines[i].date;
 
-          if (innerStart instanceof Date && !isNaN(innerStart.getTime())) {
+          if (innerStart instanceof Date && !Number.isNaN(innerStart.getTime())) {
             innerStart.setHours(12, 0, 0, 0);
           }
         }
         else if(deadline.deadline_types.includes('inner_end')){
-          innerEnd = formValues && formValues[deadline.attribute]
+          innerEnd = formValues?.[deadline.attribute]
             ? new Date(formValues[deadline.attribute])
             : deadlines[i].date;
 
-          if (innerEnd instanceof Date && !isNaN(innerEnd.getTime())) {
+          if (innerEnd instanceof Date && !Number.isNaN(innerEnd.getTime())) {
             innerEnd.setHours(12, 0, 0, 0);
           }
 
@@ -823,42 +797,42 @@ class EditProjectTimeTableModal extends Component {
       else if(deadlines[i]?.deadline?.attribute?.includes("nahtavilla") || deadlines[i]?.deadline?.deadlinegroup?.includes("nahtavillaolokerta") || deadlines[i]?.deadline?.attribute?.includes("ehdotus_nahtaville_aineiston_maaraaika")){
         
         if(deadline.deadline_types.includes('milestone') && deadline.deadline_types.includes('dashed_start')){
-          milestone = formValues && formValues[deadline.attribute]
+          milestone = formValues?.[deadline.attribute]
             ? new Date(formValues[deadline.attribute])
             : deadlines[i].date;
 
-          if (milestone instanceof Date && !isNaN(milestone.getTime())) {
+          if (milestone instanceof Date && !Number.isNaN(milestone.getTime())) {
             milestone.setHours(12, 0, 0, 0);
           }
         }
         else if(deadline.deadline_types.includes('inner_start')){
           if(formValues.kaavaprosessin_kokoluokka === "XL" && deadline.attribute.includes("iso") || formValues.kaavaprosessin_kokoluokka === "L" && deadline.attribute.includes("iso")){
             innerEnd = false
-            innerStart = formValues && formValues[deadline.attribute]
+            innerStart = formValues?.[deadline.attribute]
               ? new Date(formValues[deadline.attribute])
               : deadlines[i].date;
 
-            if (innerStart instanceof Date && !isNaN(innerStart.getTime())) {
+            if (innerStart instanceof Date && !Number.isNaN(innerStart.getTime())) {
               innerStart.setHours(12, 0, 0, 0);
             }
           }
           if(formValues.kaavaprosessin_kokoluokka === "XS" && deadline.attribute.includes("pieni") || formValues.kaavaprosessin_kokoluokka === "S" && deadline.attribute.includes("pieni") || formValues.kaavaprosessin_kokoluokka === "M" && deadline.attribute.includes("pieni")){
             innerEnd = false
-            innerStart = formValues && formValues[deadline.attribute]
+            innerStart = formValues?.[deadline.attribute]
               ? new Date(formValues[deadline.attribute])
               : deadlines[i].date;
 
-            if (innerStart instanceof Date && !isNaN(innerStart.getTime())) {
+            if (innerStart instanceof Date && !Number.isNaN(innerStart.getTime())) {
               innerStart.setHours(12, 0, 0, 0);
             }
           }
         }
         else if(deadline.deadline_types.includes('inner_end')){
-          innerEnd = formValues && formValues[deadline.attribute]
+          innerEnd = formValues?.[deadline.attribute]
             ? new Date(formValues[deadline.attribute])
             : deadlines[i].date;
 
-          if (innerEnd instanceof Date && !isNaN(innerEnd.getTime())) {
+          if (innerEnd instanceof Date && !Number.isNaN(innerEnd.getTime())) {
             innerEnd.setHours(12, 0, 0, 0);
           }
 
@@ -873,67 +847,67 @@ class EditProjectTimeTableModal extends Component {
         milestone = false;
         if(deadline.deadline_types.includes('milestone') && deadline.deadline_types.includes('dashed_start')){
           innerEnd = false
-          innerStart = formValues && formValues[deadline.attribute]
+          innerStart = formValues?.[deadline.attribute]
             ? new Date(formValues[deadline.attribute])
             : deadlines[i].date;
 
-          if (innerStart instanceof Date && !isNaN(innerStart.getTime())) {
+          if (innerStart instanceof Date && !Number.isNaN(innerStart.getTime())) {
             innerStart.setHours(12, 0, 0, 0);
           }
         }
         else if(deadline.deadline_types.includes('milestone') && deadline.deadline_types.includes('dashed_end')){
-          innerEnd = formValues && formValues[deadline.attribute]
+          innerEnd = formValues?.[deadline.attribute]
             ? new Date(formValues[deadline.attribute])
             : deadlines[i].date;
 
-          if (innerEnd instanceof Date && !isNaN(innerEnd.getTime())) {
+          if (innerEnd instanceof Date && !Number.isNaN(innerEnd.getTime())) {
             innerEnd.setHours(12, 0, 0, 0);
           }
 
           innerStyle = this.buildInnerStyle("board", innerEnd, currentDate, formValues, deadlineGroup, deadline.phase_name)
         }
         else if(deadline.deadline_types.includes('inner_start')){
-          innerStart = formValues && formValues[deadline.attribute]
+          innerStart = formValues?.[deadline.attribute]
             ? new Date(formValues[deadline.attribute])
             : deadlines[i].date;
 
-          if (innerStart instanceof Date && !isNaN(innerStart.getTime())) {
+          if (innerStart instanceof Date && !Number.isNaN(innerStart.getTime())) {
             innerStart.setHours(12, 0, 0, 0);
           }
         }
         else if(deadline.deadline_types.includes('inner_end')){
-          innerEnd = formValues && formValues[deadline.attribute]
+          innerEnd = formValues?.[deadline.attribute]
             ? new Date(formValues[deadline.attribute])
             : deadlines[i].date;
 
-          if (innerEnd instanceof Date && !isNaN(innerEnd.getTime())) {
+          if (innerEnd instanceof Date && !Number.isNaN(innerEnd.getTime())) {
             innerEnd.setHours(12, 0, 0, 0);
           }
         }
       }
       else if(deadline.deadline_types.includes('phase_end') && deadline.date_type !== "Arkipäivät"){
         if(deadline.attribute === "voimaantulovaihe_paattyy_pvm"){
-          endDate = formValues && formValues["voimaantulovaihe_paattyy_pvm"] 
+          endDate = formValues?.["voimaantulovaihe_paattyy_pvm"] 
           ? new Date(formValues["voimaantulovaihe_paattyy_pvm"]) 
           : deadlines[i].date;
         }
         else if(deadline.attribute === "hyvaksyminenvaihe_paattyy_pvm"){
-          const phaseEnd = formValues && formValues["hyvaksyminenvaihe_paattyy_pvm"] ? new Date(formValues["hyvaksyminenvaihe_paattyy_pvm"]) : deadlines[i].date;
-          endDate = formValues && formValues["hyvaksymispaatos_pvm"] 
+          const phaseEnd = formValues?.["hyvaksyminenvaihe_paattyy_pvm"] ? new Date(formValues["hyvaksyminenvaihe_paattyy_pvm"]) : deadlines[i].date;
+          endDate = formValues?.["hyvaksymispaatos_pvm"] 
           ? new Date(formValues["hyvaksymispaatos_pvm"]) 
           : phaseEnd
         }
         else{
           if(deadline.attribute === "kaynnistys_paattyy_pvm"){
-            disabled = !formValues?.kaavan_vaihe.includes("Käynnistys") ? true : false;
+            disabled = !formValues?.kaavan_vaihe.includes("Käynnistys");
           }
-          endDate = formValues && formValues[deadline.attribute]
+          endDate = formValues?.[deadline.attribute]
           ? new Date(formValues[deadline.attribute])
           : deadlines[i].date;
         }
 
 
-        if (endDate instanceof Date && !isNaN(endDate.getTime())) {
+        if (endDate instanceof Date && !Number.isNaN(endDate.getTime())) {
           endDate.setHours(12, 0, 0, 0);
         }
       }
@@ -992,71 +966,12 @@ class EditProjectTimeTableModal extends Component {
       return [deadLineGroups,nestedDeadlines,phaseData]
   }
 
-  getChangedItem(oldFormValues, newFormValues) {
-    if (typeof oldFormValues !== 'object' || oldFormValues === null || typeof newFormValues !== 'object' || newFormValues === null) {
-      return false;
-    }
-  
-    for (let key in newFormValues) {
-      if (Object.prototype.hasOwnProperty.call(oldFormValues, key) && oldFormValues[key] !== newFormValues[key]) {
-        return { [key]: newFormValues[key] };
-      }
-    }
-    return false;
-  }
-
   setLoadingFalse = () => {
     if (this.state.loading) {
       this.setState({ loading: false })
     }
   }
 
-  getNewValidDates = async (field,projectName,formattedDate) => {
-    try {
-      const { validateDate } = this.props;
-      const date = await validateDate(field, projectName, formattedDate, this.setWarning);
-      return date;
-
-    } catch (error) {
-      console.error('Validation error:', error);
-    }
-  };
-
-  getNextAvailableDate(dateString, availableDates) {
-    // Convert the input date string to a Date object
-    let inputDate = new Date(dateString);
-
-    // Sort the available dates array
-    availableDates.sort();
-
-    // Loop through the available dates
-    for (let i = 0; i < availableDates.length; i++) {
-        // Convert the current available date to a Date object
-        let availableDate = new Date(availableDates[i]);
-
-        // Check if the available date is the same or after the input date
-        if (availableDate >= inputDate) {
-            return availableDates[i]; // Return the next available date
-        }
-    }
-
-    // If no available dates are after the input date, return null or a message
-    return null;
-}
-
-  splitKey = (key, exceptionKey) => {
-    const regex = new RegExp(`(${exceptionKey})|_`, 'g');
-    const parts = key.split(regex).filter(Boolean);
-    let result = [];
-    for (let i = 0; i < parts.length; i++) {
-        if (parts[i] === exceptionKey) {
-            result.push(parts[i]);
-        } else {
-            result = result.concat(parts[i].split('_'));
-        }
-    }
-    return result.filter(Boolean);
-  };
   //Get next values and increment index and calculate new values
   processValuesSequentially = (matchingValues,index,phase) => { 
     let validValues = [];
