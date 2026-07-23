@@ -862,149 +862,104 @@ const compareAndUpdateDates = (data, previousPaattyyValues) => {
     return isNaN(d) ? null : d.toISOString().slice(0, 10);
   };
 
-  // Return latest (max) valid date among baseKey and its *_2..*_4 variants
+  // For each lausunto -> paattyy pair, ensure lausunto is not earlier than paattyy
+  // Also, if previousPaattyyValues is provided, sync lausunnot to match new paattyy if it changed
+  lausuntoPairs.forEach(([lausunto_date, paattyy_date]) => {
+    const validPaattyyDate = validateAndNormalizeDate(data[paattyy_date]);
+    if (!validPaattyyDate) return;
+
+    const currentLausuntoDate = validateAndNormalizeDate(data[lausunto_date]);
+    if(!currentLausuntoDate || currentLausuntoDate < validPaattyyDate) {
+      data[lausunto_date] = validPaattyyDate;
+      return;
+    }
+    if (previousPaattyyValues) {
+      // Called from reducer with pre-cascade snapshot: sync lausunnot when paattyy changed
+      const prevPaattyy = validateAndNormalizeDate(previousPaattyyValues[paattyy_date]);
+      if (prevPaattyy !== validPaattyyDate) {
+        // Paattyy changed (any reason) -> force lausunnot to match new paattyy
+        data[lausunto_date] = validPaattyyDate;
+      }
+    }
+  });
+
+    // Return latest (max) valid date among baseKey and its *_2..*_4 variants
   const getLatestDateValue = (baseKey) => {
+    if (!baseKey) return null;
+
     // Map date base keys to one or more activation boolean prefixes.
-    // For each numeric suffix n (1..4), if ALL listed prefixes exist for that n and are false, the candidate is ignored.
-    // Base variant without suffix corresponds logically to _1 booleans.
+    // For each numeric suffix n (1..4), a variant is active if at least one flag is true.
+    // Base variant (suffix 1) is active when no flags exist. Secondary slots without flags are skipped (KAPI-202).
     const activationMap = {
       milloin_periaatteet_lautakunnassa: ["periaatteet_lautakuntaan"],
       milloin_kaavaluonnos_lautakunnassa: ["kaavaluonnos_lautakuntaan"],
       milloin_tarkistettu_ehdotus_lautakunnassa: ["tarkistettu_ehdotus_lautakuntaan"],
       milloin_kaavaehdotus_lautakunnassa: ["kaavaehdotus_lautakuntaan"],
-      // Ehdotuksen nähtävillä end dates may be controlled either by initial nahtaville_1 or uudelleen_nahtaville_n flags
       milloin_ehdotuksen_nahtavilla_paattyy: ["kaavaehdotus_nahtaville", "kaavaehdotus_uudelleen_nahtaville"],
-      // Esilläolo variants (example pattern) – extend if needed later
       milloin_periaatteet_esillaolo_paattyy: ["jarjestetaan_periaatteet_esillaolo"],
       milloin_luonnos_esillaolo_paattyy: ["jarjestetaan_luonnos_esillaolo"],
       milloin_oas_esillaolo_paattyy: ["jarjestetaan_oas_esillaolo"],
-      // Viimeistaan mielipiteet dates tied to esillaolo activation
       viimeistaan_mielipiteet_periaatteista: ["jarjestetaan_periaatteet_esillaolo"],
       viimeistaan_mielipiteet_luonnos: ["jarjestetaan_luonnos_esillaolo"],
-      // Viimeistaan lausunnot tied to nahtaville activation
       viimeistaan_lausunnot_ehdotuksesta: ["kaavaehdotus_nahtaville", "kaavaehdotus_uudelleen_nahtaville"]
     };
 
     const activationPrefixes = activationMap[baseKey] || [];
 
-    const variantKeys = [baseKey, `${baseKey}_2`, `${baseKey}_3`, `${baseKey}_4`];
-    const validVariants = [];
+    // Suffix 1 uses baseKey directly; suffixes 2+ append _N
+    const variantKey = (suffix) => suffix === 1 ? baseKey : `${baseKey}_${suffix}`;
 
-    for (let i = 0; i < variantKeys.length; i++) {
-      const key = variantKeys[i];
-      const normalized = validateAndNormalizeDate(data[key]);
-      if (!normalized) continue; // skip empty / invalid
-      const suffixNumber = i === 0 ? 1 : (i + 1); // base -> 1, _2 -> 2, etc.
-      // Determine activation booleans for this suffix
-      let hasAtLeastOneActivation = false;
-      let anyActive = false;
-      for (const prefix of activationPrefixes) {
-        const boolKey = `${prefix}_${suffixNumber}`;
-        if (Object.prototype.hasOwnProperty.call(data, boolKey)) {
-          hasAtLeastOneActivation = true;
-          if (data[boolKey] === true) {
-            anyActive = true;
-          }
-        }
-      }
-      // If there were activation flags and none are active, skip this variant
-      if (hasAtLeastOneActivation && !anyActive) continue;
-      // KAPI-202: Secondary slots (suffix > 1) without any activation bool should be skipped.
-      // If the bool key doesn't exist, the slot hasn't been added yet.
-      if (!hasAtLeastOneActivation && suffixNumber > 1) continue;
-      validVariants.push(normalized);
-    }
+    const isVariantActive = (suffix) => {
+      const flagKeys = activationPrefixes
+        .map(prefix => `${prefix}_${suffix}`)
+        .filter(key => Object.hasOwn(data, key));
+      if (flagKeys.length === 0) return suffix === 1;
+      return flagKeys.some(key => data[key] === true);
+    };
 
-    if (!validVariants.length) return null;
-    return validVariants.reduce((a, b) => (b > a ? b : a), validVariants[0]);
+    const activeDates = [1, 2, 3, 4]
+      .filter(isVariantActive)
+      .map(suffix => validateAndNormalizeDate(data[variantKey(suffix)]))
+      .filter(Boolean);
+
+    return activeDates.length ? activeDates.reduce((a, b) => (b > a ? b : a), activeDates[0]) : null;
   };
 
-  lausuntoPairs.forEach(([lausunto_date, paattyy_date]) => {
-    const validPaattyyDate = validateAndNormalizeDate(data[paattyy_date]);
-    if (validPaattyyDate) {
-      const currentLausuntoDate = validateAndNormalizeDate(data[lausunto_date]);
-      if (previousPaattyyValues) {
-        // Called from reducer with pre-cascade snapshot: sync lausunnot when paattyy changed
-        const prevPaattyy = validateAndNormalizeDate(previousPaattyyValues[paattyy_date]);
-        if (prevPaattyy !== validPaattyyDate) {
-          // Paattyy changed (any reason) -> force lausunnot to match new paattyy
-          data[lausunto_date] = validPaattyyDate;
-        } else if (!currentLausuntoDate || currentLausuntoDate < validPaattyyDate) {
-          // Paattyy did not change but lausunnot is empty or before paattyy -> floor constraint
-          data[lausunto_date] = validPaattyyDate;
-        }
-      } else {
-        // Called without snapshot (e.g. from EditProjectTimetableModal): apply floor constraint only
-        if (!currentLausuntoDate || currentLausuntoDate < validPaattyyDate) {
-          data[lausunto_date] = validPaattyyDate;
-        }
-      }
-    }
-  });
-  //Check that phase end date line is moved to phases actual last date 
-  const buildPhasePairs = (size) => {
-    // Each entry: [dstField, primarySrcBase, fallbackSrcBase?]
-    // Primary is tried first; if getLatestDateValue returns null, fallback is tried.
-    // Per database_deadline_rules.md: P8/L8 fallback to viimeistaan_mielipiteet when no lautakunta
-    // E9 uses viimeistaan_lausunnot_ehdotuksesta for all sizes
-    return [
-      ["periaatteetvaihe_paattyy_pvm", "milloin_periaatteet_lautakunnassa", "viimeistaan_mielipiteet_periaatteista"],
-      ["oasvaihe_paattyy_pvm", "milloin_oas_esillaolo_paattyy"],
-      ["luonnosvaihe_paattyy_pvm", "milloin_kaavaluonnos_lautakunnassa", "viimeistaan_mielipiteet_luonnos"],
-      // E9: All sizes use viimeistaan_lausunnot_ehdotuksesta for ehdotus phase end
-      ["ehdotusvaihe_paattyy_pvm", "viimeistaan_lausunnot_ehdotuksesta"],
-      ["tarkistettuehdotusvaihe_paattyy_pvm", "milloin_tarkistettu_ehdotus_lautakunnassa"],
-      // hyvaksyminen & voimaantulo intentionally excluded (no paired controlling date specified)
-    ];
-  };
-
-  const phasePairs = buildPhasePairs(data["kaavaprosessin_kokoluokka"]);
-  phasePairs.forEach(([dst, srcBase, fallbackBase]) => {
-    // Always pick the latest available date among base + suffixed variants
-    let latest = getLatestDateValue(srcBase);
-    // If primary source yields nothing (e.g. lautakunta disabled), try fallback
-    if (!latest && fallbackBase) {
-      latest = getLatestDateValue(fallbackBase);
-    }
-    if (latest && data[dst] !== latest) {
+  // Maps phase end dates to their controlling source(s) for cascade enforcement
+  const phaseEndDeadlines = [
+    ["periaatteetvaihe_paattyy_pvm", "milloin_periaatteet_lautakunnassa", "viimeistaan_mielipiteet_periaatteista"],
+    ["oasvaihe_paattyy_pvm", "milloin_oas_esillaolo_paattyy"],
+    ["luonnosvaihe_paattyy_pvm", "milloin_kaavaluonnos_lautakunnassa", "viimeistaan_mielipiteet_luonnos"],
+    ["ehdotusvaihe_paattyy_pvm", "viimeistaan_lausunnot_ehdotuksesta"],
+    ["tarkistettuehdotusvaihe_paattyy_pvm", "milloin_tarkistettu_ehdotus_lautakunnassa"],
+  ];
+  phaseEndDeadlines.forEach(([dst, srcBase, fallbackBase]) => {
+    const latest = getLatestDateValue(srcBase) || getLatestDateValue(fallbackBase);
+    if (latest) {
       data[dst] = latest;
     }
   });
-  // Enforce phase adjacency: next phase alkaa >= previous phase paattyy
-  // Spec: P1=K2, O1=P8|K2, L1=O6, E1=L8|O6, T1=E9, H1=T5, V1=H3
+
   const orderedPhases = [
     { start: "kaynnistysvaihe_alkaa_pvm", end: "kaynnistys_paattyy_pvm" },
-    { start: "periaatteetvaihe_alkaa_pvm", end: "periaatteetvaihe_paattyy_pvm", optional: true },
+    { start: "periaatteetvaihe_alkaa_pvm", end: "periaatteetvaihe_paattyy_pvm"},
     { start: "oasvaihe_alkaa_pvm", end: "oasvaihe_paattyy_pvm" },
-    { start: "luonnosvaihe_alkaa_pvm", end: "luonnosvaihe_paattyy_pvm", optional: true },
+    { start: "luonnosvaihe_alkaa_pvm", end: "luonnosvaihe_paattyy_pvm"},
     { start: "ehdotusvaihe_alkaa_pvm", end: "ehdotusvaihe_paattyy_pvm" },
     { start: "tarkistettuehdotusvaihe_alkaa_pvm", end: "tarkistettuehdotusvaihe_paattyy_pvm" },
     { start: "hyvaksyminenvaihe_alkaa_pvm", end: "hyvaksyminenvaihe_paattyy_pvm" },
     { start: "voimaantulovaihe_alkaa_pvm", end: "voimaantulovaihe_paattyy_pvm" }
   ];
-
-  // Build filtered sequence of phases that actually exist (have either start or end present)
+  
   const existingPhases = orderedPhases.filter(p => data[p.start] || data[p.end]);
 
-  // Forward adjacency: next phase start >= previous phase end
+  // Sync each phase start to the previous phase end
   for (let i = 1; i < existingPhases.length; i++) {
     const prev = existingPhases[i - 1];
     const cur = existingPhases[i];
     const prevEnd = validateAndNormalizeDate(data[prev.end]);
     const curStart = validateAndNormalizeDate(data[cur.start]);
-    if (prevEnd && curStart && curStart < prevEnd) {
-      data[cur.start] = prevEnd;
-    }
-  }
-
-  // Backward cascade: when phase end moves earlier, move next phase start back to match
-  // This handles cases like removing Tarkistettu Ehdotus lautakunta elements
-  for (let i = 1; i < existingPhases.length; i++) {
-    const prev = existingPhases[i - 1];
-    const cur = existingPhases[i];
-    const prevEnd = validateAndNormalizeDate(data[prev.end]);
-    const curStart = validateAndNormalizeDate(data[cur.start]);
-    if (prevEnd && curStart && curStart > prevEnd) {
+    if (prevEnd && curStart) {
       data[cur.start] = prevEnd;
     }
   }

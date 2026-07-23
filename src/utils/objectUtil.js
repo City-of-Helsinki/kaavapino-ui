@@ -685,16 +685,12 @@ const filterHiddenKeysUsingSections = (attributeData, deadlineSections) => {
       // Deadline found in sections - use standard visibility check
       if (shouldDeadlineBeVisible(dl.name, dl.attributegroup, attributeData)) {
         acc[key] = value;
-      } else if (key.includes('luonnos') || key.includes('kaavaluonnos')) {
-        console.log('[KAAV-DEBUG] FILTERED OUT (in sections, not visible):', key, value, 'group:', dl.attributegroup);
       }
     } else {
       // Numbered deadline keys not in sections - infer visibility from attribute data
       const inferredVisibility = inferVisibilityForUnmappedDeadline(key, attributeData);
       if (inferredVisibility !== false) {
         acc[key] = value;
-      } else if (key.includes('luonnos') || key.includes('kaavaluonnos')) {
-        console.log('[KAAV-DEBUG] FILTERED OUT (unmapped, inferred false):', key, value);
       }
     }
     return acc

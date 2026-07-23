@@ -215,17 +215,10 @@ export const reducer = (state = initialState, action) => {
 
     case UPDATE_DATE_TIMELINE: {
       const { field, newDate, formValues, isAdd, deadlineSections, keepDuration, originalDurationDays, pairedEndKey } = action.payload;
-      // Create a copy of the state and attribute_data
-      let updatedAttributeData
-      if(formValues){
-        updatedAttributeData = formValues
-      }
-      else{
-        updatedAttributeData = { 
-          ...state.currentProject.attribute_data, // Shallow copy of attribute_data
-        };
-      }
+      
+      const updatedAttributeData = formValues ? {...formValues} : { ...state.currentProject.attribute_data };
       const projectSize = updatedAttributeData?.kaavaprosessin_kokoluokka
+
       //Remove all keys that are still hidden in vistimeline so they are not moved in data and later saved
       const filteredAttributeData = objectUtil.filterHiddenKeysUsingSections(updatedAttributeData, deadlineSections);
       // Snapshot paattyy values before cascade to detect changes for lausunnot auto-sync
