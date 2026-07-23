@@ -628,7 +628,7 @@ describe("getDisabledDates for various phases", () => {
     });
 });
 
-describe("compareAndUpdateDates function", () => {
+describe("syncPhaseEndDates function", () => {
     let test_data = null;
 
     beforeEach(() => {
@@ -660,7 +660,7 @@ describe("compareAndUpdateDates function", () => {
         { oldP: "2025-05-10", newP: "2025-05-11", oldL: "2025-05-10", desc: "one day forward" },
     ])("RULE: paattyy changed → lausunnot = new paattyy ($desc)", ({ oldP, newP, oldL }) => {
         setLausuntoPair(test_data, newP, oldL);
-        timeUtil.compareAndUpdateDates(test_data, makeSnapshot([oldP]));
+        timeUtil.syncPhaseEndDates(test_data, makeSnapshot([oldP]));
         expect(test_data["viimeistaan_lausunnot_ehdotuksesta"]).toBe(newP);
     });
 
@@ -672,7 +672,7 @@ describe("compareAndUpdateDates function", () => {
         { paattyy: "2025-01-01", lausunnot: "2025-12-31", desc: "almost a year later" },
     ])("RULE: paattyy unchanged → preserve lausunnot >= paattyy ($desc)", ({ paattyy, lausunnot }) => {
         setLausuntoPair(test_data, paattyy, lausunnot);
-        timeUtil.compareAndUpdateDates(test_data, makeSnapshot([paattyy]));
+        timeUtil.syncPhaseEndDates(test_data, makeSnapshot([paattyy]));
         expect(test_data["viimeistaan_lausunnot_ehdotuksesta"]).toBe(lausunnot);
     });
 
@@ -684,7 +684,7 @@ describe("compareAndUpdateDates function", () => {
         { paattyy: "2025-06-15", lausunnot: null, desc: "null" },
     ])("RULE: paattyy unchanged, invalid lausunnot → floor to paattyy ($desc)", ({ paattyy, lausunnot }) => {
         setLausuntoPair(test_data, paattyy, lausunnot);
-        timeUtil.compareAndUpdateDates(test_data, makeSnapshot([paattyy]));
+        timeUtil.syncPhaseEndDates(test_data, makeSnapshot([paattyy]));
         expect(test_data["viimeistaan_lausunnot_ehdotuksesta"]).toBe(paattyy);
     });
 
@@ -697,7 +697,7 @@ describe("compareAndUpdateDates function", () => {
         { paattyy: "2025-04-01", lausunnot: "", expected: "2025-04-01", desc: "empty → floored" },
     ])("RULE: no snapshot → floor only ($desc)", ({ paattyy, lausunnot, expected }) => {
         setLausuntoPair(test_data, paattyy, lausunnot);
-        timeUtil.compareAndUpdateDates(test_data);
+        timeUtil.syncPhaseEndDates(test_data);
         expect(test_data["viimeistaan_lausunnot_ehdotuksesta"]).toBe(expected);
     });
 
@@ -710,12 +710,12 @@ describe("compareAndUpdateDates function", () => {
         // _3: paattyy changed → sync
         setLausuntoPair(test_data, "2025-12-01", "2025-11-15", "_3");
         const snapshot = makeSnapshot(["2025-05-10", "2025-07-15", "2025-11-01"]);
-        timeUtil.compareAndUpdateDates(test_data, snapshot);
+        timeUtil.syncPhaseEndDates(test_data, snapshot);
         expect(test_data["viimeistaan_lausunnot_ehdotuksesta"]).toBe("2025-05-20");     // synced
         expect(test_data["viimeistaan_lausunnot_ehdotuksesta_2"]).toBe("2025-09-01");   // preserved
         expect(test_data["viimeistaan_lausunnot_ehdotuksesta_3"]).toBe("2025-12-01");   // synced
     });
-    test("compareAndUpdateDates phase end dates correctly", () => {
+    test("syncPhaseEndDates phase end dates correctly", () => {
         const end_keys = [
             "periaatteetvaihe_paattyy_pvm",
             "oasvaihe_paattyy_pvm",
@@ -726,7 +726,7 @@ describe("compareAndUpdateDates function", () => {
         for (let key of end_keys) {
             test_data[key] = undefined;
         }
-        timeUtil.compareAndUpdateDates(test_data);
+        timeUtil.syncPhaseEndDates(test_data);
         for (let key of end_keys) {
             expect(test_data[key], `Key ${key} was not updated`).toBeDefined();
         }
@@ -749,7 +749,7 @@ describe("compareAndUpdateDates function", () => {
         test_data["tarkistettu_ehdotus_lautakuntaan_3"] = false;
         test_data["tarkistettu_ehdotus_lautakuntaan_4"] = false;
 
-        timeUtil.compareAndUpdateDates(test_data);
+        timeUtil.syncPhaseEndDates(test_data);
         expect(test_data["oasvaihe_paattyy_pvm"]).toBe(test_data["milloin_oas_esillaolo_paattyy_2"]);
         expect(test_data["luonnosvaihe_paattyy_pvm"]).toBe(test_data["milloin_kaavaluonnos_lautakunnassa_2"]);
         expect(test_data["ehdotusvaihe_paattyy_pvm"]).toBe(test_data["viimeistaan_lausunnot_ehdotuksesta_2"]);
@@ -773,7 +773,7 @@ describe("compareAndUpdateDates function", () => {
     ];
 
     test.each(phaseEndTestCases)(
-        "compareAndUpdateDates: $phase $scenario",
+        "syncPhaseEndDates: $phase $scenario",
         ({ endKey, lautakuntaPrefix, esillaoloPrefix, correctSrc, wrongSrc, esillaolo, lautakunta, expectedDate }) => {
             // Set distinct values to prove correct field selection
             test_data[correctSrc] = expectedDate;
@@ -786,12 +786,12 @@ describe("compareAndUpdateDates function", () => {
             test_data[`${esillaoloPrefix}_2`] = esillaolo[1];
             test_data[`${esillaoloPrefix}_3`] = esillaolo[2];
             
-            timeUtil.compareAndUpdateDates(test_data);
+            timeUtil.syncPhaseEndDates(test_data);
             expect(test_data[endKey]).toBe(expectedDate);
         }
     );
 
-    test("compareAndUpdateDates end dates, ehdotus in XS size", () => {
+    test("syncPhaseEndDates end dates, ehdotus in XS size", () => {
         // Set DISTINCT values to prove correct field is used
         test_data["viimeistaan_lausunnot_ehdotuksesta"] = "2099-11-20";  // Correct per docs
         test_data["milloin_ehdotuksen_nahtavilla_paattyy"] = "2099-05-10";  // Wrong (old code used this)
@@ -804,18 +804,18 @@ describe("compareAndUpdateDates function", () => {
         test_data["kaavaehdotus_nahtaville_1"] = true;
         test_data["kaavaehdotus_uudelleen_nahtaville_2"] = false;
         test_data["kaavaehdotus_uudelleen_nahtaville_3"] = false;
-        timeUtil.compareAndUpdateDates(test_data);
+        timeUtil.syncPhaseEndDates(test_data);
         // Must use viimeistaan_lausunnot_ehdotuksesta (2099-11-20), NOT milloin_ehdotuksen_nahtavilla_paattyy
         expect(test_data["ehdotusvaihe_paattyy_pvm"]).toBe("2099-11-20");
     });
-    test("compareAndUpdateDates moves backwards start dates to match previous end dates", () => {
+    test("syncPhaseEndDates moves backwards start dates to match previous end dates", () => {
         test_data["periaatteetvaihe_alkaa_pvm"] = "2025-05-01";
         test_data["kaynnistys_paattyy_pvm"] = "2025-06-01";
-        timeUtil.compareAndUpdateDates(test_data);
+        timeUtil.syncPhaseEndDates(test_data);
         expect(test_data["periaatteetvaihe_alkaa_pvm"]).toBe("2025-06-01");
     });
 
-    test("compareAndUpdateDates backward cascade: removing lautakunta moves next phase back", () => {
+    test("syncPhaseEndDates backward cascade: removing lautakunta moves next phase back", () => {
         // Simulate: Tarkistettu Ehdotus has lautakunta_1 only (not _2/_3/_4)
         // hyväksymisvaihe_alkaa should move back to match new tarkistettuehdotusvaihe_paattyy
         test_data["tarkistettu_ehdotus_lautakuntaan_1"] = true;
@@ -827,7 +827,7 @@ describe("compareAndUpdateDates function", () => {
         // Set hyväksymisvaihe_alkaa to a LATER date (simulating it was set when _2 was active)
         test_data["hyvaksyminenvaihe_alkaa_pvm"] = "2028-06-01";
         
-        timeUtil.compareAndUpdateDates(test_data);
+        timeUtil.syncPhaseEndDates(test_data);
         
         // tarkistettuehdotusvaihe_paattyy should now be 2028-03-01 (only _1 active)
         expect(test_data["tarkistettuehdotusvaihe_paattyy_pvm"]).toBe("2028-03-01");
@@ -835,7 +835,7 @@ describe("compareAndUpdateDates function", () => {
         expect(test_data["hyvaksyminenvaihe_alkaa_pvm"]).toBe("2028-03-01");
     });
 
-    test("compareAndUpdateDates mielipiteet gap fix: manual edit updates phase end and next phase", () => {
+    test("syncPhaseEndDates mielipiteet gap fix: manual edit updates phase end and next phase", () => {
         // Simulate: user manually sets viimeistaan_mielipiteet to a later date
         // Phase end should update, and next phase start should follow
         test_data["periaatteet_lautakuntaan_1"] = false;
@@ -850,7 +850,7 @@ describe("compareAndUpdateDates function", () => {
         // OAS phase start is currently earlier
         test_data["oasvaihe_alkaa_pvm"] = "2026-08-01";
         
-        timeUtil.compareAndUpdateDates(test_data);
+        timeUtil.syncPhaseEndDates(test_data);
         
         // Phase end should match the new viimeistaan date
         expect(test_data["periaatteetvaihe_paattyy_pvm"]).toBe("2026-09-15");

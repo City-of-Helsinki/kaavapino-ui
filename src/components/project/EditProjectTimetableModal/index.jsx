@@ -156,7 +156,7 @@ class EditProjectTimeTableModal extends Component {
     }
     if(prevProps.formValues && !isEqual(prevProps.formValues, formValues)){
       //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
-      timeUtil.compareAndUpdateDates(formValues)
+      timeUtil.syncPhaseEndDates(formValues)
       if(deadlineSections && deadlines && formValues){
         // Check if changedValues contains 'jarjestetaan' or 'lautakuntaan' and the value is a boolean
         const [isGroupAdd, isGroupRemove, changedValues] = this.getChangedValues(prevProps.formValues, formValues);

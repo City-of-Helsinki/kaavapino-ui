@@ -43,7 +43,7 @@ vi.mock('../../utils/timeUtil', () => ({
       return date;
     }),
     getHighestDate: vi.fn(() => null),
-    compareAndUpdateDates: vi.fn(() => {}),
+    syncPhaseEndDates: vi.fn(() => {}),
   }
 }));
 

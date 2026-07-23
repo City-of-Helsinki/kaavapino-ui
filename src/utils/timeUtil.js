@@ -847,7 +847,7 @@ const calculateAllowedDates = (nahtavillaolo, size, dateTypes, name, formValues,
       : [];
 };
 
-const compareAndUpdateDates = (data, previousPaattyyValues) => {
+const syncPhaseEndDates = (data, previousPaattyyValues) => {
   // Static pairs: viimeistaan lausunnot -> ehdotuksen nähtävillä päättyy variants
   const lausuntoPairs = [
     ["viimeistaan_lausunnot_ehdotuksesta", "milloin_ehdotuksen_nahtavilla_paattyy"],
@@ -983,7 +983,7 @@ const exported = {
     getHighestDate,
     findAllowedDate,
     findAllowedLautakuntaDate,
-    compareAndUpdateDates
+    syncPhaseEndDates
 };
 if (process.env.UNIT_TEST === 'true') {
     exported.getPastDate = getPastDate;

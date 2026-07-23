@@ -215,7 +215,7 @@ export const reducer = (state = initialState, action) => {
 
     case UPDATE_DATE_TIMELINE: {
       const { field, newDate, formValues, isAdd, deadlineSections, keepDuration, originalDurationDays, pairedEndKey } = action.payload;
-      
+
       const updatedAttributeData = formValues ? {...formValues} : { ...state.currentProject.attribute_data };
       const projectSize = updatedAttributeData?.kaavaprosessin_kokoluokka
 
@@ -279,7 +279,7 @@ export const reducer = (state = initialState, action) => {
         filteredAttributeData[pairedEndKey] = preservedEndValue;
       }
       //Updates viimeistaan lausunnot values to paattyy if paattyy date changed, or enforces floor constraint
-      timeUtil.compareAndUpdateDates(filteredAttributeData, previousPaattyyValues)
+      timeUtil.syncPhaseEndDates(filteredAttributeData, previousPaattyyValues)
       
       // K1 = U1 sync: kaynnistysvaihe_alkaa_pvm always equals projektin_kaynnistys_pvm
       // Per timeline_requirements.md line 899: K1's "Generoitu ehdotus" = U1
