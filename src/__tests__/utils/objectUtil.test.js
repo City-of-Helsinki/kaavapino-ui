@@ -60,20 +60,6 @@ describe("Test ObjectUtil utility functions", () => {
         expect(objectUtil.getMinObject(test_object)).toBe("testname");
     });
 
-    test("getNumberFromString returns null for an empty object", () => {
-        expect(objectUtil.getNumberFromString([])).toBeNull();
-    });
-
-    test("getNumberFromString returns the highest number from valid object", () => {
-        expect(objectUtil.getNumberFromString(test_objects).attributegroup)
-            .toBe("periaatteet_esillaolokerta_3");
-    });
-
-    test("findValuesWithStrings return the correct object", () => {
-        const result = objectUtil.findValuesWithStrings(test_objects, "milloin", "oas", "esillaolo", "alkaa");
-        expect(result?.name).toEqual("milloin_oas_esillaolo_alkaa_2");
-    });
-
     test("generateDateStringArray returns empty array for invalid input", () => {
         expect(objectUtil.generateDateStringArray({})).toEqual([]);
     });

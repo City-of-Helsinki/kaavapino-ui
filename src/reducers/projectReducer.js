@@ -258,7 +258,7 @@ export const reducer = (state = initialState, action) => {
         const highestDate = timeUtil.getHighestDate(filteredAttributeData);
         // Modify the end date of voimaantulovaihe if any of the dates are changed and the new date is higher
         if ((highestDate) || (!highestDate && newDate)) {
-          const higherDate = highestDate ? highestDate : newDate;
+          const higherDate = highestDate || newDate;
           filteredAttributeData["voimaantulovaihe_paattyy_pvm"] = higherDate;
         }
       }

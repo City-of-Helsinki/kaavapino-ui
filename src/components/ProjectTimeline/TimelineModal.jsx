@@ -4,7 +4,6 @@ import { Modal } from 'semantic-ui-react'
 import { Button, Tabs, IconCross } from 'hds-react'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import FormField from '../input/FormField'
-import { isArray } from 'lodash'
 import { showField } from '../../utils/projectVisibilityUtils'
 import textUtil from '../../utils/textUtil'
 import objectUtil from '../../utils/objectUtil';
@@ -71,7 +70,7 @@ const TimelineModal = ({
     }
 
     let modifiedError = ''
-    if (isArray(error)) {
+    if (Array.isArray(error)) {
       error.forEach(current => {
         modifiedError = modifiedError + ' ' + current
       })
@@ -137,7 +136,7 @@ const TimelineModal = ({
     const esillaolo = foundGroups.filter(obj => obj.content.startsWith('Esilläolo-'));
     const nahtavillaolo = foundGroups.filter(obj => obj.content.startsWith('Nahtavillaolo-'));
     const lautakunta = foundGroups.filter(obj => obj.content.startsWith('Lautakunta-'));
-
+    
     let latestGroup
     let latestObject
     let miniumObject
@@ -312,7 +311,7 @@ const TimelineModal = ({
     const dateStr = visValues?.[dateKey];
     if (!dateStr) return false;
     const dt = new Date(dateStr);
-    if (isNaN(dt)) return false;
+    if (Number.isNaN(dt)) return false;
     return dt < new Date();
   };
 
@@ -484,13 +483,10 @@ const TimelineModal = ({
 
 
   const normalizeTitle = (group, title) => {
-      if (
-          title === undefined &&
-          group === "Tarkistettu ehdotus"
-      ) {
-          return "Lautakunta - 1";
-      }
-      return title;
+    if (title === undefined && group === "Tarkistettu ehdotus") {
+      return "Lautakunta - 1";
+    }
+    return title;
   };
 
   const renderSection = (section, sectionIndex, title) => {

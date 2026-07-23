@@ -136,32 +136,6 @@ const getMinObject = (latestObject) => {
   return null;
 }
 
-// Function to extract the number after the last underscore and return the object with the larger number
-const getNumberFromString = (arr) => {
-  let largestObject = null;
-  let largestNumber = -Infinity;
-
-  arr.forEach(obj => {
-    const match = obj.attributegroup.match(/_(\d+)$/); // Match digits after the last underscore
-    if (match) {
-      const number = parseInt(match[1], 10); // Get the number
-      if (number > largestNumber) { // Compare with the current largest number
-        largestNumber = number;
-        largestObject = obj;
-      }
-    }
-  });
-
-  return largestObject; // Return the object with the largest number
-}
-
-const findValuesWithStrings = (arr, str1, str2, str3, str4) => {
-  let arrOfObj = arr.filter(obj => obj.name.includes(str1) && obj.name.includes(str2) && obj.name.includes(str3) && obj.name.includes(str4));
-  // Get the object with the largest number from the array
-  const largest = getNumberFromString(arrOfObj);
-  return largest
-};
-
 const generateDateStringArray = (updatedAttributeData) => {
   const updateAttributeArray = [];
 
@@ -177,42 +151,19 @@ const generateDateStringArray = (updatedAttributeData) => {
 }
 
 const compareAndUpdateArrays = (arr1, arr2, deadlineSections) => {
-  let changes = [];
-  // Convert arr2 to a map for easier lookups
+
   const map2 = new Map(arr2.map(item => [item.key, item.value]));
+  const keys1 = new Set(arr1.map(item => item.key));
 
-  // Iterate through arr1 and update values if a matching key is found in arr2
-  for (let i = 0; i < arr1.length; i++) {
-    const key = arr1[i].key;
-    const value1 = arr1[i].value;
-
-    if (map2.has(key)) {
-      const value2 = map2.get(key);
-
-      // If values differ, update the value in arr1 and record the change
-      if (value1 !== value2) {
-        changes.push({
-          key: key,
-          oldValue: value1,
-          newValue: value2
-        });
-        arr1[i].value = value2; // Update the value in arr1
-      }
-    }
+  // Merge values from arr2 into arr1
+  for (const element of arr1) {
+    if (map2.has(element.key)) element.value = map2.get(element.key);
   }
 
-  // Check for keys in arr2 that are missing in arr1
-  for (let [key, value2] of map2) {
-    if (!arr1.find(item => item.key === key)) {
-      changes.push({
-        key: key,
-        oldValue: 'Not found in first array',
-        newValue: value2
-      });
-      // Optionally, add the missing key-value pair to arr1
-      arr1.push({ key: key, value: value2 });
-    }
+  for (const [key, value] of map2) {
+    if (!keys1.has(key)) arr1.push({ key, value });
   }
+
   // Adding distance_from_previous and distance_to_next to arr1 from deadlineSections
   for (let i = 0; i < arr1.length; i++) {
     const arr1Key = arr1[i].key;
@@ -275,8 +226,8 @@ const compareAndUpdateArrays = (arr1, arr2, deadlineSections) => {
 const sortPhaseData = (arr, order) => {
   arr.sort((a, b) => {
     // check for the 'order' property
-    const aHasOrder = Object.prototype.hasOwnProperty.call(a, 'order');
-    const bHasOrder = Object.prototype.hasOwnProperty.call(b, 'order');
+    const aHasOrder = Object.hasOwn(a, 'order');
+    const bHasOrder = Object.hasOwn(b, 'order');
 
     // If both items have 'order', keep their relative positions
     if (aHasOrder && bHasOrder) {
@@ -312,7 +263,7 @@ const increasePhaseValues = (arr) => {
   // Replace the original elements in arr with updated elements from filteredArr
   const result = arr.map(item => {
     const updatedItem = filteredArr.find(filteredItem => filteredItem.key === item.key);
-    return updatedItem ? updatedItem : item;
+    return updatedItem || item;
   });
   return result
 }
@@ -331,7 +282,7 @@ const checkForDecreasingValues = ({ arr, isAdd, field, disabledDates, oldDate, m
       const { generateConfirmedFields } = require('./generateConfirmedFields');
       confirmedFieldSet = new Set(generateConfirmedFields(attributeData, deadlineObjects));
     }
-    catch (e) {
+    catch {
       // Fail silently – if generation fails we simply don't lock by confirmation (past locking still applies)
     }
   }
@@ -339,7 +290,7 @@ const checkForDecreasingValues = ({ arr, isAdd, field, disabledDates, oldDate, m
   const isLocked = (item) => {
     if (!item?.value) return false;
     const d = new Date(item.value);
-    if (!isNaN(d) && d < today) return true;
+    if (!Number.isNaN(d) && d < today) return true;
     return confirmedFieldSet ? confirmedFieldSet.has(item.key) : false;
   };
   // Find the index of the next item where dates should start being pushed
@@ -370,7 +321,7 @@ const checkForDecreasingValues = ({ arr, isAdd, field, disabledDates, oldDate, m
         }
         
         // Skip cascade if no valid predecessor found
-        if (!prevItem || !prevItem.value) {
+        if (!prevItem?.value) {
           continue;
         }
         
@@ -641,8 +592,8 @@ const reverseIterateArray = (arr, index, target) => {
   for (let i = index - 1; arr.length >= 0 && i >= 0; i--) {
     // Check if 'distance_from_previous' attribute does not exist and if the key contains the target substring
     if (target === "ehdotus") {
-      for (let j = 0; j < targetString.length; j++) {
-        if (!arr[i].key.includes('tarkistettu_ehdotus') && !arr[i].key.endsWith('_pvm') && arr[i].key.includes(targetString[j])) {
+      for (const element of targetString) {
+        if (!arr[i].key.includes('tarkistettu_ehdotus') && !arr[i].key.endsWith('_pvm') && arr[i].key.includes(element)) {
           return arr[i].value;
         }
       }
@@ -657,7 +608,7 @@ const reverseIterateArray = (arr, index, target) => {
 // Function to update original object by comparing keys
 const updateOriginalObject = (originalObj, updatedArr) => {
   updatedArr.forEach(item => {
-    if (Object.prototype.hasOwnProperty.call(originalObj, item.key)) {
+    if (Object.hasOwn(originalObj, item.key)) {
       originalObj[item.key] = item.value; // Update value if key exists
     }
   });
@@ -890,7 +841,6 @@ const convertPayloadValues = (payload) => {
 const exported = {
   getHighestNumberedObject,
   getMinObject,
-  findValuesWithStrings,
   compareAndUpdateArrays,
   checkForDecreasingValues,
   generateDateStringArray,
@@ -907,7 +857,6 @@ const exported = {
 }
 
 if (process.env.UNIT_TEST === "true") {
-  exported.getNumberFromString = getNumberFromString
   exported.increasePhaseValues = increasePhaseValues
   exported.sortPhaseData = sortPhaseData
   exported.reverseIterateArray = reverseIterateArray
