@@ -246,16 +246,16 @@ export const reducer = (state = initialState, action) => {
       if(field === "hyvaksymispaatos_pvm" && filteredAttributeData["hyvaksyminenvaihe_paattyy_pvm"]){
         filteredAttributeData["hyvaksyminenvaihe_paattyy_pvm"] = timeUtil.formatDate(newDateObj);
       }
-      else if (field === "tullut_osittain_voimaan_pvm" || field === "voimaantulo_pvm" || field === "kumottu_pvm" || field === "rauennut") {
+      else if (["tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauennut"].includes(field)) {
         // Find the highest date among the specified fields
-        const highestDate = timeUtil.getHighestDate(filteredAttributeData);
+        const highestDate = timeUtil.getHighestVoimaantuloDate(filteredAttributeData);
         // Modify the end date of voimaantulovaihe if any of the dates are changed and the new date is higher
         if ((highestDate) || (!highestDate && newDate)) {
           const higherDate = highestDate || newDate;
           filteredAttributeData["voimaantulovaihe_paattyy_pvm"] = higherDate;
         }
       }
-      // Generate array from updatedAttributeData for comparison
+      // Generate array from filteredAttributeData for comparison
       const updateAttributeArray = objectUtil.generateDateStringArray(filteredAttributeData)
       //Compare for changes with dates in order sorted array
       const changes = objectUtil.compareAndUpdateArrays(origSortedData,updateAttributeArray,deadlineSections)
@@ -278,37 +278,9 @@ export const reducer = (state = initialState, action) => {
       if (keepDuration && preservedEndValue && pairedEndKey) {
         filteredAttributeData[pairedEndKey] = preservedEndValue;
       }
-      //Updates viimeistaan lausunnot values to paattyy if paattyy date changed, or enforces floor constraint
+      // Sync phase end/start dates and lausunnot viimeistaan values
       timeUtil.syncPhaseEndDates(filteredAttributeData, previousPaattyyValues)
-      
-      // K1 = U1 sync: kaynnistysvaihe_alkaa_pvm always equals projektin_kaynnistys_pvm
-      // Per timeline_requirements.md line 899: K1's "Generoitu ehdotus" = U1
-      if (filteredAttributeData['projektin_kaynnistys_pvm']) {
-        filteredAttributeData['kaynnistysvaihe_alkaa_pvm'] = filteredAttributeData['projektin_kaynnistys_pvm'];
-      }
-      
-      // Sync phase bar boundaries - each phase end = next phase start
-      const phaseBoundaries = [
-        ['kaynnistys_paattyy_pvm', 'periaatteetvaihe_alkaa_pvm', 'oasvaihe_alkaa_pvm'],
-        ['periaatteetvaihe_paattyy_pvm', 'oasvaihe_alkaa_pvm', null],
-        ['oasvaihe_paattyy_pvm', 'luonnosvaihe_alkaa_pvm', 'ehdotusvaihe_alkaa_pvm'],
-        ['luonnosvaihe_paattyy_pvm', 'ehdotusvaihe_alkaa_pvm', null],
-        ['ehdotusvaihe_paattyy_pvm', 'tarkistettuehdotusvaihe_alkaa_pvm', 'hyvaksyminenvaihe_alkaa_pvm'],
-        ['tarkistettuehdotusvaihe_paattyy_pvm', 'hyvaksyminenvaihe_alkaa_pvm', null],
-        ['hyvaksyminenvaihe_paattyy_pvm', 'voimaantulovaihe_alkaa_pvm', null],
-      ];
-      
-      for (const [endKey, nextStart, fallbackStart] of phaseBoundaries) {
-        if (filteredAttributeData[endKey]) {
-          // If next phase exists, sync to it; otherwise use fallback (skip non-existent phase)
-          if (filteredAttributeData[nextStart] != null) {
-            filteredAttributeData[nextStart] = filteredAttributeData[endKey];
-          } else if (fallbackStart && filteredAttributeData[fallbackStart] != null) {
-            filteredAttributeData[fallbackStart] = filteredAttributeData[endKey];
-          }
-        }
-      }
-      
+
       // Return the updated state with the modified currentProject and attribute_data
       return {
         ...state,

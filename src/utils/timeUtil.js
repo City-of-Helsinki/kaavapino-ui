@@ -6,10 +6,10 @@ import { getVisibilityBoolName } from "./projectVisibilityUtils";
       return day === 0 || day === 6; // 0 = Sunday, 6 = Saturday
   };
 
-  const getHighestDate = (attributeValues) => {
+  const getHighestVoimaantuloDate = (attributeValues) => {
     const datesToCompare = ["tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauennut"]
     .map(dateField => attributeValues[dateField])
-    .filter(date => date)
+    .filter(Boolean)
     .map(date => new Date(date));
     let highestDate = datesToCompare.length ? new Date(Math.max(...datesToCompare)) : null;
     if (highestDate) {
@@ -848,6 +848,11 @@ const calculateAllowedDates = (nahtavillaolo, size, dateTypes, name, formValues,
 };
 
 const syncPhaseEndDates = (data, previousPaattyyValues) => {
+  // K1 = U1 sync: kaynnistysvaihe_alkaa_pvm always equals projektin_kaynnistys_pvm
+  if (data['projektin_kaynnistys_pvm']) {
+    data['kaynnistysvaihe_alkaa_pvm'] = data['projektin_kaynnistys_pvm'];
+  }
+
   // Static pairs: viimeistaan lausunnot -> ehdotuksen nähtävillä päättyy variants
   const lausuntoPairs = [
     ["viimeistaan_lausunnot_ehdotuksesta", "milloin_ehdotuksen_nahtavilla_paattyy"],
@@ -980,7 +985,7 @@ const exported = {
     calculateWeekdayDifference,
     isHoliday,
     calculateAllowedDates,
-    getHighestDate,
+    getHighestVoimaantuloDate,
     findAllowedDate,
     findAllowedLautakuntaDate,
     syncPhaseEndDates

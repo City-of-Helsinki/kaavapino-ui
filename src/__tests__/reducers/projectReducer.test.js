@@ -42,8 +42,33 @@ vi.mock('../../utils/timeUtil', () => ({
       }
       return date;
     }),
-    getHighestDate: vi.fn(() => null),
-    syncPhaseEndDates: vi.fn(() => {}),
+    getHighestVoimaantuloDate: vi.fn(() => null),
+    // Minimal cascade stand-in for the real syncPhaseEndDates:
+    // - K1 = U1 sync
+    // - each phase start = previous existing phase end
+    syncPhaseEndDates: vi.fn((data) => {
+      if (data['projektin_kaynnistys_pvm']) {
+        data['kaynnistysvaihe_alkaa_pvm'] = data['projektin_kaynnistys_pvm'];
+      }
+      const orderedPhases = [
+        { start: 'kaynnistysvaihe_alkaa_pvm', end: 'kaynnistys_paattyy_pvm' },
+        { start: 'periaatteetvaihe_alkaa_pvm', end: 'periaatteetvaihe_paattyy_pvm' },
+        { start: 'oasvaihe_alkaa_pvm', end: 'oasvaihe_paattyy_pvm' },
+        { start: 'luonnosvaihe_alkaa_pvm', end: 'luonnosvaihe_paattyy_pvm' },
+        { start: 'ehdotusvaihe_alkaa_pvm', end: 'ehdotusvaihe_paattyy_pvm' },
+        { start: 'tarkistettuehdotusvaihe_alkaa_pvm', end: 'tarkistettuehdotusvaihe_paattyy_pvm' },
+        { start: 'hyvaksyminenvaihe_alkaa_pvm', end: 'hyvaksyminenvaihe_paattyy_pvm' },
+        { start: 'voimaantulovaihe_alkaa_pvm', end: 'voimaantulovaihe_paattyy_pvm' },
+      ];
+      const existing = orderedPhases.filter(p => data[p.start] || data[p.end]);
+      for (let i = 1; i < existing.length; i++) {
+        const prev = existing[i - 1];
+        const cur = existing[i];
+        if (data[prev.end] && data[cur.start]) {
+          data[cur.start] = data[prev.end];
+        }
+      }
+    }),
   }
 }));
 

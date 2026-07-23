@@ -137,7 +137,7 @@ afterEach(() => {
 	vi.useRealTimers();
 });
 describe("timeUtils general utility function tests", () => {
-    test("getHighestDate returns the latest date from an array of date strings", () => {
+    test("getHighestVoimaantuloDate returns the latest date from an array of date strings", () => {
         const dates = {
             "tullut_osittain_voimaan": "2023-05-01",
             "voimaantulo_pvm": "2024-01-15",
@@ -145,7 +145,7 @@ describe("timeUtils general utility function tests", () => {
             "rauennut": "2023-11-20",
             "voimaantulovaihe_paattyy_pvm": "2025-03-10" // Ignored date key
         };
-        const result = timeUtil.getHighestDate(dates);
+        const result = timeUtil.getHighestVoimaantuloDate(dates);
         expect(result).toBe("2024-01-15");
     });
     test("formatDate formats date object correctly", () => {
