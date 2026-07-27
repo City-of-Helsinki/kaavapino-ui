@@ -209,6 +209,7 @@ const mergeAndUpdateDlArrays = (arr1, arr2, deadlineSections) => {
 
   //Sort phase start end data by order const
   arr1 = sortPhaseData(arr1, phaseOrder)
+  arr1 = increasePhaseValues(arr1)
   //Return in order array ready for comparing next and previous value distances
   arr1 = arr1.filter(item => !item.key.includes("viimeistaan_lausunnot_") && !item.key.includes("viimeistaan_mielipiteet") && !item.key.includes("aloituskokous_suunniteltu_pvm_readonly")); //filter out has no next and prev values
   return arr1
@@ -231,8 +232,6 @@ const sortPhaseData = (arr, order) => {
     // Otherwise, sort based on the provided order array
     return order.indexOf(a.key) - order.indexOf(b.key);
   });
-
-  arr = increasePhaseValues(arr)
   return arr
 }
 
@@ -260,8 +259,6 @@ const increasePhaseValues = (arr) => {
 }
 
 const checkForDecreasingValues = ({ arr, isAdd, field, disabledDates, oldDate, movedDate, moveToPast, projectSize, attributeData, deadlineObjects = [] }) => {
-
-
   // Lock logic: do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
   // attributeData is the filtered attribute_data object (only visible fields) so we can inspect confirmation flags
   let confirmedFieldSet = null;
@@ -565,9 +562,6 @@ const checkForDecreasingValues = ({ arr, isAdd, field, disabledDates, oldDate, m
     }
   }
   sortPhaseData(arr, phaseOrder)
-
-
-
   return arr
 }
 
