@@ -562,6 +562,7 @@ const checkForDecreasingValues = ({ arr, isAdd, field, disabledDates, oldDate, m
     }
   }
   sortPhaseData(arr, phaseOrder)
+  increasePhaseValues(arr)
   return arr
 }
 
