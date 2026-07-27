@@ -117,11 +117,9 @@ import { getVisibilityBoolName } from "./projectVisibilityUtils";
     return new Date(normalizedDate);
   }
 
-  const dateDifference = (cur, previousValue, currentValue, allowedDays, disabledDays, miniumGap) => {
-    let previousDate = normalizeDate(previousValue);
+  const dateDifference = (cur, previousValue, currentValue, allowedDays, disabledDays, gap) => {
+    const previousDate = normalizeDate(previousValue);
     let currentDate = normalizeDate(currentValue);
-    // Use database-provided minimum gap directly (from DeadlineDistance or Deadline models)
-    let gap = miniumGap;
 
     if (previousDate >= currentDate) {
       currentDate = normalizeDate(previousDate);
@@ -134,28 +132,37 @@ import { getVisibilityBoolName } from "./projectVisibilityUtils";
       dateStr = currentDate.toISOString().split('T')[0];
     }
 
-    let calendarDays = 0;
-    let tempDate = normalizeDate(previousDate);
-    if (previousDate < currentDate) {
-      while (tempDate < new Date(currentDate)) {
-        if (isWorkingDay(tempDate, allowedDays, disabledDays)) {
-          calendarDays++;
-        }
-        tempDate.setDate(tempDate.getDate() + 1);
+    const countWorkingDaysBetween = (start, end) => {
+      if (start >= end) return 0;
+      const cursor = normalizeDate(start);
+      const endDate = new Date(end);
+      let count = 0;
+      // eslint-disable-next-line no-unmodified-loop-condition
+      while (cursor < endDate) {
+        if (isWorkingDay(cursor, allowedDays, disabledDays)) count++;
+        cursor.setDate(cursor.getDate() + 1);
       }
-    }
+      return count;
+    };
 
-    if (calendarDays < gap) {
-      while (calendarDays <= gap) {
-        if (isWorkingDay(currentDate, allowedDays, disabledDays)) {
-          calendarDays++;
-        }
-        currentDate.setDate(currentDate.getDate() + 1);
+    const advancePastWorkingDays = (date, remaining) => {
+      while (remaining > 0) {
+        if (isWorkingDay(date, allowedDays, disabledDays)) remaining--;
+        date.setDate(date.getDate() + 1);
       }
+    };
+
+    const advanceToNextLautakuntaDay = (date) => {
+      while (date.getDay() !== 2 || !isWorkingDay(date, allowedDays, disabledDays)) {
+        date.setDate(date.getDate() + 1);
+      }
+    };
+
+    const workingDaysBetween = countWorkingDaysBetween(previousDate, currentDate);
+    if (workingDaysBetween < gap) {
+      advancePastWorkingDays(currentDate, gap - workingDaysBetween);
       if (cur.includes("lautakunnassa")) {
-        while (currentDate.getDay() !== 2 || !isWorkingDay(currentDate, allowedDays, disabledDays)) {
-          currentDate.setDate(currentDate.getDate() + 1);
-        }
+        advanceToNextLautakuntaDay(currentDate);
       }
     }
 
