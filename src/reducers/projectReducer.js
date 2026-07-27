@@ -258,7 +258,7 @@ export const reducer = (state = initialState, action) => {
       // Generate array from filteredAttributeData for comparison
       const updateAttributeArray = objectUtil.generateDateStringArray(filteredAttributeData)
       //Compare for changes with dates in order sorted array
-      const changes = objectUtil.compareAndUpdateArrays(origSortedData,updateAttributeArray,deadlineSections)
+      const changes = objectUtil.mergeAndUpdateDlArrays(origSortedData,updateAttributeArray,deadlineSections)
       //Find out is next date below minium and add difference of those days to all values after and move them forward 
       const decreasingValues = objectUtil.checkForDecreasingValues({
         arr: changes,

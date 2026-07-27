@@ -150,7 +150,7 @@ describe("Test ObjectUtil utility functions", () => {
         }
     });
 
-    test("compareAndUpdateArrays returns updated array", () => {
+    test("mergeAndUpdateDlArrays returns updated array", () => {
         const createSectionAttribute = (name, distanceVal = null, dateType = null) => ({
             name: name, distance_from_previous: distanceVal,
             distance_to_next: distanceVal,
@@ -191,7 +191,7 @@ describe("Test ObjectUtil utility functions", () => {
             { key: "milloin_periaatteet_lautakunnassa", value: "2023-06-27" }, // Change
             { key: "aloituskokous_suunniteltu_pvm_readonly", value: "2023-06-27" } // Special case; exclude from result
         ];
-        const result = objectUtil.compareAndUpdateArrays(arr1, arr2, test_sections);
+        const result = objectUtil.mergeAndUpdateDlArrays(arr1, arr2, test_sections);
 
         // Result should be ordered according to sections, with distance & date_type values copied
         // the values of arr1 are updated according to values in arr2

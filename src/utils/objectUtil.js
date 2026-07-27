@@ -76,7 +76,7 @@ const derivePreviousPhaseEndKey = (phaseStartKey) => {
 };
 
 //Phase main start and end value order should always be the same
-const order = [
+const phaseOrder = [
   'projektin_kaynnistys_pvm',
   'kaynnistys_paattyy_pvm',
   'periaatteetvaihe_alkaa_pvm',
@@ -150,53 +150,44 @@ const generateDateStringArray = (updatedAttributeData) => {
   return updateAttributeArray
 }
 
-const compareAndUpdateArrays = (arr1, arr2, deadlineSections) => {
+const mergeAndUpdateDlArrays = (arr1, arr2, deadlineSections) => {
 
   const map2 = new Map(arr2.map(item => [item.key, item.value]));
-  const keys1 = new Set(arr1.map(item => item.key));
+  const arr1ByKey = new Map(arr1.map(item => [item.key, item]));
 
-  // Merge values from arr2 into arr1
-  for (const element of arr1) {
-    if (map2.has(element.key)) element.value = map2.get(element.key);
-  }
-
+  // Update existing arr1 entries in place, append new ones
   for (const [key, value] of map2) {
-    if (!keys1.has(key)) arr1.push({ key, value });
+    const existing = arr1ByKey.get(key);
+    if (existing) {
+      existing.value = value;
+    } else {
+      arr1.push({ key, value });
+    }
   }
 
-  // Adding distance_from_previous and distance_to_next to arr1 from deadlineSections
-  for (let i = 0; i < arr1.length; i++) {
-    const arr1Key = arr1[i].key;
-
-    // Iterate over each section in deadlineSections
-    for (let section of deadlineSections) {
-      // Iterate over each attribute in section's attributes array
-      for (let sec of section.sections) {
-        for (let attribute of sec.attributes) {
-          if (attribute.name === arr1Key) {
-            // Found a match, now add distance_from_previous and distance_to_next
-            arr1[i].distance_from_previous = attribute?.distance_from_previous || null;
-            arr1[i].distance_to_next = attribute?.distance_to_next || null;
-            arr1[i].initial_distance = attribute?.initial_distance?.distance || null
-            arr1[i].date_type = attribute?.date_type ?? "arkipäivät";
-            arr1[i].order = i;
-            break; // Exit the loop once the match is found
-          }
+  const keyOrder = [];
+  const attributeByName = new Map();
+  for (const section of deadlineSections) {
+    for (const sec of section.sections) {
+      for (const attribute of sec.attributes) {
+        keyOrder.push(attribute.name);
+        if (!attributeByName.has(attribute.name)) {
+          attributeByName.set(attribute.name, attribute);
         }
       }
     }
   }
 
-  // Extract the order of keys (names) from deadlineSections
-  //DeadlineSections has the correct order always
-  let keyOrder = [];
-  for (let section of deadlineSections) {
-    for (let sec of section.sections) {
-      for (let attribute of sec.attributes) {
-        keyOrder.push(attribute.name);  // Get the order of names
-      }
-    }
-  }
+  // Enrich arr1 in a single linear pass
+  arr1.forEach((item, i) => {
+    const attribute = attributeByName.get(item.key);
+    if (!attribute) return;
+    item.distance_from_previous = attribute.distance_from_previous || null;
+    item.distance_to_next       = attribute.distance_to_next || null;
+    item.initial_distance       = attribute.initial_distance?.distance || null;
+    item.date_type              = attribute.date_type ?? "arkipäivät";
+    item.order                  = i;
+  });
 
   // Sort arr1 based on the keyOrder extracted from deadlineSections
   arr1.sort((a, b) => {
@@ -217,7 +208,7 @@ const compareAndUpdateArrays = (arr1, arr2, deadlineSections) => {
   });
 
   //Sort phase start end data by order const
-  arr1 = sortPhaseData(arr1, order)
+  arr1 = sortPhaseData(arr1, phaseOrder)
   //Return in order array ready for comparing next and previous value distances
   arr1 = arr1.filter(item => !item.key.includes("viimeistaan_lausunnot_") && !item.key.includes("viimeistaan_mielipiteet") && !item.key.includes("aloituskokous_suunniteltu_pvm_readonly")); //filter out has no next and prev values
   return arr1
@@ -246,7 +237,7 @@ const sortPhaseData = (arr, order) => {
 }
 
 const increasePhaseValues = (arr) => {
-  const filteredArr = arr.filter(item => order.includes(item.key));
+  const filteredArr = arr.filter(item => phaseOrder.includes(item.key));
   // Ensure each subsequent value is equal to or greater than the previous one
   for (let i = 1; i < filteredArr.length; i++) {
     if (filteredArr[i - 1].key.includes("paattyy_pvm") && filteredArr[i].key.includes("alkaa_pvm") || filteredArr[i].key.includes("kaynnistys_pvm")) {
@@ -573,7 +564,7 @@ const checkForDecreasingValues = ({ arr, isAdd, field, disabledDates, oldDate, m
       }
     }
   }
-  sortPhaseData(arr, order)
+  sortPhaseData(arr, phaseOrder)
 
 
 
@@ -837,7 +828,7 @@ const convertPayloadValues = (payload) => {
 const exported = {
   getHighestNumberedObject,
   getMinObject,
-  compareAndUpdateArrays,
+  mergeAndUpdateDlArrays,
   checkForDecreasingValues,
   generateDateStringArray,
   updateOriginalObject,
@@ -856,7 +847,7 @@ if (process.env.UNIT_TEST === "true") {
   exported.increasePhaseValues = increasePhaseValues
   exported.sortPhaseData = sortPhaseData
   exported.reverseIterateArray = reverseIterateArray
-  exported.expectedOrder = order
+  exported.expectedOrder = phaseOrder
   exported.findDeadlineInDeadlines = findDeadlineInDeadlines
   exported.findDeadlineInDeadlineSections = findDeadlineInDeadlineSections
 }

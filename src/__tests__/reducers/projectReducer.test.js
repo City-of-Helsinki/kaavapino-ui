@@ -81,7 +81,7 @@ vi.mock('../../utils/objectUtil', () => ({
         .filter(([k, v]) => v && typeof v === 'string' && v.match(/^\d{4}-\d{2}-\d{2}$/))
         .map(([key, value]) => ({ key, value }))
     ),
-    compareAndUpdateArrays: vi.fn((orig, updated) => updated),
+    mergeAndUpdateDlArrays: vi.fn((orig, updated) => updated),
     checkForDecreasingValues: vi.fn(({ arr }) => arr),
     updateOriginalObject: vi.fn((obj, arr) => {
       arr.forEach(({ key, value }) => { obj[key] = value; });
