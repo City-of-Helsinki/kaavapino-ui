@@ -8,8 +8,6 @@ import {test_attribute_data_XL as test_attribute_data} from './test_attribute_da
  * 
  * This function is critical for enforcing minimum gaps between dates.
  * It handles:
- * - addingNew=true: Uses full distance from Excel data
- * - addingNew=false: Uses reduced gap (5 days) for certain fields
  * - Lautakunta dates must land on Tuesdays
  * - Respects allowedDays and disabledDays
  */
@@ -21,40 +19,10 @@ describe("dateDifference function - distance enforcement", () => {
 
     // Helper to run dateDifference and calculate days difference
     const runAndGetDaysDiff = ({ cur, previousValue, currentValue, minimumGap, projectSize = "XL", addingNew = true, allowedDays = arkipäivät }) => {
-        const result = timeUtil.dateDifference(cur, previousValue, currentValue, allowedDays, disabledDates, minimumGap, projectSize, addingNew);
+        const result = timeUtil.dateDifference(cur, previousValue, currentValue, allowedDays, disabledDates, minimumGap);
         const daysDiff = Math.ceil((new Date(result) - new Date(previousValue)) / (1000 * 60 * 60 * 24));
         return { result, daysDiff };
     };
-
-    describe("addingNew=true behavior (new additions)", () => {
-        test.each([
-            { cur: "milloin_oas_esillaolo_alkaa", minimumGap: 14, desc: "uses full minimumGap" },
-            { cur: "oas_esillaolo_aineiston_maaraaika", minimumGap: 10, desc: "does not reduce gap for maaraaika" },
-        ])("$desc when addingNew=true (cur=$cur, gap=$minimumGap)", ({ cur, minimumGap }) => {
-            const { daysDiff } = runAndGetDaysDiff({ cur, previousValue: "2027-03-01", currentValue: "2027-03-05", minimumGap, addingNew: true });
-            expect(daysDiff).toBeGreaterThanOrEqual(minimumGap);
-        });
-
-        test("respects database-provided gap for M/S ehdotus nahtavillaolo", () => {
-            const { daysDiff } = runAndGetDaysDiff({
-                cur: "milloin_ehdotuksen_nahtavilla_paattyy", previousValue: "2027-03-01", currentValue: "2027-03-10",
-                minimumGap: 14, projectSize: "M", addingNew: true
-            });
-            expect(daysDiff).toBeGreaterThanOrEqual(14);
-        });
-    });
-
-    describe("addingNew=false behavior (modifications)", () => {
-        test.each([
-            { cur: "oas_esillaolo_aineiston_maaraaika", minimumGap: 10, desc: "respects DB gap for maaraaika" },
-            { cur: "ehdotus_lautakunta_aineiston_maaraaika", minimumGap: 14, desc: "full gap for lautakunta_aineiston_maaraaika" },
-            { cur: "ehdotus_kylk_aineiston_maaraaika", minimumGap: 14, desc: "full gap for kylk_aineiston_maaraaika" },
-            { cur: "milloin_oas_esillaolo_alkaa", minimumGap: 31, desc: "respects DB gap even when >= 31" },
-        ])("$desc when addingNew=false", ({ cur, minimumGap }) => {
-            const { daysDiff } = runAndGetDaysDiff({ cur, previousValue: "2027-03-01", currentValue: "2027-03-05", minimumGap, addingNew: false });
-            expect(daysDiff).toBeGreaterThanOrEqual(minimumGap);
-        });
-    });
 
     describe("lautakunta Tuesday snapping", () => {
         test("snaps lautakunnassa dates to next Tuesday", () => {

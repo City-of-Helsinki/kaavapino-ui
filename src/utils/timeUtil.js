@@ -117,7 +117,7 @@ import { getVisibilityBoolName } from "./projectVisibilityUtils";
     return new Date(normalizedDate);
   }
 
-  const dateDifference = (cur, previousValue, currentValue, allowedDays, disabledDays, miniumGap, projectSize, addingNew) => {
+  const dateDifference = (cur, previousValue, currentValue, allowedDays, disabledDays, miniumGap) => {
     let previousDate = normalizeDate(previousValue);
     let currentDate = normalizeDate(currentValue);
     // Use database-provided minimum gap directly (from DeadlineDistance or Deadline models)
@@ -267,27 +267,6 @@ import { getVisibilityBoolName } from "./projectVisibilityUtils";
   };
   
 
-  // Function to adjust dates if the difference is less than or equal to 5 days
-  const adjustDates = (dataArray) => {
-    for (let i = 0; i < dataArray.length - 1; i++) {
-      const currentValue = dataArray[i].value;
-      const nextValue = dataArray[i + 1].value;
-      
-      // Calculate the difference in days between current and next date
-      let dateAndMin = dateDifference(currentValue, nextValue);
-
-      if (dateAndMin <= 5) {
-
-        // Add the difference to the next date
-        const nextDate = new Date(nextValue);
-        nextDate.setDate(nextDate.getDate() + dateAndMin); // Push next date forward by the difference
-
-        // Update the next value in the array
-        dataArray[i + 1].value = nextDate.toISOString().split('T')[0]; // Convert back to YYYY-MM-DD format
-
-      }
-    }
-  }
   
   // Function to add days to a date and return in "YYYY-MM-DD" format
   const addDays = (type, date, days, disabledDates, excludeWeekends, origDate, allDisabledDates, initialDistance) => {
@@ -476,36 +455,6 @@ import { getVisibilityBoolName } from "./projectVisibilityUtils";
     return `${year}-${month}-${day}`;
 }
 
-// Function to shift dates forward only if the new date is greater or equal to the current one
-const moveItemForward = (movedItemId, newStartDate, items) => {
-  // Find the item that is being moved forward
-  let itemIndex = items.findIndex(item => item.id === movedItemId);
-  if (itemIndex === -1) return;
-
-  // Calculate the difference in time between the old and new start date
-  let item = items[itemIndex];
-  let oldStartDate = item.start;
-  let timeDifference = newStartDate - oldStartDate; // in milliseconds
-
-  // Check if the new start date is after the old one
-  if (timeDifference <= 0) {
-    console.log("Cannot move item backward.");
-    return;
-  }
-
-  // Update the moved item's start and end date
-  item.start = newStartDate;
-  item.end = new Date(item.end.getTime() + timeDifference);
-
-  // Update all subsequent items if their current start date is before or equal to the new moved date
-  for (let i = itemIndex + 1; i < items.length; i++) {
-    if (items[i].start <= item.end) {
-      // Shift start and end date of subsequent item
-      items[i].start = new Date(items[i].start.getTime() + timeDifference);
-      items[i].end = new Date(items[i].end.getTime() + timeDifference);
-    }
-  }
-}
 
 // Check if a string is in "YYYY-MM-DD" format
 const isDate = (value) => {
@@ -977,10 +926,8 @@ const exported = {
     formatDate,
     formatRelativeDate,
     subtractDaysFromDate,
-    moveItemForward,
     sortObjectByDate,
     dateDifference,
-    adjustDates,
     isDate,
     calculateWeekdayDifference,
     isHoliday,
