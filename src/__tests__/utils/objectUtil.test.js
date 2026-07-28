@@ -211,7 +211,7 @@ describe("Test ObjectUtil utility functions", () => {
         });
     });
 
-    test("reverseIterateArray looks up the correct value from array", () => {
+    test("findLastDeadlineInPhase looks up the correct value from array", () => {
         const test_arr = [
             { key: "oasvaihe_alkaa_pvm", value: "2024-01-01" },
             { key: "milloin_oas_esillaolo_alkaa", value: "2024-01-03" },
@@ -225,12 +225,12 @@ describe("Test ObjectUtil utility functions", () => {
             { key: "tarkistettuehdotusvaihe_paattyy_pvm", value: "2024-01-11" }
         ];
 
-        expect(objectUtil.reverseIterateArray(test_arr, 3, "oas")).toBe("2024-01-04");
-        expect(objectUtil.reverseIterateArray(test_arr, 8, "ehdotus")).toBe("2024-01-07");
-        expect(objectUtil.reverseIterateArray(test_arr, 10, "tarkistettuehdotus")).toBe("2024-01-10");
+        expect(objectUtil.findLastDeadlineInPhase(test_arr, 3, "oas")).toBe("2024-01-04");
+        expect(objectUtil.findLastDeadlineInPhase(test_arr, 8, "ehdotus")).toBe("2024-01-07");
+        expect(objectUtil.findLastDeadlineInPhase(test_arr, 10, "tarkistettuehdotus")).toBe("2024-01-10");
 
-        expect(objectUtil.reverseIterateArray(test_arr, 2, "tarkistettuehdotus")).toBeNull(); // index too low
-        expect(objectUtil.reverseIterateArray(test_arr, 10, "nonexistent_key")).toBeNull();
+        expect(objectUtil.findLastDeadlineInPhase(test_arr, 2, "tarkistettuehdotus")).toBeNull(); // index too low
+        expect(objectUtil.findLastDeadlineInPhase(test_arr, 10, "nonexistent_key")).toBeNull();
     });
 
     test("checkForDecreasingValues behaves correctly when adding new element group", () => {
@@ -892,7 +892,7 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
             // the phase start (tarkistettuehdotusvaihe_alkaa_pvm) must also be pulled back
             // to maintain the minimum distance. Otherwise backend will enforce and jump dates forward.
             const newDate = "2026-07-31"; // User drags maaraaika backwards by ~8 months
-            const oldDate = "2027-03-03";
+            const oldDate = "2027-03-03";   
             
             const arr = [
                 { key: "milloin_ehdotuksen_nahtavilla_paattyy", value: "2026-07-30", date_type: "arkipäivät", distance_from_previous: 21 },
