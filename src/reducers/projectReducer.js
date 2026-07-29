@@ -229,7 +229,7 @@ export const reducer = (state = initialState, action) => {
         milloin_ehdotuksen_nahtavilla_paattyy_4: filteredAttributeData.milloin_ehdotuksen_nahtavilla_paattyy_4,
       };
       const moveToPast = filteredAttributeData[field] > newDate;
-      //Save oldDate for comparison in checkforDecreasingValues
+      //Save oldDate for comparison in cascadeDeadlineChange
       const oldDate = filteredAttributeData[field];
       //Sort array by date
       const origSortedData = timeUtil.sortObjectByDate(filteredAttributeData);
@@ -260,7 +260,7 @@ export const reducer = (state = initialState, action) => {
       //Compare for changes with dates in order sorted array
       const changes = objectUtil.mergeAndUpdateDlArrays(origSortedData,updateAttributeArray,deadlineSections)
       //Find out is next date below minium and add difference of those days to all values after and move them forward 
-      const decreasingValues = objectUtil.checkForDecreasingValues({
+      const decreasingValues = objectUtil.cascadeDeadlineChange({
         arr: changes,
         isAdd,
         field,

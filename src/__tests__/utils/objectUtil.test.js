@@ -1,13 +1,13 @@
 import { describe, test, expect, beforeAll, afterAll, vi } from 'vitest';
 
-// Pin "today" to a fixed date so that past-date locking in checkForDecreasingValues
+// Pin "today" to a fixed date so that past-date locking in cascadeDeadlineChange
 // does not freeze test data items as "in the past" as real time advances.
 beforeAll(() => { vi.useFakeTimers(); vi.setSystemTime(new Date('2025-01-01')); });
 afterAll(() => { vi.useRealTimers(); });
 import objectUtil from '../../utils/objectUtil';
-import mockData from './checkForDecreasingValues_test_data.js';
+import mockData from './cascadeDeadlineChange_test_data.js';
 
-// Helpers to reduce duplication in checkForDecreasingValues tests
+// Helpers to reduce duplication in cascadeDeadlineChange tests
 const cloneTestArr = () => structuredClone(mockData.decreasing_test_arr);
 const setFieldValue = (arr, field, value) => {
     const index = arr.findIndex(item => item.key === field);
@@ -76,13 +76,13 @@ describe("Test ObjectUtil utility functions", () => {
         expect(result_data[1]).toEqual({ key: "date_3", value: "2024-12-31" });
     });
 
-    test("increasePhaseValues handles empty and single-item arrays", () => {
-        expect(objectUtil.increasePhaseValues([])).toEqual([]);
+    test("bumpPhaseStartsToPrevEnd handles empty and single-item arrays", () => {
+        expect(objectUtil.bumpPhaseStartsToPrevEnd([])).toEqual([]);
         const single_item = [{ key: "some_date", value: "2024-01-01" }];
-        expect(objectUtil.increasePhaseValues(single_item)).toEqual(single_item);
+        expect(objectUtil.bumpPhaseStartsToPrevEnd(single_item)).toEqual(single_item);
     });
 
-    test("increasePhaseValues updates phase start dates if they are before the previous phase end date", () => {
+    test("bumpPhaseStartsToPrevEnd updates phase start dates if they are before the previous phase end date", () => {
         const test_data = [
             { key: "projektin_kaynnistys_pvm", value: "2024-01-01" },
             { key: "kaynnistys_paattyy_pvm", value: "2023-12-01" },
@@ -93,7 +93,7 @@ describe("Test ObjectUtil utility functions", () => {
             { key: "oasvaihe_paattyy_pvm", value: "2025-02-01" },
             { key: "luonnosvaihe_alkaa_pvm", value: "2025-03-03" },
         ];
-        const result = objectUtil.increasePhaseValues(test_data);
+        const result = objectUtil.bumpPhaseStartsToPrevEnd(test_data);
         expect(result.length).toBe(test_data.length);
         expect(result[0].value).toBe("2024-01-01"); // Unchanged
         expect(result[1].value).toBe("2023-12-01"); // Unchanged despite being before start date
@@ -233,7 +233,7 @@ describe("Test ObjectUtil utility functions", () => {
         expect(objectUtil.findLastDeadlineInPhase(test_arr, 10, "nonexistent_key")).toBeNull();
     });
 
-    test("checkForDecreasingValues behaves correctly when adding new element group", () => {
+    test("cascadeDeadlineChange behaves correctly when adding new element group", () => {
         const test_add_date = (movedDate, moveToPast) => {
             const modified_test_arr = cloneTestArr();
             const isAdd = true;
@@ -243,7 +243,7 @@ describe("Test ObjectUtil utility functions", () => {
             const projectSize = "XL";
             setFieldValue(modified_test_arr, field, movedDate);
             const original = JSON.parse(JSON.stringify(modified_test_arr));
-            const result = objectUtil.checkForDecreasingValues(checkParams({
+            const result = objectUtil.cascadeDeadlineChange(checkParams({
                 arr: modified_test_arr,
                 isAdd,
                 field,
@@ -541,7 +541,7 @@ describe("Test ObjectUtil utility functions", () => {
 });
 
 /**
- * Tests for checkForDecreasingValues - critical lifecycle scenarios
+ * Tests for cascadeDeadlineChange - critical lifecycle scenarios
  * 
  * These tests cover the scenarios that break in production:
  * 1. Re-add after delete (before save) - stale dates in formValues
@@ -549,7 +549,7 @@ describe("Test ObjectUtil utility functions", () => {
  * 3. Cascade enforcement across phases
  * 4. Lautakunta growth vs movement behavior
  */
-describe("checkForDecreasingValues lifecycle scenarios", () => {
+describe("cascadeDeadlineChange lifecycle scenarios", () => {
 
     describe("Re-add after delete scenarios", () => {
 
@@ -577,7 +577,7 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
             const movedDate = newDate;
             const projectSize = "XL";
 
-            const result = objectUtil.checkForDecreasingValues(checkParams({
+            const result = objectUtil.cascadeDeadlineChange(checkParams({
                 arr,
                 isAdd,
                 field,
@@ -620,7 +620,7 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
             const isAdd = true;
             const projectSize = "XL";
 
-            const result = objectUtil.checkForDecreasingValues(checkParams({
+            const result = objectUtil.cascadeDeadlineChange(checkParams({
                 arr,
                 isAdd,
                 field,
@@ -663,7 +663,7 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
             const isAdd = true;
             const projectSize = "XL";
 
-            const result = objectUtil.checkForDecreasingValues(checkParams({
+            const result = objectUtil.cascadeDeadlineChange(checkParams({
                 arr,
                 isAdd,
                 field,
@@ -696,7 +696,7 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
                 const newDate = "2028-01-11"; // A Tuesday
                 arr[lautakunta1Index].value = newDate;
 
-                const result = objectUtil.checkForDecreasingValues(checkParams({
+                const result = objectUtil.cascadeDeadlineChange(checkParams({
                     arr,
                     isAdd: false,
                     field: arr[lautakunta1Index].key,
@@ -734,7 +734,7 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
                 const newPeriaatteetPaattyy = "2027-12-01";
                 arr[periaatteetPaattyyIndex].value = newPeriaatteetPaattyy;
 
-                const result = objectUtil.checkForDecreasingValues(checkParams({
+                const result = objectUtil.cascadeDeadlineChange(checkParams({
                     arr,
                     isAdd: false,
                     field: "periaatteetvaihe_paattyy_pvm",
@@ -764,7 +764,7 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
                 const newDate = "2027-10-01"; // Far in the future
                 arr[fieldIndex].value = newDate;
 
-                const result = objectUtil.checkForDecreasingValues(checkParams({
+                const result = objectUtil.cascadeDeadlineChange(checkParams({
                     arr,
                     isAdd: true,
                     field,
@@ -797,7 +797,7 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
             const addIndex = arr.findIndex(i => i.key === addField);
             if (addIndex !== -1) arr[addIndex].value = addDate;
 
-            const afterAdd = objectUtil.checkForDecreasingValues(checkParams({
+            const afterAdd = objectUtil.cascadeDeadlineChange(checkParams({
                 arr,
                 isAdd: true,
                 field: addField,
@@ -818,7 +818,7 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
                 const newValueStr = newValue.toISOString().split('T')[0];
                 afterAdd[modifyIndex].value = newValueStr;
 
-                const afterModify = objectUtil.checkForDecreasingValues(checkParams({
+                const afterModify = objectUtil.cascadeDeadlineChange(checkParams({
                     arr: afterAdd,
                     isAdd: false,
                     field: modifyField,
@@ -869,7 +869,7 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
                 const oldDate = arr[phaseStartIndex].value;
                 arr[phaseStartIndex].value = newDate;
 
-                const result = objectUtil.checkForDecreasingValues(checkParams({
+                const result = objectUtil.cascadeDeadlineChange(checkParams({
                     arr,
                     isAdd: false,
                     field: phaseStartKey,
@@ -907,7 +907,7 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
             const kylkKey = "tarkistettu_ehdotus_kylk_maaraaika";
             const moveToPast = true;
             
-            const result = objectUtil.checkForDecreasingValues(checkParams({
+            const result = objectUtil.cascadeDeadlineChange(checkParams({
                 arr,
                 isAdd: false,
                 field: kylkKey,
@@ -948,7 +948,7 @@ describe("checkForDecreasingValues lifecycle scenarios", () => {
             const oldDate = "2026-06-09";
             const moveToPast = false;
             
-            const result = objectUtil.checkForDecreasingValues(checkParams({
+            const result = objectUtil.cascadeDeadlineChange(checkParams({
                 arr,
                 isAdd: false,
                 field: kylkKey,
