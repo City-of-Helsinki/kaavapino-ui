@@ -134,25 +134,33 @@ const cascadeDeadlineChange = ({ arr, isAdd, field, disabledDates, oldDate, move
   const handleEsillaMaaraaikaMove = (arr, i, movedDate, disabledDates) => {
     const alkaaItem = arr[i + 1];
     const paattyyItem = arr[i + 2];
-    const endAllowed = disabledDates?.date_types[paattyyItem?.date_type]?.dates || [];
+    const endAllowedDates = disabledDates?.date_types[paattyyItem?.date_type]?.dates || [];
+
+    let initialEsillaoloDiff = 0;
+    //Keep the same timespan between alkaa and paattyy if both are defined
+    if (endAllowedDates.length && alkaaItem?.value && paattyyItem?.value) {
+      const start = endAllowedDates.findIndex(d => d >= alkaaItem?.value);
+      const end = endAllowedDates.findIndex(d => d >= paattyyItem?.value);
+      if (start !== -1 && end !== -1 && end >= start) initialEsillaoloDiff = end - start;
+    }
+
     const alkaaGap = alkaaItem.initial_distance ?? alkaaItem.distance_from_previous ?? 14;
     const alkaaResult = timeUtil.findAllowedDate(movedDate, alkaaGap, disabledDates?.date_types[arr[i]?.date_type]?.dates, false);
     alkaaItem.value = new Date(alkaaResult).toISOString().split('T')[0];
 
-    let timespan = 0;
-    //Keep the same timespan between alkaa and paattyy if both are defined
-    if (endAllowed.length && alkaaItem?.value && paattyyItem?.value) {
-      const start = endAllowed.findIndex(d => d >= alkaaItem?.value);
-      const end = endAllowed.findIndex(d => d >= paattyyItem?.value);
-      if (start !== -1 && end !== -1 && end >= start) timespan = end - start;
+
+    const startIndex = endAllowedDates.findIndex(d => d >= alkaaItem.value);
+    const paattyyGap = paattyyItem.initial_distance ?? paattyyItem.distance_from_previous ?? 14;
+    let newPaattyyValue = null;
+    if (startIndex + initialEsillaoloDiff < endAllowedDates.length && initialEsillaoloDiff > paattyyGap) {
+      // Maintain the same gap between alkaa and paattyy if possible
+      newPaattyyValue = endAllowedDates[startIndex + initialEsillaoloDiff];
+    } else {
+      newPaattyyValue = timeUtil.findAllowedDate(alkaaItem.value, paattyyGap, endAllowedDates, false);
     }
-    const val = endAllowed.findIndex(d => d >= alkaaItem.value);
-    let kept = (val !== -1 && val + timespan < endAllowed.length) ? endAllowed[val + timespan] : null;
-    if (!kept) {
-      const paattyyGap = paattyyItem.initial_distance ?? paattyyItem.distance_from_previous ?? 14;
-      kept = timeUtil.findAllowedDate(alkaaItem.value, paattyyGap, endAllowed, false);
+    if (newPaattyyValue) {
+      paattyyItem.value = new Date(newPaattyyValue).toISOString().split('T')[0];
     }
-    paattyyItem.value = new Date(kept).toISOString().split('T')[0];
   }
 
   const handleDeadlineMove = ( arr, i, movedDate, disabledDates, moveToPast, projectSize, prevItem) => {
