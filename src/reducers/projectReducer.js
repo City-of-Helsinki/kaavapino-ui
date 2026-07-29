@@ -103,6 +103,7 @@ import {
 
 import timeUtil from '../utils/timeUtil'
 import objectUtil from '../utils/objectUtil'
+import deadlineCascade from '../utils/deadlineCascade'
 
 export const initialState = {
   projects: [],
@@ -260,7 +261,7 @@ export const reducer = (state = initialState, action) => {
       //Compare for changes with dates in order sorted array
       const changes = objectUtil.mergeAndUpdateDlArrays(origSortedData,updateAttributeArray,deadlineSections)
       //Find out is next date below minium and add difference of those days to all values after and move them forward 
-      const decreasingValues = objectUtil.cascadeDeadlineChange({
+      const decreasingValues = deadlineCascade.cascadeDeadlineChange({
         arr: changes,
         isAdd,
         field,

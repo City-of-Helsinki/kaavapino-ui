@@ -82,10 +82,15 @@ vi.mock('../../utils/objectUtil', () => ({
         .map(([key, value]) => ({ key, value }))
     ),
     mergeAndUpdateDlArrays: vi.fn((orig, updated) => updated),
-    cascadeDeadlineChange: vi.fn(({ arr }) => arr),
     updateOriginalObject: vi.fn((obj, arr) => {
       arr.forEach(({ key, value }) => { obj[key] = value; });
     }),
+  }
+}))
+
+vi.mock('../../utils/deadlineCascade', () => ({
+  default: {
+    cascadeDeadlineChange: vi.fn(({ arr }) => arr),
   }
 }))
 
