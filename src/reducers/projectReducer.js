@@ -215,7 +215,7 @@ export const reducer = (state = initialState, action) => {
     }
 
     case UPDATE_DATE_TIMELINE: {
-      const { field, newDate, formValues, isAdd, deadlineSections, keepDuration, originalDurationDays, pairedEndKey } = action.payload;
+      const { field, newDate, formValues, deadlineSections, keepDuration, originalDurationDays, pairedEndKey } = action.payload;
 
       const updatedAttributeData = formValues ? {...formValues} : { ...state.currentProject.attribute_data };
       const projectSize = updatedAttributeData?.kaavaprosessin_kokoluokka
@@ -259,10 +259,9 @@ export const reducer = (state = initialState, action) => {
       const updateAttributeArray = objectUtil.generateDateStringArray(filteredAttributeData)
       //Compare for changes with dates in order sorted array
       const changes = objectUtil.mergeAndUpdateDlArrays(origSortedData,updateAttributeArray,deadlineSections)
-      //Find out is next date below minium and add difference of those days to all values after and move them forward 
+      //Find out is next date below minium and add difference of those days to all values after and move them forward
       const processedDates = deadlineCascade.cascadeDeadlineChange({
         arr: changes,
-        isAdd,
         field,
         disabledDates: state.disabledDates,
         moveToPast,

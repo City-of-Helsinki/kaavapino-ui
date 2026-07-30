@@ -53,7 +53,7 @@ const findPastDateWithGap = (startingDate, gap, allowedDates) => {
   return (targetIndex >= 0) ? allowedDates[targetIndex] : null;
 }
 
-const cascadeDeadlineChange = ({ arr, isAdd, field, disabledDates, moveToPast, projectSize, attributeData, deadlineObjects = [] }) => {
+const cascadeDeadlineChange = ({ arr, field, disabledDates, moveToPast, projectSize, attributeData, deadlineObjects = [] }) => {
   // Do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
   let confirmedFieldSet = new Set();
   try {
@@ -124,45 +124,6 @@ const cascadeDeadlineChange = ({ arr, isAdd, field, disabledDates, moveToPast, p
           item.value = currentDate.toISOString().split('T')[0];
         });
       }
-    }
-  }
-
-  const handleDeadlineAdd = () => {
-    // Move the nextItem and all following items forward if item minimum is exceeded
-    for (let i = currentIndex; i < arr.length; i++) {
-      if (isFrozen(arr[i]) || IGNORED_ATTRIBUTES.some(attr => arr[i].key.includes(attr))) {
-        continue;
-      }
-      let newDate = new Date(arr[i].value);
-      const prevItem = getPreviousItem(arr, i);
-
-      // Skip cascade if no valid predecessor found
-      if (!prevItem?.value) {
-        continue;
-      }
-
-      if (prevItem.key.includes("paattyy") && (arr[i].key.includes("mielipiteet") || arr[i].key.includes("lausunnot"))) {
-        //mielipiteet and paattyy is always the same value
-        newDate = new Date(prevItem.value);
-      }
-      else {
-        const currDate = new Date(arr[i].value);
-        const cascadeGap = arr[i].distance_from_previous ?? 0;
-          //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minimum gaps
-          const min_date = arr[i]?.date_type ?
-            timeUtil.dateDifference(
-              arr[i].key, prevItem.value, arr[i].value, disabledDates?.date_types[arr[i]?.date_type]?.dates,
-              disabledDates?.date_types?.disabled_dates?.dates, cascadeGap
-            )
-            : currDate;
-          if (currDate < min_date) {
-            newDate = new Date(min_date);
-          }
-      }
-      // Update the array with the new date
-      const finalValue = newDate.toISOString().split('T')[0];
-      arr[i].value = finalValue;
-      adjustPhaseEndDates(arr, i);
     }
   }
 
@@ -256,12 +217,6 @@ const cascadeDeadlineChange = ({ arr, isAdd, field, disabledDates, moveToPast, p
     return arr;
   }
   let indexToContinue = 0;
-  if (isAdd) {
-    handleDeadlineAdd();
-    sortPhaseData(arr, phaseOrder)
-    arr = bumpPhaseStartsToPrevEnd(arr)
-    return arr
-  }
 
   for (let i = currentIndex; i < arr.length; i++) {
     const currentItem = arr[i];

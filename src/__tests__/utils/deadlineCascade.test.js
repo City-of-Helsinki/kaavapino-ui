@@ -16,7 +16,6 @@ const setFieldValue = (arr, field, value) => {
 };
 const checkParams = (overrides = {}) => ({
     arr: mockData.decreasing_test_arr,
-    isAdd: false,
     field: '',
     disabledDates: mockData.test_disabledDates,
     moveToPast: false,
@@ -51,7 +50,6 @@ describe("Test deadlineCascade utility functions", () => {
     test("cascadeDeadlineChange behaves correctly when adding new element group", () => {
         const test_add_date = (movedDate, moveToPast) => {
             const modified_test_arr = cloneTestArr();
-            const isAdd = true;
             const field = "periaatteet_esillaolo_aineiston_maaraaika_2";
             const originalField = modified_test_arr.find(item => item.key === field);
             const oldDate = "2026-04-15";
@@ -60,7 +58,6 @@ describe("Test deadlineCascade utility functions", () => {
             const original = JSON.parse(JSON.stringify(modified_test_arr));
             const result = deadlineCascade.cascadeDeadlineChange(checkParams({
                 arr: modified_test_arr,
-                isAdd,
                 field,
                 moveToPast,
                 projectSize
@@ -130,7 +127,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
             const newDate = "2027-05-01";
             if (maaraaikaIndex !== -1) arr[maaraaikaIndex].value = newDate;
 
-            const isAdd = true;
             const field = "periaatteet_esillaolo_aineiston_maaraaika_2";
             const oldDate = null;
             const movedDate = newDate;
@@ -138,7 +134,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
 
             const result = deadlineCascade.cascadeDeadlineChange(checkParams({
                 arr,
-                isAdd,
                 field,
                 moveToPast: false,
                 projectSize
@@ -174,12 +169,10 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
             const maaraaikaIndex = arr.findIndex(item => item.key === field);
             if (maaraaikaIndex !== -1) arr[maaraaikaIndex].value = newDate;
 
-            const isAdd = true;
             const projectSize = "XL";
 
             const result = deadlineCascade.cascadeDeadlineChange(checkParams({
                 arr,
-                isAdd,
                 field,
                 moveToPast: false,
                 projectSize
@@ -215,12 +208,10 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
             const maaraaikaIndex = arr.findIndex(item => item.key === field);
             if (maaraaikaIndex !== -1) arr[maaraaikaIndex].value = newDate;
 
-            const isAdd = true;
             const projectSize = "XL";
 
             const result = deadlineCascade.cascadeDeadlineChange(checkParams({
                 arr,
-                isAdd,
                 field,
                 moveToPast: false,
                 projectSize
@@ -251,7 +242,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
 
                 const result = deadlineCascade.cascadeDeadlineChange(checkParams({
                     arr,
-                    isAdd: false,
                     field: arr[lautakunta1Index].key,
                     moveToPast: false,
                     projectSize: "XL"
@@ -287,7 +277,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
 
                 const result = deadlineCascade.cascadeDeadlineChange(checkParams({
                     arr,
-                    isAdd: false,
                     field: "periaatteetvaihe_paattyy_pvm",
                     moveToPast: false,
                     projectSize: "XL"
@@ -315,7 +304,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
 
                 const result = deadlineCascade.cascadeDeadlineChange(checkParams({
                     arr,
-                    isAdd: true,
                     field,
                     moveToPast: false,
                     projectSize: "XL"
@@ -346,7 +334,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
 
             const afterAdd = deadlineCascade.cascadeDeadlineChange(checkParams({
                 arr,
-                isAdd: true,
                 field: addField,
                 moveToPast: false,
                 projectSize: "XL"
@@ -365,7 +352,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
 
                 const afterModify = deadlineCascade.cascadeDeadlineChange(checkParams({
                     arr: afterAdd,
-                    isAdd: false,
                     field: modifyField,
                     moveToPast: false,
                     projectSize: "XL"
@@ -414,7 +400,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
 
                 const result = deadlineCascade.cascadeDeadlineChange(checkParams({
                     arr,
-                    isAdd: false,
                     field: phaseStartKey,
                     moveToPast: false,
                     projectSize: "XL"
