@@ -19,8 +19,6 @@ const checkParams = (overrides = {}) => ({
     isAdd: false,
     field: '',
     disabledDates: mockData.test_disabledDates,
-    oldDate: null,
-    movedDate: null,
     moveToPast: false,
     projectSize: 'L',
     ...overrides
@@ -64,8 +62,6 @@ describe("Test deadlineCascade utility functions", () => {
                 arr: modified_test_arr,
                 isAdd,
                 field,
-                oldDate,
-                movedDate,
                 moveToPast,
                 projectSize
             }));
@@ -144,8 +140,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
                 arr,
                 isAdd,
                 field,
-                oldDate,
-                movedDate,
                 moveToPast: false,
                 projectSize
             }));
@@ -187,8 +181,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
                 arr,
                 isAdd,
                 field,
-                oldDate: oldMaaraaikaDate,
-                movedDate: newDate,
                 moveToPast: false,
                 projectSize
             }));
@@ -230,8 +222,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
                 arr,
                 isAdd,
                 field,
-                oldDate: null,
-                movedDate: newDate,
                 moveToPast: false,
                 projectSize
             }));
@@ -263,8 +253,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
                     arr,
                     isAdd: false,
                     field: arr[lautakunta1Index].key,
-                    oldDate: "2027-06-15",
-                    movedDate: newDate,
                     moveToPast: false,
                     projectSize: "XL"
                 }));
@@ -301,8 +289,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
                     arr,
                     isAdd: false,
                     field: "periaatteetvaihe_paattyy_pvm",
-                    oldDate: "2026-08-01",
-                    movedDate: newPeriaatteetPaattyy,
                     moveToPast: false,
                     projectSize: "XL"
                 }));
@@ -331,8 +317,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
                     arr,
                     isAdd: true,
                     field,
-                    oldDate: null,
-                    movedDate: newDate,
                     moveToPast: false,
                     projectSize: "XL"
                 }));
@@ -364,8 +348,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
                 arr,
                 isAdd: true,
                 field: addField,
-                oldDate: null,
-                movedDate: addDate,
                 moveToPast: false,
                 projectSize: "XL"
             }));
@@ -385,8 +367,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
                     arr: afterAdd,
                     isAdd: false,
                     field: modifyField,
-                    oldDate: oldValue,
-                    movedDate: newValueStr,
                     moveToPast: false,
                     projectSize: "XL"
                 }));
@@ -436,8 +416,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
                     arr,
                     isAdd: false,
                     field: phaseStartKey,
-                    oldDate,
-                    movedDate: newDate,
                     moveToPast: false,
                     projectSize: "XL"
                 }));

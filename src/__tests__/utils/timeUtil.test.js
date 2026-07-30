@@ -254,14 +254,12 @@ describe("timeUtils general utility function tests", () => {
     });
 });
 
-describe("addDays and subtractDays with disabled dates", () => {
+describe("addDays with disabled dates", () => {
     const disabledDates = () => structuredClone(data.test_disabledDates.date_types.työpäivät.dates);
 
     test.each([
         { fn: "addDays", date: "2025-10-10", days: 10, excludeWeekends: true, expected: "2025-10-24", desc: "adds days with weekends excluded" },
         { fn: "addDays", date: "2025-10-10", days: 10, excludeWeekends: false, expected: "2025-10-20", desc: "adds days without weekend exclusion" },
-        { fn: "subtractDays", date: "2025-10-24", days: 10, excludeWeekends: true, expected: "2025-10-10", desc: "subtracts days with weekends excluded" },
-        { fn: "subtractDays", date: "2025-10-24", days: 10, excludeWeekends: false, expected: "2025-10-14", desc: "subtracts days without weekend exclusion" },
     ])("$fn $desc", ({ fn, date, days, excludeWeekends, expected }) => {
         const result = timeUtil[fn]("työpäivät", date, days, disabledDates(), excludeWeekends);
         expect(result).toBe(expected);

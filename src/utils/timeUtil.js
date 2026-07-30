@@ -241,40 +241,6 @@ import { getVisibilityBoolName } from "./projectVisibilityUtils";
     return closestDate; // Return the closest date from allowedDays
   };
 
-  const findAllowedDate = (newDate, miniumGap, allowedDays, moveToPast) => {
-    //Find newDate from allowedDays, add miniumGap to it and return the date, moveToPast is reverse iteration of array
-
-    const gap = miniumGap;
-    // Check for direct match
-    let match = allowedDays.find(date => date === newDate);
-    if (match) {
-      const matchIndex = allowedDays.indexOf(match);
-      return moveToPast ? allowedDays[matchIndex - gap] : allowedDays[matchIndex + gap];
-    }
-
-    // Find the closest date if no exact match is found
-    let closestDate = null;
-    let smallestDiff = Infinity;
-
-    allowedDays.forEach(date => {
-      const diff = new Date(date) - new Date(newDate);
-
-      if (diff >= 0 && diff < smallestDiff) {
-        smallestDiff = diff;
-        closestDate = date;
-      }
-    });
-
-    if (closestDate) {
-      const closestIndex = allowedDays.indexOf(closestDate);
-      return moveToPast ? allowedDays[closestIndex - gap] : allowedDays[closestIndex + gap];
-    }
-  
-    return null; // Return the date that meets the gap condition, or null if none
-  };
-  
-
-  
   // Function to add days to a date and return in "YYYY-MM-DD" format
   const addDays = (type, date, days, disabledDates, excludeWeekends, origDate, allDisabledDates, initialDistance) => {
     let newDate = new Date(date);
@@ -353,84 +319,6 @@ import { getVisibilityBoolName } from "./projectVisibilityUtils";
     return finalDateStr;
   };
 
-  // Function to subtract days from a date and return in "YYYY-MM-DD" format
-  const subtractDays = (type, date, days, disabledDates, excludeWeekends, origDate, allDisabledDates, initialDistance) => {
-    let newDate = new Date(date);
-    let originalDate = origDate ? new Date(origDate) : false;
-    let filter = "";
-    let subtractDays = true;
-    let finalDateStr;
-    let isInFilter = true;
-
-    const setFilterAndInFilter = (type) => {
-      if (["työpäivät", "esilläolopäivät", "arkipäivät", "lautakunta", "lautakunta_määräaika"].includes(type)) {
-        filter = disabledDates;
-        isInFilter = false;
-      }
-    };
-
-    const calculateActualDifference = (originalDate, tempDate, workdays) => {
-      let actualDifference = 0;
-      let calculate = true
-      while (calculate) {
-        if (excludeWeekends && (tempDate.getDay() === 0 || tempDate.getDay() === 6)) {
-          tempDate.setDate(tempDate.getDate() - 1);
-        } else if (checkArrayForValue(workdays, tempDate)) {
-          tempDate.setDate(tempDate.getDate() - 1);
-          actualDifference++;
-        } else {
-          tempDate.setDate(tempDate.getDate() - 1);
-        }
-        calculate = tempDate >= originalDate
-      }
-      return actualDifference - 4;
-    };
-
-    const adjustNewDate = (newDate, days) => {
-      while (days > 0) {
-        newDate.setDate(newDate.getDate() - 1);
-        if (!excludeWeekends || (newDate.getDay() !== 0 && newDate.getDay() !== 6)) {
-          days--;
-        }
-      }
-    };
-
-    const findNextValidDateSubstract = (newDate, finalDateStr, filter, isInFilter) => {
-      const isDateInFilter = (dateStr) => filter.includes(dateStr);
-      while (isInFilter ? isDateInFilter(finalDateStr) : !isDateInFilter(finalDateStr)) {
-        newDate.setDate(newDate.getDate() - 1);
-        finalDateStr = formatDate(newDate);
-      }
-      return finalDateStr;
-    };
-
-    setFilterAndInFilter(type);
-
-    if (["lautakunta", "lautakunta_määräaika"].includes(type)) {
-      const workdays = allDisabledDates?.date_types?.työpäivät?.dates;
-      let tempDate = new Date(newDate);
-
-      if (originalDate && initialDistance) {
-        let actualDifference = calculateActualDifference(originalDate, tempDate, workdays);
-        if (actualDifference < initialDistance) {
-          subtractDays = false;
-        }
-      }
-    }
-
-    if (type === "lautakunta_määräaika") {
-      const resultPastDate = getPastDate(originalDate, initialDistance, isInFilter, filter);
-      finalDateStr = formatDate(resultPastDate);
-    } else if (subtractDays) {
-      adjustNewDate(newDate, days);
-      finalDateStr = formatDate(newDate);
-      finalDateStr = findNextValidDateSubstract(newDate, finalDateStr, filter, isInFilter);
-    } else {
-      finalDateStr = date;
-    }
-    return finalDateStr;
-  };
-
   const checkArrayForValue = (arr,expectedDate) => {
     let index = 0;
     let isValid = false; // Flag to track the validity of the array
@@ -448,20 +336,6 @@ import { getVisibilityBoolName } from "./projectVisibilityUtils";
 
     return isValid;
   }
-
-  //calculate new date from original date when removing number of days
-  const subtractDaysFromDate = (dateString, days) => {
-    const date = new Date(dateString);
-    date.setDate(date.getDate() - days);
-    
-    // Format the date to 'YYYY-MM-DD'
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() returns 0-based month
-    const day = String(date.getDate()).padStart(2, '0');
-    
-    return `${year}-${month}-${day}`;
-}
-
 
 // Check if a string is in "YYYY-MM-DD" format
 const isDate = (value) => {
@@ -929,10 +803,8 @@ const syncPhaseEndDates = (data, previousPaattyyValues) => {
 const exported = {
     isWeekend,
     addDays,
-    subtractDays,
     formatDate,
     formatRelativeDate,
-    subtractDaysFromDate,
     sortObjectByDate,
     dateDifference,
     isDate,
@@ -940,7 +812,6 @@ const exported = {
     isHoliday,
     calculateAllowedDates,
     getHighestVoimaantuloDate,
-    findAllowedDate,
     findAllowedLautakuntaDate,
     syncPhaseEndDates
 };
