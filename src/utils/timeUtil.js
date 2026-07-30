@@ -117,69 +117,6 @@ import { getVisibilityBoolName } from "./projectVisibilityUtils";
     return new Date(normalizedDate);
   }
 
-  const dateDifference = (cur, previousValue, currentValue, allowedDays, disabledDays, gap) => {
-    const previousDate = normalizeDate(previousValue);
-    let currentDate = normalizeDate(currentValue);
-
-    if (previousDate >= currentDate) {
-      currentDate = normalizeDate(previousDate);
-      currentDate.setDate(currentDate.getDate() + gap);
-    }
-
-    let dateStr = currentDate.toISOString().split('T')[0];
-    while (!allowedDays.includes(dateStr) || disabledDays.includes(dateStr) || calculateWeekdayDifference(previousDate, currentDate) < gap) {
-      currentDate.setDate(currentDate.getDate() + 1);
-      dateStr = currentDate.toISOString().split('T')[0];
-    }
-
-    const countWorkingDaysBetween = (start, end) => {
-      if (start >= end) return 0;
-      const cursor = normalizeDate(start);
-      const endDate = new Date(end);
-      let count = 0;
-      // eslint-disable-next-line no-unmodified-loop-condition
-      while (cursor < endDate) {
-        if (isWorkingDay(cursor, allowedDays, disabledDays)) count++;
-        cursor.setDate(cursor.getDate() + 1);
-      }
-      return count;
-    };
-
-    const advancePastWorkingDays = (date, remaining) => {
-      while (remaining > 0) {
-        if (isWorkingDay(date, allowedDays, disabledDays)) remaining--;
-        date.setDate(date.getDate() + 1);
-      }
-    };
-
-    const advanceToNextLautakuntaDay = (date) => {
-      while (date.getDay() !== 2 || !isWorkingDay(date, allowedDays, disabledDays)) {
-        date.setDate(date.getDate() + 1);
-      }
-    };
-
-    const workingDaysBetween = countWorkingDaysBetween(previousDate, currentDate);
-    if (workingDaysBetween < gap) {
-      advancePastWorkingDays(currentDate, gap - workingDaysBetween);
-      if (cur.includes("lautakunnassa")) {
-        advanceToNextLautakuntaDay(currentDate);
-      }
-    }
-
-    // Convert currentDate to the same format as the dates in the allowedDays array
-    const formattedNewDate = currentDate.toISOString().split('T')[0];
-    // Check that date is inside the allowedDays array
-    if (!allowedDays.includes(formattedNewDate)) {
-      // Find the next possible date from allowedDays because the date was not allowed
-      const nextPossibleDate = allowedDays.find(date => new Date(date) > currentDate);
-      if (nextPossibleDate) {
-        currentDate = new Date(nextPossibleDate);
-      }
-    }
-
-    return normalizeDate(currentDate);
-  };
-
   const isWorkingDay = (date, allowedDays, holidays) => {
     const day = date.getDay();
     const formattedDate = formatDate(date);
@@ -806,7 +743,6 @@ const exported = {
     formatDate,
     formatRelativeDate,
     sortObjectByDate,
-    dateDifference,
     isDate,
     calculateWeekdayDifference,
     isHoliday,

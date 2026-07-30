@@ -3,64 +3,6 @@ import timeUtil from '../../utils/timeUtil.js';
 import data from './cascadeDeadlineChange_test_data.js';
 import {test_attribute_data_XL as test_attribute_data} from './test_attribute_data.js';
 
-/**
- * Tests for dateDifference function - core distance enforcement logic
- * 
- * This function is critical for enforcing minimum gaps between dates.
- * It handles:
- * - Lautakunta dates must land on Tuesdays
- * - Respects allowedDays and disabledDays
- */
-describe("dateDifference function - distance enforcement", () => {
-    const arkipäivät = data.test_disabledDates.date_types.arkipäivät.dates;
-    const työpäivät = data.test_disabledDates.date_types.työpäivät.dates;
-    const lautakuntapäivät = data.test_disabledDates.date_types.lautakunnan_kokouspäivät.dates;
-    const disabledDates = data.test_disabledDates.date_types.disabled_dates?.dates || [];
-
-    // Helper to run dateDifference and calculate days difference
-    const runAndGetDaysDiff = ({ cur, previousValue, currentValue, minimumGap, projectSize = "XL", addingNew = true, allowedDays = arkipäivät }) => {
-        const result = timeUtil.dateDifference(cur, previousValue, currentValue, allowedDays, disabledDates, minimumGap);
-        const daysDiff = Math.ceil((new Date(result) - new Date(previousValue)) / (1000 * 60 * 60 * 24));
-        return { result, daysDiff };
-    };
-
-    describe("lautakunta Tuesday snapping", () => {
-        test("snaps lautakunnassa dates to next Tuesday", () => {
-            const { result } = runAndGetDaysDiff({
-                cur: "milloin_kaavaehdotus_lautakunnassa", previousValue: "2027-03-01", currentValue: "2027-03-03",
-                minimumGap: 5, allowedDays: lautakuntapäivät
-            });
-            expect(new Date(result).getDay()).toBe(2); // Tuesday
-        });
-
-        test("respects minimum gap before snapping to Tuesday", () => {
-            const { result, daysDiff } = runAndGetDaysDiff({
-                cur: "milloin_periaatteet_lautakunnassa", previousValue: "2027-03-01", currentValue: "2027-03-02",
-                minimumGap: 27, allowedDays: lautakuntapäivät
-            });
-            expect(new Date(result).getDay()).toBe(2); // Tuesday
-            expect(daysDiff).toBeGreaterThanOrEqual(27);
-        });
-    });
-
-    describe("edge cases", () => {
-        test.each([
-            { desc: "currentValue before previousValue", previousValue: "2027-03-15", currentValue: "2027-03-01" },
-            { desc: "same previousValue and currentValue", previousValue: "2027-03-15", currentValue: "2027-03-15" },
-        ])("handles $desc", ({ previousValue, currentValue }) => {
-            const { result } = runAndGetDaysDiff({ cur: "milloin_oas_esillaolo_alkaa", previousValue, currentValue, minimumGap: 5 });
-            expect(new Date(result) > new Date(previousValue)).toBe(true);
-        });
-
-        test("skips to next allowed date when landing on disabled date (July)", () => {
-            const { result } = runAndGetDaysDiff({
-                cur: "milloin_oas_esillaolo_alkaa", previousValue: "2027-07-01", currentValue: "2027-07-05",
-                minimumGap: 5, allowedDays: työpäivät
-            });
-            expect(new Date(result).getMonth()).toBeGreaterThanOrEqual(7); // August or later
-        });
-    });
-});
 
 // Helper functions to reduce code duplication
 const assertDatesAreWorkdays = (dates) => {
