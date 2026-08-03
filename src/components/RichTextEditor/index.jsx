@@ -1164,6 +1164,15 @@ function RichTextEditor(props) {
           readOnly={readonly || lastSaved?.status === "error"}
         />
       </div>
+      {showCounter.current && counter.current !== undefined && maxSize ? (
+        <p
+          className={
+            counter.current > maxSize ? 'quill-counter quill-warning' : 'quill-counter'
+          }
+        >
+          {counter.current + '/' + maxSize}
+        </p>
+      ) : null}
       {showComments && filteredComments && filteredComments.length > 0 && (
         <div className="comment-list">
           {filteredComments.map((comment, i) => (
@@ -1182,15 +1191,7 @@ function RichTextEditor(props) {
           ))}
         </div>
       )}
-      {showCounter.current && counter.current !== undefined && maxSize ? (
-        <p
-          className={
-            counter.current > maxSize ? 'quill-counter quill-warning' : 'quill-counter'
-          }
-        >
-          {counter.current + '/' + maxSize}
-        </p>
-      ) : null}
+
     </div>
     </div>
     
