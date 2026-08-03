@@ -251,7 +251,7 @@ const findNextPossibleBoardDate = (array, value) => {
  return closestIndex < array.length - 1 ? array[closestIndex + 1] : array[closestIndex];
 }
 
-const getDisabledDatesForProjectStart = (name, formValues, previousItem, nextItem, dateTypes) => {
+const getAllowedDatesForProjectStart = (name, formValues, previousItem, nextItem, dateTypes) => {
   const miniumDaysBetween = nextItem?.distance_from_previous;
   const dateToCompare = name.includes("kaynnistys_paattyy_pvm") ? formValues[previousItem?.name] : formValues[nextItem?.name];
   let newDisabledDates = dateTypes?.arkipäivät?.dates;
@@ -259,7 +259,7 @@ const getDisabledDatesForProjectStart = (name, formValues, previousItem, nextIte
   return name.includes("kaynnistys_paattyy_pvm") ? newDisabledDates.filter(date => date >= lastPossibleDateToSelect) : newDisabledDates.filter(date => date <= lastPossibleDateToSelect);
 };
 
-const getDisabledDatesForApproval = (name, formValues, matchingItem, dateTypes) => {
+const getAllowedDatesForApproval = (name, formValues, matchingItem, dateTypes) => {
   const minimumDaysBetween = matchingItem?.distance_from_previous;
   const dateToCompare = name.includes("hyvaksymispaatos_pvm") ? formValues["hyvaksyminenvaihe_alkaa_pvm"] : formValues["voimaantulovaihe_alkaa_pvm"];
   const filteredDateToCompare = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompare);
@@ -268,7 +268,7 @@ const getDisabledDatesForApproval = (name, formValues, matchingItem, dateTypes) 
   return dateTypes?.arkipäivät?.dates.filter(date => date >= firstPossibleDateToSelect);
 };
 
-const getDisabledDatesForLautakunta = (name, formValues, phaseName, matchingItem, previousItem, dateTypes) => {
+const getAllowedDatesForLautakunta = (name, formValues, phaseName, matchingItem, previousItem, dateTypes) => {
   let dateToComparePast;
   let miniumDaysPast;
   let filteredDateToCompare;
@@ -342,7 +342,7 @@ const getDisabledDatesForLautakunta = (name, formValues, phaseName, matchingItem
   }
 };
 
-const getDisabledDatesForSizeXSXL = (name, formValues, matchingItem, dateTypes) => {
+const getAllowedDatesForSizeXSXL = (name, formValues, matchingItem, dateTypes) => {
   if (name.includes("_maaraaika")) {
     const miniumDaysBetween = matchingItem?.distance_from_previous;
     const dateToCompare = formValues[matchingItem?.previous_deadline];
@@ -426,7 +426,7 @@ const getHighestLautakuntaDate = (formValues, phaseName) => {
 };
 
 
-const getDisabledDatesForNahtavillaolo = (name, formValues, phaseName, matchingItem, dateTypes, projectSize) => {
+const getAllowedDatesForNahtavillaolo = (name, formValues, phaseName, matchingItem, dateTypes, projectSize) => {
   if (name.includes("_maaraaika")) {
     const miniumDaysBetween = matchingItem?.distance_from_previous;
     const dateToCompare = formValues[matchingItem?.previous_deadline];
@@ -479,18 +479,18 @@ const calculateAllowedDates = (nahtavillaolo, size, dateTypes, name, formValues,
   const phaseName = currentDeadline?.deadline?.phase_name?.toLowerCase();
   let allowedDates;
   if (name.includes("projektin_kaynnistys_pvm") || name.includes("kaynnistys_paattyy_pvm")) {
-      allowedDates = getDisabledDatesForProjectStart(name, formValues, previousItem, nextItem, dateTypes);
+      allowedDates = getAllowedDatesForProjectStart(name, formValues, previousItem, nextItem, dateTypes);
   } else if (["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauennut"].includes(name)) {
-      allowedDates = getDisabledDatesForApproval(name, formValues, matchingItem, dateTypes);
+      allowedDates = getAllowedDatesForApproval(name, formValues, matchingItem, dateTypes);
       return allowedDates; // Skip filtering past dates for approval dates
   } else if (name === "hyvaksymispaatos_valitusaika_paattyy" || name === "valitusaika_paattyy_hallinto_oikeus") {
       allowedDates = dateTypes?.arkipäivät?.dates;
   } else if (currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')) {
-      allowedDates = getDisabledDatesForLautakunta(name, formValues, phaseName, matchingItem, previousItem, dateTypes);
+      allowedDates = getAllowedDatesForLautakunta(name, formValues, phaseName, matchingItem, previousItem, dateTypes);
   } else if (nahtavillaolo) {
-      allowedDates = getDisabledDatesForNahtavillaolo(name, formValues, phaseName, matchingItem, dateTypes, size);
+      allowedDates = getAllowedDatesForNahtavillaolo(name, formValues, phaseName, matchingItem, dateTypes, size);
   } else {
-      allowedDates = getDisabledDatesForSizeXSXL(name, formValues, matchingItem, dateTypes);
+      allowedDates = getAllowedDatesForSizeXSXL(name, formValues, matchingItem, dateTypes);
   }
   // Filter out past dates (before today)
   const todayStr = (() => {
@@ -646,11 +646,11 @@ const exported = {
 if (process.env.UNIT_TEST === 'true') {
     exported.findNextPossibleValue = findNextPossibleValue;
     exported.findNextPossibleBoardDate = findNextPossibleBoardDate;
-    exported.getDisabledDatesForProjectStart = getDisabledDatesForProjectStart;
-    exported.getDisabledDatesForApproval = getDisabledDatesForApproval;
-    exported.getDisabledDatesForLautakunta = getDisabledDatesForLautakunta;
-    exported.getDisabledDatesForSizeXSXL = getDisabledDatesForSizeXSXL;
-    exported.getDisabledDatesForNahtavillaolo = getDisabledDatesForNahtavillaolo;
+    exported.getAllowedDatesForProjectStart = getAllowedDatesForProjectStart;
+    exported.getAllowedDatesForApproval = getAllowedDatesForApproval;
+    exported.getAllowedDatesForLautakunta = getAllowedDatesForLautakunta;
+    exported.getAllowedDatesForSizeXSXL = getAllowedDatesForSizeXSXL;
+    exported.getAllowedDatesForNahtavillaolo = getAllowedDatesForNahtavillaolo;
     exported.getHighestLautakuntaDate = getHighestLautakuntaDate;
 }
 
