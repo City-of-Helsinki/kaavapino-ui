@@ -1,5 +1,6 @@
 import { generateConfirmedFields } from './generateConfirmedFields';
 import { phaseOrder, sortPhaseData, bumpPhaseStartsToPrevEnd } from './objectUtil';
+import { findFirstAllowedDate, findPastDateWithGap } from './timeUtil';
 
 const findLastDeadlineInPhase = (arr, index, targetPhase) => {
   let targetStrings = [targetPhase];
@@ -18,38 +19,6 @@ const findLastDeadlineInPhase = (arr, index, targetPhase) => {
     }
   }
   return null;
-}
-
-const findFirstAllowedDate = (prevDate, minimumGap, allowedGapDates, preferredDate=null) => {
-  if (!prevDate) {
-    return null;
-  }
-  if (allowedGapDates?.length > 0) {
-    const prevIndex = allowedGapDates.findIndex(d => d >= prevDate);
-    const preferredIndex = preferredDate ? allowedGapDates.findIndex(d => d >= preferredDate) : -1;
-    if (prevIndex === -1) {
-      return null;
-    }
-    // Prefer preferredIndex if it's valid and respects the minimum gap, otherwise use prevIndex + minimumGap
-    const nextIndex = Math.max(prevIndex + minimumGap, preferredIndex);
-    return (nextIndex < allowedGapDates.length) ? allowedGapDates[nextIndex] : null;
-  }
-  if (preferredDate) {
-    return (preferredDate >= prevDate) ? preferredDate : null;
-  }
-  return prevDate || null;
-}
-
-const findPastDateWithGap = (startingDate, gap, allowedDates) => {
-  if (!startingDate || !allowedDates || allowedDates.length === 0 || gap < 0) {
-    return null;
-  }
-  const startingIndex = allowedDates.findIndex(d => d >= startingDate);
-  if (startingIndex === -1) {
-    return null;
-  }
-  const targetIndex = startingIndex - gap;
-  return (targetIndex >= 0) ? allowedDates[targetIndex] : null;
 }
 
 const cascadeDeadlineChange = ({ arr, field, disabledDates, moveToPast, projectSize, attributeData, deadlineObjects = [] }) => {

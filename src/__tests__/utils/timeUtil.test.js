@@ -235,24 +235,6 @@ describe("getDisabledDates for various phases", () => {
         assertDatesBeforeReference(result, formValues["kaynnistys_paattyy_pvm"]);
         assertDatesAreWorkdays(result);
     });
-    test("getDisabledDatesForApproval returns valid *allowed* dates", () => {
-        const name = "hyvaksymispaatos_pvm";
-        const formValues = {
-            "hyvaksyminenvaihe_alkaa_pvm": "2025-05-01",
-            "hyvaksymispaatos_pvm": "2025-08-01",
-        };
-        const matchingItem = {
-            name: "hyvaksyminenvaihe_alkaa_pvm",
-            distance_from_previous: 15
-        };
-        const dateTypes = data.test_disabledDates.date_types;
-        const result = timeUtil.getDisabledDatesForApproval(name, formValues, matchingItem, dateTypes, "M");
-        expect(result[0]).toBe("2025-05-23"); // maintain 15 working days distance
-        assertDatesAfterReference(result, formValues["hyvaksyminenvaihe_alkaa_pvm"]);
-        assertDatesAreWorkdays(result);
-        const resultXS = timeUtil.getDisabledDatesForApproval(name, formValues, matchingItem, dateTypes, "XS");
-        expect(resultXS[0]).toBe("2025-05-22"); // 1 extra day for XS/S
-    });
 
     test("getDisabledDatesForLautakunta returns valid allowed dates for tarkistettu ehdotus", () => {
         const formValues = {

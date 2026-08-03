@@ -295,6 +295,40 @@ const sortObjectByDate = (obj) => {
 
   return sortedArray; // Returning an array guarantees the order
 }
+
+export const findFirstAllowedDate = (prevDate, minimumGap, allowedGapDates, preferredDate=null) => {
+  if (!prevDate) {
+    return null;
+  }
+  if (allowedGapDates?.length > 0) {
+    const prevIndex = allowedGapDates.findIndex(d => d >= prevDate);
+    const preferredIndex = preferredDate ? allowedGapDates.findIndex(d => d >= preferredDate) : -1;
+    if (prevIndex === -1) {
+      return null;
+    }
+    // Prefer preferredIndex if it's valid and respects the minimum gap, otherwise use prevIndex + minimumGap
+    const nextIndex = Math.max(prevIndex + minimumGap, preferredIndex);
+    return (nextIndex < allowedGapDates.length) ? allowedGapDates[nextIndex] : null;
+  }
+  if (preferredDate) {
+    return (preferredDate >= prevDate) ? preferredDate : null;
+  }
+  return prevDate || null;
+}
+
+export const findPastDateWithGap = (startingDate, gap, allowedDates) => {
+  if (!startingDate || !allowedDates || allowedDates.length === 0 || gap < 0) {
+    return null;
+  }
+  const startingIndex = allowedDates.findIndex(d => d >= startingDate);
+  if (startingIndex === -1) {
+    return null;
+  }
+  const targetIndex = startingIndex - gap;
+  return (targetIndex >= 0) ? allowedDates[targetIndex] : null;
+}
+
+
 //Finds next possible date from from array if the value does not exist in it
 const findNextPossibleValue = (array, value, addedDays) => {
   if (!Array.isArray(array) || typeof value !== 'string') {
@@ -749,7 +783,9 @@ const exported = {
     calculateAllowedDates,
     getHighestVoimaantuloDate,
     findAllowedLautakuntaDate,
-    syncPhaseEndDates
+    syncPhaseEndDates,
+    findFirstAllowedDate,
+    findPastDateWithGap
 };
 if (process.env.UNIT_TEST === 'true') {
     exported.getPastDate = getPastDate;
