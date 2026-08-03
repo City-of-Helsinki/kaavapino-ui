@@ -81,19 +81,6 @@ describe("timeUtils general utility function tests", () => {
         expect(timeUtil.isHoliday(holidayDate, false, holidays)).toBe(false);
         expect(timeUtil.isHoliday(nonHolidayDate, false, holidays)).toBe(true);
     });
-    test("getPastDate subtracts working days correctly", () => {
-        const date = new Date("2024-07-10T12:00:00Z");
-        const pastDate = timeUtil.getPastDate(date, 10, true, []);
-        expect(timeUtil.formatDate(pastDate)).toBe("2024-06-26");
-    });
-    test("getPastDate accounts for holidays when subtracting working days", () => {
-        const holidays = [
-            "2024-12-25",
-        ];
-        const date = new Date("2024-12-27T12:00:00Z");
-        const pastDate = timeUtil.getPastDate(date, 10, true, holidays);
-        expect(timeUtil.formatDate(pastDate)).toBe("2024-12-12");
-    });
     test("sortObjectByDate sorts object keys by their date values", () => {
         const dates = {
             "event1": "2024-05-01",
@@ -193,18 +180,6 @@ describe("timeUtils general utility function tests", () => {
         const threeDaysAgo = new Date(now);
         threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
         expect(timeUtil.formatRelativeDate(threeDaysAgo.toISOString(), mockTFn)).toBe('translated_relativeDates.days-ago_3');
-    });
-});
-
-describe("addDays with disabled dates", () => {
-    const disabledDates = () => structuredClone(data.test_disabledDates.date_types.työpäivät.dates);
-
-    test.each([
-        { fn: "addDays", date: "2025-10-10", days: 10, excludeWeekends: true, expected: "2025-10-24", desc: "adds days with weekends excluded" },
-        { fn: "addDays", date: "2025-10-10", days: 10, excludeWeekends: false, expected: "2025-10-20", desc: "adds days without weekend exclusion" },
-    ])("$fn $desc", ({ fn, date, days, excludeWeekends, expected }) => {
-        const result = timeUtil[fn]("työpäivät", date, days, disabledDates(), excludeWeekends);
-        expect(result).toBe(expected);
     });
 });
 

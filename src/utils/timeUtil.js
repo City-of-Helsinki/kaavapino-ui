@@ -73,44 +73,6 @@ import { getVisibilityBoolName } from "./projectVisibilityUtils";
     return isInFilter ? holidays.includes(dateStr) : !holidays.includes(dateStr);
   }
 
-  // Function to get the date x weekdays earlier, excluding holidays
-  const getPastDate = (startDate, validDaysToSubtract, isInFilter, excludedDays) => {
-    let currentDate = new Date(startDate); // Start from the original date
-    let subtractedDays = 0;
-
-    // Loop until we have subtracted the required number of valid days
-    while (subtractedDays < validDaysToSubtract) {
-        currentDate.setDate(currentDate.getDate() - 1); // Move to the previous day
-
-        // Check if the current date is not a weekend and not a holiday
-        if (!isWeekend(currentDate) && !isHoliday(currentDate,isInFilter,excludedDays)) {
-            subtractedDays++; // Increment valid days counter
-        }
-    }
-    return currentDate;
-  }
-
-  const calculateWeekdayDifference = (startDate, endDate) => {
-    let end = new Date(endDate);
-    let currentDate = new Date(startDate);
-    let daysDifference = 1;
-    let calculate = true
-
-    // Loop from start date to end date
-    while (calculate) {
-        // Check if it's a weekday (Monday to Friday)
-        if (!isWeekend(currentDate)) {
-            daysDifference++;
-        }
-        
-        // Move to the next day
-        currentDate.setDate(currentDate.getDate() + 1);
-        calculate = currentDate <= end
-    }
-
-    return daysDifference;
-  }
-
   const normalizeDate = (date) => {
     const normalizedDate = new Date(date);
     normalizedDate.setUTCHours(0, 0, 0, 0);
@@ -178,105 +140,8 @@ import { getVisibilityBoolName } from "./projectVisibilityUtils";
     return closestDate; // Return the closest date from allowedDays
   };
 
-  // Function to add days to a date and return in "YYYY-MM-DD" format
-  const addDays = (type, date, days, disabledDates, excludeWeekends, origDate, allDisabledDates, initialDistance) => {
-    let newDate = new Date(date);
-    let originalDate = origDate ? new Date(origDate) : false;
-    let filter = "";
-    let isInFilter = true;
-    let addDays = true;
-    let finalDateStr;
-
-    const setFilterAndInFilter = (type) => {
-      if (["työpäivät", "esilläolopäivät", "arkipäivät", "lautakunta", "lautakunta_määräaika"].includes(type)) {
-        filter = disabledDates;
-        isInFilter = false;
-      }
-    };
-
-    const calculateActualDifference = (originalDate, tempDate, workdays) => {
-      let actualDifference = 0;
-      let calculate = true
-      while (calculate) {
-        if (excludeWeekends && (originalDate.getDay() === 0 || originalDate.getDay() === 6)) {
-          originalDate.setDate(originalDate.getDate() + 1);
-        } else if (checkArrayForValue(workdays, originalDate)) {
-          originalDate.setDate(originalDate.getDate() + 1);
-          actualDifference++;
-        } else {
-          originalDate.setDate(originalDate.getDate() + 1);
-        }
-        calculate = originalDate <= tempDate
-      }
-      return actualDifference + 4;
-    };
-
-    const adjustNewDate = (newDate, days) => {
-      while (days > 0) {
-        newDate.setDate(newDate.getDate() + 1);
-        if (!excludeWeekends || (newDate.getDay() !== 0 && newDate.getDay() !== 6)) {
-          days--;
-        }
-      }
-    };
-
-    const findNextValidDateAdd = (newDate, finalDateStr, filter, isInFilter) => {
-      const isDateInFilter = (dateStr) => filter.includes(dateStr);
-      while (isInFilter ? isDateInFilter(finalDateStr) : !isDateInFilter(finalDateStr)) {
-        newDate.setDate(newDate.getDate() + 1);
-        finalDateStr = formatDate(newDate);
-      }
-      return finalDateStr;
-    };
-
-    setFilterAndInFilter(type);
-
-    if (["lautakunta", "lautakunta_määräaika"].includes(type)) {
-      const workdays = allDisabledDates?.date_types?.työpäivät?.dates;
-      let tempDate = new Date(newDate);
-
-      if (originalDate && initialDistance) {
-        let actualDifference = calculateActualDifference(originalDate, tempDate, workdays);
-        if (actualDifference > initialDistance) {
-          addDays = false;
-        }
-      }
-    }
-
-    if (type === "lautakunta_määräaika") {
-      const resultPastDate = getPastDate(originalDate, initialDistance, isInFilter, filter);
-      finalDateStr = formatDate(resultPastDate);
-    } else if (addDays) {
-      adjustNewDate(newDate, days);
-      finalDateStr = formatDate(newDate);
-      finalDateStr = findNextValidDateAdd(newDate, finalDateStr, filter, isInFilter);
-    } else {
-      finalDateStr = date;
-    }
-    return finalDateStr;
-  };
-
-  const checkArrayForValue = (arr,expectedDate) => {
-    let index = 0;
-    let isValid = false; // Flag to track the validity of the array
-
-    // Use a while loop to iterate through the array
-    while (index < arr.length) {
-        // Check if the current array element matches the expected date
-        if (arr[index] === formatDate(expectedDate)) {
-            isValid = true; // Set flag to false
-            break; // Stop execution if a mismatch is found
-        }
-
-        index++;
-    }
-
-    return isValid;
-  }
-
 // Check if a string is in "YYYY-MM-DD" format
 const isDate = (value) => {
-  // Regular expression for YYYY-MM-DD format
   const datePattern = /^\d{4}-\d{2}-\d{2}$/;
   return datePattern.test(value) && !isNaN(Date.parse(value));
 }
@@ -394,20 +259,13 @@ const getDisabledDatesForProjectStart = (name, formValues, previousItem, nextIte
   return name.includes("kaynnistys_paattyy_pvm") ? newDisabledDates.filter(date => date >= lastPossibleDateToSelect) : newDisabledDates.filter(date => date <= lastPossibleDateToSelect);
 };
 
-const getDisabledDatesForApproval = (name, formValues, matchingItem, dateTypes, projectSize) => {
-  const miniumDaysBetween = matchingItem?.distance_from_previous;
+const getDisabledDatesForApproval = (name, formValues, matchingItem, dateTypes) => {
+  const minimumDaysBetween = matchingItem?.distance_from_previous;
   const dateToCompare = name.includes("hyvaksymispaatos_pvm") ? formValues["hyvaksyminenvaihe_alkaa_pvm"] : formValues["voimaantulovaihe_alkaa_pvm"];
   const filteredDateToCompare = findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompare);
-  let newDisabledDates = dateTypes?.arkipäivät?.dates;
-  const lastPossibleDateToSelect = addDays("työpäivät", filteredDateToCompare, miniumDaysBetween, dateTypes?.työpäivät?.dates, true);
-  //Approval dates can be same as last phases ending date when XS or S size
-  if(name.includes("hyvaksymispaatos_pvm") && (projectSize === 'XS' || projectSize === 'S')){
-    return newDisabledDates.filter(date => date >= lastPossibleDateToSelect);
-  }
-  else{
-    return newDisabledDates.filter(date => date > lastPossibleDateToSelect);
-  }
-
+  // Add distance in working days
+  const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.työpäivät?.dates, filteredDateToCompare, minimumDaysBetween);
+  return dateTypes?.arkipäivät?.dates.filter(date => date >= firstPossibleDateToSelect);
 };
 
 const getDisabledDatesForLautakunta = (name, formValues, phaseName, matchingItem, previousItem, dateTypes) => {
@@ -623,7 +481,7 @@ const calculateAllowedDates = (nahtavillaolo, size, dateTypes, name, formValues,
   if (name.includes("projektin_kaynnistys_pvm") || name.includes("kaynnistys_paattyy_pvm")) {
       allowedDates = getDisabledDatesForProjectStart(name, formValues, previousItem, nextItem, dateTypes);
   } else if (["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauennut"].includes(name)) {
-      allowedDates = getDisabledDatesForApproval(name, formValues, matchingItem, dateTypes, size);
+      allowedDates = getDisabledDatesForApproval(name, formValues, matchingItem, dateTypes);
       return allowedDates; // Skip filtering past dates for approval dates
   } else if (name === "hyvaksymispaatos_valitusaika_paattyy" || name === "valitusaika_paattyy_hallinto_oikeus") {
       allowedDates = dateTypes?.arkipäivät?.dates;
@@ -773,12 +631,10 @@ const syncPhaseEndDates = (data, previousPaattyyValues) => {
 
 const exported = {
     isWeekend,
-    addDays,
     formatDate,
     formatRelativeDate,
     sortObjectByDate,
     isDate,
-    calculateWeekdayDifference,
     isHoliday,
     calculateAllowedDates,
     getHighestVoimaantuloDate,
@@ -788,7 +644,6 @@ const exported = {
     findPastDateWithGap
 };
 if (process.env.UNIT_TEST === 'true') {
-    exported.getPastDate = getPastDate;
     exported.findNextPossibleValue = findNextPossibleValue;
     exported.findNextPossibleBoardDate = findNextPossibleBoardDate;
     exported.getDisabledDatesForProjectStart = getDisabledDatesForProjectStart;
