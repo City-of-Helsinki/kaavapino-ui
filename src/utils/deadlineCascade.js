@@ -136,31 +136,35 @@ const cascadeDeadlineChange = ({ arr, field, disabledDates, moveToPast, projectS
 
     const kylkMaaraaikaKeys = ["kylk_maaraaika", "kylk_aineiston_maaraaika", "_lautakunta_aineiston_maaraaika"];
     if (kylkMaaraaikaKeys.some(key => currentItem?.key?.includes(key))) {
-      const enforcedDate = enforceMinimumGap(arr, i, disabledDates);
+      const enforcedDate = enforceMinimumGap(currentItem, getPreviousItem(arr, i), disabledDates);
       currentItem.value = enforcedDate.toISOString().split('T')[0];
       handleKylkMaaraaikaMove(arr, i);
       indexToContinue = i + 1;
     }
     else if (currentItem.key?.includes("paattyy") || (["XL", "L"].includes(projectSize) && currentItem?.key.includes("nahtavilla_alkaa"))) {
-      const enforcedDate = enforceMinimumGap(arr, i, disabledDates);
+      // TODO: remove this branch and ensure the next elifs work as intended
+      const enforcedDate = enforceMinimumGap(currentItem, getPreviousItem(arr, i), disabledDates);
       currentItem.value = enforcedDate.toISOString().split('T')[0];
       indexToContinue = i;
     }
     else if (currentItem?.key?.includes("lautakunnassa") && !currentItem?.key?.includes("lautakunnassa_") || currentItem?.key?.includes("alkaa")) {
       // Backward cascade to maaraaika using previous_deadline
-      const allowedDates = disabledDates?.date_types[currentItem?.date_type]?.dates || [];
+      const gapType = getGapDateType(currentItem);
+      const allowedDates = disabledDates?.date_types[gapType]?.dates || [];
       const maaraaikaResult = findPastDateWithGap(currentItem.value, currentItem.initial_distance, allowedDates);
+
       if (maaraaikaResult) {
-        const enforcedMaaraaika = enforceMinimumGap(arr, i-1, disabledDates);
+        const maikaObject = { ...prevItem, value: maaraaikaResult};
+        const enforcedMaaraaika = enforceMinimumGap(maikaObject, getPreviousItem(arr, i-1), disabledDates);
         prevItem.value = enforcedMaaraaika.toISOString().split('T')[0];
       }
-      const enforcedLautakunta = enforceMinimumGap(arr, i, disabledDates);
+      const enforcedLautakunta = enforceMinimumGap(currentItem, prevItem, disabledDates, true);
       currentItem.value = enforcedLautakunta.toISOString().split('T')[0];
       indexToContinue = i;
     }
     else if (currentItem?.key?.includes("maaraaika")) {
       //Maaraaika moving, set esillaolo alkaa & paattyy
-      const enforcedDate = enforceMinimumGap(arr, i, disabledDates);
+      const enforcedDate = enforceMinimumGap(currentItem, getPreviousItem(arr, i), disabledDates);
       currentItem.value = enforcedDate.toISOString().split('T')[0];
       handleEsillaMaaraaikaMove(arr, i, currentItem.value, disabledDates);
       indexToContinue = i + 2;
@@ -168,14 +172,13 @@ const cascadeDeadlineChange = ({ arr, field, disabledDates, moveToPast, projectS
     return {newDate: new Date(currentItem.value), indexToContinue};
   }
 
-  const enforceMinimumGap = (arr, i, disabledDates) => {
-    const currentItem = arr[i];
-    const prevItem = getPreviousItem(arr, i);
+  const enforceMinimumGap = (currentItem, prevItem, disabledDates, forceMinimumGap = false) => {
     const minimumGap = currentItem.distance_from_previous ?? 0;
     const allowedDates = disabledDates?.date_types[currentItem?.date_type]?.dates || [];
     const gapType = getGapDateType(currentItem);
     const gapDates = gapType ? disabledDates?.date_types[gapType]?.dates : allowedDates;
-    const nextAllowedDate = findFirstAllowedDate(prevItem.value, minimumGap, gapDates, allowedDates, currentItem.value);
+    const preferredDate = forceMinimumGap ? null : currentItem.value;
+    const nextAllowedDate = findFirstAllowedDate(prevItem.value, minimumGap, gapDates, allowedDates, preferredDate);
     return new Date(nextAllowedDate);
   }
 
@@ -206,7 +209,7 @@ const cascadeDeadlineChange = ({ arr, field, disabledDates, moveToPast, projectS
     }
     else if (i > indexToContinue) {
       // For subsequent items, enforce minimum gap if moving forward
-      newDate = enforceMinimumGap(arr, i, disabledDates);
+      newDate = enforceMinimumGap(currentItem, prevItem, disabledDates, false);
     }
     currentItem.value = newDate.toISOString().split('T')[0];
     adjustPhaseEndDates(arr, i);

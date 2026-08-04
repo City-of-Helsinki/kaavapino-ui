@@ -278,6 +278,7 @@ export const reducer = (state = initialState, action) => {
       // Sync phase end/start dates and lausunnot viimeistaan values
       timeUtil.syncPhaseEndDates(filteredAttributeData, previousPaattyyValues)
 
+      filteredAttributeData.timelineUpdateTimestamp = new Date().toISOString();
       // Return the updated state with the modified currentProject and attribute_data
       return {
         ...state,
