@@ -79,66 +79,6 @@ import { getVisibilityBoolName } from "./projectVisibilityUtils";
     return new Date(normalizedDate);
   }
 
-  const isWorkingDay = (date, allowedDays, holidays) => {
-    const day = date.getDay();
-    const formattedDate = formatDate(date);
-    if (allowedDays.includes(formattedDate)) {
-      return true;
-    }
-    return day !== 0 && day !== 6 && !holidays.includes(formattedDate);
-  };
-
-  const findAllowedLautakuntaDate = (newDate, miniumGap, allowedDays, moveToPast, maaraaikaAllowedDates) => {
-    const gap = miniumGap;
-    // Check for direct match in maaraaikaAllowedDates
-    let maaraaikaMatch = maaraaikaAllowedDates.find(date => date === newDate);
-    let maaraaikaDate;
-    if (maaraaikaMatch) {
-      const closestIndex = maaraaikaAllowedDates.indexOf(maaraaikaMatch);
-      maaraaikaDate = moveToPast ? maaraaikaAllowedDates[closestIndex - gap] : maaraaikaAllowedDates[closestIndex + gap];
-    }
-    else{
-      // Find the closest date from maaraaikaAllowedDates considering the miniumGap
-      let closestDate = null;
-      let smallestDiff = Infinity;
-
-      maaraaikaAllowedDates.forEach(date => {
-          const diff = new Date(date) - new Date(newDate);
-
-          if (diff >= 0 && diff < smallestDiff) {
-              smallestDiff = diff;
-              closestDate = date;
-          }
-      });
-
-      if (!closestDate) {
-          return null; // Return null if no closest date is found
-      }
-
-      const closestIndex = maaraaikaAllowedDates.indexOf(closestDate);
-      maaraaikaDate = moveToPast ? maaraaikaAllowedDates[closestIndex - gap] : maaraaikaAllowedDates[closestIndex + gap];
-    }
-    // Find the matching or closest date from allowedDays using the maaraaikaDate
-    let match = allowedDays.find(date => date === maaraaikaDate);
-    if (match) {
-        return match;
-    }
-
-    // If no exact match is found, find the closest date from allowedDays
-    let closestDate = null;
-    let smallestDiff = Infinity;
-
-    allowedDays.forEach(date => {
-        const diff = new Date(date) - new Date(maaraaikaDate);
-
-        if (diff >= 0 && diff < smallestDiff) {
-            smallestDiff = diff;
-            closestDate = date;
-        }
-    });
-
-    return closestDate; // Return the closest date from allowedDays
-  };
 
 // Check if a string is in "YYYY-MM-DD" format
 const isDate = (value) => {
@@ -161,24 +101,29 @@ const sortObjectByDate = (obj) => {
   return sortedArray; // Returning an array guarantees the order
 }
 
-export const findFirstAllowedDate = (prevDate, minimumGap, allowedGapDates, preferredDate=null) => {
+// gapDates counts the minimum-gap distance from prevDate; allowedDates constrains the returned date.
+export const findFirstAllowedDate = (prevDate, minimumGap, gapDates, allowedDates, preferredDate = null) => {
   if (!prevDate) {
     return null;
   }
-  if (allowedGapDates?.length > 0) {
-    const prevIndex = allowedGapDates.findIndex(d => d >= prevDate);
-    const preferredIndex = preferredDate ? allowedGapDates.findIndex(d => d >= preferredDate) : -1;
+  // Compute the earliest date that satisfies the minimum-gap requirement
+  let earliest = prevDate;
+  if (gapDates?.length > 0) {
+    const prevIndex = gapDates.findIndex(d => d >= prevDate);
     if (prevIndex === -1) {
       return null;
     }
-    // Prefer preferredIndex if it's valid and respects the minimum gap, otherwise use prevIndex + minimumGap
-    const nextIndex = Math.max(prevIndex + minimumGap, preferredIndex);
-    return (nextIndex < allowedGapDates.length) ? allowedGapDates[nextIndex] : null;
+    const targetIndex = prevIndex + minimumGap;
+    if (targetIndex >= gapDates.length) {
+      return null;
+    }
+    earliest = gapDates[targetIndex];
   }
-  if (preferredDate) {
-    return (preferredDate >= prevDate) ? preferredDate : null;
+  const candidate = (preferredDate && preferredDate >= earliest) ? preferredDate : earliest;
+  if (!allowedDates?.length) {
+    return candidate;
   }
-  return prevDate || null;
+  return allowedDates.find(d => d >= candidate) ?? null;
 }
 
 export const findPastDateWithGap = (startingDate, gap, allowedDates) => {
@@ -190,9 +135,8 @@ export const findPastDateWithGap = (startingDate, gap, allowedDates) => {
     return null;
   }
   const targetIndex = startingIndex - gap;
-  return (targetIndex >= 0) ? allowedDates[targetIndex] : null;
+  return (targetIndex >= 0) ? allowedDates[targetIndex] : allowedDates[0];
 }
-
 
 //Finds next possible date from from array if the value does not exist in it
 const findNextPossibleValue = (array, value, addedDays) => {
@@ -638,7 +582,6 @@ const exported = {
     isHoliday,
     calculateAllowedDates,
     getHighestVoimaantuloDate,
-    findAllowedLautakuntaDate,
     syncPhaseEndDates,
     findFirstAllowedDate,
     findPastDateWithGap

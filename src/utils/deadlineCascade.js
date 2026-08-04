@@ -100,10 +100,9 @@ const cascadeDeadlineChange = ({ arr, field, disabledDates, moveToPast, projectS
     const maaraaikaItem = arr[i];
     const lautakuntaItem = arr[i + 1];
     const lautakuntaGap = lautakuntaItem.initial_distance ?? lautakuntaItem.distance_from_previous ?? 21;
-    // Enforce minimum gap
-    let lautakuntaResult = findFirstAllowedDate(maaraaikaItem.value, lautakuntaGap, disabledDates?.date_types[maaraaikaItem?.date_type]?.dates);
-    // Enforce correct date type for lautakunta
-    lautakuntaResult = findFirstAllowedDate(lautakuntaResult, 0, disabledDates?.date_types[lautakuntaItem?.date_type]?.dates);
+    const gapDates = disabledDates?.date_types?.työpäivät?.dates;
+    const allowedDates = disabledDates?.date_types[lautakuntaItem?.date_type]?.dates;
+    const lautakuntaResult = findFirstAllowedDate(maaraaikaItem.value, lautakuntaGap, gapDates, allowedDates);
     lautakuntaItem.value = new Date(lautakuntaResult).toISOString().split('T')[0];
   }
 
@@ -120,19 +119,19 @@ const cascadeDeadlineChange = ({ arr, field, disabledDates, moveToPast, projectS
       if (start !== -1 && end !== -1 && end >= start) initialEsillaoloDiff = end - start;
     }
 
-    const alkaaGap = alkaaItem.initial_distance ?? alkaaItem.distance_from_previous ?? 14;
-    const alkaaResult = findFirstAllowedDate(movedDate, alkaaGap, disabledDates?.date_types[arr[i]?.date_type]?.dates);
+    const alkaaGap = alkaaItem.initial_distance ?? alkaaItem.distance_from_previous ?? 13;
+    const alkaaGapType = getGapDateType(alkaaItem);
+    const alkaaGapDates = disabledDates?.date_types[alkaaGapType]?.dates;
+    const alkaaAllowedDates = disabledDates?.date_types[alkaaItem?.date_type]?.dates || alkaaGapDates;
+    const alkaaResult = findFirstAllowedDate(movedDate, alkaaGap, alkaaGapDates, alkaaAllowedDates);
     alkaaItem.value = new Date(alkaaResult).toISOString().split('T')[0];
 
-    const startIndex = endAllowedDates.findIndex(d => d >= alkaaItem.value);
     const paattyyGap = paattyyItem.initial_distance ?? paattyyItem.distance_from_previous ?? 14;
-    let newPaattyyValue = null;
-    if (startIndex + initialEsillaoloDiff < endAllowedDates.length && initialEsillaoloDiff > paattyyGap) {
-      // Maintain the same gap between alkaa and paattyy if possible
-      newPaattyyValue = endAllowedDates[startIndex + initialEsillaoloDiff];
-    } else {
-      newPaattyyValue = findFirstAllowedDate(alkaaItem.value, paattyyGap, endAllowedDates);
-    }
+    const paattyyGapType = getGapDateType(paattyyItem);
+    const paattyyGapDates = disabledDates?.date_types[paattyyGapType]?.dates;
+    const paattyyAllowedDates = disabledDates?.date_types[paattyyItem?.date_type]?.dates || paattyyGapDates;
+    const gap = Math.max(initialEsillaoloDiff, paattyyGap);
+    const newPaattyyValue = findFirstAllowedDate(alkaaItem.value, gap, paattyyGapDates, paattyyAllowedDates);
     if (newPaattyyValue) {
       paattyyItem.value = new Date(newPaattyyValue).toISOString().split('T')[0];
     }
@@ -144,20 +143,34 @@ const cascadeDeadlineChange = ({ arr, field, disabledDates, moveToPast, projectS
 
     const kylkMaaraaikaKeys = ["kylk_maaraaika", "kylk_aineiston_maaraaika", "_lautakunta_aineiston_maaraaika"];
     if (kylkMaaraaikaKeys.some(key => currentItem?.key?.includes(key))) {
+      const enforcedDate = enforceMinimumGap(arr, i, disabledDates);
+      currentItem.value = enforcedDate.toISOString().split('T')[0];
       handleKylkMaaraaikaMove(arr, i);
       indexToContinue = i + 1;
     }
     else if (currentItem.key?.includes("paattyy") || (["XL", "L"].includes(projectSize) && currentItem?.key.includes("nahtavilla_alkaa"))) {
+      const enforcedDate = enforceMinimumGap(arr, i, disabledDates);
+      currentItem.value = enforcedDate.toISOString().split('T')[0];
       indexToContinue = i;
     }
     else if (currentItem?.key?.includes("lautakunnassa") && !currentItem?.key?.includes("lautakunnassa_") || currentItem?.key?.includes("alkaa")) {
       // Backward cascade to maaraaika using previous_deadline
-      const maaraaikaResult = findPastDateWithGap(currentItem.value, currentItem.initial_distance, disabledDates?.date_types[prevItem?.date_type]?.dates);
-      prevItem.value = new Date(maaraaikaResult).toISOString().split('T')[0];
+      const allowedDates = disabledDates?.date_types[currentItem?.date_type]?.dates || [];
+      const maaraaikaResult = findPastDateWithGap(currentItem.value, currentItem.initial_distance, allowedDates);
+      console.log("PRE ENFORCE", maaraaikaResult, currentItem.value);
+      if (maaraaikaResult) {
+        const enforcedMaaraaika = enforceMinimumGap(arr, i-1, disabledDates);
+        prevItem.value = enforcedMaaraaika.toISOString().split('T')[0];
+        console.log("ENFORCED", prevItem.value, enforcedMaaraaika);
+      }
+      const enforcedLautakunta = enforceMinimumGap(arr, i, disabledDates);
+      currentItem.value = enforcedLautakunta.toISOString().split('T')[0];
       indexToContinue = i;
     }
     else if (currentItem?.key?.includes("maaraaika")) {
       //Maaraaika moving, set esillaolo alkaa & paattyy
+      const enforcedDate = enforceMinimumGap(arr, i, disabledDates);
+      currentItem.value = enforcedDate.toISOString().split('T')[0];
       handleEsillaMaaraaikaMove(arr, i, currentItem.value, disabledDates);
       indexToContinue = i + 2;
     }
@@ -168,13 +181,14 @@ const cascadeDeadlineChange = ({ arr, field, disabledDates, moveToPast, projectS
     const currentItem = arr[i];
     const prevItem = getPreviousItem(arr, i);
     const minimumGap = currentItem.distance_from_previous ?? 0;
+    if (currentItem.key?.includes("periaatteet")) {
+      console.log("enforceMinimumGap", currentItem.key, prevItem?.key, minimumGap, currentItem.value);
+      console.log(getGapDateType(currentItem));
+    }
     const allowedDates = disabledDates?.date_types[currentItem?.date_type]?.dates || [];
     const gapType = getGapDateType(currentItem);
     const gapDates = gapType ? disabledDates?.date_types[gapType]?.dates : allowedDates;
-    // Move to minimum distance if necessary
-    let nextAllowedDate = findFirstAllowedDate(prevItem.value, minimumGap, gapDates, currentItem.value);
-    // Ensure the new date is also allowed for the current item's date type
-    nextAllowedDate = findFirstAllowedDate(nextAllowedDate, 0, allowedDates);
+    const nextAllowedDate = findFirstAllowedDate(prevItem.value, minimumGap, gapDates, allowedDates, currentItem.value);
     return new Date(nextAllowedDate);
   }
 

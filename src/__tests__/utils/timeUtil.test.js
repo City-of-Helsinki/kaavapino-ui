@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
-import timeUtil from '../../utils/timeUtil.js';
+import timeUtil, { findFirstAllowedDate } from '../../utils/timeUtil.js';
 import data from './cascadeDeadlineChange_test_data.js';
 import {test_attribute_data_XL as test_attribute_data} from './test_attribute_data.js';
 
@@ -150,6 +150,47 @@ describe("timeUtils general utility function tests", () => {
         expect(timeUtil.findNextPossibleBoardDate(boardDates, "2024-05-01")).toBe("2024-05-01");
         // Empty array returns null
         expect(timeUtil.findNextPossibleBoardDate([], "2024-01-01")).toBeNull();
+    });
+    describe("findFirstAllowedDate", () => {
+        // Weekdays used as "gap" dates (counted toward minimum gap)
+        const gapDates = [
+            "2025-01-06", "2025-01-07", "2025-01-08", "2025-01-09", "2025-01-10",
+            "2025-01-13", "2025-01-14", "2025-01-15", "2025-01-16", "2025-01-17"
+        ];
+        // Sparser array used as "allowed" dates for the final result
+        const allowedDates = ["2025-01-08", "2025-01-15", "2025-01-22"];
+
+        test("returns null when prevDate is missing", () => {
+            expect(findFirstAllowedDate(null, 2, gapDates, allowedDates)).toBeNull();
+        });
+
+        test("counts minimum gap in gapDates and returns first matching allowedDate", () => {
+            // 3 steps from 2025-01-06 in gapDates -> 2025-01-09; first allowedDate >= that is 2025-01-15
+            expect(findFirstAllowedDate("2025-01-06", 3, gapDates, allowedDates)).toBe("2025-01-15");
+        });
+
+        test("returns preferredDate when it satisfies the minimum gap", () => {
+            // Earliest = 2025-01-09; preferred 2025-01-22 is >= earliest -> returned as-is
+            expect(findFirstAllowedDate("2025-01-06", 3, gapDates, allowedDates, "2025-01-22")).toBe("2025-01-22");
+        });
+
+        test("ignores preferredDate that violates the minimum gap", () => {
+            // Earliest = 2025-01-09; preferred 2025-01-07 < earliest -> fall back to first allowed >= earliest
+            expect(findFirstAllowedDate("2025-01-06", 3, gapDates, allowedDates, "2025-01-07")).toBe("2025-01-15");
+        });
+
+        test("returns null when minimum gap exceeds gapDates length", () => {
+            expect(findFirstAllowedDate("2025-01-06", 999, gapDates, allowedDates)).toBeNull();
+        });
+
+        test("returns null when no allowed date satisfies the minimum gap", () => {
+            expect(findFirstAllowedDate("2025-01-06", 3, gapDates, ["2025-01-01"])).toBeNull();
+        });
+
+        test("works when gapDates and allowedDates are the same array", () => {
+            // Backward-compatible use: 3 steps from 2025-01-06 -> 2025-01-09
+            expect(findFirstAllowedDate("2025-01-06", 3, gapDates, gapDates)).toBe("2025-01-09");
+        });
     });
     test("formatRelativeDate formats relative dates correctly", () => {
         const now = new Date();
