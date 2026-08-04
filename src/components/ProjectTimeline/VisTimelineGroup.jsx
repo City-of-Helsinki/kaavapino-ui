@@ -2084,13 +2084,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
                 
                 if (itemPhaseIndex < currentPhaseIndex && itemPhaseIndex !== -1) {
                   // This item is from a past phase - add class to its DOM element
-                  console.log('[DEBUG] Adding past-phase-item class to:', visItem.data.phaseName, 'id:', visItem.data.id, 'element:', visItem.dom);
                   visItem.dom.classList.add('past-phase-item');
                   
                   // Also add to vis-item-overflow child if it exists
                   const overflow = visItem.dom.querySelector('.vis-item-overflow');
                   if (overflow) {
-                    console.log('[DEBUG] Also adding to vis-item-overflow');
                     overflow.classList.add('past-phase-item');
                   }
                 } else {

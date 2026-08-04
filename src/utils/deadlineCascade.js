@@ -23,14 +23,7 @@ const findLastDeadlineInPhase = (arr, index, targetPhase) => {
 
 const cascadeDeadlineChange = ({ arr, field, disabledDates, moveToPast, projectSize, attributeData, deadlineObjects = [] }) => {
   // Do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
-  let confirmedFieldSet = new Set();
-  try {
-    confirmedFieldSet = new Set(generateConfirmedFields(attributeData, deadlineObjects));
-  }
-  catch {
-    console.warn("Failed to generate confirmed fields. Confirmation-based locking will not be applied.");
-  }
-
+  const confirmedFieldSet = new Set(generateConfirmedFields(attributeData, deadlineObjects));
   // Attributes that should never be cascaded
   const IGNORED_ATTRIBUTES = [
     "kaynnistysvaihe_alkaa_pvm", "projektin_kaynnistys_pvm", "kaynnistys_paattyy_pvm",
@@ -157,11 +150,9 @@ const cascadeDeadlineChange = ({ arr, field, disabledDates, moveToPast, projectS
       // Backward cascade to maaraaika using previous_deadline
       const allowedDates = disabledDates?.date_types[currentItem?.date_type]?.dates || [];
       const maaraaikaResult = findPastDateWithGap(currentItem.value, currentItem.initial_distance, allowedDates);
-      console.log("PRE ENFORCE", maaraaikaResult, currentItem.value);
       if (maaraaikaResult) {
         const enforcedMaaraaika = enforceMinimumGap(arr, i-1, disabledDates);
         prevItem.value = enforcedMaaraaika.toISOString().split('T')[0];
-        console.log("ENFORCED", prevItem.value, enforcedMaaraaika);
       }
       const enforcedLautakunta = enforceMinimumGap(arr, i, disabledDates);
       currentItem.value = enforcedLautakunta.toISOString().split('T')[0];
@@ -181,10 +172,6 @@ const cascadeDeadlineChange = ({ arr, field, disabledDates, moveToPast, projectS
     const currentItem = arr[i];
     const prevItem = getPreviousItem(arr, i);
     const minimumGap = currentItem.distance_from_previous ?? 0;
-    if (currentItem.key?.includes("periaatteet")) {
-      console.log("enforceMinimumGap", currentItem.key, prevItem?.key, minimumGap, currentItem.value);
-      console.log(getGapDateType(currentItem));
-    }
     const allowedDates = disabledDates?.date_types[currentItem?.date_type]?.dates || [];
     const gapType = getGapDateType(currentItem);
     const gapDates = gapType ? disabledDates?.date_types[gapType]?.dates : allowedDates;
@@ -225,8 +212,8 @@ const cascadeDeadlineChange = ({ arr, field, disabledDates, moveToPast, projectS
     adjustPhaseEndDates(arr, i);
   }
 
-  sortPhaseData(arr, phaseOrder)
-  arr = bumpPhaseStartsToPrevEnd(arr)
+  sortPhaseData(arr, phaseOrder) // TODO: is this necessary any more? should already be in order
+  arr = bumpPhaseStartsToPrevEnd(arr) // This should also be handled by cascade
   return arr
 }
 

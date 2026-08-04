@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import timeUtil, { findFirstAllowedDate } from '../../utils/timeUtil.js';
-import data from './cascadeDeadlineChange_test_data.js';
+import data from './_test_data.js';
 import {test_attribute_data_XL as test_attribute_data} from './test_attribute_data.js';
 
 
@@ -67,19 +67,6 @@ describe("timeUtils general utility function tests", () => {
         const date = new Date("2024-07-04T12:00:00Z");
         const formattedDate = timeUtil.formatDate(date, true, 5);
         expect(formattedDate).toBe("2024-07-09");
-    });
-    test("isHoliday identifies holidays correctly", () => {
-        const holidays = [
-            "2024-01-01", // New Year's Day
-            "2024-12-25", // Christmas
-            "2024-12-26", // Boxing Day
-        ];
-        const holidayDate = new Date("2024-12-25T00:00:00Z"); // Christmas
-        const nonHolidayDate = new Date("2024-07-04T00:00:00Z"); // Regular day
-        expect(timeUtil.isHoliday(holidayDate, true, holidays)).toBe(true);
-        expect(timeUtil.isHoliday(nonHolidayDate, true, holidays)).toBe(false);
-        expect(timeUtil.isHoliday(holidayDate, false, holidays)).toBe(false);
-        expect(timeUtil.isHoliday(nonHolidayDate, false, holidays)).toBe(true);
     });
     test("sortObjectByDate sorts object keys by their date values", () => {
         const dates = {

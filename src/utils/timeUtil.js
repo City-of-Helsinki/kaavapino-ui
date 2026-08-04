@@ -1,83 +1,77 @@
 import objectUtil from "./objectUtil";
 import { getVisibilityBoolName } from "./projectVisibilityUtils";
 
-  const isWeekend = (date) => {
-      const day = new Date(date).getDay();
-      return day === 0 || day === 6; // 0 = Sunday, 6 = Saturday
-  };
+const isWeekend = (date) => {
+    const day = new Date(date).getDay();
+    return day === 0 || day === 6; // 0 = Sunday, 6 = Saturday
+};
 
-  const getHighestVoimaantuloDate = (attributeValues) => {
-    const datesToCompare = ["tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauennut"]
-    .map(dateField => attributeValues[dateField])
-    .filter(Boolean)
-    .map(date => new Date(date));
-    let highestDate = datesToCompare.length ? new Date(Math.max(...datesToCompare)) : null;
-    if (highestDate) {
-      highestDate = formatDate(highestDate,false,false);
-    }
-    return highestDate
+const getHighestVoimaantuloDate = (attributeValues) => {
+  const datesToCompare = ["tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauennut"]
+  .map(dateField => attributeValues[dateField])
+  .filter(Boolean)
+  .map(date => new Date(date));
+  let highestDate = datesToCompare.length ? new Date(Math.max(...datesToCompare)) : null;
+  if (highestDate) {
+    highestDate = formatDate(highestDate,false,false);
   }
+  return highestDate
+}
 
-  // Helper function to format a Date object to "YYYY-MM-DD"
-  const formatDate = (date,addDay,addDayNumber) => {
-    if(addDay){
-      date.setDate(date.getDate() + addDayNumber);
-    }
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-based
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
-  // Returns localized relative date string using provided t function; always plural for months/years.
-	const formatRelativeDate = (timestamp, tFn) => {
-		if(!timestamp){
-			return ''
-		}
-		const updatedDate = new Date(timestamp)
-		const now = new Date()
-		
-		// Reset time parts to compare only dates (not times)
-		const updatedDateOnly = new Date(updatedDate.getFullYear(), updatedDate.getMonth(), updatedDate.getDate())
-		const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-		
-		const oneDayMs = 24 * 60 * 60 * 1000
-		const diffMs = nowDateOnly.getTime() - updatedDateOnly.getTime()
-		const days = Math.floor(diffMs / oneDayMs)
-		
-    if (days <= 0) {
-      return tFn ? tFn('relativeDates.today') : 'Today'
-		}
-    if (days === 1) {
-      return tFn ? tFn('relativeDates.yesterday') : 'Yesterday'
-		}
-    if (days < 30) {
-      return tFn ? tFn('relativeDates.days-ago', { count: days }) : `${days} days ago`
-		}
-		let months = (now.getFullYear() - updatedDate.getFullYear()) * 12 + (now.getMonth() - updatedDate.getMonth())
-		if (months <= 0) {
-			months = 1
-		}
-    if (months < 12) {
-      const monthKey = months === 1 ? 'relativeDates.month-ago-singular' : 'relativeDates.month-ago'
-      return tFn ? tFn(monthKey, { count: months }) : `${months} months ago`
-		}
-		const years = Math.floor(months / 12)
-		const yearKey = years === 1 ? 'relativeDates.years-ago-singular' : 'relativeDates.years-ago'
-    return tFn ? tFn(yearKey, { count: years }) : `${years} years ago`
-	}
-
-  // Helper function to check if a date is a holiday
-  const isHoliday = (date,isInFilter,holidays) => {
-    const dateStr = date.toISOString().split('T')[0]; // Convert to 'YYYY-MM-DD' format
-    return isInFilter ? holidays.includes(dateStr) : !holidays.includes(dateStr);
+// Helper function to format a Date object to "YYYY-MM-DD"
+const formatDate = (date,addDay,addDayNumber) => {
+  if(addDay){
+    date.setDate(date.getDate() + addDayNumber);
   }
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-based
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
-  const normalizeDate = (date) => {
-    const normalizedDate = new Date(date);
-    normalizedDate.setUTCHours(0, 0, 0, 0);
-    return new Date(normalizedDate);
+// Returns localized relative date string using provided t function; always plural for months/years.
+const formatRelativeDate = (timestamp, tFn) => {
+  if(!timestamp){
+    return ''
   }
+  const updatedDate = new Date(timestamp)
+  const now = new Date()
+  
+  // Reset time parts to compare only dates (not times)
+  const updatedDateOnly = new Date(updatedDate.getFullYear(), updatedDate.getMonth(), updatedDate.getDate())
+  const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  
+  const oneDayMs = 24 * 60 * 60 * 1000
+  const diffMs = nowDateOnly.getTime() - updatedDateOnly.getTime()
+  const days = Math.floor(diffMs / oneDayMs)
+  
+  if (days <= 0) {
+    return tFn ? tFn('relativeDates.today') : 'Today'
+  }
+  if (days === 1) {
+    return tFn ? tFn('relativeDates.yesterday') : 'Yesterday'
+  }
+  if (days < 30) {
+    return tFn ? tFn('relativeDates.days-ago', { count: days }) : `${days} days ago`
+  }
+  let months = (now.getFullYear() - updatedDate.getFullYear()) * 12 + (now.getMonth() - updatedDate.getMonth())
+  if (months <= 0) {
+    months = 1
+  }
+  if (months < 12) {
+    const monthKey = months === 1 ? 'relativeDates.month-ago-singular' : 'relativeDates.month-ago'
+    return tFn ? tFn(monthKey, { count: months }) : `${months} months ago`
+  }
+  const years = Math.floor(months / 12)
+  const yearKey = years === 1 ? 'relativeDates.years-ago-singular' : 'relativeDates.years-ago'
+  return tFn ? tFn(yearKey, { count: years }) : `${years} years ago`
+}
+
+const normalizeDate = (date) => {
+  const normalizedDate = new Date(date);
+  normalizedDate.setUTCHours(0, 0, 0, 0);
+  return new Date(normalizedDate);
+}
 
 
 // Check if a string is in "YYYY-MM-DD" format
@@ -579,7 +573,6 @@ const exported = {
     formatRelativeDate,
     sortObjectByDate,
     isDate,
-    isHoliday,
     calculateAllowedDates,
     getHighestVoimaantuloDate,
     syncPhaseEndDates,

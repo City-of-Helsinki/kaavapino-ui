@@ -21,6 +21,17 @@ export const phaseOrder = [
   'voimaantulovaihe_paattyy_pvm'
 ];
 
+const phaseStartEndAttributes = {
+  "Käynnistys": ["projektin_kaynnistys_pvm", "kaynnistys_paattyy_pvm"],
+  "Periaatteet": ["periaatteetvaihe_alkaa_pvm", "periaatteetvaihe_paattyy_pvm"],
+  "OAS": ["oasvaihe_alkaa_pvm", "oasvaihe_paattyy_pvm"],
+  "Luonnos": ["luonnosvaihe_alkaa_pvm", "luonnosvaihe_paattyy_pvm"],
+  "Ehdotus": ["ehdotusvaihe_alkaa_pvm", "ehdotusvaihe_paattyy_pvm"],
+  "Tarkistettu ehdotus": ["tarkistettuehdotusvaihe_alkaa_pvm", "tarkistettuehdotusvaihe_paattyy_pvm"],
+  "Hyväksyminen": ["hyvaksyminenvaihe_alkaa_pvm", "hyvaksyminenvaihe_paattyy_pvm"],
+  "Voimaantulo": ["voimaantulovaihe_alkaa_pvm", "voimaantulovaihe_paattyy_pvm"]
+};
+
 const getHighestNumberedObject = (obj1) => {
   // Helper function to extract the number from a content string
   const extractNumber = str => {
@@ -93,19 +104,28 @@ const mergeAndUpdateDlArrays = (arr1, arr2, deadlineSections) => {
 
   const keyOrder = [];
   const attributeByName = new Map();
+
   for (const section of deadlineSections) {
     for (const sec of section.sections) {
+      const phaseStart = phaseStartEndAttributes[section.title]?.[0];
+      keyOrder.push(phaseStart);
       for (const attribute of sec.attributes) {
         keyOrder.push(attribute.name);
         if (!attributeByName.has(attribute.name)) {
           attributeByName.set(attribute.name, attribute);
         }
       }
+      keyOrder.push(phaseStartEndAttributes[section.title]?.[1]); // Add phase end attribute
     }
   }
 
   // Enrich arr1 in a single linear pass
   arr1.forEach((item, i) => {
+    if (phaseOrder.includes(item.key)) {
+      item.distance_from_previous = 0;
+      item.order = i;
+      return;
+    }
     const attribute = attributeByName.get(item.key);
     if (!attribute) return;
     item.distance_from_previous = attribute.distance_from_previous || null;
@@ -133,14 +153,11 @@ const mergeAndUpdateDlArrays = (arr1, arr2, deadlineSections) => {
     return 0;
   });
 
-  //Sort phase start end data by order const
-  arr1 = sortPhaseData(arr1, phaseOrder)
-  arr1 = bumpPhaseStartsToPrevEnd(arr1)
   //Return in order array ready for comparing next and previous value distances
   arr1 = arr1.filter(item => !item.key.includes("viimeistaan_lausunnot_") && !item.key.includes("viimeistaan_mielipiteet") && !item.key.includes("aloituskokous_suunniteltu_pvm_readonly")); //filter out has no next and prev values
   return arr1
 }
-//Sort by certain predetermined order
+// TODO: remove (already done in mergeAndUpdateDlArrays) and use that function instead
 export const sortPhaseData = (arr, order) => {
   arr.sort((a, b) => {
     // check for the 'order' property
