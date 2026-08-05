@@ -1,4 +1,4 @@
-import React, { useEffect, useState }  from 'react';
+import React, { useEffect }  from 'react';
 import { change } from 'redux-form'
 import { useDispatch } from 'react-redux';
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
@@ -106,7 +106,6 @@ AddGroupModal.propTypes = {
   addDialogData: PropTypes.object,
   closeAddDialog: PropTypes.func,
   allowedToEdit: PropTypes.bool,
-  isAdmin: PropTypes.bool,
   timelineAddButton: PropTypes.instanceOf(HTMLElement)
 };
 

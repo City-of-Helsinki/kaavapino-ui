@@ -20,52 +20,44 @@ import { updateDateTimeline } from '../../actions/projectActions';
 import './VisTimeline.scss'
 Moment.locale('fi');
 
-const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, phaseList, currentPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes, showTimetableForm, itemsPhaseDatesOnly }, ref) => {
+const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, phaseList, currentPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes, showTimetableForm }, ref) => {
   const dispatch = useDispatch();
   const moment = extendMoment(Moment);
   const { t } = useTranslation()
   const timelineRef = useRef(null);
-  const observerRef = useRef(null); // Store the MutationObserver
   const timelineInstanceRef = useRef(null);
   const visValuesRef = useRef(visValues);
-  const itemsPhaseDatesOnlyRef = useRef(itemsPhaseDatesOnly);
   const pendingGroupFocusIdRef = useRef(null);
 
-    const [selectedGroupId, setSelectedGroupId] = useState(null);
-    const selectedGroupIdRef = useRef(selectedGroupId);
-    const dragHandleRef = useRef("");
-    const modalClosedDuringDragRef = useRef(false);
-    // cluster/group dragging state
-    const clusterDragRef = useRef({
-      isPoint: false,
-      clusterKey: null,        // e.g. "27_26" from className
-      snapshot: null,          // { groupId, items: { [id]: { start: Date|null, end: Date|null, className: string } } }
-      movingId: null
-    });
+  const [selectedGroupId, setSelectedGroupId] = useState(null);
+  const selectedGroupIdRef = useRef(selectedGroupId);
+  const dragHandleRef = useRef("");
+  const modalClosedDuringDragRef = useRef(false);
+  // cluster/group dragging state
+  const clusterDragRef = useRef( {
+    // { groupId, items: { [id]: { start: Date|null, end: Date|null, className: string } } }
+    snapshot: null
+  });
 
-    const [toggleTimelineModal, setToggleTimelineModal] = useState({open: false, highlight: false, deadlinegroup: false});
-    const toggleTimelineModalRef = useRef(toggleTimelineModal);
-    const [timelineData, setTimelineData] = useState({group: false, content: false});
-    const [timeline, setTimeline] = useState(false);
-    const [addDialogStyle, setAddDialogStyle] = useState({ left: 0, top: 0 });
-    const [addDialogData, setAddDialogData] = useState({group:false,deadlineSections:false,showPresence:false,showBoard:false,nextEsillaolo:false,nextLautakunta:false,esillaoloReason:"",lautakuntaReason:"",hidePresence:false,hideBoard:false});
-    const [toggleOpenAddDialog, setToggleOpenAddDialog] = useState(false);
-    const currentFormatRef = useRef("showYears");
-    const weekAxisListenerRef = useRef(null);
-    // Week range floating tooltip
-    const weekTooltipRef = useRef(null);
-    const weekTooltipActiveRef = useRef(false);
-    const [openConfirmModal, setOpenConfirmModal] = useState(false);
-    const [dataToRemove, setDataToRemove] = useState({});
-    const [timelineAddButton, setTimelineAddButton] = useState();
-    //const [lock, setLock] = useState({group:false,id:false,locked:false,abbreviation:false});
-    // Track whether weekend alignment shift has been applied (3-month view only)
-    const weekendShiftAppliedRef = useRef(false);
+  const [toggleTimelineModal, setToggleTimelineModal] = useState({open: false, highlight: false, deadlinegroup: false});
+  const toggleTimelineModalRef = useRef(toggleTimelineModal);
+  const [timelineData, setTimelineData] = useState({group: false, content: false});
+  const [timeline, setTimeline] = useState(false);
+  const [addDialogStyle, setAddDialogStyle] = useState({ left: 0, top: 0 });
+  const [addDialogData, setAddDialogData] = useState({group:false,deadlineSections:false,showPresence:false,showBoard:false,nextEsillaolo:false,nextLautakunta:false,esillaoloReason:"",lautakuntaReason:"",hidePresence:false,hideBoard:false});
+  const [toggleOpenAddDialog, setToggleOpenAddDialog] = useState(false);
+  const currentFormatRef = useRef("showYears");
+  const weekAxisListenerRef = useRef(null);
+  // Week range floating tooltip
+  const weekTooltipRef = useRef(null);
+  const weekTooltipActiveRef = useRef(false);
+  const [openConfirmModal, setOpenConfirmModal] = useState(false);
+  const [dataToRemove, setDataToRemove] = useState({});
+  const [timelineAddButton, setTimelineAddButton] = useState();
+  // Track whether weekend alignment shift has been applied (3-month view only)
+  const weekendShiftAppliedRef = useRef(false);
 
-    const { onElementEnter, onElementMove, onElementLeave, hideTooltip } = useTimelineTooltip();
-
-  // Store original month names so we can temporarily swap in quarter range labels
-  const originalMonthsRef = useRef(null);
+  const { onElementEnter, onElementMove, onElementLeave, hideTooltip } = useTimelineTooltip();
 
   useImperativeHandle(ref, () => ({
     getTimelineInstance: () => timelineInstanceRef.current,
@@ -93,19 +85,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
   };
 
-    // Keep latest itemsPhaseDatesOnly available inside event handlers
-    useEffect(() => {
-      itemsPhaseDatesOnlyRef.current = itemsPhaseDatesOnly;
-    }, [itemsPhaseDatesOnly]);
-
-    // Keep toggleTimelineModalRef in sync with state
-    useEffect(() => {
-      toggleTimelineModalRef.current = toggleTimelineModal;
-    }, [toggleTimelineModal]);
-
-  const trackExpanded = (event) => {
-    trackExpandedGroups(event)
-  }
+  // Keep toggleTimelineModalRef in sync with state
+  useEffect(() => {
+    toggleTimelineModalRef.current = toggleTimelineModal;
+  }, [toggleTimelineModal]);
 
   const hideSelection = (phase, data) => {
     //hide add options for certain phases
@@ -118,7 +101,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     else if (phase === "OAS") {
       return [false, true]
     }
-
     return [false, false]
   }
 
@@ -383,12 +365,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
   };
 
-
-  const lockLine = (data) => {
-    console.log(data)
-    //setLock({group:data.nestedInGroup,id:data.id,abbreviation:data.abbreviation,locked:!data.locked})
-  }
-
   const openDialog = (data, container) => {
     const groupId = data.id;
     const timelineElement = timelineRef?.current;
@@ -532,7 +508,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const range = timeline.getWindow();
     const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
     const rangeDuration = 1000 * 60 * 60 * 24 * 30; // about 1 month
-    restoreNormalMonths(moment);
     timelineRef.current.classList.remove("years", "hide-lines", "months6", "years2", "month1", "year1");
     timelineRef.current.classList.add("months", "month1");
     timeline.setOptions({ timeAxis: { scale: 'weekday' } });
@@ -547,7 +522,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const range = timeline.getWindow();
     const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
     const rangeDuration = 1000 * 60 * 60 * 24 * 30 * 3; // approx 3 months
-    restoreNormalMonths(moment);
     timelineRef.current.classList.remove("years", "months6", "years2", "month1", "year1");
     timelineRef.current.classList.add("months", "hide-lines");
     timeline.setOptions({
@@ -572,7 +546,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const range = timeline.getWindow();
     const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
     const rangeDuration = 1000 * 60 * 60 * 24 * 30 * 6; // approx 6 months
-    restoreNormalMonths(moment);
     restoreStandardLabelFormat();
     timelineRef.current.classList.remove("hide-lines", "months", "years2", "month1", "year1");
     timelineRef.current.classList.add("years", "months6");
@@ -590,7 +563,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const range = timeline.getWindow();
     const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
     const rangeDuration = 1000 * 60 * 60 * 24 * 365; // about 1 year
-    restoreNormalMonths(moment); // also restores after quarter view
     restoreStandardLabelFormat();
     timelineRef.current.classList.remove("months", "hide-lines", "months6", "years2", "month1");
     timelineRef.current.classList.add("years", "year1");
@@ -603,17 +575,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     highlightJanuaryFirst()
   }
 
-  // Apply quarter range labels by temporarily replacing the Finnish month names
   const applyQuarterRangeLabels = () => {
-    if (!originalMonthsRef.current) {
-      const ld = Moment.localeData('fi');
-      originalMonthsRef.current = {
-        months: ld.months(),
-        monthsShort: ld.monthsShort()
-      };
-    }
-    const months = [...originalMonthsRef.current.months];
-    const monthsShort = [...originalMonthsRef.current.monthsShort];
+    const ld = Moment.localeData('fi');
+    const months = [...ld.months()];
+    const monthsShort = [...ld.monthsShort()];
     months[0] = 'Tammikuu - Maaliskuu';
     months[3] = 'Huhtikuu - Kesäkuu';
     months[6] = 'Heinäkuu - Syyskuu';
@@ -626,22 +591,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     Moment.updateLocale('fi', { months, monthsShort });
   };
 
-  const restoreQuarterRangeLabels = () => {
-    if (originalMonthsRef.current) {
-      Moment.updateLocale('fi', {
-        months: originalMonthsRef.current.months,
-        monthsShort: originalMonthsRef.current.monthsShort
-      });
-      originalMonthsRef.current = null;
-    }
-  };
-
   const show2Years = () => {
     if (currentFormatRef.current === 'show3Months') { detachWeekAxisHover(); revertWeekendShift(); }
     const range = timeline.getWindow();
     const center = new Date((range.start.getTime() + range.end.getTime()) / 2);
     const rangeDuration = 1000 * 60 * 60 * 24 * 365 * 2; // ~2 years
-    restoreQuarterRangeLabels(); // ensure clean before applying
     applyQuarterRangeLabels();
     timelineRef.current.classList.remove('months', 'hide-lines', 'months6', 'years2', 'month1', 'year1');
     timelineRef.current.classList.add('years', "years2");
@@ -659,18 +613,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     currentFormatRef.current = 'show2Years';
     highlightJanuaryFirst();
   };
-
-  const show5Years = () => {
-    if (currentFormatRef.current === 'show3Months') { detachWeekAxisHover(); revertWeekendShift(); }
-    let now = new Date();
-    let currentYear = now.getFullYear();
-    let startOf5Years = new Date(currentYear, now.getMonth(), 1);
-    let endOf5Years = new Date(currentYear + 5, now.getMonth(), 0);
-    restoreStandardLabelFormat();
-    timeline.setOptions({ timeAxis: { scale: 'month' } });
-    timeline.setWindow(startOf5Years, endOf5Years);
-    currentFormatRef.current = 'show5Years';
-  }
 
   // Week hover logic (native title) for show3Months
   const computeWeekRange = (weekNum, anchorYear) => {
@@ -692,7 +634,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       if (sib?.classList?.contains('vis-major')) {
         const txt = sib.textContent || '';
         const m = txt.match(/(\d{4})/);
-        if (m) return parseInt(m[1], 10);
+        if (m) return Number.parseInt(m[1], 10);
       }
     }
     // Fallback: center year of current window
@@ -832,28 +774,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
   }, []);
 
-
-  const restoreNormalMonths = (moment) => {
-    const loc = moment.locale('fi');
-    const ld = moment.localeData(loc);
-    const current = ld.monthsShort();
-
-    // If we had quarter range labels applied, restore originals
-    if (originalMonthsRef.current) {
-      restoreQuarterRangeLabels();
-    }
-
-    // If months are Q1/Q2/... put real month names back using Intl
-    if (current?.[0] === 'Q1') {
-      const lang = 'fi';
-      const longFmt = new Intl.DateTimeFormat(lang, { month: 'long' });
-      const shortFmt = new Intl.DateTimeFormat(lang, { month: 'short' });
-      const months = Array.from({ length: 12 }, (_, i) => longFmt.format(new Date(2020, i, 1)));
-      const monthsShort = Array.from({ length: 12 }, (_, i) => shortFmt.format(new Date(2020, i, 1)));
-      moment.updateLocale(loc, { months, monthsShort });
-    }
-  }
-
   // Reset quarter formatting when leaving 2-year quarter view
   const restoreStandardLabelFormat = () => {
     if (!timeline) return;
@@ -888,10 +808,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     timeline.moveTo(currentDate, { animation: true });
   }
 
-  const toggleRollingMode = () => {
-    timeline.toggleRollingMode();
-  }
-
   const adjustWeekend = (date) => {
     if (date.getDay() === 0) {
       date.setTime(date.getTime() + 86400000); // Move from Sunday to Monday
@@ -900,8 +816,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
   }
 
+  // Despite the name, just adds border to the first day of every month
   const highlightJanuaryFirst = () => {
-    if (!timelineInstanceRef.current) return;
+    if (!timelineInstanceRef.current || currentFormatRef.current !== "showMonths") return;
 
     requestAnimationFrame(() => {
       document.querySelectorAll(".vis-text.vis-minor").forEach((label) => {
@@ -914,124 +831,110 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         // Month View: Must be "1" AND contain "tammikuu"
         const isMonthView = firstLine === "1";
 
-        // Year View: If the text is "tammi" (January in Finnish)
-        const isYearView = text === "tammi";
-        if (isYearView || isMonthView) {
+        if (isMonthView) {
           label.classList.add("january-first");
         }
       });
     });
   };
 
-  // MutationObserver to track new elements being added dynamically
-  const observeTimelineChanges = () => {
-    observerRef.current = new MutationObserver(() => {
-      highlightJanuaryFirst(); // Apply styles when new elements are added
-    });
-
-    const targetNode = document.querySelector(".vis-panel.vis-center");
-    if (targetNode) {
-      observerRef.current.observe(targetNode, { childList: true, subtree: true });
-    }
+  /**
+   * Check if mouse is within element bounds including buffer zones
+   */
+  const isMouseWithinBounds = (mouseX, mouseY, itemBounds, topBuffer, bottomBuffer) => {
+    return (
+      mouseX >= itemBounds.left &&
+      mouseX <= itemBounds.right &&
+      mouseY >= (itemBounds.top - topBuffer) &&
+      mouseY <= (itemBounds.bottom + bottomBuffer)
+    );
   };
 
-    /**
-     * Check if mouse is within element bounds including buffer zones
-     */
-    const isMouseWithinBounds = (mouseX, mouseY, itemBounds, topBuffer, bottomBuffer) => {
-      return (
-        mouseX >= itemBounds.left &&
-        mouseX <= itemBounds.right &&
-        mouseY >= (itemBounds.top - topBuffer) &&
-        mouseY <= (itemBounds.bottom + bottomBuffer)
-      );
-    };
+  /**
+   * Update topmost item if this element has priority
+   */
+  const updateTopmostItem = (item, itemDom, zIndex, isPhaseHolder, isPhaseLength, withinActualBounds, state) => {
+    const { highestZIndex, topmostItem, foundPhaseBar } = state;
 
-    /**
-     * Update topmost item if this element has priority
-     */
-    const updateTopmostItem = (item, itemDom, zIndex, isPhaseHolder, isPhaseLength, withinActualBounds, state) => {
-      const { highestZIndex, topmostItem, foundPhaseBar } = state;
-
-      if (isPhaseHolder) {
-        // Phase holder always takes priority
-        return {
-          highestZIndex: zIndex,
-          topmostItem: item,
-          topmostItemDom: itemDom,
-          foundPhaseBar: true
-        };
-      }
-
-      if (foundPhaseBar) {
-        // Already found phase bar, ignore other elements
-        return state;
-      }
-
-      if (isPhaseLength && withinActualBounds && (!topmostItem || zIndex > highestZIndex)) {
-        // Phase-length only matches if within actual bounds (prevents buffer zone stealing)
-        return { ...state, highestZIndex: zIndex, topmostItem: item, topmostItemDom: itemDom };
-      }
-
-      // Normal elements use z-index
-      if (!isPhaseLength && zIndex > highestZIndex) {
-        return { ...state, highestZIndex: zIndex, topmostItem: item, topmostItemDom: itemDom };
-      }
-
-      return state;
-    };
-
-    /**
-     * Finds the topmost (highest z-index) timeline item at given coordinates
-     * Implements priority logic to prevent phase-length elements from stealing
-     * hover from phase-holder elements via buffer zones
-     * @param {number} mouseX - Mouse X coordinate
-     * @param {number} mouseY - Mouse Y coordinate
-     * @param {Object} timelineInstanceRef - Timeline instance reference
-     * @returns {Object|null} Object with item and dom properties, or null
-     */
-    const getTopmostTimelineItem = (mouseX, mouseY, timelineInstanceRef) => {
-      if (!timelineInstanceRef.current?.itemSet) {
-        return null;
-      }
-
-      const items = Object.values(timelineInstanceRef.current.itemSet.items);
-      const PHASE_TOP_BUFFER = 15;
-      const PHASE_BOTTOM_BUFFER = 3;
-
-      let state = {
-        highestZIndex: -1,
-        topmostItem: null,
-        topmostItemDom: null,
-        foundPhaseBar: false
+    if (isPhaseHolder) {
+      // Phase holder always takes priority
+      return {
+        highestZIndex: zIndex,
+        topmostItem: item,
+        topmostItemDom: itemDom,
+        foundPhaseBar: true
       };
+    }
 
-      items.forEach((item) => {
-        const itemDom = item?.dom?.box ?? item?.dom?.point ?? item?.dom?.dot;
-        if (!itemDom?.classList?.contains('vis-editable')) {
-          return;
-        }
+    if (foundPhaseBar) {
+      // Already found phase bar, ignore other elements
+      return state;
+    }
 
-        const itemBounds = itemDom.getBoundingClientRect();
-        const isPhaseRange = itemDom.classList.contains('vis-range');
-        const topBuffer = isPhaseRange ? PHASE_TOP_BUFFER : 0;
-        const bottomBuffer = isPhaseRange ? PHASE_BOTTOM_BUFFER : 0;
+    if (isPhaseLength && withinActualBounds && (!topmostItem || zIndex > highestZIndex)) {
+      // Phase-length only matches if within actual bounds (prevents buffer zone stealing)
+      return { ...state, highestZIndex: zIndex, topmostItem: item, topmostItemDom: itemDom };
+    }
 
-        if (!isMouseWithinBounds(mouseX, mouseY, itemBounds, topBuffer, bottomBuffer)) {
-          return;
-        }
+    // Normal elements use z-index
+    if (!isPhaseLength && zIndex > highestZIndex) {
+      return { ...state, highestZIndex: zIndex, topmostItem: item, topmostItemDom: itemDom };
+    }
 
-        const zIndex = Number.parseInt(globalThis.getComputedStyle(itemDom).zIndex, 10) || 0;
-        const isPhaseHolder = itemDom.classList.contains('phase-holder') || 
-                              itemDom.classList.contains('phase-element');
-        const isPhaseLength = itemDom.classList.contains('phase-length');
-        const withinActualBounds = mouseY >= itemBounds.top && mouseY <= itemBounds.bottom;
+    return state;
+  };
 
-        state = updateTopmostItem(item, itemDom, zIndex, isPhaseHolder, isPhaseLength, withinActualBounds, state);
-      });
+  /**
+   * Finds the topmost (highest z-index) timeline item at given coordinates
+   * Implements priority logic to prevent phase-length elements from stealing
+   * hover from phase-holder elements via buffer zones
+   * @param {number} mouseX - Mouse X coordinate
+   * @param {number} mouseY - Mouse Y coordinate
+   * @param {Object} timelineInstanceRef - Timeline instance reference
+   * @returns {Object|null} Object with item and dom properties, or null
+   */
+  const getTopmostTimelineItem = (mouseX, mouseY, timelineInstanceRef) => {
+    if (!timelineInstanceRef.current?.itemSet) {
+      return null;
+    }
 
-      return state.topmostItem ? { item: state.topmostItem, dom: state.topmostItemDom } : null;
+    const items = Object.values(timelineInstanceRef.current.itemSet.items);
+    const PHASE_TOP_BUFFER = 15;
+    const PHASE_BOTTOM_BUFFER = 3;
+
+    let state = {
+      highestZIndex: -1,
+      topmostItem: null,
+      topmostItemDom: null,
+      foundPhaseBar: false
     };
+
+    items.forEach((item) => {
+      const itemDom = item?.dom?.box ?? item?.dom?.point ?? item?.dom?.dot;
+      if (!itemDom?.classList?.contains('vis-editable')) {
+        return;
+      }
+
+      const itemBounds = itemDom.getBoundingClientRect();
+      const isPhaseRange = itemDom.classList.contains('vis-range');
+      const topBuffer = isPhaseRange ? PHASE_TOP_BUFFER : 0;
+      const bottomBuffer = isPhaseRange ? PHASE_BOTTOM_BUFFER : 0;
+
+      if (!isMouseWithinBounds(mouseX, mouseY, itemBounds, topBuffer, bottomBuffer)) {
+        return;
+      }
+
+      const zIndex = Number.parseInt(globalThis.getComputedStyle(itemDom).zIndex, 10) || 0;
+      const isPhaseHolder = itemDom.classList.contains('phase-holder') || 
+                            itemDom.classList.contains('phase-element');
+      const isPhaseLength = itemDom.classList.contains('phase-length');
+      const withinActualBounds = mouseY >= itemBounds.top && mouseY <= itemBounds.bottom;
+
+      state = updateTopmostItem(item, itemDom, zIndex, isPhaseHolder, isPhaseLength, withinActualBounds, state);
+    });
+
+    return state.topmostItem ? { item: state.topmostItem, dom: state.topmostItemDom } : null;
+  };
 
   const isPhaseClosed = (phase) => {
     const idx = phaseList.indexOf(phase);
@@ -1074,7 +977,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   useEffect(() => {
     // Ensure capitalized Finnish locale BEFORE creating timeline so initial labels are correct
     ensureFinnishLocale();
-
       const options = {
         locales: {
           fi: {
@@ -1269,7 +1171,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           else tooltipEl.innerHTML = startDate;
         }
 
-        const { snapshot, movingId } = clusterDragRef.current;
+        const { snapshot } = clusterDragRef.current;
         const setItems = timelineInstanceRef?.current?.itemSet?.items;
 
         const shouldMoveRelated =
@@ -1277,8 +1179,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           dragElement !== 'right' &&
           snapshot &&
           setItems &&
-          snapshot.items &&
-          snapshot.items[String(item.id)];
+          snapshot.items?.[String(item.id)];
 
         if (shouldMoveRelated) {
           const orig = snapshot.items[String(item.id)];
@@ -1717,7 +1618,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             lock.style.fontSize = "small";
             lock.addEventListener("click", function () {
               lock.classList.toggle("lock");
-              lockLine(group);
             });
             container.insertAdjacentElement("beforeEnd", lock);
 
@@ -1826,6 +1726,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         // Track currently styled dragged group so we can remove styling on mouseUp
         const draggingGroupRef = { current: null };
 
+        timeline.on('rangechange', () => {
+          highlightJanuaryFirst();
+        });
+
         timeline.on('mouseDown', (mouseDownEvent) => {
           // Block hyväksyminen and voimaantulo dragging
           if(isBlockedLabel(mouseDownEvent?.item)) return;
@@ -1860,7 +1764,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           const isBoardRight = element.classList.contains('board-right') || parent?.classList?.contains('board-right');
 
           // Allow center dragging for inner-end and kaynnistys_1 by clicking anywhere inside overflow/content (excluding explicit drag handles)
-          const compositeContainer = element.closest && element.closest('.inner-end, .kaynnistys_1');
+          const compositeContainer = element.closest?.('.inner-end, .kaynnistys_1');
           const insideOverflow = element.classList.contains('vis-item-overflow') || (!!element.closest && element.closest('.vis-item-overflow'));
           const isDragHandle = element.classList.contains('vis-drag-left') || element.classList.contains('vis-drag-right');
           if (compositeContainer && insideOverflow && !isDragHandle) {
@@ -1885,7 +1789,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         }
 
         //build a snapshot of items we will move together
-        clusterDragRef.current = { isPoint: false, clusterKey: null, snapshot: null, movingId: null };
+        clusterDragRef.current = {snapshot: null};
 
         if (!allowedToEdit || mouseDownEvent?.item == null) return;
 
@@ -1896,13 +1800,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           items.get(Number(mouseDownEvent.item)) ||
           items.get().find(it => String(it.id) === String(mouseDownEvent.item));
 
-        if (!baseItem || baseItem.group == null) return;
+        if (baseItem?.group == null) return;
 
         // read classes from the actual DOM item to extract the cluster token (e.g., "27_26")
         const itemEl = mouseDownEvent?.event?.target?.closest?.('.vis-item');
         const classTokens = (itemEl?.className || '').split(/\s+/);
         const clusterKey = classTokens.find(t => /^\d+_\d+$/.test(t)) || null;
-        const isPoint = !!(itemEl && (itemEl.classList.contains('vis-point') || itemEl.querySelector('.vis-point')));
 
         // choose which items to snapshot:
         // - if dragging a point: only items in same group that share the clusterKey and are one of
@@ -1933,12 +1836,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           };
         });
 
-        clusterDragRef.current = {
-          isPoint,
-          clusterKey,
-          snapshot,
-          movingId: String(baseItem.id)
-        };
+        clusterDragRef.current = {snapshot};
       });
 
       timeline.on('mouseUp', () => {
@@ -1947,7 +1845,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           draggingGroupRef.current.classList.remove('cursor-moving-target');
           draggingGroupRef.current = null;
         }
-        clusterDragRef.current = { isPoint: false, clusterKey: null, snapshot: null, movingId: null };
+        clusterDragRef.current = {snapshot: null};
       });
 
       // Add click event listener to timeline container so clicking on the timeline items works
@@ -1978,7 +1876,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             if (target.classList.contains('timeline-add-button')) {
                 return; // Don't close menu when clicking add button
             } else {
-              trackExpanded(event);
+              trackExpandedGroups(event);
               timeline.itemSet._onGroupClick(event);
             }
           });
@@ -1987,18 +1885,16 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         if(timeline){
           setTimeout(() => {
             highlightJanuaryFirst();
-            observeTimelineChanges();
           }, 100); // Ensures elements are rendered before applying styles
         }
-        //timeline.on('rangechanged', onRangeChanged);
         return () => {
+          if (timelineRef.current) {
+            timelineRef.current.removeEventListener('mousemove', handleMouseMove);
+          }
           if (timelineInstanceRef.current) {
             timelineInstanceRef.current.destroy();
-            document.body.removeEventListener('mousemove', handleMouseMove);
           }
           timeline.off('mouseDown');
-          observerRef?.current?.disconnect();
-          //timeline.off('rangechanged', onRangeChanged);
         }
       }
     }, [])
@@ -2012,7 +1908,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   }
 
   // Helper: Highlight timeline item if needed
-  function highlightTimelineItem(timelineElement, savedHighlightId) {
+  const highlightTimelineItem = (timelineElement, savedHighlightId) => {
     if (!timelineElement || !savedHighlightId) return;
     const alreadyHighlightedElements = timelineElement.querySelectorAll(".vis-group.foreground-highlight");
     if (alreadyHighlightedElements.length > 0) return;
@@ -2027,7 +1923,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   }
 
   // Helper: Highlight menu item if needed
-  function highlightMenuItem(menuHighlightClass, timelineRef) {
+  const highlightMenuItem = (menuHighlightClass, timelineRef) => {
     if (
       !menuHighlightClass ||
       typeof menuHighlightClass !== "string" ||
@@ -2223,7 +2119,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             zoomOut={zoomOut}
             moveLeft={moveLeft}
             moveRight={moveRight}
-            toggleRollingMode={toggleRollingMode}
             showDays={showDays}
             showWeeks={showWeeks}
             showMonths={showMonths}
@@ -2231,7 +2126,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             show6Months={show6Months}
             showYears={showYears}
             show2Years={show2Years}
-            show5Years={show5Years}
           />
         </div>
         <TimelineModal
@@ -2265,7 +2159,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           closeAddDialog={closeAddDialog}
           allowedToEdit={allowedToEdit}
           timelineAddButton={timelineAddButton}
-          phaseIsClosed={isPhaseClosed(addDialogData?.group?.content)}
         />
         <ConfirmModal
           openConfirmModal={openConfirmModal}
