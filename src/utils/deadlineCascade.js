@@ -208,15 +208,18 @@ const cascadeDeadlineChange = ({ arr, field, disabledDates, moveToPast, projectS
       indexToContinue = result.indexToContinue;
     }
     else if (i > indexToContinue) {
-      // For subsequent items, enforce minimum gap if moving forward
-      newDate = enforceMinimumGap(currentItem, prevItem, disabledDates, false);
+      if (phaseOrder.includes(currentItem.key)) {
+        // Set phase boundaries to previous dates end
+        newDate = prevItem ? new Date(prevItem.value) : new Date(currentItem.value);
+      }
+      else {
+        // For subsequent items, enforce minimum gap if moving forward
+        newDate = enforceMinimumGap(currentItem, prevItem, disabledDates, false);
+      }
     }
     currentItem.value = newDate.toISOString().split('T')[0];
     adjustPhaseEndDates(arr, i);
   }
-
-  sortPhaseData(arr, phaseOrder) // TODO: is this necessary any more? should already be in order
-  arr = bumpPhaseStartsToPrevEnd(arr) // This should also be handled by cascade
   return arr
 }
 

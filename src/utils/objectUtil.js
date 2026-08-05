@@ -123,7 +123,7 @@ const mergeAndUpdateDlArrays = (arr1, arr2, deadlineSections) => {
   arr1.forEach((item, i) => {
     if (phaseOrder.includes(item.key)) {
       item.distance_from_previous = 0;
-      item.order = i;
+      //item.order = i;
       return;
     }
     const attribute = attributeByName.get(item.key);
@@ -132,7 +132,7 @@ const mergeAndUpdateDlArrays = (arr1, arr2, deadlineSections) => {
     item.distance_to_next       = attribute.distance_to_next || null;
     item.initial_distance       = attribute.initial_distance?.distance || null;
     item.date_type              = attribute.date_type ?? "arkipäivät";
-    item.order                  = i;
+    //item.order                  = i;
   });
 
   // Sort arr1 based on the keyOrder extracted from deadlineSections
@@ -178,6 +178,7 @@ export const sortPhaseData = (arr, order) => {
   return arr
 }
 
+// TODO: delete this function as unused
 export const bumpPhaseStartsToPrevEnd = (arr) => {
   const filteredArr = arr.filter(item => phaseOrder.includes(item.key));
   // Ensure each subsequent value is equal to or greater than the previous one

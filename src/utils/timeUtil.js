@@ -221,8 +221,9 @@ const getAllowedDatesForLautakunta = (name, formValues, phaseName, matchingItem,
   const esillaoloOff = hasEsillaolo && !formValues[`jarjestetaan_${phaseName}_esillaolo_1`];
 
   if (name.includes("_maaraaika")) {
-    if (hasEsillaolo && esillaoloOff) {
-      const phaseStartDate = `${phaseName}vaihe_alkaa_pvm`;
+    if (!hasEsillaolo || esillaoloOff) {
+      let phaseStartDate = `${phaseName}vaihe_alkaa_pvm`;
+      phaseStartDate = phaseStartDate === "tarkistettu_ehdotusvaihe_alkaa_pvm" ? "tarkistettuehdotusvaihe_alkaa_pvm" : phaseStartDate;
       dateToComparePast = formValues[phaseStartDate];
       // Excel: P1 + 5 / L1 + 5 when esilläolo OFF
       miniumDaysPast = matchingItem?.distance_from_previous || 5;
@@ -412,6 +413,7 @@ const getAllowedDatesForNahtavillaolo = (name, formValues, phaseName, matchingIt
 
 const calculateAllowedDates = (nahtavillaolo, size, dateTypes, name, formValues, sectionAttributes, currentDeadline) => {
   const matchingItem = objectUtil.findMatchingName(sectionAttributes, name, "name");
+  console.log("matchingItem", matchingItem)
   const previousItem = objectUtil.findItem(sectionAttributes, name, "name", -1);
   const nextItem = objectUtil.findItem(sectionAttributes, name, "name", 1);
   const phaseName = currentDeadline?.deadline?.phase_name?.toLowerCase();
@@ -565,6 +567,7 @@ const syncPhaseEndDates = (data, previousPaattyyValues) => {
       data[cur.start] = prevEnd;
     }
   }
+    
 };
 
 const exported = {
