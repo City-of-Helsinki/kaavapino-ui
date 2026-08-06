@@ -14,9 +14,11 @@ import VisTimelineMenu from './VisTimelineMenu'
 import AddGroupModal from './AddGroupModal';
 import ConfirmModal from '../common/ConfirmModal'
 import PropTypes from 'prop-types';
-import { getVisibilityBoolName, getVisBoolsByPhaseName, isDeadlineConfirmed, getDateFieldsForDeadlineGroup, getSubsequentDeadlineGroups } from '../../utils/projectVisibilityUtils';
+import { getVisibilityBoolName, getVisBoolsByPhaseName, isDeadlineConfirmed, getDateFieldsForDeadlineGroup, getSubsequentDeadlineGroups, getGroupNameByVisibilityBool } from '../../utils/projectVisibilityUtils';
+import { setDefaultDatesForNewGroup } from '../../utils/deadlineCascade'
 import { useTimelineTooltip } from '../../hooks/useTimelineTooltip';
 import { updateDateTimeline } from '../../actions/projectActions';
+import { extractFromDeadlineSections } from '../../utils/objectUtil';
 import './VisTimeline.scss'
 Moment.locale('fi');
 
@@ -293,6 +295,31 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       hidePresence: hidePresence, hideBoard: hideBoard
     })
     setToggleOpenAddDialog(prevState => !prevState)
+  }
+
+  const handleGroupAdd = (addedKey) => {
+    const groupName = getGroupNameByVisibilityBool(addedKey);
+    const newDlObjects = extractFromDeadlineSections(deadlineSections,
+      (attribute) => {
+        return attribute.attributegroup === groupName && attribute.type === "date" && attribute.display !== "readonly"
+      }
+    );
+    if (newDlObjects.length === 0) {
+      console.warn("No date attributes found for group:", groupName);
+      return;
+    }
+    const updatedFormValues = structuredClone(visValuesRef.current);
+    updatedFormValues[addedKey] = true;
+    setDefaultDatesForNewGroup(newDlObjects, updatedFormValues, dateTypes);
+    dispatch(
+      updateDateTimeline(
+        newDlObjects[0].name,
+        updatedFormValues[newDlObjects[0].name],
+        updatedFormValues,
+        true,
+        deadlineSections
+      )
+    );
   }
 
   const openRemoveDialog = (data) => {
@@ -2159,6 +2186,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           closeAddDialog={closeAddDialog}
           allowedToEdit={allowedToEdit}
           timelineAddButton={timelineAddButton}
+          onAddGroup={handleGroupAdd}
         />
         <ConfirmModal
           openConfirmModal={openConfirmModal}

@@ -413,7 +413,6 @@ const getAllowedDatesForNahtavillaolo = (name, formValues, phaseName, matchingIt
 
 const calculateAllowedDates = (nahtavillaolo, size, dateTypes, name, formValues, sectionAttributes, currentDeadline) => {
   const matchingItem = objectUtil.findMatchingName(sectionAttributes, name, "name");
-  console.log("matchingItem", matchingItem)
   const previousItem = objectUtil.findItem(sectionAttributes, name, "name", -1);
   const nextItem = objectUtil.findItem(sectionAttributes, name, "name", 1);
   const phaseName = currentDeadline?.deadline?.phase_name?.toLowerCase();

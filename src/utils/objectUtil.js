@@ -389,6 +389,20 @@ const findDeadlineInDeadlineSections = (deadlineName, deadlineSections) => {
   }
 }
 
+export const extractFromDeadlineSections = (deadlineSections, additionalConditions = () => true) => {
+  const targetArray = [];
+  for (const phase of deadlineSections) {
+    for (const section of phase.sections) {
+      for (const attribute of section.attributes) {
+        if (additionalConditions(attribute)) {
+          targetArray.push(attribute);
+        }
+      }
+    }
+  }
+  return targetArray;
+}
+
 const convertKey = {
   tarkasta_esillaolo_periaatteet_fieldset: 'milloin_periaatteet_esillaolo_alkaa',
   tarkasta_lautakunta_periaatteet_fieldset: 'milloin_periaatteet_lautakunnassa',
@@ -445,7 +459,8 @@ const exported = {
   convertKeyToMatching,
   convertPhaseIdToPhaseName,
   convertPayloadValues,
-  filterHiddenKeysUsingSections
+  filterHiddenKeysUsingSections,
+  extractFromDeadlineSections
 }
 
 if (process.env.UNIT_TEST === "true") {

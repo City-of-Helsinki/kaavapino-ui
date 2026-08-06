@@ -1,19 +1,15 @@
 import React, { useEffect }  from 'react';
-import { change } from 'redux-form'
-import { useDispatch } from 'react-redux';
-import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { IconPlus,Button } from 'hds-react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { getFocusableElements, focusTrapOnTabPressed } from '../project/projectModalUtils'
 
-const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAddDialog, allowedToEdit, timelineAddButton }) => {
+const AddGroupModal = ({toggleOpenAddDialog,addDialogStyle,addDialogData,closeAddDialog, allowedToEdit, timelineAddButton, onAddGroup }) => {
   const {t} = useTranslation()
-  const dispatch = useDispatch();
   
   const addNew = (addedKey) => {
     if(addedKey) {
-      dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, addedKey, true));
+      onAddGroup(addedKey);
     }
     closeAddDialog(true);
   }
@@ -106,7 +102,8 @@ AddGroupModal.propTypes = {
   addDialogData: PropTypes.object,
   closeAddDialog: PropTypes.func,
   allowedToEdit: PropTypes.bool,
-  timelineAddButton: PropTypes.instanceOf(HTMLElement)
+  timelineAddButton: PropTypes.instanceOf(HTMLElement),
+  onAddGroup: PropTypes.func
 };
 
 export default AddGroupModal;

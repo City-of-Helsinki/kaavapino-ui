@@ -1,5 +1,5 @@
 import { generateConfirmedFields } from './generateConfirmedFields';
-import { phaseOrder, sortPhaseData, bumpPhaseStartsToPrevEnd } from './objectUtil';
+import { phaseOrder } from './objectUtil';
 import { findFirstAllowedDate, findPastDateWithGap } from './timeUtil';
 
 const findLastDeadlineInPhase = (arr, index, targetPhase) => {
@@ -21,6 +21,19 @@ const findLastDeadlineInPhase = (arr, index, targetPhase) => {
   return null;
 }
 
+const getGapDateType = (deadline) => {
+  // Workaround for finding the date type for the minimum distance calculation.
+  // This should be provided by backend but is currently unavailable.
+  // The string-matching approach is brittle and should be replaced as soon as data is available.
+
+  // The date type refers to the type of days in TO the deadline from the previous deadline
+  // Which is not always the same as the date_type of the deadline itself.
+  if (deadline.key?.includes("esillaolo_alkaa")) return "työpäivät";
+  if (deadline.key?.includes("esillaolo_paattyy")) return "esilläolopäivät";
+  if (deadline.key?.includes("lautakunnassa")) return "työpäivät";
+  return deadline?.date_type || null;
+}
+
 const cascadeDeadlineChange = ({ arr, field, disabledDates, moveToPast, projectSize, attributeData, deadlineObjects = [] }) => {
   // Do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
   const confirmedFieldSet = new Set(generateConfirmedFields(attributeData, deadlineObjects));
@@ -30,19 +43,6 @@ const cascadeDeadlineChange = ({ arr, field, disabledDates, moveToPast, projectS
     "voimaantulo_pvm", "rauennut", "tullut_osittain_voimaan_pvm", "kumottu_pvm", "valtuusto_poytakirja_nahtavilla_pvm",
     "hyvaksymispaatos_valitusaika_paattyy", "valtuusto_hyvaksymiskuulutus_pvm", "hyvaksymispaatos_pvm"
   ]
-
-  const getGapDateType = (deadline) => {
-    // Workaround for finding the date type for the minimum distance calculation.
-    // This should be provided by backend but is currently unavailable.
-    // The string-matching approach is brittle and should be replaced as soon as data is available.
-
-    // The date type refers to the type of days in TO the deadline from the previous deadline
-    // Which is not always the same as the date_type of the deadline itself.
-    if (deadline.key?.includes("esillaolo_alkaa")) return "työpäivät";
-    if (deadline.key?.includes("esillaolo_paattyy")) return "esilläolopäivät";
-    if (deadline.key?.includes("lautakunnassa")) return "työpäivät";
-    return deadline?.date_type || null;
-  }
 
   const isFrozen = (item) => {
     if (!item?.value) return false;
@@ -99,6 +99,22 @@ const cascadeDeadlineChange = ({ arr, field, disabledDates, moveToPast, projectS
     lautakuntaItem.value = new Date(lautakuntaResult).toISOString().split('T')[0];
   }
 
+  const handleLautakuntaMove = (arr, i, disabledDates) => {
+    const currentItem = arr[i];
+    const prevItem = getPreviousItem(arr, i);
+    const gapType = getGapDateType(currentItem);
+    const allowedDates = disabledDates?.date_types[gapType]?.dates || [];
+    const maaraaikaResult = findPastDateWithGap(currentItem.value, currentItem.initial_distance, allowedDates);
+
+    if (maaraaikaResult) {
+      const maikaObject = { ...prevItem, value: maaraaikaResult};
+      const enforcedMaaraaika = enforceMinimumGap(maikaObject, getPreviousItem(arr, i-1), disabledDates);
+      prevItem.value = enforcedMaaraaika.toISOString().split('T')[0];
+    }
+    const lautakuntaResult = enforceMinimumGap(currentItem, prevItem, disabledDates, true);
+    currentItem.value = lautakuntaResult?.toISOString().split('T')[0] || currentItem.value;
+  }
+
   const handleEsillaMaaraaikaMove = (arr, i, movedDate, disabledDates) => {
     const alkaaItem = arr[i + 1];
     const paattyyItem = arr[i + 2];
@@ -149,17 +165,7 @@ const cascadeDeadlineChange = ({ arr, field, disabledDates, moveToPast, projectS
     }
     else if (currentItem?.key?.includes("lautakunnassa") && !currentItem?.key?.includes("lautakunnassa_") || currentItem?.key?.includes("alkaa")) {
       // Backward cascade to maaraaika using previous_deadline
-      const gapType = getGapDateType(currentItem);
-      const allowedDates = disabledDates?.date_types[gapType]?.dates || [];
-      const maaraaikaResult = findPastDateWithGap(currentItem.value, currentItem.initial_distance, allowedDates);
-
-      if (maaraaikaResult) {
-        const maikaObject = { ...prevItem, value: maaraaikaResult};
-        const enforcedMaaraaika = enforceMinimumGap(maikaObject, getPreviousItem(arr, i-1), disabledDates);
-        prevItem.value = enforcedMaaraaika.toISOString().split('T')[0];
-      }
-      const enforcedLautakunta = enforceMinimumGap(currentItem, prevItem, disabledDates, true);
-      currentItem.value = enforcedLautakunta.toISOString().split('T')[0];
+      handleLautakuntaMove(arr, i, disabledDates);
       indexToContinue = i;
     }
     else if (currentItem?.key?.includes("maaraaika")) {
@@ -222,6 +228,25 @@ const cascadeDeadlineChange = ({ arr, field, disabledDates, moveToPast, projectS
   }
   return arr
 }
+
+export const setDefaultDatesForNewGroup = (dlObjects, formValues, allDates) => {
+  dlObjects.forEach(dl => {
+    if (dl.initial_distance?.base_deadline) {
+      const baseDate = formValues[dl.initial_distance.base_deadline] || formValues[dl.previous_deadline];
+      const distance = dl.initial_distance.distance || dl.distance_from_previous || 0;
+      if (baseDate) {
+        const gapType = getGapDateType({ key: dl.name, date_type: dl.date_type });
+        const gapDates = allDates?.[gapType]?.dates;
+        const allowedDates = allDates?.[dl.date_type]?.dates || gapDates;
+        const newDate = findFirstAllowedDate(baseDate, distance, gapDates, allowedDates);
+        if (newDate) {
+          formValues[dl.name] = newDate
+        }
+      }
+    }
+  });
+};
+
 
 const exported = {
   cascadeDeadlineChange

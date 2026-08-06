@@ -271,6 +271,15 @@ export const getVisibilityBoolName = (deadlineGroup) => {
   return vis_bool_group_map[deadlineGroup] || null;
 };
 
+export const getGroupNameByVisibilityBool = (boolName) => {
+  for (const [key, value] of Object.entries(vis_bool_group_map)) {
+    if (value === boolName) {
+      return key;
+    }
+  }
+  return null;
+};
+
 export const getVisBoolsByPhaseName = (phase_name) => {
   phase_name = phase_name.toLowerCase().split(' ').join('_');
   return Object.entries(vis_bool_group_map)

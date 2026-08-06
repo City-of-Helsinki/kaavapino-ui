@@ -16,9 +16,8 @@ import * as visdata from 'vis-data'
 import ConfirmModal from '../../common/ConfirmModal.jsx';
 import withValidateDate from '../../../hocs/withValidateDate.jsx';
 import objectUtil from '../../../utils/objectUtil'
-import textUtil from '../../../utils/textUtil'
 import { updateDateTimeline,validateProjectTimetable,setValidatingTimetable } from '../../../actions/projectActions';
-import { getVisibilityBoolName, vis_bool_group_map, getPhaseNameByVisBool, isDeadlineConfirmed } from '../../../utils/projectVisibilityUtils';
+import { getVisibilityBoolName, vis_bool_group_map, isDeadlineConfirmed } from '../../../utils/projectVisibilityUtils';
 import timeUtil from '../../../utils/timeUtil'
 import { shouldDispatchTimelineUpdate } from '../../../utils/timelineDispatchLogic'
 import { focusTrapOnTabPressed, getFocusableElements } from '../projectModalUtils';
@@ -128,29 +127,11 @@ class EditProjectTimeTableModal extends Component {
     }
     if(prevProps.formValues && !isEqual(prevProps.formValues, formValues)){
       //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
-      timeUtil.syncPhaseEndDates(formValues)
-      if(deadlineSections && deadlines && formValues){
-        // Check if changedValues contains 'jarjestetaan' or 'lautakuntaan' and the value is a boolean
-        const [isGroupAdd, isGroupRemove, changedValues] = this.getChangedValues(prevProps.formValues, formValues);
-        // Use calculated values for timeline during group add to prevent visual flash of stale dates
-        let timelineSourceData = formValues;
+      timeUtil.syncPhaseEndDates(formValues) // TODO: delete (should be done in deadline cascade)
 
-        if (isGroupAdd) {
-          // Capture calculated values from addGroup and merge with formValues
-          // This ensures validation receives freshly calculated dates immediately,
-          // avoiding race condition where change() hasn't updated Redux yet
-          const calculatedValues = this.addGroup(changedValues)
-          // Deep clone to prevent mutation by response handlers
-          const attributeDataWithNewValues = structuredClone({ ...formValues, ...calculatedValues });
-          // Use calculated values for timeline rendering to prevent visual jump
-          timelineSourceData = attributeDataWithNewValues;
-          this.setState({visValues: attributeDataWithNewValues})
-          // Dispatch validation IMMEDIATELY to ensure our
-          // calculated values are sent before any other validation triggers
-          if (!this.props.validatingTimetable?.started) {
-            this.props.dispatch(validateProjectTimetable(attributeDataWithNewValues));
-          }
-        }
+      if(deadlineSections && deadlines && formValues){
+        const isGroupRemove = this.wasGroupRemoved(prevProps.formValues, formValues);
+
         // trigger validation when removing a group to recalculate phase boundaries
         if (isGroupRemove) {
           this.setState({visValues:formValues})
@@ -163,7 +144,7 @@ class EditProjectTimeTableModal extends Component {
         if(!this.props.validated){
           let ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe)
           //Form items and groups
-          let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,timelineSourceData,deadlines,ongoingPhase,false)
+          let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,formValues,deadlines,ongoingPhase,false)
           // Update the existing data
           const combinedGroups = nestedDeadlines? deadLineGroups.concat(nestedDeadlines) : deadLineGroups
           this.state.groups.clear();
@@ -175,13 +156,10 @@ class EditProjectTimeTableModal extends Component {
           // Check if timeline update should be dispatched (handles group add/remove scenarios)
           const dispatchDecision = shouldDispatchTimelineUpdate(
             newObjectArray, 
-            this.props.validatingTimetable?.started, 
-            isGroupAdd
+            this.props.validatingTimetable?.started,
           );
           
-          if (!dispatchDecision.shouldDispatch) {
-            // Skip dispatch
-          } else {
+          if (dispatchDecision.shouldDispatch) {
             //Get added groups last date field and update all timelines ahead
             const { field, formattedDate } = this.getLastDateField(newObjectArray);
             //Dispatch added values to move other values in projectReducer if miniums are reached
@@ -189,10 +167,7 @@ class EditProjectTimeTableModal extends Component {
               this.props.dispatch(updateDateTimeline(field, formattedDate, formValues, dispatchDecision.addingNew, deadlineSections));
             }
           }
-          // Skip visValues update during group add - already set with calculated values above
-          if (!isGroupAdd) {
-            this.setState({visValues:formValues})
-          }
+          this.setState({visValues:formValues})
         }
         let sectionAttributes = [];
         this.extractAttributes(deadlineSections, formValues, sectionAttributes, (attribute, formValues) =>
@@ -911,7 +886,7 @@ class EditProjectTimeTableModal extends Component {
       } 
       else if(innerStart && innerEnd){
         if(formValues[deadline.attribute] && this.shouldAddSubgroup(deadline, formValues)){
-          let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, milestone?milestone:null, formValues);
+          let subgroup2 = this.addSubgroup(deadlines, i, numberOfPhases, innerStart, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, milestone || null, formValues);
           [phaseData, deadLineGroups, nestedDeadlines] = subgroup2;
         }
         innerStart = false;
@@ -941,407 +916,7 @@ class EditProjectTimeTableModal extends Component {
     }
   }
 
-  //Get next values and increment index and calculate new values
-  processValuesSequentially = (matchingValues,index,phase) => { 
-    let validValues = [];
-    const sortOrder = ['maaraaika', 'alkaa', 'paattyy', 'lautakunta', "viimeistaan_lausunnot", 'mielipiteet'];
-    const isLargeProject = this.props.formValues.kaavaprosessin_kokoluokka === "XL" || this.props.formValues.kaavaprosessin_kokoluokka === "L" 
-    //Sort to to order where viimeistaan and mielipiteet are last
-    matchingValues = matchingValues.sort((a, b) => {
-      const aIndex = sortOrder.findIndex(order => a.key.includes(order));
-      const bIndex = sortOrder.findIndex(order => b.key.includes(order));
-    
-      // If key not found, assign a high index to push it to the end
-      const aOrder = aIndex === -1 ? sortOrder.length : aIndex;
-      const bOrder = bIndex === -1 ? sortOrder.length : bIndex;
-    
-      return aOrder - bOrder;
-    });
-    // Replace all underscores with spaces
-    let phaseNormalized = phase.replace(/_/g, ' ');
-    // Trim leading and trailing spaces just in case
-    phaseNormalized = phaseNormalized.trim();
-    // Capitalize the first character and concatenate with the rest of the string
-    phaseNormalized = phaseNormalized.charAt(0).toUpperCase() + phaseNormalized.slice(1);
-    //Exception for luonnos and ehdotus
-    if(phaseNormalized.toLowerCase() === "kaavaluonnos"){
-      phaseNormalized = "Luonnos"
-    }
-    else if(phaseNormalized.toLowerCase() === "kaavaehdotus"){
-      phaseNormalized = "Ehdotus"
-    }
-    //Add distance values,matching name and from what data was value calculated from to check later from deadlinesection data
-    let distanceArray = []
-    for (const dlSection of this.props.deadlineSections) {
-      if(dlSection.title.toLowerCase() === phaseNormalized.toLowerCase()){
-        const sectionAttributes = dlSection.sections[0].attributes
-        for (const attribute of sectionAttributes) {
-          //Remove unwanted sections, ehdotus phase määräaika is not currently used in the timeline, possibly in the future, otherwise messes the allocation of keys and values
-          if(
-            attribute.type === "date" && 
-            attribute.display !== "readonly" && 
-            attribute.label !== "Mielipiteet viimeistään" &&
-            (isLargeProject 
-              ? attribute.name !== "ehdotus_nahtaville_aineiston_maaraaika_2" && 
-                attribute.name !== "ehdotus_nahtaville_aineiston_maaraaika_3" && 
-                attribute.name !== "ehdotus_nahtaville_aineiston_maaraaika_4"
-              : true) &&
-            (attribute.attributesubgroup === "Nähtäville" || 
-              attribute.attributesubgroup === "Esille" || 
-              attribute.attributesubgroup === "Esityslistalle")
-            ){
-            distanceArray.push({"name":attribute.name,"distance":attribute?.initial_distance?.distance,"previous":attribute?.distance_from_previous,"linkedData":attribute.previous_deadline})
-          }
-        }
-      }  
-    }
-    let newItem
-
-    for (const { key } of matchingValues) {
-      let valueToCheck
-      let daysToAdd
-
-      const foundItem = matchingValues.find(item => item?.key?.includes("_paattyy") || item?.key?.includes("_lautakunnassa")) || matchingValues[0];
-      const fallbackValue = matchingValues.find(item => item?.value)?.value;
-      let baseValue = foundItem?.value || fallbackValue;
-      let forcedStartSection = null;
-
-      if (!baseValue) {
-        const firstKey = matchingValues[0]?.key;
-        const firstSection = firstKey
-          ? distanceArray.find(section => section.name === firstKey)
-          : null;
-        
-        const linkedBase = firstSection?.linkedData
-          ? (this.props.formValues?.[firstSection.linkedData] || this.props.attributeData?.[firstSection.linkedData])
-          : null;
-        
-        if (linkedBase) {
-          baseValue = linkedBase;
-          forcedStartSection = firstSection;
-        }
-      }
-      // FIX: Fallback for lautakunta when esillaolo doesn't exist - use phase_start + initial_distance
-      // Only applies to Periaatteet, Luonnos, Ehdotus phases
-      const isLautakuntaContent = matchingValues.some(item => 
-        item.key?.includes('lautakunta') || item.key?.includes('_kylk_')
-      );
-      const isEsillaoloContent = matchingValues.some(item => 
-        item.key?.includes('esillaolo') || item.key?.includes('luonnosaineiston')
-      );
-      const isTargetPhase = ['periaatteet', 'luonnos', 'ehdotus', 'kaavaluonnos', 'kaavaehdotus'].includes(phase);
-          
-      if (!baseValue && (isLautakuntaContent || isEsillaoloContent) && isTargetPhase) {
-        const phaseStartMap = {
-          'periaatteet': 'periaatteetvaihe_alkaa_pvm',
-          'luonnos': 'luonnosvaihe_alkaa_pvm',
-          'ehdotus': 'ehdotusvaihe_alkaa_pvm',
-          'kaavaluonnos': 'luonnosvaihe_alkaa_pvm',
-          'kaavaehdotus': 'ehdotusvaihe_alkaa_pvm'
-        };
-        const phaseStartField = phaseStartMap[phase];
-        const phaseStartDate = phaseStartField 
-          ? (this.props.formValues?.[phaseStartField] || this.props.attributeData?.[phaseStartField])
-          : null;
-        
-        if (phaseStartDate) {
-          baseValue = phaseStartDate;
-          const firstKey = matchingValues[0]?.key;
-          forcedStartSection = firstKey ? distanceArray.find(section => section.name === firstKey) : null;
-        }
-      }
-      if (!baseValue) {
-        console.error("Cannot add group: missing base date for", phase, matchingValues);
-        return validValues;
-      }
-      let newDate = new Date(baseValue);
-      if (Number.isNaN(newDate.getTime())) {
-        console.error("Cannot add group: invalid base date for", phase, baseValue);
-        return validValues;
-      }
-        //let matchingSection = distanceArray.find(section => section.name === nextKey)
-        let matchingSection
-        if(!newItem){
-          if (forcedStartSection) {
-            matchingSection = forcedStartSection
-          } else {
-            matchingSection = objectUtil.findItem(distanceArray,foundItem.key,"name",1)
-          }
-          if(matchingSection?.name.includes("viimeistaan_lausunnot")){
-            matchingSection = objectUtil.findItem(distanceArray,matchingSection.name,"name",1)
-          }
-          if(!matchingSection?.name.includes("_lautakunnassa")){
-            newItem = matchingSection?.name
-          }
-        }
-        else{
-          if(newItem){
-            const newVal = validValues.find(item => item.key === newItem)
-            if (!newVal?.value) {
-              continue;
-            }
-            newDate = new Date(newVal.value)
-            if (Number.isNaN(newDate.getTime())) {
-              continue;
-            }
-                // --- Ensure new date is at least tomorrow ---
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            newDate.setHours(0, 0, 0, 0);
-            if (newDate <= today) {
-                newDate = new Date(today);
-                newDate.setDate(today.getDate() + 1);
-                // Also update validValues so subsequent calculations use the corrected date
-                const idx = validValues.findIndex(item => item.key === newItem);
-                if (idx !== -1) {
-                    validValues[idx].value = newDate.toISOString().split('T')[0];
-                }
-            }
-            matchingSection = objectUtil.findItem(distanceArray,newItem,"name",1)
-          }
-          else{
-            matchingSection = objectUtil.findItem(distanceArray,foundItem.key,"name",1)
-          }
-        }
-        // Skip iteration if matchingSection is null (happens when removing last items in the group)
-        if (!matchingSection) {
-          continue;
-        }
-        
-        const matchingItem = objectUtil.findMatchingName(this.state.unfilteredSectionAttributes, matchingSection.name, "name");
-        // Skip iteration if matchingItem is not found
-        if (!matchingItem) {
-          continue;
-        }
-        //const previousItem = objectUtil.findItem(this.state.unfilteredSectionAttributes, nextKey, "name", -1);
-        //const nextItem = objectUtil.findItem(this.state.unfilteredSectionAttributes, nextKey, "name", 1);
-        let dateFilter
-
-        if(matchingItem.attributesubgroup === "Esille" && (this.props.attributeData?.kaavaprosessin_kokoluokka === "XL" || this.props.attributeData?.kaavaprosessin_kokoluokka === "L")){
-          dateFilter = matchingSection.name.includes("_maaraaika") ? this.props.dateTypes?.työpäivät?.dates : this.props.dateTypes?.esilläolopäivät?.dates  //määräaika or alkaa/paattyy
-        }
-        else if(matchingItem.attributesubgroup === "Esille" && (this.props.attributeData?.kaavaprosessin_kokoluokka === "XS" || this.props.attributeData?.kaavaprosessin_kokoluokka === "S" || this.props.attributeData?.kaavaprosessin_kokoluokka === "M")){
-          dateFilter = matchingSection.name.includes("_maaraaika") ? this.props.dateTypes?.työpäivät?.dates : this.props.dateTypes?.arkipäivät?.dates //määräaika or alkaa paattyy
-        }
-        else if(matchingItem.attributesubgroup === "Nähtäville" && (this.props.attributeData?.kaavaprosessin_kokoluokka === "XL" || this.props.attributeData?.kaavaprosessin_kokoluokka === "L")){
-          dateFilter = matchingSection.name.includes("_maaraaika") ? this.props.dateTypes?.työpäivät?.dates : this.props.dateTypes?.arkipäivät?.dates //määräaika or alkaa paattyy
-        }
-        else if(matchingItem.attributesubgroup === "Nähtäville" && (this.props.attributeData?.kaavaprosessin_kokoluokka === "XS" || this.props.attributeData?.kaavaprosessin_kokoluokka === "S" || this.props.attributeData?.kaavaprosessin_kokoluokka === "M")){
-          dateFilter = matchingSection.name.includes("_maaraaika") ? this.props.dateTypes?.työpäivät?.dates :  this.props.dateTypes?.arkipäivät?.dates//määräaika or alkaa paattyy
-        }
-        else{
-          // Esityslistalle (lautakunta): use työpäivät for Periaatteet/Luonnos/Ehdotus, lautakunnan_kokouspäivät for others
-          const isTargetLautakuntaPhase = ['periaatteet', 'luonnos', 'ehdotus', 'kaavaluonnos', 'kaavaehdotus'].includes(phase);
-          if (isTargetLautakuntaPhase) {
-            // FIX: Use työpäivät for distance calculation (not lautakunnan_kokouspäivät which has only ~2-3 days/month)
-            dateFilter = this.props.dateTypes?.työpäivät?.dates || []
-          } else {
-            // Other phases (tarkistettu_ehdotus etc): keep original behavior
-            dateFilter = matchingSection.name.includes("_maaraaika") ? this.props.dateTypes?.työpäivät?.dates : this.props.dateTypes?.lautakunnan_kokouspäivät?.dates
-          }
-        }
-
-        if(matchingSection.name.includes("_alkaa")){
-          daysToAdd = matchingSection.distance
-        }
-        else if(matchingSection.name.includes("_paattyy")){
-          daysToAdd = matchingSection.distance
-        }
-        else if(matchingSection.name.includes("viimeistaan_lausunnot")){
-          //Should always be last item in the list so paattyy is already there
-          const endingObjectValue = validValues.find(item => item?.key?.includes('_paattyy'))?.value;
-          valueToCheck = endingObjectValue
-        }
-        else{
-          // FIX: For first esillaolo/lautakunta maaraaika in XL/L projects, use distance_from_previous
-          // instead of initial_distance when re-adding after delete
-          const isXLorL = this.props.attributeData?.kaavaprosessin_kokoluokka === "XL" || 
-                          this.props.attributeData?.kaavaprosessin_kokoluokka === "L";
-          const isPeriaatteetOrLuonnos = ['periaatteet', 'luonnos'].includes(phase);
-          const isEhdotus = phase === 'ehdotus';
-          const isFirstGroup = index == 1;
-          const isMaaraaikaField = matchingSection.name.includes('_maaraaika') || matchingSection.name.includes('aineiston_maaraaika');
-          
-          // Apply fix: esillaolo in Periaatteet/Luonnos, lautakunta in Ehdotus only
-          const shouldUsePrevious = isMaaraaikaField && isXLorL && isFirstGroup && matchingSection.previous && (
-            (isEsillaoloContent && isPeriaatteetOrLuonnos) ||
-            (isLautakuntaContent && isEhdotus)
-          );
-          
-          if (shouldUsePrevious) {
-            daysToAdd = matchingSection.previous;
-          } else {
-            //5 if for some reason there is no distance value set in backend/Excel
-            daysToAdd = matchingSection.distance ? matchingSection.distance : 5
-          }
-        }
-
-
-        if(!matchingSection.name.includes("viimeistaan_lausunnot")){
-          while (daysToAdd > 0) {
-            newDate.setDate(newDate.getDate() + 1);
-            const dateStr = newDate.toISOString().split('T')[0];
-            //Skip dates that are not compatible
-            if (dateFilter?.includes(dateStr) && !this.props.lomapaivat?.includes(dateStr) && !timeUtil.isWeekend(dateStr)) {
-                daysToAdd--;
-            }
-          }
-        }
-
-        valueToCheck = newDate.toISOString().split('T')[0];
-        validValues.push({ key: matchingSection.name, value: valueToCheck });
-
-        if(!validValues.find(item => item?.key?.includes('_lautakunnassa'))){
-          newItem = matchingSection.name
-        }
-
-        validValues = validValues.filter(item => item?.value !== null)
-    }
-    
-    //new values that are added to vis timeline when add is clicked
-    return validValues;
-  }
-
-  addGroup = (changedValues) => {
-    const keys = Object.keys(changedValues);
-    const changedVisBool = Object.values(vis_bool_group_map).find(boolName => keys.includes(boolName));
-    let phase = getPhaseNameByVisBool(changedVisBool);
-    let content = '';
-    if (changedVisBool.includes("nahtaville")){
-      content = "nahtavillaolo";
-    } else if (changedVisBool.includes("lautakunta")) {
-      content = "lautakunta";
-    } else if (changedVisBool.includes("esillaolo")) {
-      content = "esillaolo";
-    }
-    let index = textUtil.getNumberAfterSuffix(changedVisBool);
-    
-    let matchingValues = Object.entries(this.props.formValues);
-
-    if (content) {
-      let indexKey = index > 2 ? "_" + Number(index - 1) : '';
-      let syntaxToCheck = phase === "ehdotus" ? "ehdotuksen" : "";
-      let syntaxToCheck2 = phase === "ehdotus" ? "ehdotuksesta" : "";
-      //Get existing keys and values
-      if (content === "lautakunta") {
-        matchingValues = Object.entries(this.props.formValues)
-          .filter(([key]) =>
-            key === phase + '_kylk_aineiston_maaraaika' + indexKey ||
-            key === phase + '_kylk_maaraaika' + indexKey ||
-            key === 'milloin_' + phase + '_lautakunnassa' + indexKey || 
-            key === 'milloin_kaava' + phase + '_lautakunnassa' + indexKey || 
-            key === 'kaava' + phase + '_kylk_aineiston_maaraaika' + indexKey || 
-            key === phase + '_lautakunta_aineiston_maaraaika' + indexKey
-          )
-          .map(([key, value]) => ({ key, value }));
-      } else {
-        const filterContent = content == "nahtavillaolo" ? "nahtavilla" : ""
-        matchingValues = Object.entries(this.props.formValues)
-          .filter(([key]) =>
-            key === 'milloin_' + phase + '_' + content + '_alkaa' + indexKey ||
-            key === 'milloin_' + syntaxToCheck + '_' + filterContent + '_alkaa_iso' + indexKey ||
-            key === 'milloin_' + syntaxToCheck + '_' + filterContent + '_alkaa_pieni' + indexKey ||
-            key === 'milloin_' + phase + '_' + content + '_paattyy' + indexKey ||
-            key === 'milloin_' + syntaxToCheck + '_' + filterContent + '_paattyy' + indexKey ||
-            key === phase + '_nahtaville_aineiston_maaraaika' + indexKey ||
-            key === phase + '_esillaolo_aineiston_maaraaika' + indexKey ||
-            key === phase + 'aineiston_maaraaika' + indexKey ||
-            key === 'viimeistaan_lausunnot_' + syntaxToCheck2 + indexKey
-            //key === 'viimeistaan_mielipiteet_' + phase + indexKey
-          )
-          .map(([key, value]) => ({ key, value }));
-      }
-    }
-
-    // When re-adding first element after delete→save OR after validation clears values,
-    // date fields may not exist or have null/incomplete values. Build expected field names from schema.
-    const hasValidValues = matchingValues.some(item => item.value !== null && item.value !== undefined);
-    // Each content type requires minimum number of keys: lautakunta=2, esillaolo=3, nahtavillaolo=3
-    const minExpectedKeys = content === "lautakunta" ? 2 : 3;
-    const hasEnoughKeys = matchingValues.length >= minExpectedKeys;
-    
-    if ((matchingValues.length === 0 || !hasValidValues || !hasEnoughKeys) && index <= 2 && content) {
-      // Build expected field names based on phase and content type
-      // Note: field naming is inconsistent - luonnos uses 'kaavaluonnos_' prefix for maaraaika fields
-      const expectedKeys = [];
-      const isLargeProject = this.props.formValues.kaavaprosessin_kokoluokka === "XL" || 
-                             this.props.formValues.kaavaprosessin_kokoluokka === "L";
-      
-      // Determine the prefix for maaraaika fields (schema uses 'kaavaluonnos' for luonnos phase)
-      const maaraaikaPrefix = phase === "luonnos" ? "kaavaluonnos" : phase;
-      
-      if (content === "lautakunta") {
-        // phase like "periaatteet", "luonnos", "ehdotus"
-        if (phase === "periaatteet") {
-          expectedKeys.push(
-            phase + '_lautakunta_aineiston_maaraaika',
-            'milloin_' + phase + '_lautakunnassa'
-          );
-        } else {
-          // luonnos uses kaavaluonnos_kylk_*, ehdotus uses ehdotus_kylk_*
-          expectedKeys.push(
-            maaraaikaPrefix + '_kylk_aineiston_maaraaika',
-            'milloin_kaava' + phase + '_lautakunnassa'
-          );
-        }
-      } else if (content === "esillaolo") {
-        // Field naming is inconsistent:
-        // - periaatteet: periaatteet_esillaolo_aineiston_maaraaika
-        // - luonnos: luonnosaineiston_maaraaika (NOTE: no underscore, no _esillaolo_!)
-        const maaraaikaKey = phase === "luonnos" 
-          ? 'luonnosaineiston_maaraaika' 
-          : phase + '_esillaolo_aineiston_maaraaika';
-        expectedKeys.push(
-          maaraaikaKey,
-          'milloin_' + phase + '_esillaolo_alkaa',
-          'milloin_' + phase + '_esillaolo_paattyy'
-        );
-      } else if (content === "nahtavillaolo") {
-        const syntaxToCheck = phase === "ehdotus" ? "ehdotuksen" : "";
-        const alkaaKey = isLargeProject 
-          ? 'milloin_' + syntaxToCheck + '_nahtavilla_alkaa_iso'
-          : 'milloin_' + syntaxToCheck + '_nahtavilla_alkaa_pieni';
-        expectedKeys.push(
-          phase + '_nahtaville_aineiston_maaraaika',
-          alkaaKey,
-          'milloin_' + syntaxToCheck + '_nahtavilla_paattyy'
-        );
-      }
-      
-      // Create matchingValues with null values so processValuesSequentially can use linkedData
-      matchingValues = expectedKeys.map(key => ({ key, value: null }));
-    }
-
-    const validValues = this.processValuesSequentially(matchingValues, index, phase);
-
-    if (validValues.length >= 2 || validValues.length === 1 && validValues[0].key.includes("_lautakunnassa")) {
-      let indexString;
-      if (index > 1) {
-        indexString = "_" + index;
-      } else {
-        indexString = "";
-      }
-      // Build calculatedValues object to return for immediate validation
-      const calculatedValues = {};
-      validValues.forEach(({ key, value }) => {
-        let modifiedKey;
-        const numericRegex = /_\d+$/; // Matches keys that end with an underscore followed by one or more digits
-        if (numericRegex.test(key)) {
-          modifiedKey = key.replace(numericRegex, indexString);
-        } else {
-          modifiedKey = key + indexString;
-        }
-        calculatedValues[modifiedKey] = value;
-        this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, modifiedKey, value));
-      });
-      return calculatedValues;
-    } else {
-      console.error("Not enough matching values to create new items.");
-    }
-    return {};
-  };
-
-  getChangedValues = (prevValues, currentValues) => {
+  wasGroupRemoved = (prevValues, currentValues) => {
     const changedValues = {};
 
     Object.keys(currentValues).forEach((key) => {
@@ -1350,13 +925,10 @@ class EditProjectTimeTableModal extends Component {
       }
     });
     
-    const isAdd = Object.entries(changedValues).some(([key, value]) => 
-      Object.values(vis_bool_group_map).includes(key) && typeof value === 'boolean' && value === true
-    );
     const isRemove = Object.entries(changedValues).some(([key, value]) => 
       Object.values(vis_bool_group_map).includes(key) && typeof value === 'boolean' && value === false
     );
-    return [isAdd, isRemove, changedValues];
+    return isRemove;
   }
 
   handleSubmit = () => {
