@@ -6,7 +6,6 @@ import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import FormField from '../input/FormField'
 import { showField } from '../../utils/projectVisibilityUtils'
 import textUtil from '../../utils/textUtil'
-import objectUtil from '../../utils/objectUtil';
 import PropTypes from 'prop-types'
 import './VisTimeline.scss'
 import { getFocusableElements } from '../project/projectModalUtils';
@@ -46,7 +45,7 @@ const TimelineModal = ({
     }
   }, [open, returnFocusGroupId]);
 
-  const getFormField = (fieldProps, key, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title, confirmedValue, type, tooltip, lautakuntaInPast) => {
+  const getFormField = (fieldProps, key, disabled, deadlineSection, title, confirmedValue, type, tooltip, lautakuntaInPast) => {
     if (!showField(fieldProps.field, visValues)) {
       return null
     }
@@ -98,8 +97,6 @@ const TimelineModal = ({
           lomapaivat={lomapaivat}
           dateTypes={dateTypes}
           deadlineSection={deadlineSection}
-          maxMoveGroup={maxMoveGroup}
-          maxDateToMove={maxDateToMove}
           groupName={title}
           visGroups={groups}
           visItems={items}
@@ -114,7 +111,7 @@ const TimelineModal = ({
     )
   }
 
-  const getFormFields = (sections, sectionIndex, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title, confirmedValue, tooltip, lautakuntaInPast) => {
+  const getFormFields = (sections, sectionIndex, disabled, deadlineSection, title, confirmedValue, tooltip, lautakuntaInPast) => {
     // Separate the section with the label "Mielipiteet viimeistään"
     const filteredSections = sections.filter(section => section.label !== "Mielipiteet viimeistään");
     const lastSection = sections.find(section => section.label === "Mielipiteet viimeistään");
@@ -126,31 +123,9 @@ const TimelineModal = ({
 
     const formFields = []
     filteredSections.forEach((field, fieldIndex) => {
-      formFields.push(getFormField({ field }, `${sectionIndex} - ${fieldIndex}`, { disabled }, { deadlineSection }, maxMoveGroup, maxDateToMove, title, confirmedValue, field?.type, tooltip, lautakuntaInPast))
+      formFields.push(getFormField({ field }, `${sectionIndex} - ${fieldIndex}`, { disabled }, { deadlineSection }, title, confirmedValue, field?.type, tooltip, lautakuntaInPast))
     })
     return formFields
-  }
-
-  const getMaxiumDateToMove = (attr) => {
-    const foundGroups = groups.filter(g => g.nestedInGroup === group);
-    const esillaolo = foundGroups.filter(obj => obj.content.startsWith('Esilläolo-'));
-    const nahtavillaolo = foundGroups.filter(obj => obj.content.startsWith('Nahtavillaolo-'));
-    const lautakunta = foundGroups.filter(obj => obj.content.startsWith('Lautakunta-'));
-    
-    let latestGroup
-    let latestObject
-    let miniumObject
-
-    const phaseObject = lautakunta.length != 0 && lautakunta.length >= esillaolo.length || lautakunta.length != 0 && lautakunta.length >= nahtavillaolo.length ? lautakunta : esillaolo.length > 0 ? esillaolo : nahtavillaolo
-    latestGroup = objectUtil.getHighestNumberedObject(phaseObject, groups);
-    latestObject = attr[latestGroup?.deadlinegroup]
-    if (latestObject) {
-      miniumObject = objectUtil.getMinObject(latestObject)
-      if (visValues[miniumObject]) {
-        return [visValues[miniumObject], latestGroup.content]
-      }
-    }
-    return [null, null]
   }
 
   const isPhaseClosed = (phase) => {
@@ -513,7 +488,6 @@ const TimelineModal = ({
 
     sections.forEach(subsection => {
       const attr = subsection?.attributes
-      const [maxDateToMove, maxMoveGroup] = getMaxiumDateToMove(attr)
       if (attr[deadlinegroup]) {
         const clampedInitialTabIndex = Number.isInteger(initialTab) && initialTab >= 0 ? initialTab : 0;
         renderedSections.push(
@@ -527,7 +501,7 @@ const TimelineModal = ({
             </Tabs.TabList>
             {Object.values(attr[deadlinegroup]).map((subsection, index) => {
               return <Tabs.TabPanel style={{ marginBottom: 'var(--spacing-m)' }} key={`tabPanel-${index}-${subsection}`}>
-                {getFormFields(subsection, sectionIndex, disabled, attr[deadlinegroup], maxMoveGroup, maxDateToMove, normalizedTitle, confirmedValue, tooltip, lautakuntaInPast)}
+                {getFormFields(subsection, sectionIndex, disabled, attr[deadlinegroup], normalizedTitle, confirmedValue, tooltip, lautakuntaInPast)}
               </Tabs.TabPanel>
             })}
           </Tabs>

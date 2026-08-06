@@ -51,8 +51,6 @@ const FormField = ({
   lomapaivat,
   dateTypes,
   deadlineSection,
-  maxMoveGroup, 
-  maxDateToMove,
   groupName,
   visGroups,
   visItems,
@@ -147,8 +145,6 @@ const FormField = ({
         lomapaivat={lomapaivat}
         dateTypes={dateTypes}
         deadlineSection={deadlineSection}
-        maxMoveGroup={maxMoveGroup}
-        maxDateToMove={maxDateToMove}
         groupName={groupName}
         visGroups={visGroups}
         visItems={visItems}
@@ -370,11 +366,6 @@ FormField.propTypes = {
   lomapaivat: PropTypes.array,
   dateTypes: PropTypes.object,
   deadlineSection: PropTypes.object,
-  maxMoveGroup: PropTypes.oneOfType([
-    PropTypes.object,
-    PropTypes.string
-  ]),
-  maxDateToMove: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   groupName: PropTypes.string,
   visGroups: PropTypes.array,
   visItems: PropTypes.array,

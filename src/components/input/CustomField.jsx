@@ -240,7 +240,7 @@ class CustomField extends Component {
   renderDate = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, deadlines, field, lockField, fieldSetDisabled, 
       insideFieldset, disabled, isProjectTimetableEdit, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, 
-      attributeData, phaseIsClosed, disabledDates, lomapaivat, dateTypes, maxMoveGroup, maxDateToMove, groupName, visGroups, visItems, 
+      attributeData, phaseIsClosed, disabledDates, lomapaivat, dateTypes, groupName, visGroups, visItems, 
       deadlineSections, formValues, confirmedValue, sectionAttributes, allowedToEdit, timetable_editable } = this.props
 
     let current
@@ -272,8 +272,6 @@ class CustomField extends Component {
           disabledDates={disabledDates}
           lomapaivat={lomapaivat}
           dateTypes={dateTypes}
-          maxMoveGroup={maxMoveGroup}
-          maxDateToMove={maxDateToMove}
           groupName={groupName}
           visGroups={visGroups}
           visItems={visItems}
@@ -898,11 +896,6 @@ CustomField.propTypes = {
   lomapaivat: PropTypes.array,
   dateTypes: PropTypes.object,
   deadlineSection: PropTypes.object,
-  maxMoveGroup: PropTypes.oneOfType([
-    PropTypes.object,
-    PropTypes.string
-  ]),
-  maxDateToMove: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   groupName: PropTypes.string,
   visItems: PropTypes.array,
   visGroups: PropTypes.array,
