@@ -157,50 +157,6 @@ const mergeAndUpdateDlArrays = (arr1, arr2, deadlineSections) => {
   arr1 = arr1.filter(item => !item.key.includes("viimeistaan_lausunnot_") && !item.key.includes("viimeistaan_mielipiteet") && !item.key.includes("aloituskokous_suunniteltu_pvm_readonly")); //filter out has no next and prev values
   return arr1
 }
-// TODO: remove (already done in mergeAndUpdateDlArrays) and use that function instead
-export const sortPhaseData = (arr, order) => {
-  arr.sort((a, b) => {
-    // check for the 'order' property
-    const aHasOrder = Object.hasOwn(a, 'order');
-    const bHasOrder = Object.hasOwn(b, 'order');
-
-    // If both items have 'order', keep their relative positions
-    if (aHasOrder && bHasOrder) {
-      return 0; // Maintain original order for these items
-    }
-    // If only one of them has 'order', prioritize that one to stay in place
-    if (aHasOrder) return -1;
-    if (bHasOrder) return 1;
-
-    // Otherwise, sort based on the provided order array
-    return order.indexOf(a.key) - order.indexOf(b.key);
-  });
-  return arr
-}
-
-// TODO: delete this function as unused
-export const bumpPhaseStartsToPrevEnd = (arr) => {
-  const filteredArr = arr.filter(item => phaseOrder.includes(item.key));
-  // Ensure each subsequent value is equal to or greater than the previous one
-  for (let i = 1; i < filteredArr.length; i++) {
-    if (filteredArr[i - 1].key.includes("paattyy_pvm") && filteredArr[i].key.includes("alkaa_pvm")) {
-      // Convert values to Date objects for comparison
-      const previousValue = new Date(filteredArr[i - 1].value);
-      const currentValue = new Date(filteredArr[i].value);
-
-      // Adjust the current value if it's less than the previous value
-      if (currentValue < previousValue) {
-        filteredArr[i].value = filteredArr[i - 1].value;
-      }
-    }
-  }
-  // Replace the original elements in arr with updated elements from filteredArr
-  const result = arr.map(item => {
-    const updatedItem = filteredArr.find(filteredItem => filteredItem.key === item.key);
-    return updatedItem || item;
-  });
-  return result
-}
 
 // Function to update original object by comparing keys
 const updateOriginalObject = (originalObj, updatedArr) => {
@@ -464,8 +420,6 @@ const exported = {
 }
 
 if (process.env.UNIT_TEST === "true") {
-  exported.bumpPhaseStartsToPrevEnd = bumpPhaseStartsToPrevEnd
-  exported.sortPhaseData = sortPhaseData
   exported.expectedOrder = phaseOrder
   exported.findDeadlineInDeadlines = findDeadlineInDeadlines
   exported.findDeadlineInDeadlineSections = findDeadlineInDeadlineSections
