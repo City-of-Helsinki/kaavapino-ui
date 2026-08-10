@@ -245,7 +245,7 @@ const FormField = ({
 
   const renderNormalField = () => {
     const timetableBoolean = isProjectTimetableEdit && field.type === "boolean"
-    const status = lockStatus
+    const showLockMessage = lockStatus.lockStyle && !lockStatus.owner && lockStatus.identifier === field.name
     let title = (field.character_limit
       ? `${field.label}  (${t('project.char-limit', { amount: field.character_limit })})`
       : field.label)
@@ -289,11 +289,8 @@ const FormField = ({
                 className={`input-title${required ? ' highlight' : ''} ${field.type === "info_fieldset" ? ' hide' : ''}`}
               >
                 {title}
-                {status.lockStyle && !status.owner && (
-                  !status.fieldIdentifier && status.identifier && status.identifier === field.name &&(
-                    <InputLockedMessage t={t} lockStatus={status} />
-                  )
-                  )
+                { showLockMessage &&
+                  <InputLockedMessage t={t} lockStatus={lockStatus} />
                 }
               </Label>
             </div>

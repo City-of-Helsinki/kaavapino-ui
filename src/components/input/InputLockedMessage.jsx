@@ -3,8 +3,8 @@ import { IconLock } from 'hds-react';
 import PropTypes from 'prop-types';
 
 const InputLockedMessage = ({ t, lockStatus }) => {
-  const { userName, userEmail } = lockStatus?.lockStyle?.lockData?.attribute_lock || {};
-  return (<span className="input-locked"> {t('project.field-locked-by-user', { userName, userEmail })} <IconLock /></span>);
+  const { user_name, user_email } = lockStatus?.lockStyle?.lockData?.attribute_lock || {};
+  return (<span className="input-locked"> {t('project.field-locked-by-user', { userName: user_name, userEmail: user_email })} <IconLock /></span>);
 };
 
 InputLockedMessage.propTypes = {
