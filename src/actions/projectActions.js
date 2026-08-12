@@ -222,9 +222,9 @@ export const setUnlockStatus = (lockData,lock) => ({
   type: SET_UNLOCK_STATUS,
   payload: {lockData,lock}
 })
-export const setLockStatus = (lockData,lock,saving) => ({
+export const setLockStatus = (lockData,lock,saving,isLocked) => ({
   type: SET_LOCK_STATUS,
-  payload: {lockData,lock,saving}
+  payload: {lockData,lock,saving,isLocked}
 })
 export const unlockProjectField = (projectName,inputName) => ({
   type: UNLOCK_PROJECT_FIELD,

@@ -509,7 +509,7 @@ export const reducer = (state = initialState, action) => {
     case SET_UNLOCK_STATUS: {
       return{
         ...state,
-        locked:action.payload
+        locked: { ...action.payload, isLocked: false }
       }
     }
 
