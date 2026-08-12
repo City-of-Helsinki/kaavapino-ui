@@ -723,7 +723,7 @@ function RichTextEditor(props) {
     }
     //Sent a call to unlock field to backend
     if (typeof props.handleUnlockField === 'function' && 
-      lockedStatus?.lockData?.attribute_lock?.owner && !insideFieldset) {
+      lockedStatus?.lockData?.attribute_lock?.owner && !insideFieldset && !maxSizeOver) {
       props.handleUnlockField(inputProps.name)
     }
     //User is clicking inside editor and we don't want data to be refeched from db each time but we want to save latest edited data when blurred
