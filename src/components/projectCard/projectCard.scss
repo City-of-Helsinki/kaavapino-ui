@@ -2,34 +2,6 @@
   width: 100%;
   display: flex;
   overflow: auto;
-
-  .summary {
-    flex: 0.5;
-    display: flex;
-    flex-direction: column;
-    margin-right: 40px;
-    padding-right: 10px;
-    overflow: hidden;
-    overflow-y: auto;
-    overflow-x: auto;
-    max-height: 600px;
-
-    .summary-item-container {
-      margin-bottom: 20px;
-    }
-
-    .fieldset-summary-container {
-      margin-bottom: 0;
-
-      .fieldset-label {
-        text-decoration: underline;
-      }
-
-      .fieldset-summary-item:not(:last-child) {
-        margin-bottom: 10px;
-      }
-    }
-  }
 }
 
 .project-card-extend {
@@ -37,46 +9,197 @@
 }
 
 .project-card {
-  margin: -($size16);
+  .card-segment {
+    h2 {
+      font-size: $size18 !important;
+    }
+    background-color: $color-black-5;
+  }
+
+  .project-card-field, .timetable-field{
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    line-height: 1.5rem;
+    margin-bottom: 0.25rem;
+    dt {
+      font-family: 'Helsinki Grotesk Medium', sans-serif;
+      font-weight: 500;
+    }
+    dd {
+      margin-inline-start: 0px;
+      font-family: 'Helsinki Grotesk Regular', sans-serif;
+      font-weight: 400;
+    }
+  }
+
+  .project-card-first-row {
+    display:flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    min-height: 400px;
+    .card-segment {
+      width: calc(50% - $size12);
+      min-height: 400px;
+      height: 100%;
+      .description {
+        margin: $size24;
+      }
+      .photo {
+        margin: $size24;
+      }
+    }
+    .card-segment:first-child {
+      margin-right: $size12;
+    }
+    .card-segment:last-child {
+      margin-left: $size12;
+    }
+    .project-image-container {
+      text-align: center;
+    }
+  }
+
+  .project-card-timeline-row {
+    margin-top: $size24;
+    .card-segment {
+      width: calc(100%);
+      padding-top: $size24;
+      .project-card-timeline {
+        margin: $size24;
+        margin-top: 0;
+      }
+    }
+  }
+
+  .project-card-second-row{
+    display:flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    margin-top: $size24;
+    .card-segment {
+      margin-bottom: $size24;
+    }
+  }
+
+  .project-card-left {
+    display: flex;
+    flex-direction: column;
+    width: calc(40% - $size12);
+    margin-right: $size12;
+  }
+  .project-card-right {
+    display: flex;
+    flex-direction: column;
+    width: calc(60% - $size12);
+    margin-left: $size12;
+  }
 
   .basic-information {
     min-height: 250px;
     overflow: auto;
+    margin: $size24;
+    .project-card-field {
+      a {
+        border: none;
+      }
+      dt {
+        width: calc(44% - 0.5rem);
+      }
+      dd {
+        width: calc(56% - 0.5rem);
+      }
+    }
   }
   .contract {
-    min-height: 250px;
+    min-height: 180px;
     overflow: auto;
+    margin: $size24;
+    .project-card-field {
+      dt {
+        width: calc(60% - 0.5rem);
+      }
+      dd {
+        width: calc(40% - 0.5rem);
+      }
+    }
   }
-  .description {
-    min-height: 300px;
+
+  .geometry-information {
+    margin: $size24;
   }
+
   .floor-area-information {
     min-height: 120px;
     overflow: auto;
+    margin: $size24;
   }
   .floor-area-field {
     padding-left: 0;
     padding-right: 0;
   }
   .strategy-connection {
-    min-height: 200px;
+    min-height: 180px;
     overflow: auto;
+    margin: $size24;
+    ul {
+      padding-left: $size20;
+    }
+    li{
+      font-size: $size16;
+      font-family: 'Helsinki Grotesk Regular', sans-serif;
+      line-height: 1.5rem;
+      font-weight: 400;
+      margin-bottom: $size12;
+    }
   }
   .documents {
-    min-height: 200px;
+    min-height: 180px;
     overflow: auto;
+    margin: $size24;
 
     .section {
       margin-bottom: 10px;
     }
   }
   .timetable {
-    min-height: 200px;
+    min-height: 180px;
     overflow: auto;
+    margin: $size24;
+    .timetable-field {
+      dt {
+        width: stretch;
+      }
+      dd {
+        width:fit-content;
+      }
+    }
   }
   .contacts {
-    min-height: 200px;
+    min-height: 180px;
     overflow: auto;
+    margin: $size24;
+    .project-card-field {
+      display: flex;
+      flex-direction: row;
+      gap: 1rem;
+      line-height: 1.5rem;
+      margin-bottom: 0.25rem;
+      dt {
+        width: calc(60% - 0.5rem);
+        font-family: 'Helsinki Grotesk Medium', sans-serif;
+        font-weight: 500;
+      }
+      dd {
+        width: calc(40% - 0.5rem);
+        margin-inline-start: 0px;
+        font-family: 'Helsinki Grotesk Regular', sans-serif;
+        font-weight: 400;
+        word-break: break-word;
+        hyphens: auto;
+      }
+    }
   }
   .missing-data,
   .documents-not-ready {
@@ -85,58 +208,32 @@
 
   @media only screen and (min-width: 501px) {
     .photo {
-      height: 300px;
-      text-align: center;
+      display: flex;
+      flex-direction: column;
     }
   }
   @media only screen and (max-width: 500px) {
     .photo {
       height: 200px;
-      text-align: center;
     }
   }
 
   .project-image-container {
-    flex: 0.5;
-
-    .project-image {
-      max-width: 100%;
-      max-height: 300px;
-      width: auto;
-      height: auto;
-    }
+    min-height:300px;
+    width: 100%;
+    margin: auto;
+    margin-bottom: auto;
+    .project-image{
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
   }
-  .ui.segment {
-    background-color: $light-gray3 !important;
-    border: 0;
-    border-radius: 0;
-    padding: 8px 16px 16px 16px;
-    box-shadow: none;
-
-    @media screen and (min-width: 600px) {
-      padding: 16px 24px 24px 24px;
-    }
-  }
-  .five.wide.column .segment,
-  .five.wide.column + .column .ui {
-    &:not(:first-of-type) {
-      margin-top: 16px;
-    }
   }
 
   .ui.grid {
     margin: 0;
   }
-  .inner-left-column {
-    margin: 0;
-    padding: 0 !important;
-    padding-right: 8px !important;
-  }
-  .inner-right-column {
-    margin: 0;
-    padding: 0 !important;
-    padding-left: 8px !important;
-  }
+
   .floor-area-information .floor-area-value {
     font-weight: bold;
     font-size: larger;
@@ -148,9 +245,6 @@
     .geometry-input {
       height: 300px;
     }
-  }
-  .project-container {
-    margin-top: 10px;
   }
 }
 
@@ -184,6 +278,4 @@
     padding-bottom: 10px;
   }
 }
-.project-card-field {
-  padding-bottom: 5px;
-}
+

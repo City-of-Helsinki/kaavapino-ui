@@ -298,10 +298,6 @@ class EditProjectTimeTableModal extends Component {
     if(/^(\d+|XS|S|M|L|XL|XXL|[IVX]{1,4})$/i.test(prefix)) {
       return rest; 
     }
-    /*if (Array.isArray(phaseOnly)) {
-      phaseOnly = phaseOnly.length > 1 ? phaseOnly[1].trim() : phaseOnly[0].trim();
-    }
-    return phaseOnly */
     // Otherwise if previously logic would have returned an array, still just return trimmed original phase
     return phase.trim();
   } 

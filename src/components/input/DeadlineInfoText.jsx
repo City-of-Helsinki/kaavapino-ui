@@ -150,11 +150,21 @@ const DeadlineInfoText = props => {
     const eventDateKey = `${phase?.toLowerCase()}_tilaisuus_fieldset`;
     eventDate = formValues[eventDateKey]?.[0]?.[`${phase?.toLowerCase()}_tilaisuus_pvm`] || t('common.date-missing');
     if (eventDate?.includes('-')) {
-      eventDate = eventDate.replace(/-/g, '.');
+      eventDate = eventDate.replaceAll('-', '.');
       const [year, month, day] = eventDate.split('.');
       eventDate = `${day}.${month}.${year}`;
     }
   }
+
+  const getNotificationLabel = (inputName, phase) => {
+    if (inputName.includes("aloituskokous")) {
+      return t("deadlines.project-start-meeting-title");
+    }
+    if (inputName.includes("viimeistaan")) {
+      return t('deadlines.project-opinions-latest-title', {phase})
+    }
+    return inputName;
+  } 
 
   return (
     <>
@@ -162,7 +172,8 @@ const DeadlineInfoText = props => {
         <Notification
           className="event-info-notification"
           size="small"
-          label={`${phase}${phase === "Luonnos" ? "" : "-"}vaiheen tilaisuus: ${eventDate}`}
+          label={t('deadlines.event-date-title', { phase })}
+          notificationAriaLabel={t('deadlines.event-date-title', { phase })}
           headingLevel={3}
         >
           {`${phase}${phase === "Luonnos" ? "" : "-"}vaiheen tilaisuus: ${eventDate}`}
@@ -170,7 +181,15 @@ const DeadlineInfoText = props => {
       )}
       {props.input.name.includes("nahtavillaolopaivien_lukumaara") ?
         <p className="deadline-info-readonlytext">{props.label}: {value} pv </p>
-        : <Notification className='deadline-info-notification' size="small" label={props.input.name} headingLevel={3}>{props.label + ': '}{value}</Notification>
+        : <Notification 
+          className='deadline-info-notification' 
+          size="small" 
+          label={getNotificationLabel(props.input.name, phase)}
+          notificationAriaLabel={getNotificationLabel(props.input.name, phase)}
+          headingLevel={3}
+          >
+            {props.label + ': '}{value}
+          </Notification>
       }
     </>
   );

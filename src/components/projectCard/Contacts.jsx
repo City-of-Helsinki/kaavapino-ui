@@ -15,63 +15,50 @@ function Contacts({ fields, hideTitle, personnel }) {
 
     if (isArray(field.value)) {
       field.value.forEach(current => {
-        if (!field.choices) {
-          const currentPerson =
-            personnel && personnel.find(person => (person.id === current))
-
-          if (currentPerson) {
-            completeValue.push(currentPerson.name)
-          } else {
-            completeValue.push(current)
-          }
+        if (!current) return;
+        if (field.choices) {
+          const choiceValue = field.choices?.find(choice => choice.value === current)
+          completeValue.push(choiceValue?.label || current)
         } else {
-          const choiceValue =
-            field.choices && field.choices.find(choice => choice.value === current)
-          completeValue.push(choiceValue.label)
+          const currentPerson = personnel?.find(person => (person.id === current))
+          completeValue.push(currentPerson?.name || current)
         }
       })
       value = completeValue.map(value => <div key={value}>{value}</div>)
+    } else if (field.choices) {
+        const foundValue = field.choices?.find(choice => choice.value === field.value)
+        value = foundValue?.label
     } else {
-      if (field.choices) {
-        const foundValue =
-          field.choices && field.choices.find(choice => choice.value === field.value)
-        value = foundValue && foundValue.label
-      } else {
-        const current = personnel && personnel.find(person => person.id === field.value)
+      const current = personnel?.find(person => person.id === field.value)
 
-        if (current) {
-          value = current.name
-        }
+      if (current) {
+        value = current.name
       }
     }
     return (
       <div className="project-card-field" key={field.label + index}>
-        <div>{field.label}</div>
-        <div>
-          <b>{value}</b>
-        </div>
+        <dt>{field.label}</dt>
+        <dd lang="fi">{value}</dd>
       </div>
     )
   }
 
-  const renderFields = () => {
-    return (
-      <div>
-        {!hideTitle && <h3>{t('project.contact-title')}</h3>}
-        {fields &&
-          fields.map((field, index) => {
-            return renderField(field, index)
-          })}
-      </div>
-    )
-  }
-  const fieldsComponent = renderFields()
-
-  return <div className="contacts">{fieldsComponent}</div>
+  return (
+    <div className="contacts">
+      {!hideTitle && <h2>{t('project.contact-title')}</h2>}
+      <dl>
+        {fields?.map((field, index) => {
+          return renderField(field, index);
+        })}
+      </dl>
+    </div>
+  )
 }
 
 Contacts.propTypes = {
-  fields: PropTypes.array
+  fields: PropTypes.array,
+  hideTitle: PropTypes.bool,
+  personnel: PropTypes.array,
 }
 
 export default Contacts

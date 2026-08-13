@@ -77,6 +77,7 @@
           font-size: $size16;
           padding: 16px;
           min-height: 56px;
+          font-family: "Helsinki Grotesk Regular", sans-serif;
           p{
             outline: none;
           }
@@ -141,6 +142,7 @@
       padding: 16px;
       background: $light-gray3;
       border-radius: 0 0 2px 2px;
+      width: 100%;
 
       .comment-container:first-child {
         margin-top: 0;
@@ -159,6 +161,10 @@
       background-color: #E6E6E6;
       color: #808080; // NOSONAR - WCAG 1.4.3 exempts disabled/inactive UI components from contrast requirements
       cursor: not-allowed;
+      outline: none;
+      &.ql-blank::before {
+        color: #808080; // NOSONAR
+      }
     }
     
     // Show red border when field is disabled due to network error
@@ -167,7 +173,7 @@
     }
   }
   .quill-counter {
-    font-family: "Helsinki Grotesk Bold", Arial, sans-serif;
+    font-family: "Helsinki Grotesk Regular", sans-serif;
     font-weight: 700;
     font-size: $size14;
     color: $color-black-90;
@@ -181,7 +187,7 @@
     float: right;
   }
   .max-chars{
-    font-family: "Helsinki Grotesk Regular", Arial, sans-serif;
+    font-family: "Helsinki Grotesk Regular", sans-serif;
     font-size: $size16;
     color: $max-markings-color;
     line-height: $size24;

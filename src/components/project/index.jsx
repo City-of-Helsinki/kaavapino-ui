@@ -113,7 +113,6 @@ class ProjectPage extends Component {
       } else {
         this.props.setSelectedPhaseId(currentProject.phase)
       }
-      document.title = currentProject.name
     }
     if (
       this.props.documents &&
@@ -210,7 +209,7 @@ class ProjectPage extends Component {
     )
   }
   getProjectDocumentsContent = (isResponsible) => {
-    const { currentProject, users, projectSubtypes, currentUserId, selectedPhase } = this.props
+    const { currentProject, users, projectSubtypes, currentUserId, selectedPhase} = this.props
     return (
       <div key="documents">
         <NavHeader
@@ -242,11 +241,10 @@ class ProjectPage extends Component {
           handleClose={() => this.togglePrintProjectDataModal(false)}
         />
         <ProjectDocumentsPage 
-        users={users} 
-        currentUserId={currentUserId} 
-        project={currentProject} 
-        selectedPhase={selectedPhase}
-        search={this.props.location.search}
+          users={users} 
+          currentUserId={currentUserId} 
+          project={currentProject} 
+          selectedPhase={selectedPhase}
         />
       </div>
     )
@@ -258,7 +256,7 @@ class ProjectPage extends Component {
     return (
       <div key="project-card">
         <NavHeader
-          title={currentProject.name}
+          title={`${this.props.t('project.project-card')}: ${currentProject.name}`}
           actions={this.getProjectCardNavActions(isUserExpert)}
           infoOptions={this.getAllChanges()}
         />
@@ -351,7 +349,7 @@ class ProjectPage extends Component {
           </Button>
           <Button
             variant="secondary"
-            className="header-button"
+            className="header-button download-project-card"
             size="small"
             onClick={() => downloadDocument({
               ...currentProject.project_card_document,

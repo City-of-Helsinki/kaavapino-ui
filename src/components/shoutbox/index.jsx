@@ -45,8 +45,7 @@ const Shoutbox = props => {
   const countToShow = unreadCommentsCount > 9 ? '!' : unreadCommentsCount
 
   return (
-    <>
-      <div className={`shoutbox ${open ? 'open' : ''}`} ref={shoutboxRef}>
+    <div className={`shoutbox ${open ? 'open' : ''}`} ref={shoutboxRef}>
         <ShoutBoxButton onClick={toggleOpen} unreadCommentsCount={countToShow} />
         <div className="comment-list-wrapper">
           <button onClick={toggleOpen} className="shoutbox-close-icon">
@@ -55,7 +54,6 @@ const Shoutbox = props => {
           <Comments project={project} />
         </div>
       </div>
-    </>
   )
 }
 const mapStateToProps = state => ({

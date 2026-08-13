@@ -61,7 +61,8 @@ const CustomCheckbox = ({
         <Notification
           className='deadlines-confirmed-notification'
           size="small"
-          label="Päivämäärä vahvistettu"
+          label={t('deadlines.dates-confirmed-title')}
+          notificationAriaLabel={t('deadlines.dates-confirmed-title')}
           type="success"
           headingLevel={3}
         >
@@ -72,7 +73,8 @@ const CustomCheckbox = ({
       <Notification
         className='deadlines-preliminary-notification'
         size="small"
-        label="Aikataulutiedot ovat alustavia"
+        label={t('deadlines.dates-are-preliminary-title')}
+        notificationAriaLabel={t('deadlines.dates-are-preliminary-title')}
         type="info"
         headingLevel={3}
       >

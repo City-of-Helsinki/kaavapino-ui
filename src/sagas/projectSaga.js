@@ -2,7 +2,7 @@ import React from 'react'
 import axios from 'axios'
 import { eventChannel } from 'redux-saga';
 import { take, takeLatest, put, all, call, select, takeEvery, delay, race } from 'redux-saga/effects'
-import { isEqual, isEmpty, isArray } from 'lodash'
+import { isEqual, isEmpty } from 'lodash'
 import { push } from 'connected-react-router'
 import {
   editFormSelector,
@@ -311,13 +311,28 @@ function* pollConnection() {
     
     if (hasUnsavedField) {
       const fieldName = lastSaved.fields[0]
+      // fieldName may be a fieldset child (e.g. 'hanke[0].field') — extract the top-level key
+      const fieldsetName = fieldName.includes('[') ? fieldName.split('[')[0] : fieldName
 
       const formErrors = yield select(formErrorListSelector)
-      if (formErrors.includes(fieldName)) {
+      const editForm = yield select(editFormSelector)
+      const formSyncErrors = editForm?.syncErrors
+      // Check all errors belonging to the same fieldset, regardless of which child field
+      // triggered the original save. formErrorList may also be empty if resetFormErrors()
+      // cleared it while hasError in CustomInput stayed true (no state transition to re-fire).
+      const hasChildFormError = formErrors.some(ef => typeof ef === 'string' && (
+        ef === fieldsetName || ef.startsWith(`${fieldsetName}[`)
+      )) || !!(formSyncErrors?.[fieldsetName])
+      const hasFormError = formErrors.includes(fieldName) || hasChildFormError
+      if (hasFormError) {
         yield put(setPoll(true))
         yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: 'Yhteys palautunut' } })
         yield put(setSavingField(null))
-        yield put(setLastSaved("field_error", time, [fieldName], lastSaved.values || [], false))
+        yield put(setLastSaved("connection_restored", time, [fieldName], [], false))
+        yield delay(5000)
+        // Use empty fields to avoid passivating the char-limit field via fieldErrorFieldsSelector.
+        // Passivation is handled correctly by formErrors (the char-limit field stays editable).
+        yield put(setLastSaved("field_error", time, [], [], false))
         return
       }
 
@@ -325,7 +340,7 @@ function* pollConnection() {
       yield put({ type: SET_NETWORK_STATUS, payload: { status: 'success', okMessage: 'Yhteys palautunut - tallennetaan...' } })
       // Dispatch connection_restored immediately so passivation and header update before saveProject completes.
       // saveProject will set status to 'success' on success or back to 'error' on failure.
-      yield put(setLastSaved("connection_restored", time, [], [], false))
+      yield put(setLastSaved("connection_restored", time, [fieldName], [], false))
       yield put(resetFormErrors())
       
       const fieldValue = lastSaved.values?.[0]
@@ -1092,7 +1107,7 @@ function* lockProjectField(data) {
         }
       )
       //Send data to store
-      yield put(setLockStatus(lockData, false, saving))
+      yield put(setLockStatus(lockData, false, saving, true))
     }
     catch (e) {
       const dateVariable = new Date()
@@ -1115,10 +1130,10 @@ function addListingInfo(deltaOps) {
   for (let i = 0; i < enriched.length; i++) {
     const op = enriched[i]
     if (op?.attributes?.list === 'ordered' && i > 0 && !enriched[i - 1].attributes?.isOrderList) {
-      enriched[i - 1].attributes = { ...(enriched[i - 1].attributes || {}), isOrderList: true }
+      enriched[i - 1].attributes = { ...(enriched[i - 1].attributes), isOrderList: true }
     }
     if (op?.attributes?.list === 'bullet' && i > 0 && !enriched[i - 1].attributes?.isBulleted) {
-      enriched[i - 1].attributes = { ...(enriched[i - 1].attributes || {}), isBulleted: true }
+      enriched[i - 1].attributes = { ...(enriched[i - 1].attributes), isBulleted: true }
     }
   }
   return enriched
@@ -1139,34 +1154,8 @@ function* saveProject(data) {
     let changedValues = {}
     changedValues = getChangedAttributeData(values, initial)
     keys = Object.keys(changedValues)
-    // Set saving state with field name from action payload
     if (fieldName && keys.length > 0) {
-      let actualFieldName = fieldName;
-      // Check if fieldName corresponds to a fieldset in changedValues
-      if (typeof fieldName === 'string' && fieldName.endsWith('_fieldset') && changedValues[fieldName]) {
-        const fieldsetArray = changedValues[fieldName];
-        const initialFieldsetArray = initial?.[fieldName];
-        if (Array.isArray(fieldsetArray) && fieldsetArray.length > 0) {
-          const currentItem = fieldsetArray[0];
-          const initialItem = Array.isArray(initialFieldsetArray) && initialFieldsetArray.length > 0 ? initialFieldsetArray[0] : {};
-          if (typeof currentItem === 'object' && currentItem !== null) {
-            // Get all keys from current item (excluding _deleted and other metadata)
-            const itemKeys = Object.keys(currentItem).filter(key => !key.startsWith('_'));
-            // Compare each field with initial to find the changed one
-            for (const key of itemKeys) {
-              if (!isEqual(currentItem[key], initialItem[key])) {
-                actualFieldName = key; // Found the field that actually changed
-                break;
-              }
-            }
-            // If no specific change found, use first field as fallback
-            if (actualFieldName === fieldName && itemKeys.length > 0) {
-              actualFieldName = itemKeys[0];
-            }
-          }
-        }
-      }
-      yield put(setSavingField(actualFieldName));
+      yield put(setSavingField(fieldName));
     }
     //Get latest modified field and send it to components to prevent new modification for that field until saved. 
     //Prevents only user that was editing and saving. Richtext and custominput.
@@ -1185,14 +1174,20 @@ function* saveProject(data) {
       for (const key in changedValues) {
         const value = changedValues[key]
         if (Array.isArray(value)) {
-          changedValues[key] = value.map(item => {
-            if (item && Array.isArray(item.ops)) {
-              return {
-                ...item,
-                ops: addListingInfo(item.ops)
+          // Fieldset
+          changedValues[key] = value.map(fieldsetObject => {
+            if (fieldsetObject && !fieldsetObject._deleted) {
+              for (const fieldsetKey in fieldsetObject) {
+                const fieldsetValue = fieldsetObject[fieldsetKey]
+                if (fieldsetValue && Array.isArray(fieldsetValue.ops)) {
+                  fieldsetObject[fieldsetKey] = {
+                    ...fieldsetValue,
+                    ops: addListingInfo(fieldsetValue.ops)
+                  }
+                }
               }
             }
-            return item
+            return fieldsetObject
           })
         } else if (value && Array.isArray(value.ops)) {
           changedValues[key] = {
@@ -1213,9 +1208,17 @@ function* saveProject(data) {
         const fieldValue = savedFieldName ? values[savedFieldName] : undefined
         
         yield put(setSavingField(null))
-        yield put(setLastSaved("field_error",time,[savedFieldName],fieldValue ? [fieldValue] : [],false))
-        yield put(stopSubmit(EDIT_PROJECT_FORM, {}))
         yield put(saveProjectFailed())
+
+        if (globalThis.navigator?.onLine) {
+          yield put(setLastSaved("field_error", time, [savedFieldName], fieldValue ? [fieldValue] : [], false))
+          yield put(stopSubmit(EDIT_PROJECT_FORM, {}))
+        } else {
+          // Network is down: show connection error instead of validation error
+          // Same behaviour as other field types that make an API call on blur
+          yield put(setLastSaved("error", time, [savedFieldName], fieldValue ? [fieldValue] : [], false))
+          yield put({ type: SET_NETWORK_STATUS, payload: { status: 'error', errorMessage: i18.t('messages.general-save-error') } })
+        }
         return
       }
       
@@ -1582,9 +1585,9 @@ const getOverviewYearRangeQuery = value => {
   let startDate
   let endDate
 
-  if (isArray(value)) {
+  if (Array.isArray(value)) {
     startDate = dayjs(new Date(value[0].value, 0, 1)).format('YYYY-MM-DD')
-    endDate = dayjs(new Date(value[value.length - 1].value, 11, 31)).format('YYYY-MM-DD')
+    endDate = dayjs(new Date(value.at(-1).value, 11, 31)).format('YYYY-MM-DD')
   } else {
     startDate = dayjs(new Date(value, 0, 1)).format('YYYY-MM-DD')
     endDate = dayjs(new Date(value, 11, 31)).format('YYYY-MM-DD')
@@ -1599,7 +1602,7 @@ const getOverviewYearRangeQuery = value => {
 const getOverviewQueryValue = value => {
   const queryValue = []
 
-  if (isArray(value)) {
+  if (Array.isArray(value)) {
     value.forEach(current => queryValue.push(current))
   } else {
     queryValue.push(value)
@@ -1650,7 +1653,7 @@ const buildOverviewQuery = (payload, customHandlers = {}) => {
 
 const buildFloorAreaOverviewQuery = payload => buildOverviewQuery(payload, {
   kaavaprosessi: value => {
-    const subtypeIds = isArray(value)
+    const subtypeIds = Array.isArray(value)
       ? value.map(current => KAAVAPROSESSI_TO_SUBTYPE_ID[current]).filter(Boolean)
       : []
 

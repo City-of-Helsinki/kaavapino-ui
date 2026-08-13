@@ -7,7 +7,6 @@ import { withRouter } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
 import { isCurrentPhaseConfirmed } from '../../utils/projectVisibilityUtils'
-//import DocumentConfirmationModal from './DocumentConfirmationModal.jsx'
 import PropTypes from 'prop-types'
 
 function Document({
@@ -17,7 +16,6 @@ function Document({
   downloadDocument,
   downloadDocumentPreview,
   phaseEnded,
-  isUserResponsible,
   isThePersonResponsible,
   hideButtons,
   schema,
@@ -29,20 +27,6 @@ function Document({
 }) {
   const { t } = useTranslation()
 
-  /* Usage of confirmation dialog is commented out due KAAV-2776 */
-
-  //const [showConfirmation, setShowConfirmation] = useState(false)
-
-  /* const confirmationCallback = confirmed => {
-    setShowConfirmation(false)
-
-    if (confirmed) {
-      downloadDocument({ file, name })
-      if(typeof disableDownloads === 'function'){
-        disableDownloads()
-      }
-    }
-  } */
 
   const download = () => {
     downloadDocument({ file, name })
@@ -51,22 +35,8 @@ function Document({
     }
   }
 
-  /* const renderConfirmationDialog = () => {
-    return (
-      <DocumentConfirmationModal
-        open={showConfirmation}
-        callback={confirmationCallback}
-      />
-    )
-  } */
-
   const disablePreview = (ended,schema) => {
-    if(!ended && schema){
-      return false
-    }
-    else{
-      return true
-    }
+    return !(!ended && schema);
   }
 
   const disableDownload = (ended,hide,schema) => {
@@ -79,7 +49,7 @@ function Document({
     } 
     const currentSchema = schema?.phases[currentSchemaIndex]
     const phaseConfirmed = isCurrentPhaseConfirmed(attribute_data)
-    return !ended && !hide && schema && currentSchema?.id === project?.phase && phaseConfirmed ? false : true
+    return !(!ended && !hide && schema && currentSchema?.id === project?.phase && phaseConfirmed)
   }
 
   const preview = () => {
@@ -89,7 +59,6 @@ function Document({
     }
   }
 
-  //const openConfirmationDialog = () => setShowConfirmation(true)
   return (
     <Grid columns="equal" className="document-row ">
       <Grid.Column>
@@ -136,7 +105,15 @@ Document.propTypes = {
   phaseIndex: PropTypes.number,
   project: PropTypes.object,
   disableDownloads: PropTypes.func,
-  downloadingDocumentReady: PropTypes.bool
+  downloadingDocumentReady: PropTypes.bool,
+  name: PropTypes.string,
+  file: PropTypes.string,
+  lastDownloaded: PropTypes.string,
+  downloadDocument: PropTypes.func,
+  downloadDocumentPreview: PropTypes.func,
+  phaseEnded: PropTypes.bool,
+  isThePersonResponsible: PropTypes.bool,
+  hideButtons: PropTypes.bool,
 }
 
 const mapDispatchToProps = {

@@ -28,10 +28,10 @@ function FilterList({ filterList, currentFilter, onChange, defaultYear, onUserCh
   }
 
   const getDefaultValue = field => {
-    if (field && field.accepts_year) {
+    if (field?.accepts_year) {
       return defaultYear
     }
-    return filters && filters[field.parameter] ? filters[field.parameter] : null
+    return filters?.[field.parameter] ? filters[field.parameter] : null
   }
 
   const getFiltersList = () => {
@@ -78,24 +78,17 @@ function FilterList({ filterList, currentFilter, onChange, defaultYear, onUserCh
     <div className="filters-list">
       <Grid stackable columns="equal">
         {getFiltersList()}
-        {/*
-          TODO: Problems with HDS component. Needs to follow when there are updates.
-        showClearButton && !isEmpty(filterList) && (
-          <Grid.Column>
-            <Button variant="secondary" onClick={onClear} className="filter-button">
-              {t('overview.clear-selections')}
-            </Button>
-          </Grid.Column>
-        )*/}
       </Grid>
-
-      <span></span>
     </div>
   )
 }
 
 FilterList.propTypes = {
-  filterList: PropTypes.array
+  filterList: PropTypes.array,
+  currentFilter: PropTypes.object,
+  onChange: PropTypes.func,
+  defaultYear: PropTypes.number,
+  onUserChange: PropTypes.func
 }
 
 export default FilterList

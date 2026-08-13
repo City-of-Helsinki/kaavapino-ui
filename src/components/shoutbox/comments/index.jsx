@@ -101,7 +101,7 @@ class Comments extends Component {
       t
     } = this.props
     const begin =
-      comments.length < amountOfCommentsToShow ? comments.length : amountOfCommentsToShow
+      Math.min(comments.length, amountOfCommentsToShow)
 
     return (
       <div className="comment-list-container">

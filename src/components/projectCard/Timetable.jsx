@@ -23,31 +23,18 @@ function TimeTable({ fields, hideTitle }) {
         }
       })
       value = completeValue
-    } else {
-      if (field.choices) {
-        const foundValue =
-          field.choices && field.choices.find(current => current.value === field.value)
-        value = foundValue.label
+    } else if (field.choices) {
+        const foundValue = field.choices?.find(current => current.value === field.value)
+        value = foundValue?.label
       } else {
         value = dayjs(field.value).format('DD.MM.YYYY')
       }
-    }
 
-    return <div key={field.label + index}>{renderFieldValue(field, index, value)}</div>
-  }
-  const renderFieldValue = (field, index, value) => {
-    return field.date_format ? (
-      <div key={field.label + index}>
-        {field.date_format} <b>{value}</b>
-      </div>
-    ) : (
-      <div key={field.label + index}>
-        <div>{field.label}</div>
-        <div>
-          <b>
-            {field.date_format} {value}
-          </b>
-        </div>
+    const labelContent = field.date_format  || field.label;
+    return (
+      <div className="timetable-field" key={labelContent + index}>
+        <dt>{labelContent}</dt>
+        <dd><time dateTime={field.value}>{value}</time></dd>
       </div>
     )
   }
@@ -55,28 +42,28 @@ function TimeTable({ fields, hideTitle }) {
   const renderFields = () => {
     missingData = true
     return (
-      <div>
-        {fields &&
-          fields.map((field, fieldIndex) => {
+      <dl className="timetable-fields">
+        {fields?.map((field, fieldIndex) => {
             return renderField(field, fieldIndex)
           })
         }
-        {missingData && <label className="missing-data">{t('project.missing-data')}</label>}
-      </div>
+        {missingData && <div className="missing-data">{t('project.missing-data')}</div>}
+      </dl>
     )
   }
   const fieldsComponent = renderFields()
 
   return (
     <div className="timetable">
-      {!hideTitle && <h3>{t('project.timetable-title')}</h3>}
+      {!hideTitle && <h2>{t('project.timetable-title')}</h2>}
       {fieldsComponent}
     </div>
   )
 }
 
 TimeTable.propTypes = {
-  fields: PropTypes.array
+  fields: PropTypes.array,
+  hideTitle: PropTypes.bool
 }
 
 export default TimeTable

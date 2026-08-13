@@ -358,9 +358,6 @@
         height: $size24;
         border-radius: 15px;
         top: 5.5px !important;
-        //disabled for v1 draging
-        //pointer-events: auto;
-        //cursor: url('../../assets/icons/vector.svg') 8 8, move !important;
         pointer-events: none !important;
         cursor: default !important;
         .vis-item-overflow{
@@ -370,25 +367,12 @@
             border-radius: 15px;
             &::after {
                 content: "";
-                //Disabled for v1 dragging
-               /*  position: absolute;
-                top: 50%;
-                left: 50%;
-                width: 8px;
-                height: 8px;
-                background-color: #B3B3B3;
-                border-radius: 50%;
-                transform: translate(-50%, -50%) scale(0);
-                opacity: 0;
-                transition: opacity .15s ease, transform .15s ease; */
             }
             &:hover::after,&:active::after {
                 transform: translate(-50%, -50%) scale(1);
                 opacity: 1;
             }
             .vis-item-content{
-                //disabled for v1 dragging
-                //pointer-events: auto;
                 pointer-events: none !important;
                 padding:0;
             }
@@ -1475,60 +1459,14 @@
     }
 
     .vis-drag-left{
-        /*v1 dragging disbled for now*/
-        /*min-width: none !important;
-        max-width: none !important;
-        pointer-events:auto;
-        cursor: url('../../assets/icons/vector.svg') 8 8, move !important; */
         pointer-events: none;
         cursor: default !important;
     }
-    /*v1 dragging disbled for now     .vis-drag-left:hover::before {
-        content: '';
-        position: absolute;
-        left: 14px;
-        top: 6px;
-        bottom: 6px;
-        width: 2px;
-        background-color: #B3B3B3;
-    }
-    .vis-drag-left:active::before {
-        content: '';
-        position: absolute;
-        left: 14px;
-        top: 6px;
-        bottom: 6px;
-        width: 2px;
-        background-color: #808080;
-    } */
 
     .vis-drag-right{
-        /*v1 dragging disbled for now
-        min-width: none !important;
-        max-width: none !important;
-        pointer-events:auto;
-        cursor: url('../../assets/icons/vector.svg') 8 8, move !important;*/
         pointer-events: none;
         cursor: default !important;
     }
-    /*    v1 dragging disbled for now .vis-drag-right:hover::before {
-        content: '';
-        position: absolute;
-        left: 7px;
-        top: 6px;
-        bottom: 6px;
-        width: 2px;
-        background-color: #B3B3B3;
-    }
-    .vis-drag-right:active::before {
-        content: '';
-        position: absolute;
-        left: 7px;
-        top: 6px;
-        bottom: 6px;
-        width: 2px;
-        background-color: #808080;
-    } */
 
     .vis-item{
         pointer-events: auto;

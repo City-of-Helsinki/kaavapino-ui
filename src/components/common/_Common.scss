@@ -202,11 +202,7 @@ ul {
 
 .input-container {
   position: relative;
-  
-  // Add extra margin when focused to maintain consistent spacing with error-text
-  &:focus-within {
-    margin-bottom: 2px;
-  }
+  margin-bottom: 2px;
   
   .input-header-icons{
     justify-content: center;
@@ -858,7 +854,7 @@ header{
 
     .nav-header-content {
       margin-top: 120px;
-      margin-bottom: 32px;
+      margin-bottom: $size32;
 
       &.edit {
         margin-top: 106px;

@@ -67,7 +67,9 @@ export default function NetworkErrorState({ fieldName, validationError, maxSizeO
           localStorage.removeItem('isRelevantField');
           localStorage.removeItem('warningManuallyClosed');
           clearedIsRelevantField.current = true;
-      } catch (e) {}
+      } catch (e) {
+        console.error('Failed to clear localStorage:', e);
+      }
   }
   const network = useSelector(projectNetworkSelector);
   const lastSaved = useSelector(state => lastSavedSelector(state))
@@ -135,7 +137,10 @@ export default function NetworkErrorState({ fieldName, validationError, maxSizeO
   // Limit visibility to fields present in lastSaved.fields when error/success
   // (savedFields already defined above for use in banner)
   const storedFieldName = localStorage.getItem('isRelevantField') || null;
-  const isRelevantField = fieldName ? savedFields.includes(fieldName) : false;
+  const isRelevantField = fieldName
+    ? savedFields.includes(fieldName) ||
+      savedFields.some(f => typeof f === 'string' && f.startsWith(fieldName + '['))
+    : false;
   const storedRelevant = fieldName ? storedFieldName === fieldName : false;
 
   useEffect(() => {
@@ -145,7 +150,9 @@ export default function NetworkErrorState({ fieldName, validationError, maxSizeO
       if (storedFieldName !== fieldName) {
         try {
           localStorage.setItem('isRelevantField', fieldName);
-        } catch (e) {}
+        } catch (e) {
+          console.error('Failed to write to localStorage:', e);
+        }
       }
     }
   }, [hasError, storedFieldName, isRelevantField, fieldName]);

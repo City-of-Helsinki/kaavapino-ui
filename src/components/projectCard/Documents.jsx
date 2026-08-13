@@ -15,7 +15,7 @@ function Documents({ documentFields, hideTitle, mapLink }) {
     return (
       <div key={section.section_name} className="section">
         <div className="values">
-          <h4>{section.section_name}</h4>
+          <h3>{section.section_name}</h3>
           <div>{renderDocuments(section.documents)}</div>
         </div>
       </div>
@@ -47,7 +47,7 @@ function Documents({ documentFields, hideTitle, mapLink }) {
             return renderSection(section)
           })
         }
-        {documentsNotReady && !mapLink && <label className="documents-not-ready">{t('project.documents-not-ready')}</label>}
+        {documentsNotReady && !mapLink && <div className="documents-not-ready">{t('project.documents-not-ready')}</div>}
       </div>
     )
   }
@@ -55,7 +55,7 @@ function Documents({ documentFields, hideTitle, mapLink }) {
 
   return (
     <div className="documents">
-      {!hideTitle && <h3>{t('project.documents-title')}</h3>}
+      {!hideTitle && <h2>{t('project.documents-title')}</h2>}
       <div>{fieldsComponent}</div>
     </div>
   )

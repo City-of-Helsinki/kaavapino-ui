@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { Combobox } from 'hds-react'
 import PropTypes from 'prop-types'
 import axios from 'axios'
+import { useFieldPassivation } from '../../hooks/useFieldPassivation'
 
 class CustomADUserCombobox extends Component {
   constructor() {
@@ -14,7 +15,6 @@ class CustomADUserCombobox extends Component {
       page: 1,
       hasMore: true,
       loadingInitial: true,
-      loadingMore: false,
     };
     this.timer = null;
     this.containerRef = React.createRef();
@@ -212,12 +212,25 @@ CustomADUserCombobox.propTypes = {
   multiselect: PropTypes.bool,
   placeholder: PropTypes.string,
   disabled: PropTypes.bool,
-  required: PropTypes.bool,
-  onBlur: PropTypes.func,
-  input: PropTypes.shape({
-    value: PropTypes.any,
-    onChange: PropTypes.func.isRequired
-  }).isRequired
+  name: PropTypes.string,
+  input: PropTypes.shape({ name: PropTypes.string, value: PropTypes.any, onChange: PropTypes.func }),
+}
+
+export function CustomADUserComboboxField({ formName, disabled, input, ...rest }) {
+  const shouldPassivate = useFieldPassivation(input?.name, { formName })
+  return (
+    <CustomADUserCombobox
+      disabled={disabled || shouldPassivate}
+      input={input}
+      {...rest}
+    />
+  )
+}
+
+CustomADUserComboboxField.propTypes = {
+  formName: PropTypes.string,
+  disabled: PropTypes.bool,
+  input: PropTypes.shape({ name: PropTypes.string, value: PropTypes.any, onChange: PropTypes.func }),
 }
 
 export default CustomADUserCombobox;

@@ -14,7 +14,9 @@ import {
   createFieldComment
 } from '../../actions/commentActions'
 import {
-  formErrorList
+  formErrorList,
+  setLastSaved,
+  SET_NETWORK_STATUS
 } from '../../actions/projectActions'
 import { currentProjectIdSelector,savingSelector,lockedSelector, lastModifiedSelector, pollSelector,lastSavedSelector, projectNetworkSelector, formErrorListSelector, connectionErrorFieldsSelector, fieldsWithAnyErrorSelector, testingConnectionSelector } from '../../selectors/projectSelector'
 import CommentIcon from '@/assets/icons/comment-icon.svg?react'
@@ -217,6 +219,21 @@ function RichTextEditor(props) {
   }, [lastSaved?.status === "error"])
 
   useEffect(() => {
+    if (!editorRef.current) return
+    const root = editorRef.current.getEditor().root
+    if (shouldDisableForErrors) {
+      editorRef.current.editor.enable(false)
+      if (document.activeElement === root) {
+        editorRef.current.editor.blur()
+      }
+      root.tabIndex = -1
+    } else if (!readonly) {
+      editorRef.current.editor.enable(true)
+      root.tabIndex = 0
+    }
+  }, [shouldDisableForErrors])
+
+  useEffect(() => {
     if (readonly && !saving) {
       setShowComments(false)
     }
@@ -241,7 +258,67 @@ function RichTextEditor(props) {
 
     removeTabBinding();
   }, [editorRef, editField])
-  
+
+  useEffect(() => {
+    // Workaround for a bug in quill
+    // Prevents the editor from scrolling to the top of the editor when pasting large amounts of text
+    const root = editorRef?.current?.getEditor?.()?.root;
+    if (!root) return
+
+    const handlePaste = () => {
+      const savedScrollX = window.scrollX
+      const savedScrollY = window.scrollY
+
+      // scroll to caret (end of pasted content)
+      const followCaret = () => {
+        const sel = window.getSelection()
+        if (!sel || sel.rangeCount === 0 || !root.contains(sel.focusNode)) {
+          window.scrollTo(savedScrollX, savedScrollY)
+          return
+        }
+
+        const range = sel.getRangeAt(0).cloneRange()
+        range.collapse(false)
+        let rect = range.getBoundingClientRect()
+        // Collapsed ranges on an empty text node can report a zero rect; fall
+        // back to the containing element's rect in that case.
+        if (rect.top === 0 && rect.bottom === 0) {
+          const endNode = range.endContainer
+          const el = endNode.nodeType === Node.TEXT_NODE ? endNode.parentElement : endNode
+          if (el && typeof el.getBoundingClientRect === 'function') {
+            rect = el.getBoundingClientRect()
+          }
+        }
+        if (!rect || (rect.top === 0 && rect.bottom === 0)) {
+          window.scrollTo(savedScrollX, savedScrollY)
+          return
+        }
+
+        const caretAbsY = rect.bottom + window.scrollY
+        const viewportHeight = window.innerHeight
+        const margin = 32 // matches typing feel: caret stays a bit off the edge
+
+        // Where the caret would appear on-screen if we kept the pre-paste scroll.
+        const caretViewportY = caretAbsY - savedScrollY
+        const caretAlreadyVisible =
+          caretViewportY >= margin && caretViewportY <= viewportHeight - margin
+
+        const targetY = caretAlreadyVisible
+          ? savedScrollY
+          : caretAbsY - viewportHeight + margin // Move to show caret
+
+        window.scrollTo(savedScrollX, Math.max(0, targetY))
+      }
+
+      // Run after Quill's setTimeout(1) + focus() so we override the browser's
+      // focus-induced scroll to the top of the editor.
+      setTimeout(() => requestAnimationFrame(followCaret), 5)
+    }
+
+    root.addEventListener('paste', handlePaste, true)
+    return () => root.removeEventListener('paste', handlePaste, true)
+  }, [editorRef, editField])
+
   useEffect(() => {
     if(!isMount){
       //!ismount skips initial render
@@ -445,7 +522,7 @@ function RichTextEditor(props) {
         // if the field is not locked, set the value from the lock data
         // BUT skip if we just saved successfully or connection was restored - editor already has the correct content
         // and fieldData is the old pre-edit value from when the lock was acquired
-        const skipSetValue = lastSaved?.status === 'success' || lastSaved?.status === 'connection_restored';
+        const skipSetValue = lastModified === inputProps.name && (lastSaved?.status === 'success' || lastSaved?.status === 'connection_restored');
         if (!skipSetValue) {
           setValue(fieldData)
         }
@@ -646,7 +723,7 @@ function RichTextEditor(props) {
     }
     //Sent a call to unlock field to backend
     if (typeof props.handleUnlockField === 'function' && 
-      lockedStatus?.lockData?.attribute_lock?.owner) {
+      lockedStatus?.lockData?.attribute_lock?.owner && !insideFieldset && !maxSizeOver) {
       props.handleUnlockField(inputProps.name)
     }
     //User is clicking inside editor and we don't want data to be refeched from db each time but we want to save latest edited data when blurred
@@ -710,6 +787,17 @@ function RichTextEditor(props) {
     if(rollingInfo && !maxSizeOver){
       setEditField(false)
     }
+
+    // maxSizeOver blocks the normal save path, but if the network is also down,
+    // dispatch the error immediately so the UI detects it without requiring
+    // the accordion to be closed and reopened.
+    // Use fieldset name (not child field name) to match saveProject saga convention,
+    // preventing double notifications from both FieldSet and child field NetworkErrorState.
+    if (maxSizeOver && !globalThis.navigator?.onLine) {
+      const fieldsetName = inputProps.name.includes('[') ? inputProps.name.split('[')[0] : inputProps.name
+      dispatch(setLastSaved('error', null, [fieldsetName], [], false))
+      dispatch({ type: SET_NETWORK_STATUS, payload: { status: 'error', errorMessage: t('messages.general-save-error') } })
+    }
   }
 
   const addComment = () => {
@@ -733,14 +821,14 @@ function RichTextEditor(props) {
   if (lastIndex !== -1) {
     reducedName = inputProps.name.substring(lastIndex + 1, inputProps.name.length)
     const match = inputProps.name.match(/\[(\d+)\]/);
-    number = match ? parseInt(match[1], 10) : 0;
+    number = match ? Number.parseInt(match[1], 10) : 0;
   }
   const toolbarName = `toolbar-${reducedName || ''}-${number}`
   const modules = {
     toolbar: `#${toolbarName}`
   }
 
-  const onKeyDown = (e) => {
+  const onKeyDown = () => {
     if(readonly){
       //prevent typing text if locked
       editorRef.current.editor.enable(false)
@@ -955,18 +1043,20 @@ function RichTextEditor(props) {
       shouldDisableForErrors={shouldDisableForErrors}
     />
     :
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
     onContextMenu={(e)=> {if(readonly){e.preventDefault()}}}
     className='richtext-container'
     >
-    {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
     <div
       ref={wrapperRef}
+      role="textbox"
+      aria-multiline="true"
+      aria-label={inputProps.name}
       className={`rich-text-editor-wrapper ${isRichTextDisabled ? 'rich-text-disabled' : ''} ${isThisFieldNetworkError ? 'has-network-error' : ''} ${isBlurred ? 'blurred' : ''} ${maxSizeOver ? 'has-error' : ''}`}
       onFocus={handleWrapperFocus}
       onKeyDown={handleWrapperKeyDown}
       id={"rte-wrapper-" + inputProps.name}
+      tabIndex={-1}
     >
       <div className={RichTextClassName}>
         <div
@@ -995,6 +1085,7 @@ function RichTextEditor(props) {
           </span>
           <span className="ql-formats">
             <button
+              type="button"
               aria-label="Lisää kommentti"
               className="quill-toolbar-comment-button"
               onClick={addComment}
@@ -1002,6 +1093,7 @@ function RichTextEditor(props) {
               <CommentIcon className="comment-icon" aria-hidden="true" focusable="false" />
             </button>
             <button
+              type="button"
               className="show-comments-button"
               aria-label="Näytä kommentit"
               onClick={() => setShowComments(!showComments)}
@@ -1013,7 +1105,7 @@ function RichTextEditor(props) {
           </span>
         </div>
         <ReactQuill
-          tabIndex="0"
+          tabIndex={isRichTextDisabled ? -1 : 0}
           id={toolbarName + "input"}
           ref={editorRef}
           modules={modules}
@@ -1072,6 +1164,15 @@ function RichTextEditor(props) {
           readOnly={readonly || lastSaved?.status === "error"}
         />
       </div>
+      {showCounter.current && counter.current !== undefined && maxSize ? (
+        <p
+          className={
+            counter.current > maxSize ? 'quill-counter quill-warning' : 'quill-counter'
+          }
+        >
+          {counter.current + '/' + maxSize}
+        </p>
+      ) : null}
       {showComments && filteredComments && filteredComments.length > 0 && (
         <div className="comment-list">
           {filteredComments.map((comment, i) => (
@@ -1090,15 +1191,7 @@ function RichTextEditor(props) {
           ))}
         </div>
       )}
-      {showCounter.current && counter.current !== undefined && maxSize ? (
-        <p
-          className={
-            counter.current > maxSize ? 'quill-counter quill-warning' : 'quill-counter'
-          }
-        >
-          {counter.current + '/' + maxSize}
-        </p>
-      ) : null}
+
     </div>
     </div>
     

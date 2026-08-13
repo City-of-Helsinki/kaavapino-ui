@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { Grid, Segment } from 'semantic-ui-react'
 import BasicInformation from './BasicInformation'
 import Contract from './Contract'
 import Description from './Description'
@@ -9,7 +8,7 @@ import Contacts from './Contacts'
 import FloorAreaInformation from './FloorAreaInformation'
 import StrategyConnection from './StrategyConnection'
 import GeometryInformation from './GeometryInformation'
-import Photo from './Photo'
+import Photo from './Photo.jsx'
 import Documents from './Documents'
 import projectUtils from './../../utils/projectUtils'
 import {
@@ -68,6 +67,12 @@ function ProjectCardPage({
   useEffect(() => {
     getProjectCardFields(projectId)
     getExternalDocuments(projectId)
+    window.scrollTo({ top: 0, behavior: 'auto' })
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      clearExternalDocuments()
+    }
   }, [])
 
   useEffect(() => {
@@ -85,25 +90,18 @@ function ProjectCardPage({
   }, [currentProjectId])
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'auto' })
-  }, [])
-
-  useEffect(() => {
-    window.addEventListener('resize', handleResize)
+    document.title = currentProject?.name ? `Kaavapino - ${t('project.project-card')}: ${currentProject.name}` :
+      `Kaavapino - ${t('project.project-card')}`;
     return () => {
-      window.removeEventListener('resize', handleResize)
-    }
-  }, [])
+      if (document.title.includes(t('project.project-card'))) {
+        document.title = "Kaavapino";
+      }
+    };
+  }, [currentProject?.name]);
 
   const handleResize = () => {
     setIsMobile(window.innerWidth < 720)
   }
-
-  useEffect(() => {
-    return () => {
-      clearExternalDocuments()
-    }
-  }, [])
 
   const buildPage = () => {
     const currentDescriptionFields = []
@@ -181,75 +179,70 @@ function ProjectCardPage({
   }
 
   const renderFirstRow = () => (
-    <Grid stackable columns="equal">
-      <Grid.Column width={8}>
-        <Segment>
-          <Description fields={descriptionFields} />
-        </Segment>
-      </Grid.Column>
-      <Grid.Column>
-        <Segment>
-          <Photo field={photoField} />
-        </Segment>
-      </Grid.Column>
-    </Grid>
+    <div className='project-card-first-row'>
+      <div className="card-segment">
+        <Description fields={descriptionFields} />
+      </div>
+      <div className="card-segment">
+        <Photo field={photoField} />
+      </div>
+    </div>
   )
   const renderTimeLineRow = () => {
     return (
-      <Grid stackable columns="equal">
-        <Grid.Column>
-          <Segment>
+      <div className='project-card-timeline-row'>
+        <div className="card-segment">
+          <div className="project-card-timeline">
+            <h2>{t('project.timeline')}</h2>
             <ProjectTimeline
               deadlines={currentProject?.deadlines}
               projectView={true}
               onhold={currentProject?.onhold}
               attribute_data={currentProject?.attribute_data}
             />
-          </Segment>
-        </Grid.Column>
-      </Grid>
+          </div>
+        </div>
+      </div>
     )
   }
-  const renderSecondRow = () => {
+  const renderLeftSection = () => {
     return (
-      <Grid stackable columns="equal">
-        <Grid.Column width={5}>
-          <Segment>
-            <Contacts fields={contactsFields} personnel={personnel} />
-          </Segment>
-          <Segment key="basic-information">
-            <StrategyConnection fields={strategyConnectionFields} />
-          </Segment>
-          <Segment>
-            <TimeTable fields={timeTableFields} />
-          </Segment>
-        </Grid.Column>
-        <Grid.Column>
-          <Segment>
-            <FloorAreaInformation fields={floorAreaFields} />
-          </Segment>
-          <Grid columns="equal">
-            <Grid.Column className="inner-left-column">
-              <Segment key="basic-information">
-                <BasicInformation fields={basicInformationFields} />
-              </Segment>
-            </Grid.Column>
-            <Grid.Column className="inner-right-column">
-              <Segment>
-                <Contract fields={contractFields} />
-              </Segment>
-            </Grid.Column>
-          </Grid>
-          <Segment>
-            <GeometryInformation field={planningRestriction} />
-          </Segment>
-          <Segment>
-            <Documents documentFields={externalDocuments} mapLink={currentProject?.attribute_data?.linkki_karttapalvelu}/>
-          </Segment>
-        </Grid.Column>
-      </Grid>
+    <>
+    <div className="card-segment">
+      <Contacts fields={contactsFields} personnel={personnel} />
+    </div>
+    <div className="card-segment">
+      <StrategyConnection fields={strategyConnectionFields} />
+    </div>
+    <div className="card-segment">
+      <TimeTable fields={timeTableFields} />
+    </div>
+    <div className="card-segment">
+      <Documents documentFields={externalDocuments} mapLink={currentProject?.attribute_data?.linkki_karttapalvelu}/>
+    </div>
+    </>
     )
   }
+
+  const renderRightSection = () => {
+    return (
+      <>
+        <div className="card-segment">
+          <FloorAreaInformation fields={floorAreaFields} />
+        </div>
+         <div className="card-segment">
+          <BasicInformation fields={basicInformationFields} />
+        </div>
+        <div className="card-segment">
+          <Contract fields={contractFields} />
+        </div>
+        <div className="card-segment">
+          <GeometryInformation field={planningRestriction} />
+        </div>
+      </>
+    )
+  }
+
   const renderMobileView = () => {
     return (
       <div>
@@ -297,14 +290,22 @@ function ProjectCardPage({
 
   const renderNormalView = () => {
     const firstRow = renderFirstRow()
-    const secondRow = renderSecondRow()
     const timelineRow = renderTimeLineRow()
 
     return (
       <div className="project-card">
-        {firstRow}
-        {timelineRow}
-        {secondRow}
+        <section aria-label="Suunnitelualueen kuvaus ja projektin aikataulu">
+          {firstRow}
+          {timelineRow}
+        </section>
+        <div className="project-card-second-row">
+          <section className="project-card-left" aria-label="Yhteyshenkilöt, strategiakytkentä, päivämäärät, dokumentit">
+            {renderLeftSection()}
+          </section>
+          <section className="project-card-right" aria-label="Kerrosala ja projektin perustiedot">
+            {renderRightSection()}
+          </section>
+        </div>
       </div>
     )
   }

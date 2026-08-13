@@ -6,9 +6,8 @@ import { isCurrentPhaseConfirmed } from '../../utils/projectVisibilityUtils'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 
-const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserResponsible, isThePersonResponsible, schema, attribute_data, selectedPhase, search, project, disableDownloads, downloadingDocumentReady }) => {
+const DocumentGroup = ({ title, documents, phaseEnded, phase, isThePersonResponsible, schema, attribute_data, project, disableDownloads, downloadingDocumentReady }) => {
   const {t} = useTranslation()
-
   // Accessibility fixes, re-evaluate when HDS-react is updated
   const handleAccordionKeyDown = (event) => {
     if (event.key !== ' ' && event.key !== 'Spacebar') {
@@ -113,24 +112,17 @@ const DocumentGroup = ({ title, documents, projectId, phaseEnded, phase, isUserR
       <div className="document-group" onKeyDownCapture={handleAccordionKeyDown}>
         <Accordion heading={title} headingLevel={2} className="document-accordion" size="m">
           {schema ? getStatus() : ""}
-          {documents.map(({ name, file, last_downloaded, image_template, id }, i) => (
+          {documents.map(({ name, file, last_downloaded }, i) => (
             <Document
-              title={title}
               phaseEnded={phaseEnded}
               lastDownloaded={last_downloaded}
-              id={id}
-              image_template={image_template}
-              projectId={projectId}
               name={name}
               file={file}
               key={i}
               phaseIndex={phase.phaseIndex}
-              isUserResponsible={isUserResponsible}
               isThePersonResponsible={isThePersonResponsible}
               schema={schema}
               attribute_data={attribute_data}
-              selectedPhase={selectedPhase}
-              search={search}
               hideButtons={schema ? hideButtons() : true}
               project={project}
               disableDownloads={disableDownloads}
@@ -150,7 +142,10 @@ DocumentGroup.propTypes = {
   title: PropTypes.object,
   project: PropTypes.object,
   disableDownloads: PropTypes.func,
-  downloadingDocumentReady: PropTypes.bool
+  downloadingDocumentReady: PropTypes.bool,
+  documents: PropTypes.array,
+  phaseEnded: PropTypes.bool,
+  isThePersonResponsible: PropTypes.bool,
 }
 
 export default DocumentGroup
