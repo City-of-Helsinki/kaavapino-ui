@@ -261,12 +261,13 @@ export const reducer = (state = initialState, action) => {
       const changes = objectUtil.mergeAndUpdateDlArrays(origSortedData, updateAttributeArray, deadlineSections)
       //Find out is next date below minium and add difference of those days to all values after and move them forward
       const processedDates = deadlineCascade.cascadeDeadlineChange({
-        arr: changes,
+        dlArray: changes,
         field,
         disabledDates: state.disabledDates,
         projectSize,
         attributeData: filteredAttributeData,
         deadlineObjects: state.currentProject.deadlines,
+        lockedGroup: state.timelineLockedGroup
       });
       //Add new values from array to updatedAttributeData object
       objectUtil.updateOriginalObject(filteredAttributeData,processedDates)

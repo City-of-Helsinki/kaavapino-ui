@@ -1640,6 +1640,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             let lock = document.createElement("button");
             lock.classList.add("timeline-lock-button");
             lock.style.fontSize = "small";
+
+            if (group.deadlinegroup === currentTimelineLockRef.current) {
+              lock.classList.add("lock");
+            }
             lock.addEventListener("click", function () {
               lock.classList.toggle("lock");
               handleLockElement(group);

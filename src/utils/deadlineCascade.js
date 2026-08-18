@@ -21,6 +21,19 @@ const findLastDeadlineInPhase = (arr, index, targetPhase) => {
   return null;
 }
 
+const getFirstLockedElement = (arr, lockedGroup, deadlineObjects) => {
+  for (const dl_object of deadlineObjects) {
+    const deadline = dl_object.deadline;
+    if (deadline.deadlinegroup === lockedGroup) {
+      const item = arr.find(item => item.key === deadline.attribute);
+      if (item) {
+        return item;
+      }
+    }
+  }
+  return null;
+}
+
 const getGapDateType = (deadline) => {
   // Workaround for finding the date type for the minimum distance calculation.
   // This should be provided by backend but is currently unavailable.
@@ -34,7 +47,8 @@ const getGapDateType = (deadline) => {
   return deadline?.date_type || null;
 }
 
-const cascadeDeadlineChange = ({ arr, field, disabledDates, projectSize, attributeData, deadlineObjects = [] }) => {
+const cascadeDeadlineChange = ({ dlArray, field, disabledDates, projectSize, attributeData, deadlineObjects = [], lockedGroup=null }) => {
+  const arr = structuredClone(dlArray);
   // Do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
   const confirmedFieldSet = new Set(generateConfirmedFields(attributeData, deadlineObjects));
   // Attributes that should never be cascaded
@@ -194,6 +208,13 @@ const cascadeDeadlineChange = ({ arr, field, disabledDates, projectSize, attribu
     console.warn(`Field ${field} not found in the array. No cascading applied.`);
     return arr;
   }
+
+  const lockedElement = lockedGroup ? getFirstLockedElement(arr, lockedGroup, deadlineObjects) : null;
+  if (lockedElement?.key === field){
+    console.warn(`Field ${field} is locked. No cascading applied.`);
+    return arr;
+  }
+
   let indexToContinue = 0;
 
   for (let i = currentIndex; i < arr.length; i++) {
@@ -219,6 +240,10 @@ const cascadeDeadlineChange = ({ arr, field, disabledDates, projectSize, attribu
         newDate = prevItem ? new Date(prevItem.value) : new Date(currentItem.value);
       }
       else {
+        if (lockedElement && currentItem.key === lockedElement.key) {
+          console.warn(`Encountered locked field ${lockedElement.key}. Stopping cascade.`);
+          break;
+        }
         // For subsequent items, enforce minimum gap if moving forward
         newDate = enforceMinimumGap(currentItem, prevItem, disabledDates, false);
       }
@@ -228,6 +253,7 @@ const cascadeDeadlineChange = ({ arr, field, disabledDates, projectSize, attribu
   }
   return arr
 }
+
 
 export const setDefaultDatesForNewGroup = (dlObjects, formValues, allDates) => {
   dlObjects.forEach(dl => {

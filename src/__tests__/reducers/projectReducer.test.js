@@ -90,7 +90,7 @@ vi.mock('../../utils/objectUtil', () => ({
 
 vi.mock('../../utils/deadlineCascade', () => ({
   default: {
-    cascadeDeadlineChange: vi.fn(({ arr }) => arr),
+    cascadeDeadlineChange: vi.fn(({ dlArray }) => dlArray),
   }
 }))
 

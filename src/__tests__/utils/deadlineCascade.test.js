@@ -15,7 +15,7 @@ const setFieldValue = (arr, field, value) => {
     if (index !== -1) arr[index].value = value;
 };
 const checkParams = (overrides = {}) => ({
-    arr: mockData.decreasing_test_arr,
+    dlArray: mockData.decreasing_test_arr,
     field: '',
     disabledDates: mockData.test_disabledDates,
     moveToPast: false,
@@ -57,7 +57,7 @@ describe("Test deadlineCascade utility functions", () => {
             setFieldValue(modified_test_arr, field, movedDate);
             const original = JSON.parse(JSON.stringify(modified_test_arr));
             const result = deadlineCascade.cascadeDeadlineChange(checkParams({
-                arr: modified_test_arr,
+                dlArray: modified_test_arr,
                 field,
                 projectSize
             }));
@@ -132,7 +132,7 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
             const projectSize = "XL";
 
             const result = deadlineCascade.cascadeDeadlineChange(checkParams({
-                arr,
+                dlArray: arr,
                 field,
                 projectSize
             }));
@@ -170,7 +170,7 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
             const projectSize = "XL";
 
             const result = deadlineCascade.cascadeDeadlineChange(checkParams({
-                arr,
+                dlArray: arr,
                 field,
                 projectSize
             }));
@@ -208,7 +208,7 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
             const projectSize = "XL";
 
             const result = deadlineCascade.cascadeDeadlineChange(checkParams({
-                arr,
+                dlArray: arr,
                 field,
                 projectSize
             }));
@@ -237,7 +237,7 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
                 arr[lautakunta1Index].value = newDate;
 
                 const result = deadlineCascade.cascadeDeadlineChange(checkParams({
-                    arr,
+                    dlArray: arr,
                     field: arr[lautakunta1Index].key,
                     projectSize: "XL"
                 }));
@@ -271,7 +271,7 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
                 arr[periaatteetPaattyyIndex].value = newPeriaatteetPaattyy;
 
                 const result = deadlineCascade.cascadeDeadlineChange(checkParams({
-                    arr,
+                    dlArray: arr,
                     field: "periaatteetvaihe_paattyy_pvm",
                     projectSize: "XL"
                 }));
@@ -297,7 +297,7 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
                 arr[fieldIndex].value = newDate;
 
                 const result = deadlineCascade.cascadeDeadlineChange(checkParams({
-                    arr,
+                    dlArray: arr,
                     field,
                     projectSize: "XL"
                 }));
@@ -326,7 +326,7 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
             if (addIndex !== -1) arr[addIndex].value = addDate;
 
             const afterAdd = deadlineCascade.cascadeDeadlineChange(checkParams({
-                arr,
+                dlArray: arr,
                 field: addField,
                 projectSize: "XL"
             }));
@@ -343,7 +343,7 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
                 afterAdd[modifyIndex].value = newValueStr;
 
                 const afterModify = deadlineCascade.cascadeDeadlineChange(checkParams({
-                    arr: afterAdd,
+                    dlArray: afterAdd,
                     field: modifyField,
                     projectSize: "XL"
                 }));
@@ -390,7 +390,7 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
                 arr[phaseStartIndex].value = newDate;
 
                 const result = deadlineCascade.cascadeDeadlineChange(checkParams({
-                    arr,
+                    dlArray: arr,
                     field: phaseStartKey,
                     projectSize: "XL"
                 }));
