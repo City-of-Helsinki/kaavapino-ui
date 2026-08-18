@@ -34,7 +34,7 @@ const getGapDateType = (deadline) => {
   return deadline?.date_type || null;
 }
 
-const cascadeDeadlineChange = ({ arr, field, disabledDates, moveToPast, projectSize, attributeData, deadlineObjects = [] }) => {
+const cascadeDeadlineChange = ({ arr, field, disabledDates, projectSize, attributeData, deadlineObjects = [] }) => {
   // Do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
   const confirmedFieldSet = new Set(generateConfirmedFields(attributeData, deadlineObjects));
   // Attributes that should never be cascaded

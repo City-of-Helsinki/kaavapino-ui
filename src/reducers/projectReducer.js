@@ -229,8 +229,6 @@ export const reducer = (state = initialState, action) => {
         milloin_ehdotuksen_nahtavilla_paattyy_3: filteredAttributeData.milloin_ehdotuksen_nahtavilla_paattyy_3,
         milloin_ehdotuksen_nahtavilla_paattyy_4: filteredAttributeData.milloin_ehdotuksen_nahtavilla_paattyy_4,
       };
-      const moveToPast = filteredAttributeData[field] > newDate;
-      //Save oldDate for comparison in cascadeDeadlineChange
       //Sort array by date
       const origSortedData = timeUtil.sortObjectByDate(filteredAttributeData);
       const newDateObj = new Date(newDate);
@@ -258,16 +256,15 @@ export const reducer = (state = initialState, action) => {
       // Generate array from filteredAttributeData for comparison
       const updateAttributeArray = objectUtil.generateDateStringArray(filteredAttributeData)
       //Compare for changes with dates in order sorted array
-      const changes = objectUtil.mergeAndUpdateDlArrays(origSortedData,updateAttributeArray,deadlineSections)
+      const changes = objectUtil.mergeAndUpdateDlArrays(origSortedData, updateAttributeArray, deadlineSections)
       //Find out is next date below minium and add difference of those days to all values after and move them forward
       const processedDates = deadlineCascade.cascadeDeadlineChange({
         arr: changes,
         field,
         disabledDates: state.disabledDates,
-        moveToPast,
         projectSize,
         attributeData: filteredAttributeData,
-        deadlineObjects: state.currentProject.deadlines
+        deadlineObjects: state.currentProject.deadlines,
       });
       //Add new values from array to updatedAttributeData object
       objectUtil.updateOriginalObject(filteredAttributeData,processedDates)

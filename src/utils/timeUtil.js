@@ -212,7 +212,7 @@ const getAllowedDatesForLautakunta = (name, formValues, phaseName, matchingItem,
   let filteredDateToCompare;
   let firstPossibleDateToSelect;
   //Change to correct comparable phase name from tarkistettu ehdotus to tarkistettu_ehdotus
-  phaseName = phaseName?.includes("tarkistettu") && "tarkistettu_" + phaseName.replace("tarkistettu ", "") || phaseName;
+  phaseName = phaseName?.includes("tarkistettu ") && "tarkistettu_" + phaseName.replace("tarkistettu ", "") || phaseName;
 
   // Check if esilläolo is OFF for this phase (first esilläolo specifically)
   // Use !value to match Excel condition !jarjestetaan_*_esillaolo_1 (handles false, undefined, null)

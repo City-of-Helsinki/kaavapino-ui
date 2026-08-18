@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import timeUtil, { findFirstAllowedDate } from '../../utils/timeUtil.js';
-import data from './_test_data.js';
+import data from './cascadeDeadlineChange_test_data.js';
 import {test_attribute_data_XL as test_attribute_data} from './test_attribute_data.js';
 
 
@@ -242,6 +242,7 @@ describe("getAllowedDates for various phases", () => {
     test("getAllowedDatesForLautakunta returns valid allowed dates for tarkistettu ehdotus", () => {
         const formValues = {
             "tarkistettu_ehdotusvaihe_alkaa_pvm": "2025-08-01",
+            "tarkistettuehdotusvaihe_alkaa_pvm": "2025-08-01",
             "tarkistettu_ehdotus_kylk_maaraaika": "2025-08-15",
             "milloin_tarkistettu_ehdotus_lautakunnassa": "2025-09-01",
             "tarkistettu_ehdotusvaihe_paattyy_pvm": "2025-09-01",
@@ -269,7 +270,7 @@ describe("getAllowedDates for various phases", () => {
             }
         };
         const dateTypes = data.test_disabledDates.date_types;
-        const result_maaraika = timeUtil.getAllowedDatesForLautakunta("tarkistettu_ehdotus_kylk_maaraaika", formValues, "tarkistettu_ehdotus", kylkItem, vaiheAlkaaItem, dateTypes);
+        const result_maaraika = timeUtil.getAllowedDatesForLautakunta("tarkistettu_ehdotus_kylk_maaraaika", formValues, "tarkistettu ehdotus", kylkItem, vaiheAlkaaItem, dateTypes);
         expect(result_maaraika[0]).toBe("2025-08-11");
         const previousDate_maaraika = new Date(formValues["tarkistettu_ehdotusvaihe_alkaa_pvm"]);
         for (let date of result_maaraika) {
@@ -277,7 +278,7 @@ describe("getAllowedDates for various phases", () => {
         }
         assertDatesAfterReference(result_maaraika, formValues["tarkistettu_ehdotusvaihe_alkaa_pvm"]);
         assertDatesAreWorkdays(result_maaraika);
-        const result_lautakunta = timeUtil.getAllowedDatesForLautakunta("milloin_tarkistettu_ehdotus_lautakunnassa", formValues, "tarkistettu_ehdotus", lautakuntaItem, kylkItem, dateTypes);
+        const result_lautakunta = timeUtil.getAllowedDatesForLautakunta("milloin_tarkistettu_ehdotus_lautakunnassa", formValues, "tarkistettu ehdotus", lautakuntaItem, kylkItem, dateTypes);
         // 27 work days distance from maaraika (23rd), then next possible tuesday (30th)
         expect(result_lautakunta[0]).toBe("2025-09-30");
         assertDatesAreSpecificWeekday(result_lautakunta, formValues["tarkistettu_ehdotus_kylk_maaraaika"], 2); // Only tuesdays

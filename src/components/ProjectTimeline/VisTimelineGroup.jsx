@@ -1256,7 +1256,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         if (moveTooltip) {
           moveTooltip.style.display = 'none';
         }
-        let preventMove = false;
         // Determine which part of the item is being dragged
         const dragElement = dragHandleRef.current;
         const isConfirmed = dragElement?.includes("confirmed");
@@ -1279,100 +1278,82 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           return false;
         }
 
-        if (!adjustIfWeekend(item.start) && !adjustIfWeekend(item.end)) {
+        if (!adjustIfWeekend(item.start) && !adjustIfWeekend(item.end) && item.phase) {
           const movingTimetableItem = moment.range(item.start, item.end);
-          if (item.phase) {
-            items.forEach(i => {
-              if (i.phase && i.id !== item.id) {
-                const statickTimetables = moment.range(i.start, i.end);
-                if (movingTimetableItem.overlaps(statickTimetables)) {
-                  preventMove = false;
-                  changeItemRange(item.start > i.start, item, i);
-                }
+          items.forEach(i => {
+            if (i.phase && i.id !== item.id) {
+              const statickTimetables = moment.range(i.start, i.end);
+              if (movingTimetableItem.overlaps(statickTimetables)) {
+                changeItemRange(item.start > i.start, item, i);
               }
-            });
-          } else {
-            items.forEach(i => {
-              if (i.id !== item.id) {
-                if (item.phaseID === i.phaseID && !preventMove && !i.locked) {
-                  preventMove = false;
-                } /* else {
-                    const statickTimetables = moment.range(i.start, i.end);
-                    if (movingTimetableItem.overlaps(statickTimetables)) {
-                      preventMove = true;
-                    }
-                  } */
-              }
-            });
-          }
+            }
+          });
         }
 
-        if (item?.content != null && !preventMove) {
-          // Call the callback to update the item position in the timeline
-          callback(item);
-
-          // After successfully moving the item, update the data in the store
-          if (item?.title) {
-            // Initialize variables for date and title
-            let attributeDate;
-            let attributeToUpdate;
-            const hasTitleSeparator = item.title.includes("-");
-            // Determine which part was dragged and set appropriate values
-            if (dragElement === "elements") {
-              // Preserve original start-end duration for composite phase ranges
-              attributeDate = item.start;
-              attributeToUpdate = hasTitleSeparator ? item.title.split('-')[0].trim() : item.title;
-              const pairedEndKey = hasTitleSeparator ? item.title.split('-')[1].trim() : null;
-              let originalDurationDays = 0;
-              if (item.start && item.end) {
-                originalDurationDays = moment(item.end).diff(moment(item.start), 'days');
-              }
-              const formattedStart = moment(attributeDate).format('YYYY-MM-DD');
-              dispatch(updateDateTimeline(
-                attributeToUpdate,
-                formattedStart,
-                visValuesRef.current,
-                false,
-                deadlineSections,
-                true,
-                originalDurationDays,
-                pairedEndKey
-              ));
-              // Validation will be triggered by componentDidUpdate after cascade completes
-              attributeDate = null;
-              attributeToUpdate = null;
-            }
-            else if (dragElement === "left") {
-              // If dragging the start handle
-              attributeDate = item.start;
-              attributeToUpdate = hasTitleSeparator ? item.title.split("-")[0].trim() : item.title;
-            }
-            else if (dragElement === "right") {
-              // If dragging the end handle
-              attributeDate = item.end;
-              attributeToUpdate = hasTitleSeparator ? item.title.split("-")[1].trim() : item.title;
-            }
-            else {
-              // If dragging element with single handle
-              attributeDate = item.end ? item.end : item.start;
-              attributeToUpdate = hasTitleSeparator ? item.title.split("-")[0].trim() : item.title;
-            }
-
-            // Only dispatch if we have valid data
-            if (attributeToUpdate && attributeDate) {
-              const formattedDate = moment(attributeDate).format('YYYY-MM-DD');
-              dispatch(updateDateTimeline(
-                attributeToUpdate,
-                formattedDate,
-                visValuesRef.current,
-                false,
-                deadlineSections
-              ));
-            }
-          }
-        } else {
-          // Cancel the update if content is null or move is prevented
+        if (item?.content === null) {
           callback(null);
+          return;
+        }
+        // After successfully moving the item, update the data in the store
+        callback(item);
+        if (item?.title) {
+          // Initialize variables for date and title
+          let attributeDate;
+          let attributeToUpdate;
+          const hasTitleSeparator = item.title.includes("-");
+          // Determine which part was dragged and set appropriate values
+          if (dragElement === "elements") {
+            // Preserve original start-end duration for composite phase ranges
+            attributeDate = item.start;
+            attributeToUpdate = hasTitleSeparator ? item.title.split('-')[0].trim() : item.title;
+            const pairedEndKey = hasTitleSeparator ? item.title.split('-')[1].trim() : null;
+            let originalDurationDays = 0;
+            if (item.start && item.end) {
+              originalDurationDays = moment(item.end).diff(moment(item.start), 'days');
+            }
+            const formattedStart = moment(attributeDate).format('YYYY-MM-DD');
+            dispatch(updateDateTimeline(
+              attributeToUpdate,
+              formattedStart,
+              visValuesRef.current,
+              false,
+              deadlineSections,
+              true,
+              originalDurationDays,
+              pairedEndKey
+            ));
+            // Validation will be triggered by componentDidUpdate after cascade completes
+            attributeDate = null;
+            attributeToUpdate = null;
+          }
+          else if (dragElement === "left") {
+            // If dragging the start handle
+            attributeDate = item.start;
+            attributeToUpdate = hasTitleSeparator ? item.title.split("-")[0].trim() : item.title;
+          }
+          else if (dragElement === "right") {
+            // If dragging the end handle
+            attributeDate = item.end;
+            attributeToUpdate = hasTitleSeparator ? item.title.split("-")[1].trim() : item.title;
+          }
+          else {
+            // If dragging element with single handle
+            attributeDate = item.end ? item.end : item.start;
+            attributeToUpdate = hasTitleSeparator ? item.title.split("-")[0].trim() : item.title;
+          }
+
+          // Only dispatch if we have valid data
+          if (attributeToUpdate && attributeDate) {
+            const formattedDate = moment(attributeDate).format('YYYY-MM-DD');
+            dispatch(updateDateTimeline(
+              attributeToUpdate,
+              formattedDate,
+              visValuesRef.current,
+              false,
+              deadlineSections,
+
+            ));
+          }
         }
       },
       groupTemplate: function (group) {
@@ -1380,7 +1361,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           return;
         }
 
-        let container = document.createElement("div");
+        const container = document.createElement("div");
         container.classList.add("timeline-buttons-container");
         container.setAttribute("tabindex", group?.nestedGroups === undefined ? "-1" : "0");
         container.id = `timeline-group-${group.id}`;
@@ -1429,7 +1410,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         }
 
         if (group?.nestedGroups !== undefined && allowedToEdit && !contentIncludesString) {
-          let label = document.createElement("label");
+          const label = document.createElement("label");
           label.innerHTML = group.content + " ";
           label.htmlFor = container.id;
           container.insertAdjacentElement("afterBegin", label);
@@ -1448,7 +1429,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             addTooltipDiv = `<div class='timeline-add-text'>${t('deadlines.phase-closed')}</div>`;
           } else {
             add.classList.remove("button-disabled");
-            addTooltipDiv = "";
           }
 
           add.addEventListener("click", function (event) {
@@ -1519,7 +1499,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             // Common numeric suffix extraction
             const getNum = k => {
               const m = k.match(/_(\d+)$/);
-              return m ? parseInt(m[1], 10) : 1;
+              return m ? Number.parseInt(m[1], 10) : 1;
             };
             const groupNum = getNum(group.deadlinegroup);
             isFirst = groupNum === 1;

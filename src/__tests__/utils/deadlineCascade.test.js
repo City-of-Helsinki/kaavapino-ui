@@ -59,7 +59,6 @@ describe("Test deadlineCascade utility functions", () => {
             const result = deadlineCascade.cascadeDeadlineChange(checkParams({
                 arr: modified_test_arr,
                 field,
-                moveToPast,
                 projectSize
             }));
             for (const item of result) {
@@ -135,7 +134,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
             const result = deadlineCascade.cascadeDeadlineChange(checkParams({
                 arr,
                 field,
-                moveToPast: false,
                 projectSize
             }));
 
@@ -174,7 +172,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
             const result = deadlineCascade.cascadeDeadlineChange(checkParams({
                 arr,
                 field,
-                moveToPast: false,
                 projectSize
             }));
 
@@ -213,7 +210,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
             const result = deadlineCascade.cascadeDeadlineChange(checkParams({
                 arr,
                 field,
-                moveToPast: false,
                 projectSize
             }));
 
@@ -243,7 +239,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
                 const result = deadlineCascade.cascadeDeadlineChange(checkParams({
                     arr,
                     field: arr[lautakunta1Index].key,
-                    moveToPast: false,
                     projectSize: "XL"
                 }));
 
@@ -278,7 +273,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
                 const result = deadlineCascade.cascadeDeadlineChange(checkParams({
                     arr,
                     field: "periaatteetvaihe_paattyy_pvm",
-                    moveToPast: false,
                     projectSize: "XL"
                 }));
 
@@ -305,7 +299,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
                 const result = deadlineCascade.cascadeDeadlineChange(checkParams({
                     arr,
                     field,
-                    moveToPast: false,
                     projectSize: "XL"
                 }));
 
@@ -335,7 +328,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
             const afterAdd = deadlineCascade.cascadeDeadlineChange(checkParams({
                 arr,
                 field: addField,
-                moveToPast: false,
                 projectSize: "XL"
             }));
 
@@ -353,7 +345,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
                 const afterModify = deadlineCascade.cascadeDeadlineChange(checkParams({
                     arr: afterAdd,
                     field: modifyField,
-                    moveToPast: false,
                     projectSize: "XL"
                 }));
 
@@ -401,7 +392,6 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
                 const result = deadlineCascade.cascadeDeadlineChange(checkParams({
                     arr,
                     field: phaseStartKey,
-                    moveToPast: false,
                     projectSize: "XL"
                 }));
 
