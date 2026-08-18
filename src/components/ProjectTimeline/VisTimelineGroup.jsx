@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { change } from 'redux-form'
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import Moment from 'moment'
@@ -17,8 +17,9 @@ import PropTypes from 'prop-types';
 import { getVisibilityBoolName, getVisBoolsByPhaseName, isDeadlineConfirmed, getDateFieldsForDeadlineGroup, getSubsequentDeadlineGroups, getGroupNameByVisibilityBool } from '../../utils/projectVisibilityUtils';
 import { setDefaultDatesForNewGroup } from '../../utils/deadlineCascade'
 import { useTimelineTooltip } from '../../hooks/useTimelineTooltip';
-import { updateDateTimeline } from '../../actions/projectActions';
+import { updateDateTimeline, setTimelineLockedGroup } from '../../actions/projectActions';
 import { extractFromDeadlineSections } from '../../utils/objectUtil';
+import { timelineLockedGroupSelector } from '../../selectors/projectSelector';
 import './VisTimeline.scss'
 Moment.locale('fi');
 
@@ -30,6 +31,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   const timelineInstanceRef = useRef(null);
   const visValuesRef = useRef(visValues);
   const pendingGroupFocusIdRef = useRef(null);
+
+  const currentTimelineLock = useSelector(state => timelineLockedGroupSelector(state));
+  // Kept in sync with the selector so closures created inside the mount-only useEffect (e.g. groupTemplate) read the latest value.
+  const currentTimelineLockRef = useRef(currentTimelineLock);
+  useEffect(() => {
+    currentTimelineLockRef.current = currentTimelineLock;
+  }, [currentTimelineLock]);
 
   const [selectedGroupId, setSelectedGroupId] = useState(null);
   const selectedGroupIdRef = useRef(selectedGroupId);
@@ -325,6 +333,15 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   const openRemoveDialog = (data) => {
     setOpenConfirmModal(!openConfirmModal)
     setDataToRemove(data)
+  }
+
+  const handleLockElement = (data) => {
+    const currentLock = currentTimelineLockRef.current;
+    if (currentLock === data.deadlinegroup) {
+      dispatch(setTimelineLockedGroup(null));
+    } else {
+      dispatch(setTimelineLockedGroup(data.deadlinegroup));
+    }
   }
 
   const returnFocusOnConfirmModalClose = () => {
@@ -1625,6 +1642,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             lock.style.fontSize = "small";
             lock.addEventListener("click", function () {
               lock.classList.toggle("lock");
+              handleLockElement(group);
             });
             container.insertAdjacentElement("beforeEnd", lock);
 

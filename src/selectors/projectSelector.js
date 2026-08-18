@@ -336,3 +336,8 @@ export const validatingTimetableSelector = createSelector(
   selectProject,
   project => project?.validatingTimetable
 )
+
+export const timelineLockedGroupSelector = createSelector(
+  selectProject,
+  project => project?.timelineLockedGroup
+)

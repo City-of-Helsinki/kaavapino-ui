@@ -122,7 +122,7 @@ export const SAVE_PROJECT_TIMETABLE_FAILED = "saveProjectTimetableFailed";
 export const VALIDATING_TIMETABLE = "validatingTimetable"
 export const SET_NETWORK_STATUS = 'Set network status'
 export const RESET_NETWORK_STATUS = 'Reset network status'
-export const SET_TIMELINE_LOCKED_ELEMENT = 'Set timeline locked element';
+export const SET_TIMELINE_LOCKED_GROUP = 'Set timeline locked group';
 
 export const updateAttribute = (field,value) => ({
   type: UPDATE_ATTRIBUTE,
@@ -555,9 +555,11 @@ export const setValidatingTimetable = (validationStarted, validationEnded) => {
   }
 }
 
-export const setTimelineLockedElement = (elementIdentifier) => {
+export const setTimelineLockedGroup = (groupIdentifier) => {
   return {
-    type: SET_TIMELINE_LOCKED_ELEMENT,
-    payload: elementIdentifier
+    type: SET_TIMELINE_LOCKED_GROUP,
+    payload: {
+      timelineLockedGroup: groupIdentifier
+    }
   }
 }
