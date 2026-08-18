@@ -98,7 +98,8 @@ import {
   VALIDATING_TIMETABLE,
   SET_SAVING_FIELD,
   SET_NETWORK_STATUS,
-  RESET_NETWORK_STATUS
+  RESET_NETWORK_STATUS,
+  SET_TIMELINE_LOCKED_ELEMENT
 } from '../actions/projectActions'
 
 import timeUtil from '../utils/timeUtil'
@@ -159,7 +160,8 @@ export const initialState = {
   validated:false,
   cancelTimetableSave:false,
   validatingTimetable: {started: false, ended: false},
-  network: { status: 'ok', hasError: false, errorMessage: '', okMessage: '', tempFieldContents: '' }
+  network: { status: 'ok', hasError: false, errorMessage: '', okMessage: '', tempFieldContents: '' },
+  timelineLockedElement: null
 }
 
 export const reducer = (state = initialState, action) => {
@@ -1094,6 +1096,13 @@ export const reducer = (state = initialState, action) => {
       return {
         ...state,
         validatingTimetable: action.payload
+      }
+    }
+
+    case SET_TIMELINE_LOCKED_ELEMENT: {
+      return {
+        ...state,
+        timelineLockedElement: action.payload
       }
     }
 
