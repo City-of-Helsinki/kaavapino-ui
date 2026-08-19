@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Modal } from 'semantic-ui-react'
 import { Button, Tabs, IconCross } from 'hds-react'
@@ -7,6 +8,7 @@ import FormField from '../input/FormField'
 import { showField } from '../../utils/projectVisibilityUtils'
 import textUtil from '../../utils/textUtil'
 import PropTypes from 'prop-types'
+import { setTimelineLockedGroup } from '../../actions/projectActions';
 import './VisTimeline.scss'
 import { getFocusableElements } from '../project/projectModalUtils';
 
@@ -39,11 +41,17 @@ const TimelineModal = ({
 
   const [returnFocusId, setReturnFocusId] = React.useState(null);
 
+  const dispatch = useDispatch();
+
   useEffect(() => {
     if (open && returnFocusGroupId) {
       setReturnFocusId(`edit-button-${returnFocusGroupId}`);
     }
   }, [open, returnFocusGroupId]);
+
+  useEffect(() => {
+    dispatch(setTimelineLockedGroup(null));
+  }, [])
 
   const getFormField = (fieldProps, key, disabled, deadlineSection, title, confirmedValue, type, tooltip, lautakuntaInPast) => {
     if (!showField(fieldProps.field, visValues)) {
