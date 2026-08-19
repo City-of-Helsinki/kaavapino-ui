@@ -59,10 +59,8 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
 
   const isFrozen = (item) => {
     if (!item?.value) return false;
-    const d = new Date(item.value);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (!Number.isNaN(d) && d < today) return true;
+    const today = new Date().toISOString().split('T')[0];
+    if (item.value < today) return true;
     return confirmedFieldSet.has(item.key);
   };
 
@@ -85,7 +83,7 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     const gapDates = disabledDates?.date_types?.työpäivät?.dates;
     const allowedDates = disabledDates?.date_types[lautakuntaItem?.date_type]?.dates;
     const lautakuntaResult = findFirstAllowedDate(maaraaikaItem.value, lautakuntaGap, gapDates, allowedDates);
-    lautakuntaItem.value = new Date(lautakuntaResult).toISOString().split('T')[0];
+    lautakuntaItem.value = lautakuntaResult;
   }
 
   const handleLautakuntaMove = (arr, i, disabledDates) => {
@@ -98,10 +96,10 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     if (maaraaikaResult) {
       const maikaObject = { ...prevItem, value: maaraaikaResult};
       const enforcedMaaraaika = enforceMinimumGap(maikaObject, getPreviousItem(arr, i-1), disabledDates);
-      prevItem.value = enforcedMaaraaika.toISOString().split('T')[0];
+      prevItem.value = enforcedMaaraaika;
     }
     const lautakuntaResult = enforceMinimumGap(currentItem, prevItem, disabledDates, true);
-    currentItem.value = lautakuntaResult?.toISOString().split('T')[0] || currentItem.value;
+    currentItem.value = lautakuntaResult ?? currentItem.value;
   }
 
   const handleEsillaMaaraaikaMove = (arr, i, movedDate, disabledDates) => {
@@ -122,7 +120,7 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     const alkaaGapDates = disabledDates?.date_types[alkaaGapType]?.dates;
     const alkaaAllowedDates = disabledDates?.date_types[alkaaItem?.date_type]?.dates || alkaaGapDates;
     const alkaaResult = findFirstAllowedDate(movedDate, alkaaGap, alkaaGapDates, alkaaAllowedDates);
-    alkaaItem.value = new Date(alkaaResult).toISOString().split('T')[0];
+    alkaaItem.value = alkaaResult;
 
     const paattyyGap = paattyyItem.initial_distance ?? paattyyItem.distance_from_previous ?? 14;
     const paattyyGapType = getGapDateType(paattyyItem);
@@ -131,7 +129,7 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     const gap = Math.max(initialEsillaoloDiff, paattyyGap);
     const newPaattyyValue = findFirstAllowedDate(alkaaItem.value, gap, paattyyGapDates, paattyyAllowedDates);
     if (newPaattyyValue) {
-      paattyyItem.value = new Date(newPaattyyValue).toISOString().split('T')[0];
+      paattyyItem.value = newPaattyyValue;
     }
   }
 
@@ -142,14 +140,14 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     const kylkMaaraaikaKeys = ["kylk_maaraaika", "kylk_aineiston_maaraaika", "_lautakunta_aineiston_maaraaika"];
     if (kylkMaaraaikaKeys.some(key => currentItem?.key?.includes(key))) {
       const enforcedDate = enforceMinimumGap(currentItem, getPreviousItem(arr, i), disabledDates);
-      currentItem.value = enforcedDate.toISOString().split('T')[0];
+      currentItem.value = enforcedDate;
       handleKylkMaaraaikaMove(arr, i);
       indexToContinue = i + 1;
     }
     else if (currentItem.key?.includes("paattyy") || (["XL", "L"].includes(projectSize) && currentItem?.key.includes("nahtavilla_alkaa"))) {
       // TODO: remove this branch and ensure the next elifs work as intended
       const enforcedDate = enforceMinimumGap(currentItem, getPreviousItem(arr, i), disabledDates);
-      currentItem.value = enforcedDate.toISOString().split('T')[0];
+      currentItem.value = enforcedDate;
       indexToContinue = i;
     }
     else if (currentItem?.key?.includes("lautakunnassa") && !currentItem?.key?.includes("lautakunnassa_") || currentItem?.key?.includes("alkaa")) {
@@ -160,11 +158,11 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     else if (currentItem?.key?.includes("maaraaika")) {
       //Maaraaika moving, set esillaolo alkaa & paattyy
       const enforcedDate = enforceMinimumGap(currentItem, getPreviousItem(arr, i), disabledDates);
-      currentItem.value = enforcedDate.toISOString().split('T')[0];
+      currentItem.value = enforcedDate;
       handleEsillaMaaraaikaMove(arr, i, currentItem.value, disabledDates);
       indexToContinue = i + 2;
     }
-    return {newDate: new Date(currentItem.value), indexToContinue};
+    return {value: currentItem.value, indexToContinue};
   }
 
   const enforceMinimumGap = (currentItem, prevItem, disabledDates, forceMinimumGap = false) => {
@@ -174,7 +172,7 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     const gapDates = gapType ? disabledDates?.date_types[gapType]?.dates : allowedDates;
     const preferredDate = forceMinimumGap ? null : currentItem.value;
     const nextAllowedDate = findFirstAllowedDate(prevItem.value, minimumGap, gapDates, allowedDates, preferredDate);
-    return new Date(nextAllowedDate);
+    return nextAllowedDate;
   }
 
   // When a locked item is encountered, backtrack and adjust previous items
@@ -220,7 +218,7 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
   // Handle the moved item itself
   arr[movedItemIndex].value = movedFieldValue;
   const result = handleDeadlineMove(arr, movedItemIndex, disabledDates, projectSize, getPreviousItem(arr, movedItemIndex));
-  arr[movedItemIndex].value = result.newDate.toISOString().split('T')[0];
+  arr[movedItemIndex].value = result.value;
   const indexToContinue = result.indexToContinue;
 
 
@@ -229,16 +227,16 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     if (isFrozen(currentItem) || IGNORED_ATTRIBUTES.some(attr => currentItem.key.includes(attr))) {
       continue;
     }
-    let newDate = new Date(currentItem.value);
+    let newDate = currentItem.value;
     const prevItem = getPreviousItem(arr, i);
 
     if (prevItem?.key?.includes("paattyy") && currentItem?.key?.includes("mielipiteet")) {
-      newDate = new Date(prevItem.value);
+      newDate = prevItem.value;
     }
     else if (i > indexToContinue) {
       if (phaseOrder.includes(currentItem.key)) {
         // Set phase boundaries to previous dates end
-        newDate = prevItem ? new Date(prevItem.value) : new Date(currentItem.value);
+        newDate = prevItem ? prevItem.value : currentItem.value;
       }
       else {
         // For subsequent items, enforce minimum gap if moving forward
@@ -246,14 +244,14 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
       }
       if (lockedElement && currentItem.key === lockedElement.key) {
         console.warn(`Encountered locked field ${lockedElement.key}. Stopping cascade.`);
-        if (newDate > new Date(currentItem.value)) {
+        if (newDate > currentItem.value) {
           //Begin backwards cascade
           backtrackDeadlines(arr, i);
         }
         break;
       }
     }
-    currentItem.value = newDate.toISOString().split('T')[0];
+    currentItem.value = newDate;
   }
   return arr
 }
