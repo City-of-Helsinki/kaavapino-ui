@@ -217,7 +217,7 @@ export const reducer = (state = initialState, action) => {
     }
 
     case UPDATE_DATE_TIMELINE: {
-      const { field, newDate, formValues, deadlineSections, keepDuration, originalDurationDays, pairedEndKey } = action.payload;
+      const { field, newDate, formValues, deadlineSections, pairedEndKey } = action.payload;
 
       const updatedAttributeData = formValues ? {...formValues} : { ...state.currentProject.attribute_data };
       const projectSize = updatedAttributeData?.kaavaprosessin_kokoluokka
@@ -234,17 +234,7 @@ export const reducer = (state = initialState, action) => {
       //Sort array by date
       const origSortedData = timeUtil.sortObjectByDate(filteredAttributeData);
       const newDateObj = new Date(newDate);
-      // Update the specific date at the given field
 
-      // Now done in cascadeDeadlineChange function to avoid issues with paired end dates
-      //filteredAttributeData[field] = timeUtil.formatDate(newDateObj);
-      let preservedEndValue = null;
-      if (keepDuration && originalDurationDays > 0 && pairedEndKey) {
-        const endDateObj = new Date(newDateObj);
-        endDateObj.setDate(endDateObj.getDate() + originalDurationDays);
-        preservedEndValue = timeUtil.formatDate(endDateObj);
-        filteredAttributeData[pairedEndKey] = preservedEndValue; // initial set before adjustments
-      }
       if(field === "hyvaksymispaatos_pvm" && filteredAttributeData["hyvaksyminenvaihe_paattyy_pvm"]){
         filteredAttributeData["hyvaksyminenvaihe_paattyy_pvm"] = timeUtil.formatDate(newDateObj);
       }
@@ -270,14 +260,13 @@ export const reducer = (state = initialState, action) => {
         projectSize,
         attributeData: filteredAttributeData,
         deadlineObjects: state.currentProject.deadlines,
-        lockedGroup: state.timelineLockedGroup
+        lockedGroup: state.timelineLockedGroup,
+        pairedEndKey
       });
       //Add new values from array to updatedAttributeData object
       objectUtil.updateOriginalObject(filteredAttributeData,processedDates)
       // Restore preserved end after adjustments if any logic changed it
-      if (keepDuration && preservedEndValue && pairedEndKey) {
-        filteredAttributeData[pairedEndKey] = preservedEndValue;
-      }
+
       // Sync phase end/start dates and lausunnot viimeistaan values
       timeUtil.syncPhaseEndDates(filteredAttributeData, previousPaattyyValues)
 

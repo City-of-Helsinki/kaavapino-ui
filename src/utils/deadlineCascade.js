@@ -47,12 +47,12 @@ const getGapDateType = (deadline) => {
   return deadline?.date_type || null;
 }
 
-const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates, projectSize, attributeData, deadlineObjects = [], lockedGroup=null }) => {
+const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates, projectSize, attributeData, deadlineObjects = [], lockedGroup=null, pairedEndKey=null }) => {
   // Do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
   const confirmedFieldSet = new Set(generateConfirmedFields(attributeData, deadlineObjects));
   // Attributes that should never be cascaded
   const IGNORED_ATTRIBUTES = [
-    "kaynnistysvaihe_alkaa_pvm", "projektin_kaynnistys_pvm", "kaynnistys_paattyy_pvm",
+    "kaynnistysvaihe_alkaa_pvm", "projektin_kaynnistys_pvm",
     "voimaantulo_pvm", "rauennut", "tullut_osittain_voimaan_pvm", "kumottu_pvm", "valtuusto_poytakirja_nahtavilla_pvm",
     "hyvaksymispaatos_valitusaika_paattyy", "valtuusto_hyvaksymiskuulutus_pvm", "hyvaksymispaatos_pvm"
   ]
@@ -133,11 +133,51 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     }
   }
 
-  const handleDeadlineMove = ( arr, i, disabledDates, projectSize, prevItem) => {
-    let indexToContinue = i + 1;
+  const measureDistance = (fromDate, toDate, gapDates) => {
+    if (!gapDates?.length || !fromDate || !toDate) return null;
+    const fromIdx = gapDates.findIndex(d => d >= fromDate);
+    const toIdx = gapDates.findIndex(d => d >= toDate);
+    if (fromIdx === -1 || toIdx === -1) return null;
+    return toIdx - fromIdx;
+  }
+
+  const handlePairedDeadlineMove = (arr, i, movedFieldValue, disabledDates) => {
     const currentItem = arr[i];
+    const pairedEndItem = arr.find(item => item.key === pairedEndKey);
+
+    const endGapType = getGapDateType(pairedEndItem) || 'arkipäivät';
+    const endGapDates = disabledDates?.date_types[endGapType]?.dates;
+    const endAllowedDates = disabledDates?.date_types[pairedEndItem?.date_type]?.dates || endGapDates;
+    const pairedEndDistance = measureDistance(currentItem.value, pairedEndItem?.value, endGapDates);
+
+    currentItem.value = movedFieldValue;
+    const prevItem = getPreviousItem(arr, i);
+    if (prevItem) {
+      const enforcedMoved = enforceMinimumGap(currentItem, prevItem, disabledDates);
+      currentItem.value = enforcedMoved ?? currentItem.value;
+    }
+
+    if (pairedEndItem && pairedEndDistance !== null) {
+      const newEnd = findFirstAllowedDate(currentItem.value, pairedEndDistance, endGapDates, endAllowedDates);
+      if (newEnd) pairedEndItem.value = newEnd;
+    }
+
+    return currentItem.value;
+  }
+
+  const handleDeadlineMove = ( arr, i, movedFieldValue, disabledDates, projectSize) => {
+    let indexToContinue = i + 1;
+
+    if (pairedEndKey) {
+      const result = handlePairedDeadlineMove(arr, i, movedFieldValue, disabledDates);
+      return { value: result, indexToContinue: i + 1};
+    }
+    
+    const currentItem = arr[i];
+    currentItem.value = movedFieldValue;
 
     const kylkMaaraaikaKeys = ["kylk_maaraaika", "kylk_aineiston_maaraaika", "_lautakunta_aineiston_maaraaika"];
+    
     if (kylkMaaraaikaKeys.some(key => currentItem?.key?.includes(key))) {
       const enforcedDate = enforceMinimumGap(currentItem, getPreviousItem(arr, i), disabledDates);
       currentItem.value = enforcedDate;
@@ -165,7 +205,7 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     return {value: currentItem.value, indexToContinue};
   }
 
-  const enforceMinimumGap = (currentItem, prevItem, disabledDates, forceMinimumGap = false) => {
+  const enforceMinimumGap = (currentItem, prevItem, disabledDates, forceMinimumGap = false, customGap = null) => {
     const minimumGap = currentItem.distance_from_previous ?? 0;
     const allowedDates = disabledDates?.date_types[currentItem?.date_type]?.dates || [];
     const gapType = getGapDateType(currentItem);
@@ -216,8 +256,7 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
   }
 
   // Handle the moved item itself
-  arr[movedItemIndex].value = movedFieldValue;
-  const result = handleDeadlineMove(arr, movedItemIndex, disabledDates, projectSize, getPreviousItem(arr, movedItemIndex));
+  const result = handleDeadlineMove(arr, movedItemIndex, movedFieldValue, disabledDates, projectSize);
   arr[movedItemIndex].value = result.value;
   const indexToContinue = result.indexToContinue;
 

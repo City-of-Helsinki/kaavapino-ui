@@ -140,9 +140,9 @@ export const resetAttributeData = (initialData) => ({
   type: RESET_ATTRIBUTE_DATA,
   payload: {initialData},
 });
-export const updateDateTimeline = (field, newDate, formValues, isAdd, deadlineSections, keepDuration=false, originalDurationDays=0, pairedEndKey=null) => ({
+export const updateDateTimeline = (field, newDate, formValues, isAdd, deadlineSections, pairedEndKey=null) => ({
   type: UPDATE_DATE_TIMELINE,
-  payload: { field, newDate, formValues, isAdd, deadlineSections, keepDuration, originalDurationDays, pairedEndKey },
+  payload: { field, newDate, formValues, isAdd, deadlineSections, pairedEndKey },
 });
 export const removeDeadlines = (deadlines) => ({
   type: REMOVE_DEADLINES,

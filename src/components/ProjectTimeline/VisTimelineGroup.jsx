@@ -1320,14 +1320,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           const hasTitleSeparator = item.title.includes("-");
           // Determine which part was dragged and set appropriate values
           if (dragElement === "elements") {
-            // Preserve original start-end duration for composite phase ranges
             attributeDate = item.start;
             attributeToUpdate = hasTitleSeparator ? item.title.split('-')[0].trim() : item.title;
             const pairedEndKey = hasTitleSeparator ? item.title.split('-')[1].trim() : null;
-            let originalDurationDays = 0;
-            if (item.start && item.end) {
-              originalDurationDays = moment(item.end).diff(moment(item.start), 'days');
-            }
             const formattedStart = moment(attributeDate).format('YYYY-MM-DD');
             dispatch(updateDateTimeline(
               attributeToUpdate,
@@ -1335,8 +1330,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               visValuesRef.current,
               false,
               deadlineSections,
-              true,
-              originalDurationDays,
               pairedEndKey
             ));
             // Validation will be triggered by componentDidUpdate after cascade completes
