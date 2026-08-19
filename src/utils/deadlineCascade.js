@@ -78,30 +78,6 @@ const cascadeDeadlineChange = ({ dlArray, field, disabledDates, projectSize, att
     return prevItem;
   }
 
-  const adjustPhaseEndDates = (arr, i) => {
-    const currentDeadline = arr[i];
-    if (!currentDeadline.key.endsWith('paattyy_pvm') || currentDeadline.distance_from_previous !== undefined) {
-      return;
-    }
-    const targetSubstring = currentDeadline.key.split('vaihe')[0];
-    // Iterate backwards from the given index
-    const res = findLastDeadlineInPhase(arr, i, targetSubstring);
-    const differenceInTime = new Date(res) - new Date(currentDeadline.value);
-    const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
-    if (differenceInDays >= 5) {
-      currentDeadline.value = res;
-      if (currentDeadline?.key?.includes("tarkistettuehdotusvaihe_paattyy_pvm")) {
-        //Move hyvaksyminenvaihe_paattyy_pvm and voimaantulovaihe_paattyy_pvm as many days as tarkistettuehdotusvaihe_paattyy_pvm
-        const items = arr.filter(el => el.key?.includes("hyvaksyminenvaihe_paattyy_pvm") || el.key?.includes("voimaantulovaihe_paattyy_pvm"));
-        items.forEach(item => {
-          const currentDate = new Date(item.value);
-          currentDate.setDate(currentDate.getDate() + differenceInDays);
-          item.value = currentDate.toISOString().split('T')[0];
-        });
-      }
-    }
-  }
-
   const handleKylkMaaraaikaMove = (arr, i) => {
     // On moving lautakunta maaraaika, adjust the next item (lautakunta date)
     const maaraaikaItem = arr[i];
@@ -202,9 +178,34 @@ const cascadeDeadlineChange = ({ dlArray, field, disabledDates, projectSize, att
     return new Date(nextAllowedDate);
   }
 
+  // When a locked item is encountered, backtrack and adjust previous items
+  // to ensure they don't violate the minimum gap constraints with respect to the locked item.
+  const backtrackDeadlines = (arr, lockedItemIndex) => {
+    let forwardItem = arr[lockedItemIndex]
+    for (let j = lockedItemIndex-1; j >= Math.max(movedItemIndex - 1, 0); j--) {
+      const currentItem = arr[j];
+      const allowedType = forwardItem?.date_type || "arkipäivät"
+      const allowedDates = disabledDates?.date_types[allowedType]?.dates || [];
+      const gapType = getGapDateType(forwardItem);
+      const gapDates = gapType ? disabledDates?.date_types[gapType]?.dates : allowedDates;
+      const fixedDate = findPastDateWithGap(forwardItem.value, forwardItem.distance_from_previous || 0, gapDates)
+      const shouldAdjust = fixedDate < currentItem.value;
+      if (j === movedItemIndex -1) {
+        console.log(`Backtracking stopped at index ${j} for field ${currentItem.key}.`);
+        if (shouldAdjust) {
+          throw new Error(`Cannot backtrack ${currentItem.key} to satisfy minimum gap with locked field ${forwardItem.key}.`);
+        }
+      }
+      if (shouldAdjust) {
+        currentItem.value = fixedDate;
+      }
+      forwardItem = currentItem;
+    }
+  }
+
   // Find the index of the next item where dates should start being pushed
-  const currentIndex = arr.findIndex(item => item.key === field);
-  if (currentIndex === -1) {
+  const movedItemIndex = arr.findIndex(item => item.key === field);
+  if (movedItemIndex === -1) {
     console.warn(`Field ${field} not found in the array. No cascading applied.`);
     return arr;
   }
@@ -217,7 +218,7 @@ const cascadeDeadlineChange = ({ dlArray, field, disabledDates, projectSize, att
 
   let indexToContinue = 0;
 
-  for (let i = currentIndex; i < arr.length; i++) {
+  for (let i = movedItemIndex; i < arr.length; i++) {
     const currentItem = arr[i];
     if (isFrozen(currentItem) || IGNORED_ATTRIBUTES.some(attr => currentItem.key.includes(attr))) {
       continue;
@@ -228,7 +229,7 @@ const cascadeDeadlineChange = ({ dlArray, field, disabledDates, projectSize, att
     if (prevItem?.key?.includes("paattyy") && currentItem?.key?.includes("mielipiteet")) {
       newDate = new Date(prevItem.value);
     }
-    else if (i === currentIndex) {
+    else if (i === movedItemIndex) {
       // Handle the moved item itself
       const result = handleDeadlineMove(arr, i, disabledDates, projectSize, prevItem);
       newDate = result.newDate;
@@ -240,16 +241,19 @@ const cascadeDeadlineChange = ({ dlArray, field, disabledDates, projectSize, att
         newDate = prevItem ? new Date(prevItem.value) : new Date(currentItem.value);
       }
       else {
-        if (lockedElement && currentItem.key === lockedElement.key) {
-          console.warn(`Encountered locked field ${lockedElement.key}. Stopping cascade.`);
-          break;
-        }
         // For subsequent items, enforce minimum gap if moving forward
         newDate = enforceMinimumGap(currentItem, prevItem, disabledDates, false);
       }
+      if (lockedElement && currentItem.key === lockedElement.key) {
+        console.warn(`Encountered locked field ${lockedElement.key}. Stopping cascade.`);
+        if (newDate > new Date(currentItem.value)) {
+          //Begin backwards cascade
+          backtrackDeadlines(arr, i);
+        }
+        break;
+      }
     }
     currentItem.value = newDate.toISOString().split('T')[0];
-    adjustPhaseEndDates(arr, i);
   }
   return arr
 }
