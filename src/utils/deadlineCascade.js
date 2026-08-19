@@ -141,14 +141,20 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     return toIdx - fromIdx;
   }
 
+  // Preserved distance/gap-date-set between the moved (paired start) item and pairedEndKey;
+  // populated by handlePairedDeadlineMove so backtrackDeadlines can reuse them.
+  let pairedEndDistance = null;
+  let pairedEndGapDates = null;
+  let pairedEndAllowedDates = null;
+
   const handlePairedDeadlineMove = (arr, i, movedFieldValue, disabledDates) => {
     const currentItem = arr[i];
     const pairedEndItem = arr.find(item => item.key === pairedEndKey);
 
     const endGapType = getGapDateType(pairedEndItem) || 'arkipäivät';
-    const endGapDates = disabledDates?.date_types[endGapType]?.dates;
-    const endAllowedDates = disabledDates?.date_types[pairedEndItem?.date_type]?.dates || endGapDates;
-    const pairedEndDistance = measureDistance(currentItem.value, pairedEndItem?.value, endGapDates);
+    pairedEndGapDates = disabledDates?.date_types[endGapType]?.dates;
+    pairedEndAllowedDates = disabledDates?.date_types[pairedEndItem?.date_type]?.dates || pairedEndGapDates;
+    pairedEndDistance = measureDistance(currentItem.value, pairedEndItem?.value, pairedEndGapDates);
 
     currentItem.value = movedFieldValue;
     const prevItem = getPreviousItem(arr, i);
@@ -158,7 +164,7 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     }
 
     if (pairedEndItem && pairedEndDistance !== null) {
-      const newEnd = findFirstAllowedDate(currentItem.value, pairedEndDistance, endGapDates, endAllowedDates);
+      const newEnd = findFirstAllowedDate(currentItem.value, pairedEndDistance, pairedEndGapDates, pairedEndAllowedDates);
       if (newEnd) pairedEndItem.value = newEnd;
     }
 
@@ -221,11 +227,17 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     let forwardItem = arr[lockedItemIndex]
     for (let j = lockedItemIndex-1; j >= Math.max(movedItemIndex - 1, 0); j--) {
       const currentItem = arr[j];
-      const allowedType = forwardItem?.date_type || "arkipäivät"
-      const allowedDates = disabledDates?.date_types[allowedType]?.dates || [];
-      const gapType = getGapDateType(forwardItem);
-      const gapDates = gapType ? disabledDates?.date_types[gapType]?.dates : allowedDates;
-      const fixedDate = findPastDateWithGap(forwardItem.value, forwardItem.distance_from_previous || 0, gapDates)
+      let fixedDate;
+      // Reuse the preserved paired distance when stepping from paired end back to paired start.
+      if (pairedEndKey && forwardItem?.key === pairedEndKey && currentItem.key === field && pairedEndDistance !== null) {
+        fixedDate = findPastDateWithGap(forwardItem.value, pairedEndDistance, pairedEndGapDates);
+      } else {
+        const allowedType = forwardItem?.date_type || "arkipäivät"
+        const allowedDates = disabledDates?.date_types[allowedType]?.dates || [];
+        const gapType = getGapDateType(forwardItem);
+        const gapDates = gapType ? disabledDates?.date_types[gapType]?.dates : allowedDates;
+        fixedDate = findPastDateWithGap(forwardItem.value, forwardItem.distance_from_previous || 0, gapDates)
+      }
       const shouldAdjust = fixedDate < currentItem.value;
       if (j === movedItemIndex -1) {
         console.log(`Backtracking stopped at index ${j} for field ${currentItem.key}.`);
