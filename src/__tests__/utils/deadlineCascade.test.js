@@ -14,14 +14,20 @@ const setFieldValue = (arr, field, value) => {
     const index = arr.findIndex(item => item.key === field);
     if (index !== -1) arr[index].value = value;
 };
-const checkParams = (overrides = {}) => ({
-    dlArray: mockData.decreasing_test_arr,
-    field: '',
-    disabledDates: mockData.test_disabledDates,
-    moveToPast: false,
-    projectSize: 'L',
-    ...overrides
-});
+const checkParams = (overrides = {}) => {
+    const params = {
+        dlArray: mockData.decreasing_test_arr,
+        field: '',
+        disabledDates: mockData.test_disabledDates,
+        projectSize: 'L',
+        ...overrides
+    };
+    if (params.movedFieldValue === undefined) {
+        const item = params.dlArray.find(i => i.key === params.field);
+        params.movedFieldValue = item?.value;
+    }
+    return params;
+};
 
 describe("Test deadlineCascade utility functions", () => {
 

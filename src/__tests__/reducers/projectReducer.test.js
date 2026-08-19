@@ -90,7 +90,35 @@ vi.mock('../../utils/objectUtil', () => ({
 
 vi.mock('../../utils/deadlineCascade', () => ({
   default: {
-    cascadeDeadlineChange: vi.fn(({ dlArray }) => dlArray),
+    // Minimal stand-in for the real cascade: apply the moved field value to the
+    // array. When pairedEndKey is provided, preserve the original
+    // duration between the moved field and its paired end.
+    cascadeDeadlineChange: vi.fn(({ dlArray, field, movedFieldValue, pairedEndKey }) => {
+      const arr = dlArray.map(item => ({ ...item }));
+      const currIdx = arr.findIndex(item => item.key === field);
+      let oldStart = null;
+      if (currIdx !== -1) {
+        oldStart = arr[currIdx].value;
+        arr[currIdx].value = movedFieldValue;
+      } else if (movedFieldValue) {
+        arr.push({ key: field, value: movedFieldValue });
+      }
+      if (pairedEndKey && movedFieldValue) {
+        const endItem = arr.find(item => item.key === pairedEndKey);
+        if (endItem?.value && oldStart) {
+          const days = Math.round(
+            (new Date(endItem.value) - new Date(oldStart)) / 86400000
+          );
+          const newEnd = new Date(movedFieldValue);
+          newEnd.setDate(newEnd.getDate() + days);
+          const y = newEnd.getFullYear();
+          const m = String(newEnd.getMonth() + 1).padStart(2, '0');
+          const d = String(newEnd.getDate()).padStart(2, '0');
+          endItem.value = `${y}-${m}-${d}`;
+        }
+      }
+      return arr;
+    }),
   }
 }))
 
@@ -410,7 +438,7 @@ describe('UPDATE_DATE_TIMELINE action', () => {
     expect(result.currentProject.attribute_data.milloin_periaatteet_esillaolo_alkaa).toBe('2026-03-20');
   });
 
-  it('should preserve duration when keepDuration is true', () => {
+  it('should preserve duration when pairedEndKey is provided', () => {
     const state = createStateWithProject({
       milloin_periaatteet_esillaolo_alkaa: '2026-03-10',
       milloin_periaatteet_esillaolo_paattyy: '2026-03-24', // 14 days duration
@@ -423,8 +451,6 @@ describe('UPDATE_DATE_TIMELINE action', () => {
         newDate: '2026-03-17',
         isAdd: false,
         deadlineSections,
-        keepDuration: true,
-        originalDurationDays: 14,
         pairedEndKey: 'milloin_periaatteet_esillaolo_paattyy',
       },
     });
