@@ -235,7 +235,9 @@ export const reducer = (state = initialState, action) => {
       const origSortedData = timeUtil.sortObjectByDate(filteredAttributeData);
       const newDateObj = new Date(newDate);
       // Update the specific date at the given field
-      filteredAttributeData[field] = timeUtil.formatDate(newDateObj);
+
+      // Now done in cascadeDeadlineChange function to avoid issues with paired end dates
+      //filteredAttributeData[field] = timeUtil.formatDate(newDateObj);
       let preservedEndValue = null;
       if (keepDuration && originalDurationDays > 0 && pairedEndKey) {
         const endDateObj = new Date(newDateObj);
@@ -263,6 +265,7 @@ export const reducer = (state = initialState, action) => {
       const processedDates = deadlineCascade.cascadeDeadlineChange({
         dlArray: changes,
         field,
+        movedFieldValue: newDate,
         disabledDates: state.disabledDates,
         projectSize,
         attributeData: filteredAttributeData,

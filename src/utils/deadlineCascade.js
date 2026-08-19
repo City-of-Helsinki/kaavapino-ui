@@ -47,8 +47,7 @@ const getGapDateType = (deadline) => {
   return deadline?.date_type || null;
 }
 
-const cascadeDeadlineChange = ({ dlArray, field, disabledDates, projectSize, attributeData, deadlineObjects = [], lockedGroup=null }) => {
-  const arr = structuredClone(dlArray);
+const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates, projectSize, attributeData, deadlineObjects = [], lockedGroup=null }) => {
   // Do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
   const confirmedFieldSet = new Set(generateConfirmedFields(attributeData, deadlineObjects));
   // Attributes that should never be cascaded
@@ -137,7 +136,7 @@ const cascadeDeadlineChange = ({ dlArray, field, disabledDates, projectSize, att
   }
 
   const handleDeadlineMove = ( arr, i, disabledDates, projectSize, prevItem) => {
-    let indexToContinue = i;
+    let indexToContinue = i + 1;
     const currentItem = arr[i];
 
     const kylkMaaraaikaKeys = ["kylk_maaraaika", "kylk_aineiston_maaraaika", "_lautakunta_aineiston_maaraaika"];
@@ -203,6 +202,8 @@ const cascadeDeadlineChange = ({ dlArray, field, disabledDates, projectSize, att
     }
   }
 
+  const arr = structuredClone(dlArray);
+
   // Find the index of the next item where dates should start being pushed
   const movedItemIndex = arr.findIndex(item => item.key === field);
   if (movedItemIndex === -1) {
@@ -216,9 +217,14 @@ const cascadeDeadlineChange = ({ dlArray, field, disabledDates, projectSize, att
     return arr;
   }
 
-  let indexToContinue = 0;
+  // Handle the moved item itself
+  arr[movedItemIndex].value = movedFieldValue;
+  const result = handleDeadlineMove(arr, movedItemIndex, disabledDates, projectSize, getPreviousItem(arr, movedItemIndex));
+  arr[movedItemIndex].value = result.newDate.toISOString().split('T')[0];
+  const indexToContinue = result.indexToContinue;
 
-  for (let i = movedItemIndex; i < arr.length; i++) {
+
+  for (let i = indexToContinue; i < arr.length; i++) {
     const currentItem = arr[i];
     if (isFrozen(currentItem) || IGNORED_ATTRIBUTES.some(attr => currentItem.key.includes(attr))) {
       continue;
@@ -228,12 +234,6 @@ const cascadeDeadlineChange = ({ dlArray, field, disabledDates, projectSize, att
 
     if (prevItem?.key?.includes("paattyy") && currentItem?.key?.includes("mielipiteet")) {
       newDate = new Date(prevItem.value);
-    }
-    else if (i === movedItemIndex) {
-      // Handle the moved item itself
-      const result = handleDeadlineMove(arr, i, disabledDates, projectSize, prevItem);
-      newDate = result.newDate;
-      indexToContinue = result.indexToContinue;
     }
     else if (i > indexToContinue) {
       if (phaseOrder.includes(currentItem.key)) {
