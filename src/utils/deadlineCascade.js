@@ -65,6 +65,9 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
   };
 
   const getPreviousItem = (arr, index) => {
+    return arr[index - 1] || null;
+    /*
+    // previous_deadline is not up to date
     let prevItem = null;
     if (arr[index].previous_deadline) {
       prevItem = arr.find(item => item.key === arr[index].previous_deadline);
@@ -72,7 +75,7 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     if (!prevItem && index > 0) {
       prevItem = arr[index - 1];
     }
-    return prevItem;
+    return prevItem;*/
   }
 
   const handleKylkMaaraaikaMove = (arr, i) => {
@@ -188,25 +191,22 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
       const enforcedDate = enforceMinimumGap(currentItem, getPreviousItem(arr, i), disabledDates);
       currentItem.value = enforcedDate;
       handleKylkMaaraaikaMove(arr, i);
-      indexToContinue = i + 1;
+      indexToContinue += 1; // Skip the next item (lautakunta) since it was already adjusted
     }
     else if (currentItem.key?.includes("paattyy") || (["XL", "L"].includes(projectSize) && currentItem?.key.includes("nahtavilla_alkaa"))) {
       // TODO: remove this branch and ensure the next elifs work as intended
       const enforcedDate = enforceMinimumGap(currentItem, getPreviousItem(arr, i), disabledDates);
       currentItem.value = enforcedDate;
-      indexToContinue = i;
     }
     else if (currentItem?.key?.includes("lautakunnassa") && !currentItem?.key?.includes("lautakunnassa_") || currentItem?.key?.includes("alkaa")) {
-      // Backward cascade to maaraaika using previous_deadline
       handleLautakuntaMove(arr, i, disabledDates);
-      indexToContinue = i;
     }
     else if (currentItem?.key?.includes("maaraaika")) {
       //Maaraaika moving, set esillaolo alkaa & paattyy
       const enforcedDate = enforceMinimumGap(currentItem, getPreviousItem(arr, i), disabledDates);
       currentItem.value = enforcedDate;
       handleEsillaMaaraaikaMove(arr, i, currentItem.value, disabledDates);
-      indexToContinue = i + 2;
+      indexToContinue += 2; // Skip the next two items (esilla alkaa & paattyy) since they were already adjusted
     }
     return {value: currentItem.value, indexToContinue};
   }
@@ -278,13 +278,13 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     if (isFrozen(currentItem) || IGNORED_ATTRIBUTES.some(attr => currentItem.key.includes(attr))) {
       continue;
     }
-    let newDate = currentItem.value;
+    let newDate;
     const prevItem = getPreviousItem(arr, i);
 
     if (prevItem?.key?.includes("paattyy") && currentItem?.key?.includes("mielipiteet")) {
       newDate = prevItem.value;
     }
-    else if (i > indexToContinue) {
+    else {
       if (phaseOrder.includes(currentItem.key)) {
         // Set phase boundaries to previous dates end
         newDate = prevItem ? prevItem.value : currentItem.value;
