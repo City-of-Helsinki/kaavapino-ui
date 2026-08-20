@@ -65,17 +65,20 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
   };
 
   const getPreviousItem = (arr, index) => {
-    return arr[index - 1] || null;
-    /*
-    // previous_deadline is not up to date
     let prevItem = null;
     if (arr[index].previous_deadline) {
       prevItem = arr.find(item => item.key === arr[index].previous_deadline);
+      if (prevItem && arr.some(item => item.key === arr[index].previous_deadline + '_2')) {
+        // When additional element groups are added, previous_deadline may be inaccurate (Backend limitation)
+        // Previous item should be correct
+        prevItem = arr[index - 1];
+      }
     }
+
     if (!prevItem && index > 0) {
       prevItem = arr[index - 1];
     }
-    return prevItem;*/
+    return prevItem;
   }
 
   const handleKylkMaaraaikaMove = (arr, i) => {
@@ -179,7 +182,7 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
 
     if (pairedEndKey) {
       const result = handlePairedDeadlineMove(arr, i, movedFieldValue, disabledDates);
-      return { value: result, indexToContinue: i + 1};
+      return { value: result, indexToContinue: indexToContinue + 1};
     }
     
     const currentItem = arr[i];
