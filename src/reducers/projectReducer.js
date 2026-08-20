@@ -259,7 +259,6 @@ export const reducer = (state = initialState, action) => {
           field,
           movedFieldValue: newDate,
           disabledDates: state.disabledDates,
-          projectSize,
           attributeData: filteredAttributeData,
           deadlineObjects: state.currentProject.deadlines,
           lockedGroup: state.timelineLockedGroup,
