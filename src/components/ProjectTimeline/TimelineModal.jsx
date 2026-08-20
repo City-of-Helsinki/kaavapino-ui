@@ -529,9 +529,11 @@ const TimelineModal = ({
                 return <Tabs.Tab key={key}>{tabContent}</Tabs.Tab>
               })}
             </Tabs.TabList>
-            {Object.values(attr[deadlinegroup]).map((subsection, index) => {
+            {Object.entries(attr[deadlinegroup]).map(([key, subsection], index) => {
+              // Special case: Tiedottaminen tab unaffected by confirmation
+              const confirmationKey = key === "Tiedottaminen" ? null : confirmedValue
               return <Tabs.TabPanel style={{ marginBottom: 'var(--spacing-m)' }} key={`tabPanel-${index}-${subsection}`}>
-                {getFormFields(subsection, sectionIndex, disabled, attr[deadlinegroup], maxMoveGroup, maxDateToMove, normalizedTitle, confirmedValue, tooltip, lautakuntaInPast)}
+                {getFormFields(subsection, sectionIndex, disabled, attr[deadlinegroup], maxMoveGroup, maxDateToMove, normalizedTitle, confirmationKey, tooltip, lautakuntaInPast)}
               </Tabs.TabPanel>
             })}
           </Tabs>
