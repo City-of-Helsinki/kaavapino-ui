@@ -220,7 +220,6 @@ export const reducer = (state = initialState, action) => {
       const { field, newDate, formValues, deadlineSections, pairedEndKey } = action.payload;
 
       const updatedAttributeData = formValues ? {...formValues} : { ...state.currentProject.attribute_data };
-      const projectSize = updatedAttributeData?.kaavaprosessin_kokoluokka
 
       //Remove all keys that are still hidden in vistimeline so they are not moved in data and later saved
       const filteredAttributeData = objectUtil.filterHiddenKeysUsingSections(updatedAttributeData, deadlineSections);

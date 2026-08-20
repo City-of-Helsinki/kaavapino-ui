@@ -19,7 +19,7 @@ import { getVisibilityBoolName, getVisBoolsByPhaseName, isDeadlineConfirmed, get
 import { setDefaultDatesForNewGroup } from '../../utils/deadlineCascade'
 import { useTimelineTooltip } from '../../hooks/useTimelineTooltip';
 import { updateDateTimeline, setTimelineLockedGroup } from '../../actions/projectActions';
-import { extractFromDeadlineSections } from '../../utils/objectUtil';
+import { extractFromDeadlineSections, isDeadlineLocked } from '../../utils/objectUtil';
 import { timelineLockedGroupSelector } from '../../selectors/projectSelector';
 import './VisTimeline.scss'
 Moment.locale('fi');
@@ -197,7 +197,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const phase = getPhaseKey(group_data);
     const is_ehdotus = phase === "ehdotus";
 
-    // 1. Check if max esillaolo count for this phase has been reached
+    // Check if max esillaolo count for this phase has been reached
     let latestEsillaolo = null;
     let nextEsillaolo = null;
     for (let key of esillaoloKeys) {
@@ -210,8 +210,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     if (!nextEsillaolo) {
       return { canAdd: false, nextEsillaolo: null, reason: t(`deadlines.${is_ehdotus ? "nahtavillaolo-max" : "esillaolo-max"}`) }
     }
-    
-    // 2. Check if previous esillaolo is confirmed (if not the first one)
+
+    const isLocked = isDeadlineLocked(nextEsillaolo, deadlineSections, currentTimelineLockRef.current);
+    if (isLocked) {
+      return { canAdd: false, nextEsillaolo, reason: t(`deadlines.${is_ehdotus ? "nahtavillaolo-locked" : "esillaolo-locked"}`) }
+    }
+
+
+    // Check if previous esillaolo is confirmed (if not the first one)
     if (latestEsillaolo) {
       const confirmKey = getConfirmationKeyForEsillaoloKey(phase, latestEsillaolo);
       if (form_data[confirmKey] !== true) {
@@ -223,7 +229,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
     }
 
-    // 3. Check if next element group is already confirmed (prevent add if so)
+    // Check if next element group is already confirmed (prevent add if so)
     if (is_ehdotus) {
       // Special case: in ehdotus phase lautakunta comes before nahtavillaolo, so no checks needed here
       return { canAdd: true, nextEsillaolo, reason: "" };
@@ -252,6 +258,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
     if (!nextLautakunta) {
       return { canAdd: false, nextLautakunta: null, reason: t("deadlines.lautakunta-max") }
+    }
+
+    const isLocked = isDeadlineLocked(nextLautakunta, deadlineSections, currentTimelineLockRef.current);
+    if (isLocked) {
+      return { canAdd: false, nextLautakunta, reason: t("deadlines.lautakunta-locked") }
     }
 
     // 2. Check if previous lautakunta is confirmed and has correct paatos value (if not the first one)

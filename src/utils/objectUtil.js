@@ -320,6 +320,22 @@ export const extractFromDeadlineSections = (deadlineSections, additionalConditio
   return targetArray;
 }
 
+export const isDeadlineLocked = (deadlineIdentifier, deadlineSections, lockedGroup) => {
+  const deadline = findDeadlineInDeadlineSections(deadlineIdentifier, deadlineSections);
+  if (!deadline || !lockedGroup) {
+    return false;
+  }
+  const groupOrder = []
+  deadlineSections.forEach(section => {
+    groupOrder.push(...Object.keys(section.grouped_sections[0]?.attributes || {}));
+  });
+
+  const deadlineGroupIndex = groupOrder.indexOf(deadline.attributegroup);
+  const lockedGroupIndex = groupOrder.indexOf(lockedGroup);
+  return deadlineGroupIndex >= lockedGroupIndex;
+}
+
+
 const convertKey = {
   tarkasta_esillaolo_periaatteet_fieldset: 'milloin_periaatteet_esillaolo_alkaa',
   tarkasta_lautakunta_periaatteet_fieldset: 'milloin_periaatteet_lautakunnassa',
