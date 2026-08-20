@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch, useStore } from 'react-redux';
 import { change } from 'redux-form'
+import { toastr } from 'react-redux-toastr'
 import { useTranslation } from 'react-i18next'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import Moment from 'moment'
@@ -25,6 +26,7 @@ Moment.locale('fi');
 
 const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, phaseList, currentPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes, showTimetableForm }, ref) => {
   const dispatch = useDispatch();
+  const store = useStore();
   const moment = extendMoment(Moment);
   const { t } = useTranslation()
   const timelineRef = useRef(null);
@@ -328,6 +330,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         deadlineSections
       )
     );
+    const error = store.getState().project.lastCascadeError;
+    if (error) {
+      toastr.warning(t('project.element-not-fit'), '', { timeOut: 4000 });
+      closeAddDialog();
+    }
+    
   }
 
   const openRemoveDialog = (data) => {

@@ -252,17 +252,27 @@ export const reducer = (state = initialState, action) => {
       //Compare for changes with dates in order sorted array
       const changes = objectUtil.mergeAndUpdateDlArrays(origSortedData, updateAttributeArray, deadlineSections)
       //Find out is next date below minium and add difference of those days to all values after and move them forward
-      const processedDates = deadlineCascade.cascadeDeadlineChange({
-        dlArray: changes,
-        field,
-        movedFieldValue: newDate,
-        disabledDates: state.disabledDates,
-        projectSize,
-        attributeData: filteredAttributeData,
-        deadlineObjects: state.currentProject.deadlines,
-        lockedGroup: state.timelineLockedGroup,
-        pairedEndKey
-      });
+      let processedDates;
+      try {
+        processedDates = deadlineCascade.cascadeDeadlineChange({
+          dlArray: changes,
+          field,
+          movedFieldValue: newDate,
+          disabledDates: state.disabledDates,
+          projectSize,
+          attributeData: filteredAttributeData,
+          deadlineObjects: state.currentProject.deadlines,
+          lockedGroup: state.timelineLockedGroup,
+          pairedEndKey
+        });
+      } catch (err) {
+        // Cascade rejected the change (e.g. backtrack would violate a locked field).
+        console.warn('cascadeDeadlineChange rejected update:', err.message);
+        return {
+          ...state,
+          lastCascadeError: { message: err.message, field, timestamp: Date.now() }
+        };
+      }
       //Add new values from array to updatedAttributeData object
       objectUtil.updateOriginalObject(filteredAttributeData,processedDates)
       // Restore preserved end after adjustments if any logic changed it
@@ -274,6 +284,7 @@ export const reducer = (state = initialState, action) => {
       // Return the updated state with the modified currentProject and attribute_data
       return {
         ...state,
+        lastCascadeError: null,
         currentProject: {
           ...state.currentProject,
           attribute_data: filteredAttributeData,
