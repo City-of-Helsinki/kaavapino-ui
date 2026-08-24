@@ -1041,7 +1041,7 @@
                 .lock{
                     display: block;
                     padding: 0;
-                    margin-right: 0px;
+                    margin-right: 0;
                     margin-left: auto;
                     width: 48px;
                     height: 36px;
@@ -1087,6 +1087,9 @@
                 }
                 .timeline-lock-button{
                     display: block;
+                }
+                .timeline-lock-button.lock{
+                    margin-left: 0;
                 }
                 .button-disabled:not(.timeline-remove-button){
                     pointer-events: auto;

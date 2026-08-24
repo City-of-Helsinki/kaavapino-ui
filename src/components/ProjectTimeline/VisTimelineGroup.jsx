@@ -1653,11 +1653,30 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             lock.classList.add("timeline-lock-button");
             lock.style.fontSize = "small";
 
-            if (group.deadlinegroup === currentTimelineLockRef.current) {
-              lock.classList.add("lock");
+            const currentLock = currentTimelineLockRef.current;
+            if (currentLock) {
+              if (group.deadlinegroup === currentLock) {
+                lock.classList.add("lock");
+              } else {
+                lock.classList.add("button-disabled");
+              }
             }
             lock.addEventListener("click", function () {
-              lock.classList.toggle("lock");
+              if (lock.classList.contains("button-disabled")) return;
+
+              const isCurrentlyLocked = lock.classList.contains("lock");
+              const allLockButtons = document.querySelectorAll(".timeline-lock-button");
+              allLockButtons.forEach(btn => {
+                btn.classList.remove("lock", "button-disabled");
+              });
+
+              if (!isCurrentlyLocked) {
+                lock.classList.add("lock");
+                allLockButtons.forEach(btn => {
+                  if (btn !== lock) btn.classList.add("button-disabled");
+                });
+              }
+
               handleLockElement(group);
             });
             container.insertAdjacentElement("beforeEnd", lock);
