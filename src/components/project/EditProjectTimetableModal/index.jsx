@@ -640,6 +640,22 @@ class EditProjectTimeTableModal extends Component {
     const currentDateString = new Date().toJSON().slice(0, 10);
     const currentDate = new Date(currentDateString);
 
+    const lautakuntaAttributes = [
+      "lautakunta", "lautakunnassa", "tarkistettu_ehdotus_kylk_maaraaika",
+      "ehdotus_kylk_aineiston_maaraaika", "kaavaluonnos_kylk_aineiston_maaraaika"
+    ];
+
+    const nahtavillaAttributes = [
+      "nahtavilla", "nahtavillaolokerta", "ehdotus_nahtaville_aineiston_maaraaika",
+    ];
+
+    const extraLautakuntaMap = {
+      "Periaatteet": ["periaatteet_lautakuntakerta_2", "periaatteet_lautakuntakerta_3", "periaatteet_lautakuntakerta_4"],
+      "Luonnos": ["luonnos_lautakuntakerta", "luonnos_lautakuntakerta_2", "luonnos_lautakuntakerta_3", "luonnos_lautakuntakerta_4"],
+      "Ehdotus": ["ehdotus_lautakuntakerta", "ehdotus_lautakuntakerta_2", "ehdotus_lautakuntakerta_3", "ehdotus_lautakuntakerta_4"],
+      "Tarkistettu ehdotus": ["tarkistettu_ehdotus_lautakuntakerta", "tarkistettu_ehdotus_lautakuntakerta_2", "tarkistettu_ehdotus_lautakuntakerta_3", "tarkistettu_ehdotus_lautakuntakerta_4"]
+    };
+
     const resolveDate = (formValues, attr, fallback) => {
       const d = formValues?.[attr] ? new Date(formValues[attr]) : new Date(fallback);
       if (d instanceof Date && !Number.isNaN(d.getTime())) d.setHours(12, 0, 0, 0);
@@ -668,7 +684,7 @@ class EditProjectTimeTableModal extends Component {
 
         style = deadline.phase_color
       }
-      else if(deadlines[i]?.deadline?.attribute?.includes("esillaolo") || deadlines[i]?.deadline?.attribute?.includes("luonnosaineiston_maaraaika")){
+      else if(deadline?.attribute?.includes("esillaolo") || deadline?.attribute?.includes("luonnosaineiston_maaraaika")){
         if(deadline.deadline_types.includes('milestone') && deadline.deadline_types.includes('dashed_start')){
           milestone = resolveDate(formValues, deadline.attribute, deadlines[i].date);
         }
@@ -680,7 +696,7 @@ class EditProjectTimeTableModal extends Component {
           innerStyle = this.buildInnerStyle("inner-end", innerEnd, currentDate, formValues, deadlineGroup, deadline.phase_name)
         }
       }
-      else if(deadlines[i]?.deadline?.attribute?.includes("nahtavilla") || deadlines[i]?.deadline?.deadlinegroup?.includes("nahtavillaolokerta") || deadlines[i]?.deadline?.attribute?.includes("ehdotus_nahtaville_aineiston_maaraaika")){
+      else if(nahtavillaAttributes.some(attr => deadline?.attribute?.includes(attr))) {
         
         if(deadline.deadline_types.includes('milestone') && deadline.deadline_types.includes('dashed_start')){
           milestone = resolveDate(formValues, deadline.attribute, deadlines[i].date);
@@ -700,10 +716,7 @@ class EditProjectTimeTableModal extends Component {
           innerStyle = this.buildInnerStyle("inner-end", innerEnd, currentDate, formValues, deadlineGroup, deadline.phase_name)
         }
       }
-      else if(deadlines[i]?.deadline?.attribute?.includes("lautakunta") || deadlines[i]?.deadline?.attribute?.includes("lautakunnassa") || 
-      deadlines[i]?.deadline?.attribute?.includes("tarkistettu_ehdotus_kylk_maaraaika") || 
-      deadlines[i]?.deadline?.attribute?.includes("ehdotus_kylk_aineiston_maaraaika") ||
-      deadlines[i]?.deadline?.attribute?.includes("kaavaluonnos_kylk_aineiston_maaraaika")){
+      else if(lautakuntaAttributes.some(attr => deadline?.attribute?.includes(attr))) {
         // Clear any leftover milestone from deleted esillaolo to prevent lautakunta using wrong item type
         milestone = false;
         if(deadline.deadline_types.includes('milestone') && deadline.deadline_types.includes('dashed_start')){
@@ -754,11 +767,7 @@ class EditProjectTimeTableModal extends Component {
         }
         milestone = false
       }
-      else if(innerEnd && deadline.phase_name === "Periaatteet" && (deadline.deadlinegroup === "periaatteet_lautakuntakerta_2" || deadline.deadlinegroup === "periaatteet_lautakuntakerta_3" || deadline.deadlinegroup === "periaatteet_lautakuntakerta_4")
-        || innerEnd && deadline.phase_name === "Luonnos" && (deadline.deadlinegroup === "luonnos_lautakuntakerta_2" || deadline.deadlinegroup === "luonnos_lautakuntakerta_3" || deadline.deadlinegroup === "luonnos_lautakuntakerta_4")
-        || innerEnd && deadline.phase_name === "Ehdotus" && (deadline.deadlinegroup === "ehdotus_lautakuntakerta_2" || deadline.deadlinegroup === "ehdotus_lautakuntakerta_3" || deadline.deadlinegroup === "ehdotus_lautakuntakerta_4")
-        || innerEnd && deadline.phase_name === "Tarkistettu ehdotus" && (deadline.deadlinegroup === "tarkistettu_ehdotus_lautakuntakerta_2" || deadline.deadlinegroup === "tarkistettu_ehdotus_lautakuntakerta_3" || deadline.deadlinegroup === "tarkistettu_ehdotus_lautakuntakerta_4") 
-      ){
+      else if(innerEnd && extraLautakuntaMap[deadline.phase_name]?.includes(deadline.deadlinegroup)){
         if(formValues[deadline.attribute] && this.shouldAddSubgroup(deadline,formValues)){
           let subgroup = this.addSubgroup(deadlines, i, numberOfPhases, null, innerEnd, innerStyle, phaseData, deadLineGroups, nestedDeadlines, null, formValues);
           [phaseData, deadLineGroups, nestedDeadlines] = subgroup;
