@@ -1090,6 +1090,7 @@
                 }
                 .timeline-lock-button.lock{
                     margin-left: 0;
+                    margin-right: 0;
                 }
                 .button-disabled:not(.timeline-remove-button){
                     pointer-events: auto;
@@ -1122,6 +1123,10 @@
                     margin-top: -3px;
                     margin-right: 10px;
                     margin-left: 12px;
+                }
+                .timeline-lock-button.lock{
+                    margin-left: 0;
+                    margin-right: 0;
                 }
             }
         }

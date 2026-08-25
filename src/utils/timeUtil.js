@@ -569,6 +569,17 @@ const syncPhaseEndDates = (data, previousPaattyyValues) => {
     
 };
 
+export const getFirstLockedDate = (lockedGroup, deadlineObjects, attributeData) => {
+  for (const dl_object of deadlineObjects) {
+    const deadline = dl_object.deadline;
+    if (deadline.deadlinegroup === lockedGroup) {
+      const lockedDate = attributeData[deadline.attribute];
+      return lockedDate || null;
+    }
+  }
+  return null;
+}
+
 const exported = {
     isWeekend,
     formatDate,
@@ -579,7 +590,8 @@ const exported = {
     getHighestVoimaantuloDate,
     syncPhaseEndDates,
     findFirstAllowedDate,
-    findPastDateWithGap
+    findPastDateWithGap,
+    getFirstLockedDate
 };
 if (process.env.UNIT_TEST === 'true') {
     exported.findNextPossibleValue = findNextPossibleValue;
