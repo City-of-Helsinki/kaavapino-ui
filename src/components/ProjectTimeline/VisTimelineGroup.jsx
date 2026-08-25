@@ -20,6 +20,7 @@ import { setDefaultDatesForNewGroup } from '../../utils/deadlineCascade'
 import { useTimelineTooltip } from '../../hooks/useTimelineTooltip';
 import { updateDateTimeline, setTimelineLockedGroup } from '../../actions/projectActions';
 import { extractFromDeadlineSections, isDeadlineLocked } from '../../utils/objectUtil';
+import { getFirstLockedDate } from '../../utils/timeUtil';
 import { timelineLockedGroupSelector } from '../../selectors/projectSelector';
 import './VisTimeline.scss'
 Moment.locale('fi');
@@ -39,6 +40,23 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   const currentTimelineLockRef = useRef(currentTimelineLock);
   useEffect(() => {
     currentTimelineLockRef.current = currentTimelineLock;
+    if (!items) return;
+    const lockedDate = currentTimelineLock
+      ? getFirstLockedDate(currentTimelineLock, deadlines, visValuesRef.current)
+      : null;
+    const updates = [];
+    items.get().forEach(item => {
+      if (!item.className || item.type === 'background') return;
+      const itemDateStr = item.start ? new Date(item.start).toISOString().slice(0, 10) : null;
+      const isLocked = !!(lockedDate && itemDateStr && itemDateStr >= lockedDate);
+      const hasNoDrag = item.className.includes('no-drag');
+      if (isLocked && !hasNoDrag) {
+        updates.push({ ...item, className: item.className + ' no-drag' });
+      } else if (!isLocked && hasNoDrag) {
+        updates.push({ ...item, className: item.className.replace(/\s*no-drag/g, '') });
+      }
+    });
+    if (updates.length) items.update(updates);
   }, [currentTimelineLock]);
 
   const [selectedGroupId, setSelectedGroupId] = useState(null);
@@ -361,6 +379,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     } else {
       dispatch(setTimelineLockedGroup(data.deadlinegroup));
     }
+    
   }
 
   const returnFocusOnConfirmModalClose = () => {
@@ -1524,7 +1543,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             let isPhaseEnded = isPhaseClosed(matchedPhase);
             let isFirst = false;
             let isConfirmed = false;
-
+            const currentLock = currentTimelineLockRef.current;
             // Common numeric suffix extraction
             const getNum = k => {
               const m = k.match(/_(\d+)$/);
@@ -1633,6 +1652,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               } else if (label.innerHTML.includes("Nähtävilläolo")) {
                 removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-first-nahtavillaolo')}</div>`;
               }
+            } else if (currentLock && currentLock === group.deadlinegroup) {
+              remove.classList.add("button-disabled");
+              removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-locked')}</div>`;
             }
 
             remove.style.fontSize = "small";
@@ -1653,7 +1675,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             lock.classList.add("timeline-lock-button");
             lock.style.fontSize = "small";
 
-            const currentLock = currentTimelineLockRef.current;
             if (currentLock) {
               if (group.deadlinegroup === currentLock) {
                 lock.classList.add("lock");
