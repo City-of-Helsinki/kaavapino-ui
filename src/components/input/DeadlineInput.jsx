@@ -5,13 +5,13 @@ import { useTranslation } from 'react-i18next'
 import { TextInput, DateInput, IconAlertCircle } from 'hds-react'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
 import timeUtil from '../../utils/timeUtil'
-import { useSelector,useDispatch } from 'react-redux'
+import { useSelector,useDispatch,connect } from 'react-redux'
 import { getFormValues } from 'redux-form'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { updateDateTimeline } from '../../actions/projectActions';
-import { validatedSelector } from '../../selectors/projectSelector';
+import { validatedSelector, timelineLockedGroupSelector } from '../../selectors/projectSelector';
 
-const DeadLineInput = ({
+const DeadlineInput = ({
   input,
   error,
   attributeData,
@@ -27,7 +27,8 @@ const DeadLineInput = ({
   deadlineSections,
   confirmedValue,
   sectionAttributes,
-  timetable_editable
+  timetable_editable,
+  timelineLockedGroup
 }) => {
 
   const dispatch = useDispatch();
@@ -37,6 +38,7 @@ const DeadLineInput = ({
   const [currentValue, setCurrentValue] = useState("")
   const [disabledState, setDisabledState] = useState(true)
   const [allowedDates, setAllowedDates] = useState([]);
+  const [isLocked, setIsLocked] = useState(false);
 
 
   let currentError
@@ -131,6 +133,17 @@ const DeadLineInput = ({
     setDisabledState(formValues[confirmedValue])
   },[formValues[confirmedValue]])
 
+  useEffect(() => {
+    if (!timelineLockedGroup){
+      setIsLocked(false);
+      return;
+    }
+    const orderedGroups = deadlineSections?.flatMap(section => Object.keys(section.grouped_sections[0]?.attributes || {}));
+    const lockedIndex = orderedGroups?.indexOf(timelineLockedGroup);
+    const currentIndex = orderedGroups?.indexOf(currentDeadline?.deadline?.deadlinegroup);
+    setIsLocked(lockedIndex !== -1 && currentIndex !== -1 && currentIndex >= lockedIndex);
+  }, [timelineLockedGroup, deadlineSections]);
+
   const getInitialMonth = (dateString) => {
     return dateString ? new Date(dateString) : new Date();
   }
@@ -223,7 +236,7 @@ const DeadLineInput = ({
         value={formatDateToDMYYYY(currentValue || input.value)}
         name={input.name}
         type='text' // type='date' works poorly with hds-DateInput
-        disabled={!timetable_editable || disabledState ||
+        disabled={!timetable_editable || disabledState || isLocked ||
           (!attributeData?.kaavan_vaihe.includes("Käynnistys") &&
             (input?.name?.includes("projektin_kaynnistys_pvm") || input?.name?.includes("kaynnistys_paattyy_pvm")))
         }
@@ -291,7 +304,7 @@ const DeadLineInput = ({
   )
 }
 
-DeadLineInput.propTypes = {
+DeadlineInput.propTypes = {
   input: PropTypes.object.isRequired,
   error: PropTypes.string,
   attributeData: PropTypes.object,
@@ -311,7 +324,12 @@ DeadLineInput.propTypes = {
     PropTypes.bool,
   ]),
   sectionAttributes: PropTypes.array,
-  timetable_editable: PropTypes.bool
+  timetable_editable: PropTypes.bool,
+  timelineLockedGroup: PropTypes.string,
 }
 
-export default DeadLineInput
+const mapStateToProps = (state) => ({
+  timelineLockedGroup: timelineLockedGroupSelector(state),
+});
+
+export default connect(mapStateToProps, null)(DeadlineInput);
