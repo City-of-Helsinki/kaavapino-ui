@@ -483,147 +483,114 @@ class EditProjectTimeTableModal extends Component {
 
   addSubgroup = (deadlines, i, numberOfPhases, dashStart, dashEnd, dashedStyle, phaseData, deadLineGroups, nestedDeadlines, milestone, formValues) => {
     const highlightID = `${deadlines[i].deadline.phase_id}_${numberOfPhases}`;
-    const allowEditStyle = this.props?.allowedToEdit ? "" : " disable-edit"
+    const allowEditStyle = this.props?.allowedToEdit ? "" : " disable-edit";
+    const currentDeadline = deadlines[i].deadline;
+    const currentPhase = currentDeadline.phase_name;
+    const subGroupDefaults = {
+      content: "",
+      phase: false,
+      phaseID: currentDeadline.phase_id,
+      phaseName: currentPhase,
+      locked: false,
+      group: numberOfPhases,
+      title: currentDeadline.attribute,
+    }
     if(dashStart === null && milestone === null && dashEnd){
       phaseData.push({
+        ...subGroupDefaults,
         start: dashEnd,
         id: numberOfPhases,
-        content: "",
         className: "board-only " + dashedStyle + " " + highlightID + allowEditStyle,
-        title: deadlines[i].deadline.attribute,
-        phaseID: deadlines[i].deadline.phase_id,
-        phase: false,
-        group: numberOfPhases,
-        locked: false,
         type: 'point',
-        phaseName: deadlines[i].deadline.phase_name,
         groupInfo: "Lautakunta"
       });
     }
     else if(dashEnd === null){
       phaseData.push({
+        ...subGroupDefaults,
         start: dashStart,
         id: numberOfPhases,
-        content: "",
         className: dashedStyle + " " + highlightID + allowEditStyle,
-        title: deadlines[i].deadline.attribute,
-        phaseID: deadlines[i].deadline.phase_id,
-        phase: false,
-        group: numberOfPhases,
-        locked: false,
         type: 'point',
-        phaseName: deadlines[i].deadline.phase_name,
         groupInfo: "Lautakunta"
       });
     }
-    else if(dashStart && dashEnd && milestone){
-      phaseData.push({
+    else if(dashStart && dashEnd && milestone) {
+      const maaraAika = {
+        ...subGroupDefaults,
         start: milestone,
         id: numberOfPhases + " maaraaika",
-        content: "",
         className: dashedStyle + " " + highlightID + allowEditStyle,
         title: deadlines[i - 2].deadline.attribute,
-        phaseID: deadlines[i].deadline.phase_id,
-        phase: false,
-        group: numberOfPhases,
-        locked: false,
         type: 'point',
-        phaseName: deadlines[i].deadline.phase_name,
         groupInfo: "Määräaika"
-      });
-      phaseData.push({
+      }
+      const divider = {
+        ...subGroupDefaults,
         start: milestone,
         end: dashStart,
         id: numberOfPhases + " divider",
-        content: "",
         className: "divider" + " " + highlightID + allowEditStyle,
         title: "divider",
-        phaseID: deadlines[i].deadline.phase_id,
-        phase: false,
-        group: numberOfPhases,
-        locked: false,
-        phaseName: deadlines[i].deadline.phase_name,
         groupInfo: "Kaavoitussihteerin työaika"
-      });
-      phaseData.push({
+      }
+      const esillaOlo = {
+        ...subGroupDefaults,
         start: dashStart,
         end: dashEnd,
         id: numberOfPhases,
-        content: "",
         className: dashedStyle + " " + highlightID + allowEditStyle,
-        title: deadlines[i - 1].deadline.attribute + "-" +  deadlines[i].deadline.attribute,
-        phaseID: deadlines[i].deadline.phase_id,
-        phase: false,
-        group: numberOfPhases,
-        locked: false,
-        phaseName: deadlines[i].deadline.phase_name,
+        title: deadlines[i - 1].deadline.attribute + "-" +  currentDeadline.attribute,
         groupInfo: "Esilläolo"
-      });
+      }
+      phaseData.push(maaraAika, divider, esillaOlo);
     }
     else if (dashedStyle.includes("board") && dashStart && dashEnd) {
-        phaseData.push({
-          start: dashStart,
-          id: numberOfPhases + " maaraaika",
-          content: "",
-          className: dashedStyle + " deadline" + " " + highlightID + allowEditStyle,
-          title: deadlines[i - 1].deadline.attribute,
-          phaseID: deadlines[i].deadline.phase_id,
-          phase: false,
-          group: numberOfPhases,
-          locked: false,
-          type: 'point',
-          phaseName: deadlines[i].deadline.phase_name,
-          groupInfo: "Määräaika"
-        });
-        phaseData.push({
-          start: dashStart,
-          end: dashEnd,
-          id: numberOfPhases + " divider",
-          content: "",
-          className: "divider" + " " + highlightID + allowEditStyle,
-          title: "divider",
-          phaseID: deadlines[i].deadline.phase_id,
-          phase: false,
-          group: numberOfPhases,
-          locked: false,
-          phaseName: deadlines[i].deadline.phase_name,
-          groupInfo: "Kaavoitussihteerin työaika"
-        });
-        phaseData.push({
-          start: dashEnd,
-          id: numberOfPhases + " lautakunta",
-          content: "",
-          className: dashedStyle + " board-date" + (deadlines[i].deadline.phase_name === "Tarkistettu ehdotus" ? " board-right" : "") + " " + highlightID + allowEditStyle,
-          title: deadlines[i].deadline.attribute,
-          phaseID: deadlines[i].deadline.phase_id,
-          phase: false,
-          group: numberOfPhases,
-          locked: false,
-          type: 'point',
-          phaseName: deadlines[i].deadline.phase_name,
-          groupInfo: "Lautakunta"
-        });
+      const lkMaaraAika = {
+        ...subGroupDefaults,
+        start: dashStart,
+        id: numberOfPhases + " maaraaika",
+        className: dashedStyle + " deadline" + " " + highlightID + allowEditStyle,
+        title: deadlines[i - 1].deadline.attribute,
+        type: 'point',
+        groupInfo: "Määräaika"
+      };
+
+      const lkDivider = {
+        ...subGroupDefaults,
+        start: dashStart,
+        end: dashEnd,
+        id: numberOfPhases + " divider",
+        className: "divider" + " " + highlightID + allowEditStyle,
+        title: "divider",
+        groupInfo: "Kaavoitussihteerin työaika"
+      };
+
+      const lautakunta = {
+        ...subGroupDefaults,
+        start: dashEnd,
+        id: numberOfPhases + " lautakunta",
+        className: dashedStyle + " board-date" + (currentPhase === "Tarkistettu ehdotus" ? " board-right" : "") + " " + highlightID + allowEditStyle,
+        type: 'point',
+        groupInfo: "Lautakunta"
+      };
+      phaseData.push(lkMaaraAika, lkDivider, lautakunta);
     } 
     else {
       phaseData.push({
+        ...subGroupDefaults,
         start: dashStart,
         end: dashEnd,
         id: numberOfPhases,
-        content: "",
         className: dashedStyle + " " + highlightID + allowEditStyle + " only-inner-end",
-        title: deadlines[i - 1].deadline.attribute +"-"+ deadlines[i].deadline.attribute,
-        phaseID: deadlines[i].deadline.phase_id,
-        phase: false,
-        group: numberOfPhases,
-        locked: false,
-        phaseName: deadlines[i].deadline.phase_name,
+        title: deadlines[i - 1].deadline.attribute +"-"+ currentDeadline.attribute,
         groupInfo: "Nähtävilläolo"
       });
     }
 
-    let dlIndex = deadLineGroups.findIndex(group => group.content.toLowerCase() === deadlines[i].deadline.phase_name.toLowerCase());
+    const dlIndex = deadLineGroups.findIndex(group => group.content.toLowerCase() === currentPhase.toLowerCase());
     deadLineGroups?.at(dlIndex)?.nestedGroups.push(numberOfPhases);
-    const lastChar = deadlines[i]?.deadline?.deadlinegroup?.charAt(deadlines[i].deadline.deadlinegroup.length - 1); // Get the last character of the string
+    const lastChar = deadlines[i]?.deadline?.deadlinegroup?.charAt(currentDeadline.deadlinegroup.length - 1); // Get the last character of the string
     const isLastCharNumber = !Number.isNaN(lastChar) && lastChar !== ""; // Check if the last character is a number
     let indexString = "";
     if(isLastCharNumber){
@@ -632,23 +599,24 @@ class EditProjectTimeTableModal extends Component {
 
     let undeletable = false;
     if(indexString === "-1" && 
-      (deadlines[i].deadline.phase_name === "OAS" || deadlines[i].deadline.phase_name === "Tarkistettu ehdotus" || 
-      (deadlines[i].deadline.phase_name === "Ehdotus" && !(formValues?.kaavaprosessin_kokoluokka === "XL" && deadlines[i].deadline.deadlinegroup?.includes("lautakunta")))
+      (currentPhase === "OAS" || currentPhase === "Tarkistettu ehdotus" || 
+      (currentPhase === "Ehdotus" && !(formValues?.kaavaprosessin_kokoluokka === "XL" && currentDeadline.deadlinegroup?.includes("lautakunta")))
       )
     ){
       undeletable = true
     }
+    const nahtEsillaString = currentDeadline.deadlinegroup?.includes("nahtavillaolo") ? "Nahtavillaolo" + indexString : "Esilläolo" + indexString
     nestedDeadlines.push({
       id: numberOfPhases,
-      content: deadlines[i].deadline.deadlinegroup?.includes("lautakunta") ? "Lautakunta" +indexString : (deadlines[i].deadline.deadlinegroup?.includes("nahtavillaolo") ? "Nahtavillaolo" +indexString : "Esilläolo" +indexString),
+      content: currentDeadline.deadlinegroup?.includes("lautakunta") ? "Lautakunta" + indexString : nahtEsillaString,
       abbreviation: deadlines[i].abbreviation,
-      deadlinegroup: deadlines[i].deadline.deadlinegroup,
-      deadlinesubgroup: deadlines[i].deadline.deadlinesubgroup,
+      deadlinegroup: currentDeadline.deadlinegroup,
+      deadlinesubgroup: currentDeadline.deadlinesubgroup,
       locked: false,
       generated:deadlines[i].generated,
       undeletable:undeletable,
-      phaseID: deadlines[i].deadline.phase_id,
-      className: `${deadlines[i].deadline.deadlinegroup}`
+      phaseID: currentDeadline.phase_id,
+      className: `${currentDeadline.deadlinegroup}`
     });
 
     return [phaseData, deadLineGroups, nestedDeadlines];
