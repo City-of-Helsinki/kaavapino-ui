@@ -580,6 +580,16 @@ export const getFirstLockedDate = (lockedGroup, deadlineObjects, attributeData) 
   return null;
 }
 
+export const isAfterLockedGroup = (timelineLockedGroup, currentDeadline, deadlineSections) => {
+  if (!timelineLockedGroup){
+    return false;
+  }
+  const orderedGroups = deadlineSections?.flatMap(section => Object.keys(section.grouped_sections[0]?.attributes || {}));
+  const lockedIndex = orderedGroups?.indexOf(timelineLockedGroup);
+  const currentIndex = orderedGroups?.indexOf(currentDeadline?.deadline?.deadlinegroup);
+  return lockedIndex !== -1 && currentIndex !== -1 && currentIndex >= lockedIndex;
+}
+
 const exported = {
     isWeekend,
     formatDate,
@@ -591,7 +601,8 @@ const exported = {
     syncPhaseEndDates,
     findFirstAllowedDate,
     findPastDateWithGap,
-    getFirstLockedDate
+    getFirstLockedDate,
+    isAfterLockedGroup
 };
 if (process.env.UNIT_TEST === 'true') {
     exported.findNextPossibleValue = findNextPossibleValue;
