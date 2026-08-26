@@ -179,7 +179,7 @@ const createRemoveButton = (group, props) => {
 };
 
 const createLockButton = (group, props) => {
-  const { currentTimelineLockRef, handleLockElement: onClick } = props;
+  const { currentTimelineLockRef, groups, handleLockElement: onClick } = props;
   const lock = document.createElement("button");
   lock.classList.add("timeline-lock-button");
   lock.style.fontSize = "small";
@@ -206,7 +206,32 @@ const createLockButton = (group, props) => {
         if (btn !== lock) btn.classList.add("button-disabled");
       });
     }
+
+    // Dispatches lock action
     onClick(group);
+
+    setTimeout(() => {
+    // Now update the remove buttons based on the new lock state
+    // TODO: Come up with more robust solution
+    const allRemoveButtons = document.querySelectorAll(".timeline-remove-button");
+    const groupList = groups.get()
+    allRemoveButtons.forEach(btn => {
+      const groupName = btn.dataset.groupName;
+      const btnGroup = groupList.find(g => g.deadlinegroup === groupName);
+      if (!btnGroup) {
+        console.warn("WTF");
+        return;
+      }
+      const { isDisabled } = getRemoveDisabledState(btnGroup, props);
+      console.log(isDisabled, btnGroup.deadlinegroup)
+      if (isDisabled) {
+        btn.classList.add("button-disabled");
+      } else {
+        btn.classList.remove("button-disabled");
+      }
+    });}, 10);
+
+
   });
   return lock;
 };
@@ -228,7 +253,7 @@ const createLockButton = (group, props) => {
  * @property {Function} openRemoveDialog
  * @property {Function} handleLockElement
  * @property {Object[]} deadlineSections
- * 
+ * @property {Object} groups
  */
 
 /**
