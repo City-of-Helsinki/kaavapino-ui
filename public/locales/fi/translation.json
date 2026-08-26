@@ -134,6 +134,7 @@
     "delete-first-esillaolo":"Riviä ei voi poistaa, koska vaiheen ensimmäinen esilläolo on pakollinen.",
     "delete-first-lautakunta":"Riviä ei voi poistaa, koska vaiheen ensimmäinen lautakunta on pakollinen.",
     "delete-first-nahtavillaolo":"Riviä ei voi poistaa, koska vaiheen ensimmäinen nähtävilläolo on pakollinen.",
+    "delete-locked":"Riviä ei voi poistaa, sillä elementtirivi on lukittu.",
     "timeline-group-header": "Vaiheiden etapit",
     "modify-timeline":"Muokkaa aikataulua",
     "edit-deadline-section": "Muokkaa aikataulutietoja",

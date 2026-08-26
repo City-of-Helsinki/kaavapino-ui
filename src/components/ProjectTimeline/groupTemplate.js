@@ -1,4 +1,5 @@
 import { isGroupConfirmed } from '../../utils/projectUtils';
+import { isGroupAfterLockedGroup } from '../../utils/timeUtil';
 const createGroupContainer = (group, t, timelineInstanceRef, timelineRef, pendingGroupFocusIdRef) => {
   const container = document.createElement("div");
   container.classList.add("timeline-buttons-container");
@@ -102,12 +103,7 @@ const createEditButton = (group, t, openDialog, container) => {
   return edit;
 };
 
-const createRemoveButton = (group, onClick, isPhaseClosed, currentTimelineLockRef, visValuesRef, t) => {
-  const remove = document.createElement("button");
-  remove.id = `remove-button-${group.id}`;
-  remove.classList.add("timeline-remove-button");
-  remove.style.fontSize = "small";
-  
+const getRemoveDisabledState = (group, isPhaseClosed, currentTimelineLockRef, visValuesRef, t, deadlineSections) => {
   const getNum = k => {
     const m = k.match(/_(\d+)$/);
     return m ? Number.parseInt(m[1], 10) : 1;
@@ -122,12 +118,14 @@ const createRemoveButton = (group, onClick, isPhaseClosed, currentTimelineLockRe
   groupType = group.content.includes("Nahtavillaolo") ? "nahtavillaolo" : groupType;
   groupType = group.content.includes("Lautakunta") ? "lautakunta" : groupType;
 
+  let isDisabled = false;
+
   if (isPhaseEnded) {
-    remove.classList.add("button-disabled");
     removeExplanation = t('deadlines.delete-phase-closed');
+    isDisabled = true;
   } else if (isConfirmed) {
-    remove.classList.add("button-disabled");
     removeExplanation = groupType ? t(`deadlines.delete-confirmed-${groupType}`) : t('deadlines.delete-confirmed');
+    isDisabled = true;
   } else if (isFirst) {
     const isEhdotusXL = group?.nestedInGroup === "Ehdotus" && visValuesRef.current?.kaavaprosessin_kokoluokka === "XL";
     const isLautakunta = groupType === "lautakunta";
@@ -136,12 +134,27 @@ const createRemoveButton = (group, onClick, isPhaseClosed, currentTimelineLockRe
       group?.nestedInGroup !== "Luonnos" &&
       !(isEhdotusXL && isLautakunta)
     ) {
-      remove.classList.add("button-disabled");
       removeExplanation = t(`deadlines.delete-first-${groupType}`);
+      isDisabled = true;
     }
-  } else if (currentTimelineLockRef?.current === group.deadlinegroup) {
-    remove.classList.add("button-disabled");
+  }
+  if (isGroupAfterLockedGroup(currentTimelineLockRef?.current, group.deadlinegroup, deadlineSections)) {
     removeExplanation = t('deadlines.delete-locked');
+    isDisabled = true;
+  }
+  return { isDisabled, removeExplanation };
+}
+
+const createRemoveButton = (group, onClick, isPhaseClosed, currentTimelineLockRef, visValuesRef, t, deadlineSections) => {
+  const remove = document.createElement("button");
+  remove.id = `remove-button-${group.id}`;
+  remove.classList.add("timeline-remove-button");
+  remove.dataset.groupName = group.deadlinegroup;
+  remove.style.fontSize = "small";
+  
+  const { isDisabled, removeExplanation } = getRemoveDisabledState(group, isPhaseClosed, currentTimelineLockRef, visValuesRef, t, deadlineSections);
+  if (isDisabled) {
+    remove.classList.add("button-disabled");
   }
 
   const removeTextDiv = removeExplanation ? `<div class='timeline-remove-text'>${removeExplanation}</div>` : null;
@@ -207,6 +220,7 @@ export const createGroupTemplate = ({
   openDialog,
   openRemoveDialog,
   handleLockElement,
+  deadlineSections
 }) => {
   return function groupTemplate(group) {
 
@@ -252,7 +266,7 @@ export const createGroupTemplate = ({
       container.insertAdjacentElement("beforeEnd", edit);
 
       if (allowedToEdit && !contentIncludesString) {
-        const { remove, removeTextDiv } = createRemoveButton(group, openRemoveDialog, isPhaseClosed, currentTimelineLockRef, visValuesRef, t);
+        const { remove, removeTextDiv } = createRemoveButton(group, openRemoveDialog, isPhaseClosed, currentTimelineLockRef, visValuesRef, t, deadlineSections);
         container.insertAdjacentElement("beforeEnd", remove);
 
         if (remove.classList.contains("button-disabled") && removeTextDiv) {

@@ -1383,6 +1383,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         openDialog,
         openRemoveDialog,
         handleLockElement,
+        deadlineSections
       }),
     }
 

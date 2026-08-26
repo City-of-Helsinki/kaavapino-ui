@@ -580,13 +580,24 @@ export const getFirstLockedDate = (lockedGroup, deadlineObjects, attributeData) 
   return null;
 }
 
-export const isAfterLockedGroup = (timelineLockedGroup, currentDeadline, deadlineSections) => {
+export const isDlAfterLockedGroup = (timelineLockedGroup, currentDeadline, deadlineSections) => {
   if (!timelineLockedGroup){
     return false;
   }
   const orderedGroups = deadlineSections?.flatMap(section => Object.keys(section.grouped_sections[0]?.attributes || {}));
   const lockedIndex = orderedGroups?.indexOf(timelineLockedGroup);
   const currentIndex = orderedGroups?.indexOf(currentDeadline?.deadline?.deadlinegroup);
+  return lockedIndex !== -1 && currentIndex !== -1 && currentIndex >= lockedIndex;
+}
+
+export const isGroupAfterLockedGroup = (timelineLockedGroup, currentGroup, deadlineSections) => {
+  console.log('timelineLockedGroup:', timelineLockedGroup, currentGroup, deadlineSections);
+  if (!timelineLockedGroup){
+    return false;
+  }
+  const orderedGroups = deadlineSections?.flatMap(section => Object.keys(section.grouped_sections[0]?.attributes || {}));
+  const lockedIndex = orderedGroups?.indexOf(timelineLockedGroup);
+  const currentIndex = orderedGroups?.indexOf(currentGroup);
   return lockedIndex !== -1 && currentIndex !== -1 && currentIndex >= lockedIndex;
 }
 
@@ -602,7 +613,8 @@ const exported = {
     findFirstAllowedDate,
     findPastDateWithGap,
     getFirstLockedDate,
-    isAfterLockedGroup
+    isDlAfterLockedGroup,
+    isGroupAfterLockedGroup
 };
 if (process.env.UNIT_TEST === 'true') {
     exported.findNextPossibleValue = findNextPossibleValue;
