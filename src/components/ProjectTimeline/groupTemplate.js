@@ -1,5 +1,4 @@
-
-
+import { isGroupConfirmed } from '../../utils/projectUtils';
 const createGroupContainer = (group, t, timelineInstanceRef, timelineRef, pendingGroupFocusIdRef) => {
   const container = document.createElement("div");
   container.classList.add("timeline-buttons-container");
@@ -103,144 +102,55 @@ const createEditButton = (group, t, openDialog, container) => {
   return edit;
 };
 
-const createRemoveButton = (group, phaseList, openRemoveDialog, isPhaseClosed, currentTimelineLockRef, label, visValuesRef, getConfirmationKeyForEsillaoloKey, t) => {
+const createRemoveButton = (group, onClick, isPhaseClosed, currentTimelineLockRef, visValuesRef, t) => {
   const remove = document.createElement("button");
   remove.id = `remove-button-${group.id}`;
   remove.classList.add("timeline-remove-button");
   remove.style.fontSize = "small";
-
-  // Tooltip for disabled remove button
-  let removeTextDiv = "";
-
-  let groupPhase = group.phase || group.phaseName;
-  if (!groupPhase && group.deadlinegroup) {
-    groupPhase = group.deadlinegroup.split("_")[0];
-    groupPhase = groupPhase.charAt(0).toUpperCase() + groupPhase.slice(1).toLowerCase();
-  }
-  // Try to find the best match in phaseList
-  let matchedPhase = phaseList.find(phase =>
-    phase.toLowerCase().startsWith(groupPhase?.toLowerCase())
-  );
-  if (!matchedPhase) {
-    matchedPhase = phaseList.find(phase =>
-      phase.toLowerCase().includes(groupPhase?.toLowerCase())
-    );
-  }
-
-    // --- Remove button disable logic ---
-  let isPhaseEnded = isPhaseClosed(matchedPhase);
-  let isFirst = false;
-  let isConfirmed = false;
-  // Common numeric suffix extraction
+  
   const getNum = k => {
     const m = k.match(/_(\d+)$/);
     return m ? Number.parseInt(m[1], 10) : 1;
   };
+
+  const isPhaseEnded = isPhaseClosed(group.nestedInGroup);
   const groupNum = getNum(group.deadlinegroup);
-  isFirst = groupNum === 1;
-  // Esilläolo or Nähtävilläolo
-  if (label.innerHTML.includes("Esilläolo") || label.innerHTML.includes("Nähtävilläolo")) {
-    // Extract phaseKey robustly from group.deadlinegroup
-    let phaseKey = group.deadlinegroup;
-    const match = phaseKey.match(/^([a-z_]+)_(esillaolokerta|nahtavillaolokerta)/i);
-    if (match) {
-      phaseKey = match[1];
+  const isFirst = groupNum === 1;
+  const isConfirmed = isGroupConfirmed(group.deadlinegroup, visValuesRef?.current || {});
+  let removeExplanation = "";
+  let groupType = group.content.includes("Esilläolo") ? "esillaolo" : null;
+  groupType = group.content.includes("Nahtavillaolo") ? "nahtavillaolo" : groupType;
+  groupType = group.content.includes("Lautakunta") ? "lautakunta" : groupType;
+
+  if (isPhaseEnded) {
+    remove.classList.add("button-disabled");
+    removeExplanation = t('deadlines.delete-phase-closed');
+  } else if (isConfirmed) {
+    remove.classList.add("button-disabled");
+    removeExplanation = groupType ? t(`deadlines.delete-confirmed-${groupType}`) : t('deadlines.delete-confirmed');
+  } else if (isFirst) {
+    const isEhdotusXL = group?.nestedInGroup === "Ehdotus" && visValuesRef.current?.kaavaprosessin_kokoluokka === "XL";
+    const isLautakunta = groupType === "lautakunta";
+    if (
+      group?.nestedInGroup !== "Periaatteet" &&
+      group?.nestedInGroup !== "Luonnos" &&
+      !(isEhdotusXL && isLautakunta)
+    ) {
+      remove.classList.add("button-disabled");
+      removeExplanation = t(`deadlines.delete-first-${groupType}`);
     }
-    phaseKey = phaseKey.toLowerCase();
-    if (phaseKey === "kaavaehdotus") phaseKey = "ehdotus";
-    if (phaseKey === "kaavaluonnos") phaseKey = "luonnos";
-
-    const allKeys = Object.keys(visValuesRef?.current || {}).filter(
-      key =>
-        key.startsWith(phaseKey) &&
-        key.includes("esillaolo") &&
-        visValuesRef.current[key] !== false &&
-        visValuesRef.current[key] !== undefined
-    );
-    const allNums = allKeys.map(getNum).sort((a, b) => a - b);
-    // If this is group 1, always treat as first
-    isFirst = groupNum === 1 || (allNums.length > 0 && groupNum === allNums[0]);
-
-    // Confirmation
-    const confirmKey = getConfirmationKeyForEsillaoloKey(phaseKey, group.deadlinegroup);
-    isConfirmed = visValuesRef?.current[confirmKey] === true;
+  } else if (currentTimelineLockRef?.current === group.deadlinegroup) {
+    remove.classList.add("button-disabled");
+    removeExplanation = t('deadlines.delete-locked');
   }
-  // Lautakunta
-  else if (label.innerHTML.includes("Lautakunta")) {
-    let phaseKey = group.deadlinegroup;
-    if (phaseKey.includes("_lautakunta")) {
-      phaseKey = phaseKey.substring(0, phaseKey.indexOf("_lautakunta"));
-    }
-    phaseKey = phaseKey.toLowerCase();
-    if (phaseKey === "ehdotus") {
-      phaseKey = "kaavaehdotus";
-    }
-    if (phaseKey === "luonnos") {
-      phaseKey = "kaavaluonnos";
-    }
 
-    const allKeys = Object.keys(visValuesRef?.current || {}).filter(
-      key =>
-        key.startsWith(phaseKey) &&
-        key.includes("lautakuntaan") &&
-        visValuesRef.current[key] !== false &&
-        visValuesRef.current[key] !== undefined
-    );
-    const allNums = allKeys.map(getNum).sort((a, b) => a - b);
-    isFirst = allNums.length > 0 && groupNum === allNums[0];
+  const removeTextDiv = removeExplanation ? `<div class='timeline-remove-text'>${removeExplanation}</div>` : null;
 
-    // Confirmation
-    const lautakuntaMatch = group.deadlinegroup.match(/_(\d+)$/);
-    const lautakuntaIndex = lautakuntaMatch ? lautakuntaMatch[1] : "1";
-    const confirmKey = lautakuntaIndex === "1"
-      ? `vahvista_${phaseKey}_lautakunnassa`
-      : `vahvista_${phaseKey}_lautakunnassa_${lautakuntaIndex}`;
-    isConfirmed = visValuesRef?.current[confirmKey] === true;
-  }
-    // Tooltip and disable logic
-    if (isPhaseEnded) {
-      remove.classList.add("button-disabled");
-      removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-phase-closed')}</div>`;
-    } else if (isConfirmed) {
-      remove.classList.add("button-disabled");
-      if (label.innerHTML.includes("Lautakunta")) {
-        removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-confirmed-lautakunta')}</div>`;
-      } else if (label.innerHTML.includes("Esilläolo")) {
-        removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-confirmed-esillaolo')}</div>`;
-      } else if (label.innerHTML.includes("Nähtävilläolo")) {
-        removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-confirmed-nahtavillaolo')}</div>`;
-      } else {
-        removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-confirmed')}</div>`;
-      }
-    } else if (isFirst) {
-      const isEhdotusXL = group?.nestedInGroup === "Ehdotus" && visValuesRef.current?.kaavaprosessin_kokoluokka === "XL";
-      const isLautakunta = label.innerHTML.includes("Lautakunta");
-      if (
-        group?.nestedInGroup !== "Periaatteet" &&
-        group?.nestedInGroup !== "Luonnos" &&
-        !(isEhdotusXL && isLautakunta)
-      ) {
-        remove.classList.add("button-disabled");
-      }
-      if (label.innerHTML.includes("Esilläolo")) {
-        removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-first-esillaolo')}</div>`;
-      } else if (label.innerHTML.includes("Lautakunta")) {
-        removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-first-lautakunta')}</div>`;
-      } else if (label.innerHTML.includes("Nähtävilläolo")) {
-        removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-first-nahtavillaolo')}</div>`;
-      }
-    } else if (currentTimelineLockRef?.current === group.deadlinegroup) {
-      remove.classList.add("button-disabled");
-      removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-locked')}</div>`;
+  remove.addEventListener("click", function () {
+    if (!remove.classList.contains("button-disabled")) {
+      onClick(group);
     }
-
-    remove.style.fontSize = "small";
-
-    remove.addEventListener("click", function () {
-      if (!remove.classList.contains("button-disabled")) {
-        openRemoveDialog(group);
-      }
-    });
+  });
   return { remove, removeTextDiv };
 };
 
@@ -276,6 +186,7 @@ const createLockButton = (group, currentTimelineLockRef, onClick) => {
   return lock;
 };
 
+
 /**
  * Creates html elements for timeline groups (shown in left side of timeline view)
  * Including labels and buttons for editing, adding, removing and locking groups
@@ -292,14 +203,17 @@ export const createGroupTemplate = ({
   visValuesRef,
   currentTimelineLockRef,
   formatContent,
-  isPhaseClosed,
-  getConfirmationKeyForEsillaoloKey,
   handleAddButtonClick,
   openDialog,
   openRemoveDialog,
   handleLockElement,
 }) => {
   return function groupTemplate(group) {
+
+    const isPhaseClosed = (phase) => {
+      const idx = phaseList.indexOf(phase);
+      return idx > -1 && idx < currentPhaseIndex;
+    };
 
     if (group === null) {
       return;
@@ -320,7 +234,7 @@ export const createGroupTemplate = ({
       const thisPhaseIndex = phaseList.indexOf(labelPhase);
       const phaseClosed = thisPhaseIndex < currentPhaseIndex;
 
-      const {add, addTooltipDiv} = createAddButton(group, phaseClosed, t, handleAddButtonClick, visValuesRef);
+      const { add, addTooltipDiv } = createAddButton(group, phaseClosed, t, handleAddButtonClick, visValuesRef);
 
       container.insertAdjacentElement("beforeEnd", add);
 
@@ -338,7 +252,7 @@ export const createGroupTemplate = ({
       container.insertAdjacentElement("beforeEnd", edit);
 
       if (allowedToEdit && !contentIncludesString) {
-        const {remove, removeTextDiv} = createRemoveButton(group, phaseList, openRemoveDialog, isPhaseClosed, currentTimelineLockRef, label, visValuesRef, getConfirmationKeyForEsillaoloKey, t);
+        const { remove, removeTextDiv } = createRemoveButton(group, openRemoveDialog, isPhaseClosed, currentTimelineLockRef, visValuesRef, t);
         container.insertAdjacentElement("beforeEnd", remove);
 
         if (remove.classList.contains("button-disabled") && removeTextDiv) {
