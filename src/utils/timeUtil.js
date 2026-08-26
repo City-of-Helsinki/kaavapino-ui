@@ -591,7 +591,6 @@ export const isDlAfterLockedGroup = (timelineLockedGroup, currentDeadline, deadl
 }
 
 export const isGroupAfterLockedGroup = (timelineLockedGroup, currentGroup, deadlineSections) => {
-  console.log('timelineLockedGroup:', timelineLockedGroup, currentGroup, deadlineSections);
   if (!timelineLockedGroup){
     return false;
   }

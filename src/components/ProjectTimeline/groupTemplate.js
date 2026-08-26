@@ -1,6 +1,10 @@
 import { isGroupConfirmed } from '../../utils/projectUtils';
 import { isGroupAfterLockedGroup } from '../../utils/timeUtil';
-const createGroupContainer = (group, t, timelineInstanceRef, timelineRef, pendingGroupFocusIdRef) => {
+import { t } from 'i18next';
+
+
+const createGroupContainer = (group, props) => {
+  const {timelineInstanceRef, timelineRef, pendingGroupFocusIdRef } = props;
   const container = document.createElement("div");
   container.classList.add("timeline-buttons-container");
   container.setAttribute("tabindex", group?.nestedGroups === undefined ? "-1" : "0");
@@ -55,7 +59,9 @@ const createTopLevelLabel = (group, container) => {
   return label;
 };
 
-const createAddButton = (group, phaseClosed, t, onClick, visValuesRef) => {
+const createAddButton = (group, props) => {
+  const { handleAddButtonClick: onClick, visValuesRef, phaseList, currentPhaseIndex } = props;
+  const phaseClosed = phaseList.indexOf(group.content) < currentPhaseIndex;
   const add = document.createElement("button");
   add.id = `add-button-${group.id}`;
   add.classList.add("timeline-add-button");
@@ -79,7 +85,8 @@ const createAddButton = (group, phaseClosed, t, onClick, visValuesRef) => {
   return { add, addTooltipDiv };
 };
 
-const createNestedLabel = (group, formatContent) => {
+const createNestedLabel = (group, props) => {
+  const { formatContent } = props;
   // Get, format and add labels
   const label = document.createElement("label");
   label.classList.add("timeline-button-label");
@@ -89,7 +96,8 @@ const createNestedLabel = (group, formatContent) => {
   return label;
 };
 
-const createEditButton = (group, t, openDialog, container) => {
+const createEditButton = (group, container, props) => {
+  const { openDialog } = props;
   const edit = document.createElement("button");
   edit.id = `edit-button-${group.id}`;
 
@@ -103,12 +111,14 @@ const createEditButton = (group, t, openDialog, container) => {
   return edit;
 };
 
-const getRemoveDisabledState = (group, isPhaseClosed, currentTimelineLockRef, visValuesRef, t, deadlineSections) => {
+const getRemoveDisabledState = (group, props) => {
+  const { currentTimelineLockRef, visValuesRef, t, deadlineSections, phaseList, currentPhaseIndex } = props;
   const getNum = k => {
-    const m = k.match(/_(\d+)$/);
+    const m = k.match(/_(\.d+)$/);
     return m ? Number.parseInt(m[1], 10) : 1;
   };
 
+  const isPhaseClosed = (phase) => phaseList.includes(phase) && phaseList.indexOf(phase) < currentPhaseIndex;
   const isPhaseEnded = isPhaseClosed(group.nestedInGroup);
   const groupNum = getNum(group.deadlinegroup);
   const isFirst = groupNum === 1;
@@ -145,14 +155,15 @@ const getRemoveDisabledState = (group, isPhaseClosed, currentTimelineLockRef, vi
   return { isDisabled, removeExplanation };
 }
 
-const createRemoveButton = (group, onClick, isPhaseClosed, currentTimelineLockRef, visValuesRef, t, deadlineSections) => {
+const createRemoveButton = (group, props) => {
+  const { openRemoveDialog: onClick } = props;
   const remove = document.createElement("button");
   remove.id = `remove-button-${group.id}`;
   remove.classList.add("timeline-remove-button");
   remove.dataset.groupName = group.deadlinegroup;
   remove.style.fontSize = "small";
-  
-  const { isDisabled, removeExplanation } = getRemoveDisabledState(group, isPhaseClosed, currentTimelineLockRef, visValuesRef, t, deadlineSections);
+
+  const { isDisabled, removeExplanation } = getRemoveDisabledState(group, props);
   if (isDisabled) {
     remove.classList.add("button-disabled");
   }
@@ -167,7 +178,8 @@ const createRemoveButton = (group, onClick, isPhaseClosed, currentTimelineLockRe
   return { remove, removeTextDiv };
 };
 
-const createLockButton = (group, currentTimelineLockRef, onClick) => {
+const createLockButton = (group, props) => {
+  const { currentTimelineLockRef, handleLockElement: onClick } = props;
   const lock = document.createElement("button");
   lock.classList.add("timeline-lock-button");
   lock.style.fontSize = "small";
@@ -201,39 +213,39 @@ const createLockButton = (group, currentTimelineLockRef, onClick) => {
 
 
 /**
+ * @typedef {Object} GroupTemplateProps
+ * @property {React.RefObject} timelineInstanceRef
+ * @property {React.RefObject} timelineRef
+ * @property {React.RefObject} pendingGroupFocusIdRef
+ * @property {boolean} allowedToEdit
+ * @property {string[]} phaseList
+ * @property {number} currentPhaseIndex
+ * @property {React.RefObject} visValuesRef
+ * @property {React.RefObject} currentTimelineLockRef
+ * @property {Function} formatContent
+ * @property {Function} handleAddButtonClick
+ * @property {Function} openDialog
+ * @property {Function} openRemoveDialog
+ * @property {Function} handleLockElement
+ * @property {Object[]} deadlineSections
+ * 
+ */
+
+/**
  * Creates html elements for timeline groups (shown in left side of timeline view)
  * Including labels and buttons for editing, adding, removing and locking groups
  * Called by vis.js timeline library for each group every time the timeline is rendered
+ * @param {GroupTemplateProps} props
  */
-export const createGroupTemplate = ({
-  t,
-  timelineInstanceRef,
-  timelineRef,
-  pendingGroupFocusIdRef,
-  allowedToEdit,
-  phaseList,
-  currentPhaseIndex,
-  visValuesRef,
-  currentTimelineLockRef,
-  formatContent,
-  handleAddButtonClick,
-  openDialog,
-  openRemoveDialog,
-  handleLockElement,
-  deadlineSections
-}) => {
+export const createGroupTemplate = (props) => {
+  const { allowedToEdit } = props;
   return function groupTemplate(group) {
-
-    const isPhaseClosed = (phase) => {
-      const idx = phaseList.indexOf(phase);
-      return idx > -1 && idx < currentPhaseIndex;
-    };
 
     if (group === null) {
       return;
     }
 
-    const container = createGroupContainer(group, t, timelineInstanceRef, timelineRef, pendingGroupFocusIdRef);
+    const container = createGroupContainer(group, props);
 
     //Don't show buttons in these groups
     const stringsToCheck = ["Käynnistys", "Hyväksyminen", "Voimaantulo", "Vaiheen kesto"];
@@ -244,11 +256,7 @@ export const createGroupTemplate = ({
       const label = createTopLevelLabel(group, container);
       container.insertAdjacentElement("afterBegin", label);
 
-      const labelPhase = label.innerHTML.trim();
-      const thisPhaseIndex = phaseList.indexOf(labelPhase);
-      const phaseClosed = thisPhaseIndex < currentPhaseIndex;
-
-      const { add, addTooltipDiv } = createAddButton(group, phaseClosed, t, handleAddButtonClick, visValuesRef);
+      const { add, addTooltipDiv } = createAddButton(group, props);
 
       container.insertAdjacentElement("beforeEnd", add);
 
@@ -258,21 +266,21 @@ export const createGroupTemplate = ({
       return container;
     } else if (group?.nestedInGroup) {
       // Nested group element with edit, remove and lock buttons
-      const label = createNestedLabel(group, formatContent);
+      const label = createNestedLabel(group, props);
       container.insertAdjacentElement("afterBegin", label);
 
-      const edit = createEditButton(group, t, openDialog, container);
+      const edit = createEditButton(group, container, props);
       label.htmlFor = edit.id;
       container.insertAdjacentElement("beforeEnd", edit);
 
       if (allowedToEdit && !contentIncludesString) {
-        const { remove, removeTextDiv } = createRemoveButton(group, openRemoveDialog, isPhaseClosed, currentTimelineLockRef, visValuesRef, t, deadlineSections);
+        const { remove, removeTextDiv } = createRemoveButton(group, props);
         container.insertAdjacentElement("beforeEnd", remove);
 
         if (remove.classList.contains("button-disabled") && removeTextDiv) {
           container.insertAdjacentHTML("beforeEnd", removeTextDiv);
         }
-        const lock = createLockButton(group, currentTimelineLockRef, handleLockElement);
+        const lock = createLockButton(group, props);
         container.insertAdjacentElement("beforeEnd", lock);
       }
       return container;
