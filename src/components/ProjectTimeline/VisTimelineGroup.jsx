@@ -24,6 +24,7 @@ import { getFirstLockedDate } from '../../utils/timeUtil';
 import { timelineLockedGroupSelector } from '../../selectors/projectSelector';
 import './VisTimeline.scss'
 import { createGroupTemplate } from './groupTemplate';
+import { isGroupConfirmed } from '../../utils/projectUtils';
 Moment.locale('fi');
 
 const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, phaseList, currentPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes, showTimetableForm }, ref) => {
@@ -139,44 +140,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     return data.content.toLowerCase().replaceAll(/\s+/g, '_');
   }
 
-  const getConfirmationKeyForEsillaoloKey = (phase, esillaoloGroupKey) => {
-    const match = esillaoloGroupKey.match(/_(\d+)$/);
-    const idx = match ? match[1] : "1";
-
-    // Normalize phase name for key
-    let normalizedPhase = phase;
-    if (normalizedPhase === "kaavaehdotus") normalizedPhase = "ehdotus";
-    if (normalizedPhase === "kaavaluonnos") normalizedPhase = "luonnos";
-
-    // Special case for ehdotus-phase: no _alkaa in the key!
-    if (normalizedPhase === "ehdotus") {
-      if (idx === "1") {
-        return `vahvista_ehdotus_esillaolo`;
-      } else {
-        return `vahvista_ehdotus_esillaolo_${idx}`;
-      }
-    }
-
-    // All other phases use _esillaolo_alkaa
-    if (idx === "1") {
-      return `vahvista_${normalizedPhase}_esillaolo_alkaa`;
-    } else {
-      return `vahvista_${normalizedPhase}_esillaolo_alkaa_${idx}`;
-    }
-  }
-
-  const getConfirmationKeyForLautakuntaKey = (phase, lautakuntaKey) => {
-    const match = lautakuntaKey.match(/_(\d+)$/);
-    const idx = match ? match[1] : "1";
-    let normalizedPhase = phase;
-    if (normalizedPhase === "ehdotus") normalizedPhase = "kaavaehdotus";
-    if (normalizedPhase === "luonnos") normalizedPhase = "kaavaluonnos";
-    // periaatteet & tarkistettu_ehdotus stay as-is
-    return idx === "1"
-      ? `vahvista_${normalizedPhase}_lautakunnassa`
-      : `vahvista_${normalizedPhase}_lautakunnassa_${idx}`;
-  }
-
   const getLautakuntaAndPaatosBase = (phase) => {
     switch (phase) {
       case "luonnos":
@@ -238,8 +201,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
     // Check if previous esillaolo is confirmed (if not the first one)
     if (latestEsillaolo) {
-      const confirmKey = getConfirmationKeyForEsillaoloKey(phase, latestEsillaolo);
-      if (form_data[confirmKey] !== true) {
+      const groupName = getGroupNameByVisibilityBool(latestEsillaolo);
+      if (!isGroupConfirmed(groupName, form_data)) {
         return { 
           canAdd: false,
           nextEsillaolo,
@@ -255,8 +218,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
 
     if (lautakuntaKeys.some(key => {
-      const confirmKey = getConfirmationKeyForLautakuntaKey(phase, key);
-      return form_data[confirmKey] === true
+      const groupName = getGroupNameByVisibilityBool(key);
+      return isGroupConfirmed(groupName, form_data);
     })) {
       return { canAdd: false, nextEsillaolo, reason: t("deadlines.esillaolo-next-confirmed") };
     }
@@ -286,8 +249,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
     // 2. Check if previous lautakunta is confirmed and has correct paatos value (if not the first one)
     if (latestLautakunta) {
-      const confirmKey = getConfirmationKeyForLautakuntaKey(phase, latestLautakunta);
-      if (form_data[confirmKey] !== true) {
+      const groupName = getGroupNameByVisibilityBool(latestLautakunta);
+      const isConfirmed = isGroupConfirmed(groupName, form_data);
+      if (!isConfirmed) {
         return { canAdd: false, nextLautakunta, reason: t("deadlines.lautakunta-no-confirmation") }
       }
       const paatosBase= getLautakuntaAndPaatosBase(phase)[1];
@@ -306,8 +270,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     // 3. Special case for ehdotus: Check if confirmed nahtavillaolo exists (prevent lautakunta add if so)
     if (phase === "ehdotus") {
       if (esillaoloKeys.some(key => {
-        const confirmKey = getConfirmationKeyForEsillaoloKey(phase, key);
-        return form_data[confirmKey] === true;
+        const groupName = getGroupNameByVisibilityBool(key);
+        return isGroupConfirmed(groupName, form_data);
       })) {
         return { canAdd: false, nextLautakunta, reason: t("deadlines.lautakunta-next-confirmed") };
       }
@@ -1415,8 +1379,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         visValuesRef,
         currentTimelineLockRef,
         formatContent,
-        isPhaseClosed,
-        getConfirmationKeyForEsillaoloKey,
         handleAddButtonClick,
         openDialog,
         openRemoveDialog,
