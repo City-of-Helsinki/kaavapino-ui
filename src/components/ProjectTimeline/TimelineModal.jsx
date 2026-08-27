@@ -293,6 +293,26 @@ const TimelineModal = ({
     return dt < new Date();
   };
 
+  const getNextGroupWord = (isLautakunta, isEsillaolo, isNahtavillaolo) => {
+    if (isLautakunta) return 'lautakunta';
+    if (isEsillaolo) return 'esilläolo';
+    if (isNahtavillaolo) return 'nähtävilläolo';
+    return 'elementtijoukko';
+  };
+
+  const getTooltip = ({ phaseClosed, phaseIsActive, isGroupLocked, confirmed, esillaoloNotConfirmedBeforeLautakunta, esillaoloLockedByLautakunta, anyNahtavillaoloLockedByLautakunta, lautakuntaInPast, anyPast, disableConfirmButton, nextGroupWord }) => {
+    if (phaseClosed) return confirmed ? t('deadlines.tooltip.phaseClosedConfirmed') : t('deadlines.tooltip.phaseClosed');
+    if (!phaseIsActive) return confirmed ? t('deadlines.tooltip.notActiveConfirmed') : t('deadlines.tooltip.notActive');
+    if (isGroupLocked) return confirmed ? t('deadlines.tooltip.groupLockedConfirmed') : t('deadlines.tooltip.groupLocked');
+    if (esillaoloNotConfirmedBeforeLautakunta) return t('deadlines.tooltip.lautakuntaNeedsEsillaolo');
+    if (esillaoloLockedByLautakunta) return t('deadlines.tooltip.esillaoloLockedByLautakunta');
+    if (anyNahtavillaoloLockedByLautakunta) return t('deadlines.tooltip.nahtavillaoloNeedsLautakunta');
+    if (lautakuntaInPast) return t('deadlines.tooltip.lautakuntaInPast');
+    if (anyPast) return t('deadlines.tooltip.anyPastConfirmed');
+    if (disableConfirmButton) return t('deadlines.tooltip.disableConfirmButton', { nextGroupWord });
+    return null;
+  };
+
   const getSectionRestrictions = ({
     group,
     title,
@@ -308,6 +328,7 @@ const TimelineModal = ({
     const isLautakunta = nTitle.includes('lautakunta');
     const isEsillaolo = nTitle.includes('esilläolo') || nTitle.includes('esillaolo');
     const isNahtavillaolo = nTitle.includes('nähtävilläolo') || nTitle.includes('nahtavillaolo');
+    const isLXLEhdotus = group === 'Ehdotus' && ["L", "XL"].includes(visValues['kaavaprosessin_kokoluokka']);
 
     const lastLautakunta = _lastByPrefixes(groups, group, ['lautakunta-']);
     const lastEsillaolo = _lastByPrefixes(groups, group, ['esilläolo-', 'esillaolo-']);
@@ -322,97 +343,47 @@ const TimelineModal = ({
     const phaseClosed = isPhaseClosed(group);
     const isGroupLocked = isGroupAfterLockedGroup(timelineLockedGroup, deadlinegroup, deadlineSections);
 
-    const disableConfirmButton = phaseClosed
-      ? true
-      : (
-        (isLautakunta && !isLastLautakunta) ||
-        (isEsillaolo && !isLastEsillaolo) ||
-        (isNahtavillaolo && !isLastNahtavillaolo) ||
-        isGroupLocked
-      );
+    const disableConfirmButton =
+      phaseClosed ||
+      (isLautakunta && !isLastLautakunta) ||
+      (isEsillaolo && !isLastEsillaolo) ||
+      (isNahtavillaolo && !isLastNahtavillaolo) ||
+      isGroupLocked;
 
     const phaseIndexForGroup = phaseList.findIndex(p => _normalize(p) === _normalize(group));
     const phaseIsActive = phaseIndexForGroup === projectPhaseIndex;
     // New rule: In active phase, Lautakunta cannot be confirmed before Esilläolo is confirmed
-    let esillaoloNotConfirmedBeforeLautakunta = false;
-    if (phaseIsActive && isLautakunta && lastEsillaolo) {
-      // Build confirm key for the last Esilläolo block
-      const esillaoloConfirmKey = getConfirmedValue(group, lastEsillaolo);
-      const esillaoloConfirmed = !!visValues[esillaoloConfirmKey];
-      if (!esillaoloConfirmed) {
-        esillaoloNotConfirmedBeforeLautakunta = true;
-      }
-    }
+    const esillaoloNotConfirmedBeforeLautakunta =
+      phaseIsActive && isLautakunta && lastEsillaolo &&
+      !visValues[getConfirmedValue(group, lastEsillaolo)];
+
+
+    // Find all Nahtavillaolo groups in this phase
+    const nahtavillaoloGroups = groups
+      .filter(g => g.nestedInGroup === group && /nähtävilläolo[-\s]?|nahtavillaolo[-\s]?/i.test(g.content))
+      .map(g => g.content);
     // Special rule: Lautakunta confirmation cannot be cancelled while any Nahtavillaolo is confirmed (Ehdotus L/XL)
-    let lautakuntaLockedByNahtavillaolo = false;
-    if (
-      phaseIsActive &&
-      isLautakunta &&
-      group === 'Ehdotus' &&
-      (visValues['kaavaprosessin_kokoluokka'] === 'L' || visValues['kaavaprosessin_kokoluokka'] === 'XL')
-    ) {
-      // Find all Nahtavillaolo groups in this phase
-      const nahtavillaoloGroups = groups
-        .filter(g => g.nestedInGroup === group && /nähtävilläolo[-\s]?|nahtavillaolo[-\s]?/i.test(g.content))
-        .map(g => g.content);
-      // Check if any Nahtavillaolo is confirmed
-      const anyNahtavillaoloConfirmed = nahtavillaoloGroups.some(nTitle => {
-        const key = getConfirmedValue(group, nTitle);
-        return !!visValues[key];
-      });
-      // Check if current Lautakunta is confirmed
-      const currentLautakuntaConfirmKey = getConfirmedValue(group, title);
-      const currentLautakuntaConfirmed = !!visValues[currentLautakuntaConfirmKey];
-      if (anyNahtavillaoloConfirmed && currentLautakuntaConfirmed) {
-        lautakuntaLockedByNahtavillaolo = true;
-      }
-    }
+    const lautakuntaLockedByNahtavillaolo =
+      phaseIsActive && isLautakunta && isLXLEhdotus &&
+      nahtavillaoloGroups.some(g => visValues[getConfirmedValue(group, g)]) &&
+      !!visValues[getConfirmedValue(group, title)];
+
+
     // Rule 2: Esilläolo confirmation cannot be cancelled while a Lautakunta is confirmed
-    let esillaoloLockedByLautakunta = false;
+    const lautakuntaGroups = groups
+      .filter(g => g.nestedInGroup === group && /^lautakunta[-\s]?/i.test(g.content))
+      .map(g => g.content);
+    
     // Check if ANY Lautakunta in this phase is confirmed (not only the last)
     // Exception: if phase is 'Ehdotus' and project size (kaavaprosessin_kokoluokka) is L or XL, skip locking completely.
-    if (phaseIsActive && isEsillaolo) {
-      const skipLockForEhdotusLarge = group === 'Ehdotus' && (visValues['kaavaprosessin_kokoluokka'] === 'L' || visValues['kaavaprosessin_kokoluokka'] === 'XL');
-      if (!skipLockForEhdotusLarge) {
-        const lautakuntaGroups = groups
-          .filter(g => g.nestedInGroup === group && /^lautakunta[-\s]?/i.test(g.content))
-          .map(g => g.content);
-        const anyLautakuntaConfirmed = lautakuntaGroups.some(lTitle => {
-          const key = getConfirmedValue(group, lTitle);
-          return !!visValues[key];
-        });
-        if (anyLautakuntaConfirmed) {
-          const currentEsillaoloConfirmKey = getConfirmedValue(group, title);
-          // Only lock if this Esilläolo is currently confirmed (prevent un-confirm)
-          const currentEsillaoloConfirmed = !!visValues[currentEsillaoloConfirmKey];
-          if (currentEsillaoloConfirmed) {
-            esillaoloLockedByLautakunta = true;
-          }
-        }
-      }
-    }
+    const esillaoloLockedByLautakunta =
+      phaseIsActive && isEsillaolo && !isLXLEhdotus &&
+      lautakuntaGroups.some(g => visValues[getConfirmedValue(group, g)]) &&
+      !!visValues[getConfirmedValue(group, title)];
 
-    let anyNahtavillaoloLockedByLautakunta = false;
-    if (
-        phaseIsActive &&
-        isNahtavillaolo &&
-        group === 'Ehdotus' &&
-        (visValues['kaavaprosessin_kokoluokka'] === 'L' || visValues['kaavaprosessin_kokoluokka'] === 'XL')
-    ) {
-        // Collect all Lautakunta-* groups in this phase
-        const lautakuntaGroups = groups.filter(g =>
-            g.nestedInGroup === group &&
-            /^lautakunta[-\s]*/i.test(g.content)
-        );
-        // Lock Nähtävilläolo if ANY Lautakunta is still unconfirmed
-        const anyUnconfirmedLautakunta = lautakuntaGroups.some(lg => {
-            const key = getConfirmedValue(group, lg.content);
-            return !visValues[key];
-        });
-        if (anyUnconfirmedLautakunta) {
-            anyNahtavillaoloLockedByLautakunta = true;
-        }
-    }
+    const anyNahtavillaoloLockedByLautakunta =
+      phaseIsActive && isNahtavillaolo && isLXLEhdotus &&
+      lautakuntaGroups.some(g => !visValues[getConfirmedValue(group, g)]);
 
     const disabled =
       archived ||
@@ -424,43 +395,12 @@ const TimelineModal = ({
       anyNahtavillaoloLockedByLautakunta ||
       sectionIndex < projectPhaseIndex;
 
-    const nextGroupWord =
-      isLautakunta ? 'lautakunta'
-        : isEsillaolo ? 'esilläolo'
-          : isNahtavillaolo ? 'nähtävilläolo'
-            : 'elementtijoukko';
+    const nextGroupWord = getNextGroupWord(isLautakunta, isEsillaolo, isNahtavillaolo);
 
     // Unify past-date lock for lautakunta and esilläolo/nähtävilläolo; keep prop name for downstream component
     const anyPast = lautakuntaInPast || esillaoloNahtavillaInPast;
 
-    let tooltip;
-    if (phaseClosed) {
-      tooltip = confirmed
-        ? t('deadlines.tooltip.phaseClosedConfirmed')
-        : t('deadlines.tooltip.phaseClosed');
-    } else if (phaseIsActive === false) {
-      tooltip = confirmed
-        ? t('deadlines.tooltip.notActiveConfirmed')
-        : t('deadlines.tooltip.notActive');
-    } else if (isGroupLocked) {
-      tooltip = confirmed
-        ? t('deadlines.tooltip.groupLockedConfirmed')
-        : t('deadlines.tooltip.groupLocked');
-    } else if (esillaoloNotConfirmedBeforeLautakunta) {
-      tooltip = t('deadlines.tooltip.lautakuntaNeedsEsillaolo');
-    } else if (esillaoloLockedByLautakunta) {
-      tooltip = t('deadlines.tooltip.esillaoloLockedByLautakunta');
-    } else if (anyNahtavillaoloLockedByLautakunta) {
-      tooltip = t('deadlines.tooltip.nahtavillaoloNeedsLautakunta');
-    } else if (lautakuntaInPast) {
-      tooltip = t('deadlines.tooltip.lautakuntaInPast');
-    } else if (anyPast) {
-      tooltip = t('deadlines.tooltip.anyPastConfirmed');
-    } else if (disableConfirmButton) {
-      tooltip = t('deadlines.tooltip.disableConfirmButton', { nextGroupWord });
-    } else {
-      tooltip = null;
-    }
+    const tooltip = getTooltip({ phaseClosed, phaseIsActive, isGroupLocked, confirmed, esillaoloNotConfirmedBeforeLautakunta, esillaoloLockedByLautakunta, anyNahtavillaoloLockedByLautakunta, lautakuntaInPast, anyPast, disableConfirmButton, nextGroupWord });
 
     return { lautakuntaInPast: anyPast, tooltip, disabled };
   };
