@@ -210,26 +210,31 @@ const createLockButton = (group, props) => {
     // Dispatches lock action
     onClick(group);
 
-    setTimeout(() => {
-    // Now update the remove buttons based on the new lock state
-    // TODO: Come up with more robust solution
+    // Use the known next lock value rather than waiting for the ref to update after dispatch
+    const nextLock = isCurrentlyLocked ? null : group.deadlinegroup;
+    const propsWithNextLock = { ...props, currentTimelineLockRef: { current: nextLock } };
     const allRemoveButtons = document.querySelectorAll(".timeline-remove-button");
-    const groupList = groups.get()
+    const groupList = groups.get();
     allRemoveButtons.forEach(btn => {
       const groupName = btn.dataset.groupName;
       const btnGroup = groupList.find(g => g.deadlinegroup === groupName);
       if (!btnGroup) {
-        console.warn("WTF");
         return;
       }
-      const { isDisabled } = getRemoveDisabledState(btnGroup, props);
-      console.log(isDisabled, btnGroup.deadlinegroup)
+      const { isDisabled } = getRemoveDisabledState(btnGroup, propsWithNextLock);
       if (isDisabled) {
         btn.classList.add("button-disabled");
+        const removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-locked')}</div>`;
+        if (!btn.nextElementSibling?.classList.contains("timeline-remove-text")) {
+          btn.insertAdjacentHTML("afterEnd", removeTextDiv);
+        }
       } else {
         btn.classList.remove("button-disabled");
+        if (btn.nextElementSibling?.classList.contains("timeline-remove-text")) {
+          btn.nextElementSibling.remove();
+        }
       }
-    });}, 10);
+    });
 
 
   });
