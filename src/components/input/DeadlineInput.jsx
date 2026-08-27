@@ -111,7 +111,7 @@ const DeadlineInput = ({
   useEffect(() => {
     const ehdotusNahtavillaolo = currentDeadline?.deadline?.phase_name === "Ehdotus" && currentDeadline?.deadline?.deadlinegroup?.includes('nahtavillaolo')
     const lockedAttrKey = extractFromDeadlineSections(deadlineSections, (attr) => {
-      return attr?.attributegroup === timelineLockedGroup;
+      return attr?.attributegroup === timelineLockedGroup && attr?.type ==='date';
     })?.[0]?.name || null;
     const lockedValue = lockedAttrKey ? formValues[lockedAttrKey] : null;
     try {

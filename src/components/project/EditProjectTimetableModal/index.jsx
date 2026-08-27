@@ -110,6 +110,16 @@ class EditProjectTimeTableModal extends Component {
     if (prevProps.open !== this.props.open) {
       this.setBackgroundInert(this.props.open);
     }
+    if (this.props.timelineLockedGroup != prevProps.timelineLockedGroup) {
+      if (this.props.timelineLockedGroup) {
+        const lockedAttrKey = objectUtil.extractFromDeadlineSections(deadlineSections, (attr) => {
+          return attr?.attributegroup === this.props.timelineLockedGroup && attr?.type ==='date';
+        })?.[0]?.name;
+        this.updateBackgroundOnLock(this.state.items, formValues?.[lockedAttrKey]);
+      } else {
+        this.resetBackgroundOnUnlock(this.state.items);
+      }
+    }
     if (prevProps.attributeData && !isEqual(prevProps.attributeData, attributeData)) {
       let sectionAttributes = [];
       this.extractAttributes(deadlineSections, attributeData, sectionAttributes, (attribute, attributeData) =>
@@ -270,6 +280,33 @@ class EditProjectTimeTableModal extends Component {
     return !!value && value >= lockedDate;
   }
 
+  updateBackgroundOnLock = (items, firstLockedDate) => {
+    if (!items || !firstLockedDate) return items;
+
+    this.resetBackgroundOnUnlock(items); // Remove any existing locked background before adding a new one
+
+    const lockedStart = new Date(firstLockedDate);
+    if (Number.isNaN(lockedStart.getTime())) return items;
+    lockedStart.setHours(0, 0, 0, 0);
+
+    const lockedEnd = new Date(lockedStart);
+    lockedEnd.setFullYear(lockedEnd.getFullYear() + 10);
+
+    items.add({
+      id: `locked_background_${lockedStart.toISOString().slice(0, 10)}`,
+      start: lockedStart,
+      end: lockedEnd,
+      type: 'background',
+      className: 'locked-background'
+    });
+  }
+
+  resetBackgroundOnUnlock = (items) => {
+    if (!items || typeof items.get !== 'function') return;
+    const lockedBackground = items.get().find(item => item.id?.toString().startsWith('locked_background_'));
+    if (lockedBackground) items.remove(lockedBackground.id);
+  }
+
   findConsecutivePeriods = (dates, items, holidays) => {
     if (!Array.isArray(dates) || dates.length === 0) {
       return [];
@@ -281,7 +318,6 @@ class EditProjectTimeTableModal extends Component {
     };
 
     const consecutiveGroups = [];
-
     // Group consecutive dates together
     let currentGroup = [dates[0]];
 
