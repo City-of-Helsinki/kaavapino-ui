@@ -149,7 +149,9 @@
       "lautakuntaInPast": "Vahvistusta ei voi perua, koska lautakunta sijaitsee menneessä ajanhetkessä.",
       "anyPastConfirmed": "Vahvistusta ei voi perua, koska päivämäärä on menneisyydessä.",
       "anyPast": "Päivämäärää ei voi vahvistaa, koska se sijaitsee menneisyydessä.",
-      "disableConfirmButton": "Vahvistusta ei voi perua, koska seuraava {{nextGroupWord}} on jo lisätty."
+      "disableConfirmButton": "Vahvistusta ei voi perua, koska seuraava {{nextGroupWord}} on jo lisätty.",
+      "groupLocked": "Vahvistusta ei voi tehdä, koska aikajanan alue on lukittu.",
+      "groupLockedConfirmed": "Vahvistusta ei voi perua, koska aikajanan alue on lukittu."
     },
     "aria": {
       "move-timeline-forward": "Siirry aikajanalla eteenpäin",

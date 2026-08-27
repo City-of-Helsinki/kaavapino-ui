@@ -134,14 +134,9 @@ const DeadlineInput = ({
   },[formValues[confirmedValue]])
 
   useEffect(() => {
-    if (!timelineLockedGroup){
-      setIsLocked(false);
-      return;
-    }
-    const orderedGroups = deadlineSections?.flatMap(section => Object.keys(section.grouped_sections[0]?.attributes || {}));
-    const lockedIndex = orderedGroups?.indexOf(timelineLockedGroup);
-    const currentIndex = orderedGroups?.indexOf(currentDeadline?.deadline?.deadlinegroup);
-    setIsLocked(lockedIndex !== -1 && currentIndex !== -1 && currentIndex >= lockedIndex);
+    const locked = currentDeadline?.deadline?.deadlinegroup && 
+      timeUtil.isGroupAfterLockedGroup(timelineLockedGroup, currentDeadline?.deadline?.deadlinegroup, deadlineSections);
+    setIsLocked(locked);
   }, [timelineLockedGroup, deadlineSections]);
 
   const getInitialMonth = (dateString) => {

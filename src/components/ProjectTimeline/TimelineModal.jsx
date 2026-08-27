@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Modal } from 'semantic-ui-react'
 import { Button, Tabs, IconCross } from 'hds-react'
+import { isGroupAfterLockedGroup } from '../../utils/timeUtil';
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import FormField from '../input/FormField'
 import { showField } from '../../utils/projectVisibilityUtils'
 import textUtil from '../../utils/textUtil'
 import PropTypes from 'prop-types'
-import { setTimelineLockedGroup } from '../../actions/projectActions';
 import './VisTimeline.scss'
 import { getFocusableElements } from '../project/projectModalUtils';
 
@@ -40,18 +40,13 @@ const TimelineModal = ({
   const { t } = useTranslation();
 
   const [returnFocusId, setReturnFocusId] = React.useState(null);
-
-  const dispatch = useDispatch();
+  const timelineLockedGroup = useSelector(state => state.project.timelineLockedGroup);
 
   useEffect(() => {
     if (open && returnFocusGroupId) {
       setReturnFocusId(`edit-button-${returnFocusGroupId}`);
     }
   }, [open, returnFocusGroupId]);
-
-  useEffect(() => {
-    dispatch(setTimelineLockedGroup(null));
-  }, [])
 
   const getFormField = (fieldProps, key, disabled, deadlineSection, title, confirmedValue, type, tooltip, lautakuntaInPast) => {
     if (!showField(fieldProps.field, visValues)) {
@@ -325,13 +320,15 @@ const TimelineModal = ({
     const lautakuntaInPast = isLautakunta && isLautakuntaDateInPast(group, title, visValues);
     const esillaoloNahtavillaInPast = (isEsillaolo || isNahtavillaolo) && isEsillaoloOrNahtavillaStartDateInPast(group, title, visValues);
     const phaseClosed = isPhaseClosed(group);
+    const isGroupLocked = isGroupAfterLockedGroup(timelineLockedGroup, deadlinegroup, deadlineSections);
 
     const disableConfirmButton = phaseClosed
       ? true
       : (
         (isLautakunta && !isLastLautakunta) ||
         (isEsillaolo && !isLastEsillaolo) ||
-        (isNahtavillaolo && !isLastNahtavillaolo)
+        (isNahtavillaolo && !isLastNahtavillaolo) ||
+        isGroupLocked
       );
 
     const phaseIndexForGroup = phaseList.findIndex(p => _normalize(p) === _normalize(group));
@@ -445,6 +442,10 @@ const TimelineModal = ({
       tooltip = confirmed
         ? t('deadlines.tooltip.notActiveConfirmed')
         : t('deadlines.tooltip.notActive');
+    } else if (isGroupLocked) {
+      tooltip = confirmed
+        ? t('deadlines.tooltip.groupLockedConfirmed')
+        : t('deadlines.tooltip.groupLocked');
     } else if (esillaoloNotConfirmedBeforeLautakunta) {
       tooltip = t('deadlines.tooltip.lautakuntaNeedsEsillaolo');
     } else if (esillaoloLockedByLautakunta) {
@@ -499,7 +500,7 @@ const TimelineModal = ({
       if (attr[deadlinegroup]) {
         const clampedInitialTabIndex = Number.isInteger(initialTab) && initialTab >= 0 ? initialTab : 0;
         renderedSections.push(
-          <Tabs key={`tab-${sectionIndex}-${normalizedTitle}-${deadlinegroup}-${clampedInitialTabIndex}`} initiallyActiveTab={clampedInitialTabIndex}>
+          <Tabs key={`tab-${sectionIndex}-${normalizedTitle}-${deadlinegroup}-${clampedInitialTabIndex}-${timelineLockedGroup}`} initiallyActiveTab={clampedInitialTabIndex}>
             <Tabs.TabList className='tab-header' style={{ marginBottom: 'var(--spacing-m)' }}>
               {Object.keys(attr[deadlinegroup]).map((key) => {
                 let tabContent = key === "default" ? content : key
