@@ -411,7 +411,7 @@ const getAllowedDatesForNahtavillaolo = (name, formValues, phaseName, matchingIt
   }
 };
 
-const calculateAllowedDates = (nahtavillaolo, size, dateTypes, name, formValues, sectionAttributes, currentDeadline) => {
+const calculateAllowedDates = (nahtavillaolo, size, dateTypes, name, formValues, sectionAttributes, currentDeadline, firstLockedDate=null) => {
   const matchingItem = objectUtil.findMatchingName(sectionAttributes, name, "name");
   const previousItem = objectUtil.findItem(sectionAttributes, name, "name", -1);
   const nextItem = objectUtil.findItem(sectionAttributes, name, "name", 1);
@@ -440,9 +440,13 @@ const calculateAllowedDates = (nahtavillaolo, size, dateTypes, name, formValues,
       const day = String(today.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
   })();
-  return Array.isArray(allowedDates)
+  const result = Array.isArray(allowedDates)
       ? allowedDates.filter(date => date >= todayStr)
       : [];
+  if (firstLockedDate) {
+    return result.filter(date => date < firstLockedDate);
+  }
+  return result;
 };
 
 const syncPhaseEndDates = (data, previousPaattyyValues) => {

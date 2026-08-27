@@ -10,6 +10,7 @@ import { getFormValues } from 'redux-form'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { updateDateTimeline } from '../../actions/projectActions';
 import { validatedSelector, timelineLockedGroupSelector } from '../../selectors/projectSelector';
+import { extractFromDeadlineSections } from '../../utils/objectUtil';
 
 const DeadlineInput = ({
   input,
@@ -109,10 +110,14 @@ const DeadlineInput = ({
 
   useEffect(() => {
     const ehdotusNahtavillaolo = currentDeadline?.deadline?.phase_name === "Ehdotus" && currentDeadline?.deadline?.deadlinegroup?.includes('nahtavillaolo')
+    const lockedAttrKey = extractFromDeadlineSections(deadlineSections, (attr) => {
+      return attr?.attributegroup === timelineLockedGroup;
+    })?.[0]?.name || null;
+    const lockedValue = lockedAttrKey ? formValues[lockedAttrKey] : null;
     try {
       const allowed = timeUtil.calculateAllowedDates(
             ehdotusNahtavillaolo, attributeData?.kaavaprosessin_kokoluokka, dateTypes, input.name, formValues,
-            getFixedSectionAttributes(), currentDeadline
+            getFixedSectionAttributes(), currentDeadline, lockedValue
           );
       setAllowedDates(allowed);
     } catch (error) {
@@ -120,7 +125,7 @@ const DeadlineInput = ({
       console.warn(`Error calculating allowed dates for ${input.name}:`, error);
       setAllowedDates([]);
     }
-  }, [dateTypes, input.name, deadlineSections, sectionAttributes, currentDeadline, JSON.stringify(formValues)]);
+  }, [dateTypes, input.name, deadlineSections, sectionAttributes, currentDeadline, JSON.stringify(formValues), timelineLockedGroup]);
 
   useEffect(() => {
     //Update calendar values when value has changed
