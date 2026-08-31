@@ -89,6 +89,7 @@ class EditProjectTimeTableModal extends Component {
   componentWillUnmount() {
     document.removeEventListener('keydown', this.handleKeyDown);
     this.setBackgroundInert(false);
+    this.props.dispatch(setTimelineLockedGroup(null));
   }
 
   setBackgroundInert = (isInert) => {

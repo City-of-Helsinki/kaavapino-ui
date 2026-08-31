@@ -114,7 +114,7 @@ const createEditButton = (group, container, props) => {
 const getRemoveDisabledState = (group, props) => {
   const { currentTimelineLockRef, visValuesRef, t, deadlineSections, phaseList, currentPhaseIndex } = props;
   const getNum = k => {
-    const m = k.match(/_(\.d+)$/);
+    const m = k.match(/_(\d+)$/);
     return m ? Number.parseInt(m[1], 10) : 1;
   };
 
