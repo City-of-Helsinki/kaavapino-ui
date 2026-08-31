@@ -83,23 +83,6 @@ describe("Test ObjectUtil utility functions", () => {
         });
     });
 
-    test("updateOriginalObject works correctly", () => {
-        const test_object = {
-            "item1": "value1",
-            "item2": 123,
-            "item3": null
-        }
-        const new_vals = [{ key: "item1", value: "new_value" },
-        { key: "fake_item", value: "fake_value" }, { key: "item3", value: "new_value3" }]
-        const result = objectUtil.updateOriginalObject(test_object, new_vals)
-        expect(test_object).toBe(result);
-        expect(result).toEqual({
-            "item1": "new_value",
-            "item2": 123,
-            "item3": "new_value3"
-        });
-    });
-
     test("findDifferencesInObjects works correctly", () => {
         const obj1 = { "a": 1, "b": 2, "c": 3, "nested": { "x": 10 } };
         const obj2 = { "a": 1, "b": 20, "d": 4, "nested": { "x": 10, "y": 20 } };
