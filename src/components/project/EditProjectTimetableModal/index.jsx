@@ -16,12 +16,11 @@ import * as visdata from 'vis-data'
 import ConfirmModal from '../../common/ConfirmModal.jsx';
 import withValidateDate from '../../../hocs/withValidateDate.jsx';
 import objectUtil from '../../../utils/objectUtil'
-import { updateDateTimeline,validateProjectTimetable,setValidatingTimetable } from '../../../actions/projectActions';
+import { updateDateTimeline,validateProjectTimetable,setValidatingTimetable,setTimelineLockedGroup } from '../../../actions/projectActions';
 import { getVisibilityBoolName, vis_bool_group_map, isDeadlineConfirmed } from '../../../utils/projectVisibilityUtils';
 import timeUtil from '../../../utils/timeUtil'
 import { shouldDispatchTimelineUpdate } from '../../../utils/timelineDispatchLogic'
 import { focusTrapOnTabPressed, getFocusableElements } from '../projectModalUtils';
-
 class EditProjectTimeTableModal extends Component {
   constructor(props) {
     super(props)
@@ -84,6 +83,7 @@ class EditProjectTimeTableModal extends Component {
       this.extractAttributes(deadlineSections, attributeData, unfilteredSectionAttributes);
       this.setState({unfilteredSectionAttributes})
     }
+    this.props.dispatch(setTimelineLockedGroup(null));
   }
 
   componentWillUnmount() {
