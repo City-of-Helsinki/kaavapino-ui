@@ -272,8 +272,9 @@ export const reducer = (state = initialState, action) => {
         };
       }
       //Add new values from array to updatedAttributeData object
-      objectUtil.updateOriginalObject(filteredAttributeData,processedDates)
-      // Restore preserved end after adjustments if any logic changed it
+      processedDates.forEach(item => {
+        filteredAttributeData[item.key] = item.value;
+      });
 
       // Sync phase end/start dates and lausunnot viimeistaan values
       timeUtil.syncPhaseEndDates(filteredAttributeData, previousPaattyyValues)

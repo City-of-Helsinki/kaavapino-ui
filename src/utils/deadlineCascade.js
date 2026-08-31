@@ -256,6 +256,7 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
   const movedItemIndex = arr.findIndex(item => item.key === field);
   if (movedItemIndex === -1) {
     console.warn(`Field ${field} not found in the array. No cascading applied.`);
+    arr.push({ key: field, value: movedFieldValue });
     return arr;
   }
 

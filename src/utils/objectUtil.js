@@ -118,17 +118,6 @@ const mergeAndUpdateDlArrays = (arr1, arr2, deadlineSections) => {
   arr1 = arr1.filter(item => !item.key.includes("viimeistaan_lausunnot_") && !item.key.includes("viimeistaan_mielipiteet") && !item.key.includes("aloituskokous_suunniteltu_pvm_readonly")); //filter out has no next and prev values
   return arr1
 }
-
-// Function to update original object by comparing keys
-const updateOriginalObject = (originalObj, updatedArr) => {
-  updatedArr.forEach(item => {
-    if (Object.hasOwn(originalObj, item.key)) {
-      originalObj[item.key] = item.value; // Update value if key exists
-    }
-  });
-  return originalObj;
-}
-
 // Helper function to compare values
 const compareObjectValues = (key, value1, value2) => {
   if (typeof value1 === 'object' && typeof value2 === 'object') {
@@ -381,7 +370,6 @@ const convertPayloadValues = (payload) => {
 const exported = {
   mergeAndUpdateDlArrays,
   generateDateStringArray,
-  updateOriginalObject,
   findDifferencesInObjects,
   compareObjectValues,
   findMatchingName,

@@ -82,9 +82,6 @@ vi.mock('../../utils/objectUtil', () => ({
         .map(([key, value]) => ({ key, value }))
     ),
     mergeAndUpdateDlArrays: vi.fn((orig, updated) => updated),
-    updateOriginalObject: vi.fn((obj, arr) => {
-      arr.forEach(({ key, value }) => { obj[key] = value; });
-    }),
   }
 }))
 
