@@ -81,10 +81,9 @@ const mergeAndUpdateDlArrays = (arr1, arr2, deadlineSections) => {
   }
 
   // Enrich arr1 in a single linear pass
-  arr1.forEach((item, i) => {
+  arr1.forEach((item) => {
     if (phaseOrder.includes(item.key)) {
       item.distance_from_previous = 0;
-      //item.order = i;
       return;
     }
     const attribute = attributeByName.get(item.key);
@@ -93,7 +92,6 @@ const mergeAndUpdateDlArrays = (arr1, arr2, deadlineSections) => {
     item.distance_to_next       = attribute.distance_to_next || null;
     item.initial_distance       = attribute.initial_distance?.distance || null;
     item.date_type              = attribute.date_type ?? "arkipäivät";
-    //item.order                  = i;
   });
 
   // Sort arr1 based on the keyOrder extracted from deadlineSections
@@ -114,9 +112,7 @@ const mergeAndUpdateDlArrays = (arr1, arr2, deadlineSections) => {
     return 0;
   });
 
-  //Return in order array ready for comparing next and previous value distances
-  arr1 = arr1.filter(item => !item.key.includes("viimeistaan_lausunnot_") && !item.key.includes("viimeistaan_mielipiteet") && !item.key.includes("aloituskokous_suunniteltu_pvm_readonly")); //filter out has no next and prev values
-  return arr1
+  return arr1;
 }
 // Helper function to compare values
 const compareObjectValues = (key, value1, value2) => {
