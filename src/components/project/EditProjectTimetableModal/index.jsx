@@ -9,7 +9,7 @@ import './styles.scss'
 import { deadlineSectionsSelector } from '../../../selectors/schemaSelector'
 import { withTranslation } from 'react-i18next'
 import { deadlinesSelector,validatedSelector,dateValidationResultSelector,cancelTimetableSaveSelector, validatingTimetableSelector, timelineLockedGroupSelector } from '../../../selectors/projectSelector'
-import { Button,IconInfoCircle } from 'hds-react'
+import { Button,IconInfoCircle, LoadingSpinner } from 'hds-react'
 import { isEqual } from 'lodash'
 import VisTimelineGroup from '../../ProjectTimeline/VisTimelineGroup.jsx'
 import * as visdata from 'vis-data'
@@ -48,7 +48,7 @@ class EditProjectTimeTableModal extends Component {
   }
 
   componentDidMount() {
-    const { initialize, attributeData, deadlines, deadlineSections, disabledDates,lomapaivat } = this.props;
+    const { initialize, attributeData } = this.props;
 
     document.addEventListener('keydown', this.handleKeyDown);
 
@@ -57,33 +57,43 @@ class EditProjectTimeTableModal extends Component {
     }
 
     initialize(attributeData)
-   // Check if the key exists and its value is true
-    if(attributeData && deadlines && deadlineSections && disabledDates && lomapaivat){
-      let items = new visdata.DataSet()
-      let groups = new visdata.DataSet();
-      let ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe)
-      let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,attributeData,deadlines,ongoingPhase,true)
-
-      groups.add(deadLineGroups);
-      groups.add(nestedDeadlines);
-      items.add(phaseData)
-
-      items = this.findConsecutivePeriods(disabledDates,items,false);
-      items = this.findConsecutivePeriods(lomapaivat,items,true)
-      this.setState({items,groups,visValues:attributeData})
-
-      let sectionAttributes = []
-      this.extractAttributes(deadlineSections, attributeData, sectionAttributes, (attribute, attributeData) => {
-        return (attribute.label !== "Lausunnot viimeistään" && attributeData[attribute.name]) || 
-        ["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauennut"].includes(attribute.name);
-      });
-      this.setState({sectionAttributes})
-      
-      const unfilteredSectionAttributes = []
-      this.extractAttributes(deadlineSections, attributeData, unfilteredSectionAttributes);
-      this.setState({unfilteredSectionAttributes})
-    }
+    this.initializeTimelineState(this.props)
     this.props.dispatch(setTimelineLockedGroup(null));
+  }
+
+  // Returns true if all props required to build the timeline data are available.
+  hasTimelineData = (props) => {
+    const { attributeData, deadlines, deadlineSections, disabledDates, lomapaivat, dateTypes } = props;
+    return !!(attributeData && deadlines && deadlineSections && disabledDates && lomapaivat && dateTypes);
+  }
+
+  initializeTimelineState = (props) => {
+    const { attributeData, deadlines, deadlineSections, disabledDates, lomapaivat } = props;
+    if (!this.hasTimelineData(props)) return;
+
+    let items = new visdata.DataSet()
+    let groups = new visdata.DataSet();
+    let ongoingPhase = this.trimPhase(attributeData?.kaavan_vaihe)
+    let [deadLineGroups,nestedDeadlines,phaseData] = this.getTimelineData(deadlineSections,attributeData,deadlines,ongoingPhase,true)
+
+    groups.add(deadLineGroups);
+    groups.add(nestedDeadlines);
+    items.add(phaseData)
+
+    items = this.findConsecutivePeriods(disabledDates,items,false);
+    items = this.findConsecutivePeriods(lomapaivat,items,true)
+    this.setState({items,groups,visValues:attributeData})
+
+    let sectionAttributes = []
+    this.extractAttributes(deadlineSections, attributeData, sectionAttributes, (attribute, attributeData) => {
+      return (attribute.label !== "Lausunnot viimeistään" && attributeData[attribute.name]) ||
+      ["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauennut"].includes(attribute.name);
+    });
+    this.setState({sectionAttributes})
+
+    const unfilteredSectionAttributes = []
+    this.extractAttributes(deadlineSections, attributeData, unfilteredSectionAttributes);
+    this.setState({unfilteredSectionAttributes})
   }
 
   componentWillUnmount() {
@@ -110,6 +120,9 @@ class EditProjectTimeTableModal extends Component {
     } = this.props
     if (prevProps.open !== this.props.open) {
       this.setBackgroundInert(this.props.open);
+    }
+    if (!this.state.groups && this.hasTimelineData(this.props)) {
+      this.initializeTimelineState(this.props)
     }
     if (this.props.timelineLockedGroup != prevProps.timelineLockedGroup) {
       if (this.props.timelineLockedGroup) {
@@ -140,7 +153,7 @@ class EditProjectTimeTableModal extends Component {
       //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
       timeUtil.syncPhaseEndDates(formValues) // TODO: delete (should be done in deadline cascade)
 
-      if(deadlineSections && deadlines && formValues){
+      if(deadlineSections && deadlines && formValues && this.state.groups && this.state.items){
         const isGroupRemove = this.wasGroupRemoved(prevProps.formValues, formValues);
 
         // trigger validation when removing a group to recalculate phase boundaries
@@ -978,7 +991,43 @@ class EditProjectTimeTableModal extends Component {
       dateTypes } = this.props
 
     if (!formValues || !this.state.groups) {
-      return null
+      // Placeholder modal while deps loading
+      return (
+        <>
+          {open && ReactDOM.createPortal(
+            <div className="edit-project-timetable-backdrop" aria-hidden="true" />,
+            document.body
+          )}
+          <Modal
+            size="large"
+            open={open}
+            closeIcon={false}
+            closeOnDocumentClick={false}
+            closeOnDimmerClick={false}
+            className='modal-center-big'
+            id="edit-project-timetable-modal"
+          >
+            <Modal.Header>
+              <IconInfoCircle size="m" aria-hidden="true"/>
+              <h2 className='header-title'>{t('deadlines.modify-timeline')}</h2>
+            </Modal.Header>
+            <Modal.Content>
+              <div className="timeline-loading-container">
+                <LoadingSpinner theme={{ '--spinner-color': '#0000BF' }}>
+                  {t('loading')}
+                </LoadingSpinner>
+              </div>
+            </Modal.Content>
+            <Modal.Actions>
+              <span className="form-buttons">
+                <Button variant="secondary" onClick={this.handleClose}>
+                  {t('common.close')}
+                </Button>
+              </span>
+            </Modal.Actions>
+          </Modal>
+        </>
+      )
     }
 
     // Calculate ongoingPhase, phaseList, and currentPhaseIndex here:

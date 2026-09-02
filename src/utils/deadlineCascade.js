@@ -210,7 +210,7 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     return { value: currentItem.value, indexToContinue };
   };
 
-  const enforceMinimumGap = (currentItem, prevItem, disabledDates, forceMinimumGap = false, customGap = null) => {
+  const enforceMinimumGap = (currentItem, prevItem, disabledDates, forceMinimumGap = false) => {
     const minimumGap = currentItem.distance_from_previous ?? 0;
     const allowedDates = disabledDates?.date_types[currentItem?.date_type]?.dates || [];
     const gapType = getGapDateType(currentItem);
@@ -280,6 +280,7 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     const prevItem = getPreviousItem(arr, i);
 
     if (prevItem?.key?.includes("paattyy") && currentItem?.key?.includes("mielipiteet")) {
+      // Special case: in esillaolo, mielipiteet should match paattyy date (has no minimum gap)
       newDate = prevItem.value;
     }
     else {

@@ -982,11 +982,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     return state.topmostItem ? { item: state.topmostItem, dom: state.topmostItemDom } : null;
   };
 
-  const isPhaseClosed = (phase) => {
-    const idx = phaseList.indexOf(phase);
-    return idx > -1 && idx < currentPhaseIndex;
-  };
-
   const isBlockedLabel = (id) =>
     typeof id === "string" &&
     (id.includes("Hyväksyminen") || id.includes("Voimaantulo"));
@@ -1090,7 +1085,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           let hour = 60 * 60 * 1000;
           return Math.round(date / hour) * hour;
         },
-        onMoving: function (item, callback) {          
+        onMoving: function (item, callback) {
           if (!item) {
             callback(null);
             return;
@@ -1240,11 +1235,11 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               try {
                 if (idKey === String(item.id)) return; // current item already moved
                 const inst = setItems[idKey] ?? setItems[Number(idKey)];
-                if (!inst || !inst.setData || !inst.data) return;
+                if (!inst?.setData || !inst.data) return;
 
                 const newData = { ...inst.data };
-                if (snapTimes && snapTimes.start) newData.start = new Date(snapTimes.start.getTime() + deltaMs);
-                if (snapTimes && snapTimes.end) newData.end = new Date(snapTimes.end.getTime() + deltaMs);
+                if (snapTimes?.start) newData.start = new Date(snapTimes.start.getTime() + deltaMs);
+                if (snapTimes?.end) newData.end = new Date(snapTimes.end.getTime() + deltaMs);
 
                 inst.setData(newData);
                 if (inst.repositionX) {
