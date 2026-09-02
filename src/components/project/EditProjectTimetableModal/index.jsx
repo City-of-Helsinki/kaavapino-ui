@@ -127,7 +127,7 @@ class EditProjectTimeTableModal extends Component {
     if (this.props.timelineLockedGroup != prevProps.timelineLockedGroup) {
       if (this.props.timelineLockedGroup) {
         const lockedAttrKey = objectUtil.extractFromDeadlineSections(deadlineSections, (attr) => {
-          return attr?.attributegroup === this.props.timelineLockedGroup && attr?.type ==='date';
+          return attr?.attributegroup === this.props.timelineLockedGroup && attr?.type ==='date' && formValues?.[attr.name];
         })?.[0]?.name;
         this.updateBackgroundOnLock(this.state.items, formValues?.[lockedAttrKey]);
       } else {
