@@ -96,8 +96,9 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     const currentItem = arr[i];
     const prevItem = getPreviousItem(arr, i);
     const gapType = getGapDateType(currentItem);
-    const allowedDates = disabledDates?.date_types[gapType]?.dates || [];
-    const maaraaikaResult = findPastDateWithGap(currentItem.value, currentItem.initial_distance, allowedDates);
+    const gapDates = disabledDates?.date_types[gapType]?.dates || [];
+    const maaraaikaAllowedDates = disabledDates?.date_types[prevItem?.date_type]?.dates || gapDates;
+    const maaraaikaResult = findPastDateWithGap(currentItem.value, currentItem.initial_distance, gapDates, maaraaikaAllowedDates);
 
     if (maaraaikaResult) {
       const maikaObject = { ...prevItem, value: maaraaikaResult };
@@ -229,13 +230,14 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
       let fixedDate;
       // Reuse the preserved paired distance when stepping from paired end back to paired start.
       if (pairedEndKey && forwardItem?.key === pairedEndKey && currentItem.key === field && pairedEndDistance !== null) {
-        fixedDate = findPastDateWithGap(forwardItem.value, pairedEndDistance, pairedEndGapDates);
+        const pairedStartAllowedDates = disabledDates?.date_types[currentItem?.date_type]?.dates || pairedEndGapDates;
+        fixedDate = findPastDateWithGap(forwardItem.value, pairedEndDistance, pairedEndGapDates, pairedStartAllowedDates);
       } else {
-        const allowedType = forwardItem?.date_type || "arkipäivät";
+        const allowedType = currentItem?.date_type || "arkipäivät";
         const allowedDates = disabledDates?.date_types[allowedType]?.dates || [];
-        const gapType = getGapDateType(forwardItem);
-        const gapDates = gapType ? disabledDates?.date_types[gapType]?.dates : allowedDates;
-        fixedDate = findPastDateWithGap(forwardItem.value, forwardItem.distance_from_previous || 0, gapDates);
+        const gapType = getGapDateType(forwardItem) || "arkipäivät";
+        const gapDates = disabledDates?.date_types[gapType]?.dates;
+        fixedDate = findPastDateWithGap(forwardItem.value, forwardItem.distance_from_previous || 0, gapDates, allowedDates);
       }
       const shouldAdjust = fixedDate < currentItem.value;
       if (j === movedItemIndex - 1) {

@@ -120,16 +120,25 @@ export const findFirstAllowedDate = (prevDate, minimumGap, gapDates, allowedDate
   return allowedDates.find(d => d >= candidate) ?? null;
 }
 
-export const findPastDateWithGap = (startingDate, gap, allowedDates) => {
-  if (!startingDate || !allowedDates || allowedDates.length === 0 || gap < 0) {
+// gapDates counts the gap distance backwards from startingDate; allowedDates constrains the returned date.
+export const findPastDateWithGap = (startingDate, gap, gapDates, allowedDates) => {
+  if (!startingDate || gap < 0) {
     return null;
   }
-  const startingIndex = allowedDates.findIndex(d => d >= startingDate);
-  if (startingIndex === -1) {
-    return null;
+  // Compute the latest date that satisfies the gap requirement going backwards
+  let latest = startingDate;
+  if (gapDates?.length > 0) {
+    const startingIndex = gapDates.findIndex(d => d >= startingDate);
+    if (startingIndex === -1) {
+      return null;
+    }
+    const targetIndex = startingIndex - gap;
+    latest = targetIndex >= 0 ? gapDates[targetIndex] : gapDates[0];
   }
-  const targetIndex = startingIndex - gap;
-  return (targetIndex >= 0) ? allowedDates[targetIndex] : allowedDates[0];
+  if (!allowedDates?.length) {
+    return latest;
+  }
+  return allowedDates.find(d => d <= latest) ?? null;
 }
 
 //Finds next possible date from from array if the value does not exist in it
