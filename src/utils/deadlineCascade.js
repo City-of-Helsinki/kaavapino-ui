@@ -97,8 +97,7 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     const prevItem = getPreviousItem(arr, i);
     const gapType = getGapDateType(currentItem);
     const gapDates = disabledDates?.date_types[gapType]?.dates || [];
-    const maaraaikaAllowedDates = disabledDates?.date_types[prevItem?.date_type]?.dates || gapDates;
-    const maaraaikaResult = findPastDateWithGap(currentItem.value, currentItem.initial_distance, gapDates, maaraaikaAllowedDates);
+    const maaraaikaResult = findPastDateWithGap(currentItem.value, currentItem.initial_distance, gapDates);
 
     if (maaraaikaResult) {
       const maikaObject = { ...prevItem, value: maaraaikaResult };
@@ -154,6 +153,8 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
   let pairedEndGapDates = null;
   let pairedEndAllowedDates = null;
 
+  let previousMoved = false; // Moved date causes previous item to change (previous is maaraaika)
+
   const handlePairedDeadlineMove = (arr, i, movedFieldValue, disabledDates) => {
     const currentItem = arr[i];
     const pairedEndItem = arr.find(item => item.key === pairedEndKey);
@@ -200,6 +201,7 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     }
     else if (prevItem?.key?.includes("maaraaika")) {
       handleLautakuntaMove(arr, i, disabledDates);
+      previousMoved = true;
     }
     else if (currentItem?.key?.includes("maaraaika")) {
       //Maaraaika moving, set esillaolo alkaa & paattyy
@@ -225,7 +227,8 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
   // to ensure they don't violate the minimum gap constraints with respect to the locked item.
   const backtrackDeadlines = (arr, lockedItemIndex) => {
     let forwardItem = arr[lockedItemIndex];
-    for (let j = lockedItemIndex - 1; j >= Math.max(movedItemIndex - 1, 0); j--) {
+    const endIndex = Math.max(movedItemIndex - (previousMoved ? 2 : 1), 0);
+    for (let j = lockedItemIndex - 1; j >= endIndex; j--) {
       const currentItem = arr[j];
       let fixedDate;
       // Reuse the preserved paired distance when stepping from paired end back to paired start.
@@ -234,16 +237,14 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
         fixedDate = findPastDateWithGap(forwardItem.value, pairedEndDistance, pairedEndGapDates, pairedStartAllowedDates);
       } else {
         const allowedType = currentItem?.date_type || "arkipäivät";
-        const allowedDates = disabledDates?.date_types[allowedType]?.dates || [];
+        const allowedDates = disabledDates?.date_types[allowedType]?.dates;
         const gapType = getGapDateType(forwardItem) || "arkipäivät";
         const gapDates = disabledDates?.date_types[gapType]?.dates;
         fixedDate = findPastDateWithGap(forwardItem.value, forwardItem.distance_from_previous || 0, gapDates, allowedDates);
       }
       const shouldAdjust = fixedDate < currentItem.value;
-      if (j === movedItemIndex - 1) {
-        if (shouldAdjust) {
-          throw new Error(`Cannot backtrack ${currentItem.key} to satisfy minimum gap with locked field ${forwardItem.key}.`);
-        }
+      if (j === endIndex && shouldAdjust) {
+        throw new Error(`Cannot backtrack ${currentItem.key} to satisfy minimum gap with locked field ${forwardItem.key}.`);
       }
       if (shouldAdjust) {
         currentItem.value = fixedDate;
