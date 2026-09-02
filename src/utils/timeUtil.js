@@ -138,7 +138,16 @@ export const findPastDateWithGap = (startingDate, gap, gapDates, allowedDates) =
   if (!allowedDates?.length) {
     return latest;
   }
-  return allowedDates.find(d => d <= latest) ?? null;
+  // Find the latest allowed date that is <= candidate, ensuring the result is in allowedDates
+  let result = null;
+  for (const d of allowedDates) {
+    if (d <= latest) {
+      result = d;
+    } else {
+      break;
+    }
+  }
+  return result;
 }
 
 //Finds next possible date from from array if the value does not exist in it
