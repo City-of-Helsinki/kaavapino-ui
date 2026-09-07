@@ -1,5 +1,5 @@
 import { generateConfirmedFields } from './generateConfirmedFields';
-import { findFirstAllowedDate, findPastDateWithGap } from './timeUtil';
+import { findFirstAllowedDate, findPastDateWithGap, getGapDateType } from './timeUtil';
 
 const findLastDeadlineInPhase = (arr, index, targetPhase) => {
   let targetStrings = [targetPhase];
@@ -31,19 +31,6 @@ const getFirstLockedElement = (arr, lockedGroup, deadlineObjects) => {
     }
   }
   return null;
-};
-
-const getGapDateType = (deadline) => {
-  // Workaround for finding the date type for the minimum distance calculation.
-  // This should be provided by backend but is currently unavailable.
-  // The string-matching approach is brittle and should be replaced as soon as data is available.
-
-  // The date type refers to the type of days in TO the deadline from the previous deadline
-  // Which is not always the same as the date_type of the deadline itself.
-  if (deadline.key?.includes("esillaolo_alkaa")) return "työpäivät";
-  if (deadline.key?.includes("esillaolo_paattyy")) return "esilläolopäivät";
-  if (deadline.key?.includes("lautakunnassa")) return "työpäivät";
-  return deadline?.date_type || null;
 };
 
 const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates, attributeData, deadlineObjects = [], lockedGroup = null, pairedEndKey = null }) => {

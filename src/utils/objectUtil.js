@@ -375,13 +375,13 @@ const exported = {
   convertPhaseIdToPhaseName,
   convertPayloadValues,
   filterHiddenKeysUsingSections,
-  extractFromDeadlineSections
+  extractFromDeadlineSections,
+  findDeadlineInDeadlineSections,
+  findDeadlineInDeadlines
 }
 
 if (process.env.UNIT_TEST === "true") {
   exported.expectedOrder = phaseOrder
-  exported.findDeadlineInDeadlines = findDeadlineInDeadlines
-  exported.findDeadlineInDeadlineSections = findDeadlineInDeadlineSections
 }
 
 export default exported;

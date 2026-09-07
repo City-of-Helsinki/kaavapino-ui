@@ -29,7 +29,8 @@ const DeadlineInput = ({
   confirmedValue,
   sectionAttributes,
   timetable_editable,
-  timelineLockedGroup
+  timelineLockedGroup,
+  deadlines
 }) => {
 
   const dispatch = useDispatch();
@@ -117,7 +118,7 @@ const DeadlineInput = ({
     try {
       const allowed = timeUtil.calculateAllowedDates(
             ehdotusNahtavillaolo, attributeData?.kaavaprosessin_kokoluokka, dateTypes, input.name, formValues,
-            getFixedSectionAttributes(), currentDeadline, lockedValue
+            getFixedSectionAttributes(), currentDeadline, deadlines, lockedValue
           );
       setAllowedDates(allowed);
     } catch (error) {
@@ -326,6 +327,7 @@ DeadlineInput.propTypes = {
   sectionAttributes: PropTypes.array,
   timetable_editable: PropTypes.bool,
   timelineLockedGroup: PropTypes.string,
+  deadlines: PropTypes.array,
 }
 
 const mapStateToProps = (state) => ({

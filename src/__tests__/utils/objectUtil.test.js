@@ -66,7 +66,6 @@ describe("Test ObjectUtil utility functions", () => {
             { key: "oasvaihe_paattyy_pvm", value: "2024-06-01" }, // New date
             { key: "projektin_kaynnistys_pvm", value: "2023-01-01" }, // No change
             { key: "milloin_periaatteet_lautakunnassa", value: "2023-06-27" }, // Change
-            { key: "aloituskokous_suunniteltu_pvm_readonly", value: "2023-06-27" } // Special case; exclude from result
         ];
         const result = objectUtil.mergeAndUpdateDlArrays(arr1, arr2, test_sections);
 

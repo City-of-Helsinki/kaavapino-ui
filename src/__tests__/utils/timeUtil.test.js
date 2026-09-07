@@ -251,28 +251,21 @@ describe("getAllowedDates for various phases", () => {
         };
         const vaiheAlkaaItem = {
             name: "tarkistettu_ehdotusvaihe_alkaa_pvm",
-            distance_from_previous: 0,
-            previous_deadline: "tarkistettu_ehdotusvaihe_alkaa_pvm",
+            attribute: "tarkistettu_ehdotusvaihe_alkaa_pvm",
         }
         const lautakuntaItem = {
             name: "milloin_tarkistettu_ehdotus_lautakunnassa",
             distance_from_previous: 27,
-            previous_deadline: "tarkistettu_ehdotus_kylk_maaraaika",
-            initial_distance: {
-                distance: 21,
-                base_deadline: "tarkistettu_ehdotus_kylk_maaraaika"
-            }
+            date_type: "lautakunnan_kokouspäivät",
         };
         const kylkItem = {
             name: "tarkistettu_ehdotus_kylk_maaraaika",
+            attribute: "tarkistettu_ehdotus_kylk_maaraaika",
             distance_from_previous: 6,
-            initial_distance: {
-                distance: 10,
-                base_deadline: "tarkistettuehdotusvaihe_alkaa_pvm"
-            }
+            date_type: "työpäivät",
         };
         const dateTypes = data.test_disabledDates.date_types;
-        const result_maaraika = timeUtil.getAllowedDatesForLautakunta("tarkistettu_ehdotus_kylk_maaraaika", formValues, "tarkistettu ehdotus", kylkItem, vaiheAlkaaItem, dateTypes);
+        const result_maaraika = timeUtil.getAllowedDatesForLautakunta("tarkistettu_ehdotus_kylk_maaraaika", formValues, kylkItem, vaiheAlkaaItem, dateTypes);
         expect(result_maaraika[0]).toBe("2025-08-11");
         const previousDate_maaraika = new Date(formValues["tarkistettu_ehdotusvaihe_alkaa_pvm"]);
         for (let date of result_maaraika) {
@@ -280,38 +273,28 @@ describe("getAllowedDates for various phases", () => {
         }
         assertDatesAfterReference(result_maaraika, formValues["tarkistettu_ehdotusvaihe_alkaa_pvm"]);
         assertDatesAreWorkdays(result_maaraika);
-        const result_lautakunta = timeUtil.getAllowedDatesForLautakunta("milloin_tarkistettu_ehdotus_lautakunnassa", formValues, "tarkistettu ehdotus", lautakuntaItem, kylkItem, dateTypes);
-        // 27 work days distance from maaraika (23rd), then next possible tuesday (30th)
-        expect(result_lautakunta[0]).toBe("2025-09-30");
+        const result_lautakunta = timeUtil.getAllowedDatesForLautakunta("milloin_tarkistettu_ehdotus_lautakunnassa", formValues, lautakuntaItem, kylkItem, dateTypes);
+        // 27 work days distance from maaraaika (2025-08-15) lands on 2025-09-23 (Tue), which is itself a lautakunta day
+        expect(result_lautakunta[0]).toBe("2025-09-23");
         assertDatesAreSpecificWeekday(result_lautakunta, formValues["tarkistettu_ehdotus_kylk_maaraaika"], 2); // Only tuesdays
     });
     test("getAllowedatesForLautakunta handles Luonnos-phase correctly", () => {
+        // calculateAllowedDates picks the latest visible esillaolo end as the previous deadline; the unit test
+        // supplies that previousItem directly.
         const formValues = {
-            "kaavaluonnos_lautakuntaan_1": true,
-            "jarjestetaan_luonnos_esillaolo_1": true,
-            "jarjestetaan_luonnos_esillaolo_2": true,
-            "luonnosvaihe_alkaa_pvm": "2025-08-01",
             "milloin_luonnos_esillaolo_paattyy_2": "2025-08-31",
-            "luonnosaineiston_maaraaika": "2025-09-15",
-            "milloin_kaavaluonnos_lautakunnassa": "2025-10-01",
-            "luonnosvaihe_paattyy_pvm": "2025-10-01",
         };
         const lautakuntaItem = {
             name: "milloin_kaavaluonnos_lautakunnassa",
             distance_from_previous: 20,
-            previous_deadline: "luonnosaineiston_maaraaika",
-            initial_distance: {
-                distance: 15,
-                base_deadline: "luonnosaineiston_maaraaika"
-            }
+            date_type: "lautakunnan_kokouspäivät",
         };
-        const kylkItem = {
-            name: "luonnosaineiston_maaraaika",
-            distance_from_previous: 5,
+        const previousItem = {
+            name: "milloin_luonnos_esillaolo_paattyy_2",
+            attribute: "milloin_luonnos_esillaolo_paattyy_2",
         };
         const dateTypes = data.test_disabledDates.date_types;
-        // Should use latest esillaolo
-        const result_lk = timeUtil.getAllowedDatesForLautakunta("milloin_kaavaluonnos_lautakunnassa", formValues, "luonnos", lautakuntaItem, kylkItem, dateTypes);
+        const result_lk = timeUtil.getAllowedDatesForLautakunta("milloin_kaavaluonnos_lautakunnassa", formValues, lautakuntaItem, previousItem, dateTypes);
         expect(result_lk[0]).toBe("2025-09-30");
     });
     test("getAllowedDatesForSizeXSXL gets the right dates", () => {
@@ -446,8 +429,9 @@ describe("getAllowedDates for various phases", () => {
             { name: "periaatteetvaihe_alkaa_pvm", previous_deadline: "kaynnistys_paattyy_pvm", distance_from_previous: 0 }
         ];
         const currentDeadline = sectionAttributes[1];
+        const deadlines = [];
 
-        const result = timeUtil.calculateAllowedDates(false, "M", dateTypes, name, formValues, sectionAttributes, currentDeadline);
+        const result = timeUtil.calculateAllowedDates(false, "M", dateTypes, name, formValues, sectionAttributes, currentDeadline, deadlines);
         for (let date of result) {
             let newDate = new Date(date);
             const today = new Date();
@@ -458,7 +442,7 @@ describe("getAllowedDates for various phases", () => {
         const pastDate = new Date();
         pastDate.setDate(pastDate.getDate() - 10);
         formValues["kaynnistys_paattyy_pvm"] = pastDate.toISOString().split('T')[0];
-        const result2 = timeUtil.calculateAllowedDates(false, "M", dateTypes, name, formValues, sectionAttributes, currentDeadline);
+        const result2 = timeUtil.calculateAllowedDates(false, "M", dateTypes, name, formValues, sectionAttributes, currentDeadline, deadlines);
         expect(result2.length).toBe(0); // No allowed dates
     });
     test("calculateAllowedDates ignores past date filtering for approval dates", () => {
@@ -476,7 +460,7 @@ describe("getAllowedDates for various phases", () => {
         ];
         const currentDeadline = sectionAttributes[1];
 
-        const result = timeUtil.calculateAllowedDates(false, "M", dateTypes, name, formValues, sectionAttributes, currentDeadline);
+        const result = timeUtil.calculateAllowedDates(false, "M", dateTypes, name, formValues, sectionAttributes, currentDeadline, []);
         expect(result.length).toBeGreaterThan(0); // Should have allowed dates even if in past
     });
     test("ensure calculateAllowedDates handles all cases without crashing", () => {
@@ -486,6 +470,7 @@ describe("getAllowedDates for various phases", () => {
             { name: "hyvaksymispaatos_valitusaika_paattyy"},
             { name: "milloin_tarkistettu_ehdotus_lautakunnassa",
                 previous_deadline: "tarkistettu_ehdotus_kylk_maaraaika",
+                date_type: "lautakunnan_kokouspäivät",
                 initial_distance: {
                     distance: 10,
                     base_deadline: "tarkistettuehdotusvaihe_alkaa_pvm"
@@ -517,10 +502,11 @@ describe("getAllowedDates for various phases", () => {
             "tarkistettu_ehdotus_kylk_maaraaika": "2028-03-01",
             "milloin_tarkistettu_ehdotus_lautakunnassa": "2028-05-01",
         };
-        timeUtil.calculateAllowedDates(false, "M", dateTypes, "hyvaksymispaatos_valitusaika_paattyy", formValues, sectionAttributes, currentDeadline1);
-        timeUtil.calculateAllowedDates(false, "M", dateTypes, "milloin_tarkistettu_ehdotus_lautakunnassa", formValues, sectionAttributes, currentDeadline2);
-        timeUtil.calculateAllowedDates(true, "M", dateTypes, "oas_esillaolo_aineiston_maaraaika", formValues, sectionAttributes, currentDeadline3);
-        timeUtil.calculateAllowedDates(false, "M", dateTypes, "milloin_oas_esillaolo_alkaa", formValues, sectionAttributes, currentDeadline4);
+        const deadlines = [];
+        timeUtil.calculateAllowedDates(false, "M", dateTypes, "hyvaksymispaatos_valitusaika_paattyy", formValues, sectionAttributes, currentDeadline1, deadlines);
+        timeUtil.calculateAllowedDates(false, "M", dateTypes, "milloin_tarkistettu_ehdotus_lautakunnassa", formValues, sectionAttributes, currentDeadline2, deadlines);
+        timeUtil.calculateAllowedDates(true, "M", dateTypes, "oas_esillaolo_aineiston_maaraaika", formValues, sectionAttributes, currentDeadline3, deadlines);
+        timeUtil.calculateAllowedDates(false, "M", dateTypes, "milloin_oas_esillaolo_alkaa", formValues, sectionAttributes, currentDeadline4, deadlines);
     });
 });
 

@@ -249,7 +249,6 @@ class CustomField extends Component {
         deadline => deadline.deadline.attribute === props.input.name
       )
     }
-
     //temp fix because data is not added in backend to deadlines
     if(current === undefined){
       if(props.input.name === "viimeistaan_lausunnot_ehdotuksesta"){
@@ -281,6 +280,7 @@ class CustomField extends Component {
           sectionAttributes={sectionAttributes}
           allowedToEdit={allowedToEdit}
           timetable_editable={timetable_editable}
+          deadlines={deadlines}
           {...props}
         />
       )
