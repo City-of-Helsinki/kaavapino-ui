@@ -112,7 +112,7 @@ const mergeAndUpdateDlArrays = (arr1, arr2, deadlineSections) => {
     return 0;
   });
 
-  return arr1;
+  return arr1.filter(item => !item.key.includes("aloituskokous_suunniteltu_pvm_readonly"));
 }
 // Helper function to compare values
 const compareObjectValues = (key, value1, value2) => {
