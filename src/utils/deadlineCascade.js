@@ -243,7 +243,7 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
         fixedDate = findPastDateWithGap(forwardItem.value, forwardItem.distance_from_previous || 0, gapDates, allowedDates);
       }
       const shouldAdjust = fixedDate < currentItem.value;
-      if (j === endIndex && shouldAdjust) {
+      if (j === endIndex && j !== 0 && shouldAdjust) {
         throw new Error(`Cannot backtrack ${currentItem.key} to satisfy minimum gap with locked field ${forwardItem.key}.`);
       }
       if (shouldAdjust) {
@@ -305,17 +305,15 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
 
 export const setDefaultDatesForNewGroup = (dlObjects, formValues, allDates) => {
   dlObjects.forEach(dl => {
-    if (dl.initial_distance?.base_deadline) {
-      const baseDate = formValues[dl.initial_distance.base_deadline] || formValues[dl.previous_deadline];
-      const distance = dl.initial_distance.distance || dl.distance_from_previous || 0;
-      if (baseDate) {
-        const gapType = getGapDateType({ key: dl.name, date_type: dl.date_type });
-        const gapDates = allDates?.[gapType]?.dates;
-        const allowedDates = allDates?.[dl.date_type]?.dates || gapDates;
-        const newDate = findFirstAllowedDate(baseDate, distance, gapDates, allowedDates);
-        if (newDate) {
-          formValues[dl.name] = newDate;
-        }
+    const baseDate = formValues[dl.initial_distance.base_deadline] || formValues[dl.previous_deadline];
+    const distance = dl.initial_distance.distance || dl.distance_from_previous || 0;
+    if (baseDate) {
+      const gapType = getGapDateType({ key: dl.name, date_type: dl.date_type });
+      const gapDates = allDates?.[gapType]?.dates;
+      const allowedDates = allDates?.[dl.date_type]?.dates || gapDates;
+      const newDate = findFirstAllowedDate(baseDate, distance, gapDates, allowedDates);
+      if (newDate) {
+        formValues[dl.name] = newDate;
       }
     }
   });
