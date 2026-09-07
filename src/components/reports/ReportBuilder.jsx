@@ -6,25 +6,25 @@ import {
   downloadReportReview,
   clearDownloadReportReview,
   cancelReportLoading,
-  cancelReportPreviewLoading
+  cancelReportPreviewLoading,
+  fetchReports
 } from '../../actions/reportActions'
 import {
   reportsSelector,
   currentReportsSelector,
   reportPreviewLoadingSelector,
-  reportLoadingSelector
+  reportLoadingSelector,
+  externalReportsUrlSelector
 } from '../../selectors/reportSelector'
 import { Form } from 'semantic-ui-react'
 import ReportFilters from './ReportFilters'
-import { Button } from 'hds-react'
+import { Button, LoadingSpinner, IconLinkExternal } from 'hds-react'
 import { useTranslation } from 'react-i18next'
-import { fetchReports } from '../../actions/reportActions'
 import { REPORT_FORM } from '../../constants'
 import { readString } from 'react-papaparse'
 import ReportPreviewModal from './ReportPreviewModal'
 import { parseReport } from './reportUtils'
 import { findIndex } from 'lodash'
-import { LoadingSpinner } from 'hds-react'
 
 function ReportBuilder(props) {
   const [selectedReport, setSelectedReport] = useState(null)
@@ -94,9 +94,9 @@ function ReportBuilder(props) {
     : null
 
   const getHeaders = () => {
-    const data = current && current.data
+    const data = current?.data
 
-    if (!data || !data[0]) {
+    if (!data?.[0]) {
       return []
     }
 
@@ -121,7 +121,7 @@ function ReportBuilder(props) {
 
     return columns
   }
-  function getRandomInt(max) {
+  const getRandomInt = (max) => {
     const array = new Uint32Array(1);
     window.crypto.getRandomValues(array);
     return array[0] % max;
@@ -146,7 +146,7 @@ function ReportBuilder(props) {
   const headers = getHeaders()
 
   const getContent = () => {
-    const data = current && current.data
+    const data = current?.data
 
     if (!data || data.length < 2) {
       return null
@@ -196,7 +196,7 @@ function ReportBuilder(props) {
             <ReportFilters filters={selectedReport.filters} />
           </div>
         )}
-        {selectedReport && selectedReport.previewable === false && (
+        {selectedReport?.previewable === false && (
           <>
             <Button
               type="submit"
@@ -220,7 +220,7 @@ function ReportBuilder(props) {
           </>
         )}
 
-        {selectedReport && selectedReport.previewable === true && (
+        {selectedReport?.previewable === true && (
           <>
             <Button
               type="button"
@@ -250,6 +250,18 @@ function ReportBuilder(props) {
 
   return (
     <>
+      <div className="external-report-container">
+        <h2>{t('reports.external-reports')}</h2>
+        <Button
+          type="button"
+          variant="primary"
+          role="link"
+          iconRight={<IconLinkExternal />}
+          onClick={() => window.open(props.externalReportsUrl, '_blank')}
+        >
+          {t('reports.view-external-reports')}
+        </Button>
+      </div>
       <div className="select-report-container">
         <h2>{t('reports.choose-report')}</h2>
         {renderReportButtons()}
@@ -267,10 +279,10 @@ function ReportBuilder(props) {
         report={parseReport(
           headers,
           content,
-          selectedReport && selectedReport.preview_title_column,
-          props.formValues && props.formValues.aikavali
+          selectedReport?.preview_title_column,
+          props.formValues?.aikavali
         )}
-        blockColumn={selectedReport && selectedReport.preview_title_column}
+        blockColumn={selectedReport?.preview_title_column}
       />
     </>
   )
@@ -281,7 +293,8 @@ const mapStateToProps = state => ({
   currentReport: currentReportsSelector(state),
   reviewLoading: reportPreviewLoadingSelector(state),
   reportLoading: reportLoadingSelector(state),
-  formValues: getFormValues(REPORT_FORM)(state)
+  formValues: getFormValues(REPORT_FORM)(state),
+  externalReportsUrl: externalReportsUrlSelector(state)
 })
 
 const mapDispatchToProps = {

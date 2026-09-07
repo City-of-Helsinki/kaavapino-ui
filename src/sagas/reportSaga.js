@@ -55,7 +55,8 @@ function* cancelReportPreviewLoading() {
 function* fetchReportsSaga() {
   try {
     const reports = yield call(reportApi.get)
-    yield put(fetchReportsSuccessful(reports))
+    const externalReportsUrl = yield call(reportApi.get, {}, "external_link")
+    yield put(fetchReportsSuccessful(reports, externalReportsUrl?.url))
   } catch (e) {
     yield put(error(e))
   }
