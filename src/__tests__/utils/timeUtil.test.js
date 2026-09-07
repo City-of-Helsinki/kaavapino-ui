@@ -226,14 +226,16 @@ describe("getAllowedDates for various phases", () => {
             "projektin_kaynnistys_pvm": "2025-04-01",
             "kaynnistys_paattyy_pvm": "2025-06-01"
         };
-        const previousItem = null; // No previous item for project start
-        const nextItem = {
+        const startDate = {
+            name: "projektin_kaynnistys_pvm"
+        };
+        const endDate = {
             name: "kaynnistys_paattyy_pvm",
             distance_from_previous: 10
         };
         const dateTypes = data.test_disabledDates.date_types;
 
-        const result = timeUtil.getAllowedDatesForProjectStart(name, formValues, previousItem, nextItem, dateTypes);
+        const result = timeUtil.getAllowedDatesForProjectStart(name, formValues, startDate, endDate, dateTypes);
         expect(result[result.length-1]).toBe("2025-05-19"); //maintain 10 working days distance
         assertDatesBeforeReference(result, formValues["kaynnistys_paattyy_pvm"]);
         assertDatesAreWorkdays(result);

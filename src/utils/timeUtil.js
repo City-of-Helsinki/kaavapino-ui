@@ -67,13 +67,6 @@ const formatRelativeDate = (timestamp, tFn) => {
   return tFn ? tFn(yearKey, { count: years }) : `${years} years ago`
 }
 
-const normalizeDate = (date) => {
-  const normalizedDate = new Date(date);
-  normalizedDate.setUTCHours(0, 0, 0, 0);
-  return new Date(normalizedDate);
-}
-
-
 // Check if a string is in "YYYY-MM-DD" format
 const isDate = (value) => {
   const datePattern = /^\d{4}-\d{2}-\d{2}$/;
@@ -207,12 +200,30 @@ const findNextPossibleBoardDate = (array, value) => {
  return closestIndex < array.length - 1 ? array[closestIndex + 1] : array[closestIndex];
 }
 
-const getAllowedDatesForProjectStart = (name, formValues, previousItem, nextItem, dateTypes) => {
-  const miniumDaysBetween = nextItem?.distance_from_previous;
+const getAllowedDatesForProjectStartOld = (name, formValues, previousItem, nextItem, dateTypes) => {
+  const min_distance = nextItem?.distance_from_previous;
   const dateToCompare = name.includes("kaynnistys_paattyy_pvm") ? formValues[previousItem?.name] : formValues[nextItem?.name];
   let newDisabledDates = dateTypes?.arkipäivät?.dates;
-  const lastPossibleDateToSelect = name.includes("kaynnistys_paattyy_pvm") ? findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompare,miniumDaysBetween) : findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompare,-miniumDaysBetween);
+  const lastPossibleDateToSelect = name.includes("kaynnistys_paattyy_pvm") ?
+    findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompare, min_distance) :
+    findNextPossibleValue(dateTypes?.arkipäivät?.dates, dateToCompare, -min_distance);
   return name.includes("kaynnistys_paattyy_pvm") ? newDisabledDates.filter(date => date >= lastPossibleDateToSelect) : newDisabledDates.filter(date => date <= lastPossibleDateToSelect);
+};
+
+const getAllowedDatesForProjectStart = (name, formValues, startDate, endDate, dateTypes) => {
+  const gap = endDate?.distance_from_previous;
+  const currentDeadline = [startDate, endDate].find(item => item.name === name);
+  const gapType = endDate?.dateType || "työpäivät";
+  const allowedType = currentDeadline?.dateType || "työpäivät";
+  if (name === endDate.name) {
+    const firstSelectableDate = findFirstAllowedDate(formValues[startDate.name], gap, dateTypes[gapType]?.dates, dateTypes[allowedType]?.dates);
+    return dateTypes[allowedType]?.dates.filter(date => date >= firstSelectableDate);
+  }
+  else if (name === startDate.name) {
+    const lastSelectableDate = findPastDateWithGap(formValues[endDate.name], gap, dateTypes[gapType]?.dates, dateTypes[allowedType]?.dates);
+    return dateTypes[allowedType]?.dates.filter(date => date <= lastSelectableDate);
+  }
+  return dateTypes[allowedType]?.dates;
 };
 
 const getAllowedDatesForApproval = (name, formValues, matchingItem, dateTypes) => {
@@ -432,11 +443,12 @@ const getAllowedDatesForNahtavillaolo = (name, formValues, phaseName, matchingIt
 const calculateAllowedDates = (nahtavillaolo, size, dateTypes, name, formValues, sectionAttributes, currentDeadline, firstLockedDate=null) => {
   const matchingItem = objectUtil.findMatchingName(sectionAttributes, name, "name");
   const previousItem = objectUtil.findItem(sectionAttributes, name, "name", -1);
-  const nextItem = objectUtil.findItem(sectionAttributes, name, "name", 1);
   const phaseName = currentDeadline?.deadline?.phase_name?.toLowerCase();
   let allowedDates;
   if (name.includes("projektin_kaynnistys_pvm") || name.includes("kaynnistys_paattyy_pvm")) {
-      allowedDates = getAllowedDatesForProjectStart(name, formValues, previousItem, nextItem, dateTypes);
+      const start = objectUtil.findMatchingName(sectionAttributes, "projektin_kaynnistys_pvm", "name");
+      const end = objectUtil.findMatchingName(sectionAttributes, "kaynnistys_paattyy_pvm", "name");
+      allowedDates = getAllowedDatesForProjectStart(name, formValues, start, end, dateTypes);
   } else if (["hyvaksymispaatos_pvm", "tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauennut"].includes(name)) {
       allowedDates = getAllowedDatesForApproval(name, formValues, matchingItem, dateTypes);
       return allowedDates; // Skip filtering past dates for approval dates
