@@ -6,4 +6,4 @@ export const reportsSelector = createSelector(selectReport, ({ reports }) => rep
 export const currentReportsSelector = createSelector(selectReport, ({ currentReport }) => currentReport)
 export const reportPreviewLoadingSelector = createSelector( selectReport, ({reportPreviewLoading}) => reportPreviewLoading)
 export const reportLoadingSelector = createSelector( selectReport, ({reportLoading}) => reportLoading)
-
+export const externalReportsUrlSelector = createSelector(selectReport, ({ externalReportsUrl }) => externalReportsUrl)

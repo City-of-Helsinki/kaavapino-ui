@@ -484,8 +484,9 @@
     "report-cancel-title": "Peruutettu",
     "report-cancel": "Raportin lataus on peruutettu.",
     "report-preview-cancel-title": "Peruutettu",
-    "report-preview-cancel": "Esikatselun lataus on peruutettu."
-    
+    "report-preview-cancel": "Esikatselun lataus on peruutettu.",
+    "external-reports": "Asemakaavoituksen raportit",
+    "view-external-reports": "Siirry raportteihin"
   },
   "footer": {
     "footer-info": {
