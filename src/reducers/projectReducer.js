@@ -99,7 +99,9 @@ import {
   SET_SAVING_FIELD,
   SET_NETWORK_STATUS,
   RESET_NETWORK_STATUS,
-  SET_TIMELINE_LOCKED_GROUP
+  SET_TIMELINE_LOCKED_GROUP,
+  RESTORE_TIMELINE_SNAPSHOT,
+  CLEAR_SUPPRESS_TIMELINE_VALIDATION
 } from '../actions/projectActions'
 
 import timeUtil from '../utils/timeUtil'
@@ -161,7 +163,9 @@ export const initialState = {
   cancelTimetableSave:false,
   validatingTimetable: {started: false, ended: false},
   network: { status: 'ok', hasError: false, errorMessage: '', okMessage: '', tempFieldContents: '' },
-  timelineLockedGroup: null
+  timelineLockedGroup: null,
+  timelineSnapshot: null,
+  suppressTimelineValidation: false
 }
 
 export const reducer = (state = initialState, action) => {
@@ -220,6 +224,10 @@ export const reducer = (state = initialState, action) => {
       const { field, newDate, formValues, deadlineSections, pairedEndKey } = action.payload;
 
       const updatedAttributeData = formValues ? {...formValues} : { ...state.currentProject.attribute_data };
+
+      // Snapshot the last-known-good attribute_data before cascade so it can be
+      // restored if backend validation rejects the change (e.g. locked group).
+      const timelineSnapshot = { ...state.currentProject.attribute_data };
 
       //Remove all keys that are still hidden in vistimeline so they are not moved in data and later saved
       const filteredAttributeData = objectUtil.filterHiddenKeysUsingSections(updatedAttributeData, deadlineSections);
@@ -284,6 +292,7 @@ export const reducer = (state = initialState, action) => {
       return {
         ...state,
         lastCascadeError: null,
+        timelineSnapshot,
         currentProject: {
           ...state.currentProject,
           attribute_data: filteredAttributeData,
@@ -1106,6 +1115,28 @@ export const reducer = (state = initialState, action) => {
       return {
         ...state,
         timelineLockedGroup: action.payload.timelineLockedGroup
+      }
+    }
+
+    case RESTORE_TIMELINE_SNAPSHOT: {
+      if (!state.timelineSnapshot || !state.currentProject) {
+        return { ...state, timelineSnapshot: null, suppressTimelineValidation: true }
+      }
+      return {
+        ...state,
+        currentProject: {
+          ...state.currentProject,
+          attribute_data: { ...state.timelineSnapshot }
+        },
+        timelineSnapshot: null,
+        suppressTimelineValidation: true
+      }
+    }
+
+    case CLEAR_SUPPRESS_TIMELINE_VALIDATION: {
+      return {
+        ...state,
+        suppressTimelineValidation: false
       }
     }
 

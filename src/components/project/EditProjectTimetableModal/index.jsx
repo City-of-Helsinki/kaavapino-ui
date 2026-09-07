@@ -8,7 +8,7 @@ import { EDIT_PROJECT_TIMETABLE_FORM } from '../../../constants'
 import './styles.scss'
 import { deadlineSectionsSelector } from '../../../selectors/schemaSelector'
 import { withTranslation } from 'react-i18next'
-import { deadlinesSelector,validatedSelector,dateValidationResultSelector,cancelTimetableSaveSelector, validatingTimetableSelector, timelineLockedGroupSelector } from '../../../selectors/projectSelector'
+import { deadlinesSelector,validatedSelector,dateValidationResultSelector,cancelTimetableSaveSelector, validatingTimetableSelector, timelineLockedGroupSelector, suppressTimelineValidationSelector } from '../../../selectors/projectSelector'
 import { Button,IconInfoCircle, LoadingSpinner } from 'hds-react'
 import { isEqual } from 'lodash'
 import VisTimelineGroup from '../../ProjectTimeline/VisTimelineGroup.jsx'
@@ -16,7 +16,7 @@ import * as visdata from 'vis-data'
 import ConfirmModal from '../../common/ConfirmModal.jsx';
 import withValidateDate from '../../../hocs/withValidateDate.jsx';
 import objectUtil from '../../../utils/objectUtil'
-import { updateDateTimeline,validateProjectTimetable,setValidatingTimetable,setTimelineLockedGroup } from '../../../actions/projectActions';
+import { updateDateTimeline,validateProjectTimetable,setValidatingTimetable,setTimelineLockedGroup,clearSuppressTimelineValidation } from '../../../actions/projectActions';
 import { getVisibilityBoolName, vis_bool_group_map, isDeadlineConfirmed } from '../../../utils/projectVisibilityUtils';
 import timeUtil from '../../../utils/timeUtil'
 import { shouldDispatchTimelineUpdate } from '../../../utils/timelineDispatchLogic'
@@ -143,9 +143,11 @@ class EditProjectTimeTableModal extends Component {
       //when UPDATE_DATE_TIMELINE updates attribute values
       Object.keys(attributeData).forEach(fieldName => 
         this.props.dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, fieldName, attributeData[fieldName])));
-      
-      // Trigger validation after cascade is complete
-      if (!this.props.validatingTimetable?.started) {
+
+      // Skip revalidation when the attributeData change came from a snapshot rollback.
+      if (this.props.suppressTimelineValidation) {
+        this.props.dispatch(clearSuppressTimelineValidation());
+      } else if (!this.props.validatingTimetable?.started) {
         this.props.dispatch(validateProjectTimetable(attributeData));
       }
     }
@@ -1158,7 +1160,8 @@ EditProjectTimeTableModal.propTypes = {
     started: PropTypes.bool,
     ended: PropTypes.bool
   }),
-  timelineLockedGroup: PropTypes.string
+  timelineLockedGroup: PropTypes.string,
+  suppressTimelineValidation: PropTypes.bool
 }
 
 const mapStateToProps = state => ({
@@ -1171,6 +1174,7 @@ const mapStateToProps = state => ({
   cancelTimetableSave: cancelTimetableSaveSelector(state),
   validatingTimetable: validatingTimetableSelector(state),
   timelineLockedGroup: timelineLockedGroupSelector(state),
+  suppressTimelineValidation: suppressTimelineValidationSelector(state),
 })
 
 const decoratedForm = reduxForm({

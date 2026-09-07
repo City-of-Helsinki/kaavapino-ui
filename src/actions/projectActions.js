@@ -123,6 +123,8 @@ export const VALIDATING_TIMETABLE = "validatingTimetable"
 export const SET_NETWORK_STATUS = 'Set network status'
 export const RESET_NETWORK_STATUS = 'Reset network status'
 export const SET_TIMELINE_LOCKED_GROUP = 'Set timeline locked group';
+export const RESTORE_TIMELINE_SNAPSHOT = 'restoreTimelineSnapshot';
+export const CLEAR_SUPPRESS_TIMELINE_VALIDATION = 'clearSuppressTimelineValidation';
 
 export const updateAttribute = (field,value) => ({
   type: UPDATE_ATTRIBUTE,
@@ -563,3 +565,11 @@ export const setTimelineLockedGroup = (groupIdentifier) => {
     }
   }
 }
+
+export const restoreTimelineSnapshot = () => ({
+  type: RESTORE_TIMELINE_SNAPSHOT
+})
+
+export const clearSuppressTimelineValidation = () => ({
+  type: CLEAR_SUPPRESS_TIMELINE_VALIDATION
+})

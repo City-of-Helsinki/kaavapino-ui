@@ -341,3 +341,13 @@ export const timelineLockedGroupSelector = createSelector(
   selectProject,
   project => project?.timelineLockedGroup
 )
+
+export const timelineSnapshotSelector = createSelector(
+  selectProject,
+  project => project?.timelineSnapshot
+)
+
+export const suppressTimelineValidationSelector = createSelector(
+  selectProject,
+  project => project?.suppressTimelineValidation
+)

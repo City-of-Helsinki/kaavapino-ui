@@ -26,7 +26,9 @@ import {
   savingSelector,
   formErrorListSelector,
   lastSavedSelector,
-  projectNetworkSelector
+  projectNetworkSelector,
+  timelineLockedGroupSelector,
+  timelineSnapshotSelector
 } from '../selectors/projectSelector'
 import { userIdSelector } from '../selectors/authSelector'
 import { phasesSelector } from '../selectors/phaseSelector'
@@ -129,6 +131,7 @@ import {
   setDateValidationResult,
   VALIDATE_PROJECT_TIMETABLE,
   setValidatingTimetable,
+  restoreTimelineSnapshot,
   resetFormErrors,
   SET_NETWORK_STATUS,
   RESET_NETWORK_STATUS
@@ -905,12 +908,15 @@ function* validateProjectTimetable({ payload }) {
       deadlines
     );
 
+    const lockedGroup = yield select(timelineLockedGroupSelector);
+
     try {
       const response = yield call(
         projectApi.patch,
         {
           attribute_data,
           confirmed_fields,
+          locked_group: lockedGroup,
         },
         { path: { id: currentProjectId } },
         ':id/?fake=true'
@@ -955,11 +961,31 @@ function* validateProjectTimetable({ payload }) {
     } catch (e) {
       // Remove loading icon on error
       toastr.removeByType('info');
-      toastr.error(i18.t('messages.validation-error'), '', {
-        showCloseButton: false,
-        closeOnToastrClick: true,
-        icon: <IconErrorFill />
-      });
+
+      const statusCode = e?.response?.status;
+      if (statusCode === 400) {
+        // Backend rejected the cascaded timeline (e.g. locked group violation).
+        // Roll back to the pre-cascade snapshot and re-sync the form fields.
+        const snapshot = yield select(timelineSnapshotSelector);
+        yield put(restoreTimelineSnapshot());
+        if (snapshot) {
+          for (const [key, value] of Object.entries(snapshot)) {
+            yield put(change(EDIT_PROJECT_TIMETABLE_FORM, key, value));
+          }
+        }
+        toastr.warning(i18.t('messages.timeline-locked-rejected'), '', {
+          timeOut: 8000,
+          showCloseButton: true,
+          closeOnToastrClick: true,
+          icon: <IconErrorFill />
+        });
+      } else {
+        toastr.error(i18.t('messages.validation-error'), '', {
+          showCloseButton: false,
+          closeOnToastrClick: true,
+          icon: <IconErrorFill />
+        });
+      }
 
       // Reset validation state so user can try again
       yield put(setValidatingTimetable(false, false));

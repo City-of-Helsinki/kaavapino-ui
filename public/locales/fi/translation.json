@@ -239,6 +239,7 @@
     "error-connection":"Tallennus epäonnistui yhteysongelmia takia. Yritetään uudelleen 10 sekunnin kuluttua.",
     "error-connection-fail":"Tallennus keskeytyi yhteysongelmia takia.",
     "validation-error":"Päivämäärien tarkistus epäonnistui",
+    "timeline-locked-rejected":"Aikataulun muutos hylättiin, koska lukittu ryhmä estää muutoksen. Aikataulu on palautettu edelliseen tilaan.",
     "session-expiring": "Istuntosi vanhenee {{timer}} kuluttua.",
     "extend-session": "Jatka istuntoa",
     "session-extended": "Istuntoa jatkettu"
