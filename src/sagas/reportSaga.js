@@ -53,12 +53,32 @@ function* cancelReportPreviewLoading() {
   yield put(downloadReportReviewSuccessful(null))
 }
 function* fetchReportsSaga() {
+  // Isolate each request so a failure in one does not abort the other.
+  const [reportsResult, externalResult] = yield all([
+    call(safeCall, reportApi.get),
+    call(safeCall, reportApi.get, {}, 'external_link/')
+  ])
+
+  if (reportsResult.error) {
+    yield put(error(reportsResult.error))
+    return
+  }
+  // External link error is silently ignored, configuring it is optional
+
+  yield put(
+    fetchReportsSuccessful(
+      reportsResult.value ?? null,
+      externalResult.value?.url
+    )
+  )
+}
+
+function* safeCall(fn, ...args) {
   try {
-    const reports = yield call(reportApi.get)
-    const externalReportsUrl = yield call(reportApi.get, {}, "external_link")
-    yield put(fetchReportsSuccessful(reports, externalReportsUrl?.url))
+    const value = yield call(fn, ...args)
+    return { value, error: null }
   } catch (e) {
-    yield put(error(e))
+    return { value: null, error: e }
   }
 }
 function* downloadReportPreviewSaga({ payload }) {

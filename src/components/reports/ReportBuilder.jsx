@@ -250,18 +250,20 @@ function ReportBuilder(props) {
 
   return (
     <>
-      <div className="external-report-container">
-        <h2>{t('reports.external-reports')}</h2>
-        <Button
-          type="button"
-          variant="primary"
-          role="link"
-          iconRight={<IconLinkExternal />}
-          onClick={() => window.open(props.externalReportsUrl, '_blank')}
-        >
-          {t('reports.view-external-reports')}
-        </Button>
-      </div>
+      {props.externalReportsUrl && (
+        <div className="external-report-container">
+          <h2>{t('reports.external-reports')}</h2>
+          <Button
+            type="button"
+            variant="primary"
+            role="link"
+            iconRight={<IconLinkExternal />}
+            onClick={() => window.open(props.externalReportsUrl, '_blank', "noopener noreferrer")}
+          >
+            {t('reports.view-external-reports')}
+          </Button>
+        </div>
+      )}
       <div className="select-report-container">
         <h2>{t('reports.choose-report')}</h2>
         {renderReportButtons()}
