@@ -88,6 +88,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   const [timelineAddButton, setTimelineAddButton] = useState();
   // Track whether weekend alignment shift has been applied (3-month view only)
   const weekendShiftAppliedRef = useRef(false);
+  // Cache of editable vis-timeline items for hit-testing; rebuilt lazily after items change.
+  const editableItemsRef = useRef(null);
 
   const { onElementEnter, onElementMove, onElementLeave, hideTooltip } = useTimelineTooltip();
 
@@ -496,24 +498,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
   };
 
-  const changeItemRange = (subtract, item, i) => {
-    const timeline = timelineRef?.current?.getTimelineInstance();
-    if (timeline) {
-      let timeData = i
-      if (subtract) {
-        timeData.end = item.start
-      }
-      else {
-        let originalDiff = moment.duration(moment(timeData.end).diff(moment(timeData.start)))
-        let originalTimeFrame = originalDiff.asDays()
-        timeData.start = item.end
-        timeData.end = moment(timeData.start).add(originalTimeFrame, 'days').toDate()
-      }
-      timeline.itemSet.items[i.id].setData(timeData)
-      timeline.itemSet.items[i.id].repositionX()
-    }
-  }
-
   /**
  * Move the timeline a given percentage to left or right
  * @param {Number} percentage   For example 0.1 (left) or -0.1 (right)
@@ -854,14 +838,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     timeline.moveTo(currentDate, { animation: true });
   }
 
-  const adjustWeekend = (date) => {
-    if (date.getDay() === 0) {
-      date.setTime(date.getTime() + 86400000); // Move from Sunday to Monday
-    } else if (date.getDay() === 6) {
-      date.setTime(date.getTime() - 86400000); // Move from Saturday to Friday
-    }
-  }
-
   // Despite the name, just adds border to the first day of every month
   const highlightJanuaryFirst = () => {
     if (!timelineInstanceRef.current || currentFormatRef.current !== "showMonths") return;
@@ -944,7 +920,14 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       return null;
     }
 
-    const items = Object.values(timelineInstanceRef.current.itemSet.items);
+    if (!editableItemsRef.current) {
+      editableItemsRef.current = Object.values(timelineInstanceRef.current.itemSet.items)
+        .filter(it => {
+          const dom = it?.dom?.box ?? it?.dom?.point ?? it?.dom?.dot;
+          return dom?.classList?.contains('vis-editable');
+        });
+    }
+    const items = editableItemsRef.current;
     const PHASE_TOP_BUFFER = 15;
     const PHASE_BOTTOM_BUFFER = 3;
 
@@ -978,7 +961,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
       state = updateTopmostItem(item, itemDom, zIndex, isPhaseHolder, isPhaseLength, withinActualBounds, state);
     });
-
     return state.topmostItem ? { item: state.topmostItem, dom: state.topmostItemDom } : null;
   };
 
@@ -1147,17 +1129,15 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           }
           //Item is not allowed to be dragged to past dates, unless it's already there (current phase items
           // can be moved freely to allow correcting mistakes — past phase items are already blocked above)
-          if (item.start && today) {
-              if (new Date(item.start).setHours(0,0,0,0) < today.getTime()) {
-                  // Allow if the original snapshot start was also in the past (correcting an existing past item)
-                  const origSnap = clusterDragRef.current?.snapshot?.items?.[String(item.id)];
-                  const origStart = origSnap?.start ? new Date(origSnap.start).setHours(0,0,0,0) : null;
-                  const wasAlreadyPast = origStart != null && origStart < today.getTime();
-                  if (!wasAlreadyPast) {
-                      callback(null);
-                      return;
-                  }
-              }
+          if (item.start && today && new Date(item.start).setHours(0,0,0,0) < today.getTime()) {
+            // Allow if the original snapshot start was also in the past (correcting an existing past item)
+            const origSnap = clusterDragRef.current?.snapshot?.items?.[String(item.id)];
+            const origStart = origSnap?.start ? new Date(origSnap.start).setHours(0,0,0,0) : null;
+            const wasAlreadyPast = origStart != null && origStart < today.getTime();
+            if (!wasAlreadyPast) {
+                callback(null);
+                return;
+            }
           }
           // Prevent cluster items (e.g. lautakunta maaraaika) from slipping into the past,
           // unless the dragged item was already in the past (user correcting a past date)
@@ -1230,7 +1210,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
           if (baseStart != null && curStart != null) {
             const deltaMs = curStart - baseStart;
-
             Object.entries(snapshot.items).forEach(([idKey, snapTimes]) => {
               try {
                 if (idKey === String(item.id)) return; // current item already moved
@@ -1265,6 +1244,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         }
       },
       onMove(item, callback) {
+
         // Remove the moving tooltip
         const moveTooltip = document.getElementById('moving-item-tooltip');
         if (moveTooltip) {
@@ -1277,37 +1257,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         if (
           !allowedToEdit ||
           !dragElement || isConfirmed ||
-          item?.phaseName === "Hyväksyminen" || item?.phaseName === "Voimaantulo"
+          ["Hyväksyminen", "Voimaantulo"].includes(item?.phaseName) ||
+          item?.content === null
         ) {
           callback(null);
           return;
         }
 
-        const adjustIfWeekend = (date) => {
-          if (!date) return false; // Add check if date is undefined or null
-          if (!(date.getDay() % 6)) {
-            adjustWeekend(date);
-            return true;
-          }
-          return false;
-        }
-
-        if (!adjustIfWeekend(item.start) && !adjustIfWeekend(item.end) && item.phase) {
-          const movingTimetableItem = moment.range(item.start, item.end);
-          items.forEach(i => {
-            if (i.phase && i.id !== item.id) {
-              const statickTimetables = moment.range(i.start, i.end);
-              if (movingTimetableItem.overlaps(statickTimetables)) {
-                changeItemRange(item.start > i.start, item, i);
-              }
-            }
-          });
-        }
-
-        if (item?.content === null) {
-          callback(null);
-          return;
-        }
         // After successfully moving the item, update the data in the store
         callback(item);
         if (item?.title) {
@@ -1330,8 +1286,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               pairedEndKey
             ));
             // Validation will be triggered by componentDidUpdate after cascade completes
-            attributeDate = null;
-            attributeToUpdate = null;
+            return;
           }
           else if (dragElement === "left") {
             // If dragging the start handle
@@ -1358,7 +1313,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               visValuesRef.current,
               false,
               deadlineSections,
-
             ));
           }
         }
@@ -1700,6 +1654,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       timelineInstanceRef.current.setItems(items);
       timelineInstanceRef.current.setGroups(groups);
       timelineInstanceRef.current.redraw();
+      editableItemsRef.current = null;
       
       // Apply past-phase-item class to items from completed phases
       // Use setTimeout to ensure DOM is updated after redraw
@@ -1851,7 +1806,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       if (subgroup === "Valitukset") return 0;
       if (subgroup === "Lopputulos") return 1;
       if (name === "voimaantulo_pvm") return 1;
-      return subgroup === "Päätös" ? 1 : 0;
     }
     return subgroup === "Päätös" ? 1 : 0;
   };
