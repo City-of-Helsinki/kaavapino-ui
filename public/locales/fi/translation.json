@@ -112,7 +112,7 @@
     "project-start-meeting-title": "Projektin aloituskokous",
     "project-opinions-latest-title": "{{phase}}-vaiheen aineiston mielipiteiden määräaika",
     "phase-closed":"Uusia rivejä ei voi lisätä, koska vaihe on lopetettu.",
-    "phase-locked":"Uusia rivejä ei voi lisätä, koska vaihe on lukittu.",
+    "phase-locked":"Uusia rivejä ei voi lisätä lukitulle alueelle.",
     "new-esillaolo":"Lisää uusi esilläolo",
     "delete-esillaolo":"Poista esilläolo",
     "esillaolo-next-confirmed": "Esilläoloa ei voi lisätä, koska seuraava lautakunta on jo vahvistettu.",

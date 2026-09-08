@@ -60,17 +60,30 @@ const createTopLevelLabel = (group, container) => {
 };
 
 const createAddButton = (group, props) => {
-  const { handleAddButtonClick: onClick, visValuesRef, phaseList, currentPhaseIndex } = props;
+  const { handleAddButtonClick: onClick, visValuesRef, phaseList, currentPhaseIndex, currentTimelineLockRef, groups } = props;
   const phaseClosed = phaseList.indexOf(group.content) < currentPhaseIndex;
   const add = document.createElement("button");
   add.id = `add-button-${group.id}`;
   add.classList.add("timeline-add-button");
   add.style.fontSize = "small";
+
+  let isLocked = false;
+  if (currentTimelineLockRef?.current) {
+    const lockedGroup = groups?.get().find(g => g.deadlinegroup === currentTimelineLockRef?.current);
+    const lockedPhaseIndex = lockedGroup ? phaseList.indexOf(lockedGroup.nestedInGroup) : -1;
+    if (lockedPhaseIndex !== -1 && phaseList.indexOf(group.content) > lockedPhaseIndex) {
+      isLocked = true;
+    }
+  }
+
   // Disable add-button if phase is closed
   let addTooltipDiv = null;
   if (phaseClosed) {
     add.classList.add("button-disabled");
     addTooltipDiv = `<div class='timeline-add-text'>${t('deadlines.phase-closed')}</div>`;
+  } else if (isLocked) {
+    add.classList.add("button-disabled");
+    addTooltipDiv = `<div class='timeline-add-text'>${t('deadlines.phase-locked')}</div>`;
   } else {
     add.classList.remove("button-disabled");
   }
@@ -194,49 +207,15 @@ const createLockButton = (group, props) => {
   lock.addEventListener("click", function () {
     if (lock.classList.contains("button-disabled")) return;
 
-    const isCurrentlyLocked = lock.classList.contains("lock");
-    const allLockButtons = document.querySelectorAll(".timeline-lock-button");
-    allLockButtons.forEach(btn => {
-      btn.classList.remove("lock", "button-disabled");
-    });
-
-    if (!isCurrentlyLocked) {
-      lock.classList.add("lock");
-      allLockButtons.forEach(btn => {
-        if (btn !== lock) btn.classList.add("button-disabled");
-      });
-    }
-
     // Dispatches lock action
     onClick(group);
 
-    // Use the known next lock value rather than waiting for the ref to update after dispatch
+    const isCurrentlyLocked = lock.classList.contains("lock");
     const nextLock = isCurrentlyLocked ? null : group.deadlinegroup;
-    const propsWithNextLock = { ...props, currentTimelineLockRef: { current: nextLock } };
-    const allRemoveButtons = document.querySelectorAll(".timeline-remove-button");
-    const groupList = groups.get();
-    allRemoveButtons.forEach(btn => {
-      const groupName = btn.dataset.groupName;
-      const btnGroup = groupList.find(g => g.deadlinegroup === groupName);
-      if (!btnGroup) {
-        return;
-      }
-      const { isDisabled } = getRemoveDisabledState(btnGroup, propsWithNextLock);
-      if (isDisabled) {
-        btn.classList.add("button-disabled");
-        const removeTextDiv = `<div class='timeline-remove-text'>${t('deadlines.delete-locked')}</div>`;
-        if (!btn.nextElementSibling?.classList.contains("timeline-remove-text")) {
-          btn.insertAdjacentHTML("afterEnd", removeTextDiv);
-        }
-      } else {
-        btn.classList.remove("button-disabled");
-        if (btn.nextElementSibling?.classList.contains("timeline-remove-text")) {
-          btn.nextElementSibling.remove();
-        }
-      }
-    });
-
-
+    // Ensure current lock ref is updated immediately for group update
+    currentTimelineLockRef.current = nextLock;
+    // Force redraw of group elements
+    groups.update(groups.get());
   });
   return lock;
 };
