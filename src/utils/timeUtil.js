@@ -262,7 +262,7 @@ const getAllowedDatesForSizeXSXL = (name, formValues, matchingItem, dateTypes) =
     let newDisabledDates = dateTypes?.esilläolopäivät?.dates;
     const firstPossibleDateToSelect = findNextPossibleValue(dateTypes?.esilläolopäivät?.dates, dateToComparePast, miniumDaysPast);
     const lastPossibleDateToSelect = findNextPossibleValue(dateTypes?.esilläolopäivät?.dates, dateToCompareFuture, -miniumDaysFuture);
-    return newDisabledDates.filter(date => date >= firstPossibleDateToSelect && date < lastPossibleDateToSelect);
+    return newDisabledDates.filter(date => date >= firstPossibleDateToSelect && date <= lastPossibleDateToSelect);
   } else if (name.includes("_paattyy")) {
     const miniumDaysPast = matchingItem?.distance_from_previous;
     const dateToComparePast = formValues[matchingItem?.previous_deadline];
