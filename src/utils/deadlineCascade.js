@@ -302,6 +302,8 @@ export const setDefaultDatesForNewGroup = (dlObjects, formValues, allDates) => {
       if (newDate) {
         formValues[dl.name] = newDate;
       }
+    } else {
+      formValues[dl.name] = "1970-01-01" // Let deadlineCascade sort it out
     }
   });
 };

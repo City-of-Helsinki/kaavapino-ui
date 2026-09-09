@@ -180,7 +180,7 @@ const filterHiddenKeys = (attributeData, deadlines) => {
 const filterHiddenKeysUsingSections = (attributeData, deadlineSections) => {
   return Object.entries(attributeData).reduce((acc, [key, value]) => {
     const dl = findDeadlineInDeadlineSections(key, deadlineSections);
-    if (dl) {
+    if (dl?.type === "date") {
       // Deadline found in sections - use standard visibility check
       if (shouldDeadlineBeVisible(dl.name, dl.attributegroup, attributeData)) {
         acc[key] = value;
