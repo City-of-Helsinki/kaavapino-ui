@@ -283,14 +283,19 @@ export const createGroupTemplate = (props) => {
       container.insertAdjacentElement("beforeEnd", edit);
 
       if (allowedToEdit && !contentIncludesString) {
+        const actionButtons = document.createElement("div");
+        actionButtons.classList.add("timeline-action-buttons");
+
         const { remove, removeTextDiv } = createRemoveButton(group, props);
-        container.insertAdjacentElement("beforeEnd", remove);
+        actionButtons.insertAdjacentElement("beforeEnd", remove);
 
         if (remove.classList.contains("button-disabled") && removeTextDiv) {
-          container.insertAdjacentHTML("beforeEnd", removeTextDiv);
+          actionButtons.insertAdjacentHTML("beforeEnd", removeTextDiv);
         }
         const lock = createLockButton(group, props);
-        container.insertAdjacentElement("beforeEnd", lock);
+        actionButtons.insertAdjacentElement("beforeEnd", lock);
+
+        container.insertAdjacentElement("beforeEnd", actionButtons);
       }
       return container;
     } else {

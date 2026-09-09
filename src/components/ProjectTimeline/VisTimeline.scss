@@ -995,7 +995,6 @@
                 position: relative;
                 .timeline-button-label{
                     font-weight: 400;
-                    padding-top: 5px;
                 }
                 .timeline-edit-button{
                     position: absolute;
@@ -1011,10 +1010,17 @@
                     cursor: pointer;
                     color: $color-black-90;
                 }
+                // Pins remove/lock buttons to the right edge as a pair, so hiding one doesn't shift the other
+                .timeline-action-buttons{
+                    display: flex;
+                    align-items: center;
+                    height: 100%;
+                    margin-left: auto;
+                    gap: $size12;
+                }
                 .timeline-remove-button{
                     display: none;
                     padding: 0;
-                    margin-left: auto;
                     width: 24px;
                     height: 24px;
                     background:url('../../assets/icons/trash-red.svg') no-repeat;
@@ -1030,10 +1036,8 @@
                 .timeline-lock-button{
                     display: none;
                     padding: 0;
-                    margin-right: 12px;
-                    margin-left: 12px;
-                    width: 24px;
-                    height: 24px;
+                    width: 40px;
+                    height: 36px;
                     background:url('../../assets/icons/lock-open-blue.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;
@@ -1043,19 +1047,11 @@
                 }
                 .lock{
                     display: block;
-                    padding: 0;
-                    margin-right: 0;
-                    margin-left: auto;
-                    margin-top: 1px;
-                    width: 40px;
-                    height: 36px;
                     background:url('../../assets/icons/lock-white.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;
                     background-size: $size24;
                     background-color: $color-bus;
-                    border: none;
-                    cursor: pointer;
                 }
                 &:focus {
                     .timeline-remove-button{
@@ -1092,10 +1088,6 @@
                 .timeline-lock-button{
                     display: block;
                 }
-                .timeline-lock-button.lock{
-                    margin-left: 0;
-                    margin-right: 0;
-                }
                 .button-disabled:not(.timeline-remove-button){
                     pointer-events: auto;
                     cursor: default;
@@ -1120,34 +1112,30 @@
             .highlight-selected{
                 .timeline-remove-button{
                     display: block;
-                    margin-top: -3px;
                 }
                 .timeline-lock-button{
                     display: block;
-                    margin-top: -3px;
-                    margin-right: 10px;
-                    margin-left: 12px;
-                }
-                .timeline-lock-button.lock{
-                    margin-left: 0;
-                    margin-right: 0;
                 }
             }
         }
     }
 
     .vis-nested-group.vis-group-level-unknown-but-gte1.highlight-selected{
+        // content-box height (32) + 2px border on each side totals 36px, matching the unselected row height so nothing shifts
         box-sizing: content-box;
-        height: 32px !important;
+        margin-top: -1px;
+        height: 33px !important;
         width: 272px;
         border: 2px solid $color-bus;
         background-color: $color-bus-light !important;
-        margin-top: -1px;
-        padding-top: 1px;
         margin-right:-1px;
         .vis-inner .timeline-buttons-container .timeline-button-label {
-            padding-top: 0;
             margin-left: -2px;
+            padding-bottom: 1px;
+        }
+        .timeline-action-buttons {
+            margin-right: -1.5px;
+            margin-bottom: 1px;
         }
     }
 
@@ -1156,7 +1144,7 @@
         .vis-label{
             border-right: 1px solid #bfbfbf;
             .vis-inner{
-                height: $size32;
+                height: $size34;
                 display: flex;
                 justify-content: flex-start;
                 align-items: center;
@@ -1166,7 +1154,7 @@
 
     .vis-label{
         background-color: #F2F2F2;
-        border-bottom: 1px solid #CCCCCC;
+        //border-bottom: 1px solid #CCCCCC;
     }
 
     .vis-label.vis-nested-group{
