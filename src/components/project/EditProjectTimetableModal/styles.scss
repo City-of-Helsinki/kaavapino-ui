@@ -81,3 +81,10 @@
     font-size: $size14 !important;
   }
 }
+
+.timeline-loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 48px 0;
+}

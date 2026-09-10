@@ -725,6 +725,9 @@
             transform: translate(-50%, -50%) scale(1);
             opacity: 1;
         }
+        &.no-drag::after{
+            opacity: 0 !important;
+        }
     }
 
     .phase-length{
@@ -991,8 +994,8 @@
                 padding-left: $size15;
                 position: relative;
                 .timeline-button-label{
+                    margin-top:2px;
                     font-weight: 400;
-                    padding-top: 5px;
                 }
                 .timeline-edit-button{
                     position: absolute;
@@ -1008,10 +1011,17 @@
                     cursor: pointer;
                     color: $color-black-90;
                 }
+                // Pins remove/lock buttons to the right edge as a pair, so hiding one doesn't shift the other
+                .timeline-action-buttons{
+                    display: flex;
+                    align-items: center;
+                    height: 100%;
+                    margin-left: auto;
+                    gap: $size8;
+                }
                 .timeline-remove-button{
                     display: none;
                     padding: 0;
-                    margin-left: auto;
                     width: 24px;
                     height: 24px;
                     background:url('../../assets/icons/trash-red.svg') no-repeat;
@@ -1025,33 +1035,32 @@
                     }
                 }
                 .timeline-lock-button{
-                    visibility: hidden;
+                    display: none;
                     padding: 0;
-                    margin-right: 12px;
-                    margin-left: 12px;
-                    /*width: 24px;
-                    height: 24px; Hidden for now, unhide when lock feature in dev*/
-                    width: 0;
-                    height: 0;
+                    width: 40px;
+                    height: 36px;
                     background:url('../../assets/icons/lock-open-blue.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;
                     background-size: $size24;
                     border: none;
                     cursor: pointer;
+                    &.button-disabled {
+                        background:url('../../assets/icons/lock-open-gray.svg') no-repeat;
+                        cursor: auto;
+                            background-position-x: center;
+                            background-position-y: center;
+                            background-size: $size24;
+                    }
                 }
+
                 .lock{
-                    margin-right: 12px;
-                    margin-left: 12px;
-                    padding: 0;
-                    width: 24px;
-                    height: 24px;
-                    background:url('../../assets/icons/lock-blue.svg') no-repeat;
+                    display: block;
+                    background:url('../../assets/icons/lock-white.svg') no-repeat;
                     background-position-x: center;
                     background-position-y: center;
                     background-size: $size24;
-                    border: none;
-                    cursor: pointer;
+                    background-color: $color-bus;
                 }
                 &:focus {
                     .timeline-remove-button{
@@ -1059,6 +1068,16 @@
                     }
                     .timeline-lock-button{
                         display: block;
+                    }
+                }
+                &:hover {
+                    .lock{
+                        display: block;
+                        background:url('../../assets/icons/lock-white.svg') no-repeat;
+                        background-position-x: center;
+                        background-position-y: center;
+                        background-size: $size24;
+                        background-color: $color-bus-dark;
                     }
                 }
                 .timeline-remove-text {
@@ -1080,6 +1099,25 @@
                     display: block;
                     position: absolute;
                 }
+                .timeline-lock-text {
+                    color: $color-black-90;
+                    display: none;
+                    position: absolute;
+                    top: 35px;
+                    right: 1px;
+                    background-color: $white;
+                    width: 177px;
+                    height: auto;
+                    padding: 8px;
+                    box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.6);
+                    z-index: 1005;
+                    font-size: $size14;
+                    font-weight: 400;
+                }
+                .timeline-lock-button:hover + .timeline-lock-text {
+                    display: block;
+                    position: absolute;
+                }
             }
             .show-buttons{
                 .timeline-remove-button{
@@ -1088,45 +1126,48 @@
                 .timeline-lock-button{
                     display: block;
                 }
-                .button-disabled:not(.timeline-remove-button){
-                    pointer-events: auto;
-                    cursor: default;
-                    opacity: 0.5;
-                    color: gray;
-                }
                 .button-enabled{
                     pointer-events: all;
                     cursor: pointer;
                     opacity: 1;
                 }
             }
+
+            .has-lock{
+                .timeline-lock-button{
+                    pointer-events: none;
+                    cursor: default;
+                    opacity: 0.5;
+                    color: gray;
+                }
+            }
             .highlight-selected{
                 .timeline-remove-button{
                     display: block;
-                    margin-top: -3px;
                 }
                 .timeline-lock-button{
                     display: block;
-                    margin-top: -3px;
-                    margin-right: 10px;
-                    margin-left: 12px;
                 }
             }
         }
     }
 
     .vis-nested-group.vis-group-level-unknown-but-gte1.highlight-selected{
+        // content-box height (32) + 2px border on each side totals 36px, matching the unselected row height so nothing shifts
         box-sizing: content-box;
-        height: 32px !important;
+        margin-top: -1px;
+        height: 33px !important;
         width: 272px;
         border: 2px solid $color-bus;
         background-color: $color-bus-light !important;
-        margin-top: -1px;
-        padding-top: 1px;
         margin-right:-1px;
         .vis-inner .timeline-buttons-container .timeline-button-label {
-            padding-top: 0;
             margin-left: -2px;
+            margin-top: 0px;
+        }
+        .timeline-action-buttons {
+            margin-right: -0.5px;
+            margin-bottom: 2px;
         }
     }
 
@@ -1135,7 +1176,7 @@
         .vis-label{
             border-right: 1px solid #bfbfbf;
             .vis-inner{
-                height: $size32;
+                height: $size34;
                 display: flex;
                 justify-content: flex-start;
                 align-items: center;
@@ -1145,11 +1186,15 @@
 
     .vis-label{
         background-color: #F2F2F2;
-        border-bottom: 1px solid #CCCCCC;
     }
 
     .vis-label.vis-nested-group{
         padding-left: 15px;
+    }
+
+    // Apply blue box-shadow to all vis-label siblings after the one containing timeline-lock-button.lock
+    .vis-label:has(.vis-inner .timeline-lock-button.lock) ~ .vis-label {
+        box-shadow: -4px 0 0 $color-bus inset;
     }
 
     .vis-group-level-0:not(.vis-nested-group){
@@ -1262,6 +1307,42 @@
             }
         }
     }
+
+    .buttons-locked{
+        .timeline-add-button{
+            pointer-events: none;
+            cursor: default;
+            opacity: 0.5;
+            color: gray;
+        }
+        .show-buttons{
+            .timeline-remove-button{
+                pointer-events: none;
+                cursor: default;
+                opacity: 0.5;
+                color: gray;
+            }
+            .timeline-lock-button{
+                pointer-events: none;
+                cursor: default;
+                opacity: 0.5;
+                color: gray;
+            }
+            .button-disabled{
+                pointer-events: none;
+                cursor: default;
+                opacity: 0.5;
+                color: gray;
+            }
+            .button-enabled{
+                pointer-events: none;
+                cursor: default;
+                opacity: 0.5;
+                color: gray;
+            }
+        }
+    }
+
 
     .vis-nesting-group{
         display: flex;
@@ -1445,6 +1526,25 @@
 
     .vis-background .vis-group {
         height: 36px !important;
+    }
+
+    .locked-color{
+        background-color: grey !important;
+        pointer-events: none !important;
+        cursor: default !important;
+        
+        // Override all draggable elements within locked items
+        &.vis-point,
+        &.inner-end,
+        &.vis-point.inner-end,
+        &.kaynnistys_1,
+        &.board-date,
+        .vis-item-overflow,
+        .vis-drag-left,
+        .vis-drag-right {
+            pointer-events: none !important;
+            cursor: default !important;
+        }
     }
 
     .vis-foreground .vis-group {
@@ -1968,7 +2068,7 @@ body.cursor-moving {
     .vis-item.vis-background.holiday {
         top: 0;
         background: $color-summer-light;
-        z-index: 100;
+        z-index: 2;
         .vis-item-overflow {
             background-color: $color-summer-light !important;
         }
@@ -1976,6 +2076,12 @@ body.cursor-moving {
     .vis-time-axis .vis-grid.vis-major {
         border-left: 0.063rem solid #999999 !important;
     }
+}
+
+.locked-background {
+    background: #cdcdcd !important;
+    z-index: 3;
+    opacity: 0.5;
 }
 
 .vis.months {

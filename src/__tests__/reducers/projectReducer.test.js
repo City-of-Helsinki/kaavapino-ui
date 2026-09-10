@@ -42,8 +42,33 @@ vi.mock('../../utils/timeUtil', () => ({
       }
       return date;
     }),
-    getHighestDate: vi.fn(() => null),
-    compareAndUpdateDates: vi.fn(() => {}),
+    getHighestVoimaantuloDate: vi.fn(() => null),
+    // Minimal cascade stand-in for the real syncPhaseEndDates:
+    // - K1 = U1 sync
+    // - each phase start = previous existing phase end
+    syncPhaseEndDates: vi.fn((data) => {
+      if (data['projektin_kaynnistys_pvm']) {
+        data['kaynnistysvaihe_alkaa_pvm'] = data['projektin_kaynnistys_pvm'];
+      }
+      const orderedPhases = [
+        { start: 'kaynnistysvaihe_alkaa_pvm', end: 'kaynnistys_paattyy_pvm' },
+        { start: 'periaatteetvaihe_alkaa_pvm', end: 'periaatteetvaihe_paattyy_pvm' },
+        { start: 'oasvaihe_alkaa_pvm', end: 'oasvaihe_paattyy_pvm' },
+        { start: 'luonnosvaihe_alkaa_pvm', end: 'luonnosvaihe_paattyy_pvm' },
+        { start: 'ehdotusvaihe_alkaa_pvm', end: 'ehdotusvaihe_paattyy_pvm' },
+        { start: 'tarkistettuehdotusvaihe_alkaa_pvm', end: 'tarkistettuehdotusvaihe_paattyy_pvm' },
+        { start: 'hyvaksyminenvaihe_alkaa_pvm', end: 'hyvaksyminenvaihe_paattyy_pvm' },
+        { start: 'voimaantulovaihe_alkaa_pvm', end: 'voimaantulovaihe_paattyy_pvm' },
+      ];
+      const existing = orderedPhases.filter(p => data[p.start] || data[p.end]);
+      for (let i = 1; i < existing.length; i++) {
+        const prev = existing[i - 1];
+        const cur = existing[i];
+        if (data[prev.end] && data[cur.start]) {
+          data[cur.start] = data[prev.end];
+        }
+      }
+    }),
   }
 }));
 
@@ -56,10 +81,40 @@ vi.mock('../../utils/objectUtil', () => ({
         .filter(([k, v]) => v && typeof v === 'string' && v.match(/^\d{4}-\d{2}-\d{2}$/))
         .map(([key, value]) => ({ key, value }))
     ),
-    compareAndUpdateArrays: vi.fn((orig, updated) => updated),
-    checkForDecreasingValues: vi.fn(({ arr }) => arr),
-    updateOriginalObject: vi.fn((obj, arr) => {
-      arr.forEach(({ key, value }) => { obj[key] = value; });
+    mergeAndUpdateDlArrays: vi.fn((orig, updated) => updated),
+  }
+}))
+
+vi.mock('../../utils/deadlineCascade', () => ({
+  default: {
+    // Minimal stand-in for the real cascade: apply the moved field value to the
+    // array. When pairedEndKey is provided, preserve the original
+    // duration between the moved field and its paired end.
+    cascadeDeadlineChange: vi.fn(({ dlArray, field, movedFieldValue, pairedEndKey }) => {
+      const arr = dlArray.map(item => ({ ...item }));
+      const currIdx = arr.findIndex(item => item.key === field);
+      let oldStart = null;
+      if (currIdx !== -1) {
+        oldStart = arr[currIdx].value;
+        arr[currIdx].value = movedFieldValue;
+      } else if (movedFieldValue) {
+        arr.push({ key: field, value: movedFieldValue });
+      }
+      if (pairedEndKey && movedFieldValue) {
+        const endItem = arr.find(item => item.key === pairedEndKey);
+        if (endItem?.value && oldStart) {
+          const days = Math.round(
+            (new Date(endItem.value) - new Date(oldStart)) / 86400000
+          );
+          const newEnd = new Date(movedFieldValue);
+          newEnd.setDate(newEnd.getDate() + days);
+          const y = newEnd.getFullYear();
+          const m = String(newEnd.getMonth() + 1).padStart(2, '0');
+          const d = String(newEnd.getDate()).padStart(2, '0');
+          endItem.value = `${y}-${m}-${d}`;
+        }
+      }
+      return arr;
     }),
   }
 }))
@@ -380,7 +435,7 @@ describe('UPDATE_DATE_TIMELINE action', () => {
     expect(result.currentProject.attribute_data.milloin_periaatteet_esillaolo_alkaa).toBe('2026-03-20');
   });
 
-  it('should preserve duration when keepDuration is true', () => {
+  it('should preserve duration when pairedEndKey is provided', () => {
     const state = createStateWithProject({
       milloin_periaatteet_esillaolo_alkaa: '2026-03-10',
       milloin_periaatteet_esillaolo_paattyy: '2026-03-24', // 14 days duration
@@ -393,8 +448,6 @@ describe('UPDATE_DATE_TIMELINE action', () => {
         newDate: '2026-03-17',
         isAdd: false,
         deadlineSections,
-        keepDuration: true,
-        originalDurationDays: 14,
         pairedEndKey: 'milloin_periaatteet_esillaolo_paattyy',
       },
     });

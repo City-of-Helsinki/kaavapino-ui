@@ -28,6 +28,47 @@ let confirmationAttributeNames = [
 const confirmationAttributes = confirmationAttributeNames.concat(confirmationAttributeNames.map(attr => attr + '_readonly'));
 Object.freeze(confirmationAttributes);
 
+export const confirm_attr_group_map = Object.freeze({
+  'kaynnistys_1': null,
+  'periaatteet_esillaolokerta_1': 'vahvista_periaatteet_esillaolo_alkaa',
+  'periaatteet_esillaolokerta_2': 'vahvista_periaatteet_esillaolo_alkaa_2',
+  'periaatteet_esillaolokerta_3': 'vahvista_periaatteet_esillaolo_alkaa_3',
+  'periaatteet_lautakuntakerta_1': 'vahvista_periaatteet_lautakunnassa',
+  'periaatteet_lautakuntakerta_2': 'vahvista_periaatteet_lautakunnassa_2',
+  'periaatteet_lautakuntakerta_3': 'vahvista_periaatteet_lautakunnassa_3',
+  'periaatteet_lautakuntakerta_4': 'vahvista_periaatteet_lautakunnassa_4',
+  'oas_esillaolokerta_1': 'vahvista_oas_esillaolo_alkaa',
+  'oas_esillaolokerta_2': 'vahvista_oas_esillaolo_alkaa_2',
+  'oas_esillaolokerta_3': 'vahvista_oas_esillaolo_alkaa_3',
+  'luonnos_esillaolokerta_1': 'vahvista_luonnos_esillaolo_alkaa',
+  'luonnos_esillaolokerta_2': 'vahvista_luonnos_esillaolo_alkaa_2',
+  'luonnos_esillaolokerta_3': 'vahvista_luonnos_esillaolo_alkaa_3',
+  'luonnos_lautakuntakerta_1': 'vahvista_kaavaluonnos_lautakunnassa',
+  'luonnos_lautakuntakerta_2': 'vahvista_kaavaluonnos_lautakunnassa_2',
+  'luonnos_lautakuntakerta_3': 'vahvista_kaavaluonnos_lautakunnassa_3',
+  'luonnos_lautakuntakerta_4': 'vahvista_kaavaluonnos_lautakunnassa_4',
+  'ehdotus_nahtavillaolokerta_1': 'vahvista_ehdotus_esillaolo',
+  'ehdotus_nahtavillaolokerta_2': 'vahvista_ehdotus_esillaolo_2',
+  'ehdotus_nahtavillaolokerta_3': 'vahvista_ehdotus_esillaolo_3',
+  'ehdotus_nahtavillaolokerta_4': 'vahvista_ehdotus_esillaolo_4',
+  'ehdotus_lautakuntakerta_1': 'vahvista_kaavaehdotus_lautakunnassa',
+  'ehdotus_lautakuntakerta_2': 'vahvista_kaavaehdotus_lautakunnassa_2',
+  'ehdotus_lautakuntakerta_3': 'vahvista_kaavaehdotus_lautakunnassa_3',
+  'ehdotus_lautakuntakerta_4': 'vahvista_kaavaehdotus_lautakunnassa_4',
+  'tarkistettu_ehdotus_lautakuntakerta_1': 'vahvista_tarkistettu_ehdotus_lautakunnassa',
+  'tarkistettu_ehdotus_lautakuntakerta_2': 'vahvista_tarkistettu_ehdotus_lautakunnassa_2',
+  'tarkistettu_ehdotus_lautakuntakerta_3': 'vahvista_tarkistettu_ehdotus_lautakunnassa_3',
+  'tarkistettu_ehdotus_lautakuntakerta_4': 'vahvista_tarkistettu_ehdotus_lautakunnassa_4',
+  'hyvaksyminen_1': null,
+  'voimaantulo_1': null}
+);
+
+export const isGroupConfirmed = (groupKey, attributeData) => {
+  const confirmAttr = confirm_attr_group_map[groupKey];
+  if (!confirmAttr) return false;
+  return attributeData[confirmAttr] === true;
+}
+
 const addZeroPrefixIfNecessary = value => (value < 10 ? `0${value}` : value)
 
 const formatDate = value => {
@@ -718,7 +759,8 @@ const getMissingGeoData = (attData, geoData) => {
 }
 
 
-const exported = {  confirmationAttributes,
+const exported = {
+  confirmationAttributes,
   formatDate,
   formatTime,
   formatDateTime,
@@ -749,7 +791,9 @@ const exported = {  confirmationAttributes,
   objectsEqual,
   diffArray,
   diffArrayObject,
-  getMissingGeoData}
+  getMissingGeoData,
+  isGroupConfirmed,
+}
 
 if (process.env.UNIT_TEST === "true"){
   exported.checkErrors = checkErrors;

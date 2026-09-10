@@ -1,82 +1,8 @@
 import { shouldDeadlineBeVisible } from "./projectVisibilityUtils";
 import timeUtil from "./timeUtil";
 
-// Extract phase prefix from a deadline key to determine if deadlines are in the same phase
-const getPhasePrefix = (key) => {
-  if (!key) return null;
-  // Phase boundary fields like "oasvaihe_alkaa_pvm" or "periaatteetvaihe_paattyy_pvm"
-  if (key.includes('vaihe_')) return key.split('vaihe_')[0] + 'vaihe';
-  // Phase-specific deadlines
-  if (key.includes('periaatteet') || key.includes('periaatteista')) return 'periaatteet';
-  if (key.includes('oas_') || key.includes('_oas')) return 'oas';
-  if (key.includes('luonnos') || key.includes('kaavaluonnos')) return 'luonnos';
-  if (key.includes('ehdotus') || key.includes('kaavaehdotus') || key.includes('ehdotuksesta')) return 'ehdotus';
-  if (key.includes('tarkistettu_ehdotus') || key.includes('tarkistettuehdotus')) return 'tarkistettu_ehdotus';
-  if (key.includes('hyvaksyminen') || key.includes('hyvaksymis')) return 'hyvaksyminen';
-  if (key.includes('voimaantulo')) return 'voimaantulo';
-  if (key.includes('kaynnistys')) return 'kaynnistys';
-  return null; // Unknown phase
-};
-
-// Check if a key is a phase boundary field (alkaa_pvm or paattyy_pvm)
-const isPhaseBoundary = (key) => {
-  if (!key) return false;
-  return key.endsWith('_alkaa_pvm') || key.endsWith('_paattyy_pvm');
-};
-
-// KAAV-3517: Derive the phase start key from a kylk_maaraaika key
-// Maps e.g. "tarkistettu_ehdotus_kylk_maaraaika" → "tarkistettuehdotusvaihe_alkaa_pvm"
-const derivePhaseStartKeyFromKylkMaaraaika = (key) => {
-  if (!key) return null;
-  
-  // Map from kylk_maaraaika patterns to phase start keys
-  const mappings = {
-    'tarkistettu_ehdotus_kylk_maaraaika': 'tarkistettuehdotusvaihe_alkaa_pvm',
-    'ehdotus_kylk_aineiston_maaraaika': 'ehdotusvaihe_alkaa_pvm',
-    'kaavaluonnos_kylk_aineiston_maaraaika': 'luonnosvaihe_alkaa_pvm',
-    'periaatteet_lautakunta_aineiston_maaraaika': 'periaatteetvaihe_alkaa_pvm',
-  };
-
-  // Direct mapping first
-  if (mappings[key]) return mappings[key];
-
-  // Fallback pattern matching for variations
-  if (key.includes('tarkistettu_ehdotus') && (key.includes('kylk_maaraaika') || key.includes('kylk_aineiston_maaraaika'))) {
-    return 'tarkistettuehdotusvaihe_alkaa_pvm';
-  }
-  if (key.includes('ehdotus') && !key.includes('tarkistettu') && (key.includes('kylk_maaraaika') || key.includes('kylk_aineiston_maaraaika'))) {
-    return 'ehdotusvaihe_alkaa_pvm';
-  }
-  if ((key.includes('luonnos') || key.includes('kaavaluonnos')) && (key.includes('kylk_maaraaika') || key.includes('kylk_aineiston_maaraaika'))) {
-    return 'luonnosvaihe_alkaa_pvm';
-  }
-  if (key.includes('periaatteet') && (key.includes('lautakunta_aineiston_maaraaika') || key.includes('kylk_maaraaika'))) {
-    return 'periaatteetvaihe_alkaa_pvm';
-  }
-
-  return null;
-};
-
-// KAAV-3517: Derive the previous phase end key from a phase start key
-// Maps e.g. "tarkistettuehdotusvaihe_alkaa_pvm" → "ehdotusvaihe_paattyy_pvm"
-const derivePreviousPhaseEndKey = (phaseStartKey) => {
-  if (!phaseStartKey) return null;
-
-  const phaseBoundaryPairs = {
-    'tarkistettuehdotusvaihe_alkaa_pvm': 'ehdotusvaihe_paattyy_pvm',
-    'ehdotusvaihe_alkaa_pvm': 'luonnosvaihe_paattyy_pvm', // Only when luonnos phase exists
-    'luonnosvaihe_alkaa_pvm': 'oasvaihe_paattyy_pvm',
-    'oasvaihe_alkaa_pvm': 'periaatteetvaihe_paattyy_pvm', // Only when periaatteet phase exists
-    'periaatteetvaihe_alkaa_pvm': 'kaynnistys_paattyy_pvm',
-    'hyvaksyminenvaihe_alkaa_pvm': 'tarkistettuehdotusvaihe_paattyy_pvm',
-    'voimaantulovaihe_alkaa_pvm': 'hyvaksyminenvaihe_paattyy_pvm',
-  };
-
-  return phaseBoundaryPairs[phaseStartKey] || null;
-};
-
 //Phase main start and end value order should always be the same
-const order = [
+export const phaseOrder = [
   'projektin_kaynnistys_pvm',
   'kaynnistys_paattyy_pvm',
   'periaatteetvaihe_alkaa_pvm',
@@ -95,72 +21,18 @@ const order = [
   'voimaantulovaihe_paattyy_pvm'
 ];
 
-const getHighestNumberedObject = (obj1) => {
-  // Helper function to extract the number from a content string
-  const extractNumber = str => {
-    // Find the last digit in the string
-    let i = str.length - 1;
-    while (i >= 0 && !/\d/.test(str[i])) {
-      i--;
-    }
-    // Extract the number
-    let numStr = '';
-    while (i >= 0 && /\d/.test(str[i])) {
-      numStr = str[i] + numStr;
-      i--;
-    }
-    return numStr ? parseInt(numStr, 10) : -Infinity; // Return -Infinity if no number is found
-  };
-
-  // If 'asd_x' objects exist, find the one with the highest number
-  if (obj1.length > 0) {
-    return obj1.reduce((maxObj, currentObj) =>
-      extractNumber(currentObj.content) > extractNumber(maxObj.content) ? currentObj : maxObj
-    );
-  }
-
-  // Return null if no valid objects are found
-  return null;
+const phaseStartEndAttributes = {
+  "Käynnistys": ["projektin_kaynnistys_pvm", "kaynnistys_paattyy_pvm"],
+  "Periaatteet": ["periaatteetvaihe_alkaa_pvm", "periaatteetvaihe_paattyy_pvm"],
+  "OAS": ["oasvaihe_alkaa_pvm", "oasvaihe_paattyy_pvm"],
+  "Luonnos": ["luonnosvaihe_alkaa_pvm", "luonnosvaihe_paattyy_pvm"],
+  "Ehdotus": ["ehdotusvaihe_alkaa_pvm", "ehdotusvaihe_paattyy_pvm"],
+  "Tarkistettu ehdotus": ["tarkistettuehdotusvaihe_alkaa_pvm", "tarkistettuehdotusvaihe_paattyy_pvm"],
+  "Hyväksyminen": ["hyvaksyminenvaihe_alkaa_pvm", "hyvaksyminenvaihe_paattyy_pvm"],
+  "Voimaantulo": ["voimaantulovaihe_alkaa_pvm", "voimaantulovaihe_paattyy_pvm"]
 };
 
-const getMinObject = (latestObject) => {
-  // Iterate over the keys of the object
-  for (let key in latestObject) {
-    // Check if the value is an array
-    if (Array.isArray(latestObject[key]) && latestObject[key].length > 0) {
-      // Access the first object in the array
-      let firstObject = latestObject[key][0];
-      return firstObject.name
-    }
-  }
-  return null;
-}
 
-// Function to extract the number after the last underscore and return the object with the larger number
-const getNumberFromString = (arr) => {
-  let largestObject = null;
-  let largestNumber = -Infinity;
-
-  arr.forEach(obj => {
-    const match = obj.attributegroup.match(/_(\d+)$/); // Match digits after the last underscore
-    if (match) {
-      const number = parseInt(match[1], 10); // Get the number
-      if (number > largestNumber) { // Compare with the current largest number
-        largestNumber = number;
-        largestObject = obj;
-      }
-    }
-  });
-
-  return largestObject; // Return the object with the largest number
-}
-
-const findValuesWithStrings = (arr, str1, str2, str3, str4) => {
-  let arrOfObj = arr.filter(obj => obj.name.includes(str1) && obj.name.includes(str2) && obj.name.includes(str3) && obj.name.includes(str4));
-  // Get the object with the largest number from the array
-  const largest = getNumberFromString(arrOfObj);
-  return largest
-};
 
 const generateDateStringArray = (updatedAttributeData) => {
   const updateAttributeArray = [];
@@ -176,76 +48,51 @@ const generateDateStringArray = (updatedAttributeData) => {
   return updateAttributeArray
 }
 
-const compareAndUpdateArrays = (arr1, arr2, deadlineSections) => {
-  let changes = [];
-  // Convert arr2 to a map for easier lookups
+const mergeAndUpdateDlArrays = (arr1, arr2, deadlineSections) => {
+
   const map2 = new Map(arr2.map(item => [item.key, item.value]));
+  const arr1ByKey = new Map(arr1.map(item => [item.key, item]));
 
-  // Iterate through arr1 and update values if a matching key is found in arr2
-  for (let i = 0; i < arr1.length; i++) {
-    const key = arr1[i].key;
-    const value1 = arr1[i].value;
-
-    if (map2.has(key)) {
-      const value2 = map2.get(key);
-
-      // If values differ, update the value in arr1 and record the change
-      if (value1 !== value2) {
-        changes.push({
-          key: key,
-          oldValue: value1,
-          newValue: value2
-        });
-        arr1[i].value = value2; // Update the value in arr1
-      }
+  // Update existing arr1 entries in place, append new ones
+  for (const [key, value] of map2) {
+    const existing = arr1ByKey.get(key);
+    if (existing) {
+      existing.value = value;
+    } else {
+      arr1.push({ key, value });
     }
   }
 
-  // Check for keys in arr2 that are missing in arr1
-  for (let [key, value2] of map2) {
-    if (!arr1.find(item => item.key === key)) {
-      changes.push({
-        key: key,
-        oldValue: 'Not found in first array',
-        newValue: value2
-      });
-      // Optionally, add the missing key-value pair to arr1
-      arr1.push({ key: key, value: value2 });
-    }
-  }
-  // Adding distance_from_previous and distance_to_next to arr1 from deadlineSections
-  for (let i = 0; i < arr1.length; i++) {
-    const arr1Key = arr1[i].key;
+  const keyOrder = [];
+  const attributeByName = new Map();
 
-    // Iterate over each section in deadlineSections
-    for (let section of deadlineSections) {
-      // Iterate over each attribute in section's attributes array
-      for (let sec of section.sections) {
-        for (let attribute of sec.attributes) {
-          if (attribute.name === arr1Key) {
-            // Found a match, now add distance_from_previous and distance_to_next
-            arr1[i].distance_from_previous = attribute?.distance_from_previous || null;
-            arr1[i].distance_to_next = attribute?.distance_to_next || null;
-            arr1[i].initial_distance = attribute?.initial_distance?.distance || null
-            arr1[i].date_type = attribute?.date_type ?? "arkipäivät";
-            arr1[i].order = i;
-            break; // Exit the loop once the match is found
-          }
+  for (const section of deadlineSections) {
+    for (const sec of section.sections) {
+      const phaseStart = phaseStartEndAttributes[section.title]?.[0];
+      keyOrder.push(phaseStart);
+      for (const attribute of sec.attributes) {
+        keyOrder.push(attribute.name);
+        if (!attributeByName.has(attribute.name)) {
+          attributeByName.set(attribute.name, attribute);
         }
       }
+      keyOrder.push(phaseStartEndAttributes[section.title]?.[1]); // Add phase end attribute
     }
   }
 
-  // Extract the order of keys (names) from deadlineSections
-  //DeadlineSections has the correct order always
-  let keyOrder = [];
-  for (let section of deadlineSections) {
-    for (let sec of section.sections) {
-      for (let attribute of sec.attributes) {
-        keyOrder.push(attribute.name);  // Get the order of names
-      }
+  // Enrich arr1 in a single linear pass
+  arr1.forEach((item) => {
+    if (phaseOrder.includes(item.key)) {
+      item.distance_from_previous = 0;
+      return;
     }
-  }
+    const attribute = attributeByName.get(item.key);
+    if (!attribute) return;
+    item.distance_from_previous = attribute.distance_from_previous || null;
+    item.distance_to_next       = attribute.distance_to_next || null;
+    item.initial_distance       = attribute.initial_distance?.distance || null;
+    item.date_type              = attribute.date_type ?? "arkipäivät";
+  });
 
   // Sort arr1 based on the keyOrder extracted from deadlineSections
   arr1.sort((a, b) => {
@@ -265,405 +112,8 @@ const compareAndUpdateArrays = (arr1, arr2, deadlineSections) => {
     return 0;
   });
 
-  //Sort phase start end data by order const
-  arr1 = sortPhaseData(arr1, order)
-  //Return in order array ready for comparing next and previous value distances
-  arr1 = arr1.filter(item => !item.key.includes("viimeistaan_lausunnot_") && !item.key.includes("viimeistaan_mielipiteet") && !item.key.includes("aloituskokous_suunniteltu_pvm_readonly")); //filter out has no next and prev values
-  return arr1
+  return arr1.filter(item => !item.key.includes("aloituskokous_suunniteltu_pvm_readonly"));
 }
-//Sort by certain predetermined order
-const sortPhaseData = (arr, order) => {
-  arr.sort((a, b) => {
-    // check for the 'order' property
-    const aHasOrder = Object.prototype.hasOwnProperty.call(a, 'order');
-    const bHasOrder = Object.prototype.hasOwnProperty.call(b, 'order');
-
-    // If both items have 'order', keep their relative positions
-    if (aHasOrder && bHasOrder) {
-      return 0; // Maintain original order for these items
-    }
-    // If only one of them has 'order', prioritize that one to stay in place
-    if (aHasOrder) return -1;
-    if (bHasOrder) return 1;
-
-    // Otherwise, sort based on the provided order array
-    return order.indexOf(a.key) - order.indexOf(b.key);
-  });
-
-  arr = increasePhaseValues(arr)
-  return arr
-}
-
-const increasePhaseValues = (arr) => {
-  const filteredArr = arr.filter(item => order.includes(item.key));
-  // Ensure each subsequent value is equal to or greater than the previous one
-  for (let i = 1; i < filteredArr.length; i++) {
-    if (filteredArr[i - 1].key.includes("paattyy_pvm") && filteredArr[i].key.includes("alkaa_pvm") || filteredArr[i].key.includes("kaynnistys_pvm")) {
-      // Convert values to Date objects for comparison
-      const previousValue = new Date(filteredArr[i - 1].value);
-      const currentValue = new Date(filteredArr[i].value);
-
-      // Adjust the current value if it's less than the previous value
-      if (currentValue < previousValue) {
-        filteredArr[i].value = filteredArr[i - 1].value;
-      }
-    }
-  }
-  // Replace the original elements in arr with updated elements from filteredArr
-  const result = arr.map(item => {
-    const updatedItem = filteredArr.find(filteredItem => filteredItem.key === item.key);
-    return updatedItem ? updatedItem : item;
-  });
-  return result
-}
-
-const checkForDecreasingValues = ({ arr, isAdd, field, disabledDates, oldDate, movedDate, moveToPast, projectSize, attributeData, deadlineObjects = [] }) => {
-
-
-  // Lock logic: do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
-  // attributeData is the filtered attribute_data object (only visible fields) so we can inspect confirmation flags
-  let confirmedFieldSet = null;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  if (attributeData && deadlineObjects.length > 0) {
-    try {
-      // Lazy load to avoid circular deps
-      const { generateConfirmedFields } = require('./generateConfirmedFields');
-      confirmedFieldSet = new Set(generateConfirmedFields(attributeData, deadlineObjects));
-    }
-    catch (e) {
-      // Fail silently – if generation fails we simply don't lock by confirmation (past locking still applies)
-    }
-  }
-  // Helper to decide if an item should be frozen
-  const isLocked = (item) => {
-    if (!item?.value) return false;
-    const d = new Date(item.value);
-    if (!isNaN(d) && d < today) return true;
-    return confirmedFieldSet ? confirmedFieldSet.has(item.key) : false;
-  };
-  // Find the index of the next item where dates should start being pushed
-  const currentIndex = arr.findIndex(item => item.key === field);
-  let indexToContinue = 0
-  // If adding items
-  if (isAdd) {
-    // Move the nextItem and all following items forward if item minium is exceeded
-    for (let i = currentIndex; i < arr.length; i++) {
-      if (isLocked(arr[i])) continue; // skip locked items entirely
-      // AT1.2.2/AT1.2.4: Käynnistys phase dates are user-editable exceptions - never cascade them
-      if (arr[i].key.includes("kaynnistysvaihe_alkaa_pvm") || arr[i].key.includes("projektin_kaynnistys_pvm") || arr[i].key.includes("kaynnistys_paattyy_pvm")) continue;
-      if (!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
-        && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
-        && !arr[i].key.includes("hyvaksymispaatos_pvm")) {
-        let newDate = new Date(arr[i].value);
-        // Note: initial_distance is for initial project generation; cascade operations use distance_from_previous
-        // miniumGap is kept for compatibility with non-cascade operations within this loop
-        const miniumGap = arr[i].initial_distance ?? arr[i].distance_from_previous ?? 0
-        
-        // Find predecessor by previous_deadline relationship, fallback to array position
-        let prevItem = null;
-        if (arr[i].previous_deadline) {
-          prevItem = arr.find(item => item.key === arr[i].previous_deadline);
-        }
-        if (!prevItem && i > 0) {
-          prevItem = arr[i - 1];
-        }
-        
-        // Skip cascade if no valid predecessor found
-        if (!prevItem || !prevItem.value) {
-          continue;
-        }
-        
-        if (prevItem.key.includes("paattyy") && arr[i].key.includes("mielipiteet") || prevItem.key.includes("paattyy") && arr[i].key.includes("lausunnot")) {
-          //mielipiteet and paattyy is always the same value
-          newDate = new Date(prevItem.value);
-        }
-        else {
-          // Only push forward if there's an actual overlap
-          const prevDate = new Date(prevItem.value);
-          const currDate = new Date(arr[i].value);
-          const hasOverlap = prevDate >= currDate;
-          
-          if (hasOverlap) {
-            // Use distance_from_previous for cascade; initial_distance is only for project generation
-            const cascadeGap = arr[i].distance_from_previous ?? miniumGap;
-            //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
-            newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key, prevItem.value, arr[i].value, disabledDates?.date_types[arr[i]?.date_type]?.dates, disabledDates?.date_types?.disabled_dates?.dates, cascadeGap, projectSize, true) : newDate
-          }
-          else {
-            // No overlap - keep current date unchanged
-          }
-        }
-        // Update the array with the new date
-        newDate.setDate(newDate.getDate());
-        const finalValue = newDate.toISOString().split('T')[0];
-        
-        arr[i].value = finalValue;
-        //Move phase start and end dates
-        if (arr[i].distance_from_previous === undefined && arr[i].key.endsWith('_pvm') && arr[i].key.includes("_paattyy_")) {
-          const targetSubstring = arr[i].key.split('vaihe')[0];
-          // Iterate backwards from the given index
-          const res = reverseIterateArray(arr, i, targetSubstring)
-          const differenceInTime = new Date(res) - new Date(arr[i].value)
-          const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
-          if (differenceInDays >= 5) {
-            arr[i].value = res
-            if (arr[i]?.key?.includes("tarkistettuehdotusvaihe_paattyy_pvm")) {
-              //Move hyvaksyminenvaihe_paattyy_pvm and voimaantulovaihe_paattyy_pvm as many days as tarkistettuehdotusvaihe_paattyy_pvm
-              const items = arr.filter(el => el.key?.includes("hyvaksyminenvaihe_paattyy_pvm") || el.key?.includes("voimaantulovaihe_paattyy_pvm"));
-              if (items) {
-                items.forEach(item => {
-                  const currentDate = new Date(item.value);
-                  currentDate.setDate(currentDate.getDate() + differenceInDays);
-                  item.value = currentDate.toISOString().split('T')[0];
-                });
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  else if (currentIndex !== -1) {
-    // Save original values before mutation to prevent cascading against just-updated values
-    const originalValues = arr.map(item => item.value);
-
-    for (let i = currentIndex; i < arr.length; i++) {
-      if (isLocked(arr[i])) continue; // do not move locked items
-      // AT1.2.2/AT1.2.4: Käynnistys phase dates are user-editable exceptions - never cascade them
-      if (arr[i].key.includes("kaynnistysvaihe_alkaa_pvm") || arr[i].key.includes("projektin_kaynnistys_pvm") || arr[i].key.includes("kaynnistys_paattyy_pvm")) continue;
-      if (!arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")
-        && !arr[i].key.includes("valtuusto_poytakirja_nahtavilla_pvm") && !arr[i].key.includes("hyvaksymispaatos_valitusaika_paattyy") && !arr[i].key.includes("valtuusto_hyvaksymiskuulutus_pvm")
-        && !arr[i].key.includes("hyvaksymispaatos_pvm")) {
-        let newDate = new Date(arr[i].value);
-        
-        // Find predecessor by previous_deadline, fallback to array position
-        let prevItem = null;
-        if (arr[i].previous_deadline) {
-          prevItem = arr.find(item => item.key === arr[i].previous_deadline);
-        }
-        if (!prevItem && i > 0) {
-          prevItem = arr[i - 1];
-        }
-        
-        if (prevItem?.key?.includes("paattyy") && arr[i]?.key?.includes("mielipiteet")) {
-          //mielipiteet and paattyy is always the same value
-          newDate = new Date(prevItem.value);
-        }
-        else {
-          //Paattyy and nahtavillaolo l-xl are independent of other values
-          if (
-            ((projectSize === "XS" || projectSize === "S" || projectSize === "M") && i === currentIndex) ||
-            ((projectSize === "XL" || projectSize === "L") && i === currentIndex)
-          ) {
-            //Make next or previous or previous and 1 after previous dates follow the moved date if needed
-            if (arr[currentIndex]?.key?.includes("kylk_maaraaika") || arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") || arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika")) {
-              //maaraika in lautakunta moving - forward cascade to lautakunnassa
-              // Use initial_distance, fall back to distance_from_previous, then default 21 (P7/L7/E8/T3 standard gap)
-              const lautakuntaGap = arr[i + 1].initial_distance ?? arr[i + 1].distance_from_previous ?? 21;
-              const lautakuntaResult = timeUtil.findAllowedLautakuntaDate(movedDate, lautakuntaGap, disabledDates?.date_types[arr[i + 1]?.date_type]?.dates, false, disabledDates?.date_types[arr[i]?.date_type]?.dates);
-              arr[i + 1].value = new Date(lautakuntaResult).toISOString().split('T')[0];
-              indexToContinue = i + 1
-              
-              // KAAV-3517 FIX: Backward cascade when moving kylk_maaraaika to past
-              // The predecessor (phase start like tarkistettuehdotusvaihe_alkaa_pvm) must also move backwards
-              // to maintain the minimum distance (distance_from_previous) from phase start to maaraaika
-              if (moveToPast) {
-                const phaseStartKey = derivePhaseStartKeyFromKylkMaaraaika(arr[currentIndex].key);
-                if (phaseStartKey) {
-                  const phaseStartIndex = arr.findIndex(item => item.key === phaseStartKey);
-                  if (phaseStartIndex !== -1) {
-                    const distance = arr[currentIndex].distance_from_previous ?? 6; // default 6 work days per database_deadline_rules.md
-                    const phaseStartAllowedDates = disabledDates?.date_types[arr[phaseStartIndex]?.date_type]?.dates;
-                    
-                    // Calculate required phase start: movedDate - distance work days
-                    // Phase starts typically don't have date_type, so we may need to calculate manually
-                    let newPhaseStartDate;
-                    if (phaseStartAllowedDates && phaseStartAllowedDates.length > 0) {
-                      const requiredPhaseStart = timeUtil.findAllowedDate(movedDate, distance, phaseStartAllowedDates, true);
-                      newPhaseStartDate = new Date(requiredPhaseStart).toISOString().split('T')[0];
-                    } else {
-                      // Fallback: calculate by subtracting work days manually
-                      // Use the maaraaika's date_type allowed dates to count backwards
-                      const maaraikaAllowedDates = disabledDates?.date_types[arr[currentIndex]?.date_type]?.dates;
-                      if (maaraikaAllowedDates && maaraikaAllowedDates.length > 0) {
-                        const requiredPhaseStart = timeUtil.findAllowedDate(movedDate, distance, maaraikaAllowedDates, true);
-                        newPhaseStartDate = new Date(requiredPhaseStart).toISOString().split('T')[0];
-                      } else {
-                        // Last fallback: simple calendar day subtraction (not work days, but better than nothing)
-                        const fallbackDate = new Date(movedDate);
-                        fallbackDate.setDate(fallbackDate.getDate() - (distance + Math.ceil(distance / 5) * 2)); // Rough work day estimate
-                        newPhaseStartDate = fallbackDate.toISOString().split('T')[0];
-                      }
-                    }
-                    
-                    // Only update if new phase start is earlier than current
-                    if (new Date(newPhaseStartDate) < new Date(arr[phaseStartIndex].value)) {
-                      arr[phaseStartIndex].value = newPhaseStartDate;
-                      
-                      // Also update phase end (paattyy) for the previous phase since phase start = previous phase end
-                      const prevPhaseEndKey = derivePreviousPhaseEndKey(phaseStartKey);
-                      // AT1.2.2/AT1.2.4: Never cascade backwards into käynnistys phase - it's user-editable exception
-                      if (prevPhaseEndKey && prevPhaseEndKey !== 'kaynnistys_paattyy_pvm') {
-                        const prevPhaseEndIndex = arr.findIndex(item => item.key === prevPhaseEndKey);
-                        if (prevPhaseEndIndex !== -1 && new Date(newPhaseStartDate) < new Date(arr[prevPhaseEndIndex].value)) {
-                          arr[prevPhaseEndIndex].value = newPhaseStartDate;
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            else if (arr[currentIndex]?.key?.includes("paattyy") || ((projectSize === "XL" || projectSize === "L") && (arr[currentIndex]?.key.includes("nahtavilla_alkaa") || arr[currentIndex]?.key.includes("nahtavilla_paattyy")))) {
-              newDate = new Date(arr[i].value);
-              indexToContinue = i
-            }
-            else if (arr[currentIndex]?.key?.includes("lautakunnassa") && !arr[currentIndex]?.key?.includes("lautakunnassa_") || arr[currentIndex]?.key?.includes("alkaa")) {
-              // Backward cascade to maaraaika using previous_deadline
-              let prevIdx = i - 1;
-              if (arr[i].previous_deadline) {
-                const foundIdx = arr.findIndex(item => item.key === arr[i].previous_deadline);
-                if (foundIdx !== -1) prevIdx = foundIdx;
-              }
-              const maaraaikaResult = timeUtil.findAllowedDate(movedDate, arr[i].initial_distance, disabledDates?.date_types[arr[prevIdx]?.date_type]?.dates, true);
-              arr[prevIdx].value = new Date(maaraaikaResult).toISOString().split('T')[0];
-              indexToContinue = i
-            }
-            else if (arr[currentIndex]?.key?.includes("maaraaika")) {
-              //Maaraiaka moving
-              const oldStartISO = arr[i + 1]?.value;
-              const oldEndISO = arr[i + 2]?.value;
-              const endAllowed = disabledDates?.date_types[arr[i + 2]?.date_type]?.dates || [];
-              // Use initial_distance, fall back to distance_from_previous, then default 14 (P3/L3/O3 standard gap)
-              const alkaaGap = arr[i + 1].initial_distance ?? arr[i + 1].distance_from_previous ?? 14;
-              const alkaaResult = timeUtil.findAllowedDate(movedDate, alkaaGap, disabledDates?.date_types[arr[i]?.date_type]?.dates, false);
-              arr[i + 1].value = new Date(alkaaResult).toISOString().split('T')[0];
-              indexToContinue = i + 1
-              if (!arr[currentIndex]?.key?.includes("kylk_maaraaika") && !arr[currentIndex]?.key?.includes("kylk_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("_lautakunta_aineiston_maaraaika") && !arr[currentIndex]?.key?.includes("lautakunnassa") && arr[currentIndex]?.key?.includes("maaraaika")) {
-                let timespan = 0;
-                //Keep the same timespan between alkaa and paattyy if both are defined
-                if (endAllowed.length && oldStartISO && oldEndISO) {
-                  const start = endAllowed.findIndex(d => d >= oldStartISO);
-                  const end = endAllowed.findIndex(d => d >= oldEndISO);
-                  if (start !== -1 && end !== -1 && end >= start) timespan = end - start;
-                }
-                const val = endAllowed.findIndex(d => d >= arr[i + 1].value);
-                let kept = (val !== -1 && val + timespan < endAllowed.length) ? endAllowed[val + timespan] : null;
-                if (!kept) {
-                  const paattyyGap = arr[i + 2].initial_distance ?? arr[i + 2].distance_from_previous ?? 14;
-                  kept = timeUtil.findAllowedDate(arr[i + 1].value, paattyyGap, endAllowed, false);
-                }
-                arr[i + 2].value = new Date(kept).toISOString().split('T')[0];
-                indexToContinue = i + 2
-              }
-            }
-          }
-          else {
-            if (!moveToPast && i > indexToContinue) {
-              // Find predecessor by previous_deadline
-              let prevItemIdx = i - 1;
-              if (arr[i].previous_deadline) {
-                const foundIdx = arr.findIndex(item => item.key === arr[i].previous_deadline);
-                if (foundIdx !== -1) prevItemIdx = foundIdx;
-              }
-              
-              // Only push forward if there's an actual overlap (use original values to prevent cascade chain reactions)
-              const prevDate = new Date(originalValues[prevItemIdx]);
-              const currDate = new Date(originalValues[i]);
-              // Use distance_from_previous (minimum distance) for moving dates
-              const miniumGap = arr[i].distance_from_previous ?? 0
-              
-              // Skip cross-phase cascade for non-boundary deadlines
-              // Only phase boundaries (alkaa_pvm/paattyy_pvm) cascade across phase transitions
-              const currPhase = getPhasePrefix(arr[i].key);
-              const prevPhase = getPhasePrefix(arr[prevItemIdx]?.key);
-              const isCrossPhase = currPhase && prevPhase && currPhase !== prevPhase;
-              const currIsPhaseBoundary = isPhaseBoundary(arr[i].key);
-              
-              // Skip cascade if cross-phase transition and not a phase boundary
-              if (isCrossPhase && !currIsPhaseBoundary) {
-                // Don't modify newDate - keep the original value
-              }
-              else if (prevDate >= currDate) {
-                //Calculate difference between two dates and rule out holidays and set on date type specific allowed dates and keep minium gaps
-                newDate = arr[i]?.date_type ? timeUtil.dateDifference(arr[i].key, originalValues[prevItemIdx], originalValues[i], disabledDates?.date_types[arr[i]?.date_type]?.dates, disabledDates?.date_types?.disabled_dates?.dates, miniumGap, projectSize, false) : newDate
-                newDate = new Date(newDate)
-              }
-            }
-          }
-        }
-        // Update the array with the new date
-        newDate.setDate(newDate.getDate());
-        arr[i].value = newDate.toISOString().split('T')[0];
-        //Move phase start and end dates
-        if (arr[i].distance_from_previous === undefined && arr[i].key.endsWith('_pvm') && arr[i].key.includes("_paattyy_")
-          && !arr[i].key.includes("voimaantulo_pvm") && !arr[i].key.includes("rauennut") && !arr[i].key.includes("kumottu_pvm") && !arr[i].key.includes("tullut_osittain_voimaan_pvm")) {
-          const targetSubstring = arr[i].key.split('vaihe')[0];
-          // Iterate backwards from the given index
-          const res = reverseIterateArray(arr, i, targetSubstring)
-          const differenceInTime = new Date(res) - new Date(arr[i].value)
-          const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
-          if (differenceInDays >= 5) {
-            arr[i].value = res
-            if (arr[i]?.key?.includes("tarkistettuehdotusvaihe_paattyy_pvm")) {
-              //Move hyvaksyminenvaihe_paattyy_pvm and voimaantulovaihe_paattyy_pvm as many days as tarkistettuehdotusvaihe_paattyy_pvm
-              const items = arr.filter(el => el.key?.includes("hyvaksyminenvaihe_paattyy_pvm") || el.key?.includes("voimaantulovaihe_paattyy_pvm"));
-              if (items) {
-                items.forEach(item => {
-                  const currentDate = new Date(item.value);
-                  currentDate.setDate(currentDate.getDate() + differenceInDays);
-                  item.value = currentDate.toISOString().split('T')[0];
-                });
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  sortPhaseData(arr, order)
-
-
-
-  return arr
-}
-
-const reverseIterateArray = (arr, index, target) => {
-  let targetString = target
-  if (target === "tarkistettuehdotus") {
-    //other values in array at tarkistettu ehdotus phase are with _ but phase values are without
-    targetString = "tarkistettu_ehdotus"
-  }
-  else if (target === "ehdotus") {
-    targetString = ["ehdotuksen", "kaavaehdotus", "ehdotus"]
-  }
-  for (let i = index - 1; arr.length >= 0 && i >= 0; i--) {
-    // Check if 'distance_from_previous' attribute does not exist and if the key contains the target substring
-    if (target === "ehdotus") {
-      for (let j = 0; j < targetString.length; j++) {
-        if (!arr[i].key.includes('tarkistettu_ehdotus') && !arr[i].key.endsWith('_pvm') && arr[i].key.includes(targetString[j])) {
-          return arr[i].value;
-        }
-      }
-    }
-    else if (arr[i].key.includes(targetString) && !arr[i].key.endsWith('_pvm')) {
-      return arr[i].value;
-    }
-  }
-  return null; // Return null if no such key is found
-}
-
-// Function to update original object by comparing keys
-const updateOriginalObject = (originalObj, updatedArr) => {
-  updatedArr.forEach(item => {
-    if (Object.prototype.hasOwnProperty.call(originalObj, item.key)) {
-      originalObj[item.key] = item.value; // Update value if key exists
-    }
-  });
-  return originalObj;
-}
-
 // Helper function to compare values
 const compareObjectValues = (key, value1, value2) => {
   if (typeof value1 === 'object' && typeof value2 === 'object') {
@@ -730,20 +180,16 @@ const filterHiddenKeys = (attributeData, deadlines) => {
 const filterHiddenKeysUsingSections = (attributeData, deadlineSections) => {
   return Object.entries(attributeData).reduce((acc, [key, value]) => {
     const dl = findDeadlineInDeadlineSections(key, deadlineSections);
-    if (dl) {
+    if (dl?.type === "date") {
       // Deadline found in sections - use standard visibility check
       if (shouldDeadlineBeVisible(dl.name, dl.attributegroup, attributeData)) {
         acc[key] = value;
-      } else if (key.includes('luonnos') || key.includes('kaavaluonnos')) {
-        console.log('[KAAV-DEBUG] FILTERED OUT (in sections, not visible):', key, value, 'group:', dl.attributegroup);
       }
     } else {
       // Numbered deadline keys not in sections - infer visibility from attribute data
       const inferredVisibility = inferVisibilityForUnmappedDeadline(key, attributeData);
       if (inferredVisibility !== false) {
         acc[key] = value;
-      } else if (key.includes('luonnos') || key.includes('kaavaluonnos')) {
-        console.log('[KAAV-DEBUG] FILTERED OUT (unmapped, inferred false):', key, value);
       }
     }
     return acc
@@ -845,6 +291,36 @@ const findDeadlineInDeadlineSections = (deadlineName, deadlineSections) => {
   }
 }
 
+export const extractFromDeadlineSections = (deadlineSections, additionalConditions = () => true) => {
+  const targetArray = [];
+  for (const phase of deadlineSections) {
+    for (const section of phase.sections) {
+      for (const attribute of section.attributes) {
+        if (additionalConditions(attribute)) {
+          targetArray.push(attribute);
+        }
+      }
+    }
+  }
+  return targetArray;
+}
+
+export const isDeadlineLocked = (deadlineIdentifier, deadlineSections, lockedGroup) => {
+  const deadline = findDeadlineInDeadlineSections(deadlineIdentifier, deadlineSections);
+  if (!deadline || !lockedGroup) {
+    return false;
+  }
+  const groupOrder = []
+  deadlineSections.forEach(section => {
+    groupOrder.push(...Object.keys(section.grouped_sections[0]?.attributes || {}));
+  });
+
+  const deadlineGroupIndex = groupOrder.indexOf(deadline.attributegroup);
+  const lockedGroupIndex = groupOrder.indexOf(lockedGroup);
+  return deadlineGroupIndex >= lockedGroupIndex;
+}
+
+
 const convertKey = {
   tarkasta_esillaolo_periaatteet_fieldset: 'milloin_periaatteet_esillaolo_alkaa',
   tarkasta_lautakunta_periaatteet_fieldset: 'milloin_periaatteet_lautakunnassa',
@@ -888,13 +364,8 @@ const convertPayloadValues = (payload) => {
 };
 
 const exported = {
-  getHighestNumberedObject,
-  getMinObject,
-  findValuesWithStrings,
-  compareAndUpdateArrays,
-  checkForDecreasingValues,
+  mergeAndUpdateDlArrays,
   generateDateStringArray,
-  updateOriginalObject,
   findDifferencesInObjects,
   compareObjectValues,
   findMatchingName,
@@ -903,17 +374,14 @@ const exported = {
   convertKeyToMatching,
   convertPhaseIdToPhaseName,
   convertPayloadValues,
-  filterHiddenKeysUsingSections
+  filterHiddenKeysUsingSections,
+  extractFromDeadlineSections,
+  findDeadlineInDeadlineSections,
+  findDeadlineInDeadlines
 }
 
 if (process.env.UNIT_TEST === "true") {
-  exported.getNumberFromString = getNumberFromString
-  exported.increasePhaseValues = increasePhaseValues
-  exported.sortPhaseData = sortPhaseData
-  exported.reverseIterateArray = reverseIterateArray
-  exported.expectedOrder = order
-  exported.findDeadlineInDeadlines = findDeadlineInDeadlines
-  exported.findDeadlineInDeadlineSections = findDeadlineInDeadlineSections
+  exported.expectedOrder = phaseOrder
 }
 
 export default exported;

@@ -112,7 +112,7 @@
     "project-start-meeting-title": "Projektin aloituskokous",
     "project-opinions-latest-title": "{{phase}}-vaiheen aineiston mielipiteiden määräaika",
     "phase-closed":"Uusia rivejä ei voi lisätä, koska vaihe on lopetettu.",
-    "phase-locked":"Uusia rivejä ei voi lisätä, koska vaihe on lukittu.",
+    "phase-locked":"Uusia rivejä ei voi lisätä lukitulle alueelle.",
     "new-esillaolo":"Lisää uusi esilläolo",
     "delete-esillaolo":"Poista esilläolo",
     "esillaolo-next-confirmed": "Esilläoloa ei voi lisätä, koska seuraava lautakunta on jo vahvistettu.",
@@ -124,6 +124,9 @@
     "esillaolo-max": "Esilläolojen enimmäismäärä on saavutettu.",
     "nahtavillaolo-max": "Nähtävilläolojen enimmäismäärä on saavutettu.",
     "lautakunta-max": "Lautakuntien enimmäismäärä on saavutettu.",
+    "esillaolo-locked": "Esilläoloa ei voi lisätä, sillä vaihe on lukittu.",
+    "nahtavillaolo-locked": "Nähtävilläoloa ei voi lisätä, sillä vaihe on lukittu.",
+    "lautakunta-locked": "Lautakuntaa ei voi lisätä, sillä vaihe on lukittu.",
     "delete-phase-closed":"Riviä ei voi poistaa, koska vaihe on lopetettu.",
     "delete-confirmed-esillaolo":"Riviä ei voi poistaa, koska esilläolo on vahvistettu.",
     "delete-confirmed-lautakunta": "Riviä ei voi poistaa, koska lautakunta on vahvistettu.",
@@ -131,6 +134,9 @@
     "delete-first-esillaolo":"Riviä ei voi poistaa, koska vaiheen ensimmäinen esilläolo on pakollinen.",
     "delete-first-lautakunta":"Riviä ei voi poistaa, koska vaiheen ensimmäinen lautakunta on pakollinen.",
     "delete-first-nahtavillaolo":"Riviä ei voi poistaa, koska vaiheen ensimmäinen nähtävilläolo on pakollinen.",
+    "delete-locked":"Riviä ei voi poistaa, sillä elementtirivi on lukittu.",
+    "lock-another-locked":"Riviä ei voi lukita, koska toinen rivi on jo lukittu.",
+    "lock-phase-closed":" Riviä ei voi lukita, koska vaihe on lopetettu.",
     "timeline-group-header": "Vaiheiden etapit",
     "modify-timeline":"Muokkaa aikataulua",
     "edit-deadline-section": "Muokkaa aikataulutietoja",
@@ -145,7 +151,9 @@
       "lautakuntaInPast": "Vahvistusta ei voi perua, koska lautakunta sijaitsee menneessä ajanhetkessä.",
       "anyPastConfirmed": "Vahvistusta ei voi perua, koska päivämäärä on menneisyydessä.",
       "anyPast": "Päivämäärää ei voi vahvistaa, koska se sijaitsee menneisyydessä.",
-      "disableConfirmButton": "Vahvistusta ei voi perua, koska seuraava {{nextGroupWord}} on jo lisätty."
+      "disableConfirmButton": "Vahvistusta ei voi perua, koska seuraava {{nextGroupWord}} on jo lisätty.",
+      "groupLocked": "Vahvistusta ei voi tehdä, koska aikajanan alue on lukittu.",
+      "groupLockedConfirmed": "Vahvistusta ei voi perua, koska aikajanan alue on lukittu."
     },
     "aria": {
       "move-timeline-forward": "Siirry aikajanalla eteenpäin",
@@ -233,6 +241,7 @@
     "error-connection":"Tallennus epäonnistui yhteysongelmia takia. Yritetään uudelleen 10 sekunnin kuluttua.",
     "error-connection-fail":"Tallennus keskeytyi yhteysongelmia takia.",
     "validation-error":"Päivämäärien tarkistus epäonnistui",
+    "timeline-locked-rejected":"Aikataulun muutos hylättiin, koska lukittu ryhmä estää muutoksen. Aikataulu on palautettu edelliseen tilaan.",
     "session-expiring": "Istuntosi vanhenee {{timer}} kuluttua.",
     "extend-session": "Jatka istuntoa",
     "session-extended": "Istuntoa jatkettu"
@@ -353,7 +362,8 @@
     "remove-filters": "Poista kaikki valinnat",
     "field-locked-by-user": "Käyttäjä {{userName}} ({{userEmail}}) on muokkaamassa kenttää",
     "rolling-info": "Tieto siirtyy vaiheiden välillä ja sitä voi täydentää",
-    "auto-generated-info": "Tieto on automaattisesti muodostettu"
+    "auto-generated-info": "Tieto on automaattisesti muodostettu",
+    "element-not-fit": "Elementtijoukko ei sovi aikajanalle lukituksen vuoksi."
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}",

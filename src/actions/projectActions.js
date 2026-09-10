@@ -122,6 +122,9 @@ export const SAVE_PROJECT_TIMETABLE_FAILED = "saveProjectTimetableFailed";
 export const VALIDATING_TIMETABLE = "validatingTimetable"
 export const SET_NETWORK_STATUS = 'Set network status'
 export const RESET_NETWORK_STATUS = 'Reset network status'
+export const SET_TIMELINE_LOCKED_GROUP = 'Set timeline locked group';
+export const RESTORE_TIMELINE_SNAPSHOT = 'restoreTimelineSnapshot';
+export const CLEAR_SUPPRESS_TIMELINE_VALIDATION = 'clearSuppressTimelineValidation';
 
 export const updateAttribute = (field,value) => ({
   type: UPDATE_ATTRIBUTE,
@@ -139,9 +142,9 @@ export const resetAttributeData = (initialData) => ({
   type: RESET_ATTRIBUTE_DATA,
   payload: {initialData},
 });
-export const updateDateTimeline = (field, newDate, formValues, isAdd, deadlineSections, keepDuration=false, originalDurationDays=0, pairedEndKey=null) => ({
+export const updateDateTimeline = (field, newDate, formValues, isAdd, deadlineSections, pairedEndKey=null) => ({
   type: UPDATE_DATE_TIMELINE,
-  payload: { field, newDate, formValues, isAdd, deadlineSections, keepDuration, originalDurationDays, pairedEndKey },
+  payload: { field, newDate, formValues, isAdd, deadlineSections, pairedEndKey },
 });
 export const removeDeadlines = (deadlines) => ({
   type: REMOVE_DEADLINES,
@@ -553,3 +556,20 @@ export const setValidatingTimetable = (validationStarted, validationEnded) => {
     }
   }
 }
+
+export const setTimelineLockedGroup = (groupIdentifier) => {
+  return {
+    type: SET_TIMELINE_LOCKED_GROUP,
+    payload: {
+      timelineLockedGroup: groupIdentifier
+    }
+  }
+}
+
+export const restoreTimelineSnapshot = () => ({
+  type: RESTORE_TIMELINE_SNAPSHOT
+})
+
+export const clearSuppressTimelineValidation = () => ({
+  type: CLEAR_SUPPRESS_TIMELINE_VALIDATION
+})

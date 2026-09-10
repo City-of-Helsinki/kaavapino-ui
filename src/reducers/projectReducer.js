@@ -98,11 +98,15 @@ import {
   VALIDATING_TIMETABLE,
   SET_SAVING_FIELD,
   SET_NETWORK_STATUS,
-  RESET_NETWORK_STATUS
+  RESET_NETWORK_STATUS,
+  SET_TIMELINE_LOCKED_GROUP,
+  RESTORE_TIMELINE_SNAPSHOT,
+  CLEAR_SUPPRESS_TIMELINE_VALIDATION
 } from '../actions/projectActions'
 
 import timeUtil from '../utils/timeUtil'
 import objectUtil from '../utils/objectUtil'
+import deadlineCascade from '../utils/deadlineCascade'
 
 export const initialState = {
   projects: [],
@@ -158,7 +162,10 @@ export const initialState = {
   validated:false,
   cancelTimetableSave:false,
   validatingTimetable: {started: false, ended: false},
-  network: { status: 'ok', hasError: false, errorMessage: '', okMessage: '', tempFieldContents: '' }
+  network: { status: 'ok', hasError: false, errorMessage: '', okMessage: '', tempFieldContents: '' },
+  timelineLockedGroup: null,
+  timelineSnapshot: null,
+  suppressTimelineValidation: false
 }
 
 export const reducer = (state = initialState, action) => {
@@ -214,18 +221,14 @@ export const reducer = (state = initialState, action) => {
     }
 
     case UPDATE_DATE_TIMELINE: {
-      const { field, newDate, formValues, isAdd, deadlineSections, keepDuration, originalDurationDays, pairedEndKey } = action.payload;
-      // Create a copy of the state and attribute_data
-      let updatedAttributeData
-      if(formValues){
-        updatedAttributeData = formValues
-      }
-      else{
-        updatedAttributeData = { 
-          ...state.currentProject.attribute_data, // Shallow copy of attribute_data
-        };
-      }
-      const projectSize = updatedAttributeData?.kaavaprosessin_kokoluokka
+      const { field, newDate, formValues, deadlineSections, pairedEndKey } = action.payload;
+
+      const updatedAttributeData = formValues ? {...formValues} : { ...state.currentProject.attribute_data };
+
+      // Snapshot the last-known-good attribute_data before cascade so it can be
+      // restored if backend validation rejects the change (e.g. locked group).
+      const timelineSnapshot = { ...state.currentProject.attribute_data };
+
       //Remove all keys that are still hidden in vistimeline so they are not moved in data and later saved
       const filteredAttributeData = objectUtil.filterHiddenKeysUsingSections(updatedAttributeData, deadlineSections);
       // Snapshot paattyy values before cascade to detect changes for lausunnot auto-sync
@@ -235,90 +238,61 @@ export const reducer = (state = initialState, action) => {
         milloin_ehdotuksen_nahtavilla_paattyy_3: filteredAttributeData.milloin_ehdotuksen_nahtavilla_paattyy_3,
         milloin_ehdotuksen_nahtavilla_paattyy_4: filteredAttributeData.milloin_ehdotuksen_nahtavilla_paattyy_4,
       };
-      const moveToPast = filteredAttributeData[field] > newDate;
-      //Save oldDate for comparison in checkforDecreasingValues
-      const oldDate = filteredAttributeData[field];
       //Sort array by date
       const origSortedData = timeUtil.sortObjectByDate(filteredAttributeData);
       const newDateObj = new Date(newDate);
-      // Update the specific date at the given field
-      filteredAttributeData[field] = timeUtil.formatDate(newDateObj);
-      let preservedEndValue = null;
-      if (keepDuration && originalDurationDays > 0 && pairedEndKey) {
-        const endDateObj = new Date(newDateObj);
-        endDateObj.setDate(endDateObj.getDate() + originalDurationDays);
-        preservedEndValue = timeUtil.formatDate(endDateObj);
-        filteredAttributeData[pairedEndKey] = preservedEndValue; // initial set before adjustments
-      }
+
       if(field === "hyvaksymispaatos_pvm" && filteredAttributeData["hyvaksyminenvaihe_paattyy_pvm"]){
         filteredAttributeData["hyvaksyminenvaihe_paattyy_pvm"] = timeUtil.formatDate(newDateObj);
       }
-      else if (field === "tullut_osittain_voimaan_pvm" || field === "voimaantulo_pvm" || field === "kumottu_pvm" || field === "rauennut") {
+      else if (["tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauennut"].includes(field)) {
         // Find the highest date among the specified fields
-        const highestDate = timeUtil.getHighestDate(filteredAttributeData);
+        const highestDate = timeUtil.getHighestVoimaantuloDate(filteredAttributeData);
         // Modify the end date of voimaantulovaihe if any of the dates are changed and the new date is higher
         if ((highestDate) || (!highestDate && newDate)) {
-          const higherDate = highestDate ? highestDate : newDate;
+          const higherDate = highestDate || newDate;
           filteredAttributeData["voimaantulovaihe_paattyy_pvm"] = higherDate;
         }
       }
-      // Generate array from updatedAttributeData for comparison
+      // Generate array from filteredAttributeData for comparison
       const updateAttributeArray = objectUtil.generateDateStringArray(filteredAttributeData)
       //Compare for changes with dates in order sorted array
-      const changes = objectUtil.compareAndUpdateArrays(origSortedData,updateAttributeArray,deadlineSections)
-      //Find out is next date below minium and add difference of those days to all values after and move them forward 
-      const decreasingValues = objectUtil.checkForDecreasingValues({
-        arr: changes,
-        isAdd,
-        field,
-        disabledDates: state.disabledDates,
-        oldDate,
-        movedDate: newDate,
-        moveToPast,
-        projectSize,
-        attributeData: filteredAttributeData,
-        deadlineObjects: state.currentProject.deadlines
-      });
+      const changes = objectUtil.mergeAndUpdateDlArrays(origSortedData, updateAttributeArray, deadlineSections)
+      //Find out is next date below minium and add difference of those days to all values after and move them forward
+      let processedDates;
+      try {
+        processedDates = deadlineCascade.cascadeDeadlineChange({
+          dlArray: changes,
+          field,
+          movedFieldValue: newDate,
+          disabledDates: state.disabledDates,
+          attributeData: filteredAttributeData,
+          deadlineObjects: state.currentProject.deadlines,
+          lockedGroup: state.timelineLockedGroup,
+          pairedEndKey
+        });
+      } catch (err) {
+        // Cascade rejected the change (e.g. backtrack would violate a locked field).
+        console.warn('cascadeDeadlineChange rejected update:', err.message);
+        return {
+          ...state,
+          lastCascadeError: { message: err.message, field, timestamp: Date.now() }
+        };
+      }
       //Add new values from array to updatedAttributeData object
-      objectUtil.updateOriginalObject(filteredAttributeData,decreasingValues)
-      // Restore preserved end after adjustments if any logic changed it
-      if (keepDuration && preservedEndValue && pairedEndKey) {
-        filteredAttributeData[pairedEndKey] = preservedEndValue;
-      }
-      //Updates viimeistaan lausunnot values to paattyy if paattyy date changed, or enforces floor constraint
-      timeUtil.compareAndUpdateDates(filteredAttributeData, previousPaattyyValues)
-      
-      // K1 = U1 sync: kaynnistysvaihe_alkaa_pvm always equals projektin_kaynnistys_pvm
-      // Per timeline_requirements.md line 899: K1's "Generoitu ehdotus" = U1
-      if (filteredAttributeData['projektin_kaynnistys_pvm']) {
-        filteredAttributeData['kaynnistysvaihe_alkaa_pvm'] = filteredAttributeData['projektin_kaynnistys_pvm'];
-      }
-      
-      // Sync phase bar boundaries - each phase end = next phase start
-      const phaseBoundaries = [
-        ['kaynnistys_paattyy_pvm', 'periaatteetvaihe_alkaa_pvm', 'oasvaihe_alkaa_pvm'],
-        ['periaatteetvaihe_paattyy_pvm', 'oasvaihe_alkaa_pvm', null],
-        ['oasvaihe_paattyy_pvm', 'luonnosvaihe_alkaa_pvm', 'ehdotusvaihe_alkaa_pvm'],
-        ['luonnosvaihe_paattyy_pvm', 'ehdotusvaihe_alkaa_pvm', null],
-        ['ehdotusvaihe_paattyy_pvm', 'tarkistettuehdotusvaihe_alkaa_pvm', 'hyvaksyminenvaihe_alkaa_pvm'],
-        ['tarkistettuehdotusvaihe_paattyy_pvm', 'hyvaksyminenvaihe_alkaa_pvm', null],
-        ['hyvaksyminenvaihe_paattyy_pvm', 'voimaantulovaihe_alkaa_pvm', null],
-      ];
-      
-      for (const [endKey, nextStart, fallbackStart] of phaseBoundaries) {
-        if (filteredAttributeData[endKey]) {
-          // If next phase exists, sync to it; otherwise use fallback (skip non-existent phase)
-          if (filteredAttributeData[nextStart] != null) {
-            filteredAttributeData[nextStart] = filteredAttributeData[endKey];
-          } else if (fallbackStart && filteredAttributeData[fallbackStart] != null) {
-            filteredAttributeData[fallbackStart] = filteredAttributeData[endKey];
-          }
-        }
-      }
-      
+      processedDates.forEach(item => {
+        filteredAttributeData[item.key] = item.value;
+      });
+
+      // Sync phase end/start dates and lausunnot viimeistaan values
+      timeUtil.syncPhaseEndDates(filteredAttributeData, previousPaattyyValues)
+
+      filteredAttributeData.timelineUpdateTimestamp = new Date().toISOString();
       // Return the updated state with the modified currentProject and attribute_data
       return {
         ...state,
+        lastCascadeError: null,
+        timelineSnapshot,
         currentProject: {
           ...state.currentProject,
           attribute_data: filteredAttributeData,
@@ -1134,6 +1108,35 @@ export const reducer = (state = initialState, action) => {
       return {
         ...state,
         validatingTimetable: action.payload
+      }
+    }
+
+    case SET_TIMELINE_LOCKED_GROUP: {
+      return {
+        ...state,
+        timelineLockedGroup: action.payload.timelineLockedGroup
+      }
+    }
+
+    case RESTORE_TIMELINE_SNAPSHOT: {
+      if (!state.timelineSnapshot || !state.currentProject) {
+        return { ...state, timelineSnapshot: null, suppressTimelineValidation: true }
+      }
+      return {
+        ...state,
+        currentProject: {
+          ...state.currentProject,
+          attribute_data: { ...state.timelineSnapshot }
+        },
+        timelineSnapshot: null,
+        suppressTimelineValidation: true
+      }
+    }
+
+    case CLEAR_SUPPRESS_TIMELINE_VALIDATION: {
+      return {
+        ...state,
+        suppressTimelineValidation: false
       }
     }
 

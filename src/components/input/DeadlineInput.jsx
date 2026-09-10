@@ -5,13 +5,14 @@ import { useTranslation } from 'react-i18next'
 import { TextInput, DateInput, IconAlertCircle } from 'hds-react'
 import { getFieldAutofillValue } from '../../utils/projectAutofillUtils'
 import timeUtil from '../../utils/timeUtil'
-import { useSelector,useDispatch } from 'react-redux'
+import { useSelector,useDispatch,connect } from 'react-redux'
 import { getFormValues } from 'redux-form'
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import { updateDateTimeline } from '../../actions/projectActions';
-import { validatedSelector } from '../../selectors/projectSelector';
+import { validatedSelector, timelineLockedGroupSelector } from '../../selectors/projectSelector';
+import { extractFromDeadlineSections } from '../../utils/objectUtil';
 
-const DeadLineInput = ({
+const DeadlineInput = ({
   input,
   error,
   attributeData,
@@ -27,7 +28,9 @@ const DeadLineInput = ({
   deadlineSections,
   confirmedValue,
   sectionAttributes,
-  timetable_editable
+  timetable_editable,
+  timelineLockedGroup,
+  deadlines
 }) => {
 
   const dispatch = useDispatch();
@@ -37,6 +40,7 @@ const DeadLineInput = ({
   const [currentValue, setCurrentValue] = useState("")
   const [disabledState, setDisabledState] = useState(true)
   const [allowedDates, setAllowedDates] = useState([]);
+  const [isLocked, setIsLocked] = useState(false);
 
 
   let currentError
@@ -107,10 +111,14 @@ const DeadLineInput = ({
 
   useEffect(() => {
     const ehdotusNahtavillaolo = currentDeadline?.deadline?.phase_name === "Ehdotus" && currentDeadline?.deadline?.deadlinegroup?.includes('nahtavillaolo')
+    const lockedAttrKey = extractFromDeadlineSections(deadlineSections, (attr) => {
+      return attr?.attributegroup === timelineLockedGroup && attr?.type ==='date';
+    })?.[0]?.name || null;
+    const lockedValue = lockedAttrKey ? formValues[lockedAttrKey] : null;
     try {
       const allowed = timeUtil.calculateAllowedDates(
             ehdotusNahtavillaolo, attributeData?.kaavaprosessin_kokoluokka, dateTypes, input.name, formValues,
-            getFixedSectionAttributes(), currentDeadline
+            getFixedSectionAttributes(), currentDeadline, deadlines, lockedValue
           );
       setAllowedDates(allowed);
     } catch (error) {
@@ -118,7 +126,7 @@ const DeadLineInput = ({
       console.warn(`Error calculating allowed dates for ${input.name}:`, error);
       setAllowedDates([]);
     }
-  }, [dateTypes, input.name, deadlineSections, sectionAttributes, currentDeadline, JSON.stringify(formValues)]);
+  }, [dateTypes, input.name, deadlineSections, sectionAttributes, currentDeadline, JSON.stringify(formValues), timelineLockedGroup]);
 
   useEffect(() => {
     //Update calendar values when value has changed
@@ -130,6 +138,12 @@ const DeadLineInput = ({
   useEffect(() => {
     setDisabledState(formValues[confirmedValue])
   },[formValues[confirmedValue]])
+
+  useEffect(() => {
+    const locked = currentDeadline?.deadline?.deadlinegroup && 
+      timeUtil.isGroupAfterLockedGroup(timelineLockedGroup, currentDeadline?.deadline?.deadlinegroup, deadlineSections);
+    setIsLocked(locked);
+  }, [timelineLockedGroup, deadlineSections]);
 
   const getInitialMonth = (dateString) => {
     return dateString ? new Date(dateString) : new Date();
@@ -223,7 +237,7 @@ const DeadLineInput = ({
         value={formatDateToDMYYYY(currentValue || input.value)}
         name={input.name}
         type='text' // type='date' works poorly with hds-DateInput
-        disabled={!timetable_editable || disabledState ||
+        disabled={!timetable_editable || disabledState || isLocked ||
           (!attributeData?.kaavan_vaihe.includes("Käynnistys") &&
             (input?.name?.includes("projektin_kaynnistys_pvm") || input?.name?.includes("kaynnistys_paattyy_pvm")))
         }
@@ -291,7 +305,7 @@ const DeadLineInput = ({
   )
 }
 
-DeadLineInput.propTypes = {
+DeadlineInput.propTypes = {
   input: PropTypes.object.isRequired,
   error: PropTypes.string,
   attributeData: PropTypes.object,
@@ -311,7 +325,13 @@ DeadLineInput.propTypes = {
     PropTypes.bool,
   ]),
   sectionAttributes: PropTypes.array,
-  timetable_editable: PropTypes.bool
+  timetable_editable: PropTypes.bool,
+  timelineLockedGroup: PropTypes.string,
+  deadlines: PropTypes.array,
 }
 
-export default DeadLineInput
+const mapStateToProps = (state) => ({
+  timelineLockedGroup: timelineLockedGroupSelector(state),
+});
+
+export default connect(mapStateToProps, null)(DeadlineInput);

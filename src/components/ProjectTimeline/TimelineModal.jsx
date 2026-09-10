@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Modal } from 'semantic-ui-react'
 import { Button, Tabs, IconCross } from 'hds-react'
+import { isGroupAfterLockedGroup } from '../../utils/timeUtil';
 import { EDIT_PROJECT_TIMETABLE_FORM } from '../../constants'
 import FormField from '../input/FormField'
-import { isArray } from 'lodash'
 import { showField } from '../../utils/projectVisibilityUtils'
 import textUtil from '../../utils/textUtil'
-import objectUtil from '../../utils/objectUtil';
 import PropTypes from 'prop-types'
 import './VisTimeline.scss'
 import { getFocusableElements } from '../project/projectModalUtils';
@@ -40,6 +40,7 @@ const TimelineModal = ({
   const { t } = useTranslation();
 
   const [returnFocusId, setReturnFocusId] = React.useState(null);
+  const timelineLockedGroup = useSelector(state => state.project.timelineLockedGroup);
 
   useEffect(() => {
     if (open && returnFocusGroupId) {
@@ -47,7 +48,7 @@ const TimelineModal = ({
     }
   }, [open, returnFocusGroupId]);
 
-  const getFormField = (fieldProps, key, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title, confirmedValue, type, tooltip, lautakuntaInPast) => {
+  const getFormField = (fieldProps, key, disabled, deadlineSection, title, confirmedValue, type, tooltip, lautakuntaInPast, isDeadlineLocked) => {
     if (!showField(fieldProps.field, visValues)) {
       return null
     }
@@ -71,7 +72,7 @@ const TimelineModal = ({
     }
 
     let modifiedError = ''
-    if (isArray(error)) {
+    if (Array.isArray(error)) {
       error.forEach(current => {
         modifiedError = modifiedError + ' ' + current
       })
@@ -93,14 +94,13 @@ const TimelineModal = ({
             ? (disabled?.disabled || !allowedToEdit)
             : disabled?.disabled}
           lautakuntaInPast={lautakuntaInPast}
+          isDeadlineLocked={isDeadlineLocked}
           tooltip={tooltip}
           attributeData={visValues}
           disabledDates={type === 'date' ? disabledDates : undefined}
           lomapaivat={lomapaivat}
           dateTypes={dateTypes}
           deadlineSection={deadlineSection}
-          maxMoveGroup={maxMoveGroup}
-          maxDateToMove={maxDateToMove}
           groupName={title}
           visGroups={groups}
           visItems={items}
@@ -115,7 +115,7 @@ const TimelineModal = ({
     )
   }
 
-  const getFormFields = (sections, sectionIndex, disabled, deadlineSection, maxMoveGroup, maxDateToMove, title, confirmedValue, tooltip, lautakuntaInPast) => {
+  const getFormFields = (sections, sectionIndex, disabled, deadlineSection, title, confirmedValue, tooltip, lautakuntaInPast, isDeadlineLocked) => {
     // Separate the section with the label "Mielipiteet viimeistään"
     const filteredSections = sections.filter(section => section.label !== "Mielipiteet viimeistään");
     const lastSection = sections.find(section => section.label === "Mielipiteet viimeistään");
@@ -127,31 +127,9 @@ const TimelineModal = ({
 
     const formFields = []
     filteredSections.forEach((field, fieldIndex) => {
-      formFields.push(getFormField({ field }, `${sectionIndex} - ${fieldIndex}`, { disabled }, { deadlineSection }, maxMoveGroup, maxDateToMove, title, confirmedValue, field?.type, tooltip, lautakuntaInPast))
+      formFields.push(getFormField({ field }, `${sectionIndex} - ${fieldIndex}`, { disabled }, { deadlineSection }, title, confirmedValue, field?.type, tooltip, lautakuntaInPast, isDeadlineLocked))
     })
     return formFields
-  }
-
-  const getMaxiumDateToMove = (attr) => {
-    const foundGroups = groups.filter(g => g.nestedInGroup === group);
-    const esillaolo = foundGroups.filter(obj => obj.content.startsWith('Esilläolo-'));
-    const nahtavillaolo = foundGroups.filter(obj => obj.content.startsWith('Nahtavillaolo-'));
-    const lautakunta = foundGroups.filter(obj => obj.content.startsWith('Lautakunta-'));
-
-    let latestGroup
-    let latestObject
-    let miniumObject
-
-    const phaseObject = lautakunta.length != 0 && lautakunta.length >= esillaolo.length || lautakunta.length != 0 && lautakunta.length >= nahtavillaolo.length ? lautakunta : esillaolo.length > 0 ? esillaolo : nahtavillaolo
-    latestGroup = objectUtil.getHighestNumberedObject(phaseObject, groups);
-    latestObject = attr[latestGroup?.deadlinegroup]
-    if (latestObject) {
-      miniumObject = objectUtil.getMinObject(latestObject)
-      if (visValues[miniumObject]) {
-        return [visValues[miniumObject], latestGroup.content]
-      }
-    }
-    return [null, null]
   }
 
   const isPhaseClosed = (phase) => {
@@ -214,8 +192,8 @@ const TimelineModal = ({
     const list = groups
       .filter(g => g.nestedInGroup === group && prefixes.some(p => g.content.toLowerCase().startsWith(p)))
       .sort((a, b) => {
-        const na = parseInt(a.content.split('-')[1] || '0', 10);
-        const nb = parseInt(b.content.split('-')[1] || '0', 10);
+        const na = Number.parseInt(a.content.split('-')[1] || '0', 10);
+        const nb = Number.parseInt(b.content.split('-')[1] || '0', 10);
         return na - nb;
       });
     return list[list.length - 1]?.content;
@@ -312,8 +290,28 @@ const TimelineModal = ({
     const dateStr = visValues?.[dateKey];
     if (!dateStr) return false;
     const dt = new Date(dateStr);
-    if (isNaN(dt)) return false;
+    if (Number.isNaN(dt)) return false;
     return dt < new Date();
+  };
+
+  const getNextGroupWord = (isLautakunta, isEsillaolo, isNahtavillaolo) => {
+    if (isLautakunta) return 'lautakunta';
+    if (isEsillaolo) return 'esilläolo';
+    if (isNahtavillaolo) return 'nähtävilläolo';
+    return 'elementtijoukko';
+  };
+
+  const getTooltip = ({ phaseClosed, phaseIsActive, isGroupLocked, confirmed, esillaoloNotConfirmedBeforeLautakunta, esillaoloLockedByLautakunta, anyNahtavillaoloLockedByLautakunta, lautakuntaInPast, anyPast, disableConfirmButton, nextGroupWord }) => {
+    if (phaseClosed) return confirmed ? t('deadlines.tooltip.phaseClosedConfirmed') : t('deadlines.tooltip.phaseClosed');
+    if (!phaseIsActive) return confirmed ? t('deadlines.tooltip.notActiveConfirmed') : t('deadlines.tooltip.notActive');
+    if (isGroupLocked) return confirmed ? t('deadlines.tooltip.groupLockedConfirmed') : t('deadlines.tooltip.groupLocked');
+    if (esillaoloNotConfirmedBeforeLautakunta) return t('deadlines.tooltip.lautakuntaNeedsEsillaolo');
+    if (esillaoloLockedByLautakunta) return t('deadlines.tooltip.esillaoloLockedByLautakunta');
+    if (anyNahtavillaoloLockedByLautakunta) return t('deadlines.tooltip.nahtavillaoloNeedsLautakunta');
+    if (lautakuntaInPast) return t('deadlines.tooltip.lautakuntaInPast');
+    if (anyPast) return t('deadlines.tooltip.anyPastConfirmed');
+    if (disableConfirmButton) return t('deadlines.tooltip.disableConfirmButton', { nextGroupWord });
+    return null;
   };
 
   const getSectionRestrictions = ({
@@ -331,109 +329,61 @@ const TimelineModal = ({
     const isLautakunta = nTitle.includes('lautakunta');
     const isEsillaolo = nTitle.includes('esilläolo') || nTitle.includes('esillaolo');
     const isNahtavillaolo = nTitle.includes('nähtävilläolo') || nTitle.includes('nahtavillaolo');
+    const isLXLEhdotus = group === 'Ehdotus' && ["L", "XL"].includes(visValues['kaavaprosessin_kokoluokka']);
 
     const lastLautakunta = _lastByPrefixes(groups, group, ['lautakunta-']);
     const lastEsillaolo = _lastByPrefixes(groups, group, ['esilläolo-', 'esillaolo-']);
     const lastNahtavillaolo = _lastByPrefixes(groups, group, ['nähtävilläolo-', 'nahtavillaolo-']);
 
-    const isLastLautakunta = isLautakunta && (_normalize(title) === _normalize(lastLautakunta));
-    const isLastEsillaolo = isEsillaolo && (_normalize(title) === _normalize(lastEsillaolo));
-    const isLastNahtavillaolo = isNahtavillaolo && (_normalize(title) === _normalize(lastNahtavillaolo));
+    const isLastLautakunta = isLautakunta && (nTitle === _normalize(lastLautakunta));
+    const isLastEsillaolo = isEsillaolo && (nTitle === _normalize(lastEsillaolo));
+    const isLastNahtavillaolo = isNahtavillaolo && (nTitle === _normalize(lastNahtavillaolo));
 
     const lautakuntaInPast = isLautakunta && isLautakuntaDateInPast(group, title, visValues);
     const esillaoloNahtavillaInPast = (isEsillaolo || isNahtavillaolo) && isEsillaoloOrNahtavillaStartDateInPast(group, title, visValues);
     const phaseClosed = isPhaseClosed(group);
+    const isGroupLocked = isGroupAfterLockedGroup(timelineLockedGroup, deadlinegroup, deadlineSections);
 
-    const disableConfirmButton = phaseClosed
-      ? true
-      : (
-        (isLautakunta && !isLastLautakunta) ||
-        (isEsillaolo && !isLastEsillaolo) ||
-        (isNahtavillaolo && !isLastNahtavillaolo)
-      );
+    const disableConfirmButton =
+      phaseClosed ||
+      (isLautakunta && !isLastLautakunta) ||
+      (isEsillaolo && !isLastEsillaolo) ||
+      (isNahtavillaolo && !isLastNahtavillaolo);
 
     const phaseIndexForGroup = phaseList.findIndex(p => _normalize(p) === _normalize(group));
     const phaseIsActive = phaseIndexForGroup === projectPhaseIndex;
     // New rule: In active phase, Lautakunta cannot be confirmed before Esilläolo is confirmed
-    let esillaoloNotConfirmedBeforeLautakunta = false;
-    if (phaseIsActive && isLautakunta && lastEsillaolo) {
-      // Build confirm key for the last Esilläolo block
-      const esillaoloConfirmKey = getConfirmedValue(group, lastEsillaolo);
-      const esillaoloConfirmed = !!visValues[esillaoloConfirmKey];
-      if (!esillaoloConfirmed) {
-        esillaoloNotConfirmedBeforeLautakunta = true;
-      }
-    }
+    const esillaoloNotConfirmedBeforeLautakunta =
+      phaseIsActive && isLautakunta && lastEsillaolo &&
+      !visValues[getConfirmedValue(group, lastEsillaolo)];
+
+
+    // Find all Nahtavillaolo groups in this phase
+    const nahtavillaoloGroups = groups
+      .filter(g => g.nestedInGroup === group && /nähtävilläolo[-\s]?|nahtavillaolo[-\s]?/i.test(g.content))
+      .map(g => g.content);
     // Special rule: Lautakunta confirmation cannot be cancelled while any Nahtavillaolo is confirmed (Ehdotus L/XL)
-    let lautakuntaLockedByNahtavillaolo = false;
-    if (
-      phaseIsActive &&
-      isLautakunta &&
-      group === 'Ehdotus' &&
-      (visValues['kaavaprosessin_kokoluokka'] === 'L' || visValues['kaavaprosessin_kokoluokka'] === 'XL')
-    ) {
-      // Find all Nahtavillaolo groups in this phase
-      const nahtavillaoloGroups = groups
-        .filter(g => g.nestedInGroup === group && /nähtävilläolo[-\s]?|nahtavillaolo[-\s]?/i.test(g.content))
-        .map(g => g.content);
-      // Check if any Nahtavillaolo is confirmed
-      const anyNahtavillaoloConfirmed = nahtavillaoloGroups.some(nTitle => {
-        const key = getConfirmedValue(group, nTitle);
-        return !!visValues[key];
-      });
-      // Check if current Lautakunta is confirmed
-      const currentLautakuntaConfirmKey = getConfirmedValue(group, title);
-      const currentLautakuntaConfirmed = !!visValues[currentLautakuntaConfirmKey];
-      if (anyNahtavillaoloConfirmed && currentLautakuntaConfirmed) {
-        lautakuntaLockedByNahtavillaolo = true;
-      }
-    }
+    const lautakuntaLockedByNahtavillaolo =
+      phaseIsActive && isLautakunta && isLXLEhdotus &&
+      nahtavillaoloGroups.some(g => visValues[getConfirmedValue(group, g)]) &&
+      !!visValues[getConfirmedValue(group, title)];
+
+
     // Rule 2: Esilläolo confirmation cannot be cancelled while a Lautakunta is confirmed
-    let esillaoloLockedByLautakunta = false;
+    const lautakuntaGroups = groups
+      .filter(g => g.nestedInGroup === group && /^lautakunta[-\s]?/i.test(g.content))
+      .map(g => g.content);
+    
     // Check if ANY Lautakunta in this phase is confirmed (not only the last)
     // Exception: if phase is 'Ehdotus' and project size (kaavaprosessin_kokoluokka) is L or XL, skip locking completely.
-    if (phaseIsActive && isEsillaolo) {
-      const skipLockForEhdotusLarge = group === 'Ehdotus' && (visValues['kaavaprosessin_kokoluokka'] === 'L' || visValues['kaavaprosessin_kokoluokka'] === 'XL');
-      if (!skipLockForEhdotusLarge) {
-        const lautakuntaGroups = groups
-          .filter(g => g.nestedInGroup === group && /^lautakunta[-\s]?/i.test(g.content))
-          .map(g => g.content);
-        const anyLautakuntaConfirmed = lautakuntaGroups.some(lTitle => {
-          const key = getConfirmedValue(group, lTitle);
-          return !!visValues[key];
-        });
-        if (anyLautakuntaConfirmed) {
-          const currentEsillaoloConfirmKey = getConfirmedValue(group, title);
-          // Only lock if this Esilläolo is currently confirmed (prevent un-confirm)
-          const currentEsillaoloConfirmed = !!visValues[currentEsillaoloConfirmKey];
-          if (currentEsillaoloConfirmed) {
-            esillaoloLockedByLautakunta = true;
-          }
-        }
-      }
-    }
+    const esillaoloLockedByLautakunta =
+      phaseIsActive && isEsillaolo && !isLXLEhdotus &&
+      lautakuntaGroups.some(g => visValues[getConfirmedValue(group, g)]) &&
+      !!visValues[getConfirmedValue(group, title)];
 
-    let anyNahtavillaoloLockedByLautakunta = false;
-    if (
-        phaseIsActive &&
-        isNahtavillaolo &&
-        group === 'Ehdotus' &&
-        (visValues['kaavaprosessin_kokoluokka'] === 'L' || visValues['kaavaprosessin_kokoluokka'] === 'XL')
-    ) {
-        // Collect all Lautakunta-* groups in this phase
-        const lautakuntaGroups = groups.filter(g =>
-            g.nestedInGroup === group &&
-            /^lautakunta[-\s]*/i.test(g.content)
-        );
-        // Lock Nähtävilläolo if ANY Lautakunta is still unconfirmed
-        const anyUnconfirmedLautakunta = lautakuntaGroups.some(lg => {
-            const key = getConfirmedValue(group, lg.content);
-            return !visValues[key];
-        });
-        if (anyUnconfirmedLautakunta) {
-            anyNahtavillaoloLockedByLautakunta = true;
-        }
-    }
+    const anyNahtavillaoloLockedByLautakunta =
+      phaseIsActive && isNahtavillaolo && isLXLEhdotus &&
+      lautakuntaGroups.some(g => !visValues[getConfirmedValue(group, g)]);
 
     const disabled =
       archived ||
@@ -445,52 +395,22 @@ const TimelineModal = ({
       anyNahtavillaoloLockedByLautakunta ||
       sectionIndex < projectPhaseIndex;
 
-    const nextGroupWord =
-      isLautakunta ? 'lautakunta'
-        : isEsillaolo ? 'esilläolo'
-          : isNahtavillaolo ? 'nähtävilläolo'
-            : 'elementtijoukko';
+    const nextGroupWord = getNextGroupWord(isLautakunta, isEsillaolo, isNahtavillaolo);
 
     // Unify past-date lock for lautakunta and esilläolo/nähtävilläolo; keep prop name for downstream component
     const anyPast = lautakuntaInPast || esillaoloNahtavillaInPast;
 
-    let tooltip;
-    if (phaseClosed) {
-      tooltip = confirmed
-        ? t('deadlines.tooltip.phaseClosedConfirmed')
-        : t('deadlines.tooltip.phaseClosed');
-    } else if (phaseIsActive === false) {
-      tooltip = confirmed
-        ? t('deadlines.tooltip.notActiveConfirmed')
-        : t('deadlines.tooltip.notActive');
-    } else if (esillaoloNotConfirmedBeforeLautakunta) {
-      tooltip = t('deadlines.tooltip.lautakuntaNeedsEsillaolo');
-    } else if (esillaoloLockedByLautakunta) {
-      tooltip = t('deadlines.tooltip.esillaoloLockedByLautakunta');
-    } else if (anyNahtavillaoloLockedByLautakunta) {
-      tooltip = t('deadlines.tooltip.nahtavillaoloNeedsLautakunta');
-    } else if (lautakuntaInPast) {
-      tooltip = t('deadlines.tooltip.lautakuntaInPast');
-    } else if (anyPast) {
-      tooltip = t('deadlines.tooltip.anyPastConfirmed');
-    } else if (disableConfirmButton) {
-      tooltip = t('deadlines.tooltip.disableConfirmButton', { nextGroupWord });
-    } else {
-      tooltip = null;
-    }
+    const tooltip = getTooltip({ phaseClosed, phaseIsActive, isGroupLocked, confirmed, esillaoloNotConfirmedBeforeLautakunta, esillaoloLockedByLautakunta, anyNahtavillaoloLockedByLautakunta, lautakuntaInPast, anyPast, disableConfirmButton, nextGroupWord });
 
-    return { lautakuntaInPast: anyPast, tooltip, disabled };
+    return { lautakuntaInPast: anyPast, tooltip, disabled, isDeadlineLocked: isGroupLocked };
   };
 
 
   const normalizeTitle = (group, title) => {
-      if (
-          title === undefined &&
-          group === "Tarkistettu ehdotus"
-      ) {
-          return "Lautakunta - 1";
-      }
-      return title;
+    if (title === undefined && group === "Tarkistettu ehdotus") {
+      return "Lautakunta - 1";
+    }
+    return title;
   };
 
   const renderSection = (section, sectionIndex, title) => {
@@ -504,7 +424,7 @@ const TimelineModal = ({
 
     const renderedSections = []
 
-    const { lautakuntaInPast, tooltip, disabled } = getSectionRestrictions({
+    const { lautakuntaInPast, tooltip, disabled, isDeadlineLocked } = getSectionRestrictions({
       group,
       title: normalizedTitle,
       sectionIndex,
@@ -517,11 +437,10 @@ const TimelineModal = ({
 
     sections.forEach(subsection => {
       const attr = subsection?.attributes
-      const [maxDateToMove, maxMoveGroup] = getMaxiumDateToMove(attr)
       if (attr[deadlinegroup]) {
         const clampedInitialTabIndex = Number.isInteger(initialTab) && initialTab >= 0 ? initialTab : 0;
         renderedSections.push(
-          <Tabs key={`tab-${sectionIndex}-${normalizedTitle}-${deadlinegroup}-${clampedInitialTabIndex}`} initiallyActiveTab={clampedInitialTabIndex}>
+          <Tabs key={`tab-${sectionIndex}-${normalizedTitle}-${deadlinegroup}-${clampedInitialTabIndex}-${timelineLockedGroup}`} initiallyActiveTab={clampedInitialTabIndex}>
             <Tabs.TabList className='tab-header' style={{ marginBottom: 'var(--spacing-m)' }}>
               {Object.keys(attr[deadlinegroup]).map((key) => {
                 let tabContent = key === "default" ? content : key
@@ -533,7 +452,7 @@ const TimelineModal = ({
               // Special case: Tiedottaminen tab unaffected by confirmation
               const confirmationKey = key === "Tiedottaminen" ? null : confirmedValue
               return <Tabs.TabPanel style={{ marginBottom: 'var(--spacing-m)' }} key={`tabPanel-${index}-${subsection}`}>
-                {getFormFields(subsection, sectionIndex, disabled, attr[deadlinegroup], maxMoveGroup, maxDateToMove, normalizedTitle, confirmationKey, tooltip, lautakuntaInPast)}
+                {getFormFields(subsection, sectionIndex, disabled, attr[deadlinegroup], normalizedTitle, confirmedValue, tooltip, lautakuntaInPast, isDeadlineLocked)}
               </Tabs.TabPanel>
             })}
           </Tabs>
