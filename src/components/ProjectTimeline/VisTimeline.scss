@@ -994,6 +994,7 @@
                 padding-left: $size15;
                 position: relative;
                 .timeline-button-label{
+                    margin-top:2px;
                     font-weight: 400;
                 }
                 .timeline-edit-button{
@@ -1016,7 +1017,7 @@
                     align-items: center;
                     height: 100%;
                     margin-left: auto;
-                    gap: $size12;
+                    gap: $size8;
                 }
                 .timeline-remove-button{
                     display: none;
@@ -1059,6 +1060,16 @@
                     }
                     .timeline-lock-button{
                         display: block;
+                    }
+                }
+                &:hover {
+                    .lock{
+                        display: block;
+                        background:url('../../assets/icons/lock-white.svg') no-repeat;
+                        background-position-x: center;
+                        background-position-y: center;
+                        background-size: $size24;
+                        background-color: $color-bus-dark;
                     }
                 }
                 .timeline-remove-text {
@@ -1131,11 +1142,11 @@
         margin-right:-1px;
         .vis-inner .timeline-buttons-container .timeline-button-label {
             margin-left: -2px;
-            padding-bottom: 1px;
+            margin-top: 0px;
         }
         .timeline-action-buttons {
-            margin-right: -1.5px;
-            margin-bottom: 1px;
+            margin-right: -0.5px;
+            margin-bottom: 2px;
         }
     }
 
@@ -1154,16 +1165,15 @@
 
     .vis-label{
         background-color: #F2F2F2;
-        //border-bottom: 1px solid #CCCCCC;
     }
 
     .vis-label.vis-nested-group{
         padding-left: 15px;
     }
 
-    // Apply blue border-right to all vis-label siblings after the one containing timeline-lock-button.lock
+    // Apply blue box-shadow to all vis-label siblings after the one containing timeline-lock-button.lock
     .vis-label:has(.vis-inner .timeline-lock-button.lock) ~ .vis-label {
-        border-right: 4px solid $color-bus;
+        box-shadow: -4px 0 0 $color-bus inset;
     }
 
     .vis-group-level-0:not(.vis-nested-group){
