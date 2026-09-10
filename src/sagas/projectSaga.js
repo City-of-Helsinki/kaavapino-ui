@@ -1133,7 +1133,7 @@ function* lockProjectField(data) {
         }
       )
       //Send data to store
-      yield put(setLockStatus(lockData, false, saving))
+      yield put(setLockStatus(lockData, false, saving, true))
     }
     catch (e) {
       const dateVariable = new Date()

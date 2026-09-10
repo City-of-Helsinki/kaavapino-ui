@@ -4,6 +4,7 @@ import projectUtils from '../../../utils/projectUtils'
 import { TextInput, Button } from 'hds-react'
 import { withTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
+import './Comments.scss'
 
 class Comment extends Component {
   constructor(props) {

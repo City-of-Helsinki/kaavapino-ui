@@ -193,12 +193,13 @@ const FieldSet = ({
     
     if(expand){
       const isOffline = lastSaved?.status === 'error'
+      const hasError = formErrors?.some(errorFieldName => errorFieldName.startsWith(name))
       //Expand or close element that was clicked inside fieldset array of elements
       //Prevent focus and editing to field if not locked
       let expandedArray = expanded.slice();
       if(expandedArray.includes(i)){
         expandedArray.splice(expandedArray.indexOf(i), 1);
-        if (!isOffline) handleUnlockField(set)
+        if (!isOffline && !hasError) handleUnlockField(set)
       }
       else{
         if (!isOffline) {
@@ -210,7 +211,11 @@ const FieldSet = ({
           if (!hasFieldsetErrors) {
             dispatch(getAttributeData(attributeData?.projektin_nimi,name,formName, set, nulledFields,i))
           }
-          handleLockField(set)
+          // Don't lock fieldset if any field has errors - The problematic field should already be locked
+          // Locking any field clears existing locks
+          if (!formErrors?.length){
+            handleLockField(set)
+          }
         }
         //Close other accordians and open latest
         expandedArray = [i];
@@ -220,12 +225,15 @@ const FieldSet = ({
 
   }
 
-   const handleOutsideClick = () => {
-    const lockedField = lockStatus.fieldIdentifier
+  const handleOutsideClick = () => {
+    const isOffline = lastSaved?.status === 'error'
+    const hasError = formErrors?.some(errorFieldName => errorFieldName.startsWith(name))
+    const lockedField = lockStatus.fieldIdentifier;
+    const thisIslockedField = lockedField?.startsWith(name) && lockStatus?.lockStyle?.isLocked;
     //close all accordians and unlock locked field when clicked outside fieldset main
     setExpanded([]);
-    if (lockStatus.owner) {
-      handleUnlockField(lockedField)
+    if (thisIslockedField && lockStatus.owner && !isOffline && !hasError) {
+      handleUnlockField(lockedField);
     }
   }
 
