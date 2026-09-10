@@ -1045,7 +1045,15 @@
                     background-size: $size24;
                     border: none;
                     cursor: pointer;
+                    &.button-disabled {
+                        background:url('../../assets/icons/lock-open-gray.svg') no-repeat;
+                        cursor: auto;
+                            background-position-x: center;
+                            background-position-y: center;
+                            background-size: $size24;
+                    }
                 }
+
                 .lock{
                     display: block;
                     background:url('../../assets/icons/lock-white.svg') no-repeat;
@@ -1091,6 +1099,25 @@
                     display: block;
                     position: absolute;
                 }
+                .timeline-lock-text {
+                    color: $color-black-90;
+                    display: none;
+                    position: absolute;
+                    top: 35px;
+                    right: 1px;
+                    background-color: $white;
+                    width: 177px;
+                    height: auto;
+                    padding: 8px;
+                    box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.6);
+                    z-index: 1005;
+                    font-size: $size14;
+                    font-weight: 400;
+                }
+                .timeline-lock-button:hover + .timeline-lock-text {
+                    display: block;
+                    position: absolute;
+                }
             }
             .show-buttons{
                 .timeline-remove-button{
@@ -1098,12 +1125,6 @@
                 }
                 .timeline-lock-button{
                     display: block;
-                }
-                .button-disabled:not(.timeline-remove-button){
-                    pointer-events: auto;
-                    cursor: default;
-                    opacity: 0.5;
-                    color: gray;
                 }
                 .button-enabled{
                     pointer-events: all;

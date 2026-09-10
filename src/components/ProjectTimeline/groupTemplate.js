@@ -192,18 +192,30 @@ const createRemoveButton = (group, props) => {
 };
 
 const createLockButton = (group, props) => {
-  const { currentTimelineLockRef, groups, handleLockElement: onClick } = props;
+  const { currentTimelineLockRef, groups, handleLockElement: onClick, currentPhaseIndex, phaseList } = props;
   const lock = document.createElement("button");
   lock.classList.add("timeline-lock-button");
   lock.style.fontSize = "small";
 
-  if (currentTimelineLockRef.current) {
-    if (group.deadlinegroup === currentTimelineLockRef.current) {
-      lock.classList.add("lock");
-    } else {
-      lock.classList.add("button-disabled");
-    }
+  const isLocked = group.deadlinegroup === currentTimelineLockRef.current;
+  const isOtherLocked = !!currentTimelineLockRef.current && !isLocked;
+  let lockText;
+  const groupIndex = phaseList.indexOf(group.nestedInGroup);
+  const isPhaseClosed = groupIndex > -1 && groupIndex < currentPhaseIndex;
+  if (isLocked) {
+    lock.classList.add("lock");
+  } else if (isOtherLocked) {
+    lock.classList.add("button-disabled");
+    lockText = t('deadlines.lock-another-locked');
+  } else if (isPhaseClosed) {
+    lock.classList.add("button-disabled");
+    lockText = t('deadlines.lock-phase-closed');
   }
+
+
+
+  const lockTextDiv = lockText && `<div class='timeline-lock-text'>${lockText}</div>`;
+
   lock.addEventListener("click", function () {
     if (lock.classList.contains("button-disabled")) return;
 
@@ -217,7 +229,7 @@ const createLockButton = (group, props) => {
     // Force redraw of group elements
     groups.update(groups.get());
   });
-  return lock;
+  return { lock, lockTextDiv };
 };
 
 
@@ -292,8 +304,12 @@ export const createGroupTemplate = (props) => {
         if (remove.classList.contains("button-disabled") && removeTextDiv) {
           actionButtons.insertAdjacentHTML("beforeEnd", removeTextDiv);
         }
-        const lock = createLockButton(group, props);
+        const { lock, lockTextDiv } = createLockButton(group, props);
         actionButtons.insertAdjacentElement("beforeEnd", lock);
+
+        if (lockTextDiv) {
+          actionButtons.insertAdjacentHTML("beforeEnd", lockTextDiv);
+        }
 
         container.insertAdjacentElement("beforeEnd", actionButtons);
       }
