@@ -38,6 +38,7 @@ const FormField = ({
   insideFieldset,
   disabled,
   lautakuntaInPast,
+  isDeadlineLocked,
   tooltip,
   deadlines,
   isProjectTimetableEdit,
@@ -116,6 +117,7 @@ const FormField = ({
         {...rest}
         disabled={newField.disabled === undefined ? disabled : newField.disabled}
         lautakuntaInPast={lautakuntaInPast}
+        isDeadlineLocked={isDeadlineLocked}
         tooltip={tooltip}
         field={newField}
         attributeData={attributeData}
@@ -391,6 +393,7 @@ FormField.propTypes = {
   highlightedInFieldset: PropTypes.string,
   insideFieldset: PropTypes.bool,
   lautakuntaInPast: PropTypes.bool,
+  isDeadlineLocked: PropTypes.bool,
   tooltip: PropTypes.string,
   hasEditRights: PropTypes.bool,
   isAdmin: PropTypes.bool,

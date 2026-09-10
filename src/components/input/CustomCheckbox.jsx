@@ -16,6 +16,7 @@ const CustomCheckbox = ({
   className,
   disabled,
   lautakuntaInPast,
+  isDeadlineLocked,
   tooltip,
   updated,
   formName,
@@ -26,7 +27,7 @@ const CustomCheckbox = ({
   const { t } = useTranslation()
   const shouldDisableForErrors = useFieldPassivation(name, { formName: meta.form })
   const formValues = useSelector(getFormValues(formName || EDIT_PROJECT_TIMETABLE_FORM))
-  const checkboxDisabled = autofillRule || disabled || shouldDisableForErrors
+  const checkboxDisabled = autofillRule || disabled || shouldDisableForErrors || isDeadlineLocked
   const [checked, setChecked] = useState()
 
   useEffect(() => {
@@ -154,6 +155,7 @@ CustomCheckbox.propTypes = {
   display: PropTypes.string,
   isProjectTimetableEdit: PropTypes.bool,
   lautakuntaInPast: PropTypes.bool,
+  isDeadlineLocked: PropTypes.bool,
   tooltip: PropTypes.string,
   isAdmin: PropTypes.bool,
 };
