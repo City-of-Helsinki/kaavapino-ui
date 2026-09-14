@@ -307,6 +307,12 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const groupName = getGroupNameByVisibilityBool(addedKey);
     const newDlObjects = extractFromDeadlineSections(deadlineSections,
       (attribute) => {
+        // Hide ehdotus_nahtaville_aineiston_maaraaika if kaavaprosessin_kokoluokka is L or XL 
+        // TODO: should be fixed in backend or Excel, remove this when mistake is found there
+        if (attribute.name.includes("ehdotus_nahtaville_aineiston_maaraaika") && ["L", "XL"].includes(visValues['kaavaprosessin_kokoluokka'])) {
+          return false;
+        }
+
         return attribute.attributegroup === groupName && attribute.type === "date" && attribute.display !== "readonly"
       }
     );
