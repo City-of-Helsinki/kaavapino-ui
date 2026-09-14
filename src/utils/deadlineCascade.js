@@ -197,6 +197,11 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
       handleEsillaMaaraaikaMove(arr, i, currentItem.value, disabledDates);
       indexToContinue += 2; // Skip the next two items (esilla alkaa & paattyy) since they were already adjusted
     }
+    else {
+      // For any other deadlines not specifically handled, enforce the minimum gap
+      const enforcedDate = enforceMinimumGap(currentItem, getPreviousItem(arr, i), disabledDates);
+      currentItem.value = enforcedDate;
+    }
     return { value: currentItem.value, indexToContinue };
   };
 
