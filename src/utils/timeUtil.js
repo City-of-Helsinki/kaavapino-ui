@@ -384,7 +384,7 @@ const calculateAllowedDates = (nahtavillaolo, size, dateTypes, name,
   let previousDeadline = objectUtil.findDeadlineInDeadlines(matchingItem?.previous_deadline, deadlines)?.deadline;
 
   // Fallback: use previous visible deadline if the current one is not visible
-  if (previousDeadline && !shouldDeadlineBeVisible(previousDeadline.attribute, previousDeadline.deadlinegroup, formValues)) {
+  if (!previousDeadline || !shouldDeadlineBeVisible(previousDeadline.attribute, previousDeadline.deadlinegroup, formValues)) {
     for (const deadline of deadlines) {
       if (deadline.deadline?.attribute === name) {
         break;
