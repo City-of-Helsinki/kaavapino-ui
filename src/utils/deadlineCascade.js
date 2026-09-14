@@ -292,6 +292,9 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
 
 export const setDefaultDatesForNewGroup = (dlObjects, formValues, allDates) => {
   dlObjects.forEach(dl => {
+    if (!dl?.initial_distance) {
+      return;
+    }
     const baseDate = formValues[dl.initial_distance.base_deadline] || formValues[dl.previous_deadline];
     const distance = dl.initial_distance.distance || dl.distance_from_previous || 0;
     if (baseDate) {
