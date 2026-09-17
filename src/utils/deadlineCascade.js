@@ -134,6 +134,14 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     return toIdx - fromIdx;
   };
 
+  // Gap to preserve between two items as they existed before this cascade run, floored at the minimum gap.
+  const getPreservedGap = (currentItem, prevItem, minimumGap, gapDates) => {
+    const origCurrent = originalByKey.get(currentItem.key);
+    const origPrev = originalByKey.get(prevItem.key);
+    const existingDistance = measureDistance(origPrev?.value, origCurrent?.value, gapDates);
+    return existingDistance != null ? Math.max(minimumGap, existingDistance) : minimumGap;
+  };
+
   // Preserved distance/gap-date-set between the moved (paired start) item and pairedEndKey;
   // populated by handlePairedDeadlineMove so backtrackDeadlines can reuse them.
   let pairedEndDistance = null;
@@ -205,13 +213,15 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
     return { value: currentItem.value, indexToContinue };
   };
 
-  const enforceMinimumGap = (currentItem, prevItem, disabledDates, forceMinimumGap = false) => {
+  const enforceMinimumGap = (currentItem, prevItem, disabledDates, forceMinimumGap = false, preserveDistance = false) => {
     const minimumGap = currentItem.distance_from_previous ?? 0;
     const allowedDates = disabledDates?.date_types[currentItem?.date_type]?.dates || [];
     const gapType = getGapDateType(currentItem);
     const gapDates = gapType ? disabledDates?.date_types[gapType]?.dates : allowedDates;
-    const preferredDate = forceMinimumGap ? null : currentItem.value;
-    const nextAllowedDate = findFirstAllowedDate(prevItem.value, minimumGap, gapDates, allowedDates, preferredDate);
+    const effectiveGap = preserveDistance ? getPreservedGap(currentItem, prevItem, minimumGap, gapDates) : minimumGap;
+    // Preserving distance must land exactly on prev+effectiveGap, not clamp to the item's own stale value.
+    const preferredDate = (forceMinimumGap || preserveDistance) ? null : currentItem.value;
+    const nextAllowedDate = findFirstAllowedDate(prevItem.value, effectiveGap, gapDates, allowedDates, preferredDate);
     return nextAllowedDate;
   };
 
@@ -232,7 +242,12 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
         const allowedDates = disabledDates?.date_types[allowedType]?.dates;
         const gapType = getGapDateType(forwardItem) || "arkipäivät";
         const gapDates = disabledDates?.date_types[gapType]?.dates;
-        fixedDate = findPastDateWithGap(forwardItem.value, forwardItem.distance_from_previous || 0, gapDates, allowedDates);
+        const minimumGap = forwardItem.distance_from_previous || 0;
+        // The locked item's own gap from its predecessor is never preserved, only the minimum applies
+        const effectiveGap = (lockedElement && forwardItem.key === lockedElement.key)
+          ? minimumGap
+          : getPreservedGap(forwardItem, currentItem, minimumGap, gapDates);
+        fixedDate = findPastDateWithGap(forwardItem.value, effectiveGap, gapDates, allowedDates);
       }
       const shouldAdjust = fixedDate < currentItem.value;
       if (j === endIndex && j !== 0 && shouldAdjust) {
@@ -246,6 +261,8 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
   };
 
   const arr = structuredClone(dlArray);
+  // Pre-mutation snapshot of the incoming values, used to measure distances that predate this cascade run.
+  const originalByKey = new Map(dlArray.map(item => [item.key, item]));
 
   // Find the index of the next item where dates should start being pushed
   const movedItemIndex = arr.findIndex(item => item.key === field);
@@ -278,9 +295,13 @@ const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates,
       // Special case: in esillaolo, mielipiteet should match paattyy date (has no minimum gap)
       newDate = prevItem.value;
     }
+    else if (lockedElement && currentItem.key === lockedElement.key) {
+      // The locked item's own gap from its predecessor is never preserved, only the minimum applies
+      newDate = enforceMinimumGap(currentItem, prevItem, disabledDates, false, false);
+    }
     else {
-      // For subsequent items, enforce minimum gap if moving forward
-      newDate = enforceMinimumGap(currentItem, prevItem, disabledDates, false);
+      // For subsequent items, preserve their existing distance from the previous item, floored at the minimum gap
+      newDate = enforceMinimumGap(currentItem, prevItem, disabledDates, false, true);
     }
     if (lockedElement && currentItem.key === lockedElement.key) {
       if (newDate > currentItem.value) {

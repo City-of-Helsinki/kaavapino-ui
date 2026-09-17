@@ -101,6 +101,125 @@ describe("Test deadlineCascade utility functions", () => {
     });
 });
 
+// Helpers mirroring the "arkipäivät" (weekday) gap semantics used by findFirstAllowedDate/findPastDateWithGap,
+// so expected dates can be computed independently of the production code under test.
+// Uses local date components (not toISOString) to avoid off-by-one shifts in non-UTC timezones.
+const formatLocalDate = (d) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const date = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${date}`;
+};
+const addWeekdays = (dateStr, days) => {
+    const [year, month, date] = dateStr.split('-').map(Number);
+    const d = new Date(year, month - 1, date);
+    let added = 0;
+    while (added < days) {
+        d.setDate(d.getDate() + 1);
+        const day = d.getDay();
+        if (day !== 0 && day !== 6) added++;
+    }
+    return formatLocalDate(d);
+};
+const subtractWeekdays = (dateStr, days) => {
+    const [year, month, date] = dateStr.split('-').map(Number);
+    const d = new Date(year, month - 1, date);
+    let removed = 0;
+    while (removed < days) {
+        d.setDate(d.getDate() - 1);
+        const day = d.getDay();
+        if (day !== 0 && day !== 6) removed++;
+    }
+    return formatLocalDate(d);
+};
+
+describe("cascadeDeadlineChange preserves existing distances (forward cascade)", () => {
+    const buildArr = () => {
+        const anchor_orig = '2026-01-01'; // Thursday, untouched item before the moved field
+        const a_orig = '2026-01-05'; // Monday
+        const b_orig = addWeekdays(a_orig, 10); // existing a->b distance = 10 (> b's minimum of 3)
+        const c_orig = addWeekdays(b_orig, 2);  // existing b->c distance = 2 (== c's minimum)
+        const d_orig = addWeekdays(c_orig, 1);  // existing c->d distance = 1 (< d's minimum of 8)
+        return [
+            { key: 'preserve_test_anchor', value: anchor_orig, distance_from_previous: null, date_type: 'arkipäivät', order: 0 },
+            { key: 'preserve_test_a', value: a_orig, distance_from_previous: 2, date_type: 'arkipäivät', order: 1 },
+            { key: 'preserve_test_b', value: b_orig, distance_from_previous: 3, date_type: 'arkipäivät', order: 2 },
+            { key: 'preserve_test_c', value: c_orig, distance_from_previous: 2, date_type: 'arkipäivät', order: 3 },
+            { key: 'preserve_test_d', value: d_orig, distance_from_previous: 8, date_type: 'arkipäivät', order: 4 }
+        ];
+    };
+
+    test("downstream item further away than its minimum gap keeps its original distance when the anchor moves forward", () => {
+        const arr = buildArr();
+        const originalA = arr[1].value;
+        const newA = addWeekdays(originalA, 5);
+        const result = deadlineCascade.cascadeDeadlineChange({
+            dlArray: arr,
+            field: 'preserve_test_a',
+            movedFieldValue: newA,
+            disabledDates: mockData.test_disabledDates,
+            attributeData: {},
+            deadlineObjects: []
+        });
+
+        const b = result.find(i => i.key === 'preserve_test_b');
+        const c = result.find(i => i.key === 'preserve_test_c');
+        const d = result.find(i => i.key === 'preserve_test_d');
+
+        // b preserves its original 10-day distance from a (lockstep shift), not just its 3-day minimum
+        expect(b.value).toBe(addWeekdays(newA, 10));
+        // c preserves its original 2-day distance from b (equal to its own minimum)
+        expect(c.value).toBe(addWeekdays(b.value, 2));
+        // d's original distance from c (1 day) was below its minimum (8), so the minimum floors the gap
+        expect(d.value).toBe(addWeekdays(c.value, 8));
+    });
+});
+
+describe("cascadeDeadlineChange preserves existing distances during backtracking (locked group)", () => {
+    test("the locked item's direct predecessor is backtracked using only the minimum gap, while earlier items still preserve their original distance", () => {
+        const anchor_orig = '2026-01-01'; // Thursday, untouched item before the moved field
+        const x_orig = '2026-01-05'; // Monday
+        const pre_orig = addWeekdays(x_orig, 10); // existing x->pre distance = 10
+        const a_orig = addWeekdays(pre_orig, 6);  // existing pre->a distance = 6 (>> a's minimum of 3)
+        const b_orig = addWeekdays(a_orig, 15);   // existing a->b distance = 15 (>> b's minimum of 2)
+
+        const arr = [
+            { key: 'lock_test_anchor', value: anchor_orig, distance_from_previous: null, date_type: 'arkipäivät', order: 0 },
+            { key: 'lock_test_x', value: x_orig, distance_from_previous: 2, date_type: 'arkipäivät', order: 1 },
+            { key: 'lock_test_pre', value: pre_orig, distance_from_previous: 3, date_type: 'arkipäivät', order: 2 },
+            { key: 'lock_test_a', value: a_orig, distance_from_previous: 3, date_type: 'arkipäivät', order: 3 },
+            { key: 'lock_test_b', value: b_orig, distance_from_previous: 2, date_type: 'arkipäivät', order: 4 }
+        ];
+        const deadlineObjects = [
+            { deadline: { deadlinegroup: 'test_group', attribute: 'lock_test_b' } }
+        ];
+
+        // Move x far enough forward that, without backtracking, b would need to move later than its locked value.
+        const newX = addWeekdays(x_orig, 60);
+
+        const result = deadlineCascade.cascadeDeadlineChange({
+            dlArray: arr,
+            field: 'lock_test_x',
+            movedFieldValue: newX,
+            disabledDates: mockData.test_disabledDates,
+            attributeData: {},
+            deadlineObjects,
+            lockedGroup: 'test_group'
+        });
+
+        const pre = result.find(i => i.key === 'lock_test_pre');
+        const a = result.find(i => i.key === 'lock_test_a');
+        const b = result.find(i => i.key === 'lock_test_b');
+
+        // b (locked) stays at its original value
+        expect(b.value).toBe(b_orig);
+        // a (the locked item's direct predecessor) only gets b's 2-day minimum gap, not the original 15-day distance
+        expect(a.value).toBe(subtractWeekdays(b_orig, 2));
+        // pre (further back) still preserves its original 6-day distance from a
+        expect(pre.value).toBe(subtractWeekdays(a.value, 6));
+    });
+});
+
 /**
  * Tests for cascadeDeadlineChange - critical lifecycle scenarios
  * 
