@@ -227,7 +227,8 @@ export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disable
 
   const enforceMinimumGap = (currentItem, prevItem, disabledDates, forceMinimumGap = false, preserveDistance = false) => {
     const minimumGap = currentItem.distance_from_previous ?? 0;
-    const allowedDates = disabledDates?.date_types[currentItem?.date_type]?.dates || [];
+    const allowedType = currentItem?.date_type || "arkipäivät";
+    const allowedDates = disabledDates?.date_types[allowedType]?.dates || [];
     const gapType = getGapDateType(currentItem);
     const gapDates = gapType ? disabledDates?.date_types[gapType]?.dates : allowedDates;
     const effectiveGap = preserveDistance ? getPreservedGap(currentItem, prevItem, minimumGap, gapDates) : minimumGap;
