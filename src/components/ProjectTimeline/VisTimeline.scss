@@ -2079,6 +2079,7 @@ body.cursor-moving {
 }
 
 .locked-background {
+    top: 0px !important;
     background: #cdcdcd !important;
     z-index: 3;
     opacity: 0.5;
