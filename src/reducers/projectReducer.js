@@ -223,45 +223,38 @@ export const reducer = (state = initialState, action) => {
     case UPDATE_DATE_TIMELINE: {
       const { field, newDate, formValues, deadlineSections, pairedEndKey } = action.payload;
 
-      const updatedAttributeData = formValues ? {...formValues} : { ...state.currentProject.attribute_data };
-
       // Snapshot the last-known-good attribute_data before cascade so it can be
       // restored if backend validation rejects the change (e.g. locked group).
       const timelineSnapshot = { ...state.currentProject.attribute_data };
 
-      //Remove all keys that are still hidden in vistimeline so they are not moved in data and later saved
-      const filteredAttributeData = objectUtil.filterHiddenKeysUsingSections(updatedAttributeData, deadlineSections);
-      // Snapshot paattyy values before cascade to detect changes for lausunnot auto-sync
-      const previousPaattyyValues = {
-        milloin_ehdotuksen_nahtavilla_paattyy: filteredAttributeData.milloin_ehdotuksen_nahtavilla_paattyy,
-        milloin_ehdotuksen_nahtavilla_paattyy_2: filteredAttributeData.milloin_ehdotuksen_nahtavilla_paattyy_2,
-        milloin_ehdotuksen_nahtavilla_paattyy_3: filteredAttributeData.milloin_ehdotuksen_nahtavilla_paattyy_3,
-        milloin_ehdotuksen_nahtavilla_paattyy_4: filteredAttributeData.milloin_ehdotuksen_nahtavilla_paattyy_4,
-      };
-      //Sort array by date
-      const origSortedData = timeUtil.sortObjectByDate(filteredAttributeData);
-      const newDateObj = new Date(newDate);
+      const updatedAttributeData = formValues ? {...formValues} : { ...state.currentProject.attribute_data };
 
-      if(field === "hyvaksymispaatos_pvm" && filteredAttributeData["hyvaksyminenvaihe_paattyy_pvm"]){
-        filteredAttributeData["hyvaksyminenvaihe_paattyy_pvm"] = timeUtil.formatDate(newDateObj);
+      if(field === "hyvaksymispaatos_pvm" && updatedAttributeData["hyvaksyminenvaihe_paattyy_pvm"]){
+        updatedAttributeData["hyvaksyminenvaihe_paattyy_pvm"] = timeUtil.formatDate(new Date(newDate));
       }
       else if (["tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauennut"].includes(field)) {
         // Ensure new date is set for the field before calculating the highest date
-        filteredAttributeData[field] = newDate;
+        updatedAttributeData[field] = newDate;
         // Find the highest date among the specified fields
-        const highestDate = timeUtil.getHighestVoimaantuloDate(filteredAttributeData);
+        const highestDate = timeUtil.getHighestVoimaantuloDate(updatedAttributeData);
         // Modify the end date of voimaantulovaihe if any of the dates are changed and the new date is higher
         if ((highestDate) || (!highestDate && newDate)) {
           const higherDate = highestDate || newDate;
-          filteredAttributeData["voimaantulovaihe_paattyy_pvm"] = higherDate;
+          updatedAttributeData["voimaantulovaihe_paattyy_pvm"] = higherDate;
         }
       }
-      // Generate array from filteredAttributeData for comparison
-      const updateAttributeArray = objectUtil.generateDateStringArray(filteredAttributeData)
-      //Compare for changes with dates in order sorted array
-      const changes = objectUtil.mergeAndUpdateDlArrays(origSortedData, updateAttributeArray, deadlineSections)
-      //Find out is next date below minium and add difference of those days to all values after and move them forward
-      let processedDates;
+      // Snapshot paattyy values before cascade to detect changes for lausunnot auto-sync
+      const previousPaattyyValues = {
+        milloin_ehdotuksen_nahtavilla_paattyy: updatedAttributeData.milloin_ehdotuksen_nahtavilla_paattyy,
+        milloin_ehdotuksen_nahtavilla_paattyy_2: updatedAttributeData.milloin_ehdotuksen_nahtavilla_paattyy_2,
+        milloin_ehdotuksen_nahtavilla_paattyy_3: updatedAttributeData.milloin_ehdotuksen_nahtavilla_paattyy_3,
+        milloin_ehdotuksen_nahtavilla_paattyy_4: updatedAttributeData.milloin_ehdotuksen_nahtavilla_paattyy_4,
+      };
+
+      // Prepare the input for the deadline cascade by filtering and sorting the attribute data according to the deadline sections
+      const [changes, filteredAttributeData] = deadlineCascade.prepareCascadeInput(updatedAttributeData, deadlineSections)
+
+      let processedDates = [];
       try {
         processedDates = deadlineCascade.cascadeDeadlineChange({
           dlArray: changes,

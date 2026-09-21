@@ -1,5 +1,6 @@
 import { generateConfirmedFields } from './generateConfirmedFields';
-import { findFirstAllowedDate, findPastDateWithGap, getGapDateType } from './timeUtil';
+import { findFirstAllowedDate, findPastDateWithGap, getGapDateType, sortObjectByDate } from './timeUtil';
+import objectUtil from '../utils/objectUtil'
 
 const findLastDeadlineInPhase = (arr, index, targetPhase) => {
   let targetStrings = [targetPhase];
@@ -33,7 +34,18 @@ const getFirstLockedElement = (arr, lockedGroup, deadlineObjects) => {
   return null;
 };
 
-const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates, attributeData, deadlineObjects = [], lockedGroup = null, pairedEndKey = null }) => {
+export const prepareCascadeInput = (attributeData, deadlineSections) => {
+    //Remove all keys that are still hidden in vistimeline so they are not moved in data and later saved
+    const filteredAttributeData = objectUtil.filterHiddenKeysUsingSections(attributeData, deadlineSections);
+    const origSortedData = sortObjectByDate(filteredAttributeData);
+    // Generate array from filteredAttributeData for comparison
+    const updateAttributeArray = objectUtil.generateDateStringArray(filteredAttributeData);
+    //Compare for changes with dates in order sorted array
+    const changes = objectUtil.mergeAndUpdateDlArrays(origSortedData, updateAttributeArray, deadlineSections);
+    return [changes, filteredAttributeData];
+};
+
+export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates, attributeData, deadlineObjects = [], lockedGroup = null, pairedEndKey = null }) => {
   // Do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
   const confirmedFieldSet = new Set(generateConfirmedFields(attributeData, deadlineObjects));
   // Attributes that should never be cascaded
@@ -339,7 +351,8 @@ export const setDefaultDatesForNewGroup = (dlObjects, formValues, allDates) => {
 
 
 const exported = {
-  cascadeDeadlineChange
+  cascadeDeadlineChange,
+  prepareCascadeInput
 };
 
 if (process.env.UNIT_TEST === "true") {
