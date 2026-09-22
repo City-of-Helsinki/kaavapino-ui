@@ -162,7 +162,8 @@ const getRemoveDisabledState = (group, props) => {
     }
   }
   if (isGroupAfterLockedGroup(currentTimelineLockRef?.current, group.deadlinegroup, deadlineSections)) {
-    removeExplanation = t('deadlines.delete-locked');
+    removeExplanation = currentTimelineLockRef?.current === group.deadlinegroup ?
+      t('deadlines.delete-locked') : t('deadlines.delete-above-locked');
     isDisabled = true;
   }
   return { isDisabled, removeExplanation };
