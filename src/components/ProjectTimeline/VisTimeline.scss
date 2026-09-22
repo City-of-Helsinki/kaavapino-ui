@@ -2517,3 +2517,23 @@ body.cursor-moving {
         }
     }
 }
+
+.lock-area-icon-container {
+    width: 55px;
+    height: 55px;
+    background: #fff;
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    margin: 8px;
+    z-index: 4;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .lock-area-icon {
+        width: 29px;
+        height: 29px;
+        content: url('../../assets/icons/lock.svg');
+    }
+}

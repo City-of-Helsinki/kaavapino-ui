@@ -59,6 +59,20 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }
     });
     if (updates.length) items.update(updates);
+    if (currentTimelineLockRef?.current){
+      // Create a visual indicator for locked area
+      const lockedAnchor = document.getElementsByClassName('vis-itemset')[0];
+      const indicator = document.createElement('div');
+      indicator.classList.add('lock-area-icon-container');
+      const lockIcon = document.createElement('img');
+      lockIcon.classList.add('lock-area-icon');
+      indicator.appendChild(lockIcon);
+      lockedAnchor.appendChild(indicator);
+      setLockIndicatorPosition();
+    } else {
+      const lockedAnchor = document.getElementsByClassName('lock-area-icon-container')[0];
+      lockedAnchor?.remove();
+    }
   }, [currentTimelineLock]);
 
   const [selectedGroupId, setSelectedGroupId] = useState(null);
@@ -1002,6 +1016,23 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     return false;
   };
 
+  const setLockIndicatorPosition = () => {
+    if (!currentTimelineLockRef?.current) return;
+    const lockedBackground = document.getElementsByClassName('locked-background')[0];
+    const lockIndicator = document.getElementsByClassName('lock-area-icon-container')[0];
+    if (lockedBackground && lockIndicator) {
+      const lockStyle = getComputedStyle(lockIndicator);
+      const leftExtra = Number.parseInt(lockStyle.marginLeft, 10);
+      const rightExtra = Number.parseInt(lockStyle.marginRight, 10);
+      const indicatorWidth = lockIndicator.offsetWidth + leftExtra + rightExtra;
+      const bgVisibleWidth = lockedBackground.offsetWidth - lockedBackground.offsetParent.offsetWidth;
+      if (bgVisibleWidth < indicatorWidth) {
+        lockIndicator.style.right = `${-1 * Math.max(indicatorWidth - bgVisibleWidth, 0)}px`;
+      } else {
+        lockIndicator.style.right = '0px';
+      }
+    }
+  };
 
   useEffect(() => {
     // Ensure capitalized Finnish locale BEFORE creating timeline so initial labels are correct
@@ -1437,6 +1468,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
         timeline.on('rangechange', () => {
           highlightJanuaryFirst();
+          setLockIndicatorPosition();
         });
 
         timeline.on('mouseDown', (mouseDownEvent) => {
@@ -1837,6 +1869,10 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             show2Years={show2Years}
           />
         </div>
+        {/*
+        <div className="lock-area-icon-container">
+          <LockIcon alt="Lock Icon" className="lock-area-icon"></LockIcon>
+        </div> */}
         <TimelineModal
           open={toggleTimelineModal.open}
           group={timelineData.group}
