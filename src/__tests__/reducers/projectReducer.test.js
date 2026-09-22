@@ -87,32 +87,20 @@ vi.mock('../../utils/objectUtil', () => ({
 
 vi.mock('../../utils/deadlineCascade', () => ({
   default: {
-    // Minimal stand-in for the real cascade: apply the moved field value to the
-    // array. When pairedEndKey is provided, preserve the original
-    // duration between the moved field and its paired end.
-    cascadeDeadlineChange: vi.fn(({ dlArray, field, movedFieldValue, pairedEndKey }) => {
+    prepareCascadeInput: vi.fn((attributeData) => [
+      Object.entries(attributeData)
+        .filter(([, value]) => value && typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}$/))
+        .map(([key, value]) => ({ key, value })),
+      { ...attributeData },
+    ]),
+    // Minimal stand-in for the real cascade: apply the moved field value to the array.
+    cascadeDeadlineChange: vi.fn(({ dlArray, field, movedFieldValue }) => {
       const arr = dlArray.map(item => ({ ...item }));
-      const currIdx = arr.findIndex(item => item.key === field);
-      let oldStart = null;
-      if (currIdx !== -1) {
-        oldStart = arr[currIdx].value;
-        arr[currIdx].value = movedFieldValue;
+      const currentIndex = arr.findIndex(item => item.key === field);
+      if (currentIndex !== -1) {
+        arr[currentIndex].value = movedFieldValue;
       } else if (movedFieldValue) {
         arr.push({ key: field, value: movedFieldValue });
-      }
-      if (pairedEndKey && movedFieldValue) {
-        const endItem = arr.find(item => item.key === pairedEndKey);
-        if (endItem?.value && oldStart) {
-          const days = Math.round(
-            (new Date(endItem.value) - new Date(oldStart)) / 86400000
-          );
-          const newEnd = new Date(movedFieldValue);
-          newEnd.setDate(newEnd.getDate() + days);
-          const y = newEnd.getFullYear();
-          const m = String(newEnd.getMonth() + 1).padStart(2, '0');
-          const d = String(newEnd.getDate()).padStart(2, '0');
-          endItem.value = `${y}-${m}-${d}`;
-        }
       }
       return arr;
     }),
@@ -433,39 +421,6 @@ describe('UPDATE_DATE_TIMELINE action', () => {
     });
 
     expect(result.currentProject.attribute_data.milloin_periaatteet_esillaolo_alkaa).toBe('2026-03-20');
-  });
-
-  it('should preserve duration when pairedEndKey is provided', () => {
-    const state = createStateWithProject({
-      milloin_periaatteet_esillaolo_alkaa: '2026-03-10',
-      milloin_periaatteet_esillaolo_paattyy: '2026-03-24', // 14 days duration
-    });
-
-    const result = project(state, {
-      type: UPDATE_DATE_TIMELINE,
-      payload: {
-        field: 'milloin_periaatteet_esillaolo_alkaa',
-        newDate: '2026-03-17',
-        isAdd: false,
-        deadlineSections,
-        pairedEndKey: 'milloin_periaatteet_esillaolo_paattyy',
-      },
-    });
-
-    // Start date should be updated
-    expect(result.currentProject.attribute_data.milloin_periaatteet_esillaolo_alkaa).toBe('2026-03-17');
-    
-    // Verify duration is preserved - use same Date logic as reducer to stay timezone-consistent
-    // The reducer uses: new Date(newDate) then setDate(getDate() + days)
-    // We replicate this to calculate expected end date
-    const expectedEndDateObj = new Date('2026-03-17');
-    expectedEndDateObj.setDate(expectedEndDateObj.getDate() + 14);
-    const expectedYear = expectedEndDateObj.getFullYear();
-    const expectedMonth = String(expectedEndDateObj.getMonth() + 1).padStart(2, '0');
-    const expectedDay = String(expectedEndDateObj.getDate()).padStart(2, '0');
-    const expectedEndDate = `${expectedYear}-${expectedMonth}-${expectedDay}`;
-    
-    expect(result.currentProject.attribute_data.milloin_periaatteet_esillaolo_paattyy).toBe(expectedEndDate);
   });
 
   it('should handle isAdd=true for new deadline slots', () => {

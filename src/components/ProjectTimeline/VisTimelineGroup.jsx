@@ -1312,15 +1312,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           if (dragElement === "elements") {
             attributeDate = item.start;
             attributeToUpdate = hasTitleSeparator ? item.title.split('-')[0].trim() : item.title;
-            const pairedEndKey = hasTitleSeparator ? item.title.split('-')[1].trim() : null;
             const formattedStart = moment(attributeDate).format('YYYY-MM-DD');
             dispatch(updateDateTimeline(
               attributeToUpdate,
               formattedStart,
               visValuesRef.current,
               false,
-              deadlineSections,
-              pairedEndKey
+              deadlineSections
             ));
             // Validation will be triggered by componentDidUpdate after cascade completes
             return;
