@@ -238,17 +238,15 @@ export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disable
     return nextAllowedDate;
   };
 
-  // When a locked item is encountered, backtrack and adjust previous items
-  // to ensure they don't violate the minimum gap constraints with respect to the locked item.
-  // forceMinimumGap: fallback mode used when preserved-gap backtracking couldn't fit; spaces every step at the minimum gap instead.
-  const backtrackDeadlines = (arr, lockedItemIndex, forceMinimumGap = false) => {
+  // When a locked item is encountered, backtrack and adjust previous items to maintain the preserved gap without moving locked item
+  const backtrackDeadlines = (arr, lockedItemIndex) => {
     let forwardItem = arr[lockedItemIndex];
     const endIndex = Math.max(movedItemIndex - (previousMoved ? 2 : 1), 0);
     for (let j = lockedItemIndex - 1; j >= endIndex; j--) {
       const currentItem = arr[j];
       let fixedDate;
       // Reuse the preserved paired distance when stepping from paired end back to paired start.
-      if (pairedEndKey && forwardItem?.key === pairedEndKey && currentItem.key === field && pairedEndDistance !== null && !forceMinimumGap) {
+      if (pairedEndKey && forwardItem?.key === pairedEndKey && currentItem.key === field && pairedEndDistance !== null) {
         const pairedStartAllowedDates = disabledDates?.date_types[currentItem?.date_type]?.dates || pairedEndGapDates;
         fixedDate = findPastDateWithGap(forwardItem.value, pairedEndDistance, pairedEndGapDates, pairedStartAllowedDates);
       } else {
@@ -258,14 +256,14 @@ export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disable
         const gapDates = disabledDates?.date_types[gapType]?.dates;
         const minimumGap = forwardItem.distance_from_previous || 0;
         // The locked item's own gap from its predecessor is never preserved, only the minimum applies
-        const effectiveGap = (forceMinimumGap || (lockedElement && forwardItem.key === lockedElement.key))
+        const effectiveGap = ((lockedElement && forwardItem.key === lockedElement.key))
           ? minimumGap
           : getPreservedGap(forwardItem, currentItem, minimumGap, gapDates);
         fixedDate = findPastDateWithGap(forwardItem.value, effectiveGap, gapDates, allowedDates);
       }
       const shouldAdjust = fixedDate < currentItem.value;
       if (j === endIndex && j !== 0 && shouldAdjust) {
-        throw new Error(`Cannot backtrack ${currentItem.key} to satisfy ${forceMinimumGap ? "minimum" : "preserved"} gap with locked field ${forwardItem.key}.`);
+        throw new Error(`Cannot backtrack ${currentItem.key} to satisfy preserved gap with locked field ${forwardItem.key}.`);
       }
       if (shouldAdjust) {
         currentItem.value = fixedDate;
@@ -319,18 +317,7 @@ export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disable
     }
     if (lockedElement && currentItem.key === lockedElement.key) {
       if (newDate > currentItem.value) {
-        //Begin backwards cascade, preserving existing distances where possible
-        try {
-          const arrCopy = structuredClone(arr);
-          backtrackDeadlines(arrCopy, i);
-          return arrCopy;
-        } catch {
-          console.log("Retrying with minimum-gap-only spacing");
-          // Failed due to locking, retry with minimum-gap-only spacing
-          const arrCopy = structuredClone(arr);
-          backtrackDeadlines(arrCopy, i, true);
-          return arrCopy;
-        }
+        backtrackDeadlines(arr, i);
       }
       break;
     }
