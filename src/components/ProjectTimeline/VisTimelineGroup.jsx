@@ -343,7 +343,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         updatedFormValues[newDlObjects[0].name],
         updatedFormValues,
         true,
-        deadlineSections
+        deadlineSections,
+        true
       )
     );
     const error = store.getState().project.lastCascadeError;

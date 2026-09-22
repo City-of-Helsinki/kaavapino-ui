@@ -45,7 +45,7 @@ export const prepareCascadeInput = (attributeData, deadlineSections) => {
     return [changes, filteredAttributeData];
 };
 
-export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates, attributeData, deadlineObjects = [], lockedGroup = null }) => {
+export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates, attributeData, deadlineObjects = [], lockedGroup = null, isAdd = false }) => {
   // Do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
   const confirmedFieldSet = new Set(generateConfirmedFields(attributeData, deadlineObjects));
   // Attributes that should never be cascaded
@@ -156,7 +156,8 @@ export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disable
 
   let previousMoved = false; // Moved date causes previous item to change (previous is maaraaika)
 
-  const handleDeadlineMove = (arr, i, movedFieldValue, disabledDates) => {
+  const handleDeadlineMove = (arr, i, movedFieldValue, disabledDates, isAdd = false) => {
+    console.log(isAdd)
     let indexToContinue = i + 1;
 
     const currentItem = arr[i];
@@ -187,6 +188,23 @@ export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disable
       const enforcedDate = enforceMinimumGap(currentItem, getPreviousItem(arr, i), disabledDates);
       currentItem.value = enforcedDate;
     }
+    
+    if (isAdd) {
+      // Special case: after adding deadline group, only enforce minimum gap for the next deadline
+      // (Instead of measuring and preserving distance)
+      let nextItem = arr[indexToContinue];
+      if (nextItem?.key.includes("mielipiteet")){
+        // Another special case, handle & skip to next
+        nextItem.value = arr[indexToContinue - 1].value;
+        indexToContinue++;
+        nextItem = arr[indexToContinue];
+      }
+      if (nextItem) {
+        nextItem.value = enforceMinimumGap(nextItem, arr[indexToContinue - 1], disabledDates, false, false);
+        indexToContinue++;
+      }
+    }
+
     return { value: currentItem.value, indexToContinue };
   };
 
@@ -251,7 +269,7 @@ export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disable
   }
 
   // Handle the moved item itself
-  const result = handleDeadlineMove(arr, movedItemIndex, movedFieldValue, disabledDates);
+  const result = handleDeadlineMove(arr, movedItemIndex, movedFieldValue, disabledDates, isAdd);
   arr[movedItemIndex].value = result.value;
   const indexToContinue = result.indexToContinue;
 
