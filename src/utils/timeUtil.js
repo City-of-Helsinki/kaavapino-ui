@@ -73,7 +73,7 @@ const isDate = (value) => {
   return datePattern.test(value) && !isNaN(Date.parse(value));
 }
 
-const sortObjectByDate = (obj) => {
+export const sortObjectByDate = (obj) => {
   const sortedArray = [];
 
   // Process and sort only the keys with date strings
