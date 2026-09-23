@@ -16,10 +16,9 @@ import * as visdata from 'vis-data'
 import ConfirmModal from '../../common/ConfirmModal.jsx';
 import withValidateDate from '../../../hocs/withValidateDate.jsx';
 import objectUtil from '../../../utils/objectUtil'
-import { updateDateTimeline,validateProjectTimetable,setValidatingTimetable,setTimelineLockedGroup,clearSuppressTimelineValidation } from '../../../actions/projectActions';
+import { validateProjectTimetable,setValidatingTimetable,setTimelineLockedGroup,clearSuppressTimelineValidation } from '../../../actions/projectActions';
 import { getVisibilityBoolName, vis_bool_group_map, isDeadlineConfirmed } from '../../../utils/projectVisibilityUtils';
 import timeUtil from '../../../utils/timeUtil'
-import { shouldDispatchTimelineUpdate } from '../../../utils/timelineDispatchLogic'
 import { focusTrapOnTabPressed, getFocusableElements } from '../projectModalUtils';
 class EditProjectTimeTableModal extends Component {
   constructor(props) {
@@ -152,8 +151,8 @@ class EditProjectTimeTableModal extends Component {
       }
     }
     if(prevProps.formValues && !isEqual(prevProps.formValues, formValues)){
-      //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater
-      timeUtil.syncPhaseEndDates(formValues) // TODO: delete (should be done in deadline cascade)
+      //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater, fixes phase end dates on delete
+      timeUtil.syncPhaseEndDates(formValues)
 
       if(deadlineSections && deadlines && formValues && this.state.groups && this.state.items){
         const isGroupRemove = this.wasGroupRemoved(prevProps.formValues, formValues);
@@ -177,22 +176,6 @@ class EditProjectTimeTableModal extends Component {
           this.state.groups.add(combinedGroups)
           // phaseData is an array, not a DataSet; update directly
           this.state.items.update(phaseData)
-          const newObjectArray = objectUtil.findDifferencesInObjects(prevProps.formValues,formValues)
-
-          // Check if timeline update should be dispatched (handles group add/remove scenarios)
-          const dispatchDecision = shouldDispatchTimelineUpdate(
-            newObjectArray, 
-            this.props.validatingTimetable?.started,
-          );
-          
-          if (dispatchDecision.shouldDispatch) {
-            //Get added groups last date field and update all timelines ahead
-            const { field, formattedDate } = this.getLastDateField(newObjectArray);
-            //Dispatch added values to move other values in projectReducer if miniums are reached
-            if(field && formattedDate){
-              this.props.dispatch(updateDateTimeline(field, formattedDate, formValues, dispatchDecision.addingNew, deadlineSections));
-            }
-          }
           this.setState({visValues:formValues})
         }
         let sectionAttributes = [];

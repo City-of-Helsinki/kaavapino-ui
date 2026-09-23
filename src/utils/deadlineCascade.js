@@ -157,7 +157,6 @@ export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disable
   let previousMoved = false; // Moved date causes previous item to change (previous is maaraaika)
 
   const handleDeadlineMove = (arr, i, movedFieldValue, disabledDates, isAdd = false) => {
-    console.log(isAdd)
     let indexToContinue = i + 1;
 
     const currentItem = arr[i];
@@ -321,7 +320,7 @@ export const setDefaultDatesForNewGroup = (dlObjects, formValues, allDates) => {
         formValues[dl.name] = newDate;
       }
     } else {
-      formValues[dl.name] = "1970-01-01" // Let deadlineCascade sort it out
+      formValues[dl.name] = "1970-01-01" // Let cascadeDeadlineChange sort it out
     }
   });
 };
