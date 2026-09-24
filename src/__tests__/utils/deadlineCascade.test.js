@@ -159,7 +159,8 @@ describe("cascadeDeadlineChange preserves existing distances (forward cascade)",
             movedFieldValue: newA,
             disabledDates: mockData.test_disabledDates,
             attributeData: {},
-            deadlineObjects: []
+            deadlineObjects: [],
+            isDrag: true
         });
 
         const b = result.find(i => i.key === 'preserve_test_b');
@@ -204,7 +205,8 @@ describe("cascadeDeadlineChange preserves existing distances during backtracking
             disabledDates: mockData.test_disabledDates,
             attributeData: {},
             deadlineObjects,
-            lockedGroup: 'test_group'
+            lockedGroup: 'test_group',
+            isDrag: true
         });
 
         const pre = result.find(i => i.key === 'lock_test_pre');
@@ -398,7 +400,8 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
                 const result = deadlineCascade.cascadeDeadlineChange(checkParams({
                     dlArray: arr,
                     field: "periaatteetvaihe_paattyy_pvm",
-                    projectSize: "XL"
+                    projectSize: "XL",
+                    isDrag: true
                 }));
 
                 const resultOasAlkaa = result.find(i => i.key === "oasvaihe_alkaa_pvm");
@@ -470,7 +473,8 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
                 const afterModify = deadlineCascade.cascadeDeadlineChange(checkParams({
                     dlArray: afterAdd,
                     field: modifyField,
-                    projectSize: "XL"
+                    projectSize: "XL",
+                    isDrag: true
                 }));
 
                 // Find the modified field's order
