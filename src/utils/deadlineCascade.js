@@ -206,7 +206,7 @@ export const cascadeDeadlineChange = (
       handleEsillaMaaraaikaMove(arr, i, currentItem.value, disabledDates);
       indexToContinue += 2; // Skip the next two items (esilla alkaa & paattyy) since they were already adjusted
     }
-    else if(!isDrag && (!currentItem?.key.includes("_alkaa") || currentItem?.key == "projektin_kaynnistys_pvm")) {
+    else if(!isDrag && (currentItem?.key.includes("_alkaa") || currentItem?.key == "projektin_kaynnistys_pvm")) {
       handleAlkaaManualMove(arr, i, movedFieldValue, disabledDates);
       indexToContinue += 1; // Skip the next item (paattyy) as it should not move
     }
