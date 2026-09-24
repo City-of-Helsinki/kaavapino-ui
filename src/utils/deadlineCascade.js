@@ -336,8 +336,13 @@ export const cascadeDeadlineChange = (
     }
     else if (currentItem?.isPhaseBoundary && !currentItem?.date_type) {
       newDate = enforcePhaseBoundaryGap(currentItem, prevItem);
-    } else {
-      // For subsequent items, preserve their existing distance from the previous item, floored at the minimum gap
+    }
+    else if (prevItem?.key?.includes("maaraaika")) {
+      // distance between maaraaika and the next element should always follow minimum gap
+      newDate = enforceMinimumGap(currentItem, prevItem, disabledDates, true);
+    }
+    else {
+      // For all other cases, preserve the distance from the previous item
       newDate = preserveDistanceFromPrevious(currentItem, prevItem, disabledDates);
     }
     if (lockedElement && currentItem.key === lockedElement.key) {
