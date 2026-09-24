@@ -151,9 +151,6 @@ class EditProjectTimeTableModal extends Component {
       }
     }
     if(prevProps.formValues && !isEqual(prevProps.formValues, formValues)){
-      //Updates viimeistaan lausunnot values to paattyy if paattyy date is greater, fixes phase end dates on delete
-      timeUtil.syncPhaseEndDates(formValues)
-
       if(deadlineSections && deadlines && formValues && this.state.groups && this.state.items){
         const isGroupRemove = this.wasGroupRemoved(prevProps.formValues, formValues);
 

@@ -74,11 +74,11 @@ describe("Test ObjectUtil utility functions", () => {
         // order field is the original order of arr1 items
         expect(result).toHaveLength(3);
         expect(result[0]).toEqual({
-            key: "projektin_kaynnistys_pvm", value: "2023-01-01", distance_from_previous: 0,
+            key: "projektin_kaynnistys_pvm", value: "2023-01-01", distance_from_previous: 0, isPhaseBoundary: true
         });
         expect(result[1]).toEqual({
             key: "milloin_periaatteet_lautakunnassa", value: "2023-06-27", date_type: "työpäivät",
-            distance_to_next: 3, distance_from_previous: 3, initial_distance: 3
+            distance_to_next: 3, distance_from_previous: 3, initial_distance: 3, isPhaseBoundary: false
         });
     });
 

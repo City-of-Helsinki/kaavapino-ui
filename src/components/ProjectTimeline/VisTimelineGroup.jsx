@@ -15,7 +15,7 @@ import VisTimelineMenu from './VisTimelineMenu'
 import AddGroupModal from './AddGroupModal';
 import ConfirmModal from '../common/ConfirmModal'
 import PropTypes from 'prop-types';
-import { getVisibilityBoolName, getVisBoolsByPhaseName, getGroupNameByVisibilityBool } from '../../utils/projectVisibilityUtils';
+import { getVisibilityBoolName, getVisBoolsByPhaseName, getGroupNameByVisibilityBool, shouldDeadlineBeVisible } from '../../utils/projectVisibilityUtils';
 import { setDefaultDatesForNewGroup } from '../../utils/deadlineCascade'
 import { useTimelineTooltip } from '../../hooks/useTimelineTooltip';
 import { updateDateTimeline, setTimelineLockedGroup } from '../../actions/projectActions';
@@ -26,6 +26,31 @@ import './VisTimeline.scss'
 import { createGroupTemplate } from './groupTemplate';
 import { isGroupConfirmed } from '../../utils/projectUtils';
 Moment.locale('fi');
+
+// Helpers for deadline removal
+// Finds the first/last index of the removed group's deadlines within the visible deadline list
+const findRemovedIndexRange = (filteredDeadlines, removedGroupName) => {
+  let firstRemovedIndex = -1;
+  let lastRemovedIndex = -1;
+  filteredDeadlines.forEach((dlObject, i) => {
+    if (dlObject.deadline.deadlinegroup === removedGroupName) {
+      if (firstRemovedIndex === -1) firstRemovedIndex = i;
+      lastRemovedIndex = i;
+    }
+  });
+  return { firstRemovedIndex, lastRemovedIndex };
+};
+
+// Actual default phase length set by backend based on excel; used only for UX default when previous deadline is a phase start
+const calculateNewEndDateString = (previousDeadline, previousDeadlineDate) => {
+  if (!previousDeadline?.deadline_types?.includes('phase_start')) {
+    return previousDeadlineDate;
+  }
+  const defaultLength = 45;
+  const newEndDate = new Date(previousDeadlineDate);
+  newEndDate.setDate(newEndDate.getDate() + defaultLength);
+  return newEndDate.toISOString().split('T')[0];
+};
 
 const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, deadlineSections, formSubmitErrors, projectPhaseIndex, phaseList, currentPhaseIndex, archived, allowedToEdit, isAdmin, disabledDates, lomapaivat, dateTypes, trackExpandedGroups, sectionAttributes, showTimetableForm }, ref) => {
   const dispatch = useDispatch();
@@ -391,12 +416,43 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     returnFocusOnConfirmModalClose();
   }
 
+  const adjustPhaseEndDatePostRemove = (removedGroupName) => {
+    const changedFields = [];
+    if (!removedGroupName || !deadlines) return changedFields;
+
+    const filteredDeadlines = deadlines.filter(dl => shouldDeadlineBeVisible(dl?.deadline?.attribute, dl?.deadline?.deadlinegroup, visValues));
+    const { firstRemovedIndex, lastRemovedIndex } = findRemovedIndexRange(filteredDeadlines, removedGroupName);
+    if (firstRemovedIndex === -1 || lastRemovedIndex === -1) return changedFields;
+
+    const phaseEndDeadline = filteredDeadlines[lastRemovedIndex + 1]?.deadline;
+    if (!phaseEndDeadline?.deadline_types?.includes('phase_end')) return changedFields;
+
+    const previousDeadline = filteredDeadlines[firstRemovedIndex - 1]?.deadline;
+    const previousDeadlineDate = visValues[previousDeadline?.attribute];
+    const newEndDateString = calculateNewEndDateString(previousDeadline, previousDeadlineDate);
+    changedFields.push({ field: phaseEndDeadline.attribute, value: newEndDateString });
+
+    const nextPhaseStartDeadline = filteredDeadlines[lastRemovedIndex + 2]?.deadline;
+    if (nextPhaseStartDeadline?.deadline_types?.includes('phase_start')) {
+      changedFields.push({ field: nextPhaseStartDeadline.attribute, value: newEndDateString });
+    }
+    return changedFields;
+  }
+
   const handleRemoveGroup = () => {
     const visibilityBool = getVisibilityBoolName(dataToRemove.deadlinegroup);
     if (visibilityBool) {
+      const changedFields = adjustPhaseEndDatePostRemove(dataToRemove.deadlinegroup);
+      for (const field of changedFields) {
+        dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, field.field, field.value));
+      }
+      // Flag deleted group as hidden
       dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, visibilityBool, false));
     }
     setOpenConfirmModal(!openConfirmModal);
+    if (dataToRemove.deadlinegroup === toggleTimelineModal.deadlinegroup) {
+      setToggleTimelineModal({ open: false, highlight: null, deadlinegroup: null });
+    }
     returnFocusOnConfirmModalClose();
   }
 
@@ -1844,10 +1900,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
             show2Years={show2Years}
           />
         </div>
-        {/*
-        <div className="lock-area-icon-container">
-          <LockIcon alt="Lock Icon" className="lock-area-icon"></LockIcon>
-        </div> */}
         <TimelineModal
           open={toggleTimelineModal.open}
           group={timelineData.group}

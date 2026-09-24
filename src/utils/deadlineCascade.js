@@ -1,5 +1,5 @@
 import { generateConfirmedFields } from './generateConfirmedFields';
-import { findFirstAllowedDate, findPastDateWithGap, getGapDateType, sortObjectByDate } from './timeUtil';
+import { findFirstAllowedDate, findPastDateWithGap, getGapDateType, sortObjectByDate, addCalendarDays } from './timeUtil';
 import objectUtil from '../utils/objectUtil'
 
 const findLastDeadlineInPhase = (arr, index, targetPhase) => {
@@ -208,6 +208,9 @@ export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disable
   };
 
   const enforceMinimumGap = (currentItem, prevItem, disabledDates, forceMinimumGap = false, preserveDistance = false) => {
+    if (currentItem?.isPhaseBoundary) {
+      return enforcePhaseBoundaryGap(currentItem, prevItem);
+    }
     const minimumGap = currentItem.distance_from_previous ?? 0;
     const allowedType = currentItem?.date_type || "arkipäivät";
     const allowedDates = disabledDates?.date_types[allowedType]?.dates || [];
@@ -219,6 +222,18 @@ export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disable
     const prevValue = prevItem?.value || currentItem?.value; // for first item in array, gap resolves to 0
     const nextAllowedDate = findFirstAllowedDate(prevValue, effectiveGap, gapDates, allowedDates, preferredDate);
     return nextAllowedDate;
+  };
+
+  const enforcePhaseBoundaryGap = (currentItem, prevItem) => {
+    // Special case: phase boundaries use calendar days (not present in disabledDates)
+    const origCurrent = originalByKey.get(currentItem?.key);
+    const origPrev = originalByKey.get(prevItem?.key);
+    const origCurrentDate = origCurrent ? new Date(origCurrent.value) : null;
+    const origPrevDate = origPrev ? new Date(origPrev.value) : null;
+    const calendarDiff = origPrevDate && origCurrentDate ? Math.floor((origCurrentDate - origPrevDate) / (24 * 60 * 60 * 1000)) : 0;
+    const prevValue = prevItem?.value || currentItem?.value;
+    const adjustedCurrent = addCalendarDays(prevValue, calendarDiff);
+    return adjustedCurrent;
   };
 
   // When a locked item is encountered, backtrack and adjust previous items to maintain the preserved gap without moving locked item
@@ -302,7 +317,6 @@ export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disable
   }
   return arr;
 };
-
 
 export const setDefaultDatesForNewGroup = (dlObjects, formValues, allDates) => {
   dlObjects.forEach(dl => {

@@ -103,6 +103,12 @@ export const getGapDateType = (deadline) => {
   return deadline?.date_type || null;
 };
 
+export const addCalendarDays = (startingDateString, dayCount) => {
+  const resultDate = new Date(startingDateString);
+  resultDate.setDate(resultDate.getDate() + dayCount);
+  return resultDate.toISOString().split('T')[0]; // Return in YYYY-MM-DD format
+}
+
 // gapDates counts the minimum-gap distance from prevDate; allowedDates constrains the returned date.
 export const findFirstAllowedDate = (prevDate, minimumGap, gapDates, allowedDates, preferredDate = null) => {
   if (!prevDate) {

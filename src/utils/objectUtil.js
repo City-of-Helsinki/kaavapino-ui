@@ -84,6 +84,7 @@ const mergeAndUpdateDlArrays = (arr1, arr2, deadlineSections) => {
   arr1.forEach((item) => {
     if (phaseOrder.includes(item.key)) {
       item.distance_from_previous = 0;
+      item.isPhaseBoundary = true;
       return;
     }
     const attribute = attributeByName.get(item.key);
@@ -92,6 +93,7 @@ const mergeAndUpdateDlArrays = (arr1, arr2, deadlineSections) => {
     item.distance_to_next       = attribute.distance_to_next || null;
     item.initial_distance       = attribute.initial_distance?.distance || null;
     item.date_type              = attribute.date_type ?? "arkipäivät";
+    item.isPhaseBoundary        = false;
   });
 
   // Sort arr1 based on the keyOrder extracted from deadlineSections
