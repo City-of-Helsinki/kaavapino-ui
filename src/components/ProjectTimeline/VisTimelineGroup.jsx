@@ -367,9 +367,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         newDlObjects[0].name,
         updatedFormValues[newDlObjects[0].name],
         updatedFormValues,
-        true,
         deadlineSections,
-        true
+        true,
+        false
       )
     );
     const error = store.getState().project.lastCascadeError;
@@ -1350,8 +1350,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               attributeToUpdate,
               formattedStart,
               visValuesRef.current,
+              deadlineSections,
               false,
-              deadlineSections
+              true,
             ));
             // Validation will be triggered by componentDidUpdate after cascade completes
             return;
@@ -1379,8 +1380,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               attributeToUpdate,
               formattedDate,
               visValuesRef.current,
-              false,
               deadlineSections,
+              false,
+              true,
             ));
           }
         }

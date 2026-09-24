@@ -45,7 +45,9 @@ export const prepareCascadeInput = (attributeData, deadlineSections) => {
     return [changes, filteredAttributeData];
 };
 
-export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disabledDates, attributeData, deadlineObjects = [], lockedGroup = null, isAdd = false }) => {
+export const cascadeDeadlineChange = (
+  { dlArray, field, movedFieldValue, disabledDates, attributeData, deadlineObjects = [], lockedGroup = null, isAdd = false, isDrag=false }
+) => {
   // Do not mutate dates that are (a) in the past or (b) confirmed via vahvista_* flags
   const confirmedFieldSet = new Set(generateConfirmedFields(attributeData, deadlineObjects));
   // Attributes that should never be cascaded
@@ -91,7 +93,8 @@ export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disable
     lautakuntaItem.value = lautakuntaResult;
   };
 
-  const handleLautakuntaMove = (arr, i, disabledDates) => {
+  const handleMoveWithPrevMaaraaika = (arr, i, disabledDates) => {
+    // If an element has a previous maaraaika, it should move together
     const currentItem = arr[i];
     const prevItem = getPreviousItem(arr, i);
     const gapType = getGapDateType(currentItem);
@@ -103,8 +106,8 @@ export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disable
       const enforcedMaaraaika = enforceMinimumGap(maikaObject, getPreviousItem(arr, i - 1), disabledDates);
       prevItem.value = enforcedMaaraaika;
     }
-    const lautakuntaResult = enforceMinimumGap(currentItem, prevItem, disabledDates, true);
-    currentItem.value = lautakuntaResult ?? currentItem.value;
+    const movedItemResult = enforceMinimumGap(currentItem, prevItem, disabledDates, true);
+    currentItem.value = movedItemResult ?? currentItem.value;
   };
 
   const handleEsillaMaaraaikaMove = (arr, i, movedDate, disabledDates) => {
@@ -138,6 +141,24 @@ export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disable
     }
   };
 
+  const handleAlkaaManualMove = (arr, i, movedDate, disabledDates) => {
+    // Ensure new alkaa date lands an allowed date, and not too close to paattyy
+    const currentItem = arr[i]
+    currentItem.value = movedDate;
+    const enforcedDate = enforceMinimumGap(currentItem, getPreviousItem(arr, i), disabledDates);
+    const nextItem = arr[i + 1];
+    const currentType = currentItem?.date_type || 'arkipäivät';
+    const allowedDates = disabledDates?.date_types?.[currentType]?.dates || [];
+    const gapType = getGapDateType(nextItem);
+    const gapDates = gapType ? disabledDates?.date_types?.[gapType]?.dates : allowedDates;
+    const gap = nextItem.distance_from_previous || 0;
+    const lastPossibleDate = nextItem ? findPastDateWithGap(nextItem.value, gap, gapDates, allowedDates) : enforcedDate;
+    if (enforcedDate <= lastPossibleDate) {
+      currentItem.value = enforcedDate
+    }
+    // If no possible dates available, keep movedDate as value. Backend will validate
+  }
+
   const measureDistance = (fromDate, toDate, gapDates) => {
     if (!gapDates?.length || !fromDate || !toDate) return null;
     const fromIdx = gapDates.findIndex(d => d >= fromDate);
@@ -164,7 +185,6 @@ export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disable
     currentItem.value = movedFieldValue;
 
     const kylkMaaraaikaKeys = ["kylk_maaraaika", "kylk_aineiston_maaraaika", "_lautakunta_aineiston_maaraaika"];
-
     if (kylkMaaraaikaKeys.some(key => currentItem?.key?.includes(key))) {
       const enforcedDate = enforceMinimumGap(currentItem, getPreviousItem(arr, i), disabledDates);
       currentItem.value = enforcedDate;
@@ -172,8 +192,12 @@ export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disable
       indexToContinue += 1; // Skip the next item (lautakunta) since it was already adjusted
     }
     else if (prevItem?.key?.includes("maaraaika")) {
-      handleLautakuntaMove(arr, i, disabledDates);
+      handleMoveWithPrevMaaraaika(arr, i, disabledDates);
       previousMoved = true;
+      if (currentItem?.key?.includes('alkaa') && !isDrag) {
+        handleAlkaaManualMove(arr, i, movedFieldValue, disabledDates);
+        indexToContinue += 1; // Skip the next item (paattyy) as it should not move
+      }
     }
     else if (currentItem?.key?.includes("maaraaika")) {
       //Maaraaika moving, set esillaolo alkaa & paattyy
@@ -181,6 +205,10 @@ export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disable
       currentItem.value = enforcedDate;
       handleEsillaMaaraaikaMove(arr, i, currentItem.value, disabledDates);
       indexToContinue += 2; // Skip the next two items (esilla alkaa & paattyy) since they were already adjusted
+    }
+    else if(!isDrag && (!currentItem?.key.includes("_alkaa") || currentItem?.key == "projektin_kaynnistys_pvm")) {
+      handleAlkaaManualMove(arr, i, movedFieldValue, disabledDates);
+      indexToContinue += 1; // Skip the next item (paattyy) as it should not move
     }
     else {
       // For any other deadlines not specifically handled, enforce the minimum gap
@@ -199,7 +227,7 @@ export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disable
         nextItem = arr[indexToContinue];
       }
       if (nextItem) {
-        nextItem.value = enforceMinimumGap(nextItem, arr[indexToContinue - 1], disabledDates, false, false);
+        nextItem.value = enforceMinimumGap(nextItem, arr[indexToContinue - 1], disabledDates, false);
         indexToContinue++;
       }
     }
@@ -207,21 +235,31 @@ export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disable
     return { value: currentItem.value, indexToContinue };
   };
 
-  const enforceMinimumGap = (currentItem, prevItem, disabledDates, forceMinimumGap = false, preserveDistance = false) => {
-    if (currentItem?.isPhaseBoundary) {
-      return enforcePhaseBoundaryGap(currentItem, prevItem);
+  const enforceMinimumGap = (currentItem, prevItem, disabledDates, forceMinimumGap = false) => {
+    if (!prevItem) {
+      return currentItem.value;
     }
     const minimumGap = currentItem.distance_from_previous ?? 0;
     const allowedType = currentItem?.date_type || "arkipäivät";
     const allowedDates = disabledDates?.date_types[allowedType]?.dates || [];
     const gapType = getGapDateType(currentItem);
     const gapDates = gapType ? disabledDates?.date_types[gapType]?.dates : allowedDates;
-    const effectiveGap = preserveDistance ? getPreservedGap(currentItem, prevItem, minimumGap, gapDates) : minimumGap;
-    // Preserving distance must land exactly on prev+effectiveGap, not clamp to the item's own stale value.
-    const preferredDate = (forceMinimumGap || preserveDistance) ? null : currentItem.value;
+    const preferredDate = forceMinimumGap ? null : currentItem.value;
     const prevValue = prevItem?.value || currentItem?.value; // for first item in array, gap resolves to 0
-    const nextAllowedDate = findFirstAllowedDate(prevValue, effectiveGap, gapDates, allowedDates, preferredDate);
-    return nextAllowedDate;
+    return findFirstAllowedDate(prevValue, minimumGap, gapDates, allowedDates, preferredDate);
+  };
+
+  // Preserves the existing distance between currentItem and prevItem, floored at the minimum gap.
+  const preserveDistanceFromPrevious = (currentItem, prevItem, disabledDates) => {
+    const minimumGap = currentItem.distance_from_previous ?? 0;
+    const allowedType = currentItem?.date_type || "arkipäivät";
+    const allowedDates = disabledDates?.date_types[allowedType]?.dates || [];
+    const gapType = getGapDateType(currentItem);
+    const gapDates = gapType ? disabledDates?.date_types[gapType]?.dates : allowedDates;
+    const effectiveGap = getPreservedGap(currentItem, prevItem, minimumGap, gapDates);
+    // Preserving distance must land exactly on prev+effectiveGap, not clamp to the item's own stale value.
+    const prevValue = prevItem?.value || currentItem?.value;
+    return findFirstAllowedDate(prevValue, effectiveGap, gapDates, allowedDates, null);
   };
 
   const enforcePhaseBoundaryGap = (currentItem, prevItem) => {
@@ -301,11 +339,13 @@ export const cascadeDeadlineChange = ({ dlArray, field, movedFieldValue, disable
     }
     else if (lockedElement && currentItem.key === lockedElement.key) {
       // The locked item's own gap from its predecessor is never preserved, only the minimum applies
-      newDate = enforceMinimumGap(currentItem, prevItem, disabledDates, false, false);
+      newDate = enforceMinimumGap(currentItem, prevItem, disabledDates, false);
     }
-    else {
+    else if (currentItem?.isPhaseBoundary) {
+      newDate = enforcePhaseBoundaryGap(currentItem, prevItem);
+    } else {
       // For subsequent items, preserve their existing distance from the previous item, floored at the minimum gap
-      newDate = enforceMinimumGap(currentItem, prevItem, disabledDates, false, true);
+      newDate = preserveDistanceFromPrevious(currentItem, prevItem, disabledDates);
     }
     if (lockedElement && currentItem.key === lockedElement.key) {
       if (newDate > currentItem.value) {

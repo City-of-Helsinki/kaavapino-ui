@@ -221,7 +221,7 @@ export const reducer = (state = initialState, action) => {
     }
 
     case UPDATE_DATE_TIMELINE: {
-      const { field, newDate, formValues, deadlineSections, isAdd = false } = action.payload;
+      const { field, newDate, formValues, deadlineSections, isAdd = false, isDrag = false } = action.payload;
 
       // Snapshot the last-known-good attribute_data before cascade so it can be
       // restored if backend validation rejects the change (e.g. locked group).
@@ -255,7 +255,7 @@ export const reducer = (state = initialState, action) => {
       const [changes, filteredAttributeData] = deadlineCascade.prepareCascadeInput(updatedAttributeData, deadlineSections)
 
       let processedDates = [];
-      try {
+      //try {
         processedDates = deadlineCascade.cascadeDeadlineChange({
           dlArray: changes,
           field,
@@ -264,16 +264,17 @@ export const reducer = (state = initialState, action) => {
           attributeData: filteredAttributeData,
           deadlineObjects: state.currentProject.deadlines,
           lockedGroup: state.timelineLockedGroup,
-          isAdd
+          isAdd,
+          isDrag,
         });
-      } catch (err) {
-        // Cascade rejected the change (e.g. backtrack would violate a locked field).
-        console.warn('cascadeDeadlineChange rejected update:', err?.message || err);
-        return {
-          ...state,
-          lastCascadeError: { message: err?.message, field, timestamp: Date.now() }
-        };
-      }
+      //} catch (err) {
+      //  // Cascade rejected the change (e.g. backtrack would violate a locked field).
+      //  console.warn('cascadeDeadlineChange rejected update:', err?.message || err);
+      //  return {
+      //    ...state,
+      //    lastCascadeError: { message: err?.message, field, timestamp: Date.now() }
+      //  };
+      //}
       // Add new values from array to updatedAttributeData object
       processedDates.forEach(item => {
         filteredAttributeData[item.key] = item.value;
