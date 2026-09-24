@@ -255,7 +255,7 @@ export const reducer = (state = initialState, action) => {
       const [changes, filteredAttributeData] = deadlineCascade.prepareCascadeInput(updatedAttributeData, deadlineSections)
 
       let processedDates = [];
-      //try {
+      try {
         processedDates = deadlineCascade.cascadeDeadlineChange({
           dlArray: changes,
           field,
@@ -267,14 +267,14 @@ export const reducer = (state = initialState, action) => {
           isAdd,
           isDrag,
         });
-      //} catch (err) {
-      //  // Cascade rejected the change (e.g. backtrack would violate a locked field).
-      //  console.warn('cascadeDeadlineChange rejected update:', err?.message || err);
-      //  return {
-      //    ...state,
-      //    lastCascadeError: { message: err?.message, field, timestamp: Date.now() }
-      //  };
-      //}
+      } catch (err) {
+        // Cascade rejected the change (e.g. backtrack would violate a locked field).
+        console.warn('cascadeDeadlineChange rejected update:', err?.message || err);
+        return {
+          ...state,
+          lastCascadeError: { message: err?.message, field, timestamp: Date.now() }
+        };
+      }
       // Add new values from array to updatedAttributeData object
       processedDates.forEach(item => {
         filteredAttributeData[item.key] = item.value;

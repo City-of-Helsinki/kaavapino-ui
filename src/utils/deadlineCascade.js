@@ -52,17 +52,10 @@ export const cascadeDeadlineChange = (
   const confirmedFieldSet = new Set(generateConfirmedFields(attributeData, deadlineObjects));
   // Attributes that should never be cascaded
   const IGNORED_ATTRIBUTES = [
-    "kaynnistysvaihe_alkaa_pvm", "projektin_kaynnistys_pvm",
+    "kaynnistysvaihe_alkaa_pvm", "projektin_kaynnistys_pvm", "ulkopaikkakuntalaisille_tiedotus", "milloin_kuulutus_nahtavillaolosta",
     "voimaantulo_pvm", "rauennut", "tullut_osittain_voimaan_pvm", "kumottu_pvm", "valtuusto_poytakirja_nahtavilla_pvm",
     "hyvaksymispaatos_valitusaika_paattyy", "valtuusto_hyvaksymiskuulutus_pvm", "hyvaksymispaatos_pvm"
   ];
-
-  const isFrozen = (item) => {
-    if (!item?.value) return false;
-    const today = new Date().toISOString().split('T')[0];
-    if (item.value < today) return true;
-    return confirmedFieldSet.has(item.key);
-  };
 
   const getPreviousItem = (arr, index) => {
     if (index === 0) return null;
@@ -327,7 +320,7 @@ export const cascadeDeadlineChange = (
 
   for (let i = indexToContinue; i < arr.length; i++) {
     const currentItem = arr[i];
-    if (isFrozen(currentItem) || IGNORED_ATTRIBUTES.some(attr => currentItem.key.includes(attr))) {
+    if ( confirmedFieldSet.has(currentItem.key) || IGNORED_ATTRIBUTES.some(attr => currentItem.key.includes(attr))) {
       continue;
     }
     let newDate;
@@ -341,7 +334,7 @@ export const cascadeDeadlineChange = (
       // The locked item's own gap from its predecessor is never preserved, only the minimum applies
       newDate = enforceMinimumGap(currentItem, prevItem, disabledDates, false);
     }
-    else if (currentItem?.isPhaseBoundary) {
+    else if (currentItem?.isPhaseBoundary && !currentItem?.date_type) {
       newDate = enforcePhaseBoundaryGap(currentItem, prevItem);
     } else {
       // For subsequent items, preserve their existing distance from the previous item, floored at the minimum gap
