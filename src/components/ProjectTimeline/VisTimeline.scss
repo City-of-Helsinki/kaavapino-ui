@@ -1739,14 +1739,14 @@ body .vis-item-overflow.past-phase-item::after {
 }
 
 // no-drag and confirmed: hide drag handle dot on all non-draggable vis-point items
-// board-date is excluded because its ::after is the confirmed checkmark icon
+// board-date and board-only are excluded because their ::after is the confirmed checkmark icon
 // Covers: inner-end, only-inner-end, board.deadline, and any other vis-point type
-body .vis .vis-point.no-drag:not(.board-date)::after,
-body .vis .vis-point.no-drag:not(.board-date):hover::after,
-body .vis .vis-point.no-drag:not(.board-date):active::after,
-body .vis .vis-point.confirmed:not(.board-date)::after,
-body .vis .vis-point.confirmed:not(.board-date):hover::after,
-body .vis .vis-point.confirmed:not(.board-date):active::after {
+body .vis .vis-point.no-drag:not(.board-date):not(.board-only)::after,
+body .vis .vis-point.no-drag:not(.board-date):not(.board-only):hover::after,
+body .vis .vis-point.no-drag:not(.board-date):not(.board-only):active::after,
+body .vis .vis-point.confirmed:not(.board-date):not(.board-only)::after,
+body .vis .vis-point.confirmed:not(.board-date):not(.board-only):hover::after,
+body .vis .vis-point.confirmed:not(.board-date):not(.board-only):active::after {
     opacity: 0 !important;
 }
 // For only-inner-end and inner-end in ehdotus/nahtavilla/esillaolo context: dot is on .vis-item-overflow::after
