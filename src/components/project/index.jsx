@@ -157,7 +157,7 @@ class ProjectPage extends Component {
     this.setState({sectionIndex})
   }
 
-  getProjectEditContent = (isExpert,isResponsible,isTheResponsiblePerson, editViewLoading) => {
+  getProjectEditContent = (isExpert,isResponsible,isTheResponsiblePerson) => {
     const { currentProject, users, projectSubtypes, selectedPhase, allEditFields } = this.props
     const user = projectUtils.formatUsersName(users.find(u => u.id === currentProject.user))
     const currentPhases = this.getCurrentPhases()
@@ -172,7 +172,7 @@ class ProjectPage extends Component {
           pwnumber={currentProject?.attribute_data?.hankenumero}
           pwlink={allEditFields?.pw_urn}
           location={this.props.location}
-          actions={this.getEditNavActions(isExpert, editViewLoading)}
+          actions={this.getEditNavActions(isExpert)}
           infoOptions={this.getAllChanges()}
         />
         <NewProjectFormModal
@@ -288,10 +288,10 @@ class ProjectPage extends Component {
     )
   }
 
-  getProjectPageContent = (isExpert,isResponsible, isTheResponsiblePerson, editViewLoading) => {
+  getProjectPageContent = (isExpert,isResponsible, isTheResponsiblePerson) => {
     const { edit, documents } = this.props
     if (edit) {
-      return this.getProjectEditContent(isExpert,isResponsible,isTheResponsiblePerson, editViewLoading)
+      return this.getProjectEditContent(isExpert,isResponsible,isTheResponsiblePerson)
     }
     if (documents) {
       return this.getProjectDocumentsContent(isResponsible)
@@ -386,7 +386,7 @@ class ProjectPage extends Component {
     })
   }
 
-  getEditNavActions = (isUserExpert, editViewLoading) => {
+  getEditNavActions = (isUserExpert) => {
     const { t } = this.props
     const options = [
       {value: 1, label: this.getNavOptionLabel(<><i className="icons document-icon"></i>{t('project.create-documents')}</>, t('project.create-documents'))},
@@ -407,7 +407,6 @@ class ProjectPage extends Component {
           value={t('project.edit-tools')}
           options={options}
           onChange={this.changeOptions}
-          disabled={editViewLoading}
         />
         )}
       </span>
@@ -548,14 +547,6 @@ class ProjectPage extends Component {
       currentProject
     } = this.props
 
-    const editViewLoading =
-    !currentProjectLoaded ||
-    !phases ||
-    !users ||
-    users.length === 0 ||
-    !this.props.allEditFields ||
-    !this.props.selectedPhase
-
     const loading = !currentProjectLoaded || !phases
 
     const userIsExpert = authUtils.isExpert(currentUserId, users)
@@ -574,7 +565,7 @@ class ProjectPage extends Component {
         {!loading && !resettingDeadlines && (
           <div className="project-container">
             <main className="project-page-content" id="main">
-              {this.getProjectPageContent(userIsExpert,isResponsible,isTheResponsiblePerson, editViewLoading)}
+              {this.getProjectPageContent(userIsExpert,isResponsible,isTheResponsiblePerson)}
             </main>
           </div>
         )}

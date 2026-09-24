@@ -173,13 +173,13 @@ async function fetchProjectSchema() {
 }
 
 /**
- * Generate the checkForDecreasingValues_test_data.js file content
+ * Generate the cascadeDeadlineChange_test_data.js file content
  */
 function generateTestDataFile(dateTypes, deadlineDistances) {
   const { arkipäivät, työpäivät, lautakuntapäivät, esilläolopäivät } = dateTypes;
   
   let content = `/**
- * Auto-generated mock data for checkForDecreasingValues tests
+ * Auto-generated mock data for cascadeDeadlineChange tests
  * 
  * Generated at: ${new Date().toISOString()}
  * 
