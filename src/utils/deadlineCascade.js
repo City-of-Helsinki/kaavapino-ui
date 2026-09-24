@@ -219,9 +219,9 @@ export const cascadeDeadlineChange = (
         indexToContinue++;
         nextItem = arr[indexToContinue];
       }
-      if (nextItem) {
+      if (nextItem && nextItem.key !== lockedElement.key) {
         nextItem.value = enforceMinimumGap(nextItem, arr[indexToContinue - 1], disabledDates, false);
-        indexToContinue++;
+        indexToContinue++; 
       }
     }
 
@@ -269,6 +269,7 @@ export const cascadeDeadlineChange = (
 
   // When a locked item is encountered, backtrack and adjust previous items to maintain the preserved gap without moving locked item
   const backtrackDeadlines = (arr, lockedItemIndex) => {
+    console.log("Backtracking")
     let forwardItem = arr[lockedItemIndex];
     const endIndex = Math.max(movedItemIndex - (previousMoved ? 2 : 1), 0);
     for (let j = lockedItemIndex - 1; j >= endIndex; j--) {
