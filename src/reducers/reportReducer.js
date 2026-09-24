@@ -13,7 +13,8 @@ export const initialState = {
   reports: null,
   currentReport: undefined,
   reportPreviewLoading: false,
-  reportLoading: false
+  reportLoading: false,
+  externalReportsUrl: null
 }
 
 export const reducer = (state = initialState, { type, payload }) => {
@@ -21,7 +22,8 @@ export const reducer = (state = initialState, { type, payload }) => {
     case FETCH_REPORTS_SUCCESSFUL:
       return {
         ...state,
-        reports: payload
+        reports: payload.reports,
+        externalReportsUrl: payload.externalReportsUrl
       }
 
     case DOWNLOAD_REPORT: {

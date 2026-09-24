@@ -9,9 +9,9 @@ export const CANCEL_REPORT_LOADING = 'Cancel report loading'
 export const CANCEL_REPORT_PREVIEW_LOADING = 'Cancel report preview loading'
 
 export const fetchReports = () => ({ type: FETCH_REPORTS })
-export const fetchReportsSuccessful = reports => ({
+export const fetchReportsSuccessful = (reports, externalReportsUrl) => ({
   type: FETCH_REPORTS_SUCCESSFUL,
-  payload: reports
+  payload: { reports, externalReportsUrl }
 })
 export const downloadReport = report => ({ type: DOWNLOAD_REPORT, payload: report })
 
