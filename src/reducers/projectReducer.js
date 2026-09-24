@@ -268,6 +268,9 @@ export const reducer = (state = initialState, action) => {
           isDrag,
         });
       } catch (err) {
+        if (!err.message?.includes("Cannot backtrack")){
+          throw err;
+        }
         // Cascade rejected the change (e.g. backtrack would violate a locked field).
         console.warn('cascadeDeadlineChange rejected update:', err?.message || err);
         return {
