@@ -452,7 +452,7 @@ const TimelineModal = ({
               // Special case: Tiedottaminen tab unaffected by confirmation
               const confirmationKey = key === "Tiedottaminen" ? null : confirmedValue
               return <Tabs.TabPanel style={{ marginBottom: 'var(--spacing-m)' }} key={`tabPanel-${index}-${subsection}`}>
-                {getFormFields(subsection, sectionIndex, disabled, attr[deadlinegroup], normalizedTitle, confirmedValue, tooltip, lautakuntaInPast, isDeadlineLocked)}
+                {getFormFields(subsection, sectionIndex, disabled, attr[deadlinegroup], normalizedTitle, confirmationKey, tooltip, lautakuntaInPast, isDeadlineLocked)}
               </Tabs.TabPanel>
             })}
           </Tabs>
