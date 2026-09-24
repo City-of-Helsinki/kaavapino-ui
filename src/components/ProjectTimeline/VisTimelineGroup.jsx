@@ -374,7 +374,15 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     );
     const error = store.getState().project.lastCascadeError;
     if (error) {
-      toastr.warning(t('project.element-not-fit'), '', { timeOut: 4000 });
+      let warningMessage = t('project.element-not-fit')
+      if (error.field?.includes("nahtavill")) {
+        warningMessage = t('project.review-not-fit');
+      } else if (error.field?.includes("esillaolo")) {
+        warningMessage = t('project.presence-not-fit');
+      } else if (error.field?.includes("kylk") || error.field?.includes("lautakun")) {
+        warningMessage = t('project.board-not-fit');
+      }
+      toastr.warning(warningMessage, '', { timeOut: 4000 });
       closeAddDialog();
     }
     
