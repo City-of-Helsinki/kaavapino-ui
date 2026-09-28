@@ -6,6 +6,7 @@ beforeAll(() => { vi.useFakeTimers(); vi.setSystemTime(new Date('2025-01-01')); 
 afterAll(() => { vi.useRealTimers(); });
 
 import deadlineCascade from '../../utils/deadlineCascade';
+import { addCalendarDays } from '../../utils/timeUtil';
 import mockData from './cascadeDeadlineChange_test_data.js';
 
 // Helpers to reduce duplication in cascadeDeadlineChange tests
@@ -128,6 +129,41 @@ const subtractWeekdays = (dateStr, days) => {
         if (day !== 0 && day !== 6) removed++;
     }
     return formatLocalDate(d);
+};
+
+// Minimal disabledDates fixture for isolated helper unit tests below.
+// Easier to test and verify distance measurements etc.
+const buildWeekdayDates = (startStr, endStr) => {
+    const [sy, sm, sd] = startStr.split('-').map(Number);
+    const [ey, em, ed] = endStr.split('-').map(Number);
+    const end = new Date(ey, em - 1, ed);
+    const dates = [];
+    let cur = new Date(sy, sm - 1, sd);
+    while (cur <= end) {
+        const day = cur.getDay();
+        if (day !== 0 && day !== 6) dates.push(formatLocalDate(cur));
+        cur = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate() + 1);
+    }
+    return dates;
+};
+const nextTuesday = (dateStr) => {
+    const [year, month, date] = dateStr.split('-').map(Number);
+    const d = new Date(year, month - 1, date);
+    while (d.getDay() !== 2) d.setDate(d.getDate() + 1);
+    return formatLocalDate(d);
+};
+const dayOfWeek = (dateStr) => {
+    const [year, month, date] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, date).getDay();
+};
+const simpleWeekdayDates = buildWeekdayDates('2029-01-01', '2031-01-01');
+const simpleDisabledDates = {
+    date_types: {
+        "arkipäivät": { dates: simpleWeekdayDates },
+        "työpäivät": { dates: simpleWeekdayDates },
+        "esilläolopäivät": { dates: simpleWeekdayDates },
+        "lautakunnan_kokouspäivät": { dates: simpleWeekdayDates.filter(d => dayOfWeek(d) === 2) }
+    }
 };
 
 describe("cascadeDeadlineChange preserves existing distances (forward cascade)", () => {
@@ -480,5 +516,214 @@ describe("cascadeDeadlineChange lifecycle scenarios", () => {
 
         // Known bug: phase-start dates lacking date_type/distance_from_previous break findAllowedDate in objectUtil.
         test.todo("distances are enforced consistently for all phases (phase-start dates without date_type crash findAllowedDate)");
+    });
+});
+
+describe("cascadeDeadlineChange helper functions", () => {
+
+    describe("getPreviousItem", () => {
+        test("returns the item immediately before the given index", () => {
+            const arr = [{ key: 'a' }, { key: 'b' }, { key: 'c' }];
+            expect(deadlineCascade.getPreviousItem(arr, 2)).toBe(arr[1]);
+        });
+
+        test("returns null for index 0", () => {
+            const arr = [{ key: 'a' }, { key: 'b' }];
+            expect(deadlineCascade.getPreviousItem(arr, 0)).toBeNull();
+        });
+
+        test("uses previous_deadline lookup when no '_2' variant of it exists", () => {
+            const arr = [
+                { key: 'x' },
+                { key: 'unrelated' },
+                { key: 'y', previous_deadline: 'x' }
+            ];
+            expect(deadlineCascade.getPreviousItem(arr, 2)).toBe(arr[0]);
+        });
+
+        test("falls back to arr[index - 1] when a '_2' variant of previous_deadline exists (ambiguous group)", () => {
+            const arr = [
+                { key: 'x' },
+                { key: 'x_2' }, // additional element group sharing the same previous_deadline key
+                { key: 'y', previous_deadline: 'x' }
+            ];
+            // previous_deadline 'x' is ambiguous because an 'x_2' variant also exists;
+            // getPreviousItem should fall back to the immediately preceding array item instead
+            expect(deadlineCascade.getPreviousItem(arr, 2)).toBe(arr[1]);
+        });
+    });
+
+    describe("measureDistance", () => {
+        const gapDates = ['2026-01-01', '2026-01-02', '2026-01-05', '2026-01-06'];
+
+        test("returns the index distance between two dates present in gapDates", () => {
+            expect(deadlineCascade.measureDistance('2026-01-01', '2026-01-05', gapDates)).toBe(2);
+        });
+
+        test("returns null when gapDates is empty or missing", () => {
+            expect(deadlineCascade.measureDistance('2026-01-01', '2026-01-05', [])).toBeNull();
+            expect(deadlineCascade.measureDistance('2026-01-01', '2026-01-05', undefined)).toBeNull();
+        });
+
+        test("returns null when fromDate or toDate is missing", () => {
+            expect(deadlineCascade.measureDistance(null, '2026-01-05', gapDates)).toBeNull();
+            expect(deadlineCascade.measureDistance('2026-01-01', null, gapDates)).toBeNull();
+        });
+
+        test("returns null when a date is not found in gapDates", () => {
+            expect(deadlineCascade.measureDistance('2026-01-01', '2099-01-01', gapDates)).toBeNull();
+        });
+    });
+
+    describe("enforceMinimumGap", () => {
+        test("returns the item's own value unchanged when there is no previous item", () => {
+            const currentItem = { key: 'a', value: '2026-01-10', distance_from_previous: 5, date_type: 'arkipäivät' };
+            expect(deadlineCascade.enforceMinimumGap(currentItem, null, mockData.test_disabledDates)).toBe('2026-01-10');
+        });
+
+        test("pushes the date forward to satisfy the minimum gap when it is below the minimum", () => {
+            const prevItem = { key: 'prev', value: '2026-01-02' };
+            // Only 1 weekday after prev, well below the 5-day minimum
+            const currentItem = { key: 'current', value: addWeekdays('2026-01-02', 1), distance_from_previous: 5, date_type: 'arkipäivät' };
+            const result = deadlineCascade.enforceMinimumGap(currentItem, prevItem, mockData.test_disabledDates);
+            expect(result).toBe(addWeekdays('2026-01-02', 5));
+        });
+
+        test("forceMinimumGap=true snaps to the minimum gap even when the item's own later value would otherwise be kept", () => {
+            const prevItem = { key: 'prev', value: '2026-01-02' };
+            const currentItem = { key: 'current', value: '2027-01-01', distance_from_previous: 5, date_type: 'arkipäivät' };
+            const forced = deadlineCascade.enforceMinimumGap(currentItem, prevItem, mockData.test_disabledDates, true);
+            const notForced = deadlineCascade.enforceMinimumGap(currentItem, prevItem, mockData.test_disabledDates, false);
+            expect(forced).toBe(addWeekdays('2026-01-02', 5));
+            expect(notForced).toBe('2027-01-01');
+        });
+    });
+
+    describe("getPreservedGap", () => {
+        const gapDates = simpleWeekdayDates;
+
+        test("returns the existing distance when it is above the minimum", () => {
+            const originalByKey = new Map([
+                ['prev', { key: 'prev', value: '2029-01-01' }],
+                ['current', { key: 'current', value: addWeekdays('2029-01-01', 5) }]
+            ]);
+            const result = deadlineCascade.getPreservedGap({ key: 'current' }, { key: 'prev' }, 2, gapDates, originalByKey);
+            expect(result).toBe(5);
+        });
+
+        test("floors at the minimum gap when the existing distance is smaller", () => {
+            const originalByKey = new Map([
+                ['prev', { key: 'prev', value: '2029-01-01' }],
+                ['current', { key: 'current', value: addWeekdays('2029-01-01', 1) }]
+            ]);
+            const result = deadlineCascade.getPreservedGap({ key: 'current' }, { key: 'prev' }, 4, gapDates, originalByKey);
+            expect(result).toBe(4);
+        });
+
+        test("falls back to the minimum gap when an original entry is missing", () => {
+            const originalByKey = new Map(); // no entries for either key
+            const result = deadlineCascade.getPreservedGap({ key: 'current' }, { key: 'prev' }, 3, gapDates, originalByKey);
+            expect(result).toBe(3);
+        });
+    });
+
+    describe("enforcePhaseBoundaryGap", () => {
+        test("shifts the current item by the original calendar-day distance from prevItem", () => {
+            const originalByKey = new Map([
+                ['phase_prev', { key: 'phase_prev', value: '2026-01-01' }],
+                ['phase_current', { key: 'phase_current', value: '2026-01-10' }] // 9 calendar days apart
+            ]);
+            const prevItem = { key: 'phase_prev', value: '2027-03-01' }; // prevItem has since moved
+            const currentItem = { key: 'phase_current' };
+            const result = deadlineCascade.enforcePhaseBoundaryGap(currentItem, prevItem, originalByKey);
+            expect(result).toBe(addCalendarDays('2027-03-01', 9));
+        });
+
+        test("defaults to a 0-day diff when original entries are missing", () => {
+            const originalByKey = new Map();
+            const prevItem = { key: 'phase_prev', value: '2027-03-01' };
+            const currentItem = { key: 'phase_current' };
+            const result = deadlineCascade.enforcePhaseBoundaryGap(currentItem, prevItem, originalByKey);
+            expect(result).toBe(addCalendarDays('2027-03-01', 0));
+        });
+    });
+
+    describe("preserveDistanceFromPrevious", () => {
+        test("lands exactly on prevValue + preserved gap, ignoring the item's own stale value", () => {
+            const originalA = '2029-01-08'; // Tuesday
+            const originalB = addWeekdays(originalA, 10); // original gap = 10 weekdays
+            const originalByKey = new Map([
+                ['prev', { key: 'prev', value: originalA }],
+                ['current', { key: 'current', value: originalB }]
+            ]);
+            const newA = addWeekdays(originalA, 3); // prev has since moved forward
+            const prevItem = { key: 'prev', value: newA };
+            const currentItem = { key: 'current', value: 'stale-value-should-be-ignored', distance_from_previous: 2, date_type: 'arkipäivät' };
+
+            const result = deadlineCascade.preserveDistanceFromPrevious(currentItem, prevItem, mockData.test_disabledDates, originalByKey);
+            expect(result).toBe(addWeekdays(newA, 10));
+        });
+
+        test("floors the preserved gap at the item's own minimum distance", () => {
+            const originalA = '2029-01-08';
+            const originalB = addWeekdays(originalA, 1); // original gap (1) is below the 8-day minimum
+            const originalByKey = new Map([
+                ['prev', { key: 'prev', value: originalA }],
+                ['current', { key: 'current', value: originalB }]
+            ]);
+            const prevItem = { key: 'prev', value: originalA };
+            const currentItem = { key: 'current', value: originalB, distance_from_previous: 8, date_type: 'arkipäivät' };
+
+            const result = deadlineCascade.preserveDistanceFromPrevious(currentItem, prevItem, mockData.test_disabledDates, originalByKey);
+            expect(result).toBe(addWeekdays(originalA, 8));
+        });
+    });
+
+    describe("handleEsillaMaaraaikaMove", () => {
+        test("computes alkaa and paattyy from the moved maaraaika date using each item's own gap", () => {
+            const arr = [
+                { key: 'esillaolo_maaraaika_test', date_type: 'arkipäivät' },
+                { key: 'esillaolo_alkaa_test', distance_from_previous: 13, date_type: 'arkipäivät' },
+                { key: 'esillaolo_paattyy_test', distance_from_previous: 14, date_type: 'arkipäivät' }
+            ];
+            const movedDate = '2030-03-04'; // Monday, well clear of any exclusion windows
+            deadlineCascade.handleEsillaMaaraaikaMove(arr, 0, movedDate, simpleDisabledDates);
+
+            const expectedAlkaa = addWeekdays(movedDate, 13);
+            expect(arr[1].value).toBe(expectedAlkaa);
+            const expectedPaattyy = addWeekdays(expectedAlkaa, 14);
+            expect(arr[2].value).toBe(expectedPaattyy);
+        });
+
+        test("preserves the existing alkaa->paattyy gap when it's larger than paattyy's own minimum", () => {
+            const alkaaOrig = '2030-02-04'; // Monday
+            const paattyyOrig = addWeekdays(alkaaOrig, 20); // existing gap (20) > minimum (14)
+            const arr = [
+                { key: 'esillaolo_maaraaika_test', date_type: 'arkipäivät' },
+                { key: 'esillaolo_alkaa_test', value: alkaaOrig, distance_from_previous: 13, date_type: 'arkipäivät' },
+                { key: 'esillaolo_paattyy_test', value: paattyyOrig, distance_from_previous: 14, date_type: 'arkipäivät' }
+            ];
+            const movedDate = '2030-03-04';
+            deadlineCascade.handleEsillaMaaraaikaMove(arr, 0, movedDate, simpleDisabledDates);
+
+            const expectedAlkaa = addWeekdays(movedDate, 13);
+            expect(arr[1].value).toBe(expectedAlkaa);
+            // The original 20-weekday gap between alkaa and paattyy should be preserved, not floored to 14
+            expect(arr[2].value).toBe(addWeekdays(expectedAlkaa, 20));
+        });
+    });
+
+    describe("handleKylkMaaraaikaMove", () => {
+        test("moves the lautakunta item to the gap-adjusted weekday landing on an allowed lautakunta (Tuesday) date", () => {
+            const lautakuntaDate = nextTuesday('2030-04-01');
+            const maaraaikaDate = subtractWeekdays(lautakuntaDate, 21);
+            const arr = [
+                { key: 'kylk_maaraaika_test', value: maaraaikaDate },
+                { key: 'lautakunta_item_test', initial_distance: 21, date_type: 'lautakunnan_kokouspäivät' }
+            ];
+            deadlineCascade.handleKylkMaaraaikaMove(arr, 0, simpleDisabledDates);
+
+            expect(arr[1].value).toBe(lautakuntaDate);
+        });
     });
 });
