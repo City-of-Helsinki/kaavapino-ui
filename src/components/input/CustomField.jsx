@@ -240,7 +240,7 @@ class CustomField extends Component {
   renderDate = props => {
     const { handleBlurSave, handleLockField, handleUnlockField, deadlines, field, lockField, fieldSetDisabled, 
       insideFieldset, disabled, isProjectTimetableEdit, nonEditable, rollingInfo, modifyText, rollingInfoText, isCurrentPhase, selectedPhase, 
-      attributeData, phaseIsClosed, disabledDates, lomapaivat, dateTypes, maxMoveGroup, maxDateToMove, groupName, visGroups, visItems, 
+      attributeData, phaseIsClosed, disabledDates, lomapaivat, dateTypes, groupName, visGroups, visItems, 
       deadlineSections, formValues, confirmedValue, sectionAttributes, allowedToEdit, timetable_editable } = this.props
 
     let current
@@ -249,7 +249,6 @@ class CustomField extends Component {
         deadline => deadline.deadline.attribute === props.input.name
       )
     }
-
     //temp fix because data is not added in backend to deadlines
     if(current === undefined){
       if(props.input.name === "viimeistaan_lausunnot_ehdotuksesta"){
@@ -272,8 +271,6 @@ class CustomField extends Component {
           disabledDates={disabledDates}
           lomapaivat={lomapaivat}
           dateTypes={dateTypes}
-          maxMoveGroup={maxMoveGroup}
-          maxDateToMove={maxDateToMove}
           groupName={groupName}
           visGroups={visGroups}
           visItems={visItems}
@@ -283,6 +280,7 @@ class CustomField extends Component {
           sectionAttributes={sectionAttributes}
           allowedToEdit={allowedToEdit}
           timetable_editable={timetable_editable}
+          deadlines={deadlines}
           {...props}
         />
       )
@@ -542,13 +540,14 @@ class CustomField extends Component {
   }
 
   renderCustomCheckbox = props => {
-    const { field,formName,disabled, tooltip, lautakuntaInPast, isProjectTimetableEdit,isAdmin } = this.props
+    const { field,formName,disabled, tooltip, lautakuntaInPast, isDeadlineLocked, isProjectTimetableEdit,isAdmin } = this.props
     return (
       <CustomCheckbox
         {...props}
         label={field.label}
         autofillRule={field.autofill_rule}
         lautakuntaInPast={lautakuntaInPast}
+        isDeadlineLocked={isDeadlineLocked}
         tooltip={tooltip}
         formName={formName}
         display={field.display}
@@ -898,11 +897,6 @@ CustomField.propTypes = {
   lomapaivat: PropTypes.array,
   dateTypes: PropTypes.object,
   deadlineSection: PropTypes.object,
-  maxMoveGroup: PropTypes.oneOfType([
-    PropTypes.object,
-    PropTypes.string
-  ]),
-  maxDateToMove: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   groupName: PropTypes.string,
   visItems: PropTypes.array,
   visGroups: PropTypes.array,
@@ -921,6 +915,7 @@ CustomField.propTypes = {
   highlightedTag: PropTypes.string,
   isAdmin: PropTypes.bool,
   lautakuntaInPast: PropTypes.bool,
+  isDeadlineLocked: PropTypes.bool,
   tooltip: PropTypes.string,
 };
 
