@@ -142,7 +142,7 @@ export const resetAttributeData = (initialData) => ({
   type: RESET_ATTRIBUTE_DATA,
   payload: {initialData},
 });
-export const updateDateTimeline = (field, newDate, formValues, deadlineSections,deadlines, isAdd = false, isDrag = false) => ({
+export const updateDateTimeline = (field, newDate, formValues, deadlineSections, deadlines, isAdd = false, isDrag = false) => ({
   type: UPDATE_DATE_TIMELINE,
   payload: { field, newDate, formValues, isAdd, deadlineSections, deadlines, isDrag },
 });

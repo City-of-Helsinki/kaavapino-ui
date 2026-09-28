@@ -41,7 +41,6 @@ export const prepareCascadeInput = (attributeData, deadlineSections, deadlines) 
     // Generate array from filteredAttributeData for comparison
     const updateAttributeArray = objectUtil.generateDateStringArray(filteredAttributeData, deadlines);
     //Compare for changes with dates in order sorted array
-    console.log(deadlines)
     const changes = objectUtil.mergeAndUpdateDlArrays(origSortedData, updateAttributeArray, deadlineSections);
     return [changes, filteredAttributeData];
 };
@@ -177,6 +176,10 @@ export const cascadeDeadlineChange = (
     const currentItem = arr[i];
     const prevItem = getPreviousItem(arr, i);
     currentItem.value = movedFieldValue;
+
+    if (IGNORED_ATTRIBUTES.some(attr => currentItem?.key?.includes(attr))) {
+      return { value: currentItem.value, indexToContinue };
+    }
 
     const kylkMaaraaikaKeys = ["kylk_maaraaika", "kylk_aineiston_maaraaika", "_lautakunta_aineiston_maaraaika"];
     if (kylkMaaraaikaKeys.some(key => currentItem?.key?.includes(key))) {
