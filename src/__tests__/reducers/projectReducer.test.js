@@ -74,7 +74,6 @@ vi.mock('../../utils/timeUtil', () => ({
 
 vi.mock('../../utils/objectUtil', () => ({
   default: {
-    filterHiddenKeysUsingSections: vi.fn((data) => ({ ...data })),
     filterHiddenKeys: vi.fn((data) => data), // Used by FETCH_PROJECT_SUCCESSFUL
     generateDateStringArray: vi.fn((data) => 
       Object.entries(data)

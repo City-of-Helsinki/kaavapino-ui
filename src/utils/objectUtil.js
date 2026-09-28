@@ -177,99 +177,6 @@ const filterHiddenKeys = (attributeData, deadlines) => {
   }, {})
 }
 
-const filterHiddenKeysUsingSections = (attributeData, deadlineSections) => {
-  return Object.entries(attributeData).reduce((acc, [key, value]) => {
-    const dl = findDeadlineInDeadlineSections(key, deadlineSections);
-    if (dl?.type === "date") {
-      // Deadline found in sections - use standard visibility check
-      if (shouldDeadlineBeVisible(dl.name, dl.attributegroup, attributeData)) {
-        acc[key] = value;
-      }
-    } else {
-      // Numbered deadline keys not in sections - infer visibility from attribute data
-      const inferredVisibility = inferVisibilityForUnmappedDeadline(key, attributeData);
-      if (inferredVisibility !== false) {
-        acc[key] = value;
-      }
-    }
-    return acc
-  }, {})
-}
-
-/**
- * Infer visibility for deadline keys not present in deadlineSections.
- * This handles numbered variants (_2, _3, _4) that may not be in the schema but exist in stored data.
- * 
- * @param {string} key - The attribute key (e.g., "luonnosaineiston_maaraaika_3")
- * @param {object} attributeData - The form/attribute data containing visibility bools
- * @returns {boolean|null} - false if definitely hidden, true/null if should be included
- */
-const inferVisibilityForUnmappedDeadline = (key, attributeData) => {
-  // Skip visibility bool keys themselves - they should never be filtered
-  if (key.startsWith('jarjestetaan_') || key.match(/_lautakuntaan_\d+$/) || key.match(/nahtaville_\d+$/)) {
-    return true;
-  }
-  
-  // Extract the suffix number if present (e.g., "_3" from "luonnosaineiston_maaraaika_3")
-  const suffixMatch = key.match(/_(\d+)$/);
-  if (!suffixMatch) {
-    return true;  // No numbered suffix - not a variant, include it
-  }
-  
-  const index = suffixMatch[1];
-  
-  // Patterns mapped to visibility bool templates
-  // Template uses {index} placeholder
-  const patternToVisBool = [
-    // Luonnos esilläolo
-    { patterns: ['luonnosaineiston_maaraaika', 'luonnos_esillaolo', 'mielipiteet_luonnos'], 
-      visBool: 'jarjestetaan_luonnos_esillaolo_{index}' },
-    // Luonnos lautakunta  
-    { patterns: ['kaavaluonnos_lautakunnassa', 'kaavaluonnos_kylk'], 
-      visBool: 'kaavaluonnos_lautakuntaan_{index}' },
-    // Periaatteet esilläolo
-    { patterns: ['periaatteet_esillaolo', 'mielipiteet_periaatteista'], 
-      visBool: 'jarjestetaan_periaatteet_esillaolo_{index}' },
-    // Periaatteet lautakunta
-    { patterns: ['periaatteet_lautakunnassa', 'periaatteet_lautakunta_aineiston'], 
-      visBool: 'periaatteet_lautakuntaan_{index}' },
-    // OAS esilläolo
-    { patterns: ['oas_esillaolo', 'mielipiteet_oas'], 
-      visBool: 'jarjestetaan_oas_esillaolo_{index}' },
-    // Ehdotus lautakunta
-    { patterns: ['kaavaehdotus_lautakunnassa', 'ehdotus_kylk'], 
-      visBool: 'kaavaehdotus_lautakuntaan_{index}' },
-    // Tarkistettu ehdotus lautakunta
-    { patterns: ['tarkistettu_ehdotus_lautakunnassa', 'tarkistettu_ehdotus_kylk'], 
-      visBool: 'tarkistettu_ehdotus_lautakuntaan_{index}' },
-  ];
-  
-  for (const mapping of patternToVisBool) {
-    if (mapping.patterns.some(p => key.includes(p))) {
-      const visBool = mapping.visBool.replace('{index}', index);
-      if (attributeData[visBool] === false) {
-        return false;
-      }
-      return null;  // Pattern matched, but visibility bool is not false
-    }
-  }
-  
-  // Ehdotus nähtävilläolo - special case with different bool names
-  const nahtavillaPatterns = ['ehdotuksen_nahtavilla', 'ehdotus_nahtaville', 'lausunnot_ehdotuksesta'];
-  if (nahtavillaPatterns.some(p => key.includes(p))) {
-    const visBool = index === '1' 
-      ? `kaavaehdotus_nahtaville_${index}`
-      : `kaavaehdotus_uudelleen_nahtaville_${index}`;
-    if (attributeData[visBool] === false) {
-      return false;
-    }
-    return null;
-  }
-  
-  // No matching pattern found, include by default
-  return null;
-}
-
 const findDeadlineInDeadlines = (deadlineName, deadlineObjects) => {
   for (const deadline of deadlineObjects) {
     if (deadlineName && deadline?.deadline?.attribute === deadlineName) {
@@ -374,7 +281,6 @@ const exported = {
   convertKeyToMatching,
   convertPhaseIdToPhaseName,
   convertPayloadValues,
-  filterHiddenKeysUsingSections,
   extractFromDeadlineSections,
   findDeadlineInDeadlineSections,
   findDeadlineInDeadlines
