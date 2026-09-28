@@ -221,7 +221,7 @@ const DeadlineInput = ({
     try {
       let field = input.name;
       setCurrentValue(formattedDate)
-      dispatch(updateDateTimeline(field,formattedDate,formValues,deadlineSections,false,false));
+      dispatch(updateDateTimeline(field,formattedDate,formValues,deadlineSections,deadlines,false,false));
     } catch (error) {
       console.error('Validation error:', error);
     }

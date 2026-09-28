@@ -221,7 +221,7 @@ export const reducer = (state = initialState, action) => {
     }
 
     case UPDATE_DATE_TIMELINE: {
-      const { field, newDate, formValues, deadlineSections, isAdd = false, isDrag = false } = action.payload;
+      const { field, newDate, formValues, deadlineSections, deadlines, isAdd = false, isDrag = false } = action.payload;
 
       // Snapshot the last-known-good attribute_data before cascade so it can be
       // restored if backend validation rejects the change (e.g. locked group).
@@ -252,7 +252,7 @@ export const reducer = (state = initialState, action) => {
       };
 
       // Prepare the input for the deadline cascade by filtering and sorting the attribute data according to the deadline sections
-      const [changes, filteredAttributeData] = deadlineCascade.prepareCascadeInput(updatedAttributeData, deadlineSections)
+      const [changes, filteredAttributeData] = deadlineCascade.prepareCascadeInput(updatedAttributeData, deadlineSections, deadlines)
 
       let processedDates = [];
       try {

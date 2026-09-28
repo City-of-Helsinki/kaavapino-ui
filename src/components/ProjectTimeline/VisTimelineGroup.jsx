@@ -1359,6 +1359,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               formattedStart,
               visValuesRef.current,
               deadlineSections,
+              deadlines,
               false,
               true,
             ));
@@ -1389,6 +1390,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
               formattedDate,
               visValuesRef.current,
               deadlineSections,
+              deadlines,
               false,
               true,
             ));

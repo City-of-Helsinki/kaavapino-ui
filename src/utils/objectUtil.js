@@ -34,17 +34,15 @@ const phaseStartEndAttributes = {
 
 
 
-const generateDateStringArray = (updatedAttributeData) => {
+const generateDateStringArray = (updatedAttributeData, deadlines) => {
   const updateAttributeArray = [];
-
   // Process only the keys with date strings
   Object.keys(updatedAttributeData)
-    .filter(key => timeUtil.isDate(updatedAttributeData[key])) // Filter only date keys
+    .filter(key => timeUtil.isDate(updatedAttributeData[key]) && deadlines.some(dl => dl.deadline.attribute === key))
     .map(key => ({ key, date: new Date(updatedAttributeData[key]), value: updatedAttributeData[key] })) // Map keys to real Date objects and values
     .forEach(item => {
       updateAttributeArray.push({ key: item.key, value: item.value }); // Push each sorted key-value pair into the array
     });
-
   return updateAttributeArray
 }
 

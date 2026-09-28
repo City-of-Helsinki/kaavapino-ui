@@ -34,13 +34,14 @@ const getFirstLockedElement = (arr, lockedGroup, deadlineObjects) => {
   return null;
 };
 
-export const prepareCascadeInput = (attributeData, deadlineSections) => {
+export const prepareCascadeInput = (attributeData, deadlineSections, deadlines) => {
     //Remove all keys that are still hidden in vistimeline so they are not moved in data and later saved
-    const filteredAttributeData = objectUtil.filterHiddenKeysUsingSections(attributeData, deadlineSections);
+    const filteredAttributeData = objectUtil.filterHiddenKeys(attributeData, deadlines);
     const origSortedData = sortObjectByDate(filteredAttributeData);
     // Generate array from filteredAttributeData for comparison
-    const updateAttributeArray = objectUtil.generateDateStringArray(filteredAttributeData);
+    const updateAttributeArray = objectUtil.generateDateStringArray(filteredAttributeData, deadlines);
     //Compare for changes with dates in order sorted array
+    console.log(deadlines)
     const changes = objectUtil.mergeAndUpdateDlArrays(origSortedData, updateAttributeArray, deadlineSections);
     return [changes, filteredAttributeData];
 };

@@ -21,7 +21,12 @@ describe("Test ObjectUtil utility functions", () => {
             "date_2": "not-a-date",
             "date_3": "2024-12-31",
         };
-        const result_data = objectUtil.generateDateStringArray(test_data);
+        const test_deadlines = [
+            { deadline: { attribute: "date_1" } },
+            { deadline: { attribute: "date_2" } },
+            { deadline: { attribute: "date_3" } },
+        ];
+        const result_data = objectUtil.generateDateStringArray(test_data, test_deadlines);
         expect(result_data?.length).toBe(2);
         expect(result_data[0]).toEqual({ key: "date_1", value: "2023-01-01" });
         expect(result_data[1]).toEqual({ key: "date_3", value: "2024-12-31" });
