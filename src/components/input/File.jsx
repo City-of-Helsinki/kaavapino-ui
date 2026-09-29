@@ -11,6 +11,7 @@ import infoBothDir from '../../assets/icons/Infobothdir.svg'
 import PropTypes from 'prop-types'
 import NetworkErrorState from './NetworkErrorState.jsx'
 import { shouldPassivateField } from '../../hooks/useFieldPassivation'
+import { resizeLargeImage } from '../../utils/imageUtils'
 
 class File extends Component {
   constructor(props) {
@@ -145,14 +146,17 @@ class File extends Component {
         return
       }
     }
-    projectFileUpload({
-      attribute: field.name,
-      file,
-      callback: e => this.callback(e, onCompleted),
-      setCancelToken: token => (this.cancelToken = token),
-      insideFieldset:insideFieldset
+
+    resizeLargeImage(file).then(resizedFile => {
+      projectFileUpload({
+        attribute: field.name,
+        file: resizedFile,
+        callback: e => this.callback(e, onCompleted),
+        setCancelToken: token => (this.cancelToken = token),
+        insideFieldset:insideFieldset
+      })
+      this.setState({ uploading: true, percentCompleted: 0 })
     })
-    this.setState({ uploading: true, percentCompleted: 0 })
   }
 
   render() {
