@@ -1,4 +1,4 @@
-const TARGET_DIMENSION = 2048;
+const TARGET_DIMENSION = 4096;
 
 export const resizeLargeImage = async (file) => {
   if (!['image/jpeg', 'image/png'].includes(file.type)) return file;
