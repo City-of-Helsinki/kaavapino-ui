@@ -1643,6 +1643,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           return;
         }
 
+        editableItemsRef.current = null; // Ensure editable items are recalculated
         const result = getTopmostTimelineItem(mouseX, mouseY, timelineInstanceRef);
 
         if (result) {
