@@ -127,7 +127,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   const [timelineAddButton, setTimelineAddButton] = useState();
   // Track whether weekend alignment shift has been applied (3-month view only)
   const weekendShiftAppliedRef = useRef(false);
-  // Cache of editable vis-timeline items for hit-testing; rebuilt lazily after items change.
+  // Cache of editable vis-timeline items for hit-testing; invalidated via the timeline's 'changed' event (see mount effect).
   const editableItemsRef = useRef(null);
 
   const { onElementEnter, onElementMove, onElementLeave, hideTooltip } = useTimelineTooltip();
@@ -1438,6 +1438,19 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         );
       };
 
+      const isMouseOverTimelineModal = (mouseX, mouseY) => {
+        const modalEl = document.getElementById('timeline-edit-side-panel');
+        if (modalEl?.offsetParent == null) {
+          return false;
+        }
+
+        const modalRect = modalEl.getBoundingClientRect();
+        return (
+          mouseX >= modalRect.left && mouseX <= modalRect.right &&
+          mouseY >= modalRect.top && mouseY <= modalRect.bottom
+        );
+      };
+
       /**
        * Handle item hover state changes
        */
@@ -1484,7 +1497,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           // Check other skip conditions that should clear the tooltip
           const menuTooltip = document.querySelector('.element-tooltip');
           const shouldSkip = (menuTooltip && menuTooltip.offsetParent !== null) || 
-                            (mouseX < 310 || mouseY < 250);
+                            (mouseX < 310 || mouseY < 250) ||
+                            isMouseOverTimelineModal(mouseX, mouseY);
           
           if (shouldSkip) {
             if (lastItemId !== null) {
@@ -1509,10 +1523,15 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
         addAriaHiddenToTimelineElements(timelineRef);
         // Track currently styled dragged group so we can remove styling on mouseUp
         const draggingGroupRef = { current: null };
+        let isDraggingItem = false;
 
         timeline.on('rangechange', () => {
           highlightJanuaryFirst();
           setLockIndicatorPosition();
+        });
+
+        timeline.on('changed', () => {
+          if (!isDraggingItem) editableItemsRef.current = null;
         });
 
         timeline.on('mouseDown', (mouseDownEvent) => {
@@ -1529,6 +1548,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           modalClosedDuringDragRef.current = false;
 
           if (allowedToEdit && mouseDownEvent?.item) {
+            isDraggingItem = true;
             document.body.classList.add('cursor-moving');
             const targetEl = mouseDownEvent?.event?.target;
             const groupEl = targetEl?.closest?.('.vis-group');
@@ -1631,6 +1651,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           draggingGroupRef.current = null;
         }
         clusterDragRef.current = {snapshot: null};
+        isDraggingItem = false;
+        editableItemsRef.current = null;
       });
 
       // Add click event listener to timeline container so clicking on the timeline items works
@@ -1643,7 +1665,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
           return;
         }
 
-        editableItemsRef.current = null; // Ensure editable items are recalculated
         const result = getTopmostTimelineItem(mouseX, mouseY, timelineInstanceRef);
 
         if (result) {
@@ -1737,7 +1758,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       timelineInstanceRef.current.setItems(items);
       timelineInstanceRef.current.setGroups(groups);
       timelineInstanceRef.current.redraw();
-      editableItemsRef.current = null;
       
       // Apply past-phase-item class to items from completed phases
       // Use setTimeout to ensure DOM is updated after redraw
