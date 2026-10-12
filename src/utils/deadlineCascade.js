@@ -330,9 +330,19 @@ export const cascadeDeadlineChange = (
     let newDate;
     const prevItem = getPreviousItem(arr, i);
 
-    if (prevItem?.key?.includes("paattyy") && currentItem?.key?.includes("mielipiteet")) {
-      // Special case: in esillaolo, mielipiteet should match paattyy date (has no minimum gap)
-      newDate = prevItem.value;
+    if (prevItem?.key?.includes("paattyy") && ["mielipiteet", "viimeistaan_lausunnot"].some(attr => currentItem?.key?.includes(attr))) {
+      if (currentItem?.key?.includes("mielipiteet")) {
+        // Special case: in esillaolo, mielipiteet should match paattyy date (has no minimum gap)
+        newDate = prevItem.value;
+      }
+      // For lausunnot, match paattyy date only if it has moved
+      else if (currentItem?.key?.includes("viimeistaan_lausunnot") &&
+        (prevItem.value !== originalByKey.get(prevItem.key)?.value) || field === prevItem.key) {
+        newDate = prevItem.value;
+      }
+      else {
+        newDate = currentItem.value;
+      }
     }
     else if (lockedElement && currentItem.key === lockedElement.key) {
       // The locked item's own gap from its predecessor is never preserved, only the minimum applies
