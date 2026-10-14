@@ -256,8 +256,8 @@ export const cascadeDeadlineChange = (
       // Special case: after adding deadline group, only enforce minimum gap for the next deadline
       // (Instead of measuring and preserving distance)
       let nextItem = arr[indexToContinue];
-      if (nextItem?.key.includes("mielipiteet")){
-        // Another special case, handle & skip to next
+      if (["mielipiteet", "viimeistaan_lausunnot"].some(attr => nextItem?.key.includes(attr))){
+        // Another special case, should always match previous value, skip to next for enforcement
         nextItem.value = arr[indexToContinue - 1].value;
         indexToContinue++;
         nextItem = arr[indexToContinue];
