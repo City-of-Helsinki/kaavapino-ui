@@ -33,6 +33,40 @@ if (process.env.NODE_ENV === 'test') {
 
 const userManager = new UserManager(userManagerConfig)
 
+// Save a handle to the original built-in method before wrapping it
+const signinSilent = userManager.signinSilent.bind(userManager)
+const renewalLockName = `oidc-renew:${userManagerConfig.authority}:${userManagerConfig.client_id}`
+let renewalPromise = null
+
+userManager.signinSilent = (args) => {
+  if (renewalPromise) {
+    return renewalPromise
+  }
+
+  renewalPromise = (async () => {
+    if (!navigator.locks?.request) {
+      return signinSilent(args)
+    }
+
+    // For multi-tab scenarios, we acquire a lock to ensure only one tab performs the silent renewal at a time
+    const previousUser = await userManager.getUser()
+    return navigator.locks.request(renewalLockName, async () => {
+      const currentUser = await userManager.getUser()
+      if (currentUser && !currentUser.expired &&
+          currentUser.access_token !== previousUser?.access_token) {
+        await userManager.events.load(currentUser)
+        return currentUser
+      }
+
+      return signinSilent(args)
+    })
+  })().finally(() => {
+    renewalPromise = null
+  })
+
+  return renewalPromise
+}
+
 userManager.events.addSilentRenewError((error) => {
   console.error('Silent renew failed', error)
 })
