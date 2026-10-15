@@ -1,11 +1,6 @@
 import objectUtil from "./objectUtil";
 import { getVisibilityBoolName, shouldDeadlineBeVisible } from "./projectVisibilityUtils";
 
-const isWeekend = (date) => {
-    const day = new Date(date).getDay();
-    return day === 0 || day === 6; // 0 = Sunday, 6 = Saturday
-};
-
 const getHighestVoimaantuloDate = (attributeValues) => {
   const datesToCompare = ["tullut_osittain_voimaan_pvm", "voimaantulo_pvm", "kumottu_pvm", "rauennut"]
   .map(dateField => attributeValues[dateField])
@@ -196,29 +191,21 @@ const findNextPossibleValue = (array, value, addedDays) => {
   return null;
 }
 
-const findNextPossibleBoardDate = (array, value) => {
-  if (!Array.isArray(array) || typeof value !== 'string') {
-    throw new TypeError('Invalid input. Provide an array of strings and a value as a string.');
-  }
+const getPreviousDeadline = (matchingItem, formValues, deadlines) => {
+  let previousDeadline = objectUtil.findDeadlineInDeadlines(matchingItem?.previous_deadline, deadlines)?.deadline;
 
-  let closestIndex = -1;
-
-  // Find the next possible date in the array
-  for (let i = 0; i < array.length; i++) {
-    if (array[i] <= value) {
-      closestIndex = i;
-    } else {
-      break;
+  // Fallback: use previous visible deadline if the current one is not visible
+  if (!previousDeadline || !shouldDeadlineBeVisible(previousDeadline.attribute, previousDeadline.deadlinegroup, formValues)) {
+    for (const deadline of deadlines) {
+      if (deadline.deadline?.attribute === matchingItem?.name) {
+        break;
+      }
+      if (shouldDeadlineBeVisible(deadline.deadline?.attribute, deadline.deadline?.deadlinegroup, formValues)) {
+        previousDeadline = deadline.deadline;
+      }
     }
   }
-
-  // If no closest date is found, return null
-  if (closestIndex === -1) {
-    return null;
-  }
-
- // Return the next possible date (one index higher) if it exists, otherwise return the closest date
- return closestIndex < array.length - 1 ? array[closestIndex + 1] : array[closestIndex];
+  return previousDeadline;
 }
 
 const getAllowedDatesForProjectStart = (name, formValues, startDate, endDate, dateTypes) => {
@@ -383,23 +370,16 @@ const getAllowedDatesForNahtavillaolo = (name, formValues, phaseName, matchingIt
   }
 };
 
-const calculateAllowedDates = (nahtavillaolo, size, dateTypes, name,
-  formValues, sectionAttributes, currentDeadline, deadlines, firstLockedDate=null
-) => {
-  const matchingItem = objectUtil.findMatchingName(sectionAttributes, name, "name");
-  let previousDeadline = objectUtil.findDeadlineInDeadlines(matchingItem?.previous_deadline, deadlines)?.deadline;
-
-  // Fallback: use previous visible deadline if the current one is not visible
-  if (!previousDeadline || !shouldDeadlineBeVisible(previousDeadline.attribute, previousDeadline.deadlinegroup, formValues)) {
-    for (const deadline of deadlines) {
-      if (deadline.deadline?.attribute === name) {
-        break;
-      }
-      if (shouldDeadlineBeVisible(deadline.deadline?.attribute, deadline.deadline?.deadlinegroup, formValues)) {
-        previousDeadline = deadline.deadline;
-      }
-    }
+const calculateAllowedDates = (dateTypes, formValues, sectionAttributes, currentDeadline, deadlines, firstLockedDate=null) => {
+  if (!currentDeadline) {
+    throw new Error(`Current deadline is not defined`);
   }
+
+  const name = currentDeadline?.deadline?.attribute;
+  const size = formValues.kaavaprosessin_kokoluokka;
+  const nahtavillaolo = currentDeadline?.deadline?.phase_name === "Ehdotus" && currentDeadline?.deadline?.deadlinegroup?.includes('nahtavillaolo')
+  const matchingItem = objectUtil.findMatchingName(sectionAttributes, name, "name");
+  const previousDeadline = getPreviousDeadline(matchingItem, formValues, deadlines);
 
   const phaseName = currentDeadline?.deadline?.phase_name?.toLowerCase();
   let allowedDates;
@@ -593,7 +573,6 @@ export const isGroupAfterLockedGroup = (timelineLockedGroup, currentGroup, deadl
 }
 
 const exported = {
-    isWeekend,
     formatDate,
     formatRelativeDate,
     sortObjectByDate,
@@ -609,7 +588,6 @@ const exported = {
 };
 if (process.env.UNIT_TEST === 'true') {
     exported.findNextPossibleValue = findNextPossibleValue;
-    exported.findNextPossibleBoardDate = findNextPossibleBoardDate;
     exported.getAllowedDatesForProjectStart = getAllowedDatesForProjectStart;
     exported.getAllowedDatesForApproval = getAllowedDatesForApproval;
     exported.getAllowedDatesForLautakunta = getAllowedDatesForLautakunta;

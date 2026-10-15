@@ -119,25 +119,6 @@ describe("timeUtils general utility function tests", () => {
         const result = timeUtil.findNextPossibleValue(dateArray, value, addedDays);
         expect(result).toBe("2024-06-01");
     });
-    test("findNextPossibleBoardDate returns next possible board date correctly", () => {
-        const boardDates = [
-            "2024-01-01",
-            "2024-02-01",
-            "2024-03-01",
-            "2024-04-01",
-            "2024-05-01"
-        ];
-        // Value exactly matches a date
-        expect(timeUtil.findNextPossibleBoardDate(boardDates, "2024-03-01")).toBe("2024-04-01");
-        // Value between two dates
-        expect(timeUtil.findNextPossibleBoardDate(boardDates, "2024-03-15")).toBe("2024-04-01");
-        // Value after last date
-        expect(timeUtil.findNextPossibleBoardDate(boardDates, "2024-06-01")).toBe("2024-05-01");
-        // Value equal to last date
-        expect(timeUtil.findNextPossibleBoardDate(boardDates, "2024-05-01")).toBe("2024-05-01");
-        // Empty array returns null
-        expect(timeUtil.findNextPossibleBoardDate([], "2024-01-01")).toBeNull();
-    });
     describe("findFirstAllowedDate", () => {
         // Weekdays used as "gap" dates (counted toward minimum gap)
         const gapDates = [
@@ -428,10 +409,10 @@ describe("getAllowedDates for various phases", () => {
             { name: "kaynnistys_paattyy_pvm", distance_from_previous: 10 },
             { name: "periaatteetvaihe_alkaa_pvm", previous_deadline: "kaynnistys_paattyy_pvm", distance_from_previous: 0 }
         ];
-        const currentDeadline = sectionAttributes[1];
+        const currentDeadline = { deadline: { attribute: name } };
         const deadlines = [];
 
-        const result = timeUtil.calculateAllowedDates(false, "M", dateTypes, name, formValues, sectionAttributes, currentDeadline, deadlines);
+        const result = timeUtil.calculateAllowedDates(dateTypes, formValues, sectionAttributes, currentDeadline, deadlines);
         for (let date of result) {
             let newDate = new Date(date);
             const today = new Date();
@@ -442,7 +423,7 @@ describe("getAllowedDates for various phases", () => {
         const pastDate = new Date();
         pastDate.setDate(pastDate.getDate() - 10);
         formValues["kaynnistys_paattyy_pvm"] = pastDate.toISOString().split('T')[0];
-        const result2 = timeUtil.calculateAllowedDates(false, "M", dateTypes, name, formValues, sectionAttributes, currentDeadline, deadlines);
+        const result2 = timeUtil.calculateAllowedDates(dateTypes, formValues, sectionAttributes, currentDeadline, deadlines);
         expect(result2.length).toBe(0); // No allowed dates
     });
     test("calculateAllowedDates ignores past date filtering for approval dates", () => {
@@ -458,9 +439,9 @@ describe("getAllowedDates for various phases", () => {
             { name: "hyvaksyminenvaihe_alkaa_pvm" },
             { name: "hyvaksymispaatos_pvm", distance_from_previous: 15 }
         ];
-        const currentDeadline = sectionAttributes[1];
+        const currentDeadline = { deadline: { attribute: name } };
 
-        const result = timeUtil.calculateAllowedDates(false, "M", dateTypes, name, formValues, sectionAttributes, currentDeadline, []);
+        const result = timeUtil.calculateAllowedDates(dateTypes, formValues, sectionAttributes, currentDeadline, []);
         expect(result.length).toBeGreaterThan(0); // Should have allowed dates even if in past
     });
     test("ensure calculateAllowedDates handles all cases without crashing", () => {
@@ -489,10 +470,16 @@ describe("getAllowedDates for various phases", () => {
                 distance_to_next: 15, next_deadline: "milloin_oas_esillaolo_paattyy" 
             }
         ];
-        const currentDeadline1 = sectionAttributes[0];
-        const currentDeadline2 = sectionAttributes[1];
-        const currentDeadline3 = sectionAttributes[2];
-        const currentDeadline4 = sectionAttributes[3];
+        const toCurrentDeadline = (attribute) => ({
+            deadline: {
+                attribute: attribute.name,
+                deadlinegroup: attribute.deadline?.deadlinegroup
+            }
+        });
+        const currentDeadline1 = toCurrentDeadline(sectionAttributes[0]);
+        const currentDeadline2 = toCurrentDeadline(sectionAttributes[1]);
+        const currentDeadline3 = toCurrentDeadline(sectionAttributes[2]);
+        const currentDeadline4 = toCurrentDeadline(sectionAttributes[3]);
         const formValues = {
             "oasvaihe_alkaa_pvm": "2028-01-01",
             "oas_esillaolo_aineiston_maaraaika": "2028-02-01",
@@ -503,10 +490,10 @@ describe("getAllowedDates for various phases", () => {
             "milloin_tarkistettu_ehdotus_lautakunnassa": "2028-05-01",
         };
         const deadlines = [];
-        timeUtil.calculateAllowedDates(false, "M", dateTypes, "hyvaksymispaatos_valitusaika_paattyy", formValues, sectionAttributes, currentDeadline1, deadlines);
-        timeUtil.calculateAllowedDates(false, "M", dateTypes, "milloin_tarkistettu_ehdotus_lautakunnassa", formValues, sectionAttributes, currentDeadline2, deadlines);
-        timeUtil.calculateAllowedDates(true, "M", dateTypes, "oas_esillaolo_aineiston_maaraaika", formValues, sectionAttributes, currentDeadline3, deadlines);
-        timeUtil.calculateAllowedDates(false, "M", dateTypes, "milloin_oas_esillaolo_alkaa", formValues, sectionAttributes, currentDeadline4, deadlines);
+        timeUtil.calculateAllowedDates(dateTypes, formValues, sectionAttributes, currentDeadline1, deadlines);
+        timeUtil.calculateAllowedDates(dateTypes, formValues, sectionAttributes, currentDeadline2, deadlines);
+        timeUtil.calculateAllowedDates(dateTypes, formValues, sectionAttributes, currentDeadline3, deadlines);
+        timeUtil.calculateAllowedDates(dateTypes, formValues, sectionAttributes, currentDeadline4, deadlines);
     });
 });
 
