@@ -231,16 +231,25 @@ const getAllowedDatesForApproval = (name, formValues, matchingItem, dateTypes) =
   return dateTypes?.arkipäivät?.dates.filter(date => date >= firstPossibleDateToSelect);
 };
 
-const getAllowedDatesForLautakunta = (name, formValues, matchingItem, previousDeadline, dateTypes) => {
+const getAllowedDatesForLautakunta = (name, formValues, matchingItem, previousItem, dateTypes, deadlines) => {
+  const previousName = previousItem?.name || matchingItem?.previous_deadline;
+  let comparisonDate = formValues[previousName];
+  if (previousName?.includes("_maaraaika")) {
+    // Määräaika moves with lautakunta date. Compare to the first possible määräaika date.
+    const maaraAikaGap = previousItem?.distance_from_previous || 0;
+    const maaraAikaGapType = previousItem?.dateType || "työpäivät";
+    const preMaikaIdentifier = getPreviousDeadline(previousItem, formValues, deadlines)?.attribute;
+    comparisonDate = findFirstAllowedDate(formValues[preMaikaIdentifier], maaraAikaGap, dateTypes[maaraAikaGapType]?.dates, dateTypes[maaraAikaGapType]?.dates);
+  }
   const gap = matchingItem?.distance_from_previous || 5;
   const gapType = getGapDateType({...matchingItem, key: name} );
   const allowedDates = dateTypes?.[matchingItem.date_type]?.dates;
-  const firstDate = findFirstAllowedDate(formValues[previousDeadline?.attribute], gap,  dateTypes?.[gapType]?.dates, allowedDates);
+  const firstDate = findFirstAllowedDate(comparisonDate, gap,  dateTypes?.[gapType]?.dates, allowedDates);
   return allowedDates.filter(date => date >= firstDate);
 };
 
 
-const getAllowedDatesForSizeXSXL = (name, formValues, matchingItem, dateTypes) => {
+const getAllowedDatesDefault = (name, formValues, matchingItem, dateTypes) => {
   if (name.includes("_maaraaika")) {
     const miniumDaysBetween = matchingItem?.distance_from_previous;
     const dateToCompare = formValues[matchingItem?.previous_deadline];
@@ -377,11 +386,13 @@ const calculateAllowedDates = (dateTypes, formValues, sectionAttributes, current
 
   const name = currentDeadline?.deadline?.attribute;
   const size = formValues.kaavaprosessin_kokoluokka;
-  const nahtavillaolo = currentDeadline?.deadline?.phase_name === "Ehdotus" && currentDeadline?.deadline?.deadlinegroup?.includes('nahtavillaolo')
+  const phaseName = currentDeadline?.deadline?.phase_name?.toLowerCase();
+  const nahtavillaolo = phaseName === "ehdotus" && currentDeadline?.deadline?.deadlinegroup?.includes('nahtavillaolo')
   const matchingItem = objectUtil.findMatchingName(sectionAttributes, name, "name");
   const previousDeadline = getPreviousDeadline(matchingItem, formValues, deadlines);
+  const previousItem = objectUtil.findMatchingName(sectionAttributes, previousDeadline?.attribute, "name") || null;
 
-  const phaseName = currentDeadline?.deadline?.phase_name?.toLowerCase();
+
   let allowedDates;
   if (name.includes("projektin_kaynnistys_pvm") || name.includes("kaynnistys_paattyy_pvm")) {
       const start = objectUtil.findMatchingName(sectionAttributes, "projektin_kaynnistys_pvm", "name");
@@ -393,11 +404,11 @@ const calculateAllowedDates = (dateTypes, formValues, sectionAttributes, current
   } else if (name === "hyvaksymispaatos_valitusaika_paattyy" || name === "valitusaika_paattyy_hallinto_oikeus") {
       allowedDates = dateTypes?.arkipäivät?.dates;
   } else if (currentDeadline?.deadline?.deadlinegroup?.includes('lautakunta')) {
-      allowedDates = getAllowedDatesForLautakunta(name, formValues, matchingItem, previousDeadline, dateTypes)
+      allowedDates = getAllowedDatesForLautakunta(name, formValues, matchingItem, previousItem, dateTypes, deadlines)
   } else if (nahtavillaolo) {
       allowedDates = getAllowedDatesForNahtavillaolo(name, formValues, phaseName, matchingItem, dateTypes, size);
   } else {
-      allowedDates = getAllowedDatesForSizeXSXL(name, formValues, matchingItem, dateTypes);
+      allowedDates = getAllowedDatesDefault(name, formValues, matchingItem, dateTypes);
   }
   // Filter out past dates (before today)
   const todayStr = (() => {
@@ -591,7 +602,7 @@ if (process.env.UNIT_TEST === 'true') {
     exported.getAllowedDatesForProjectStart = getAllowedDatesForProjectStart;
     exported.getAllowedDatesForApproval = getAllowedDatesForApproval;
     exported.getAllowedDatesForLautakunta = getAllowedDatesForLautakunta;
-    exported.getAllowedDatesForSizeXSXL = getAllowedDatesForSizeXSXL;
+    exported.getAllowedDatesDefault = getAllowedDatesDefault;
     exported.getAllowedDatesForNahtavillaolo = getAllowedDatesForNahtavillaolo;
     exported.getHighestLautakuntaDate = getHighestLautakuntaDate;
 }

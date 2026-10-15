@@ -226,7 +226,7 @@ describe("getAllowedDates for various phases", () => {
         const formValues = {
             "tarkistettu_ehdotusvaihe_alkaa_pvm": "2025-08-01",
             "tarkistettuehdotusvaihe_alkaa_pvm": "2025-08-01",
-            "tarkistettu_ehdotus_kylk_maaraaika": "2025-08-15",
+            "tarkistettu_ehdotus_kylk_maaraaika": "2025-09-01",
             "milloin_tarkistettu_ehdotus_lautakunnassa": "2025-09-01",
             "tarkistettu_ehdotusvaihe_paattyy_pvm": "2025-09-01",
         };
@@ -243,10 +243,17 @@ describe("getAllowedDates for various phases", () => {
             name: "tarkistettu_ehdotus_kylk_maaraaika",
             attribute: "tarkistettu_ehdotus_kylk_maaraaika",
             distance_from_previous: 6,
+            previous_deadline: "tarkistettu_ehdotusvaihe_alkaa_pvm",
             date_type: "työpäivät",
         };
         const dateTypes = data.test_disabledDates.date_types;
-        const result_maaraika = timeUtil.getAllowedDatesForLautakunta("tarkistettu_ehdotus_kylk_maaraaika", formValues, kylkItem, vaiheAlkaaItem, dateTypes);
+        const deadlines = [{
+            deadline: {
+                attribute: "tarkistettu_ehdotusvaihe_alkaa_pvm",
+                deadlinegroup: "tarkistettu_ehdotusvaihe"
+            }
+        }];
+        const result_maaraika = timeUtil.getAllowedDatesForLautakunta("tarkistettu_ehdotus_kylk_maaraaika", formValues, kylkItem, vaiheAlkaaItem, dateTypes, []);
         expect(result_maaraika[0]).toBe("2025-08-11");
         const previousDate_maaraika = new Date(formValues["tarkistettu_ehdotusvaihe_alkaa_pvm"]);
         for (let date of result_maaraika) {
@@ -254,8 +261,8 @@ describe("getAllowedDates for various phases", () => {
         }
         assertDatesAfterReference(result_maaraika, formValues["tarkistettu_ehdotusvaihe_alkaa_pvm"]);
         assertDatesAreWorkdays(result_maaraika);
-        const result_lautakunta = timeUtil.getAllowedDatesForLautakunta("milloin_tarkistettu_ehdotus_lautakunnassa", formValues, lautakuntaItem, kylkItem, dateTypes);
-        // 27 work days distance from maaraaika (2025-08-15) lands on 2025-09-23 (Tue), which is itself a lautakunta day
+        const result_lautakunta = timeUtil.getAllowedDatesForLautakunta("milloin_tarkistettu_ehdotus_lautakunnassa", formValues, lautakuntaItem, kylkItem, dateTypes, deadlines);
+        // The lautakunta gap starts from the first allowed määräaika date, not its selected value.
         expect(result_lautakunta[0]).toBe("2025-09-23");
         assertDatesAreSpecificWeekday(result_lautakunta, formValues["tarkistettu_ehdotus_kylk_maaraaika"], 2); // Only tuesdays
     });
@@ -275,10 +282,10 @@ describe("getAllowedDates for various phases", () => {
             attribute: "milloin_luonnos_esillaolo_paattyy_2",
         };
         const dateTypes = data.test_disabledDates.date_types;
-        const result_lk = timeUtil.getAllowedDatesForLautakunta("milloin_kaavaluonnos_lautakunnassa", formValues, lautakuntaItem, previousItem, dateTypes);
+        const result_lk = timeUtil.getAllowedDatesForLautakunta("milloin_kaavaluonnos_lautakunnassa", formValues, lautakuntaItem, previousItem, dateTypes, []);
         expect(result_lk[0]).toBe("2025-09-30");
     });
-    test("getAllowedDatesForSizeXSXL gets the right dates", () => {
+    test("getAllowedDatesDefault gets the right dates", () => {
         // Use dynamic year (current + 2) to ensure test remains stable regardless of when it runs
         const futureYear = new Date().getFullYear() + 2;
         const name = "oas_esillaolo_aineiston_maaraaika";
@@ -308,12 +315,12 @@ describe("getAllowedDates for various phases", () => {
         const dateTypes = data.test_disabledDates.date_types;
         
         // Test maaraAika - should return disabled dates (working days only)
-        const maaraAikaResult = timeUtil.getAllowedDatesForSizeXSXL(name, formValues, maaraAikaItem, dateTypes);
+        const maaraAikaResult = timeUtil.getAllowedDatesDefault(name, formValues, maaraAikaItem, dateTypes);
         expect(maaraAikaResult.length).toBeGreaterThan(0);
         expectAllWeekdays(maaraAikaResult);
         
         // Test alkaa - should return disabled dates after prerequisite
-        const alkaaResult = timeUtil.getAllowedDatesForSizeXSXL("milloin_oas_esillaolo_alkaa", formValues, alkaaItem, dateTypes);
+        const alkaaResult = timeUtil.getAllowedDatesDefault("milloin_oas_esillaolo_alkaa", formValues, alkaaItem, dateTypes);
         expect(alkaaResult.length).toBeGreaterThan(0);
         expectAllWeekdays(alkaaResult);
         
@@ -321,7 +328,7 @@ describe("getAllowedDates for various phases", () => {
         assertDatesAreWorkdays(alkaaResult);
         
         // Test paattyy - should return disabled dates (working days only)
-        const paattyyResult = timeUtil.getAllowedDatesForSizeXSXL("milloin_oas_esillaolo_paattyy", formValues, paattyyItem, dateTypes);
+        const paattyyResult = timeUtil.getAllowedDatesDefault("milloin_oas_esillaolo_paattyy", formValues, paattyyItem, dateTypes);
         expect(paattyyResult.length).toBeGreaterThan(0);
         for (let date of paattyyResult) {
             let newDate = new Date(date);
