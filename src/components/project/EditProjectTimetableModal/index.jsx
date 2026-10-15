@@ -581,7 +581,7 @@ class EditProjectTimeTableModal extends Component {
         id: numberOfPhases,
         className: dashedStyle + " " + highlightID + allowEditStyle + lockedClass,
         title: deadlines[i - 1].deadline.attribute + "-" +  currentDeadline.attribute,
-        groupInfo: "Esilläolo"
+        groupInfo: currentPhase === "Ehdotus" ? "Nähtävilläolo" : "Esilläolo"
       }
       phaseData.push(maaraAika, divider, esillaOlo);
     }
