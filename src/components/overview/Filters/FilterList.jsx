@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import DropdownFilter from './DropdownFilter'
 import projectUtils from '../../../utils/projectUtils'
@@ -11,21 +11,21 @@ function FilterList({ filterList, currentFilter, onChange, defaultYear, onUserCh
     setFilters(currentFilter)
   }, [currentFilter])
 
-  const formatOptions = field => {
-    let options = field.choices
-    if (field.accepts_year) {
-      options = projectUtils.generateArrayOfYearsForChart(field.parameter)
-    }
+  const formattedOptions = useMemo(() => {
+    return filterList?.map(field => {
+      let options = field.choices
+      if (field.accepts_year) {
+        options = projectUtils.generateArrayOfYearsForChart(field.parameter)
+      }
 
-    return options.map(option => {
-      return {
+      return options.map(option => ({
         key: option.value,
         value: option.value,
         label: option.label,
         parameter: field.parameter
-      }
+      }))
     })
-  }
+  }, [filterList, defaultYear])
 
   const getDefaultValue = field => {
     if (field?.accepts_year) {
@@ -41,7 +41,7 @@ function FilterList({ filterList, currentFilter, onChange, defaultYear, onUserCh
     return filterList.map((field, index) => {
       if (field.value_type === 'user') {
         return (
-          <Grid.Column key={index}>
+          <Grid.Column key={`${field.name}`}>
             <CustomADUserCombobox
               label={field.name}
               input={{
@@ -57,12 +57,12 @@ function FilterList({ filterList, currentFilter, onChange, defaultYear, onUserCh
         )
       }
       return (
-        <Grid.Column key={index}>
+        <Grid.Column key={`${field.name}`}>
           <DropdownFilter
-            key={field + index}
+            key={`${field.name}-filter`}
             name={field.name}
             defaultValue={getDefaultValue(field)}
-            options={formatOptions(field)}
+            options={formattedOptions[index]}
             placeholder={field.name}
             onChange={onChange}
             type={field.type}
