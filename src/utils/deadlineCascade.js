@@ -167,7 +167,7 @@ export const cascadeDeadlineChange = (
   const confirmedFieldSet = new Set(generateConfirmedFields(attributeData, deadlineObjects));
   // Attributes that should never be cascaded
   const IGNORED_ATTRIBUTES = [
-    "kaynnistysvaihe_alkaa_pvm", "projektin_kaynnistys_pvm", "ulkopaikkakuntalaisille_tiedotus", "milloin_kuulutus_nahtavillaolosta",
+    "kaynnistysvaihe_alkaa_pvm", "ulkopaikkakuntalaisille_tiedotus", "milloin_kuulutus_nahtavillaolosta",
     "voimaantulo_pvm", "rauennut", "tullut_osittain_voimaan_pvm", "kumottu_pvm", "valtuusto_poytakirja_nahtavilla_pvm",
     "hyvaksymispaatos_valitusaika_paattyy", "valtuusto_hyvaksymiskuulutus_pvm", "hyvaksymispaatos_pvm"
   ];
