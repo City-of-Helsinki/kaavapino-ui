@@ -126,7 +126,7 @@ function* downloadDocumentPreviewSaga({ payload }) {
 function* downloadDocumentSaga(payload, isPreview) {
   let res
   let isError = false
-  const modifiedUrl = payload.file + '?immediate=true' + (isPreview ? '&preview=true' : '')
+  const modifiedUrl = payload.file + '?immediate=true&result_type=pdf' + (isPreview ? '&preview=true' : '')
   yield put(downloadDocumentDone(false))
   showInfoToast(payload.projectCard, isPreview)
   try {
