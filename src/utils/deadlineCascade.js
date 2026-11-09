@@ -102,11 +102,20 @@ const measureDistance = (fromDate, toDate, gapDates) => {
   return toIdx - fromIdx;
 };
 
+const getMinimumGap = (item, prevItem = null) => {
+  if (item?.key === "milloin_ehdotuksen_nahtavilla_alkaa_iso" && prevItem?.key === "ehdotusvaihe_alkaa_pvm") {
+    // Hardcoded special case: If first lautakunta is deleted, backend data may be stale and still show distance to it (LK + 1)
+    // 5 is the default gap for phase start.
+    return 5;
+  }
+  return item?.distance_from_previous ?? 0;
+}
+
 const enforceMinimumGap = (currentItem, prevItem, disabledDates, forceMinimumGap = false) => {
   if (!prevItem) {
     return currentItem.value;
   }
-  const minimumGap = currentItem.distance_from_previous ?? 0;
+  const minimumGap = getMinimumGap(currentItem, prevItem);
   const allowedType = currentItem?.date_type || "arkipäivät";
   const allowedDates = disabledDates?.date_types[allowedType]?.dates || [];
   const gapType = getGapDateType(currentItem);
@@ -126,7 +135,7 @@ const getPreservedGap = (currentItem, prevItem, minimumGap, gapDates, originalBy
 
 // Preserves the existing distance between currentItem and prevItem, floored at the minimum gap.
 const preserveDistanceFromPrevious = (currentItem, prevItem, disabledDates, originalByKey) => {
-  const minimumGap = currentItem.distance_from_previous ?? 0;
+  const minimumGap = getMinimumGap(currentItem, prevItem);
   const allowedType = currentItem?.date_type || "arkipäivät";
   const allowedDates = disabledDates?.date_types[allowedType]?.dates || [];
   const gapType = getGapDateType(currentItem);
@@ -199,7 +208,7 @@ export const cascadeDeadlineChange = (
     const allowedDates = disabledDates?.date_types?.[currentType]?.dates || [];
     const gapType = getGapDateType(nextItem);
     const gapDates = gapType ? disabledDates?.date_types?.[gapType]?.dates : allowedDates;
-    const gap = nextItem.distance_from_previous || 0;
+    const gap = getMinimumGap(nextItem, currentItem) || 0;
     const lastPossibleDate = nextItem ? findPastDateWithGap(nextItem.value, gap, gapDates, allowedDates) : enforcedDate;
     if (enforcedDate <= lastPossibleDate) {
       currentItem.value = enforcedDate
@@ -282,7 +291,7 @@ export const cascadeDeadlineChange = (
       const allowedDates = disabledDates?.date_types[allowedType]?.dates;
       const gapType = getGapDateType(forwardItem) || "arkipäivät";
       const gapDates = disabledDates?.date_types[gapType]?.dates;
-      const minimumGap = forwardItem.distance_from_previous || 0;
+      const minimumGap = getMinimumGap(forwardItem, currentItem) || 0;
       // The locked item's own gap from its predecessor is never preserved, only the minimum applies
       const effectiveGap = ((lockedElement && forwardItem.key === lockedElement.key))
         ? minimumGap
