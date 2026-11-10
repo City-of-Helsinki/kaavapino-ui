@@ -192,20 +192,23 @@ const findNextPossibleValue = (array, value, addedDays) => {
 }
 
 const getPreviousDeadline = (matchingItem, formValues, deadlines) => {
-  let previousDeadline = objectUtil.findDeadlineInDeadlines(matchingItem?.previous_deadline, deadlines)?.deadline;
+  let previousDeadline = null;
 
-  // Fallback: use previous visible deadline if the current one is not visible
-  if (!previousDeadline || !shouldDeadlineBeVisible(previousDeadline.attribute, previousDeadline.deadlinegroup, formValues)) {
-    previousDeadline = null;
-    for (const deadline of deadlines) {
-      if (deadline.deadline?.attribute === matchingItem?.name) {
-        break;
-      }
-      if (shouldDeadlineBeVisible(deadline.deadline?.attribute, deadline.deadline?.deadlinegroup, formValues)) {
-        previousDeadline = deadline.deadline;
-      }
+  for (const deadline of deadlines) {
+    if (deadline.deadline?.attribute === matchingItem?.name) {
+      break;
+    }
+    if (shouldDeadlineBeVisible(deadline.deadline?.attribute, deadline.deadline?.deadlinegroup, formValues)) {
+      previousDeadline = deadline.deadline;
     }
   }
+  
+  if (!previousDeadline) {
+    // Note: avoid relying on previous_deadline, as it may be stale
+    // Used here as fallback if no visible previous deadline is found
+    previousDeadline = objectUtil.findDeadlineInDeadlines(matchingItem?.previous_deadline, deadlines)?.deadline;
+  }
+
   return previousDeadline;
 }
 
