@@ -426,37 +426,44 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   }
 
   const adjustPhaseEndDatePostRemove = (removedGroupName) => {
-    const changedFields = [];
-    if (!removedGroupName || !deadlines) return changedFields;
+    if (!removedGroupName || !deadlines) return null;
 
     const filteredDeadlines = deadlines.filter(dl => shouldDeadlineBeVisible(dl?.deadline?.attribute, dl?.deadline?.deadlinegroup, visValues));
     const { firstRemovedIndex, lastRemovedIndex } = findRemovedIndexRange(filteredDeadlines, removedGroupName);
-    if (firstRemovedIndex === -1 || lastRemovedIndex === -1) return changedFields;
+    if (firstRemovedIndex === -1 || lastRemovedIndex === -1) return null;
 
     const phaseEndDeadline = filteredDeadlines[lastRemovedIndex + 1]?.deadline;
-    if (!phaseEndDeadline?.deadline_types?.includes('phase_end')) return changedFields;
+    if (!phaseEndDeadline?.deadline_types?.includes('phase_end')) return null;
 
     const previousDeadline = filteredDeadlines[firstRemovedIndex - 1]?.deadline;
     const previousDeadlineDate = visValues[previousDeadline?.attribute];
     const newEndDateString = calculateNewEndDateString(previousDeadline, previousDeadlineDate);
-    changedFields.push({ field: phaseEndDeadline.attribute, value: newEndDateString });
-
-    const nextPhaseStartDeadline = filteredDeadlines[lastRemovedIndex + 2]?.deadline;
-    if (nextPhaseStartDeadline?.deadline_types?.includes('phase_start')) {
-      changedFields.push({ field: nextPhaseStartDeadline.attribute, value: newEndDateString });
-    }
-    return changedFields;
+    return { field: phaseEndDeadline.attribute, value: newEndDateString }
   }
 
   const handleRemoveGroup = () => {
     const visibilityBool = getVisibilityBoolName(dataToRemove.deadlinegroup);
     if (visibilityBool) {
-      const changedFields = adjustPhaseEndDatePostRemove(dataToRemove.deadlinegroup);
-      for (const field of changedFields) {
-        dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, field.field, field.value));
+      const newEndField = adjustPhaseEndDatePostRemove(dataToRemove.deadlinegroup);
+
+      if (newEndField) {
+        // Hide deleted group and trigger deadline cascade
+        const updatedFormValues = { ...visValues }
+        updatedFormValues[visibilityBool] = false;
+        dispatch(
+          updateDateTimeline(
+            newEndField.field,
+            newEndField.value,
+            updatedFormValues,
+            deadlineSections,
+            deadlines
+          )
+        );
+      } else {
+        // Group deleted, but not last in phase. Don't trigger cascade
+        dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, visibilityBool, false));
       }
-      // Flag deleted group as hidden
-      dispatch(change(EDIT_PROJECT_TIMETABLE_FORM, visibilityBool, false));
+
     }
     setOpenConfirmModal(!openConfirmModal);
     if (dataToRemove.deadlinegroup === toggleTimelineModal.deadlinegroup) {
