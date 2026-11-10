@@ -24,6 +24,7 @@ import { getFirstLockedDate } from '../../utils/timeUtil';
 import { timelineLockedGroupSelector } from '../../selectors/projectSelector';
 import './VisTimeline.scss'
 import { createGroupTemplate } from './groupTemplate';
+import { applyTimelineHighlight } from './helpers/timelineHighlight';
 import { isGroupConfirmed } from '../../utils/projectUtils';
 Moment.locale('fi');
 
@@ -112,6 +113,7 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
   const [toggleTimelineModal, setToggleTimelineModal] = useState({open: false, highlight: false, deadlinegroup: false});
   const toggleTimelineModalRef = useRef(toggleTimelineModal);
+  const highlightTargetRef = useRef(null);
   const [timelineData, setTimelineData] = useState({group: false, content: false});
   const [timeline, setTimeline] = useState(false);
   const [addDialogStyle, setAddDialogStyle] = useState({ left: 0, top: 0 });
@@ -161,6 +163,9 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
   // Keep toggleTimelineModalRef in sync with state
   useEffect(() => {
     toggleTimelineModalRef.current = toggleTimelineModal;
+    if (!toggleTimelineModal.open && highlightTargetRef.current) {
+      setHighlightTarget(null);
+    }
   }, [toggleTimelineModal]);
 
   const hideSelection = (phase, data) => {
@@ -482,89 +487,42 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     }
   };
 
+  const setHighlightTarget = (target) => {
+    highlightTargetRef.current = target;
+    applyTimelineHighlight(timelineRef.current, target);
+  };
+
   const openDialog = (data, container) => {
     const groupId = data.id;
-    const timelineElement = timelineRef?.current;
 
-    setToggleTimelineModal(prev => {
-      if (selectedGroupIdRef.current === groupId && prev.open) {
-        setSelectedGroupId(null);
-        setTimelineData({ group: null, content: null });
-        // Remove highlights when closing via same group click
-        if (timelineElement) {
-          removeHighlights(timelineElement);
-        }
-        return { open: false, highlight: null, deadlinegroup: null };
-      }
+    if (selectedGroupIdRef.current === groupId && toggleTimelineModalRef.current.open) {
+      selectedGroupIdRef.current = null;
+      toggleTimelineModalRef.current = { open: false, highlight: null, deadlinegroup: null };
+      setHighlightTarget(null);
+      setSelectedGroupId(null);
+      setTimelineData({ group: null, content: null });
+      setToggleTimelineModal(toggleTimelineModalRef.current);
+      return;
+    }
 
-      setSelectedGroupId(groupId);
-
-      if (timelineElement) {
-        removeHighlights(timelineElement);
-        addHighlights(timelineElement, data, container);
-      }
-
-      setTimelineData({ group: data.nestedInGroup, content: data.content, groupId: data.id });
-      return {
-        open: true,
-        highlight: container,
-        deadlinegroup: data?.deadlinegroup?.includes(';') ? data.deadlinegroup.split(';')[0] : data.deadlinegroup
-      };
-    });
-  };
-
-  const removeHighlights = (timelineElement) => {
-    timelineElement.querySelectorAll(".vis-group.foreground-highlight").forEach(el => {
-      el.classList.remove("foreground-highlight");
-    });
-    timelineElement.querySelectorAll('.highlight-selected').forEach(el => {
-      el.classList.remove('highlight-selected');
-      if (el.parentElement.parentElement) {
-        el.parentElement.parentElement.classList.remove('highlight-selected');
-      }
-    });
-  };
-
-  const addHighlights = (timelineElement, data, container) => {
-    // Remove previous highlights
-    timelineElement
-      .querySelectorAll(".vis-group.foreground-highlight")
-      .forEach(el => el.classList.remove("foreground-highlight"));
-
-    // setTimeout(..., 0) ensures DOM elements are rendered before highlighting;
-    // without it, elements may not exist yet, causing highlight logic to fail.
-    setTimeout(() => {
-      if (timelineElement && data?.deadlinegroup) {
-        const groupEls = timelineElement.querySelectorAll(`.vis-group.${data.deadlinegroup}`);
-        const groupEl = Array.from(groupEls).find(
-          el => el.parentElement?.classList?.contains('vis-foreground')
-        );
-        groupEl?.classList?.add("foreground-highlight");
-        if (groupEl) {
-          localStorage.setItem('timelineHighlightedElement', data.deadlinegroup);
-        }
-      }
-
-      container?.classList?.add("highlight-selected");
-      container?.parentElement?.parentElement?.classList?.add("highlight-selected");
-      localStorage.setItem('menuHighlight', data.className ? data.className : false);
-
-      const groupContainer = timelineElement.querySelector(`#timeline-group-${data.id}`);
-      groupContainer?.classList?.add("highlight-selected");
-      groupContainer?.parentElement?.parentElement?.classList?.add("highlight-selected");
-    }, 0);
+    const target = {
+      groupId,
+      deadlinegroup: data.deadlinegroup?.split(';')[0],
+      className: data.className,
+    };
+    selectedGroupIdRef.current = groupId;
+    toggleTimelineModalRef.current = { open: true, highlight: container, deadlinegroup: target.deadlinegroup };
+    setHighlightTarget(target);
+    setSelectedGroupId(groupId);
+    setTimelineData({ group: data.nestedInGroup, content: data.content, groupId: data.id });
+    setToggleTimelineModal(toggleTimelineModalRef.current);
   };
 
   const handleClosePanel = () => {
     setToggleTimelineModal({ open: false, highlight: null, deadlinegroup: null });
     setSelectedGroupId(null);
     setTimelineData({ group: null, content: null });
-
-    // Remove group highlights when panel closes
-    const timelineElement = timelineRef?.current;
-    if (timelineElement) {
-      removeHighlights(timelineElement);
-    }
+    setHighlightTarget(null);
   };
 
   /**
@@ -1455,6 +1413,8 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
 
         timeline.on('changed', () => {
           if (!isDraggingItem) editableItemsRef.current = null;
+          // vis-timeline recreates group DOM when groups are rebuilt; keep the highlight in sync
+          applyTimelineHighlight(timelineRef.current, highlightTargetRef.current);
         });
 
         timeline.on('mouseDown', (mouseDownEvent) => {
@@ -1637,41 +1597,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     });
   }
 
-  // Helper: Highlight timeline item if needed
-  const highlightTimelineItem = (timelineElement, savedHighlightId) => {
-    if (!timelineElement || !savedHighlightId) return;
-    const alreadyHighlightedElements = timelineElement.querySelectorAll(".vis-group.foreground-highlight");
-    if (alreadyHighlightedElements.length > 0) return;
-
-    const matchedItem = timelineElement.querySelector(`.vis-item[class*="${savedHighlightId}"]`);
-    if (!matchedItem) return;
-
-    const groupEl = matchedItem.closest(".vis-group");
-    if (groupEl) {
-      groupEl.classList.add("foreground-highlight");
-    }
-  }
-
-  // Helper: Highlight menu item if needed
-  const highlightMenuItem = (menuHighlightClass, timelineRef) => {
-    if (
-      !menuHighlightClass ||
-      typeof menuHighlightClass !== "string" ||
-      menuHighlightClass.startsWith("[object ") ||
-      !timelineRef?.current
-    ) {
-      return;
-    }
-    const selector = `.vis-label.vis-nested-group.${CSS.escape(menuHighlightClass)}`;
-    const alreadyHighlightedMenuElements = document.querySelectorAll(".highlight-selected");
-    if (alreadyHighlightedMenuElements.length > 0) return;
-
-    const menuElementToHighlight = document.querySelector(selector);
-    if (menuElementToHighlight) {
-      menuElementToHighlight.classList.add("highlight-selected");
-    }
-  }
-
   useEffect(() => {
     visValuesRef.current = visValues;
     setToggleOpenAddDialog(false);
@@ -1732,15 +1657,6 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
       }, 100); // Wait 100ms for DOM to update
     }
 
-    // Restore highlight from localStorage
-    const savedHighlightId = localStorage.getItem("timelineHighlightedElement");
-    const menuHighlightClass = localStorage.getItem("menuHighlight");
-
-    if (timelineRef.current) {
-      highlightTimelineItem(timelineRef.current, savedHighlightId);
-    }
-    highlightMenuItem(menuHighlightClass, timelineRef);
-
   }, [visValues, items]);
 
   // Function to highlight elements based on phase name and suffix when redirected from the form to the timeline
@@ -1758,7 +1674,13 @@ const VisTimelineGroup = forwardRef(({ groups, items, deadlines, visValues, dead
     const all = Array.from(container.querySelectorAll('.vis-nested-group'));
     const highlightedElement = all.find(el => normalize(el.className).includes(normalizedGroup));
     if (highlightedElement) {
-      highlightedElement.classList.add('highlight-selected');
+      const groupContainer = highlightedElement.querySelector('.timeline-buttons-container[id^="timeline-group-"]');
+      const className = Array.from(highlightedElement.classList).find(c => normalize(c).includes(normalizedGroup));
+      setHighlightTarget({
+        groupId: groupContainer ? groupContainer.id.slice('timeline-group-'.length) : null,
+        deadlinegroup: null,
+        className: className || null,
+      });
     }
   };
 

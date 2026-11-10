@@ -865,8 +865,6 @@ class EditProjectTimeTableModal extends Component {
 
   handleSubmit = () => {
     this.setState({ loading: true })
-    localStorage.removeItem('timelineHighlightedElement');
-    localStorage.removeItem('menuHighlight');
     const errors = this.props.handleSubmit()
     if (errors) {
       this.setState({ loading: false })
@@ -893,8 +891,6 @@ class EditProjectTimeTableModal extends Component {
   }
 
   handleClose = () => {
-    localStorage.removeItem('timelineHighlightedElement');
-    localStorage.removeItem('menuHighlight');
     this.props.handleClose()
   }
 
