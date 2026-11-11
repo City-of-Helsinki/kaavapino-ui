@@ -38,6 +38,7 @@ const FormField = ({
   insideFieldset,
   disabled,
   lautakuntaInPast,
+  isDeadlineLocked,
   tooltip,
   deadlines,
   isProjectTimetableEdit,
@@ -51,8 +52,6 @@ const FormField = ({
   lomapaivat,
   dateTypes,
   deadlineSection,
-  maxMoveGroup, 
-  maxDateToMove,
   groupName,
   visGroups,
   visItems,
@@ -118,6 +117,7 @@ const FormField = ({
         {...rest}
         disabled={newField.disabled === undefined ? disabled : newField.disabled}
         lautakuntaInPast={lautakuntaInPast}
+        isDeadlineLocked={isDeadlineLocked}
         tooltip={tooltip}
         field={newField}
         attributeData={attributeData}
@@ -147,8 +147,6 @@ const FormField = ({
         lomapaivat={lomapaivat}
         dateTypes={dateTypes}
         deadlineSection={deadlineSection}
-        maxMoveGroup={maxMoveGroup}
-        maxDateToMove={maxDateToMove}
         groupName={groupName}
         visGroups={visGroups}
         visItems={visItems}
@@ -367,11 +365,6 @@ FormField.propTypes = {
   lomapaivat: PropTypes.array,
   dateTypes: PropTypes.object,
   deadlineSection: PropTypes.object,
-  maxMoveGroup: PropTypes.oneOfType([
-    PropTypes.object,
-    PropTypes.string
-  ]),
-  maxDateToMove: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   groupName: PropTypes.string,
   visGroups: PropTypes.array,
   visItems: PropTypes.array,
@@ -400,6 +393,7 @@ FormField.propTypes = {
   highlightedInFieldset: PropTypes.string,
   insideFieldset: PropTypes.bool,
   lautakuntaInPast: PropTypes.bool,
+  isDeadlineLocked: PropTypes.bool,
   tooltip: PropTypes.string,
   hasEditRights: PropTypes.bool,
   isAdmin: PropTypes.bool,
