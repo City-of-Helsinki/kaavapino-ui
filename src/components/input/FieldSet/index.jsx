@@ -10,7 +10,14 @@ import { OutsideClick } from '../../../hooks/OutsideClick.js'
 import {getAttributeData, formErrorList, setLastSaved} from '../../../actions/projectActions.js'
 import { useIsMount } from '../../../hooks/IsMounted.js'
 import { useFieldPassivation } from '../../../hooks/useFieldPassivation.js'
-import { buildAddButtonMessage, getNumberOfFieldsets } from './helpers.js'
+import {
+  buildAddButtonMessage,
+  getNumberOfFieldsets,
+  getFieldsetDisplayOrder,
+  applyRequestedOrder,
+  moveFieldsetRow,
+  getFieldsetOrderChanges,
+} from './helpers.js'
 import FieldsetRow from './FieldsetRow.jsx'
 import PropTypes from 'prop-types'
 import '../Input.scss'
@@ -81,6 +88,12 @@ const FieldSet = ({
   const [currentFieldset,setCurrentFieldset] = useState(false)
   const [pendingAutoOpen, setPendingAutoOpen] = useState(false)
 
+  // Requested row order (array indices) shown optimistically until it has been applied to the form
+  const [pendingOrder, setPendingOrder] = useState(null)
+  const reordering = pendingOrder !== null
+  const [draggedIndex, setDraggedIndex] = useState(null)
+  const [dropTarget, setDropTarget] = useState(null)
+
   const refreshFieldset = () => {
     if (connection?.connection === false) {
       dispatch(setLastSaved('error', null, [name], [], false))
@@ -110,6 +123,16 @@ const FieldSet = ({
     dispatch(getAttributeData(attributeData?.projektin_nimi,name,formName, set, nulledFields,i))
   }
 
+  const requestReorder = (requestedOrder) => {
+    if (connection?.connection === false) {
+      dispatch(setLastSaved('error', null, [name], [], false))
+      return
+    }
+    //Fetch latest fieldset data first, the new order is applied to it in the updateField useEffect
+    setPendingOrder(requestedOrder)
+    dispatch(getAttributeData(attributeData?.projektin_nimi,name))
+  }
+
   useEffect(() => {
     if (lastSaved?.status === 'ok' || lastSaved?.status === 'success') {
       setLastSavedChildField(null)
@@ -122,6 +145,7 @@ const FieldSet = ({
       setAdding(false)
       setCurrentFieldset(false)
       setHiding(false)
+      setPendingOrder(null)
     }
   }, [lastSaved?.status])
  
@@ -143,6 +167,18 @@ const FieldSet = ({
         setHiddenIndex(updateField?.i)
         handleBlur()
         setHiding(false)
+      }
+      else if(updateField?.fieldName === name && reordering){
+        //Apply requested order to the latest fieldset data; rows added meanwhile by others end up last
+        const latestValues = updateField?.data?.[name] ?? get(formValues, name)
+        const orderChanges = getFieldsetOrderChanges(latestValues, pendingOrder)
+        orderChanges.forEach(({ index, order }) => {
+          dispatch(change(formName, `${name}[${index}]._order`, order))
+        })
+        if (orderChanges.length > 0) {
+          handleBlur()
+        }
+        setPendingOrder(null)
       }
       else if(updateField?.fieldName === name && saving){
         setCurrentFieldset(name)
@@ -252,14 +288,94 @@ const FieldSet = ({
     t
   })
 
+  const fieldsetValues = get(formValues, name)
+  const displayOrder = applyRequestedOrder(getFieldsetDisplayOrder(fieldsetValues, sets.length), pendingOrder)
+  const visibleOrder = displayOrder.filter(i => !get(fieldsetValues, `[${i}]._deleted`) && i !== hiddenIndex)
+
+  const lockedByOtherUser = !!(lockStatus?.lockStyle && !lockStatus?.owner &&
+    lockStatus?.fieldIdentifier?.startsWith(`${name}[`))
+  const showReorderHandle = !disabled
+  const canReorder = showReorderHandle && visibleOrder.length > 1 && !saving && !hiding && !adding && !reordering &&
+    !lockedByOtherUser && lastSaved?.status !== 'error' && !(formErrors?.length > 0) && !shouldDisableForErrors
+
+  const clearDragState = () => {
+    setDraggedIndex(null)
+    setDropTarget(null)
+  }
+
+  const moveRow = (fromIndex, toPosition) => {
+    const newOrder = moveFieldsetRow(visibleOrder, visibleOrder.indexOf(fromIndex), toPosition)
+    if (canReorder && newOrder !== visibleOrder) {
+      requestReorder(newOrder)
+    }
+  }
+
+  const getDropPosition = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    return e.clientY < rect.top + rect.height / 2 ? 'before' : 'after'
+  }
+
+  const getRowReorder = (i) => {
+    if (!showReorderHandle) {
+      return null
+    }
+    const position = visibleOrder.indexOf(i)
+    return {
+      enabled: canReorder,
+      position,
+      total: visibleOrder.length,
+      isDragged: draggedIndex === i,
+      dropPosition: dropTarget?.index === i && draggedIndex !== i ? dropTarget.position : null,
+      handleProps: {
+        draggable: canReorder,
+        onDragStart: (e) => {
+          e.dataTransfer.effectAllowed = 'move'
+          // Custom type so that the drag payload is never inserted into text inputs
+          e.dataTransfer.setData('application/x-kaavapino-fieldset-row', String(i))
+          e.dataTransfer.setDragImage(e.currentTarget.closest('.fieldset-container'), 0, 0)
+          setDraggedIndex(i)
+        },
+        onDragEnd: clearDragState,
+        onKeyDown: (e) => {
+          const delta = { ArrowUp: -1, ArrowDown: 1 }[e.key]
+          if (delta) {
+            e.preventDefault()
+            moveRow(i, position + delta)
+          }
+        },
+      },
+      containerProps: {
+        onDragOver: (e) => {
+          if (draggedIndex === null) return
+          e.preventDefault()
+          e.dataTransfer.dropEffect = 'move'
+          const dropPosition = getDropPosition(e)
+          if (dropTarget?.index !== i || dropTarget?.position !== dropPosition) {
+            setDropTarget({ index: i, position: dropPosition })
+          }
+        },
+        onDrop: (e) => {
+          if (draggedIndex === null) return
+          e.preventDefault()
+          let toPosition = position + (getDropPosition(e) === 'after' ? 1 : 0)
+          if (visibleOrder.indexOf(draggedIndex) < toPosition) {
+            toPosition -= 1
+          }
+          moveRow(draggedIndex, toPosition)
+          clearDragState()
+        },
+      },
+    }
+  }
+
   return (
     <>
     <div className='fieldset-main-container' ref={accordianRef}>
     <div className='fieldset-info'>{fieldsetTotal ? getNumberOfFieldsets(fieldsetTotal, formValues, name, t) : ""}</div>
-      {sets.map((set, i) => (
+      {displayOrder.map((i) => (
         <React.Fragment key={`${name}-${i}`}>
           <FieldsetRow
-            set={set}
+            set={`${name}[${i}]`}
             i={i}
             sets={sets}
             name={name}
@@ -277,6 +393,8 @@ const FieldSet = ({
             hiding={hiding}
             saving={saving}
             adding={adding}
+            reordering={reordering}
+            reorder={getRowReorder(i)}
             lastSavedChildField={lastSavedChildField}
             isThisFieldsetNetworkError={isThisFieldsetNetworkError}
             isThisFieldsetConnectionRestored={isThisFieldsetConnectionRestored}
@@ -312,7 +430,7 @@ const FieldSet = ({
           onClick={() => {
             refreshFieldset()
           }}
-          disabled={disabled || formErrors.length > 0 || saving || lastSaved?.status === 'error' || (shouldDisableForErrors && !anyFieldsetHasChildError)}
+          disabled={disabled || formErrors.length > 0 || saving || reordering || lastSaved?.status === 'error' || (shouldDisableForErrors && !anyFieldsetHasChildError)}
           variant="supplementary"
           size='small'
           fullWidth={true}

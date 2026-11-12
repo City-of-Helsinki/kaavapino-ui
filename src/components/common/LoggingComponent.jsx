@@ -1,5 +1,5 @@
 import React from 'react'
-import { isArray, isObject } from 'lodash'
+import { isObject } from 'lodash'
 import { Popup, Grid } from 'semantic-ui-react'
 import { useTranslation } from 'react-i18next'
 import { QuillDeltaToHtmlConverter } from 'quill-delta-to-html'
@@ -76,7 +76,7 @@ function LoggingComponent(props) {
         break;
     }
 
-    if (isArray(value)) {
+    if (Array.isArray(value)) {
       const returnValue = []
       value.forEach(current => {
         if (schema && Object.keys(schema).length > 0) {
@@ -143,6 +143,10 @@ function LoggingComponent(props) {
         let component
         let deleted = false
 
+        if (key === '_order') {
+          return
+        }
+
         if (key === '_deleted') {
           const value = getFormattedValue(
             fieldset[key],
@@ -188,9 +192,9 @@ function LoggingComponent(props) {
       for (let object of others) {
         //Modify string values to be similar so they can be compared reliably
         if (object && value && typeof object[key] === 'string') {
-          object[key] = object[key].split('_').join(' ').split('-').join(' ');
+          object[key] = object[key].replaceAll('_', ' ').replaceAll('-', ' ');
           object[key] = object[key].toUpperCase();
-          value = value.split('_').join(' ').split('-').join(' ');
+          value = value.replaceAll('_', ' ').replaceAll('-', ' ');
           value = value.toUpperCase();
         }
         if (object && value && object[key] === value) {

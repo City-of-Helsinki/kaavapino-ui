@@ -339,6 +339,8 @@
     "fieldset-empty":"Ei lisättyjä {{label}}.",
     "fieldset-connection-restored-label":"Yhteys on palautunut",
     "fieldset-missing-value":"Tieto puuttuu",
+    "fieldset-reorder-handle":"Siirrä riviä {{position}}/{{total}}. Siirrä raahaamalla tai nuolinäppäimillä ylös ja alas.",
+    "fieldset-reorder-handle-title":"Siirrä raahaamalla",
     "no-fields":"Suodatinvalinnalla ei löytynyt tämän otsikon alta suodatettavia kenttiä.",
     "link-to-map":"Siirry Karttapalveluun projektin tietoihin",
     "add-new-board":"Lisää lautakunta",
