@@ -926,6 +926,57 @@
     }
   }
 
+  .fieldset-reorder-control {
+    position: relative;
+    display: flex;
+    flex: 0 0 24px;
+  }
+
+  .fieldset-reorder-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 10;
+    min-width: 190px;
+    padding: 4px;
+    background: $color-white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      min-height: 44px;
+      padding: 8px 12px;
+      border: none;
+      background: transparent;
+      color: $black1;
+      font: inherit;
+      text-align: left;
+      white-space: nowrap;
+      cursor: pointer;
+
+      &:hover:not(:disabled) {
+        background: $color-fog-light;
+      }
+
+      &:focus-visible {
+        outline: 2px solid $color-coat-of-arms;
+        outline-offset: -2px;
+      }
+
+      &:disabled {
+        color: $color-black-40;
+        cursor: default;
+      }
+
+      svg {
+        flex-shrink: 0;
+      }
+    }
+  }
+
   .fieldset-drag-handle {
     display: flex;
     align-items: center;

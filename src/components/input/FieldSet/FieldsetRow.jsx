@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useId, useRef, useState } from 'react'
 import { get } from 'lodash'
 import {
   Button,
@@ -6,6 +6,7 @@ import {
   IconAngleDown,
   IconAngleUp,
   IconDrag,
+  IconPlus,
   LoadingSpinner,
 } from 'hds-react'
 import { useTranslation } from 'react-i18next'
@@ -15,6 +16,110 @@ import NetworkErrorState from '../NetworkErrorState.jsx'
 import FieldsetField from './FieldsetField.jsx'
 import InputLockedMessage from '../InputLockedMessage.jsx'
 import { getValueName, getAccordionButtonClassName } from './helpers.js'
+
+const FieldsetReorderControl = ({ reorder }) => {
+  const { t } = useTranslation()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const reorderRef = useRef(null)
+  const handleRef = useRef(null)
+  const dragged = useRef(false)
+  const menuId = useId()
+  const showMenu = menuOpen && reorder?.enabled && !reorder?.isDragged
+
+  const closeMenu = (restoreFocus = false) => {
+    setMenuOpen(false)
+    if (restoreFocus) handleRef.current?.focus()
+  }
+
+  useEffect(() => {
+    if (!reorder?.enabled || reorder?.isDragged) setMenuOpen(false)
+  }, [reorder?.enabled, reorder?.isDragged])
+
+  useEffect(() => {
+    if (!showMenu) return
+    reorderRef.current?.querySelector('[role="menuitem"]:not(:disabled)')?.focus()
+    const handleOutside = (event) => {
+      if (!reorderRef.current?.contains(event.target)) setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handleOutside)
+    document.addEventListener('touchstart', handleOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleOutside)
+      document.removeEventListener('touchstart', handleOutside)
+    }
+  }, [showMenu])
+
+  const handleMenuKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      event.stopPropagation()
+      closeMenu(true)
+    } else if (event.key === 'Tab') {
+      closeMenu(true)
+    } else if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+      event.preventDefault()
+      const items = Array.from(reorderRef.current.querySelectorAll('[role="menuitem"]:not(:disabled)'))
+      const current = items.indexOf(document.activeElement)
+      const direction = event.key === 'ArrowDown' ? 1 : -1
+      let next = (current + direction + items.length) % items.length
+      if (event.key === 'Home') next = 0
+      if (event.key === 'End') next = items.length - 1
+      items[next]?.focus()
+    }
+  }
+
+  return (
+    <div className='fieldset-reorder-control' ref={reorderRef}>
+      <button
+        {...reorder.handleProps}
+        ref={handleRef}
+        type="button"
+        className='fieldset-drag-handle'
+        aria-disabled={!reorder.enabled}
+        aria-haspopup="menu"
+        aria-expanded={!!showMenu}
+        aria-controls={showMenu ? menuId : undefined}
+        aria-label={t('project.fieldset-reorder-handle', { position: reorder.position + 1, total: reorder.total })}
+        title={t('project.fieldset-reorder-handle-title')}
+        onMouseDown={() => { dragged.current = false }}
+        onDragStart={(event) => {
+          dragged.current = true
+          closeMenu()
+          reorder.handleProps?.onDragStart?.(event)
+        }}
+        onClick={() => {
+          if (reorder.enabled && !dragged.current) setMenuOpen(open => !open)
+        }}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') dragged.current = false
+          reorder.handleProps?.onKeyDown?.(event)
+        }}
+      >
+        <IconDrag size='s' aria-hidden="true" />
+      </button>
+      {showMenu && (
+        <div className='fieldset-reorder-menu' id={menuId} role="menu" tabIndex={-1}
+          aria-label={t('project.fieldset-reorder-handle-title')} onKeyDown={handleMenuKeyDown}>
+          {[
+            ['top', 0, reorder.position === 0],
+            ['up', reorder.position - 1, reorder.position === 0],
+            ['down', reorder.position + 1, reorder.position === reorder.total - 1],
+            ['bottom', reorder.total - 1, reorder.position === reorder.total - 1],
+          ].map(([action, position, unavailable]) => (
+            <button key={action} type="button" role="menuitem" tabIndex={-1} disabled={unavailable}
+              onClick={() => {
+                closeMenu(true)
+                reorder.onMove(position)
+              }}>
+              <IconPlus size='s' aria-hidden="true" />
+              {t(`project.fieldset-reorder-${action}`)}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const FieldsetRow = ({
   set,
@@ -99,16 +204,7 @@ const FieldsetRow = ({
     <div className={containerClassName} {...reorder?.containerProps}>
       {reorder ? (
         <div className='fieldset-row-header'>
-          <button
-            type="button"
-            className='fieldset-drag-handle'
-            aria-disabled={!reorder.enabled}
-            aria-label={t('project.fieldset-reorder-handle', { position: reorder.position + 1, total: reorder.total })}
-            title={t('project.fieldset-reorder-handle-title')}
-            {...reorder.handleProps}
-          >
-            <IconDrag size='s' aria-hidden="true" />
-          </button>
+          <FieldsetReorderControl reorder={reorder} />
           {accordionButton}
         </div>
       ) : accordionButton}
@@ -213,6 +309,7 @@ FieldsetRow.propTypes = {
     dropPosition: PropTypes.oneOf(['before', 'after']),
     handleProps: PropTypes.object,
     containerProps: PropTypes.object,
+    onMove: PropTypes.func.isRequired,
   }),
   lastSavedChildField: PropTypes.string,
   isThisFieldsetNetworkError: PropTypes.bool,
@@ -233,6 +330,10 @@ FieldsetRow.propTypes = {
   onChildBlurSave: PropTypes.func.isRequired,
   onCheckLocked: PropTypes.func.isRequired,
   onHide: PropTypes.func.isRequired,
+}
+
+FieldsetReorderControl.propTypes = {
+  reorder: FieldsetRow.propTypes.reorder,
 }
 
 export default FieldsetRow

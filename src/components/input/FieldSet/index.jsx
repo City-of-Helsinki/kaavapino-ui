@@ -324,6 +324,7 @@ const FieldSet = ({
       enabled: canReorder,
       position,
       total: visibleOrder.length,
+      onMove: (toPosition) => moveRow(i, toPosition),
       isDragged: draggedIndex === i,
       dropPosition: dropTarget?.index === i && draggedIndex !== i ? dropTarget.position : null,
       handleProps: {
