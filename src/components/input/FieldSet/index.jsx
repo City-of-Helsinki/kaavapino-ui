@@ -333,7 +333,6 @@ const FieldSet = ({
           e.dataTransfer.effectAllowed = 'move'
           // Custom type so that the drag payload is never inserted into text inputs
           e.dataTransfer.setData('application/x-kaavapino-fieldset-row', String(i))
-          e.dataTransfer.setDragImage(e.currentTarget.closest('.fieldset-container'), 0, 0)
           setDraggedIndex(i)
         },
         onDragEnd: clearDragState,

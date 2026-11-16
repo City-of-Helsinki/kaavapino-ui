@@ -22,9 +22,41 @@ const FieldsetReorderControl = ({ reorder }) => {
   const [menuOpen, setMenuOpen] = useState(false)
   const reorderRef = useRef(null)
   const handleRef = useRef(null)
+  const dragPreview = useRef(null)
   const dragged = useRef(false)
+  const [tooltipVisible, setTooltipVisible] = useState(false)
   const menuId = useId()
   const showMenu = menuOpen && reorder?.enabled && !reorder?.isDragged
+  const showTooltip = tooltipVisible && !reorder.enabled
+  const tooltipId = `${menuId}-tooltip`
+  const disabledMessage = reorder.total < 2 ? 'project.fieldset-reorder-needs-rows' : 'project.fieldset-reorder-unavailable'
+
+  const restoreDragPreview = () => {
+    const preview = dragPreview.current
+    if (!preview) return
+    cancelAnimationFrame(preview.frame)
+    preview.chevron.style.visibility = preview.visibility
+    dragPreview.current = null
+  }
+
+  useEffect(() => restoreDragPreview, [])
+
+  const startDrag = (event) => {
+    dragged.current = true
+    closeMenu()
+    setTooltipVisible(false)
+    if (event.dataTransfer?.setDragImage) {
+      restoreDragPreview()
+      const row = event.currentTarget.closest('.fieldset-container')
+      const header = row.querySelector('.fieldset-row-header > button')
+      const chevron = header.querySelector(':scope > svg')
+      dragPreview.current = { chevron, visibility: chevron.style.visibility, frame: null }
+      chevron.style.visibility = 'hidden'
+      event.dataTransfer.setDragImage(header, 0, 0)
+      dragPreview.current.frame = requestAnimationFrame(restoreDragPreview)
+    }
+    reorder.handleProps?.onDragStart?.(event)
+  }
 
   const closeMenu = (restoreFocus = false) => {
     setMenuOpen(false)
@@ -69,7 +101,8 @@ const FieldsetReorderControl = ({ reorder }) => {
   }
 
   return (
-    <div className='fieldset-reorder-control' ref={reorderRef}>
+    <div className='fieldset-reorder-control' ref={reorderRef}
+      onMouseEnter={() => setTooltipVisible(true)} onMouseLeave={() => setTooltipVisible(false)}>
       <button
         {...reorder.handleProps}
         ref={handleRef}
@@ -79,24 +112,33 @@ const FieldsetReorderControl = ({ reorder }) => {
         aria-haspopup="menu"
         aria-expanded={!!showMenu}
         aria-controls={showMenu ? menuId : undefined}
+        aria-describedby={showTooltip ? tooltipId : undefined}
         aria-label={t('project.fieldset-reorder-handle', { position: reorder.position + 1, total: reorder.total })}
-        title={t('project.fieldset-reorder-handle-title')}
+        title={reorder.enabled ? t('project.fieldset-reorder-handle-title') : undefined}
+        onFocus={() => setTooltipVisible(true)}
+        onBlur={() => setTooltipVisible(false)}
         onMouseDown={() => { dragged.current = false }}
-        onDragStart={(event) => {
-          dragged.current = true
-          closeMenu()
-          reorder.handleProps?.onDragStart?.(event)
+        onDragStart={startDrag}
+        onDragEnd={(event) => {
+          restoreDragPreview()
+          reorder.handleProps?.onDragEnd?.(event)
         }}
         onClick={() => {
           if (reorder.enabled && !dragged.current) setMenuOpen(open => !open)
         }}
         onKeyDown={(event) => {
+          if (event.key === 'Escape') setTooltipVisible(false)
           if (event.key === 'Enter' || event.key === ' ') dragged.current = false
           reorder.handleProps?.onKeyDown?.(event)
         }}
       >
         <IconDrag size='s' aria-hidden="true" />
       </button>
+      {showTooltip && (
+        <div className='fieldset-reorder-tooltip' id={tooltipId} role="tooltip">
+          {t(disabledMessage)}
+        </div>
+      )}
       {showMenu && (
         <div className='fieldset-reorder-menu' id={menuId} role="menu" tabIndex={-1}
           aria-label={t('project.fieldset-reorder-handle-title')} onKeyDown={handleMenuKeyDown}>
