@@ -570,7 +570,6 @@
   padding-bottom: 0;
   padding-top: 0;
   padding-left: 16px;
-  padding-right: 16px;
 
   /* Style the buttons that are used to open and close the accordion panel */
   .accordion-button {
@@ -785,22 +784,30 @@
   }
 
   .fieldset-accordian-open{
-    margin-left: -12px;
-    margin-right: -12px;
-    padding-left: 12px;
+    margin-left: $size36;
+    padding-left: 24px;
     padding-right: 12px;
     padding-top: 16px;
     background-color: $color-fog-light;
     display: block;
     overflow: visible;
     position: relative;
+    &::before {
+      content: '';
+      display: block;
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-top: 0.7px solid $color-black-60;
+    }
     &::after {
       content: '';
       display: block;
       position: absolute;
-      left: 12px;
-      right: 12px;
-      bottom: 0;
+      left: 0;
+      right: 0;
+      top: 0;
       border-bottom: 0.7px solid $color-black-60;
     }
     .input-container {
@@ -1094,10 +1101,11 @@
 }
 
 .fieldset-button-remove:not(:disabled) {
- color: $color-error;
- border-color: $color-error !important;
- background-color: $color-white;
- margin-bottom: 3.4px;
+  color: $color-error;
+  border-color: $color-error !important;
+  background-color: $color-white;
+  margin-bottom: 3.4px;
+  margin-top: 20px;
 }
 
 .fieldset-button-remove:not(:disabled):hover{
