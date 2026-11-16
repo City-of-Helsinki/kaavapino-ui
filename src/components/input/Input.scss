@@ -643,7 +643,7 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    background-color: #fff;
+    background-color: $color-white;
     font-family: "Helsinki Grotesk Medium", sans-serif;
     font-size: $size14;
     line-height: 150%;
@@ -932,15 +932,19 @@
     flex: 0 0 24px;
   }
 
-  .fieldset-reorder-menu {
+  .fieldset-reorder-menu,
+  .fieldset-reorder-tooltip {
     position: absolute;
     top: 100%;
     left: 0;
     z-index: 10;
-    min-width: 190px;
-    padding: 4px;
     background: $color-white;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .fieldset-reorder-menu {
+    min-width: 190px;
+    padding: 4px;
 
     button {
       display: flex;
@@ -978,19 +982,13 @@
   }
 
   .fieldset-reorder-tooltip {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    z-index: 11;
     pointer-events: none;
     width: max-content;
     max-width: min(460px, calc(100vw - 48px));
     padding: 8px 12px;
-    background: $color-white;
     color: $black1;
     font-size: 14px;
     line-height: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
 
   .fieldset-drag-handle {
@@ -1033,11 +1031,8 @@
 }
 
 .fieldset-container-dragging {
-  > .fieldset-row-header > .accordion-button,
-  > .fieldset-row-header > .accordion-button-open,
-  > .fieldset-row-header > .accordion-button-disabled,
-  > .fieldset-accordian-open,
-  > .fieldset-accordian {
+  > :not(.fieldset-row-header),
+  > .fieldset-row-header > :not(.fieldset-reorder-control) {
     opacity: 0.5;
   }
 
@@ -1056,19 +1051,18 @@
   &::after {
     content: '';
     position: absolute;
+    left: 16px;
     z-index: 1;
     pointer-events: none;
   }
 
   &::before {
-    left: 16px;
     border-top: 6px solid transparent;
     border-bottom: 6px solid transparent;
     border-left: 10px solid $color-coat-of-arms;
   }
 
   &::after {
-    left: 16px;
     right: 0;
     height: 2px;
     background: $color-coat-of-arms;

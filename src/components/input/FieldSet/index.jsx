@@ -294,8 +294,7 @@ const FieldSet = ({
 
   const lockedByOtherUser = !!(lockStatus?.lockStyle && !lockStatus?.owner &&
     lockStatus?.fieldIdentifier?.startsWith(`${name}[`))
-  const showReorderHandle = !disabled
-  const canReorder = showReorderHandle && visibleOrder.length > 1 && !saving && !hiding && !adding && !reordering &&
+  const canReorder = !disabled && visibleOrder.length > 1 && !saving && !hiding && !adding && !reordering &&
     !lockedByOtherUser && lastSaved?.status !== 'error' && !(formErrors?.length > 0) && !shouldDisableForErrors
 
   const clearDragState = () => {
@@ -316,7 +315,7 @@ const FieldSet = ({
   }
 
   const getRowReorder = (i) => {
-    if (!showReorderHandle) {
+    if (disabled) {
       return null
     }
     const position = visibleOrder.indexOf(i)
@@ -324,26 +323,11 @@ const FieldSet = ({
       enabled: canReorder,
       position,
       total: visibleOrder.length,
-      onMove: (toPosition) => moveRow(i, toPosition),
       isDragged: draggedIndex === i,
       dropPosition: dropTarget?.index === i && draggedIndex !== i ? dropTarget.position : null,
-      handleProps: {
-        draggable: canReorder,
-        onDragStart: (e) => {
-          e.dataTransfer.effectAllowed = 'move'
-          // Custom type so that the drag payload is never inserted into text inputs
-          e.dataTransfer.setData('application/x-kaavapino-fieldset-row', String(i))
-          setDraggedIndex(i)
-        },
-        onDragEnd: clearDragState,
-        onKeyDown: (e) => {
-          const delta = { ArrowUp: -1, ArrowDown: 1 }[e.key]
-          if (delta) {
-            e.preventDefault()
-            moveRow(i, position + delta)
-          }
-        },
-      },
+      onMove: (toPosition) => moveRow(i, toPosition),
+      onDragStart: () => setDraggedIndex(i),
+      onDragEnd: clearDragState,
       containerProps: {
         onDragOver: (e) => {
           if (draggedIndex === null) return
@@ -357,11 +341,9 @@ const FieldSet = ({
         onDrop: (e) => {
           if (draggedIndex === null) return
           e.preventDefault()
-          let toPosition = position + (getDropPosition(e) === 'after' ? 1 : 0)
-          if (visibleOrder.indexOf(draggedIndex) < toPosition) {
-            toPosition -= 1
-          }
-          moveRow(draggedIndex, toPosition)
+          const from = visibleOrder.indexOf(draggedIndex)
+          const to = position + (getDropPosition(e) === 'after' ? 1 : 0)
+          moveRow(draggedIndex, from < to ? to - 1 : to)
           clearDragState()
         },
       },

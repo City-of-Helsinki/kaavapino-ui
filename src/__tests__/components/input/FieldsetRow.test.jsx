@@ -6,13 +6,15 @@ import FieldsetRow from '../../../components/input/FieldSet/FieldsetRow.jsx'
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: key => key }) }))
 vi.mock('../../../components/input/FieldSet/FieldsetField.jsx', () => ({ default: () => null }))
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  vi.restoreAllMocks()
+})
 
 const renderRow = (overrides = {}) => {
   const reorder = {
     enabled: true, position: 1, total: 4,
-    handleProps: { draggable: true, onDragStart: vi.fn(), onDragEnd: vi.fn() },
-    onMove: vi.fn(), ...overrides,
+    onMove: vi.fn(), onDragStart: vi.fn(), onDragEnd: vi.fn(), ...overrides,
   }
   const props = {
     set: 'rows[1]', i: 1, sets: [{}, {}, {}, {}], name: 'rows', fields: [],
@@ -26,7 +28,56 @@ const renderRow = (overrides = {}) => {
   return { ...view, reorder, handle, props }
 }
 
+const dragStart = (handle) => {
+  const dataTransfer = { setData: vi.fn(), setDragImage: vi.fn() }
+  fireEvent.dragStart(handle, { dataTransfer })
+  return dataTransfer
+}
+
 describe('fieldset reorder menu', () => {
+  test.each([[1, 'needs-rows'], [4, 'unavailable']])('explains why the handle is disabled with %s rows', (total, message) => {
+    const { handle } = renderRow({ enabled: false, total })
+    expect(screen.queryByRole('tooltip')).toBeNull()
+    fireEvent.mouseEnter(handle.closest('.fieldset-reorder-control'))
+    const tooltip = screen.getByRole('tooltip')
+    expect(tooltip.textContent).toBe(`project.fieldset-reorder-${message}`)
+    expect(handle.getAttribute('aria-describedby')).toBe(tooltip.id)
+    fireEvent.mouseLeave(handle.closest('.fieldset-reorder-control'))
+    expect(screen.queryByRole('tooltip')).toBeNull()
+    fireEvent.focus(handle)
+    expect(screen.getByRole('tooltip')).toBeTruthy()
+    fireEvent.keyDown(handle, { key: 'Escape' })
+    expect(screen.queryByRole('tooltip')).toBeNull()
+  })
+
+  test('does not show a disabled tooltip on an enabled handle', () => {
+    const { handle } = renderRow()
+    fireEvent.mouseEnter(handle.closest('.fieldset-reorder-control'))
+    expect(screen.queryByRole('tooltip')).toBeNull()
+  })
+
+  test.each([false, true])('drag image is the header without its chevron for one frame when expanded is %s', (expanded) => {
+    const frame = vi.spyOn(window, 'requestAnimationFrame').mockReturnValue(1)
+    const { handle, reorder, props, rerender } = renderRow()
+    rerender(<FieldsetRow {...props} expanded={expanded ? [1] : []} />)
+    const header = handle.closest('.fieldset-row-header').querySelector(':scope > button')
+    const chevron = header.querySelector(':scope > svg')
+    const dataTransfer = dragStart(handle)
+    expect(dataTransfer.setDragImage).toHaveBeenCalledWith(header, 0, 0)
+    expect(header.querySelector('.fieldset-reorder-control')).toBeNull()
+    expect(chevron.style.visibility).toBe('hidden')
+    frame.mock.calls[0][0]()
+    expect(chevron.style.visibility).toBe('')
+    expect(reorder.onDragStart).toHaveBeenCalledOnce()
+  })
+
+  test('arrow keys on the handle move the row by one', () => {
+    const { handle, reorder } = renderRow()
+    fireEvent.keyDown(handle, { key: 'ArrowUp' })
+    fireEvent.keyDown(handle, { key: 'ArrowDown' })
+    expect(reorder.onMove.mock.calls).toEqual([[0], [2]])
+  })
+
   test.each([['top', 0], ['up', 1], ['down', 3], ['bottom', 4]])('moves %s through the shared callback', (action, position) => {
     const { handle, reorder } = renderRow({ position: 2, total: 5 })
     fireEvent.click(handle)
@@ -48,16 +99,16 @@ describe('fieldset reorder menu', () => {
   test('does not open after dragging, but opens on the next fresh click', () => {
     const { handle, reorder } = renderRow()
     fireEvent.mouseDown(handle)
-    fireEvent.dragStart(handle)
+    dragStart(handle)
     fireEvent.dragEnd(handle)
     fireEvent.click(handle)
-    expect(reorder.handleProps.onDragStart).toHaveBeenCalledOnce()
-    expect(reorder.handleProps.onDragEnd).toHaveBeenCalledOnce()
+    expect(reorder.onDragStart).toHaveBeenCalledOnce()
+    expect(reorder.onDragEnd).toHaveBeenCalledOnce()
     expect(screen.queryByRole('menu')).toBeNull()
     fireEvent.mouseDown(handle)
     fireEvent.click(handle)
     expect(screen.getByRole('menu')).toBeTruthy()
-    fireEvent.dragStart(handle)
+    dragStart(handle)
     expect(screen.queryByRole('menu')).toBeNull()
   })
 
@@ -71,7 +122,7 @@ describe('fieldset reorder menu', () => {
     expect(screen.queryByRole('menu')).toBeNull()
     expect(document.activeElement).toBe(handle)
     fireEvent.click(handle)
-    fireEvent.mouseDown(document.body)
+    fireEvent.pointerDown(document.body)
     expect(screen.queryByRole('menu')).toBeNull()
     fireEvent.click(handle)
     fireEvent.click(handle)
