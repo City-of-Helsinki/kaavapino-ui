@@ -117,9 +117,9 @@ const FieldsetReorderControl = ({ enabled, position, total, onMove, onDragStart,
       >
         <IconDrag size='s' aria-hidden="true" />
       </button>
-      {showTooltip && (
+      {showTooltip && total < 2 &&(
         <div className='fieldset-reorder-tooltip' id={tooltipId} role="tooltip">
-          {t(total < 2 ? 'project.fieldset-reorder-needs-rows' : 'project.fieldset-reorder-unavailable')}
+          {t('project.fieldset-reorder-needs-rows')}
         </div>
       )}
       {showMenu && (

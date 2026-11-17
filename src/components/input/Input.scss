@@ -49,6 +49,10 @@
       border:2px solid $color-bus;
     }
   }
+  .input-header.fieldset-input-header {
+    justify-content: space-between;
+    max-width: 100%;
+  }
 
   .input-header-icons {
     display: flex;
@@ -897,6 +901,7 @@
     line-height: 24px;
     text-align: center;
     opacity: 1 !important;
+    color: #000;
   }
 }
 
@@ -1093,7 +1098,7 @@
 
 .fieldset-button-remove-disabled{
   border-color: $color-black-40;
-  margin-top: 20px;
+  margin-bottom: $size24;
 }
 
 .fieldset-button-remove-disabled:hover{
@@ -1104,8 +1109,7 @@
   color: $color-error;
   border-color: $color-error !important;
   background-color: $color-white;
-  margin-bottom: 3.4px;
-  margin-top: 20px;
+  margin-bottom: $size24;
 }
 
 .fieldset-button-remove:not(:disabled):hover{

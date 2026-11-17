@@ -160,7 +160,6 @@ const FieldsetRow = ({
               className="loading-spinner"
               theme={{
                 '--spinner-color': '#0000BF',
-                '--spinner-thickness': '2px'
               }}
             />
             {t('project.deleting')}
