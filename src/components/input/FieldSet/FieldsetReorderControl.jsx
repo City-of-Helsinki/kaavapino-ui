@@ -3,7 +3,7 @@ import { IconDrag, IconPlus } from 'hds-react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 
-// The browser snapshots the drag image synchronously, so the chevron only needs hiding for one frame
+// Creates a "ghost" for fieldset row being dragged
 const setHeaderDragImage = (handle, dataTransfer) => {
   const header = handle.closest('.fieldset-row-header').querySelector(':scope > button')
   const chevron = header.querySelector(':scope > svg')
