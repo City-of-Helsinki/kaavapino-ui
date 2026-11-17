@@ -12,6 +12,7 @@ import PropTypes from 'prop-types'
 
 import NetworkErrorState from '../NetworkErrorState.jsx'
 import FieldsetField from './FieldsetField.jsx'
+import FieldsetReorderControl from './FieldsetReorderControl.jsx'
 import InputLockedMessage from '../InputLockedMessage.jsx'
 import { getValueName, getAccordionButtonClassName } from './helpers.js'
 
@@ -34,6 +35,8 @@ const FieldsetRow = ({
   hiding,
   saving,
   adding,
+  reordering,
+  reorder,
   lastSavedChildField,
   isThisFieldsetNetworkError,
   isThisFieldsetConnectionRestored,
@@ -70,21 +73,36 @@ const FieldsetRow = ({
   const lockedElement = fieldsetDisabled ? <InputLockedMessage t={t} lockStatus={lockStatus} /> : <></>;
   const lockName = <><span className='accoardian-header-text'>{getValueName(setValues, fields, t)}</span> {lockedElement}</>
 
-  const shouldDisableAccordion = saving || hiding || adding
+  const shouldDisableAccordion = saving || hiding || adding || reordering
   const thisRowHasError = formErrors?.some(ef => ef.startsWith(`${set}.`))
   const thisRowHasNetworkError = isThisFieldsetNetworkError && !expanded.includes(i) && !!lastSavedChildField?.startsWith(set)
 
+  const containerClassName = [
+    'fieldset-container',
+    reorder?.isDragged ? 'fieldset-container-dragging' : '',
+    reorder?.dropPosition ? `fieldset-container-drop-${reorder.dropPosition}` : '',
+  ].filter(Boolean).join(' ')
+
+  const accordionButton = (
+    <button type="button" tabIndex={0}
+      className={getAccordionButtonClassName(shouldDisableAccordion, expanded.includes(i), thisRowHasError || thisRowHasNetworkError)}
+      onClick={(e) => { if (!shouldDisableAccordion) { onCheckLocked(e, set, i) } }}
+    >
+      <div className='accordion-button-content'>
+        {lockName}
+      </div>
+      {expanded.includes(i) ? <IconAngleUp size='s'/> : <IconAngleDown size='s'/>}
+    </button>
+  )
+
   return (
-    <div className="fieldset-container">
-      <button type="button" tabIndex={0}
-        className={getAccordionButtonClassName(shouldDisableAccordion, expanded.includes(i), thisRowHasError || thisRowHasNetworkError)}
-        onClick={(e) => { if (!shouldDisableAccordion) { onCheckLocked(e, set, i) } }}
-      >
-        <div className='accordion-button-content'>
-          {lockName}
+    <div className={containerClassName} {...reorder?.containerProps}>
+      {reorder ? (
+        <div className='fieldset-row-header'>
+          <FieldsetReorderControl {...reorder} />
+          {accordionButton}
         </div>
-        {expanded.includes(i) ? <IconAngleUp size='s'/> : <IconAngleDown size='s'/>}
-      </button>
+      ) : accordionButton}
       <div className={expanded.includes(i) ? 'fieldset-accordian-open' : 'fieldset-accordian'}>
         {fields.map((field, j) => (
           <FieldsetField
@@ -96,7 +114,7 @@ const FieldsetRow = ({
             formName={formName}
             formValues={formValues}
             attributeData={attributeData}
-            disabled={disabled || hiding || saving || adding }
+            disabled={disabled || hiding || saving || adding || reordering }
             syncError={syncronousErrors?.[field.name]}
             highlightedTag={highlightedTag}
             highlightedInFieldset={highlightedInFieldset}
@@ -127,7 +145,7 @@ const FieldsetRow = ({
         {(!disable_fieldset_delete_add && !automatically_added && !disabled) && (
           <Button
             className={`${fieldsetDisabled || saving || shouldDisableAccordion || (formErrors.length > 0 && !thisRowHasError) ? 'fieldset-button-remove-disabled' : 'fieldset-button-remove'} ${hiding ? ' hidden' : ''}`}
-            disabled={sets.length < 1 || disabled || fieldsetDisabled || saving || lastSaved?.status === 'error' || (formErrors.length > 0 && !thisRowHasError)}
+            disabled={sets.length < 1 || disabled || fieldsetDisabled || saving || reordering || lastSaved?.status === 'error' || (formErrors.length > 0 && !thisRowHasError)}
             variant="secondary"
             size='small'
             iconLeft={<IconTrash/>}
@@ -142,7 +160,6 @@ const FieldsetRow = ({
               className="loading-spinner"
               theme={{
                 '--spinner-color': '#0000BF',
-                '--spinner-thickness': '2px'
               }}
             />
             {t('project.deleting')}
@@ -177,6 +194,12 @@ FieldsetRow.propTypes = {
   hiding: PropTypes.bool,
   saving: PropTypes.bool,
   adding: PropTypes.bool,
+  reordering: PropTypes.bool,
+  reorder: PropTypes.shape({
+    isDragged: PropTypes.bool,
+    dropPosition: PropTypes.oneOf(['before', 'after']),
+    containerProps: PropTypes.object,
+  }),
   lastSavedChildField: PropTypes.string,
   isThisFieldsetNetworkError: PropTypes.bool,
   isThisFieldsetConnectionRestored: PropTypes.bool,

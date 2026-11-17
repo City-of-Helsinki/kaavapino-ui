@@ -82,7 +82,7 @@ const FieldsetField = ({
   };
   const getInputHeader = () => {
     return (
-    <div className="input-header">
+    <div className="input-header fieldset-input-header">
       <Label className={`input-title${required ? ' highlight' : ''} ${errorText ? 'error' : ''}`}>
         {title}
         {getLockedFieldComponent()}
@@ -92,7 +92,7 @@ const FieldsetField = ({
           inputUtils.renderUpdatedFieldInfo({ savingField, fieldName: currentName, updated: null, t, isFieldset: false, testingConnection })
         )}
         {field.help_text && (
-          <Info content={field.help_text} link={field.help_link} linked={field.linked_fields} help_img_link={field.help_img_link} />
+          <Info content={field.help_text} link={field.help_link} linked={field.linked_fields} help_img_link={field.help_img_link} placement="left-start" />
         )}
       </div>
     </div>

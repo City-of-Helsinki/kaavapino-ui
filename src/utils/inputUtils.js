@@ -34,7 +34,6 @@ const renderUpdatedFieldInfo = ({ savingField, fieldName, updated, t, isFieldset
 						small 
 						theme={{
 							'--spinner-color': '#0000BF',
-							'--spinner-thickness': '2px'
 						}}
 					/>
 				</div>

@@ -100,4 +100,50 @@ const getAccordionButtonClassName = (shouldDisableAccordion, isOpen, hasError) =
   return "accordion-button";
 }
 
-export { buildAddButtonMessage, getValueName, getNumberOfFieldsets, getAccordionButtonClassName };
+const getFieldsetOrderKey = (item, index) => (Number.isFinite(item?._order) ? item._order : index);
+
+// Returns the array indices of fieldset rows sorted into display order.
+const getFieldsetDisplayOrder = (values, length = values?.length ?? 0) =>
+  Array.from({ length }, (_, i) => i).sort(
+    (a, b) => getFieldsetOrderKey(values?.[a], a) - getFieldsetOrderKey(values?.[b], b) || a - b
+  );
+
+// Puts the requested indices first (ignoring any not present in displayOrder),
+// followed by the remaining indices in their existing display order.
+const applyRequestedOrder = (displayOrder, requestedOrder) => {
+  if (!requestedOrder) return displayOrder;
+  const requested = requestedOrder.filter((i) => displayOrder.includes(i));
+  return [...requested, ...displayOrder.filter((i) => !requested.includes(i))];
+};
+
+const moveFieldsetRow = (order, fromPosition, toPosition) => {
+  const inRange = (position) => position >= 0 && position < order.length;
+  if (fromPosition === toPosition || !inRange(fromPosition) || !inRange(toPosition)) {
+    return order;
+  }
+  const result = order.slice();
+  const [moved] = result.splice(fromPosition, 1);
+  result.splice(toPosition, 0, moved);
+  return result;
+};
+
+// Computes the `_order` values needed so that the non-deleted rows of `values` follow `requestedOrder`.
+// Returns only the rows whose `_order` changes, as [{ index, order }].
+const getFieldsetOrderChanges = (values, requestedOrder) => {
+  if (!Array.isArray(values)) return [];
+  const visible = getFieldsetDisplayOrder(values).filter((i) => values[i]?._deleted !== true);
+  return applyRequestedOrder(visible, requestedOrder)
+    .map((index, order) => ({ index, order }))
+    .filter(({ index, order }) => values[index]?._order !== order);
+};
+
+export {
+  buildAddButtonMessage,
+  getValueName,
+  getNumberOfFieldsets,
+  getAccordionButtonClassName,
+  getFieldsetDisplayOrder,
+  applyRequestedOrder,
+  moveFieldsetRow,
+  getFieldsetOrderChanges,
+};
