@@ -27,7 +27,7 @@ const renderUpdatedFieldInfo = ({ savingField, fieldName, updated, t, isFieldset
 	
 	return (
 		<div className='popup-container'>
-			{shouldShowSpinner || true ? (
+			{shouldShowSpinner ? (
 				<div className='spinner-container'>
 					<LoadingSpinner 
 						className='loading-spinner' 

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import { connect, useDispatch } from 'react-redux'
 import { checkingSelector, savingSelector, formErrorListSelector, lastSavedSelector, updateFieldSelector, pollSelector} from '../../../selectors/projectSelector.js'
 import projectUtils from '../../../utils/projectUtils.js'
@@ -93,7 +93,8 @@ const FieldSet = ({
   const reordering = pendingOrder !== null
   const [draggedIndex, setDraggedIndex] = useState(null)
   const [dropTarget, setDropTarget] = useState(null)
-  const [lastMove, setLastMove] = useState(null)
+  const rowTops = useRef(new Map())
+  const previousOrderKey = useRef(null)
 
   const refreshFieldset = () => {
     if (connection?.connection === false) {
@@ -124,14 +125,13 @@ const FieldSet = ({
     dispatch(getAttributeData(attributeData?.projektin_nimi,name,formName, set, nulledFields,i))
   }
 
-  const requestReorder = (requestedOrder, movedIndex) => {
+  const requestReorder = (requestedOrder) => {
     if (connection?.connection === false) {
       dispatch(setLastSaved('error', null, [name], [], false))
       return
     }
     //Fetch latest fieldset data first, the new order is applied to it in the updateField useEffect
     setPendingOrder(requestedOrder)
-    setLastMove(prev => ({ index: movedIndex, id: (prev?.id ?? 0) + 1 }))
     dispatch(getAttributeData(attributeData?.projektin_nimi,name))
   }
 
@@ -293,6 +293,23 @@ const FieldSet = ({
   const fieldsetValues = get(formValues, name)
   const displayOrder = applyRequestedOrder(getFieldsetDisplayOrder(fieldsetValues, sets.length), pendingOrder)
   const visibleOrder = displayOrder.filter(i => !get(fieldsetValues, `[${i}]._deleted`) && i !== hiddenIndex)
+  const displayOrderKey = displayOrder.join()
+
+  // FLIP: when the order changes, rows slide from their previous position (offsetTop ignores running transforms)
+  useLayoutEffect(() => {
+    const rows = [...(accordianRef.current?.querySelectorAll(':scope > .fieldset-container[data-row]') ?? [])]
+    const previousTops = rowTops.current
+    rowTops.current = new Map(rows.map(row => [row.dataset.row, row.offsetTop]))
+    const orderChanged = previousOrderKey.current !== null && previousOrderKey.current !== displayOrderKey
+    previousOrderKey.current = displayOrderKey
+    if (!orderChanged || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+    rows.forEach(row => {
+      const delta = previousTops.get(row.dataset.row) - row.offsetTop
+      if (delta) {
+        row.animate?.([{ transform: `translateY(${delta}px)` }, { transform: 'none' }], { duration: 180, easing: 'ease-out' })
+      }
+    })
+  })
 
   const lockedByOtherUser = !!(lockStatus?.lockStyle && !lockStatus?.owner &&
     lockStatus?.fieldIdentifier?.startsWith(`${name}[`))
@@ -307,7 +324,7 @@ const FieldSet = ({
   const moveRow = (fromIndex, toPosition) => {
     const newOrder = moveFieldsetRow(visibleOrder, visibleOrder.indexOf(fromIndex), toPosition)
     if (canReorder && newOrder !== visibleOrder) {
-      requestReorder(newOrder, fromIndex)
+      requestReorder(newOrder)
     }
   }
 
@@ -326,12 +343,12 @@ const FieldSet = ({
       position,
       total: visibleOrder.length,
       isDragged: draggedIndex === i,
-      moveId: lastMove?.index === i ? lastMove.id : null,
       dropPosition: dropTarget?.index === i && draggedIndex !== i ? dropTarget.position : null,
       onMove: (toPosition) => moveRow(i, toPosition),
       onDragStart: () => setDraggedIndex(i),
       onDragEnd: clearDragState,
       containerProps: {
+        'data-row': i,
         onDragOver: (e) => {
           if (draggedIndex === null) return
           e.preventDefault()

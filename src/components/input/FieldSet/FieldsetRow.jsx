@@ -60,13 +60,8 @@ const FieldsetRow = ({
   onHide,
 }) => {
   const { t } = useTranslation()
-  // Browsers restart CSS animations when React moves a node, so only animate on mount and for the moved row
+  // Browsers restart CSS animations when React moves a node, so only animate on mount
   const [entering, setEntering] = useState(true)
-  const [animatedMoveId, setAnimatedMoveId] = useState(reorder?.moveId)
-  if (reorder?.moveId && reorder.moveId !== animatedMoveId) {
-    setAnimatedMoveId(reorder.moveId)
-    setEntering(true)
-  }
 
   const setValues = get(formValues, set)
   const fieldsetDisabled = !!(lockStatus?.lockStyle && !lockStatus?.owner && lockStatus?.fieldIdentifier === set)
@@ -206,7 +201,6 @@ FieldsetRow.propTypes = {
   reordering: PropTypes.bool,
   reorder: PropTypes.shape({
     isDragged: PropTypes.bool,
-    moveId: PropTypes.number,
     dropPosition: PropTypes.oneOf(['before', 'after']),
     containerProps: PropTypes.object,
   }),
