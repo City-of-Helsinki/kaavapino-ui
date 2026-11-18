@@ -93,6 +93,7 @@ const FieldSet = ({
   const reordering = pendingOrder !== null
   const [draggedIndex, setDraggedIndex] = useState(null)
   const [dropTarget, setDropTarget] = useState(null)
+  const [lastMove, setLastMove] = useState(null)
 
   const refreshFieldset = () => {
     if (connection?.connection === false) {
@@ -123,13 +124,14 @@ const FieldSet = ({
     dispatch(getAttributeData(attributeData?.projektin_nimi,name,formName, set, nulledFields,i))
   }
 
-  const requestReorder = (requestedOrder) => {
+  const requestReorder = (requestedOrder, movedIndex) => {
     if (connection?.connection === false) {
       dispatch(setLastSaved('error', null, [name], [], false))
       return
     }
     //Fetch latest fieldset data first, the new order is applied to it in the updateField useEffect
     setPendingOrder(requestedOrder)
+    setLastMove(prev => ({ index: movedIndex, id: (prev?.id ?? 0) + 1 }))
     dispatch(getAttributeData(attributeData?.projektin_nimi,name))
   }
 
@@ -305,7 +307,7 @@ const FieldSet = ({
   const moveRow = (fromIndex, toPosition) => {
     const newOrder = moveFieldsetRow(visibleOrder, visibleOrder.indexOf(fromIndex), toPosition)
     if (canReorder && newOrder !== visibleOrder) {
-      requestReorder(newOrder)
+      requestReorder(newOrder, fromIndex)
     }
   }
 
@@ -324,6 +326,7 @@ const FieldSet = ({
       position,
       total: visibleOrder.length,
       isDragged: draggedIndex === i,
+      moveId: lastMove?.index === i ? lastMove.id : null,
       dropPosition: dropTarget?.index === i && draggedIndex !== i ? dropTarget.position : null,
       onMove: (toPosition) => moveRow(i, toPosition),
       onDragStart: () => setDraggedIndex(i),

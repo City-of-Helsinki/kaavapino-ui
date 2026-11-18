@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { get } from 'lodash'
 import {
   Button,
@@ -60,6 +60,13 @@ const FieldsetRow = ({
   onHide,
 }) => {
   const { t } = useTranslation()
+  // Browsers restart CSS animations when React moves a node, so only animate on mount and for the moved row
+  const [entering, setEntering] = useState(true)
+  const [animatedMoveId, setAnimatedMoveId] = useState(reorder?.moveId)
+  if (reorder?.moveId && reorder.moveId !== animatedMoveId) {
+    setAnimatedMoveId(reorder.moveId)
+    setEntering(true)
+  }
 
   const setValues = get(formValues, set)
   const fieldsetDisabled = !!(lockStatus?.lockStyle && !lockStatus?.owner && lockStatus?.fieldIdentifier === set)
@@ -79,6 +86,7 @@ const FieldsetRow = ({
 
   const containerClassName = [
     'fieldset-container',
+    entering ? 'fieldset-container-enter' : '',
     reorder?.isDragged ? 'fieldset-container-dragging' : '',
     reorder?.dropPosition ? `fieldset-container-drop-${reorder.dropPosition}` : '',
   ].filter(Boolean).join(' ')
@@ -96,7 +104,8 @@ const FieldsetRow = ({
   )
 
   return (
-    <div className={containerClassName} {...reorder?.containerProps}>
+    <div className={containerClassName} {...reorder?.containerProps}
+      onAnimationEnd={(e) => { if (e.target === e.currentTarget) setEntering(false) }}>
       {reorder ? (
         <div className='fieldset-row-header'>
           <FieldsetReorderControl {...reorder} />
@@ -197,6 +206,7 @@ FieldsetRow.propTypes = {
   reordering: PropTypes.bool,
   reorder: PropTypes.shape({
     isDragged: PropTypes.bool,
+    moveId: PropTypes.number,
     dropPosition: PropTypes.oneOf(['before', 'after']),
     containerProps: PropTypes.object,
   }),
