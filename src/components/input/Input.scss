@@ -581,13 +581,13 @@
     transition: 0.1s;
     padding-top: 11.2px;
     padding-bottom: 10.8px;
-    padding-left: 12px;
+    padding-inline-start: 0px;
     padding-right: 12px;
     &::after {
       content: '';
       display: block;
       position: absolute;
-      left: 12px;
+      left: 0px;
       right: 12px;
       bottom: 0;
       border-bottom: 0.7px solid $color-black-60;
@@ -609,16 +609,10 @@
         }
       }
     }
-    svg{
-      pointer-events: none;
-      width: $size17;
-      height: $size17;
-    }
   }
 
   .accordion-button-error {
     outline: 2px solid $color-error;
-    outline-offset: -2px;
     &::after {
       border-bottom: none;
     }
@@ -664,11 +658,6 @@
           color: $max-markings-color;
         }
       }
-    }
-    svg{
-      pointer-events: none;
-      width: $size17;
-      height: $size17;
     }
   }
 
@@ -722,6 +711,7 @@
   .accordion-button:focus-visible,.accordion-button-open:focus-visible{
     outline: 3px solid $color-coat-of-arms;
     outline-offset: -3px;
+    padding-left: 3px;
   }
 
   .accordion-button > * {
@@ -841,7 +831,7 @@
       align-items: center;
       button{
         font-family: "Helsinki Grotesk Medium", sans-serif;
-        font-size: $size12;
+        font-size: $size14;
         color: $black1;
         display: flex;
         justify-content: flex-end;
@@ -918,12 +908,24 @@
         border-bottom: 0.7px solid $color-black-40;
       }
     }
+
+    // Only applied for the frame in which the browser captures the drag ghost
+    > .fieldset-drag-image {
+      padding: 12px;
+      transition: none;
+
+      &::after,
+      > svg {
+        visibility: hidden;
+      }
+    }
   }
 
   .fieldset-reorder-control {
     position: relative;
     display: flex;
     flex: 0 0 24px;
+    margin-right: 8px;
   }
 
   .fieldset-reorder-menu,
@@ -938,7 +940,6 @@
 
   .fieldset-reorder-menu {
     min-width: 190px;
-    padding: 4px;
 
     button {
       display: flex;
@@ -993,7 +994,8 @@
     width: 24px;
     height: 24px;
     align-self: center;
-    padding: 0;
+    padding: 2px;
+    box-sizing: content-box;
     border: none;
     background-color: transparent;
     color: $black1;
@@ -1005,7 +1007,9 @@
 
     &[aria-expanded="true"],
     &:active:where([aria-disabled="false"]) {
-      background-color: #e6f2fa;
+      svg {
+        background-color: $color-bus-medium-light;
+      }
     }
 
     &[aria-disabled="true"] {
@@ -1014,8 +1018,7 @@
     }
 
     &:focus-visible {
-      outline: 3px solid $color-coat-of-arms;
-      outline-offset: -3px;
+      outline: 2px solid $color-coat-of-arms;
     }
 
     svg {
@@ -1031,8 +1034,10 @@
   }
 
   .fieldset-drag-handle[draggable="true"] {
-    background-color: $color-coat-of-arms;
-    color: $color-white;
+    svg {
+      color: $color-white;
+      background-color: $color-coat-of-arms;
+    }
     cursor: grabbing;
   }
 }
