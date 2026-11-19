@@ -72,8 +72,8 @@ const FieldsetRow = ({
     return null
   }
 
-  const lockedElement = fieldsetDisabled ? <InputLockedMessage t={t} lockStatus={lockStatus} /> : <></>;
-  const lockName = <><span className='accoardian-header-text'>{getValueName(setValues, fields, t)}</span> {lockedElement}</>
+  const lockedMessage = fieldsetDisabled ? <InputLockedMessage t={t} lockStatus={lockStatus} isFieldsetRow={true} /> : <></>;
+  const contentElement = <><span className='accordion-header-text'>{getValueName(setValues, fields, t)}</span> {lockedMessage}</>
 
   const shouldDisableAccordion = saving || hiding || adding || reordering
   const thisRowHasError = formErrors?.some(ef => ef.startsWith(`${set}.`))
@@ -92,7 +92,7 @@ const FieldsetRow = ({
       onClick={(e) => { if (!shouldDisableAccordion) { onCheckLocked(e, set, i) } }}
     >
       <div className='accordion-button-content'>
-        {lockName}
+        {contentElement}
       </div>
       {expanded.includes(i) ? <IconAngleUp size='s'/> : <IconAngleDown size='s'/>}
     </button>
@@ -169,8 +169,8 @@ const FieldsetRow = ({
             {t('project.deleting')}
           </div>
         )}
-        <div className='close-accordion-button'>
-          <button type="button" className={expanded.includes(i) ? "accordion-button-open" : "accordion-button"} onClick={(e) => { onCheckLocked(e, set, i) }}>
+        <div className='close-accordion-button-container'>
+          <button className='close-accordion-button' type="button" onClick={(e) => { onCheckLocked(e, set, i) }}>
             <span>Sulje</span><IconAngleUp size='s'/>
           </button>
         </div>

@@ -224,8 +224,9 @@ const FieldSet = ({
   const checkLocked = (e,set,i) => {
     let expand = false
     //Change expanded styles if close button or accordian heading element is clicked
-    const substrings = ["fieldset-accordian-close","accordion-button"];
-    if (substrings.some(v => e?.target?.className?.includes(v))) {
+    const substrings = ["accordion-button"];
+    console.log(e.target)
+    if (substrings.some(v => e?.target?.className?.includes?.(v))) {
       expand = true
     }
     

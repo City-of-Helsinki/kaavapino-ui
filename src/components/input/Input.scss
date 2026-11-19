@@ -560,148 +560,92 @@
   padding-top: 0;
   padding-left: 8px;
 
+
   /* Style the buttons that are used to open and close the accordion panel */
-  .accordion-button {
+
+  .accordion-button,
+  .accordion-button-open,
+  .accordion-button-disabled
+  {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    color: $black1;
     background-color: $color-white;
     font-family: "Helsinki Grotesk Medium", sans-serif;
     font-size: $size14;
     line-height: 150%;
     letter-spacing: 0;
-    color: $black1;
     font-weight: 500;
     pointer-events: all;
     cursor: pointer;
-    width: calc(100% + 24px);
-    margin-left: -12px;
-    margin-right: -12px;
+    width: 100%;
+    min-height: 44px;
     text-align: left;
-    border:none;
+    border: none;
     outline: none;
-    position: relative;
-    transition: 0.1s;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    padding-inline-start: 0px;
-    padding-right: 12px;
-    &::after {
-      content: '';
-      display: block;
-      position: absolute;
-      left: 0px;
-      right: 12px;
-      bottom: 0;
-      border-bottom: 0.7px solid $color-black-60;
-    }
     .accordion-button-content{
       display: flex;
       justify-content: flex-start;
       flex-flow: column;
       align-items: flex-start;
+      padding-top: 10px;
+      padding-bottom: 8px;
+      height:100%;
       svg{
         pointer-events: none;
       }
-      .accoardian-header-text{
+      .accordion-header-text{
         pointer-events: none;
         .italic{
           font-family: "Helsinki Grotesk Regular", sans-serif;
           font-style: italic;
-          color:$max-markings-color;
+          color: $max-markings-color;
         }
       }
     }
+    svg {
+      pointer-events: none;
+      width: $size24;
+      margin-top: $size10;
+    }
+  }
+
+  // Standard, closed state accordion button
+  .accordion-button {
+    position: relative;
+    padding-inline-start: 0px;
+    padding-right: 0px;
+    &::after {
+      content: '';
+      display: block;
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-bottom: 1px solid $color-black-60;
+    }
+  }
+
+  .accordion-button-open{
+    padding-left: 0;
+    padding-right: 0px;
+  }
+
+  .accordion-button-disabled{
+    color: $color-black-40;
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+    padding-left: 0;
+    border-bottom: 0.7px solid $color-black-40;
+    pointer-events: none;
   }
 
   .accordion-button-error {
     outline: 2px solid $color-error;
     &::after {
       border-bottom: none;
-    }
-  }
-
-  .accordion-button-open{
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    background-color: $color-white;
-    font-family: "Helsinki Grotesk Medium", sans-serif;
-    font-size: $size14;
-    line-height: 150%;
-    letter-spacing: 0;
-    color: $black1;
-    font-weight: 500;
-    pointer-events: all;
-    cursor: pointer;
-    width: calc(100% + 24px);
-    margin-left: -12px;
-    margin-right: -12px;
-    text-align: left;
-    border: none;
-    outline: none;
-    transition: 0.1s;
-    padding-top: 11.2px;
-    padding-bottom: 10.8px;
-    padding-left: 12px;
-    padding-right: 12px;
-    .accordion-button-content{
-      display: flex;
-      justify-content: flex-start;
-      flex-flow: column;
-      align-items: flex-start;
-      svg{
-        pointer-events: none;
-      }
-      .accoardian-header-text{
-        pointer-events: none;
-        .italic{
-          font-family: "Helsinki Grotesk Regular", sans-serif;
-          font-style: italic;
-          color: $max-markings-color;
-        }
-      }
-    }
-  }
-
-  .accordion-button-disabled{
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    background-color: $color-white;
-    font-family: "Helsinki Grotesk Medium", sans-serif;
-    font-size: $size14;
-    line-height: 150%;
-    letter-spacing: 0;
-    color: $color-black-40;
-    font-weight: 500;
-    cursor: pointer;
-    width: 100%;
-    text-align: left;
-    border:none;
-    outline: none;
-    transition: 0.1s;
-    padding-top: 11.2px;
-    padding-bottom: 10.8px;
-    padding-left: 0;
-    border-bottom: 0.7px solid $color-black-40;
-    pointer-events: none;
-    .accordion-button-content{
-      display: flex;
-      justify-content: flex-start;
-      flex-flow: column;
-      align-items: flex-start;
-      svg{
-        pointer-events: none;
-      }
-      .accoardian-header-text{
-        pointer-events: none;
-        .italic{
-          font-family: "Helsinki Grotesk Regular", sans-serif;
-          font-style: italic;
-          color: $max-markings-color;
-        }
-      }
     }
   }
 
@@ -823,38 +767,47 @@
       padding-left: 0;
       pointer-events: none;
     }
-    .close-accordion-button{
+    .close-accordion-button-container{
       display: flex;
       justify-content: flex-end;
       align-items: center;
-      button{
+      padding-bottom: 10px;
+      pointer-events: all;
+      button {
         font-family: "Helsinki Grotesk Medium", sans-serif;
         font-size: $size14;
-        color: $black1;
+        font-weight: 500;
+        line-height: 24px;
+        color: $color-black-90;
         display: flex;
-        justify-content: flex-end;
         align-items: center;
         background-color: transparent;
         border: none;
-        margin-right: -16px;
-        width: fit-content;
+              pointer-events: all;
         span{
           pointer-events: none;
-          padding-right: 5px;
+          margin-right: 8px;
         }
+
+      }
+      svg {
+        pointer-events: none;
       }
     }
   }
 
-  .input-locked{
+  .input-locked-fieldset{
     font-family: "Helsinki Grotesk Medium", sans-serif;
-    font-size: $size12;
-    color: $color-info-dark;
+    font-size: $size14;
+    color: $color-coat-of-arms-dark;
     display: flex;
-    justify-content: flex-start;
-    align-items: flex-end;
+    gap: 8px;
     padding-top: 8px;
     padding-bottom: 2px;
+    svg {
+      color: $color-coat-of-arms-dark;
+      margin-top: 0;
+    }
   }
 }
 
@@ -945,6 +898,7 @@
     display: flex;
     flex: 0 0 24px;
     margin-right: 8px;
+    max-height: 44px;
   }
 
   .fieldset-reorder-menu,
@@ -1122,22 +1076,6 @@
   color: $color-error-dark;
   border-color: $color-error-dark !important;
   background-color: $color-error-light;
-}
-
-.fieldset-accordian-close{
-  font-family: "Helsinki Grotesk Medium", sans-serif;
-  font-size: $size12;
-  background-color: $color-fog-light;
-  display: flex;
-  width: 100%;
-  justify-content: flex-end;
-  max-height: 25px;
-  min-height: 25px;
-}
-
-.fieldset-accordian-close:hover{
-  text-decoration: underline;
-  background-color: #e8f3fc;
 }
 
 .input-header + .fieldset-container {
