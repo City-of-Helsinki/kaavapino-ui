@@ -858,6 +858,28 @@
   }
 }
 
+.fieldset-main-container-dragging {
+  position: relative;
+
+  // Invisible drop zones so releasing just above or below the list still drops
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 48px;
+  }
+
+  &::before {
+    bottom: 100%;
+  }
+
+  &::after {
+    top: 100%;
+  }
+}
+
 .fieldset-main-container{
   .fieldset-container:last-of-type{
     margin-bottom: 16px;

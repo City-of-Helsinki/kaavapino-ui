@@ -333,6 +333,40 @@ const FieldSet = ({
     return e.clientY < rect.top + rect.height / 2 ? 'before' : 'after'
   }
 
+  // The whole list (extended past its edges while dragging) accepts drops; beyond the first/last row the pointer decides
+  const getEdgeDropTarget = (clientY) => {
+    const rows = accordianRef.current?.querySelectorAll(':scope > .fieldset-container[data-row]')
+    if (!rows?.length) return null
+    const first = rows[0]
+    const last = rows[rows.length - 1]
+    if (clientY < first.getBoundingClientRect().top) return { index: Number(first.dataset.row), position: 'before' }
+    if (clientY > last.getBoundingClientRect().bottom) return { index: Number(last.dataset.row), position: 'after' }
+    return null
+  }
+
+  const listDropProps = {
+    onDragOver: (e) => {
+      if (draggedIndex === null) return
+      e.preventDefault()
+      e.dataTransfer.dropEffect = 'move'
+      const edge = getEdgeDropTarget(e.clientY)
+      if (edge && (edge.index !== dropTarget?.index || edge.position !== dropTarget?.position)) {
+        setDropTarget(edge)
+      }
+    },
+    onDrop: (e) => {
+      if (draggedIndex === null) return
+      e.preventDefault()
+      const target = getEdgeDropTarget(e.clientY) ?? dropTarget
+      if (target) {
+        const from = visibleOrder.indexOf(draggedIndex)
+        const to = visibleOrder.indexOf(target.index) + (target.position === 'after' ? 1 : 0)
+        moveRow(draggedIndex, from < to ? to - 1 : to)
+      }
+      clearDragState()
+    },
+  }
+
   const getRowReorder = (i) => {
     if (disabled) {
       return null
@@ -351,20 +385,10 @@ const FieldSet = ({
         'data-row': i,
         onDragOver: (e) => {
           if (draggedIndex === null) return
-          e.preventDefault()
-          e.dataTransfer.dropEffect = 'move'
           const dropPosition = getDropPosition(e)
           if (dropTarget?.index !== i || dropTarget?.position !== dropPosition) {
             setDropTarget({ index: i, position: dropPosition })
           }
-        },
-        onDrop: (e) => {
-          if (draggedIndex === null) return
-          e.preventDefault()
-          const from = visibleOrder.indexOf(draggedIndex)
-          const to = position + (getDropPosition(e) === 'after' ? 1 : 0)
-          moveRow(draggedIndex, from < to ? to - 1 : to)
-          clearDragState()
         },
       },
     }
@@ -372,7 +396,8 @@ const FieldSet = ({
 
   return (
     <>
-    <div className='fieldset-main-container' ref={accordianRef}>
+    <div className={`fieldset-main-container${draggedIndex === null ? '' : ' fieldset-main-container-dragging'}`}
+      ref={accordianRef} {...(disabled ? {} : listDropProps)}>
     <div className='fieldset-info'>{fieldsetTotal ? getNumberOfFieldsets(fieldsetTotal, formValues, name, t) : ""}</div>
       {displayOrder.map((i) => (
         <React.Fragment key={`${name}-${i}`}>
