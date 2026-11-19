@@ -221,47 +221,46 @@ const FieldSet = ({
     }
   }, [saving])
 
-  const checkLocked = (e,set,i) => {
-    let expand = false
-    //Change expanded styles if close button or accordian heading element is clicked
-    const substrings = ["accordion-button"];
-    console.log(e.target)
-    if (substrings.some(v => e?.target?.className?.includes?.(v))) {
-      expand = true
+  const closeAccordion = (index, expandedArray = expanded.slice()) => {
+    const fieldsetIdentifier = `${name}[${index}]`;
+    const isOffline = lastSaved?.status === 'error';
+    const hasError = formErrors?.some(errorFieldName => errorFieldName.startsWith(name));
+    const expandedIndex = expandedArray.indexOf(index);
+    if (expandedIndex !== -1) {
+      expandedArray.splice(expandedIndex, 1);
+      if (!isOffline && !hasError) handleUnlockField(fieldsetIdentifier);
     }
-    
-    if(expand){
-      const isOffline = lastSaved?.status === 'error'
-      const hasError = formErrors?.some(errorFieldName => errorFieldName.startsWith(name))
-      //Expand or close element that was clicked inside fieldset array of elements
-      //Prevent focus and editing to field if not locked
-      let expandedArray = expanded.slice();
-      if(expandedArray.includes(i)){
-        expandedArray.splice(expandedArray.indexOf(i), 1);
-        if (!isOffline && !hasError) handleUnlockField(set)
-      }
-      else{
-        if (!isOffline) {
-          // Opening fieldset - fetch data only if no validation errors in this fieldset
-          // This preserves user's invalid input so they can fix it
-          const hasFieldsetErrors = formErrors?.some(errorFieldName => 
-            errorFieldName.startsWith(`${set}.`)
-          );
-          if (!hasFieldsetErrors) {
-            dispatch(getAttributeData(attributeData?.projektin_nimi,name,formName, set, nulledFields,i))
-          }
-          // Don't lock fieldset if any field has errors - The problematic field should already be locked
-          // Locking any field clears existing locks
-          if (!formErrors?.length){
-            handleLockField(set)
-          }
-        }
-        //Close other accordians and open latest
-        expandedArray = [i];
-      }
-      setExpanded(expandedArray);
-    }
+    return expandedArray;
+  }
 
+  const onAccordionClick = (set, i) => {
+    let expandedArray = expanded.slice();
+    if (expandedArray.includes(i)) {
+      expandedArray = closeAccordion(i, expandedArray);
+    } else {
+      if (lastSaved?.status === 'error') {
+        // Opening fieldset - fetch data only if no validation errors in this fieldset
+        // This preserves user's invalid input so they can fix it
+        const hasFieldsetErrors = formErrors?.some(errorFieldName =>
+          errorFieldName.startsWith(`${set}.`)
+        );
+        if (!hasFieldsetErrors) {
+          dispatch(getAttributeData(attributeData?.projektin_nimi, name, formName, set, nulledFields, i));
+        }
+        // Don't lock fieldset if any field has errors - The problematic field should already be locked
+        // Locking any field clears existing locks
+        if (!formErrors?.length) {
+          handleLockField(set);
+        }
+      }
+      //Close other accordians and open latest
+      expandedArray = [i];
+    }
+    setExpanded(expandedArray);
+  }
+
+  const onCloseAccordionClick = (index) => {
+    setExpanded(closeAccordion(index));
   }
 
   const handleOutsideClick = () => {
@@ -446,7 +445,8 @@ const FieldSet = ({
                 handleBlur()
               }
             }}
-            onCheckLocked={checkLocked}
+            onAccordionClick={onAccordionClick}
+            onCloseAccordionClick={onCloseAccordionClick}
             onHide={hideFieldset}
           />
         </React.Fragment>

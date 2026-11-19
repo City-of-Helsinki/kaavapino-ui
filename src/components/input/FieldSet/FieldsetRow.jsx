@@ -56,7 +56,8 @@ const FieldsetRow = ({
   validate,
   onChildBlurSave,
   // Row-level handlers
-  onCheckLocked,
+  onAccordionClick,
+  onCloseAccordionClick,
   onHide,
 }) => {
   const { t } = useTranslation()
@@ -89,7 +90,7 @@ const FieldsetRow = ({
   const accordionButton = (
     <button type="button" tabIndex={0}
       className={getAccordionButtonClassName(shouldDisableAccordion, expanded.includes(i), thisRowHasError || thisRowHasNetworkError)}
-      onClick={(e) => { if (!shouldDisableAccordion) { onCheckLocked(e, set, i) } }}
+      onClick={() => { if (!shouldDisableAccordion) { onAccordionClick(set, i) }}}
     >
       <div className='accordion-button-content'>
         {contentElement}
@@ -138,7 +139,7 @@ const FieldsetRow = ({
             unlockAllFields={unlockAllFields}
             validate={validate}
             onChildBlurSave={onChildBlurSave}
-            onCheckLocked={(e) => onCheckLocked(e, set, i)}
+            onCheckLocked={() => {}} // Locking handled on a fieldset row level
           />
         ))}
         {/* Show NetworkErrorState for connection errors in fieldset — fallback if no specific field tracked */}
@@ -170,7 +171,7 @@ const FieldsetRow = ({
           </div>
         )}
         <div className='close-accordion-button-container'>
-          <button className='close-accordion-button' type="button" onClick={(e) => { onCheckLocked(e, set, i) }}>
+          <button className='close-accordion-button' type="button" onClick={() => {onCloseAccordionClick(i)}}>
             <span>Sulje</span><IconAngleUp size='s'/>
           </button>
         </div>
@@ -223,6 +224,8 @@ FieldsetRow.propTypes = {
   onChildBlurSave: PropTypes.func.isRequired,
   onCheckLocked: PropTypes.func.isRequired,
   onHide: PropTypes.func.isRequired,
+  onAccordionClick: PropTypes.func.isRequired,
+  onCloseAccordionClick: PropTypes.func.isRequired,
 }
 
 export default FieldsetRow
