@@ -6,10 +6,9 @@ import PropTypes from 'prop-types'
 // Creates a "ghost" for fieldset row being dragged
 const setHeaderDragImage = (handle, dataTransfer) => {
   const header = handle.closest('.fieldset-row-header').querySelector(':scope > button')
-  const chevron = header.querySelector(':scope > svg')
-  chevron.style.visibility = 'hidden'
+  header.classList.add('fieldset-drag-image')
   dataTransfer.setDragImage(header, 0, 0)
-  requestAnimationFrame(() => { chevron.style.visibility = '' })
+  requestAnimationFrame(() => header.classList.remove('fieldset-drag-image'))
 }
 
 const FieldsetReorderControl = ({ enabled, position, total, onMove, onDragStart, onDragEnd }) => {
@@ -101,6 +100,7 @@ const FieldsetReorderControl = ({ enabled, position, total, onMove, onDragStart,
         className='fieldset-drag-handle'
         draggable={enabled}
         aria-disabled={!enabled}
+        tabIndex={enabled ? 0 : -1}
         aria-haspopup="menu"
         aria-expanded={showMenu}
         aria-controls={showMenu ? menuId : undefined}

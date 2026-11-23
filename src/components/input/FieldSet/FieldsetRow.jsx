@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { get } from 'lodash'
 import {
   Button,
@@ -56,10 +56,13 @@ const FieldsetRow = ({
   validate,
   onChildBlurSave,
   // Row-level handlers
-  onCheckLocked,
+  onAccordionClick,
+  onCloseAccordionClick,
   onHide,
 }) => {
   const { t } = useTranslation()
+  // Browsers restart CSS animations when React moves a node, so only animate on mount
+  const [entering, setEntering] = useState(true)
 
   const setValues = get(formValues, set)
   const fieldsetDisabled = !!(lockStatus?.lockStyle && !lockStatus?.owner && lockStatus?.fieldIdentifier === set)
@@ -70,8 +73,8 @@ const FieldsetRow = ({
     return null
   }
 
-  const lockedElement = fieldsetDisabled ? <InputLockedMessage t={t} lockStatus={lockStatus} /> : <></>;
-  const lockName = <><span className='accoardian-header-text'>{getValueName(setValues, fields, t)}</span> {lockedElement}</>
+  const lockedMessage = fieldsetDisabled ? <InputLockedMessage t={t} lockStatus={lockStatus} isFieldsetRow={true} /> : <></>;
+  const contentElement = <><div className='accordion-header-text'>{getValueName(setValues, fields, t)}</div> {lockedMessage}</>
 
   const shouldDisableAccordion = saving || hiding || adding || reordering
   const thisRowHasError = formErrors?.some(ef => ef.startsWith(`${set}.`))
@@ -79,6 +82,7 @@ const FieldsetRow = ({
 
   const containerClassName = [
     'fieldset-container',
+    entering ? 'fieldset-container-enter' : '',
     reorder?.isDragged ? 'fieldset-container-dragging' : '',
     reorder?.dropPosition ? `fieldset-container-drop-${reorder.dropPosition}` : '',
   ].filter(Boolean).join(' ')
@@ -86,24 +90,25 @@ const FieldsetRow = ({
   const accordionButton = (
     <button type="button" tabIndex={0}
       className={getAccordionButtonClassName(shouldDisableAccordion, expanded.includes(i), thisRowHasError || thisRowHasNetworkError)}
-      onClick={(e) => { if (!shouldDisableAccordion) { onCheckLocked(e, set, i) } }}
+      onClick={() => { if (!shouldDisableAccordion) { onAccordionClick(set, i) }}}
     >
       <div className='accordion-button-content'>
-        {lockName}
+        {contentElement}
       </div>
       {expanded.includes(i) ? <IconAngleUp size='s'/> : <IconAngleDown size='s'/>}
     </button>
   )
 
   return (
-    <div className={containerClassName} {...reorder?.containerProps}>
+    <div className={containerClassName} {...reorder?.containerProps}
+      onAnimationEnd={(e) => { if (e.target === e.currentTarget) setEntering(false) }}>
       {reorder ? (
         <div className='fieldset-row-header'>
           <FieldsetReorderControl {...reorder} />
           {accordionButton}
         </div>
       ) : accordionButton}
-      <div className={expanded.includes(i) ? 'fieldset-accordian-open' : 'fieldset-accordian'}>
+      <div className={expanded.includes(i) ? 'fieldset-accordion-open' : 'fieldset-accordion'}>
         {fields.map((field, j) => (
           <FieldsetField
             key={name + field.name + j}
@@ -134,7 +139,7 @@ const FieldsetRow = ({
             unlockAllFields={unlockAllFields}
             validate={validate}
             onChildBlurSave={onChildBlurSave}
-            onCheckLocked={(e) => onCheckLocked(e, set, i)}
+            onCheckLocked={() => {}} // Locking handled on a fieldset row level
           />
         ))}
         {/* Show NetworkErrorState for connection errors in fieldset — fallback if no specific field tracked */}
@@ -165,8 +170,8 @@ const FieldsetRow = ({
             {t('project.deleting')}
           </div>
         )}
-        <div className='close-accordion-button'>
-          <button type="button" className={expanded.includes(i) ? "accordion-button-open" : "accordion-button"} onClick={(e) => { onCheckLocked(e, set, i) }}>
+        <div className='close-accordion-button-container'>
+          <button className='close-accordion-button' type="button" onClick={() => {onCloseAccordionClick(i)}}>
             <span>Sulje</span><IconAngleUp size='s'/>
           </button>
         </div>
@@ -219,6 +224,8 @@ FieldsetRow.propTypes = {
   onChildBlurSave: PropTypes.func.isRequired,
   onCheckLocked: PropTypes.func.isRequired,
   onHide: PropTypes.func.isRequired,
+  onAccordionClick: PropTypes.func.isRequired,
+  onCloseAccordionClick: PropTypes.func.isRequired,
 }
 
 export default FieldsetRow
