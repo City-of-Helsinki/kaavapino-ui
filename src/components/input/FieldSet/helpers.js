@@ -82,15 +82,17 @@ const getValueName = (values, fields, t) => {
   return valueType || <span className='italic'>{t('project.fieldset-missing-value')}</span>;
 };
 
-const getNumberOfFieldsets = (fieldsetTotal, formValues, name, t) => {
+const getFieldsetInfoData = (fieldsetTotal, formValues, name, t) => {
   const fieldName = get(formValues, name);
   const fieldsLength = fieldName?.filter(i => i?._deleted !== true);
   const count = fieldsLength?.length || 0;
   if (count === 0) {
-    const label = fieldsetTotal?.split(/\s+/)[0]?.toLowerCase() || '';
-    return t('project.fieldset-empty', { label });
+    const baseLabel = fieldsetTotal?.split(/\s+/)[0]?.toLowerCase() || '';
+    return {count: 0, label: t('project.fieldset-empty', { label: baseLabel })};
   }
-  return fieldsetTotal.replace('{{kpl}}', count);
+  let label = fieldsetTotal?.replace('{{kpl}}', count);
+  if (label && !label.endsWith('.')) label += '.';
+  return {count: count, label: label};
 }
 
 const getAccordionButtonClassName = (shouldDisableAccordion, isOpen, hasError) => {
@@ -140,7 +142,7 @@ const getFieldsetOrderChanges = (values, requestedOrder) => {
 export {
   buildAddButtonMessage,
   getValueName,
-  getNumberOfFieldsets,
+  getFieldsetInfoData,
   getAccordionButtonClassName,
   getFieldsetDisplayOrder,
   applyRequestedOrder,

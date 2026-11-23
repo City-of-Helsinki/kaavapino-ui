@@ -74,7 +74,7 @@ const FieldsetRow = ({
   }
 
   const lockedMessage = fieldsetDisabled ? <InputLockedMessage t={t} lockStatus={lockStatus} isFieldsetRow={true} /> : <></>;
-  const contentElement = <><span className='accordion-header-text'>{getValueName(setValues, fields, t)}</span> {lockedMessage}</>
+  const contentElement = <><div className='accordion-header-text'>{getValueName(setValues, fields, t)}</div> {lockedMessage}</>
 
   const shouldDisableAccordion = saving || hiding || adding || reordering
   const thisRowHasError = formErrors?.some(ef => ef.startsWith(`${set}.`))
@@ -108,7 +108,7 @@ const FieldsetRow = ({
           {accordionButton}
         </div>
       ) : accordionButton}
-      <div className={expanded.includes(i) ? 'fieldset-accordian-open' : 'fieldset-accordian'}>
+      <div className={expanded.includes(i) ? 'fieldset-accordion-open' : 'fieldset-accordion'}>
         {fields.map((field, j) => (
           <FieldsetField
             key={name + field.name + j}

@@ -545,12 +545,19 @@
   font-family: "Helsinki Grotesk Regular", sans-serif;
   font-style: italic;
   font-size: $size14;
-  color: $dropdown-text-color;
-  border-bottom: 1px solid $border-gray1;
+  font-weight: 400;
+  color: $color-black-90;
+  border-bottom: 1px solid $color-black-20;
   margin-top: $size16;
-  padding-bottom: 6px;
+  padding-bottom: $size4;
   margin-left: $size12;
+  margin-bottom: $size4;
 }
+.fieldset-info.no-fs-rows {
+  margin-bottom: 16px;
+}
+
+
 .fieldset-container {
   border: none;
   position: relative;
@@ -558,7 +565,7 @@
   margin-bottom: 0;
   padding-bottom: 0;
   padding-top: 0;
-  padding-left: 8px;
+  margin-left: 12px;
 
 
   /* Style the buttons that are used to open and close the accordion panel */
@@ -584,14 +591,19 @@
     text-align: left;
     border: none;
     outline: none;
+    padding: 0;
     .accordion-button-content{
       display: flex;
-      justify-content: flex-start;
+      justify-content: center;
       flex-flow: column;
       align-items: flex-start;
       padding-top: 10px;
-      padding-bottom: 8px;
+      padding-bottom: 10px;
       height:100%;
+      &:has(> .input-locked-fieldset) {
+        padding-bottom: 8px;
+      }
+
       svg{
         pointer-events: none;
       }
@@ -607,7 +619,7 @@
     svg {
       pointer-events: none;
       width: $size24;
-      margin-top: $size10;
+      margin-top: 10px;
     }
   }
 
@@ -628,8 +640,7 @@
   }
 
   .accordion-button-open{
-    padding-left: 0;
-    padding-right: 0px;
+    padding: 0;
   }
 
   .accordion-button-disabled{
@@ -643,7 +654,7 @@
   }
 
   .accordion-button-error {
-    outline: 2px solid $color-error;
+    border: 2px solid $color-error;
     &::after {
       border-bottom: none;
     }
@@ -661,7 +672,7 @@
   }
 
   /* Style the accordion panel. Note: hidden by default */
-  .fieldset-accordian {
+  .fieldset-accordion {
     padding: 0 18px;
     background-color: $color-white;
     display: none;
@@ -701,12 +712,12 @@
     }
   }
 
-  .fieldset-accordian-open{
-    margin-left: $size36;
+  .fieldset-accordion-open{
+    margin-left: $size40;
     padding-left: 24px;
-    padding-right: 12px;
+    padding-right: 24px;
     padding-top: 16px;
-    background-color: $color-fog-light;
+    background-color: #F1F8FD;
     display: block;
     overflow: visible;
     position: relative;
@@ -717,7 +728,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      border-top: 0.7px solid $color-black-60;
+      border-top: 1px solid $color-black-60;
     }
     &::after {
       content: '';
@@ -726,10 +737,10 @@
       left: 0;
       right: 0;
       top: 0;
-      border-bottom: 0.7px solid $color-black-60;
+      border-bottom: 1px solid $color-black-60;
     }
     .input-container {
-      background-color: $color-fog-light;
+      background-color: #F1F8FD;
       padding-bottom: 24px;
       padding-left: 0;
       padding-right: 0;
@@ -773,7 +784,9 @@
       align-items: center;
       padding-bottom: 10px;
       pointer-events: all;
+      height: 44px;
       button {
+        cursor: pointer;
         font-family: "Helsinki Grotesk Medium", sans-serif;
         font-size: $size14;
         font-weight: 500;
@@ -839,13 +852,19 @@
   }
   .fieldset-button-add{
     justify-content: flex-start;
-    width: auto;
+    width:auto;
+    border: 0;
     font-family: "Helsinki Grotesk Medium", sans-serif;
     font-weight: 500;
     font-size: $size16;
     line-height: 24px;
     text-align: center;
     opacity: 1 !important;
+    padding-right: 16px;
+    padding-left: 8px;
+    &:focus-visible{
+      border: 3px solid $color-coat-of-arms;
+    }
   }
 }
 
@@ -883,7 +902,7 @@
 
     // Only applied for the frame in which the browser captures the drag ghost
     > .fieldset-drag-image {
-      padding: 12px;
+      padding: 0 0 0 12px;
       transition: none;
 
       &::after,
@@ -897,7 +916,8 @@
     position: relative;
     display: flex;
     flex: 0 0 24px;
-    margin-right: 8px;
+    margin-right: 10px;
+    margin-left: 2px;
     max-height: 44px;
   }
 
@@ -1066,6 +1086,7 @@
 
 
 .fieldset-button-remove-disabled{
+  min-width: 118px;
   border-color: $color-black-40;
   margin-bottom: $size24;
 }
@@ -1075,6 +1096,7 @@
 }
 
 .fieldset-button-remove:not(:disabled) {
+
   color: $color-error;
   border-color: $color-error !important;
   background-color: $color-white;
@@ -1550,7 +1572,7 @@
   max-width: 288px;
 }
 
-.fieldset-accordian-open{
+.fieldset-accordion-open{
   .text-input{
     .input-spinner {
       position: absolute;

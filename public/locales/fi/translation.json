@@ -358,7 +358,9 @@
     "filters": "Suodattimet",
     "edit-filters": "Muokkaa suodattimia",
     "remove-filters": "Poista kaikki valinnat",
-    "field-locked-by-user": "Käyttäjä {{userName}} ({{userEmail}}) on muokkaamassa kenttää",
+    "field-locked-by-user": "Käyttäjä {{userName}} ({{userEmail}}) on muokkaamassa kenttää.",
+    "fieldset-locked-by-user": "Käyttäjä {{userName}} ({{userEmail}}) on muokkaamassa tietoja.",
+    "fieldset-reordered": "Rivi siirretty riville {{to}} / {{total}}",
     "rolling-info": "Tieto siirtyy vaiheiden välillä ja sitä voi täydentää",
     "auto-generated-info": "Tieto on automaattisesti muodostettu"
   },

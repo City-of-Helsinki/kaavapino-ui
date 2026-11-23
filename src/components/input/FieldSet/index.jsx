@@ -12,7 +12,7 @@ import { useIsMount } from '../../../hooks/IsMounted.js'
 import { useFieldPassivation } from '../../../hooks/useFieldPassivation.js'
 import {
   buildAddButtonMessage,
-  getNumberOfFieldsets,
+  getFieldsetInfoData,
   getFieldsetDisplayOrder,
   applyRequestedOrder,
   moveFieldsetRow,
@@ -64,7 +64,7 @@ const FieldSet = ({
   const dispatch = useDispatch()
   const { t } = useTranslation()
   const isMount = useIsMount()
-  const accordianRef = useRef(null)
+  const accordionRef = useRef(null)
   const autoOpenScrollPending = useRef(false)
   
   // Check if other fields have errors - passivate fieldset expand/delete buttons
@@ -192,7 +192,7 @@ const FieldSet = ({
     if (autoOpenScrollPending.current && expanded.length > 0) {
       autoOpenScrollPending.current = false
       requestAnimationFrame(() => {
-        const containers = accordianRef.current?.querySelectorAll('.fieldset-container')
+        const containers = accordionRef.current?.querySelectorAll('.fieldset-container')
         const lastContainer = containers?.[containers.length - 1]
         if (lastContainer) {
           lastContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
@@ -253,7 +253,7 @@ const FieldSet = ({
           handleLockField(set);
         }
       }
-      //Close other accordians and open latest
+      //Close other accordions and open latest
       expandedArray = [i];
     }
     setExpanded(expandedArray);
@@ -268,14 +268,14 @@ const FieldSet = ({
     const hasError = formErrors?.some(errorFieldName => errorFieldName.startsWith(name))
     const lockedField = lockStatus.fieldIdentifier;
     const thisIslockedField = lockedField?.startsWith(name) && lockStatus?.lockStyle?.isLocked;
-    //close all accordians and unlock locked field when clicked outside fieldset main
+    //close all accordions and unlock locked field when clicked outside fieldset main
     setExpanded([]);
     if (thisIslockedField && lockStatus.owner && !isOffline && !hasError) {
       handleUnlockField(lockedField);
     }
   }
 
-  OutsideClick(accordianRef, handleOutsideClick)
+  OutsideClick(accordionRef, handleOutsideClick)
   
   const anyFieldsetHasChildError = !!formErrors?.some(ef => ef.startsWith(`${name}[`));
 
@@ -297,7 +297,7 @@ const FieldSet = ({
 
   // FLIP: when the order changes, rows slide from their previous position (offsetTop ignores running transforms)
   useLayoutEffect(() => {
-    const rows = [...(accordianRef.current?.querySelectorAll(':scope > .fieldset-container[data-row]') ?? [])]
+    const rows = [...(accordionRef.current?.querySelectorAll(':scope > .fieldset-container[data-row]') ?? [])]
     const previousTops = rowTops.current
     rowTops.current = new Map(rows.map(row => [row.dataset.row, row.offsetTop]))
     const orderChanged = previousOrderKey.current !== null && previousOrderKey.current !== displayOrderKey
@@ -317,6 +317,10 @@ const FieldSet = ({
     !lockedByOtherUser && lastSaved?.status !== 'error' && !(formErrors?.length > 0) && !shouldDisableForErrors
 
   const clearDragState = () => {
+    const visiblePosition = visibleOrder.indexOf(dropTarget?.index)
+    if (visiblePosition !== -1){
+      document.body.ariaNotify(t('project.fieldset-reordered', {to: dropTarget?.index, total: visibleOrder.length}))
+    }
     setDraggedIndex(null)
     setDropTarget(null)
   }
@@ -335,7 +339,7 @@ const FieldSet = ({
 
   // The whole list (extended past its edges while dragging) accepts drops; beyond the first/last row the pointer decides
   const getEdgeDropTarget = (clientY) => {
-    const rows = accordianRef.current?.querySelectorAll(':scope > .fieldset-container[data-row]')
+    const rows = accordionRef.current?.querySelectorAll(':scope > .fieldset-container[data-row]')
     if (!rows?.length) return null
     const first = rows[0]
     const last = rows[rows.length - 1]
@@ -394,11 +398,20 @@ const FieldSet = ({
     }
   }
 
+
+  const infoData = fieldsetTotal ? getFieldsetInfoData(fieldsetTotal, formValues, name, t) : {}
+
+  const addButtonStyle = {};
+  if (infoData.count === 0) addButtonStyle.paddingLeft = 0;
+  if ((currentFieldset === name) && adding) addButtonStyle.color = "#000";
+
   return (
     <>
     <div className={`fieldset-main-container${draggedIndex === null ? '' : ' fieldset-main-container-dragging'}`}
-      ref={accordianRef} {...(disabled ? {} : listDropProps)}>
-    <div className='fieldset-info'>{fieldsetTotal ? getNumberOfFieldsets(fieldsetTotal, formValues, name, t) : ""}</div>
+      ref={accordionRef} {...(disabled ? {} : listDropProps)}>
+    <div className={'fieldset-info' + (!infoData.count > 0 ? ' no-fs-rows' : '')}>
+      {infoData?.label}
+    </div>
       {displayOrder.map((i) => (
         <React.Fragment key={`${name}-${i}`}>
           <FieldsetRow
@@ -455,6 +468,7 @@ const FieldSet = ({
         <Button
           className={`fieldset-button-add ${checking && projectUtils.hasFieldsetErrors(name, fields, attributeData) ? 'fieldset-internal-error' : null
             }`}
+          style={addButtonStyle}
           onClick={() => {
             refreshFieldset()
           }}

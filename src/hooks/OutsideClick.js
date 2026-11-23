@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 export const OutsideClick = (ref, callback) => {
   const handleClick = e => {
-    //Used for fieldset modify button not to close accordian, else if listens to click outside accordian
+    //Used for fieldset modify button not to close accordion, else if listens to click outside accordion
     if(ref?.current?.className === "fieldset-main-container" && e?.target?.textContent === "Muokkaa"){
       return false
     }

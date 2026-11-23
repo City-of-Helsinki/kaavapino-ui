@@ -6,10 +6,10 @@ const InputLockedMessage = ({ t, lockStatus, isFieldsetRow=false }) => {
   const { user_name, user_email } = lockStatus?.lockStyle?.lockData?.attribute_lock || {};
   if (isFieldsetRow) {
     return (
-      <span className="input-locked-fieldset">
+      <div className="input-locked-fieldset">
         <IconLock />
-        {t('project.field-locked-by-user', { userName: user_name, userEmail: user_email })}
-      </span>
+        {t('project.fieldset-locked-by-user', { userName: user_name, userEmail: user_email })}
+      </div>
     )
   }
   return (

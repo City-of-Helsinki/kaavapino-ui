@@ -100,6 +100,7 @@ const FieldsetReorderControl = ({ enabled, position, total, onMove, onDragStart,
         className='fieldset-drag-handle'
         draggable={enabled}
         aria-disabled={!enabled}
+        tabIndex={enabled ? 0 : -1}
         aria-haspopup="menu"
         aria-expanded={showMenu}
         aria-controls={showMenu ? menuId : undefined}
