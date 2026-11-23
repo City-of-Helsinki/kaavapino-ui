@@ -978,8 +978,13 @@
       cursor: grabbing;
     }
 
+    &:hover svg{
+      background-color: $color-bus-medium-light;
+    }
+
     &[aria-expanded="true"],
     &:active:where([aria-disabled="false"]) {
+      outline: 2px solid $color-coat-of-arms;
       svg {
         background-color: $color-bus-medium-light;
       }
@@ -988,6 +993,9 @@
     &[aria-disabled="true"] {
       color: $color-black-40;
       cursor: not-allowed;
+      &:hover svg {
+        background-color: #fff;
+      }
     }
 
     &:focus-visible {
@@ -1007,6 +1015,7 @@
   }
 
   .fieldset-drag-handle[draggable="true"] {
+    outline: none;
     svg {
       color: $color-white;
       background-color: $color-coat-of-arms;
