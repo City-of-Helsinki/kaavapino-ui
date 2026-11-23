@@ -238,7 +238,7 @@ const FieldSet = ({
     if (expandedArray.includes(i)) {
       expandedArray = closeAccordion(i, expandedArray);
     } else {
-      if (lastSaved?.status === 'error') {
+      if (lastSaved?.status !== 'error') {
         // Opening fieldset - fetch data only if no validation errors in this fieldset
         // This preserves user's invalid input so they can fix it
         const hasFieldsetErrors = formErrors?.some(errorFieldName =>
