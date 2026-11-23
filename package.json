@@ -14,7 +14,7 @@
     "hds-core": "2.12.1",
     "hds-react": "2.12.1",
     "html-react-parser": "^3.0.12",
-    "i18next": "^22.4.11",
+    "i18next": "^26.3.4",
     "i18next-browser-languagedetector": "^7.0.1",
     "i18next-http-backend": "^4.0.2",
     "ip-regex": "^5.0.0",
