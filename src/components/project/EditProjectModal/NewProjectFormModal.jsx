@@ -177,6 +177,11 @@ class NewProjectFormModal extends Component {
           {isEdit ? t('project-base.modify') : t('project-base.add')}
         </Modal.Header>
         <Modal.Content as="section">
+          { isEdit &&
+            <section className="project-form-info-edit">
+              <p>{t('project-base.info-edit-data')}</p>
+            </section>
+          }
           <Form>
             <Form.Group widths="equal" as="section">
               {this.getFormField({
