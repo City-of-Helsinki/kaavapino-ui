@@ -97,8 +97,8 @@
       "dec": "Joulu"
     },
     "now": "Tänään",
-    "deadline-label": "{{date}}.{{month}} määräa. ",
-    "kylk-message": "{{date}}.{{month}} Kylk",
+    "deadline-label": "Määräaika",
+    "kylk-message": "KYLK",
     "shown": "nähtävillä",
     "reset-project-deadlines": "Tyhjennä aikataulut",
     "reset-confirm-dialog-title": "Aikataulujen uudelleen luominen",

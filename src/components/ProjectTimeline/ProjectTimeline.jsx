@@ -226,17 +226,16 @@ function ProjectTimeline(props) {
     let milestoneType = [];
     let listKey = 0;
     const square_color = monthDate.midpoint?.phase_name === "Tarkistettu ehdotus" ? "white" : "black";
+    console.log(monthDate)
     monthDate.milestone_types.forEach(milestone_type => {
       switch (milestone_type) {
         case 'dashed_start':
           if (monthDate.milestone_types.includes('milestone')) {
             showMessage = (
-              <span className="milestone-message">
-                {t('deadlines.deadline-label', {
-                  date: date.date(),
-                  month: date.month() + 1
-                })}
-              </span>
+              <div className="milestone-message">
+                <span className="milestone-message-date">{`${date.date()}.${date.month() + 1}`}</span>
+                <span className="milestone-message-label">{t('deadlines.deadline-label')}</span>
+              </div>
             );
           }
           milestoneType.push(
@@ -252,15 +251,12 @@ function ProjectTimeline(props) {
         case 'dashed_end':
           if (monthDate.milestone_types.includes('milestone')) {
             showMessage = (
-              <span
-                className={`milestone-message ${monthDate.milestone_space < 6 ? 'under' : ''
-                  }`}
+              <div
+                className={`milestone-message ${monthDate.milestone_space < 6 ? 'under' : ''}`}
               >
-                {t('deadlines.kylk-message', {
-                  date: date.date(),
-                  month: date.month() + 1
-                })}
-              </span>
+                <span className="milestone-message-date">{`${date.date()}.${date.month() + 1}`}</span>
+                <span className="milestone-message-label">{t('deadlines.kylk-message')}</span>
+              </div>
             );
             milestoneType.push(
               <div key={listKey++} className="milestone-icon sphere black" />
