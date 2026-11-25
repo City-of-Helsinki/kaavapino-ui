@@ -79,7 +79,7 @@ const getValueName = (values, fields, t) => {
     valueType = getCorrectValueType(values, valueNameKey);
   }
 
-  return valueType || <span className='italic'>{t('project.fieldset-missing-value')}</span>;
+  return valueType || t('project.fieldset-missing-value');
 };
 
 const getFieldsetInfoData = (fieldsetTotal, formValues, name, t) => {

@@ -11,7 +11,7 @@ const setHeaderDragImage = (handle, dataTransfer) => {
   requestAnimationFrame(() => header.classList.remove('fieldset-drag-image'))
 }
 
-const FieldsetReorderControl = ({ enabled, position, total, onMove, onDragStart, onDragEnd }) => {
+const FieldsetReorderControl = ({ enabled, position, total, onMove, onDragStart, onDragEnd, rowTitle }) => {
   const { t } = useTranslation()
   const [menuOpen, setMenuOpen] = useState(false)
   const [tooltipVisible, setTooltipVisible] = useState(false)
@@ -105,7 +105,7 @@ const FieldsetReorderControl = ({ enabled, position, total, onMove, onDragStart,
         aria-expanded={showMenu}
         aria-controls={showMenu ? menuId : undefined}
         aria-describedby={showTooltip ? tooltipId : undefined}
-        aria-label={t('project.fieldset-reorder-handle', { position: position + 1, total })}
+        aria-label={t('project.fieldset-reorder-handle', { title: rowTitle })}
         title={enabled ? t('project.fieldset-reorder-handle-title') : undefined}
         onFocus={() => setTooltipVisible(true)}
         onBlur={() => setTooltipVisible(false)}

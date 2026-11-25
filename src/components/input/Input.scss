@@ -660,8 +660,8 @@
     }
   }
 
-  // Drawn inside the button so the panel or next row can't cover it; keyboard focus only
-  .accordion-button:focus-visible,.accordion-button-open:focus-visible{
+  // Drawn inside the button so the panel or next row can't cover it
+  .accordion-button:focus,.accordion-button-open:focus{
     outline: 3px solid $color-coat-of-arms;
     outline-offset: -3px;
     padding-left: 3px;
@@ -785,6 +785,24 @@
       padding-bottom: 10px;
       pointer-events: all;
       height: 44px;
+      .close-accordion-button{
+        font-family: "Helsinki Grotesk Medium", sans-serif;
+        font-size: $size14;
+        font-weight: 500;
+        line-height: 24px;
+        color: $color-black-90;
+        height: 100%;
+        padding-left: 6px;
+        padding-right: 6px;
+        justify-content: center;
+        span {
+          padding-left: 0;
+        }
+        div {
+          margin-right:0;
+        }
+      }
+      /*
       button {
         cursor: pointer;
         font-family: "Helsinki Grotesk Medium", sans-serif;
@@ -797,15 +815,7 @@
         background-color: transparent;
         border: none;
               pointer-events: all;
-        span{
-          pointer-events: none;
-          margin-right: 8px;
-        }
-
-      }
-      svg {
-        pointer-events: none;
-      }
+      }*/
     }
   }
 
@@ -950,7 +960,7 @@
       cursor: pointer;
 
       &:hover:not(:disabled) {
-        background: $color-bus-medium-light;
+        background: $color-bus-light;
       }
 
       &:focus-visible {
@@ -999,14 +1009,14 @@
     }
 
     &:hover svg{
-      background-color: $color-bus-medium-light;
+      background-color: $color-bus-light;
     }
 
     &[aria-expanded="true"],
     &:active:where([aria-disabled="false"]) {
       outline: 2px solid $color-coat-of-arms;
       svg {
-        background-color: $color-bus-medium-light;
+        background-color: $color-bus-light;
       }
     }
 
@@ -1096,7 +1106,6 @@
 }
 
 .fieldset-button-remove:not(:disabled) {
-
   color: $color-error;
   border-color: $color-error !important;
   background-color: $color-white;
@@ -1107,6 +1116,9 @@
   color: $color-error-dark;
   border-color: $color-error-dark !important;
   background-color: $color-error-light;
+  &:focus-visible {
+    color: #b01038;
+  }
 }
 
 .input-header + .fieldset-container {

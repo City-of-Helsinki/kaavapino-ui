@@ -339,7 +339,7 @@
     "fieldset-empty":"Ei lisättyjä {{label}}.",
     "fieldset-connection-restored-label":"Yhteys on palautunut",
     "fieldset-missing-value":"Tieto puuttuu",
-    "fieldset-reorder-handle":"Siirrä riviä {{position}}/{{total}}. Avaa siirtovalikko napsauttamalla tai siirrä raahaamalla tai nuolinäppäimillä ylös ja alas.",
+    "fieldset-reorder-handle":"Siirrä rivi {{title}}. Siirrä nuolinäppäimillä. Vahvista Enterillä.",
     "fieldset-reorder-handle-title":"Siirrä riviä",
     "fieldset-reorder-needs-rows":"Tarvitset vähintään kaksi riviä, jotta voit muuttaa rivien järjestystä.",
     "fieldset-reorder-top":"Siirrä ylimmäksi",

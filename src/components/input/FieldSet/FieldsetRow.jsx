@@ -74,7 +74,9 @@ const FieldsetRow = ({
   }
 
   const lockedMessage = fieldsetDisabled ? <InputLockedMessage t={t} lockStatus={lockStatus} isFieldsetRow={true} /> : <></>;
-  const contentElement = <><div className='accordion-header-text'>{getValueName(setValues, fields, t)}</div> {lockedMessage}</>
+  const rowTitle = getValueName(setValues, fields, t)
+  const titleElement = rowTitle ==  t('project.fieldset-missing-value') ? <span className='italic'>{rowTitle}</span> : rowTitle
+  const contentElement = <><div className='accordion-header-text'>{titleElement}</div> {lockedMessage}</>
 
   const shouldDisableAccordion = saving || hiding || adding || reordering
   const thisRowHasError = formErrors?.some(ef => ef.startsWith(`${set}.`))
@@ -104,7 +106,10 @@ const FieldsetRow = ({
       onAnimationEnd={(e) => { if (e.target === e.currentTarget) setEntering(false) }}>
       {reorder ? (
         <div className='fieldset-row-header'>
-          <FieldsetReorderControl {...reorder} />
+          <FieldsetReorderControl
+            rowTitle={rowTitle}
+            {...reorder}
+          />
           {accordionButton}
         </div>
       ) : accordionButton}
@@ -171,9 +176,15 @@ const FieldsetRow = ({
           </div>
         )}
         <div className='close-accordion-button-container'>
-          <button className='close-accordion-button' type="button" onClick={() => {onCloseAccordionClick(i)}}>
-            <span>Sulje</span><IconAngleUp size='s'/>
-          </button>
+          <Button 
+            className='close-accordion-button'
+            type="button"
+            onClick={() => {onCloseAccordionClick(i)}}
+            iconRight={<IconAngleUp size='s'/>}
+            variant="supplementary"
+          >
+            Sulje
+          </Button>
         </div>
       </div>
     </div>
