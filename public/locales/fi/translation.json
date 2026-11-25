@@ -467,7 +467,7 @@
       "draft": "Kaavaluonnos",
       "project-type": "Projektin tyyppi"
     },
-    "info-edit-data": "Projektin vastuuhenkilö ja pääkäyttäjä voivat muokata projektin luontitietoja. Jos vastuuhenkilöä pitää vaihtaa, ota yhteys kaavoitussihteeriin.",
+    "responsible-help": "Projektin vastuuhenkilö ja pääkäyttäjä voivat muokata projektin luontitietoja. Jos vastuuhenkilöä pitää vaihtaa, ota yhteys kaavoitussihteeriin.",
     "warning-process-change": "Huom. Kun prosessi vaihtuu, vain ne Kaavapinoon syötetyt tiedot jäävät näkyviin, jotka kuuluvat valittuun prosessiin.",
     "warning-visibility-change": "Huom. Aiemmin ei-näkyväksi merkityn projektin tiedot muuttuvat näkyviksi kaikille Kaavapinon käyttäjille.",
     "choose-title": "Valitse laaditaanko"
