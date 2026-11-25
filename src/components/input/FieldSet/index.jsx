@@ -317,10 +317,6 @@ const FieldSet = ({
     !lockedByOtherUser && lastSaved?.status !== 'error' && !(formErrors?.length > 0) && !shouldDisableForErrors
 
   const clearDragState = () => {
-    const visiblePosition = visibleOrder.indexOf(dropTarget?.index)
-    if (visiblePosition !== -1){
-      document.body.ariaNotify(t('project.fieldset-reordered', {to: dropTarget?.index, total: visibleOrder.length}))
-    }
     setDraggedIndex(null)
     setDropTarget(null)
   }
@@ -329,6 +325,13 @@ const FieldSet = ({
     const newOrder = moveFieldsetRow(visibleOrder, visibleOrder.indexOf(fromIndex), toPosition)
     if (canReorder && newOrder !== visibleOrder) {
       requestReorder(newOrder)
+      const handle = accordionRef.current?.querySelector(
+        `:scope > .fieldset-container[data-row="${fromIndex}"] .fieldset-drag-handle`
+      )
+      handle?.ariaNotify?.(
+        t('project.fieldset-reordered', { to: toPosition + 1, total: visibleOrder.length }),
+        { priority: 'high' }
+      )
     }
   }
 

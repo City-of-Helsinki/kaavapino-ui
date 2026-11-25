@@ -663,8 +663,7 @@
   // Drawn inside the button so the panel or next row can't cover it
   .accordion-button:focus,.accordion-button-open:focus{
     outline: 3px solid $color-coat-of-arms;
-    outline-offset: -3px;
-    padding-left: 3px;
+    outline-offset: 0px;
   }
 
   .accordion-button > * {
@@ -1116,8 +1115,8 @@
   color: $color-error-dark;
   border-color: $color-error-dark !important;
   background-color: $color-error-light;
-  &:focus-visible {
-    color: #b01038;
+  &:focus-visible,&:active {
+    color: #b01038 !important;
   }
 }
 
