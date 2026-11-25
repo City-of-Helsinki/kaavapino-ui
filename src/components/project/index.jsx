@@ -172,7 +172,7 @@ class ProjectPage extends Component {
           pwnumber={currentProject?.attribute_data?.hankenumero}
           pwlink={allEditFields?.pw_urn}
           location={this.props.location}
-          actions={this.getEditNavActions(isExpert, editViewLoading)}
+          actions={this.getEditNavActions(isTheResponsiblePerson, editViewLoading)}
           infoOptions={this.getAllChanges()}
         />
         <NewProjectFormModal
@@ -386,19 +386,27 @@ class ProjectPage extends Component {
     })
   }
 
-  getEditNavActions = (isUserExpert, editViewLoading) => {
+  getEditNavActions = (isUserResponsibleOrAdmin, editViewLoading) => {
     const { t } = this.props
-    const options = [
-      {value: 1, label: this.getNavOptionLabel(<><i className="icons document-icon"></i>{t('project.create-documents')}</>, t('project.create-documents'))},
-      {value: 2, label: this.getNavOptionLabel(<><i className="icons calendar-icon"></i>{t('deadlines.title')}</>, t('deadlines.title'))},
-      {value: 3, label: this.getNavOptionLabel(<><i className="icons company-icon"></i>{t('floor-areas.title')}</>, t('floor-areas.title'))},
-      {value: 4, label: this.getNavOptionLabel(<><i className="icons download-icon"></i>{t('project.download-old-data')}</>, t('project.download-old-data'))},
-      {value: 5, label: this.getNavOptionLabel(<><i className="icons pen-icon"></i>{t('project.modify-project-base')}</>, t('project.modify-project-base'))},
+    const actionLabels = [
+      {view: t('project.view-documents'), edit: t('project.create-documents'), iconClass: "icons document-icon"},
+      {view: t('deadlines.button-title-view'), edit: t('deadlines.button-title'), iconClass: "icons calendar-icon"},
+      {view: t('floor-areas.button-title-view'), edit: t('floor-areas.button-title'), iconClass: "icons company-icon"},
+      {view: t('project.download-old-data'), edit: t('project.download-old-data'), iconClass: "icons download-icon"},
+      {view: t('project.view-project-base'), edit: t('project.modify-project-base'), iconClass: isUserResponsibleOrAdmin ? "icons pen-icon" : "icons view-icon"},
     ]
-    //{value:6,label:<><i className="icons trash-icon"></i>{t('deadlines.reset-project-deadlines')}</>} removed for now, need will be reavaluated after 1.1.
+
+    const perm = isUserResponsibleOrAdmin ? "edit" : "view";
+    const options = actionLabels.map((a, i) => {
+      const labelText = a[perm];
+      return {
+        value: i + 1,
+        label: this.getNavOptionLabel(<> <i className={a.iconClass}/> {labelText} </>, labelText)
+      };
+    })
+
     return (
       <span className="header-buttons">
-        {isUserExpert && (
         <Select
           size="small"
           className='edit-view-select'
@@ -409,7 +417,6 @@ class ProjectPage extends Component {
           onChange={this.changeOptions}
           disabled={editViewLoading}
         />
-        )}
       </span>
     )
   }
