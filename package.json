@@ -3,11 +3,11 @@
   "version": "1.1.4",
   "private": true,
   "engines": {
-    "node": ">=20.19 <21 || >=22.12"
+    "node": ">=22.23.4"
   },
   "dependencies": {
     "@sentry/browser": "^7.119.1",
-    "axios": "^1.18.0",
+    "axios": "^1.20.0",
     "connected-react-router": "^6.9.1",
     "dayjs": "^1.10.4",
     "file-saver": "^2.0.5",
@@ -16,12 +16,12 @@
     "html-react-parser": "^3.0.12",
     "i18next": "^22.4.11",
     "i18next-browser-languagedetector": "^7.0.1",
-    "i18next-http-backend": "^3.0.5",
+    "i18next-http-backend": "^4.0.2",
     "ip-regex": "^5.0.0",
     "is-url": "^1.2.4",
     "jsdom": "^26.1.0",
     "leaflet": "^1.7.1",
-    "moment": "^2.29.1",
+    "moment": "^2.31.0",
     "moment-range": "^4.0.2",
     "oidc-client-ts": "^3.0.1",
     "proj4": "^2.7.2",
@@ -105,9 +105,9 @@
     "redux-mock-store": "^1.5.4",
     "sass": "^1.89.2",
     "sass-embedded": "^1.89.2",
-    "vite": "^7.3.5",
+    "vite": "^7.3.7",
     "vite-plugin-svgr": "^4.3.0",
-    "vitest": "^4.1.0",
+    "vitest": "^4.1.11",
     "vitest-dom": "^0.1.1"
   },
   "proxy": "http://localhost:8000",

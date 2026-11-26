@@ -72,6 +72,7 @@
   "deadlines": {
     "title": "Päivitä aikataulut",
     "button-title": "Päivitä aikataulut",
+    "button-title-view": "Katsele aikatauluja",
     "error": "Virhe: {{error}}",
     "warning": "Päivitettyjen aikataulutietojen tallentaminen saattaa kestää hieman pidempään kun Kaavapino tekee laskutoimituksia.",
     "estimated": "Kaavapinon arvio",
@@ -112,7 +113,7 @@
     "project-start-meeting-title": "Projektin aloituskokous",
     "project-opinions-latest-title": "{{phase}}-vaiheen aineiston mielipiteiden määräaika",
     "phase-closed":"Uusia rivejä ei voi lisätä, koska vaihe on lopetettu.",
-    "phase-locked":"Uusia rivejä ei voi lisätä, koska vaihe on lukittu.",
+    "phase-locked":"Uusia rivejä ei voi lisätä lukitulle alueelle.",
     "new-esillaolo":"Lisää uusi esilläolo",
     "delete-esillaolo":"Poista esilläolo",
     "esillaolo-next-confirmed": "Esilläoloa ei voi lisätä, koska seuraava lautakunta on jo vahvistettu.",
@@ -124,6 +125,9 @@
     "esillaolo-max": "Esilläolojen enimmäismäärä on saavutettu.",
     "nahtavillaolo-max": "Nähtävilläolojen enimmäismäärä on saavutettu.",
     "lautakunta-max": "Lautakuntien enimmäismäärä on saavutettu.",
+    "esillaolo-locked": "Esilläoloa ei voi lisätä, sillä vaihe on lukittu.",
+    "nahtavillaolo-locked": "Nähtävilläoloa ei voi lisätä, sillä vaihe on lukittu.",
+    "lautakunta-locked": "Lautakuntaa ei voi lisätä, sillä vaihe on lukittu.",
     "delete-phase-closed":"Riviä ei voi poistaa, koska vaihe on lopetettu.",
     "delete-confirmed-esillaolo":"Riviä ei voi poistaa, koska esilläolo on vahvistettu.",
     "delete-confirmed-lautakunta": "Riviä ei voi poistaa, koska lautakunta on vahvistettu.",
@@ -131,6 +135,10 @@
     "delete-first-esillaolo":"Riviä ei voi poistaa, koska vaiheen ensimmäinen esilläolo on pakollinen.",
     "delete-first-lautakunta":"Riviä ei voi poistaa, koska vaiheen ensimmäinen lautakunta on pakollinen.",
     "delete-first-nahtavillaolo":"Riviä ei voi poistaa, koska vaiheen ensimmäinen nähtävilläolo on pakollinen.",
+    "delete-locked":"Riviä ei voi poistaa, sillä elementtirivi on lukittu.",
+    "delete-above-locked": "Riviä ei voi poistaa, koska ylempänä oleva rivi on lukittu.",
+    "lock-another-locked":"Riviä ei voi lukita, koska toinen rivi on jo lukittu.",
+    "lock-phase-closed":" Riviä ei voi lukita, koska vaihe on lopetettu.",
     "timeline-group-header": "Vaiheiden etapit",
     "modify-timeline":"Muokkaa aikataulua",
     "edit-deadline-section": "Muokkaa aikataulutietoja",
@@ -145,7 +153,9 @@
       "lautakuntaInPast": "Vahvistusta ei voi perua, koska lautakunta sijaitsee menneessä ajanhetkessä.",
       "anyPastConfirmed": "Vahvistusta ei voi perua, koska päivämäärä on menneisyydessä.",
       "anyPast": "Päivämäärää ei voi vahvistaa, koska se sijaitsee menneisyydessä.",
-      "disableConfirmButton": "Vahvistusta ei voi perua, koska seuraava {{nextGroupWord}} on jo lisätty."
+      "disableConfirmButton": "Vahvistusta ei voi perua, koska seuraava {{nextGroupWord}} on jo lisätty.",
+      "groupLocked": "Vahvistusta ei voi tehdä, koska aikajanan alue on lukittu.",
+      "groupLockedConfirmed": "Vahvistusta ei voi perua, koska aikajanan alue on lukittu."
     },
     "aria": {
       "move-timeline-forward": "Siirry aikajanalla eteenpäin",
@@ -233,13 +243,15 @@
     "error-connection":"Tallennus epäonnistui yhteysongelmia takia. Yritetään uudelleen 10 sekunnin kuluttua.",
     "error-connection-fail":"Tallennus keskeytyi yhteysongelmia takia.",
     "validation-error":"Päivämäärien tarkistus epäonnistui",
+    "timeline-locked-rejected":"Aikataulun muutos hylättiin, koska lukittu ryhmä estää muutoksen. Aikataulu on palautettu edelliseen tilaan.",
     "session-expiring": "Istuntosi vanhenee {{timer}} kuluttua.",
     "extend-session": "Jatka istuntoa",
     "session-extended": "Istuntoa jatkettu"
   },
   "floor-areas": {
     "title": "Päivitä kerrosalatiedot",
-    "button-title": "Päivitä kerrosalatiedot"
+    "button-title": "Päivitä kerrosalatiedot",
+    "button-title-view": "Katsele kerrosalatietoja"
   },
   "file": {
     "remove-question": "Oletko varma, että haluat poistaa tiedoston {{current}}",
@@ -270,6 +282,7 @@
     "save": "Tallenna",
     "create-project": "Luo projekti",
     "create-documents": "Luo dokumentteja",
+    "view-documents": "Katsele dokumentteja",
     "print-project-card": "Lataa projektikortti",
     "deadlines": "Määräajat",
     "modify-project": "Muokkaa luontitietoja",
@@ -328,6 +341,7 @@
     "total":"Yhteensä",
     "found-projects":"projektia.",
     "download-old-data":"Lataa vanhoja projektitietoja",
+    "view-project-base": "Katsele projektin luontitietoja",
     "modify-project-base":"Muokkaa projektin luontitietoja",
     "header-text":"Kentän tieto siirtyy seuraaviin paikkoihin: ",
     "charsover":"Merkkimäärä ylittyi. Lyhennä tekstiä – muuten muutoksia ei tallenneta.",
@@ -339,6 +353,13 @@
     "fieldset-empty":"Ei lisättyjä {{label}}.",
     "fieldset-connection-restored-label":"Yhteys on palautunut",
     "fieldset-missing-value":"Tieto puuttuu",
+    "fieldset-reorder-handle":"Siirrä rivi {{title}}. Siirrä nuolinäppäimillä. Vahvista Enterillä.",
+    "fieldset-reorder-handle-title":"Siirrä riviä",
+    "fieldset-reorder-needs-rows":"Tarvitset vähintään kaksi riviä, jotta voit muuttaa rivien järjestystä.",
+    "fieldset-reorder-top":"Siirrä ylimmäksi",
+    "fieldset-reorder-up":"Siirrä ylös",
+    "fieldset-reorder-down":"Siirrä alas",
+    "fieldset-reorder-bottom":"Siirrä alimmaksi",
     "no-fields":"Suodatinvalinnalla ei löytynyt tämän otsikon alta suodatettavia kenttiä.",
     "link-to-map":"Siirry Karttapalveluun projektin tietoihin",
     "add-new-board":"Lisää lautakunta",
@@ -351,9 +372,15 @@
     "filters": "Suodattimet",
     "edit-filters": "Muokkaa suodattimia",
     "remove-filters": "Poista kaikki valinnat",
-    "field-locked-by-user": "Käyttäjä {{userName}} ({{userEmail}}) on muokkaamassa kenttää",
+    "field-locked-by-user": "Käyttäjä {{userName}} ({{userEmail}}) on muokkaamassa kenttää.",
+    "fieldset-locked-by-user": "Käyttäjä {{userName}} ({{userEmail}}) on muokkaamassa tietoja.",
+    "fieldset-reordered": "Rivi siirretty riville {{to}} / {{total}}",
     "rolling-info": "Tieto siirtyy vaiheiden välillä ja sitä voi täydentää",
-    "auto-generated-info": "Tieto on automaattisesti muodostettu"
+    "auto-generated-info": "Tieto on automaattisesti muodostettu",
+    "presence-not-fit": "Esilläolo ei sovi aikajanalle lukituksen vuoksi.",
+    "review-not-fit": "Nähtävilläolo ei sovi aikajanalle lukituksen vuoksi.",
+    "board-not-fit": "Lautakunta ei sovi aikajanalle lukituksen vuoksi.",
+    "element-not-fit": "Etappi ei sovi aikajanalle lukituksen vuoksi."
   },
   "nav-header": {
     "latest-update": "Viimeisin muokkaus: {{latestUpdate}}",
@@ -454,6 +481,7 @@
       "draft": "Kaavaluonnos",
       "project-type": "Projektin tyyppi"
     },
+    "responsible-help": "Projektin vastuuhenkilö ja pääkäyttäjä voivat muokata projektin luontitietoja. Jos vastuuhenkilöä pitää vaihtaa, ota yhteys kaavoitussihteeriin.",
     "warning-process-change": "Huom. Kun prosessi vaihtuu, vain ne Kaavapinoon syötetyt tiedot jäävät näkyviin, jotka kuuluvat valittuun prosessiin.",
     "warning-visibility-change": "Huom. Aiemmin ei-näkyväksi merkityn projektin tiedot muuttuvat näkyviksi kaikille Kaavapinon käyttäjille.",
     "choose-title": "Valitse laaditaanko"

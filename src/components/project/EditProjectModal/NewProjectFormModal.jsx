@@ -216,7 +216,8 @@ class NewProjectFormModal extends Component {
                   label: t('project-base.labels.responsible'),
                   type: 'search-select',
                   choices: this.formatUsers(),
-                  editable: isEditable
+                  editable: isEditable,
+                  help_text: t('project-base.responsible-help')
                 }
               })}
             </Form.Group>

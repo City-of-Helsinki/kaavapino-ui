@@ -1,6 +1,4 @@
 # kaavapino-ui
-[![Build Status](https://travis-ci.com/City-of-Helsinki/kaavapino-ui.svg?branch=master)](https://travis-ci.com/City-of-Helsinki/kaavapino-ui)
-[![codecov](https://codecov.io/gh/City-of-Helsinki/kaavapino-ui/branch/master/graph/badge.svg)](https://codecov.io/gh/City-of-Helsinki/kaavapino-ui)
 
 UI for editing city planning projects in [Kaavapino API](https://github.com/City-of-Helsinki/kaavapino)
 
@@ -65,13 +63,4 @@ If not working try (Windows):
 ```
 docker exec -it kaavapino-api /bin/bash
 python manage.py import_attributes päivittyvä_Kaavaprojektitiedot.xlsx
-```
-
-## Deploy staging
-
-Install kubectl locally. Check version and run:
-```
-#> pwd
-... kaavapino/web/deploy/rancher
-#> ./deploy_staging_web.sh web:<version> run
 ```
