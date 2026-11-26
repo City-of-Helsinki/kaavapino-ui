@@ -111,6 +111,12 @@
           flex-direction: column;
           .milestone-message-label {
             font-family: "Helsinki Grotesk Regular", sans-serif;
+            inline-size: max-content;
+            writing-mode: horizontal-tb;
+          }
+          .milestone-message-date {
+            inline-size: max-content;
+            writing-mode: horizontal-tb;
           }
         }
         .milestone-icon {
@@ -201,6 +207,7 @@
           border: 1px solid $color-metro;
           margin-top: -56px;
           span {
+            position: relative;
             left: 1.25rem;
             top: 1rem;
             color: $color-black-90;
