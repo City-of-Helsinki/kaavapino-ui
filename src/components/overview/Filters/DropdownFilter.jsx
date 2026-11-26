@@ -42,6 +42,7 @@ function DropdownFilter({
       id={id}
       multiselect={multiSelect}
       options={options}
+      value={currentValue}
       onBlur={() => {
         onChange(currentValue, currentParameter)
       }}

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Tooltip,IconLinkExternal } from 'hds-react'
+import { Tooltip, IconLinkExternal } from 'hds-react'
 import { useTranslation } from 'react-i18next'
 
 const InfoContent = props => {
@@ -28,7 +28,7 @@ const InfoContent = props => {
 
   return (
     <React.Fragment>
-      <span className="content">{props.content}</span>
+      <span>{props.content}</span>
       {props.link && createInfoLinks()}
       {props.help_img_link && (
         <div className='img-link-container' key={props.help_img_link}>
@@ -54,7 +54,7 @@ const InfoContent = props => {
 }
 
 const Info = props => (
-  <Tooltip tooltipClassName={"tooltip"} placement="auto">
+  <Tooltip tooltipClassName={"tooltip"} placement={props.placement || "auto"}>
     <InfoContent content={props.content} link={props.link} linked={props.linked} help_img_link={props.help_img_link}/>
   </Tooltip>
 )

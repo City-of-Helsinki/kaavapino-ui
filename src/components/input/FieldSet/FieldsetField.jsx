@@ -1,7 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Form, Label } from 'semantic-ui-react';
-import InputLockedMessage from '../InputLockedMessage.jsx';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { checkingSelector, formErrorListSelector } from '../../../selectors/projectSelector.js';
@@ -74,25 +73,18 @@ const FieldsetField = ({
   const isLastSavedOrErrorField = (lastSavedChildField === currentName || (!lastSavedChildField && formErrors.includes(currentName)));
   const isNetworkErrorField = isThisFieldsetNetworkError && isLastSavedOrErrorField;
 
-  const getLockedFieldComponent = () => {
-    if (lockStatus?.lockStyle && !lockStatus?.owner && lockStatus?.fieldIdentifier === currentName) {
-      return ( <InputLockedMessage t={t} lockStatus={lockStatus} /> );
-    }
-    return null;
-  };
   const getInputHeader = () => {
     return (
-    <div className="input-header">
+    <div className="input-header fieldset-input-header">
       <Label className={`input-title${required ? ' highlight' : ''} ${errorText ? 'error' : ''}`}>
         {title}
-        {getLockedFieldComponent()}
       </Label>
       <div className="input-header-icons">
         {!isReadOnly && (
           inputUtils.renderUpdatedFieldInfo({ savingField, fieldName: currentName, updated: null, t, isFieldset: false, testingConnection })
         )}
         {field.help_text && (
-          <Info content={field.help_text} link={field.help_link} linked={field.linked_fields} help_img_link={field.help_img_link} />
+          <Info content={field.help_text} link={field.help_link} linked={field.linked_fields} help_img_link={field.help_img_link} placement="left-start" />
         )}
       </div>
     </div>

@@ -72,6 +72,7 @@
   "deadlines": {
     "title": "Päivitä aikataulut",
     "button-title": "Päivitä aikataulut",
+    "button-title-view": "Katsele aikatauluja",
     "error": "Virhe: {{error}}",
     "warning": "Päivitettyjen aikataulutietojen tallentaminen saattaa kestää hieman pidempään kun Kaavapino tekee laskutoimituksia.",
     "estimated": "Kaavapinon arvio",
@@ -249,7 +250,8 @@
   },
   "floor-areas": {
     "title": "Päivitä kerrosalatiedot",
-    "button-title": "Päivitä kerrosalatiedot"
+    "button-title": "Päivitä kerrosalatiedot",
+    "button-title-view": "Katsele kerrosalatietoja"
   },
   "file": {
     "remove-question": "Oletko varma, että haluat poistaa tiedoston {{current}}",
@@ -280,6 +282,7 @@
     "save": "Tallenna",
     "create-project": "Luo projekti",
     "create-documents": "Luo dokumentteja",
+    "view-documents": "Katsele dokumentteja",
     "print-project-card": "Lataa projektikortti",
     "deadlines": "Määräajat",
     "modify-project": "Muokkaa luontitietoja",
@@ -338,6 +341,7 @@
     "total":"Yhteensä",
     "found-projects":"projektia.",
     "download-old-data":"Lataa vanhoja projektitietoja",
+    "view-project-base": "Katsele projektin luontitietoja",
     "modify-project-base":"Muokkaa projektin luontitietoja",
     "header-text":"Kentän tieto siirtyy seuraaviin paikkoihin: ",
     "charsover":"Merkkimäärä ylittyi. Lyhennä tekstiä – muuten muutoksia ei tallenneta.",
@@ -349,6 +353,13 @@
     "fieldset-empty":"Ei lisättyjä {{label}}.",
     "fieldset-connection-restored-label":"Yhteys on palautunut",
     "fieldset-missing-value":"Tieto puuttuu",
+    "fieldset-reorder-handle":"Siirrä rivi {{title}}. Siirrä nuolinäppäimillä. Vahvista Enterillä.",
+    "fieldset-reorder-handle-title":"Siirrä riviä",
+    "fieldset-reorder-needs-rows":"Tarvitset vähintään kaksi riviä, jotta voit muuttaa rivien järjestystä.",
+    "fieldset-reorder-top":"Siirrä ylimmäksi",
+    "fieldset-reorder-up":"Siirrä ylös",
+    "fieldset-reorder-down":"Siirrä alas",
+    "fieldset-reorder-bottom":"Siirrä alimmaksi",
     "no-fields":"Suodatinvalinnalla ei löytynyt tämän otsikon alta suodatettavia kenttiä.",
     "link-to-map":"Siirry Karttapalveluun projektin tietoihin",
     "add-new-board":"Lisää lautakunta",
@@ -361,7 +372,9 @@
     "filters": "Suodattimet",
     "edit-filters": "Muokkaa suodattimia",
     "remove-filters": "Poista kaikki valinnat",
-    "field-locked-by-user": "Käyttäjä {{userName}} ({{userEmail}}) on muokkaamassa kenttää",
+    "field-locked-by-user": "Käyttäjä {{userName}} ({{userEmail}}) on muokkaamassa kenttää.",
+    "fieldset-locked-by-user": "Käyttäjä {{userName}} ({{userEmail}}) on muokkaamassa tietoja.",
+    "fieldset-reordered": "Rivi siirretty riville {{to}} / {{total}}",
     "rolling-info": "Tieto siirtyy vaiheiden välillä ja sitä voi täydentää",
     "auto-generated-info": "Tieto on automaattisesti muodostettu",
     "presence-not-fit": "Esilläolo ei sovi aikajanalle lukituksen vuoksi.",
@@ -468,6 +481,7 @@
       "draft": "Kaavaluonnos",
       "project-type": "Projektin tyyppi"
     },
+    "responsible-help": "Projektin vastuuhenkilö ja pääkäyttäjä voivat muokata projektin luontitietoja. Jos vastuuhenkilöä pitää vaihtaa, ota yhteys kaavoitussihteeriin.",
     "warning-process-change": "Huom. Kun prosessi vaihtuu, vain ne Kaavapinoon syötetyt tiedot jäävät näkyviin, jotka kuuluvat valittuun prosessiin.",
     "warning-visibility-change": "Huom. Aiemmin ei-näkyväksi merkityn projektin tiedot muuttuvat näkyviksi kaikille Kaavapinon käyttäjille.",
     "choose-title": "Valitse laaditaanko"
