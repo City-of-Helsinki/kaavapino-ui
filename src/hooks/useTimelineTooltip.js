@@ -2,31 +2,19 @@ import { useEffect, useRef } from 'react';
 
 /**
  * Extracts and formats line name from CSS class name
- * Handles special cases for phase detail rows (_1 suffix)
  * @param {string} className - CSS class name to parse
  * @returns {string} Formatted line name
  */
 function getLineNameFromClassName(className) {
   if (!className) return '';
 
-  // Phase detail rows (_1 suffix) always show generic label
-  if (className.endsWith('_1') || className.includes('_1 ')) {
-    return 'Vaiheen lisätiedot';
-  }
 
-  // Known phase type mappings (handles both with and without umlauts)
   const phaseTypeLabels = new Map([
-    ['kaynnistys', 'Käynnistys'],
-    ['käynnistys', 'Käynnistys'],
-    ['voimaantulo', 'Voimaantulo'],
-    ['hyvaksyminen', 'Hyväksyminen'],
-    ['hyväksyminen', 'Hyväksyminen'],
     ['esillaolo', 'Esilläolo'],
     ['nahtavillaolo', 'Nähtävilläolo'],
     ['lautakunta', 'Lautakunta']
   ]);
-
-  // Try to find matching phase type in className
+  
   let label = '';
   for (const [key, value] of phaseTypeLabels) {
     if (className.includes(key)) {
@@ -35,8 +23,10 @@ function getLineNameFromClassName(className) {
     }
   }
 
-  // Fallback: capitalize first letter and format
   if (!label) {
+    if (className.endsWith('_1') || className.includes('_1 ')) {
+      return 'Vaiheen lisätiedot';
+    }
     label = className.charAt(0).toUpperCase() + className.slice(1).replaceAll('_', ' ');
   }
 
