@@ -208,11 +208,12 @@
           margin-top: -56px;
           span {
             position: relative;
-            left: 1.25rem;
-            top: 1rem;
+            left: $size4;
+            top: 2.25rem;
             color: $color-black-90;
             margin-top: -34px;
             font-weight: 700;
+            font-family: "Helsinki Grotesk Bold", sans-serif;
             font-size: $size14;
           }
         }
