@@ -143,7 +143,7 @@ function ProjectTimeline(props) {
     setDrawMonths([...drawableMonths])
     return totalColumns
   }
-  function createDrawItem(monthDate, property) {
+  function createDrawItem(monthDate, property, nextInnerEndDate=null) {
     const phaseEndpoint = monthDate[property]
     const buildDeadlineItem = (item, monthDate, styles, className, showDeadlineName) => {
       return (
@@ -157,7 +157,7 @@ function ProjectTimeline(props) {
               {item.phase_name}
             </span>
           )}
-          {monthDate.milestone && createMilestoneItem(monthDate)}
+          {monthDate.milestone && createMilestoneItem(monthDate, nextInnerEndDate)}
         </div>
       )
     }
@@ -198,13 +198,18 @@ function ProjectTimeline(props) {
       return
     }
 
+    // Collect dashed end dates for nahtavilla/esilla display
+    const innerEndDates = monthDates.filter(md => md.milestone_types?.includes('inner_end'))
     const drawableItems = []
     for (let i = 0; i < monthDates.length; i++) {
       const monthDate = monthDates[i]
+      console.log(monthDate)
+      if (monthDate.milestone_types?.includes('inner_end')) innerEndDates.shift()
+      const nextInnerEndDate = innerEndDates[0]?.milestoneDate ? dayjs(innerEndDates[0].milestoneDate) : null;
       let rendered = false
       for (const property in monthDate) {
         if (Array.isArray(monthDate[property].deadline_type)) {
-          drawableItems.push(createDrawItem(monthDate, property))
+          drawableItems.push(createDrawItem(monthDate, property, nextInnerEndDate))
           rendered = true
           break
         }
@@ -217,7 +222,7 @@ function ProjectTimeline(props) {
     }
     setDrawItems([...drawableItems])
   }
-  function createMilestoneItem(monthDate) {
+  function createMilestoneItem(monthDate, nextInnerEndDate=null) {
     if (!monthDate) {
       return null;
     }
@@ -231,12 +236,10 @@ function ProjectTimeline(props) {
         case 'dashed_start':
           if (monthDate.milestone_types.includes('milestone')) {
             showMessage = (
-              <span className="milestone-message">
-                {t('deadlines.deadline-label', {
-                  date: date.date(),
-                  month: date.month() + 1
-                })}
-              </span>
+              <div className="milestone-message">
+                <span className="milestone-message-date">{`${date.date()}.${date.month() + 1}`}</span>
+                <span className="milestone-message-label">{t('deadlines.deadline-label')}</span>
+              </div>
             );
           }
           milestoneType.push(
@@ -252,27 +255,28 @@ function ProjectTimeline(props) {
         case 'dashed_end':
           if (monthDate.milestone_types.includes('milestone')) {
             showMessage = (
-              <span
-                className={`milestone-message ${monthDate.milestone_space < 6 ? 'under' : ''
-                  }`}
+              <div
+                className={`milestone-message ${monthDate.milestone_space < 6 ? 'under' : ''}`}
               >
-                {t('deadlines.kylk-message', {
-                  date: date.date(),
-                  month: date.month() + 1
-                })}
-              </span>
+                <span className="milestone-message-date">{`${date.date()}.${date.month() + 1}`}</span>
+                <span className="milestone-message-label">{t('deadlines.kylk-message')}</span>
+              </div>
             );
             milestoneType.push(
               <div key={listKey++} className="milestone-icon sphere black" />
             );
           } else {
+            let dateRangeString = `${date.date()}.${date.month() + 1}`;
+            if (nextInnerEndDate) dateRangeString += `-${nextInnerEndDate.date()}.${nextInnerEndDate.month() + 1}`;
+            const labelKey = `deadlines.${monthDate.midpoint.phase_name === "Ehdotus" ? 'proposal-shown' : 'shown'}`
             showMessage = (
-              <span
+              <div
                 className={`milestone-message ${monthDate.milestone_space < 6 ? 'under' : ''
                   }`}
               >
-                {t('deadlines.shown')}
-              </span>
+                <span className="milestone-message-date">{dateRangeString}</span>
+                <span className="milestone-message-label">{t(labelKey)}</span>
+              </div>
             );
             milestoneType.push(
               <div key={listKey++} className="milestone-icon square white" />

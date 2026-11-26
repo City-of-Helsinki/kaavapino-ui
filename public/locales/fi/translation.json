@@ -97,9 +97,10 @@
       "dec": "Joulu"
     },
     "now": "Tänään",
-    "deadline-label": "{{date}}.{{month}} määräa. ",
-    "kylk-message": "{{date}}.{{month}} Kylk",
-    "shown": "nähtävillä",
+    "deadline-label": "Määräaika",
+    "kylk-message": "KYLK",
+    "shown": "Esillä",
+    "proposal-shown": "Nähtävillä",
     "reset-project-deadlines": "Tyhjennä aikataulut",
     "reset-confirm-dialog-title": "Aikataulujen uudelleen luominen",
     "reset-confirm-dialog-question": "Oletko varma, että haluat luoda aikataulut uudestaan? Tapahtumaa ei voi perua.",

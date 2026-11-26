@@ -96,9 +96,10 @@
         font-family: 'Helsinki Grotesk Medium', sans-serif;
         position: absolute;
         bottom: 1.75rem;
-        font-size: $size14;
-        width: 8rem;
+        font-size: $size16;
         color: $color-black-90;
+        inline-size: max-content;
+        writing-mode: horizontal-tb;
       }
       .deadline-milestone {
         .milestone-message {
@@ -106,6 +107,17 @@
           top: 2rem;
           line-height: normal;
           font-size: $size14;
+          display: flex;
+          flex-direction: column;
+          .milestone-message-label {
+            font-family: "Helsinki Grotesk Regular", sans-serif;
+            inline-size: max-content;
+            writing-mode: horizontal-tb;
+          }
+          .milestone-message-date {
+            inline-size: max-content;
+            writing-mode: horizontal-tb;
+          }
         }
         .milestone-icon {
           position: absolute;
@@ -195,11 +207,13 @@
           border: 1px solid $color-metro;
           margin-top: -56px;
           span {
-            left: 1.25rem;
-            top: 1rem;
+            position: relative;
+            left: $size4;
+            top: 2.25rem;
             color: $color-black-90;
             margin-top: -34px;
             font-weight: 700;
+            font-family: "Helsinki Grotesk Bold", sans-serif;
             font-size: $size14;
           }
         }
